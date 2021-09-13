@@ -11,7 +11,7 @@
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
     junit:junit;version="${junit4.version}",\
-    org.hamcrest:hamcrest-core;version="${hamcrest.version}",\
+    org.hamcrest;version="${hamcrest.version}",\
     assertj-core;version="${assertj.version}"
 
 -includepackage: \

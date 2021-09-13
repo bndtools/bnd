@@ -225,7 +225,7 @@ public class AlsoLauncherTest {
 		project.setProperty(Constants.RUNTRACE, "true");
 		project.setProperty("-executable", "location='${@bsn}");
 		Entry<String, Resource> export = project.export("bnd.executablejar", null);
-		assertThat(project.check("Cannot find bsn in.*apiguardian-api")).isTrue();
+		assertThat(project.check()).isTrue();
 		assertThat(export).isNotNull();
 
 		try (Jar jar = new Jar(".", export.getValue()
@@ -235,7 +235,7 @@ public class AlsoLauncherTest {
 				.keySet()).contains(//
 					"jar/biz.aQute.launcher.jar", // -runpath
 					"jar/org.apache.felix.framework-5.6.10.jar", // -runpath
-					"jar/apiguardian-api-1.1.0.jar", // not a bundle
+					"jar/org.apiguardian.api", //
 					"jar/demo", //
 					"jar/junit-jupiter-api", //
 					"jar/junit-jupiter-engine", //

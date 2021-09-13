@@ -1,5 +1,3 @@
-org.awaitility:awaitility:3.1.6
-
 org.osgi:osgi.annotation:8.0.0
 org.osgi:osgi.core:6.0.0
 org.osgi:org.osgi.framework:1.10.0
@@ -67,7 +65,6 @@ org.apache.ant:ant-testutil:1.10.8
 
 junit:junit:${junit4.tester.version}
 junit:junit:${junit4.version}
-org.hamcrest:hamcrest-core:${hamcrest.version}
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.13.2_1
 org.junit.platform:junit-platform-commons:${junit.platform.tester.version}
 org.junit.platform:junit-platform-engine:${junit.platform.tester.version}
@@ -82,16 +79,18 @@ org.junit.platform:junit-platform-engine:${junit.platform.version}
 org.junit.platform:junit-platform-launcher:${junit.platform.version}
 org.opentest4j:opentest4j:${opentest4j.tester.version}
 org.opentest4j:opentest4j:1.2.0
-org.apiguardian:apiguardian-api:1.1.0
+org.apiguardian:apiguardian-api:1.1.2
 org.assertj:assertj-core:${assertj.version}
+org.awaitility:awaitility:${awaitility.version}
+org.hamcrest:hamcrest:${hamcrest.version}
+org.mockito:mockito-core:jar:${org.mockito.version}
+net.bytebuddy:byte-buddy:${net.bytebuddy.version}
+net.bytebuddy:byte-buddy-agent:${net.bytebuddy.version}
+org.objenesis:objenesis:jar:${org.objenesis.version}
 org.xmlunit:xmlunit-core:2.6.3
 org.xmlunit:xmlunit-assertj:2.6.3
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
-
-org.mockito:mockito-core:2.23.0
-net.bytebuddy:byte-buddy:1.9.0
-org.objenesis:objenesis:2.6
 
 args4j:args4j:2.0.26
 
