@@ -1036,4 +1036,39 @@
 			id="bndtools.core.BndtoolsJavaWorkingSet">
 		</workingSet>
 	</extension>
+	
+	<!-- =========================================================================== -->
+	<!-- Remote Bundle Install Support -->
+	<!-- =========================================================================== -->
+	<extension point="org.eclipse.ui.commands">
+		<command
+			defaultHandler="org.bndtools.facade.ExtensionFacade:org.eclipse.core.commands.IHandler2"
+			id="org.bndtools.remoteinstall.command.InstallHandler"
+			name="Remote Bundle Install">
+		</command>
+	</extension>
+
+	<extension point="org.eclipse.ui.commandImages">
+		<image commandId="org.bndtools.remoteinstall.command.InstallHandler"
+			icon="${icons.remote.install}" />
+	</extension>
+
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution
+			locationURI="popup:org.eclipse.ui.popup.any">
+				<command commandId="org.bndtools.remoteinstall.command.InstallHandler"
+					label="Remote Bundle Install" style="push">
+					<visibleWhen>
+						<with variable="activeMenuSelection">
+							<iterate ifEmpty="false" operator="or">
+								<adapt type="org.eclipse.core.resources.IFile">
+									<test property="org.eclipse.core.resources.extension"
+										value="jar" />
+								</adapt>
+							</iterate>
+						</with>
+					</visibleWhen>
+				</command>
+		</menuContribution>
+	</extension>
 </plugin>

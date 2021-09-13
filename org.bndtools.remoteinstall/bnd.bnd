@@ -1,0 +1,22 @@
+-include                  : ${workspace}/cnf/includes/bndtools.bnd
+Import-Package            : ${eclipse.importpackage}, *
+-privatepackage           : org.bndtools.remoteinstall.*
+-conditionalpackage       : aQute.bnd.exceptions
+-buildpath                : \
+                            biz.aQute.bnd.util;version=latest,\
+                            biz.aQute.remote.api;version=latest,\
+                            bndtools.api;version=latest,\
+                            bndtools.core;version=latest,\
+                            com.google.gson,\
+                            org.eclipse.core.commands,\
+                            org.eclipse.core.jobs,\
+                            org.eclipse.core.resources,\
+                            org.eclipse.core.runtime,\
+                            org.eclipse.equinox.common,\
+                            org.eclipse.equinox.preferences,\
+                            org.eclipse.jface,\
+                            org.eclipse.osgi,\
+                            org.eclipse.swt.cocoa.macosx.x86_64,\
+                            org.eclipse.ui.ide,\
+                            org.eclipse.ui.workbench,\
+                            org.osgi.service.component.annotations

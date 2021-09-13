@@ -18,6 +18,7 @@ timestamp: ${tstamp}
     org.bndtools.headless.build.plugin.ant, \
     org.bndtools.headless.build.plugin.gradle, \
     org.bndtools.launch, \
+    org.bndtools.remoteinstall, \
     org.bndtools.versioncontrol.ignores.manager, \
     org.bndtools.versioncontrol.ignores.plugin.git, \
     org.bndtools.templating, \

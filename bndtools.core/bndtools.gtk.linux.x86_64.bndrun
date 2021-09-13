@@ -30,6 +30,7 @@
 	biz.aQute.bnd.maven;version=snapshot,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.remote.api;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
 	biz.aQute.resolve;version=snapshot,\
 	bndtools.api;version=snapshot,\
@@ -80,6 +81,7 @@
 	org.bndtools.headless.build.plugin.ant;version=snapshot,\
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
 	org.bndtools.launch;version=snapshot,\
+	org.bndtools.remoteinstall;version=snapshot,\
 	org.bndtools.templates.template;version=snapshot,\
 	org.bndtools.templating;version=snapshot,\
 	org.bndtools.templating.gitrepo;version=snapshot,\

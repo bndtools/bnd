@@ -102,7 +102,8 @@ public class AgentSupervisor<Supervisor, Agent> {
 		if (quit.getAndSet(true))
 			return;
 
-		if (link.isOpen())
+		// link can be null in case of connection issues
+		if (link != null && link.isOpen())
 			link.close();
 
 		latch.countDown();
