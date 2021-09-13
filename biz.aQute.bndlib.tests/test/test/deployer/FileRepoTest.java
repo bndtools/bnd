@@ -238,7 +238,7 @@ public class FileRepoTest {
 
 		f = repo.get("XXXXXXXXXXXXXXXXX", new Version("0"), null, mock);
 		assertNull(f);
-		Mockito.verifyZeroInteractions(mock);
+		Mockito.verifyNoInteractions(mock);
 	}
 
 	@Test
