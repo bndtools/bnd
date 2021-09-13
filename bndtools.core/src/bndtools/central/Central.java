@@ -143,7 +143,6 @@ public class Central implements IStartupParticipant {
 		repoListenerTracker = new RepositoryListenerPluginTracker(bundleContext);
 		repoListenerTracker.open();
 		internalPlugins.open();
-
 	}
 
 	@Override
@@ -588,12 +587,7 @@ public class Central implements IStartupParticipant {
 					refreshFile(file);
 				}
 
-				for (Project p : Central.getWorkspace()
-					.getAllProjects()) {
-					p.setChanged();
-					for (ModelListener l : getInstance().listeners)
-						l.modelChanged(p);
-				}
+				refreshProjects();
 
 				if (repoChanged) {
 					repositoriesViewRefresher.repositoriesRefreshed();
@@ -607,17 +601,29 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static void refreshPlugin(Refreshable plugin) throws Exception {
-		if (plugin.refresh()) {
+		refreshPlugin(plugin, false);
+	}
+
+	public static void refreshPlugin(Refreshable plugin, boolean force) throws Exception {
+		boolean refresh = plugin.refresh();
+		if (refresh || force) {
 			refreshFile(plugin.getRoot());
-			for (Project p : Central.getWorkspace()
-				.getAllProjects()) {
-				p.setChanged();
-				for (ModelListener l : getInstance().listeners)
-					l.modelChanged(p);
-			}
 			if (plugin instanceof RepositoryPlugin) {
 				repositoriesViewRefresher.repositoryRefreshed((RepositoryPlugin) plugin);
+			} else {
+				// If the Plugin was a RepositoryPlugin, the ViewRefresher will
+				// trigger the Project update. If not, we have to do it ourself
+				refreshProjects();
 			}
+		}
+	}
+
+	public static void refreshProjects() throws Exception {
+		for (Project p : Central.getWorkspace()
+			.getAllProjects()) {
+			p.setChanged();
+			for (ModelListener l : getInstance().listeners)
+				l.modelChanged(p);
 		}
 	}
 

@@ -28,6 +28,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -127,6 +128,12 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 								busy = false;
 								if (redo) {
 									refreshRepositories(null);
+								} else {
+									try {
+										Central.refreshProjects();
+									} catch (Exception e) {
+										Exceptions.duck(e);
+									}
 								}
 							}
 						});
