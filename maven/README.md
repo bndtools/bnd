@@ -87,6 +87,25 @@ pom's `pluginManagement` section, to configure the repository:
 	</pluginRepository>
 </pluginRepositories>
 ```
+# Using the latest Milestone/Release Candidate build of the Bnd Maven Plugins
+
+If you want to try the latest milestone or release candidate build of the
+Bnd Maven Plugins, you will need to adjust your pom to refer to the release
+repository and select the desired version of the plugins. For example, edit the
+pom's `pluginManagement` section, to configure the repository:
+
+```xml
+<pluginRepositories>
+	<pluginRepository>
+		<id>bnd-releases</id>
+		<url>https://bndtools.jfrog.io/bndtools/libs-release/</url>
+		<layout>default</layout>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+	</pluginRepository>
+</pluginRepositories>
+```
 
 [1]: bnd-maven-plugin/README.md
 [2]: bnd-indexer-maven-plugin/README.md
