@@ -241,8 +241,3 @@ tasks.test {
 		}
 	}
 }
-
-tasks.build {
-	// Publish to local repository
-	finalizedBy("publishToMavenLocal")
-}
