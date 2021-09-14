@@ -28,8 +28,8 @@ java {
 val maven_repo_local: String? by rootProject.extra
 repositories {
 	mavenLocal {
-		if (maven_repo_local != null) {
-			url = uri(maven_repo_local)
+		maven_repo_local?.let {
+			url = uri(it)
 		}
 		metadataSources {
 			mavenPom()
@@ -169,9 +169,9 @@ publishing {
 
 // Handle JPMS options
 val jpmsOptions: List<String>? by rootProject.extra
-if (jpmsOptions != null) {
+jpmsOptions?.let {
 	tasks.withType<GroovyCompile> {
-		groovyOptions.fork(mapOf("jvmArgs" to jpmsOptions))
+		groovyOptions.fork(mapOf("jvmArgs" to it))
 	}
 }
 
@@ -226,8 +226,8 @@ tasks.test {
 	inputs.files(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
 	systemProperty("bnd_version", bnd_version)
 	systemProperty("org.gradle.warning.mode", gradle.getStartParameter().getWarningMode().name.toLowerCase())
-	if (maven_repo_local != null) {
-		systemProperty("maven.repo.local", maven_repo_local)
+	maven_repo_local?.let {
+		systemProperty("maven.repo.local", it)
 	}
 	val injected = objects.newInstance<Injected>()
 	doFirst {
