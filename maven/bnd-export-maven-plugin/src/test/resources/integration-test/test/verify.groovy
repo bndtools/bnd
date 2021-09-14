@@ -3,13 +3,14 @@ import aQute.bnd.build.model.*;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import java.io.*;
 import java.util.jar.*;
 
 println "basedir ${basedir}"
 println "bndVersion ${bndVersion}"
-def baseVersion = bndVersion - '-SNAPSHOT'
+def baseVersion = new MavenVersion(bndVersion).toReleaseVersion()
 
 // Check the bndrun file exist!
 File bndrunFile = new File(new File(basedir, "export"), 'test.bndrun')
