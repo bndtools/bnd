@@ -12,5 +12,9 @@
 	biz.aQute.bnd.util;version=latest,\
 	aQute.libg;version=project
 
+# Don't release since this is a test project
+-buildrepo:
+-releaserepo:
+
 # Don't run tests in parallel with other projects claiming launchpad
 -noparallel: launchpad;task="test"
