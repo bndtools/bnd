@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -ev
 unset JAVA_TOOL_OPTIONS _JAVA_OPTIONS
 ./gradlew --no-daemon --version
 ./mvnw --version
