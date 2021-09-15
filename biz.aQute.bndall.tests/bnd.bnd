@@ -1,11 +1,12 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
 #
 #  A Test project that includes all subsystems of bnd
 #
 # This is not a bundle ...
 #
 -dependson biz.aQute.bnd.javagen
-
--include: ${workspace}/cnf/includes/jdt.bnd
 
 -testpath: \
     osgi.core;version=latest,\
@@ -29,6 +30,7 @@
 
 -sub: *.bnd
 
+# Don't release since this is a test project
 -buildrepo:
 -releaserepo:
 

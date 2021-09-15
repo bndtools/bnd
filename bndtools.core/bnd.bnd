@@ -109,7 +109,7 @@ Export-Package: org.osgi.service.metatype.annotations
 	${junit},\
 	${mockito}
 
--builderignore: testdata
+-builderignore: testdata, workspace
 
 # Runtime Options and Variables
 -runpath: org.eclipse.osgi,\
