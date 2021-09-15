@@ -48,5 +48,5 @@ public final class BndtoolsConstants {
 	 */
 	public static final String	BNDTOOLS_MARKER_PROJECT_ATTR			= "bndtools.marker.project";
 
-	public static final String	BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME	= "BndtoolsJAREditorTempFiles";
+	public static final String	BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME	= ".BndtoolsJAREditorTempFiles";
 }
