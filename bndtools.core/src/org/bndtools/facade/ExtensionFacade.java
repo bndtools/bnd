@@ -188,9 +188,10 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 		this.data = data;
 		this.id = config.getAttribute("id");
 
-		consoleLog.debug("{} Initializing facade, propName: {}, data {}", this, propertyName, data);
+		consoleLog.debug("{} Initializing facade, propName: \"{}\", data: \"{}\"", this, propertyName, data);
 
-		if (data != null) {
+		if (data != null && !data.toString()
+			.isEmpty()) {
 			try {
 				String epId = config.getDeclaringExtension()
 					.getExtensionPointUniqueIdentifier();
@@ -205,7 +206,7 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 					.findFirst();
 
 				if (b.isPresent()) {
-					consoleLog.debug("{} Attempting to load from bundle: {}", this, b.get());
+					consoleLog.debug("{} Attempting to load \"{}\" from bundle: {}", this, data, b.get());
 					@SuppressWarnings("unchecked")
 					final Class<T> clazz = (Class<T>) b.get()
 						.loadClass(data.toString());
@@ -217,6 +218,7 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 					downstreamClass = clazz;
 				}
 			} catch (ClassNotFoundException e) {
+				consoleLog.error("{} exception:", this, e);
 				throw new CoreException(
 					new Status(IStatus.ERROR, getClass(), 0, "Downstream interface for " + id + " not found", e));
 			}
