@@ -1,6 +1,10 @@
 package bndtools.jareditor.internal;
 
+import java.io.File;
+import java.util.Set;
+
 import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -12,6 +16,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+
+import bndtools.preferences.BndPreferences;
 
 public class TemporaryProject {
 
@@ -62,6 +70,19 @@ public class TemporaryProject {
 
 		project.create(description, monitor);
 		project.open(monitor);
+
+		try {
+			VersionControlIgnoresManager versionControlIgnoresManager = bndtools.Plugin.getDefault()
+				.getVersionControlIgnoresManager();
+			IJavaProject javaProject = JavaCore.create(project);
+			Set<String> enabledIgnorePlugins = new BndPreferences()
+				.getVersionControlIgnoresPluginsEnabled(versionControlIgnoresManager, javaProject, null);
+			versionControlIgnoresManager.addIgnores(enabledIgnorePlugins,
+				new File(project.getLocationURI()).getParentFile(),
+				BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
+		} catch (Exception e) {
+			// best effort
+		}
 
 		return project;
 	}
