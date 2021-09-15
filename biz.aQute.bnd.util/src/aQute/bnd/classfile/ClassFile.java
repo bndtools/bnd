@@ -12,7 +12,7 @@ import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.io.IO;
 
 public class ClassFile extends ElementInfo {
-	public static final int		MAJOR_VERSION	= 60;
+	public static final int		MAJOR_VERSION	= 61;
 	public static final int		ACC_ANNOTATION	= 0x2000;
 	public static final int		ACC_ENUM		= 0x4000;
 	public static final int		ACC_MODULE		= 0x8000;

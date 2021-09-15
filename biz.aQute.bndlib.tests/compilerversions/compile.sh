@@ -32,6 +32,7 @@
 # javac --release 14 -cp src src/jdk_14_0/*.java
 # javac --release 15 -cp src src/jdk_15/*.java
 # javac --release 16 -cp src src/jdk_16/*.java
+# javac --release 17 -cp src src/jdk_17/*.java
 
 # java -jar ../jar/ecj_3.2.2.jar -target 1.1 -source 1.3 -cp src src/eclipse_1_1/*.java
 # java -jar ../jar/ecj_3.2.2.jar -target 1.2 -source 1.3 -cp src src/eclipse_1_2/*.java
