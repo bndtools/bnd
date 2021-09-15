@@ -123,8 +123,17 @@ public enum EE {
 		Version version = Optional.of(targetVersion)
 			.map(Analyzer::cleanupVersion)
 			.map(Version::new)
-			// drop the MICRO version since EEs don't have them
-			.map(v -> new Version(v.getMajor(), v.getMinor(), 0))
+			.map(v -> {
+				int major = v.getMajor();
+				int minor = v.getMinor();
+				// maps 8 to 1.8
+				if ((major > 1) && (major < 9)) {
+					minor = major;
+					major = 1;
+				}
+				// drop the MICRO version since EEs don't have them
+				return new Version(major, minor, 0);
+			})
 			// practically unreachable since NPE and invalid syntax are caught
 			// earlier
 			.orElseThrow(() -> new IllegalArgumentException(
