@@ -7,10 +7,10 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Optional;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {
@@ -59,6 +59,7 @@ public enum EE {
 	JavaSE_18("JavaSE-18", "JavaSE", "18", JavaSE_17),
 	JavaSE_19("JavaSE-19", "JavaSE", "19", JavaSE_18),
 	JavaSE_20("JavaSE-20", "JavaSE", "20", JavaSE_19),
+	JavaSE_21("JavaSE-21", "JavaSE", "21", JavaSE_20),
 
 	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0");
 
