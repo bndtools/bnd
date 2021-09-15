@@ -7,5 +7,6 @@ Extension-Activator: aQute.bnd.ext.test.TestExtension
 	biz.aQute.bnd.util;version=project,\
 	biz.aQute.bndlib;version=project
 
+# Don't release since this is a test project
 -buildrepo:
 -releaserepo:

@@ -1,3 +1,4 @@
+# Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath: \
@@ -50,7 +51,7 @@ Import-Package: \
 -includepackage: bndtools.m2e.*
 
 -includeresource: \
-	lifecycle-mapping-metadata.xml,\
+	resources,\
 	plugin.xml=_plugin.xml,\
 	icons/bricks_junit.png=${workspace}/bndtools.core/resources/unprocessed/icons/bricks_junit.png,\
 	icons/bricks_run.png=${workspace}/bndtools.core/resources/unprocessed/icons/bricks_run.png

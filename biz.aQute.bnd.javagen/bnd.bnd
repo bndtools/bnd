@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
 -buildpath: \
 	osgi.annotation;version=latest,\
 	aQute.libg;version=project,\
@@ -11,6 +14,7 @@
     aQute.lib.*, \
     aQute.libg.*
 
+# Don't release since this project is only used in testing
 -buildrepo:
 -releaserepo:
 -nojunit: true

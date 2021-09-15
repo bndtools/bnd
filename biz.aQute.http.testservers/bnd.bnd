@@ -34,6 +34,7 @@ Bundle-Description: \
 
 -exportcontents: aQute.http.testservers
 
+# Don't release since this is a test project
 -buildrepo:
 -releaserepo:
 

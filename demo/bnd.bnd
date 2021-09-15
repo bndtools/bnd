@@ -37,11 +37,12 @@ Import-Package: \
 
 base.version:   1.1.0
 
+# Don't release since this project is only used in testing
+-buildrepo:
+-releaserepo:
 -nojunit: true
 -nojunitosgi: true
 test-reports: demotest-reports
--buildrepo:
--releaserepo:
 Export-Package: \
 	test.api,\
 	test.api2,\
@@ -53,3 +54,5 @@ Export-Package: \
 -exporttype: bnd.executablejar;foo=bnd, bnd.runbundles;bar=bnd
 
 -includeresource: x.bndrun
+
+-builderignore: testresources

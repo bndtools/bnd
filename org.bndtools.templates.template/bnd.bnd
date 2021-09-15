@@ -1,7 +1,7 @@
-# Template inception... templates for generating template projects!
-
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+# Template inception... templates for generating template projects!
 
 -resourceonly: true
 
