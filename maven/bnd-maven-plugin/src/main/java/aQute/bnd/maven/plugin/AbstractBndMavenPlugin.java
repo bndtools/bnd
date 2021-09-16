@@ -670,8 +670,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		}
 
 		Path path = directory.toPath();
-		try (Stream<Path> entries = Files.list(path)) {
-			return !entries.filter(Files::isRegularFile)
+		try (Stream<Path> entries = Files.walk(path)) {
+			return !entries.filter(p -> !Files.isDirectory(p))
 				.findFirst()
 				.isPresent();
 		} catch (IOException ioe) {
