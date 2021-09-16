@@ -2,8 +2,8 @@ package aQute.bnd.osgi;
 
 import java.util.Map;
 
-import aQute.bnd.version.Version;
 import aQute.bnd.unmodifiable.Maps;
+import aQute.bnd.version.Version;
 
 /**
  * This package contains a number of classes that assists by analyzing JARs and
@@ -54,8 +54,10 @@ public class About {
 	public static final Version					_5_2		= new Version(5, 2, 0);
 	public static final Version					_5_3		= new Version(5, 3, 0);
 	public static final Version					_6_0		= new Version(6, 0, 0);
-	public static final Version					CURRENT		= _6_0;
+	public static final Version					_6_1		= new Version(6, 1, 0);
+	public static final Version					CURRENT		= _6_1;
 
+	public static final String[]				CHANGES_6_1	= {};
 	public static final String[]				CHANGES_6_0	= {};
 	public static final String[]				CHANGES_5_3	= {};
 	public static final String[]				CHANGES_5_2	= {};
