@@ -31,9 +31,7 @@ Bundle-SymbolicName: ${p};singleton:=true
 	org.eclipse.jdt.launching,\
 	org.eclipse.core.filesystem,\
 	org.eclipse.core.contenttype,\
-	bndtools.api;version=latest,\
-	bndtools.core;version=latest,\
-	org.bndtools.versioncontrol.ignores.manager
+    bndtools.api;version=latest
 
 -includepackage: bndtools.jareditor.*,\
 	bndtools.test.plugin
