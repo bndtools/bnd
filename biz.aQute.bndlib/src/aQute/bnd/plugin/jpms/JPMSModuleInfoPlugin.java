@@ -126,7 +126,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 	private static final Pattern	mangledModuleName			= Pattern.compile("(.*)-\\d.*");
 
-	private static final EE			DEFAULT_MODULE_EE			= EE.JavaSE_11_0;
+	private static final EE			DEFAULT_MODULE_EE			= EE.JavaSE_11;
 	private static final String		INTERNAL_MODULE_DIRECTIVE	= "-internal-module:";
 
 	@Override
