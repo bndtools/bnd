@@ -181,8 +181,15 @@ public enum EE {
 	private void init() {
 		try (InputStream stream = EE.class.getResourceAsStream(name() + ".properties")) {
 			if (stream == null) {
-				packages = new Parameters();
-				modules = new Parameters();
+				int ordinal = ordinal();
+				if (ordinal > 0) {
+					EE previousEE = values()[ordinal - 1];
+					packages = previousEE.getPackages();
+					modules = previousEE.getModules();
+				} else {
+					packages = new Parameters();
+					modules = new Parameters();
+				}
 				return;
 			}
 			UTF8Properties props = new UTF8Properties();
