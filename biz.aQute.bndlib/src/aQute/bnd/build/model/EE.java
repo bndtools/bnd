@@ -43,17 +43,17 @@ public enum EE {
 
 	JavaSE_1_8("JavaSE-1.8", "JavaSE", "1.8", JavaSE_1_7, JavaSE_compact3_1_8),
 
-	JavaSE_9_0("JavaSE-9", "JavaSE", "9", JavaSE_1_8),
+	JavaSE_9("JavaSE-9", "JavaSE", "9", JavaSE_1_8),
 
-	JavaSE_10_0("JavaSE-10", "JavaSE", "10", JavaSE_9_0),
+	JavaSE_10("JavaSE-10", "JavaSE", "10", JavaSE_9),
 
-	JavaSE_11_0("JavaSE-11", "JavaSE", "11", JavaSE_10_0),
+	JavaSE_11("JavaSE-11", "JavaSE", "11", JavaSE_10),
 
-	JavaSE_12_0("JavaSE-12", "JavaSE", "12", JavaSE_11_0),
+	JavaSE_12("JavaSE-12", "JavaSE", "12", JavaSE_11),
 
-	JavaSE_13_0("JavaSE-13", "JavaSE", "13", JavaSE_12_0),
-	JavaSE_14_0("JavaSE-14", "JavaSE", "14", JavaSE_13_0),
-	JavaSE_15("JavaSE-15", "JavaSE", "15", JavaSE_14_0),
+	JavaSE_13("JavaSE-13", "JavaSE", "13", JavaSE_12),
+	JavaSE_14("JavaSE-14", "JavaSE", "14", JavaSE_13),
+	JavaSE_15("JavaSE-15", "JavaSE", "15", JavaSE_14),
 	JavaSE_16("JavaSE-16", "JavaSE", "16", JavaSE_15),
 	JavaSE_17("JavaSE-17", "JavaSE", "17", JavaSE_16),
 	JavaSE_18("JavaSE-18", "JavaSE", "18", JavaSE_17),

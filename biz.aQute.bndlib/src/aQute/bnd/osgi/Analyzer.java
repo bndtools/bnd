@@ -369,7 +369,7 @@ public class Analyzer extends Processor {
 				// Determine if we should elide imports of java packages.
 				boolean noimportjava = is(NOIMPORTJAVA);
 				while (!noimportjava) {
-					if (getHighestEE().compareTo(Clazz.JAVA.OpenJDK11) >= 0) {
+					if (getHighestEE().compareTo(Clazz.JAVA.Java_11) >= 0) {
 						// Requires Java 11 or later.
 						break; // So we import java packages.
 					}
@@ -3318,14 +3318,14 @@ public class Analyzer extends Processor {
 
 	public Clazz.JAVA getLowestEE() {
 		if (ees.isEmpty())
-			return Clazz.JAVA.JDK1_4;
+			return Clazz.JAVA.Java_1_4;
 
 		return ees.first();
 	}
 
 	public Clazz.JAVA getHighestEE() {
 		if (ees.isEmpty())
-			return Clazz.JAVA.JDK1_4;
+			return Clazz.JAVA.Java_1_4;
 
 		return ees.last();
 	}
