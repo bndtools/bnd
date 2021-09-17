@@ -419,7 +419,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 							continue projects;
 						}
 					} catch (CoreException e) {
-						Exceptions.duck(e);
+						throw Exceptions.duck(e);
 					}
 					// No full check needed
 					continue projects;

@@ -80,7 +80,7 @@ public class Snapshot implements BundleActivator {
 
 					snapshot();
 				} catch (InterruptedException e) {
-					Exceptions.duck(e);
+					throw Exceptions.duck(e);
 				}
 			}
 		});

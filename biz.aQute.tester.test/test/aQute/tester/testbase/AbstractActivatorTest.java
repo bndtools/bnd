@@ -169,7 +169,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 			try {
 				postCreateCallback.run();
 			} catch (Exception e) {
-				Exceptions.duck(e);
+				throw Exceptions.duck(e);
 			}
 		}
 

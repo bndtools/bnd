@@ -675,10 +675,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				.findFirst()
 				.isPresent();
 		} catch (IOException ioe) {
-			Exceptions.duck(ioe);
+			throw Exceptions.duck(ioe);
 		}
-
-		return false;
 	}
 
 	private void expandJar(Jar jar, File dir) throws Exception {

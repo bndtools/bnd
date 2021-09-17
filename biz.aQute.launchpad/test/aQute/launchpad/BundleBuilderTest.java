@@ -20,7 +20,7 @@ public class BundleBuilderTest {
 		// try {
 		// Workspace w = Workspace.findWorkspace(IO.work);
 		// } catch (Exception e) {
-		// Exceptions.duck(e);
+		// throw Exceptions.duck(e);
 		// }
 	}
 
