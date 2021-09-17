@@ -90,9 +90,8 @@ public class BndPomRepository extends BaseRepository
 			}
 			return initialized.getValue();
 		} catch (Exception e) {
-			Exceptions.duck(e);
+			throw Exceptions.duck(e);
 		}
-		return false;
 	}
 
 	@SuppressWarnings("deprecation")

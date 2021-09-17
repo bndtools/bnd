@@ -93,13 +93,13 @@ import org.eclipse.ui.part.ViewPart;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -821,7 +821,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 													e1.getValue()
 														.run();
 													if (rp != null && rp instanceof Refreshable)
-														Central.refreshPlugin((Refreshable) rp);
+														Central.refreshPlugin((Refreshable) rp, true);
 												} catch (final Exception e) {
 													IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
 														"Error executing: " + getName(), e);

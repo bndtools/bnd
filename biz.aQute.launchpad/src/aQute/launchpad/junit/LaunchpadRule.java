@@ -32,7 +32,7 @@ public class LaunchpadRule extends TestWatcher {
 		try {
 			this.launchpad.close();
 		} catch (Exception e) {
-			Exceptions.duck(e);
+			throw Exceptions.duck(e);
 		}
 	}
 
