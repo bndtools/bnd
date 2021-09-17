@@ -361,14 +361,14 @@ public class BuildpathQuickFixProcessor_WithEmptyBuildpath_Test extends Abstract
 	void testWithShortClassNameInRepoAndBuildpath() {
 		String source = "package test; public class " + DEFAULT_CLASS_NAME + "{ ";
 		int start = source.length();
-		source += "Tag unqualifiedTagType; }";
+		source += "MyForeignClass unqualifiedType; }";
 
 		assertThatProposals(proposalsFor(start, 3, source)).haveExactly(1,
-			suggestsBundle("junit-jupiter-api", "5.6.2", "org.junit.jupiter.api.Tag"));
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
 
 		// Now put it on the buildpath
 
-		addBundlesToBuildpath("junit-jupiter-api");
+		addBundlesToBuildpath("bndtools.core.test.fodder.iface");
 
 		try {
 			assertThatProposals(proposalsFor(start, 3, source)).isEmpty();
