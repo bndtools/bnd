@@ -254,7 +254,7 @@ public class Nexus {
 				deferred.resolveWith(result);
 			} catch (Throwable e) {
 				deferred.fail(e);
-				Exceptions.duck(e);
+				throw Exceptions.duck(e);
 			}
 		});
 

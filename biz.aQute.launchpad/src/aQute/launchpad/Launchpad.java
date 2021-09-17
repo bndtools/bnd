@@ -920,7 +920,7 @@ public class Launchpad implements AutoCloseable {
 		try {
 			clazz.getConstructor();
 		} catch (NoSuchMethodException e) {
-			Exceptions.duck(e);
+			throw Exceptions.duck(e);
 		}
 		Bundle b = bundle().addResourceWithCopy(clazz)
 			.start();

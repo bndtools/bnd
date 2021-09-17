@@ -285,7 +285,7 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 			tracker.open();
 		} catch (InvalidSyntaxException e) {
 			consoleLog.error("{} couldn't build filter for {}", this, filter, e);
-			Exceptions.duck(e);
+			throw Exceptions.duck(e);
 		}
 	}
 

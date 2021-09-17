@@ -18,8 +18,10 @@ public class ExceptionsTest {
 	@Test
 	public void testDuck() {
 		IOException ioe = new IOException();
-		assertThatExceptionOfType(IOException.class).isThrownBy(() -> duck(ioe))
-			.isEqualTo(ioe);
+		assertThatExceptionOfType(IOException.class).isThrownBy(() -> {
+			throw duck(ioe);
+		})
+			.isSameAs(ioe);
 		assertThatExceptionOfType(Throwable.class).isThrownBy(() -> duck(new Throwable()));
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> duck(new RuntimeException()));
 		assertThatExceptionOfType(Error.class).isThrownBy(() -> duck(new Error()));
@@ -31,11 +33,11 @@ public class ExceptionsTest {
 		IOException ioe2 = new IOException(ioe1);
 		InvocationTargetException ite1 = new InvocationTargetException(ioe2);
 		InvocationTargetException ite2 = new InvocationTargetException(ite1);
-		assertThat(Exceptions.unrollCause(ite2)).isEqualTo(ioe1);
-		assertThat(Exceptions.unrollCause(ite2, Throwable.class)).isEqualTo(ioe1);
-		assertThat(Exceptions.unrollCause(ite2, InvocationTargetException.class)).isEqualTo(ioe2);
-		assertThat(Exceptions.unrollCause(ioe2, InvocationTargetException.class)).isEqualTo(ioe2);
-		assertThat(Exceptions.unrollCause(ioe1)).isEqualTo(ioe1);
+		assertThat(Exceptions.unrollCause(ite2)).isSameAs(ioe1);
+		assertThat(Exceptions.unrollCause(ite2, Throwable.class)).isSameAs(ioe1);
+		assertThat(Exceptions.unrollCause(ite2, InvocationTargetException.class)).isSameAs(ioe2);
+		assertThat(Exceptions.unrollCause(ioe2, InvocationTargetException.class)).isSameAs(ioe2);
+		assertThat(Exceptions.unrollCause(ioe1)).isSameAs(ioe1);
 
 		assertThatNullPointerException().isThrownBy(() -> Exceptions.unrollCause(null));
 		assertThatNullPointerException()
