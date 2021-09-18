@@ -112,11 +112,13 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	@Override
 	protected void processBuilder(Builder builder) throws MojoFailureException {
 		String defaultBsn = project.getArtifactId();
+		String bsn = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME, defaultBsn + "-tests");
+
+		builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, bsn);
+
 		if (artifactFragment) {
-			builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, defaultBsn + "-tests");
-			builder.setProperty(Constants.FRAGMENT_HOST, defaultBsn);
-		} else if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
-			builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, defaultBsn + "-tests");
+			String fragmentHost = builder.getProperty(Constants.FRAGMENT_HOST, defaultBsn);
+			builder.setProperty(Constants.FRAGMENT_HOST, fragmentHost);
 		}
 
 		if (testCases != TestCases.useTestCasesHeader) {
