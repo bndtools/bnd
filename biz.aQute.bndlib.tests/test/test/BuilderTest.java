@@ -3387,6 +3387,59 @@ public class BuilderTest {
 	}
 
 	@Test
+	public void testIncludeResourceFromZipRecurseDirectoryFlatten() throws Exception {
+		try (Builder bmaker = new Builder()) {
+			Properties p = new Properties();
+			p.put("Import-Package", "!*");
+			p.put("-includeresource", "new.package/=@jar/cxf-rt-rs-sse-3.2.5.jar!/META-INF/services/*;flatten:=true");
+			bmaker.setProperties(p);
+			Jar jar = bmaker.build();
+			assertTrue(bmaker.check());
+			assertThat(jar.getResources().keySet())
+					.containsExactlyInAnyOrder("new.package/javax.ws.rs.sse.SseEventSource$Builder",
+						"new.package/org.apache.cxf.jaxrs.ext.JAXRSServerFactoryCustomizationExtension");
+		}
+
+	}
+
+	@Test
+	public void testIncludeResourceFromZipRecurseDirectoryRename2() throws Exception {
+		try (Builder bmaker = new Builder()) {
+			Properties p = new Properties();
+			p.put("Import-Package", "!*");
+			p.put("-includeresource", "new.package/=@jar/cxf-rt-rs-sse-3.2.5.jar!/META-INF/services/(*);rename:=$1");
+			bmaker.setProperties(p);
+			Jar jar = bmaker.build();
+			assertTrue(bmaker.check());
+			System.out.println(jar.getResources());
+			assertThat(jar.getResources()
+				.keySet()).containsExactlyInAnyOrder("new.package/javax.ws.rs.sse.SseEventSource$Builder",
+					"new.package/org.apache.cxf.jaxrs.ext.JAXRSServerFactoryCustomizationExtension");
+		}
+
+	}
+
+	@Test
+	public void testIncludeResourceFromZipRecurseDirectoryRename3() throws Exception {
+		try (Builder bmaker = new Builder()) {
+			Properties p = new Properties();
+			p.put("Import-Package", "!*");
+			p.put("-includeresource",
+				"new.package/=@jar/cxf-rt-rs-sse-3.2.5.jar!/(META-INF)/(cxf|services)/(*);rename:=$2/$1/$3.copy");
+			bmaker.setProperties(p);
+			Jar jar = bmaker.build();
+			assertTrue(bmaker.check());
+			System.out.println(jar.getResources());
+			assertThat(jar.getResources()
+				.keySet()).containsExactlyInAnyOrder(
+					"new.package/services/META-INF/javax.ws.rs.sse.SseEventSource$Builder.copy",
+					"new.package/services/META-INF/org.apache.cxf.jaxrs.ext.JAXRSServerFactoryCustomizationExtension.copy",
+					"new.package/cxf/META-INF/bus-extensions.txt.copy");
+		}
+
+	}
+
+	@Test
 	public void testIncludeLicenseFromZip() throws Exception {
 		Builder bmaker = new Builder();
 		try {
