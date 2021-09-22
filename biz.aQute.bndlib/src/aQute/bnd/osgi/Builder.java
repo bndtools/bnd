@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -946,7 +947,7 @@ public class Builder extends Analyzer {
 		}
 
 		if (source.startsWith("@")) {
-			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination, absentIsOk);
+			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination, absentIsOk, extra);
 		} else if (extra.containsKey("cmd")) {
 			doCommand(jar, source, destination, extra, preprocess, absentIsOk);
 		} else if (extra.containsKey(LITERAL_ATTRIBUTE)) {
@@ -1274,8 +1275,11 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Extra resources from a Jar and add them to the given jar.
+	 *
+	 * @param extra
 	 */
-	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk)
+	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk,
+		Map<String, String> extra)
 		throws ZipException, IOException {
 		// Inline all resources and classes from another jar
 		// optionally appended with a modified regular expression
@@ -1294,10 +1298,23 @@ public class Builder extends Analyzer {
 
 			error("Can not find JAR file '%s'", source);
 		} else {
+			Function<String, String> nameMapper = v -> v;
+			if (isTrue(extra.get("flatten:"))) {
+				nameMapper = path -> Strings.getLastSegment(path, '/');
+			} else if (instr != null) {
+				if (extra.containsKey("rename:")) {
+					Instruction in = instr;
+					String replacement = extra.get("rename:");
+					nameMapper = path -> in.getMatcher(path)
+							.replaceAll(replacement);
+				}
+			}
+
 			for (Jar j : sub)
-				addAll(jar, j, instr, destination);
+				addAll(jar, j, instr, destination, nameMapper);
 		}
 	}
+
 
 	/**
 	 * Add all the resources in the given jar that match the given filter.
@@ -1316,6 +1333,11 @@ public class Builder extends Analyzer {
 	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
+
+		return addAll(to, sub, filter, destination, f -> f);
+	}
+
+	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier) {
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
@@ -1326,7 +1348,8 @@ public class Builder extends Analyzer {
 				continue;
 
 			if (filter == null || filter.matches(name) ^ filter.isNegated())
-				dupl |= to.putResource(Processor.appendPath(destination, name), sub.getResource(name), true);
+				dupl |= to.putResource(Processor.appendPath(destination, modifier.apply(name)), sub.getResource(name),
+					true);
 		}
 		return dupl;
 	}

@@ -70,6 +70,16 @@ Wrapping often requires access to a JAR from the repository. It is therefore com
 
     -includeresource    @${repo;biz.aQute.bndlib}!/about.html
 
+### Unrolling options
+
+`flatten:=BOOLEAN` - puts all files in the file-tree into one folder
+
+    -includeresource new.package/=@jar/file.jar!/META-INF/services/*;flatten:=true
+
+`rename:=RENAME` - maps the path using a given renaming instruction. Paths are filtered by the given instruction-SELECTOR. The instruction-Selector is compiled to a regex-pattern. This pattern is used to generate a matcher by using the filtered path and the matcher is used to replaceAll using the given extra value.
+
+    -includeresource new.package=@jar/cxf-rt-rs-sse-3.2.5.jar!/(META-INF)/(c*f)/(*);rename:=$2/$1/$3.copy
+
 ## Literals
 
 For testing purposes it is often necessary to have tiny resources in the bundle. These could of course be placed on the file system but bnd can also generate these on the fly. Since these are defined in the bnd files, the content has full access to the macros. This is done by specifying a `literal` attribute on the clause.
@@ -87,7 +97,7 @@ The recursion and the hierarchy can be controlled with directives.
 
     -includeresource    target/=hierarchy/
 
-The `recursive:` directive can be used ot indicate that the source should not be recursively traversed by specifying `false`:
+The `recursive:` directive can be used to indicate that the source should not be recursively traversed by specifying `false`:
 
     -includeresource    target/=hierarchy/;recursive:=false
 
