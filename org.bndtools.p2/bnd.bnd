@@ -1,7 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
-p2.version: ${base.version}.${if;${def;-snapshot;DEV};${def;-snapshot;DEV};REL}
+p2.version: ${base.version}.${first;${def;-snapshot;DEV};REL}
 timestamp: ${tstamp}
 
 # Plugins to be included in the Bndtools p2 update repository
