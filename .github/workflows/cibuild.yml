@@ -35,7 +35,7 @@ jobs:
       fail-fast: ${{ (github.repository != 'bndtools/bnd') || ((github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/next')) || (github.event_name == 'pull_request') }}
       matrix:
         os: [ 'ubuntu-latest' ]
-        java: [ '11', '16' ]
+        java: [ '11', '17' ]
         runner: [ 'xvfb-run --auto-servernum {0}' ]
         script: [ 'build.sh' ]
         include:
