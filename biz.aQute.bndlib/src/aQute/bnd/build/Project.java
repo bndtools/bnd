@@ -1629,7 +1629,7 @@ public class Project extends Processor {
 			return null;
 		}
 
-		String bsns = args[1];
+		String spec = args[1];
 		String version = null;
 		Strategy strategy = Strategy.HIGHEST;
 
@@ -1647,11 +1647,13 @@ public class Project extends Processor {
 			}
 		}
 
-		Collection<String> parts = split(bsns);
+		Parameters bsns = new Parameters(spec, this);
 		List<String> paths = new ArrayList<>();
 
-		for (String bsn : parts) {
-			Container container = getBundle(bsn, version, strategy, null);
+		for (Entry<String, Attrs> entry : bsns.entrySet()) {
+			String bsn = removeDuplicateMarker(entry.getKey());
+			Map<String, String> attrs = entry.getValue();
+			Container container = getBundle(bsn, version, strategy, attrs);
 			if (container.getError() != null) {
 				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy,
 					container.getError());
