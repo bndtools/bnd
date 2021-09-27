@@ -1788,12 +1788,11 @@ public class Macro {
 	public String _nmax(String[] args) throws Exception {
 		verifyCommand(args, _nmaxHelp, null, 2, Integer.MAX_VALUE);
 
-		double result = Arrays.stream(args, 1, args.length)
+		String result = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitAsStream)
-			.mapToDouble(Double::parseDouble)
-			.max()
-			.orElse(Double.NaN);
-		return toString(result);
+			.max(Comparator.comparingDouble(Double::parseDouble))
+			.orElse("NaN");
+		return result;
 	}
 
 	static final String _nminHelp = "${nmin;<list>[;<list>...]}";
@@ -1801,12 +1800,11 @@ public class Macro {
 	public String _nmin(String[] args) throws Exception {
 		verifyCommand(args, _nminHelp, null, 2, Integer.MAX_VALUE);
 
-		double result = Arrays.stream(args, 1, args.length)
+		String result = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitAsStream)
-			.mapToDouble(Double::parseDouble)
-			.min()
-			.orElse(Double.NaN);
-		return toString(result);
+			.min(Comparator.comparingDouble(Double::parseDouble))
+			.orElse("NaN");
+		return result;
 	}
 
 	static final String _vmaxHelp = "${vmax;<list>[;<list>...]}";

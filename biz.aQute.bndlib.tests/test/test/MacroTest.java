@@ -679,84 +679,94 @@ public class MacroTest {
 	 */
 	@Test
 	public void testMacroLists() throws Exception {
-		Processor processor = new Processor();
+		try (Processor processor = new Processor()) {
+			assertEquals("true", processor.getReplacer()
+				.process("${apply;isnumber;1,2,3,4}"));
+			assertEquals("10", processor.getReplacer()
+				.process("${apply;sum;1,2,3,4}"));
+			assertEquals("false", processor.getReplacer()
+				.process("${apply;isnumber;1,2,3,a,4}"));
+			
+			processor.setProperty("double", "${1}${1}");
+			assertEquals("A,B,C,D,E,F", processor.getReplacer()
+				.process("${map;toupper;a, b, c, d, e, f}"));
+			assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer()
+				.process("${map;double;a, b, c, d, e, f}"));
+			
+			processor.setProperty("sumbyindex", "${sum;${1},${2}}");
+			assertEquals("1,3,5,7,9,11,13,15,17,19", processor.getReplacer()
+				.process("${foreach;sumbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+			
+			assertEquals("6", processor.getReplacer()
+				.process("${size;a, b, c, d, e, f}"));
+			assertEquals("0", processor.getReplacer()
+				.process("${size;}"));
+			
+			assertEquals("d", processor.getReplacer()
+				.process("${get;3;a, b, c, d, e, f}"));
+			assertEquals("d", processor.getReplacer()
+				.process("${get;-3;a, b, c, d, e, f}"));
+			assertEquals("f", processor.getReplacer()
+				.process("${get;-1;a, b, c, d, e, f}"));
+			
+			assertEquals("b,c", processor.getReplacer()
+				.process("${sublist;1;3;a, b, c, d, e, f}"));
+			assertEquals("e,f", processor.getReplacer()
+				.process("${sublist;-1;-3;a, b, c, d, e, f}"));
+			
+			assertEquals("a", processor.getReplacer()
+				.process("${first;a, b, c, d, e, f}"));
+			assertEquals("", processor.getReplacer()
+				.process("${first;}"));
+			assertEquals("f", processor.getReplacer()
+				.process("${last;a, b, c, d, e, f}"));
+			assertEquals("", processor.getReplacer()
+				.process("${last;}"));
+			
+			assertEquals("5", processor.getReplacer()
+				.process("${indexof;6;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+			assertEquals("-1", processor.getReplacer()
+				.process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+			
+			assertEquals("8", processor.getReplacer()
+				.process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
+			
+			assertEquals("10,9,8,7,6,5,4,3,2,1", processor.getReplacer()
+				.process("${reverse;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+			
+			assertEquals("55", processor.getReplacer()
+				.process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+			assertEquals("55", processor.getReplacer()
+				.process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+			
+			assertEquals("5.5", processor.getReplacer()
+				.process("${average;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+			
+			assertEquals("-16", processor.getReplacer()
+				.process("${nmin;2, 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+			assertEquals("-16", processor.getReplacer()
+				.process("${nmin;2; 0; -13; 40 ; 55 ; -16; 700; -8; 9; 10}"));
+			
+			assertEquals("700", processor.getReplacer()
+				.process("${nmax;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+			assertEquals("700", processor.getReplacer()
+				.process("${nmax;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+			
+			assertThat(processor.getReplacer()
+				.process("${nmax;-0;0}")).isEqualTo("0");
+			assertThat(processor.getReplacer()
+				.process("${nmax;0;-0}")).isEqualTo("0");
+			assertThat(processor.getReplacer()
+				.process("${nmin;-0;0}")).isEqualTo("-0");
+			assertThat(processor.getReplacer()
+				.process("${nmin;0;-0}")).isEqualTo("-0");
+			
+			assertEquals("-13", processor.getReplacer()
+				.process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+			assertEquals("9", processor.getReplacer()
+				.process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		}
 
-		assertEquals("true", processor.getReplacer()
-			.process("${apply;isnumber;1,2,3,4}"));
-		assertEquals("10", processor.getReplacer()
-			.process("${apply;sum;1,2,3,4}"));
-		assertEquals("false", processor.getReplacer()
-			.process("${apply;isnumber;1,2,3,a,4}"));
-
-		processor.setProperty("double", "${1}${1}");
-		assertEquals("A,B,C,D,E,F", processor.getReplacer()
-			.process("${map;toupper;a, b, c, d, e, f}"));
-		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer()
-			.process("${map;double;a, b, c, d, e, f}"));
-
-		processor.setProperty("sumbyindex", "${sum;${1},${2}}");
-		assertEquals("1,3,5,7,9,11,13,15,17,19", processor.getReplacer()
-			.process("${foreach;sumbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-
-		assertEquals("6", processor.getReplacer()
-			.process("${size;a, b, c, d, e, f}"));
-		assertEquals("0", processor.getReplacer()
-			.process("${size;}"));
-
-		assertEquals("d", processor.getReplacer()
-			.process("${get;3;a, b, c, d, e, f}"));
-		assertEquals("d", processor.getReplacer()
-			.process("${get;-3;a, b, c, d, e, f}"));
-		assertEquals("f", processor.getReplacer()
-			.process("${get;-1;a, b, c, d, e, f}"));
-
-		assertEquals("b,c", processor.getReplacer()
-			.process("${sublist;1;3;a, b, c, d, e, f}"));
-		assertEquals("e,f", processor.getReplacer()
-			.process("${sublist;-1;-3;a, b, c, d, e, f}"));
-
-		assertEquals("a", processor.getReplacer()
-			.process("${first;a, b, c, d, e, f}"));
-		assertEquals("", processor.getReplacer()
-			.process("${first;}"));
-		assertEquals("f", processor.getReplacer()
-			.process("${last;a, b, c, d, e, f}"));
-		assertEquals("", processor.getReplacer()
-			.process("${last;}"));
-
-		assertEquals("5", processor.getReplacer()
-			.process("${indexof;6;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		assertEquals("-1", processor.getReplacer()
-			.process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-
-		assertEquals("8", processor.getReplacer()
-			.process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
-
-		assertEquals("10,9,8,7,6,5,4,3,2,1", processor.getReplacer()
-			.process("${reverse;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-
-		assertEquals("55", processor.getReplacer()
-			.process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		assertEquals("55", processor.getReplacer()
-			.process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-
-		assertEquals("5.5", processor.getReplacer()
-			.process("${average;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-
-		assertEquals("-16", processor.getReplacer()
-			.process("${nmin;2, 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-		assertEquals("-16", processor.getReplacer()
-			.process("${nmin;2; 0; -13; 40 ; 55 ; -16; 700; -8; 9; 10}"));
-
-		assertEquals("700", processor.getReplacer()
-			.process("${nmax;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-		assertEquals("700", processor.getReplacer()
-			.process("${nmax;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
-
-		assertEquals("-13", processor.getReplacer()
-			.process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
-		assertEquals("9", processor.getReplacer()
-			.process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
 	}
 
 	/**
