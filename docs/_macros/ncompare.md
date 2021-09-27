@@ -2,16 +2,9 @@
 layout: default
 class: Macro
 title: ncompare NUMBER NUMBER
-summary: Compare two numbers. 0 is equal, 1 means a > b, -1 is a < b.
+summary: Compare two numbers by using the Double.compare method.
 ---
 
-    static final String _ncompareHelp = "${ncompare;<anumber>;<bnumber>}";
+Compare two numbers using the Double.compare method. The result "0" means the two numbers are equal, "1" means the first number is greater than the second number, "-1" means the first number is less than the second number.
 
-    public int _ncompare(String[] args) throws Exception {
-        verifyCommand(args, _ncompareHelp, null, 3, 3);
-        double a = Double.parseDouble(args[1]);
-        double b = Double.parseDouble(args[2]);
-        return Integer.signum(Double.compare(a, b));
-    }
-
-
+    ${ncompare;numberA;numberB}

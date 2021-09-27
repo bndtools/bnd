@@ -1,9 +1,15 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,6 +20,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -30,27 +41,29 @@ import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings({
 	"resource", "restriction"
 })
-public class ProjectTest extends TestCase {
+public class ProjectTest {
 	File tmp;
 
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName())
+	@BeforeEach
+	public void setUp(TestInfo info) throws Exception {
+		Method testMethod = info.getTestMethod()
+			.get();
+		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + testMethod.getName())
 			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
+	@AfterEach
+	public void tearDown() throws Exception {
 		IO.delete(tmp);
 	}
 
+	@Test
 	public void testAliasbuild() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p3");
@@ -82,6 +95,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test require bnd
 	 */
+	@Test
 	public void testRequireBndFail() throws Exception {
 		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws")); Project top = ws.getProject("p1")) {
 			top.setProperty("-resourceonly", "true");
@@ -92,6 +106,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRequireBndPass() throws Exception {
 		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws")); Project top = ws.getProject("p1")) {
 			top.setProperty("-resourceonly", "true");
@@ -107,6 +122,7 @@ public class ProjectTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testStaleChecks() throws Exception {
 
 		Workspace ws = getWorkspace("testresources/ws-stalecheck");
@@ -155,6 +171,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test linked canonical name
 	 */
+	@Test
 	public void testCanonicalName() throws Exception {
 
 		Workspace ws = getWorkspace("testresources/ws");
@@ -175,6 +192,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test linked canonical name
 	 */
+	@Test
 	public void testNoCanonicalName() throws Exception {
 
 		Workspace ws = getWorkspace("testresources/ws");
@@ -196,6 +214,7 @@ public class ProjectTest extends TestCase {
 	 * Test the multi-key support on runbundles/runpath/testpath and buildpath
 	 */
 
+	@Test
 	public void testMulti() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("multipath");
@@ -220,6 +239,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(3, testpath.size());
 	}
 
+	@Test
 	public void testDecoration() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("multipath");
@@ -254,6 +274,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(3, testpath.size());
 	}
 
+	@Test
 	public void testRepoFilterBuildPath() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
@@ -268,6 +289,7 @@ public class ProjectTest extends TestCase {
 			.getVersion());
 	}
 
+	@Test
 	public void testRepoFilterBuildPathMultiple() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
@@ -280,6 +302,7 @@ public class ProjectTest extends TestCase {
 			.getVersion());
 	}
 
+	@Test
 	public void testWildcardBuildPath() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
@@ -295,6 +318,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testWildcardBuildPathWithRepoFilter() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
@@ -321,6 +345,7 @@ public class ProjectTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
@@ -334,6 +359,7 @@ public class ProjectTest extends TestCase {
 	 * anything
 	 */
 
+	@Test
 	public void testRepoMacro2() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p2");
@@ -356,6 +382,7 @@ public class ProjectTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testLastModified() throws Exception {
 
 		Workspace ws = getWorkspace("testresources/ws");
@@ -405,6 +432,7 @@ public class ProjectTest extends TestCase {
 	 * #194 StackOverflowError when -runbundles in bnd.bnd refers to itself
 	 */
 
+	@Test
 	public void testProjectReferringToItself() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("bug194");
@@ -418,6 +446,7 @@ public class ProjectTest extends TestCase {
 	 * checked only for files
 	 */
 
+	@Test
 	public void testAddDirToClasspath() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
@@ -428,6 +457,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */
+	@Test
 	public void testRunBundlesContainsSelf() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
@@ -445,6 +475,7 @@ public class ProjectTest extends TestCase {
 	 * Test 2 equal bsns but diff. versions
 	 */
 
+	@Test
 	public void testSameBsnRunBundles() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
@@ -460,6 +491,7 @@ public class ProjectTest extends TestCase {
 	 * Duplicates in runbundles gave a bad error, should be ignored
 	 */
 
+	@Test
 	public void testRunbundleDuplicates() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
@@ -476,6 +508,7 @@ public class ProjectTest extends TestCase {
 	 * Check isStale
 	 */
 
+	@Test
 	public void testIsStale() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p-stale");
@@ -524,6 +557,7 @@ public class ProjectTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testMultipleRepos() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p1");
@@ -542,6 +576,7 @@ public class ProjectTest extends TestCase {
 	 * Check if the getSubBuilders properly predicts the output.
 	 */
 
+	@Test
 	public void testSubBuilders() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		try (Project project = ws.getProject("p4-sub")) {
@@ -593,6 +628,7 @@ public class ProjectTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testSub() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p4-sub");
@@ -624,6 +660,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOutofDate() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p3");
@@ -655,34 +692,42 @@ public class ProjectTest extends TestCase {
 			project.updateModified(System.currentTimeMillis(), "Testing");
 			files = project.build();
 			assertEquals(1, files.length);
-			assertTrue("Must have newer files now", files[0].lastModified() > lastTime);
+			assertTrue(files[0].lastModified() > lastTime, "Must have newer files now");
 		} finally {
 			project.clean();
 		}
 	}
 
+	@Test
 	public void testRepoMacro() throws Exception {
-		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
-		Project project = ws.getProject("p2");
-		System.err.println(project.getPlugins(FileRepo.class));
-		String s = project.getReplacer()
-			.process(("${repo;libtest}"));
-		System.err.println(s);
-		assertThat(s).contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8",
-			"org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar");
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws")); Project project = ws.getProject("p2")) {
+			System.err.println(project.getPlugins(FileRepo.class));
+			String s = project.getReplacer()
+				.process(("${repo;libtest}"));
+			System.err.println(s);
+			assertThat(s).contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8",
+				"org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar");
 
-		s = project.getReplacer()
-			.process(("${repo;libtestxyz}"));
-		assertThat(s).matches("");
+			s = project.getReplacer()
+				.process(("${repo;libtestxyz}"));
+			assertThat(s).matches("");
 
-		s = project.getReplacer()
-			.process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
-		assertThat(s).endsWith("org.apache.felix.configadmin-1.8.8.jar");
-		s = project.getReplacer()
-			.process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
-		assertThat(s).endsWith("org.apache.felix.configadmin-1.0.1.jar");
+			s = project.getReplacer()
+				.process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
+			assertThat(s).endsWith("org.apache.felix.configadmin-1.8.8.jar");
+			s = project.getReplacer()
+				.process("${repo;org.apache.felix.configadmin\\;repo=Repo;1.0.0;highest}");
+			assertThat(s).endsWith("org.apache.felix.configadmin-1.1.0.jar");
+			s = project.getReplacer()
+				.process("${repo;org.apache.felix.configadmin\\;repo=Release;1.0.0;lowest}");
+			assertThat(s).endsWith("org.apache.felix.configadmin-1.1.0.jar");
+			s = project.getReplacer()
+				.process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
+			assertThat(s).endsWith("org.apache.felix.configadmin-1.0.1.jar");
+		}
 	}
 
+	@Test
 	public void testClasspath() throws Exception {
 		File project = new File("").getAbsoluteFile();
 		File workspace = project.getParentFile();
@@ -694,6 +739,7 @@ public class ProjectTest extends TestCase {
 		System.err.println(p.getOutput());
 	}
 
+	@Test
 	public void testBump() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("p1");
@@ -712,6 +758,7 @@ public class ProjectTest extends TestCase {
 		assertEquals("sometime", newv.getQualifier());
 	}
 
+	@Test
 	public void testBumpIncludeFile() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("bump-included");
@@ -730,6 +777,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(0, newv.getMicro());
 	}
 
+	@Test
 	public void testBumpSubBuilders() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("bump-sub");
@@ -748,6 +796,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRunBuilds() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 
@@ -768,6 +817,7 @@ public class ProjectTest extends TestCase {
 		assertTrue(p1b.getRunBuilds());
 	}
 
+	@Test
 	public void testSetPackageVersion() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("p5");
@@ -833,6 +883,7 @@ public class ProjectTest extends TestCase {
 	/*
 	 * Verify that this also works when you have multiple directories
 	 */
+	@Test
 	public void testMultidirsrc() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project p = ws.getProject("pmuldirsrc");
@@ -863,6 +914,7 @@ public class ProjectTest extends TestCase {
 	/*
 	 * Verify that this also works when you have multiple directories
 	 */
+	@Test
 	public void testSrcPointsToFile() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project p = ws.getProject("pfilesrc");
@@ -877,6 +929,7 @@ public class ProjectTest extends TestCase {
 	 * Verify that that -versionannotations works. We can be osgi, bnd,
 	 * packageinfo, or an annotation. When not set, we are packageinfo
 	 */
+	@Test
 	public void testPackageInfoType() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("p5");
@@ -944,6 +997,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(expectPackageInfoJava, pkgInfoJava.exists());
 	}
 
+	@Test
 	public void testBuildAll() throws Exception {
 		assertTrue(testBuildAll("*", 20).check()); // there are 20 projects
 		assertTrue(testBuildAll("p*", 12).check()); // 12 begin with p
@@ -970,6 +1024,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Check that the output property can be used to name the output binary.
 	 */
+	@Test
 	public void testGetOutputFile() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
@@ -978,11 +1033,11 @@ public class ProjectTest extends TestCase {
 		// We expect p1 to be a single project (no sub builders)
 		//
 		try (ProjectBuilder pb = top.getBuilder(null)) {
-			assertEquals("p1 must be singleton", 1, pb.getSubBuilders()
-				.size());
+			assertEquals(1, pb.getSubBuilders()
+				.size(), "p1 must be singleton");
 			Builder builder = pb.getSubBuilders()
 				.get(0);
-			assertEquals("p1 must be singleton", "p1", builder.getBsn());
+			assertEquals("p1", builder.getBsn(), "p1 must be singleton");
 
 			// Check the default bsn.jar form
 
@@ -1041,7 +1096,8 @@ public class ProjectTest extends TestCase {
 		return all;
 	}
 
-	public static void testVmArgs() throws Exception {
+	@Test
+	public void testVmArgs() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project p = ws.getProject("p7");
 		Collection<String> c = p.getRunVM();
@@ -1052,6 +1108,7 @@ public class ProjectTest extends TestCase {
 		assertEquals("-XX:FlightRecorderOptions=defaultrecording=true,dumponexit=true", arr[2]);
 	}
 
+	@Test
 	public void testHashVersion() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
 		Project project = ws.getProject("p1");
@@ -1067,6 +1124,7 @@ public class ProjectTest extends TestCase {
 			.getValue("Prints"));
 	}
 
+	@Test
 	public void testHashVersionWithAlgorithm() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
 		Project project = ws.getProject("p1");
@@ -1082,6 +1140,7 @@ public class ProjectTest extends TestCase {
 			.getValue("Prints"));
 	}
 
+	@Test
 	public void testHashVersionWithAlgorithmNotFound() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
 		Project project = ws.getProject("p1");
@@ -1093,6 +1152,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(0, buildpath.size());
 	}
 
+	@Test
 	public void testHashVersionNonMatchingBsn() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
 		Project project = ws.getProject("p1");
@@ -1104,6 +1164,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(0, buildpath.size());
 	}
 
+	@Test
 	public void testCopyRepo() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws-repo-test"));
 		Project project = ws.getProject("p1");
