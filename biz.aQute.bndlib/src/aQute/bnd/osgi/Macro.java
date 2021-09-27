@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Formatter;
@@ -1808,6 +1809,30 @@ public class Macro {
 		return toString(result);
 	}
 
+	static final String _vmaxHelp = "${vmax;<list>[;<list>...]}";
+
+	public String _vmax(String[] args) throws Exception {
+		verifyCommand(args, _vmaxHelp, null, 2, Integer.MAX_VALUE);
+
+		String result = Arrays.stream(args, 1, args.length)
+			.flatMap(Strings::splitAsStream)
+			.max(Comparator.comparing(Version::valueOf))
+			.orElse("0");
+		return result;
+	}
+
+	static final String _vminHelp = "${vmin;<list>[;<list>...]}";
+
+	public String _vmin(String[] args) throws Exception {
+		verifyCommand(args, _vminHelp, null, 2, Integer.MAX_VALUE);
+
+		String result = Arrays.stream(args, 1, args.length)
+			.flatMap(Strings::splitAsStream)
+			.min(Comparator.comparing(Version::valueOf))
+			.orElse("0");
+		return result;
+	}
+
 	static final String _sumHelp = "${sum;<list>[;<list>...]}";
 
 	public String _sum(String[] args) throws Exception {
@@ -1986,6 +2011,15 @@ public class Macro {
 		double a = Double.parseDouble(args[1]);
 		double b = Double.parseDouble(args[2]);
 		return Integer.signum(Double.compare(a, b));
+	}
+
+	static final String _vcompareHelp = "${vcompare;<aversion>;<bversion>}";
+
+	public int _vcompare(String[] args) throws Exception {
+		verifyCommand(args, _vcompareHelp, null, 3, 3);
+		Version a = Version.valueOf(args[1]);
+		Version b = Version.valueOf(args[2]);
+		return Integer.signum(a.compareTo(b));
 	}
 
 	static final String _matchesHelp = "${matches;<target>;<regex>}";

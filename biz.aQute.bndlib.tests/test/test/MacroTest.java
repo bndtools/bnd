@@ -944,6 +944,44 @@ public class MacroTest {
 	}
 
 	@Test
+	public void vcompare() throws Exception {
+		try (Processor processor = new Processor()) {
+			assertThat(processor.getReplacer()
+				.process("${vcompare;1;1.0.0}")).isEqualTo("0");
+			assertThat(processor.getReplacer()
+				.process("${vcompare;1;1.0.1}")).isEqualTo("-1");
+			assertThat(processor.getReplacer()
+				.process("${vcompare;1;1.0.0.qual}")).isEqualTo("-1");
+			assertThat(processor.getReplacer()
+				.process("${vcompare;1.0.0.qual;1}")).isEqualTo("1");
+		}
+	}
+
+	@Test
+	public void vmax() throws Exception {
+		try (Processor processor = new Processor()) {
+			assertThat(processor.getReplacer()
+				.process("${vmax;1}")).isEqualTo("1");
+			assertThat(processor.getReplacer()
+				.process("${vmax;1,1.0.0.qual}")).isEqualTo("1.0.0.qual");
+			assertThat(processor.getReplacer()
+				.process("${vmax;1.1;1}")).isEqualTo("1.1");
+		}
+	}
+
+	@Test
+	public void vmin() throws Exception {
+		try (Processor processor = new Processor()) {
+			assertThat(processor.getReplacer()
+				.process("${vmin;1}")).isEqualTo("1");
+			assertThat(processor.getReplacer()
+				.process("${vmin;1,1.0.0.qual}")).isEqualTo("1");
+			assertThat(processor.getReplacer()
+				.process("${vmin;1.0.0.qual;1.0}")).isEqualTo("1.0");
+		}
+	}
+
+	@Test
 	@EnabledOnOs(WINDOWS)
 	public void testMacroStringsWindows() throws Exception {
 		Processor processor = new Processor();
