@@ -582,23 +582,15 @@ public class Central implements IStartupParticipant {
 		//
 
 		if (changed) {
-			try {
-
-				for (File file : refreshedFiles) {
-					refreshFile(file);
-				}
-
-				refreshProjects();
-
-				if (repoChanged) {
-					repositoriesViewRefresher.repositoriesRefreshed();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new RuntimeException(e);
+			for (File file : refreshedFiles) {
+				refreshFile(file);
 			}
-		}
 
+			if (repoChanged) {
+				repositoriesViewRefresher.repositoriesRefreshed();
+			}
+			refreshProjects();
+		}
 	}
 
 	public static void refreshPlugin(Refreshable plugin) throws Exception {
@@ -611,11 +603,8 @@ public class Central implements IStartupParticipant {
 			refreshFile(plugin.getRoot());
 			if (plugin instanceof RepositoryPlugin) {
 				repositoriesViewRefresher.repositoryRefreshed((RepositoryPlugin) plugin);
-			} else {
-				// If the Plugin was a RepositoryPlugin, the ViewRefresher will
-				// trigger the Project update. If not, we have to do it ourself
-				refreshProjects();
 			}
+			refreshProjects();
 		}
 	}
 

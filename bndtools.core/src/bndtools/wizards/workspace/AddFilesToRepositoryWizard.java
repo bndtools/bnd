@@ -20,9 +20,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
 import bndtools.types.Pair;
 
@@ -84,6 +86,9 @@ public class AddFilesToRepositoryWizard extends Wizard {
 						if ((artifact != null) && artifact.getScheme()
 							.equalsIgnoreCase("file")) {
 							refresh.add(new File(artifact));
+						}
+						if (repository instanceof Refreshable) {
+							Central.refreshPlugin((Refreshable) repository, true);
 						}
 					} catch (Exception e) {
 						status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
