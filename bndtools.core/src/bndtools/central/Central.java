@@ -462,12 +462,13 @@ public class Central implements IStartupParticipant {
 
 	public void changed(Project model) {
 		model.setChanged();
-		for (ModelListener m : listeners)
+		for (ModelListener m : listeners) {
 			try {
 				m.modelChanged(model);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("While notifying ModelListener {} of change to project {}", m, model, e);
 			}
+		}
 	}
 
 	public void addModelListener(ModelListener m) {
@@ -619,11 +620,21 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static void refreshProjects() throws Exception {
-		for (Project p : Central.getWorkspace()
-			.getAllProjects()) {
+		Collection<Project> allProjects = getWorkspace().getAllProjects();
+		// Mark all projects changed before we notify model listeners
+		// since the listeners can take actions on project's other than
+		// the specified project.
+		for (Project p : allProjects) {
 			p.setChanged();
-			for (ModelListener l : getInstance().listeners)
-				l.modelChanged(p);
+		}
+		for (Project p : allProjects) {
+			for (ModelListener m : getInstance().listeners) {
+				try {
+					m.modelChanged(p);
+				} catch (Exception e) {
+					logger.error("While notifying ModelListener {} of change to project {}", m, p, e);
+				}
+			}
 		}
 	}
 
