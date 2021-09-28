@@ -100,19 +100,17 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
 	}
 
 	static void async(Runnable run) {
-		if (Display.getCurrent() == null) {
-			Display.getDefault()
-				.asyncExec(run);
-		} else
-			run.run();
+		Display display = Display.getCurrent();
+		if (display == null)
+			display = Display.getDefault();
+		display.asyncExec(run);
 	}
 
 	static void sync(Runnable run) {
-		if (Display.getCurrent() == null) {
-			Display.getDefault()
-				.syncExec(run);
-		} else
-			run.run();
+		Display display = Display.getCurrent();
+		if (display == null)
+			display = Display.getDefault();
+		display.syncExec(run);
 	}
 
 	public static void message(final String msg) {
