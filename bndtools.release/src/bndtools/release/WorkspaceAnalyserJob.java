@@ -102,12 +102,10 @@ public class WorkspaceAnalyserJob extends Job {
 			if (projectDiffs.isEmpty()) {
 				Runnable runnable = () -> MessageDialog.openInformation(shell, Messages.releaseWorkspaceBundles,
 					Messages.noBundlesRequireRelease);
-				if (Display.getCurrent() == null) {
-					Display.getDefault()
-						.syncExec(runnable);
-				} else {
-					runnable.run();
-				}
+				Display display = Display.getCurrent();
+				if (display == null)
+					display = Display.getDefault();
+				display.syncExec(runnable);
 				return Status.OK_STATUS;
 			}
 
@@ -135,13 +133,10 @@ public class WorkspaceAnalyserJob extends Job {
 				}
 			};
 
-			if (Display.getCurrent() == null) {
-				Display.getDefault()
-					.asyncExec(runnable);
-			} else {
-				runnable.run();
-			}
-
+			Display display = Display.getCurrent();
+			if (display == null)
+				display = Display.getDefault();
+			display.asyncExec(runnable);
 		} catch (Exception e) {
 			return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
 		}

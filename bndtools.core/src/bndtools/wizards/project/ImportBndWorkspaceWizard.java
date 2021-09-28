@@ -482,12 +482,10 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
 		// build the error message and include the current stack trace
 		final MultiStatus status = createMultiStatus(t);
 		Runnable run = () -> ErrorDialog.openError(null, "Error", message, status);
-		if (Display.getCurrent() == null) {
-			Display.getDefault()
-				.asyncExec(run);
-		} else {
-			run.run();
-		}
+		Display display = Display.getCurrent();
+		if (display == null)
+			display = Display.getDefault();
+		display.asyncExec(run);
 	}
 
 	/*

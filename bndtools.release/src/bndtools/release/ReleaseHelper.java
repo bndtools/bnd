@@ -120,11 +120,10 @@ public class ReleaseHelper {
 					throw new RuntimeException(e);
 				}
 			};
-			if (Display.getCurrent() == null) {
-				Display.getDefault()
-					.syncExec(run);
-			} else
-				run.run();
+			Display display = Display.getCurrent();
+			if (display == null)
+				display = Display.getDefault();
+			display.syncExec(run);
 		}
 	}
 
@@ -258,13 +257,10 @@ public class ReleaseHelper {
 				error.open();
 			};
 
-			if (Display.getCurrent() == null) {
-				Display.getDefault()
-					.asyncExec(runnable);
-			} else {
-				runnable.run();
-			}
-
+			Display display = Display.getCurrent();
+			if (display == null)
+				display = Display.getDefault();
+			display.asyncExec(runnable);
 		}
 
 	}

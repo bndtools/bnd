@@ -93,12 +93,10 @@ public class ReleaseDialogJob extends Job {
 				}
 			};
 
-			if (Display.getCurrent() == null) {
-				Display.getDefault()
-					.asyncExec(runnable);
-			} else {
-				runnable.run();
-			}
+			Display display = Display.getCurrent();
+			if (display == null)
+				display = Display.getDefault();
+			display.asyncExec(runnable);
 
 			monitor.worked(33);
 			return Status.OK_STATUS;

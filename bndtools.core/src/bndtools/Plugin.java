@@ -197,11 +197,10 @@ public class Plugin extends AbstractUIPlugin {
 	}
 
 	static void async(Runnable run) {
-		if (Display.getCurrent() == null) {
-			Display.getDefault()
-				.asyncExec(run);
-		} else
-			run.run();
+		Display display = Display.getCurrent();
+		if (display == null)
+			display = Display.getDefault();
+		display.asyncExec(run);
 	}
 
 	public static void error(List<String> errors) {
