@@ -103,12 +103,8 @@ class Model {
 
 	void update() {
 		dirty.set(true);
-		if (Display.getCurrent() == null) {
-			Display.getDefault()
-				.asyncExec(this::update0);
-		} else {
-			update0();
-		}
+		Display.getDefault()
+			.asyncExec(this::update0);
 	}
 
 	private void update0() {
