@@ -2,13 +2,12 @@ package bndtools.launch.bnd;
 
 import static bndtools.launch.LaunchConstants.PLUGIN_ID;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.bndtools.api.RunMode;
 import org.bndtools.api.launch.LaunchConstants;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -29,7 +28,6 @@ import org.osgi.service.component.annotations.ServiceScope;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
-import aQute.bnd.build.Run;
 import aQute.bnd.build.RunSession;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
@@ -81,32 +79,10 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
 				return;
 			}
 
-			IProject parent = targetResource.getProject();
-			if (parent == null) {
-				p.error("Not part of a project " + targetResource);
+			Project model = LaunchUtils.createRun(targetResource, RunMode.LAUNCH);
+			if (model == null) {
+				p.error("Cannot locate Bnd launch for " + targetResource);
 				return;
-			}
-
-			Project parentModel = Central.getProject(parent);
-			if (parentModel == null) {
-				p.error("Cannot locate Bnd project for " + targetResource);
-				return;
-			}
-
-			Project model;
-			if (targetResource.getName()
-				.equals(Project.BNDFILE)) {
-				model = parentModel;
-			} else {
-
-				File file = targetResource.getLocation()
-					.toFile();
-				if (file == null || !file.isFile()) {
-					p.error("No file associated with the entry " + targetResource);
-					return;
-				}
-
-				model = new Run(parentModel.getWorkspace(), parentModel.getBase(), file);
 			}
 
 			monitor.setTaskName("Target is " + model);
