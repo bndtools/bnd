@@ -30,4 +30,4 @@ Bundle-Description: Util classes
 
 -builderignore: testresources
 
-#-baseline: *
+-baseline: *
