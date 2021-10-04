@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/6.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>bnd | Bnd/Bndtools. Tooling to build OSGi bundles including Eclipse, Maven, and Gradle plugins.</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="bnd" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Bnd/Bndtools. Tooling to build OSGi bundles including Eclipse, Maven, and Gradle plugins." />
+<meta property="og:description" content="Bnd/Bndtools. Tooling to build OSGi bundles including Eclipse, Maven, and Gradle plugins." />
+<meta property="og:site_name" content="bnd" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="bnd" />
+<script type="application/ld+json">
+{"url":"/releases/6.0.0/md/150-projects.html","headline":"bnd","description":"Bnd/Bndtools. Tooling to build OSGi bundles including Eclipse, Maven, and Gradle plugins.","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/6.0.0/"><img
+			class=menu-logo src="/releases/6.0.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/6.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/6.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/6.0.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/6.0.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/6.0.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">6.0.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/6.0.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/6.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> </h1>
+				<hr />
+<hr />
+<h1 id="projects">Projects</h1>
+
+<h2 id="project-properties">Project Properties</h2>
+<p>There are a number of built in properties that are set by bnd:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td>!Property name</td>
+      <td> </td>
+      <td>!Description</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td><code class="language-plaintext highlighter-rouge">project</code></td>
+      <td> </td>
+      <td>Name of the project. This is the name of the bnd file without the .bnd extension. If this name is bnd.bnd, then the directory name is used.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td><code class="language-plaintext highlighter-rouge">project.file</code></td>
+      <td> </td>
+      <td>Absolute path of the main bnd file.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td><code class="language-plaintext highlighter-rouge">project.name</code></td>
+      <td> </td>
+      <td>Just the name part of the file path</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td><code class="language-plaintext highlighter-rouge">project.dir</code></td>
+      <td> </td>
+      <td>The absolute path of the directory in which the bnd file resides.</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="run-instructions">Run instructions</h2>
+<p>Run instructions are used to start OSGi tests and OSGi runs.</p>
+
+<table>
+<td>Instructions</td>
+<td>Argument</td>
+<td>Description</td>
+
+
+(:cellnr:)`-runbundles`
+<td>`LIST SPEC`</td>
+<td>Additional bundles that will be installed and started when the framework is launched. This property is normally part of the project's `bnd.bnd` file.</td>
+
+(:cellnr:)`-runvm`
+<td>`PROPERTIES`</td>
+<td>Properties given to the VM before launching. This property is normally set in the cnf/build.bnd file and only in rare cases overridden in the bnd.bnd file.</td>
+
+(:cellnr:)`-runproperties`
+<td>`PROPERTIES`</td>
+<td>Properties given to the framework when launching. Usually project specific.</td>
+
+(:cellnr:)`-runsystempackages`
+<td>`PACKAGES`</td>
+<td>A declaration like Import-Package that specifies additional system packages to import from the class path. Usually given in the cnf/build.bnd file.</td>
+
+(:cellnr:)`-runpath`
+<td>`LIST SPEC`</td>
+<td>A path description of artifacts that must be on the classpath of the to be launched framework.  Usually given in the cnf/build.bnd file. This path should contain the framework. Any packages that a bundle on the -runpath should specify should be listed in the `export` attribute.</td>
+
+(:cellnr:)`-runtrace`
+<td>`true|'''false'''`</td>
+<td>Trace the startup of the framework to the console. Usually used during testing and development so project specific.</td>
+
+(:cellnr:)`-runframework`
+<td>`none|'''services'''`</td>
+<td>`NONE` indicates that a mini built in framework should be used. `SERVICES` indicates that the `META-INF/services` model must be followed for the `org.osgi.framework.launch.FrameworkFactory` class. Project specific.</td>
+
+(:cellnr:)`-testpath`
+<td>`LIST SPEC`</td>
+<td>A path used to specify the test plugin</td>
+
+(:tableend:)
+
+## Launching
+Launching is needed when the project's `run` action or `test` action is executed. The project creates a Project Launcher. A Project Launcher must launch a new VM and set up this VM correctly. The VM is launched with the following information.
+
+* `java` - The command to launch a new VM is bu default `java`. However, this can be overridden by setting a property called `java`.
+* `classpath` - The classpath set for the VM is derived from the `-runpath` property. Notice that this is supposed to contain the JAR with the framework. The `-runpath` requires bundle symbolic names for the JAR and an optional version range. bnd will use the latest version in the repository. Any packages that should be exported by the system bundle should have an export attribute containing the exported packages, like `junit.osgi;version=3.8;export="junit.framework;version=3.8,junit.misc;version=3.8".
+* `vm options` - These options can be set in the `-runvm` property. They are usually in the form of `-Dxya=15` or `-X:agent=bla`. Options should be separated by commas.
+* `main` - The class implementing the main type is defined by the launcher plugin.
+
+And example of a launcher set is:
+
+  -runvm:   -Xmn100M, -Xms500M, -Xmx500M
+  -runpath: \
+	org.apache.felix.framework; version=3.0, \   
+	junit.osgi;export="junit.framework;version=3.8"
+  -runtrace: true
+  -runproperties: launch=42, trace.xyz=true
+  -runbundles: org.apache.felix.configadmin,\  
+	org.apache.felix.log,\  
+	org.apache.felix.scr,\  
+	org.apache.felix.http.jetty,\   
+	org.apache.felix.metatype,\  
+	org.apache.felix.webconsole
+
+Debugging launching is greatly simplified with the -runtrace property set to true. This provides a lot of feedback what the launcher is doing.
+
+###Access to arguments
+When the launcher is ready it will register itself as a service with the following properties:
+
+||`launcher.arguments`||The command line arguments||
+||`launcher.ready`||Indicating the launcher is read||
+
+###Access to main thread
+In certain cases it is necessary to grab the main thread after launching. The default launcher will launch all the bundles and then wait for any of those bundles to register a Runnable service with a service property `main.thread=true`. If such  service is registered, the launcher will call the run method and exit when this method returns.
+
+###Timeout
+The launcher will timeout after an hour. There is currently no way to override this timeout.
+
+###Mini Framework
+The bnd launcher contains a mini framework that implements the bare bones of an OSGi framework. The purpose of this mini framework is to allow tests and runs that want to launch their own framework. A launch that wants to take advantage of this can launch with the following property:
+
+  -runframework: none
+
+###Ant
+In ant, the following task provides the run facility.
+	
+  <target name="run" depends="compile">
+    <bnd command="run" exceptions="true" basedir="${project}" />
+  </target>
+
+These targets provide commands for `ant run`.
+
+## Testing
+Testing is in principle the same as launching, it actually uses the launcher. Testing commences with the `test` action in the project. This creates a Project Tester. bnd carries a default Project Tester but this can be overridden.
+
+The basic model of the default Project Tester plugin is to look for bundles that have a `Test-Cases` manifest header after launching. The value of this header is a comma separated list of JUnit test case class names. For example:
+
+  Test-Cases: test.LaunchTest, test.OtherTest
+
+Maintaining this list can be cumbersome and for that reason the `${classes}` macro can be used to calculate its contents:
+
+    Test-Cases : ${classes;extending;junit.framework.TestCase;concrete}
+
+See [classes macro][Macros#classes] for more information.
+
+###Ant
+  <target name="test" depends="compile">
+    <bnd command="test" exceptions="true" basedir="${project}" />
+  </target>
+
+## Overriding the plugins
+Both the Project launcher and Project Tester are plugins. Defaults are provided by bnd itself (bnd carries a mini cache repo that is expanded in the cnf director), it is possible to add new launchers and testers as needed.
+
+Plugins are found on the -runpath or the -testpath properties respectively. bnd will look for an appropriate manifest header. The header has a class name as value. It will then instantiate the class and use as launcher/tester. The classes must extend an abstract base class. Each plugin has access to the Project object, containing all the details of the project.
+
+||Plugin             ||Manifest header||Base Class||Where||
+||Project Launcher   ||Launcher-Plugin||ProjectLauncher||-runpath||
+||Project Test       ||Tester-Plugin||ProjectLauncher||-testpath||
+
+The plugin gets complete control and can implement many different strategies.
+</table>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/6.0.0'></a> <a href='/releases/6.0.0'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/6.0.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
