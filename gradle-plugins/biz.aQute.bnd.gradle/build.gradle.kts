@@ -78,19 +78,19 @@ gradlePlugin {
 			id = "biz.aQute.bnd"
 			implementationClass = "aQute.bnd.gradle.BndPlugin"
 			displayName = "Bnd Gradle Plugin for Bnd Workspace Projects"
-			description = "Gradle Plugin for developing OSGi bundles with Bnd using the Bnd Workspace build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${version}.REL/gradle-plugins/README.md for information on using in a Bnd Workspace build."
+			description = "Gradle Plugin for developing OSGi bundles with Bnd using the Bnd Workspace build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${version}/gradle-plugins/README.md for information on using in a Bnd Workspace build."
 		}
 		create("BndBuilder") {
 			id = "biz.aQute.bnd.builder"
 			implementationClass = "aQute.bnd.gradle.BndBuilderPlugin"
 			displayName = "Bnd Gradle Plugin for Gradle Projects"
-			description = "Gradle Plugin for developing OSGi bundles with Bnd in a typical Gradle build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd. See https://github.com/bndtools/bnd/blob/${version}.REL/gradle-plugins/README.md for information on using in a typical Gradle build."
+			description = "Gradle Plugin for developing OSGi bundles with Bnd in a typical Gradle build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd. See https://github.com/bndtools/bnd/blob/${version}/gradle-plugins/README.md for information on using in a typical Gradle build."
 		}
 		create("BndWorkspace") {
 			id = "biz.aQute.bnd.workspace"
 			implementationClass = "aQute.bnd.gradle.BndWorkspacePlugin"
 			displayName = "Bnd Gradle Plugin for the Bnd Workspace"
-			description = "Gradle Plugin for developing OSGi bundles with Bnd using the Bnd Workspace build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${version}.REL/gradle-plugins/README.md for information on using on a Bnd Workspace."
+			description = "Gradle Plugin for developing OSGi bundles with Bnd using the Bnd Workspace build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${version}/gradle-plugins/README.md for information on using on a Bnd Workspace."
 		}
 	}
 }
