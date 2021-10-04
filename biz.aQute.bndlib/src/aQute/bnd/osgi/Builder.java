@@ -1298,7 +1298,7 @@ public class Builder extends Analyzer {
 
 			error("Can not find JAR file '%s'", source);
 		} else {
-			Function<String, String> nameMapper = v -> v;
+			Function<String, String> nameMapper = Function.identity();
 			if (isTrue(extra.get("flatten:"))) {
 				nameMapper = path -> Strings.getLastSegment(path, '/');
 			} else if (instr != null) {
@@ -1333,11 +1333,10 @@ public class Builder extends Analyzer {
 	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
-
-		return addAll(to, sub, filter, destination, f -> f);
+		return addAll(to, sub, filter, destination, Function.identity());
 	}
 
-	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier) {
+	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier) {
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
