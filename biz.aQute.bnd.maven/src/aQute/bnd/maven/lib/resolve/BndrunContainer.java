@@ -34,6 +34,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.io.IO;
 import biz.aQute.resolve.Bndrun;
 
 @ProviderType
@@ -192,16 +193,18 @@ public class BndrunContainer {
 			.resolve(bndrun)
 			.toFile();
 		File cnf = new File(temporaryDir, Workspace.CNFDIR);
-		aQute.lib.io.IO.mkdirs(cnf);
+		IO.mkdirs(cnf);
 
 		Bndrun run = Bndrun.createBndrun(null, runFile);
-		run.setBase(temporaryDir);
 		Workspace workspace = run.getWorkspace();
 		workspace.setBase(temporaryDir);
 		workspace.setBuildDir(cnf);
 		workspace.setOffline(session.getSettings()
 			.isOffline());
 		run.setParent(getProcessor(workspace));
+		run.clear();
+		run.forceRefresh(); // setBase must be called after forceRefresh
+		run.setBase(temporaryDir);
 		run.getInfo(workspace);
 		setRunrequiresFromProjectArtifact(run);
 		setEEfromBuild(run);

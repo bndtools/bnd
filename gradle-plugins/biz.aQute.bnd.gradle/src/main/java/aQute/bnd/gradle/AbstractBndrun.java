@@ -242,16 +242,19 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 				gradleProperties.put("task", this);
 				gradleProperties.put("project", getProject());
 				run.setParent(new Processor(runWorkspace, gradleProperties, false));
+				run.clear();
+				run.forceRefresh(); // setBase must be called after forceRefresh
 			}
 			run.setBase(workingDirFile);
 			if (run.isStandalone()) {
+				runWorkspace.setBase(workingDirFile);
+				File cnf = new File(workingDirFile, Workspace.CNFDIR);
+				IO.mkdirs(cnf);
+				runWorkspace.setBuildDir(cnf);
 				runWorkspace.setOffline(Objects.nonNull(workspace) ? workspace.isOffline()
 					: getProject().getGradle()
 						.getStartParameter()
 						.isOffline());
-				File cnf = new File(workingDirFile, Workspace.CNFDIR);
-				IO.mkdirs(cnf);
-				runWorkspace.setBuildDir(cnf);
 				if (Objects.isNull(workspace)) {
 					FileSetRepository fileSetRepository = new FileSetRepository(getName(), getBundles().getFiles());
 					runWorkspace.addBasicPlugin(fileSetRepository);
