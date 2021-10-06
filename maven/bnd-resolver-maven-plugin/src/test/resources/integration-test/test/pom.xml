@@ -21,6 +21,7 @@
 		<module>resolve-from-inputbundles</module>
 		<module>enroute</module>
 		<module>resolve-infer-with-custom-bsn</module>
+		<module>resolve-with-project-props</module>
 	</modules>
 
 	<build>

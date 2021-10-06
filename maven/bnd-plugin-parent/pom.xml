@@ -321,6 +321,7 @@
 						<scriptVariables>
 							<bndVersion>${project.version}</bndVersion>
 						</scriptVariables>
+						<showErrors>true</showErrors>
 						<mavenOpts>${mavenOpts}</mavenOpts>
 						<goals>
 							<goal>--no-transfer-progress</goal>
