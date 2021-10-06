@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
@@ -39,6 +40,20 @@ public class Bndrun extends Run {
 	final ResolutionInstructions												resolutionInstructions;
 	private static final Converter<String, Collection<? extends HeaderClause>>	runbundlesListFormatter	= new CollectionFormatter<>(
 		",", new HeaderClauseFormatter(), null, "", "");
+
+	/**
+	 * Create a Bndrun that will be stand alone if it contains -standalone. In
+	 * that case the given workspace is ignored. Otherwise, the workspace must
+	 * be a valid workspace.
+	 */
+	public static Bndrun createBndrun(File file, Properties additionProperties) throws Exception {
+		Processor processor = new Processor();
+		processor.setProperties(file);
+
+		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(processor, file.toURI());
+		standaloneWorkspace.addProperties(additionProperties);
+		return createBndrun(standaloneWorkspace, file);
+	}
 
 	/**
 	 * Create a Bndrun that will be stand alone if it contains -standalone. In

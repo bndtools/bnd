@@ -1,0 +1,3 @@
+-runfw: org.apache.felix.framework;version='[5.4.0,5.4.0]'
+#test.prop must be set to false
+-include: ${if;${test.prop}; ${.}/error.properties; ${.}/include.properties}

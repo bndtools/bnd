@@ -194,7 +194,7 @@ public class BndrunContainer {
 		File cnf = new File(temporaryDir, Workspace.CNFDIR);
 		aQute.lib.io.IO.mkdirs(cnf);
 
-		Bndrun run = Bndrun.createBndrun(null, runFile);
+		Bndrun run = Bndrun.createBndrun(runFile, project.getProperties());
 		run.setBase(temporaryDir);
 		Workspace workspace = run.getWorkspace();
 		workspace.setBase(temporaryDir);
