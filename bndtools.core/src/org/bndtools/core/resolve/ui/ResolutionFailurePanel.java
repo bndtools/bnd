@@ -1,7 +1,7 @@
 package org.bndtools.core.resolve.ui;
 
+import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -151,7 +151,7 @@ public class ResolutionFailurePanel {
 	}
 
 	private static String formatFailureStatus(IStatus status, boolean exceptions, String indent) {
-		StringWriter writer = new StringWriter();
+		CharArrayWriter writer = new CharArrayWriter();
 		try (PrintWriter pw = new PrintWriter(writer)) {
 
 			if (status.isMultiStatus()) {

@@ -3,10 +3,10 @@ package aQute.junit;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
+import java.io.CharArrayWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -170,7 +170,7 @@ public class Tag {
 	 */
 	@Override
 	public String toString() {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		print(0, new PrintWriter(sw));
 		return sw.toString();
 	}

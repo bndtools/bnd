@@ -1,7 +1,7 @@
 package aQute.lib.tag;
 
+import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
@@ -418,7 +418,7 @@ public class Tag {
 	 */
 	@Override
 	public String toString() {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		print(0, new PrintWriter(sw));
 		return sw.toString();
 	}
@@ -711,7 +711,7 @@ public class Tag {
 	}
 
 	public String compact() {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		print(Integer.MIN_VALUE, new PrintWriter(sw));
 		return sw.toString();
 	}

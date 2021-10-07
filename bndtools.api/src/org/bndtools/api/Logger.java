@@ -1,7 +1,7 @@
 package org.bndtools.api;
 
+import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -46,7 +46,7 @@ public class Logger implements ILogger {
 			return "No exception trace is available";
 		}
 
-		final Writer sw = new StringWriter();
+		final Writer sw = new CharArrayWriter();
 		final PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		return sw.toString();

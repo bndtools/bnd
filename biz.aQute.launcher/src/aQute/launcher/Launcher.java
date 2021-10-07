@@ -1663,7 +1663,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	}
 
 	private static String toString(Throwable t) {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		t.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
 	}

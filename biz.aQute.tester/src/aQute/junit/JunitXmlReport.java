@@ -1,7 +1,7 @@
 package aQute.junit;
 
+import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.URL;
@@ -198,7 +198,7 @@ public class JunitXmlReport implements TestReporter {
 	private void progress(@SuppressWarnings("unused") String s) {}
 
 	private String getTrace(Throwable t) {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		pw.close();

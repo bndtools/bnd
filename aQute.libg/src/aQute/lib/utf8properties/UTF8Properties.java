@@ -3,12 +3,12 @@ package aQute.lib.utf8properties;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -146,7 +146,7 @@ public class UTF8Properties extends Properties {
 
 	@Override
 	public void store(OutputStream out, String msg) throws IOException {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		super.store(sw, null);
 
 		String[] lines = sw.toString()
@@ -164,7 +164,7 @@ public class UTF8Properties extends Properties {
 
 	@Override
 	public void store(Writer out, String msg) throws IOException {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		super.store(sw, null);
 
 		String[] lines = sw.toString()
@@ -180,7 +180,7 @@ public class UTF8Properties extends Properties {
 	}
 
 	public void store(File out) throws IOException {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		super.store(sw, null);
 		IO.store(sw.toString(), out);
 	}

@@ -6,6 +6,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.util.regex.Pattern;
 
@@ -162,19 +162,19 @@ public class Base64 {
 	}
 
 	public static String encodeBase64(InputStream in) throws IOException {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		encode(in, sw);
 		return sw.toString();
 	}
 
 	public static String encodeBase64(File in) throws IOException {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		encode(in, sw);
 		return sw.toString();
 	}
 
 	public static String encodeBase64(byte data[]) {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		ByteArrayInputStream bin = new ByteArrayInputStream(data);
 		try {
 			encode(bin, sw);
