@@ -9,13 +9,13 @@ import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.lang.instrument.Instrumentation;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
@@ -1305,9 +1305,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		startLevelhandler.sync();
 		try {
 			synchronized (out) { // avoid interleaving output
-				out.print("------------------------------- REPORT --------------------------");
-				out.print(System.lineSeparator());
-				out.print(System.lineSeparator());
+				out.print(String.format("------------------------------- REPORT --------------------------%n%n"));
 				row(out, "Framework", systemBundle == null ? "<>" : systemBundle.getClass());
 				row(out, "Framework type", parms.services ? "META-INF/services" : "mini framework");
 				row(out, "Storage", parms.storageDir);
@@ -1315,12 +1313,12 @@ public class Launcher implements ServiceListener, FrameworkListener {
 				row(out, "Security", security);
 				row(out, "Has StartLevels", startLevelhandler.hasStartLevels());
 				row(out, "Startlevel", startLevelhandler.getFrameworkStartLevel(systemBundle));
-				list(out, fill("Run bundles", 40), parms.runbundles);
+				list(out, "Run bundles", parms.runbundles);
 				row(out, "Java Home", System.getProperty("java.home"));
-				list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
-				list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
-				list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
-				row(out, "Properties");
+				list(out, "Classpath", split(System.getProperty("java.class.path"), File.pathSeparator));
+				list(out, "System Packages", split(parms.systemPackages, ","));
+				list(out, "System Capabilities", split(parms.systemCapabilities, ","));
+				row(out, "Properties", "");
 				for (Entry<Object, Object> entry : properties.entrySet()) {
 					String key = (String) entry.getKey();
 					String value = (String) entry.getValue();
@@ -1331,25 +1329,16 @@ public class Launcher implements ServiceListener, FrameworkListener {
 					if (context != null) {
 						Bundle bundles[] = context.getBundles();
 						out.print(System.lineSeparator());
-						out.print("Id    Levl State Modified      Location");
-						out.print(System.lineSeparator());
-
+						bundleRow(out, "Id", "Levl", "State", "Modified", "Location");
 						for (Bundle bundle : bundles) {
-							String lastModified = "<>";
-							String loc = bundle.getLocation();
-							Optional<Path> p = URIUtil.pathFromURI(loc);
-							if (p.isPresent() && Files.exists(p.get())) {
-								lastModified = FORMAT.format(Files.getLastModifiedTime(p.get())
-									.toInstant());
-							}
-							out.print(fill(Long.toString(bundle.getBundleId()), 6));
-							out.print(fill(Integer.toString(startLevelhandler.getBundleStartLevel(bundle)), 4));
-							out.print(fill(toState(bundle.getState()), 6));
-							out.print(fill(lastModified, 14));
-
-							out.print(bundle.getLocation());
-
-							out.print(System.lineSeparator());
+							String location = bundle.getLocation();
+							Optional<Path> path = URIUtil.pathFromURI(location)
+								.filter(Files::exists);
+							String lastModified = path.isPresent() ? FORMAT.format(Files.getLastModifiedTime(path.get())
+								.toInstant()) : "<>";
+							bundleRow(out, Long.toString(bundle.getBundleId()),
+								Integer.toString(startLevelhandler.getBundleStartLevel(bundle)),
+								toState(bundle.getState()), lastModified, location);
 						}
 					}
 				}
@@ -1360,45 +1349,24 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		}
 	}
 
-	private void row(PrintStream out, Object... parms) {
-		boolean fill = true;
-		for (Object p : parms) {
-			if (fill)
-				out.print(fill(p + "", 40));
-			else
-				out.print(p);
-			fill = false;
+	private void row(PrintStream out, String label, Object value) {
+		// We use String.format instead of PrintStream.format to ensure
+		// the complete string is output without any interleaved text
+		if (label.length() > 40) {
+			out.print(String.format("%.19s..%.19s %s%n", label, label.substring(label.length() - 19), value));
+		} else {
+			out.print(String.format("%-40s %s%n", label, value));
 		}
-		out.print(System.lineSeparator());
+	}
+
+	private void bundleRow(PrintStream out, String id, String level, String state, String modified, String location) {
+		// We use String.format instead of PrintStream.format to ensure
+		// the complete string is output without any interleaved text
+		out.print(String.format("%-5s %-4s %-5s %-12s %s%n", id, level, state, modified, location));
 	}
 
 	static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("YYYYMMddHHmm")
 		.withZone(ZoneOffset.UTC);
-
-	private String fill(String s, int width) {
-		return fill(s, width, ' ', -1);
-	}
-
-	private String fill(String s, int width, char filler, int dir) {
-		StringBuilder sb = new StringBuilder();
-		if (s.length() > width) {
-			int half = (width - 1) / 2;
-			return s.substring(0, half) + ".." + s.substring(s.length() - half);
-		}
-		width -= s.length();
-		int before = (dir == 0) ? width / 2 : (dir < 0) ? 0 : width;
-		int after = width - before;
-
-		while (before-- > 0)
-			sb.append(filler);
-
-		sb.append(s);
-
-		while (after-- > 0)
-			sb.append(filler);
-
-		return sb.toString();
-	}
 
 	private String toState(int state) {
 		switch (state) {
@@ -1415,16 +1383,13 @@ public class Launcher implements ServiceListener, FrameworkListener {
 			case Bundle.UNINSTALLED :
 				return "UNNST";
 		}
-		return "? " + state;
+		return String.format("? %-3d", state);
 	}
 
-	private void list(PrintStream out, String del, List<?> l) {
-		for (Object o : l) {
-			String s = o.toString();
-			out.print(del);
-			out.print(s);
-			out.print(System.lineSeparator());
-			del = fill(" ", 40);
+	private void list(PrintStream out, String label, List<String> list) {
+		for (String s : list) {
+			row(out, label, s);
+			label = "";
 		}
 	}
 
@@ -1592,20 +1557,20 @@ public class Launcher implements ServiceListener, FrameworkListener {
 			}
 		}
 
-		StringBuilder sb = new StringBuilder(prefix);
+		CharArrayWriter sb = new CharArrayWriter().append(prefix);
 		try (Formatter f = new Formatter(sb)) {
 			f.format(string, objects);
 		} catch (IllegalFormatException fe) {
-			sb.append(fe);
+			sb.append(fe.toString());
+		}
+		String message = sb.toString();
+		sb.append(System.lineSeparator());
+		if (e != null) {
+			e.printStackTrace(new PrintWriter(sb));
 		}
 
-		String message = sb.toString();
 		synchronized (out) { // avoid interleaving output
-			out.print(message);
-			out.print(System.lineSeparator());
-			if (e != null) {
-				e.printStackTrace(out);
-			}
+			out.print(sb.toString());
 			out.flush();
 		}
 
@@ -1663,7 +1628,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	}
 
 	private static String toString(Throwable t) {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		t.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
 	}

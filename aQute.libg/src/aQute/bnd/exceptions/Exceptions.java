@@ -2,8 +2,8 @@ package aQute.bnd.exceptions;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -41,7 +41,7 @@ public class Exceptions {
 	}
 
 	public static String toString(Throwable t) {
-		StringWriter sw = new StringWriter();
+		CharArrayWriter sw = new CharArrayWriter();
 		t.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
 	}

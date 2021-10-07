@@ -13,11 +13,11 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
+import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -442,7 +442,7 @@ public class Activator implements BundleActivator, Runnable {
 			} finally {
 				track.close();
 				trace(null, () -> {
-					StringWriter sw = new StringWriter();
+					CharArrayWriter sw = new CharArrayWriter();
 					summary.getSummary()
 						.printTo(new PrintWriter(sw));
 					return sw.toString();

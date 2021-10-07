@@ -100,11 +100,6 @@ public class Macro {
 	Object																			targets[];
 	boolean																			flattening;
 	private boolean																	nosystem;
-	ScriptEngine																	engine			= null;
-	ScriptContext																	context			= null;
-	Bindings																		bindings		= null;
-	StringWriter																	stdout			= new StringWriter();
-	StringWriter																	stderr			= new StringWriter();
 	public boolean																	inTest;
 	private final Map<Class<?>, Map<String, BiFunction<Object, String[], Object>>>	macrosByClass	= new ConcurrentHashMap<>();
 
@@ -1924,19 +1919,15 @@ public class Macro {
 	public Object _js(String[] args) throws Exception {
 		verifyCommand(args, _jsHelp, null, 2, Integer.MAX_VALUE);
 
-		StringBuilder sb = new StringBuilder();
+		String script = Arrays.stream(args, 1, args.length)
+			.collect(Collectors.joining(SEMICOLON));
 
-		for (int i = 1; i < args.length; i++)
-			sb.append(args[i])
-				.append(';');
-
-		if ((context == null) || (engine == null)) {
-			synchronized (this) {
-				if (engine == null)
-					engine = new ScriptEngineManager().getEngineByName("javascript");
-			}
-			context = engine.getContext();
-			bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
+		StringWriter stdout = new StringWriter();
+		StringWriter stderr = new StringWriter();
+		try {
+			ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
+			ScriptContext context = engine.getContext();
+			Bindings bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
 			bindings.put("domain", domain);
 			String javascript = domain.mergeProperties("javascript", ";");
 			if (javascript != null && javascript.length() > 0) {
@@ -1944,22 +1935,23 @@ public class Macro {
 			}
 			context.setErrorWriter(stderr);
 			context.setWriter(stdout);
-		}
-		Object eval = engine.eval(sb.toString(), context);
-		StringBuffer buffer = stdout.getBuffer();
-		if (buffer.length() > 0) {
-			reporter.error("Executing js: %s: %s", sb, buffer);
-			buffer.setLength(0);
-		}
+			Object eval = engine.eval(script, context);
+			String out = stdout.toString();
+			if (!out.isEmpty()) {
+				reporter.error("Executing js: %s: %s", script, out);
+			}
 
-		if (eval != null) {
-			return toString(eval);
-		}
+			if (eval != null) {
+				return toString(eval);
+			}
 
-		String out = stdout.toString();
-		stdout.getBuffer()
-			.setLength(0);
-		return out;
+			return "";
+		} finally {
+			stdout.getBuffer()
+				.setLength(0);
+			stderr.getBuffer()
+				.setLength(0);
+		}
 	}
 
 	private String toString(Object eval) {

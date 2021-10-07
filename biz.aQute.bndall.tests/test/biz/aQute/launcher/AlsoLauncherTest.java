@@ -1,9 +1,9 @@
 package biz.aQute.launcher;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,11 +28,12 @@ import java.util.regex.Pattern;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.assertj.core.util.Files;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -48,22 +49,26 @@ import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.command.Command;
 import biz.aQute.resolve.Bndrun;
 
 public class AlsoLauncherTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
-	@Rule
-	public final TestName		testName	= new TestName();
 	private File				testDir;
 
 	private Workspace			workspace;
 	private Project				project;
 	private Properties			prior;
 
-	@Before
-	public void setUp() throws Exception {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws Exception {
+		testDir = new File(TMPDIR, testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		prior = new Properties();
@@ -85,7 +90,7 @@ public class AlsoLauncherTest {
 	}
 
 	@SuppressWarnings("restriction")
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		IO.close(project);
 		IO.close(workspace);
@@ -720,59 +725,47 @@ public class AlsoLauncherTest {
 		}
 	}
 
-	@Test
-	public void testReporting_notUsingReferences() throws Exception {
+	@ParameterizedTest(name = "-runnoreferences={0}")
+	@ValueSource(strings = {
+		"true", "false"
+	})
+	public void testReporting_runnoreferences(String runnoreferences) throws Exception {
 		try (ProjectLauncher l = project.getProjectLauncher()) {
-			project.setProperty("-runnoreferences", "true");
-			doTestReporting(l);
-		}
-	}
+			project.setProperty("-runnoreferences", runnoreferences);
+			l.setTrace(true);
+			StringBuilder out = new StringBuilder();
+			l.setStreams(out, out);
+			l.getRunProperties()
+				.put("test.cmd", "framework.stop");
 
-	@Test
-	public void testReporting_usingReferences() throws Exception {
-		try (ProjectLauncher l = project.getProjectLauncher()) {
-			project.setProperty("-runnoreferences", "false");
-			doTestReporting(l);
-		}
-	}
+			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+				Macro r = project.getReplacer();
 
-	private void doTestReporting(ProjectLauncher l) throws Exception {
-		l.setTrace(true);
-		StringBuilder out = new StringBuilder();
-		l.setStreams(out, out);
-		l.getRunProperties()
-			.put("test.cmd", "framework.stop");
+				l.launch();
 
-		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			Macro r = project.getReplacer();
+				// High-level test; cuts down our search space for subsequent
+				// tests which makes the output more readable in the event of a
+				// subsequent assertion failure. Don't try and find the end;
+				// there is not much text after the bundle dump anyway, and
+				// attempts to find it can end up truncating the matched block
+				// and hiding the useful information.
+				Pattern pattern = Pattern.compile("^Id\\s+Levl\\s+State.*", Pattern.DOTALL | Pattern.MULTILINE);
+				Matcher match = pattern.matcher(out);
+				if (!match.find()) {
+					throw new AssertionError("Couldn't find report block in output:\n" + out);
+				}
+				final List<String> report = Strings.splitLines(match.group());
 
-			String[] expected = {
-				"org.apache.felix.scr", "org.apache.servicemix.bundles.junit", "assertj-core", "demo"
-			};
+				List<String> expected = Arrays.asList("System Bundle", "org.apache.felix.scr",
+					"org.apache.servicemix.bundles.junit", "assertj-core", "demo");
 
-			l.launch();
-
-			// High-level test; cuts down our search space for subsequent tests
-			// which makes the output more readable in the event of a subsequent
-			// assertion failure. Don't try and find the end; there is not much
-			// text after the bundle dump anyway, and attempts to find it can
-			// end up truncating the matched block and hiding the useful
-			// information.
-			Pattern pattern = Pattern.compile("^Id\\s+\\s+Levl\\s+State.*", Pattern.DOTALL | Pattern.MULTILINE);
-			Matcher match = pattern.matcher(out);
-			if (!match.find()) {
-				throw new AssertionError("Couldn't find report block in output:\n" + out);
-			}
-			final String report = match.group();
-
-			softly.assertThat(report)
-				.as("System Bundle")
-				.containsPattern("\\n0\\s+\\d*\\s*ACTIV\\s+[<][>]\\s+System Bundle");
-
-			for (String bundle : expected) {
-				softly.assertThat(report)
-					.as(bundle)
-					.containsPattern("ACTIV\\s+\\d{12}\\s+.*\\Q" + bundle + "\\E");
+				for (String bundle : expected) {
+					Pattern bundlePattern = Pattern.compile("ACTIV.*\\Q" + bundle + "\\E");
+					softly.assertThat(report)
+						.as(bundle)
+						.anyMatch(line -> bundlePattern.matcher(line)
+							.find());
+				}
 			}
 		}
 	}

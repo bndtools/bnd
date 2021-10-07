@@ -1,9 +1,9 @@
 package bndtools.views.repository;
 
+import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -662,7 +662,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						XMLMemento memento = XMLMemento.createWriteRoot("search");
 						dialog.saveState(memento);
 
-						StringWriter writer = new StringWriter();
+						CharArrayWriter writer = new CharArrayWriter();
 						memento.save(writer);
 						advancedSearchState = writer.toString();
 					} catch (Exception e) {

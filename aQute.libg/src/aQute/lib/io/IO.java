@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 import java.io.BufferedReader;
+import java.io.CharArrayWriter;
 import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -19,7 +20,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UTFDataFormatException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
@@ -626,7 +626,7 @@ public class IO {
 	}
 
 	public static String collect(Reader r) throws IOException {
-		return copy(r, new StringWriter()).toString();
+		return copy(r, new CharArrayWriter()).toString();
 	}
 
 	/**
