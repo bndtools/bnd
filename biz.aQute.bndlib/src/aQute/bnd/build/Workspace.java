@@ -164,7 +164,22 @@ public class Workspace extends Processor {
 	}
 
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
-	static Processor											defaults			= null;
+	private static final Memoize<Processor>						defaults;
+	static {
+		defaults = Memoize.supplier(() -> {
+			UTF8Properties props = new UTF8Properties();
+			try (InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd")) {
+				if (propStream != null) {
+					props.load(propStream);
+				} else {
+					System.err.println("Cannot load defaults");
+				}
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Unable to load bnd defaults.", e);
+			}
+			return new Processor(props, false);
+		});
+	}
 	final Map<String, Action>									commands			= newMap();
 	final Maven													maven;
 	private final AtomicBoolean									offline				= new AtomicBoolean();
@@ -205,23 +220,8 @@ public class Workspace extends Processor {
 		return ws.getProject(projectDir.getName());
 	}
 
-	static synchronized public Processor getDefaults() {
-		if (defaults != null)
-			return defaults;
-
-		UTF8Properties props = new UTF8Properties();
-		try (InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd")) {
-			if (propStream != null) {
-				props.load(propStream);
-			} else {
-				System.err.println("Cannot load defaults");
-			}
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Unable to load bnd defaults.", e);
-		}
-		defaults = new Processor(props, false);
-
-		return defaults;
+	public static Processor getDefaults() {
+		return defaults.get();
 	}
 
 	public static Workspace createDefaultWorkspace() throws Exception {
