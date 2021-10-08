@@ -2,25 +2,6 @@ package aQute.bnd.osgi;
 
 import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
 import static aQute.bnd.exceptions.PredicateWithException.asPredicate;
-/**
- * This class can calculate the required headers for a (potential) JAR file. It
- * analyzes a directory or JAR for the packages that are contained and that are
- * referred to by the bytecodes. The user can the use regular expressions to
- * define the attributes and directives. The matching is not fully regex for
- * convenience. A * and ? get a . prefixed and dots are escaped.
- *
- * <pre>
- *                                                             			*;auto=true				any
- *                                                             			org.acme.*;auto=true    org.acme.xyz
- *                                                             			org.[abc]*;auto=true    org.acme.xyz
- * </pre>
- *
- * Additional, the package instruction can start with a '=' or a '!'. The '!'
- * indicates negation. Any matching package is removed. The '=' is literal, the
- * expression will be copied verbatim and no matching will take place.
- *
- * Any headers in the given properties are used in the output properties.
- */
 import static aQute.libg.generics.Create.list;
 import static aQute.libg.generics.Create.map;
 import static java.util.stream.Collectors.toCollection;
@@ -75,6 +56,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -105,12 +87,50 @@ import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterMessages;
 import aQute.libg.tuple.Pair;
 
+/**
+ * This class can calculate the required headers for a (potential) JAR file. It
+ * analyzes a directory or JAR for the packages that are contained and that are
+ * referred to by the bytecodes. The user can the use regular expressions to
+ * define the attributes and directives. The matching is not fully regex for
+ * convenience. A * and ? get a . prefixed and dots are escaped.
+ *
+ * <pre>
+ * *;auto=true             any
+ * org.acme.*;auto=true    org.acme.xyz
+ * org.[abc]*;auto=true    org.acme.xyz
+ * </pre>
+ *
+ * Additional, the package instruction can start with a '=' or a '!'. The '!'
+ * indicates negation. Any matching package is removed. The '=' is literal, the
+ * expression will be copied verbatim and no matching will take place. Any
+ * headers in the given properties are used in the output properties.
+ */
 public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
 	private final static VersionRange				frameworkPreR7			= new VersionRange(Version.LOWEST,
 		new Version(1, 9));
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
-	static Properties								bndInfo;
+	private static final Memoize<Properties>		bndInfo;
+	static {
+		bndInfo = Memoize.supplier(() -> {
+			Properties properties = new UTF8Properties();
+			try {
+				URL url = Analyzer.class.getResource("bnd.info");
+				if (url != null) {
+					try (InputStream in = url.openStream()) {
+						properties.load(in);
+					}
+				}
+				String v = properties.getProperty("version");
+				if (!Version.isVersion(v)) {
+					properties.put("version", About.CURRENT.toString());
+				}
+			} catch (IOException e) {
+				logger.info("Unable to load bnd.info resource", e);
+			}
+			return properties;
+		});
+	}
 
 	// Bundle parameters
 	private Jar										dot;
@@ -1594,29 +1614,11 @@ public class Analyzer extends Processor {
 	}
 
 	public String getBndInfo(String key, String defaultValue) {
-		if (bndInfo == null) {
-			try {
-				Properties bndInfoLocal = new UTF8Properties();
-				URL url = Analyzer.class.getResource("bnd.info");
-				if (url != null) {
-					try (InputStream in = url.openStream()) {
-						bndInfoLocal.load(in);
-					}
-				}
-
-				String v = bndInfoLocal.getProperty("version");
-				if (!Version.isVersion(v)) {
-					bndInfoLocal.put("version", About.CURRENT.toString());
-				}
-				bndInfo = bndInfoLocal;
-			} catch (Exception e) {
-				e.printStackTrace();
-				return defaultValue;
-			}
-		}
-		String value = bndInfo.getProperty(key);
-		if (value == null)
+		String value = bndInfo.get()
+			.getProperty(key);
+		if (value == null) {
 			return defaultValue;
+		}
 		return value;
 	}
 

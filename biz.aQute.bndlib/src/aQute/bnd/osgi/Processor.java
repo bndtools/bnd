@@ -190,7 +190,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		scheduledExecutor.setThreadFactory(shutdownHookInstaller.apply(scheduledExecutorThreadFactory));
 	}
 	private static final PromiseFactory			promiseFactory	= new PromiseFactory(executor, scheduledExecutor);
-	static Random								random			= new Random();
+	private static final Memoize<Random>		random				= Memoize.supplier(Random::new);
 	public final static String					LIST_SPLITTER	= "\\s*,\\s*";
 	final List<String>							errors			= new ArrayList<>();
 	final List<String>							warnings		= new ArrayList<>();
@@ -1886,10 +1886,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 		}
 
-		synchronized (Processor.class) {
-			if (random == null)
-				random = new Random();
-		}
+		Random random = Processor.random.get();
 
 		char[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 		char[] alphanums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
