@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.differ.XmlRepoDiffer;
 import aQute.bnd.service.diff.Delta;

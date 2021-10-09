@@ -10,11 +10,10 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.service.subsystem.SubsystemConstants;
 
 import aQute.bnd.build.Project;
@@ -43,14 +42,18 @@ public class SubsystemExporterTest {
 	private static final String	bndRunSubSystemEsaArchiveTypeContent	= "SubSystemTypeContent";
 	private static final String	bndRunSubSystemEsaArchiveTypeAll		= "SubSystemTypeAll";
 
-	@Rule
-	public final TestName		testName								= new TestName();
 	private String				genWsPath;
 	private Workspace			ws;
 
-	@Before
-	public void setUp() throws Exception {
-		genWsPath = "generated/tmp/test/" + getClass().getName() + "/" + testName.getMethodName() + "/" + WS_PATH;
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws Exception {
+		genWsPath = "generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName()
+			+ "/" + WS_PATH;
 		File wsRoot = IO.getFile(genWsPath);
 		IO.delete(wsRoot);
 		IO.copy(IO.getFile(WS_PATH), wsRoot);
@@ -81,7 +84,7 @@ public class SubsystemExporterTest {
 		}
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		ws.close();
 	}

@@ -1,10 +1,11 @@
 package test.cdi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -85,20 +86,22 @@ public class CDIAnnotationTest {
 		}
 	}
 
-	@Test(expected = AssertionError.class)
+	@Test
 	public void noRequiresNoSpecifiedBeans() throws Exception {
-		try (Builder b = new Builder()) {
-			b.setProperty("Private-Package", "test.cdi.beans_a.*");
-			b.addClasspath(new File("bin_test"));
-			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
-			Jar jar = b.build();
+		assertThatCode(() -> {
+			try (Builder b = new Builder()) {
+				b.setProperty("Private-Package", "test.cdi.beans_a.*");
+				b.addClasspath(new File("bin_test"));
+				b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+				Jar jar = b.build();
 
-			if (!b.check())
-				fail();
-			Attributes a = getAttr(jar);
-			checkProvides(a);
-			checkRequires(a, Arrays.asList("test.cdi.beans_a.AppScopedBean"));
-		}
+				if (!b.check())
+					fail();
+				Attributes a = getAttr(jar);
+				checkProvides(a);
+				checkRequires(a, Arrays.asList("test.cdi.beans_a.AppScopedBean"));
+			}
+		}).isInstanceOf(AssertionError.class);
 	}
 
 	@Test
@@ -169,21 +172,23 @@ public class CDIAnnotationTest {
 		}
 	}
 
-	@Test(expected = AssertionError.class)
+	@Test
 	public void discoveryNone() throws Exception {
-		try (Builder b = new Builder()) {
-			b.setProperty(Constants.CDIANNOTATIONS, "*;discover=none");
-			b.setProperty("Private-Package", "test.cdi.beans_e.*");
-			b.addClasspath(new File("bin_test"));
-			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
-			Jar jar = b.build();
+		assertThatCode(() -> {
+			try (Builder b = new Builder()) {
+				b.setProperty(Constants.CDIANNOTATIONS, "*;discover=none");
+				b.setProperty("Private-Package", "test.cdi.beans_e.*");
+				b.addClasspath(new File("bin_test"));
+				b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+				Jar jar = b.build();
 
-			if (!b.check())
-				fail();
-			Attributes a = getAttr(jar);
-			checkProvides(a);
-			checkRequires(a, Arrays.asList("test.cdi.beans_a.AppScopedBean"));
-		}
+				if (!b.check())
+					fail();
+				Attributes a = getAttr(jar);
+				checkProvides(a);
+				checkRequires(a, Arrays.asList("test.cdi.beans_a.AppScopedBean"));
+			}
+		}).isInstanceOf(AssertionError.class);
 	}
 
 	@Test
@@ -411,7 +416,7 @@ public class CDIAnnotationTest {
 					found = true;
 				}
 			}
-			assertTrue("objectClass not found: " + os, found);
+			assertTrue(found, "objectClass not found: " + os);
 		}
 	}
 
@@ -420,16 +425,16 @@ public class CDIAnnotationTest {
 		System.err.println(Constants.REQUIRE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
 		List<Attrs> attrs = getAll(header, "osgi.service");
-		assertEquals("osgi.service attributes: " + attrs, objectClass.length, attrs.size());
+		assertEquals(objectClass.length, attrs.size(), "osgi.service attributes: " + attrs);
 		for (String o : objectClass) {
 			boolean found = false;
 			for (Attrs at : attrs) {
 				if (("(objectClass=" + o + ")").equals(at.get("filter:"))) {
-					assertEquals("no effective:=\"active\"", "active", at.get("effective:"));
+					assertEquals("active", at.get("effective:"), "no effective:=\"active\"");
 					found = true;
 				}
 			}
-			assertTrue("objectClass not found: " + o, found);
+			assertTrue(found, "objectClass not found: " + o);
 		}
 
 		if (beans != null) {

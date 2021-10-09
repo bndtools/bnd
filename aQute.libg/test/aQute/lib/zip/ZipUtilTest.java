@@ -9,7 +9,7 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ZipUtilTest {
 

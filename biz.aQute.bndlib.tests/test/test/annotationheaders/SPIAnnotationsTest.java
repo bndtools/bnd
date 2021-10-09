@@ -1,16 +1,16 @@
 package test.annotationheaders;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -584,7 +584,7 @@ public class SPIAnnotationsTest {
 		Resource resource = jar.getResource("META-INF/services/" + spi);
 		assertNotNull(resource);
 		String contents = IO.collect(resource.openInputStream());
-		assertTrue("does not contain " + impl, contents.contains(impl));
+		assertTrue(contents.contains(impl), "does not contain " + impl);
 	}
 
 }

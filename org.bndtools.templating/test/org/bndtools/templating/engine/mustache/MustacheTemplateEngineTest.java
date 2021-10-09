@@ -1,8 +1,8 @@
 package org.bndtools.templating.engine.mustache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import org.bndtools.templating.FolderResource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.StringResource;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.lib.io.IO;
 

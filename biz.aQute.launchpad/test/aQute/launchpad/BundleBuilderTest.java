@@ -1,32 +1,25 @@
 package aQute.launchpad;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Dictionary;
 import java.util.function.Supplier;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.FrameworkUtil;
 
 public class BundleBuilderTest {
 
-	static {
-		// try {
-		// Workspace w = Workspace.findWorkspace(IO.work);
-		// } catch (Exception e) {
-		// throw Exceptions.duck(e);
-		// }
-	}
-
 	LaunchpadBuilder builder;
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		builder = new LaunchpadBuilder();
 		builder.runfw("org.apache.felix.framework");
@@ -34,7 +27,7 @@ public class BundleBuilderTest {
 			.isNotEmpty();
 	}
 
-	@After
+	@AfterEach
 	public void after() throws Exception {
 		builder.close();
 	}
@@ -128,43 +121,46 @@ public class BundleBuilderTest {
 		assertThat(headers.get(key)).isEqualToIgnoringWhitespace(value);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testWorkspaceNotAtEnd() throws Exception {
-		try (Launchpad lp = builder.create()) {
-
-			Bundle bundle = lp.bundle()
-				.workspace()
-				.workspace()
-				.privatePackage("")
-				.exportPackage("")
-				.start();
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			try (Launchpad lp = builder.create()) {
+				Bundle bundle = lp.bundle()
+					.workspace()
+					.workspace()
+					.privatePackage("")
+					.exportPackage("")
+					.start();
+			}
+		});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testProjectNotAtEnd() throws Exception {
-		try (Launchpad lp = builder.create()) {
-
-			Bundle bundle = lp.bundle()
-				.project()
-				.project()
-				.privatePackage("")
-				.exportPackage("")
-				.start();
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			try (Launchpad lp = builder.create()) {
+				Bundle bundle = lp.bundle()
+					.project()
+					.project()
+					.privatePackage("")
+					.exportPackage("")
+					.start();
+			}
+		});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testParentAfterWorkspaceOrProject() throws Exception {
-		try (Launchpad lp = builder.create()) {
-
-			Bundle bundle = lp.bundle()
-				.project()
-				.parent("bnd.bnd")
-				.privatePackage("")
-				.exportPackage("")
-				.start();
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			try (Launchpad lp = builder.create()) {
+				Bundle bundle = lp.bundle()
+					.project()
+					.parent("bnd.bnd")
+					.privatePackage("")
+					.exportPackage("")
+					.start();
+			}
+		});
 	}
 
 	@Test

@@ -1,9 +1,6 @@
 package aQute.lib.utf8properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,7 +9,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
@@ -240,9 +237,8 @@ public class UTF8PropertiesTest {
 		ReporterAdapter ra = new ReporterAdapter();
 		p.load("	-runvm: \n" //
 			+ "#\"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044\"", null, ra);
-		assertEquals("", p.get("-runvm"));
-		assertEquals(1, p.size());
-
+		assertThat(p).containsEntry("-runvm", "")
+			.hasSize(1);
 	}
 
 	@Test
@@ -250,9 +246,8 @@ public class UTF8PropertiesTest {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
 		p.load("version 1.1\n ", null, ra);
-		assertEquals("1.1", p.get("version"));
-		assertEquals(1, p.size());
-
+		assertThat(p).containsEntry("version", "1.1")
+			.hasSize(1);
 	}
 
 	@Test
@@ -260,10 +255,9 @@ public class UTF8PropertiesTest {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
 		p.load("a=2\n\rb=3\n\r", null, ra);
-		assertEquals("2", p.get("a"));
-		assertEquals("3", p.get("b"));
-		assertEquals(2, p.size());
-
+		assertThat(p).containsEntry("a", "2")
+			.containsEntry("b", "3")
+			.hasSize(2);
 	}
 
 	@Test
@@ -271,9 +265,8 @@ public class UTF8PropertiesTest {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
 		p.load("a=x\\\n\n", null, ra);
-		assertEquals("x", p.get("a"));
-		assertEquals(1, p.size());
-
+		assertThat(p).containsEntry("a", "x")
+			.hasSize(1);
 	}
 
 	@Test
@@ -281,9 +274,8 @@ public class UTF8PropertiesTest {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
 		p.load("version 1.0.1", null, ra);
-		assertEquals("1.0.1", p.get("version"));
-		assertEquals(1, p.size());
-
+		assertThat(p).containsEntry("version", "1.0.1")
+			.hasSize(1);
 	}
 
 	@Test
@@ -291,9 +283,8 @@ public class UTF8PropertiesTest {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
 		p.load("version 1.0.1\r\n", null, ra);
-		assertEquals("1.0.1", p.get("version"));
-		assertEquals(1, p.size());
-
+		assertThat(p).containsEntry("version", "1.0.1")
+			.hasSize(1);
 	}
 
 	@Test
@@ -314,60 +305,60 @@ public class UTF8PropertiesTest {
 		ReporterAdapter ra = new ReporterAdapter();
 		UTF8Properties up = new UTF8Properties();
 		up.load(string, IO.getFile("foo"), ra);
-		assertNotNull("No '" + key + "' property found", up.getProperty(key));
-		if (check.length == 0)
-			assertEquals(0, ra.getWarnings()
-				.size());
-		else {
-			assertTrue(ra.getWarnings()
-				.size() > 0);
+		assertThat(up).as("No '%s' property found", key)
+			.containsKey(key);
+		if (check.length == 0) {
+			assertThat(ra.getWarnings()).isEmpty();
+		} else {
+			assertThat(ra.getWarnings()).isNotEmpty();
 			Location location = ra.getLocation(ra.getWarnings()
 				.get(0));
-			assertEquals("Faulty line number", line, location.line);
+			assertThat(location.line).as("Faulty line number")
+				.isEqualTo(line);
 		}
-		assertTrue(ra.check(check));
+		assertThat(ra.check(check)).isTrue();
 	}
 
 	@Test
 	public void testBackslashEncodingWithReader() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new StringReader("x=abc \\\\ def\n"));
-		assertEquals("abc \\ def", p.get("x"));
+		assertThat(p).containsEntry("x", "abc \\ def");
 	}
 
 	@Test
 	public void testISO8859Encoding() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new ByteArrayInputStream(("x=" + trickypart + "\n").getBytes("ISO-8859-1")));
-		assertEquals(trickypart, p.get("x"));
+		assertThat(p).containsEntry("x", trickypart);
 	}
 
 	@Test
 	public void testUTF8Encoding() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new ByteArrayInputStream(("x=" + trickypart + "\n").getBytes("UTF-8")));
-		assertEquals(trickypart, p.get("x"));
+		assertThat(p).containsEntry("x", trickypart);
 	}
 
 	@Test
 	public void testShowUTF8PropertiesDoNotSkipBackslash() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new ByteArrayInputStream("x=abc \\ def\n".getBytes("UTF-8")));
-		assertEquals("abc  def", p.get("x"));
+		assertThat(p).containsEntry("x", "abc  def");
 	}
 
 	@Test
 	public void testShowPropertiesSkipBackslash() throws IOException {
 		Properties p = new Properties();
 		p.load(new StringReader("x=abc \\ def\n"));
-		assertEquals("abc  def", p.get("x"));
+		assertThat(p).containsEntry("x", "abc  def");
 	}
 
 	@Test
 	public void testContinuation() throws IOException {
 		Properties p = new Properties();
 		p.load(new StringReader("x=abc \\\n        def\n"));
-		assertEquals("abc def", p.get("x"));
+		assertThat(p).containsEntry("x", "abc def");
 	}
 
 	@Test
@@ -377,9 +368,8 @@ public class UTF8PropertiesTest {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		p.store(bout);
 		String s = new String(bout.toByteArray(), "UTF-8");
-		assertFalse(s.startsWith("#"));
-
-		assertTrue("Foo should be in there", s.contains("Foo"));
+		assertThat(s).doesNotStartWith("#")
+			.contains("Foo");
 	}
 
 	@Test
@@ -390,11 +380,10 @@ public class UTF8PropertiesTest {
 		StringWriter sw = new StringWriter();
 		p.store(sw, null);
 		String s = sw.toString();
-		assertNotNull(s);
-		assertTrue(s.contains("#comment"));
+		assertThat(s).contains("#comment");
 		UTF8Properties p1 = new UTF8Properties();
 		p1.load(new StringReader(s));
-		assertEquals(p, p1);
+		assertThat(p1).containsExactlyInAnyOrderEntriesOf(p);
 	}
 
 	private void testProperty(String content, String key, String value) throws IOException {
@@ -414,18 +403,13 @@ public class UTF8PropertiesTest {
 			"Export-Package", "Private-Package", "Import-Package", "Provide-Capability", "Foo"
 		});
 
-		if (check == null)
-			assertTrue(ra.check());
-		else
-			assertTrue(ra.check(check));
+		assertThat((check == null) ? ra.check() : ra.check(check)).isTrue();
 
-		assertEquals(value, p.get(key));
-		assertEquals(1, p.size());
+		assertThat(p).containsEntry(key, value)
+			.hasSize(1);
 
 		Properties pp = new Properties();
 		pp.load(new StringReader(content));
-		assertEquals("normal properties differ in comparison", value, pp.get(key));
-		assertEquals(1, pp.size());
-		assertEquals(pp, p);
+		assertThat(pp).containsExactlyInAnyOrderEntriesOf(p);
 	}
 }

@@ -1,15 +1,19 @@
 package aQute.lib.concurrentinit;
 
+import static org.assertj.core.api.Assertions.assertThatIOException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ConcurrentInitializeTest extends Assert {
+public class ConcurrentInitializeTest {
 	final static Executor executor = Executors.newCachedThreadPool();
 
 	@Test
@@ -58,45 +62,51 @@ public class ConcurrentInitializeTest extends Assert {
 		assertTrue(result.tryAcquire(10, 10, TimeUnit.SECONDS));
 	}
 
-	@Test(expected = IOException.class)
+	@Test
 	public void testExceptionForFirstCall() throws Exception {
-		ConcurrentInitialize<String> ci = new ConcurrentInitialize<String>() {
+		assertThatIOException().isThrownBy(() -> {
+			ConcurrentInitialize<String> ci = new ConcurrentInitialize<String>() {
 
-			@Override
-			public String create() throws Exception {
-				throw new IOException();
-			}
-		};
-		ci.get();
-	}
-
-	@Test(expected = IOException.class)
-	public void testExceptionForFurtherCalls() throws Exception {
-		ConcurrentInitialize<String> ci = new ConcurrentInitialize<String>() {
-
-			@Override
-			public String create() throws Exception {
-				throw new IOException();
-			}
-		};
-		try {
+				@Override
+				public String create() throws Exception {
+					throw new IOException();
+				}
+			};
 			ci.get();
-		} catch (IllegalArgumentException e) {
-			// ignore
-		}
-		ci.get();
+		});
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void testExceptionForNestedCreate() throws Exception {
-		ConcurrentInitialize<String> ci = new ConcurrentInitialize<String>() {
+	@Test
+	public void testExceptionForFurtherCalls() throws Exception {
+		assertThatIOException().isThrownBy(() -> {
+			ConcurrentInitialize<String> ci = new ConcurrentInitialize<String>() {
 
-			@Override
-			public String create() throws Exception {
-				return get();
+				@Override
+				public String create() throws Exception {
+					throw new IOException();
+				}
+			};
+			try {
+				ci.get();
+			} catch (IllegalArgumentException e) {
+				// ignore
 			}
-		};
-		ci.get();
+			ci.get();
+		});
+	}
+
+	@Test
+	public void testExceptionForNestedCreate() throws Exception {
+		assertThatIllegalStateException().isThrownBy(() -> {
+			ConcurrentInitialize<String> ci = new ConcurrentInitialize<String>() {
+
+				@Override
+				public String create() throws Exception {
+					return get();
+				}
+			};
+			ci.get();
+		});
 	}
 
 }

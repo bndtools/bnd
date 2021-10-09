@@ -8,8 +8,8 @@ import java.io.File;
 
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
@@ -24,8 +24,8 @@ public class SnapshotTest {
 	static final String	org_apache_felix_gogo_runtime	= "org.apache.felix.gogo.runtime;version='[1.1.0,1.1.0]'";
 	static File tmp = IO.getFile("generated/snapshot");
 
-	@BeforeClass
-	static public void before() {
+	@BeforeEach
+	public void before() {
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}

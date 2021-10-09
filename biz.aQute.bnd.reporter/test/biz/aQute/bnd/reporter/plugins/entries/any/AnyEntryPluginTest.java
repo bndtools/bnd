@@ -1,12 +1,12 @@
 package biz.aQute.bnd.reporter.plugins.entries.any;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 

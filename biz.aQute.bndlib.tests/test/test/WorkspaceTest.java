@@ -2,9 +2,9 @@ package test;
 
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,10 +13,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
@@ -30,13 +29,16 @@ import aQute.lib.strings.Strings;
 
 public class WorkspaceTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
-	@Rule
-	public final TestName		testName	= new TestName();
 	private File				testDir;
 
-	@Before
-	public void setUp() throws IOException {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws IOException {
+		testDir = new File(TMPDIR, testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 	}

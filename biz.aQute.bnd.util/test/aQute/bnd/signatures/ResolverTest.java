@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.SignatureAttribute;

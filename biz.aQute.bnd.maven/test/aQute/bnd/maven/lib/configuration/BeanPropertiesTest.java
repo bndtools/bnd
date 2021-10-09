@@ -8,11 +8,10 @@ import java.util.Properties;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.osgi.Processor;
 
@@ -20,14 +19,16 @@ public class BeanPropertiesTest {
 	private Properties		beanProperties;
 	private Processor		processor;
 	private MavenProject	project;
-	@Rule
-	public TestName			testName	= new TestName();
+	private String			testName;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws Exception {
+		testName = testInfo.getTestMethod()
+			.get()
+			.getName();
 		project = new MavenProject(new Model());
 		project.setGroupId(BeanPropertiesTest.class.getName());
-		project.setArtifactId(testName.getMethodName());
+		project.setArtifactId(testName);
 		project.setVersion("0.0.1");
 		project.setFile(new File(project.getGroupId(), project.getArtifactId()));
 
@@ -41,19 +42,19 @@ public class BeanPropertiesTest {
 		assertThat(beanProperties).hasSize(1);
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		processor.close();
 	}
 
 	@Test
 	public void testProjectName() {
-		project.setName(testName.getMethodName());
+		project.setName(testName);
 		assertThat(beanProperties.getProperty("project")).contains(project.getGroupId(), project.getArtifactId());
-		assertThat(beanProperties.getProperty("project.name")).isEqualTo(testName.getMethodName());
+		assertThat(beanProperties.getProperty("project.name")).isEqualTo(testName);
 
 		processor.setProperty("Project-Name", "${project.name}");
-		assertThat(processor.getProperty("Project-Name")).isEqualTo(testName.getMethodName());
+		assertThat(processor.getProperty("Project-Name")).isEqualTo(testName);
 	}
 
 	@Test

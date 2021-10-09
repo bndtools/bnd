@@ -1,14 +1,13 @@
 package aQute.launchpad;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.Semaphore;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -19,17 +18,12 @@ public class HelloTest {
 	static Workspace	ws;
 	LaunchpadBuilder	builder;
 
-	@BeforeClass
-	public static void beforeClass() throws Exception {
-		// ws = Workspace.findWorkspace(IO.work);
-	}
-
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		builder = new LaunchpadBuilder();
 	}
 
-	@After
+	@AfterEach
 	public void after() throws Exception {
 		builder.close();
 	}

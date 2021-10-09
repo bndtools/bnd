@@ -9,27 +9,30 @@ import static org.mockito.Mockito.verify;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.assertj.core.api.JUnitSoftAssertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.service.specifications.RunSpecification;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class LaunchpadBuilderTest {
 	LaunchpadBuilder			builder;
 
-	@Rule
-	public JUnitSoftAssertions	softly	= new JUnitSoftAssertions();
+	@InjectSoftAssertions
+	public SoftAssertions	softly;
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		builder = new LaunchpadBuilder();
 	}
 
-	@After
+	@AfterEach
 	public void after() throws Exception {
 		builder.close();
 	}

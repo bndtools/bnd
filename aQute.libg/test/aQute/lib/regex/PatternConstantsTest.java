@@ -2,7 +2,7 @@ package aQute.lib.regex;
 
 import java.util.regex.Pattern;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PatternConstantsTest {
 	@Test

@@ -1,6 +1,6 @@
 package org.bndtools.templating.engine.st;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupDir;
 

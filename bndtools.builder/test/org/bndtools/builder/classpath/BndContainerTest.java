@@ -1,9 +1,11 @@
 package org.bndtools.builder.classpath;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 public class BndContainerTest {
 
