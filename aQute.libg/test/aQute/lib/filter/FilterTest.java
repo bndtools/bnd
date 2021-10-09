@@ -1,14 +1,17 @@
 package aQute.lib.filter;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Dictionary;
 import java.util.Hashtable;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.Version;
 
-import junit.framework.TestCase;
+public class FilterTest {
 
-public class FilterTest extends TestCase {
-
+	@Test
 	public void testFilters() throws IllegalArgumentException, Exception {
 		verify("(&(test=aName)(version>=1.1.0))");
 		verify("(&(version>=1.1)(string~=astring))");
@@ -24,6 +27,7 @@ public class FilterTest extends TestCase {
 		verify("(willResolve=false)");
 	}
 
+	@Test
 	public void testFilterDictMatches() throws IllegalArgumentException, Exception {
 		Dictionary<String, Object> dict = new Hashtable<>();
 		dict.put("test", "aName");
@@ -33,7 +37,7 @@ public class FilterTest extends TestCase {
 	}
 
 	private void verify(String string) throws IllegalArgumentException, Exception {
-		assertNull("Invalid filter", new Filter(string).verify());
+		assertNull(new Filter(string).verify(), "Invalid filter");
 
 	}
 }

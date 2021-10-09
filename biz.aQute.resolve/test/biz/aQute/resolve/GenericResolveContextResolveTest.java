@@ -1,5 +1,7 @@
 package biz.aQute.resolve;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static test.lib.Utils.createRepo;
 
 import java.util.Arrays;
@@ -7,6 +9,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -19,14 +24,26 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
-public class GenericResolveContextResolveTest extends TestCase {
+public class GenericResolveContextResolveTest {
 	ResolverLogger logger = new ResolverLogger(0, System.out);
 
+	private String	name;
+
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		name = testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
+
+	}
+
 	private String getTestName() {
-		return getClass().getName() + "/" + getName();
+		return name;
 	}
 
 	/**
@@ -35,6 +52,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testSimpleResolve() throws Exception {
 		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
@@ -59,6 +77,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testResolveRequirementNoDirective() throws Exception {
 		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
@@ -80,6 +99,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testResolveRequirementResolveDirective() throws Exception {
 
 		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
@@ -96,6 +116,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 		assertNames(providers, "test.a", "test.b");
 	}
 
+	@Test
 	public void testResolveRequirementActiveDirective() throws Exception {
 		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
 		GenericResolveContext grc = new GenericResolveContext(logger);

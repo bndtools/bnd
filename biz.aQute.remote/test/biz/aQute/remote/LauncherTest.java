@@ -1,5 +1,9 @@
 package biz.aQute.remote;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
@@ -7,6 +11,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -24,12 +32,11 @@ import aQute.lib.io.IO;
 import aQute.remote.main.Main;
 import aQute.remote.plugin.RemoteProjectLauncherPlugin;
 import aQute.remote.plugin.RunSessionImpl;
-import junit.framework.TestCase;
 
 /**
  * Creates a workspace and then launches a main remote.
  */
-public class LauncherTest extends TestCase {
+public class LauncherTest {
 	private int						random;
 	private File					tmp;
 	private Workspace				workspace;
@@ -42,13 +49,15 @@ public class LauncherTest extends TestCase {
 	private File					t2;
 	private Thread					thread;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 		IO.copy(IO.getFile("testdata/ws"), tmp);
@@ -101,24 +110,21 @@ public class LauncherTest extends TestCase {
 		};
 		thread.setDaemon(true);
 		thread.start();
-
-		super.setUp();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
-		super.tearDown();
 		framework.stop();
 		Main.stop();
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));
 		framework.waitForStop(100000);
-		super.tearDown();
 	}
 
 	/*
 	 * Launches against the agent
 	 */
+	@Test
 	public void testSimpleLauncher() throws Exception {
 		Project project = workspace.getProject("p1");
 		Run bndrun = new Run(workspace, project.getBase(), project.getFile("one.bndrun"));
@@ -175,6 +181,7 @@ public class LauncherTest extends TestCase {
 	/*
 	 * Launches against the agent& main
 	 */
+	@Test
 	public void testMain() throws Exception {
 		Project project = workspace.getProject("p1");
 		Run bndrun = new Run(workspace, project.getBase(), project.getFile("one.bndrun"));
@@ -208,6 +215,7 @@ public class LauncherTest extends TestCase {
 	/*
 	 * Launches against the agent& main
 	 */
+	@Test
 	public void testAgentAndMain() throws Exception {
 		Project project = workspace.getProject("p1");
 		Run bndrun = new Run(workspace, project.getBase(), project.getFile("one.bndrun"));

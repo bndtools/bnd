@@ -1,10 +1,13 @@
 package aQute.bnd.deployer.repository.providers;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestAttributeTypeParsing extends TestCase {
+import org.junit.jupiter.api.Test;
 
-	public static void testScalarTypeNames() {
+public class TestAttributeTypeParsing {
+
+	@Test
+	public void testScalarTypeNames() {
 		assertEquals(AttributeType.STRING, AttributeType.parseTypeName(null));
 		assertEquals(AttributeType.STRING, AttributeType.parseTypeName("String"));
 		assertEquals(AttributeType.LONG, AttributeType.parseTypeName("Long"));
@@ -12,7 +15,8 @@ public class TestAttributeTypeParsing extends TestCase {
 		assertEquals(AttributeType.VERSION, AttributeType.parseTypeName("Version"));
 	}
 
-	public static void testListTypeNames() {
+	@Test
+	public void testListTypeNames() {
 		assertEquals(AttributeType.STRINGLIST, AttributeType.parseTypeName("List<String>"));
 		assertEquals(AttributeType.LONGLIST, AttributeType.parseTypeName("List<Long>"));
 		assertEquals(AttributeType.DOUBLELIST, AttributeType.parseTypeName("List<Double>"));

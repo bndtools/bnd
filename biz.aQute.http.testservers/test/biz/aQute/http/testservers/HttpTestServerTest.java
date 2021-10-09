@@ -1,5 +1,10 @@
 package biz.aQute.http.testservers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -15,17 +20,19 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.http.testservers.HttpTestServer;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
-import junit.framework.TestCase;
 
-public class HttpTestServerTest extends TestCase {
+public class HttpTestServerTest {
 	final static TypeReference<Map<String, Object>> MAP_REF = new TypeReference<Map<String, Object>>() {};
 
+	@Test
 	public void testSimple() throws Exception {
 		try (HttpTestServer http = getHttps()) {
 			System.out.println(http.getBaseURI());
@@ -37,6 +44,7 @@ public class HttpTestServerTest extends TestCase {
 
 	static Pattern DN_P = Pattern.compile("(^|\\s)CN=(?<cn>[^, ]+)", Pattern.CASE_INSENSITIVE);
 
+	@Test
 	public void testCorrectCommonName() throws Exception {
 		try (HttpTestServer http = getHttps()) {
 			X509Certificate cert = http.getCertificateChain()[0];
@@ -49,6 +57,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testURI() throws Exception {
 		try (HttpTestServer http = getHttps();) {
 			URI uri = http.getBaseURI();
@@ -60,6 +69,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDefault() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL uri = http.getBaseURI()
@@ -69,6 +79,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testStatus() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL uri = new URI(http.getBaseURI() + "/status/500").toURL();
@@ -77,24 +88,28 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testIp() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			assertNotNull(get(http, MAP_REF, "/ip").get("origin"));
 		}
 	}
 
+	@Test
 	public void testUserAgent() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			assertNotNull(toCaseInsensitive(get(http, MAP_REF, "/user-agent")).get("user-agent"));
 		}
 	}
 
+	@Test
 	public void testHeaders() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			assertNotNull(toCaseInsensitive(get(http, MAP_REF, "/headers")).get("user-agent"));
 		}
 	}
 
+	@Test
 	public void testBasicAuth() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL uri = new URL(http.getBaseURI() + "/basic-auth/john/doe");
@@ -106,6 +121,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBasicFalseAuth() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL uri = new URL(http.getBaseURI() + "/basic-auth/john/xxxxxxx");
@@ -117,6 +133,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testGet() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			Map<String, ?> map = get(http, MAP_REF, "/get");
@@ -124,6 +141,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEncoding() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL url = new URL(http.getBaseURI() + "/encoding/utf8");
@@ -148,6 +166,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testGzip() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL url = new URL(http.getBaseURI() + "/gzip");
@@ -163,6 +182,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDeflate() throws Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL url = new URL(http.getBaseURI() + "/deflate?abc=def&abc%24=12");
@@ -178,6 +198,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPut() throws IOException, Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL url = new URL(http.getBaseURI() + "/put");
@@ -192,6 +213,7 @@ public class HttpTestServerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPost() throws IOException, Exception {
 		try (HttpTestServer http = getHttp();) {
 			URL url = new URL(http.getBaseURI() + "/put");

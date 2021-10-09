@@ -1,6 +1,11 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +20,8 @@ import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.About;
@@ -28,7 +35,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 class T0 {}
 
@@ -39,7 +45,7 @@ class T2 extends T1 {}
 class T3 extends T2 {}
 
 @SuppressWarnings("resource")
-public class AnalyzerTest extends TestCase {
+public class AnalyzerTest {
 	static File cwd = new File(System.getProperty("user.dir"));
 
 	/**
@@ -49,6 +55,7 @@ public class AnalyzerTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testIncludeResourceFromClasspathWithGlobbing() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -61,6 +68,7 @@ public class AnalyzerTest extends TestCase {
 		assertNotNull(jar.getResource("asm.jar"));
 	}
 
+	@Test
 	public void testIncludeResourceFromClasspathWithGlobbingMultiple() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -74,6 +82,7 @@ public class AnalyzerTest extends TestCase {
 	 * #525 Test if exceptions are imported
 	 */
 
+	@Test
 	public void testExceptionImports() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -91,6 +100,7 @@ public class AnalyzerTest extends TestCase {
 	 * Verify that the OSGi and the bnd Version annotation both work
 	 */
 
+	@Test
 	public void testVersionAnnotation() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -147,6 +157,7 @@ public class AnalyzerTest extends TestCase {
 	 * ~[na:1.7.0_04]
 	 * </pre>
 	 */
+	@Test
 	public void testAnnotationWithDefaultClass() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -173,6 +184,7 @@ public class AnalyzerTest extends TestCase {
 	 * The -removeheaders header can be used as a whitelist.
 	 */
 
+	@Test
 	public void testRemoveheadersAsWhiteList() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -210,6 +222,7 @@ public class AnalyzerTest extends TestCase {
 	 * Check if bnd detects references to private packages and gives a warning.
 	 */
 
+	@Test
 	public void testExportReferencesToPrivatePackages() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -229,6 +242,7 @@ public class AnalyzerTest extends TestCase {
 	 * Test basic functionality of he BCP
 	 */
 
+	@Test
 	public void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -245,6 +259,7 @@ public class AnalyzerTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBundleClasspathWithVersionedExports() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -265,6 +280,7 @@ public class AnalyzerTest extends TestCase {
 
 	}
 
+	@Test
 	public void testNegatedPackagesFiltering() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -291,6 +307,7 @@ public class AnalyzerTest extends TestCase {
 	 * Very basic sanity test
 	 */
 
+	@Test
 	public void testSanity() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -318,6 +335,7 @@ public class AnalyzerTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testGenerateManifest() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		try {
@@ -350,6 +368,7 @@ public class AnalyzerTest extends TestCase {
 	 * Bundle-Classpath are considered during import/export calculation.
 	 */
 
+	@Test
 	public void testExportContentsDirectory() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -361,10 +380,11 @@ public class AnalyzerTest extends TestCase {
 			b.setProperty("-exportcontents", "test.refer");
 			b.build();
 			assertTrue(b.check("Bundle-ClassPath uses a directory 'jars/some.jar'"));
-			assertTrue(b.getImports()
-				.toString(),
+			assertTrue(
 				b.getImports()
-					.getByFQN("org.osgi.service.event") != null);
+					.getByFQN("org.osgi.service.event") != null,
+				b.getImports()
+					.toString());
 		} finally {
 			b.close();
 		}
@@ -376,6 +396,7 @@ public class AnalyzerTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testUsesFiltering() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -420,6 +441,7 @@ public class AnalyzerTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testRequireFail() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -430,6 +452,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRequirePass() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -440,6 +463,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testComponentImportReference() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -459,6 +483,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFindClass() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -475,6 +500,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMultilevelInheritance() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(new File("bin_test"));
@@ -488,6 +514,7 @@ public class AnalyzerTest extends TestCase {
 
 	}
 
+	@Test
 	public void testClassQuery() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/osgi.jar"));
@@ -501,6 +528,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testClassQuery_b() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/osgi.jar"));
@@ -521,6 +549,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testEmptyHeader() throws Exception {
 		try (Builder a = new Builder()) {
 			a.setProperty("Bundle-Blueprint", "  <<EMPTY>> ");
@@ -547,6 +576,7 @@ public class AnalyzerTest extends TestCase {
 	 * Test name section.
 	 */
 
+	@Test
 	public void testNameSection() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -581,6 +611,7 @@ public class AnalyzerTest extends TestCase {
 	 * Test if mandatory attributes are augmented even when the version is not
 	 * set.
 	 */
+	@Test
 	public void testMandatoryWithoutVersion() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -609,6 +640,7 @@ public class AnalyzerTest extends TestCase {
 	 * Test Import-Packages marked with resolution:=dynamic are expanded, moved
 	 * to DynamicImport-Packages with no original DIP instruction.
 	 */
+	@Test
 	public void testDynamicImportExpansionPackagesAreSet() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -645,6 +677,7 @@ public class AnalyzerTest extends TestCase {
 	 * Test Import-Packages marked with resolution:=dynamic are expanded, moved
 	 * to DynamicImport-Packages and added to the original DIP instruction.
 	 */
+	@Test
 	public void testDynamicImportExpansionPackagesAreAdded() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -684,6 +717,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testPrivataBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -714,6 +748,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -743,6 +778,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorImport() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -778,6 +814,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorAbstract() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -805,6 +842,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorInterface() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -833,6 +871,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorNoDefaultConstructor() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -861,6 +900,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorNotPublic() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -891,6 +931,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testNotABundleActivator() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -919,6 +960,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorNoType() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -931,14 +973,16 @@ public class AnalyzerTest extends TestCase {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(a.getErrors()
-				.toString(), 0,
+			assertEquals(0,
 				a.getErrors()
-					.size());
-			assertEquals(a.getWarnings()
-				.toString(), 1,
+					.size(),
+				a.getErrors()
+					.toString());
+			assertEquals(1,
 				a.getWarnings()
-					.size());
+					.size(),
+				a.getWarnings()
+					.toString());
 			assertTrue(a.check("A Bundle-Activator header was present but no activator class was defined"));
 		} finally {
 			a.close();
@@ -950,6 +994,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBundleActivatorNotAType() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -962,14 +1007,16 @@ public class AnalyzerTest extends TestCase {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(a.getErrors()
-				.toString(), 2,
+			assertEquals(2,
 				a.getErrors()
-					.size());
-			assertEquals(a.getWarnings()
-				.toString(), 0,
+					.size(),
+				a.getErrors()
+					.toString());
+			assertEquals(0,
 				a.getWarnings()
-					.size());
+					.size(),
+				a.getWarnings()
+					.toString());
 			assertTrue(a.check("A Bundle-Activator header is present and its value is not a valid type name 123",
 				"The default package '.' is not permitted by the Import-Package syntax."));
 		} finally {
@@ -982,6 +1029,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testScanForABundleActivatorNoMatches() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -994,14 +1042,16 @@ public class AnalyzerTest extends TestCase {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(a.getErrors()
-				.toString(), 1,
+			assertEquals(1,
 				a.getErrors()
-					.size());
-			assertEquals(a.getWarnings()
-				.toString(), 0,
+					.size(),
+				a.getErrors()
+					.toString());
+			assertEquals(0,
 				a.getWarnings()
-					.size());
+					.size(),
+				a.getWarnings()
+					.toString());
 			assertTrue(a.check(
 				"A Bundle-Activator header is present but no activator class was found using the macro \\$\\{classes;IMPLEMENTS;org\\.osgi\\.framework\\.BundleActivator\\}"));
 		} finally {
@@ -1014,6 +1064,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testScanForABundleActivatorMultipleMatches() throws Exception {
 		Builder a = new Builder();
 		try {
@@ -1026,14 +1077,16 @@ public class AnalyzerTest extends TestCase {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(a.getErrors()
-				.toString(), 1,
+			assertEquals(1,
 				a.getErrors()
-					.size());
-			assertEquals(a.getWarnings()
-				.toString(), 0,
+					.size(),
+				a.getErrors()
+					.toString());
+			assertEquals(0,
 				a.getWarnings()
-					.size());
+					.size(),
+				a.getWarnings()
+					.toString());
 			assertTrue(
 				a.check("The Bundle-Activator header only supports a single type. The following types were found: "
 					+ "test.activator.AbstractActivator,test.activator.Activator,test.activator.Activator11,test.activator.Activator2,test.activator.Activator3,test.activator.ActivatorPackage,test.activator.ActivatorPrivate,test.activator.DefaultVisibilityActivator,test.activator.IActivator,test.activator.MissingNoArgsConstructorActivator"
@@ -1048,6 +1101,7 @@ public class AnalyzerTest extends TestCase {
 	 * calculated.
 	 */
 
+	@Test
 	public void testRemoveheaders() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/asm.jar"));
@@ -1070,6 +1124,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testExportForJar() throws Exception {
 		try (Analyzer an = new Analyzer()) {
 			Jar jar = new Jar("dot");
@@ -1095,6 +1150,7 @@ public class AnalyzerTest extends TestCase {
 	 * @throws IOException
 	 */
 
+	@Test
 	public void testVersion() throws IOException {
 		try (Analyzer a = new Analyzer()) {
 			String v = a.getBndVersion();
@@ -1105,6 +1161,7 @@ public class AnalyzerTest extends TestCase {
 	/**
 	 * asm is a simple library with two packages. No imports are done.
 	 */
+	@Test
 	public void testAsm() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
@@ -1126,8 +1183,8 @@ public class AnalyzerTest extends TestCase {
 			assertFalse(analyzer.getImports()
 				.getByFQN("org.objectweb.asm") != null);
 
-			assertEquals("Expected size", 2, analyzer.getExports()
-				.size());
+			assertEquals(2, analyzer.getExports()
+				.size(), "Expected size");
 		}
 
 	}
@@ -1137,6 +1194,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws IOException
 	 */
+	@Test
 	public void testAsm2() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
@@ -1153,12 +1211,13 @@ public class AnalyzerTest extends TestCase {
 			Packages imports = h.getImports();
 			assertTrue(imports.getByFQN("org.objectweb.asm.signature") == null);
 			assertTrue(imports.getByFQN("org.objectweb.asm") == null);
-			assertEquals("Expected size", 2, exports.size());
+			assertEquals(2, exports.size(), "Expected size");
 			assertEquals("short", get(exports, h.getPackageRef("org.objectweb.asm"), "name"));
 			assertEquals("long", get(exports, h.getPackageRef("org.objectweb.asm.signature"), "name"));
 		}
 	}
 
+	@Test
 	public void testDs() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
@@ -1183,6 +1242,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDsSkipOsgiImport() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "!org.osgi.*, *");
@@ -1210,6 +1270,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDsNoExport() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
@@ -1234,6 +1295,7 @@ public class AnalyzerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testClasspath() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
@@ -1248,11 +1310,11 @@ public class AnalyzerTest extends TestCase {
 			});
 			h.calcManifest()
 				.write(System.err);
-			assertEquals("Version from osgi.jar", "[1.2,2)",
-				get(h.getImports(), h.getPackageRef("org.osgi.service.packageadmin"), "version"));
-			assertEquals("Version from osgi.jar", "[1.3,2)",
-				get(h.getImports(), h.getPackageRef("org.osgi.util.tracker"), "version"));
-			assertEquals("Version from osgi.jar", null, get(h.getImports(), h.getPackageRef("org.xml.sax"), "version"));
+			assertEquals("[1.2,2)", get(h.getImports(), h.getPackageRef("org.osgi.service.packageadmin"), "version"),
+				"Version from osgi.jar");
+			assertEquals("[1.3,2)", get(h.getImports(), h.getPackageRef("org.osgi.util.tracker"), "version"),
+				"Version from osgi.jar");
+			assertNull(get(h.getImports(), h.getPackageRef("org.xml.sax"), "version"), "Version from osgi.jar");
 		}
 	}
 
@@ -1265,6 +1327,7 @@ public class AnalyzerTest extends TestCase {
 	 *
 	 * @throws IOException
 	 */
+	@Test
 	public void testSuperfluous() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*, com.baz.bar.*:io");
@@ -1293,7 +1356,7 @@ public class AnalyzerTest extends TestCase {
 		StringTokenizer st = new StringTokenizer(string, ", ");
 		while (st.hasMoreTokens()) {
 			String member = st.nextToken();
-			assertFalse("Must not contain  " + member, map.contains(member));
+			assertFalse(map.contains(member), "Must not contain  " + member);
 		}
 	}
 
@@ -1305,7 +1368,7 @@ public class AnalyzerTest extends TestCase {
 		StringTokenizer st = new StringTokenizer(string, ", ");
 		while (st.hasMoreTokens()) {
 			String member = st.nextToken();
-			assertTrue("Must contain  " + member, ss.contains(member));
+			assertTrue(ss.contains(member), "Must contain  " + member);
 		}
 	}
 

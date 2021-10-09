@@ -1,12 +1,14 @@
 package aQute.configurable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class ConfigurableTest extends TestCase {
+public class ConfigurableTest {
 
 	interface C {
 		@Config(deflt = "abc\\,def,ghi")
@@ -16,6 +18,7 @@ public class ConfigurableTest extends TestCase {
 		List<String> bar();
 	}
 
+	@Test
 	public void testDefault() {
 		C c = Configurable.createConfigurable(C.class, Collections.emptyMap());
 		assertEquals(Arrays.asList("abc,def", "ghi"), c.foo());
@@ -23,6 +26,7 @@ public class ConfigurableTest extends TestCase {
 
 	}
 
+	@Test
 	public void testSimple() {
 		assertEquals(Arrays.asList("abc|def"), Configurable.unescape("abc\\|def"));
 		assertEquals(Arrays.asList("abc", "def"), Configurable.unescape("abc,def"));

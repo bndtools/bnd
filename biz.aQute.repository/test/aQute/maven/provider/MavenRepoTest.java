@@ -1,11 +1,20 @@
 package aQute.maven.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.version.MavenVersion;
@@ -16,9 +25,8 @@ import aQute.maven.api.Archive;
 import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
-import junit.framework.TestCase;
 
-public class MavenRepoTest extends TestCase {
+public class MavenRepoTest {
 	File							aFile		= IO.getFile("testresources/empty");
 
 	String							tmpName;
@@ -30,10 +38,14 @@ public class MavenRepoTest extends TestCase {
 	ReporterAdapter					reporter	= new ReporterAdapter(System.err);
 	HttpClient						client		= new HttpClient();
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
 		local = IO.getFile(tmpName + "/local");
 		remote = IO.getFile(tmpName + "/remote");
 		reporter.setTrace(true);
@@ -50,12 +62,12 @@ public class MavenRepoTest extends TestCase {
 			.executor(), null);
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		fnx.close();
-		super.tearDown();
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		Program program = Program.valueOf("commons-cli", "commons-cli");
 		List<Revision> revisions = storage.getRevisions(program);
@@ -79,6 +91,7 @@ public class MavenRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testSnapshotCaches() throws Exception {
 		File fpom = IO.getFile(local, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-SNAPSHOT.pom");
 		Program program = Program.valueOf("commons-cli", "commons-cli");
@@ -110,6 +123,7 @@ public class MavenRepoTest extends TestCase {
 		assertTrue(Math.abs(System.currentTimeMillis() - f.lastModified()) <= 20000);
 	}
 
+	@Test
 	public void testImmutable() throws Exception {
 		File fpom = IO.getFile(local, "commons-cli/commons-cli/1.2/commons-cli-1.2.pom");
 		Program program = Program.valueOf("commons-cli", "commons-cli");
@@ -135,6 +149,7 @@ public class MavenRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBasicSnapshotRelease() throws Exception {
 		File fpom = IO.getFile(local, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-SNAPSHOT.pom");
 		File rpom = IO.getFile(remote, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-19700101.000010-10.pom");
@@ -161,6 +176,7 @@ public class MavenRepoTest extends TestCase {
 	 * after the first upload to mitigate this bug.
 	 */
 
+	@Test
 	public void testStagingRelease() throws Exception {
 		List<MavenBackingRepository> repo = MavenBackingRepository.create(fnx.getBaseURI() + "/staging/", reporter,
 			local, client);

@@ -1,22 +1,27 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.annotation.metatype.Configurable;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import junit.framework.TestCase;
 
-public class AnnotationsTest extends TestCase {
+public class AnnotationsTest {
 
 	@SuppressWarnings({
 		"rawtypes", "unchecked"
 	})
-	public static void testNestedAnnotations() throws Exception {
+	@Test
+	public void testNestedAnnotations() throws Exception {
 		try (Analyzer analyzer = new Analyzer();) {
 			TypeRef typeref = analyzer.getTypeRefFromFQN(ActualAnnotation.class.getName());
 			Map<String, Object> annMap = Collections.singletonMap("a", 5);

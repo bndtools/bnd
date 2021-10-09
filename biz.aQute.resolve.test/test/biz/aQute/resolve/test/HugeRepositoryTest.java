@@ -1,9 +1,13 @@
 package biz.aQute.resolve.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.build.model.EE;
@@ -13,11 +17,11 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.ResolverValidator;
 import biz.aQute.resolve.ResolverValidator.Resolution;
-import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
-public class HugeRepositoryTest extends TestCase {
+public class HugeRepositoryTest {
 
+	@Test
 	public void testHugeWithSpecificResources() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
@@ -42,6 +46,7 @@ public class HugeRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHugeWithSpecificResourcesAndDuplication() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder resourceBuilder = new ResourceBuilder();
@@ -87,6 +92,7 @@ public class HugeRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHugeValidateSelf1Iteration() throws Exception {
 		List<Long> durations = new ArrayList<>();
 		for (int i = 1; i <= 1; i++) {
@@ -104,6 +110,7 @@ public class HugeRepositoryTest extends TestCase {
 		System.out.printf("Summary: %s%n", summaryStatistics);
 	}
 
+	@Test
 	public void testHugeValidateSelfIterations() throws Exception {
 		List<Long> durations = new ArrayList<>();
 		for (int i = 1; i <= 10; i++) {

@@ -1,10 +1,18 @@
 package aQute.bnd.comm.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
@@ -12,7 +20,6 @@ import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.url.URLConnector;
 import aQute.http.testservers.HttpTestServer;
 import aQute.http.testservers.Httpbin;
-import junit.framework.TestCase;
 import sockslib.common.AuthenticationException;
 import sockslib.common.Credentials;
 import sockslib.common.methods.UsernamePasswordMethod;
@@ -27,10 +34,11 @@ import sockslib.server.manager.User;
 import sockslib.server.manager.UserManager;
 import sockslib.server.msg.CommandMessage;
 
-public class IndexedReposWithComms extends TestCase {
+public class IndexedReposWithComms {
 
 	private static SocksProxyServer socks5Proxy;
 
+	@Test
 	public void testBasicWorkspace() throws Exception {
 		HttpTestServer ht = http();
 		try {
@@ -62,6 +70,7 @@ public class IndexedReposWithComms extends TestCase {
 	 * Uses workspaces/indexed Sets up a OSGiRepository to the local server.
 	 */
 
+	@Test
 	public void testIndexedRepo() throws IOException, Exception {
 		try (HttpTestServer ht = http();) {
 			createSecureSocks5();
@@ -85,6 +94,7 @@ public class IndexedReposWithComms extends TestCase {
 	 * Uses workspaces/indexed Sets up a OSGiRepository to the local server.
 	 */
 
+	@Test
 	public void testIndexedRepoWithPassword() throws IOException, Exception {
 		try (HttpTestServer ht = https();) {
 			createSecureSocks5();
@@ -149,7 +159,7 @@ public class IndexedReposWithComms extends TestCase {
 		socks5Proxy.start();
 	}
 
-	@Override
+	@AfterEach
 	public void tearDown() {
 		if (socks5Proxy != null)
 			socks5Proxy.shutdown();

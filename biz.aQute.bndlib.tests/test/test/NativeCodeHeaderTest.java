@@ -1,5 +1,8 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.resource.Requirement;
 
@@ -7,14 +10,10 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import junit.framework.TestCase;
 
-public class NativeCodeHeaderTest extends TestCase {
+public class NativeCodeHeaderTest {
 
-	public void testBadSelectionFilter() throws Exception {
-
-	}
-
+	@Test
 	public void testNative() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 

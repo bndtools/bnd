@@ -2,6 +2,10 @@ package aQute.bnd.comm.tests;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -14,6 +18,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
@@ -30,18 +38,16 @@ import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import junit.framework.TestCase;
 
-public class HttpClientTest extends TestCase {
+public class HttpClientTest {
 	private TestServer	httpServer;
 	private Httpbin		httpsServer;
 	private File		tmp;
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.close(httpServer);
 		IO.close(httpsServer);
-		super.tearDown();
 	}
 
 	public static class TestServer extends Httpbin {
@@ -116,13 +122,8 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
 		Config config = new Config();
 		config.https = false;
 		httpServer = new TestServer(config);
@@ -133,12 +134,19 @@ public class HttpClientTest extends TestCase {
 		httpsServer = new Httpbin(configs);
 		httpsServer.start();
 
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		tmp.mkdirs();
 		httpServer.second = false;
 	}
 
+	@Test
 	public void testReadTimeOutButSucceed() throws Exception {
 		try (Processor p = new Processor()) {
 			try (HttpClient client = new HttpClient()) {
@@ -155,6 +163,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoRetriesOnPut() throws Exception {
 		try (Processor p = new Processor()) {
 			try (HttpClient client = new HttpClient()) {
@@ -173,6 +182,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRetriesOnPut() throws Exception {
 		try (Processor p = new Processor()) {
 			try (HttpClient client = new HttpClient()) {
@@ -190,6 +200,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testReadTimeOutButFail() throws Exception {
 		try (Processor p = new Processor()) {
 			try (HttpClient client = new HttpClient()) {
@@ -206,6 +217,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testReadFailRetrySucceeds() throws Exception {
 		try (Processor p = new Processor()) {
 			try (HttpClient client = new HttpClient()) {
@@ -221,6 +233,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testReadFailRetryFails() throws Exception {
 		try (Processor p = new Processor()) {
 			try (HttpClient client = new HttpClient()) {
@@ -237,6 +250,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHttpsVerification() throws Exception {
 		try (Processor p = new Processor()) {
 			p.setProperty("-connection-settings", "server;id=\"" + httpsServer.getBaseURI() + "\";verify=" + true
@@ -288,6 +302,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHostnameVerification() throws Exception {
 		try (Processor p = new Processor()) {
 
@@ -318,6 +333,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHostnameVerificationDisabled() throws Exception {
 		try (Processor p = new Processor()) {
 
@@ -349,6 +365,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testTimeout() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			try {
@@ -367,6 +384,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testClearCacheOn404() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			hc.setCache(tmp);
@@ -398,6 +416,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCancel() throws Exception {
 		final long deadline = System.currentTimeMillis() + 1000L;
 
@@ -440,6 +459,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCachingMultipleFetch() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			hc.setCache(tmp);
@@ -477,6 +497,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFetch() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			String text = hc.build()
@@ -487,6 +508,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testURLResource() throws Exception {
 		try (HttpClient hc = new HttpClient()) {
 			URL url = httpServer.getBaseURI("get")
@@ -500,6 +522,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRedirect() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData tag = hc.build()
@@ -510,6 +533,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRedirectRelative() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData tag = hc.build()
@@ -520,6 +544,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRedirectTooMany() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData tag = hc.build()
@@ -530,6 +555,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testThatHttpWithUnverifiedNameGeneratesError() throws Exception {
 		Processor p = new Processor();
 		try (HttpClient hc = new HttpClient();) {
@@ -546,6 +572,7 @@ public class HttpClientTest extends TestCase {
 		assertTrue(p.check());
 	}
 
+	@Test
 	public void testThatHttpWithUnverifiedNameButMatchingHandlerIsOk() throws Exception {
 		Processor p = new Processor();
 		try (HttpClient hc = new HttpClient();) {
@@ -566,6 +593,7 @@ public class HttpClientTest extends TestCase {
 		assertTrue(p.check());
 	}
 
+	@Test
 	public void testInvalidTrustAnchors() throws Exception {
 		Processor p = new Processor();
 		try (HttpClient hc = new HttpClient();) {
@@ -592,6 +620,7 @@ public class HttpClientTest extends TestCase {
 		assertTrue(p.check());
 	}
 
+	@Test
 	public void testRedirectURL() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			HttpsVerification httpsVerification = new HttpsVerification(httpsServer.getCertificateChain(), false,
@@ -611,6 +640,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testETag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
@@ -621,6 +651,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNotModifiedEtag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
@@ -633,6 +664,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testModifiedWithEtag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
@@ -645,6 +677,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNotModifiedSince() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
@@ -658,6 +691,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNotModifiedSinceAtSameTime() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
@@ -671,6 +705,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testModifiedSince() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
@@ -692,6 +727,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMultipleProgressPlugins() throws Exception {
 		final long deadline = System.currentTimeMillis() + 1000L;
 
@@ -744,6 +780,7 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPut() throws URISyntaxException, Exception {
 		try (Processor p = new Processor();) {
 			final AtomicBoolean done = new AtomicBoolean();

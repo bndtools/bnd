@@ -1,15 +1,20 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 
-public class InlineTest extends TestCase {
-	public static void testSimple() throws Exception {
+public class InlineTest {
+	@Test
+	public void testSimple() throws Exception {
 		Builder builder = new Builder();
 		builder.setProperty("Include-Resource", "@jar/osgi.jar");
 		Jar jar = builder.build();

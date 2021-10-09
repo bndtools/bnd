@@ -1,6 +1,10 @@
 package aQute.lib.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,18 +36,20 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.map.MAP;
-import junit.framework.TestCase;
 
 @SuppressWarnings({
 	"unchecked", "rawtypes"
 })
-public class ConverterTest extends TestCase {
+public class ConverterTest {
 	Converter converter = new Converter();
 
+	@Test
 	public void testOptional() throws Exception {
 
 		Optional<String> opt = converter.convert(new TypeReference<Optional<String>>() {}, 1);
@@ -54,6 +60,7 @@ public class ConverterTest extends TestCase {
 		assertFalse(opt.isPresent());
 	}
 
+	@Test
 	public void testMangling() {
 
 		assertMangle("", "");
@@ -103,6 +110,7 @@ public class ConverterTest extends TestCase {
 		double d();
 	}
 
+	@Test
 	public void testMap() throws Exception {
 		Map<String, String> map = MAP.$("a", "A")
 			.$("b", "2");
@@ -114,6 +122,7 @@ public class ConverterTest extends TestCase {
 		assertThat(m.toString()).endsWith("'");
 	}
 
+	@Test
 	public void testTypeRef() throws Exception {
 		Map<String, Integer> f;
 		Type type = (new TypeReference<Map<String, Integer>>() {}).getType();
@@ -163,6 +172,7 @@ public class ConverterTest extends TestCase {
 		public Map<String, Object>	__extra;
 	}
 
+	@Test
 	public void testMap2Object() throws Exception {
 		Map<String, Object> map = new HashMap<>();
 		map.put("n", 42);
@@ -180,6 +190,7 @@ public class ConverterTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testDigest() throws Exception {
 		Digester<SHA1> digester = SHA1.getDigester();
 		try {
@@ -200,6 +211,7 @@ public class ConverterTest extends TestCase {
 	 * Map a string to a char[], Character[], or Collection<Character>
 	 */
 
+	@Test
 	public void testCharacters() throws Exception {
 		assertTrue(Arrays.equals(new char[] {
 			'A', 'B', 'C'
@@ -216,13 +228,14 @@ public class ConverterTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testStringtoPrimitives() throws Exception {
 		assertEquals((Integer) (int) 'A', converter.convert(int.class, 'A'));
 		assertEquals((Integer) (int) 'A', converter.convert(Integer.class, 'A'));
-		assertEquals((Boolean) true, converter.convert(boolean.class, "1"));
-		assertEquals((Boolean) true, converter.convert(Boolean.class, "1"));
-		assertEquals((Boolean) false, converter.convert(boolean.class, "0"));
-		assertEquals((Boolean) false, converter.convert(Boolean.class, "0"));
+		assertEquals(true, converter.convert(boolean.class, "1"));
+		assertEquals(true, converter.convert(Boolean.class, "1"));
+		assertEquals(false, converter.convert(boolean.class, "0"));
+		assertEquals(false, converter.convert(Boolean.class, "0"));
 		assertEquals((Byte) (byte) 1, converter.convert(byte.class, "1"));
 		assertEquals((Byte) (byte) 1, converter.convert(Byte.class, "1"));
 		assertEquals((Short) (short) 1, converter.convert(short.class, "1"));
@@ -244,13 +257,14 @@ public class ConverterTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testWrappers() throws Exception {
 		Object[] types = {
 			Boolean.FALSE, (byte) 0, '\u0000', (short) 0, 0, 0L, 0f, 0d
 		};
 		for (int i = 0; i < types.length; i++) {
 			for (int j = 0; j < types.length; j++) {
-				assertEquals("" + i + " " + j, types[i], converter.convert(types[i].getClass(), types[j]));
+				assertEquals(types[i], converter.convert(types[i].getClass(), types[j]), "" + i + " " + j);
 			}
 		}
 	}
@@ -260,6 +274,7 @@ public class ConverterTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testPrimitives() throws Exception {
 		assertPrimitives1(1);
 		assertPrimitives(0);
@@ -284,6 +299,7 @@ public class ConverterTest extends TestCase {
 		C;
 	}
 
+	@Test
 	public void testEnums() throws Exception {
 		assertEquals(X.A, converter.convert(X.class, "A"));
 		assertEquals(X.B, converter.convert(X.class, 1));
@@ -306,6 +322,7 @@ public class ConverterTest extends TestCase {
 		public CopyOnWriteArraySet<String>		concurrentSet;
 	}
 
+	@Test
 	public void testCollections() throws Exception {
 		Class<XX> xx = XX.class;
 		Object xxx = xx.getConstructor()
@@ -335,6 +352,7 @@ public class ConverterTest extends TestCase {
 		public List								list;
 	}
 
+	@Test
 	public void testGenericCollections() throws Exception {
 		Class<GC> xx = GC.class;
 		GC g = xx.getConstructor()
@@ -373,6 +391,7 @@ public class ConverterTest extends TestCase {
 		public double	b	= 2;
 	}
 
+	@Test
 	public void testGenericMaps() throws Exception {
 		Class<GM> xx = GM.class;
 		GM gMap = xx.getConstructor()
@@ -425,6 +444,7 @@ public class ConverterTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testConstructor() throws Exception {
 		String home = System.getProperty("user.home");
 		assertEquals(new File(home), converter.convert(File.class, home));
@@ -438,13 +458,14 @@ public class ConverterTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testValueOf() throws Exception {
 		assertEquals((Byte) (byte) 12, converter.convert(Byte.class, "12"));
-		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
+		assertEquals(true, converter.convert(Boolean.class, "TRUE"));
 		assertEquals((Character) '1', converter.convert(char.class, "49"));
-		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
-		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
-		assertEquals((Boolean) true, converter.convert(Boolean.class, "TRUE"));
+		assertEquals(true, converter.convert(Boolean.class, "TRUE"));
+		assertEquals(true, converter.convert(Boolean.class, "TRUE"));
+		assertEquals(true, converter.convert(Boolean.class, "TRUE"));
 	}
 
 	void assertPrimitives1(Object source) throws Exception {
@@ -471,6 +492,7 @@ public class ConverterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testProperties() throws Exception {
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, "1"));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1));
@@ -518,6 +540,7 @@ public class ConverterTest extends TestCase {
 		}));
 	}
 
+	@Test
 	public void testURIs() throws Exception {
 		URI expected = new URI("https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0");
 		assertEquals(expected,
@@ -530,6 +553,7 @@ public class ConverterTest extends TestCase {
 			"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\r\n1.3.1"));
 	}
 
+	@Test
 	public void testFile() throws Exception {
 		Converter c = new Converter();
 		c.setBase(IO.getFile("testresources"));
@@ -537,6 +561,7 @@ public class ConverterTest extends TestCase {
 		assertThat(convert).isFile();
 	}
 
+	@Test
 	public void testFileSet() throws Exception {
 		Converter c = new Converter();
 		c.setBase(IO.getFile("testresources"));

@@ -1,5 +1,11 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -16,11 +22,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.maven.PomParser;
 import aQute.bnd.maven.support.CachedPom;
@@ -39,10 +44,9 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.lib.xml.XML;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class MavenTest extends TestCase {
+public class MavenTest {
 	Processor				processor	= new Processor();
 	final static File		cwd			= new File("").getAbsoluteFile();
 	static ExecutorService	executor	= Executors.newCachedThreadPool();
@@ -54,6 +58,7 @@ public class MavenTest extends TestCase {
 	 * @throws Exception
 	 * @throws URISyntaxException
 	 */
+	@Test
 	public void testRemote() throws URISyntaxException, Exception {
 		URI repo = new URI("https://repo.maven.apache.org/maven2");
 		MavenEntry entry = maven.getEntry("org.springframework", "spring-aspects", "3.0.5.RELEASE");
@@ -67,46 +72,13 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * Check if we get the correct bundles for a project
-	 *
-	 * @throws Exception
-	 */
-
-	public void testProjectBundles() throws Exception {
-		// Project project = getProject("maven1");
-		//
-		// Collection<Container> containers = project.getBuildpath();
-		// List<String> files = new ArrayList<String>();
-		// for ( Container c : containers ) {
-		// files.add( c.getFile().getName());
-		// }
-		// assertTrue(files.remove("bin_test"));
-		// System.err.println(files);
-		// assertTrue(
-		// files.contains("com.springsource.org.apache.commons.beanutils-1.6.1.jar"));
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	protected static Project getProject(String name) throws Exception {
-		File wsf = IO.getFile(cwd, "testresources/ws");
-		Workspace ws = Workspace.getWorkspace(wsf);
-
-		assertNotNull(ws);
-
-		Project project = ws.getProject(name);
-		assertNotNull(project);
-		return project;
-	}
-
-	/**
 	 * Test parsing a project pom
 	 *
 	 * @throws Exception
 	 */
 
-	public static void testProjectPom() throws Exception {
+	@Test
+	public void testProjectPom() throws Exception {
 		Maven maven = new Maven(null);
 		ProjectPom pom = maven.createProjectModel(IO.getFile(cwd, "testresources/ws/maven1/testpom.xml"));
 		assertEquals("artifact", pom.getArtifactId());
@@ -162,7 +134,8 @@ public class MavenTest extends TestCase {
 	 * Test the maven remote repository
 	 */
 
-	public static void testMavenRepo1() throws Exception {
+	@Test
+	public void testMavenRepo1() throws Exception {
 		Maven maven = new Maven(null);
 		MavenRemoteRepository mr = new MavenRemoteRepository();
 		mr.setMaven(maven);
@@ -198,7 +171,8 @@ public class MavenTest extends TestCase {
 		assertEquals("com.springsource.org.apache.commons.beanutils-1.6.1.jar", file.getName());
 	}
 
-	public static void testMavenx() throws Exception {
+	@Test
+	public void testMavenx() throws Exception {
 		Maven maven = new Maven(null);
 		CachedPom pom = maven.getPom("javax.xml.bind", "com.springsource.javax.xml.bind", "2.2.0",
 			new URI("http://repository.springsource.com/maven/bundles/release"),
@@ -223,7 +197,8 @@ public class MavenTest extends TestCase {
 	 */
 
 	@SuppressWarnings("restriction")
-	public static void testPomParser() throws Exception {
+	@Test
+	public void testPomParser() throws Exception {
 		PomParser parser = new PomParser();
 		Properties p = parser.getProperties(IO.getFile("testresources/ws/maven1/pom.xml"));
 		p.store(System.err, "testing");
@@ -242,7 +217,7 @@ public class MavenTest extends TestCase {
 		assertEquals("2.4", easymock.get("version"));
 	}
 
-	// public void testDependencies() throws Exception {
+	// @Test public void testDependencies() throws Exception {
 	// MavenDependencyGraph graph;
 	//
 	// graph = new MavenDependencyGraph();
@@ -260,7 +235,7 @@ public class MavenTest extends TestCase {
 	//
 	// }
 
-	// public void testMaven() throws Exception {
+	// @Test public void testMaven() throws Exception {
 	// MavenRepository maven = new MavenRepository();
 	// maven.setReporter(processor);
 	// maven.setProperties(new HashMap<String, String>());
@@ -294,7 +269,7 @@ public class MavenTest extends TestCase {
 	// versions.contains(new Version("0.0.255"));
 	// }
 
-	// public void testMavenBsnMapping() throws Exception {
+	// @Test public void testMavenBsnMapping() throws Exception {
 	// Processor processor = new Processor();
 	// processor
 	// .setProperty("-plugin",
@@ -313,6 +288,7 @@ public class MavenTest extends TestCase {
 	// assertEquals(1, files.length);
 	// }
 
+	@Test
 	public void testPomResource() throws Exception {
 
 		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier",

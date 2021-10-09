@@ -1,68 +1,86 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class UsesTest extends TestCase {
+public class UsesTest {
 
-	public static void testUsesExtend() throws Exception {
+	@Test
+	public void testUsesExtend() throws Exception {
 		checkUses("test.uses.extend");
 	}
 
-	public static void testUsesGenericExtend() throws Exception {
+	@Test
+	public void testUsesGenericExtend() throws Exception {
 		checkUses("test.uses.generic.extend");
 	}
 
-	public static void testUsesConstructor() throws Exception {
+	@Test
+	public void testUsesConstructor() throws Exception {
 		checkUses("test.uses.constructor");
 	}
 
-	public static void testUsesImplement() throws Exception {
+	@Test
+	public void testUsesImplement() throws Exception {
 		checkUses("test.uses.implement");
 	}
 
-	public static void testUsesGenericImplement() throws Exception {
+	@Test
+	public void testUsesGenericImplement() throws Exception {
 		checkUses("test.uses.generic.implement");
 	}
 
-	public static void testUsesParam() throws Exception {
+	@Test
+	public void testUsesParam() throws Exception {
 		checkUses("test.uses.param");
 	}
 
-	public static void testUsesGenericParam() throws Exception {
+	@Test
+	public void testUsesGenericParam() throws Exception {
 		checkUses("test.uses.generic.param");
 	}
 
-	public static void testUsesRValue() throws Exception {
+	@Test
+	public void testUsesRValue() throws Exception {
 		checkUses("test.uses.rvalue");
 	}
 
-	public static void testUsesGenericRValue() throws Exception {
+	@Test
+	public void testUsesGenericRValue() throws Exception {
 		checkUses("test.uses.generic.rvalue");
 	}
 
-	public static void testUsesException() throws Exception {
+	@Test
+	public void testUsesException() throws Exception {
 		checkUses("test.uses.exception");
 	}
 
-	public static void testUsesField() throws Exception {
+	@Test
+	public void testUsesField() throws Exception {
 		checkUses("test.uses.field");
 	}
 
-	public static void testUsesAnnotation() throws Exception {
+	@Test
+	public void testUsesAnnotation() throws Exception {
 		checkUses("test.uses.annotation", "test.uses.annotation.annotation");
 	}
 
-	public static void testUsesMulti() throws Exception {
+	@Test
+	public void testUsesMulti() throws Exception {
 		// Check for consistent ordering
 		for (int i = 0; i < 10; i++)
 			checkUses("test.uses.multi", "javax.security.auth.callback,javax.sql");

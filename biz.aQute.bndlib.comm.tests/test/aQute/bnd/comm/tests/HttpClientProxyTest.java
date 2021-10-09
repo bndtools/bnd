@@ -1,6 +1,10 @@
 package aQute.bnd.comm.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -30,6 +34,8 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSource;
@@ -59,7 +65,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslContextBuilder;
-import junit.framework.TestCase;
 import sockslib.common.AuthenticationException;
 import sockslib.common.Credentials;
 import sockslib.common.methods.UsernamePasswordMethod;
@@ -79,7 +84,7 @@ import sockslib.server.msg.CommandMessage;
  * Different combinations are tried out with a secure and unsecure server. See
  * https://github.com/fengyouchao/sockslib for socks
  */
-public class HttpClientProxyTest extends TestCase {
+public class HttpClientProxyTest {
 
 	private final class ProxyCheckingFilter implements HttpFiltersSource {
 
@@ -126,18 +131,21 @@ public class HttpClientProxyTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPromiscuousProxyWithNoUser() throws Exception {
 		createPromiscuousHttpProxy();
 		createUnsecureServer();
 		assertHttpProxy(null, false, 200);
 	}
 
+	@Test
 	public void testPromiscuousProxyWithBadUser() throws Exception {
 		createPromiscuousHttpProxy();
 		createUnsecureServer();
 		assertHttpProxy("bad", false, 200);
 	}
 
+	@Test
 	public void testAuthenticatingProxyWithGoodUser() throws Exception {
 		createAuthenticationHttpProxy();
 		createUnsecureServer();
@@ -145,28 +153,33 @@ public class HttpClientProxyTest extends TestCase {
 		assertHttpProxy("good", true, 200);
 	}
 
+	@Test
 	public void testPromiscuousProxyWithGoodUser() throws Exception {
 		createPromiscuousHttpProxy();
 		createUnsecureServer();
 		assertHttpProxy("good", false, 200);
 	}
 
+	@Test
 	public void testNoProxyUnsecure() throws Exception {
 		createUnsecureServer();
 		assertHttpProxy("good", Type.HTTP.name(), false, false, 200);
 	}
 
+	@Test
 	public void testNoProxySecure() throws Exception {
 		createUnsecureServer();
 		assertHttpProxy("good", Type.HTTP.name(), false, false, 200);
 	}
 
+	@Test
 	public void testPromiscuousProxyWithGoodUserSecure() throws Exception {
 		createSecureServer();
 		createSecurePromiscuousHttpProxy();
 		assertHttpProxy("good", "HTTPS", true, false, 200);
 	}
 
+	@Test
 	public void testAuthenticatingProxyNoUser() throws Exception {
 		try {
 			createAuthenticationHttpProxy();
@@ -179,6 +192,7 @@ public class HttpClientProxyTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAuthenticatingProxyBadUser() throws Exception {
 		try {
 			createAuthenticationHttpProxy();
@@ -191,24 +205,28 @@ public class HttpClientProxyTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSecureSocksAuthenticatingWithGoodUserSecure() throws Exception {
 		createSecureSocks5();
 		createSecureServer();
 		assertThat(assertSocks5Proxy("good", true)).isBetween(200, 299);
 	}
 
+	@Test
 	public void testSecureSocksAuthenticatingWithBadUserSecure() throws Exception {
 		createSecureSocks5();
 		createSecureServer();
 		assertThat(assertSocks5Proxy("bad", true)).isGreaterThanOrEqualTo(500);
 	}
 
+	@Test
 	public void testSecureSocksAuthenticatingWithGoodUser() throws Exception {
 		createSecureSocks5();
 		createUnsecureServer();
 		assertThat(assertSocks5Proxy("good", true)).isBetween(200, 299);
 	}
 
+	@Test
 	public void testSecureSocksAuthenticatingWithBadUser() throws Exception {
 		createSecureSocks5();
 		createUnsecureServer();
@@ -447,7 +465,7 @@ public class HttpClientProxyTest extends TestCase {
 		}
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		if (httpProxy != null) {
 			httpProxy.abort();
@@ -460,8 +478,6 @@ public class HttpClientProxyTest extends TestCase {
 		if (socks5Proxy != null) {
 			socks5Proxy.shutdown();
 		}
-
-		super.tearDown();
 	}
 
 	void assertHttpProxy(String password, boolean authenticationCalled, int responseCode)

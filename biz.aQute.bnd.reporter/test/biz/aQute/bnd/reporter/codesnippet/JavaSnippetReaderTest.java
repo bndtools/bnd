@@ -1,20 +1,25 @@
 package biz.aQute.bnd.reporter.codesnippet;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class JavaSnippetReaderTest extends TestCase {
+public class JavaSnippetReaderTest {
 
+	@Test
 	public void testEmpty() {
 		final List<Snippet> r = execute("JavaSnippetReaderTest");
 		assertTrue(r.isEmpty());
 	}
 
+	@Test
 	public void testEmptyOnMethod() {
 		final List<Snippet> r = execute("EmptyOnMethod");
 
@@ -23,6 +28,7 @@ public class JavaSnippetReaderTest extends TestCase {
 			"public void print() {\n" + "  System.out.println(\"test\");\n" + "}");
 	}
 
+	@Test
 	public void testEmptyOnType() {
 		final List<Snippet> r = execute("EmptyOnType");
 
@@ -33,6 +39,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "    System.out.println(test);\n" + "  }\n" + "}");
 	}
 
+	@Test
 	public void testFullOnMethod() {
 		final List<Snippet> r = execute("FullOnMethod");
 
@@ -42,6 +49,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "  final MyClass c = new MyClass();\n" + "  System.out.println(c.toString());\n" + "}");
 	}
 
+	@Test
 	public void testFullOnType() {
 		final List<Snippet> r = execute("FullOnType");
 
@@ -53,6 +61,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "    System.out.println(c.toString());\n" + "  }\n" + "}");
 	}
 
+	@Test
 	public void testOnlyContentMethod() {
 		final List<Snippet> r = execute("OnlyContentMethod");
 
@@ -61,6 +70,7 @@ public class JavaSnippetReaderTest extends TestCase {
 			"// Comment\n" + "final MyClass c = new MyClass();\n" + "System.out.println(c.toString());");
 	}
 
+	@Test
 	public void testOnlyContentType() {
 		final List<Snippet> r = execute("OnlyContentType");
 
@@ -70,6 +80,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "  final MyClass c = new MyClass();\n" + "  System.out.println(c.toString());\n" + "}");
 	}
 
+	@Test
 	public void testWithoutDeclarationMethod() {
 		final List<Snippet> r = execute("WithoutDeclarationMethod");
 
@@ -79,6 +90,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "final MyClass c = new MyClass();\n" + "System.out.println(c.toString());");
 	}
 
+	@Test
 	public void testWithoutDeclarationType() {
 		final List<Snippet> r = execute("WithoutDeclarationType");
 
@@ -89,6 +101,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "  final MyClass c = new MyClass();\n" + "  System.out.println(c.toString());\n" + "}");
 	}
 
+	@Test
 	public void testWithoutImportMethod() {
 		final List<Snippet> r = execute("WithoutImportMethod");
 
@@ -98,6 +111,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "  System.out.println(c.toString());\n" + "}");
 	}
 
+	@Test
 	public void testWithoutImportType() {
 		final List<Snippet> r = execute("WithoutImportType");
 
@@ -108,6 +122,7 @@ public class JavaSnippetReaderTest extends TestCase {
 				+ "    System.out.println(c.toString());\n" + "  }\n" + "}");
 	}
 
+	@Test
 	public void testWithGroup() {
 		final List<Snippet> r = execute("WithGroup");
 
@@ -128,6 +143,7 @@ public class JavaSnippetReaderTest extends TestCase {
 			.getCodeSnippetGroup().steps.size());
 	}
 
+	@Test
 	public void testWithParentGroup() {
 		final List<Snippet> r = execute("WithParentGroup");
 

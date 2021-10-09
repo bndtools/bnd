@@ -1,6 +1,9 @@
 package aQute.lib.link;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -14,9 +17,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class LinkTest extends TestCase {
+public class LinkTest {
 	private ServerSocket	server;
 	private LocalImpl		localImpl;
 	private RemoteImpl		remoteImpl;
@@ -26,7 +31,7 @@ public class LinkTest extends TestCase {
 	private Socket			remoteSocket;
 	ExecutorService			es;
 
-	@Override
+	@BeforeEach
 	public void setUp() throws IOException {
 		es = Executors.newCachedThreadPool();
 		localClosed = new CountDownLatch(1);
@@ -40,7 +45,7 @@ public class LinkTest extends TestCase {
 		remoteImpl = new RemoteImpl(Local.class, remoteSocket.getInputStream(), remoteSocket.getOutputStream());
 	}
 
-	@Override
+	@AfterEach
 	public void tearDown() throws IOException {
 		server.close();
 		localSocket.close();
@@ -120,6 +125,7 @@ public class LinkTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testTransfer() throws Exception {
 
 		assertEquals(-42, localImpl.link.getRemote()
@@ -144,6 +150,7 @@ public class LinkTest extends TestCase {
 	 * @throws InterruptedException
 	 */
 
+	@Test
 	public void testSimple() throws IOException, InterruptedException {
 		assertEquals(-42, localImpl.link.getRemote()
 			.foo());
@@ -169,6 +176,7 @@ public class LinkTest extends TestCase {
 	 * @throws InterruptedException
 	 */
 
+	@Test
 	public void testCloseLocalIn() throws IOException, InterruptedException {
 
 		assertTrue(localImpl.link.isOpen());
@@ -180,6 +188,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseremoteIn() throws IOException, InterruptedException {
 
 		assertTrue(localImpl.link.isOpen());
@@ -191,6 +200,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseremoteOut() throws IOException, InterruptedException {
 
 		assertTrue(localImpl.link.isOpen());
@@ -203,6 +213,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseLocalSocket() throws IOException, InterruptedException {
 
 		assertTrue(localImpl.link.isOpen());
@@ -214,6 +225,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseRemoteSocket() throws IOException, InterruptedException {
 
 		assertTrue(localImpl.link.isOpen());
@@ -225,6 +237,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testAbort() throws IOException, InterruptedException {
 
 		assertEquals(-42, localImpl.link.getRemote()

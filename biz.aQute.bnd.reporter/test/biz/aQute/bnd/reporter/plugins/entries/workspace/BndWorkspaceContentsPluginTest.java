@@ -1,5 +1,8 @@
 package biz.aQute.bnd.reporter.plugins.entries.workspace;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,18 +11,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.build.Workspace;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
-import junit.framework.TestCase;
 
-public class BndWorkspaceContentsPluginTest extends TestCase {
+public class BndWorkspaceContentsPluginTest {
 
+	@Test
 	public void testEmptyWorkspace() throws Exception {
 		final BndWorkspaceContentsPlugin plugin = new BndWorkspaceContentsPlugin();
 
 		assertNull(plugin.extract(getWorkspace(), Locale.forLanguageTag("und")));
 	}
 
+	@Test
 	public void testWorkspaceWithProjects() throws Exception {
 		final BndWorkspaceContentsPlugin plugin = new BndWorkspaceContentsPlugin();
 
@@ -28,6 +34,7 @@ public class BndWorkspaceContentsPluginTest extends TestCase {
 		assertEquals(2, result.size());
 	}
 
+	@Test
 	public void testWorkspaceWithProjectsFilter() throws Exception {
 		final BndWorkspaceContentsPlugin plugin = new BndWorkspaceContentsPlugin();
 

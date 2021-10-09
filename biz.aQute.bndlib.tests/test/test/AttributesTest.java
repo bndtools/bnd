@@ -1,20 +1,26 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class AttributesTest extends TestCase {
+public class AttributesTest {
 
 	/**
 	 * Remove a version attribute A mandatory attribute adds the common and tst
@@ -22,7 +28,8 @@ public class AttributesTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testRemoveDirective() throws Exception {
+	@Test
+	public void testRemoveDirective() throws Exception {
 		Jar javax = new Jar("test");
 		Manifest m = new Manifest();
 		m.getMainAttributes()
@@ -52,7 +59,7 @@ public class AttributesTest extends TestCase {
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
-		assertNotNull("Import package header", imprt);
+		assertNotNull(imprt, "Import package header");
 		Parameters map = Processor.parseHeader(imprt, null);
 		System.err.println("** " + map);
 		Map<String, String> attrs = map.get("javax.microedition.io");
@@ -70,7 +77,8 @@ public class AttributesTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testRemoveAttribute() throws Exception {
+	@Test
+	public void testRemoveAttribute() throws Exception {
 		Jar javax = new Jar("test");
 		Manifest m = new Manifest();
 		m.getMainAttributes()
@@ -94,7 +102,7 @@ public class AttributesTest extends TestCase {
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
-		assertNotNull("Import package header", imprt);
+		assertNotNull(imprt, "Import package header");
 		Parameters map = Processor.parseHeader(imprt, null);
 		Map<String, String> attrs = map.get("javax.microedition.io");
 		assertNotNull(attrs);
@@ -106,7 +114,8 @@ public class AttributesTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testOverrideAttribute() throws Exception {
+	@Test
+	public void testOverrideAttribute() throws Exception {
 		File cp[] = {
 			IO.getFile("jar/osgi.jar")
 		};
@@ -125,7 +134,7 @@ public class AttributesTest extends TestCase {
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");
-		assertNotNull("Export package header", export);
+		assertNotNull(export, "Export package header");
 		Parameters map = Processor.parseHeader(export, null);
 		assertEquals("1.1", map.get("org.osgi.framework")
 			.get("version"));
@@ -136,7 +145,8 @@ public class AttributesTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testSimple() throws Exception {
+	@Test
+	public void testSimple() throws Exception {
 		File cp[] = {
 			IO.getFile("jar/osgi.jar")
 		};
@@ -155,7 +165,7 @@ public class AttributesTest extends TestCase {
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");
-		assertNotNull("Export package header", export);
+		assertNotNull(export, "Export package header");
 		Parameters map = Processor.parseHeader(export, null);
 		assertEquals("1.3", map.get("org.osgi.framework")
 			.get("version"));

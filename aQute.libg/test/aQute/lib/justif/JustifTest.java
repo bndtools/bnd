@@ -1,11 +1,14 @@
 package aQute.lib.justif;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Formatter;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class JustifTest extends TestCase {
+public class JustifTest {
 
+	@Test
 	public void testTab() {
 		// tabs stay in column
 		assertJ("a\t0b\t1c\fd\ne", "a    b    c\n          d\ne", 50);
@@ -27,6 +30,7 @@ public class JustifTest extends TestCase {
 		System.out.println(s);
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		StringBuilder sb = new StringBuilder();
 		Formatter f = new Formatter(sb);

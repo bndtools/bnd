@@ -1,17 +1,23 @@
 package aQute.bnd.repository.maven.provider;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.File;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.bnd.build.Workspace;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
-import junit.framework.TestCase;
 
-public class WorkspaceTest extends TestCase {
+public class WorkspaceTest {
 	String						tmpName;
 	File						tmp;
 	File						local;
@@ -23,10 +29,14 @@ public class WorkspaceTest extends TestCase {
 	private FakeNexus			fnx;
 	private Workspace			workspace;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
 		tmp = IO.getFile(tmpName);
 		IO.delete(tmp);
 		local = IO.getFile(tmp, "local");
@@ -44,32 +54,17 @@ public class WorkspaceTest extends TestCase {
 		fnx.start();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.close(fnx);
 	}
 
+	@Test
 	public void testEnv() throws Exception {
 		config(null);
 		assertNotNull(workspace);
 		assertNotNull(repo);
 		System.out.println(workspace.getBase());
-	}
-
-	public void testDefaultIndexFile() throws Exception {
-		config(null);
-	}
-
-	public void testDefaultPollWithChange() throws Exception {
-		config(null);
-	}
-
-	public void testDefaultPollWithoutChange() throws Exception {
-		config(null);
-	}
-
-	public void testRelease() {
-
 	}
 
 	void config(Map<String, String> override) throws Exception {

@@ -1,6 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -12,6 +13,9 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -27,18 +31,30 @@ import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.p2.packed.Unpack200;
-import junit.framework.TestCase;
 
-public class P2IndexerTest extends TestCase {
+public class P2IndexerTest {
+	String	name;
 	File tmp;
 
-	@Override
-	protected void setUp() {
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) {
+		name = testInfo.getTestMethod()
+			.get()
+			.getName();
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ name)
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
+	private String getName() {
+		return name;
+	}
+
+	@Test
 	public void testURI() throws Exception {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));
@@ -57,6 +73,7 @@ public class P2IndexerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFile() throws Throwable {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));
@@ -148,6 +165,7 @@ public class P2IndexerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRefresh() throws Exception {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));
@@ -164,6 +182,7 @@ public class P2IndexerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testTargetPlatform() throws Throwable {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));

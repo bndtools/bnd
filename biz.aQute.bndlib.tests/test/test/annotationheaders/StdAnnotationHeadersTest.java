@@ -2,24 +2,30 @@ package test.annotationheaders;
 
 import static aQute.lib.env.Header.DUPLICATE_MARKER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.env.Header;
 import aQute.lib.env.Props;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 /**
  * This class mirrors the testing from {@link AnnotationHeadersTest} but using
  * the OSGi R7 standard annotations. Annotations and annotated types are present
  * in the test.annotationheaders.xxx.std packages
  */
-public class StdAnnotationHeadersTest extends TestCase {
+public class StdAnnotationHeadersTest {
 
+	@Test
 	public void testCardinalityDirectiveOverride() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -44,6 +50,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testResolutionDirectiveOverride() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -72,6 +79,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 	 * A directly annotated class
 	 */
 
+	@Test
 	public void testStdAnnotations() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -136,6 +144,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testStdAnnotationsMetaAnnotated() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -155,17 +164,17 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertNotNull(p);
 			assertTrue(p.containsKey("filter:"));
 			String filter = p.get("filter:");
-			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(version>=1.0.0)(!(version>=2.0.0))"));
-			assertTrue(filter, filter.contains("(require=Indirectly-Required)"));
+			assertTrue(filter.contains("(a=b)"), filter);
+			assertTrue(filter.contains("(version>=1.0.0)(!(version>=2.0.0))"), filter);
+			assertTrue(filter.contains("(require=Indirectly-Required)"), filter);
 
 			p = req.get("require" + DUPLICATE_MARKER);
 			assertNotNull(p);
 			assertTrue(p.containsKey("filter:"));
 			filter = p.get("filter:");
-			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(version>=2.0.0)(!(version>=3.0.0))"));
-			assertTrue(filter, filter.contains("(require=Indirectly-Required2)"));
+			assertTrue(filter.contains("(a=b)"), filter);
+			assertTrue(filter.contains("(version>=2.0.0)(!(version>=3.0.0))"), filter);
+			assertTrue(filter.contains("(require=Indirectly-Required2)"), filter);
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
 			p = cap.get("provide");
@@ -188,9 +197,9 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertNotNull(p);
 			assertTrue(p.containsKey("filter:"));
 			filter = p.get("filter:");
-			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(version>=1.0.0)(!(version>=2.0.0))"));
-			assertTrue(filter, filter.contains("(require=Required)"));
+			assertTrue(filter.contains("(a=b)"), filter);
+			assertTrue(filter.contains("(version>=1.0.0)(!(version>=2.0.0))"), filter);
+			assertTrue(filter.contains("(require=Required)"), filter);
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
 			assertTrue(p.containsKey("usedName:List<String>"));
@@ -211,9 +220,9 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertNotNull(p);
 			assertTrue(p.containsKey("filter:"));
 			filter = p.get("filter:");
-			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(version>=2.0.0)(!(version>=3.0.0))"));
-			assertTrue(filter, filter.contains("(require=Required2)"));
+			assertTrue(filter.contains("(a=b)"), filter);
+			assertTrue(filter.contains("(version>=2.0.0)(!(version>=3.0.0))"), filter);
+			assertTrue(filter.contains("(require=Required2)"), filter);
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
 			assertTrue(p.containsKey("usedName:List<String>"));
@@ -309,6 +318,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testStdAnnotationsOverrideAttrsAndDirectives() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -361,6 +371,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testStdAnnotationsMacroVersions() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -396,6 +407,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testStdRepeatableMetaAnnotated() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -421,6 +433,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testOverrideBundleAnnotationsInstruction_success() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("bin_test"));

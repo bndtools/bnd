@@ -1,5 +1,10 @@
 package biz.aQute.resolve;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.osgi.framework.Version.parseVersion;
 import static org.osgi.framework.namespace.IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
@@ -16,6 +21,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
@@ -25,10 +33,22 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 import test.lib.MockRegistry;
 
-public class ResolveProcessTest extends TestCase {
+public class ResolveProcessTest {
+	private String name;
+	private String	cache;
+
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		name = testInfo.getTestMethod()
+			.get()
+			.getName();
+		cache = new File("generated/tmp/test/cache/" + testInfo.getTestClass()
+		.get()
+		.getName() + "/"
+			+ name).getAbsolutePath();
+	}
 
 	private final class ResourceComparator implements Comparator<Resource> {
 		@Override
@@ -51,6 +71,7 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testResolveRequired() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
@@ -87,6 +108,7 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBigNastyResolveRequired() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
@@ -143,6 +165,7 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testResolveFailure_1() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
@@ -166,7 +189,7 @@ public class ResolveProcessTest extends TestCase {
 				System.out.println(output);
 
 				String expected = "osgi.wiring.package: (osgi.wiring.package=aQute.lib.io)";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 
 				return;
 			}
@@ -175,6 +198,7 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testResolveFailure_2() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
@@ -198,7 +222,7 @@ public class ResolveProcessTest extends TestCase {
 				System.out.println(output);
 
 				String expected = "osgi.service: (objectClass=java.util.concurrent.Executor)";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 
 				return;
 			}
@@ -207,6 +231,7 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testResolveFailure_3() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
@@ -231,7 +256,7 @@ public class ResolveProcessTest extends TestCase {
 				System.out.println(output);
 
 				String expected = "osgi.enroute.endpoint: (&(osgi.enroute.endpoint=/sse/1)(&(version>=1.1.0)(!(version>=2.0.0))))";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 
 				return;
 			}
@@ -241,6 +266,7 @@ public class ResolveProcessTest extends TestCase {
 	}
 
 	// transitive failure
+	@Test
 	public void testResolveFailure_4() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
@@ -264,12 +290,12 @@ public class ResolveProcessTest extends TestCase {
 				System.out.println(output);
 
 				String expected = "osgi.wiring.package=org.apache.tools.ant.types";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 
 				expected = "Capabilities satisfying the following requirements could not be found:";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 				expected = "The following requirements are optional:";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 
 				return;
 			}
@@ -279,6 +305,7 @@ public class ResolveProcessTest extends TestCase {
 	}
 
 	// transitive failure, no optional requirements
+	@Test
 	public void testResolveFailure_5() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
@@ -302,12 +329,12 @@ public class ResolveProcessTest extends TestCase {
 				System.out.println(output);
 
 				String expected = "osgi.wiring.package=org.apache.tools.ant.types";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 
 				expected = "Capabilities satisfying the following requirements could not be found:";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				assertTrue(output.contains(expected), "Doesn't contain " + expected + ": <" + output + ">");
 				expected = "The following requirements are optional:";
-				assertFalse("Contains " + expected + ": <" + output + ">", output.contains(expected));
+				assertFalse(output.contains(expected), "Contains " + expected + ": <" + output + ">");
 
 				return;
 			}
@@ -323,9 +350,8 @@ public class ResolveProcessTest extends TestCase {
 		map.put("locations", IO.getFile(location)
 			.toURI()
 			.toString());
-		map.put("name", getName());
-		map.put("cache",
-			new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
+		map.put("name", name);
+		map.put("cache", cache);
 		repo.setProperties(map);
 		Processor p = new Processor();
 		p.addBasicPlugin(httpClient);
@@ -353,12 +379,13 @@ public class ResolveProcessTest extends TestCase {
 			.get(0)
 			.getAttributes()
 			.get(IDENTITY_NAMESPACE));
-		assertTrue(wire.getRequirement()
-			.toString(),
+		assertTrue(
 			wire.getRequirement()
 				.getDirectives()
 				.get(REQUIREMENT_FILTER_DIRECTIVE)
-				.contains(packageName));
+				.contains(packageName),
+			wire.getRequirement()
+				.toString());
 
 		for (String pkg : morePackages) {
 			wire = iterator.next();
@@ -367,12 +394,13 @@ public class ResolveProcessTest extends TestCase {
 				.get(0)
 				.getAttributes()
 				.get(IDENTITY_NAMESPACE));
-			assertTrue(wire.getRequirement()
-				.toString(),
+			assertTrue(
 				wire.getRequirement()
 					.getDirectives()
 					.get(REQUIREMENT_FILTER_DIRECTIVE)
-					.contains(pkg));
+					.contains(pkg),
+				wire.getRequirement()
+					.toString());
 		}
 	}
 

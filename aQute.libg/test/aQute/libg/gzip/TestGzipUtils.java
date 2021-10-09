@@ -1,12 +1,16 @@
 package aQute.libg.gzip;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import aQute.lib.io.IO;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class TestGzipUtils extends TestCase {
+import aQute.lib.io.IO;
+
+public class TestGzipUtils {
+	@Test
 	public void testUnzipped() throws Exception {
 		FileInputStream fis = new FileInputStream("testresources/unzipped.dat");
 		InputStream stream = GZipUtils.detectCompression(fis);
@@ -18,6 +22,7 @@ public class TestGzipUtils extends TestCase {
 		}
 	}
 
+	@Test
 	public void testZipped() throws Exception {
 		FileInputStream fis = new FileInputStream("testresources/zipped.dat");
 		InputStream stream = GZipUtils.detectCompression(fis);

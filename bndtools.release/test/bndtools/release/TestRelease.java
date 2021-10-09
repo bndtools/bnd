@@ -1,10 +1,14 @@
 package bndtools.release;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.version.Version;
-import junit.framework.TestCase;
 
-public class TestRelease extends TestCase {
+public class TestRelease {
 
+	@Test
 	public void testUpdateTemplateVersion() {
 
 		String version = ReleaseHelper.updateTemplateVersion("1.0.2.${tstamp}",

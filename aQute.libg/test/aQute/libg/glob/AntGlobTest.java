@@ -1,8 +1,12 @@
 package aQute.libg.glob;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AntGlobTest extends TestCase {
+import org.junit.jupiter.api.Test;
+
+public class AntGlobTest {
+	@Test
 	public void testSimple() {
 		Glob glob;
 
@@ -65,6 +69,7 @@ public class AntGlobTest extends TestCase {
 			.matches());
 	}
 
+	@Test
 	public void testMultiple() {
 		Glob glob;
 
@@ -237,6 +242,7 @@ public class AntGlobTest extends TestCase {
 			.matches());
 	}
 
+	@Test
 	public void testEscape() {
 		Glob glob;
 

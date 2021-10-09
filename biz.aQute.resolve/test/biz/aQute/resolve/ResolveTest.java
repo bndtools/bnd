@@ -1,6 +1,11 @@
 package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static test.lib.Utils.createRepo;
 
 import java.io.File;
@@ -15,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.mockito.Mockito;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -45,18 +53,29 @@ import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.dot.DOT;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
-import junit.framework.TestCase;
 import test.lib.MockRegistry;
 
 @SuppressWarnings({
 	"restriction", "deprecation"
 })
-public class ResolveTest extends TestCase {
+public class ResolveTest {
 
 	private static final LogService log = new LogReporter(new ReporterAdapter(System.out));
 
+	private String					name;
+
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		name = testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
+	}
+
 	private String getTestName() {
-		return getClass().getName() + "/" + getName();
+		return name;
 	}
 
 	/**
@@ -69,6 +88,7 @@ public class ResolveTest extends TestCase {
 	 * <p>
 	 * Tried this but seems to work in all combinations as expected
 	 */
+	@Test
 	public void testIncludeBndrun() throws Exception {
 		assertInclude("intop.bndrun", "top");
 		assertInclude("ininclude.bndrun", "include");
@@ -102,6 +122,7 @@ public class ResolveTest extends TestCase {
 	 * Missing default version
 	 */
 
+	@Test
 	public void testDefaultVersionsForJava() throws Exception {
 		Run run = Run.createRun(null, IO.getFile("testdata/defltversions/run.bndrun"));
 		try (Workspace w = run.getWorkspace(); ProjectResolver pr = new ProjectResolver(run);) {
@@ -118,6 +139,7 @@ public class ResolveTest extends TestCase {
 	 * not run
 	 */
 
+	@Test
 	public void testenRouteGuard() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		Repository repo = createRepo(IO.getFile("testdata/enroute/index.xml"), getTestName());
@@ -163,6 +185,7 @@ public class ResolveTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testResolveWithAugments() throws Exception {
 		// Add requirement
 		assertAugmentResolve(
@@ -230,6 +253,7 @@ public class ResolveTest extends TestCase {
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
+	@Test
 	public void testMinimalSetup() throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
@@ -267,6 +291,7 @@ public class ResolveTest extends TestCase {
 	 *
 	 * @throws ResolutionException
 	 */
+	@Test
 	public void testResolveWithDistro() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
@@ -297,6 +322,7 @@ public class ResolveTest extends TestCase {
 	 *
 	 * @throws ResolutionException
 	 */
+	@Test
 	public void testResolveWithLargeDistro() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
@@ -326,6 +352,7 @@ public class ResolveTest extends TestCase {
 	 * Test if we can resolve fragment with a distro without whitelisting the
 	 * 'osgi.wiring.host' capabilities on the system resource. Should FAIL
 	 */
+	@Test
 	public void testResolveFragmentWithDistro_FAIL() throws Exception {
 		File f = IO.getFile("testdata/repo9/fragment.bndrun");
 		File distro = IO.getFile("testdata/release.dxp.distro-7.2.10.jar");
@@ -349,6 +376,7 @@ public class ResolveTest extends TestCase {
 	 * Test if we can resolve fragment with a distro when whitelisting the
 	 * 'osgi.wiring.host' capabilities on the system resource. Should NOT fail
 	 */
+	@Test
 	public void testResolveFragmentWithDistro() throws Exception {
 		File f = IO.getFile("testdata/repo9/fragment.bndrun");
 		File distro = IO.getFile("testdata/release.dxp.distro-7.2.10.jar");
@@ -378,7 +406,7 @@ public class ResolveTest extends TestCase {
 		}
 	}
 
-	// public void testResolveWithLargeDistroRepeated() throws Exception {
+	// @Test public void testResolveWithLargeDistroRepeated() throws Exception {
 	// for (int i = 0; i < 1000; i++) {
 	// System.out.println("iteration " + i);
 	// testResolveWithLargeDistro();
@@ -391,6 +419,7 @@ public class ResolveTest extends TestCase {
 	 * this is done in the same way. The {@link #testResolveWithDistro()} has a
 	 * negative check while this one checks positive.
 	 */
+	@Test
 	public void testSimpleResolve() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
@@ -522,6 +551,7 @@ public class ResolveTest extends TestCase {
 	 *
 	 * @throws ResolutionException
 	 */
+	@Test
 	public void testMultipleOptionsNotDuplicated() throws Exception {
 
 		// Resolve against repo 5
@@ -565,7 +595,7 @@ public class ResolveTest extends TestCase {
 			// this resolve
 			String symbolicName = (String) cap.getAttributes()
 				.get(IdentityNamespace.IDENTITY_NAMESPACE);
-			assertNull("Multiple results for " + symbolicName, mandatoryResourcesBySymbolicName.put(symbolicName, r));
+			assertNull(mandatoryResourcesBySymbolicName.put(symbolicName, r), "Multiple results for " + symbolicName);
 		}
 		assertEquals(4, resolvedResources.size());
 	}
@@ -575,6 +605,7 @@ public class ResolveTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testLatestBundleServiceNamespace() throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
@@ -608,6 +639,7 @@ public class ResolveTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFrameworkFragmentResolve() throws Exception {
 		String wspath = "framework-fragment/";
 		String genWsPath = "generated/tmp/test/" + getTestName() + "/" + wspath;
@@ -628,6 +660,7 @@ public class ResolveTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testResolveWithDependencyOrdering() throws Exception {
 		File f = IO.getFile("testdata/enroute/resolver.bndrun");
 		try (Bndrun bndrun = Bndrun.createBndrun(null, f)) {
@@ -638,6 +671,7 @@ public class ResolveTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDot() throws Exception {
 		File f = IO.getFile("testdata/enroute/resolver.bndrun");
 		try (Bndrun bndrun = Bndrun.createBndrun(null, f)) {

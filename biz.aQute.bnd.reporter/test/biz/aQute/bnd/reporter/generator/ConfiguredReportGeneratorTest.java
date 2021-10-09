@@ -1,5 +1,8 @@
 package biz.aQute.bnd.reporter.generator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,15 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.reporter.ReportGeneratorService;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
-import junit.framework.TestCase;
 
-public class ConfiguredReportGeneratorTest extends TestCase {
+public class ConfiguredReportGeneratorTest {
 
+	@Test
 	public void testNoConfiguredEntryPluginWithNoDefaults() throws IOException {
 		try (final Processor processor = new Processor();) {
 			final ReportGeneratorService generator = getGenerator(processor);
@@ -25,6 +30,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoConfiguredEntryPluginWithDefaults() throws IOException {
 		try (final Processor processor = new Processor(); final Jar jar = new Jar("jar");) {
 			final ReportGeneratorService generator = getGenerator(processor, new ArrayList<>(),
@@ -43,6 +49,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoConfiguredEntryPluginWithExtendedDefaults() throws IOException {
 		try (final Processor processor = new Processor();) {
 
@@ -58,6 +65,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testConfiguredEntryPlugin() throws IOException {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			processor.setProperty("-reportconfig.myConfigName", "anyEntry;key=any;value=test");
@@ -79,6 +87,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testConfiguredEntryPluginWithDuplicate() throws IOException {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			processor.setProperty("-reportconfig.myConfigName",
@@ -102,6 +111,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testConfiguredEntryPluginWithoutDefaults() throws IOException {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 

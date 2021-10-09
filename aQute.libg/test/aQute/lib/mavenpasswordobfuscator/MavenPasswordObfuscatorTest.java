@@ -1,9 +1,12 @@
 package aQute.lib.mavenpasswordobfuscator;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MavenPasswordObfuscatorTest extends TestCase {
+import org.junit.jupiter.api.Test;
 
+public class MavenPasswordObfuscatorTest {
+
+	@Test
 	public void testAgainstMavenEncryptedPassword() throws Exception {
 		String decrypt64 = MavenPasswordObfuscator.decrypt("{YJSiC4rcl1cH2hcwL20EL8wlQwkB2zGvdIGq8x8pX7k=}",
 			"settings.security");

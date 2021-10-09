@@ -1,10 +1,15 @@
 package test.diff;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
@@ -18,11 +23,11 @@ import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class DiffTest extends TestCase {
+public class DiffTest {
 	static DiffPluginImpl differ = new DiffPluginImpl();
 
+	@Test
 	public void testBaselineDiffs() throws Exception {
 
 		Tree newerTree = make(IO.getFile("testresources/baseline/test1.jar"));
@@ -54,6 +59,7 @@ public class DiffTest extends TestCase {
 	 * and we have the same package in our test.api package.
 	 */
 
+	@Test
 	public void testAPI() throws Exception {
 		Jar older = new Jar(IO.getFile("../demo/generated/demo.jar"));
 		Builder b = new Builder();
@@ -139,6 +145,7 @@ public class DiffTest extends TestCase {
 		b.close();
 	}
 
+	@Test
 	public void testAPIStaticSuperClassChange() throws Exception {
 		Jar older = new Jar(IO.getFile("../demo/generated/demo.jar"));
 		Builder b = new Builder();
@@ -164,6 +171,7 @@ public class DiffTest extends TestCase {
 		b.close();
 	}
 
+	@Test
 	public void testBaselineOverride() throws Exception {
 		try (Jar older = new Jar(IO.getFile("../demo/generated/demo.jar")); Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -200,6 +208,7 @@ public class DiffTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testInsertSuper() throws Exception {
 		try (Jar older = new Jar(IO.getFile("../demo/generated/demo.jar")); Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -235,6 +244,7 @@ public class DiffTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBaselineOverridePackage() throws Exception {
 		try (Jar older = new Jar(IO.getFile("../demo/generated/demo.jar")); Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -263,6 +273,7 @@ public class DiffTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testInheritanceII() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("bin_test"));
@@ -303,6 +314,7 @@ public class DiffTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testGuavaDiff() throws Exception {
 		File guava = IO.getFile("testresources/guava-14.0.1.jar");
 		Tree one = differ.tree(guava);
@@ -325,6 +337,7 @@ public class DiffTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testNestedExportedAnnotations() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test/"));
@@ -351,6 +364,7 @@ public class DiffTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testNestedExportedAnnotations2() throws Exception {
 
 		File input = IO.getFile("testresources/exported-annotations.jar");
@@ -360,6 +374,7 @@ public class DiffTest extends TestCase {
 		assertTrue(diff.getDelta() == Delta.UNCHANGED);
 	}
 
+	@Test
 	public void testAwtGeom() throws Exception {
 		Tree newer = differ.tree(IO.getFile("jar/ee.j2se-1.6.0.jar"));
 		Tree gp = newer.get("<api>")

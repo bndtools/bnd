@@ -1,5 +1,7 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,13 +10,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class CodeSnippetPluginTest extends TestCase {
+public class CodeSnippetPluginTest {
 
+	@Test
 	public void testProjectWithoutSnippet() throws Exception {
 		final CodeSnippetPlugin plugin = new CodeSnippetPlugin();
 		final Project p = getProject();
@@ -25,6 +29,7 @@ public class CodeSnippetPluginTest extends TestCase {
 		assertEquals(null, result);
 	}
 
+	@Test
 	public void testProjectWithSnippet() throws Exception {
 		final CodeSnippetPlugin plugin = new CodeSnippetPlugin();
 		final Project p = getProjectWithSnippet(false);
@@ -35,6 +40,7 @@ public class CodeSnippetPluginTest extends TestCase {
 		assertEquals(1, result.size());
 	}
 
+	@Test
 	public void testProjectWithSnippetCustomDir() throws Exception {
 		final CodeSnippetPlugin plugin = new CodeSnippetPlugin();
 

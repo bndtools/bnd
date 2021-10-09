@@ -1,5 +1,8 @@
 package org.bndtools.core.templating.repobased;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Collections;
@@ -15,18 +18,20 @@ import org.bndtools.templating.Template;
 import org.bndtools.templating.engine.st.StringTemplateEngine;
 import org.bndtools.utils.progress.ProgressMonitorReporter;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Run;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
-public class ReposTemplateLoaderTest extends TestCase {
+public class ReposTemplateLoaderTest {
 
 	private ReposTemplateLoader loader;
 
-	@Override
+	@BeforeEach
 	protected void setUp() throws Exception {
 		Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
 		loader = new ReposTemplateLoader();
@@ -38,11 +43,12 @@ public class ReposTemplateLoaderTest extends TestCase {
 		loader.addTemplateEngine(new StringTemplateEngine(), engineProps);
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		loader.dectivate();
 	}
 
+	@Test
 	public void testLoad() throws Exception {
 		List<Template> templates = loader
 			.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
@@ -54,6 +60,7 @@ public class ReposTemplateLoaderTest extends TestCase {
 		assertNull(template.getCategory());
 	}
 
+	@Test
 	public void testProcessTemplate() throws Exception {
 		List<Template> templates = loader
 			.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
@@ -103,6 +110,7 @@ public class ReposTemplateLoaderTest extends TestCase {
 			.getContent()));
 	}
 
+	@Test
 	public void testAlternateDelimiters() throws Exception {
 		List<Template> templates = loader
 			.findTemplates("test2", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
@@ -152,6 +160,7 @@ public class ReposTemplateLoaderTest extends TestCase {
 			.getContent()));
 	}
 
+	@Test
 	public void testReferTemplateDefinitions() throws Exception {
 		List<Template> templates = loader
 			.findTemplates("test3", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
@@ -175,6 +184,7 @@ public class ReposTemplateLoaderTest extends TestCase {
 			.getContent()));
 	}
 
+	@Test
 	public void testExtendUnprocessedPatternAndIgnore() throws Exception {
 		List<Template> templates = loader
 			.findTemplates("test4", new ProgressMonitorReporter(new NullProgressMonitor(), ""))

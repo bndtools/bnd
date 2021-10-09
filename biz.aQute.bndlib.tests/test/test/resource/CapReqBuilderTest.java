@@ -1,5 +1,9 @@
 package test.resource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.header.Attrs;
@@ -7,14 +11,15 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
-import junit.framework.TestCase;
 
-public class CapReqBuilderTest extends TestCase {
+public class CapReqBuilderTest {
 
+	@Test
 	public void testSimple() throws Exception {
 		CapabilityBuilder cb = new CapabilityBuilder("test");
 	}
 
+	@Test
 	public void testParseRequirement() throws Exception {
 		Parameters params = OSGiHeader.parseHeader("osgi.identity; filter:='(a=b)'; resolution:=optional");
 		Requirement req = CapReqBuilder.getRequirementsFrom(params)
@@ -26,6 +31,7 @@ public class CapReqBuilderTest extends TestCase {
 			.get("filter"));
 	}
 
+	@Test
 	public void testAliasedRequirement() throws Exception {
 		Parameters params = OSGiHeader.parseHeader("bnd.identity; id=org.example.foo");
 		Requirement req = CapReqBuilder.getRequirementsFrom(params)
@@ -35,6 +41,7 @@ public class CapReqBuilderTest extends TestCase {
 			.get("filter"));
 	}
 
+	@Test
 	public void testAliasedRequirementWithVersion() throws Exception {
 		Parameters params = OSGiHeader.parseHeader("bnd.identity; id=org.example.foo; version=1.2");
 		Requirement req = CapReqBuilder.getRequirementsFrom(params)
@@ -44,6 +51,7 @@ public class CapReqBuilderTest extends TestCase {
 			.get("filter"));
 	}
 
+	@Test
 	public void testAliasedRequirementWithVersionRange() throws Exception {
 		Parameters params = OSGiHeader.parseHeader("bnd.identity; id=org.example.foo; version='[1.2,1.3)'");
 		Requirement req = CapReqBuilder.getRequirementsFrom(params)
@@ -54,6 +62,7 @@ public class CapReqBuilderTest extends TestCase {
 			.get("filter"));
 	}
 
+	@Test
 	public void testAliasedRequirementCopyAttributesAndDirectives() throws Exception {
 		Attrs attrs = new Attrs();
 		attrs.putTyped("id", "org.example.foo");
@@ -70,6 +79,7 @@ public class CapReqBuilderTest extends TestCase {
 			.get("resolution"));
 	}
 
+	@Test
 	public void testParseLiteralAliasedRequirement() throws Exception {
 		Attrs attrs = new Attrs();
 		attrs.putTyped("bnd.literal", "bnd.identity");
@@ -87,6 +97,7 @@ public class CapReqBuilderTest extends TestCase {
 			.get("resolution"));
 	}
 
+	@Test
 	public void testParseLiteralLiteralRequirement() throws Exception {
 		Attrs attrs = new Attrs();
 		attrs.putTyped("bnd.literal", "bnd.literal");
@@ -104,12 +115,13 @@ public class CapReqBuilderTest extends TestCase {
 			.get("resolution"));
 	}
 
+	@Test
 	public void testNonAliasedRequirementUnchanged() throws Exception {
 		Parameters params = OSGiHeader.parseHeader("osgi.identity; filter:='(a=b)'; resolution:=optional");
 		Requirement original = CapReqBuilder.getRequirementsFrom(params, false)
 			.get(0);
 		Requirement unaliased = CapReqBuilder.unalias(original);
-		assertTrue("unaliasing a normal requirement should return the original object", original == unaliased);
+		assertTrue(original == unaliased, "unaliasing a normal requirement should return the original object");
 	}
 
 }

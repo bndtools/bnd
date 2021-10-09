@@ -4,14 +4,16 @@ import static org.bndtools.utils.parse.properties.LineType.blank;
 import static org.bndtools.utils.parse.properties.LineType.comment;
 import static org.bndtools.utils.parse.properties.LineType.entry;
 import static org.bndtools.utils.parse.properties.LineType.eof;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.eclipse.jface.text.Region;
+import org.junit.jupiter.api.Test;
 
-import junit.framework.TestCase;
+public class TestPropertiesLineReader {
 
-public class TestPropertiesLineReader extends TestCase {
-
-	public static void testEmpty() throws Exception {
+	@Test
+	public void testEmpty() throws Exception {
 		String input = "\n" + "  \n" + "\t  ";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 
@@ -27,7 +29,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals(eof, reader.next());
 	}
 
-	public static void testRegionAfterEOF() throws Exception {
+	@Test
+	public void testRegionAfterEOF() throws Exception {
 		PropertiesLineReader reader = new PropertiesLineReader("");
 		assertEquals(blank, reader.next());
 		assertEquals(new Region(0, 0), reader.region());
@@ -40,7 +43,8 @@ public class TestPropertiesLineReader extends TestCase {
 		}
 	}
 
-	public static void testComment() throws Exception {
+	@Test
+	public void testComment() throws Exception {
 		String input = "# comment";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 		assertEquals(comment, reader.next());
@@ -48,7 +52,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals(eof, reader.next());
 	}
 
-	public static void testCommentLines() throws Exception {
+	@Test
+	public void testCommentLines() throws Exception {
 		String input = "# comment1\n" + "# comment2\n" + "   # comment3\n" + "! comment4\n" + "   ! comment5";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 		assertEquals(comment, reader.next());
@@ -69,7 +74,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals(eof, reader.next());
 	}
 
-	public static void testCommentsDontContinue() throws Exception {
+	@Test
+	public void testCommentsDontContinue() throws Exception {
 		// first comment ends with backslash but this shouldn't continue the
 		// line
 		String input = "# comment\\\n# comment";
@@ -84,7 +90,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals(eof, reader.next());
 	}
 
-	public static void testEntryLines() throws Exception {
+	@Test
+	public void testEntryLines() throws Exception {
 		String input = "foo=bar\n" + "foo2:bar2\n" + "   foo3:bar3";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 
@@ -101,7 +108,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals("foo3", reader.key());
 	}
 
-	public static void testContinuedLine() throws Exception {
+	@Test
+	public void testContinuedLine() throws Exception {
 		String input = "foo=bar,\\\n" + "  baz";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 
@@ -110,7 +118,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals("foo", reader.key());
 	}
 
-	public static void testTrailingWhitespaceAfterKey() throws Exception {
+	@Test
+	public void testTrailingWhitespaceAfterKey() throws Exception {
 		String input = "   hello  :world";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 
@@ -119,7 +128,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals("hello", reader.key());
 	}
 
-	public static void testEscapedCharsInKey() throws Exception {
+	@Test
+	public void testEscapedCharsInKey() throws Exception {
 		String input = "hel\\ \\ lo: world\n" + "hell\\=o\\:world=foo";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 
@@ -132,7 +142,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals("hell=o:world", reader.key());
 	}
 
-	public static void testEmptyValue() throws Exception {
+	@Test
+	public void testEmptyValue() throws Exception {
 		String input = "cheeses";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 
@@ -141,7 +152,8 @@ public class TestPropertiesLineReader extends TestCase {
 		assertEquals("cheeses", reader.key());
 	}
 
-	public static void testCarriageReturnAndLineFeed() throws Exception {
+	@Test
+	public void testCarriageReturnAndLineFeed() throws Exception {
 		String input = "line1=foo\r\n" + "line2=foo,\\\r\n" + "  bar";
 		PropertiesLineReader reader = new PropertiesLineReader(input);
 

@@ -1,11 +1,16 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -14,14 +19,14 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.signing.JartoolSigner;
 import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
-import junit.framework.TestCase;
 
 @SuppressWarnings({
 	"resource", "restriction"
 })
-public class JarSignerTest extends TestCase {
+public class JarSignerTest {
 
-	public static void testNoManifest() throws Exception {
+	@Test
+	public void testNoManifest() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-sign", "test");
 		b.setProperty(Constants.PLUGIN, JartoolSigner.class.getName()
@@ -43,7 +48,8 @@ public class JarSignerTest extends TestCase {
 		assertNotNull(manifest.getAttributes("WEB-INF/classes/org/osgi/framework/BundleContext.class"));
 	}
 
-	public static void testError() throws Exception {
+	@Test
+	public void testError() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
 		Map<String, String> properties = Create.map();
 		properties.put("keystore", "testresources/keystore");
@@ -64,7 +70,8 @@ public class JarSignerTest extends TestCase {
 		}
 	}
 
-	public static void testSimple() throws Exception {
+	@Test
+	public void testSimple() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
 		Map<String, String> properties = Create.map();
 		properties.put("keystore", "testresources/keystore");

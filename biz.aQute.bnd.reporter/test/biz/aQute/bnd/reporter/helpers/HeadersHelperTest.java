@@ -1,5 +1,7 @@
 package biz.aQute.bnd.reporter.helpers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -11,6 +13,8 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -38,10 +42,9 @@ import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("boxing")
-public class HeadersHelperTest extends TestCase {
+public class HeadersHelperTest {
 
 	static Map<String, Function<Parameters, Object>> headerToFunc = new HashMap<>();
 
@@ -76,6 +79,7 @@ public class HeadersHelperTest extends TestCase {
 		headerToFunc.put(Constants.BUNDLE_MANIFESTVERSION, HeadersHelper::convertBundleManifestVersion);
 	}
 
+	@Test
 	public void testBundleActivator() throws Exception {
 		String expected = null;
 		perform(Constants.BUNDLE_ACTIVATOR, "", expected);
@@ -84,6 +88,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_ACTIVATOR, "class.Name", expected);
 	}
 
+	@Test
 	public void testBundleCategories() throws Exception {
 		List<String> expected = null;
 		perform(Constants.BUNDLE_CATEGORY, "", expected);
@@ -98,6 +103,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_CATEGORY, "one, two, one, two", expected);
 	}
 
+	@Test
 	public void testBundleClasspaths() throws Exception {
 		final List<String> expected = new LinkedList<>();
 		expected.add(".");
@@ -112,6 +118,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_CLASSPATH, "class.Name;class.Name1,class.Name2", expected);
 	}
 
+	@Test
 	public void testBundleContactAddress() throws Exception {
 		ContactAddressDTO expected = null;
 		perform(Constants.BUNDLE_CONTACTADDRESS, "", expected);
@@ -132,6 +139,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_CONTACTADDRESS, "cde@cde.cde", expected);
 	}
 
+	@Test
 	public void testBundleCopyright() throws Exception {
 		String expected = null;
 		perform(Constants.BUNDLE_COPYRIGHT, "", expected);
@@ -140,6 +148,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_COPYRIGHT, "My Copyright", expected);
 	}
 
+	@Test
 	public void testBundleDescription() throws Exception {
 		String expected = null;
 		perform(Constants.BUNDLE_DESCRIPTION, "", expected);
@@ -148,6 +157,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_DESCRIPTION, "My Description", expected);
 	}
 
+	@Test
 	public void testBundleDevelopers() throws Exception {
 		DeveloperDTO e = null;
 		List<DeveloperDTO> expected = null;
@@ -189,6 +199,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testBundleDocUrl() throws Exception {
 		String expected = null;
 		perform(Constants.BUNDLE_DOCURL, "", expected);
@@ -196,6 +207,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_DOCURL, "www.google.com", expected);
 	}
 
+	@Test
 	public void testDynamicImportPackages() throws Exception {
 		DynamicImportPackageDTO i;
 		List<DynamicImportPackageDTO> expected = null;
@@ -281,6 +293,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testExportPackages() throws Exception {
 		ExportPackageDTO e;
 		List<ExportPackageDTO> expected = null;
@@ -343,6 +356,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testFragmentHost() throws Exception {
 		FragmentHostDTO expected = null;
 		perform(Constants.FRAGMENT_HOST, "", expected);
@@ -389,6 +403,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testBundleIcons() throws Exception {
 		IconDTO i;
 		List<IconDTO> expected = null;
@@ -408,6 +423,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_ICON, "./path; ./path2;size=34", expected);
 	}
 
+	@Test
 	public void testImportPackages() throws Exception {
 		ImportPackageDTO i;
 		List<ImportPackageDTO> expected = null;
@@ -517,6 +533,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testBundleActivationPolicy() throws Exception {
 		ActivationPolicyDTO expected = null;
 		perform(Constants.BUNDLE_ACTIVATIONPOLICY, "", expected);
@@ -534,6 +551,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_ACTIVATIONPOLICY, "lazy;include:='test,test1';exclude:='test2, test3'", expected);
 	}
 
+	@Test
 	public void testBundleLicenses() throws Exception {
 		LicenseDTO l = new LicenseDTO();
 		List<LicenseDTO> expected = null;
@@ -555,6 +573,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_LICENSE, "Apache;description='description';link='www.google.com',Apache2", expected);
 	}
 
+	@Test
 	public void testBundleManifestVersion() throws Exception {
 		Integer expected = 1;
 		perform(Constants.BUNDLE_MANIFESTVERSION, "", expected);
@@ -562,6 +581,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_MANIFESTVERSION, "2", expected);
 	}
 
+	@Test
 	public void testBundleName() throws Exception {
 		String expected = null;
 		perform(Constants.BUNDLE_NAME, "", expected);
@@ -569,6 +589,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_NAME, "Test", expected);
 	}
 
+	@Test
 	public void testBundleNativeCode() throws Exception {
 		VersionRangeDTO v;
 		NativeCodeEntryDTO n;
@@ -627,6 +648,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testProvideCapabilities() throws Exception {
 		TypedAttributeValueDTO t;
 		ProvideCapabilityDTO c;
@@ -710,6 +732,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testRequireBundles() throws Exception {
 		RequireBundleDTO b;
 		List<RequireBundleDTO> expected = null;
@@ -755,6 +778,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testRequireCapabilities() throws Exception {
 		TypedAttributeValueDTO t;
 		RequireCapabilityDTO c;
@@ -851,6 +875,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testBundleRequiredExecutionEnvironments() throws Exception {
 		List<String> expected = null;
 		perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "", expected);
@@ -863,6 +888,7 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "one,two", expected);
 	}
 
+	@Test
 	public void testBundleSymbolicName() throws Exception {
 		BundleSymbolicNameDTO expected = new BundleSymbolicNameDTO();
 
@@ -884,6 +910,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testBundleVendor() throws Exception {
 		String expected = null;
 		perform(Constants.BUNDLE_VENDOR, "", expected);
@@ -891,11 +918,13 @@ public class HeadersHelperTest extends TestCase {
 		perform(Constants.BUNDLE_VENDOR, "My vendor", expected);
 	}
 
+	@Test
 	public void testBundleLocalization() throws Exception {
 		perform(Constants.BUNDLE_LOCALIZATION, null, "OSGI-INF/l10n/bundle");
 		perform(Constants.BUNDLE_LOCALIZATION, "OSGI-INF/custom/bundle", "OSGI-INF/custom/bundle");
 	}
 
+	@Test
 	public void testBundleScm() throws Exception {
 		ScmDTO expected = null;
 		perform(Constants.BUNDLE_SCM, "", expected);
@@ -909,6 +938,7 @@ public class HeadersHelperTest extends TestCase {
 			expected);
 	}
 
+	@Test
 	public void testBundleVersion() throws Exception {
 		VersionDTO expected = new VersionDTO();
 		expected.major = 0;

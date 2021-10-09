@@ -1,21 +1,24 @@
 package aQute.lib.strings;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.regex.Pattern;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class StringsTest extends TestCase {
+public class StringsTest {
 
+	@Test
 	public void testTimes() {
 		assertEquals("----", Strings.times("-", 4));
 		assertEquals("-", Strings.times("-", -100));
 
 	}
 
+	@Test
 	public void testJoin() {
 		assertThat(Strings.join("x", (Iterable<Object>) null)).isEqualTo("");
 		assertThat(Strings.join("x", Collections.emptyList())).isEqualTo("");
@@ -28,6 +31,7 @@ public class StringsTest extends TestCase {
 		assertThat(Strings.join(Arrays.asList("a", "b"))).isEqualTo("a,b");
 	}
 
+	@Test
 	public void testCompareExcept() {
 
 		assertThat(Strings.compareExcept("foox", "foo", Pattern.compile("(x+)"))).isFalse();
@@ -50,31 +54,37 @@ public class StringsTest extends TestCase {
 
 	}
 
+	@Test
 	public void testCompareExceptWithNoFirstMatch() {
 
 		assertThat(Strings.compareExcept("foo", "xfoo", Pattern.compile("(x+)"))).isFalse();
 	}
 
+	@Test
 	public void testCompareExceptWithNoSecondMatch() {
 
 		assertThat(Strings.compareExcept("foox", "foo", Pattern.compile("(x+)"))).isFalse();
 	}
 
+	@Test
 	public void testCompareExceptWithPrefixDifferentLength() {
 
 		assertThat(Strings.compareExcept("abcxfoo", "abxfoo", Pattern.compile("(x+)"))).isFalse();
 	}
 
+	@Test
 	public void testCompareExceptWithPrefixDifference() {
 
 		assertThat(Strings.compareExcept("abcxfoo", "abdxfoo", Pattern.compile("(x+)"))).isFalse();
 	}
 
+	@Test
 	public void testCompareExceptWithSuffixDifference() {
 
 		assertThat(Strings.compareExcept("abcxfoo", "abcxfox", Pattern.compile("(x+)"))).isFalse();
 	}
 
+	@Test
 	public void testStrip() {
 		assertEquals("abcd", Strings.stripSuffix("abcdef", "ef"));
 		assertEquals("a", Strings.stripSuffix("abcdef", "b.*f"));
@@ -82,6 +92,7 @@ public class StringsTest extends TestCase {
 		assertEquals("cdef", Strings.stripPrefix("abcdef", "ab"));
 	}
 
+	@Test
 	public void testSubstrings() {
 		assertEquals("abcdef", Strings.from("abcdef", 0));
 		assertEquals("bcdef", Strings.from("abcdef", 1));
@@ -100,6 +111,7 @@ public class StringsTest extends TestCase {
 		assertEquals("fdb", Strings.substring("abcdef", 0, 0, -2));
 	}
 
+	@Test
 	public void testTrim() {
 		assertEquals("", Strings.trim(""));
 		assertEquals("", Strings.trim("    "));
@@ -110,6 +122,7 @@ public class StringsTest extends TestCase {
 		assertEquals("a b", Strings.trim("\r\n\r\na b\t\f\n\r"));
 	}
 
+	@Test
 	public void testSplit() {
 		assertThat(Strings.split("  a,  b ,,c  ")).containsSequence("a", "b", "c");
 		assertThat(Strings.split("  a; version=\"[1,2)\",  'b' ,,c  ")).containsSequence("a; version=\"[1", "2)\"",
@@ -119,12 +132,14 @@ public class StringsTest extends TestCase {
 			"2)\"", "'b'", "c");
 	}
 
+	@Test
 	public void testSplitLines() {
 		assertThat(Strings.splitLinesAsStream("x")).containsSequence("x");
 		assertThat(Strings.splitLinesAsStream("a\nb\r\n\nc  d")).containsSequence("a", "b", "", "c  d");
 		assertThat(Strings.splitLinesAsStream(" a \n b \r\n\n c  d \r\n")).containsSequence(" a ", " b ", "", " c  d ");
 	}
 
+	@Test
 	public void testSplitQuoted() {
 		assertThat(Strings.splitQuoted("  a,  b ,,c  ")).containsSequence("a", "b", "c");
 		assertThat(Strings.splitQuoted("  a; version=\"[1,2)\",  'b' ,,\"c\"  "))
@@ -138,6 +153,7 @@ public class StringsTest extends TestCase {
 			"quote=\"He said, \\\"What!?\\\"\"");
 	}
 
+	@Test
 	public void testEscapeSlash() {
 		Pattern p1 = Pattern.compile("[/\\$]");
 		assertThat(Strings.escape("foobar", p1, '$')).isEqualTo("foobar");
@@ -147,6 +163,7 @@ public class StringsTest extends TestCase {
 		assertThat(Strings.escape("$/bar", p1, '$')).isEqualTo("$0024$002Fbar");
 	}
 
+	@Test
 	public void testUnEscape() {
 		Pattern p1 = Pattern.compile("[/\\$]");
 		assertThat(Strings.unescape("foobar", '$')).isPresent()
@@ -169,6 +186,7 @@ public class StringsTest extends TestCase {
 			.isEqualTo("foo$//$bar");
 	}
 
+	@Test
 	public void testError() {
 		Pattern p1 = Pattern.compile("[/\\$]");
 		assertThat(Strings.unescape("foo$002Xbar", '$')).isNotPresent();

@@ -2,11 +2,18 @@ package aQute.remote.main;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.dto.FrameworkDTO;
@@ -20,18 +27,16 @@ import aQute.remote.agent.AgentDispatcher.Descriptor;
 import aQute.remote.api.Agent;
 import aQute.remote.main.EnvoyDispatcher.DispatcherInfo;
 import aQute.remote.plugin.LauncherSupervisor;
-import junit.framework.TestCase;
 
 /**
  * Start the main program which will wait for requests to create a framework.
  */
-public class MainTest extends TestCase {
+public class MainTest {
 
 	private Thread thread;
 
-	@Override
+	@BeforeEach
 	protected void setUp() throws Exception {
-		super.setUp();
 		thread = new Thread() {
 			@Override
 			public void run() {
@@ -58,14 +63,14 @@ public class MainTest extends TestCase {
 		throw new IllegalStateException("Cannot initialize agent");
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		Main.stop();
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));
-		super.tearDown();
 	}
 
+	@Test
 	public void testRemoteMain() throws Exception {
 
 		//
@@ -75,8 +80,8 @@ public class MainTest extends TestCase {
 		LauncherSupervisor supervisor = new LauncherSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT + 1);
 
-		assertEquals("not talking to an envoy", true, supervisor.getAgent()
-			.isEnvoy());
+		assertEquals(true, supervisor.getAgent()
+			.isEnvoy(), "not talking to an envoy");
 
 		HashMap<String, Object> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
@@ -84,11 +89,11 @@ public class MainTest extends TestCase {
 		List<String> emptyList = Collections.emptyList();
 		boolean created = supervisor.getAgent()
 			.createFramework("test", emptyList, configuration);
-		assertTrue("there already was a framework, funny, since we created the main in setUp?", created);
+		assertTrue(created, "there already was a framework, funny, since we created the main in setUp?");
 
 		FrameworkDTO framework = supervisor.getAgent()
 			.getFramework();
-		assertNotNull("just created it, so we should have a framework", framework);
+		assertNotNull(framework, "just created it, so we should have a framework");
 
 		//
 		// Create a second supervisor and ensure we do not
@@ -98,21 +103,21 @@ public class MainTest extends TestCase {
 		LauncherSupervisor sv2 = new LauncherSupervisor();
 		sv2.connect("localhost", Agent.DEFAULT_PORT + 1);
 
-		assertTrue("no second framework", supervisor.getAgent()
-			.ping());
+		assertTrue(supervisor.getAgent()
+			.ping(), "no second framework");
 
-		assertEquals("must be an envoy", true, sv2.getAgent()
-			.isEnvoy());
-		assertFalse("the framework should already exist", sv2.getAgent()
-			.createFramework("test", emptyList, configuration));
+		assertEquals(true, sv2.getAgent()
+			.isEnvoy(), "must be an envoy");
+		assertFalse(sv2.getAgent()
+			.createFramework("test", emptyList, configuration), "the framework should already exist");
 
-		assertTrue("first framework is gone", supervisor.getAgent()
-			.ping());
+		assertTrue(supervisor.getAgent()
+			.ping(), "first framework is gone");
 
 		FrameworkDTO fw2 = sv2.getAgent()
 			.getFramework();
-		assertEquals("we should not have created a new framework", framework.properties.get("org.osgi.framework.uuid"),
-			fw2.properties.get("org.osgi.framework.uuid"));
+		assertEquals(framework.properties.get("org.osgi.framework.uuid"), fw2.properties.get("org.osgi.framework.uuid"),
+			"we should not have created a new framework");
 
 		//
 		// Kill the second framework
@@ -123,14 +128,15 @@ public class MainTest extends TestCase {
 		Thread.sleep(500);
 		assertFalse(supervisor.isOpen());
 
-		assertTrue("should not have killed sv2", sv2.getAgent()
-			.ping());
+		assertTrue(sv2.getAgent()
+			.ping(), "should not have killed sv2");
 
 		sv2.abort();
 		Thread.sleep(500);
 		assertFalse(sv2.isOpen());
 	}
 
+	@Test
 	public void testStartlevels() throws Exception {
 		EnvoyDispatcher dispatcher = Main.getDispatcher();
 

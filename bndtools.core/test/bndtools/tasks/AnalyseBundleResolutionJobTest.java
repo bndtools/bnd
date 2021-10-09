@@ -1,5 +1,9 @@
 package bndtools.tasks;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -7,14 +11,15 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 
 import bndtools.model.resolution.RequirementWrapper;
-import junit.framework.TestCase;
 
-public class AnalyseBundleResolutionJobTest extends TestCase {
+public class AnalyseBundleResolutionJobTest {
 
+	@Test
 	public void testEmptyFileList() {
 		AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve",
 			Collections.<CapReqLoader> emptySet());
@@ -28,7 +33,7 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
 	}
 
 	/*
-	 * public void testSimpleImport() { File[] files = new File[] { new
+	 * @Test public void testSimpleImport() { File[] files = new File[] { new
 	 * File("test/tests.consumer.jar") }; AnalyseBundleResolutionJob job = new
 	 * AnalyseBundleResolutionJob("resolve", files); IStatus status =
 	 * job.run(new NullProgressMonitor()); assertEquals(IStatus.OK,
@@ -38,6 +43,7 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
 	 * assertFalse(apiImport.isSelfImport()); }
 	 */
 
+	@Test
 	public void testExportAndSelfImport() {
 		AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve",
 			Collections.singleton(new JarFileCapReqLoader(new File("test/tests.provider.jar"))));
@@ -101,6 +107,7 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
 
 	}
 
+	@Test
 	public void testProvideCapability() {
 		AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve",
 			Collections.singleton(new JarFileCapReqLoader(new File("test/tests.consumer.jar"))));

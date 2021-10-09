@@ -1,5 +1,11 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -7,6 +13,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
@@ -17,14 +27,13 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
-import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
-public class ResourceRepoTest extends TestCase {
+public class ResourceRepoTest {
 	ResourceRepositoryImpl	repoImpl	= new ResourceRepositoryImpl();
 	File					tmp			= new File("tmp");
 
-	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -36,11 +45,12 @@ public class ResourceRepoTest extends TestCase {
 
 	}
 
-	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		IO.delete(tmp);
 	}
 
+	@Test
 	public void testRepositoryId() throws Exception {
 		// Just basic check
 		assertEquals(0, repoImpl.filter(null, null)
@@ -89,6 +99,7 @@ public class ResourceRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		// Just basic check
 		assertEquals(0, repoImpl.filter(null, null)
@@ -170,6 +181,7 @@ public class ResourceRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testEvents() throws Exception {
 		final AtomicInteger adds = new AtomicInteger();
 		final AtomicInteger removes = new AtomicInteger();
@@ -220,6 +232,7 @@ public class ResourceRepoTest extends TestCase {
 		assertEquals(0, errors.get());
 	}
 
+	@Test
 	public void testMultipleDownloads() throws Exception {
 
 		final Semaphore s = new Semaphore(0);
@@ -274,6 +287,7 @@ public class ResourceRepoTest extends TestCase {
 		assertEquals(1, downloads.get());
 	}
 
+	@Test
 	public void testStore() throws Exception {
 		assertEquals(0, repoImpl.filter(null, null)
 			.size());

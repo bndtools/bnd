@@ -1,14 +1,18 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.version.Version;
-import junit.framework.TestCase;
 
-public class AttrsTest extends TestCase {
+public class AttrsTest {
 
+	@Test
 	public void testAttrs() {
 		Attrs attr = new Attrs();
 		attr.putTyped("xyz", new String[] {
@@ -18,6 +22,7 @@ public class AttrsTest extends TestCase {
 		assertEquals("xyz:List<String>=\"a,\\,b\"", attr.toString());
 	}
 
+	@Test
 	public void testFloats() {
 		Attrs attr = new Attrs();
 		attr.putTyped("double", 3.1D);
@@ -27,6 +32,7 @@ public class AttrsTest extends TestCase {
 		assertEquals("double:Double=\"3.1\";float:Double=\"3.1\"", attr.toString());
 	}
 
+	@Test
 	public void testNumbers() {
 		Attrs attr = new Attrs();
 		attr.putTyped("long", 3L);
@@ -40,6 +46,7 @@ public class AttrsTest extends TestCase {
 		assertEquals("long:Long=3;int:Long=3;short:Long=3;byte:Long=3", attr.toString());
 	}
 
+	@Test
 	public void testVersion() {
 		Attrs attr = new Attrs();
 		attr.putTyped("version", new Version("1.2.3"));

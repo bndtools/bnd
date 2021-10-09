@@ -3,20 +3,23 @@ package biz.aQute.bnd.reporter.plugins.entries.bundle;
 import static biz.aQute.bnd.reporter.matcher.IsDTODeepEquals.deepEqualsTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 import aQute.lib.json.JSONCodec;
-import junit.framework.TestCase;
 
-public class GogoPluginTest extends TestCase {
+public class GogoPluginTest {
 
+	@Test
 	public void testGogo() throws Exception {
 
 		try (final Jar jar = new Jar("jar", "testresources/gogoEntry/source.jar");

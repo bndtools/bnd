@@ -1,6 +1,10 @@
 package test.uses.order;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
@@ -9,15 +13,15 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 
-public class UsesOrderingTest extends TestCase {
+public class UsesOrderingTest {
 
-	static DiffPluginImpl differ = new DiffPluginImpl();
 
-	public static void testOrdering() throws Exception {
+	@Test
+	public void testOrdering() throws Exception {
+		DiffPluginImpl differ = new DiffPluginImpl();
 		Builder builder = new Builder();
 		builder.addClasspath(new File("bin_test"));
 		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=\"d,c,a,b\"");

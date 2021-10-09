@@ -1,18 +1,21 @@
 package biz.aQute.bnd.reporter.plugins.transformer;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.io.IO;
 import biz.aQute.bnd.reporter.plugins.serializer.XmlReportSerializerPlugin;
-import junit.framework.TestCase;
 
-public class XsltTransformerPluginTest extends TestCase {
+public class XsltTransformerPluginTest {
 
+	@Test
 	public void testXsltTransformer() throws Exception {
 
 		final XsltTransformerPlugin t = new XsltTransformerPlugin();
@@ -31,11 +34,7 @@ public class XsltTransformerPluginTest extends TestCase {
 
 		assertTrue(new String(output.toByteArray()).contains("test"));
 
-		assertArrayEquals(t.getHandledModelExtensions(), new String[] {
-			"xml"
-		});
-		assertArrayEquals(t.getHandledTemplateExtensions(), new String[] {
-			"xslt", "xsl"
-		});
+		assertThat(t.getHandledModelExtensions()).containsExactly("xml");
+		assertThat(t.getHandledTemplateExtensions()).containsExactly("xslt", "xsl");
 	}
 }

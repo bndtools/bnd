@@ -1,6 +1,8 @@
 package aQute.lib.tag;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -11,16 +13,18 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class TagTest extends TestCase {
+public class TagTest {
 
+	@Test
 	public void testScalar() {
 		depthCompare(null, "root", "");
 		depthCompare("", "root", "");
 		depthCompare("simple", "root", "simple");
 	}
 
+	@Test
 	public void testCollectionOfScalar() {
 		depthCompare(new LinkedList<>(), "root", "");
 		depthCompare(Arrays.asList(""), "root", "rootElement", "");
@@ -29,6 +33,7 @@ public class TagTest extends TestCase {
 			"andMore");
 	}
 
+	@Test
 	public void testCollectionOfCollection() {
 		depthCompare(Arrays.asList(Arrays.asList()), "root", "rootElement", "");
 		depthCompare(Arrays.asList(Arrays.asList("")), "root", "rootElement", "element", "");
@@ -38,6 +43,7 @@ public class TagTest extends TestCase {
 			"rootElement", "element", "oneElement", "element", "andMore", "rootElement", "element", "oneElement2");
 	}
 
+	@Test
 	public void testArray() {
 		depthCompare(new String[] {
 			"oneElement", "andMore"
@@ -45,6 +51,7 @@ public class TagTest extends TestCase {
 
 	}
 
+	@Test
 	public void testMapOfScalar() {
 		Map<String, Object> map;
 
@@ -68,6 +75,7 @@ public class TagTest extends TestCase {
 		depthCompare(map, "root", "oneElement", "onValue", "andMore", "moreValue");
 	}
 
+	@Test
 	public void testMapOfCollection() {
 		Map<String, Object> map;
 
@@ -93,6 +101,7 @@ public class TagTest extends TestCase {
 			"andMore", "moreValue");
 	}
 
+	@Test
 	public void testMapOfMap() {
 		Map<String, Object> map;
 		Map<String, Object> map2;
@@ -109,6 +118,7 @@ public class TagTest extends TestCase {
 			"otherValue", "andMore", "moreValue", "andMore", "moreValue");
 	}
 
+	@Test
 	public void testMixedMapCollectionScalar() {
 		Map<String, Object> map;
 		Map<String, Object> map2;
@@ -130,10 +140,12 @@ public class TagTest extends TestCase {
 			"andMore", "moreValue", "andMore", "moreValue", "andMore", "moreValue");
 	}
 
+	@Test
 	public void testDto() {
 		depthCompare(new OtherDTO(), "root", "oneElement", "test");
 	}
 
+	@Test
 	public void testGenericName() {
 		depthCompareTweak("roots", Arrays.asList("test"), "roots", "root", "test");
 		depthCompareTweak("ROOTS", Arrays.asList("test"), "ROOTS", "ROOT", "test");
@@ -186,6 +198,7 @@ public class TagTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCDATAEscaped() throws Exception {
 		Tag t = new Tag("test", "]]>blah blah bl]]>]]>ah blah]]>");
 		t.setCDATA();
@@ -197,6 +210,7 @@ public class TagTest extends TestCase {
 			.contains("<![CDATA[]]]]><![CDATA[>blah blah bl]]]]><![CDATA[>]]]]><![CDATA[>ah blah]]]]><![CDATA[>]]>");
 	}
 
+	@Test
 	public void testCDATA() throws Exception {
 		Tag t = new Tag("test", "blah blah blah blah");
 		t.setCDATA();
@@ -207,6 +221,7 @@ public class TagTest extends TestCase {
 		assertThat(w.toString()).contains("<![CDATA[blah blah blah blah]]>");
 	}
 
+	@Test
 	public void testDate() throws Exception {
 		Date now = new Date();
 		Tag t = new Tag("test");

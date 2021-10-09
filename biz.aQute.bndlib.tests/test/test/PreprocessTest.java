@@ -1,7 +1,14 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.Properties;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -9,14 +16,14 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
-import junit.framework.TestCase;
 
-public class PreprocessTest extends TestCase {
+public class PreprocessTest {
 	/**
 	 * Preprocess now tries not to preprocess binary files, it uses an exclusion
 	 * list by default. This list contains JAR files.
 	 */
-	public static void testPreProcessDefaultExclusion() throws Exception {
+	@Test
+	public void testPreProcessDefaultExclusion() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.INCLUDE_RESOURCE, "{test/test/tb1.jar}     ");
 		b.build();
@@ -40,7 +47,8 @@ public class PreprocessTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testPreProcessExcludeExtensionGlobal() throws Exception {
+	@Test
+	public void testPreProcessExcludeExtensionGlobal() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.PREPROCESSMATCHERS, "!*.TXT:i,*");
 		b.setProperty(Constants.INCLUDE_RESOURCE,
@@ -69,7 +77,8 @@ public class PreprocessTest extends TestCase {
 	/**
 	 * Exclude a file with a specific extension from being processed
 	 */
-	public static void testPreProcessExcludeExtensionLocal() throws Exception {
+	@Test
+	public void testPreProcessExcludeExtensionLocal() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.INCLUDE_RESOURCE,
 			"{test/test/builder-preprocess.txt};-preprocessmatchers='!*.TXT:i,*'");
@@ -93,7 +102,8 @@ public class PreprocessTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testPreProcess() throws Exception {
+	@Test
+	public void testPreProcess() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.INCLUDE_RESOURCE, "{test/test/top.mf}     ");
 		Builder analyzer = new Builder();

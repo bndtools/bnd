@@ -1,5 +1,7 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,16 +11,18 @@ import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.make.calltree.CalltreeResource;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Resource;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class CalltreeTest extends TestCase {
+public class CalltreeTest {
+	@Test
 	@SuppressWarnings("restriction")
-	public static void testCalltree() throws Exception {
+	public void testCalltree() throws Exception {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		Builder b = new Builder();

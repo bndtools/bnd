@@ -1,5 +1,7 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,12 +10,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import junit.framework.TestCase;
 
-public class BndProjectContentsPluginTest extends TestCase {
+public class BndProjectContentsPluginTest {
 
+	@Test
 	public void testProjectSingleContents() throws Exception {
 		final BndProjectContentsPlugin plugin = new BndProjectContentsPlugin();
 		final Project p = getProject();
@@ -23,6 +27,7 @@ public class BndProjectContentsPluginTest extends TestCase {
 		assertEquals(1, result.size());
 	}
 
+	@Test
 	public void testProjectMultiContents() throws Exception {
 		final BndProjectContentsPlugin plugin = new BndProjectContentsPlugin();
 		final Project p = getProjectWithSub();
@@ -32,6 +37,7 @@ public class BndProjectContentsPluginTest extends TestCase {
 		assertEquals(2, result.size());
 	}
 
+	@Test
 	public void testProjectMultiContentsWithFilter() throws Exception {
 		final BndProjectContentsPlugin plugin = new BndProjectContentsPlugin();
 

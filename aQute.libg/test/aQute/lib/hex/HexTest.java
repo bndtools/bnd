@@ -1,14 +1,18 @@
 package aQute.lib.hex;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import aQute.lib.base64.Base64;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class HexTest extends TestCase {
+import aQute.lib.base64.Base64;
+
+public class HexTest {
 
 	static final char	ns[]	= {
 		' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'A', 'B', 'C', 'D',
@@ -18,17 +22,19 @@ public class HexTest extends TestCase {
 		-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, -1, 10, 11, 12, 13, 14, 15, -1, -1
 	};
 
-	public static void testNibble() {
+	@Test
+	public void testNibble() {
 		for (int i = 0; i < ns.length; i++) {
 			try {
 				assertEquals(nsr[i], Hex.nibble(ns[i]));
 			} catch (IllegalArgumentException e) {
-				assertEquals("Did not get an exception for nibble \"" + ns[i] + "\"", -1, nsr[i]);
+				assertEquals(-1, nsr[i], "Did not get an exception for nibble \"" + ns[i] + "\"");
 			}
 		}
 	}
 
-	public static void testHexOddCount() {
+	@Test
+	public void testHexOddCount() {
 		boolean ex = false;
 		byte[] bytes = null;
 		try {
@@ -40,13 +46,15 @@ public class HexTest extends TestCase {
 		assertNull(bytes);
 	}
 
-	public static void testHex() {
+	@Test
+	public void testHex() {
 		byte[] bytes = Hex.toByteArray("b10a8db164e0754105b7a99be72e3fe5");
 		String s = Hex.toHexString(bytes);
 		assertEquals("b10a8db164e0754105b7a99be72e3fe5", s.toLowerCase());
 	}
 
-	public static void testBase64() {
+	@Test
+	public void testBase64() {
 		assertEquals("", Base64.encodeBase64(new byte[] {}));
 		assertEquals("MQ==", Base64.encodeBase64(new byte[] {
 			'1'
@@ -96,17 +104,20 @@ public class HexTest extends TestCase {
 
 	final static String EOL = String.format("%n");
 
+	@Test
 	public void testFormatEmpty() {
 		byte[] input = new byte[] {};
 		assertThat(Hex.format(input)).isEqualTo("")
 			.isEqualTo(Hex.format(ByteBuffer.allocate(0)));
 	}
 
+	@Test
 	public void testNull() {
 		assertThat(Hex.format((byte[]) null)).isEmpty();
 		assertThat(Hex.format((ByteBuffer) null)).isEmpty();
 	}
 
+	@Test
 	public void testAscii() {
 		byte[] input = new byte[] {
 			-1, 'A', 'a', '~', ' ', '\u007F'
@@ -116,6 +127,7 @@ public class HexTest extends TestCase {
 			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
+	@Test
 	public void testFormatOne() {
 		byte[] input = new byte[] {
 			-1
@@ -124,6 +136,7 @@ public class HexTest extends TestCase {
 			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
+	@Test
 	public void testFormatSeven() {
 		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6
@@ -133,6 +146,7 @@ public class HexTest extends TestCase {
 			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
+	@Test
 	public void testFormatEight() {
 		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7
@@ -142,6 +156,7 @@ public class HexTest extends TestCase {
 			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
+	@Test
 	public void testFormatNine() {
 		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8
@@ -151,6 +166,7 @@ public class HexTest extends TestCase {
 			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
+	@Test
 	public void testFormatFifteen() {
 		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
@@ -161,6 +177,7 @@ public class HexTest extends TestCase {
 
 	}
 
+	@Test
 	public void testFormatSixteen() {
 		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
@@ -171,6 +188,7 @@ public class HexTest extends TestCase {
 
 	}
 
+	@Test
 	public void testFormatSeventeen() {
 		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
@@ -182,6 +200,7 @@ public class HexTest extends TestCase {
 
 	}
 
+	@Test
 	public void testHexAppend() {
 		StringBuilder sb = new StringBuilder();
 

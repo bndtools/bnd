@@ -1,21 +1,27 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class MergeTest extends TestCase {
+public class MergeTest {
 
-	public static void testFirst() throws Exception {
+	@Test
+	public void testFirst() throws Exception {
 		testMerge("first", new String[] {
 			"A", "C"
 		}, new String[] {
@@ -23,7 +29,8 @@ public class MergeTest extends TestCase {
 		}, "first", 0, 0);
 	}
 
-	public static void testMergeFirst() throws Exception {
+	@Test
+	public void testMergeFirst() throws Exception {
 		testMerge("merge-first", new String[] {
 			"A", "B", "C"
 		}, new String[] {
@@ -31,13 +38,15 @@ public class MergeTest extends TestCase {
 		}, "first", 0, 0);
 	}
 
-	public static void testDefault() throws Exception {
+	@Test
+	public void testDefault() throws Exception {
 		testMerge(null, new String[] {
 			"A", "B", "C"
 		}, new String[] {}, "first", 0, 1);
 	}
 
-	public static void testMergeLast() throws Exception {
+	@Test
+	public void testMergeLast() throws Exception {
 		testMerge("merge-last", new String[] {
 			"A", "B", "C"
 		}, new String[] {
@@ -45,11 +54,12 @@ public class MergeTest extends TestCase {
 		}, "last", 0, 0);
 	}
 
-	public static void testError() throws Exception {
+	@Test
+	public void testError() throws Exception {
 		testMerge("error", null, null, null, 1, 1);
 	}
 
-	static void testMerge(String type, String[] in, String[] out, String c, int errors, int warnings) throws Exception {
+	void testMerge(String type, String[] in, String[] out, String c, int errors, int warnings) throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setClasspath(new File[] {
@@ -74,9 +84,9 @@ public class MergeTest extends TestCase {
 				return;
 
 			for (int i = 0; in != null && i < in.length; i++)
-				assertNotNull("Contains " + in[i], jar.getResource("test/split/" + in[i]));
+				assertNotNull(jar.getResource("test/split/" + in[i]), "Contains " + in[i]);
 			for (int i = 0; out != null && i < out.length; i++)
-				assertNull("Does not contain " + out[i], jar.getResource("test/split/" + out[i]));
+				assertNull(jar.getResource("test/split/" + out[i]), "Does not contain " + out[i]);
 
 			Resource r = jar.getResource("test/split/C");
 			InputStream is = r.openInputStream();

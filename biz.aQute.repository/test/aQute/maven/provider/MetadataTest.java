@@ -1,17 +1,24 @@
 package aQute.maven.provider;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.maven.provider.MetadataParser.SnapshotVersion;
-import junit.framework.TestCase;
 
-public class MetadataTest extends TestCase {
+public class MetadataTest {
 
+	@Test
 	public void testProgramParsing() throws Exception {
 		try (InputStream in = new FileInputStream(IO.getFile("testresources/parser/commons-dbcp.xml"))) {
 
@@ -25,6 +32,7 @@ public class MetadataTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSnapshotParsing() throws Exception {
 
 		try (InputStream in = new FileInputStream(IO.getFile("testresources/parser/commons-dbcp-1.4.1-SNAPSHOT.xml"))) {

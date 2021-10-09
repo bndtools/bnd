@@ -1,29 +1,39 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Builder;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class ContainerTest extends TestCase {
+public class ContainerTest {
 	File tmp;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 
-	@Override
-	public void setUp() {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
+	@Test
 	public void testBundleClasspath() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(new File("bin_test"));

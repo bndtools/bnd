@@ -1,15 +1,19 @@
 package aQute.libg.tarjan;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.collections.MultiMap;
-import junit.framework.TestCase;
 
-public class TestTarjan extends TestCase {
+public class TestTarjan {
 
+	@Test
 	public void testTarjan() throws Exception {
 		MultiMap<String, String> g = mkGraph("A{BC}B{A}C{DE}D{C}E{D}");
 		System.err.println(g);

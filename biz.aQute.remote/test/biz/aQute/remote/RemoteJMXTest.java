@@ -1,9 +1,17 @@
 package biz.aQute.remote;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -12,21 +20,22 @@ import org.osgi.framework.launch.Framework;
 
 import aQute.lib.io.IO;
 import aQute.remote.util.JMXBundleDeployer;
-import junit.framework.TestCase;
 
-public class RemoteJMXTest extends TestCase {
+public class RemoteJMXTest {
 
 	private Map<String, Object>	configuration;
 	private Framework			framework;
 	private File				tmp;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 
@@ -54,17 +63,15 @@ public class RemoteJMXTest extends TestCase {
 				b.start();
 			}
 		}
-
-		super.setUp();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		framework.stop();
 		framework.waitForStop(10000);
-		super.tearDown();
 	}
 
+	@Test
 	public void testJMXBundleDeployer() throws Exception {
 		JMXBundleDeployer jmxBundleDeployer = new JMXBundleDeployer();
 

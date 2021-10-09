@@ -1,17 +1,23 @@
 package biz.aQute.bnd.reporter.generator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.reporter.ReportGeneratorService;
-import junit.framework.TestCase;
 
-public class BasicReportGeneratorTest extends TestCase {
+public class BasicReportGeneratorTest {
 
+	@Test
 	public void testNoConfiguredEntryPlugin() throws IOException {
 		try (final Processor processor = new Processor();) {
 
@@ -22,6 +28,7 @@ public class BasicReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testTypeFilter() throws IOException {
 		try (final Processor processor = new Processor();) {
 			final ReportGeneratorService generator = getGenerator(processor);
@@ -38,6 +45,7 @@ public class BasicReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testTypeMatch() throws IOException {
 		try (final Processor processor = new Processor();) {
 			final ReportGeneratorService generator = getGenerator(processor);
@@ -61,6 +69,7 @@ public class BasicReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFilterFilter() throws IOException {
 		try (final Processor processor = new Processor();) {
 			final ReportGeneratorService generator = getGenerator(processor);
@@ -83,6 +92,7 @@ public class BasicReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFilterMatch() throws IOException {
 		try (final Processor processor = new Processor();) {
 			final ReportGeneratorService generator = getGenerator(processor);
@@ -109,6 +119,7 @@ public class BasicReportGeneratorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testTypeBadConfig() throws IOException {
 		try (final Processor processor = new Processor();) {
 			final ReportGeneratorService generator = getGenerator(processor);

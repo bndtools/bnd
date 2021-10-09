@@ -1,16 +1,22 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
-import junit.framework.TestCase;
 
-public class NativeHeader extends TestCase {
+public class NativeHeader {
 	Builder b;
 
-	@Override
+	@BeforeEach
 	protected void setUp() throws Exception {
 		b = new Builder();
 		b.setProperty("Include-Resource",
@@ -18,11 +24,12 @@ public class NativeHeader extends TestCase {
 		b.build();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		b.close();
 	}
 
+	@Test
 	public void testFunnyHeader() throws Exception {
 		try (Verifier v = new Verifier(b)) {
 			v.doNative(
@@ -31,6 +38,7 @@ public class NativeHeader extends TestCase {
 		}
 	}
 
+	@Test
 	public void testWildcardNotAtEnd() throws Exception {
 		try (Verifier v = new Verifier(b)) {
 			v.doNative("x.so;osname=win32,*,x.dll");
@@ -38,6 +46,7 @@ public class NativeHeader extends TestCase {
 		}
 	}
 
+	@Test
 	public void testWildcard() throws Exception {
 		try (Verifier v = new Verifier(b)) {
 			v.doNative("x.so ;y.so;osname=Linux;processor=amd64,*");
@@ -45,6 +54,7 @@ public class NativeHeader extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		try (Verifier v = new Verifier(b)) {
 			v.doNative(

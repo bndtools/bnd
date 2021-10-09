@@ -1,36 +1,48 @@
 package aQute.lib.remote;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Formatter;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.lib.io.IO;
 import aQute.libg.remote.sink.RemoteSink;
 import aQute.libg.remote.source.RemoteSource;
-import junit.framework.TestCase;
 
-public class RemoteTest extends TestCase {
+public class RemoteTest {
 	File					sinkDir;
 	File					sourceDir;
 	private RemoteSource	source;
 	private RemoteSink		sink;
 
-	@Override
-	public void setUp() throws Exception {
-		sinkDir = create("generated/sink/" + getName(), null);
-		sourceDir = create("generated/source/" + getName(), "testresources/remote");
-		super.setUp();
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws Exception {
+		String baseDir = "generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
+		sinkDir = create(baseDir + "/sink", null);
+		sourceDir = create(baseDir + "/source", "testresources/remote");
 		source = new RemoteSource();
 		sink = new RemoteSink(sinkDir, source);
 		source.open(sink, sourceDir, "test");
 
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.delete(sinkDir);
 		IO.delete(sourceDir);
-		super.tearDown();
 	}
 
 	private File create(String dir, String source) throws IOException {
@@ -46,18 +58,7 @@ public class RemoteTest extends TestCase {
 		return tmp;
 	}
 
-	public void testCmdTransform() throws Exception {
-		// List<String> args = Arrays.asList("java", "-cp",
-		// IO.getFile("bin_test").getAbsolutePath(),
-		// "aQute.lib.remote.Foo");
-		// StringBuilder sb = new StringBuilder();
-		// source.launch(new HashMap<String,String>(), args, System.in, sb,
-		// System.err);
-		// source.join();
-		// assertTrue(IO.getFile(sinkDir, "areas/test/cwd/test").isFile());
-		// assertEquals("Hooray!\n", sb.toString());
-	}
-
+	@Test
 	public void testTransform() throws Exception {
 		File file = new File(sourceDir, "list");
 		Formatter f = new Formatter();
@@ -85,6 +86,7 @@ public class RemoteTest extends TestCase {
 			.isDirectory());
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		source.add(sourceDir);
 		source.sync();

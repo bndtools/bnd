@@ -1,5 +1,9 @@
 package aQute.bnd.deployer.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -7,19 +11,21 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 import test.lib.NanoHTTPD;
 
-public class CachingUriResourceHandlerTest extends TestCase {
+public class CachingUriResourceHandlerTest {
 
 	private static final String	EXPECTED_SHA	= "d0002141a722ef03ecd8fd2e0d3e4d3bc680ba91483cb4962f68a41a12dd01ab"
 		.toUpperCase();
 
 	static File					currentDir		= new File(System.getProperty("user.dir"));
 
-	public static void testLoadFromCache() throws Exception {
+	@Test
+	public void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/1"),
 			new HttpClient(), null);
@@ -29,7 +35,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			.getAbsolutePath(), result.getAbsolutePath());
 	}
 
-	public static void testFailedLoadFromRemote() throws Exception {
+	@Test
+	public void testFailedLoadFromRemote() throws Exception {
 		String testDirName = "testdata/httpcache/2";
 		File cacheDir = new File(testDirName);
 		URI baseUri = new URI("http://localhost:18083/bundles");
@@ -56,7 +63,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public static void testLoadFromRemote() throws Exception {
+	@Test
+	public void testLoadFromRemote() throws Exception {
 		String testDirName = "testdata/httpcache/3";
 		File cacheDir = new File(testDirName);
 		URI baseUri = new URI("http://localhost:18083/bundles");
@@ -91,7 +99,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public static void testUseCached() throws Exception {
+	@Test
+	public void testUseCached() throws Exception {
 		File cached = IO.getFile("testdata/httpcache/4/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
@@ -103,13 +112,14 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
-			assertEquals("File timestamp should NOT change", cacheTimestamp, result.lastModified());
+			assertEquals(cacheTimestamp, result.lastModified(), "File timestamp should NOT change");
 		} finally {
 			httpd.stop();
 		}
 	}
 
-	public static void testReplaceCache() throws Exception {
+	@Test
+	public void testReplaceCache() throws Exception {
 		File cached = IO.getFile("testdata/httpcache/5/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
@@ -125,7 +135,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
-			assertNotSame("File timestamp SHOULD change", cacheTimestamp, result.lastModified());
+			assertNotSame(cacheTimestamp, result.lastModified(), "File timestamp SHOULD change");
 
 			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
 		} finally {
@@ -133,7 +143,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public static void testEmptyCache() throws Exception {
+	@Test
+	public void testEmptyCache() throws Exception {
 		String testDirName = "testdata/httpcache/6";
 		File cacheDir = new File(testDirName);
 		URI baseUri = new URI("http://localhost:18083/bundles");
@@ -168,7 +179,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public static void testUseCacheWhenRemoteUnavailable() throws Exception {
+	@Test
+	public void testUseCacheWhenRemoteUnavailable() throws Exception {
 		File cached = IO.getFile("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/7"),

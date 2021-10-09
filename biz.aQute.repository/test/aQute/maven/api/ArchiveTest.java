@@ -1,10 +1,16 @@
 package aQute.maven.api;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.version.MavenVersion;
-import junit.framework.TestCase;
 
-public class ArchiveTest extends TestCase {
+public class ArchiveTest {
 
+	@Test
 	public void testFilePath() {
 		String s = "com/netflix/governator/governator-commons-cli/1.12.10/governator-commons-cli-1.12.10.pom";
 		Archive a = Archive.fromFilepath(s);
@@ -16,6 +22,7 @@ public class ArchiveTest extends TestCase {
 		assertEquals("", a.classifier);
 	}
 
+	@Test
 	public void testFilePathWithClassifier() {
 		String s = "com/netflix/governator/governator-commons-cli/1.12.10/governator-commons-cli-1.12.10-classifier.pom";
 		Archive a = Archive.fromFilepath(s);
@@ -27,6 +34,7 @@ public class ArchiveTest extends TestCase {
 		assertEquals("classifier", a.classifier);
 	}
 
+	@Test
 	public void testEquals() {
 		Archive a = Archive.valueOf("a.b.c:def:jar:1.3");
 		Archive b = Archive.valueOf("a.b.c:def:1.3");
@@ -34,6 +42,7 @@ public class ArchiveTest extends TestCase {
 		assertTrue(a.hashCode() == b.hashCode());
 	}
 
+	@Test
 	public void testEqualsDefault() {
 		Archive a = new Archive("org.slf4j:slf4j-api:1.7.5");
 		Archive b = Archive.valueOf("org.slf4j:slf4j-api:1.7.5");
@@ -41,6 +50,7 @@ public class ArchiveTest extends TestCase {
 		assertTrue(a.hashCode() == b.hashCode());
 	}
 
+	@Test
 	public void testValueOf() {
 		Archive a = Archive.valueOf("a.b.c:def:1.3");
 		assertEquals("a.b.c", a.revision.program.group);
@@ -52,6 +62,7 @@ public class ArchiveTest extends TestCase {
 		assertEquals("a/b/c/def/1.3/def-1.3.jar", a.remotePath);
 	}
 
+	@Test
 	public void testValueOfWithExtension() {
 		Archive a = Archive.valueOf("a.b.c:def:ext:1.3");
 		assertEquals("a.b.c", a.revision.program.group);
@@ -63,6 +74,7 @@ public class ArchiveTest extends TestCase {
 		assertEquals("a/b/c/def/1.3/def-1.3.ext", a.remotePath);
 	}
 
+	@Test
 	public void testValueOfWithExtensionAndClassifier() {
 		Archive a = Archive.valueOf("a.b.c:def:ext:class:1.3");
 		assertEquals("a.b.c", a.revision.program.group);
@@ -74,17 +86,20 @@ public class ArchiveTest extends TestCase {
 		assertEquals("a/b/c/def/1.3/def-1.3-class.ext", a.remotePath);
 	}
 
+	@Test
 	public void testDefaultExtension() {
 		Archive a = Archive.valueOf("a.b.c:def:jar:1.3");
 		Archive b = Archive.valueOf("a.b.c:def:1.3");
 		assertTrue(a.equals(b));
 	}
 
+	@Test
 	public void testName() {
 		Archive a = Archive.valueOf("a.b.c:def:1.3");
 		assertEquals("def-1.3.jar", a.getName());
 	}
 
+	@Test
 	public void testPom() {
 		Archive a = Archive.valueOf("a.b.c:def:1.3");
 		Archive pomArchive = a.getPomArchive();
@@ -97,6 +112,7 @@ public class ArchiveTest extends TestCase {
 		assertFalse(a.isPom());
 	}
 
+	@Test
 	public void testSnapshot() {
 		Archive a = Archive.valueOf("a.b.c:def:1.3-SNAPSHOT");
 		assertTrue(a.isSnapshot());

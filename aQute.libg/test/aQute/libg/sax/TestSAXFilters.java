@@ -1,10 +1,14 @@
 package aQute.libg.sax;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import javax.xml.transform.stream.StreamResult;
 
+import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -12,9 +16,8 @@ import org.xml.sax.XMLReader;
 
 import aQute.libg.sax.filters.ElementSelectionFilter;
 import aQute.libg.sax.filters.MergeContentFilter;
-import junit.framework.TestCase;
 
-public class TestSAXFilters extends TestCase {
+public class TestSAXFilters {
 
 	private static final String	SAMPLE1		= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 		+ "<root a=\"1\"><a><b><c></c></b></a></root>";
@@ -31,6 +34,7 @@ public class TestSAXFilters extends TestCase {
 
 	private static final String	SAMPLE5		= "<?xml version='1.0' encoding='UTF-8'?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?><root><a/></root>";
 
+	@Test
 	public void testMerge() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
@@ -46,6 +50,7 @@ public class TestSAXFilters extends TestCase {
 			.size());
 	}
 
+	@Test
 	public void testMergeInconsistentRoots() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
@@ -59,6 +64,7 @@ public class TestSAXFilters extends TestCase {
 		} catch (SAXException e) {}
 	}
 
+	@Test
 	public void testDontRepeatProcessingInstruction() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
@@ -73,6 +79,7 @@ public class TestSAXFilters extends TestCase {
 		assertEquals(expected, stripLineBreaks(output.toString()));
 	}
 
+	@Test
 	public void testSelectionFilter() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 

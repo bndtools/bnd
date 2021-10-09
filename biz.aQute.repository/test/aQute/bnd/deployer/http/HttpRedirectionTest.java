@@ -1,5 +1,6 @@
 package aQute.bnd.deployer.http;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import java.io.File;
@@ -11,14 +12,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
-import junit.framework.TestCase;
 import test.lib.NanoHTTPD;
 
-public class HttpRedirectionTest extends TestCase {
+public class HttpRedirectionTest {
 
+	@Test
 	public void testFollowRedirect() throws Exception {
 		Reporter reporter = mock(Reporter.class);
 
@@ -55,6 +58,7 @@ public class HttpRedirectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDetectRedirectLoop() throws Exception {
 		final NanoHTTPD httpd = new NanoHTTPD(0, new File(".")) {
 			@Override

@@ -1,5 +1,8 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -7,14 +10,16 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
-import junit.framework.TestCase;
 
-public class CommonInfoProjectPluginTest extends TestCase {
+public class CommonInfoProjectPluginTest {
 
+	@Test
 	public void testNoPropAndHeader() throws Exception {
 		final CommonInfoProjectPlugin plugin = new CommonInfoProjectPlugin();
 
@@ -34,6 +39,7 @@ public class CommonInfoProjectPluginTest extends TestCase {
 		assertNull(infoDto.version);
 	}
 
+	@Test
 	public void testFullProp() throws Exception {
 		final CommonInfoProjectPlugin plugin = new CommonInfoProjectPlugin();
 
@@ -61,6 +67,7 @@ public class CommonInfoProjectPluginTest extends TestCase {
 		assertEquals(1, infoDto.version.major);
 	}
 
+	@Test
 	public void testFullHeader() throws Exception {
 		final CommonInfoProjectPlugin plugin = new CommonInfoProjectPlugin();
 
@@ -90,6 +97,7 @@ public class CommonInfoProjectPluginTest extends TestCase {
 		assertEquals(1, infoDto.version.major);
 	}
 
+	@Test
 	public void testMixPropHeader() throws Exception {
 		final CommonInfoProjectPlugin plugin = new CommonInfoProjectPlugin();
 

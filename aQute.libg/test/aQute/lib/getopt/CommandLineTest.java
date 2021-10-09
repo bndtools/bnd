@@ -1,18 +1,23 @@
 package aQute.lib.getopt;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.collections.ExtList;
 import aQute.lib.justif.Justif;
 import aQute.libg.reporter.ReporterAdapter;
-import junit.framework.TestCase;
 
-public class CommandLineTest extends TestCase {
+public class CommandLineTest {
 	ReporterAdapter rp = new ReporterAdapter(System.err);
 
-	public static void testWrap() {
+	@Test
+	public void testWrap() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Abc \t3Def ghi asoudg gd ais gdiasgd asgd auysgd asyudga8sdga8sydga 8sdg\fSame column\nbegin\n"
 			+ "\t3abc\t5def\nabc");
@@ -35,6 +40,7 @@ public class CommandLineTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCommand() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		assertEquals("[cmda, cmdb]", getopt.getCommands(new X())
@@ -79,6 +85,7 @@ public class CommandLineTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHelp() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		C1 c1 = new C1();
@@ -86,6 +93,7 @@ public class CommandLineTest extends TestCase {
 
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		C1 c1 = new C1();
@@ -134,6 +142,7 @@ public class CommandLineTest extends TestCase {
 		public void _commandWrongOption(Opt4 opts) {}
 	}
 
+	@Test
 	public void test_SameFirstChar() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		CommandTwoOptions c = new CommandTwoOptions();
@@ -142,6 +151,7 @@ public class CommandLineTest extends TestCase {
 		assertEquals("test", c.test);
 	}
 
+	@Test
 	public void test_SameFirstChar_NoCapitalizedCommands() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		CommandWrongOption c = new CommandWrongOption();
@@ -151,6 +161,7 @@ public class CommandLineTest extends TestCase {
 		} catch (Error e) {}
 	}
 
+	@Test
 	public void test_SameFirstChar_MaxTwoOptionsWithSameShortcut() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		CommandThreeOptions c = new CommandThreeOptions();

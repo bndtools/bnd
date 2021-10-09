@@ -1,25 +1,31 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.libg.glob.AntGlob;
 import aQute.libg.glob.Glob;
-import junit.framework.TestCase;
 
-public class InstructionTest extends TestCase {
+public class InstructionTest {
 
+	@Test
 	public void testSelect() {
 		assertEquals(Arrays.asList("a", "c"), new Instructions("b").reject(Arrays.asList("a", "b", "c")));
 		assertEquals(Arrays.asList("a", "c"), new Instructions("a,c").select(Arrays.asList("a", "b", "c"), false));
 		assertEquals(Arrays.asList("a", "c"), new Instructions("!b,*").select(Arrays.asList("a", "b", "c"), false));
 	}
 
+	@Test
 	public void testDecorate() {
 		Instructions instrs = new Instructions("a;x=1,b*;y=2, literal;n=1, foo.com.example.bar;startlevel=10");
 		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1");
@@ -45,6 +51,7 @@ public class InstructionTest extends TestCase {
 			.containsEntry("n", "1");
 	}
 
+	@Test
 	public void testDecoratePriority() {
 		Instructions instrs = new Instructions("def;x=1, *;x=0");
 		Parameters params = new Parameters("abc, def, ghi");
@@ -60,6 +67,7 @@ public class InstructionTest extends TestCase {
 			.containsEntry("x", "0");
 	}
 
+	@Test
 	public void testNegate() {
 		Instructions instrs = new Instructions("!def, *;x=0");
 		Parameters params = new Parameters("abc, def, ghi");
@@ -74,6 +82,7 @@ public class InstructionTest extends TestCase {
 			.containsEntry("x", "0");
 	}
 
+	@Test
 	public void testWildcard() {
 		assertTrue(new Instruction("a|b").matches("a"));
 		assertTrue(new Instruction("a|b").matches("b"));
@@ -98,6 +107,7 @@ public class InstructionTest extends TestCase {
 		assertTrue(new Instruction("!com.foo.*~").isNegated());
 	}
 
+	@Test
 	public void testAdvancedPatterns() {
 		assertThat(new Instruction("ab*").getPattern()).isEqualTo("ab.*");
 		assertThat(new Instruction("ab?").getPattern()).isEqualTo("ab.");
@@ -113,6 +123,7 @@ public class InstructionTest extends TestCase {
 		assertThat(new Instruction("(ab)+").getPattern()).isEqualTo("(ab)+");
 	}
 
+	@Test
 	public void testLiteral() {
 		assertTrue(new Instruction("literal").isLiteral());
 		assertTrue(new Instruction("literal").matches("literal"));
@@ -131,6 +142,7 @@ public class InstructionTest extends TestCase {
 		assertTrue(new Instruction("=*********").isLiteral());
 	}
 
+	@Test
 	public void testPattern() {
 		Pattern p = Pattern.compile("com\\.foo(?:\\..*)?");
 		Instruction i = new Instruction(p);
@@ -148,6 +160,7 @@ public class InstructionTest extends TestCase {
 		assertThat(i.isNegated()).isTrue();
 	}
 
+	@Test
 	public void testGlobPattern() {
 		Pattern p = Glob.toPattern("com.foo{,.*}");
 		Instruction i = new Instruction(p);
@@ -157,6 +170,7 @@ public class InstructionTest extends TestCase {
 		assertThat(i.matches("com.bar")).isFalse();
 	}
 
+	@Test
 	public void testAntGlobPattern() {
 		Pattern p = AntGlob.toPattern("com/foo/");
 		Instruction i = new Instruction(p);

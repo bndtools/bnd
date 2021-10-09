@@ -1,21 +1,25 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Analyzer;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class IncludeHeaderTest extends TestCase {
+public class IncludeHeaderTest {
 
 	/**
 	 * Test url includes props: a\ b\ c\ d last-props: end
 	 */
-	public static void testUrlIncludes() throws IOException {
+	@Test
+	public void testUrlIncludes() throws IOException {
 		Analyzer a = new Analyzer();
 		Properties p = new Properties();
 		p.setProperty("a", "1");
@@ -29,7 +33,8 @@ public class IncludeHeaderTest extends TestCase {
 	/**
 	 * Test url includes
 	 */
-	public static void testUrlIncludes2() throws IOException {
+	@Test
+	public void testUrlIncludes2() throws IOException {
 		Analyzer a = new Analyzer();
 		Properties p = new Properties();
 		p.setProperty("a", "1");
@@ -61,13 +66,15 @@ public class IncludeHeaderTest extends TestCase {
 	// assertEquals("set", analyzer.getProperty("pom.scope.test")); // Set
 	// }
 
-	public static void testTopBottom() throws Exception {
+	@Test
+	public void testTopBottom() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setProperties(IO.getFile("test/test/include.bnd/top.bnd"));
 		assertEquals("0.0.257", analyzer.getProperty("Bundle-Version"));
 	}
 
-	public static void testPrecedence() throws Exception {
+	@Test
+	public void testPrecedence() throws Exception {
 		File base = IO.getFile("test/test");
 		String a = "a=a.props\n";
 		String b = "a=b.props\n";
@@ -118,7 +125,8 @@ public class IncludeHeaderTest extends TestCase {
 		out.close();
 	}
 
-	public static void testAbsentIncludes() throws IOException {
+	@Test
+	public void testAbsentIncludes() throws IOException {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setBase(IO.getFile("test/test"));
 		Properties p = new Properties();
@@ -129,7 +137,8 @@ public class IncludeHeaderTest extends TestCase {
 			.size());
 	}
 
-	public static void testIncludeWithProperty() throws IOException {
+	@Test
+	public void testIncludeWithProperty() throws IOException {
 		File home = new File(System.getProperty("user.home"));
 		File include = new File(home, "includeheadertest.txt");
 		try {
@@ -155,7 +164,8 @@ public class IncludeHeaderTest extends TestCase {
 		}
 	}
 
-	public static void testIncludeHeader() throws IOException {
+	@Test
+	public void testIncludeHeader() throws IOException {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setBase(IO.getFile("test/test"));
 		Properties p = new Properties();
