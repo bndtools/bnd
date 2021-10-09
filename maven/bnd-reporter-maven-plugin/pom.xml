@@ -49,7 +49,6 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 
-
 		<!-- dependencies to annotations -->
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
@@ -66,8 +65,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

@@ -1,5 +1,8 @@
 package aQute.bnd.maven.reporter.plugin.entries.mavenproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -10,13 +13,14 @@ import org.apache.maven.model.License;
 import org.apache.maven.model.Organization;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
 import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
-import junit.framework.TestCase;
 
-public class CommonInfoPluginTest extends TestCase {
+public class CommonInfoPluginTest {
 
+	@Test
 	public void testMinimal() throws Exception {
 		final CommonInfoPlugin plugin = new CommonInfoPlugin();
 
@@ -42,6 +46,7 @@ public class CommonInfoPluginTest extends TestCase {
 		assertNull(infoDto.version);
 	}
 
+	@Test
 	public void testFull() throws Exception {
 		final CommonInfoPlugin plugin = new CommonInfoPlugin();
 

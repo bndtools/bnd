@@ -1,5 +1,7 @@
 package aQute.bnd.maven.reporter.plugin.entries.mavenproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,13 +12,14 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class CodeSnippetPluginTest extends TestCase {
+public class CodeSnippetPluginTest {
 
+	@Test
 	public void testProjectWithoutSnippet() throws Exception {
 		final CodeSnippetPlugin plugin = new CodeSnippetPlugin();
 		final MavenProjectWrapper p = getProject();
@@ -26,6 +29,7 @@ public class CodeSnippetPluginTest extends TestCase {
 		assertEquals(null, result);
 	}
 
+	@Test
 	public void testProjectWithSnippet() throws Exception {
 		final CodeSnippetPlugin plugin = new CodeSnippetPlugin();
 		final MavenProjectWrapper p = getProjectWithSnippet(false);
@@ -35,6 +39,7 @@ public class CodeSnippetPluginTest extends TestCase {
 		assertEquals(1, result.size());
 	}
 
+	@Test
 	public void testProjectWithSnippetCustomDir() throws Exception {
 		final CodeSnippetPlugin plugin = new CodeSnippetPlugin();
 
