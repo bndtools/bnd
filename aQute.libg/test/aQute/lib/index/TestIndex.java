@@ -1,14 +1,25 @@
 package aQute.lib.index;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class TestIndex extends TestCase {
+public class TestIndex {
 
-	public void testPersistence() throws Exception {
-		File test = IO.getFile("tmp/" + getName() + ".tmp");
+	@Test
+	public void testPersistence(TestInfo testInfo) throws Exception {
+		File test = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		test.delete();
 		test.getParentFile()
 			.mkdirs();
@@ -58,8 +69,15 @@ public class TestIndex extends TestCase {
 		}
 	}
 
-	public void testBasic() throws Exception {
-		File test = IO.getFile("tmp/" + getName() + ".tmp");
+	@Test
+	public void testBasic(TestInfo testInfo) throws Exception {
+		File test = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		test.delete();
 		test.getParentFile()
 			.mkdirs();
@@ -95,19 +113,5 @@ public class TestIndex extends TestCase {
 			IO.delete(test.getParentFile());
 		}
 	}
-
-	// public void testMany() throws Exception {
-	// File test = IO.getFile("tmp/"+getName()+".tmp");
-	// test.delete();
-	// Index index = new Index(test, 1000);
-	// for ( int i = 1; i<127; i++)
-	// index.insert( new byte[]{(byte)i}, i*2);
-	//
-	// index.close();
-	// Index index2 = new Index(test, 1000);
-	// for ( int i = 1; i<127; i++)
-	// assertEquals(i*2, index2.search( new byte[(byte)i]));
-	//
-	// }
 
 }

@@ -5,32 +5,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
-import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.lib.io.IO;
 import aQute.libg.map.MAP;
 import aQute.libg.map.MAP.MAPX;
 
 public class WorkspaceRepositoryTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
-	@Rule
-	public final TestName		testName	= new TestName();
 	private File				testDir;
 	private File				home		= IO.getFile("testresources/build-repo");
 
-	@Before
-	public void setUp() throws IOException {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws IOException {
+		testDir = new File(TMPDIR, testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 	}

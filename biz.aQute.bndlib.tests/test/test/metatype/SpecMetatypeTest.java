@@ -1,5 +1,9 @@
 package test.metatype;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,6 +21,7 @@ import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
@@ -32,12 +37,11 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.XmlTester;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings({
 	"resource", "restriction"
 })
-public class SpecMetatypeTest extends TestCase {
+public class SpecMetatypeTest {
 
 	public enum Foo {
 		A,
@@ -145,6 +149,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, id, name, null, null, null, 0, "String", null, null, null);
 	}
 
+	@Test
 	public void testNaming() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -221,6 +226,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, id, name, null, null, deflt, 0, "String", null, null, null);
 	}
 
+	@Test
 	public void testNaming14() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -252,6 +258,7 @@ public class SpecMetatypeTest extends TestCase {
 		String a$$$(); // a$
 	}
 
+	@Test
 	public void testADCollision() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -273,6 +280,7 @@ public class SpecMetatypeTest extends TestCase {
 
 	}
 
+	@Test
 	public void testOCDCollision() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -336,6 +344,7 @@ public class SpecMetatypeTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPidCollision() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -528,6 +537,7 @@ public class SpecMetatypeTest extends TestCase {
 		StringList<String> stringList();
 	}
 
+	@Test
 	public void testCollections() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -588,6 +598,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, id, name, null, null, null, 0, "String", null, optionLabels, optionValues);
 	}
 
+	@Test
 	public void testEnum() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -654,6 +665,7 @@ public class SpecMetatypeTest extends TestCase {
 	})
 	public interface OCDName {}
 
+	@Test
 	public void testOCD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -786,6 +798,7 @@ public class SpecMetatypeTest extends TestCase {
 		String notRequired();
 	}
 
+	@Test
 	public void testAD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -871,6 +884,7 @@ public class SpecMetatypeTest extends TestCase {
 		String fromChild();
 	}
 
+	@Test
 	public void testADWithInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1031,6 +1045,7 @@ public class SpecMetatypeTest extends TestCase {
 		URI[] raURI();
 	}
 
+	@Test
 	public void testReturnTypes() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1161,6 +1176,7 @@ public class SpecMetatypeTest extends TestCase {
 		boolean enabled();
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1177,6 +1193,7 @@ public class SpecMetatypeTest extends TestCase {
 		testSimple(b, xt);
 	}
 
+	@Test
 	public void testSimple13() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1268,6 +1285,7 @@ public class SpecMetatypeTest extends TestCase {
 		};
 	}
 
+	@Test
 	public void testAnnotationDefaults() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1327,6 +1345,7 @@ public class SpecMetatypeTest extends TestCase {
 
 	}
 
+	@Test
 	public void testAbstract() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1350,6 +1369,7 @@ public class SpecMetatypeTest extends TestCase {
 		NestedInner inner();
 	}
 
+	@Test
 	public void testNested() throws Exception {
 		{
 			Builder b = new Builder();
@@ -1409,6 +1429,7 @@ public class SpecMetatypeTest extends TestCase {
 	@Designate(ocd = DesignateOCD.class, factory = true)
 	public static class DesignateComponent4 {}
 
+	@Test
 	public void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1419,14 +1440,16 @@ public class SpecMetatypeTest extends TestCase {
 		{
 			Resource r = b.getJar()
 				.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateOCD.xml");
-			assertEquals(b.getErrors()
-				.toString(), 0,
+			assertEquals(0,
 				b.getErrors()
-					.size());
-			assertEquals(b.getWarnings()
-				.toString(), 0,
+					.size(),
+				b.getErrors()
+					.toString());
+			assertEquals(0,
 				b.getWarnings()
-					.size());
+					.size(),
+				b.getWarnings()
+					.toString());
 			System.err.println(b.getJar()
 				.getResources()
 				.keySet());
@@ -1506,6 +1529,7 @@ public class SpecMetatypeTest extends TestCase {
 		boolean enabled();
 	}
 
+	@Test
 	public void testExtensions() throws Exception {
 		MetatypeVersion version = MetatypeVersion.VERSION_1_2;
 		Builder b = new Builder();
@@ -1517,8 +1541,8 @@ public class SpecMetatypeTest extends TestCase {
 			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestExtensions.xml");
 		assertEquals(0, b.getErrors()
 			.size());
-		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings()
-			.size());
+		assertEquals(0, b.getWarnings()
+			.size(), "warnings: " + b.getWarnings());
 
 		System.err.println(b.getJar()
 			.getResources()
@@ -1580,6 +1604,7 @@ public class SpecMetatypeTest extends TestCase {
 		String[] property();
 	}
 
+	@Test
 	public void testSimpleExtensions() throws Exception {
 		MetatypeVersion version = MetatypeVersion.VERSION_1_2;
 		Builder b = new Builder();
@@ -1591,8 +1616,8 @@ public class SpecMetatypeTest extends TestCase {
 			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$SimpleConfig.xml");
 		assertEquals(0, b.getErrors()
 			.size());
-		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings()
-			.size());
+		assertEquals(0, b.getWarnings()
+			.size(), "warnings: " + b.getWarnings());
 
 		System.err.println(b.getJar()
 			.getResources()
@@ -1632,6 +1657,7 @@ public class SpecMetatypeTest extends TestCase {
 		String[] property();
 	}
 
+	@Test
 	public void testMappingExtensions() throws Exception {
 		MetatypeVersion version = MetatypeVersion.VERSION_1_2;
 		Builder b = new Builder();
@@ -1643,8 +1669,8 @@ public class SpecMetatypeTest extends TestCase {
 			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$MappingConfig.xml");
 		assertEquals(0, b.getErrors()
 			.size());
-		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings()
-			.size());
+		assertEquals(0, b.getWarnings()
+			.size(), "warnings: " + b.getWarnings());
 
 		System.err.println(b.getJar()
 			.getResources()
@@ -1673,6 +1699,7 @@ public class SpecMetatypeTest extends TestCase {
 		String[] escapes();
 	}
 
+	@Test
 	public void testEscapes() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
@@ -1706,6 +1733,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	// cf issue 1130
+	@Test
 	public void testBndAnnoCompatible() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));

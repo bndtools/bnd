@@ -1,5 +1,10 @@
 package biz.aQute.resolve;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static test.lib.Utils.createRepo;
 import static test.lib.Utils.findContentURI;
 
@@ -12,6 +17,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -30,25 +38,37 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 import test.lib.MockRegistry;
 import test.lib.NullLogService;
 
 @SuppressWarnings({
 	"restriction", "deprecation"
 })
-public class BndrunResolveContextTest extends TestCase {
+public class BndrunResolveContextTest {
 
 	private final LogService log = new NullLogService();
 
+	private String				name;
+
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		name = testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
+	}
+
 	private String getTestName() {
-		return getClass().getName() + "/" + getName();
+		return name;
 	}
 
 	/**
 	 * Simple test that checks if we can find a resource through the
 	 * findProviders
 	 */
+	@Test
 	public void testSimple() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName()));
@@ -71,6 +91,7 @@ public class BndrunResolveContextTest extends TestCase {
 	 * requirements
 	 */
 
+	@Test
 	public void testSimpleBlacklist() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName()));
@@ -99,6 +120,7 @@ public class BndrunResolveContextTest extends TestCase {
 	 * See if we can reject the 4.0.2 framework, which should normally be
 	 * selected because it is the highest (this is tested later).
 	 */
+	@Test
 	public void testBlacklistFramework() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
@@ -124,6 +146,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.toURI(), findContentURI(framework));
 	}
 
+	@Test
 	public void testEffective() throws Exception {
 		BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log);
 
@@ -140,6 +163,7 @@ public class BndrunResolveContextTest extends TestCase {
 		assertTrue(context.isEffective(noEffectiveDirectiveReq));
 	}
 
+	@Test
 	public void testEffective2() throws Exception {
 		BndEditModel model = new BndEditModel();
 		model.genericSet(BndrunResolveContext.RUN_EFFECTIVE_INSTRUCTION, "active, arbitrary");
@@ -168,6 +192,7 @@ public class BndrunResolveContextTest extends TestCase {
 		assertTrue(context.isEffective(noEffectiveDirectiveReq));
 	}
 
+	@Test
 	public void testEffective3() throws Exception {
 		BndEditModel model = new BndEditModel();
 		model.genericSet(BndrunResolveContext.RUN_EFFECTIVE_INSTRUCTION,
@@ -201,11 +226,13 @@ public class BndrunResolveContextTest extends TestCase {
 		assertTrue(context.isEffective(noEffectiveDirectiveReq));
 	}
 
+	@Test
 	public void testEmptyInitialWirings() throws Exception {
 		assertEquals(0, new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log).getWirings()
 			.size());
 	}
 
+	@Test
 	public void testBasicFindProviders() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName()));
@@ -225,6 +252,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.toURI(), findContentURI(resource));
 	}
 
+	@Test
 	public void testProviderPreference() throws Exception {
 		Requirement req = new CapReqBuilder("osgi.wiring.package")
 			.addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)")
@@ -270,6 +298,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.toURI(), findContentURI(resource));
 	}
 
+	@Test
 	public void testReorderRepositories() throws Exception {
 		Requirement req = new CapReqBuilder("osgi.wiring.package")
 			.addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)")
@@ -300,6 +329,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.toURI(), findContentURI(resource));
 	}
 
+	@Test
 	public void testFrameworkIsMandatory() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -314,6 +344,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.toURI(), findContentURI(context.getFramework()));
 	}
 
+	@Test
 	public void testChooseHighestFrameworkVersion() throws Exception {
 		MockRegistry registry;
 		BndEditModel runModel;
@@ -351,6 +382,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.toURI(), findContentURI(context.getFramework()));
 	}
 
+	@Test
 	public void testFrameworkCapabilitiesPreferredOverRepository() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
@@ -378,6 +410,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testResolverHookFiltersResult() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
@@ -417,6 +450,7 @@ public class BndrunResolveContextTest extends TestCase {
 		// The capability from osgi.cmpn is NOT here
 	}
 
+	@Test
 	public void testResolverHookFiltersResultWithBlacklist() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
@@ -447,6 +481,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.getResource()));
 	}
 
+	@Test
 	public void testResolverHookFiltersResultWithBlacklistAndVersionRange1() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
@@ -478,6 +513,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.getResource()));
 	}
 
+	@Test
 	public void testResolverHookFiltersResultWithBlacklistAndVersionRange2() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
@@ -507,6 +543,7 @@ public class BndrunResolveContextTest extends TestCase {
 			.getResource()));
 	}
 
+	@Test
 	public void testResolverHookCannotFilterFrameworkCapabilities() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
@@ -550,6 +587,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testPreferLeastRequirementsAndMostCapabilities() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo4/index.xml"), getTestName()));
@@ -578,6 +616,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testResolvePreferences() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo4/index.xml"), getTestName()));
@@ -605,6 +644,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testSelfCapabilityPreferredOverRepository() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		Repository repo = createRepo(IO.getFile("testdata/repo4.index.xml"), getTestName());
@@ -637,6 +677,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testInputRequirementsAsMandatoryResource() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -668,6 +709,7 @@ public class BndrunResolveContextTest extends TestCase {
 		assertEquals("<<INITIAL>>", ic.osgi_identity());
 	}
 
+	@Test
 	public void testEERequirementResolvesFramework() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -689,6 +731,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testJREPackageResolvesFramework() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -710,6 +753,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testJREPackageNotResolved() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -726,6 +770,7 @@ public class BndrunResolveContextTest extends TestCase {
 		assertEquals(0, providers.size());
 	}
 
+	@Test
 	public void testDontResolveBuildOnlyLibraries() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/buildrepo.index.xml"), getTestName()));
@@ -740,6 +785,7 @@ public class BndrunResolveContextTest extends TestCase {
 		assertEquals(0, providers1.size());
 	}
 
+	@Test
 	public void testResolveSystemBundleAlias() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -762,6 +808,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testUnsatisfiedSystemPackage() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -780,6 +827,7 @@ public class BndrunResolveContextTest extends TestCase {
 		assertEquals(0, providers.size());
 	}
 
+	@Test
 	public void testResolveSystemPackagesExtra() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -803,6 +851,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testUnsatisfiedRequirement() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -820,6 +869,7 @@ public class BndrunResolveContextTest extends TestCase {
 		assertEquals(0, providers.size());
 	}
 
+	@Test
 	public void testResolveSystemCapabilitiesExtra() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
@@ -843,6 +893,7 @@ public class BndrunResolveContextTest extends TestCase {
 				.getResource()));
 	}
 
+	@Test
 	public void testResolveProvidedCapabilitiesWithDistro() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));

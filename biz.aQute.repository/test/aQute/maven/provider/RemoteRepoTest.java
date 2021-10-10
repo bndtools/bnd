@@ -1,7 +1,17 @@
 package aQute.maven.provider;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.util.Arrays;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.State;
@@ -11,9 +21,8 @@ import aQute.lib.io.IO;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.reporter.ReporterAdapter;
-import junit.framework.TestCase;
 
-public class RemoteRepoTest extends TestCase {
+public class RemoteRepoTest {
 
 	String					tmpName;
 	File					local;
@@ -22,10 +31,14 @@ public class RemoteRepoTest extends TestCase {
 	MavenRemoteRepository	repo;
 	ReporterAdapter			reporter	= new ReporterAdapter(System.err);
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
 		local = IO.getFile(tmpName + "/local");
 		remote = IO.getFile(tmpName + "/remote");
 		Config config = new Config();
@@ -39,12 +52,12 @@ public class RemoteRepoTest extends TestCase {
 		repo = new MavenRemoteRepository(local, new HttpClient(), fnx.getBaseURI() + "/repo/", reporter);
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		fnx.close();
-		super.tearDown();
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		File localFoobar = IO.getFile(this.local, "some.jar");
 		File localFoobarSha1 = IO.getFile(this.local, "some.jar.sha1");
@@ -129,6 +142,7 @@ public class RemoteRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testChecksumError() throws Exception {
 		File localFoobar = IO.getFile(this.local, "some.jar");
 		File remoteFoobar = IO.getFile(this.remote, "foo/bar");
@@ -147,6 +161,7 @@ public class RemoteRepoTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testLowercaseChecksum() throws Exception {
 		File localFoobar = IO.getFile(this.local, "some.jar");
 		File remoteFoobar = IO.getFile(this.remote, "foo/bar");
@@ -162,6 +177,7 @@ public class RemoteRepoTest extends TestCase {
 			.getState());
 	}
 
+	@Test
 	public void testNoChecksum() throws Exception {
 		File localFoobar = IO.getFile(this.local, "some.jar");
 		File remoteFoobar = IO.getFile(this.remote, "foo/bar");
@@ -178,6 +194,7 @@ public class RemoteRepoTest extends TestCase {
 			.getState());
 	}
 
+	@Test
 	public void testOnlyWrongMD5Checksum() throws Exception {
 		File localFoobar = IO.getFile(this.local, "some.jar");
 		File remoteFoobar = IO.getFile(this.remote, "foo/bar");
@@ -199,6 +216,7 @@ public class RemoteRepoTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOnlyMD5Checksum() throws Exception {
 		File localFoobar = IO.getFile(this.local, "some.jar");
 		File remoteFoobar = IO.getFile(this.remote, "foo/bar");

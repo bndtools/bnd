@@ -1,19 +1,24 @@
 package aQute.lib.persistentmap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import aQute.lib.io.IO;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class PersistentMapTest extends TestCase {
+import aQute.lib.io.IO;
+
+public class PersistentMapTest {
 
 	private static final String	UNIX_KEY	= "abc/../../";
 	private static final String	WINDOWS_KEY	= "abc\\..\\..\\";
 
+	@Test
 	public void testSimple() throws Exception {
 		File tmp = new File("tmp");
 		PersistentMap<String> pm = new PersistentMap<>(new File(tmp, "simple"), String.class);
@@ -40,6 +45,7 @@ public class PersistentMapTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testZipSlipnames() throws Exception {
 		File tmp = new File("tmp");
 		IO.delete(tmp);
@@ -68,6 +74,7 @@ public class PersistentMapTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testZipSlipnamesWindows() throws Exception {
 		File tmp = new File("tmp");
 		IO.delete(tmp);
@@ -101,6 +108,7 @@ public class PersistentMapTest extends TestCase {
 		public List<String>	list	= new ArrayList<>();
 	}
 
+	@Test
 	public void testStructs() throws Exception {
 		File tmp = new File("tmp");
 		PersistentMap<X> pm = new PersistentMap<>(new File(tmp, "simple"), X.class);

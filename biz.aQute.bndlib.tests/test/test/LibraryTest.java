@@ -5,10 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -21,13 +20,16 @@ import aQute.lib.io.IO;
 
 public class LibraryTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
-	@Rule
-	public final TestName		testName	= new TestName();
 	private File				testDir;
 
-	@Before
-	public void setUp() throws IOException {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws IOException {
+		testDir = new File(TMPDIR, testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 	}

@@ -1,5 +1,10 @@
 package aQute.lib.collections;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,9 +18,9 @@ import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.Spliterators;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class CollectionsTest extends TestCase {
+public class CollectionsTest {
 
 	List<String>	a	= Arrays.asList("a");
 	List<String>	ab	= Arrays.asList("a", "b");
@@ -25,6 +30,7 @@ public class CollectionsTest extends TestCase {
 	List<String>	b	= Arrays.asList("b");
 
 	@SuppressWarnings("unchecked")
+	@Test
 	public void testLogicRetain() {
 		assertEqualsList(Arrays.asList("a"), Logic.retain(a));
 		assertEqualsList(Arrays.asList("a"), Logic.retain(a, a, a, a));
@@ -35,6 +41,7 @@ public class CollectionsTest extends TestCase {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Test
 	public void testHasOverlap() {
 		assertFalse(Logic.hasOverlap(a));
 		assertTrue(Logic.hasOverlap(a, ab));
@@ -61,6 +68,7 @@ public class CollectionsTest extends TestCase {
 		return aa.equals(bb);
 	}
 
+	@Test
 	public void testSortedList() throws Exception {
 		SortedList<String> sl = new SortedList<>("f", "a", "b", "c", "d", "c", "e");
 		assertEquals("[a, b, c, c, d, e, f]", sl.toString());
@@ -96,6 +104,7 @@ public class CollectionsTest extends TestCase {
 
 	}
 
+	@Test
 	public void testFailures() {
 		SortedList<String> sl = new SortedList<>("f", "a", "b", "c", "d", "c", "e");
 		try {
@@ -113,12 +122,14 @@ public class CollectionsTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testComparator() {
 		Comparator<String> reverseOrder = Collections.reverseOrder();
 		SortedList<String> sl = new SortedList<>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
 		assertEquals("[f, e, d, c, c, b, a]", sl.toString());
 	}
 
+	@Test
 	public void testListIterator() throws Exception {
 		Comparator<String> reverseOrder = Collections.reverseOrder();
 		List<String> sl = new SortedList<>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
@@ -147,6 +158,7 @@ public class CollectionsTest extends TestCase {
 		assertFalse(li.hasNext());
 	}
 
+	@Test
 	public void testEnumerationSpliterator() {
 		List<String> test = Arrays.asList("once", "upon", "a", "time");
 		Enumeration<String> e = Enumerations.enumeration(test.spliterator(), s -> s.toUpperCase(Locale.ROOT),
@@ -178,6 +190,7 @@ public class CollectionsTest extends TestCase {
 		assertFalse(e.hasMoreElements());
 	}
 
+	@Test
 	public void testEnumerationEmptySpliterator() {
 		Enumeration<String> e = Enumerations.enumeration(Spliterators.emptySpliterator());
 

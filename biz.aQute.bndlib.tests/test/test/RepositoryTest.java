@@ -1,11 +1,17 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -14,13 +20,13 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import junit.framework.TestCase;
 
 /**
  * Test the repository classes
  */
-public class RepositoryTest extends TestCase {
+public class RepositoryTest {
 
+	@Test
 	public void testXMLParserLarge() throws Exception {
 		URL url = RepositoryTest.class.getResource("larger-repo.xml");
 		try (XMLResourceParser xrp = new XMLResourceParser(url.toURI());) {
@@ -55,10 +61,11 @@ public class RepositoryTest extends TestCase {
 				.toString();
 			String base = url.toURI()
 				.toString();
-			assertFalse(location, location.startsWith(base));
+			assertFalse(location.startsWith(base), location);
 		}
 	}
 
+	@Test
 	public void testXMLParserSmall() throws Exception {
 		URL url = RepositoryTest.class.getResource("repoindex-file.xml");
 		try (XMLResourceParser xrp = new XMLResourceParser(url.toURI());) {
@@ -91,7 +98,7 @@ public class RepositoryTest extends TestCase {
 				.getAttributes()
 				.get("url")
 				.toString();
-			assertFalse(location, location.contains("file:"));
+			assertFalse(location.contains("file:"), location);
 		}
 	}
 

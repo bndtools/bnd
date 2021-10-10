@@ -1,11 +1,13 @@
 package biz.aQute.bnd.reporter.plugins.transformer;
 
+import org.junit.jupiter.api.Test;
+
 import biz.aQute.bnd.reporter.plugins.transformer.TwigChecker.ListBuilder;
 import biz.aQute.bnd.reporter.plugins.transformer.TwigChecker.MapBuilder;
-import junit.framework.TestCase;
 
-public class JtwigPrinterTest extends TestCase {
+public class JtwigPrinterTest {
 
+	@Test
 	public void testTitle() throws Exception {
 		TwigChecker checker = checker("printTitle");
 
@@ -61,6 +63,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testDescription() throws Exception {
 		TwigChecker checker = checker("_printComponentServiceDescription");
 
@@ -73,6 +76,7 @@ public class JtwigPrinterTest extends TestCase {
 
 	}
 
+	@Test
 	public void testMavenCoordinate() throws Exception {
 		TwigChecker checker = checker("printMavenCoordinate");
 
@@ -116,6 +120,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testFeatureCoordinates() throws Exception {
 		TwigChecker checker = checker("printFeatureCoordinate");
 
@@ -148,6 +153,7 @@ public class JtwigPrinterTest extends TestCase {
 
 	}
 
+	@Test
 	public void testOSGiCoordinate() throws Exception {
 		TwigChecker checker = checker("printOsgiCoordinate");
 
@@ -173,6 +179,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testOSGiVersion() throws Exception {
 		TwigChecker checker = checker("printOsgiVersion");
 
@@ -190,6 +197,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testTableHeaders() throws Exception {
 		TwigChecker checker = checker("printTableHeaders");
 
@@ -227,6 +235,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testPropertyType() throws Exception {
 		TwigChecker checker = checker("printPropertyType");
 
@@ -245,6 +254,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testPropertyValues() throws Exception {
 		TwigChecker checker = checker("printPropertyValues");
 
@@ -293,6 +303,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testOptions() throws Exception {
 		TwigChecker checker = checker("printOptions");
 
@@ -309,6 +320,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testComponents() throws Exception {
 		TwigChecker checker = checker("printComponents");
 
@@ -449,6 +461,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testComponentTitle() throws Exception {
 		TwigChecker checker = checker("_printComponentTitle");
 
@@ -475,6 +488,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testComponentServices() throws Exception {
 		TwigChecker checker = checker("_printComponentServices");
 
@@ -504,6 +518,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testComponentProperties() throws Exception {
 		TwigChecker checker = checker("_printComponentProperties");
 
@@ -535,6 +550,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testComponentConfiguration() throws Exception {
 		TwigChecker checker = checker("_printComponentConfiguration");
 
@@ -705,6 +721,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testGogoCommands() throws Exception {
 		TwigChecker checker = checker("printGogoCommands");
 
@@ -841,6 +858,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testDevelopers() throws Exception {
 		TwigChecker checker = checker("printDevelopers");
 
@@ -937,6 +955,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testLicenses() throws Exception {
 		TwigChecker checker = checker("printLicenses");
 
@@ -982,6 +1001,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testArtifacts() throws Exception {
 		TwigChecker checker = checker("printArtifacts");
 
@@ -1142,6 +1162,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testCodeSnippets() throws Exception {
 		TwigChecker checker = checker("printCodeSnippets");
 
@@ -1293,6 +1314,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testVendor() throws Exception {
 		TwigChecker checker = checker("printVendor");
 

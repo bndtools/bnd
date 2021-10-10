@@ -8,7 +8,7 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ByteBufferDataTest {
 

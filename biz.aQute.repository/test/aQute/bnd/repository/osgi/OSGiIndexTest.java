@@ -1,5 +1,8 @@
 package aQute.bnd.repository.osgi;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -7,29 +10,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class OSGiIndexTest extends TestCase {
+public class OSGiIndexTest {
 	File	tmp;
 	File	cache;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		cache = IO.getFile(tmp, "name");
 		IO.delete(tmp);
 	}
 
+	@Test
 	public void testIndex() throws Exception {
 		HttpClient client = new HttpClient();
 		client.setCache(tmp);
@@ -62,6 +69,7 @@ public class OSGiIndexTest extends TestCase {
 		assertNotNull(promise);
 	}
 
+	@Test
 	public void testAggregateIndex() throws Exception {
 		HttpClient client = new HttpClient();
 		client.setCache(tmp);

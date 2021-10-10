@@ -1,9 +1,13 @@
 package biz.aQute.resolve;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ResolverLoggerTest extends TestCase {
+import org.junit.jupiter.api.Test;
 
+public class ResolverLoggerTest {
+
+	@Test
 	public void testSimple() throws Exception {
 		try (ResolverLogger rl = new ResolverLogger()) {
 			rl.log(ResolverLogger.LOG_ERROR, "test", null);

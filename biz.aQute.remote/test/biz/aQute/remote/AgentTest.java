@@ -1,6 +1,11 @@
 package biz.aQute.remote;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.net.ConnectException;
@@ -9,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -27,9 +36,8 @@ import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
 import aQute.remote.util.AgentSupervisor;
-import junit.framework.TestCase;
 
-public class AgentTest extends TestCase {
+public class AgentTest {
 	private int				random;
 	private File			tmp;
 	private Framework		framework;
@@ -42,13 +50,15 @@ public class AgentTest extends TestCase {
 	private File			t41;
 	private TestSupervisor	supervisor;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 
@@ -87,20 +97,17 @@ public class AgentTest extends TestCase {
 
 		supervisor = new TestSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT);
-
-		super.setUp();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
-		super.tearDown();
 		framework.stop();
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));
 		framework.waitForStop(100000);
-		super.tearDown();
 	}
 
+	@Test
 	public void testFrameworkDTO() throws Exception {
 		FrameworkDTO fw = supervisor.getAgent()
 			.getFramework();
@@ -109,6 +116,7 @@ public class AgentTest extends TestCase {
 		assertThat(fw.bundles).hasSize(4);
 	}
 
+	@Test
 	public void testStartStop() throws Exception {
 
 		String start = supervisor.getAgent()
@@ -120,6 +128,7 @@ public class AgentTest extends TestCase {
 		assertThat(stop).isNull();
 	}
 
+	@Test
 	public void testAgentGetBundles() throws Exception {
 		List<BundleDTO> bundles = supervisor.getAgent()
 			.getBundles();
@@ -138,6 +147,7 @@ public class AgentTest extends TestCase {
 		assertEquals("1.0.0", bundles.get(0).version);
 	}
 
+	@Test
 	public void testAgentGetBundleRevisions() throws Exception {
 		List<BundleRevisionDTO> bundleRevisions = supervisor.getAgent()
 			.getBundleRevisons();
@@ -151,6 +161,7 @@ public class AgentTest extends TestCase {
 		assertEquals("osgi.wiring.package", reqs.get(0).namespace);
 	}
 
+	@Test
 	public void testAgentGetBundleRevisionsById() throws Exception {
 		List<BundleRevisionDTO> bundleRevisions = supervisor.getAgent()
 			.getBundleRevisons(2, 3);
@@ -164,6 +175,7 @@ public class AgentTest extends TestCase {
 		assertEquals("osgi.wiring.package", reqs.get(0).namespace);
 	}
 
+	@Test
 	public void testAgentInstallBundle() throws Exception {
 		String sha = supervisor.addFile(t3);
 		BundleDTO bundle = supervisor.getAgent()
@@ -175,6 +187,7 @@ public class AgentTest extends TestCase {
 		assertEquals("3.0.0", bundle.version);
 	}
 
+	@Test
 	public void testAgentInstallBundleWithData() throws Exception {
 		BundleDTO bundle = supervisor.getAgent()
 			.installWithData("FOO", IO.read(t3));
@@ -190,6 +203,7 @@ public class AgentTest extends TestCase {
 		assertThat(b).isNotNull();
 	}
 
+	@Test
 	public void testAgentInstallBundleWithDataAndNullLocation() throws Exception {
 		BundleDTO bundle = supervisor.getAgent()
 			.installWithData(null, IO.read(t3));
@@ -204,6 +218,7 @@ public class AgentTest extends TestCase {
 		assertThat(b).isNotNull();
 	}
 
+	@Test
 	public void testAgentUpdateBundleWithData() throws Exception {
 		BundleDTO bundle = supervisor.getAgent()
 			.installWithData("FOO", IO.read(t4));
@@ -221,6 +236,7 @@ public class AgentTest extends TestCase {
 			.toString()).isEqualTo("4.1.0");
 	}
 
+	@Test
 	public void testAgentUpdateBundleWithDataAndNullLocation() throws Exception {
 		BundleDTO bt4 = supervisor.getAgent()
 			.installWithData(null, IO.read(t4));
@@ -238,6 +254,7 @@ public class AgentTest extends TestCase {
 			.toString()).isEqualTo("4.1.0");
 	}
 
+	@Test
 	public void testAgentUpdateBundleWithWithNullLocationAndMultipleChoice() throws Exception {
 		try {
 			BundleDTO b4 = supervisor.getAgent()
@@ -254,6 +271,7 @@ public class AgentTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAgentInstallBundleFromURL() throws Exception {
 		BundleDTO bundle = supervisor.getAgent()
 			.installFromURL(t3.getAbsolutePath(), t3.toURI()
@@ -269,6 +287,7 @@ public class AgentTest extends TestCase {
 			.size());
 	}
 
+	@Test
 	public void testAgentUninstallBundle() throws Exception {
 		List<BundleDTO> existingBundles = supervisor.getAgent()
 			.getBundles();
@@ -288,6 +307,7 @@ public class AgentTest extends TestCase {
 		assertTrue(existingBundles.size() == 2);
 	}
 
+	@Test
 	public void testAgentUpdateBundle() throws Exception {
 		BundleDTO t2Bundle = supervisor.getAgent()
 			.getBundles(2)
@@ -311,6 +331,7 @@ public class AgentTest extends TestCase {
 		assertTrue(previousModified != t2Bundle.lastModified);
 	}
 
+	@Test
 	public void testAgentUpdateBundleFromURL() throws Exception {
 		BundleDTO t2Bundle = supervisor.getAgent()
 			.getBundles(2)
@@ -335,7 +356,7 @@ public class AgentTest extends TestCase {
 		assertTrue(previousModified != t2Bundle.lastModified);
 	}
 
-	// public void testAgentShell() throws Exception {
+	// @Test public void testAgentShell() throws Exception {
 	// This test requires a gogo to be added to the framework
 	// String result = supervisor.getAgent().shell("lb");
 	// assertNotNull(result);
@@ -343,6 +364,7 @@ public class AgentTest extends TestCase {
 	// assertTrue(result.contains("LEVEL"));
 	// }
 
+	@Test
 	public void testAgentSupervisorTimeout() throws Exception {
 		TestSupervisor testSupervisor = new TestSupervisor();
 
@@ -362,6 +384,7 @@ public class AgentTest extends TestCase {
 		} catch (IllegalArgumentException e) {}
 	}
 
+	@Test
 	public void testAgentInstallBundleSinceNoExistingBundleMathcesBsnAndVersion() throws Exception {
 		BundleDTO bundle = supervisor.getAgent()
 			.installWithData(t4.getAbsolutePath(), IO.read(t4));
@@ -372,6 +395,7 @@ public class AgentTest extends TestCase {
 		assertEquals("4.0.0", bundle.version);
 	}
 
+	@Test
 	public void testPing() {
 		assertThat(supervisor.getAgent()
 			.ping()).isTrue();

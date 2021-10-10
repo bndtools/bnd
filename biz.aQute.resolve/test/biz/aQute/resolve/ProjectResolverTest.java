@@ -1,12 +1,18 @@
 package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
@@ -20,12 +26,11 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 /**
  * Test the project resolver
  */
-public class ProjectResolverTest extends TestCase {
+public class ProjectResolverTest {
 
 	private Workspace			ws;
 	private File				tmp;
@@ -33,16 +38,16 @@ public class ProjectResolverTest extends TestCase {
 	private ResourcesRepository	fr;
 	private File				home	= IO.getFile("testdata/projectresolver");
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
 		ws = Workspace.findWorkspace(IO.getFile("testdata/projectresolver/ws"));
 		ws.setTrace(true);
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName());
 		local = IO.getFile(tmp, "local");
 		IO.delete(tmp);
 		local.mkdirs();
@@ -71,25 +76,12 @@ public class ProjectResolverTest extends TestCase {
 		fr.add(resource);
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		ws.close();
-		super.tearDown();
 	}
 
-	// public void testSimple() throws Exception {
-	// Run run = new Run(ws, IO.work,
-	// IO.getFile("testdata/projectresolver/simple.bndrun"));
-	// ProjectResolver pr = new ProjectResolver(run);
-	// pr.setTrace(true);
-	// Map<Resource,List<Wire>> resolve = pr.resolve();
-	// assertTrue(pr.check());
-	// List<Container> runbundles = pr.getRunBundles();
-	// assertEquals(2, runbundles.size());
-	// System.out.println(Strings.join("\n", runbundles));
-	// pr.close();
-	// }
-
+	@Test
 	public void testAugment() throws Exception {
 		try (Builder b = new Builder();) {
 

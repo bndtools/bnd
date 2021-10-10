@@ -1,10 +1,16 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -16,16 +22,17 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Verifier;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class VerifierTest extends TestCase {
+public class VerifierTest {
 
+	@Test
 	public void testSpaceSeparated() {
 		assertThat(Verifier.isSpaceSeparated("a='x x, ' b c")).isTrue();
 		assertThat(Verifier.isSpaceSeparated("a\t , b, c")).isFalse();
 	}
 
+	@Test
 	public void testExports() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(b.getFile("bin_test"));
@@ -38,6 +45,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFQN() {
 		assertTrue(Verifier.isFQN("a"));
 		assertTrue(Verifier.isFQN("a.b"));
@@ -101,6 +109,7 @@ public class VerifierTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testInvalidFileNames() throws Exception {
 		testFileName("0ABC", null, true);
 		testFileName("0ABC", "[0-9].*|${@}", false);
@@ -144,6 +153,7 @@ public class VerifierTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testInvalidFilterOnRequirement() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -171,6 +181,7 @@ public class VerifierTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testValidDirectivesOnRequirement() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -188,6 +199,7 @@ public class VerifierTest extends TestCase {
 	/**
 	 * Test the strict flag
 	 */
+	@Test
 	public void testStrict() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			bmaker.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -214,6 +226,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCapability() throws Exception {
 
 		Parameters h = OSGiHeader.parseHeader(
@@ -242,12 +255,14 @@ public class VerifierTest extends TestCase {
 			.getType("version.list"));
 	}
 
+	@Test
 	public void testFailedOSGiJar() throws Exception {
 		try (Jar jar = new Jar("jar/osgi.residential-4.3.0.jar"); Verifier v = new Verifier(jar)) {
 			assertTrue(v.check());
 		}
 	}
 
+	@Test
 	public void testnativeCode() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(new File("bin_test"));
@@ -264,6 +279,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFilter() {
 
 		testFilter("(&(a=b)(c=1))");
@@ -389,6 +405,7 @@ public class VerifierTest extends TestCase {
 		} catch (Exception e) {}
 	}
 
+	@Test
 	public void testBundleActivationPolicyNone() throws Exception {
 		try (Builder v = new Builder()) {
 			v.setProperty("Private-Package", "test.activator");
@@ -398,6 +415,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBundleActivationPolicyBad() throws Exception {
 		try (Builder v = new Builder()) {
 			v.setProperty("Private-Package", "test.activator");
@@ -408,6 +426,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBundleActivationPolicyGood() throws Exception {
 		try (Builder v = new Builder()) {
 			v.setProperty("Private-Package", "test.activator");
@@ -418,6 +437,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBundleActivationPolicyMultiple() throws Exception {
 		try (Builder v = new Builder()) {
 			v.setProperty("Private-Package", "test.activator");
@@ -428,6 +448,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testInvalidCaseForHeader() throws Exception {
 		Properties p = new Properties();
 		p.put("Export-package", "org.apache.mina.*");
@@ -444,6 +465,7 @@ public class VerifierTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			bmaker.addClasspath(IO.getFile("jar/mina.jar"));

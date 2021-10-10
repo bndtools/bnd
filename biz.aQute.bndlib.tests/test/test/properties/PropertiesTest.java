@@ -1,5 +1,7 @@
 package test.properties;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -7,14 +9,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class PropertiesTest extends TestCase {
+public class PropertiesTest {
 
-	public static void testBndEditModel() throws Exception {
+	@Test
+	public void testBndEditModel() throws Exception {
 
 		Document doc = new Document("# Hello\nBundle-Description:\tTest \u2649\n"
 			+ "\n\nBundle-SymbolicName:\ttest.properties\n" + "Private-Package:\tpp1\n" + "-privatepackage:\tppA\n");

@@ -1,6 +1,7 @@
 package test.component_extra;
 
 import static aQute.bnd.test.BndTestCase.assertOk;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ComponentPropertyType;
 
@@ -20,27 +24,31 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.XmlTester;
-import junit.framework.TestCase;
+import aQute.lib.io.IO;
 
 /*
  * Placed in a new package to avoid breaking lots of existing tests with the additional packages
  * we need to import.
  */
-public class DSPropertyAnnotationsTest extends TestCase {
+public class DSPropertyAnnotationsTest {
 
+	private Builder	b;
 	private Jar jar;
 
-	@Override
+	@BeforeEach
 	public void setUp() throws IOException, Exception {
-		super.setUp();
-
-		Builder b = new Builder();
+		b = new Builder();
 		b.setProperty("Private-Package", DSPropertyAnnotationsTest.class.getPackage()
 			.getName());
 		b.addClasspath(new File("bin_test"));
 
 		jar = b.build();
 		assertOk(b);
+	}
+
+	@AfterEach
+	public void testDown() {
+		IO.close(b);
 	}
 
 	@ComponentPropertyType
@@ -54,6 +62,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class SimpleDSPropertyAnnotated {}
 
+	@Test
 	public void testPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + SimpleDSPropertyAnnotated.class.getName() + ".xml");
@@ -81,6 +90,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class DSPropertyAnnotatedNotUsingDefault {}
 
+	@Test
 	public void testPropertyAnnotationNotUsingDefault() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + DSPropertyAnnotatedNotUsingDefault.class.getName() + ".xml");
@@ -108,6 +118,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class DefaultDSPropertyAnnotated {}
 
+	@Test
 	public void testDefaultedPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + DefaultDSPropertyAnnotated.class.getName() + ".xml");
@@ -135,6 +146,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class IntDSPropertyAnnotated {}
 
+	@Test
 	public void testIntPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + IntDSPropertyAnnotated.class.getName() + ".xml");
@@ -162,6 +174,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class ClassDSPropertyAnnotated {}
 
+	@Test
 	public void testClassPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + ClassDSPropertyAnnotated.class.getName() + ".xml");
@@ -191,6 +204,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class MultiDSPropertyAnnotated {}
 
+	@Test
 	public void testMultiPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + MultiDSPropertyAnnotated.class.getName() + ".xml");
@@ -222,6 +236,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class PrefixPropertyAnnotated {}
 
+	@Test
 	public void testPrefixPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + PrefixPropertyAnnotated.class.getName() + ".xml");
@@ -251,6 +266,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class ArrayPropertyAnnotated {}
 
+	@Test
 	public void testArrayPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + ArrayPropertyAnnotated.class.getName() + ".xml");
@@ -280,6 +296,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class IntArrayPropertyAnnotated {}
 
+	@Test
 	public void testIntArrayPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + IntArrayPropertyAnnotated.class.getName() + ".xml");
@@ -309,6 +326,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class DefaultIntArrayPropertyAnnotated {}
 
+	@Test
 	public void testDefaultIntArrayPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + DefaultIntArrayPropertyAnnotated.class.getName() + ".xml");
@@ -338,6 +356,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class ClassArrayPropertyAnnotated {}
 
+	@Test
 	public void testClassArrayPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + ClassArrayPropertyAnnotated.class.getName() + ".xml");
@@ -359,6 +378,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class EmptyClassArrayPropertyAnnotated {}
 
+	@Test
 	public void testEmptyClassArrayPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + EmptyClassArrayPropertyAnnotated.class.getName() + ".xml");
@@ -386,6 +406,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class DefaultClassArrayPropertyAnnotated {}
 
+	@Test
 	public void testDefaultClassArrayPropertyAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + DefaultClassArrayPropertyAnnotated.class.getName() + ".xml");
@@ -412,6 +433,7 @@ public class DSPropertyAnnotationsTest extends TestCase {
 	@Component
 	public static class MarkerPropertyAnnotated {}
 
+	@Test
 	public void testMarkerAnnotation() throws Exception {
 
 		Resource r = jar.getResource("OSGI-INF/" + MarkerPropertyAnnotated.class.getName() + ".xml");

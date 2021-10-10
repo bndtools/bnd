@@ -1,5 +1,9 @@
 package aQute.bnd.comm.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -7,15 +11,19 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class HttpClientCacheTest extends TestCase {
+public class HttpClientCacheTest {
 
 	File			tmp;
 	File			cache;
@@ -51,13 +59,15 @@ public class HttpClientCacheTest extends TestCase {
 		}
 	}
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	public void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		cache = IO.getFile(tmp, "cache");
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -67,11 +77,12 @@ public class HttpClientCacheTest extends TestCase {
 		httpServer.start();
 	}
 
-	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		IO.close(httpServer);
 	}
 
+	@Test
 	public void testGetNewThenUnmodifiedThenModified() throws URISyntaxException, Exception {
 		try (HttpClient client = new HttpClient();) {
 
@@ -125,6 +136,7 @@ public class HttpClientCacheTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testPrivateFile() throws Exception {
 		try (HttpClient client = new HttpClient();) {
 			client.setCache(new File(tmp, "cache"));
@@ -135,26 +147,26 @@ public class HttpClientCacheTest extends TestCase {
 			// File does not exist
 			//
 
-			assertFalse("File should not exist", t1.isFile());
+			assertFalse(t1.isFile(), "File should not exist");
 			TaggedData tag = client.build()
 				.useCache(t1)
 				.asTag()
 				.go(new URI(httpServer.getBaseURI() + "/testetag"));
-			assertTrue("Expected the file to be created (not unmodified)", tag.isOk());
-			assertTrue("Just created the file", t1.isFile());
-			assertEquals("Should be the tag we set", "1234", tag.getTag());
+			assertTrue(tag.isOk(), "Expected the file to be created (not unmodified)");
+			assertTrue(t1.isFile(), "Just created the file");
+			assertEquals("1234", tag.getTag(), "Should be the tag we set");
 
 			tag = client.build()
 				.useCache(t1, 100000)
 				.asTag()
 				.go(new URI(httpServer.getBaseURI() + "/testetag"));
-			assertEquals("Expected file to be 'fresh'", State.UNMODIFIED, tag.getState());
+			assertEquals(State.UNMODIFIED, tag.getState(), "Expected file to be 'fresh'");
 
 			tag = client.build()
 				.useCache(t1)
 				.asTag()
 				.go(new URI(httpServer.getBaseURI() + "/testetag"));
-			assertTrue("Should have checked so we should have unmodified", tag.isNotModified());
+			assertTrue(tag.isNotModified(), "Should have checked so we should have unmodified");
 
 			etag = "5678";
 
@@ -162,26 +174,26 @@ public class HttpClientCacheTest extends TestCase {
 				.useCache(t1, 100000)
 				.asTag()
 				.go(new URI(httpServer.getBaseURI() + "/testetag"));
-			assertEquals("Since it is still fresh, we expect no new fetch", State.UNMODIFIED, tag.getState());
+			assertEquals(State.UNMODIFIED, tag.getState(), "Since it is still fresh, we expect no new fetch");
 
 			tag = client.build()
 				.useCache(t1)
 				.asTag()
 				.go(new URI(httpServer.getBaseURI() + "/testetag"));
-			assertEquals("We should have fetched it with the new etag", "5678", tag.getTag());
-			assertTrue("And it should have been modified", tag.isOk());
+			assertEquals("5678", tag.getTag(), "We should have fetched it with the new etag");
+			assertTrue(tag.isOk(), "And it should have been modified");
 
 			String s = client.build()
 				.useCache(t1)
 				.get(String.class)
 				.go(new URI(httpServer.getBaseURI() + "/testetag"));
-			assertEquals("Content check", "5678", s);
+			assertEquals("5678", s, "Content check");
 
 			byte[] b = client.build()
 				.useCache(t1)
 				.get(byte[].class)
 				.go(new URI(httpServer.getBaseURI() + "/testetag"));
-			assertTrue("Content check", Arrays.equals("5678".getBytes(), b));
+			assertTrue(Arrays.equals("5678".getBytes(), b), "Content check");
 		}
 	}
 

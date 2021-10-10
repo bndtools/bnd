@@ -1,5 +1,10 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -13,17 +18,19 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class ManifestTest extends TestCase {
+public class ManifestTest {
 
-	public static void testNameSection() throws Exception {
+	@Test
+	public void testNameSection() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Export-Package", "org.osgi.framework");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -63,7 +70,8 @@ public class ManifestTest extends TestCase {
 
 	}
 
-	public static void testUnicode() throws Exception {
+	@Test
+	public void testUnicode() throws Exception {
 		Builder b = new Builder();
 		String longSentence = "\u1401\u1402\u1403\u1404\u1405\u1406\u1407\u1408\u1409\u140A\u140B\u140C\u140D\u140E\u140F\u1410\u1411\u1412\u1413\u1414\u1415\u1416\u1417\u1418\u1419\u141A\u141B\u141C\u141D\u141E\u141F\u1420\u1421\u1422\u1422\u1423\u1424\u1425\u1426\u1427\u1428\u1429\u1429\u142A\u142B\u142C\u142D\u142E\u142F\u1430\u1431\u1432\u1433\u1434\u1435\u1436\u1437\u1438\u1439\u143A\u143B\u143C\u143D\u143E\u143F\u1440\u1441\u1442\u1443\u1444\u1444\u1445\u1446\u1447\u1448\u1449\u144A\u144B\u144C\u144D";
 		String shortSentence = "\u1401\u1402\u1403\u1404\u1405\u1406\u1407\u1408\u1409\u140A\u140B\u140C\u140D\u140E\u140F\u1410\u1411\u1412\u1413\u1414\u1415\u1416";
@@ -109,7 +117,8 @@ public class ManifestTest extends TestCase {
 
 	}
 
-	public static void test72() throws Exception {
+	@Test
+	public void test72() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("H65", "01234567890123456789012345678901234567890123456789012345678901234");
 		b.setProperty("H66", "012345678901234567890123456789012345678901234567890123456789012345");
@@ -169,7 +178,8 @@ public class ManifestTest extends TestCase {
 			.find());
 	}
 
-	public static void testNoManifest() throws Exception {
+	@Test
+	public void testNoManifest() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-nomanifest", "true");
 		b.setProperty("Export-Package", "org.osgi.service.event.*");
@@ -185,7 +195,8 @@ public class ManifestTest extends TestCase {
 		assertNull(entry.getExtra());
 	}
 
-	public static void testRenameManifest() throws Exception {
+	@Test
+	public void testRenameManifest() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-manifest-name", "META-INF/FESTYMAN.MF");
 		b.setProperty("Subsystem-Wibble", "hullo");
@@ -214,7 +225,8 @@ public class ManifestTest extends TestCase {
 		zin.close();
 	}
 
-	public static void testNames() throws Exception {
+	@Test
+	public void testNames() throws Exception {
 		Manifest m = new Manifest();
 		m.getMainAttributes()
 			.putValue("Manifest-Version", "1.0");
@@ -232,7 +244,8 @@ public class ManifestTest extends TestCase {
 		System.err.println(new String(result));
 	}
 
-	public static void testUTF8() throws Exception {
+	@Test
+	public void testUTF8() throws Exception {
 		Manifest m = new Manifest();
 		m.getMainAttributes()
 			.putValue("Manifest-Version", "1.0");
@@ -250,7 +263,8 @@ public class ManifestTest extends TestCase {
 		System.err.println(new String(result));
 	}
 
-	public static void testQuotes() throws IOException {
+	@Test
+	public void testQuotes() throws IOException {
 		Map<String, Map<String, String>> map = new HashMap<>();
 		Map<String, String> clause = new HashMap<>();
 		clause.put("version1", "0");

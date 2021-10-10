@@ -1,5 +1,8 @@
 package aQute.bnd.deployer.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,26 +10,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class TestOSGiRepository extends TestCase {
+public class TestOSGiRepository {
 
+	private String	name;
 	private File tmp;
 
-	@Override
-	public void setUp() {
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		name = testInfo.getTestMethod()
+			.get()
+			.getName();
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ name)
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
-	@Override
+	@AfterEach
 	public void tearDown() {
 		IO.delete(tmp);
 	}
@@ -45,13 +60,14 @@ public class TestOSGiRepository extends TestCase {
 		return count;
 	}
 
+	@Test
 	public void testIndex1() throws Exception {
 		Processor reporter = new Processor();
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
 			Map<String, String> props = new HashMap<>();
-			props.put("name", getName());
+			props.put("name", name);
 			props.put("locations", IO.getFile("testdata/index1.xml")
 				.toURI()
 				.toString());
@@ -73,13 +89,14 @@ public class TestOSGiRepository extends TestCase {
 		}
 	}
 
+	@Test
 	public void testIndex2() throws Exception {
 		Processor reporter = new Processor();
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
 			Map<String, String> props = new HashMap<>();
-			props.put("name", getName());
+			props.put("name", name);
 			props.put("locations", IO.getFile("testdata/index2.xml")
 				.toURI()
 				.toString());
@@ -95,13 +112,14 @@ public class TestOSGiRepository extends TestCase {
 		}
 	}
 
+	@Test
 	public void testIndex2Compressed() throws Exception {
 		Processor reporter = new Processor();
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
 			Map<String, String> props = new HashMap<>();
-			props.put("name", getName());
+			props.put("name", name);
 			props.put("locations", IO.getFile("testdata/index2.xml.gz")
 				.toURI()
 				.toString());
@@ -117,6 +135,7 @@ public class TestOSGiRepository extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAmbiguous() throws Exception {
 		Processor reporter = new Processor();
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
@@ -126,7 +145,7 @@ public class TestOSGiRepository extends TestCase {
 			config.put("locations", IO.getFile("testdata/ambiguous.xml")
 				.toURI()
 				.toString());
-			config.put("name", getName());
+			config.put("name", name);
 			config.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(config);
 			repo.setReporter(reporter);
@@ -145,6 +164,7 @@ public class TestOSGiRepository extends TestCase {
 	 * making it blow up. This checks if we can use spaces in the name.
 	 */
 
+	@Test
 	public void testSpaceInName() throws Exception {
 		Processor reporter = new Processor();
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
@@ -155,7 +175,7 @@ public class TestOSGiRepository extends TestCase {
 				.getAbsoluteFile()
 				.toURI()
 				.toString());
-			config.put("name", getName());
+			config.put("name", name);
 			config.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(config);
 			repo.setReporter(reporter);

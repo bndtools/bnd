@@ -1,8 +1,17 @@
 package aQute.bnd.comm.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.HttpClient;
@@ -12,17 +21,22 @@ import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import junit.framework.TestCase;
 
 /**
  */
-public class HttpClientServerTest extends TestCase {
+public class HttpClientServerTest {
 	private File	tmp;
 	private Httpbin	httpsServer;
 
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 		Config config = new Config();
@@ -31,24 +45,27 @@ public class HttpClientServerTest extends TestCase {
 		httpsServer.start();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.close(httpsServer);
-		super.tearDown();
 	}
 
+	@Test
 	public void testSimpleSecureNoVerify() throws Exception {
 		assertOk(null, null, false);
 	}
 
+	@Test
 	public void testSimpleSecureVerify() throws Exception {
 		assertOk(null, null, true);
 	}
 
+	@Test
 	public void testSimpleSecureVerifyBasic() throws Exception {
 		assertOk("user", "good", true);
 	}
 
+	@Test
 	public void testSimpleSecureVerifyBearer() throws Exception {
 		assertOk(null, "token", true);
 	}

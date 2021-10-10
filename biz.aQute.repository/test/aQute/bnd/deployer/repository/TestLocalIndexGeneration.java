@@ -1,5 +1,12 @@
 package aQute.bnd.deployer.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +18,11 @@ import java.util.SortedSet;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
@@ -21,23 +33,30 @@ import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
-import junit.framework.TestCase;
 import test.lib.MockRegistry;
 import test.repository.FailingGeneratingProvider;
 import test.repository.NonGeneratingProvider;
 
 @SuppressWarnings("resource")
-public class TestLocalIndexGeneration extends TestCase {
+public class TestLocalIndexGeneration {
 
+	private String					name;
 	private Processor				reporter;
 	private LocalIndexedRepo		repo;
 	private File					outputDir;
 	private HashMap<String, String>	config;
 
-	@Override
-	protected void setUp() throws Exception {
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		name = testInfo.getTestMethod()
+			.get()
+			.getName();
 		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
+		outputDir = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ name)
+			.getAbsoluteFile();
 		IO.delete(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -54,7 +73,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setReporter(reporter);
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.delete(outputDir);
 		assertEquals(0, reporter.getErrors()
@@ -63,12 +82,14 @@ public class TestLocalIndexGeneration extends TestCase {
 			.size());
 	}
 
+	@Test
 	public void testInitiallyEmpty() throws Exception {
 		List<String> list = repo.list(".*");
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
+	@Test
 	public void testDeployBundle() throws Exception {
 		PutResult r = repo.put(
 			new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
@@ -96,6 +117,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOverwrite() throws Exception {
 		config.put("overwrite", "false");
 		repo.setProperties(config);
@@ -121,6 +143,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertNull(r.artifact);
 	}
 
+	@Test
 	public void testInvalidContentProvider() throws Exception {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String, String> config = new HashMap<>();
@@ -140,6 +163,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
+	@Test
 	public void testNonGeneratingProvider() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(new NonGeneratingProvider());
@@ -164,6 +188,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
+	@Test
 	public void testFailToGenerate() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(new FailingGeneratingProvider());
@@ -188,6 +213,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
+	@Test
 	public void testValidGZipFile() throws Exception {
 		// The test now uses a normal text file
 		// PutResult r = repo.put(new BufferedInputStream(new FileInputStream(
@@ -208,6 +234,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		// }
 	}
 
+	@Test
 	public void testUncompressedIndexFile() throws Exception {
 		repo = new LocalIndexedRepo();
 		config = new HashMap<>();
@@ -247,9 +274,9 @@ public class TestLocalIndexGeneration extends TestCase {
 		map.put("locations", index.getAbsoluteFile()
 			.toURI()
 			.toString());
-		map.put("name", getName());
+		map.put("name", name);
 		map.put("cache",
-			new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
+			new File("generated/tmp/test/cache/" + getClass().getName() + "/" + name).getAbsolutePath());
 		repo.setProperties(map);
 		Processor p = new Processor();
 		p.addBasicPlugin(httpClient);

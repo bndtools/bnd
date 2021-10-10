@@ -1,5 +1,8 @@
 package aQute.bnd.maven.reporter.plugin.entries.mavenproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,12 +12,13 @@ import java.util.Locale;
 
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
-import junit.framework.TestCase;
 
-public class MavenProjectContentPluginTest extends TestCase {
+public class MavenProjectContentPluginTest {
 
+	@Test
 	public void testProjectNoBundle() throws Exception {
 		final MavenProjectContentPlugin plugin = new MavenProjectContentPlugin();
 
@@ -23,6 +27,7 @@ public class MavenProjectContentPluginTest extends TestCase {
 		assertNull(result);
 	}
 
+	@Test
 	public void testProjectWithBundle() throws Exception {
 		final MavenProjectContentPlugin plugin = new MavenProjectContentPlugin();
 

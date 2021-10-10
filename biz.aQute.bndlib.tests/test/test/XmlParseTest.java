@@ -1,10 +1,14 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
-import junit.framework.TestCase;
 
-public class XmlParseTest extends TestCase {
+public class XmlParseTest {
+	@Test
 	public void testSimple() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-plugin", "aQute.lib.spring.SpringXMLType");

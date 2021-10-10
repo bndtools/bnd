@@ -1,6 +1,9 @@
 package aQute.bnd.main;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -37,21 +44,22 @@ import aQute.lib.io.IO;
 import biz.aQute.resolve.BndResolver;
 import biz.aQute.resolve.ResolveProcess;
 import biz.aQute.resolve.ResolverLogger;
-import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
-public class DistroCommandTest extends TestCase {
+public class DistroCommandTest {
 
 	private Framework	framework;
 	private File		tmp;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		tmp.mkdirs();
 
@@ -90,16 +98,15 @@ public class DistroCommandTest extends TestCase {
 				.get(Constants.FRAGMENT_HOST) == null)
 				b.start();
 		}
-		super.setUp();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		framework.stop();
 		framework.waitForStop(10000);
-		super.tearDown();
 	}
 
+	@Test
 	public void testMultiplePackageVersionsKeepsHighest() throws Exception {
 		bnd bnd = new bnd();
 		CommandLine cmdline = new CommandLine(null);
@@ -141,6 +148,7 @@ public class DistroCommandTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMultipleCapabilitiesPerNamespace() throws Exception {
 		bnd bnd = new bnd();
 		CommandLine cmdline = new CommandLine(null);
@@ -174,6 +182,7 @@ public class DistroCommandTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testXmlOutput() throws Exception {
 		bnd bnd = new bnd();
 		CommandLine cmdline = new CommandLine(null);
@@ -243,6 +252,7 @@ public class DistroCommandTest extends TestCase {
 		assertTrue(versions.contains(new Version("1.3.0")));
 	}
 
+	@Test
 	public void testResolveAgainstDistro() throws Exception {
 		bnd bnd = new bnd();
 		CommandLine cmdline = new CommandLine(null);
@@ -282,6 +292,7 @@ public class DistroCommandTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDistroJarLastModified() throws Exception {
 		bnd bnd = new bnd();
 		CommandLine cmdline = new CommandLine(null);
@@ -321,6 +332,7 @@ public class DistroCommandTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDistroJarNotResolvable() throws Exception {
 		bnd bnd = new bnd();
 		CommandLine cmdline = new CommandLine(null);

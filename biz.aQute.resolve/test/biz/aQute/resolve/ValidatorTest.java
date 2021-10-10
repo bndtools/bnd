@@ -1,11 +1,15 @@
 package biz.aQute.resolve;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
 
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Resource;
 
@@ -17,10 +21,10 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.ResolverValidator.Resolution;
-import junit.framework.TestCase;
 
-public class ValidatorTest extends TestCase {
+public class ValidatorTest {
 
+	@Test
 	public void testMultipleSameRequirements() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
@@ -50,6 +54,7 @@ public class ValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSmallWithSpecificResources() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
@@ -66,6 +71,7 @@ public class ValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSmall() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
@@ -80,6 +86,7 @@ public class ValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDelibarateFail() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
@@ -94,11 +101,12 @@ public class ValidatorTest extends TestCase {
 			assertEquals(1, resolutions.size());
 			String message = resolutions.get(0).message;
 			String expectedToContain = "missing requirement osgi.wiring.package;filter:='(osgi.wiring.package=org.apache.felix.gogo.api)'";
-			assertTrue(String.format("expected to contain <%s> but was <%s>", expectedToContain, message),
-				message.contains(expectedToContain));
+			assertTrue(message.contains(expectedToContain),
+				String.format("expected to contain <%s> but was <%s>", expectedToContain, message));
 		}
 	}
 
+	@Test
 	public void testDelibarateFailWithSpecificResources() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
@@ -113,11 +121,12 @@ public class ValidatorTest extends TestCase {
 			assertEquals(1, resolutions.size());
 			String message = resolutions.get(0).message;
 			String expectedToContain = "missing requirement osgi.wiring.package;filter:='(osgi.wiring.package=org.apache.felix.gogo.api)'";
-			assertTrue(String.format("expected to contain <%s> but was <%s>", expectedToContain, message),
-				message.contains(expectedToContain));
+			assertTrue(message.contains(expectedToContain),
+				String.format("expected to contain <%s> but was <%s>", expectedToContain, message));
 		}
 	}
 
+	@Test
 	public void testValidatingResourcesWithDocumentaryAttributes() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
@@ -142,20 +151,6 @@ public class ValidatorTest extends TestCase {
 				.anyMatch(c -> Objects.equals(c.getAttributes()
 					.get(PACKAGE_NAMESPACE), "org.osgi.framework")));
 			validator.validateResources(repository, resources);
-			assertTrue(validator.check());
-		}
-	}
-
-	public void _testLarger() throws Exception {
-		try (ResolverValidator validator = new ResolverValidator();) {
-			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
-			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
-			validator.setSystem(system.build());
-			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/larger-repo.xml")
-				.toURI());
-			validator.validate();
 			assertTrue(validator.check());
 		}
 	}

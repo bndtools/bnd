@@ -1,6 +1,13 @@
 package aQute.launcher.plugin;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -8,18 +15,23 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class ProjectLauncherImplTest extends TestCase {
+public class ProjectLauncherImplTest {
 
 	private Workspace	ws;
 	private Project		project;
 	private File		tmp;
 	private File		launcherJar;
 
-	@Override
-	protected void setUp() throws Exception {
-		tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + getName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 		IO.copy(IO.getFile("testresources/ws"), tmp);
@@ -35,12 +47,13 @@ public class ProjectLauncherImplTest extends TestCase {
 
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.close(project);
 		IO.close(ws);
 	}
 
+	@Test
 	public void testParseSystemCapabilities() throws Exception {
 		try (ProjectLauncherImpl launcher = new ProjectLauncherImpl(project, new Container(project, launcherJar))) {
 			launcher.updateFromProject();
@@ -53,6 +66,7 @@ public class ProjectLauncherImplTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCwdIsProjectBase() throws Exception {
 		try (ProjectLauncherImpl launcher = new ProjectLauncherImpl(project, new Container(project, launcherJar))) {
 			launcher.updateFromProject();

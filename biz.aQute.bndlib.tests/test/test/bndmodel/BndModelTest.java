@@ -1,5 +1,9 @@
 package test.bndmodel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -7,15 +11,16 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.Document;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class BndModelTest extends TestCase {
+public class BndModelTest {
 
 	static final String	BND_BUILDPATH			= "-buildpath: \\\n" + "\torg.apache.felix.dependencymanager,\\\n"
 		+ "\tosgi.core\n";
@@ -28,6 +33,7 @@ public class BndModelTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testEscapingBackslashes() throws Exception {
 		String longstring = "abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890";
 		String formattedLongstring = "abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs \\\n"
@@ -60,6 +66,7 @@ public class BndModelTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBadInput() throws UnsupportedEncodingException, IOException {
 		BndEditModel model = new BndEditModel();
 
@@ -71,6 +78,7 @@ public class BndModelTest extends TestCase {
 		assertTrue(runProperties.containsKey("ERROR"));
 	}
 
+	@Test
 	public void testSetBuildPath() throws Exception {
 
 		BndEditModel model = new BndEditModel();
@@ -95,6 +103,7 @@ public class BndModelTest extends TestCase {
 	 * Check if we can get a processor of the model and verify that we get the
 	 * proper properties.
 	 */
+	@Test
 	public void testParent() throws Exception {
 
 		BndEditModel model = new BndEditModel();
@@ -104,8 +113,8 @@ public class BndModelTest extends TestCase {
 
 		Processor p = model.getProperties();
 
-		assertEquals("Set in file, refers to macro", "a, b, c", p.getProperty(Constants.RUNBUNDLES));
-		assertEquals("Changes, refers to macro", "framework", p.getProperty(Constants.RUNFW));
+		assertEquals("a, b, c", p.getProperty(Constants.RUNBUNDLES), "Set in file, refers to macro");
+		assertEquals("framework", p.getProperty(Constants.RUNFW), "Changes, refers to macro");
 
 	}
 

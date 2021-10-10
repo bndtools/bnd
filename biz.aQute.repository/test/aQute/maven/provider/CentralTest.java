@@ -1,7 +1,14 @@
 package aQute.maven.provider;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.File;
 import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.http.testservers.HttpTestServer.Config;
@@ -10,9 +17,8 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.maven.api.MavenScope;
 import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
-import junit.framework.TestCase;
 
-public class CentralTest extends TestCase {
+public class CentralTest {
 	private static final String		REPO_URL	= "https://repo.maven.apache.org/maven2/";
 	String							tmpName;
 	File							local;
@@ -21,10 +27,14 @@ public class CentralTest extends TestCase {
 	MavenRepository					storage;
 	ReporterAdapter					reporter	= new ReporterAdapter(System.err);
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
 		local = IO.getFile(tmpName + "/local");
 		reporter.setTrace(true);
 		Config config = new Config();
@@ -36,12 +46,12 @@ public class CentralTest extends TestCase {
 			.executor(), null);
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
-		super.tearDown();
 		storage.close();
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		Revision r = Program.valueOf("org.lunarray.model.extensions.descriptor", "spring")
 			.version("1.0");

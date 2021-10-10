@@ -1,17 +1,21 @@
 package biz.aQute.resolve;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class StandaloneTest extends TestCase {
+public class StandaloneTest {
 
+	@Test
 	public void testStandalone() throws Exception {
 		File f = IO.getFile("testdata/standalone/simple.bndrun");
 		Run run = Run.createRun(null, f);
@@ -26,6 +30,7 @@ public class StandaloneTest extends TestCase {
 		assertEquals("http://example.org/index.xml", f0.getLocation());
 	}
 
+	@Test
 	public void testMultipleUrls() throws Exception {
 		File f = IO.getFile("testdata/standalone/multi.bndrun");
 		Run run = Run.createRun(null, f);
@@ -45,6 +50,7 @@ public class StandaloneTest extends TestCase {
 		assertEquals("http://example.org/index2.xml", f1.getLocation());
 	}
 
+	@Test
 	public void testRelativeUrl() throws Exception {
 		File f = IO.getFile("testdata/standalone/relative_url.bndrun");
 		Run run = Run.createRun(null, f);
@@ -68,6 +74,7 @@ public class StandaloneTest extends TestCase {
 		assertEquals("http://example.org/index2.xml", f1.getLocation());
 	}
 
+	@Test
 	public void testExtraAttribs() throws Exception {
 		File f = IO.getFile("testdata/standalone/attribs.bndrun");
 		Run run = Run.createRun(null, f);
@@ -85,6 +92,7 @@ public class StandaloneTest extends TestCase {
 		assertEquals(cacheDir, f0.getRoot());
 	}
 
+	@Test
 	public void testMacroExpansion() throws Exception {
 		File f = IO.getFile("testdata/standalone/macro.bndrun");
 		Run run = Run.createRun(null, f);

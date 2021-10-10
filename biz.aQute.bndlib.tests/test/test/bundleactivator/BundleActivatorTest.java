@@ -1,13 +1,15 @@
 package test.bundleactivator;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.osgi.Builder;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class BundleActivatorTest extends TestCase {
+public class BundleActivatorTest {
 
 	public static class DirectImplement implements BundleActivator {
 
@@ -25,6 +27,7 @@ public class BundleActivatorTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBundleActivatorVerify() throws Exception {
 		assertBundleActivator(DirectImplement.class, null);
 	}
@@ -33,6 +36,7 @@ public class BundleActivatorTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBundleActivatorInheritVerify() throws Exception {
 		assertBundleActivator(InheritBundleActivator.class, null);
 	}
@@ -57,6 +61,7 @@ public class BundleActivatorTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBundleActivatorInheritViaInterfaceVerify() throws Exception {
 		assertBundleActivator(IndirectImplementViaInterface.class, null);
 	}

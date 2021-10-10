@@ -1,6 +1,8 @@
 package aQute.bnd.deployer.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,22 +10,32 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
-import junit.framework.TestCase;
 import test.lib.NanoHTTPD;
 
-public class TestLocalIndexedRepo extends TestCase {
+public class TestLocalIndexedRepo {
 
 	private File		outputDir;
 	private NanoHTTPD	httpd;
 	private int			httpdPort;
 
-	@Override
-	protected void setUp() throws Exception {
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
+		outputDir = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.deleteWithException(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -33,11 +45,12 @@ public class TestLocalIndexedRepo extends TestCase {
 		httpdPort = httpd.getPort();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		httpd.stop();
 	}
 
+	@Test
 	public void testLocalIndexLocation() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
@@ -53,6 +66,7 @@ public class TestLocalIndexedRepo extends TestCase {
 		assertTrue(reporter.check());
 	}
 
+	@Test
 	public void testLocalIndexLocationWithPretty() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
@@ -81,6 +95,7 @@ public class TestLocalIndexedRepo extends TestCase {
 		assertThat(indexFile).hasDigest("SHA1", digest.digest());
 	}
 
+	@Test
 	public void testLocalAndRemoteIndexLocations() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();

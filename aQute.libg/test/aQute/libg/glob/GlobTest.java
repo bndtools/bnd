@@ -1,20 +1,27 @@
 package aQute.libg.glob;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.regex.Pattern;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class GlobTest extends TestCase {
+public class GlobTest {
 
+	@Test
 	public void testCaseInsensitive() {
 		match("xx(?i)xx(?i)xx", "xx(?i)xx(?i)xx", "xxXXxx", "xxXxxx", "xxxxxx", "xxxxXX");
 
 	}
 
+	@Test
 	public void testtail() {
 		match("com.foo.*", "com\\.foo\\..*", "~com.foo", "com.foo.bar");
 	}
 
+	@Test
 	public void testDifferentMappings() {
 
 		match("[\\p{Lower}]", "[\\p{Lower}]", "e", "f", "~B");
@@ -77,6 +84,7 @@ public class GlobTest extends TestCase {
 		match("{1,2}", "(?:1|2)", "1", "2");
 	}
 
+	@Test
 	public void testEscape() {
 		match("[*]", "[*]", "*");
 		match("\\*", "\\*", "*");
@@ -96,11 +104,13 @@ public class GlobTest extends TestCase {
 		match("\\{x\\}*", "\\{x\\}.*", "{x}foobar");
 	}
 
+	@Test
 	public void testQuoted() {
 		match("abc\\Q?*&%$#\\Edef", "abc\\Q?*&%$#\\Edef", "abc?*&%$#def");
 
 	}
 
+	@Test
 	public void testBracketed() {
 
 		match("[A-F]+", "[A-F]+", "AFFAED");
@@ -121,10 +131,12 @@ public class GlobTest extends TestCase {
 		match("[\\\\{}]", "[\\\\{}]", "{", "}");
 	}
 
+	@Test
 	public void testSimple() {
 		match("*foo*", ".*foo.*", "foo", "aaaafooxxx", "food", "Xfood", "~ood");
 	}
 
+	@Test
 	public void testCurlies() {
 		match("(a){1,2}?", "(a){1,2}.");
 		match("{[a],[b]}", "(?:[a]|[b])", "b");
@@ -135,11 +147,13 @@ public class GlobTest extends TestCase {
 		match("{a,b}{1,2}", "(?:a|b){1,2}", "b", "bb", "~bbb");
 	}
 
+	@Test
 	public void testOr() {
 		match("abc|def|ghi", "abc|def|ghi", "abc", "ghi");
 		match("{abc,def,ghi}", "(?:abc|def|ghi)", "abc", "ghi");
 	}
 
+	@Test
 	public void testUrl() {
 		Glob glob;
 
@@ -167,12 +181,12 @@ public class GlobTest extends TestCase {
 
 		for (String m : match) {
 			if (m.startsWith("~")) {
-				assertFalse("Failed to match " + glob + "~" + m.substring(1), p.matcher(m.substring(1))
-					.matches());
+				assertFalse(p.matcher(m.substring(1))
+					.matches(), "Failed to match " + glob + "~" + m.substring(1));
 
 			} else
-				assertTrue("Failed to match " + glob + "~" + m, p.matcher(m)
-					.matches());
+				assertTrue(p.matcher(m)
+					.matches(), "Failed to match " + glob + "~" + m);
 		}
 		if (!glob.contains("\\Q")) {
 			String quoted = "\\Q" + glob + "\\E";

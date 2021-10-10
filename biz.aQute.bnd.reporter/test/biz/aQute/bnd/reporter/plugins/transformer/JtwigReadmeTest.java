@@ -3,12 +3,14 @@ package biz.aQute.bnd.reporter.plugins.transformer;
 import java.io.File;
 import java.net.URISyntaxException;
 
+import org.junit.jupiter.api.Test;
+
 import biz.aQute.bnd.reporter.plugins.transformer.TwigChecker.ListBuilder;
 import biz.aQute.bnd.reporter.plugins.transformer.TwigChecker.MapBuilder;
-import junit.framework.TestCase;
 
-public class JtwigReadmeTest extends TestCase {
+public class JtwigReadmeTest {
 
+	@Test
 	public void testMinReadme() throws Exception {
 		TwigChecker checker = checker();
 
@@ -16,6 +18,7 @@ public class JtwigReadmeTest extends TestCase {
 			.check();
 	}
 
+	@Test
 	public void testMaxReadme() throws Exception {
 		TwigChecker checker = checker();
 

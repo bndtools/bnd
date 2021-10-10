@@ -1,11 +1,15 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.header.Attrs;
-import junit.framework.TestCase;
 
-public class TestAttrs extends TestCase {
+public class TestAttrs {
 
-	public static void testAttrs() {
+	@Test
+	public void testAttrs() {
 		Attrs attrs = new Attrs();
 		attrs.put("a", "aa");
 		attrs.put("a:", "ab");

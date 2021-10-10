@@ -1,10 +1,18 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.awt.MenuContainer;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -12,14 +20,13 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Plugin;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 
-public class PluginTest extends TestCase {
+public class PluginTest {
 	private Processor main;
 
-	@Override
+	@BeforeEach
 	protected void setUp() {
 		main = new Processor();
 	}
@@ -28,6 +35,7 @@ public class PluginTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPluginInheritance() throws IOException {
 		Processor top = new Processor();
 		Processor middle = new Processor(top);
@@ -48,6 +56,7 @@ public class PluginTest extends TestCase {
 		assertTrue(bottom.check());
 	}
 
+	@Test
 	public void testMissingPluginNotUsed() throws Exception {
 		Builder p = new Builder();
 		p.setProperty("-plugin", "missing;command:=\"-abc,-def\"");
@@ -80,6 +89,7 @@ public class PluginTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPlugin() {
 		main.setProperty(Constants.PLUGIN, "test.PluginTest.TPlugin;a=1;b=2");
 
@@ -92,6 +102,7 @@ public class PluginTest extends TestCase {
 	}
 
 	@SuppressWarnings("deprecation")
+	@Test
 	public void testLoadPlugin() {
 		main.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
 		for (java.applet.Applet applet : main.getPlugins(java.applet.Applet.class)) {
@@ -100,6 +111,7 @@ public class PluginTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testLoadPluginFailsWithMissingPath() throws Exception {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
@@ -109,6 +121,7 @@ public class PluginTest extends TestCase {
 		assertTrue(p.check("plugin thinlet\\.Thinlet"));
 	}
 
+	@Test
 	public void testLoadPluginWithPath() {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
@@ -122,6 +135,7 @@ public class PluginTest extends TestCase {
 			.getName());
 	}
 
+	@Test
 	public void testLoadPluginWithGlobalPluginPath() {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
@@ -136,9 +150,15 @@ public class PluginTest extends TestCase {
 			.getName());
 	}
 
-	public void testLoadPluginWithGlobalPluginPathURL() throws Exception {
-		File tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + getName() + "/thinlet.jar")
-			.getAbsoluteFile();
+	@Test
+	public void testLoadPluginWithGlobalPluginPathURL(TestInfo testInfo) throws Exception {
+		File tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+		.get()
+		.getName() + "/"
+			+ testInfo.getTestMethod()
+			.get()
+			.getName())
+		.getAbsoluteFile();
 		IO.delete(tmp);
 		try (Builder p = new Builder()) {
 			p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");

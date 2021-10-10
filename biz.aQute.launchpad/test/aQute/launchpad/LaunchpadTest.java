@@ -1,10 +1,11 @@
 package aQute.launchpad;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.net.URL;
@@ -19,11 +20,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import org.assertj.core.api.JUnitSoftAssertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -42,23 +45,24 @@ import aQute.launchpad.test.inject.SomeService;
 import aQute.lib.io.IO;
 import aQute.libg.parameters.ParameterMap;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class LaunchpadTest {
 	static final String					org_apache_felix_framework	= "org.apache.felix.framework;version='[5.6.10,5.6.11)'";
 	static final String					org_apache_felix_scr		= "org.apache.felix.scr;version='[2.1.12,2.1.13)'";
 	static final String					org_apache_felix_log		= "org.apache.felix.log;version='[1.2.0,1.2.1)'";
-	@Rule
-	public final JUnitSoftAssertions	softly	= new JUnitSoftAssertions();
+	@InjectSoftAssertions
+	public SoftAssertions	softly;
 
 	LaunchpadBuilder					builder;
 	File								tmp;
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		builder = new LaunchpadBuilder();
 
 	}
 
-	@After
+	@AfterEach
 	public void after() throws Exception {
 		builder.close();
 	}
@@ -256,19 +260,19 @@ public class LaunchpadTest {
 
 	}
 
-	@Test(expected = TimeoutException.class)
+	@Test
 	public void testTimeout() throws Exception {
 		class X {
 			@Service(timeout = 500)
 			String s;
 		}
 		X x = new X();
-		try (Launchpad fw = builder.bundles()
-			.runfw(org_apache_felix_framework)
-			.create()
-			.inject(x)) {
-
-		}
+		assertThatCode(() -> {
+			try (Launchpad fw = builder.bundles()
+				.runfw(org_apache_felix_framework)
+				.create()
+				.inject(x)) {}
+		}).isInstanceOf(TimeoutException.class);
 	}
 
 	@Test

@@ -1,12 +1,17 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.File;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.build.DownloadBlocker;
-import junit.framework.TestCase;
 
-public class DownloadBlockerTest extends TestCase {
+public class DownloadBlockerTest {
 
+	@Test
 	public void testSimple() throws Exception {
 		{
 			DownloadBlocker db = new DownloadBlocker(null);

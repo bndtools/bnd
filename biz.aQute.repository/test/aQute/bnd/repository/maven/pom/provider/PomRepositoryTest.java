@@ -1,6 +1,12 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.net.URL;
@@ -19,6 +25,11 @@ import java.util.SortedSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
@@ -42,9 +53,8 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
-import junit.framework.TestCase;
 
-public class PomRepositoryTest extends TestCase {
+public class PomRepositoryTest {
 	static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
 	Reporter			reporter			= new Slf4jReporter(PomRepositoryTest.class);
@@ -53,9 +63,15 @@ public class PomRepositoryTest extends TestCase {
 	private File		location;
 	private HttpClient	client;
 
-	@Override
-	protected void setUp() {
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		localRepo = IO.getFile(MAVEN_REPO_LOCAL);
 		location = IO.getFile(tmp, "index.xml");
 		IO.delete(tmp);
@@ -63,11 +79,12 @@ public class PomRepositoryTest extends TestCase {
 		client = new HttpClient();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() {
 		client.close();
 	}
 
+	@Test
 	public void testPomTransitive() throws Exception {
 		MavenRepository mr = getRepo();
 
@@ -82,6 +99,7 @@ public class PomRepositoryTest extends TestCase {
 		assertAllBndCap(value);
 	}
 
+	@Test
 	public void testPomNotTransitive() throws Exception {
 		MavenRepository mr = getRepo();
 
@@ -96,6 +114,7 @@ public class PomRepositoryTest extends TestCase {
 		assertAllBndCap(value);
 	}
 
+	@Test
 	public void testDependenciesWithVersionRanges() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -104,8 +123,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("revision", "com.mchange:mchange-commons-java:0.2.10");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -141,6 +160,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRepoIndexFileRefreshOnReload() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -149,8 +169,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.8");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("transitive", "false");
 			config.put("name", "test");
 			bpr.setProperties(config);
@@ -166,8 +186,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.7");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("transitive", "false");
 			config.put("name", "test");
 			bpr.setProperties(config);
@@ -183,8 +203,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.8");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("transitive", "false");
 			config.put("name", "test");
 			bpr.setProperties(config);
@@ -197,6 +217,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testWithSources() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -205,8 +226,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("revision", "com.mchange:mchange-commons-java:0.2.10");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 			bpr.list(null);
@@ -221,6 +242,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoFile() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -229,8 +251,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simple.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -240,6 +262,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoFileExistingParent() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -248,8 +271,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/existing-parent.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -259,6 +282,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoFileMissingParent() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -267,8 +291,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/missing-parent.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -278,6 +302,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEntityPom() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -286,8 +311,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/entity.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -297,6 +322,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoFileNoDeps() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -305,8 +331,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simple-nodeps.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -316,6 +342,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoURI() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -325,8 +352,8 @@ public class PomRepositoryTest extends TestCase {
 			Map<String, String> config = new HashMap<>();
 			config.put("pom",
 				"https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -342,6 +369,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoNewURIConfig() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -368,6 +396,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoNewURIConfigStatusError() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -456,6 +485,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBndPomRepoRefresh() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -464,8 +494,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simple.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -480,6 +510,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRepository() throws Exception {
 		MavenRepository repo = getRepo();
 		List<Revision> revisions = Arrays.asList(Revision.valueOf("bcel:bcel:5.1"));
@@ -495,6 +526,7 @@ public class PomRepositoryTest extends TestCase {
 		assertFalse(pom.isStale());
 	}
 
+	@Test
 	public void testSearchRepoSimple() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -503,8 +535,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			mcsr.setProperties(config);
 
@@ -514,23 +546,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
-	public void testSearchRepoNoUrls() throws Exception {
-		try (BndPomRepository mcsr = new BndPomRepository()) {
-			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
-			w.setBase(tmp);
-			mcsr.setRegistry(w);
-
-			Map<String, String> config = new HashMap<>();
-			config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
-			config.put("name", "test");
-			mcsr.setProperties(config);
-
-			List<String> list = mcsr.list(null);
-			assertNotNull(list);
-			assertEquals(1, list.size());
-		}
-	}
-
+	@Test
 	public void testSearchRepoMultipleConfigurationsDontBreak() throws Exception {
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 		w.setBase(tmp);
@@ -542,6 +558,7 @@ public class PomRepositoryTest extends TestCase {
 			Map<String, String> config = new HashMap<>();
 			config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
 			config.put("name", "bnd320");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			mcsrBnd320.setProperties(config);
 
 			mcsrBnd330.setRegistry(w);
@@ -549,6 +566,7 @@ public class PomRepositoryTest extends TestCase {
 			config = new HashMap<>();
 			config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.3.0");
 			config.put("name", "bnd330");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			mcsrBnd330.setProperties(config);
 
 			List<String> list320 = mcsrBnd320.list(null);
@@ -576,42 +594,31 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
-	/**
-	 * This test occasionally fails on Travis.
-	 *
-	 * <pre>
-	aQute.bnd.repository.maven.pom.provider.PomRepositoryTest > testSearchRepoAllVersions FAILED
-	    junit.framework.AssertionFailedError: expected:<1> but was:<2>
-	        at junit.framework.Assert.fail(Assert.java:57)
-	        at junit.framework.Assert.failNotEquals(Assert.java:329)
-	        at junit.framework.Assert.assertEquals(Assert.java:78)
-	        at junit.framework.Assert.assertEquals(Assert.java:234)
-	        at junit.framework.Assert.assertEquals(Assert.java:241)
-	        at junit.framework.TestCase.assertEquals(TestCase.java:409)
-	        at aQute.bnd.repository.maven.pom.provider.PomRepositoryTest.testSearchRepoAllVersions(PomRepositoryTest.java:220)
-	 * </pre>
-	 */
-	// public void testSearchRepoAllVersions() throws Exception {
-	// BndPomRepository mcsr = new BndPomRepository();
-	// Workspace w = Workspace.createStandaloneWorkspace(new Processor(),
-	// tmp.toURI());
-	// w.setBase(tmp);
-	// mcsr.setRegistry(w);
-	//
-	// Map<String,String> config = new HashMap<>();
-	// config.put("query",
-	// "q=g:biz.aQute.bnd+AND+a:biz.aQute.bnd&core=gav&rows=100");
-	// config.put("name", "test");
-	// mcsr.setProperties(config);
-	//
-	// List<String> list = mcsr.list(null);
-	// assertNotNull(list);
-	// // All the results are represented by a single bsn
-	// assertEquals(1, list.size());
-	// SortedSet<Version> versions = mcsr.versions("biz.aQute.bnd");
-	// assertTrue(versions.size() >= 4);
-	// }
+	@Disabled("This test is flaky because http://search.maven.org/solrsearch/select often returns 400")
+	@Test
+	public void testSearchRepoAllVersions() throws Exception {
+		try (BndPomRepository mcsr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			mcsr.setRegistry(w);
 
+			Map<String, String> config = new HashMap<>();
+			config.put("query", "q=g:biz.aQute.bnd+AND+a:biz.aQute.bnd&core=gav&rows=100");
+			config.put("name", "test");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
+			mcsr.setProperties(config);
+
+			List<String> list = mcsr.list(null);
+			assertNotNull(list);
+			// All the results are represented by a single bsn
+			assertThat(list).hasSize(1);
+			assertEquals(1, list.size());
+			SortedSet<Version> versions = mcsr.versions("biz.aQute.bnd");
+			assertTrue(versions.size() >= 4);
+		}
+	}
+
+	@Test
 	public void testSearchRepoFailNoQuery() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -626,6 +633,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSearchRepoFailNoName() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -634,12 +642,14 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			mcsr.setProperties(config);
 			mcsr.prepare();
 			assertEquals("Must get a name", mcsr.getStatus());
 		}
 	}
 
+	@Test
 	public void testNonStandardClassifierDependencies() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -652,8 +662,8 @@ public class PomRepositoryTest extends TestCase {
 			Map<String, String> config = new HashMap<>();
 			config.put("name", "pmd");
 			config.put("revision", "net.sourceforge.pmd:pmd-java:5.2.3");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("local", local.getAbsolutePath());
 			mcsr.setProperties(config);
 
@@ -678,6 +688,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMultipleRevisions() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -699,8 +710,8 @@ public class PomRepositoryTest extends TestCase {
 			});
 
 			config.put("revision", revisions);
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("local", local.getAbsolutePath());
 			config.put("transitive", "true");
 			mcsr.setProperties(config);
@@ -732,6 +743,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMultiplePomFiles() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -750,8 +762,8 @@ public class PomRepositoryTest extends TestCase {
 			});
 
 			config.put("pom", pomFiles);
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("local", local.getAbsolutePath());
 			mcsr.setProperties(config);
 
@@ -775,6 +787,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPomFilesWithDependencyManagement() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -783,8 +796,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simpleDepManagement.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -799,8 +812,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simpleDepManagement.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("dependencyManagement", "true");
 			config.put("name", "test");
 			bpr.setProperties(config);
@@ -811,6 +824,7 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPomFilesWithDependencyManagementImport() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -819,8 +833,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/depManagementImport.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("dependencyManagement", "true");
 			config.put("transitive", "false");
 			config.put("name", "test");
@@ -837,8 +851,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/depManagementImport.xml");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("dependencyManagement", "true");
 			config.put("transitive", "true");
 			config.put("name", "test");
@@ -857,6 +871,7 @@ public class PomRepositoryTest extends TestCase {
 	 * Furthermore a remote POM is added to the config to check run through the
 	 * stale-check
 	 */
+	@Test
 	public void testBndPomRepoFilePolling() throws Exception {
 		Path path = IO.getFile(tmp, "pom.xml")
 			.toPath();
@@ -872,8 +887,8 @@ public class PomRepositoryTest extends TestCase {
 			Map<String, String> config = new HashMap<>();
 			config.put("pom",
 				path.toString() + ",https://repo.maven.apache.org/maven2/javax/enterprise/cdi-api/2.0/cdi-api-2.0.pom");
-			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
-			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			config.put("poll.time", "1");
 			bpr.setProperties(config);

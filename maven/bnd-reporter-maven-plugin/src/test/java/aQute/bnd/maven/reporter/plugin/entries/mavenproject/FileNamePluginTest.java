@@ -1,17 +1,20 @@
 package aQute.bnd.maven.reporter.plugin.entries.mavenproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
-import junit.framework.TestCase;
 
-public class FileNamePluginTest extends TestCase {
+public class FileNamePluginTest {
 
+	@Test
 	public void testWorkspaceSettingsEntry() throws Exception {
 
 		final FileNamePlugin s = new FileNamePlugin();

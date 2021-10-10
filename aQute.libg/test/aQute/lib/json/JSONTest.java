@@ -1,5 +1,12 @@
 package aQute.lib.json;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,13 +30,14 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
 import aQute.libg.map.MAP;
-import junit.framework.TestCase;
 
-public class JSONTest extends TestCase {
+public class JSONTest {
 	JSONCodec codec = new JSONCodec();
 
 	static abstract class Base<V> implements List<V> {}
@@ -80,6 +88,7 @@ public class JSONTest extends TestCase {
 	/**
 	 * Test hooks
 	 */
+	@Test
 	public void testHooks() throws Exception {
 		JSONCodec c = new JSONCodec();
 		c.addHandler(Version.class, new Handler() {
@@ -118,6 +127,7 @@ public class JSONTest extends TestCase {
 
 	}
 
+	@Test
 	public void testGenericsVars() {
 		ParameterizedType type = (ParameterizedType) new TypeReference<Base<String>>() {}.getType();
 		System.out.println(type);
@@ -139,6 +149,7 @@ public class JSONTest extends TestCase {
 		public T field;
 	}
 
+	@Test
 	public void testGenerics() throws Exception {
 		Generics<String> s = new Generics<>();
 		s.field = "abc";
@@ -162,6 +173,7 @@ public class JSONTest extends TestCase {
 		public int b;
 	}
 
+	@Test
 	public void testMultiMap() throws Exception {
 		// A a = new A();
 		// B b = new B();
@@ -183,6 +195,7 @@ public class JSONTest extends TestCase {
 		public List<byte[]>	content;
 	}
 
+	@Test
 	public void testListOfByteArray() throws Exception {
 		final List<byte[]> l = Arrays.asList(new byte[] {
 			1
@@ -217,6 +230,7 @@ public class JSONTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testBase64AndHex() throws Exception {
 		byte[] b = "abc".getBytes("UTF-8");
 
@@ -244,6 +258,7 @@ public class JSONTest extends TestCase {
 		public List<String>	list;
 	}
 
+	@Test
 	public void testZip() throws Exception {
 		X x = new X();
 		x.hello = "hello";
@@ -269,6 +284,7 @@ public class JSONTest extends TestCase {
 
 	}
 
+	@Test
 	public void testToDictionary() throws Exception {
 		Dictionary<String, String> dictionary = codec.dec()
 			.from("{\"x\":3, \"y\":\"\"}")
@@ -284,6 +300,7 @@ public class JSONTest extends TestCase {
 	 * @throws IOException
 	 */
 
+	@Test
 	public void testIterable() throws IOException, Exception {
 		final List<String> l = Arrays.asList("a", "b", "c");
 		Iterable<String> i = () -> l.iterator();
@@ -318,6 +335,7 @@ public class JSONTest extends TestCase {
 
 	}
 
+	@Test
 	public void testMissingField() throws Exception {
 		Decoder dec = codec.dec();
 		dec.from("{\"field\":3}")
@@ -342,6 +360,7 @@ public class JSONTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testEscape() throws Exception {
 
 		assertEquals("{\"message\":\"Hello world\"}", codec.dec()
@@ -358,6 +377,7 @@ public class JSONTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testStream() throws Exception {
 		Encoder enc = codec.enc();
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -373,6 +393,7 @@ public class JSONTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testMaps() throws Exception {
 		Map<String, Object> map = new HashMap<>();
 		map.put("a", new int[] {
@@ -405,7 +426,8 @@ public class JSONTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testPrimitiveArrays() throws Exception {
+	@Test
+	public void testPrimitiveArrays() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
 		assertTrue(Arrays.equals(new Boolean[] {
@@ -560,7 +582,8 @@ public class JSONTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testByteArrays() throws Exception {
+	@Test
+	public void testByteArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		assertEquals("[43,41]", enc.to()
 			.put(new Byte[] {
@@ -593,7 +616,8 @@ public class JSONTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testEncodeBasic() throws Exception {
+	@Test
+	public void testEncodeBasic() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		assertEquals("49", enc.to()
 			.put((byte) 49)
@@ -650,7 +674,8 @@ public class JSONTest extends TestCase {
 		B;
 	}
 
-	public static void testDecodeBasic() throws Exception {
+	@Test
+	public void testDecodeBasic() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
 		// Dates
@@ -745,6 +770,7 @@ public class JSONTest extends TestCase {
 																	// generic
 																	// types
 
+	@Test
 	public void testArrays() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
@@ -770,6 +796,7 @@ public class JSONTest extends TestCase {
 	public Map<String, Integer>		map;
 	public Map<Integer, Integer>	mapIntegerKeys;
 
+	@Test
 	public void testObject() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
@@ -827,7 +854,8 @@ public class JSONTest extends TestCase {
 		public Short		sh;
 	}
 
-	public static void testEncodeTypeA() throws Exception {
+	@Test
+	public void testEncodeTypeA() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		Data1A data1 = new Data1A();
 		data1.b = false;
@@ -846,7 +874,8 @@ public class JSONTest extends TestCase {
 				.toString());
 	}
 
-	public static void testEncodeType() throws Exception {
+	@Test
+	public void testEncodeType() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		Data1 data1 = new Data1();
 		data1.b = true;
@@ -868,7 +897,8 @@ public class JSONTest extends TestCase {
 			s);
 	}
 
-	public static void testDecodeType() throws Exception {
+	@Test
+	public void testDecodeType() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data1 d = dec
 			.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
@@ -884,7 +914,8 @@ public class JSONTest extends TestCase {
 		assertEquals(-10, d.sh);
 	}
 
-	public static void testDecodeTypeA() throws Exception {
+	@Test
+	public void testDecodeTypeA() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data1A d = dec
 			.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
@@ -910,7 +941,8 @@ public class JSONTest extends TestCase {
 		public Map<String, List<Map<Integer, String>>>	map;
 	}
 
-	public static void testComplexMaps() throws Exception {
+	@Test
+	public void testComplexMaps() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data2 d = dec.from("{\"map\": {\"a\":[ {\"1\":1}, {\"2\":2} ]},\"integers\":{\"c\":1}}")
 			.get(Data2.class);
@@ -939,7 +971,8 @@ public class JSONTest extends TestCase {
 		public Map<String, Object> __extra;
 	}
 
-	public static void testExtra() throws Exception {
+	@Test
+	public void testExtra() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data3 d = dec.from("{\"a\": 1, \"b\": [1], \"c\": {}}")
 			.get(Data3.class);
@@ -953,7 +986,8 @@ public class JSONTest extends TestCase {
 	 * Test calling the encoder repeatedly
 	 */
 
-	public static void testRepeat() throws Exception {
+	@Test
+	public void testRepeat() throws Exception {
 		Decoder dec = new JSONCodec().dec()
 			.keepOpen();
 		try {
@@ -987,7 +1021,8 @@ public class JSONTest extends TestCase {
 		public double[]		doubles;
 	}
 
-	public static void testEncodeTypePrimitiveArrays() throws Exception {
+	@Test
+	public void testEncodeTypePrimitiveArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		Data4 d = new Data4();
 		d.booleans = new boolean[] {
@@ -1041,7 +1076,8 @@ public class JSONTest extends TestCase {
 		public int a = 3;
 	}
 
-	public static void testDefaults() throws Exception {
+	@Test
+	public void testDefaults() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		DataDefaults d = new DataDefaults();
 		// We're not writing out fields with defaults.
@@ -1065,7 +1101,8 @@ public class JSONTest extends TestCase {
 	/**
 	 * Test the checksum support
 	 */
-	public static void testDigest() throws Exception {
+	@Test
+	public void testDigest() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		enc.mark()
 			.put("Hello World");
@@ -1124,6 +1161,7 @@ public class JSONTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBlog() throws Exception {
 		Person u1 = new Person();
 		u1.name = "Peter";
@@ -1181,6 +1219,7 @@ public class JSONTest extends TestCase {
 		private static final long serialVersionUID = 1L;
 	}
 
+	@Test
 	public void testMapInheritance() throws Exception {
 		D d = new D();
 		d.put("foo", "bar");

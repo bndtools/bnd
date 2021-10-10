@@ -1,5 +1,9 @@
 package biz.aQute.remote;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,10 +13,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import aQute.remote.util.Link;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class LinkTest extends TestCase {
+import aQute.remote.util.Link;
+
+public class LinkTest {
 	private ServerSocket	server;
 	private LocalImpl		localImpl;
 	private RemoteImpl		remoteImpl;
@@ -21,7 +28,7 @@ public class LinkTest extends TestCase {
 	private Socket			localSocket;
 	private Socket			remoteSocket;
 
-	@Override
+	@BeforeEach
 	public void setUp() throws IOException {
 		server = new ServerSocket(4567);
 		remoteSocket = new Socket(InetAddress.getByName(null), server.getLocalPort());
@@ -32,7 +39,7 @@ public class LinkTest extends TestCase {
 		remoteImpl = new RemoteImpl(Local.class, remoteSocket.getInputStream(), remoteSocket.getOutputStream());
 	}
 
-	@Override
+	@AfterEach
 	public void tearDown() throws IOException {
 		server.close();
 		localSocket.close();
@@ -109,6 +116,7 @@ public class LinkTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testTransfer() throws Exception {
 		localImpl.link.open();
 		remoteImpl.link.open();
@@ -136,6 +144,7 @@ public class LinkTest extends TestCase {
 	 * @throws InterruptedException
 	 */
 
+	@Test
 	public void testSimple() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();
@@ -166,6 +175,7 @@ public class LinkTest extends TestCase {
 	 * @throws InterruptedException
 	 */
 
+	@Test
 	public void testCloseLocalIn() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();
@@ -179,6 +189,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseremoteIn() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();
@@ -192,6 +203,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseremoteOut() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();
@@ -206,6 +218,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseLocalSocket() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();
@@ -219,6 +232,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testCloseRemoteSocket() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();
@@ -232,6 +246,7 @@ public class LinkTest extends TestCase {
 		normalClose();
 	}
 
+	@Test
 	public void testAbort() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();

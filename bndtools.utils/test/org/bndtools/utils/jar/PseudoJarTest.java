@@ -1,13 +1,17 @@
 package org.bndtools.utils.jar;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class PseudoJarTest extends TestCase {
+public class PseudoJarTest {
 
+	@Test
 	public void testReadJarFile() throws Exception {
 
 		PseudoJar pj = new PseudoJar(new File("testdata/hello.jar"));
@@ -28,6 +32,7 @@ public class PseudoJarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testReadDir() throws Exception {
 		PseudoJar pj = new PseudoJar(new File("testdata/hello_jar_dir"));
 		try {

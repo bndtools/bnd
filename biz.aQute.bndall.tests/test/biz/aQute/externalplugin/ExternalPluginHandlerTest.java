@@ -9,9 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.repository.fileset.FileSetRepository;
@@ -20,12 +19,8 @@ import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 
 public class ExternalPluginHandlerTest {
-
-	@Rule
-	public TemporaryFolder	tf	= new TemporaryFolder();
-	File					tmp;
-
-	public ExternalPluginHandlerTest() throws Exception {}
+	@TempDir
+	File tmp;
 
 	@Test
 	public void testSimple() throws Exception {
@@ -82,7 +77,6 @@ public class ExternalPluginHandlerTest {
 	}
 
 	private Workspace getWorkspace(File file) throws Exception {
-		tmp = tf.newFolder();
 		tmp.mkdirs();
 		IO.copy(file, tmp);
 		return new Workspace(tmp);

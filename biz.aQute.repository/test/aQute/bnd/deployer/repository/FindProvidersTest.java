@@ -1,12 +1,18 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.File;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -16,10 +22,26 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class FindProvidersTest extends TestCase {
+public class FindProvidersTest {
 
+	String	name;
+	String	cache;
+
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		name = testInfo.getTestMethod()
+			.get()
+			.getName();
+		cache = IO.getFile("generated/tmp/test/cache/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ name)
+			.getAbsolutePath();
+
+	}
+
+	@Test
 	public void testPackageQuery() throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Processor p = new Processor();
@@ -29,9 +51,8 @@ public class FindProvidersTest extends TestCase {
 			props.put("locations", IO.getFile("testdata/minir5.xml")
 				.toURI()
 				.toString());
-			props.put("name", getName());
-			props.put("cache",
-				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
+			props.put("name", name);
+			props.put("cache", cache);
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)")
@@ -51,6 +72,7 @@ public class FindProvidersTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testTypedCapabilityAttribute() throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Processor p = new Processor();
@@ -60,9 +82,8 @@ public class FindProvidersTest extends TestCase {
 			props.put("locations", IO.getFile("testdata/minir5.xml")
 				.toURI()
 				.toString());
-			props.put("name", getName());
-			props.put("cache",
-				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
+			props.put("name", name);
+			props.put("cache", cache);
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)")
@@ -80,6 +101,7 @@ public class FindProvidersTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testReadGZippedStream() throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Processor p = new Processor();
@@ -89,9 +111,8 @@ public class FindProvidersTest extends TestCase {
 			props.put("locations", IO.getFile("testdata/big_index.xml.gz")
 				.toURI()
 				.toString());
-			props.put("name", getName());
-			props.put("cache",
-				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
+			props.put("name", name);
+			props.put("cache", cache);
 			repo.setProperties(props);
 
 			Requirement req = new CapReqBuilder("osgi.identity")
@@ -123,6 +144,7 @@ public class FindProvidersTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMultipleMatches() throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Processor p = new Processor();
@@ -132,9 +154,8 @@ public class FindProvidersTest extends TestCase {
 			props.put("locations", IO.getFile("testdata/big_index.xml")
 				.toURI()
 				.toString());
-			props.put("name", getName());
-			props.put("cache",
-				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
+			props.put("name", name);
+			props.put("cache", cache);
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("aQute.bnd.annotation", "[1.43,2)")

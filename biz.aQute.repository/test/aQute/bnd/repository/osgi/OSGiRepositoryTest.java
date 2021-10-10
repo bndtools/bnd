@@ -1,6 +1,8 @@
 package aQute.bnd.repository.osgi;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -12,6 +14,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.DownloadBlocker;
 import aQute.bnd.build.Workspace;
@@ -28,20 +35,24 @@ import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
-import junit.framework.TestCase;
 
 @SuppressWarnings("deprecation")
-public class OSGiRepositoryTest extends TestCase {
+public class OSGiRepositoryTest {
 	File				tmp;
 	File				cache;
 	File				remote;
 	File				ws;
 	private FakeNexus	fnx;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		cache = IO.getFile(tmp, "cache");
 		remote = IO.getFile(tmp, "testdata");
 		ws = IO.getFile(tmp, "ws");
@@ -54,17 +65,19 @@ public class OSGiRepositoryTest extends TestCase {
 		IO.copy(IO.getFile("testdata/bundles"), IO.getFile(remote, "bundles"));
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.close(fnx);
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		try (OSGiRepository r = new OSGiRepository()) {
 			assertTrue(testRepo(r));
 		}
 	}
 
+	@Test
 	public void testStatus() throws Exception {
 		workspaceSetup(r -> {
 			Map<String, String> map = new HashMap<>();
@@ -75,6 +88,7 @@ public class OSGiRepositoryTest extends TestCase {
 		});
 	}
 
+	@Test
 	public void testRemote() throws Exception {
 		workspaceSetup(r -> {
 			Map<String, String> map = new HashMap<>();
@@ -109,6 +123,7 @@ public class OSGiRepositoryTest extends TestCase {
 	}
 
 	@SuppressWarnings("deprecation")
+	@Test
 	public void testCompatibilityWithFixedIndexedRepo() throws Exception {
 		try (aQute.bnd.deployer.repository.FixedIndexedRepo r = new aQute.bnd.deployer.repository.FixedIndexedRepo()) {
 			assertTrue(testRepo(r,
@@ -188,6 +203,7 @@ public class OSGiRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoPolling() throws Exception {
 		try (Processor p = new Processor(); Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
 			workspace.setProperty(Constants.GESTALT, Constants.GESTALT_BATCH);
@@ -196,6 +212,7 @@ public class OSGiRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPolling() throws Exception {
 		try (Processor p = new Processor(); Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
 			testPolling(workspace, true);
@@ -270,6 +287,7 @@ public class OSGiRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPollingWithFile() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();
 			Processor p = new Processor();
@@ -339,6 +357,7 @@ public class OSGiRepositoryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRefreshable() throws Exception {
 		try (OSGiRepository testRepo = new OSGiRepository();
 			Processor p = new Processor();
@@ -392,16 +411,18 @@ public class OSGiRepositoryTest extends TestCase {
 			boolean refreshed = testRepo.refresh(true);
 			// give the Promise time to resolve
 			Thread.sleep(1000);
-			assertTrue("The cache should have been modified after the refresh", testRepo.getIndex(false)
+			assertTrue(testRepo.getIndex(false)
 				.getCache()
-				.lastModified() > indexLastModifiedBeforeRefresh);
-			assertTrue("The refresh method should return true", refreshed);
-			assertEquals("Exactly 1 repository should have been refreshed", 1, numberOfTimesRefreshed.get());
-			assertEquals("The repository that has been refreshed should be the created one", testRepo,
-				refreshedRepo.get());
+				.lastModified() > indexLastModifiedBeforeRefresh,
+				"The cache should have been modified after the refresh");
+			assertTrue(refreshed, "The refresh method should return true");
+			assertEquals(1, numberOfTimesRefreshed.get(), "Exactly 1 repository should have been refreshed");
+			assertEquals(testRepo, refreshedRepo.get(),
+				"The repository that has been refreshed should be the created one");
 		}
 	}
 
+	@Test
 	public void testBndRepo() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();
 			Processor p = new Processor();

@@ -1,10 +1,13 @@
 
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.differ.DiffImpl;
 import aQute.bnd.differ.RepositoryElement;
@@ -15,10 +18,10 @@ import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
-import junit.framework.TestCase;
 
-public class RepoTreeTest extends TestCase {
-	public static void testSimple() throws Exception {
+public class RepoTreeTest {
+	@Test
+	public void testSimple() throws Exception {
 		RepositoryPlugin a = mock(RepositoryPlugin.class);
 		RepositoryPlugin b = mock(RepositoryPlugin.class);
 

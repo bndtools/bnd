@@ -1,6 +1,11 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
@@ -28,7 +37,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.Plugin;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
-import junit.framework.TestCase;
 
 class ConstantValues {
 	public static final boolean	f		= false;
@@ -88,15 +96,15 @@ class Implemented implements Plugin {
 }
 
 @SuppressWarnings("resource")
-public class ClassParserTest extends TestCase {
+public class ClassParserTest {
 	Analyzer a;
 
-	@Override
+	@BeforeEach
 	protected void setUp() {
 		a = new Analyzer();
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		a.close();
 	}
@@ -107,6 +115,7 @@ public class ClassParserTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testJavaTypeAnnotations() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("java8/type_annotations/bin"));
@@ -150,6 +159,7 @@ public class ClassParserTest extends TestCase {
 	 * the same results with v1.8.9. The problem was apparently fixed in v2.1,
 	 * using a groovy-all-2.1.0 a correct manifest file is created.
 	 */
+	@Test
 	public void testCodehauseGROOVY_6169() throws Exception {
 		Clazz c = new Clazz(a, "foo", new FileResource(IO.getFile("jar/BugReproLoggerGroovy189.jclass")));
 		c.parseClassFile();
@@ -163,6 +173,7 @@ public class ClassParserTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testConstantValues() throws Exception {
 		final Map<String, Object> values = new HashMap<>();
 		Clazz c = new Clazz(a, "ConstantValues",
@@ -198,6 +209,7 @@ public class ClassParserTest extends TestCase {
 		// values.get("clss")).getName());
 	}
 
+	@Test
 	public void testGeneric() throws Exception {
 		print(System.err, WithGenerics.class.getField("field")
 			.getGenericType());
@@ -259,6 +271,7 @@ public class ClassParserTest extends TestCase {
 	/**
 	 * Included an aop alliance class that is not directly referenced.
 	 */
+	@Test
 	public void testUnacceptableReference() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/nl.fuji.general.jar"));
@@ -269,7 +282,7 @@ public class ClassParserTest extends TestCase {
 			.getByFQN("org.aopalliance.aop") != null);
 	}
 
-	// public void testImplemented() throws Exception {
+	// @Test public void testImplemented() throws Exception {
 	// Builder a = new Builder();
 	// a.addClasspath(new File("bin_test"));
 	// a.setProperty("Private-Package", "test");
@@ -281,12 +294,13 @@ public class ClassParserTest extends TestCase {
 	// assertTrue(s.contains( a.getPackageRef("aQute/bnd/service")));
 	// }
 
+	@Test
 	public void testWildcards() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("WithGenerics.class"));
 		System.err.println(c.getReferred());
-		assertEquals("size ", 5, c.getReferred()
-			.size());
+		assertEquals(5, c.getReferred()
+			.size(), "size");
 		assertTrue(c.getReferred()
 			.contains(a.getPackageRef("aQute/bnd/osgi")));
 		assertTrue(c.getReferred()
@@ -297,6 +311,7 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("java/lang")));
 	}
 
+	@Test
 	public void testGenericsSignature3() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("Generics.class"));
@@ -306,6 +321,7 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("aQute/bnd/osgi")));
 	}
 
+	@Test
 	public void testGenericsSignature2() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("test/test/generics.clazz")));
 		c.parseClassFile();
@@ -315,6 +331,7 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("javax/swing")));
 	}
 
+	@Test
 	public void testGenericsSignature() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("test/test/generics.clazz")));
 		c.parseClassFile();
@@ -344,6 +361,7 @@ public class ClassParserTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testJQuantlib() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("testresources/jquantlib-0.1.2.jar"));
@@ -351,6 +369,7 @@ public class ClassParserTest extends TestCase {
 		b.build();
 	}
 
+	@Test
 	public void testMissingPackage2() throws Exception {
 		InputStream in = getClass().getResourceAsStream("JobsService.clazz");
 		assertNotNull(in);
@@ -360,6 +379,7 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
+	@Test
 	public void testGeneratedClass() throws Exception {
 		InputStream in = getClass().getResourceAsStream("XDbCmpXView.clazz");
 		assertNotNull(in);
@@ -368,6 +388,7 @@ public class ClassParserTest extends TestCase {
 		clazz.getReferred();
 	}
 
+	@Test
 	public void testParameterAnnotation() throws Exception {
 		InputStream in = getClass().getResourceAsStream("Test2.jclass");
 		assertNotNull(in);
@@ -378,6 +399,7 @@ public class ClassParserTest extends TestCase {
 		assertTrue(set.contains(a.getPackageRef("test/annotations")));
 	}
 
+	@Test
 	public void testLargeClass2() throws IOException {
 		try {
 			URL url = new URL("jar:file:jar/ecj_3.2.2.jar!/org/eclipse/jdt/internal/compiler/parser/Parser.class");
@@ -394,6 +416,7 @@ public class ClassParserTest extends TestCase {
 	/**
 	 * Still problems with the stuff in ecj
 	 */
+	@Test
 	public void testEcj() throws Exception {
 		Builder builder = new Builder();
 		try {
@@ -423,6 +446,7 @@ public class ClassParserTest extends TestCase {
 	 *
 	 * @throws IOException
 	 */
+	@Test
 	public void testLargeClass() throws IOException {
 		InputStream in = getClass().getResourceAsStream("Parser.jclass");
 		assertNotNull(in);
@@ -435,6 +459,7 @@ public class ClassParserTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		InputStream in = getClass().getResourceAsStream("WithAnnotations.jclass");
 		assertNotNull(in);
@@ -447,6 +472,7 @@ public class ClassParserTest extends TestCase {
 		assertTrue(set.contains(testAnnotations));
 	}
 
+	@Test
 	public void testStackMapTable() throws Exception {
 		Clazz c = new Clazz(a, "test/stackmaptable", null);
 		c.parseClassFile(getClass().getResourceAsStream("stackmaptable/ClassRefInStackMapTable.class"));
@@ -456,6 +482,7 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("javax/crypto")));
 	}
 
+	@Test
 	public void testClassForName() throws Exception {
 		a.setProperty("-noclassforname", "false");
 		Clazz c = new Clazz(a, "test/classforname", null);
@@ -463,6 +490,7 @@ public class ClassParserTest extends TestCase {
 		assertThat(c.getReferred()).contains(a.getPackageRef("javax.swing"));
 	}
 
+	@Test
 	public void testNoClassForName() throws Exception {
 		a.setProperty("-noclassforname", "true");
 		Clazz c = new Clazz(a, "test/classforname", null);

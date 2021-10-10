@@ -1,11 +1,17 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
@@ -15,11 +21,23 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class ExportAnnotationTest extends TestCase {
+public class ExportAnnotationTest {
+	private String testName;
 
+	@BeforeEach
+	public void setUp(TestInfo testInfo) {
+		testName = testInfo.getTestMethod()
+			.get()
+			.getName();
+	}
+
+	private String getName() {
+		return testName;
+	}
+
+	@Test
 	public void testExportAnnotationOverlapsExportPackageHeader() throws Exception {
 		try (Builder builder = new Builder()) {
 			builder.addClasspath(new File("bin_test"));
@@ -41,6 +59,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAutoExportAnnotation() throws Exception {
 		try (Builder builder = new Builder()) {
 			builder.addClasspath(new File("bin_test"));
@@ -53,6 +72,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRemoveExportAnnotation() throws Exception {
 		try (Builder builder = new Builder()) {
 			builder.addClasspath(new File("bin_test"));
@@ -64,6 +84,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCalculated() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin_test"));
@@ -99,6 +120,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testProvider() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin_test"));
@@ -132,6 +154,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testProviderType() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin_test"));
@@ -162,6 +185,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testConsumer() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin_test"));
@@ -195,6 +219,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoimport() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin_test"));
@@ -227,6 +252,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testUses() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin_test"));
@@ -258,6 +284,7 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNouses() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin_test"));

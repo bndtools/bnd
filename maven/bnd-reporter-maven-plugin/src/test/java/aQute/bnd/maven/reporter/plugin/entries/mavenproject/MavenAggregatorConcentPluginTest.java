@@ -1,5 +1,8 @@
 package aQute.bnd.maven.reporter.plugin.entries.mavenproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,18 +13,20 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
-import junit.framework.TestCase;
 
-public class MavenAggregatorConcentPluginTest extends TestCase {
+public class MavenAggregatorConcentPluginTest {
 
+	@Test
 	public void testEmptyWorkspace() throws Exception {
 		final MavenAggregatorConcentPlugin plugin = new MavenAggregatorConcentPlugin();
 
 		assertNull(plugin.extract(getProject(), Locale.forLanguageTag("und")));
 	}
 
+	@Test
 	public void testWorkspaceWithProjects() throws Exception {
 		final MavenAggregatorConcentPlugin plugin = new MavenAggregatorConcentPlugin();
 
@@ -30,6 +35,7 @@ public class MavenAggregatorConcentPluginTest extends TestCase {
 		assertEquals(2, result.size());
 	}
 
+	@Test
 	public void testWorkspaceWithProjectsFilter() throws Exception {
 		final MavenAggregatorConcentPlugin plugin = new MavenAggregatorConcentPlugin();
 

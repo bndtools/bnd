@@ -1,8 +1,13 @@
 package biz.aQute.bnd.reporter.exporter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -10,10 +15,10 @@ import aQute.bnd.osgi.Resource;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorConstants;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
-import junit.framework.TestCase;
 
-public class ReportExporterTest extends TestCase {
+public class ReportExporterTest {
 
+	@Test
 	public void testUnscopedAvailableReport() throws IOException {
 		try (final Processor processor = new Processor();) {
 			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".first",
@@ -30,6 +35,7 @@ public class ReportExporterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testScopedAvailableReport() throws IOException {
 		try (final Processor processor = new Processor();) {
 
@@ -48,6 +54,7 @@ public class ReportExporterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBasicExport() throws Exception {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			final Manifest manifest = new Manifest();
@@ -73,6 +80,7 @@ public class ReportExporterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testExportWithTemplate() throws Exception {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			final Manifest manifest = new Manifest();
@@ -102,6 +110,7 @@ public class ReportExporterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testExportWithDefaultTemplate() throws Exception {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			final Manifest manifest = new Manifest();
@@ -132,6 +141,7 @@ public class ReportExporterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testExportWithTemplateOverride() throws Exception {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			final Manifest manifest = new Manifest();
@@ -161,6 +171,7 @@ public class ReportExporterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testExportWithTemplateUnknowType() throws Exception {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			final Manifest manifest = new Manifest();
@@ -190,6 +201,7 @@ public class ReportExporterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testExportWithTemplateParameter() throws Exception {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			final Manifest manifest = new Manifest();
@@ -220,6 +232,7 @@ public class ReportExporterTest extends TestCase {
 
 	}
 
+	@Test
 	public void testExportWithConfigName() throws Exception {
 		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 			final Manifest manifest = new Manifest();

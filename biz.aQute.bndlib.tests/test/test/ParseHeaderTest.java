@@ -1,11 +1,18 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.resource.Capability;
 
 import aQute.bnd.header.Attrs;
@@ -17,10 +24,10 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.Version;
 import aQute.lib.filter.Filter;
 import aQute.lib.strings.Strings;
-import junit.framework.TestCase;
 
-public class ParseHeaderTest extends TestCase {
+public class ParseHeaderTest {
 
+	@Test
 	public void testTyped() {
 		Parameters p = new Parameters("a;a:Long=1;b:Double=3.2;c:String=abc;d:Version=1"
 			+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
@@ -44,6 +51,7 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
 	}
 
+	@Test
 	public void testTypedSpaces() {
 		Parameters p = new Parameters("a;a : Long=1;b:Double  =3.2;c:  String=abc;d : Version =1"
 			+ ";e  :List < Long >='1,2,3';f: List<Double> ='1.0,1.1,1.2';g:List <String> ='abc,def,ghi';h  :  List  <  Version >  ='1.0.1,1.0.2'");
@@ -67,6 +75,7 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
 	}
 
+	@Test
 	public void testMergeWithOverrideFalse() {
 		Parameters a = new Parameters("a;a=value_a;av:Version=\"1.0.0\"");
 		Parameters b = new Parameters("b;b=metal;bv:Version=\"1.0.0\"");
@@ -78,6 +87,7 @@ public class ParseHeaderTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEscaping() {
 
 		{
@@ -101,6 +111,7 @@ public class ParseHeaderTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPropertiesSimple() {
 		Map<String, String> p = OSGiHeader.parseProperties("a=1, b=\"3   3\", c=c");
 		assertEquals("c", p.get("c"));
@@ -117,6 +128,7 @@ public class ParseHeaderTest extends TestCase {
 	 * osgi.service.http.port=8180,\ osgi.console= while the following does
 	 * work: -runproperties: osgi.console=,\ osgi.service.http.port=8180
 	 */
+	@Test
 	public void testUnfinishedProperties() {
 		Map<String, String> p = OSGiHeader.parseProperties("osgi.console");
 		assertEquals("", p.get("osgi.console"));
@@ -134,6 +146,7 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals("", p.get("osgi.console"));
 	}
 
+	@Test
 	public void testClauseName() {
 		assertNames("a,b,c;", new String[] {
 			"a", "b", "c"
@@ -211,6 +224,7 @@ public class ParseHeaderTest extends TestCase {
 				.size());
 	}
 
+	@Test
 	public void testSimple() {
 		String s = "a;a=a1;b=a2;c=a3, b;a=b1;b=b2;c=b3, c;d;e;a=x1";
 		Parameters map = Processor.parseHeader(s, null);
@@ -230,6 +244,7 @@ public class ParseHeaderTest extends TestCase {
 		System.err.println(map);
 	}
 
+	@Test
 	public void testParseMultiValueAttribute() {
 		String s = "capability;foo:List<String>=\"MacOSX,Mac OS X\";version:List<Version>=\"1.0, 2.0, 2.1\"";
 		Parameters map = Processor.parseHeader(s, null);
@@ -250,6 +265,7 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(new Version(2, 1), version.get(2));
 	}
 
+	@Test
 	public void testParametersCollector() throws Exception {
 		Stream<String> pkgs = Stream.of("com.foo;com.fuu;fizz=bazz;dir:=dar", "com.bar;a=b,org.foo;provide:=true",
 			"org.fuu", "io.hiho;viking:Version=2");
@@ -280,6 +296,7 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(Version.parseVersion("2.0.0"), Version.parseVersion(a.get("viking")));
 	}
 
+	@Test
 	public void testParametersKeyList() throws Exception {
 		String s = "--add-opens, mod1, --add-opens, mod2";
 		Parameters map = Processor.parseHeader(s, null);
@@ -290,6 +307,7 @@ public class ParseHeaderTest extends TestCase {
 	@SuppressWarnings({
 		"null", "unchecked"
 	})
+	@Test
 	public void testParseListAttributesAndMatchWithFilter() throws Exception {
 		List<String> urls = null;
 		Filter f = new Filter("(url=http://three)");
@@ -309,6 +327,7 @@ public class ParseHeaderTest extends TestCase {
 	@SuppressWarnings({
 		"null", "unchecked"
 	})
+	@Test
 	public void testParseListAttributesAndMatchWithFilter_b() throws Exception {
 		List<String> urls = null;
 		Filter f = new Filter("(url=http://three)");

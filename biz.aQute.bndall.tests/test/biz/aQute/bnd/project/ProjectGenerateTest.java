@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -22,14 +20,8 @@ import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
 public class ProjectGenerateTest {
-	@Rule
-	public TemporaryFolder	tf	= new TemporaryFolder();
+	@TempDir
 	File					tmp;
-
-	@Before
-	public void setUp() throws Exception {
-		tmp = tf.newFolder();
-	}
 
 	/**
 	 * Test -stalecheck

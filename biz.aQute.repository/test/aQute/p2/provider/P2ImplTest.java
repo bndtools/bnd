@@ -3,7 +3,7 @@ package aQute.p2.provider;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;

@@ -11,31 +11,33 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.lib.io.IO;
 
 public class FileWatcherTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
-	@Rule
-	public final TestName		testName	= new TestName();
 	private File				testDir;
 
 	private ExecutorService		executor;
 
-	@Before
-	public void before() throws Exception {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
+	@BeforeEach
+	public void before(TestInfo testInfo) throws Exception {
+		testDir = new File(TMPDIR, testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		executor = Executors.newFixedThreadPool(10);
 	}
 
-	@After
+	@AfterEach
 	public void after() throws Exception {
 		executor.shutdownNow();
 	}

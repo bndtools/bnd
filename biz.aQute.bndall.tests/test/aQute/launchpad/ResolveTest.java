@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -21,7 +21,7 @@ public class ResolveTest {
 	private LaunchpadBuilder	builder;
 	private Workspace			workspace;
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		File tmp = IO.getFile("generated/tmpws1");
 		IO.delete(tmp);
@@ -34,7 +34,7 @@ public class ResolveTest {
 		builder = new LaunchpadBuilder(remoteWs);
 	}
 
-	@After
+	@AfterEach
 	public void after() throws Exception {
 		IO.closeAll(builder, workspace);
 	}

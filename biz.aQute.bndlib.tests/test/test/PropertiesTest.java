@@ -1,10 +1,17 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
@@ -13,16 +20,16 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class PropertiesTest extends TestCase {
+public class PropertiesTest {
 	static <T> T notNull(T t) {
 		assertNotNull(t);
 		return t;
 	}
 
-	public static void testFlattening() throws Exception {
+	@Test
+	public void testFlattening() throws Exception {
 		Processor p = new Processor();
 		p.setProperty("-versionpolicy", "${version;===;${@}}");
 		p.setProperty("x", "x");
@@ -36,7 +43,8 @@ public class PropertiesTest extends TestCase {
 		assertEquals(2, flattened.size());
 	}
 
-	public static void testFilter() {
+	@Test
+	public void testFilter() {
 		Processor p1 = new Processor();
 		p1.setProperty("dan", "bandera");
 		p1.setProperty("susan", "sarandon");
@@ -51,7 +59,8 @@ public class PropertiesTest extends TestCase {
 		assertEquals("bostrom", p2.getProperty("jon"));
 	}
 
-	public static void testUnicode() {
+	@Test
+	public void testUnicode() {
 		StringBuilder sb = new StringBuilder();
 		String s = "Loïc Cotonéa";
 		for (int i = 0; i < s.length(); i++) {
@@ -66,7 +75,8 @@ public class PropertiesTest extends TestCase {
 		System.err.println(sb);
 	}
 
-	public static void testSpacesAround() throws Exception {
+	@Test
+	public void testSpacesAround() throws Exception {
 		String test = "#comment\n" + "   abc    =   abc\r\n" + "def = def\n\r" + " ghi =               ghi\r"
 			+ " jkl =               jkl";
 
@@ -81,7 +91,8 @@ public class PropertiesTest extends TestCase {
 		assertEquals("jkl", p.get("jkl"));
 	}
 
-	public static void testInternationalCharacters() throws Exception {
+	@Test
+	public void testInternationalCharacters() throws Exception {
 		String test = "#comment\n" + "Namex=Lo\u00EFc Coton\u00E9a\n" + "Export-Package: *\n" + "Unicode=\\u0040\n"
 			+ "NameAgain=Loïc Cotonéa";
 
@@ -109,7 +120,8 @@ public class PropertiesTest extends TestCase {
 			.getValue("Namex"));
 	}
 
-	public static void testBadProperties() throws Exception {
+	@Test
+	public void testBadProperties() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setPedantic(true);
 		analyzer.setProperties(IO.getFile("test/test/badproperties.prop"));
@@ -123,7 +135,8 @@ public class PropertiesTest extends TestCase {
 		assertTrue(map.containsKey("org.osgi.util.tracker"));
 	}
 
-	public static void testProperties() throws Exception {
+	@Test
+	public void testProperties() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setProperties(IO.getFile("test/test/variables.mf"));
 

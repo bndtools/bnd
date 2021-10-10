@@ -1,15 +1,19 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Properties;
 import java.util.jar.Manifest;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class ClasspathTest extends TestCase {
+public class ClasspathTest {
 
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
@@ -17,7 +21,8 @@ public class ClasspathTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testBundleClasspath() throws Exception {
+	@Test
+	public void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "bin_test=bin_test");
 		b.setProperty("Bundle-Classpath", "bin_test");
@@ -33,7 +38,8 @@ public class ClasspathTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testFindJarOnClasspath() throws Exception {
+	@Test
+	public void testFindJarOnClasspath() throws Exception {
 		Properties p = new Properties();
 		p.put("Include-Resource", "tb1.jar, @test.jar");
 
@@ -53,7 +59,8 @@ public class ClasspathTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testSimple() throws Exception {
+	@Test
+	public void testSimple() throws Exception {
 		Properties p = new Properties();
 		p.put("-classpath", IO.getFile("jar/osgi.jar")
 			.toURI()

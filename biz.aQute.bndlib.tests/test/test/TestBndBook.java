@@ -1,13 +1,18 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Builder;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class TestBndBook extends TestCase {
+public class TestBndBook {
 
-	public static void testFilterout() throws Exception {
+	@Test
+	public void testFilterout() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.addClasspath(IO.getFile("jar/ds.jar"));

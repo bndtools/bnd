@@ -1,7 +1,10 @@
 package test.resource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -11,10 +14,10 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.PersistentResource;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.json.JSONCodec;
-import junit.framework.TestCase;
 
-public class PersistentResourceTest extends TestCase {
+public class PersistentResourceTest {
 
+	@Test
 	public void testSimple() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addCapability(new CapReqBuilder("test").addAttribute("double", 3.0D)

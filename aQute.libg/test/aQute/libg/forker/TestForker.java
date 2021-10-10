@@ -1,13 +1,17 @@
 package aQute.libg.forker;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class TestForker extends TestCase {
+public class TestForker {
 
 	final Collection<Integer>	EMPTY	= Collections.emptyList();
 	final int					TIMEOUT	= 1000000;
@@ -27,6 +31,7 @@ public class TestForker extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimple() throws InterruptedException {
 		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
@@ -38,6 +43,7 @@ public class TestForker extends TestCase {
 		assertEquals(Arrays.asList(3, 2, 1), result);
 	}
 
+	@Test
 	public void testSimple2() throws InterruptedException {
 		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
@@ -53,6 +59,7 @@ public class TestForker extends TestCase {
 		assertEquals(Integer.valueOf(4), q[q.length - 1]);
 	}
 
+	@Test
 	public void testInvalid() {
 		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
@@ -67,6 +74,7 @@ public class TestForker extends TestCase {
 
 	}
 
+	@Test
 	public void testCancel() throws InterruptedException {
 		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());

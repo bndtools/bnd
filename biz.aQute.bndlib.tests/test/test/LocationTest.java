@@ -1,7 +1,16 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
@@ -10,29 +19,31 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class LocationTest extends TestCase {
+public class LocationTest {
 	Workspace		ws;
 	private File	tmp;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.copy(IO.getFile("testresources/ws-location"), tmp);
 		ws = new Workspace(tmp);
 
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		ws.close();
 	}
 
+	@Test
 	public void testMerged() throws Exception {
 		try (Project project = ws.getProject("locationtest")) {
 			FileLine fl = project.getHeader("-merged", "BAZ");
@@ -45,6 +56,7 @@ public class LocationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testProjectHeaderClauses() throws Exception {
 		try (Project project = ws.getProject("locationtest")) {
 			assertNotNull(project);
@@ -67,6 +79,7 @@ public class LocationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHeaderInSub() throws Exception {
 		try (Project project = ws.getProject("locationtest"); ProjectBuilder pb = project.getBuilder(null)) {
 			Builder builder = pb.getSubBuilders()
@@ -84,6 +97,7 @@ public class LocationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		try (Project project = ws.getProject("p1")) {
 			assertNotNull(project);

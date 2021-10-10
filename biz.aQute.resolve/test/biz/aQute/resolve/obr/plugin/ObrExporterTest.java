@@ -12,9 +12,9 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.lib.io.IO;
@@ -26,7 +26,7 @@ public class ObrExporterTest {
 	private Bndrun		project;
 	private ObrExporter	underTest;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		File path = IO.getPath("generated/")
 			.toFile();
@@ -40,7 +40,7 @@ public class ObrExporterTest {
 		underTest = new ObrExporter();
 	}
 
-	@After
+	@AfterEach
 	public void teardown() throws IOException {
 		IO.delete(tempDir);
 	}

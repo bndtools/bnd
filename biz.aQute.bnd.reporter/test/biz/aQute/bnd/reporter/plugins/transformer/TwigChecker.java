@@ -1,6 +1,6 @@
 package biz.aQute.bnd.reporter.plugins.transformer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

@@ -1,12 +1,15 @@
 package test.component_extra;
 
 import static aQute.bnd.test.BndTestCase.assertOk;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -20,13 +23,12 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import junit.framework.TestCase;
 
 /*
  * Placed in a new package to avoid breaking lots of existing tests with the additional packages
  * we need to import.
  */
-public class DSAnnotationExtrasTest extends TestCase {
+public class DSAnnotationExtrasTest {
 
 	@Component(configurationPid = "x" // force DS 1.3
 	)
@@ -45,6 +47,7 @@ public class DSAnnotationExtrasTest extends TestCase {
 		void setMetatype(MetaTypeService metatype) {}
 	}
 
+	@Test
 	public void testRequireCapabilityCardinality() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, DS13reference_cardinalities.class.getName());
@@ -72,17 +75,17 @@ public class DSAnnotationExtrasTest extends TestCase {
 		boolean found = false;
 		for (Attrs serviceReq : serviceReqs) {
 			if (filter.equals(serviceReq.get("filter:"))) {
-				assertEquals("missing effective:=active on " + clazz.getName(), "active", serviceReq.get("effective:"));
+				assertEquals("active", serviceReq.get("effective:"), "missing effective:=active on " + clazz.getName());
 				if (optional)
-					assertEquals("missing resolution:=optional on " + clazz.getName(), "optional",
-						serviceReq.get("resolution:"));
+					assertEquals("optional", serviceReq.get("resolution:"),
+						"missing resolution:=optional on " + clazz.getName());
 				if (multiple)
-					assertEquals("missing cardinality:=multiple on " + clazz.getName(), "multiple",
-						serviceReq.get("cardinality:"));
+					assertEquals("multiple", serviceReq.get("cardinality:"),
+						"missing cardinality:=multiple on " + clazz.getName());
 				found = true;
 			}
 		}
-		assertTrue("objectClass not found: " + clazz.getName(), found);
+		assertTrue(found, "objectClass not found: " + clazz.getName());
 	}
 
 	private static List<Attrs> getAll(Parameters p, String key) {

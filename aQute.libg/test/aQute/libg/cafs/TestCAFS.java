@@ -1,20 +1,25 @@
 package aQute.libg.cafs;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TestCAFS extends TestCase {
+public class TestCAFS {
 	File tmp;
 
-	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		tmp = new File(System.getProperty("java.io.tmpdir"));
 		assertTrue(tmp.isDirectory());
 	}
 
+	@Test
 	public void testX() {}
 
+	// @Test
 	// public void testSimple() throws Exception {
 	// File dir = new File(tmp, getClass().getName() +
 	// System.currentTimeMillis());

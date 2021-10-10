@@ -1,6 +1,8 @@
 package biz.aQute.bnd.reporter.plugins.transformer;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -14,13 +16,15 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
-import junit.framework.TestCase;
 
-public class JtwigTransformerPluginTest extends TestCase {
+public class JtwigTransformerPluginTest {
 
+	@Test
 	public void testJtwigTransformer() throws Exception {
 
 		final JtwigTransformerPlugin t = new JtwigTransformerPlugin();
@@ -39,14 +43,11 @@ public class JtwigTransformerPluginTest extends TestCase {
 
 		assertTrue(new String(output.toByteArray()).contains("test"));
 
-		assertArrayEquals(t.getHandledModelExtensions(), new String[] {
-			"json"
-		});
-		assertArrayEquals(t.getHandledTemplateExtensions(), new String[] {
-			"twig", "jtwig"
-		});
+		assertThat(t.getHandledModelExtensions()).containsExactly("json");
+		assertThat(t.getHandledTemplateExtensions()).containsExactly("twig", "jtwig");
 	}
 
+	@Test
 	public void testJtwigTransformerDefault() throws Exception {
 		final JtwigTransformerPlugin t = new JtwigTransformerPlugin();
 
@@ -70,6 +71,7 @@ public class JtwigTransformerPluginTest extends TestCase {
 		assertTrue(new String(output.toByteArray()).contains("# test"));
 	}
 
+	@Test
 	public void testTaggesFunction() throws Exception {
 
 		assertTag(execTemplateTaggesFunction(null), "abbaaaa");

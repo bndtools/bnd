@@ -1,5 +1,11 @@
 package test.annotationheaders;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -9,6 +15,8 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.annotation.headers.BundleCategory;
 import aQute.bnd.annotation.headers.BundleContributors;
@@ -24,10 +32,9 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 @SuppressWarnings("deprecation")
-public class AnnotationHeadersTest extends TestCase {
+public class AnnotationHeadersTest {
 
 	/**
 	 * Say I want to define a capability namespace for web applications, e.g.
@@ -57,6 +64,7 @@ public class AnnotationHeadersTest extends TestCase {
 	 * then it only generates the Require.
 	 */
 
+	@Test
 	public void testMultipleManifestHeaders() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -93,6 +101,7 @@ public class AnnotationHeadersTest extends TestCase {
 	 * although jsonrpc.js is set as default for the resource attribute.
 	 */
 
+	@Test
 	public void testDefaultAttrs() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -123,6 +132,7 @@ public class AnnotationHeadersTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testWithAttrs() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -155,7 +165,7 @@ public class AnnotationHeadersTest extends TestCase {
 			assertNotNull(p.get("nsz"));
 			assertNotNull(p.get("param"));
 			assertNotNull(p.get("osgi.ee"));
-			assertEquals("spurious Require-Capability namespaces", 5, p.size());
+			assertEquals(5, p.size(), "spurious Require-Capability namespaces");
 
 			attrs = p.get("nsx");
 			assertEquals(Arrays.asList("abc", "def"), attrs.getTyped("foo"));
@@ -251,6 +261,7 @@ public class AnnotationHeadersTest extends TestCase {
 	@NoFilterRequirement
 	class NoFilterImpl {}
 
+	@Test
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));

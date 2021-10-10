@@ -1,9 +1,10 @@
 package aQute.bnd.osgi;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class AnalyzerTest extends TestCase {
+public class AnalyzerTest {
 
+	@Test
 	public void testdoNameSection() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.doNameSection(null, "@");

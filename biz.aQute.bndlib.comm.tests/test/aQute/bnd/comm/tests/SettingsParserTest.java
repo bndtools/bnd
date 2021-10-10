@@ -1,11 +1,16 @@
 package aQute.bnd.comm.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.Proxy.Type;
 import java.net.URL;
 import java.util.List;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.connection.settings.ConnectionSettings;
@@ -18,10 +23,10 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class SettingsParserTest extends TestCase {
+public class SettingsParserTest {
 
+	@Test
 	public void testMavenEncryptedPassword() throws Exception {
 
 		System.setProperty(ConnectionSettings.M2_SETTINGS_SECURITY_PROPERTY, "testresources/settings-security.xml");
@@ -40,6 +45,7 @@ public class SettingsParserTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testValidXLMViaWorkspace() throws Exception {
 		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
 			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/valid.xml");
@@ -50,6 +56,7 @@ public class SettingsParserTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testInvalidXLMViaWorkspace() throws Exception {
 		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
 			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/invalid.xml");
@@ -60,6 +67,7 @@ public class SettingsParserTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testServerSelectionWithTrust() throws Exception {
 		SettingsDTO settings = getSettings("server-trust-selection.xml");
 		assertEquals(1, settings.servers.size());
@@ -68,6 +76,7 @@ public class SettingsParserTest extends TestCase {
 		assertNotNull(p.trust);
 	}
 
+	@Test
 	public void testServerSelection() throws Exception {
 		SettingsDTO settings = getSettings("server-selection.xml");
 		assertEquals(1, settings.servers.size());
@@ -79,6 +88,7 @@ public class SettingsParserTest extends TestCase {
 		assertEquals("passwd", p.password);
 	}
 
+	@Test
 	public void testServerSelectionOAuth2() throws Exception {
 		SettingsDTO settings = getSettings("server-selection-oauth2.xml");
 		assertEquals(1, settings.servers.size());
@@ -90,6 +100,7 @@ public class SettingsParserTest extends TestCase {
 		assertEquals("token", p.password);
 	}
 
+	@Test
 	public void testProxies() throws Exception {
 		SettingsDTO settings = getSettings("proxy-types.xml");
 		assertEquals(2, settings.proxies.size());
@@ -114,6 +125,7 @@ public class SettingsParserTest extends TestCase {
 		assertEquals(null, p.password);
 	}
 
+	@Test
 	public void testSocksAuth() throws Exception {
 		SettingsDTO settings = getSettings("socks-auth.xml");
 		assertEquals(1, settings.proxies.size());
@@ -127,6 +139,7 @@ public class SettingsParserTest extends TestCase {
 		assertEquals("somepassword", p.password);
 	}
 
+	@Test
 	public void testSocksNoAuth() throws Exception {
 		SettingsDTO settings = getSettings("socks-noauth.xml");
 		assertEquals(1, settings.proxies.size());
@@ -140,6 +153,7 @@ public class SettingsParserTest extends TestCase {
 		assertEquals(null, p.password);
 	}
 
+	@Test
 	public void testNonProxyHost() throws Exception {
 		SettingsDTO settings = getSettings("socks-auth-nonproxyhosts.xml");
 		assertEquals(1, settings.proxies.size());
@@ -161,6 +175,7 @@ public class SettingsParserTest extends TestCase {
 		return settings;
 	}
 
+	@Test
 	public void testWildcardURL() throws Exception {
 		try (Processor proc = new Processor(); HttpClient hc = new HttpClient()) {
 			proc.setProperty("-connection-settings",

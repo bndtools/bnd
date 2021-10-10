@@ -1,6 +1,12 @@
 package test.baseline;
 
 import static aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,6 +20,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
@@ -36,10 +47,9 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class BaselineTest extends TestCase {
+public class BaselineTest {
 	File		tmp;
 	Workspace	workspace;
 
@@ -51,23 +61,30 @@ public class BaselineTest extends TestCase {
 		return workspace = new Workspace(tmp);
 	}
 
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName())
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
 			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		IO.delete(tmp);
+		IO.close(workspace);
 		workspace = null;
 	}
 
 	/**
 	 * Test 2 jars compiled with different compilers
 	 */
+	@Test
 	public void testCompilerEnumDifference() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
 		try (Jar ecj = new Jar(IO.getFile("jar/baseline/com.example.baseline.ecj.jar"));
@@ -83,6 +100,7 @@ public class BaselineTest extends TestCase {
 	/**
 	 * Test skipping classes when there is source
 	 */
+	@Test
 	public void testClassesDiffWithSource() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
 		try (Jar jar = new Jar(IO.getFile("jar/osgi.jar")); Jar out = new Jar(".");) {
@@ -106,6 +124,7 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testClassesDiffWithoutSource() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
 		try (Jar jar = new Jar(IO.getFile("jar/osgi.jar")); Jar out = new Jar(".");) {
@@ -125,6 +144,7 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testJava8DefaultMethods() throws Exception {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
@@ -149,6 +169,7 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoMismatchForZeroMajor() throws Exception {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
@@ -177,6 +198,7 @@ public class BaselineTest extends TestCase {
 	 * Check if we can ignore resources in the baseline. First build two jars
 	 * that are identical except for the b/b resource. Then do baseline on them.
 	 */
+	@Test
 	public void testIgnoreResourceDiff() throws Exception {
 		Processor processor = new Processor();
 		DiffPluginImpl differ = new DiffPluginImpl();
@@ -197,59 +219,13 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
-	public static void testBaslineJar() throws Exception {
-		// Workspace ws = new Workspace(IO.getFile("testresources/ws"));
-		//
-		// Project p3 = ws.getProject("p3");
-		//
-		// ProjectBuilder builder = (ProjectBuilder)
-		// p3.getBuilder(null).getSubBuilder();
-		// builder.setBundleSymbolicName("p3");
-		//
-		// // Nothing specified
-		// Jar jar = builder.getBaselineJar(false);
-		// assertNull(jar);
-		//
-		// jar = builder.getBaselineJar(true);
-		// assertEquals(".", jar.getName());
-		//
-		// // Fallback to release repo
-		// builder.set("-releaserepo", "Repo");
-		// jar = builder.getBaselineJar(false);
-		// assertNull(jar);
-		//
-		// jar = builder.getBaselineJar(true);
-		// assertEquals("p3", jar.getBsn());
-		// assertEquals("1.0.1", jar.getVersion());
-		//
-		// // -baselinerepo specified
-		// builder.set("-baselinerepo", "Release");
-		// jar = builder.getBaselineJar(false);
-		// assertEquals("p3", jar.getBsn());
-		// assertEquals("1.2.0", jar.getVersion());
-		//
-		// jar = builder.getBaselineJar(true);
-		// assertEquals("p3", jar.getBsn());
-		// assertEquals("1.2.0", jar.getVersion());
-		//
-		// // -baseline specified
-		// builder.set("-baseline", "p3;version=1.1.0");
-		// jar = builder.getBaselineJar(false);
-		// assertEquals("p3", jar.getBsn());
-		// assertEquals("1.1.0", jar.getVersion());
-		//
-		// jar = builder.getBaselineJar(true);
-		// assertEquals("p3", jar.getBsn());
-		// assertEquals("1.1.0", jar.getVersion());
-
-	}
-
 	/**
 	 * When a JAR is build the manifest is not set in the resources but in a
 	 * instance var.
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testPrematureJar() throws Exception {
 		File file = IO.getFile(new File(""), "jar/osgi.jar");
 		try (Builder b1 = new Builder(); Builder b2 = new Builder();) {
@@ -312,6 +288,7 @@ public class BaselineTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testRepository() throws Exception {
 		Jar v1_2_0_a = mock(Jar.class);
 		when(v1_2_0_a.getVersion()).thenReturn("1.2.0.b");
@@ -397,6 +374,7 @@ public class BaselineTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testNothingInRepo() throws Exception {
 		File tmp = new File("tmp");
 		tmp.mkdirs();
@@ -426,6 +404,7 @@ public class BaselineTest extends TestCase {
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
+	@Test
 	public void testProviderTypeBump() throws Exception {
 		Processor processor = new Processor();
 
@@ -450,7 +429,8 @@ public class BaselineTest extends TestCase {
 	}
 
 	// Adding a method to a ConsumerType produces a MINOR bump (1.0.0 -> 2.0.0)
-	public static void testConsumerTypeBump() throws Exception {
+	@Test
+	public void testConsumerTypeBump() throws Exception {
 		Processor processor = new Processor();
 
 		DiffPluginImpl differ = new DiffPluginImpl();
@@ -472,6 +452,7 @@ public class BaselineTest extends TestCase {
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
+	@Test
 	public void testBundleVersionBump() throws Exception {
 		Processor processor = new Processor();
 
@@ -492,6 +473,7 @@ public class BaselineTest extends TestCase {
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
 	// in package, but bundle version should be ignored
+	@Test
 	public void testBundleVersionDiffignore() throws Exception {
 		Processor processor = new Processor();
 
@@ -511,6 +493,7 @@ public class BaselineTest extends TestCase {
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
+	@Test
 	public void testBundleVersionBumpDifferentSymbolicNames() throws Exception {
 		Processor processor = new Processor();
 
@@ -535,6 +518,7 @@ public class BaselineTest extends TestCase {
 
 	// Adding a method to an exported class produces a MINOR bump (1.0.0 ->
 	// 1.1.0)
+	@Test
 	public void testMinorChange() throws Exception {
 		Processor processor = new Processor();
 
@@ -555,6 +539,7 @@ public class BaselineTest extends TestCase {
 
 	// Adding a method to an exported class and unexporting a package produces a
 	// MINOR bump (1.0.0 -> 1.1.0)
+	@Test
 	public void testMinorAndRemovedChange() throws Exception {
 		Processor processor = new Processor();
 
@@ -575,6 +560,7 @@ public class BaselineTest extends TestCase {
 
 	// Deleting a protected field on a ProviderType API class produces a MINOR
 	// bump (1.0.0 -> 1.1.0)
+	@Test
 	public void testProviderProtectedFieldRemovedChange() throws Exception {
 		Processor processor = new Processor();
 
@@ -605,6 +591,7 @@ public class BaselineTest extends TestCase {
 
 	// Moving a package from the root into a jar on the Bundle-ClassPath
 	// should not result in DELETED
+	@Test
 	public void testMovePackageToBundleClassPath() throws Exception {
 		Processor processor = new Processor();
 
@@ -638,6 +625,7 @@ public class BaselineTest extends TestCase {
 	// baseline cannot find it. Since the class hierarchy was cut off, the
 	// baseline would _forget_ that every class inherits from Object, and _lose_
 	// Object's methods if not directly implemented.
+	@Test
 	public void testCutOffInheritance() throws Exception {
 		Processor processor = new Processor();
 
@@ -689,6 +677,7 @@ public class BaselineTest extends TestCase {
 	// <T extends Foo> T getFoo();
 	// or:
 	// <T extends Foo & Comparable<Foo>> T getFoo();
+	@Test
 	public void testExpandErasureOfMethodReturn() throws Exception {
 		Processor processor = new Processor();
 

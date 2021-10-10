@@ -1,18 +1,21 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class ExportHeaderTest extends TestCase {
+public class ExportHeaderTest {
 
 	/**
 	 * If you import a range then the maven guys can have the silly -SNAPSHOT in
@@ -20,7 +23,8 @@ public class ExportHeaderTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testImportHeaderWithMessedUpRange() throws Exception {
+	@Test
+	public void testImportHeaderWithMessedUpRange() throws Exception {
 		Builder builder = new Builder();
 		Jar bin = new Jar(new File("bin_test"));
 		builder.setClasspath(new Jar[] {
@@ -38,7 +42,8 @@ public class ExportHeaderTest extends TestCase {
 		assertEquals("test.packageinfo;version=\"[1.1.1.SNAPSHOT,1.1.1.SNAPSHOT]\"", imph);
 	}
 
-	public static void testPickupExportVersion() throws Exception {
+	@Test
+	public void testPickupExportVersion() throws Exception {
 		Builder builder = new Builder();
 		Jar bin = new Jar(new File("bin_test"));
 		builder.setClasspath(new Jar[] {
@@ -55,7 +60,8 @@ public class ExportHeaderTest extends TestCase {
 		assertEquals("test.packageinfo;version=\"[1.0,2)\"", imph);
 	}
 
-	public static void testExportVersionWithPackageInfo() throws Exception {
+	@Test
+	public void testExportVersionWithPackageInfo() throws Exception {
 		Builder builder = new Builder();
 		Jar bin = new Jar(new File("bin_test"));
 		builder.setClasspath(new Jar[] {

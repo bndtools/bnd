@@ -1,11 +1,12 @@
 package aQute.bnd.osgi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.ActivelyClosingClassLoader.Wrapper;
@@ -65,19 +66,21 @@ public class ActivelyClosingClassLoaderTest {
 		}
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testClose() throws Exception {
-		CL cl;
-		try (Processor p = new Processor()) {
-			cl = p.getLoader();
+		assertThatIllegalStateException().isThrownBy(() -> {
+			CL cl;
+			try (Processor p = new Processor()) {
+				cl = p.getLoader();
+				cl.add(IO.getFile("jar/asm.jar"));
+
+				assertEquals(Jar.class, cl.loadClass("aQute.bnd.osgi.Jar"));
+				cl.loadClass("org.objectweb.asm.AnnotationVisitor");
+			}
+			assertFalse(cl.open.get());
+
 			cl.add(IO.getFile("jar/asm.jar"));
-
-			assertEquals(Jar.class, cl.loadClass("aQute.bnd.osgi.Jar"));
-			cl.loadClass("org.objectweb.asm.AnnotationVisitor");
-		}
-		assertFalse(cl.open.get());
-
-		cl.add(IO.getFile("jar/asm.jar"));
+		});
 	}
 
 	@Test

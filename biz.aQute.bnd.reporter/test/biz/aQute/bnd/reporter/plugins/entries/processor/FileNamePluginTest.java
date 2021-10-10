@@ -1,13 +1,18 @@
 package biz.aQute.bnd.reporter.plugins.entries.processor;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.Locale;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.bnd.osgi.Processor;
-import junit.framework.TestCase;
 
-public class FileNamePluginTest extends TestCase {
+public class FileNamePluginTest {
 
+	@Test
 	public void testWorkspaceSettingsEntry() throws Exception {
 
 		final Processor p = new Processor();

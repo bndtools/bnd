@@ -1,5 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,6 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
@@ -18,9 +24,8 @@ import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class AgainstNexusTest extends TestCase {
+public class AgainstNexusTest {
 	private static final String	HTTP_LOCALHOST_8081	= "http://localhost:8081/nexus/content/repositories/snapshots/";
 	String						tmpName;
 	File						tmp;
@@ -31,10 +36,14 @@ public class AgainstNexusTest extends TestCase {
 
 	private MavenBndRepository	repo;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName();
 		tmp = IO.getFile(tmpName);
 		IO.delete(tmp);
 		local = IO.getFile(tmp, "local");
@@ -55,6 +64,7 @@ public class AgainstNexusTest extends TestCase {
 		skip = true;
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		if (skip)
 			return;
@@ -69,6 +79,7 @@ public class AgainstNexusTest extends TestCase {
 		System.out.println(f);
 	}
 
+	@Test
 	public void testRelease() throws Exception {
 		if (skip)
 			return;

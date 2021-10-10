@@ -1,6 +1,11 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +13,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.resource.Capability;
 
 import aQute.bnd.osgi.Constants;
@@ -18,10 +24,10 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter.SetLocation;
-import junit.framework.TestCase;
 
-public class ProcessorTest extends TestCase {
+public class ProcessorTest {
 
+	@Test
 	public void testFixupMerge() throws IOException {
 		Processor p = new Processor();
 		p.setProperty("-fixupmessages.foo", "foo");
@@ -32,6 +38,7 @@ public class ProcessorTest extends TestCase {
 		p.close();
 	}
 
+	@Test
 	public void testFixupMacro() throws IOException {
 		Processor p = new Processor();
 		p.setProperty("skip", "foo");
@@ -42,6 +49,7 @@ public class ProcessorTest extends TestCase {
 		p.close();
 	}
 
+	@Test
 	public void testNative() throws Exception {
 		assertNative("osname=linux;osversion=2.3;processor=arm_le", "(osgi.native.osname~=LINUX)");
 		assertNative("osname=Windows;osversion=10.0;processor=x86", "(osgi.native.osname~=Win32)");
@@ -52,6 +60,7 @@ public class ProcessorTest extends TestCase {
 		assertNative("osname=Mac OS X;osversion=11.1;processor=aarch64", "(osgi.native.processor~=aarch64)");
 	}
 
+	@Test
 	public void testNativeDefaults() throws Exception {
 		try (Processor p = new Processor();) {
 			p.setProperty("a", "${native_capability}");
@@ -106,6 +115,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOperatingSystems() {
 
 		assertIn(OSInformation.getOperatingSystemAliases("Windows XP", "5.1.x").osnames, "WindowsXP", "Windows XP",
@@ -126,6 +136,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testUnknownProcessor() throws Exception {
 		try (Processor p = new Processor();) {
 			assertNative("osname=linux;osversion=2.3;processor=FOO;processor=BLA",
@@ -134,6 +145,7 @@ public class ProcessorTest extends TestCase {
 
 	}
 
+	@Test
 	public void testUnknownOsname() throws Exception {
 		try (Processor p = new Processor();) {
 			assertNative("osname=Beos;osversion=2.3;processor=FOO;processor=BLA", "(&(osgi.native.osname~=beos))");
@@ -143,6 +155,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoOsVersion() throws Exception {
 		try (Processor p = new Processor();) {
 			String cap = p._native_capability("native_capability", "processor=x86", "osname=Linux");
@@ -211,6 +224,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBeginEndHandleErrors() throws IOException {
 		try (Processor sub = new Processor(); SeethroughProcessor owner = new SeethroughProcessor()) {
 			Processor previous = owner.beginHandleErrors("dummy");
@@ -237,10 +251,12 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
-	public static void testPlugins() {
+	@Test
+	public void testPlugins() {
 
 	}
 
+	@Test
 	public void testFixupMessages() throws IOException {
 		Processor p = new Processor();
 		p.setTrace(true);
@@ -350,7 +366,8 @@ public class ProcessorTest extends TestCase {
 		p.close();
 	}
 
-	public static void testDuplicates() {
+	@Test
+	public void testDuplicates() {
 		assertEquals("", Processor.removeDuplicateMarker("~"));
 
 		assertTrue(Processor.isDuplicate("abc~"));
@@ -382,6 +399,7 @@ public class ProcessorTest extends TestCase {
 
 	}
 
+	@Test
 	public void testUriMacro() throws Exception {
 		try (Processor p = new Processor()) {
 			String baseURI = p.getBaseURI()
@@ -424,6 +442,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testUriMacroTooFew() throws IOException {
 		try (Processor p = new Processor()) {
 			p.setProperty("urix", "${uri}");
@@ -432,6 +451,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testUriMacroTooMany() throws IOException {
 		try (Processor p = new Processor()) {
 			p.setProperty("urix", "${uri;file:/dist/bundles;file:/some/dir/;another}");
@@ -440,6 +460,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testUriMacroNoBase() throws IOException {
 		try (Processor p = new Processor()) {
 			p.setBase(null);
@@ -449,6 +470,7 @@ public class ProcessorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFileUriMacro() throws Exception {
 		try (Processor p = new Processor()) {
 			String baseURI = p.getBaseURI()

@@ -1,12 +1,15 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -22,12 +25,12 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.properties.Document;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import junit.framework.TestCase;
 
-public class BndEditModelTest extends TestCase {
+public class BndEditModelTest {
 	static CapReqBuilder cp = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 
-	public static void testVariableInRunRequirements() throws Exception {
+	@Test
+	public void testVariableInRunRequirements() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		BndEditModel model = new BndEditModel(ws);
 		File f = new File("testresources/ws/p7/reuse.bndrun");
@@ -112,7 +115,8 @@ public class BndEditModelTest extends TestCase {
 			.buildSyntheticRequirement();
 	}
 
-	public static void testVariableInSystemPackages() throws Exception {
+	@Test
+	public void testVariableInSystemPackages() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		BndEditModel model = new BndEditModel(ws);
 		File f = new File("testresources/ws/p7/syspkg.bndrun");
@@ -148,7 +152,8 @@ public class BndEditModelTest extends TestCase {
 			.mergeProperties(Constants.RUNSYSTEMPACKAGES));
 	}
 
-	public static void testRunReposShared() throws Exception {
+	@Test
+	public void testRunReposShared() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		BndEditModel model = new BndEditModel(ws);
 		File f = new File("testresources/ws/p7/syspkg.bndrun");
@@ -161,7 +166,8 @@ public class BndEditModelTest extends TestCase {
 		assertEquals("testing", runrepos.get(0));
 	}
 
-	public static void testRemovePropertyFromStandalone() throws Exception {
+	@Test
+	public void testRemovePropertyFromStandalone() throws Exception {
 		File runFile = IO.getFile("testresources/standalone.bndrun");
 		Run run = Run.createRun(null, runFile);
 
@@ -181,12 +187,13 @@ public class BndEditModelTest extends TestCase {
 
 		assertEquals("A", model.getProperties()
 			.get("a"));
-		assertNull("removed property should be null", model.getProperties()
-			.get("b"));
+		assertNull(model.getProperties()
+			.get("b"), "removed property should be null");
 		assertEquals("C", model.getProperties()
 			.get("c"));
 	}
 
+	@Test
 	public void testGetProperties() throws Exception {
 		File runFile = IO.getFile("testresources/standalone.bndrun");
 		Run run = Run.createRun(null, runFile);
@@ -207,6 +214,7 @@ public class BndEditModelTest extends TestCase {
 
 	}
 
+	@Test
 	public void testGetPropertiesWithFileReplace() throws Exception {
 		File runFile = IO.getFile("testresources/standalone.bndrun");
 		Run run = Run.createRun(null, runFile);
@@ -221,6 +229,7 @@ public class BndEditModelTest extends TestCase {
 		assertThat(properties.getProperty("here.also")).isEqualTo(getPortablePath(runFile.getParentFile()));
 	}
 
+	@Test
 	public void testGetPropertiesWithWorkspaceMacros() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project project = ws.getProject("p1");
@@ -234,6 +243,7 @@ public class BndEditModelTest extends TestCase {
 		assertThat(p.getProperty("pro")).isEqualTo(getPortablePath(project.getBase()));
 	}
 
+	@Test
 	public void testGetPropertiesWithoutParent() throws Exception {
 		BndEditModel model = new BndEditModel();
 		model.setGenericString("foo", "FOO");
@@ -242,6 +252,7 @@ public class BndEditModelTest extends TestCase {
 		assertThat(p.getProperty("foo")).isEqualTo("FOO");
 	}
 
+	@Test
 	public void testGetPropertiesWithOnlyWorkspace() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		BndEditModel model = new BndEditModel(ws);

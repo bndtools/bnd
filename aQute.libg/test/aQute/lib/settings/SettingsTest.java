@@ -1,13 +1,20 @@
 package aQute.lib.settings;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class SettingsTest extends TestCase {
+public class SettingsTest {
 
+	@Test
 	public void testSimple() throws Exception {
 		File tmp = IO.getFile("tmp.json");
 		IO.delete(tmp);

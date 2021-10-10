@@ -1,7 +1,14 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Properties;
 import java.util.jar.Attributes;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
@@ -9,18 +16,18 @@ import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 /**
  * Tests the make functionality.
  */
 @SuppressWarnings("resource")
-public class MakeTest extends TestCase {
+public class MakeTest {
 
 	/**
 	 * Test a make plugin
 	 */
 
+	@Test
 	public void testMakePlugin() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			bmaker.setProperty("Export-Package", "*");
@@ -40,6 +47,7 @@ public class MakeTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testCopy() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			Properties p = new Properties();
@@ -60,6 +68,7 @@ public class MakeTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testJarInJarInJar() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			Properties p = new Properties();
@@ -87,6 +96,7 @@ public class MakeTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testFilteredHeader() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			Properties p = new Properties();
@@ -122,6 +132,7 @@ public class MakeTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testComplexOnDemand() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			Properties p = new Properties();

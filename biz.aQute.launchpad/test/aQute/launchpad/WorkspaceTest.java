@@ -1,13 +1,12 @@
 package aQute.launchpad;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
@@ -17,12 +16,12 @@ import aQute.lib.io.IO;
  * Workspace related tests
  */
 public class WorkspaceTest {
-	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
+	@TempDir
+	public File folder;
 
 	@Test
 	public void testDeletePortRegistry() throws Exception {
-		File tmpWs = folder.newFolder("tmp");
+		File tmpWs = new File(folder, "tmp");
 		IO.copy(IO.getFile("testresources/ws1"), tmpWs);
 		File portFile;
 		try (Workspace ws = Workspace.findWorkspace(tmpWs)) {

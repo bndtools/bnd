@@ -1,5 +1,10 @@
 package biz.aQute.remote;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
@@ -9,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -22,9 +31,8 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
 import aQute.remote.plugin.LauncherSupervisor;
-import junit.framework.TestCase;
 
-public class RemoteTest extends TestCase {
+public class RemoteTest {
 	private int						random;
 	private HashMap<String, Object>	configuration;
 	private Framework				framework;
@@ -33,15 +41,15 @@ public class RemoteTest extends TestCase {
 	private String					location;
 	private File					tmp;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	protected void setUp(TestInfo testInfo) throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
+			.get()
+			.getName() + "/"
+			+ testInfo.getTestMethod()
+				.get()
+				.getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 		configuration = new HashMap<>();
@@ -61,13 +69,13 @@ public class RemoteTest extends TestCase {
 
 	}
 
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception {
 		framework.stop();
 		framework.waitForStop(10000);
-		super.tearDown();
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		LauncherSupervisor supervisor = new LauncherSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT);
@@ -117,6 +125,7 @@ public class RemoteTest extends TestCase {
 
 	}
 
+	@Test
 	public void testUpdate() throws Exception {
 		LauncherSupervisor supervisor = new LauncherSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT);
@@ -201,6 +210,7 @@ public class RemoteTest extends TestCase {
 		assertNull(context.getBundle(t2.getAbsolutePath()));
 	}
 
+	@Test
 	public void testUpdateOrder() throws Exception {
 		LauncherSupervisor supervisor = new LauncherSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT);
@@ -263,6 +273,7 @@ public class RemoteTest extends TestCase {
 	 * Test if we can get the BundleRevisionDTOs
 	 */
 
+	@Test
 	public void testBRD() throws Exception {
 		LauncherSupervisor supervisor = new LauncherSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT);

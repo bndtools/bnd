@@ -1,15 +1,20 @@
 package biz.aQute.bnd.reporter.codesnippet;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.List;
+
+import org.junit.jupiter.api.Test;
 
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetDTO;
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetGroupDTO;
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
-import junit.framework.TestCase;
 
-public class CodeSnippetExtractorTest extends TestCase {
+public class CodeSnippetExtractorTest {
 
+	@Test
 	public void testExtractor() {
 		final CodeSnippetExtractor extractor = new CodeSnippetExtractor();
 

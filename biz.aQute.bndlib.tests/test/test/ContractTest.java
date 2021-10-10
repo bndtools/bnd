@@ -1,12 +1,17 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Formatter;
 
 import org.assertj.core.api.Condition;
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -16,10 +21,10 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class ContractTest extends TestCase {
+public class ContractTest {
 
+	@Test
 	public void testParameterized() throws Exception {
 		Jar bjara = getContractExporter("atest", "2.5", "${exports}");
 
@@ -46,6 +51,7 @@ public class ContractTest extends TestCase {
 		assertEquals("(&(osgi.contract=atest)(version=2.5.0))", attrs.get("filter:"));
 	}
 
+	@Test
 	public void testDefinedContract() throws Exception {
 		Builder b = newBuilder();
 		b.setTrace(true);
@@ -74,6 +80,7 @@ public class ContractTest extends TestCase {
 			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
 	}
 
+	@Test
 	public void testDefinedContractMultiple() throws Exception {
 		Builder b = newBuilder();
 		b.setTrace(true);
@@ -111,6 +118,7 @@ public class ContractTest extends TestCase {
 			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
 	}
 
+	@Test
 	public void testNoContract() throws Exception {
 		Builder b = newBuilder();
 		b.setTrace(true);
@@ -136,6 +144,7 @@ public class ContractTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testWarningVersion() throws Exception {
 		Jar bjara = getContractExporter("abc", (String[]) null, "${exports}");
 
@@ -161,6 +170,7 @@ public class ContractTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testWarningUses() throws Exception {
 		Jar bjara = getContractExporter("abc", "2.5", null);
 
@@ -185,6 +195,7 @@ public class ContractTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testUnused() throws Exception {
 		Jar bjara = getContractExporter("atest", "2.5", "${exports}");
 
@@ -209,6 +220,7 @@ public class ContractTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testSelect() throws Exception {
 		Jar bjara = getContractExporter("atest", "2.5", "${exports}");
 		Jar bjarb = getContractExporter("btest", "2.5", "${exports}");
@@ -242,6 +254,7 @@ public class ContractTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testOverlap() throws Exception {
 		Jar bjar = getContractExporter("test", "2.5", "${exports}");
 
@@ -259,6 +272,7 @@ public class ContractTest extends TestCase {
 
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		Jar bjar = getContractExporter("test", "2.5", "${exports}");
 
@@ -283,6 +297,7 @@ public class ContractTest extends TestCase {
 		assertNull(attrs.getVersion());
 	}
 
+	@Test
 	public void testMultiple() throws Exception {
 		Jar bjar = getContractExporter("abc", new String[] {
 			"2.5", "2.6", "3.0", "3.1"
@@ -307,6 +322,7 @@ public class ContractTest extends TestCase {
 		assertEquals("(&(osgi.contract=abc)(version=3.1.0))", attrs.get("filter:"));
 	}
 
+	@Test
 	public void testSimple_withDefault() throws Exception {
 		Jar bjar = getContractExporter("test", "2.5", "${exports}");
 
@@ -332,6 +348,7 @@ public class ContractTest extends TestCase {
 		assertEquals("(&(osgi.contract=test)(version=2.5.0))", attrs.get("filter:"));
 	}
 
+	@Test
 	public void testMultiple_withDefault() throws Exception {
 		Jar bjar = getContractExporter("abc", new String[] {
 			"2.5", "2.6", "3.0", "3.1"
