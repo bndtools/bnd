@@ -20,7 +20,6 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
-import aQute.bnd.build.Run;
 import aQute.lib.io.IO;
 
 /**
@@ -53,7 +52,7 @@ import aQute.lib.io.IO;
  * execution.</li>
  * </ul>
  */
-public class Bndrun extends AbstractBndrun<Project, Run> {
+public class Bndrun extends AbstractBndrun {
 	private final Property<JavaLauncher> javaLauncher;
 
 	/**
@@ -82,9 +81,9 @@ public class Bndrun extends AbstractBndrun<Project, Run> {
 	}
 
 	/**
-	 * Execute the Run object.
+	 * Execute the Project object.
 	 *
-	 * @param run The Run object.
+	 * @param run The Project object.
 	 * @throws Exception If the worker action has an exception.
 	 */
 	@Override

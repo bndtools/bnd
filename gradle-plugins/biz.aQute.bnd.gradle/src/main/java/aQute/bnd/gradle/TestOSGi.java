@@ -108,9 +108,9 @@ public class TestOSGi extends Bndrun {
 	}
 
 	/**
-	 * Test the Run object.
+	 * Test the Project object.
 	 *
-	 * @param run The Run object.
+	 * @param run The Project object.
 	 * @throws Exception If the worker action has an exception.
 	 */
 	@Override
