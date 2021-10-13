@@ -35,9 +35,9 @@
 	<extension
 			point="org.eclipse.debug.ui.launchShortcuts">
 		<shortcut
-				class="bndtools.launch.JUnitShortcut"
+				class="org.bndtools.facade.ExtensionFacade:org.eclipse.debug.ui.ILaunchShortcut2"
 				icon="icons/bricks_junit.png"
-				id="bndtools.m2e.launch.junitShortcut"
+				id="bndtools.launch.JUnitShortcut"
 				label="Bnd OSGi Test Launcher (JUnit)"
 				modes="run, debug"
 				path="bndtools.m2e.launch.core">
