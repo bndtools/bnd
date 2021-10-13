@@ -1,7 +1,5 @@
 package org.bndtools.templating.jgit;
 
-import static aQute.lib.promise.PromiseCollectors.toPromise;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -104,7 +102,7 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
 						return (Template) new GitCloneTemplate(params);
 					});
 			})
-			.collect(toPromise(promiseFactory));
+			.collect(promiseFactory.toPromise());
 	}
 
 	private static URI createHelpUri(String repoName, String linkUri) {

@@ -1,7 +1,6 @@
 package aQute.bnd.repository.fileset;
 
 import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
-import static aQute.lib.promise.PromiseCollectors.toPromise;
 
 import java.io.File;
 import java.io.InputStream;
@@ -24,6 +23,7 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
@@ -38,7 +38,6 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.POM;
@@ -79,7 +78,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	private Promise<BridgeRepository> readFiles() {
 		Promise<List<Resource>> resources = files().stream()
 			.map(this::parseFile)
-			.collect(toPromise(promiseFactory));
+			.collect(promiseFactory.toPromise());
 		if (logger.isDebugEnabled()) {
 			resources.onSuccess(l -> l.stream()
 				.filter(Objects::nonNull)

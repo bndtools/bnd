@@ -1,4 +1,4 @@
-org.osgi:osgi.annotation:8.0.0
+org.osgi:osgi.annotation:8.0.1
 org.osgi:osgi.core:6.0.0
 org.osgi:org.osgi.framework:1.10.0
 org.osgi:org.osgi.dto:1.0.0
@@ -28,9 +28,9 @@ org.osgi:org.osgi.service.resolver:1.1.1
 org.osgi:org.osgi.service.serviceloader:1.0.0
 org.osgi:org.osgi.service.subsystem:1.1.0
 org.osgi:org.osgi.service.wireadmin:1.0.1
-org.osgi:org.osgi.util.function:1.1.0
+org.osgi:org.osgi.util.function:1.2.0
 org.osgi:org.osgi.util.measurement:1.0.2
-org.osgi:org.osgi.util.promise:1.1.1
+org.osgi:org.osgi.util.promise:1.2.0
 
 org.bouncycastle:bcpkix-jdk15on:1.54
 org.bouncycastle:bcprov-jdk15on:1.54
