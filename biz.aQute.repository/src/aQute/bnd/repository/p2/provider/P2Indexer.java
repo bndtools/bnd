@@ -2,7 +2,6 @@ package aQute.bnd.repository.p2.provider;
 
 import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
 import static aQute.bnd.osgi.resource.ResourceUtils.toVersion;
-import static aQute.lib.promise.PromiseCollectors.toPromise;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
@@ -201,7 +200,7 @@ class P2Indexer implements Closeable {
 					});
 			})
 			.filter(Objects::nonNull)
-			.collect(toPromise(promiseFactory));
+			.collect(promiseFactory.toPromise());
 
 		return all.map(resources -> resources.stream()
 			.filter(resource -> resource != RECOVERY)

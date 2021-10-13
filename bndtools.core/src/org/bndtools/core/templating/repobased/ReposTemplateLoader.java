@@ -1,6 +1,5 @@
 package org.bndtools.core.templating.repobased;
 
-import static aQute.lib.promise.PromiseCollectors.toPromise;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -151,7 +150,7 @@ public class ReposTemplateLoader implements TemplateLoader {
 					.filter(Objects::nonNull)
 					.collect(toList());
 			}))
-			.collect(toPromise(promiseFactory))
+			.collect(promiseFactory.toPromise())
 			.map(ll -> ll.stream()
 				.flatMap(List::stream)
 				.collect(toList()));

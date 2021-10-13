@@ -1,6 +1,5 @@
 package aQute.bnd.repository.osgi;
 
-import static aQute.lib.promise.PromiseCollectors.toPromise;
 import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedInputStream;
@@ -65,7 +64,7 @@ class OSGiIndex {
 	private Promise<BridgeRepository> readIndexes(boolean refresh) throws Exception {
 		Promise<List<Resource>> resources = getURIs().stream()
 			.map(uri -> download(uri, refresh))
-			.collect(toPromise(promiseFactory))
+			.collect(promiseFactory.toPromise())
 			.map(ll -> ll.stream()
 				.flatMap(List::stream)
 				.collect(toList()));

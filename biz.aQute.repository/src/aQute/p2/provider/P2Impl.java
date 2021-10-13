@@ -1,6 +1,5 @@
 package aQute.p2.provider;
 
-import static aQute.lib.promise.PromiseCollectors.toPromise;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -140,7 +139,7 @@ public class P2Impl implements ArtifactProvider {
 							}
 							return Collections.emptyList();
 						}))
-						.collect(toPromise(promiseFactory))
+						.collect(promiseFactory.toPromise())
 						.map(ll -> ll.stream()
 							.flatMap(List::stream)
 							.collect(toList())));
