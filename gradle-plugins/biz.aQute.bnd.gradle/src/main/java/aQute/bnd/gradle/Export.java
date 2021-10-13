@@ -25,7 +25,6 @@ import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Run;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
@@ -74,7 +73,7 @@ import aQute.lib.strings.Strings;
  * "bnd.executablejar".</li>
  * </ul>
  */
-public class Export extends AbstractBndrun<Project, Run> {
+public class Export extends AbstractBndrun {
 	private boolean					bundlesOnly	= false;
 	private final DirectoryProperty	destinationDirectory;
 	private final Property<String>	exporter;
@@ -166,9 +165,9 @@ public class Export extends AbstractBndrun<Project, Run> {
 	}
 
 	/**
-	 * Export the Run object.
+	 * Export the Project object.
 	 *
-	 * @param run The Run object.
+	 * @param run The Project object.
 	 * @throws Exception If the worker action has an exception.
 	 */
 	@Override

@@ -50,11 +50,11 @@ public class BndBuilderPlugin implements Plugin<Project> {
 	 */
 	@Override
 	public void apply(Project project) {
-		if (project.getPlugins()
+		if (project.getPluginManager()
 			.hasPlugin(BndPlugin.PLUGINID)) {
 			throw new GradleException("Project already has \"" + BndPlugin.PLUGINID + "\" plugin applied.");
 		}
-		project.getPlugins()
+		project.getPluginManager()
 			.apply("java");
 
 		RegularFile defaultBndfile = project.getLayout()

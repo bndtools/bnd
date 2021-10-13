@@ -13,7 +13,7 @@ import aQute.bnd.repository.fileset.FileSetRepository;
 
 @Deprecated
 public class FileSetRepositoryConvention {
-	private final AbstractBndrun<?, ?> bndrunTask;
+	private final AbstractBndrun bndrunTask;
 
 	/**
 	 * Create a FileSetRepositoryConvention for the specified AbstractBndrun
@@ -22,7 +22,7 @@ public class FileSetRepositoryConvention {
 	 * @param task The AbstractBndrun task.
 	 */
 	public FileSetRepositoryConvention(Task task) {
-		this.bndrunTask = (AbstractBndrun<?, ?>) task;
+		this.bndrunTask = (AbstractBndrun) task;
 	}
 
 	/**

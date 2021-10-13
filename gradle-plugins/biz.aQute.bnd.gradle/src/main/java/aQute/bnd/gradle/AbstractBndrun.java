@@ -16,7 +16,6 @@ import java.util.Properties;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
-import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -35,7 +34,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.work.NormalizeLineEndings;
 
-import aQute.bnd.build.Run;
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Constants;
@@ -65,7 +64,7 @@ import aQute.lib.strings.Strings;
  * for workingDirectory is temporaryDir.</li>
  * </ul>
  */
-public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN extends WORKER> extends DefaultTask {
+public abstract class AbstractBndrun extends DefaultTask {
 	private final RegularFileProperty			bndrun;
 	private final ConfigurableFileCollection	bundles;
 	private boolean								ignoreFailures	= false;
@@ -154,7 +153,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	@SuppressWarnings("deprecation")
 	public AbstractBndrun() {
 		super();
-		Project project = getProject();
+		org.gradle.api.Project project = getProject();
 		projectName = project.getName();
 		ObjectFactory objects = project.getObjects();
 		bndrun = objects.fileProperty();
@@ -222,19 +221,17 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 		Workspace workspace = (Workspace) getProject().findProperty("bndWorkspace");
 		File bndrunFile = unwrapFile(getBndrun());
 		File workingDirFile = unwrapFile(getWorkingDirectory());
-		if (Objects.nonNull(workspace) && getProject().getPlugins()
+		if (Objects.nonNull(workspace) && getProject().getPluginManager()
 			.hasPlugin(BndPlugin.PLUGINID)) {
 			BndPluginExtension extension = getProject().getExtensions()
 				.getByType(BndPluginExtension.class);
 			if (Objects.equals(bndrunFile, extension.getProject()
 				.getPropertiesFile())) {
-				@SuppressWarnings("unchecked")
-				WORKER worker = (WORKER) extension.getProject();
-				worker(worker);
+				worker(extension.getProject());
 				return;
 			}
 		}
-		try (RUN run = createRun(workspace, bndrunFile)) {
+		try (biz.aQute.resolve.Bndrun run = createBndrun(workspace, bndrunFile)) {
 			Workspace runWorkspace = run.getWorkspace();
 			IO.mkdirs(workingDirFile);
 			if (Objects.isNull(workspace)) {
@@ -283,27 +280,25 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	 * @return The RUN object.
 	 * @throws Exception If the create action has an exception.
 	 */
-	protected RUN createRun(Workspace workspace, File bndrunFile) throws Exception {
-		@SuppressWarnings("unchecked")
-		RUN run = (RUN) Run.createRun(workspace, bndrunFile);
-		return run;
+	protected biz.aQute.resolve.Bndrun createBndrun(Workspace workspace, File bndrunFile) throws Exception {
+		return biz.aQute.resolve.Bndrun.createBndrun(workspace, bndrunFile);
 	}
 
 	/**
-	 * Execute the Run object.
+	 * Execute the Project object.
 	 *
-	 * @param run The Run object.
+	 * @param run The Project object.
 	 * @throws Exception If the worker action has an exception.
 	 */
-	abstract protected void worker(WORKER run) throws Exception;
+	abstract protected void worker(Project run) throws Exception;
 
 	/**
-	 * Set -runee from the build environment if not already set in the Run
+	 * Set -runee from the build environment if not already set in the Processor
 	 * object.
 	 *
-	 * @param run The Run object.
+	 * @param run The Processor object.
 	 */
-	protected void inferRunEE(RUN run) {
+	protected void inferRunEE(Processor run) {
 		String runee = run.getProperty(Constants.RUNEE);
 		if (Objects.isNull(runee)) {
 			runee = Optional.ofNullable(targetVersion.getOrElse(System.getProperty("java.specification.version")))
@@ -316,12 +311,12 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	}
 
 	/**
-	 * Set -runrequires from the build environment if not already set in the Run
-	 * object.
+	 * Set -runrequires from the build environment if not already set in the
+	 * Processor object.
 	 *
-	 * @param run The Run object.
+	 * @param run The Processor object.
 	 */
-	protected void inferRunRequires(RUN run) {
+	protected void inferRunRequires(Processor run) {
 		String runrequires = run.getProperty(Constants.RUNREQUIRES);
 		if (Objects.isNull(runrequires) && !artifacts.isEmpty()) {
 			runrequires = artifacts.getFiles()

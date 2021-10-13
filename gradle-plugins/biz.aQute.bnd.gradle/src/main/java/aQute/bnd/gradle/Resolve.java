@@ -14,6 +14,7 @@ import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.osgi.service.resolver.ResolutionException;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
@@ -60,7 +61,7 @@ import biz.aQute.resolve.ResolveProcess;
  * -runbundles property. The default is true.</li>
  * </ul>
  */
-public class Resolve extends AbstractBndrun<biz.aQute.resolve.Bndrun, biz.aQute.resolve.Bndrun> {
+public class Resolve extends AbstractBndrun {
 	private boolean						failOnChanges	= false;
 	private final RegularFileProperty	outputBndrun;
 	private boolean						reportOptional	= true;
@@ -212,7 +213,7 @@ public class Resolve extends AbstractBndrun<biz.aQute.resolve.Bndrun, biz.aQute.
 	 * @throws Exception If the create action has an exception.
 	 */
 	@Override
-	protected biz.aQute.resolve.Bndrun createRun(Workspace workspace, File bndrunFile) throws Exception {
+	protected biz.aQute.resolve.Bndrun createBndrun(Workspace workspace, File bndrunFile) throws Exception {
 		File outputBndrunFile = unwrapFile(getOutputBndrun());
 		if (!Objects.equals(outputBndrunFile, bndrunFile)) {
 			try (Writer writer = IO.writer(outputBndrunFile)) {
@@ -222,17 +223,33 @@ public class Resolve extends AbstractBndrun<biz.aQute.resolve.Bndrun, biz.aQute.
 			}
 			bndrunFile = outputBndrunFile;
 		}
-		return biz.aQute.resolve.Bndrun.createBndrun(workspace, bndrunFile);
+		return super.createBndrun(workspace, bndrunFile);
 	}
 
 	/**
 	 * Resolve the Bndrun object.
 	 *
-	 * @param run The Run object.
-	 * @throws Exception If the worker action has an exception.
+	 * @param run The Bndrun object.
+	 * @throws Exception If the worker action has an exception or the input is
+	 *             not a Bndrun object.
 	 */
 	@Override
-	protected void worker(biz.aQute.resolve.Bndrun run) throws Exception {
+	protected void worker(Project run) throws Exception {
+		if (run instanceof biz.aQute.resolve.Bndrun) {
+			worker((biz.aQute.resolve.Bndrun) run);
+			return;
+		}
+		throw new GradleException(
+			"Resolving a project's bnd.bnd file is not supported by this task. This task can only resolve a bndrun file.");
+	}
+
+	/**
+	 * Resolve the Bndrun object.
+	 *
+	 * @param run The Bndrun object.
+	 * @throws Exception If the worker action has an exception.
+	 */
+	private void worker(biz.aQute.resolve.Bndrun run) throws Exception {
 		getLogger().info("Resolving runbundles required for {}", run.getPropertiesFile());
 		getLogger().debug("Run properties: {}", run.getProperties());
 		try {

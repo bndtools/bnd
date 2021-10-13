@@ -31,7 +31,7 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 
 /* Configure the subprojects */
 subprojects {
-	if (plugins.hasPlugin("biz.aQute.bnd")) {
+	if (pluginManager.hasPlugin("biz.aQute.bnd")) {
 		group = bnd.get("-groupid")
 		version = bnd.get("base.version")
 		tasks.withType(JavaCompile).configureEach {

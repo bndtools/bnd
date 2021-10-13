@@ -211,7 +211,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 				.getExtraProperties();
 			ext.set("bnd_cnf", cnf);
 			ext.set("bndWorkspace", workspace);
-			project.getPlugins()
+			project.getPluginManager()
 				.apply(BndWorkspacePlugin.class);
 		});
 	}
@@ -222,7 +222,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		/* Configure the Bnd projects */
 		for (Project project : workspace.getSubprojects()) {
 			if (Objects.nonNull(bndWorkspace.getProject(project.getName()))) {
-				project.getPlugins()
+				project.getPluginManager()
 					.apply(BndPlugin.class);
 			}
 		}

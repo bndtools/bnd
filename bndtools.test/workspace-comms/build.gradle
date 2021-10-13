@@ -29,6 +29,6 @@ ext.cnf = rootProject.project(bnd_cnf)
 subprojects {
   def bndProject = bndWorkspace.getProject(name)
   if (bndProject != null) {
-    plugins.apply 'biz.aQute.bnd'
+    pluginManager.apply 'biz.aQute.bnd'
   }
 }
