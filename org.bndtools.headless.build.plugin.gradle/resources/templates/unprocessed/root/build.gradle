@@ -4,7 +4,7 @@
 
 /* Additional configuration for the Bnd projects */
 subprojects {
-  if (plugins.hasPlugin('biz.aQute.bnd')) {
+  if (pluginManager.hasPlugin('biz.aQute.bnd')) {
     // additional configuration for Bnd projects
   }
 }

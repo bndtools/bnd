@@ -117,7 +117,7 @@ public class BndPlugin implements Plugin<Project> {
 			ProjectLayout layout = project.getLayout();
 			ObjectFactory objects = this.objects = project.getObjects();
 			TaskContainer tasks = project.getTasks();
-			if (project.getPlugins()
+			if (project.getPluginManager()
 				.hasPlugin(BndBuilderPlugin.PLUGINID)) {
 				throw new GradleException("Project already has \"" + BndBuilderPlugin.PLUGINID + "\" plugin applied.");
 			}
@@ -146,7 +146,7 @@ public class BndPlugin implements Plugin<Project> {
 
 			layout.getBuildDirectory()
 				.fileValue(bndProject.getTargetDir());
-			project.getPlugins()
+			project.getPluginManager()
 				.apply("java");
 			if (isGradleCompatible("7.1")) {
 				project.getExtensions()

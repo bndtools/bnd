@@ -222,7 +222,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 		Workspace workspace = (Workspace) getProject().findProperty("bndWorkspace");
 		File bndrunFile = unwrapFile(getBndrun());
 		File workingDirFile = unwrapFile(getWorkingDirectory());
-		if (Objects.nonNull(workspace) && getProject().getPlugins()
+		if (Objects.nonNull(workspace) && getProject().getPluginManager()
 			.hasPlugin(BndPlugin.PLUGINID)) {
 			BndPluginExtension extension = getProject().getExtensions()
 				.getByType(BndPluginExtension.class);
