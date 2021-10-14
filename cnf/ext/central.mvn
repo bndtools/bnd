@@ -91,6 +91,7 @@ net.bytebuddy:byte-buddy-agent:${net.bytebuddy.version}
 org.objenesis:objenesis:jar:${org.objenesis.version}
 org.xmlunit:xmlunit-core:2.6.3
 org.xmlunit:xmlunit-assertj:2.6.3
+org.osgi:org.osgi.test.common:${osgi-test.version}
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
 

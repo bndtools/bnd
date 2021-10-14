@@ -4,8 +4,6 @@
 -nobundles: true
 
 -buildpath: \
-	osgi.core;version=latest,\
-	aQute.libg;version=project,\
-	biz.aQute.bnd.util;version=project,\
-	biz.aQute.bndlib;version=project,\
+	osgi.annotation;version=latest,\
+	org.osgi.test.common;version=latest,\
 	${junit}

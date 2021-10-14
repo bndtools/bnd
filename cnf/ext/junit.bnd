@@ -17,6 +17,7 @@ hamcrest.version=2.2
 org.mockito.version=4.0.0
 net.bytebuddy.version=1.11.19
 org.objenesis.version=3.2
+osgi-test.version=1.0.1
 
 junit: \
 	junit-platform-commons;version=latest,\
@@ -30,7 +31,8 @@ junit: \
 	org.hamcrest;version=latest,\
 	org.awaitility;version=latest,\
 	org.apache.servicemix.bundles.junit;version=latest,\
-	junit-vintage-engine;version=latest
+	junit-vintage-engine;version=latest,\
+	org.osgi.test.common;version=latest
 
 mockito: org.mockito.mockito-core;version=latest,\
 	net.bytebuddy.byte-buddy;version=latest,\
