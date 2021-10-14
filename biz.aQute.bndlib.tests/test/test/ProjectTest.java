@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,10 +20,7 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -38,6 +34,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
@@ -46,22 +43,8 @@ import aQute.lib.io.IO;
 	"resource", "restriction"
 })
 public class ProjectTest {
+	@InjectTemporaryDirectory
 	File tmp;
-
-	@BeforeEach
-	public void setUp(TestInfo info) throws Exception {
-		Method testMethod = info.getTestMethod()
-			.get();
-		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + testMethod.getName())
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-	}
-
-	@AfterEach
-	public void tearDown() throws Exception {
-		IO.delete(tmp);
-	}
 
 	@Test
 	public void testAliasbuild() throws Exception {

@@ -14,6 +14,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class ResolveTest {
@@ -22,10 +23,8 @@ public class ResolveTest {
 	private Workspace			workspace;
 
 	@BeforeEach
-	public void before() throws Exception {
-		File tmp = IO.getFile("generated/tmpws1");
-		IO.delete(tmp);
-		tmp.mkdirs();
+	public void before(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		IO.copy(IO.getFile("resources/launchpad/ws1"), tmp);
 		workspace = new Workspace(tmp);
 		Project project = workspace.getProject("p1");

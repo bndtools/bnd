@@ -4,12 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 /**
@@ -17,20 +16,8 @@ import aQute.lib.io.IO;
  * specific version.
  */
 public class WorkspaceBundleVersionedDependencyTest {
-	public static final String	TMPDIR		= "generated/tmp/test";
-	private File				testDir;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
-		testDir = new File(TMPDIR, testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
-	}
+	@InjectTemporaryDirectory
+	File testDir;
 
 	@Test
 	public void testWorkspaceVersionedDependency() throws Exception {

@@ -20,9 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.mockito.Mockito;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -50,6 +48,7 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.dot.DOT;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
@@ -62,20 +61,11 @@ public class ResolveTest {
 
 	private static final LogService log = new LogReporter(new ReporterAdapter(System.out));
 
-	private String					name;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) {
-		name = testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
-	}
+	@InjectTemporaryDirectory
+	File							tmp;
 
 	private String getTestName() {
-		return name;
+		return tmp.getName();
 	}
 
 	/**
@@ -142,7 +132,7 @@ public class ResolveTest {
 	@Test
 	public void testenRouteGuard() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		Repository repo = createRepo(IO.getFile("testdata/enroute/index.xml"), getTestName());
+		Repository repo = createRepo(IO.getFile("testdata/enroute/index.xml"), getTestName(), tmp);
 		registry.addPlugin(repo);
 
 		List<Requirement> reqs = CapReqBuilder.getRequirementsFrom(
@@ -227,7 +217,7 @@ public class ResolveTest {
 	private void assertAugmentResolve(String augment, String require, String effective) throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp));
 
 		Processor model = new Processor();
 		model.setRunfw("org.apache.felix.framework");
@@ -261,7 +251,7 @@ public class ResolveTest {
 				.toURI()
 				.toString());
 			map.put("name", getTestName());
-			map.put("cache", new File("generated/tmp/test/cache/" + getTestName()).getAbsolutePath());
+			map.put("cache", new File(tmp, "cache").getAbsolutePath());
 			repo.setProperties(map);
 			Processor model = new Processor();
 			model.addBasicPlugin(httpClient);
@@ -295,7 +285,7 @@ public class ResolveTest {
 	public void testResolveWithDistro() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp));
 
 		BndEditModel model = new BndEditModel();
 		model.setDistro(Arrays.asList("testdata/distro.jar;version=file"));
@@ -326,7 +316,7 @@ public class ResolveTest {
 	public void testResolveWithLargeDistro() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp));
 
 		BndEditModel model = new BndEditModel();
 		model.setDistro(Arrays.asList("testdata/release.dxp.distro-7.2.10.jar;version=file"));
@@ -423,7 +413,7 @@ public class ResolveTest {
 	public void testSimpleResolve() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp));
 
 		BndEditModel model = new BndEditModel();
 
@@ -556,7 +546,7 @@ public class ResolveTest {
 
 		// Resolve against repo 5
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo5/index.xml"), getTestName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo5/index.xml"), getTestName(), tmp));
 
 		// Set up a simple Java 7 Felix requirement as per Issue #971
 		BndEditModel runModel = new BndEditModel();
@@ -613,7 +603,7 @@ public class ResolveTest {
 				.toURI()
 				.toString());
 			map.put("name", getTestName());
-			map.put("cache", new File("generated/tmp/test/cache/" + getTestName()).getAbsolutePath());
+			map.put("cache", new File(tmp, "cache").getAbsolutePath());
 			repo.setProperties(map);
 			Processor model = new Processor();
 			model.addBasicPlugin(httpClient);
@@ -642,8 +632,7 @@ public class ResolveTest {
 	@Test
 	public void testFrameworkFragmentResolve() throws Exception {
 		String wspath = "framework-fragment/";
-		String genWsPath = "generated/tmp/test/" + getTestName() + "/" + wspath;
-		File wsRoot = IO.getFile(genWsPath);
+		File wsRoot = IO.getFile(tmp, wspath);
 		IO.delete(wsRoot);
 		IO.copy(IO.getFile("testdata/" + wspath), wsRoot);
 

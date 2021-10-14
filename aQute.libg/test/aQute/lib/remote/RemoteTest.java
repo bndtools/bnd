@@ -11,8 +11,8 @@ import java.util.Formatter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.remote.sink.RemoteSink;
 import aQute.libg.remote.source.RemoteSource;
@@ -24,13 +24,9 @@ public class RemoteTest {
 	private RemoteSink		sink;
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
-		String baseDir = "generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
+	public void setUp(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		String baseDir = tmp.getAbsolutePath();
 		sinkDir = create(baseDir + "/sink", null);
 		sourceDir = create(baseDir + "/source", "testresources/remote");
 		source = new RemoteSource();

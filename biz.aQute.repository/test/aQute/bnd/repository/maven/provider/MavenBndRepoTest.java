@@ -29,7 +29,6 @@ import javax.xml.xpath.XPathFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -49,6 +48,7 @@ import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -69,7 +69,7 @@ public class MavenBndRepoTest {
 	private static final Version		DTO_VERSION	= Version.parseVersion("1.0.0.201505202023");
 	final static DocumentBuilderFactory	dbf			= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpf			= XPathFactory.newInstance();
-	String								tmpName;
+	@InjectTemporaryDirectory
 	File								tmp;
 	File								local;
 	File								remote;
@@ -80,13 +80,7 @@ public class MavenBndRepoTest {
 	private Processor					domain;
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
-		String name = testInfo.getTestMethod()
-			.get()
-			.getName();
-		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + name;
-		tmp = IO.getFile(tmpName);
-		IO.delete(tmp);
+	public void setUp() throws Exception {
 		local = IO.getFile(tmp, "local");
 		remote = IO.getFile(tmp, "remote");
 		index = IO.getFile(tmp, "index");
@@ -1069,8 +1063,8 @@ public class MavenBndRepoTest {
 	void config(Processor domain, Map<String, String> override) throws Exception {
 		this.domain = domain;
 		Map<String, String> config = new HashMap<>();
-		config.put("local", tmpName + "/local");
-		config.put("index", tmpName + "/index");
+		config.put("local", tmp.getAbsolutePath() + "/local");
+		config.put("index", tmp.getAbsolutePath() + "/index");
 		config.put("snapshotUrl", fnx.getBaseURI() + "/repo/");
 		config.put("releaseUrl", fnx.getBaseURI() + "/repo/");
 

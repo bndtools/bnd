@@ -13,37 +13,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.lib.io.IO;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 
 public class XMLResourceGeneratorTest {
 	private static final Requirement	WILDCARD	= ResourceUtils.createWildcardRequirement();
-	File								tmp;
-
-	@BeforeEach
-	protected void setUp(TestInfo testInfo) {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-
-		IO.delete(tmp);
-		tmp.mkdirs();
-	}
 
 	@Test
-	public void testBasic() throws URISyntaxException, Exception {
+	public void testBasic(@InjectTemporaryDirectory
+	File tmp) throws URISyntaxException, Exception {
 		Repository repository = getTestRepository();
 		File location = new File(tmp, "index.xml");
 		new XMLResourceGenerator().name("test")

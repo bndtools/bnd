@@ -7,42 +7,31 @@ import static java.util.zip.GZIPInputStream.GZIP_MAGIC;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.Bndrun;
 
 public class ObrExporterTest {
 
-	private File		tempDir;
+	@InjectTemporaryDirectory
+	File				tempDir;
 	private Bndrun		project;
 	private ObrExporter	underTest;
 
 	@BeforeEach
 	public void setup() throws Exception {
-		File path = IO.getPath("generated/")
-			.toFile();
-
-		tempDir = Files.createTempDirectory(path.toPath(), "obr-test")
-			.toFile();
-
 		IO.copy(IO.getFile("testdata/obr-exporter/"), tempDir);
 
 		project = createBndrun(null, getFile(tempDir, "test.bndrun"));
 		underTest = new ObrExporter();
-	}
-
-	@AfterEach
-	public void teardown() throws IOException {
-		IO.delete(tempDir);
 	}
 
 	@Test

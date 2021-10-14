@@ -11,12 +11,12 @@ import java.net.URL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
@@ -25,20 +25,12 @@ import aQute.lib.strings.Strings;
 /**
  */
 public class HttpClientServerTest {
-	private File	tmp;
+	@InjectTemporaryDirectory
+	File			tmp;
 	private Httpbin	httpsServer;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
+	protected void setUp() throws Exception {
 		Config config = new Config();
 		config.https = true;
 		httpsServer = new Httpbin(config);

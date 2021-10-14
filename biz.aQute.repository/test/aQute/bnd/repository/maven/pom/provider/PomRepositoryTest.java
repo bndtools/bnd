@@ -29,7 +29,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
@@ -43,6 +42,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -58,24 +58,16 @@ public class PomRepositoryTest {
 	static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
 	Reporter			reporter			= new Slf4jReporter(PomRepositoryTest.class);
-	private File		tmp;
+	@InjectTemporaryDirectory
+	File				tmp;
 	private File		localRepo;
 	private File		location;
 	private HttpClient	client;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
+	protected void setUp() {
 		localRepo = IO.getFile(MAVEN_REPO_LOCAL);
 		location = IO.getFile(tmp, "index.xml");
-		IO.delete(tmp);
-		tmp.mkdirs();
 		client = new HttpClient();
 	}
 

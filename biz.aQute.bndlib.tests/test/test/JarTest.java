@@ -14,16 +14,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.reflect.Method;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -31,22 +28,11 @@ import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
 
 public class JarTest {
-
-	File tmp;
-
-	@BeforeEach
-	public void setUp(TestInfo info) throws Exception {
-		Method testMethod = info.getTestMethod()
-			.get();
-		tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + testMethod.getName()).getAbsoluteFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-	}
-
 	@Test
 	public void testDeletePrefix() {
 		Resource r = new EmbeddedResource(new byte[1], 0L);
@@ -163,7 +149,8 @@ public class JarTest {
 	}
 
 	@Test
-	public void testWriteFolder() throws Exception {
+	public void testWriteFolder(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("/a/b.txt;literal='ab', /a/c.txt;literal='ac', /a/c/d/e.txt;literal='acde'");
 			b.build();
@@ -330,7 +317,8 @@ public class JarTest {
 	}
 
 	@Test
-	public void testZipSlip() throws Exception {
+	public void testZipSlip(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		assertThat(catchThrowable(() -> {
 			try (Jar jar = new Jar(new File("jar/zip-slip.zip"))) {
 				jar.writeFolder(tmp);

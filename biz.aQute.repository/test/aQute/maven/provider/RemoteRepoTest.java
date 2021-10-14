@@ -11,10 +11,10 @@ import java.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.State;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -23,8 +23,6 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.reporter.ReporterAdapter;
 
 public class RemoteRepoTest {
-
-	String					tmpName;
 	File					local;
 	File					remote;
 	FakeNexus				fnx;
@@ -32,22 +30,15 @@ public class RemoteRepoTest {
 	ReporterAdapter			reporter	= new ReporterAdapter(System.err);
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
-		local = IO.getFile(tmpName + "/local");
-		remote = IO.getFile(tmpName + "/remote");
+	protected void setUp(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		local = IO.getFile(tmp, "local");
+		remote = IO.getFile(tmp, "remote");
+		remote.mkdirs();
+		local.mkdirs();
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
 		fnx.start();
-		IO.delete(remote);
-		IO.delete(local);
-		remote.mkdirs();
-		local.mkdirs();
 		reporter.setTrace(true);
 		repo = new MavenRemoteRepository(local, new HttpClient(), fnx.getBaseURI() + "/repo/", reporter);
 	}

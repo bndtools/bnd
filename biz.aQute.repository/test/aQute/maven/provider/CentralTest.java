@@ -8,9 +8,9 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
@@ -20,7 +20,6 @@ import aQute.maven.api.Revision;
 
 public class CentralTest {
 	private static final String		REPO_URL	= "https://repo.maven.apache.org/maven2/";
-	String							tmpName;
 	File							local;
 
 	List<MavenBackingRepository>	repo;
@@ -28,17 +27,11 @@ public class CentralTest {
 	ReporterAdapter					reporter	= new ReporterAdapter(System.err);
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
+	protected void setUp(@InjectTemporaryDirectory
+	String tmpName) throws Exception {
 		local = IO.getFile(tmpName + "/local");
 		reporter.setTrace(true);
 		Config config = new Config();
-		IO.delete(local);
 		local.mkdirs();
 		HttpClient client = new HttpClient();
 		repo = MavenBackingRepository.create(REPO_URL, reporter, local, client);

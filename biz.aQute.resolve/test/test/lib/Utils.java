@@ -17,7 +17,7 @@ import aQute.bnd.repository.osgi.OSGiRepository;
 
 public class Utils {
 
-	public static Repository createRepo(File index, String name) throws Exception {
+	public static Repository createRepo(File index, String name, File tmp) throws Exception {
 		OSGiRepository repo = new OSGiRepository();
 		HttpClient httpClient = new HttpClient();
 		Map<String, String> map = new HashMap<>();
@@ -25,7 +25,7 @@ public class Utils {
 			.toURI()
 			.toString());
 		map.put("name", name);
-		map.put("cache", new File("generated/tmp/test/cache/" + name).getAbsolutePath());
+		map.put("cache", new File(tmp, name).getAbsolutePath());
 		repo.setProperties(map);
 		Processor p = new Processor();
 		p.addBasicPlugin(httpClient);

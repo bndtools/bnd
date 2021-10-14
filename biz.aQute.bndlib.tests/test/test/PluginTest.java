@@ -12,13 +12,12 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Plugin;
-import aQute.lib.io.IO;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.service.reporter.Reporter;
 
 @SuppressWarnings("resource")
@@ -151,19 +150,12 @@ public class PluginTest {
 	}
 
 	@Test
-	public void testLoadPluginWithGlobalPluginPathURL(TestInfo testInfo) throws Exception {
-		File tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-		.get()
-		.getName() + "/"
-			+ testInfo.getTestMethod()
-			.get()
-			.getName())
-		.getAbsoluteFile();
-		IO.delete(tmp);
+	public void testLoadPluginWithGlobalPluginPathURL(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (Builder p = new Builder()) {
 			p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
 			p.setProperty(Constants.PLUGINPATH,
-				tmp + ";url=file:jar/thinlet.jar;sha1=af7ec3a35b1825e678bfa80edeffe65836d55b17");
+				tmp + "/tmpfile;url=file:jar/thinlet.jar;sha1=af7ec3a35b1825e678bfa80edeffe65836d55b17");
 
 			List<MenuContainer> plugins = p.getPlugins(MenuContainer.class);
 			assertEquals(0, p.getErrors()

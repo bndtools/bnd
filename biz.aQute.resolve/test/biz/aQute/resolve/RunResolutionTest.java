@@ -2,9 +2,7 @@ package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -16,7 +14,6 @@ import java.util.TreeMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 
@@ -27,23 +24,19 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.result.Result;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class RunResolutionTest {
 
 	Workspace	workspace;
 
+	@InjectTemporaryDirectory
 	Path		tmp;
 	Path		ws;
 
 	@BeforeEach
-	public void before(TestInfo info) throws Exception {
-		Method testMethod = info.getTestMethod()
-			.get();
-		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
-			.toAbsolutePath();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
+	public void before() throws Exception {
 		IO.copy(IO.getPath("testdata/enroute"), tmp);
 		ws = IO.copy(IO.getPath("testdata/pre-buildworkspace"), tmp.resolve("workspace"));
 		workspace = new Workspace(ws.toFile());

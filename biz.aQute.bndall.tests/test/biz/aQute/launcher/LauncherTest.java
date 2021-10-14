@@ -18,30 +18,27 @@ import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 @ExtendWith(SoftAssertionsExtension.class)
 public class LauncherTest {
-	public static final String	TMPDIR		= "generated/tmp/test";
 	@InjectSoftAssertions
 	SoftAssertions softly;
 
-	private File				testDir;
+	@InjectTemporaryDirectory
+	File				testDir;
 
 	private Properties			prior;
 
 	@BeforeEach
-	public void before(TestInfo testInfo) throws Exception {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testInfo.getTestMethod().get());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
+	public void before() throws Exception {
 		prior = new Properties();
 		prior.putAll(System.getProperties());
 	}

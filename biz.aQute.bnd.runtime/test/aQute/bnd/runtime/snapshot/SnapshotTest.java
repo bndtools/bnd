@@ -11,10 +11,10 @@ import org.apache.felix.service.command.CommandSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.launchpad.Service;
-import aQute.lib.io.IO;
 
 public class SnapshotTest {
 	static final String	org_apache_felix_framework		= "org.apache.felix.framework;version='[5.6.10,5.6.11)'";
@@ -22,21 +22,22 @@ public class SnapshotTest {
 	static final String	org_apache_felix_log			= "org.apache.felix.log;version='[1.2.0,1.2.1)'";
 	static final String	org_apache_felix_configadmin	= "org.apache.felix.configadmin;version='[1.9.10,1.9.11)'";
 	static final String	org_apache_felix_gogo_runtime	= "org.apache.felix.gogo.runtime;version='[1.1.0,1.1.0]'";
-	static File tmp = IO.getFile("generated/snapshot");
+	@InjectTemporaryDirectory
+	File				tmp;
+	LaunchpadBuilder	builder;
 
+	@SuppressWarnings("resource")
 	@BeforeEach
 	public void before() {
-		IO.delete(tmp);
-		tmp.mkdirs();
+		builder = new LaunchpadBuilder().runfw(org_apache_felix_framework)
+			.bundles("biz.aQute.bnd.runtime.snapshot")
+			.bundles(org_apache_felix_log)
+			.bundles(org_apache_felix_configadmin)
+			.bundles(org_apache_felix_scr)
+			.bundles(org_apache_felix_gogo_runtime)
+			.set("snapshot.dir", tmp.getAbsolutePath());
 	}
 
-	LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw(org_apache_felix_framework)
-		.bundles("biz.aQute.bnd.runtime.snapshot")
-		.bundles(org_apache_felix_log)
-		.bundles(org_apache_felix_configadmin)
-		.bundles(org_apache_felix_scr)
-		.bundles(org_apache_felix_gogo_runtime)
-		.set("snapshot.dir", tmp.getAbsolutePath());
 
 	@Service
 	CommandProcessor	gogo;
@@ -77,7 +78,7 @@ public class SnapshotTest {
 
 	@Test
 	public void testSnapshotDefaultName() throws Exception {
-		File f = new File("generated/snapshot/snapshottest-testSnapshotDefaultName.json");
+		File f = new File(tmp, "snapshottest-testSnapshotDefaultName.json");
 		f.delete();
 		assertThat(f).doesNotExist();
 

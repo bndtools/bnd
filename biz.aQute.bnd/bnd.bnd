@@ -89,6 +89,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	jline
 
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
 	${junit},\
 	org.osgi.namespace.extender;version=latest,\
 	org.apache.felix.framework, \

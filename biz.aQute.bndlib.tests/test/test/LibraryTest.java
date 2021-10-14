@@ -3,11 +3,8 @@ package test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -16,23 +13,12 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class LibraryTest {
-	public static final String	TMPDIR		= "generated/tmp/test";
-	private File				testDir;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) throws IOException {
-		testDir = new File(TMPDIR, testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
-	}
+	@InjectTemporaryDirectory
+	File testDir;
 
 	@SuppressWarnings("resource")
 	@Test

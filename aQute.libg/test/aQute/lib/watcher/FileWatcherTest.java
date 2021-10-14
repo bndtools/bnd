@@ -14,26 +14,18 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class FileWatcherTest {
-	public static final String	TMPDIR		= "generated/tmp/test";
-	private File				testDir;
+	@InjectTemporaryDirectory
+	File					testDir;
 
 	private ExecutorService		executor;
 
 	@BeforeEach
-	public void before(TestInfo testInfo) throws Exception {
-		testDir = new File(TMPDIR, testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
+	public void before() throws Exception {
 		executor = Executors.newFixedThreadPool(10);
 	}
 

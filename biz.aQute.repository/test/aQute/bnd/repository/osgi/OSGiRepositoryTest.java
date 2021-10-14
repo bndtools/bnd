@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.DownloadBlocker;
 import aQute.bnd.build.Workspace;
@@ -31,6 +30,7 @@ import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -38,25 +38,17 @@ import aQute.maven.provider.FakeNexus;
 
 @SuppressWarnings("deprecation")
 public class OSGiRepositoryTest {
-	File				tmp;
 	File				cache;
 	File				remote;
 	File				ws;
 	private FakeNexus	fnx;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
+	protected void setUp(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		cache = IO.getFile(tmp, "cache");
 		remote = IO.getFile(tmp, "testdata");
 		ws = IO.getFile(tmp, "ws");
-		IO.delete(tmp);
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
 		fnx.start();

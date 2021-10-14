@@ -13,7 +13,6 @@ import java.util.jar.Manifest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.service.subsystem.SubsystemConstants;
 
 import aQute.bnd.build.Project;
@@ -23,6 +22,7 @@ import aQute.bnd.exporter.subsystem.SubsystemExporter;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class SubsystemExporterTest {
@@ -46,14 +46,9 @@ public class SubsystemExporterTest {
 	private Workspace			ws;
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
-		genWsPath = "generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName()
-			+ "/" + WS_PATH;
+	public void setUp(@InjectTemporaryDirectory
+	String tmp) throws Exception {
+		genWsPath = tmp + "/" + WS_PATH;
 		File wsRoot = IO.getFile(genWsPath);
 		IO.delete(wsRoot);
 		IO.copy(IO.getFile(WS_PATH), wsRoot);

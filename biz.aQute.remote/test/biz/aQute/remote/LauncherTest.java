@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -27,6 +26,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.repository.InfoRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.main.Main;
@@ -38,7 +38,8 @@ import aQute.remote.plugin.RunSessionImpl;
  */
 public class LauncherTest {
 	private int						random;
-	private File					tmp;
+	@InjectTemporaryDirectory
+	File							tmp;
 	private Workspace				workspace;
 	private HashMap<String, Object>	configuration;
 	private Framework				framework;
@@ -50,18 +51,10 @@ public class LauncherTest {
 	private Thread					thread;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-		IO.copy(IO.getFile("testdata/ws"), tmp);
-		workspace = Workspace.getWorkspace(tmp);
+	protected void setUp() throws Exception {
+		File wsfolder = new File(tmp, "ws");
+		IO.copy(IO.getFile("testdata/ws"), wsfolder);
+		workspace = Workspace.getWorkspace(wsfolder);
 		workspace.refresh();
 
 		InfoRepository repo = workspace.getPlugin(InfoRepository.class);
@@ -77,7 +70,7 @@ public class LauncherTest {
 		workspace.getPlugins()
 			.add(repo);
 
-		File storage = IO.getFile("generated/storage-1");
+		File storage = IO.getFile(tmp, "storage-1");
 		storage.mkdirs();
 
 		configuration = new HashMap<>();
@@ -101,7 +94,11 @@ public class LauncherTest {
 			public void run() {
 				try {
 					Main.main(new String[] {
-						"-s", "generated/storage", "-c", "generated/cache", "-p", "1090", "-et"
+						"-s", IO.getFile(tmp, "storage")
+							.getAbsolutePath(),
+						"-c", IO.getFile(tmp, "cache")
+							.getAbsolutePath(),
+						"-p", "1090", "-et"
 					});
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -116,8 +113,6 @@ public class LauncherTest {
 	protected void tearDown() throws Exception {
 		framework.stop();
 		Main.stop();
-		IO.delete(IO.getFile("generated/cache"));
-		IO.delete(IO.getFile("generated/storage"));
 		framework.waitForStop(100000);
 	}
 

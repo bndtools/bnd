@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,9 +17,7 @@ import java.util.Set;
 import java.util.jar.Manifest;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
@@ -45,19 +42,15 @@ import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class ResourceTest {
 	static String		defaultSHA		= "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 	static String		alternativeSHA	= "AAAAAAAAAAAAFFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 	static FilterParser	filterParser	= new FilterParser();
-	private Method		testMethod;
-
-	@BeforeEach
-	public void before(TestInfo info) throws Exception {
-		testMethod = info.getTestMethod()
-			.get();
-	}
+	@InjectTemporaryDirectory
+	File				tmp;
 
 	@Test
 	public void packageDecoration() throws Exception {
@@ -301,9 +294,8 @@ public class ResourceTest {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
 			map.put("locations", locations);
-			map.put("name", testMethod.getName());
-			map.put("cache", new File("generated/tmp/test/cache/" + getClass().getName() + "/" + testMethod.getName())
-				.getAbsolutePath());
+			map.put("name", tmp.getName());
+			map.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(map);
 			Processor p = new Processor();
 			p.addBasicPlugin(httpClient);

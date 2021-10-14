@@ -10,41 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 
 public class TestOSGiRepository {
 
-	private String	name;
-	private File tmp;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) {
-		name = testInfo.getTestMethod()
-			.get()
-			.getName();
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ name)
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		tmp.mkdirs();
-	}
-
-	@AfterEach
-	public void tearDown() {
-		IO.delete(tmp);
-	}
+	@InjectTemporaryDirectory
+	File			tmp;
 
 	private static int countBundles(RepositoryPlugin repo) throws Exception {
 		int count = 0;
@@ -67,7 +46,7 @@ public class TestOSGiRepository {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
 			Map<String, String> props = new HashMap<>();
-			props.put("name", name);
+			props.put("name", tmp.getName());
 			props.put("locations", IO.getFile("testdata/index1.xml")
 				.toURI()
 				.toString());
@@ -96,7 +75,7 @@ public class TestOSGiRepository {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
 			Map<String, String> props = new HashMap<>();
-			props.put("name", name);
+			props.put("name", tmp.getName());
 			props.put("locations", IO.getFile("testdata/index2.xml")
 				.toURI()
 				.toString());
@@ -119,7 +98,7 @@ public class TestOSGiRepository {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
 			Map<String, String> props = new HashMap<>();
-			props.put("name", name);
+			props.put("name", tmp.getName());
 			props.put("locations", IO.getFile("testdata/index2.xml.gz")
 				.toURI()
 				.toString());
@@ -145,7 +124,7 @@ public class TestOSGiRepository {
 			config.put("locations", IO.getFile("testdata/ambiguous.xml")
 				.toURI()
 				.toString());
-			config.put("name", name);
+			config.put("name", tmp.getName());
 			config.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(config);
 			repo.setReporter(reporter);
@@ -175,7 +154,7 @@ public class TestOSGiRepository {
 				.getAbsoluteFile()
 				.toURI()
 				.toString());
-			config.put("name", name);
+			config.put("name", tmp.getName());
 			config.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(config);
 			repo.setReporter(reporter);

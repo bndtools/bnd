@@ -31,7 +31,6 @@ import org.assertj.core.util.Files;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -48,29 +47,22 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.command.Command;
 import biz.aQute.resolve.Bndrun;
 
 public class AlsoLauncherTest {
-	public static final String	TMPDIR		= "generated/tmp/test";
-	private File				testDir;
+	@InjectTemporaryDirectory
+	File				testDir;
 
 	private Workspace			workspace;
 	private Project				project;
 	private Properties			prior;
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
-		testDir = new File(TMPDIR, testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
+	public void setUp() throws Exception {
 		prior = new Properties();
 		prior.putAll(System.getProperties());
 
