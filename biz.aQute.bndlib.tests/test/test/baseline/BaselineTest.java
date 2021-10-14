@@ -22,9 +22,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
@@ -43,6 +41,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
@@ -50,10 +49,10 @@ import aQute.libg.reporter.ReporterAdapter;
 
 @SuppressWarnings("resource")
 public class BaselineTest {
-	File		tmp;
+
 	Workspace	workspace;
 
-	private Workspace getWorkspace() throws Exception {
+	private Workspace getWorkspace(File tmp) throws Exception {
 		if (workspace != null)
 			return workspace;
 
@@ -61,22 +60,8 @@ public class BaselineTest {
 		return workspace = new Workspace(tmp);
 	}
 
-	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-	}
-
 	@AfterEach
 	protected void tearDown() throws Exception {
-		IO.delete(tmp);
 		IO.close(workspace);
 		workspace = null;
 	}
@@ -289,7 +274,8 @@ public class BaselineTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testRepository() throws Exception {
+	public void testRepository(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Jar v1_2_0_a = mock(Jar.class);
 		when(v1_2_0_a.getVersion()).thenReturn("1.2.0.b");
 		when(v1_2_0_a.getBsn()).thenReturn("p3");
@@ -303,9 +289,9 @@ public class BaselineTest {
 		when(repo.getName()).thenReturn("Baseline");
 		when(repo.versions("p3")).thenReturn(new SortedList<>(new Version("1.1.0.a"), new Version("1.1.0.b"),
 			new Version("1.2.0.a"), new Version("1.2.0.b")));
-		getWorkspace().addBasicPlugin(repo);
+		getWorkspace(tmp).addBasicPlugin(repo);
 
-		Project p3 = getWorkspace().getProject("p3");
+		Project p3 = getWorkspace(tmp).getProject("p3");
 		p3.setBundleVersion("1.3.0");
 		ProjectBuilder builder = (ProjectBuilder) p3.getBuilder(null)
 			.getSubBuilder();
@@ -375,16 +361,15 @@ public class BaselineTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testNothingInRepo() throws Exception {
-		File tmp = new File("tmp");
-		tmp.mkdirs();
+	public void testNothingInRepo(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try {
 			RepositoryPlugin repo = mock(RepositoryPlugin.class);
 			when(repo.canWrite()).thenReturn(true);
 			when(repo.getName()).thenReturn("Baseline");
 			when(repo.versions("p3")).thenReturn(new TreeSet<>());
-			getWorkspace().addBasicPlugin(repo);
-			Project p3 = getWorkspace().getProject("p3");
+			getWorkspace(tmp).addBasicPlugin(repo);
+			Project p3 = getWorkspace(tmp).getProject("p3");
 			p3.setProperty(Constants.BASELINE, "*");
 			p3.setProperty(Constants.BASELINEREPO, "Baseline");
 			p3.setBundleVersion("0");

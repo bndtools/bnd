@@ -3,9 +3,7 @@ package aQute.bnd.repository.p2.provider;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.build.Workspace;
@@ -26,23 +22,13 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
 import aQute.p2.packed.Unpack200;
 
 public class P2RepositoryTest {
+	@InjectTemporaryDirectory
 	File tmp;
-
-	@BeforeEach
-	public void setUp(TestInfo info) throws Exception {
-		Method testMethod = info.getTestMethod()
-			.get();
-		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
-			.toAbsolutePath()
-			.toFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-	}
 
 	@Test
 	public void testSimple() throws Exception {

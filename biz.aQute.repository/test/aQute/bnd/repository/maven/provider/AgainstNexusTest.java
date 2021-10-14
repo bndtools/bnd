@@ -13,12 +13,12 @@ import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.url.BasicAuthentication;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer;
@@ -27,7 +27,7 @@ import aQute.lib.io.IO;
 
 public class AgainstNexusTest {
 	private static final String	HTTP_LOCALHOST_8081	= "http://localhost:8081/nexus/content/repositories/snapshots/";
-	String						tmpName;
+	@InjectTemporaryDirectory
 	File						tmp;
 	File						local;
 	File						remote;
@@ -37,15 +37,7 @@ public class AgainstNexusTest {
 	private MavenBndRepository	repo;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
-		tmp = IO.getFile(tmpName);
-		IO.delete(tmp);
+	protected void setUp() throws Exception {
 		local = IO.getFile(tmp, "local");
 		remote = IO.getFile(tmp, "remote");
 		index = IO.getFile(tmp, "index");
@@ -96,8 +88,8 @@ public class AgainstNexusTest {
 	void config(Map<String, String> config) throws Exception {
 		if (config == null)
 			config = new HashMap<>();
-		config.put("local", tmpName + "/local");
-		config.put("index", tmpName + "/index");
+		config.put("local", tmp.getAbsolutePath() + "/local");
+		config.put("index", tmp.getAbsolutePath() + "/index");
 		config.put("releaseUrl", HTTP_LOCALHOST_8081);
 
 		Processor reporter = new Processor();

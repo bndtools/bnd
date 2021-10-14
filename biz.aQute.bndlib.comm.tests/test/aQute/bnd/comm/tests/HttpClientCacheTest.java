@@ -14,17 +14,18 @@ import java.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
 
 public class HttpClientCacheTest {
 
+	@InjectTemporaryDirectory
 	File			tmp;
 	File			cache;
 	private Httpbin	httpServer;
@@ -60,17 +61,8 @@ public class HttpClientCacheTest {
 	}
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
+	public void setUp() throws Exception {
 		cache = IO.getFile(tmp, "cache");
-		IO.delete(tmp);
-		tmp.mkdirs();
 		Config config = new Config();
 		config.https = false;
 		httpServer = new MyHttpBin(config);

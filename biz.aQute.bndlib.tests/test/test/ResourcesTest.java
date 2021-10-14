@@ -12,19 +12,15 @@ import static org.junit.jupiter.api.condition.OS.WINDOWS;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 
 import aQute.bnd.osgi.Builder;
@@ -32,6 +28,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
@@ -39,17 +36,6 @@ import aQute.lib.zip.ZipUtil;
 @SuppressWarnings("resource")
 public class ResourcesTest {
 	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
-	private Path		tmp;
-
-	@BeforeEach
-	public void before(TestInfo info) throws Exception {
-		Method testMethod = info.getTestMethod()
-			.get();
-		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
-			.toAbsolutePath();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-	}
 
 	/**
 	 * Command facility in Include-Resource
@@ -422,7 +408,8 @@ public class ResourcesTest {
 	}
 
 	@Test
-	public void testLiteral() throws Exception {
+	public void testLiteral(@InjectTemporaryDirectory
+	Path tmp) throws Exception {
 		try (Builder bmaker = new Builder()) {
 			Properties p = new Properties();
 			p.setProperty("-resourceonly", "true");
@@ -542,7 +529,8 @@ public class ResourcesTest {
 	}
 
 	@Test
-	public void testURLResourceJarLocking() throws Exception {
+	public void testURLResourceJarLocking(@InjectTemporaryDirectory
+	Path tmp) throws Exception {
 		File f = tmp.resolve("locking.jar")
 			.toFile();
 		try (Builder b = new Builder()) {

@@ -11,7 +11,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Formatter;
@@ -24,7 +23,6 @@ import java.util.regex.Pattern;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.mockito.Mockito;
@@ -34,6 +32,7 @@ import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
@@ -47,7 +46,8 @@ public class FileRepoTest {
 	private FileRepo	testRepo;
 	private FileRepo	nonExistentRepo;
 	private FileRepo	indexedRepo;
-	private File		tmp;
+	@InjectTemporaryDirectory
+	File				tmp;
 
 	private String hashToString(byte[] hash) {
 		Formatter formatter = new Formatter();
@@ -64,13 +64,7 @@ public class FileRepoTest {
 	}
 
 	@BeforeEach
-	protected void setUp(TestInfo info) throws Exception {
-		Method testMethod = info.getTestMethod()
-			.get();
-		tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + testMethod.getName()).getAbsoluteFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-
+	protected void setUp() throws Exception {
 		File testRepoDir = IO.getFile("test/test/repo");
 		assertTrue(testRepoDir.isDirectory());
 		testRepo = createRepo(testRepoDir);

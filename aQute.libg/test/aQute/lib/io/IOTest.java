@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.condition.OS.WINDOWS;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Writer;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,28 +19,15 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import aQute.bnd.exceptions.BiFunctionWithException;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO.EnvironmentCalculator;
 
 public class IOTest {
-
-	private Path tmp;
-
-	@BeforeEach
-	public void before(TestInfo info) throws Exception {
-		Method testMethod = info.getTestMethod()
-			.get();
-		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
-			.toAbsolutePath();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-	}
 
 	@Test
 	public void testEnvVarsForHome() throws Exception {
@@ -93,15 +79,8 @@ public class IOTest {
 	}
 
 	@Test
-	public void testFilesetCopy() throws Exception {
-		File destDir = new File("generated/fileset-copy-test");
-
-		if (destDir.exists()) {
-			IO.delete(destDir);
-			assertFalse(destDir.exists());
-		}
-
-		IO.mkdirs(destDir);
+	public void testFilesetCopy(@InjectTemporaryDirectory
+	File destDir) throws Exception {
 		assertTrue(destDir.isDirectory());
 
 		File srcDir = new File("testresources/fileset");
@@ -251,18 +230,11 @@ public class IOTest {
 	}
 
 	@Test
-	public void testDestDirIsChildOfSource() throws Exception {
-		File parentDir = new File("generated/test/parentDir");
-
-		if (parentDir.exists()) {
-			IO.delete(parentDir);
-			assertFalse(parentDir.exists());
-		}
-
-		IO.mkdirs(parentDir);
+	public void testDestDirIsChildOfSource(@InjectTemporaryDirectory
+	File parentDir) throws Exception {
 		assertTrue(parentDir.isDirectory());
 
-		File childDir = new File("generated/test/parentDir/childDir");
+		File childDir = new File(parentDir, "childDir");
 
 		try {
 			IO.copy(parentDir, childDir);
@@ -272,8 +244,9 @@ public class IOTest {
 	}
 
 	@Test
-	public void testIfCreateSymlinkOrCopyFileDependingOnOS() throws Exception {
-		File link = new File("generated/test/target.dat");
+	public void testIfCreateSymlinkOrCopyFileDependingOnOS(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		File link = new File(tmp, "target.dat");
 
 		IO.delete(link);
 
@@ -292,8 +265,9 @@ public class IOTest {
 
 	@Test
 	@EnabledOnOs(WINDOWS)
-	public void testOnlyCopyIfReallyNeededOnWindows() throws Exception {
-		File link = new File("generated/test/target.dat");
+	public void testOnlyCopyIfReallyNeededOnWindows(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		File link = new File(tmp, "target.dat");
 
 		IO.delete(link);
 
@@ -316,9 +290,10 @@ public class IOTest {
 	}
 
 	@Test
-	public void testCreateSymlinkOrCopyWillDeleteOriginalLink() throws Exception {
+	public void testCreateSymlinkOrCopyWillDeleteOriginalLink(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		File originalSource = new File("testresources/unzipped.dat");
-		File link = new File("generated/test/originalLink");
+		File link = new File(tmp, "originalLink");
 
 		IO.delete(link);
 
@@ -341,8 +316,8 @@ public class IOTest {
 	}
 
 	@Test
-	public void testCreateDirectory_Symlink() throws Exception {
-		Path rootDirectory = tmp;
+	public void testCreateDirectory_Symlink(@InjectTemporaryDirectory
+	Path rootDirectory) throws Exception {
 
 		Path target = Files.createDirectories(rootDirectory.resolve("target")
 			.toAbsolutePath());
@@ -360,8 +335,8 @@ public class IOTest {
 	}
 
 	@Test
-	public void testCreateDirectory_SymlinkMissingTarget() throws Exception {
-		Path rootDirectory = tmp;
+	public void testCreateDirectory_SymlinkMissingTarget(@InjectTemporaryDirectory
+	Path rootDirectory) throws Exception {
 
 		Path target = rootDirectory.resolve("target")
 			.toAbsolutePath();

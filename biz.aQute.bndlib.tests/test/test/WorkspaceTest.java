@@ -7,15 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
@@ -24,24 +21,13 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
 public class WorkspaceTest {
-	public static final String	TMPDIR		= "generated/tmp/test";
-	private File				testDir;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) throws IOException {
-		testDir = new File(TMPDIR, testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
-	}
+	@InjectTemporaryDirectory
+	File testDir;
 
 	@Test
 	public void testVersionDefaultsWithBndWorkspace() throws Exception {

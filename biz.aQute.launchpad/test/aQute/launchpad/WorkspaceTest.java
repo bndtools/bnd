@@ -6,21 +6,19 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 /**
  * Workspace related tests
  */
 public class WorkspaceTest {
-	@TempDir
-	public File folder;
-
 	@Test
-	public void testDeletePortRegistry() throws Exception {
+	public void testDeletePortRegistry(@InjectTemporaryDirectory
+	File folder) throws Exception {
 		File tmpWs = new File(folder, "tmp");
 		IO.copy(IO.getFile("testresources/ws1"), tmpWs);
 		File portFile;

@@ -13,9 +13,7 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -26,6 +24,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
@@ -33,25 +32,11 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.p2.packed.Unpack200;
 
 public class P2IndexerTest {
-	String	name;
+	@InjectTemporaryDirectory
 	File tmp;
 
-	@BeforeEach
-	protected void setUp(TestInfo testInfo) {
-		name = testInfo.getTestMethod()
-			.get()
-			.getName();
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ name)
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		tmp.mkdirs();
-	}
-
 	private String getName() {
-		return name;
+		return tmp.getName();
 	}
 
 	@Test

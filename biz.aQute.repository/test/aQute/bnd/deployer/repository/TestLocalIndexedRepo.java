@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,34 +12,21 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.osgi.Processor;
-import aQute.lib.io.IO;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.libg.cryptography.SHA1;
 import test.lib.NanoHTTPD;
 
 public class TestLocalIndexedRepo {
 
-	private File		outputDir;
+	@InjectTemporaryDirectory
+	File				outputDir;
 	private NanoHTTPD	httpd;
 	private int			httpdPort;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-		IO.deleteWithException(outputDir);
-		if (!outputDir.exists() && !outputDir.mkdirs()) {
-			throw new IOException("Could not create directory " + outputDir);
-		}
-
+	protected void setUp() throws Exception {
 		httpd = new NanoHTTPD(0, new File("testdata"));
 		httpdPort = httpd.getPort();
 	}

@@ -16,7 +16,6 @@ import java.util.ServiceLoader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -39,6 +38,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.BndResolver;
@@ -47,22 +47,12 @@ import biz.aQute.resolve.ResolverLogger;
 
 @SuppressWarnings("restriction")
 public class DistroCommandTest {
-
+	@InjectTemporaryDirectory
+	File				tmp;
 	private Framework	framework;
-	private File		tmp;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		tmp.mkdirs();
-
+	protected void setUp() throws Exception {
 		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, this.getClass()
 			.getClassLoader());
 
@@ -113,7 +103,7 @@ public class DistroCommandTest {
 		List<String> remoteArgs = new ArrayList<>();
 		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		File distro = new File("generated/tmp/test.distro.jar");
+		File distro = new File(tmp, "test.distro.jar");
 
 		List<String> distroArgs = new ArrayList<>();
 		distroArgs.add("-o");
@@ -155,7 +145,7 @@ public class DistroCommandTest {
 		List<String> remoteArgs = new ArrayList<>();
 		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		File distro = new File("generated/tmp/test.distro.jar");
+		File distro = new File(tmp, "test.distro.jar");
 
 		List<String> distroArgs = new ArrayList<>();
 		distroArgs.add("-o");
@@ -189,7 +179,7 @@ public class DistroCommandTest {
 		List<String> remoteArgs = new ArrayList<>();
 		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		File distro = new File("generated/tmp/test.distro.xml").getAbsoluteFile();
+		File distro = new File(tmp, "test.distro.xml").getAbsoluteFile();
 
 		List<String> distroArgs = new ArrayList<>();
 		distroArgs.add("-x");
@@ -259,7 +249,7 @@ public class DistroCommandTest {
 		List<String> remoteArgs = new ArrayList<>();
 		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		File distro = new File("generated/tmp/test.distro.jar");
+		File distro = new File(tmp, "test.distro.jar");
 
 		List<String> distroArgs = new ArrayList<>();
 		distroArgs.add("-o");
@@ -299,7 +289,7 @@ public class DistroCommandTest {
 		List<String> remoteArgs = new ArrayList<>();
 		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		File distro = new File("generated/tmp/test.distro.jar");
+		File distro = new File(tmp, "test.distro.jar");
 
 		if (distro.exists()) {
 			assertTrue(distro.delete());
@@ -339,7 +329,7 @@ public class DistroCommandTest {
 		List<String> remoteArgs = new ArrayList<>();
 		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		File distro = new File("generated/tmp/test.distro.jar");
+		File distro = new File(tmp, "test.distro.jar");
 
 		if (distro.exists()) {
 			assertTrue(distro.delete());

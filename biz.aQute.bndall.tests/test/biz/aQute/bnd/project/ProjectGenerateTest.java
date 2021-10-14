@@ -8,20 +8,20 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.result.Result;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
 public class ProjectGenerateTest {
-	@TempDir
-	File					tmp;
+	@InjectTemporaryDirectory
+	File tmp;
 
 	/**
 	 * Test -stalecheck

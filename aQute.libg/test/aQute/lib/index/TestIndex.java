@@ -5,21 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.File;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class TestIndex {
 
 	@Test
-	public void testPersistence(TestInfo testInfo) throws Exception {
-		File test = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
+	public void testPersistence(@InjectTemporaryDirectory
+	File test) throws Exception {
 		test.delete();
 		test.getParentFile()
 			.mkdirs();
@@ -70,14 +64,8 @@ public class TestIndex {
 	}
 
 	@Test
-	public void testBasic(TestInfo testInfo) throws Exception {
-		File test = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
+	public void testBasic(@InjectTemporaryDirectory
+	File test) throws Exception {
 		test.delete();
 		test.getParentFile()
 			.mkdirs();

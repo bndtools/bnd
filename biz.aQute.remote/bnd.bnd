@@ -14,6 +14,7 @@ aQute.agent.server.port = 29998
     org.apache.felix.gogo.runtime
 
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
     ${junit},\
     slf4j.api, \
     slf4j.simple,\

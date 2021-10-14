@@ -12,7 +12,6 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
@@ -25,6 +24,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 /**
@@ -33,23 +33,17 @@ import aQute.lib.io.IO;
 public class ProjectResolverTest {
 
 	private Workspace			ws;
-	private File				tmp;
+	@InjectTemporaryDirectory
+	File						tmp;
 	private File				local;
 	private ResourcesRepository	fr;
 	private File				home	= IO.getFile("testdata/projectresolver");
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
+	protected void setUp() throws Exception {
 		ws = Workspace.findWorkspace(IO.getFile("testdata/projectresolver/ws"));
 		ws.setTrace(true);
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName());
 		local = IO.getFile(tmp, "local");
-		IO.delete(tmp);
 		local.mkdirs();
 
 		OSGiRepository or = new OSGiRepository();

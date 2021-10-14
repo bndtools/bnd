@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,6 @@ import java.util.zip.ZipException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Jar;
@@ -30,6 +28,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
@@ -40,28 +39,14 @@ import test.repository.NonGeneratingProvider;
 @SuppressWarnings("resource")
 public class TestLocalIndexGeneration {
 
-	private String					name;
 	private Processor				reporter;
 	private LocalIndexedRepo		repo;
-	private File					outputDir;
+	@InjectTemporaryDirectory
+	File							outputDir;
 	private HashMap<String, String>	config;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		name = testInfo.getTestMethod()
-			.get()
-			.getName();
-		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ name)
-			.getAbsoluteFile();
-		IO.delete(outputDir);
-		if (!outputDir.exists() && !outputDir.mkdirs()) {
-			throw new IOException("Could not create directory " + outputDir);
-		}
-
+	protected void setUp() throws Exception {
 		// Setup the repo
 		reporter = new Processor();
 		repo = new LocalIndexedRepo();
@@ -75,7 +60,6 @@ public class TestLocalIndexGeneration {
 
 	@AfterEach
 	protected void tearDown() throws Exception {
-		IO.delete(outputDir);
 		assertEquals(0, reporter.getErrors()
 			.size());
 		assertEquals(0, reporter.getWarnings()
@@ -214,27 +198,6 @@ public class TestLocalIndexGeneration {
 	}
 
 	@Test
-	public void testValidGZipFile() throws Exception {
-		// The test now uses a normal text file
-		// PutResult r = repo.put(new BufferedInputStream(new FileInputStream(
-		// "testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new
-		// RepositoryPlugin.PutOptions());
-		// File deployedFile = new File(r.artifact);
-		//
-		// File indexFile = IO.getFile(outputDir, "index.xml");
-		// assertTrue(indexFile.exists());
-		//
-		// try {
-		// InputStream gzip = new FileInputStream(indexFile);
-		// assertTrue(gzip.read() > -1);
-		// }
-		// finally {
-		// IO.delete(new File(r.artifact));
-		// IO.delete(indexFile);
-		// }
-	}
-
-	@Test
 	public void testUncompressedIndexFile() throws Exception {
 		repo = new LocalIndexedRepo();
 		config = new HashMap<>();
@@ -274,9 +237,9 @@ public class TestLocalIndexGeneration {
 		map.put("locations", index.getAbsoluteFile()
 			.toURI()
 			.toString());
+		String name = outputDir.getName();
 		map.put("name", name);
-		map.put("cache",
-			new File("generated/tmp/test/cache/" + getClass().getName() + "/" + name).getAbsolutePath());
+		map.put("cache", new File(outputDir.getParentFile(), "cache/" + name).getAbsolutePath());
 		repo.setProperties(map);
 		Processor p = new Processor();
 		p.addBasicPlugin(httpClient);

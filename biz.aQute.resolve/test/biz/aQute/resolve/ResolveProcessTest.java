@@ -21,9 +21,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
@@ -32,23 +30,13 @@ import org.osgi.service.resolver.ResolutionException;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import test.lib.MockRegistry;
 
 public class ResolveProcessTest {
-	private String name;
-	private String	cache;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) {
-		name = testInfo.getTestMethod()
-			.get()
-			.getName();
-		cache = new File("generated/tmp/test/cache/" + testInfo.getTestClass()
-		.get()
-		.getName() + "/"
-			+ name).getAbsolutePath();
-	}
+	@InjectTemporaryDirectory
+	File	cache;
 
 	private final class ResourceComparator implements Comparator<Resource> {
 		@Override
@@ -350,8 +338,8 @@ public class ResolveProcessTest {
 		map.put("locations", IO.getFile(location)
 			.toURI()
 			.toString());
-		map.put("name", name);
-		map.put("cache", cache);
+		map.put("name", cache.getName());
+		map.put("cache", cache.getAbsolutePath());
 		repo.setProperties(map);
 		Processor p = new Processor();
 		p.addBasicPlugin(httpClient);

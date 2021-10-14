@@ -3,11 +3,8 @@ package aQute.bnd.build.repo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -16,26 +13,15 @@ import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.map.MAP;
 import aQute.libg.map.MAP.MAPX;
 
 public class WorkspaceRepositoryTest {
-	public static final String	TMPDIR		= "generated/tmp/test";
-	private File				testDir;
+	@InjectTemporaryDirectory
+	File			testDir;
 	private File				home		= IO.getFile("testresources/build-repo");
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) throws IOException {
-		testDir = new File(TMPDIR, testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
-	}
 
 	@Test
 	public void findprovidersMacroTest() throws Exception {

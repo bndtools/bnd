@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.jar.Manifest;
 
 import org.junit.jupiter.api.AfterEach;
@@ -25,8 +24,8 @@ public class ImportJavaTest {
 		builder = new Builder();
 		builder.addClasspath(new File("bin_test"));
 		builder.setProperty("Bundle-Name", testInfo.getTestMethod()
-			.map(Method::getName)
-			.get());
+			.get()
+			.getName());
 	}
 
 	@AfterEach

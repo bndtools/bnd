@@ -12,26 +12,20 @@ import java.util.SortedSet;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 
 public class OSGiIndexTest {
+	@InjectTemporaryDirectory
 	File	tmp;
 	File	cache;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
+	protected void setUp() throws Exception {
 		cache = IO.getFile(tmp, "name");
 		IO.delete(tmp);
 	}

@@ -17,6 +17,7 @@
 	slf4j.api;version=latest
 
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
 	${junit},\
 	slf4j.simple;version=latest
 

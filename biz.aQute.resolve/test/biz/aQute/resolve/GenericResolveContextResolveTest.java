@@ -4,14 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static test.lib.Utils.createRepo;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -21,6 +20,7 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
@@ -29,21 +29,11 @@ import aQute.lib.io.IO;
 public class GenericResolveContextResolveTest {
 	ResolverLogger logger = new ResolverLogger(0, System.out);
 
-	private String	name;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) {
-		name = testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
-
-	}
+	@InjectTemporaryDirectory
+	File			tmp;
 
 	private String getTestName() {
-		return name;
+		return tmp.getName();
 	}
 
 	/**
@@ -54,7 +44,7 @@ public class GenericResolveContextResolveTest {
 	 */
 	@Test
 	public void testSimpleResolve() throws Exception {
-		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName());
+		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp);
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.setLevel(2);
 		grc.addRepository(repository);
@@ -79,7 +69,7 @@ public class GenericResolveContextResolveTest {
 	 */
 	@Test
 	public void testResolveRequirementNoDirective() throws Exception {
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName(), tmp);
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.setLevel(2);
 		grc.addRepository(repository);
@@ -102,7 +92,7 @@ public class GenericResolveContextResolveTest {
 	@Test
 	public void testResolveRequirementResolveDirective() throws Exception {
 
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName(), tmp);
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.addRepository(repository);
 		Requirement logservice = new CapReqBuilder("osgi.service")
@@ -118,7 +108,7 @@ public class GenericResolveContextResolveTest {
 
 	@Test
 	public void testResolveRequirementActiveDirective() throws Exception {
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName(), tmp);
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.addRepository(repository);
 

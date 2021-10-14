@@ -10,15 +10,15 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
 
 public class WorkspaceTest {
-	String						tmpName;
+	@InjectTemporaryDirectory
 	File						tmp;
 	File						local;
 	File						remote;
@@ -30,15 +30,7 @@ public class WorkspaceTest {
 	private Workspace			workspace;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
-		tmp = IO.getFile(tmpName);
-		IO.delete(tmp);
+	protected void setUp() throws Exception {
 		local = IO.getFile(tmp, "local");
 		remote = IO.getFile(tmp, "remote");
 		index = IO.getFile(tmp, "index");
@@ -69,8 +61,8 @@ public class WorkspaceTest {
 
 	void config(Map<String, String> override) throws Exception {
 		Map<String, String> config = new HashMap<>();
-		config.put("local", tmpName + "/local");
-		config.put("index", tmpName + "/index");
+		config.put("local", tmp.getAbsolutePath() + "/local");
+		config.put("index", tmp.getAbsolutePath() + "/index");
 		config.put("releaseUrl", fnx.getBaseURI() + "/repo/");
 
 		if (override != null)

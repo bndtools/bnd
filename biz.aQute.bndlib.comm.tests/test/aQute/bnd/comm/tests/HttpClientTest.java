@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
@@ -33,6 +32,7 @@ import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.url.HttpsVerification;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
@@ -42,7 +42,6 @@ import aQute.lib.strings.Strings;
 public class HttpClientTest {
 	private TestServer	httpServer;
 	private Httpbin		httpsServer;
-	private File		tmp;
 
 	@AfterEach
 	protected void tearDown() throws Exception {
@@ -123,7 +122,7 @@ public class HttpClientTest {
 	}
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
+	protected void setUp() throws Exception {
 		Config config = new Config();
 		config.https = false;
 		httpServer = new TestServer(config);
@@ -134,15 +133,6 @@ public class HttpClientTest {
 		httpsServer = new Httpbin(configs);
 		httpsServer.start();
 
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		tmp.mkdirs();
 		httpServer.second = false;
 	}
 
@@ -251,7 +241,8 @@ public class HttpClientTest {
 	}
 
 	@Test
-	public void testHttpsVerification() throws Exception {
+	public void testHttpsVerification(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (Processor p = new Processor()) {
 			p.setProperty("-connection-settings", "server;id=\"" + httpsServer.getBaseURI() + "\";verify=" + true
 				+ ";trust=\"" + Strings.join(httpsServer.getTrustedCertificateFiles(tmp)) + "\"");
@@ -303,7 +294,8 @@ public class HttpClientTest {
 	}
 
 	@Test
-	public void testHostnameVerification() throws Exception {
+	public void testHostnameVerification(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (Processor p = new Processor()) {
 
 			//
@@ -334,7 +326,8 @@ public class HttpClientTest {
 	}
 
 	@Test
-	public void testHostnameVerificationDisabled() throws Exception {
+	public void testHostnameVerificationDisabled(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (Processor p = new Processor()) {
 
 			//
@@ -385,7 +378,8 @@ public class HttpClientTest {
 	}
 
 	@Test
-	public void testClearCacheOn404() throws Exception {
+	public void testClearCacheOn404(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			hc.setCache(tmp);
 			URLCache cache = hc.cache();
@@ -460,7 +454,8 @@ public class HttpClientTest {
 	}
 
 	@Test
-	public void testCachingMultipleFetch() throws Exception {
+	public void testCachingMultipleFetch(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			hc.setCache(tmp);
 

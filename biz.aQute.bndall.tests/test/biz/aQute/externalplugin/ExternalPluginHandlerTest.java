@@ -10,16 +10,16 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.result.Result;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 
 public class ExternalPluginHandlerTest {
-	@TempDir
+	@InjectTemporaryDirectory
 	File tmp;
 
 	@Test
@@ -77,7 +77,6 @@ public class ExternalPluginHandlerTest {
 	}
 
 	private Workspace getWorkspace(File file) throws Exception {
-		tmp.mkdirs();
 		IO.copy(file, tmp);
 		return new Workspace(tmp);
 	}

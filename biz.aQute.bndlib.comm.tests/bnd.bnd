@@ -12,6 +12,7 @@
 	biz.aQute.bndlib;version=latest;packages=*,\
 	biz.aQute.http.testservers;version=latest,\
 	com.github.mike10004:fengyouchao-sockslib;version=latest,\
+	biz.aQute.bnd.test;version=project,\
 	${junit},\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\

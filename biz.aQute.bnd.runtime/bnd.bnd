@@ -16,6 +16,7 @@
     org.apache.felix.gogo.shell
 
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
     ${junit}, \
     biz.aQute.launchpad;version=latest, \
     biz.aQute.repository, \

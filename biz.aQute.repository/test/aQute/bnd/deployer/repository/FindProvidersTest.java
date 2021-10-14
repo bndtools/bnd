@@ -4,15 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -21,25 +20,12 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class FindProvidersTest {
-
-	String	name;
-	String	cache;
-
-	@BeforeEach
-	public void setUp(TestInfo testInfo) {
-		name = testInfo.getTestMethod()
-			.get()
-			.getName();
-		cache = IO.getFile("generated/tmp/test/cache/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ name)
-			.getAbsolutePath();
-
-	}
+	@InjectTemporaryDirectory
+	File cache;
 
 	@Test
 	public void testPackageQuery() throws Exception {
@@ -51,8 +37,8 @@ public class FindProvidersTest {
 			props.put("locations", IO.getFile("testdata/minir5.xml")
 				.toURI()
 				.toString());
-			props.put("name", name);
-			props.put("cache", cache);
+			props.put("name", cache.getName());
+			props.put("cache", cache.getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)")
@@ -82,8 +68,8 @@ public class FindProvidersTest {
 			props.put("locations", IO.getFile("testdata/minir5.xml")
 				.toURI()
 				.toString());
-			props.put("name", name);
-			props.put("cache", cache);
+			props.put("name", cache.getName());
+			props.put("cache", cache.getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)")
@@ -111,8 +97,8 @@ public class FindProvidersTest {
 			props.put("locations", IO.getFile("testdata/big_index.xml.gz")
 				.toURI()
 				.toString());
-			props.put("name", name);
-			props.put("cache", cache);
+			props.put("name", cache.getName());
+			props.put("cache", cache.getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = new CapReqBuilder("osgi.identity")
@@ -154,8 +140,8 @@ public class FindProvidersTest {
 			props.put("locations", IO.getFile("testdata/big_index.xml")
 				.toURI()
 				.toString());
-			props.put("name", name);
-			props.put("cache", cache);
+			props.put("name", cache.getName());
+			props.put("cache", cache.getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("aQute.bnd.annotation", "[1.43,2)")

@@ -20,6 +20,7 @@
 	org.tukaani.xz;version=latest
 
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
 	${junit},\
 	${mockito},\
 	biz.aQute.http.testservers;version=latest,\

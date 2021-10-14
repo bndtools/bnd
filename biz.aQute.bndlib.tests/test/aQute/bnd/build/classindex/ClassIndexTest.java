@@ -11,7 +11,6 @@ import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import aQute.bnd.build.Project;
@@ -20,6 +19,7 @@ import aQute.bnd.build.classindex.pa.Abc;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.libg.map.MAP;
@@ -27,21 +27,15 @@ import aQute.libg.map.MAP.MAPX;
 
 @ExtendWith(SoftAssertionsExtension.class)
 public class ClassIndexTest {
-	public static final String	TMPDIR	= "generated/tmp/test";
 	private static final File	home	= IO.getFile("testresources/classindex");
-	private File				testDir;
+	@InjectTemporaryDirectory
+	File						testDir;
 	private Workspace			ws;
 	@InjectSoftAssertions
 	SoftAssertions				softly;
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testInfo.getTestMethod()
-			.get()
-			.getName());
-		IO.delete(testDir);
-		IO.mkdirs(testDir);
-
+	public void setUp() throws Exception {
 		IO.copy(new File(home, "ws"), testDir);
 
 		ws = Workspace.getWorkspace(testDir);

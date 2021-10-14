@@ -17,7 +17,6 @@ import java.util.ServiceLoader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -30,6 +29,7 @@ import org.osgi.resource.dto.RequirementDTO;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
@@ -39,7 +39,8 @@ import aQute.remote.util.AgentSupervisor;
 
 public class AgentTest {
 	private int				random;
-	private File			tmp;
+	@InjectTemporaryDirectory
+	File					tmp;
 	private Framework		framework;
 	private BundleContext	context;
 	private Bundle			agent;
@@ -51,17 +52,7 @@ public class AgentTest {
 	private TestSupervisor	supervisor;
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName())
-			.getAbsoluteFile();
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-
+	protected void setUp() throws Exception {
 		t1 = create("bsn-1", new Version(1, 0, 0));
 		t2 = create("bsn-2", new Version(2, 0, 0));
 		t3 = create("bsn-3", new Version(3, 0, 0));
@@ -102,8 +93,6 @@ public class AgentTest {
 	@AfterEach
 	protected void tearDown() throws Exception {
 		framework.stop();
-		IO.delete(IO.getFile("generated/cache"));
-		IO.delete(IO.getFile("generated/storage"));
 		framework.waitForStop(100000);
 	}
 

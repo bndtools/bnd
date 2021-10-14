@@ -42,6 +42,7 @@ Import-Package: \
     org.osgi.namespace.extender
 
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
     ${mockito}, \
     biz.aQute.repository, \
     slf4j.simple;version=latest, \

@@ -14,9 +14,9 @@ import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.MavenVersion;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -28,8 +28,6 @@ import aQute.maven.api.Revision;
 
 public class MavenRepoTest {
 	File							aFile		= IO.getFile("testresources/empty");
-
-	String							tmpName;
 	File							local;
 	File							remote;
 	FakeNexus						fnx;
@@ -39,24 +37,17 @@ public class MavenRepoTest {
 	HttpClient						client		= new HttpClient();
 
 	@BeforeEach
-	protected void setUp(TestInfo testInfo) throws Exception {
-		tmpName = "generated/tmp/test/" + testInfo.getTestClass()
-			.get()
-			.getName() + "/"
-			+ testInfo.getTestMethod()
-				.get()
-				.getName();
-		local = IO.getFile(tmpName + "/local");
-		remote = IO.getFile(tmpName + "/remote");
+	protected void setUp(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		local = IO.getFile(tmp, "local");
+		remote = IO.getFile(tmp, "remote");
+		remote.mkdirs();
+		local.mkdirs();
 		reporter.setTrace(true);
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
 		fnx.start();
-		IO.delete(remote);
-		IO.delete(local);
 		IO.copy(IO.getFile("testresources/mavenrepo"), remote);
-		remote.mkdirs();
-		local.mkdirs();
 		repo = MavenBackingRepository.create(fnx.getBaseURI() + "/repo/", reporter, local, client);
 		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, client.promiseFactory()
 			.executor(), null);

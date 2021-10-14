@@ -12,8 +12,10 @@ org.osgi:org.osgi.service.cdi:1.0.0
 org.osgi:org.osgi.service.cm:1.5.0
 org.osgi:org.osgi.service.component:1.3.0
 org.osgi:org.osgi.service.component:1.4.0
+org.osgi:org.osgi.service.component:1.5.0
 org.osgi:org.osgi.service.component.annotations:1.3.0
 org.osgi:org.osgi.service.component.annotations:1.4.0
+org.osgi:org.osgi.service.component.annotations:1.5.0
 org.osgi:org.osgi.service.configurator:1.0.0
 org.osgi:org.osgi.service.coordinator:1.0.2
 org.osgi:org.osgi.service.device:1.1.0
@@ -89,6 +91,7 @@ net.bytebuddy:byte-buddy-agent:${net.bytebuddy.version}
 org.objenesis:objenesis:jar:${org.objenesis.version}
 org.xmlunit:xmlunit-core:2.6.3
 org.xmlunit:xmlunit-assertj:2.6.3
+org.osgi:org.osgi.test.common:${osgi-test.version}
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
 

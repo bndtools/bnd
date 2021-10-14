@@ -22,6 +22,7 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import aQute.bnd.exceptions.RunnableWithException;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.remote.agent.AgentDispatcher.Descriptor;
 import aQute.remote.api.Agent;
@@ -34,15 +35,20 @@ import aQute.remote.plugin.LauncherSupervisor;
 public class MainTest {
 
 	private Thread thread;
+	String			storage;
+	String			cache;
 
 	@BeforeEach
-	protected void setUp() throws Exception {
+	protected void setUp(@InjectTemporaryDirectory
+	String tmp) throws Exception {
+		storage = tmp + "/storage";
+		cache = tmp + "/cache";
 		thread = new Thread() {
 			@Override
 			public void run() {
 				try {
 					Main.main(new String[] {
-						"-p", Agent.DEFAULT_PORT + 1 + "", "-s", "generated/storage", "-c", "generated/cache", "-n",
+						"-p", Agent.DEFAULT_PORT + 1 + "", "-s", storage, "-c", cache, "-n",
 						"*", "-et", "-Dfoo=bar", "-Dbar=foo"
 					});
 				} catch (Exception e) {
@@ -66,8 +72,6 @@ public class MainTest {
 	@AfterEach
 	protected void tearDown() throws Exception {
 		Main.stop();
-		IO.delete(IO.getFile("generated/cache"));
-		IO.delete(IO.getFile("generated/storage"));
 	}
 
 	@Test
@@ -85,7 +89,7 @@ public class MainTest {
 
 		HashMap<String, Object> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-		configuration.put(Constants.FRAMEWORK_STORAGE, "generated/storage");
+		configuration.put(Constants.FRAMEWORK_STORAGE, storage);
 		List<String> emptyList = Collections.emptyList();
 		boolean created = supervisor.getAgent()
 			.createFramework("test", emptyList, configuration);
