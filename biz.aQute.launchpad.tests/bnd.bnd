@@ -2,10 +2,10 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
-    org.osgi.service.component.annotations, \
+    org.osgi.service.component.annotations;version='1.3.0', \
     osgi.annotation; version=latest,\
     osgi.core; version=latest, \
-    org.osgi.service.component
+    org.osgi.service.component;version='1.3.0'
 
 -testpath: \
     slf4j.api, \

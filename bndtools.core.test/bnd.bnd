@@ -78,7 +78,7 @@
 	org.eclipse.e4.ui.model.workbench,\
 	org.eclipse.e4.ui.workbench,\
 	org.eclipse.e4.ui.workbench.swt,\
-	org.osgi.service.component.annotations,\
+	org.osgi.service.component.annotations;version='1.3.0',\
 	org.osgi.service.event,\
 	osgi.annotation,\
 	org.eclipse.jdt.core.manipulation

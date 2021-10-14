@@ -1,5 +1,6 @@
 package test.component;
 
+import static aQute.bnd.exceptions.PredicateWithException.asPredicate;
 import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -2256,7 +2257,7 @@ public class DSAnnotationTest {
 				fail();
 			Attributes a = getAttr(jar);
 			checkProvides(a, FACTORY);
-			checkRequires(a, "1.4.0");
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 
 			//
 			// Test all the defaults
@@ -2794,7 +2795,7 @@ public class DSAnnotationTest {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, "1.4.0");
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 
 		checkDS14AnnoConfigNames(jar, DS14annoNames_config.class.getName());
 	}
@@ -2862,7 +2863,7 @@ public class DSAnnotationTest {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a, SERIALIZABLE_RUNNABLE);
-			checkRequires(a, "1.4.0");
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 			checkDS14ActivationObjects(jar, DS14_activation_objects.class.getName());
 
 		}
@@ -3267,14 +3268,8 @@ public class DSAnnotationTest {
 			Map<String, Object> map = new HashMap<>();
 			map.put("osgi.extender", "osgi.component");
 			map.put("version", Version.parseVersion(extender));
-			boolean matches = false;
-			try {
-				matches = filter.matchMap(map);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-			assertThat(matches).as("filter %s matches version %s", filter, extender)
-				.isTrue();
+			assertThat(filter).as("filter %s matches version %s", filter, extender)
+				.matches(asPredicate(f -> f.matchMap(map)), "is correct extender");
 		}
 	}
 
@@ -4313,7 +4308,7 @@ public class DSAnnotationTest {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a, "1.4.0", LoggerFactory.class.getName());
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LoggerFactory.class.getName());
 
 			//
 			// Test all the defaults
@@ -4382,7 +4377,7 @@ public class DSAnnotationTest {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a, "1.4.0", LogService.class.getName());
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 			//
 			// Test all the defaults
@@ -4440,7 +4435,7 @@ public class DSAnnotationTest {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a, "1.5.0", AnyService.class.getName());
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, AnyService.class.getName());
 
 			//
 			// Test all the defaults
@@ -4598,7 +4593,7 @@ public class DSAnnotationTest {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a, "1.5.0", LogService.class.getName());
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 			//
 			// Test all the defaults

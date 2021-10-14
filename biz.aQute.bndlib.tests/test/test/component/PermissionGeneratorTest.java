@@ -88,6 +88,7 @@ public class PermissionGeneratorTest {
 		/* @formatter:off */
 		assertThat(importedPackages).containsExactlyInAnyOrder(
 			"aQute.bnd.differ",
+			"aQute.bnd.exceptions",
             "aQute.bnd.header",
             "aQute.bnd.osgi",
             "aQute.bnd.service.diff",
