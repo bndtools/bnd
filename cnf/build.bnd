@@ -29,7 +29,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 
 # Maven info. The maven artifactId defaults to Bundle-SymbolicName
 -groupid:               biz.aQute.bnd
--pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${-snapshot};${versionmask;===s;${@version}}}
+-pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
 -maven-release:         pom;path=JAR,javadoc;-classpath="${project.buildpath}"
 # -snapshot unset (commented out) is a snapshot build. (e.g. 6.0.0-SNAPSHOT)
 # -snapshot set to a value (e.g. RC1) is a release build with the value as the Maven version qualifier. (e.g. 6.0.0-RC1)
