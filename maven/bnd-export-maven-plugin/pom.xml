@@ -41,6 +41,10 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.service.resolver</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bnd.maven</artifactId>
 		</dependency>

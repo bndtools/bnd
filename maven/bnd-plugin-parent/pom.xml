@@ -20,7 +20,7 @@
 		<java.release>8</java.release>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<osgi.core.version>6.0.0</osgi.core.version>
+		<osgi.annotation.version>8.0.1</osgi.annotation.version>
 		<jpmsOptions></jpmsOptions>
 		<mavenOpts>${jpmsOptions}</mavenOpts>
 		<!-- The following versions must match those in cnf/ext/maven-plugin.bnd -->
@@ -199,11 +199,29 @@
 			</dependency>
 			<dependency>
 				<groupId>org.osgi</groupId>
-				<artifactId>osgi.core</artifactId>
-				<version>${osgi.core.version}</version>
+				<artifactId>osgi.annotation</artifactId>
+				<version>${osgi.annotation.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.service.resolver</artifactId>
+				<version>1.1.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.service.repository</artifactId>
+				<version>1.1.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.annotation</artifactId>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<pluginManagement>
