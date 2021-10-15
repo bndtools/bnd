@@ -203,6 +203,16 @@
 				<version>${osgi.annotation.version}</version>
 				<scope>provided</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.service.resolver</artifactId>
+				<version>1.1.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.service.repository</artifactId>
+				<version>1.1.0</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
