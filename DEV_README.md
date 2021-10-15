@@ -214,7 +214,10 @@ will not be able to restart it.
    type of the extension that you are implementing.
    2. Ensure that the `component.name` property is the same as the `id`
    field in the `plugin.xml` of the plugin that registers the extension (set
-   in step 1.i). By default, this is the fqn of the implementation class.
+   in step 1.i). By default, this is the fqn of the implementation class. (Note:
+   there are some cases where you might need the `id` to be different from
+   the `component.name` - in such cases, see the section "Overriding the
+   `component.name`" below.)
    3. Set the correct component scope. Usually the component will need to be
    prototype scope, otherwise the implementation instances will interfere with
    each other - however, if your component implementation is stateless, then you
@@ -242,11 +245,23 @@ a new backing component arrives or is closed. `RunAction` uses this feature
 to enable/disable itself depending on whether or not the backing component is
 present.
 
+## Overriding the `component.name`
+
+By default, the `ExtensionFacade` will use the extension element's `id` attribute to
+look for a DS component with a `component.name` that matches. However, sometimes you
+want two extensions that point to the same DS component. Because having extensions with
+duplicate ids is not a good idea, the `ExtensionFacade` provides an alternative method
+to specify the `component.name` to match: by adding `:<component.name>` to the end
+of the class.
+
+If you need to combine the factory mode with this feature, leave the name of the class
+blank (eg, `class="org.bndtools.facade.ExtensionFacade::my.component.name"`).
+
 ## Examples of the `ExtensionFacade` in action
 
 The prototype example of how to use the `ExtensionFacade` is in the 
 `org.bndtools.launch` bundle, which contains the launch-related code
 for Bndtools. This bundle was used as a proving ground for the
 `ExtensionFacade`'s initial development. The extensions are registered in
-`bndtools.core`'s `plugin.xml`, using the `ExtensionFacade`
-configured as described above.
+`bndtools.core` and `bndtools.m2e`'s `plugin.xml` files, using the
+`ExtensionFacade` configured as described above.
