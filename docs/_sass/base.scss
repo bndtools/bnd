@@ -48,7 +48,7 @@ table {
   	border-spacing: 	0;
   	width: 100%;
   	margin-bottom: $block-separation;
-	td, th { 
+	td, th {
 		text-align: 	left;
 		vertical-align: top;
 		padding-top: $text-separation/2;
@@ -58,10 +58,10 @@ table {
 			padding-right:	0;
 		}
 	}
-	
+
 	&.bordered {
 	  	border: 2px solid lightgrey;
-		td, th { 
+		td, th {
 			border-top: 1px solid lightgrey;
 			border-right: 1px solid lightgrey;
 			padding-right:	$gutter / 2;
@@ -86,7 +86,7 @@ h1, h2, h3, h4, h5, h6 {
 
 h1, h2, h3, h4, h5, h6 {
 	margin-bottom: $text-separation;
-	
+
 }
 
 p, li, blockquote, ol, ul {
@@ -102,13 +102,13 @@ h1 {
 
 h2 {
 	font-size: 1.4em;
-	counter-increment: h2 1;	
+	counter-increment: h2 1;
 	counter-reset: h3 0;
 }
 
 h3 {
 	font-size: 1.3em;
-	counter-increment: h3 1;	
+	counter-increment: h3 1;
 }
 
 h4 {font-size: 1.2em;}
@@ -117,7 +117,7 @@ h6 {font-size: 1em;}
 
 .jump {
 	position: absolute;
-	left: -120px;
+	left: -90px;
 }
 
 h1::before {
@@ -132,11 +132,11 @@ h2:before {
 h3:before {
 	@extend .jump;
 	content: counter(h1) "." counter(h2) "." counter(h3);
-	counter-increment: h3 1;	
+	counter-increment: h3 1;
 }
 
 .notes-margin {
-	margin-left: 120px;
+	margin-left: 90px;
 }
 p {
   word-break:	hyphenate;
@@ -193,7 +193,7 @@ input {
 	border: 1px inset lightgrey;
 	@include rounded(3px);
 	min-height: $line-height;
-	&[type='text'], &[type='email'], &[type='url'] { 
+	&[type='text'], &[type='email'], &[type='url'] {
 		height: 1.8em;
 	}
 	margin: 0;
@@ -215,7 +215,7 @@ fieldset {
 	border: 0 solid white;
 	margin: 0 0 $text-separation 0;
 	padding: 0;
-		
+
 	> * {
 		@include box-sizing(border-box);
 		display:inline-block;
@@ -231,7 +231,7 @@ fieldset {
 }
 
 /**
-	Provide tabs 
+	Provide tabs
 */
 menu.tabs {
 	border-bottom: 1px solid lightgray;
@@ -240,7 +240,7 @@ menu.tabs {
     padding: 6px;
 	li {
 		padding: 6px;
-	    display:inline;	
+	    display:inline;
 	    border: 1px solid lightgray;
 	    border-bottom: 0 none;
 	    @include border-radius(3px, 0, 0, 3px);
@@ -287,14 +287,14 @@ img.inset {
     color: transparent;
     vertical-align: middle;
     &[disabled] {
-        opacity:0.3;  
+        opacity:0.3;
     }
     background-size: 80% 80%;
     background-position: 2px 2px;
     background-origin: padding-box;
     background-repeat: no-repeat;
     cursor: pointer;
-    
+
     &.add { background-image: url(/img/add.png); }
     &.remove { background-image: url(/img/remove.png); }
     &.edit { background-image: url(/img/edit.png); }

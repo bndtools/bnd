@@ -1,7 +1,7 @@
 
 <ul class="container12 menu-bar">
 	<li span=12><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
-			class=menu-logo src="{{ '/img/bnd-80x40-white.png' | prepend:site.baseurl }}"></a>
+			class=menu-logo src="{{ '/img/bnd-80x40-red.png' | prepend:site.baseurl }}"></a>
 			<a href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro
 			</a><a href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers
 			</a><a href="{{ '/chapters/825-instructions-ref.html' | prepend:site.baseurl }}">Instructions
@@ -12,7 +12,7 @@
 			{% include github.htm %}
 </ul>
 <script defer>
-	process = { env: {} }
+	process = { env: {} } // DocSearch has a bug where it is expecting a Node.js `process` variable
 	docsearch({
 		container: '#docsearch',
 		appId: '{{ site.algolia.appId }}',

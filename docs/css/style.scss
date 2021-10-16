@@ -3,12 +3,12 @@
 
 @import url("//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700");
 
-$font-family: 		Trebuchet MS, Verdana, sans;
-$font-size:			9pt;
-$line-height:		1.4em;
+$font-family: 		system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+$font-size:			1em;
+$line-height:		1.6em;
 $max-width:			960px;
 $min-column-width:	2.5em;
-$color:				black;
+$color:				#3c3942;
 $background:		white;
 $secondary-color:	#720F10;
 $icon-size:			2em;
@@ -16,7 +16,7 @@ $text-mono: 		Courier New;
 $text-body: 		$font-family;
 $text-head: 		$font-family;
 $block-separation: 	1em;
-$text-separation: 	0.5em;
+$text-separation: 	1em;
 $gutter:			1em;
 $rounded:			4px;
 $color-normal:		transparent;
@@ -47,16 +47,11 @@ $color-vignette:	#F0F0F0;
 	margin-top: 10px;
 	padding-top: $text-separation;
 	padding-bottom: $text-separation;
-	@include gradient( lightgrey, rgb(179,179,181), rgb(130,132,135));
-	@include drop-shadow(2px,2px,2px,0.1);
-	@include rounded(3px);
-	margin-bottom: $block-separation;
+	margin-bottom: 60px;
+	border-bottom: 2px solid #720F10;
 	> [span] {
 		vertical-align:middle;
 		margin: 0px;
-		> * {
-			color: white;
-		}
 		> a {
 			font-size: $font-size * 1.4;
 			padding-top:3px;
@@ -97,7 +92,8 @@ $color-vignette:	#F0F0F0;
  */
 
 .side-nav {
-	@include vignette();
+	padding: 0px;
+	list-style: none;
 }
 
 .enroute {
