@@ -45,9 +45,9 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 	String						propertyName;
 	Class<T>					downstreamClass;
 	Object						data;
-	static final BundleContext	bc	= Optional.ofNullable(FrameworkUtil.getBundle(ExtensionFacade.class))
+	static final BundleContext	bc			= Optional.ofNullable(FrameworkUtil.getBundle(ExtensionFacade.class))
 		.map(Bundle::getBundleContext)
-		.orElseGet(null);
+		.orElse(null);
 
 	@Override
 	public Object create() throws CoreException {
@@ -190,37 +190,52 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 
 		consoleLog.debug("{} Initializing facade, propName: \"{}\", data: \"{}\"", this, propertyName, data);
 
-		if (data != null && !data.toString()
-			.isEmpty()) {
-			try {
-				String epId = config.getDeclaringExtension()
-					.getExtensionPointUniqueIdentifier();
+		if (data != null) {
+			final String dataString = data.toString();
 
-				IExtensionPoint ep = Platform.getExtensionRegistry()
-					.getExtensionPoint(epId);
-				String bp = ep.getContributor()
-					.getName();
+			final int index = dataString.indexOf(':');
 
-				Optional<Bundle> b = Stream.of(bc.getBundles())
-					.filter(x -> bp.equals(x.getSymbolicName()))
-					.findFirst();
-
-				if (b.isPresent()) {
-					consoleLog.debug("{} Attempting to load \"{}\" from bundle: {}", this, data, b.get());
-					@SuppressWarnings("unchecked")
-					final Class<T> clazz = (Class<T>) b.get()
-						.loadClass(data.toString());
-					downstreamClass = clazz;
-				} else {
-					consoleLog.debug("Using our classloader");
-					@SuppressWarnings("unchecked")
-					final Class<T> clazz = (Class<T>) Class.forName(data.toString());
-					downstreamClass = clazz;
+			String className;
+			if (index < 0) {
+				className = dataString;
+			} else {
+				className = dataString.substring(0, index);
+				if (index < dataString.length() - 1) {
+					this.id = dataString.substring(index + 1);
 				}
-			} catch (ClassNotFoundException e) {
-				consoleLog.error("{} exception:", this, e);
-				throw new CoreException(
-					new Status(IStatus.ERROR, getClass(), 0, "Downstream interface for " + id + " not found", e));
+			}
+
+			if (!className.isEmpty()) {
+				try {
+					String epId = config.getDeclaringExtension()
+						.getExtensionPointUniqueIdentifier();
+
+					IExtensionPoint ep = Platform.getExtensionRegistry()
+						.getExtensionPoint(epId);
+					String bp = ep.getContributor()
+						.getName();
+
+					Optional<Bundle> b = Stream.of(bc.getBundles())
+						.filter(x -> bp.equals(x.getSymbolicName()))
+						.findFirst();
+
+					if (b.isPresent()) {
+						consoleLog.debug("{} Attempting to load \"{}\" from bundle: {}", this, data, b.get());
+						@SuppressWarnings("unchecked")
+						final Class<T> clazz = (Class<T>) b.get()
+							.loadClass(className);
+						downstreamClass = clazz;
+					} else {
+						consoleLog.debug("Using our classloader");
+						@SuppressWarnings("unchecked")
+						final Class<T> clazz = (Class<T>) Class.forName(className);
+						downstreamClass = clazz;
+					}
+				} catch (ClassNotFoundException e) {
+					consoleLog.error("{} exception:", this, e);
+					throw new CoreException(
+						new Status(IStatus.ERROR, getClass(), 0, "Downstream interface for " + id + " not found", e));
+				}
 			}
 		}
 		try {
