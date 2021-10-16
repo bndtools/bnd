@@ -9,3 +9,4 @@ Archive
 /generated/
 /install-jdk.sh
 .to
+.idea/

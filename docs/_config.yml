@@ -2,7 +2,10 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
 markdown: kramdown
-
+algolia:
+    appId: BH4D9OD16A
+    indexName: docsearch
+    apiKey: 25626fae796133dc1e734c6bcaaeac3c
 collections:
   chapters:
     output: true

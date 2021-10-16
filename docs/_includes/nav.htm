@@ -1,6 +1,6 @@
 
 <ul class="container12 menu-bar">
-	<li span=11><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
+	<li span=12><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
 			class=menu-logo src="{{ '/img/bnd-80x40-white.png' | prepend:site.baseurl }}"></a>
 			<a href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro
 			</a><a href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers
@@ -8,6 +8,15 @@
 			</a><a href="{{ '/chapters/855-macros-ref.html' | prepend:site.baseurl }}">Macros
 			</a><a href="{{ '/chapters/400-commands.html' | prepend:site.baseurl }}">Commands
 			</a><div class="releases"><button class="dropbtn">{{ site.releasename }}</button><div class="dropdown-content"></div></div>
-	<li class=menu-link span=1>
+			<div id="docsearch"></div>
 			{% include github.htm %}
 </ul>
+<script defer>
+	process = { env: {} }
+	docsearch({
+		container: '#docsearch',
+		appId: '{{ site.algolia.appId }}',
+		indexName: '{{ site.algolia.indexName }}',
+		apiKey: '{{ site.algolia.apiKey }}',
+	});
+</script>
