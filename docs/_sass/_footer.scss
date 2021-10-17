@@ -1,0 +1,23 @@
+nav.next-prev {
+	flex: 0 0 100%;
+}
+
+.discourse-link {
+	display: block;
+	color: #3A9977;
+	letter-spacing: 0.05rem;
+	font-weight: bold;
+	margin: 4rem 0 2rem;
+	cursor: pointer;
+}
+.discourse-text-link {
+	color: #3A9977;
+	text-decoration: underline;
+}
+
+footer {
+	flex: 0 0 100%;
+	border-top: 1px solid #ccc;
+	padding: 1rem 0;
+	margin-top: 3rem;
+}

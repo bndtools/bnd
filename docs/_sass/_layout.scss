@@ -1,0 +1,33 @@
+.wrapper {
+	display: flex;
+	flex-wrap: wrap;
+	max-width: 980px;
+	margin: 0 auto;
+}
+
+.side-nav {
+	flex: 3;
+	max-width: 30%;
+	li {
+		margin: 0 0 0.5em;
+	}
+}
+
+.notes-margin {
+	flex: 9;
+	max-width: 70%;
+}
+
+@media only screen and (max-device-width: 450px) {
+	.menu-bar {
+		display: block;
+	}
+	.side-nav, .notes-margin {
+		padding: 0.75rem;
+		max-width: 100%;
+		flex: 1 1 100%;
+	}
+	.wrapper {
+		max-width: 100%;
+	}
+}

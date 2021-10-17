@@ -1,0 +1,27 @@
+.home {
+	.hero {
+		flex: 0 0 100%;
+		margin: 1rem 0;
+	}
+	h1::before {
+		content: '';
+		display: none;
+	}
+}
+
+#getting-started {
+	text-align: center;
+	margin: 4rem 0;
+	.build-tools {
+		display: none;
+
+	}
+	&.selecting-build-tool {
+		.build-tools {
+			display: block;
+		}
+		.getting-started-options {
+			display: none;
+		}
+	}
+}
