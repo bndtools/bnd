@@ -30,7 +30,7 @@ The early version of bnd was called btool and was incepted at Ericsson, where it
 
 The name came from bundle, then removing the vowels, and cutting it to three characters to reduce the typing on the command line. The pronunciation: we actually have no clue, whatever your preference is. _B AND D_, _bind_, whatever. You want to write it as bnd, Bnd, or BND, be our guest. We prefer to write it like bnd since we love the symmetry.
 
-Over the years bnd gained a lot of power because we needed a tool at the OSGi Alliance that could not just create good bundles, it also was heavily used in the test cases that required bad bundles. Of course this was an excellent test range for bnd and this synergy is still true today.  
+Over the years bnd gained a lot of power because we needed a tool at the OSGi Alliance that could not just create good bundles, it also was heavily used in the test cases that required bad bundles. Of course this was an excellent test range for bnd and this synergy is still true today.
 
 ### Eclipse
 
@@ -54,4 +54,5 @@ Currently bnd(tools) is managed through a Github organization called bndtools an
 
 What you are now reading is the manual of bnd, which is the result of a tremendous amount of work, and will be a work in progress for a long time to be. Though much of bnd's development was indirectly supported by the OSGi Alliance it is and always will be an open source project. This gave the authors the license to scratch their itches and not worry too much about documenting the nifty things they developed to scratch. Though the most important aspects were documented, it was sparse and not overly well organized. Though we always hoped someone with a gift for documenting would come along, fall in love with bnd, and write the perfect documentation, this somehow failed. After 16 years, we find it is time to take up this task ourselves, still praying that we will get support from bnd's surprisingly large (to some) group of users, don't hesitate. This is the reason this manual is a github repositories. Contributing is trivial, clone the bndtools/bnd.manual repo, edit the markdown text (you can even do this on the github web), save it, and create a pull request. Don't (always) ask what bnd can do for you, ask what you can do for bnd's users ...
 
-Not sure why we wrote such a long introduction, the facebook generation seems have an attention span of 5 lines, so we are probably among ourselves dear reader, congratulations on your stamina!
+If you have reached this point from the top dear reader, congratulations on your stamina!
+We hope that you come to realise this time investment pays off handsomely.

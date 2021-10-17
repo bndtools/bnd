@@ -291,7 +291,37 @@ footer {
 .home .third h1 {
 	font-size: 1.5rem;
 }
-.home .third h1::before {
+.home h1::before {
 	content: '';
+	display: none;
+}
+
+.button {
+	display: inline-block;
+	padding: 1rem;
+	margin: 1rem;
+	border: 1px solid;
+	border-radius: 6px;
+}
+.button.primary {
+	background: #3A9977;
+	color: white;
+	font-weight: bold;
+}
+.button:hover {
+	text-decoration: none;
+}
+
+#getting-started {
+	text-align: center;
+	margin: 4rem 0;
+}
+#getting-started .build-tools {
+	display: none;
+}
+#getting-started.selecting-build-tool .build-tools {
+	display: block;
+}
+#getting-started.selecting-build-tool .getting-started-options {
 	display: none;
 }

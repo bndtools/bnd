@@ -6,4 +6,8 @@ $().ready(function(){
 			);
 		});
 	});
+	$('#select-build-tool').click(() => {
+		$('#getting-started').toggleClass('selecting-build-tool');
+	})
 });
+
