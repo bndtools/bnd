@@ -6,11 +6,11 @@ layout: default
 
 Since bnd is by design headless, the best way to get start is to use one of the IDEs like [bndtools][1]. They have tutorials and an IDE is a more pleasant place than a command line. So if you just want to learn OSGi, please go away, this chapter is not for you! bndlib relates to OSGi like the ASM byte code manipulation library relates to Java. Sometimes incredibly useful but in general something you do not want to touch, and obviously not the way to learn Java.
 
-Assuming we're now only left with the blue collar workers of our industry: people that need to maintain builds or that must do JAR engineering. First a word of warning, the fact that bndlib provides a function is in no way an advertisement to use that function. bndlib grew up together with the OSGi specifications and has been used to build the Reference Implementations (RI) and Test Compatibility Kits (TCK). Though this has a lot of benefits for you, the disadvantage is that it also has to support all the bad parts of the specifications, and even sometimes must be able to create erroneous situations so we could create test cases. And we also had to handle the situations caused by the mess of non-modular bundles out there.  
+Assuming we're now only left with the blue collar workers of our industry: people that need to maintain builds or that must do JAR engineering. First a word of warning, the fact that bndlib provides a function is in no way an advertisement to use that function. bndlib grew up together with the OSGi specifications and has been used to build the Reference Implementations (RI) and Test Compatibility Kits (TCK). Though this has a lot of benefits for you, the disadvantage is that it also has to support all the bad parts of the specifications, and even sometimes must be able to create erroneous situations so we could create test cases. And we also had to handle the situations caused by the mess of non-modular bundles out there.
 
-So to make it crystal clear: the fact that a function is in bndlib does not mean it is intended to be used. This section contains a whole bunch of things you wish you never had to touch, and if you do OSGi properly, you will only see a tiny fraction of bndlib. That said, when the unprepared JARs hit the OSGi framework, it is nice to have bndlib as backup. 
+So to make it crystal clear: the fact that a function is in bndlib does not mean it is intended to be used. This section contains a whole bunch of things you wish you never had to touch, and if you do OSGi properly, you will only see a tiny fraction of bndlib. That said, when the unprepared JARs hit the OSGi framework, it is nice to have bndlib as backup.
 
-This tour uses the bnd command line bnd to demonstrate much of the inner details of bndlib. 
+This tour uses the bnd command line bnd to demonstrate much of the inner details of bndlib.
 
 bnd became the Swiss army knife to manipulate JARs and gained a lot of function you _should never attempt to use_. However, this chapter will give you an overview of what is in bnd.
 
@@ -24,24 +24,30 @@ The OSGi metadata is stored in the _manifest_ of the JAR file. The manifest is a
 
 So let's use bnd to wrap the [javax.activation.jar][2] file even though it is already wrapped for us in the [Enterprise Bundle Repository][3]. Let's download it:
 
-	$ mkdir jar
-	$ bnd copy https://repo.maven.apache.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar \
-		jar/javax.activation-1.1.1.jar
-	
-bnd provides a convenience function to print out the contents of a JAR. The --uses option shows the packages and what other packages they use. 
+```shell
+$ mkdir jar
+$ bnd copy https://repo.maven.apache.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar \
+	jar/javax.activation-1.1.1.jar
+```
 
-	$ bnd print --uses jar/javax.activation-1.1.1.jar 
-	[USES]
-	com.sun.activation.registries            []
-	com.sun.activation.viewers               [javax.activation]
-	javax.activation                         [com.sun.activation.registries]
+bnd provides a convenience function to print out the contents of a JAR. The --uses option shows the packages and what other packages they use.
+
+```shell
+$ bnd print --uses jar/javax.activation-1.1.1.jar
+[USES]
+com.sun.activation.registries            []
+com.sun.activation.viewers               [javax.activation]
+javax.activation                         [com.sun.activation.registries]
+```
 
 ## Simplistic
 
 In the simplistic case our goal is to provide a manifest that makes all the packages in the source JAR available to the other bundles (exports) and that imports anything the classes in the JAR require from the external world (imports). bnd is controlled by a _bnd_ file. This file is a standard Java properties file. In this properties file we can provide headers, instructions, and macros to bnd. In general, a header starts with an upper case, and an instruction with a minus sign ('-'). The format of the headers and instructions is defined by the OSGi specifications. The headers specifically try to follow the structure of an OSGi header. Since exports are defined with the `Export-Package` header and imports are defined by the `Import-Package` header we can create a bnd file that looks very much like the desired manifest, except for the instruction that defines our class path. We could also use the URL directly on the classpath but this would download the JAR everytime we ran bnd. So `javax.activation.bnd` should look like:
 
-	-classpath:		jar/javax.activation-1.1.1.jar
-	Export-Package: *
+```bnd
+-classpath:		jar/javax.activation-1.1.1.jar
+Export-Package: *
+```
 
 ## Properties Format
 The casing of the headers is important, even though OSGi headers are case insensitive. That is Export-Package is not the same for bnd as Export-package.
@@ -51,7 +57,7 @@ The properties format we use in bnd is darned flexibile. A header is recognized 
 * Any white space (space, tab)
 * A  colon (':'), white space around the colon is ignored
 * An equal sign ('='), white space around the equal sign is ignored
- 
+
 Though lines can be as long as you want, it is better for your brains to keep them short. You can break a line with a backslash ('\\') followed by a newline ('\n'). Be careful, the newline *must* follow the backslash or you will get whatever comes after the backslash in the header. Some examples that all set the variable `foo` to 3:
 
 	foo				= 	3
@@ -72,18 +78,18 @@ bnd has many commands, you can find out more about them with the`bnd help [sub]`
 
 	$ bnd javax.activation.jar
 	[MANIFEST javax.activation]
-	Bnd-LastModified                         1407229057278                           
-	Bundle-ManifestVersion                   2                                       
-	Bundle-Name                              javax.activation                   
-	Bundle-SymbolicName                      javax.activation                   
-	Bundle-Version                           0                                       
-	Created-By                               1.8.0 (Oracle Corporation)              
+	Bnd-LastModified                         1407229057278
+	Bundle-ManifestVersion                   2
+	Bundle-Name                              javax.activation
+	Bundle-SymbolicName                      javax.activation
+	Bundle-Version                           0
+	Created-By                               1.8.0 (Oracle Corporation)
 	Export-Package                           com.sun.activation.registries;version="0.0.0",
 	                                         com.sun.activation.viewers;uses:="javax.activation";version="0.0.0",
 	                                         javax.activation;version="0.0.0"
-	Manifest-Version                         1.0                                     
+	Manifest-Version                         1.0
 	Require-Capability                       osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.4))"
-	Tool                                     Bnd-2.4.0.201408050759                  
+	Tool                                     Bnd-2.4.0.201408050759
 
 ## Output
 
@@ -105,9 +111,9 @@ It is clear that bnd has been busy. It detected 3 packages (com.sun.activation.r
 
 ## Export Package
 
-Currently our package is exported at version 0.0.0. This is not a very useful version, we therefore need to version the exported packages. Why? Well, this is the contract of modularity. To get the benefits of privacy (the privilege to change whenever we feel the need) comes the cost of compatibility for the parts we share. If you export a package, you intend it to be used by others. These others are an uncontrollable bunch that will use your _revision_ (the actual artifact with a given digest, i.e. the instance of the _program_) but will expect updates in the future with new functionality and bug fixes. 
+Currently our package is exported at version 0.0.0. This is not a very useful version, we therefore need to version the exported packages. Why? Well, this is the contract of modularity. To get the benefits of privacy (the privilege to change whenever we feel the need) comes the cost of compatibility for the parts we share. If you export a package, you intend it to be used by others. These others are an uncontrollable bunch that will use your _revision_ (the actual artifact with a given digest, i.e. the instance of the _program_) but will expect updates in the future with new functionality and bug fixes.
 
-Since a software _program_ is an ephemeral product that changes over time these others do not become dependent on the revision, nope, they become dependent on the _program_. This creates two problems. 
+Since a software _program_ is an ephemeral product that changes over time these others do not become dependent on the revision, nope, they become dependent on the _program_. This creates two problems.
 
 * How do they make sure they do not get linked in runtime to a revision that is older than they they compiled against?
 * How do they know if a revision is backward compatible?
@@ -119,17 +125,17 @@ Such a version scheme of course only works if you agree how to use the version s
 * major – For breaking change
 * minor – For changes that break the provider of the package but are backward compatible for the consumer of the package. See [semantic versions][5] for more detail.
 * micro – Backward compatible changes, e.g. small bug fixes or documentation changes
-* qualifier – Identifying the build 
+* qualifier – Identifying the build
 
 Long story, but it is at the heart of what we're trying to achieve: evolving large systems in a anti-fragile way.
 
-Back to the exported packages. We can add the version to the export-package by _decorating_ the Export-Package header: 
-  
+Back to the exported packages. We can add the version to the export-package by _decorating_ the Export-Package header:
+
 	-classpath:		jar/javax.activation-1.1.1.jar
 	Export-Package: *;version=1.1.1
 
 Let's take another look:
-	
+
 	$ bnd javax.activation.bnd
 	$ bnd javax.activation.jar
 	[MANIFEST javax.activation]
@@ -180,7 +186,7 @@ The 'Do Not Repeat Yourself' mantra encodes one of the more important lessons of
 * The version
 * The output
 
-bnd has a macro processor on board that is a life saver if you are addicted to DNRY (we are). This macro processor has access to all properties in the bnd file, including headers and instructions. Therefore `${Bundle-Version}` refers to whatever value the Bundle Version is set to. However, in this case the Bundle Version also contains the time stamp in the qualifier, which we do not need in the other places. That is, we do not want the output file name to contain the qualifier. 
+bnd has a macro processor on board that is a life saver if you are addicted to DNRY (we are). This macro processor has access to all properties in the bnd file, including headers and instructions. Therefore `${Bundle-Version}` refers to whatever value the Bundle Version is set to. However, in this case the Bundle Version also contains the time stamp in the qualifier, which we do not need in the other places. That is, we do not want the output file name to contain the qualifier.
 
 bnd also contains a large number of built-in macros that provide common utilities. The `${versionmask;mask;version}` is for example such a utility for picking out the parts of a version, bumping it, as well as normalizing it. Normalizing (making sure all parts are present, leading zeros removed, etc.) is crucial to keep things workable.
 
@@ -191,21 +197,21 @@ We can try out the macro from the command line, the bnd command has a `macro` su
 	$ bnd macro "version;+00;0"       => 1.0.0
 	$ bnd macro "version;=;1.2.3.q"   => 1
 
-To reuse the Bundle Version in the class path, the output, and the export package:  
+To reuse the Bundle Version in the class path, the output, and the export package:
 
 	-classpath:		jar/javax.activation-${versionmask;===;${Bundle-Version}}.jar
 
 	Export-Package: javax.activation;version=${versionmask;===;${Bundle-Version}}
 	Private-Package: com.sun.activation.*
 	Bundle-Version:	1.1.1.${tstamp}
-   
+
 This of course looks awkward and hardly DNRY. A better solution is to create an intermediate variable. Variables are always lower case (if they started with an upper case, they would end up in the manifest). Variables can be referred to with the macro syntax of `${}`.
 
 	v:               1.1.1
 
 	-classpath:		 jar/javax.activation-${v}.jar
 	-output:		 bundle
-	
+
 	Bundle-Version:	 ${v}.${tstamp}
 	Export-Package:  javax.activation;version=${v}
 	Private-Package: com.sun.activation.*
@@ -213,12 +219,12 @@ This of course looks awkward and hardly DNRY. A better solution is to create an 
 ## Description
 
 Maven Central is quickly moving towards a million revisions organized in 200.000 programs. It should be clear that we need to organize this huge pile of software. One way is to make sure you document your programs appropriately. It is highly recommended to have a short one paragraph description in each bundle. Adding a description to our bundle is easy:
- 
+
 	v:               1.1.1
 
 	-classpath:		 jar/javax.activation-${v}.jar
 	-output:		 bundle
-	
+
 	Bundle-Description: \
 		A wrapped version of javax.activation ${v} JAR from Oracle. \
 		This bundle is downloaded from maven and wrapped by bnd.
@@ -228,7 +234,7 @@ Maven Central is quickly moving towards a million revisions organized in 200.000
 
 For longer descriptions you can continue on the next line with a backslash ('\') followed by a newline. Unlike the manifest, it does not has to start with a space though indenting the text for the next lines is usually a good practice. You cannot use newlines or other markup in the Bundle-Description.
 
-That said, a good Bundle-Description is a single paragraph with a few short sentences. 
+That said, a good Bundle-Description is a single paragraph with a few short sentences.
 
 ## Include Resources
 
@@ -236,16 +242,16 @@ The Bundle-Description is an excellent way to provide a short description, but w
 
 In bnd it is possible to include any resource from anywhere in the file system (actually, any URL as well).
 
-	-includeresource: readme.md 
+	-includeresource: readme.md
 
 The resource is of course not always in the proper place, it is therefore possible to make the output name different from the file path:
 
 	-includeresource: readme.md=doc/readme.md
 
-In this case, the readme could benefit from the bnd macro support. For example, it could then contain the actual version of the artifact or use any of the other macros available. Preprocessing can be indicated by enclosing the clause with curly braces ('{' and '}').  
+In this case, the readme could benefit from the bnd macro support. For example, it could then contain the actual version of the artifact or use any of the other macros available. Preprocessing can be indicated by enclosing the clause with curly braces ('{' and '}').
 
 	-includeresource: {readme.md=doc/readme.md}
-	
+
 Another option is to encode the text for the readme in the bnd file using the literal option (though this is not such a good idea for any decent readme file since it is hard to use newlines):
 
 	-includeresource: readme.md;literal=${unescape;#JAF\nThis is the Java Activation Framework}
@@ -254,11 +260,11 @@ The `-includeresource` instruction is quite powerful, there are many more option
 
 ## Import Package
 
-So far, we've ignored the imported packages because the javax.activation JAR only depends on java.*; java.* packages are not imported, the OSGi Framework will always provide access to them. Let's add another JAR, the javax.mail jar that uses javax.activation. This JAR is already a bundle, which is really good. Except for this exercise, so we copy and strip the OSGi metadata 
+So far, we've ignored the imported packages because the javax.activation JAR only depends on java.*; java.* packages are not imported, the OSGi Framework will always provide access to them. Let's add another JAR, the javax.mail jar that uses javax.activation. This JAR is already a bundle, which is really good. Except for this exercise, so we copy and strip the OSGi metadata
 
 	$ bnd copy --strip https://repo.maven.apache.org/maven2/com/sun/mail/javax.mail/1.5.2/javax.mail-1.5.2.jar \
 	   > jar/javax.mail-1.5.2.jar
-	$ bnd print --uses jar/javax.mail-1.5.2.jar 
+	$ bnd print --uses jar/javax.mail-1.5.2.jar
 	[USES]
 	com.sun.mail.auth          [javax.crypto, ... ]
 	com.sun.mail.handlers      [javax.activation, ... ]
@@ -280,11 +286,11 @@ The javax.mail bundle leverages the Java Activation Framework (JAF) embedded in 
 So lets wrap the javax.mail package, add to `javax.mail.bnd`:
 
 	v:          1.5.2
-	
+
 	-classpath: \
 		jar/javax.activation-1.1.1.jar, \
 		jar/javax.mail-${v}.jar
-	
+
 	Bundle-Version: ${v}
 	Bundle-Description: \
 	  An OSGi wrapped version of the javax.mail library downloaded from maven.
@@ -292,24 +298,24 @@ So lets wrap the javax.mail package, add to `javax.mail.bnd`:
 	Private-Package: com.sun.mail.*
 
 bnd contains a special `-i/--impexp` option to print the imports and exports of a bundle. So lets make the bundle and see:
- 
+
 	$ bnd javax.mail.bnd
 	$ bnd print -i javax.mail.jar
 	[IMPEXP]
 	Import-Package
-	  javax.activation                       
-	  javax.crypto                           
-	  javax.crypto.spec                      
+	  javax.activation
+	  javax.crypto
+	  javax.crypto.spec
 	  javax.mail.event                       {version=[1.5,2)}
 	  javax.mail.search                      {version=[1.5,2)}
 	  javax.mail.util                        {version=[1.5,2)}
-	  javax.net                              
-	  javax.net.ssl                          
-	  javax.security.auth.callback           
-	  javax.security.auth.x500               
-	  javax.security.sasl                    
-	  javax.xml.transform                    
-	  javax.xml.transform.stream             
+	  javax.net
+	  javax.net.ssl
+	  javax.security.auth.callback
+	  javax.security.auth.x500
+	  javax.security.sasl
+	  javax.xml.transform
+	  javax.xml.transform.stream
 	Export-Package
 	  javax.mail                             {version=1.5}
 	  javax.mail.event                       {version=1.5, imported-as=[1.5,2)}
@@ -320,13 +326,13 @@ bnd contains a special `-i/--impexp` option to print the imports and exports of 
 First, we notice that there are quite a few imports that have no import range. This is not good but unfortunately Java's VM package versions are more or less absent and are clearly not semantically versioned. A correctly setup system ensures that the correct execution environment is used.
 
 However, we also have in this list javax.activation, for this package we do have an export, the problem is that we included the original JAR on the class path and not the bundle we generated.
- 
+
 	v:          1.5.2
-	
+
 	-classpath: \
 		bundle/javax.activation.jar, \
 		jar/javax.mail-${v}.jar
-	
+
 	Bundle-Version: ${v}
 	Bundle-Description: \
 	  An OSGi wrapped version of the javax.mail library downloaded from maven.
@@ -339,7 +345,7 @@ And now build + print:
 	[IMPEXP]
 	Import-Package
 	  javax.activation                       {version=[1.1,2)}
-	  javax.crypto                           
+	  javax.crypto
 	  ...
 
 Yes! Now the javax.activation package is imported with a range of `[1.1,2)`. You now may wonder why not `[1.1.1,2)`? Well, the reason is that changes in the micro part of the version should not make a difference in API. If you include the micro part in the import range then it turns out that the overall system becomes very volatile, small changes become large quickly. Ignoring the micro part in the import range is like a bit of oil in the engine ... However, if you feel uncomfortable with this lubricant then it is possible to override this.
@@ -352,7 +358,7 @@ Assume we want to provide a version range on some of the imported packages becau
 
 	Import-Package: javax.net.*;version=1.1, *
 
-You can decorate any package, including packages specified with a wildcard. The domain of the Import-Package is all packaged that are referred to by any class inside the bundle. If there are for example imports 
+You can decorate any package, including packages specified with a wildcard. The domain of the Import-Package is all packaged that are referred to by any class inside the bundle. If there are for example imports
 
 ## Remove Headers
 
@@ -405,18 +411,18 @@ We can now build the jars with a simple command:
 
 The basic model of bnd is to collect packages from the classpath and assemble them in a bundle. This pull model is quite different from the more common push model in builds where it is harder to include packages from other projects. However, bnd's model makes it quite easy to create a bundle out of multiple JARs. So lets add a new bnd file that merges javax activation and mail.
 
-Actually, javax.activation and javax.mail are really bad citizens in an OSGi world. They use class loading hacks all over the place that make a mockery out of modularity. Part of the problem is that they really require certain private directories to be available from the client's class loader. In those cases it is sometimes necessary to make sure the layout of the bundles is exactly the same as the source bundles. 
+Actually, javax.activation and javax.mail are really bad citizens in an OSGi world. They use class loading hacks all over the place that make a mockery out of modularity. Part of the problem is that they really require certain private directories to be available from the client's class loader. In those cases it is sometimes necessary to make sure the layout of the bundles is exactly the same as the source bundles.
 
 The best way to achieve this is to _unroll_ the source bundles in the target bundle. You can unroll a JAR by prefixing it with a commercial at sign ('@') in an include resource operation. Lets get started on a javax.mail.all.bnd file:
 
 	-includeresource:   \
 		@jar/javax.activation.jar, \
-		@jar/javax.mail.jar     
+		@jar/javax.mail.jar
 
 This instruction combines the two JARs into one.
 
 
-	
+
 
 
 
@@ -456,7 +462,7 @@ Traditionally, JAR files were made with the JDK jar tool, the jar ant task, or t
 bnd works differently, it uses the ''pull'' model. Instructions in the bnd file describe the contents of the desired JAR file without writing this structure to disk. The contents from the output can come from the class path or from anywhere in the file system. For example, the following instruction includes the designated packages in the JAR:
 
   Private-Package: com.example.*
- 
+
 bnd can create a JAR from packages the sources, directories or other JAR files. You never have to copy files around, the instructions that Bnd receives are sufficient to retrieve the files from their original location, preprocessing or filtering when required.
 
 The Jar is constructed from 3 different arguments:
@@ -487,7 +493,7 @@ The arguments to bnd are normal given as a set of properties. Properties that be
 
 After the JAR is created, the bnd program will verify the result. This will check the resulting manifest in painstaking detail.
 
-The bnd program works on a higher level than the traditional jarring; this might take some getting used to. However, it is much more elegant to think in packages than that it is to think in files. The fact that the bnd understands the semantics of a bundle, allows it to detect many errors and also allows bundles to be created with almost no special information. 
+The bnd program works on a higher level than the traditional jarring; this might take some getting used to. However, it is much more elegant to think in packages than that it is to think in files. The fact that the bnd understands the semantics of a bundle, allows it to detect many errors and also allows bundles to be created with almost no special information.
 
 bnd will not create an output file if none of the resources is newer than an existing output file.
 
