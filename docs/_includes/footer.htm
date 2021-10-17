@@ -9,4 +9,17 @@
 				<li><a href="{{ "/" | prepend:site.baseurl }}">GitHub</a>
 			</ul>
 	</ul>
+	{% if site.releasename == "master" %}
+		<ul class="releases-footer">
+			{% assign sorted = site.static_files | sort: "path" | reverse %}
+			{% for entry in sorted %}
+				 {% if entry.path contains 'releases/' %}
+					  {% assign entrypath = entry.path | split: "/" %}
+					  {% if entrypath.size == 4 and entrypath[3] == "index.html" %}
+						 <li><a href="/{{ entrypath[1] }}/{{ entrypath[2] }}">{{ entrypath[2] }}</a></li>
+					  {% endif %}
+				 {% endif %}
+			{% endfor %}
+		</ul>
+	{% endif %}
 </footer>
