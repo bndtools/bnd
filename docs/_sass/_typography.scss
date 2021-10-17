@@ -1,0 +1,75 @@
+a {
+	color: #720F10;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:visited {
+	color: #b61819;
+}
+
+h1 {
+	font-size:1.75em;
+	counter-reset:h2 0;
+	counter-reset:h3 0;
+	margin: 3rem 0 1rem;
+}
+
+h1:first-child {
+	margin-top: 1rem;
+}
+
+h1::before {
+	content:counter(h1)
+}
+
+h2 {
+	font-size:1.4em;
+	counter-increment:h2 1;
+	counter-reset:h3 0;
+	margin: 2.5rem 0 1rem;
+}
+
+h2:before {
+	content:counter(h1) "." counter(h2)
+}
+
+h3 {
+	font-size:1.3em;
+	counter-increment:h3 1;
+	margin: 2rem 0 0.75rem;
+}
+
+h3:before {
+	content:counter(h1) "." counter(h2) "." counter(h3);
+	counter-increment:h3 1
+}
+
+h1::before, h2::before, h3::before {
+	background: #994b3a;
+	color: white;
+	padding: 0 1rem;
+	margin-right: 1rem;
+}
+
+h4 {
+	font-size:1.2em;
+	margin: 1rem 0;
+}
+
+h5 {
+	font-size:1.1em;
+	margin: 1rem 0;
+}
+
+h6 {
+	font-size:1em;
+	margin: 1rem 0;
+}
+
+.content p, .content li {
+	margin-bottom: 0.75rem;
+}

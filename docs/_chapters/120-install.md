@@ -30,11 +30,13 @@ The binaries are available on [JFrog][4]. The latest version can be found at:
 
 If you are a maven user, you can find many version in central. The coordinates are:
 
-		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
-			<artifactId>biz.aQute.bndlib</artifactId>
-			<version>....</version>
-		</dependency>
+```xml
+<dependency>
+	<groupId>biz.aQute.bnd</groupId>
+	<artifactId>biz.aQute.bndlib</artifactId>
+	<version>....</version>
+</dependency>
+```
 
 
 ## Source Code
