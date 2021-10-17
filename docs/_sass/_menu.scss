@@ -5,17 +5,18 @@
 	padding: 0.5em 0;
 	border-bottom: 2px solid #ccc;
 	line-height: 40px;
+	> li {
+		margin: 0 0.75rem;
+		&:last-of-type {
+			flex: 1 0;
+		}
+		&:first-of-type {
+			flex: 1 0;
+			margin-left: 0;
+		}
+	}
 }
-.menu-bar > li {
-	margin: 0 0.75rem;
-}
-.menu-bar > li:last-of-type{
-	flex: 1 0
-}
-.menu-bar > li:first-of-type {
-	flex: 1 0;
-	margin-left: 0;
-}
+
 .menu-link img {
 	display: block;
 }
@@ -38,10 +39,11 @@
 	padding: 1.5rem;
 	border: 1px solid #eee;
 	box-shadow: 1px 2px 3px #ccc;
+	a {
+		display: block;
+	}
 }
+
 .releases:hover .dropdown-content {
-	display: block;
-}
-.dropdown-content a {
 	display: block;
 }
