@@ -1,27 +1,20 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="jpm">
 
-	{% include head.htm %}
+{% include head.htm %}
 
 <body>
 
+
+<div class="wrapper">
 	{% include nav.htm %}
-
-					
-
-	<ul class=container12>
-		<li span=3>
-			<div>
-			{% include sidebar.htm %}
-			</div>
-			
-		<li span=9>
-			<div class=notes-margin>
-				<h1>{{h1}} {{page.title}}</h1>
-				{{content}}
-			</div>
-	</ul>
-
+	{% include sidebar.htm %}
+	<div class="notes-margin content">
+		 <h1>{{h1}} {{page.title}}</h1>
+		 {{content}}
+	</div>
 	{% include footer.htm %}
+</div>
+
 </body>
 </html>

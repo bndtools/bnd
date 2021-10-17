@@ -1,18 +1,25 @@
-
-<ul class="container12 menu-bar">
-	<li span=12><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
-			class=menu-logo src="{{ '/img/bnd-80x40-red.png' | prepend:site.baseurl }}"></a>
-			<a href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro
-			</a><a href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers
-			</a><a href="{{ '/chapters/825-instructions-ref.html' | prepend:site.baseurl }}">Instructions
-			</a><a href="{{ '/chapters/855-macros-ref.html' | prepend:site.baseurl }}">Macros
-			</a><a href="{{ '/chapters/400-commands.html' | prepend:site.baseurl }}">Commands
-			</a><div class="releases"><button class="dropbtn">{{ site.releasename }}</button><div class="dropdown-content"></div></div>
-			<div id="docsearch"></div>
-			{% include github.htm %}
+{% include github.htm %}
+<ul class="menu-bar">
+	<li>
+		<a class=menu-link href="{{ '/' | prepend:site.baseurl }}">
+			<img class=menu-logo src="{{ '/img/bnd-80x40-red.png' | prepend:site.baseurl }}">
+		</a>
+	</li>
+	<li><a href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro</a>
+	<li><a href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers</a></li>
+	<li><a href="{{ '/chapters/825-instructions-ref.html' | prepend:site.baseurl }}">Instructions</a></li>
+	<li><a href="{{ '/chapters/855-macros-ref.html' | prepend:site.baseurl }}">Macros</a></li>
+	<li><a href="{{ '/chapters/400-commands.html' | prepend:site.baseurl }}">Commands</a></li>
+	<li class="releases">
+		 <div class="dropbtn">{{ site.releasename }}</div>
+		 <div class="dropdown-content"></div>
+	</li>
+	<li>
+		<div id="docsearch"></div>
+	</li>
 </ul>
 <script defer>
-	process = { env: {} } // DocSearch has a bug where it is expecting a Node.js `process` variable
+	process = {env: {}} // DocSearch has a bug where it is expecting a Node.js `process` variable
 	docsearch({
 		container: '#docsearch',
 		appId: '{{ site.algolia.appId }}',

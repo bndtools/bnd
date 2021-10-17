@@ -4,18 +4,13 @@
 {% include head.htm %}
 
 <body>
-
-	{% include nav.htm %}
-
-	<div class=container12>
-		<img span=12 src="{{ '/img/front-page.png' | prepend:site.baseurl }}">
-	</div>
-
-	<ul class=container12>
-		<li span=4>
+	<div class="wrapper home">
+		{% include nav.htm %}
+		<img class="hero" src="{{ '/img/front-page.png' | prepend:site.baseurl }}">
+		<div class="third content">
 			<h1>What is bnd?</h1>
-			<blockquote style='margin-top:20px'>“If you want to teach people a new way of thinking, don't bother trying to teach them. Instead, give them a tool, the use of which will lead to new ways of thinking.”
-			<br><b>― R. Buckminster Fuller</b>
+			<blockquote>“If you want to teach people a new way of thinking, don't bother trying to teach them. Instead, give them a tool, the use of which will lead to new ways of thinking.”
+				<br><b>― R. Buckminster Fuller</b>
 			</blockquote>
 			<p>
 				bnd is the engine behind a number of popular software development
@@ -41,41 +36,42 @@
 			<p>So to use bnd, look at the the descriptions of the tools that
 				include bnd. Then when you want to find out what a certain command
 				does, or how to call a macro, then use this manual.
-		<li span=4>
+		</div>
+		<div class="third content">
 			<h1>How to get started?</h1>
 			<p>There are several different ways to get started with bnd. The most elegant
-            one is to start with <a href="https://bndtools.org/">Bndtools Eclipse IDE</a>. There 
-            are a number of <a href="workspace.html">videos</a> available that provide a gentle introduction. There is also an accompanying 
-            <a href="https://bndtools.org/assets/osgi-starter-workspace.pdf">OSGi Starter</a> that provides a lot of detail
-            how to use bnd for larger projects. It includes a Gradle plugin out of the box that
-            will build the Bndtools workspace identical to how things are build inside Eclipse 
-            for Continuous Integration with <a href="https://bndtools.org/workspace.html#github--actions">Github Actions</a> or other build servers.
-            <p>
-            If you insist on using Maven, then you can start with the  description of the 
-            <a href="https://github.com/bndtools/bnd/tree/master/maven/bnd-maven-plugin">Maven plugins</a>.
-            You can also go to the <a href="https://enroute.osgi.org/">OSGi enRoute</a> site; OSGi enRoute
-            is fully based on these Maven plugins.
-            <p>
-            There is also a Gradle plugin that is the preferred way to build OSGi bundles 
-            with plain old vanilla Gradle. This is described in the <a href="https://github.com/bndtools/bnd/tree/master/gradle-plugins">Gradle Plugins 
-            readme</a>.
-            <p> 
-            If you just want to figure out how different commands and macros work, the <a href="https://bnd.bndtools.org/chapters/400-commands.html">bnd commandline</a>
-            is your friend. Especially the <code>shell</code> command is very useful exploring it. 
-            <p>
-            Last but not least, the whole source code is on GitHub. So feel
-            free to explore it. And when you like, we&#39;re very actively taken outside PR&#39;s. There is a
-            lot of activity going on.</p>
-		<li span=4>
+				one is to start with <a href="https://bndtools.org/">Bndtools Eclipse IDE</a>. There
+				are a number of <a href="workspace.html">videos</a> available that provide a gentle introduction. There is also an accompanying
+				<a href="https://bndtools.org/assets/osgi-starter-workspace.pdf">OSGi Starter</a> that provides a lot of detail
+				how to use bnd for larger projects. It includes a Gradle plugin out of the box that
+				will build the Bndtools workspace identical to how things are build inside Eclipse
+				for Continuous Integration with <a href="https://bndtools.org/workspace.html#github--actions">Github Actions</a> or other build servers.
+			<p>
+				If you insist on using Maven, then you can start with the  description of the
+				<a href="https://github.com/bndtools/bnd/tree/master/maven/bnd-maven-plugin">Maven plugins</a>.
+				You can also go to the <a href="https://enroute.osgi.org/">OSGi enRoute</a> site; OSGi enRoute
+				is fully based on these Maven plugins.
+			<p>
+				There is also a Gradle plugin that is the preferred way to build OSGi bundles
+				with plain old vanilla Gradle. This is described in the <a href="https://github.com/bndtools/bnd/tree/master/gradle-plugins">Gradle Plugins
+				readme</a>.
+			<p>
+				If you just want to figure out how different commands and macros work, the <a href="https://bnd.bndtools.org/chapters/400-commands.html">bnd commandline</a>
+				is your friend. Especially the <code>shell</code> command is very useful exploring it.
+			<p>
+				Last but not least, the whole source code is on GitHub. So feel
+				free to explore it. And when you like, we&#39;re very actively taken outside PR&#39;s. There is a
+				lot of activity going on.</p>
+		</div>
+		<div class="third side-nav">
 			<h1>Table of contents</h1>
 			<ol>
 				{% for chapter in site.chapters %}
 				<li>
-				<a href="{{ chapter.url | prepend: site.baseurl }}">{{chapter.title}}</a> {% endfor %}
+					<a href="{{ chapter.url | prepend: site.baseurl }}">{{chapter.title}}</a> {% endfor %}
 			</ol>
-	</ul>
-
+		</div>
+	</div>
 	{% include footer.htm %}
-
 </body>
 </html>
