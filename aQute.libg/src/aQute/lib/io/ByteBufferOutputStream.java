@@ -30,6 +30,11 @@ public class ByteBufferOutputStream extends OutputStream {
 		return result;
 	}
 
+	public ByteBufferOutputStream clear() {
+		bb.clear();
+		return this;
+	}
+
 	private ByteBuffer bb(int len) {
 		ByteBuffer obb = bb;
 		if (obb.remaining() - len >= 0) {
