@@ -240,7 +240,7 @@ The `bnd-process-tests` is not executed by default, therefore at least one expli
 | `bndfile`               | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_. |
 | `bnd`                   | Bnd instructions for this project specified directly in the pom file. This is generally be done using a `<![CDATA[  ]]>` section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
 | `includeClassesDir`     | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*. |
-| `skip`                  | Skip the project. _Defaults to `false`._ Override with property `bnd-tests.skip`. |
+| `skip`                  | Skip the goal. _Defaults to `false`._ Override with property `bnd-tests.skip` or `maven.test.skip`. |
 | `artifactFragment`      | If true, make the tests artifact a fragment using `${project.artifactId}` as the `Fragment-Host` header and setting the `Bundle-SymbolicName` of the tests artifact to `${project.artifactId}-tests`. *Defaults to `false`*. |
 | `testCases`             | Specify the filter that will determine which classes to identify as test cases. *Defaults to `junit5`*. |
 |`skipIfEmpty`         | Skip processing if `includeClassesDir` is `true` and the `${project.build.testOutputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.|

@@ -68,8 +68,11 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	@Parameter(defaultValue = "${project.build.testOutputDirectory}/META-INF/MANIFEST.MF", readonly = true)
 	private File									manifestPath;
 
-	@Parameter(property = "bnd-tests.skip", defaultValue = "false")
+	@Parameter(property = "maven.test.skip", defaultValue = "false")
 	private boolean									skip;
+
+	@Parameter(property = "bnd-tests.skip", defaultValue = "false")
+	private boolean									skipGoal;
 
 	@Override
 	public File getSourceDir() {
@@ -98,7 +101,7 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 
 	@Override
 	public boolean isSkip() {
-		return skip;
+		return skip || skipGoal;
 	}
 
 	@Override
