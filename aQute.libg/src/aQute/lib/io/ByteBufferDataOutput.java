@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UTFDataFormatException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class ByteBufferDataOutput implements DataOutput {
 	private ByteBuffer bb;
@@ -18,17 +19,13 @@ public class ByteBufferDataOutput implements DataOutput {
 	}
 
 	public ByteBuffer toByteBuffer() {
-		ByteBuffer obb = bb.duplicate();
-		obb.flip();
-		return obb;
+		return ByteBuffer.wrap(toByteArray());
 	}
 
 	public byte[] toByteArray() {
-		ByteBuffer obb = toByteBuffer();
-		int len = obb.remaining();
-		byte[] result = new byte[len];
-		obb.get(result, 0, len);
-		return result;
+		ByteBuffer obb = bb;
+		int offset = obb.arrayOffset();
+		return Arrays.copyOfRange(obb.array(), offset, offset + obb.position());
 	}
 
 	private ByteBuffer bb(int len) {

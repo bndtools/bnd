@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
@@ -367,7 +368,7 @@ public class UTF8PropertiesTest {
 		p.put("Foo", "Foo");
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		p.store(bout);
-		String s = new String(bout.toByteArray(), "UTF-8");
+		String s = new String(bout.toByteArray(), StandardCharsets.UTF_8);
 		assertThat(s).doesNotStartWith("#")
 			.contains("Foo");
 	}

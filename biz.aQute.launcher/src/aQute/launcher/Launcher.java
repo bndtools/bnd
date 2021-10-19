@@ -27,7 +27,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.AllPermission;
@@ -1593,8 +1592,8 @@ public class Launcher implements ServiceListener, FrameworkListener {
 				if (e != null) {
 					dos.writeUTF(toString(e));
 				}
-				ByteBuffer bb = dos.toByteBuffer();
-				socket.send(new DatagramPacket(bb.array(), bb.arrayOffset(), bb.remaining()));
+				byte[] buf = dos.toByteArray();
+				socket.send(new DatagramPacket(buf, 0, buf.length));
 			} catch (IOException ioe) {
 				synchronized (out) { // avoid interleaving output
 					out.print("! Unable to send notification to " + socket.getRemoteSocketAddress());

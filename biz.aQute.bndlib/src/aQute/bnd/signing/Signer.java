@@ -116,7 +116,7 @@ public class Signer extends Processor {
 			// encoding ...
 
 			try (ByteBufferOutputStream tmpStream = new ByteBufferOutputStream()) {
-				jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0L));
+				jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteBuffer(), 0L));
 			}
 		} catch (Exception e) {
 			exception(e, "During signing: %s", e);
