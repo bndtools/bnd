@@ -5,6 +5,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.bndtools.api.ILogger;
@@ -183,7 +184,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 					else
 						try {
 							byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
-							browserText = new String(bytes, "UTF-8");
+							browserText = new String(bytes, StandardCharsets.UTF_8);
 						} catch (IOException e) {
 							logger.logError("Error reading template description document.", e);
 						}

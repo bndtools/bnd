@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.jar.Attributes;
@@ -346,7 +347,7 @@ public class AnnotationHeadersTest {
 		}
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		Jar.writeManifest(manifest, bout);
-		String s = new String(bout.toByteArray(), "UTF-8");
+		String s = new String(bout.toByteArray(), StandardCharsets.UTF_8);
 		System.out.println(s);
 		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
 		Manifest m2 = new Manifest(bin);

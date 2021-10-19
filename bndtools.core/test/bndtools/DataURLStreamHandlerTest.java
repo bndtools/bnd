@@ -2,6 +2,8 @@ package bndtools;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 
 import bndtools.DataURLStreamHandler.DataURLConnection;
@@ -15,13 +17,13 @@ public class DataURLStreamHandlerTest {
 		String ssp = "image/gif;base64," + encodedSample;
 
 		byte[] bytes = DataURLConnection.parse(ssp).data;
-		String result = new String(bytes, "UTF-8");
+		String result = new String(bytes, StandardCharsets.UTF_8);
 		assertEquals(sample, result);
 	}
 
 	@Test
 	public void testDecodeOctets() throws Exception {
 		byte[] bytes = DataURLConnection.parse(",A%20brief%20note").data;
-		assertEquals("A brief note", new String(bytes, "UTF-8"));
+		assertEquals("A brief note", new String(bytes, StandardCharsets.UTF_8));
 	}
 }

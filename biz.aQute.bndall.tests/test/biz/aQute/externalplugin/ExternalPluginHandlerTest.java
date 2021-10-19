@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -51,7 +52,7 @@ public class ExternalPluginHandlerTest {
 					Collections.emptyList(), null, bout, null);
 			System.out.println(call);
 			assertThat(call.isOk()).isTrue();
-			assertThat(new String(bout.toByteArray(), "UTF-8")).contains("Hello world");
+			assertThat(new String(bout.toByteArray(), StandardCharsets.UTF_8)).contains("Hello world");
 		}
 	}
 
