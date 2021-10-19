@@ -57,11 +57,11 @@ import java.util.zip.ZipOutputStream;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
@@ -163,6 +163,7 @@ public class Jar implements Closeable {
 		ZipInputStream jin = new ZipInputStream(jarResource.openInputStream());
 		Spliterator<Resource> spliterator = new AbstractSpliterator<Resource>(Long.MAX_VALUE,
 			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
+			ByteBufferOutputStream bbos = new ByteBufferOutputStream(BUFFER_SIZE);
 
 			@Override
 			public boolean tryAdvance(Consumer<? super Resource> action) {
@@ -174,13 +175,11 @@ public class Jar implements Closeable {
 						}
 						String path = ZipUtil.cleanPath(entry.getName());
 						if (filter.test(path)) {
-							int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
-							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
-								bbos.write(jin);
-								Resource resource = new EmbeddedResource(bbos.toByteBuffer(),
-									ZipUtil.getModifiedTime(entry));
-								action.accept(resource);
-							}
+							bbos.clear()
+								.write(jin);
+							Resource resource = new EmbeddedResource(bbos.toByteArray(),
+								ZipUtil.getModifiedTime(entry));
+							action.accept(resource);
 							return true;
 						}
 					}
@@ -291,21 +290,20 @@ public class Jar implements Closeable {
 	}
 
 	private Jar buildFromInputStream(InputStream in) throws IOException {
-		try (ZipInputStream jin = new ZipInputStream(in)) {
+		try (ZipInputStream jin = new ZipInputStream(in);
+			ByteBufferOutputStream bbos = new ByteBufferOutputStream(BUFFER_SIZE)) {
 			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 				if (entry.isDirectory()) {
 					continue;
 				}
-				int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
-				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
-					bbos.write(jin);
-					Resource resource = new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry));
-					byte[] extra = entry.getExtra();
-					if (extra != null) {
-						resource.setExtra(Resource.encodeExtra(extra));
-					}
-					putResource(entry.getName(), resource, true);
+				bbos.clear()
+					.write(jin);
+				Resource resource = new EmbeddedResource(bbos.toByteArray(), ZipUtil.getModifiedTime(entry));
+				byte[] extra = entry.getExtra();
+				if (extra != null) {
+					resource.setExtra(Resource.encodeExtra(extra));
 				}
+				putResource(entry.getName(), resource, true);
 			}
 		}
 		return this;
