@@ -119,6 +119,7 @@ public class ResolverMojo extends AbstractMojo {
 			Operation operation = getOperation();
 
 			for (File runFile : bndrunFiles) {
+				logger.info("Resolving {}:", runFile);
 				errors += container.execute(runFile, "resolve", targetDir, operation);
 			}
 		} catch (Exception e) {

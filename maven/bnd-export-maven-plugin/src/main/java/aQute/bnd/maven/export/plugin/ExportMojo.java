@@ -39,8 +39,8 @@ import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
-import aQute.lib.io.IO;
 import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.io.IO;
 import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
@@ -136,6 +136,7 @@ public class ExportMojo extends AbstractMojo {
 			Operation operation = getOperation();
 
 			for (File runFile : bndrunFiles) {
+				logger.info("Exporting {}:", runFile);
 				errors += container.execute(runFile, "export", targetDir, operation);
 			}
 		} catch (Exception e) {
