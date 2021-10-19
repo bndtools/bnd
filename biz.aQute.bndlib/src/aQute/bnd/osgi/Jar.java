@@ -177,7 +177,7 @@ public class Jar implements Closeable {
 						if (filter.test(path)) {
 							bbos.clear()
 								.write(jin);
-							Resource resource = new EmbeddedResource(bbos.toByteArray(),
+							Resource resource = new EmbeddedResource(bbos.toByteBuffer(),
 								ZipUtil.getModifiedTime(entry));
 							action.accept(resource);
 							return true;
@@ -298,7 +298,7 @@ public class Jar implements Closeable {
 				}
 				bbos.clear()
 					.write(jin);
-				Resource resource = new EmbeddedResource(bbos.toByteArray(), ZipUtil.getModifiedTime(entry));
+				Resource resource = new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry));
 				byte[] extra = entry.getExtra();
 				if (extra != null) {
 					resource.setExtra(Resource.encodeExtra(extra));

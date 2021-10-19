@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class ByteBufferOutputStream extends OutputStream {
 	private ByteBuffer bb;
@@ -17,17 +18,13 @@ public class ByteBufferOutputStream extends OutputStream {
 	}
 
 	public ByteBuffer toByteBuffer() {
-		ByteBuffer obb = bb.duplicate();
-		obb.flip();
-		return obb;
+		return ByteBuffer.wrap(toByteArray());
 	}
 
 	public byte[] toByteArray() {
-		ByteBuffer obb = toByteBuffer();
-		int len = obb.remaining();
-		byte[] result = new byte[len];
-		obb.get(result, 0, len);
-		return result;
+		ByteBuffer obb = bb;
+		int offset = obb.arrayOffset();
+		return Arrays.copyOfRange(obb.array(), offset, offset + obb.position());
 	}
 
 	public ByteBufferOutputStream clear() {
