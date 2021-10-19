@@ -32,8 +32,8 @@ import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
-import aQute.lib.strings.Strings;
 import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
 
@@ -153,6 +153,7 @@ public class TestingMojo extends AbstractMojo {
 			Operation operation = getOperation();
 
 			for (File runFile : bndrunFiles) {
+				logger.info("Testing {}:", runFile);
 				errors += container.execute(runFile, "testing", cwd, operation);
 			}
 		} catch (Exception e) {
