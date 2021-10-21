@@ -185,6 +185,17 @@ public class StartLevelRuntimeHandler implements Closeable {
 
 				this.systemBundle = systemBundle;
 
+				for (Bundle bundle : systemBundle.getBundleContext()
+					.getBundles()) {
+					if (bundle.getBundleId() == 0) {
+						continue;
+					}
+					if (bundle.getSymbolicName() == null) {
+						continue;
+					}
+					installed.put(bundle, new BundleIdentity(bundle));
+				}
+
 				updateConfiguration(outerConfiguration);
 
 				setDefaultStartlevel(this.systemBundle, defaultStartlevel);
