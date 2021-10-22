@@ -123,6 +123,7 @@ tasks.named("wrapper") {
 
 tasks.register("buildscriptDependencies") {
 	doLast {
+		println "Java version: ${JavaVersion.current()}"
 		println "bnd_plugin: ${bnd_plugin}"
 		println "bnd_repourl: ${bnd_repourl}"
 		println buildscript.configurations.classpath.asPath

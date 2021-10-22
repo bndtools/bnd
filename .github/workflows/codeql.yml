@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: 'CodeQL'
 
 on:
   push:
@@ -33,10 +33,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest' ]
-        java: [ '8' ]
-        script: [ 'codeql-build.sh' ]
-    name: JDK${{ matrix.java }} ${{ matrix.os }} ${{ matrix.script }}
+        os:
+        - 'ubuntu-latest'
+        java:
+        - '8'
+    name: CodeQL JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
@@ -55,6 +56,6 @@ jobs:
     - name: Build for CodeQL Analysis
       id: build
       run: |
-        ${{ format('./.github/scripts/{0}', matrix.script) }}
+        ./.github/scripts/codeql-build.sh
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
