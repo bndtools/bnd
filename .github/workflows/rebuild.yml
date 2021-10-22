@@ -39,7 +39,7 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '16'
+        - '17'
     name: Build JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     outputs:
@@ -74,7 +74,7 @@ jobs:
         - 'ubuntu-latest'
         java:
         - '8'
-        - '16'
+        - '17'
         runner:
         - 'xvfb-run --auto-servernum {0}'
     name: Rebuild JDK${{ matrix.java }} ${{ matrix.os }}
