@@ -1,4 +1,4 @@
-name: 'CI Build'
+name: 'Rebuild'
 
 on:
   push:
@@ -8,14 +8,14 @@ on:
     - 'docs/**'
     - '.github/**/*docs*'
     - '.github/**/*codeql*'
-    - '.github/**/*rebuild*'
+    - '.github/**/*cibuild*'
     - '.github/*.yml'
   pull_request:
     paths-ignore:
     - 'docs/**'
     - '.github/**/*docs*'
     - '.github/**/*codeql*'
-    - '.github/**/*rebuild*'
+    - '.github/**/*cibuild*'
     - '.github/*.yml'
 
 env:
@@ -39,26 +39,14 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '11'
         - '16'
-        runner:
-        - 'xvfb-run --auto-servernum {0}'
-        include:
-        - os: 'ubuntu-latest'
-          java: '8'
-          runner: 'xvfb-run --auto-servernum {0}'
-          canonical: true
-          fetch-depth: '0'
-        - os: 'windows-latest'
-          java: '8'
-          runner: '{0}'
     name: Build JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    outputs:
+      dist-bundles: Dist_Bundles_JDK${{ matrix.java }}_${{ matrix.os }}
     steps:
     - name: Git Checkout
       uses: actions/checkout@v2
-      with:
-        fetch-depth: ${{ matrix.fetch-depth }}
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
     - name: Set up Java ${{ matrix.java }}
@@ -69,16 +57,50 @@ jobs:
     - name: Build
       id: build
       run: |
-        ${{ format(matrix.runner, './.github/scripts/cibuild.sh') }}
-      env:
-        CANONICAL: ${{ matrix.canonical && !strategy.fail-fast }}
-        JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
-        JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+        ./.github/scripts/rebuild-build.sh
+    - name: Upload dist/bundles
+      uses: actions/upload-artifact@v2
+      with:
+        name: Dist_Bundles_JDK${{ matrix.java }}_${{ matrix.os }}
+        if-no-files-found: error
+        path: dist/bundles/
+
+  rebuild:
+    needs: build
+    strategy:
+      fail-fast: ${{ (github.repository != 'bndtools/bnd') || ((github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/next')) || (github.event_name == 'pull_request') }}
+      matrix:
+        os:
+        - 'ubuntu-latest'
+        java:
+        - '8'
+        - '16'
+        runner:
+        - 'xvfb-run --auto-servernum {0}'
+    name: Rebuild JDK${{ matrix.java }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v2
+    - name: Set up Java
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'temurin'
+        java-version: ${{ matrix.java }}
+    - name: Download dist/bundles
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ needs.build.outputs.dist-bundles }}
+        path: dist/bundles
+    - name: Rebuild
+      id: build
+      run: |
+        ${{ format(matrix.runner, './.github/scripts/rebuild-test.sh') }}
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
       uses: actions/upload-artifact@v2
       with:
-        name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
+        name: Rebuild_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
         path: |
           */generated/test-reports/*/TEST-*.xml
           maven/*/target/surefire-reports/TEST-*.xml

@@ -1,4 +1,4 @@
-name: Docs Build
+name: 'Docs Build'
 
 on:
   push:
@@ -20,7 +20,7 @@ defaults:
     shell: bash
 
 jobs:
-  GitHub_Pages:
+  docs:
     name: GitHub Pages
     runs-on: ubuntu-latest
     env:
