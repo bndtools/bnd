@@ -61,9 +61,11 @@ A Maven snapshot repository of the latest build is available at <https://bndtool
 
 ## Release
 
-Release versions of Bnd artifacts including Maven and Gradle plugins are available from Maven Central. Release versions of the Bnd Gradle plugins are also available from the Gradle Plugin repository.
+Release versions of Bnd artifacts including Maven and Gradle plugins are available from [Maven Central](https://search.maven.org/search?q=g:biz.aQute.bnd). Release versions of the Bnd Gradle plugins are also available from the [Gradle Plugin repository](https://plugins.gradle.org/search?term=biz.aQute.bnd).
 
-Release versions of Bndtools are available from the Bndtools p2 update site: <https://bndtools.jfrog.io/bndtools/update-latest>.
+Release versions of the Bndtools Eclipse Features are available from the Bndtools p2 update site: <https://bndtools.jfrog.io/bndtools/update-latest>.
+
+For macOS there is also a [Homebrew formula](https://formulae.brew.sh/formula/bnd).
 
 ## Feedback
 
