@@ -7,11 +7,18 @@
 aQute.agent.server.port = 29998
 
 -buildpath: \
+	org.osgi.util.function,\
+	org.osgi.util.promise,\
+	org.apache.felix.gogo.runtime,\
+	org.apache.felix.log,\
+	org.apache.felix.scr,\
+	org.apache.felix.configadmin,\
 	osgi.core;version=latest;maven-scope=provided,\
-    aQute.libg;version=project,\
-    biz.aQute.bnd.util;version=latest,\
-    biz.aQute.bndlib;version=latest,\
-    org.apache.felix.gogo.runtime
+	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
+	biz.aQute.bndlib;version=latest,\
+	org.osgi.service.event,\
+	org.osgi.service.metatype
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\

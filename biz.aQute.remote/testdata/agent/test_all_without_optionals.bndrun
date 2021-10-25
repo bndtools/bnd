@@ -1,0 +1,5 @@
+-runrequires: \
+	bnd.identity;id='biz.aQute.remote.agent'
+	
+-runbundles: \
+	biz.aQute.remote.agent

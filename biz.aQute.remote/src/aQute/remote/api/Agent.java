@@ -3,6 +3,7 @@ package aQute.remote.api;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.osgi.framework.dto.BundleDTO;
@@ -241,4 +242,174 @@ public interface Agent {
 	 * Ping the remote agent to see if it is still alive.
 	 */
 	boolean ping();
+
+	/*******************************************************************
+	 * Extended usages to manage runtime in all respects
+	 *******************************************************************/
+
+	/**
+	 * Returns the detailed information of all the installed bundles
+	 *
+	 * @return the detailed information of all the installed bundles
+	 */
+	List<XBundleDTO> getAllBundles();
+
+	/**
+	 * Get the detailed information of all the registered DS service components
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has SCR bundle
+	 * installed.
+	 *
+	 * @return the detailed information of all the registered DS service
+	 *         components, otherwise {@code empty} list if the remote runtime
+	 *         does not have SCR bundle installed
+	 */
+	List<XComponentDTO> getAllComponents();
+
+	/**
+	 * Get the detailed information of all the configurations
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has ConfigAdmin
+	 * (CM) bundle installed.
+	 * <p>
+	 * Also note that, if metatype bundle is installed, the property descriptors
+	 * will also be included.
+	 *
+	 * @return the detailed information of all the configurations, otherwise
+	 *         {@code empty} list if the remote runtime does not have CM bundle
+	 *         installed
+	 */
+	List<XConfigurationDTO> getAllConfigurations();
+
+	/**
+	 * Get the detailed information of all the properties
+	 *
+	 * @return the detailed information of all the properties
+	 */
+	List<XPropertyDTO> getAllProperties();
+
+	/**
+	 * Get the detailed information of all services
+	 *
+	 * @return the detailed information of all services
+	 */
+	List<XServiceDTO> getAllServices();
+
+	/**
+	 * Get the detailed information of all the threads
+	 *
+	 * @return the detailed information of all the threads
+	 */
+	List<XThreadDTO> getAllThreads();
+
+	/**
+	 * Enables the component description by name
+	 *
+	 * @param name The name of the component description to enable.
+	 * @return the detailed information about the operation whether it succeeded
+	 *         or failed
+	 */
+	XResultDTO enableComponent(String name);
+
+	/**
+	 * Enables the component description by identifier
+	 *
+	 * @param id The id of the component description to enable.
+	 * @return the detailed information about the operation whether it succeeded
+	 *         or failed
+	 */
+	XResultDTO enableComponent(long id);
+
+	/**
+	 * Disables the component description by name
+	 *
+	 * @param name The name of component description to disable.
+	 * @return the detailed information about the operation whether it succeeded
+	 *         or failed
+	 */
+	XResultDTO disableComponent(String name);
+
+	/**
+	 * Disables the component description by identifier
+	 *
+	 * @param id The id of component description to disable.
+	 * @return the detailed information about the operation whether it succeeded
+	 *         or failed
+	 */
+	XResultDTO disableComponent(long id);
+
+	/**
+	 * Creates or updates the associated {@code Configuration} object with the
+	 * specified properties.
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has ConfigAdmin
+	 * (CM) bundle installed.
+	 *
+	 * @param pid the configuration PID to update
+	 * @param newProperties the new properties to associate
+	 * @return the detailed information about the operation whether it succeeded
+	 *         or failed
+	 */
+	XResultDTO createOrUpdateConfiguration(String pid, Map<String, Object> newProperties);
+
+	/**
+	 * Deletes the associated {@code Configuration} object that corresponds to
+	 * the specified {@code pid}.
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has ConfigAdmin CM
+	 * bundle installed.
+	 *
+	 * @param pid The configuration PID to delete.
+	 * @return the detailed information about the operation whether it succeeded
+	 *         or failed
+	 */
+	XResultDTO deleteConfiguration(String pid);
+
+	/**
+	 * Create the {@code Configuration} object associated with the specified
+	 * {@code factoryPid} with the specified properties.
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has ConfigAdmin
+	 * (CM) bundle installed.
+	 *
+	 * @param factoryPid the Configuration Factory PID
+	 * @param newProperties the new properties to associate
+	 * @return the detailed information about the operation whether it succeeded
+	 *         or failed
+	 */
+	XResultDTO createFactoryConfiguration(String factoryPid, Map<String, Object> newProperties);
+
+	/**
+	 * Returns the runtime information of the remote system
+	 *
+	 * @return the runtime information
+	 */
+	Map<String, String> getRuntimeInfo();
+
+	/**
+	 * Returns the set of registered Gogo commands
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has Gogo bundle(s)
+	 * installed
+	 *
+	 * @return the set of registered Gogo commands, otherwise {@code empty} set
+	 *         if the remote runtime does not have Gogo bundle(s) installed
+	 */
+	Set<String> getGogoCommands();
+
+	/**
+	 * Returns the result from the specified agent extension.
+	 * <p>
+	 * <b>Note that,</b> the extension should be registered as a service that
+	 * implements {@link AgentExtension} and the service must provide a readable
+	 * name in its {@code agent.extension.name} service property.
+	 *
+	 * @param name the name of the extension
+	 * @param context the context for the extension to be provided for execution
+	 *            (note that, the map should also contain values supported by
+	 *            bnd's {@code Converter})
+	 * @return the value having the type supported by bnd's {@code Converter}
+	 * @see AgentExtension
+	 */
+	Object executeExtension(String name, Map<String, Object> context);
 }

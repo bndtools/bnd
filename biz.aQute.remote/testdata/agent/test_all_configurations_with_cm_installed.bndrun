@@ -1,0 +1,4 @@
+-runbundles: \
+	biz.aQute.remote.agent,\
+	org.apache.felix.configadmin,\
+	org.apache.felix.log

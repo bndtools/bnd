@@ -16,6 +16,22 @@ public interface Supervisor {
 	void event(Event e) throws Exception;
 
 	/**
+	 * Callback method for OSGi Events delivered by {@code EventAdmin}
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has Event Admin
+	 * bundle installed.
+	 */
+	default void onOSGiEvent(XEventDTO event) {}
+
+	/**
+	 * Callback method for logs delivered by {@code LogService}
+	 * <p>
+	 * Note that, this is only possible if the remote runtime has OSGi log
+	 * bundle installed.
+	 */
+	default void logged(XLogEntryDTO event) {}
+
+	/**
 	 * Redirected standard output
 	 *
 	 * @param out the text that was redirected

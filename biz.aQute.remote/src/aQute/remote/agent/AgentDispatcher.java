@@ -163,9 +163,10 @@ public class AgentDispatcher {
 
 	/**
 	 * Create a new agent on an existing framework.
+	 *
+	 * @throws Exception
 	 */
-
-	public static void toAgent(final Descriptor descriptor, DataInputStream in, DataOutputStream out) {
+	public static void toAgent(final Descriptor descriptor, DataInputStream in, DataOutputStream out) throws Exception {
 
 		//
 		// Check if the framework is active

@@ -1,0 +1,4 @@
+-runbundles: \
+	biz.aQute.remote.agent,\
+	org.apache.felix.scr;version="[2.1.12,2.1.13)",\
+	bnd.with.ds.jar;version=file
