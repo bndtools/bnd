@@ -148,7 +148,10 @@ public class Central implements IStartupParticipant {
 	@Override
 	public void stop() {
 		repoListenerTracker.close();
-		workspaceService.unregister();
+		ServiceRegistration<Workspace> service = workspaceService;
+		if (service != null) {
+			service.unregister();
+		}
 		instance = null;
 
 		Workspace ws = workspace.peek();
