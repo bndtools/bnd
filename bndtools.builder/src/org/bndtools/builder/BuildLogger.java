@@ -66,35 +66,41 @@ public class BuildLogger {
 	}
 
 	public String format() {
-		long millis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-		long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-		long decimal = millis % TimeUnit.SECONDS.toMillis(1L);
-		full("Duration %d.%03d sec", seconds, decimal);
-		String kindString;
-		switch (kind) {
-			case IncrementalProjectBuilder.FULL_BUILD :
-				kindString = "FULL";
-				break;
-			case IncrementalProjectBuilder.AUTO_BUILD :
-				kindString = "AUTO";
-				break;
-			case IncrementalProjectBuilder.CLEAN_BUILD :
-				kindString = "CLEAN";
-				break;
-			case IncrementalProjectBuilder.INCREMENTAL_BUILD :
-				kindString = "INCREMENTAL";
-				break;
-			default :
-				kindString = String.valueOf(kind);
-				break;
-		}
+		long duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
 
-		StringBuilder top = new StringBuilder();
+		StringBuilder top = new StringBuilder().append("BUILD ");
 		try (Formatter topper = new Formatter(top)) {
-			if (files > 0)
-				topper.format("BUILD %s %s %d file%s built", kindString, name, files, files > 1 ? "s were" : " was");
-			else
-				topper.format("BUILD %s %s no build", kindString, name);
+			switch (kind) {
+				case IncrementalProjectBuilder.FULL_BUILD :
+					top.append("FULL");
+					break;
+				case IncrementalProjectBuilder.AUTO_BUILD :
+					top.append("AUTO");
+					break;
+				case IncrementalProjectBuilder.CLEAN_BUILD :
+					top.append("CLEAN");
+					break;
+				case IncrementalProjectBuilder.INCREMENTAL_BUILD :
+					top.append("INCREMENTAL");
+					break;
+				default :
+					topper.format("%d", kind);
+					break;
+			}
+			top.append(' ')
+				.append(name)
+				.append(' ');
+			if (files == 1) {
+				top.append("1 file was built");
+			} else if (files > 1) {
+				topper.format("%d files were built", files);
+			} else {
+				top.append("no build");
+			}
+
+			long seconds = TimeUnit.MILLISECONDS.toSeconds(duration);
+			long millis = duration % TimeUnit.SECONDS.toMillis(1L);
+			topper.format(" in %d.%03d sec", seconds, millis);
 		}
 
 		return top.append('\n')
