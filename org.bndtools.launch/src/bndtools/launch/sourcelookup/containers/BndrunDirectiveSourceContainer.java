@@ -20,7 +20,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Run;
-import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.SupplierWithException;
 
 public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 	private static final ILogger		logger	= Logger.getLogger(BndrunDirectiveSourceContainer.class);
@@ -29,23 +29,9 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 
 	final private String				directive;
 
-	final private CollectionSupplier	directiveGetter;
+	final private SupplierWithException<Collection<Container>>	directiveGetter;
 
 	final boolean						containsBundles;
-
-	interface CollectionSupplier {
-
-		Collection<Container> getUnchecked() throws Exception;
-
-		default Collection<Container> get() {
-			try {
-				return getUnchecked();
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-		}
-
-	}
 
 	public BndrunDirectiveSourceContainer(Run run, String directive) {
 		if (directive == null) {
@@ -99,9 +85,9 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 		try {
 			return directiveGetter.get()
 				.stream()
-				.map(bundle -> {
-					if (bundle.getType() == TYPE.PROJECT) {
-						String targetProjName = bundle.getProject()
+				.map(container -> {
+					if (container.getType() == TYPE.PROJECT) {
+						String targetProjName = container.getProject()
 							.getName();
 						if (projectsAdded.add(targetProjName)) {
 							IProject targetProj = ResourcesPlugin.getWorkspace()
@@ -112,15 +98,15 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 								return new JavaProjectSourceContainer(targetJavaProj);
 							}
 						}
-					} else if (bundle.getType() == TYPE.REPO) {
+					} else if (container.getType() == TYPE.REPO) {
 						if (containsBundles) {
-							return new BundleSourceContainer(bundle);
+							return new BundleSourceContainer(container);
 						} else {
-							return new ExternalArchiveSourceContainer(bundle.getFile()
+							return new ExternalArchiveSourceContainer(container.getFile()
 								.toString(), false);
 						}
 					}
-					return EMPTY_SOURCE;
+					return null;
 				})
 				.filter(Objects::nonNull)
 				.toArray(ISourceContainer[]::new);
