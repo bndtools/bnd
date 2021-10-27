@@ -106,10 +106,15 @@
 -runblacklist: \
 	bnd.identity;id='biz.aQute.bnd.annotation',\
 	bnd.identity;id='biz.aQute.bnd.transform',\
-	bnd.identity;id='biz.aQute.junit'
+	bnd.identity;id='biz.aQute.junit',\
+	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
+	bnd.identity;id='osgi.*',\
+	bnd.identity;id='org.osgi.*.annotations',\
+	bnd.identity;id='junit-*'
 
 -runrepos: \
 	"Workspace",\
+	"Maven Central",\
 	"Eclipse 2020-06"
 
 -runee: JavaSE-1.8

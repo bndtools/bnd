@@ -29,7 +29,13 @@ timestamp: ${tstamp}
     biz.aQute.repository, \
     biz.aQute.resolve
 
-pluginnames: ${-dependson},org.slf4j.api
+pluginnames: ${-dependson},\
+	org.slf4j.api,\
+	org.osgi.service.coordinator,\
+	org.osgi.service.repository,\
+	org.osgi.util.function,\
+	org.osgi.util.promise
+
 plugins: ${map;repo;${template;pluginnames;${@};latest}}
 
 -includeresource: ${target}/p2

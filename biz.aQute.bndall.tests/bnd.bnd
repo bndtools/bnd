@@ -18,7 +18,7 @@
     biz.aQute.launchpad;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	biz.aQute.bnd.test;version=project,\
-	${junit},\
+	${junit-osgi},\
 	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	slf4j.api;version=latest, \
     slf4j.simple;version=latest

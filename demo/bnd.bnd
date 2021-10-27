@@ -16,7 +16,7 @@ Bundle-SymbolicName: demo
 
 -runbundles: org.apache.felix.scr;version='[2.1.12,2.1.13)';startlevel=10,\
 	org.apache.felix.configadmin;startlevel=11, \
-	${junit}
+	${junit-osgi}
 
 Bundle-Activator: test.TestActivator
 

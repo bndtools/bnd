@@ -53,7 +53,9 @@ Import-Package: \
 	org.parboiled.*;-split-package:=merge-first,\
 	com.github.javaparser.*,\
 	!org.slf4j.impl,\
-	org.slf4j.*
+	org.slf4j.*,\
+	org.osgi.service.coordinator,\
+	org.osgi.service.resolver
 
 Main-Class:                     aQute.bnd.main.bnd
 JPM-Command:                    bnd
@@ -70,9 +72,16 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -maven-scope: provided
 
 -buildpath: \
-	osgi.core;version=latest,\
+	org.osgi.dto;version='1.0',\
+	org.osgi.resource;version='1.0',\
+	org.osgi.framework;version='1.8',\
+	org.osgi.util.tracker;version='1.5',\
+	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
+	org.osgi.service.resolver;version=latest, \
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\

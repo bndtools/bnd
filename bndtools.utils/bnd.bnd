@@ -8,6 +8,8 @@
     org.osgi.namespace.contract;version=latest,\
     org.osgi.namespace.extender;version=latest,\
     org.osgi.namespace.service;version=latest,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
     aQute.libg;version=project,\
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest, \
