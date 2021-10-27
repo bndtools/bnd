@@ -28,7 +28,7 @@ $endif$
 	\${mockito}
 
 Bundle-Version: 0.0.0.\${tstamp}
-Private-Package: $basePackageName$
+-privatepackage: $basePackageName$
 
 # Needed for Mockito's mocking to work
 -runsystempackages.objenesis: sun.misc,sun.reflect

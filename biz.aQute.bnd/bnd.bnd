@@ -45,7 +45,7 @@ Import-Package: \
 # About the aQute.library.bndrepo dep. Needed to add them here
 # by hand even though they are in bndlib. However, they are added
 # and we can unfortunately not see those packages ...
-Private-Package: \
+-privatepackage: \
     aQute.bnd.enroute.commands,\
     aQute.bnd.main, \
     org.objectweb.asm.*,\

@@ -12,4 +12,4 @@ javac.target: $javaLevel$
 $endif$
 
 Bundle-Version: 0.0.0.\${tstamp}
-Private-Package: $basePackageName$
+-privatepackage: $basePackageName$
