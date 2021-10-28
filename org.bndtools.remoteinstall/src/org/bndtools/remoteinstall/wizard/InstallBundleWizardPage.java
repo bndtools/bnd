@@ -41,212 +41,221 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = InstallBundleWizardPage.class)
 public final class InstallBundleWizardPage extends WizardPage {
 
-    private Composite   composite;
-    private TableViewer listViewer;
+	private Composite						composite;
+	private TableViewer						listViewer;
 
-    private static final int TABLE_COLUMN_WIDTH      = 100;
-    private static final int FORM_SELECT_AREA_WIDTH  = 400;
-    private static final int FORM_SELECT_AREA_HEIGHT = 150;
+	private static final int				TABLE_COLUMN_WIDTH		= 100;
+	private static final int				FORM_SELECT_AREA_WIDTH	= 400;
+	private static final int				FORM_SELECT_AREA_HEIGHT	= 150;
 
-    @Reference
-    private RemoteRuntimeConfigurationStore store;
+	@Reference
+	private RemoteRuntimeConfigurationStore	store;
 
-    public InstallBundleWizardPage() {
-        super(InstallBundleWizardPage_Name);
-        setDescription(InstallBundleWizardPage_Description);
-    }
+	public InstallBundleWizardPage() {
+		super(InstallBundleWizardPage_Name);
+		setDescription(InstallBundleWizardPage_Description);
+	}
 
-    @Override
-    public void createControl(final Composite parent) {
-        composite = parent;
+	@Override
+	public void createControl(final Composite parent) {
+		composite = parent;
 
-        initComposite();
-        initForm();
-        initList();
-    }
+		initComposite();
+		initForm();
+		initList();
+	}
 
-    private void addConfiguration() {
-        final RemoteRuntimeConfigurationDialog dialog = new RemoteRuntimeConfigurationDialog(
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+	private void addConfiguration() {
+		final RemoteRuntimeConfigurationDialog dialog = new RemoteRuntimeConfigurationDialog(
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 
-        if (dialog.open() == OK) {
-            final RemoteRuntimeConfiguration config = dialog.getConfiguration();
-            store.addConfiguration(config);
-            initList();
-        }
-    }
+		if (dialog.open() == OK) {
+			final RemoteRuntimeConfiguration config = dialog.getConfiguration();
+			store.addConfiguration(config);
+			initList();
+		}
+	}
 
-    private void modifyConfiguration() {
-        final int selectedIndex = listViewer.getTable().getSelectionIndex();
-        if (selectedIndex < 0) {
-            showMessage(InstallBundleWizardPage_Error_NoConfigSelected, InstallBundleWizardPage_Dialog_Title);
-            return;
-        }
+	private void modifyConfiguration() {
+		int selectedIndex = listViewer.getTable().getSelectionIndex();
+		if (selectedIndex < 0) {
+			if (listViewer.getTable().getItemCount() > 0) {
+				listViewer.getTable().select(0);
+				selectedIndex = 0;
+			} else {
+				showMessage(InstallBundleWizardPage_Error_NoConfigSelected, InstallBundleWizardPage_Dialog_Title);
+				return;
+			}
+		}
 
-        final RemoteRuntimeConfiguration configuration = store.getConfiguration(selectedIndex);
-        if (configuration != null) {
-            final RemoteRuntimeConfigurationDialog dialog = new RemoteRuntimeConfigurationDialog(
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+		final RemoteRuntimeConfiguration configuration = store.getConfiguration(selectedIndex);
+		if (configuration != null) {
+			final RemoteRuntimeConfigurationDialog dialog = new RemoteRuntimeConfigurationDialog(
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 
-            dialog.setConfiguration(configuration);
+			dialog.setConfiguration(configuration);
 
-            if (dialog.open() == OK) {
-                final RemoteRuntimeConfiguration c = dialog.getConfiguration();
+			if (dialog.open() == OK) {
+				final RemoteRuntimeConfiguration c = dialog.getConfiguration();
 
-                configuration.name    = c.name;
-                configuration.host    = c.host;
-                configuration.port    = c.port;
-                configuration.timeout = c.timeout;
+				configuration.name = c.name;
+				configuration.host = c.host;
+				configuration.port = c.port;
+				configuration.timeout = c.timeout;
 
-                store.updateConfiguration(selectedIndex, configuration);
-                initList();
-            }
-        }
-    }
+				store.updateConfiguration(selectedIndex, configuration);
+				initList();
+			}
+		}
+	}
 
-    private void deleteConfiguration() {
-        final int selectedIndex = listViewer.getTable().getSelectionIndex();
-        if (selectedIndex < 0) {
-            showMessage(InstallBundleWizardPage_Error_NoConfigSelected, InstallBundleWizardPage_Dialog_Title);
-            return;
-        }
-        store.removeConfiguration(selectedIndex);
-        initList();
-    }
+	private void deleteConfiguration() {
+		final int selectedIndex = listViewer.getTable().getSelectionIndex();
+		if (selectedIndex < 0) {
+			showMessage(InstallBundleWizardPage_Error_NoConfigSelected, InstallBundleWizardPage_Dialog_Title);
+			return;
+		}
+		store.removeConfiguration(selectedIndex);
+		initList();
+	}
 
-    public RemoteRuntimeConfiguration getSelectedConfiguration() {
-        final IStructuredSelection selection = listViewer.getStructuredSelection();
-        return (RemoteRuntimeConfiguration) selection.getFirstElement();
-    }
+	public RemoteRuntimeConfiguration getSelectedConfiguration() {
+		final IStructuredSelection selection = listViewer.getStructuredSelection();
+		return (RemoteRuntimeConfiguration) selection.getFirstElement();
+	}
 
-    private void initComposite() {
-        final GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        composite.setLayout(layout);
+	private void initComposite() {
+		final GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		composite.setLayout(layout);
 
-        setControl(composite);
-    }
+		setControl(composite);
+	}
 
-    private void initForm() {
-        initTable();
-        initAddButton();
-        initModifyButton();
-        initDeleteButton();
-    }
+	private void initForm() {
+		initTable();
+		initAddButton();
+		initModifyButton();
+		initDeleteButton();
+	}
 
-    private void initAddButton() {
-        final Button buttonAdd = new Button(composite, SWT.NONE);
+	private void initAddButton() {
+		final Button buttonAdd = new Button(composite, SWT.NONE);
 
-        buttonAdd.setText(InstallBundleWizardPage_ButtonAdd_Title);
-        buttonAdd.addSelectionListener(new SelectionAdapter() {
+		buttonAdd.setText(InstallBundleWizardPage_ButtonAdd_Title);
+		buttonAdd.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(final SelectionEvent event) {
-                addConfiguration();
-            }
-        });
-        buttonAdd.setLayoutData(new GridData(FILL, CENTER, true, false));
-    }
+			@Override
+			public void widgetSelected(final SelectionEvent event) {
+				addConfiguration();
+			}
+		});
+		buttonAdd.setLayoutData(new GridData(FILL, CENTER, true, false));
+	}
 
-    private void initModifyButton() {
-        final Button buttonModify = new Button(composite, SWT.NONE);
-        buttonModify.setText(InstallBundleWizardPage_ButtonEdit_Title);
-        buttonModify.addSelectionListener(new SelectionAdapter() {
+	private void initModifyButton() {
+		final Button buttonModify = new Button(composite, SWT.NONE);
+		buttonModify.setText(InstallBundleWizardPage_ButtonEdit_Title);
+		buttonModify.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(final SelectionEvent event) {
-                modifyConfiguration();
-            }
-        });
-        buttonModify.setLayoutData(new GridData(FILL, BEGINNING, true, false));
-    }
+			@Override
+			public void widgetSelected(final SelectionEvent event) {
+				modifyConfiguration();
+			}
+		});
+		buttonModify.setLayoutData(new GridData(FILL, BEGINNING, true, false));
+	}
 
-    private void initDeleteButton() {
-        final Button buttonDelete = new Button(composite, SWT.NONE);
+	private void initDeleteButton() {
+		final Button buttonDelete = new Button(composite, SWT.NONE);
 
-        buttonDelete.setText(InstallBundleWizardPage_ButtonRemove_Title);
-        buttonDelete.addSelectionListener(new SelectionAdapter() {
+		buttonDelete.setText(InstallBundleWizardPage_ButtonRemove_Title);
+		buttonDelete.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(final SelectionEvent event) {
-                deleteConfiguration();
-            }
-        });
-        buttonDelete.setLayoutData(new GridData(FILL, BEGINNING, true, false));
-    }
+			@Override
+			public void widgetSelected(final SelectionEvent event) {
+				deleteConfiguration();
+			}
+		});
+		buttonDelete.setLayoutData(new GridData(FILL, BEGINNING, true, false));
+	}
 
-    private void initTable() {
-        final GridData configsListData = new GridData();
+	private void initTable() {
+		final GridData configsListData = new GridData();
 
-        configsListData.widthHint                 = FORM_SELECT_AREA_WIDTH;
-        configsListData.heightHint                = FORM_SELECT_AREA_HEIGHT;
-        configsListData.verticalSpan              = 3;
-        configsListData.grabExcessHorizontalSpace = false;
-        configsListData.grabExcessVerticalSpace   = true;
+		configsListData.widthHint = FORM_SELECT_AREA_WIDTH;
+		configsListData.heightHint = FORM_SELECT_AREA_HEIGHT;
+		configsListData.verticalSpan = 3;
+		configsListData.grabExcessHorizontalSpace = false;
+		configsListData.grabExcessVerticalSpace = true;
 
-        listViewer = new TableViewer(composite,
-                SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		listViewer = new TableViewer(composite,
+				SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 
-        final Table table = listViewer.getTable();
-        table.setLayoutData(configsListData);
-        table.setHeaderVisible(true);
-        table.setLinesVisible(true);
+		final Table table = listViewer.getTable();
+		table.setLayoutData(configsListData);
+		table.setHeaderVisible(true);
+		table.setLinesVisible(true);
 
-        listViewer.setContentProvider(ArrayContentProvider.getInstance());
+		listViewer.setContentProvider(ArrayContentProvider.getInstance());
 
-        final TableViewerColumn colName = new TableViewerColumn(listViewer, SWT.NONE);
-        colName.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-        colName.getColumn().setText(TableColumn_Name);
-        colName.setLabelProvider(new ColumnLabelProvider() {
+		final TableViewerColumn colName = new TableViewerColumn(listViewer, SWT.NONE);
+		colName.getColumn().setWidth(TABLE_COLUMN_WIDTH);
+		colName.getColumn().setText(TableColumn_Name);
+		colName.setLabelProvider(new ColumnLabelProvider() {
 
-            @Override
-            public String getText(final Object element) {
-                final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
-                return config.name;
-            }
-        });
+			@Override
+			public String getText(final Object element) {
+				final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
+				return config.name;
+			}
+		});
 
-        final TableViewerColumn colHost = new TableViewerColumn(listViewer, SWT.NONE);
-        colHost.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-        colHost.getColumn().setText(TableColumn_Host);
-        colHost.setLabelProvider(new ColumnLabelProvider() {
+		final TableViewerColumn colHost = new TableViewerColumn(listViewer, SWT.NONE);
+		colHost.getColumn().setWidth(TABLE_COLUMN_WIDTH);
+		colHost.getColumn().setText(TableColumn_Host);
+		colHost.setLabelProvider(new ColumnLabelProvider() {
 
-            @Override
-            public String getText(final Object element) {
-                final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
-                return config.host;
-            }
-        });
+			@Override
+			public String getText(final Object element) {
+				final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
+				return config.host;
+			}
+		});
 
-        final TableViewerColumn colPort = new TableViewerColumn(listViewer, SWT.NONE);
-        colPort.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-        colPort.getColumn().setText(TableColumn_Port);
-        colPort.setLabelProvider(new ColumnLabelProvider() {
+		final TableViewerColumn colPort = new TableViewerColumn(listViewer, SWT.NONE);
+		colPort.getColumn().setWidth(TABLE_COLUMN_WIDTH);
+		colPort.getColumn().setText(TableColumn_Port);
+		colPort.setLabelProvider(new ColumnLabelProvider() {
 
-            @Override
-            public String getText(final Object element) {
-                final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
-                return String.valueOf(config.port);
-            }
-        });
+			@Override
+			public String getText(final Object element) {
+				final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
+				return String.valueOf(config.port);
+			}
+		});
 
-        final TableViewerColumn colTimeout = new TableViewerColumn(listViewer, SWT.NONE);
-        colTimeout.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-        colTimeout.getColumn().setText(TableColumn_Timeout);
-        colTimeout.setLabelProvider(new ColumnLabelProvider() {
+		final TableViewerColumn colTimeout = new TableViewerColumn(listViewer, SWT.NONE);
+		colTimeout.getColumn().setWidth(TABLE_COLUMN_WIDTH);
+		colTimeout.getColumn().setText(TableColumn_Timeout);
+		colTimeout.setLabelProvider(new ColumnLabelProvider() {
 
-            @Override
-            public String getText(final Object element) {
-                final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
-                return String.valueOf(config.timeout);
-            }
-        });
-    }
+			@Override
+			public String getText(final Object element) {
+				final RemoteRuntimeConfiguration config = (RemoteRuntimeConfiguration) element;
+				return String.valueOf(config.timeout);
+			}
+		});
+	}
 
-    private void initList() {
-        listViewer.getTable().removeAll();
-        listViewer.setInput(store.getConfigurations().toArray(new RemoteRuntimeConfiguration[0]));
-        listViewer.getTable().redraw();
-    }
+	private void initList() {
+		listViewer.getTable().removeAll();
+		RemoteRuntimeConfiguration[] array = store.getConfigurations().toArray(new RemoteRuntimeConfiguration[0]);
+		listViewer.setInput(array);
+		listViewer.getTable().redraw();
+		if (array != null && array.length > 0) {
+			listViewer.getTable().select(0);
+		}
+	}
 
 }
