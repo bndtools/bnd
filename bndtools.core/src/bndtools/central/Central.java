@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
@@ -824,8 +825,10 @@ public class Central implements IStartupParticipant {
 								try {
 									runnable.run();
 								} catch (Exception e) {
-									status.add(new Status(IStatus.ERROR, runnable.getClass(),
-										"Unexpected exception in bndCall after action: " + name, e));
+									if (!(e instanceof OperationCanceledException)) {
+										status.add(new Status(IStatus.ERROR, runnable.getClass(),
+											"Unexpected exception in bndCall after action: " + name, e));
+									}
 								}
 							})));
 						} finally {
