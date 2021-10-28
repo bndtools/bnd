@@ -19,7 +19,12 @@ net.bytebuddy.version=1.11.19
 org.objenesis.version=3.2
 osgi-test.version=1.0.1
 
-junit: \
+junit: ${junit-osgi},\
+	org.osgi.dto;version='[1.0,1.1)',\
+	org.osgi.resource;version='[1.0,1.1)',\
+	org.osgi.framework;version='[1.8,1.9)'
+
+junit-osgi: \
 	junit-platform-commons;version=latest,\
 	junit-platform-engine;version=latest,\
 	assertj-core;version=latest,\
@@ -32,6 +37,12 @@ junit: \
 	org.awaitility;version=latest,\
 	org.apache.servicemix.bundles.junit;version=latest,\
 	junit-vintage-engine;version=latest,\
+	org.osgi.service.coordinator;version=latest,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
+	org.osgi.service.resolver;version=latest,\
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
 	org.osgi.test.common;version=latest
 
 mockito: org.mockito.mockito-core;version=latest,\

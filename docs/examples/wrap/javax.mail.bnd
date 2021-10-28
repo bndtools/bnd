@@ -5,5 +5,5 @@ Bundle-Version: ${v}
 Bundle-Description: \
   An OSGi wrapped version of the javax.mail library downloaded from maven.
 Export-Package: javax.mail.*
-Private-Package: com.sun.mail.*
+-privatepackage: com.sun.mail.*
 

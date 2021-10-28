@@ -149,6 +149,7 @@
 	bnd.identity;id='biz.aQute.bnd.transform',\
 	bnd.identity;id='biz.aQute.junit',\
 	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
-	bnd.identity;id='org.osgi.*',\
+	bnd.identity;id='osgi.*',\
+	bnd.identity;id='org.osgi.*.annotations',\
 	bnd.identity;id='org.junit.*'
 

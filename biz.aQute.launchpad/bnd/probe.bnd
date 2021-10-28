@@ -1,5 +1,5 @@
 
-Private-Package aQute.launchpad.internal
+-privatepackage: aQute.launchpad.internal
 
 -conditionalpackage: \
     aQute.lib.*,\

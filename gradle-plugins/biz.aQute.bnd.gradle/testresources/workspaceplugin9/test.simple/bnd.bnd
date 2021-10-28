@@ -1,5 +1,5 @@
 Bundle-Version: 0.0.0.${tstamp}
-Private-Package: test.simple
+-privatepackage: test.simple
 Test-Cases: test.simple.Test,test.simple.FailingTest
 
 -buildpath: osgi.enroute.junit.wrapper
