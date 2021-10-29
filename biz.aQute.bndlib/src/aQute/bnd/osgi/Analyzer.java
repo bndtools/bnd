@@ -56,7 +56,6 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -110,27 +109,6 @@ public class Analyzer extends Processor {
 	private final static VersionRange				frameworkPreR7			= new VersionRange(Version.LOWEST,
 		new Version(1, 9));
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
-	private static final Memoize<Properties>		bndInfo;
-	static {
-		bndInfo = Memoize.supplier(() -> {
-			Properties properties = new UTF8Properties();
-			try {
-				URL url = Analyzer.class.getResource("bnd.info");
-				if (url != null) {
-					try (InputStream in = url.openStream()) {
-						properties.load(in);
-					}
-				}
-				String v = properties.getProperty("version");
-				if (!Version.isVersion(v)) {
-					properties.put("version", About.CURRENT.toString());
-				}
-			} catch (IOException e) {
-				logger.info("Unable to load bnd.info resource", e);
-			}
-			return properties;
-		});
-	}
 
 	// Bundle parameters
 	private Jar										dot;
@@ -1597,11 +1575,11 @@ public class Analyzer extends Processor {
 	 * @return version or unknown.
 	 */
 	public String getBndVersion() {
-		return getBndInfo("version", "<unknown>");
+		return About.getBndVersion();
 	}
 
 	public long getBndLastModified() {
-		String time = getBndInfo("lastmodified", "0");
+		String time = About.getBndInfo("lastmodified", () -> "0");
 		if (time.equals("0")) {
 			return 0L;
 		}
@@ -1614,12 +1592,7 @@ public class Analyzer extends Processor {
 	}
 
 	public String getBndInfo(String key, String defaultValue) {
-		String value = bndInfo.get()
-			.getProperty(key);
-		if (value == null) {
-			return defaultValue;
-		}
-		return value;
+		return About.getBndInfo(key, () -> defaultValue);
 	}
 
 	/**
