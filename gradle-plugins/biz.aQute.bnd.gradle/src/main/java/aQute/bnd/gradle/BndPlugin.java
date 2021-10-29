@@ -815,21 +815,21 @@ public class BndPlugin implements Plugin<Project> {
 					public void execute(Task tt) {
 						try (Formatter f = new Formatter()) {
 							f.format("------------------------------------------------------------%n");
-							f.format("Project %s // Bnd version %s%n", project.getName(), About.CURRENT);
+							f.format("Project %s // Bnd version %s%n", project.getName(), About.getBndVersion());
 							f.format("------------------------------------------------------------%n");
 							f.format("%n");
 							f.format("project.workspace:      %s%n", workspace.getLayout()
 								.getProjectDirectory());
 							f.format("project.name:           %s%n", project.getName());
 							f.format("project.dir:            %s%n", layout.getProjectDirectory());
-							f.format("target:                 %s%n", unwrapFile(layout.getBuildDirectory()));
+							f.format("target:                 %s%n", unwrap(layout.getBuildDirectory()));
 							f.format("project.dependson:      %s%n", dependson);
 							f.format("project.sourcepath:     %s%n",
 								sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
 									.getAllSource()
 									.getSourceDirectories()
 									.getAsPath());
-							f.format("project.output:         %s%n", unwrapFile(compileJava.getDestinationDirectory()));
+							f.format("project.output:         %s%n", unwrap(compileJava.getDestinationDirectory()));
 							f.format("project.buildpath:      %s%n", compileJava.getClasspath()
 								.getAsPath());
 							f.format("project.allsourcepath:  %s%n", allSrcDirs.getAsPath());
@@ -838,14 +838,15 @@ public class BndPlugin implements Plugin<Project> {
 									.getAllSource()
 									.getSourceDirectories()
 									.getAsPath());
-							f.format("project.testoutput:     %s%n",
-								unwrapFile(compileTestJava.getDestinationDirectory()));
+							f.format("project.testoutput:     %s%n", unwrap(compileTestJava.getDestinationDirectory()));
 							f.format("project.testpath:       %s%n", compileTestJava.getClasspath()
 								.getAsPath());
-							FileCollection bootstrapClasspath = compileJava.getOptions()
-								.getBootstrapClasspath();
-							f.format("project.bootclasspath:  %s%n",
-								Objects.nonNull(bootstrapClasspath) ? bootstrapClasspath.getAsPath() : "");
+							if (Objects.nonNull(compileJava.getOptions()
+								.getBootstrapClasspath())) {
+								f.format("project.bootclasspath:  %s%n", compileJava.getOptions()
+									.getBootstrapClasspath()
+									.getAsPath());
+							}
 							f.format("project.deliverables:   %s%n", deliverables.getFiles());
 							String executable = Optional.ofNullable(compileJava.getOptions()
 								.getForkOptions()
@@ -854,9 +855,18 @@ public class BndPlugin implements Plugin<Project> {
 									.map(javaCompiler -> IO.absolutePath(unwrapFile(javaCompiler.getExecutablePath())))
 									.getOrElse("javac"));
 							f.format("javac:                  %s%n", executable);
-							f.format("javac.source:           %s%n", javacSource.getOrElse(""));
-							f.format("javac.target:           %s%n", javacTarget.getOrElse(""));
-							f.format("javac.profile:          %s%n", javacProfile.getOrElse(""));
+							if (compileJava.getOptions()
+								.getRelease()
+								.isPresent()) {
+								f.format("--release:              %s%n", unwrap(compileJava.getOptions()
+									.getRelease()));
+							} else {
+								f.format("-source:                %s%n", compileJava.getSourceCompatibility());
+								f.format("-target:                %s%n", compileJava.getTargetCompatibility());
+							}
+							if (javacProfile.isPresent()) {
+								f.format("-profile:               %s%n", unwrap(javacProfile));
+							}
 							System.out.print(f.toString());
 						}
 						checkErrors(tt.getLogger(), true);
@@ -872,7 +882,7 @@ public class BndPlugin implements Plugin<Project> {
 					public void execute(Task tt) {
 						try (Formatter f = new Formatter()) {
 							f.format("------------------------------------------------------------%n");
-							f.format("Project %s %n", project.getName());
+							f.format("Project %s // Bnd version %s%n", project.getName(), About.getBndVersion());
 							f.format("------------------------------------------------------------%n");
 							f.format("%n");
 							bndProject.getPropertyKeys(true)

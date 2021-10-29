@@ -1,9 +1,20 @@
 package aQute.bnd.osgi;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
+import aQute.lib.utf8properties.UTF8Properties;
 
 /**
  * This package contains a number of classes that assists by analyzing JARs and
@@ -37,6 +48,7 @@ import aQute.bnd.version.Version;
  * that are found in the code. @version $Revision: 1.2 $
  */
 public class About {
+	private final static Logger					logger		= LoggerFactory.getLogger(About.class);
 	public static final Version					_2_3		= new Version(2, 3, 0);
 	public static final Version					_2_4		= new Version(2, 4, 0);
 	public static final Version					_3_0		= new Version(3, 0, 0);
@@ -244,4 +256,35 @@ public class About {
 		Maps.entry(_2_4, CHANGES_2_4),																																							//
 		Maps.entry(_2_3, CHANGES_2_3));
 
+	private static final Memoize<Properties>	bndInfo;
+	static {
+		bndInfo = Memoize.supplier(() -> {
+			Properties properties = new UTF8Properties();
+			try {
+				URL url = Analyzer.class.getResource("bnd.info");
+				if (url != null) {
+					try (InputStream in = url.openStream()) {
+						properties.load(in);
+					}
+				}
+				String v = properties.getProperty("version");
+				if (!Version.isVersion(v)) {
+					properties.put("version", About.CURRENT.toString());
+				}
+			} catch (IOException e) {
+				logger.info("Unable to load bnd.info resource", e);
+			}
+			return properties;
+		});
+	}
+
+	public static String getBndInfo(String key, Supplier<String> defaultValue) {
+		return Optional.ofNullable(bndInfo.get()
+			.getProperty(key))
+			.orElseGet(defaultValue);
+	}
+
+	public static String getBndVersion() {
+		return getBndInfo("version", About.CURRENT::toString);
+	}
 }

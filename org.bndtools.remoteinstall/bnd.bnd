@@ -1,22 +1,31 @@
--include                  : ${workspace}/cnf/includes/bndtools.bnd
-Import-Package            : ${eclipse.importpackage}, *
--privatepackage           : org.bndtools.remoteinstall.*
--conditionalpackage       : aQute.bnd.exceptions
--buildpath                : \
-                            biz.aQute.bnd.util;version=latest,\
-                            biz.aQute.remote.api;version=latest,\
-                            bndtools.api;version=latest,\
-                            bndtools.core;version=latest,\
-                            com.google.gson,\
-                            org.eclipse.core.commands,\
-                            org.eclipse.core.jobs,\
-                            org.eclipse.core.resources,\
-                            org.eclipse.core.runtime,\
-                            org.eclipse.equinox.common,\
-                            org.eclipse.equinox.preferences,\
-                            org.eclipse.jface,\
-                            org.eclipse.osgi,\
-                            org.eclipse.swt.cocoa.macosx.x86_64,\
-                            org.eclipse.ui.ide,\
-                            org.eclipse.ui.workbench,\
-                            org.osgi.service.component.annotations
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+Import-Package: \
+    ${eclipse.importpackage},\
+    *
+-privatepackage: ${p}.*
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+    org.osgi.service.component.annotations;version='1.3.0';maven-scope=provided,\
+    aQute.libg;version=project,\
+    biz.aQute.bnd.util;version=latest,\
+    biz.aQute.remote.api;version=latest,\
+    bndtools.api;version=latest,\
+    bndtools.core;version=latest,\
+    org.eclipse.core.commands,\
+    org.eclipse.core.jobs,\
+    org.eclipse.core.resources,\
+    org.eclipse.core.runtime,\
+    org.eclipse.equinox.common,\
+    org.eclipse.equinox.preferences,\
+    org.eclipse.jface,\
+    org.eclipse.osgi;maven-scope=provided,\
+    org.eclipse.swt,\
+    org.eclipse.swt.cocoa.macosx.x86_64,\
+    org.eclipse.ui.ide,\
+    org.eclipse.ui.workbench

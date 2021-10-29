@@ -65,9 +65,10 @@ public final class InstallBundleWizardPage extends WizardPage {
 		initList();
 	}
 
-	private void addConfiguration() {
-		final RemoteRuntimeConfigurationDialog dialog = new RemoteRuntimeConfigurationDialog(
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+	void addConfiguration() {
+		final RemoteRuntimeConfigurationDialog dialog = new RemoteRuntimeConfigurationDialog(PlatformUI.getWorkbench()
+			.getActiveWorkbenchWindow()
+			.getShell());
 
 		if (dialog.open() == OK) {
 			final RemoteRuntimeConfiguration config = dialog.getConfiguration();
@@ -76,11 +77,14 @@ public final class InstallBundleWizardPage extends WizardPage {
 		}
 	}
 
-	private void modifyConfiguration() {
-		int selectedIndex = listViewer.getTable().getSelectionIndex();
+	void modifyConfiguration() {
+		int selectedIndex = listViewer.getTable()
+			.getSelectionIndex();
 		if (selectedIndex < 0) {
-			if (listViewer.getTable().getItemCount() > 0) {
-				listViewer.getTable().select(0);
+			if (listViewer.getTable()
+				.getItemCount() > 0) {
+				listViewer.getTable()
+					.select(0);
 				selectedIndex = 0;
 			} else {
 				showMessage(InstallBundleWizardPage_Error_NoConfigSelected, InstallBundleWizardPage_Dialog_Title);
@@ -91,7 +95,9 @@ public final class InstallBundleWizardPage extends WizardPage {
 		final RemoteRuntimeConfiguration configuration = store.getConfiguration(selectedIndex);
 		if (configuration != null) {
 			final RemoteRuntimeConfigurationDialog dialog = new RemoteRuntimeConfigurationDialog(
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				PlatformUI.getWorkbench()
+					.getActiveWorkbenchWindow()
+					.getShell());
 
 			dialog.setConfiguration(configuration);
 
@@ -109,8 +115,9 @@ public final class InstallBundleWizardPage extends WizardPage {
 		}
 	}
 
-	private void deleteConfiguration() {
-		final int selectedIndex = listViewer.getTable().getSelectionIndex();
+	void deleteConfiguration() {
+		final int selectedIndex = listViewer.getTable()
+			.getSelectionIndex();
 		if (selectedIndex < 0) {
 			showMessage(InstallBundleWizardPage_Error_NoConfigSelected, InstallBundleWizardPage_Dialog_Title);
 			return;
@@ -190,7 +197,7 @@ public final class InstallBundleWizardPage extends WizardPage {
 		configsListData.grabExcessVerticalSpace = true;
 
 		listViewer = new TableViewer(composite,
-				SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+			SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 
 		final Table table = listViewer.getTable();
 		table.setLayoutData(configsListData);
@@ -200,8 +207,10 @@ public final class InstallBundleWizardPage extends WizardPage {
 		listViewer.setContentProvider(ArrayContentProvider.getInstance());
 
 		final TableViewerColumn colName = new TableViewerColumn(listViewer, SWT.NONE);
-		colName.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-		colName.getColumn().setText(TableColumn_Name);
+		colName.getColumn()
+			.setWidth(TABLE_COLUMN_WIDTH);
+		colName.getColumn()
+			.setText(TableColumn_Name);
 		colName.setLabelProvider(new ColumnLabelProvider() {
 
 			@Override
@@ -212,8 +221,10 @@ public final class InstallBundleWizardPage extends WizardPage {
 		});
 
 		final TableViewerColumn colHost = new TableViewerColumn(listViewer, SWT.NONE);
-		colHost.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-		colHost.getColumn().setText(TableColumn_Host);
+		colHost.getColumn()
+			.setWidth(TABLE_COLUMN_WIDTH);
+		colHost.getColumn()
+			.setText(TableColumn_Host);
 		colHost.setLabelProvider(new ColumnLabelProvider() {
 
 			@Override
@@ -224,8 +235,10 @@ public final class InstallBundleWizardPage extends WizardPage {
 		});
 
 		final TableViewerColumn colPort = new TableViewerColumn(listViewer, SWT.NONE);
-		colPort.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-		colPort.getColumn().setText(TableColumn_Port);
+		colPort.getColumn()
+			.setWidth(TABLE_COLUMN_WIDTH);
+		colPort.getColumn()
+			.setText(TableColumn_Port);
 		colPort.setLabelProvider(new ColumnLabelProvider() {
 
 			@Override
@@ -236,8 +249,10 @@ public final class InstallBundleWizardPage extends WizardPage {
 		});
 
 		final TableViewerColumn colTimeout = new TableViewerColumn(listViewer, SWT.NONE);
-		colTimeout.getColumn().setWidth(TABLE_COLUMN_WIDTH);
-		colTimeout.getColumn().setText(TableColumn_Timeout);
+		colTimeout.getColumn()
+			.setWidth(TABLE_COLUMN_WIDTH);
+		colTimeout.getColumn()
+			.setText(TableColumn_Timeout);
 		colTimeout.setLabelProvider(new ColumnLabelProvider() {
 
 			@Override
@@ -249,12 +264,16 @@ public final class InstallBundleWizardPage extends WizardPage {
 	}
 
 	private void initList() {
-		listViewer.getTable().removeAll();
-		RemoteRuntimeConfiguration[] array = store.getConfigurations().toArray(new RemoteRuntimeConfiguration[0]);
+		listViewer.getTable()
+			.removeAll();
+		RemoteRuntimeConfiguration[] array = store.getConfigurations()
+			.toArray(new RemoteRuntimeConfiguration[0]);
 		listViewer.setInput(array);
-		listViewer.getTable().redraw();
+		listViewer.getTable()
+			.redraw();
 		if (array != null && array.length > 0) {
-			listViewer.getTable().select(0);
+			listViewer.getTable()
+				.select(0);
 		}
 	}
 

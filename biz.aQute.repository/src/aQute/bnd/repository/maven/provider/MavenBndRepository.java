@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -45,6 +46,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
@@ -66,14 +69,12 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.PathSet;
@@ -115,7 +116,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private File				base				= IO.work;
 	private String				status				= null;
 	private boolean				remote;
-	private final AtomicBoolean	open				= new AtomicBoolean(true);
+	private final AtomicReference<Throwable>	open				= new AtomicReference<>();
 	Optional<Workspace>			workspace;
 	private AtomicBoolean		polling				= new AtomicBoolean(false);
 
@@ -553,8 +554,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	synchronized boolean init() {
 
-		if (!open.get())
-			throw new IllegalStateException("Already closed " + this);
+		if (open.get() != null)
+			throw new IllegalStateException("Already closed " + this + "\n" + Exceptions.toString(open.get()),
+				open.get());
 
 		if (status != null)
 			return false;
@@ -703,7 +705,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public void close() throws IOException {
-		if (open.getAndSet(false)) {
+		if (open.getAndSet(new Exception(this + " closed")) == null) {
 			if (indexPoller != null)
 				indexPoller.cancel(true);
 			IO.close(storage);

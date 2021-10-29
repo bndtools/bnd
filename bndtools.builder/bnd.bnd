@@ -15,7 +15,7 @@
 	bndtools.api;version=latest,\
 	bndtools.utils;version=project;packages='*',\
 	bndtools.core;version=snapshot,\
-	org.eclipse.osgi,\
+	org.eclipse.osgi;maven-scope=provided,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.resources,\
@@ -35,7 +35,6 @@
 	org.eclipse.equinox.common,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.equinox.preferences,\
-	org.eclipse.swt,\
 	slf4j.api
 
 -testpath: \

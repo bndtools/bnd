@@ -2,13 +2,13 @@ package aQute.lib.json;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.CharArrayWriter;
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -62,8 +62,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	}
 
 	public Encoder to() throws IOException {
-		to(new StringWriter());
-		return this;
+		return to(new CharArrayWriter());
 	}
 
 	public Encoder to(File file) throws IOException {
