@@ -39,13 +39,13 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
+        - '8'
         - '11'
-        - '17'
         runner:
         - 'xvfb-run --auto-servernum {0}'
         include:
         - os: 'ubuntu-latest'
-          java: '8'
+          java: '17'
           runner: 'xvfb-run --auto-servernum {0}'
           canonical: true
           fetch-depth: '0'
