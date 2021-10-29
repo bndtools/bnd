@@ -619,6 +619,13 @@ version(s), and exceptions or additional permissions here}.&quot;
          version="@org.bndtools.launch-version@"
          unpack="false"/>
 
+    <plugin
+         id="org.bndtools.remoteinstall"
+         download-size="0"
+         install-size="0"
+         version="@org.bndtools.remoteinstall-version@"
+         unpack="false"/>
+
    <plugin
          id="org.bndtools.versioncontrol.ignores.manager"
          download-size="0"

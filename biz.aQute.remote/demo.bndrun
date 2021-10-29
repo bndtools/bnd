@@ -1,5 +1,9 @@
--runbundles: biz.aQute.remote.agent;version=latest
 
 -runee: JavaSE-1.8
--runpath: biz.aQute.remote.launcher
--exporttype: subsystem
+-runfw: org.apache.felix.framework;version='[5.6.10,5.6.10]'
+-runrequires: \
+	osgi.identity;filter:='(osgi.identity=biz.aQute.remote.agent)',\
+	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.runtime)(version>=1.1.0))'
+-runbundles: \
+	biz.aQute.remote.agent;version=snapshot,\
+	org.apache.felix.gogo.runtime;version='[1.1.0,1.1.1)'

@@ -307,8 +307,7 @@ public class Link<L, R> extends Thread implements Closeable {
 	}
 
 	private void trace(String string) {
-		// TODO Auto-generated method stub
-
+		System.out.println("# " + string);
 	}
 
 	/*

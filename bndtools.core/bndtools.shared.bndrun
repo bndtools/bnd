@@ -46,6 +46,7 @@
 	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
 	bnd.identity;id='org.bndtools.headless.build.plugin.gradle',\
 	bnd.identity;id='org.bndtools.launch',\
+	bnd.identity;id='org.bndtools.remoteinstall',\
 	bnd.identity;id='org.bndtools.templates.template',\
 	bnd.identity;id='org.bndtools.templating',\
 	bnd.identity;id='org.bndtools.templating.gitrepo',\
