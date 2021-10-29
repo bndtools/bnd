@@ -74,7 +74,7 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.ui,\
 	org.eclipse.jdt.core.manipulation,\
-	org.eclipse.osgi,\
+	org.eclipse.osgi;maven-scope=provided,\
 	org.eclipse.core.commands,\
 	org.eclipse.team.core,\
 	org.eclipse.ui.forms,\
