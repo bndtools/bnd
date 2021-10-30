@@ -7,7 +7,9 @@ Import-Package: \
 -privatepackage: ${p}.*
 -conditionalpackage: \
     aQute.lib.*,\
-    aQute.libg.*
+    aQute.libg.*,\
+    aQute.remote.*
+
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
