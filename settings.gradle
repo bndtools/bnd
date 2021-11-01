@@ -12,22 +12,21 @@ buildscript {
 			url = uri(bnd_repourl)
 		}
 	}
-	var bndConfiguration = configurations.create("bnd")
-	configurations.classpath.extendsFrom(bndConfiguration)
-	dependencies {
-		bnd(bnd_plugin)
-	}
-	/* Since the files in the repository change with each build, we need to recheck for changes */
-	configurations.classpath {
+	var bndConfiguration = configurations.create("bnd") {
+		/* Since the files in the repository change with each build, we need to recheck for changes */
 		resolutionStrategy {
 			cacheChangingModulesFor(30, "minutes")
 			cacheDynamicVersionsFor(30, "minutes")
 		}
 	}
+	configurations.classpath.extendsFrom(bndConfiguration)
 	dependencies {
+		bnd(bnd_plugin)
 		components {
 			all { ComponentMetadataDetails details ->
-				details.changing = true
+				if ((details.id.group == "biz.aQute.bnd") || (details.id.group == "biz.aQute.bnd.workspace")) {
+					details.changing = true
+				}
 			}
 		}
 	}
