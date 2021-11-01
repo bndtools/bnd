@@ -22,6 +22,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.About;
@@ -39,7 +40,6 @@ import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.aspects.Aspects;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -59,7 +59,7 @@ public class RemoteWorkspaceServer implements Closeable {
 	final File					remotewsPort;
 	final Workspace				workspace;
 	final ScheduledFuture<?>	registerPort;
-	private long				startingTime;
+	private final long			startingTime;
 
 	/**
 	 * Create a new Remote Workspace Server. This will create a server socket on
@@ -104,8 +104,9 @@ public class RemoteWorkspaceServer implements Closeable {
 	}
 
 	void register() {
-		if (remotewsPort.isFile())
+		if (remotewsPort.isFile() && (Math.abs(startingTime - remotewsPort.lastModified()) < 1000L)) {
 			return;
+		}
 
 		try {
 			IO.delete(remotewsPort);
