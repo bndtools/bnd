@@ -51,7 +51,7 @@ Export-Package: \
 	org.tukaani.xz.*, \
 	aQute.configurable.*
 
--builderignore: testresources, testdata, maven-project
+-builderignore: testresources, testdata
 
 -fixupmessages.tag: "Export aQute.maven.provider,* private references \\[aQute.lib.tag\\]"
 -fixupmessages.getopts: "Export aQute.bnd.repository.maven.provider,* private references \\[aQute.lib.getopt\\]"
