@@ -10,12 +10,7 @@ import aQute.bnd.build.model.clauses.HeaderClause;
 
 public abstract class HeaderClauseLabelProvider<C extends HeaderClause> extends StyledCellLabelProvider {
 
-	private final Image packageImg;
-
-	public HeaderClauseLabelProvider() {
-		packageImg = Icons.desc("package")
-			.createImage();
-	}
+	private final static Image packageImg = Icons.image("package");
 
 	@Override
 	public void update(ViewerCell cell) {
@@ -35,12 +30,6 @@ public abstract class HeaderClauseLabelProvider<C extends HeaderClause> extends 
 
 		cell.setText(styledString.getString());
 		cell.setStyleRanges(styledString.getStyleRanges());
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		packageImg.dispose();
 	}
 
 	@SuppressWarnings("unused")

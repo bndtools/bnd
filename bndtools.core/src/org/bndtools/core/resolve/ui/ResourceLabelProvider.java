@@ -14,8 +14,7 @@ import org.osgi.resource.Resource;
 
 public class ResourceLabelProvider extends StyledCellLabelProvider {
 
-	private final Image bundleImg = Icons.desc("bundle")
-		.createImage();
+	private final static Image bundleImg = Icons.image("bundle");
 
 	@Override
 	public void update(ViewerCell cell) {
@@ -44,11 +43,5 @@ public class ResourceLabelProvider extends StyledCellLabelProvider {
 		cell.setText(label.getString());
 		cell.setStyleRanges(label.getStyleRanges());
 		cell.setImage(bundleImg);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		bundleImg.dispose();
 	}
 }

@@ -97,8 +97,7 @@ public class PackageSearchPanel extends SearchPanel {
 
 	@Override
 	public Image createImage(Device device) {
-		return Icons.desc("package")
-			.createImage(device);
+		return Icons.image("package");
 	}
 
 	@Override

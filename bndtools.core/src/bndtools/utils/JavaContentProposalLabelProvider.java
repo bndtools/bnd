@@ -7,10 +7,8 @@ import org.eclipse.swt.graphics.Image;
 
 public class JavaContentProposalLabelProvider extends LabelProvider {
 
-	private final Image	classImg		= Icons.desc("class")
-		.createImage();
-	private final Image	interfaceImg	= Icons.desc("interface")
-		.createImage();
+	private static final Image	classImg		= Icons.image("class");
+	private static final Image	interfaceImg	= Icons.image("interface");
 
 	@Override
 	public Image getImage(Object element) {
@@ -33,12 +31,5 @@ public class JavaContentProposalLabelProvider extends LabelProvider {
 		IContentProposal proposal = (IContentProposal) element;
 
 		return proposal.getLabel();
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		classImg.dispose();
-		interfaceImg.dispose();
 	}
 }

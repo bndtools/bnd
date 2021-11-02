@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -42,12 +43,10 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ResourceTransfer;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
-import bndtools.Plugin;
 import bndtools.editor.common.PackageDropAdapter;
 
 public abstract class PkgPatternsListPart<C extends HeaderClause> extends SectionPart
@@ -66,18 +65,9 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
 	private List<C>						selection;
 
-	private final Image					imgAnalyse			= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png")
-		.createImage();
-	private final Image					imgInsert			= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/table_row_insert.png")
-		.createImage();
-	private final Image					imgUp				= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
-		.createImage();
-	private final Image					imgDown				= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
-		.createImage();
+	private static final Image			imgInsert			= Icons.image("/icons/table_row_insert.png");
+	private static final Image			imgUp				= Icons.image("/icons/arrow_up.png");
+	private static final Image			imgDown				= Icons.image("/icons/arrow_down.png");
 
 	protected final String				title;
 
@@ -364,10 +354,6 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 	public void dispose() {
 		super.dispose();
 		this.model.removePropertyChangeListener(Constants.IMPORT_PACKAGE, this);
-		imgAnalyse.dispose();
-		imgInsert.dispose();
-		imgUp.dispose();
-		imgDown.dispose();
 	}
 
 	@Override

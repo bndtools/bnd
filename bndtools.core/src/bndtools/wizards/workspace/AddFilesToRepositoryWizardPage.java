@@ -40,7 +40,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.osgi.Jar;
@@ -52,17 +51,10 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
 	private static final ILogger					logger		= Logger
 		.getLogger(AddFilesToRepositoryWizardPage.class);
 
-	private final Image								jarImg		= Icons.desc("jar")
-		.createImage();
-	private final Image								warnImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/warning_obj.gif")
-		.createImage();
-	private final Image								errorImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/error.gif")
-		.createImage();
-	private final Image								okayImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tick.png")
-		.createImage();
+	private final static Image						jarImg		= Icons.image("jar");
+	private final static Image						warnImg		= Icons.image("/icons/warning_obj.gif");
+	private final static Image						errorImg	= Icons.image("/icons/error.gif");
+	private final static Image						okayImg		= Icons.image("/icons/tick.png");
 
 	private final Map<File, Pair<String, String>>	bsnMap		= new HashMap<>();
 	private final List<File>						files		= new ArrayList<>(1);
@@ -304,14 +296,5 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
 		setErrorMessage(error);
 		setMessage(warning, WARNING);
 		setPageComplete(!files.isEmpty() && error == null);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		jarImg.dispose();
-		warnImg.dispose();
-		errorImg.dispose();
-		okayImg.dispose();
 	}
 }

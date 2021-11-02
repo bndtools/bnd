@@ -6,6 +6,7 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
 import org.bndtools.builder.BndtoolsBuilder;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -23,7 +24,6 @@ import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.version.Version;
@@ -40,10 +40,8 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 	private static final QualifiedName	packageDecoratorKey	= new QualifiedName(BndtoolsBuilder.PLUGIN_ID,
 		packageDecoratorId);
 	private static final String			excluded			= " <excluded>";
-	private final ImageDescriptor		exportedIcon		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(BndtoolsBuilder.PLUGIN_ID, "icons/plus-decorator.png");
-	private final ImageDescriptor		excludedIcon		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(BndtoolsBuilder.PLUGIN_ID, "icons/excluded_ovr.gif");
+	private static final ImageDescriptor	exportedIcon		= Icons.desc("icons/plus-decorator.png");
+	private static final ImageDescriptor	excludedIcon		= Icons.desc("icons/excluded_ovr.gif");
 
 	@Override
 	public void decorate(Object element, IDecoration decoration) {

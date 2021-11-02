@@ -1,16 +1,13 @@
 package bndtools.internal.testcaseselection;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class TestCaseLabelProvider extends LabelProvider {
 
-	private Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/test.gif")
-		.createImage();
+	private final static Image junitImg = Icons.image("icons/test.gif");
 
 	@Override
 	public String getText(Object element) {
@@ -30,9 +27,4 @@ public class TestCaseLabelProvider extends LabelProvider {
 		return junitImg;
 	}
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		junitImg.dispose();
-	}
 }

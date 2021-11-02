@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.wizards.shared.TemplateParamsWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
@@ -44,7 +45,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.io.IO;
 import bndtools.Plugin;
@@ -70,9 +70,9 @@ public class WorkspacePreviewPage extends WizardPage {
 	private Table						tblOutputs;
 	private CheckboxTableViewer			vwrOutputs;
 
-	private Image						imgAdded;
-	private Image						imgOverwrite;
-	private Image						imgError;
+	private final static Image			imgAdded				= Icons.image("icons/incoming.gif");
+	private final static Image			imgOverwrite			= Icons.image("icons/conflict.gif");
+	private final static Image			imgError				= Icons.image("icons/error_obj.gif");
 
 	private TemplateParamsWizardPage	paramsPage;
 
@@ -267,13 +267,6 @@ public class WorkspacePreviewPage extends WizardPage {
 		setTitle("Preview Changes");
 		setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
 
-		imgAdded = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/incoming.gif")
-			.createImage(parent.getDisplay());
-		imgOverwrite = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/conflict.gif")
-			.createImage(parent.getDisplay());
-		imgError = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_obj.gif")
-			.createImage(parent.getDisplay());
-
 		int columns = 4;
 
 		Composite composite = new Composite(parent, SWT.NONE);
@@ -401,15 +394,6 @@ public class WorkspacePreviewPage extends WizardPage {
 				}
 			}
 		}));
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-
-		imgAdded.dispose();
-		imgOverwrite.dispose();
-		imgError.dispose();
 	}
 
 	@Override

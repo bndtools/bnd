@@ -10,12 +10,12 @@ import java.util.regex.Pattern;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -28,7 +28,6 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import aQute.bnd.annotation.plugin.InternalPluginDefinition;
@@ -36,7 +35,6 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.properties.IDocument;
-import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 import bndtools.editor.model.IDocumentWrapper;
@@ -44,7 +42,7 @@ import bndtools.editor.model.IDocumentWrapper;
 public class BndSourceEditorPage extends TextEditor implements IFormPage {
 	private static final ILogger			logger				= Logger.getLogger(BndSourceEditorPage.class);
 
-	private final Image						icon;
+	private static final Image				icon				= Icons.image("icons/page_white_text.png");
 
 	private final String					id;
 	private final FormEditor				editor;
@@ -64,16 +62,12 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 	public BndSourceEditorPage(String id, FormEditor editor) {
 		this.id = id;
 		this.editor = editor;
-		ImageDescriptor iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID,
-			"icons/page_white_text.png");
-		icon = iconDescriptor.createImage();
 	}
 
 	@Override
 	public void dispose() {
 		editModel.removePropertyChangeListener(propChangeListener);
 		super.dispose();
-		icon.dispose();
 	}
 
 	@Override
@@ -160,7 +154,8 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 		}
 	}
 
-	void commit(@SuppressWarnings("unused") boolean onSave) {
+	void commit(@SuppressWarnings("unused")
+	boolean onSave) {
 		try {
 			// Only commit changes to the model if the document text has
 			// actually changed since we switched to the page; this prevents us

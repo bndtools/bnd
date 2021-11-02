@@ -45,8 +45,7 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		RUNREQUIRE, Constants.RUNREQUIRES, Constants.RESOLVE
 	};
 
-	private final Image				resolveIcon		= Icons.desc("resolve")
-		.createImage();
+	private final static Image		resolveIcon		= Icons.image("resolve");
 	private Button					btnResolveNow;
 	private JobChangeAdapter		resolveJobListener;
 	private Combo					comboResolveMode;
@@ -155,7 +154,6 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		super.dispose();
 		Job.getJobManager()
 			.removeJobChangeListener(resolveJobListener);
-		resolveIcon.dispose();
 	}
 
 	private void doResolve() {

@@ -7,8 +7,7 @@ import org.eclipse.swt.graphics.Image;
 
 public class PackageNameLabelProvider extends LabelProvider {
 
-	private final Image packageImg = Icons.desc("package")
-		.createImage();
+	private static final Image packageImg = Icons.image("package");
 
 	@Override
 	public String getText(Object element) {
@@ -26,11 +25,5 @@ public class PackageNameLabelProvider extends LabelProvider {
 	@Override
 	public Image getImage(Object element) {
 		return packageImg;
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		packageImg.dispose();
 	}
 }

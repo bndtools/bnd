@@ -67,8 +67,7 @@ public class ServiceSearchPanel extends SearchPanel {
 
 	@Override
 	public Image createImage(Device device) {
-		return Icons.desc("service")
-			.createImage(device);
+		return Icons.image("service");
 	}
 
 	@Override

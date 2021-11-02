@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -16,13 +17,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public abstract class BndTargetLocationPage extends WizardPage implements IEditBundleContainerPage {
 	private final ILogger			logger;
 	private final String			message;
 	private final ITargetDefinition	targetDefinition;
-	private final Image				bundleIcon;
+	private static final Image		bundleIcon	= Icons.image("/icons/bundle.png");
 
 	public BndTargetLocationPage(String pageName, String title, String message, ITargetDefinition targetDefinition) {
 		super(pageName);
@@ -33,8 +33,6 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
 		this.logger = Logger.getLogger(getClass());
 		this.message = message;
 		this.targetDefinition = targetDefinition;
-		this.bundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/bundle.png")
-			.createImage();
 	}
 
 	public ITargetDefinition getTargetDefinition() {

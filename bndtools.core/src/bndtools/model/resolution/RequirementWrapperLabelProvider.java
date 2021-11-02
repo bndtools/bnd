@@ -28,8 +28,7 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 		if (element instanceof RequirementWrapper) {
 			RequirementWrapper rw = (RequirementWrapper) element;
 
-			Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(rw.requirement.getNamespace()),
-				shortenNamespaces);
+			Image icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(rw.requirement.getNamespace()), true);
 			if (icon != null)
 				cell.setImage(icon);
 
@@ -40,7 +39,7 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 			cell.setText(label.getString());
 			cell.setStyleRanges(label.getStyleRanges());
 		} else if (element instanceof Clazz) {
-			cell.setImage(getImage(Icons.path("class"), false));
+			cell.setImage(Icons.image("class", false));
 
 			String pkg;
 			String className;

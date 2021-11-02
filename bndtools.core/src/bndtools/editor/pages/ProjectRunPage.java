@@ -19,11 +19,9 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.AvailableBundlesPart;
@@ -39,10 +37,8 @@ public class ProjectRunPage extends FormPage {
 
 	private final BndEditModel				model;
 
-	private final Image						imgBndLayout		= Icons.desc("bnd.workspace.bndlayout")
-		.createImage();
-	private final Image						imgStandaloneLayout	= Icons.desc("bnd.workspace.standalone")
-		.createImage();
+	private final static Image				imgBndLayout		= Icons.image("bnd.workspace.bndlayout");
+	private final static Image				imgStandaloneLayout	= Icons.image("bnd.workspace.standalone");
 
 	public static final IFormPageFactory	FACTORY_PROJECT		= new IFormPageFactory() {
 																	@Override
@@ -121,7 +117,7 @@ public class ProjectRunPage extends FormPage {
 
 		// Toolbar Actions
 		RunAction runAction = new RunAction(this, "run");
-		runAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run.gif"));
+		runAction.setImageDescriptor(Icons.desc("icons/run.gif"));
 		runAction.setText("Run OSGi");
 		ActionContributionItem runContrib = new ActionContributionItem(runAction);
 		runContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
@@ -129,7 +125,7 @@ public class ProjectRunPage extends FormPage {
 			.add(runContrib);
 
 		RunAction debugAction = new RunAction(this, "debug");
-		debugAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/debug.gif"));
+		debugAction.setImageDescriptor(Icons.desc("icons/debug.gif"));
 		debugAction.setText("Debug OSGi");
 		ActionContributionItem debugContrib = new ActionContributionItem(debugAction);
 		debugContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
@@ -138,7 +134,7 @@ public class ProjectRunPage extends FormPage {
 
 		ExportAction exportAction = new ExportAction(getEditorSite().getShell(), getEditor(), model);
 		exportAction
-			.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run_export.png"));
+			.setImageDescriptor(Icons.desc("icons/run_export.png"));
 		exportAction.setText("Export");
 		ActionContributionItem exportContrib = new ActionContributionItem(exportAction);
 		exportContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
@@ -248,13 +244,6 @@ public class ProjectRunPage extends FormPage {
 		});
 		sashForm.hookResizeListener();
 		body.setLayout(new FillLayout());
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		imgBndLayout.dispose();
-		imgStandaloneLayout.dispose();
 	}
 
 	private void updateFormImage(final ScrolledForm form) {

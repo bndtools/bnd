@@ -75,12 +75,9 @@ public class IndexerWizardPage extends WizardPage {
 	private TableViewer			vwrInputs;
 	private Label				lblInputCount;
 
-	private final Image			imgFile			= Icons.desc("file")					//$NON-NLS-1$
-		.createImage();
-	private final Image			imgWarning		= Icons.desc("warning")					//$NON-NLS-1$
-		.createImage();
-	private final Image			imgError		= Icons.desc("error")					//$NON-NLS-1$
-		.createImage();
+	private static final Image	imgFile			= Icons.image("file");					//$NON-NLS-1$
+	private static final Image	imgWarning		= Icons.image("warning");				//$NON-NLS-1$
+	private static final Image	imgError		= Icons.image("error");					//$NON-NLS-1$
 
 	public IndexerWizardPage() {
 		super("index"); //$NON-NLS-1$
@@ -419,14 +416,6 @@ public class IndexerWizardPage extends WizardPage {
 		} catch (InterruptedException e) {
 			return Collections.emptyList();
 		}
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		imgFile.dispose();
-		imgError.dispose();
-		imgWarning.dispose();
 	}
 
 	private static class SearchFilesJob extends Job {

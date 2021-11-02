@@ -4,22 +4,16 @@ import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ImportPattern;
-import bndtools.Plugin;
 
 public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvider {
 
-	final Image	pageImg		= AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/page_white_text.png")
-		.createImage();
-	final Image	packageImg	= Icons.desc("package")
-		.createImage();
-	final Image	brickImg	= Icons.desc("bundle")
-		.createImage();
-	final Image	pluginImg	= AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png")
-		.createImage();
+	static final Image	pageImg		= Icons.image("bndeditor.page");
+	static final Image	packageImg	= Icons.image("package");
+	static final Image	brickImg	= Icons.image("bundle");
+	static final Image	pluginImg	= Icons.image("bndeditor.plugin");
 
 	@Override
 	public void update(ViewerCell cell) {
@@ -56,14 +50,5 @@ public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvide
 			cell.setText(((PluginClause) element).header.getName());
 			cell.setImage(pluginImg);
 		}
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		pageImg.dispose();
-		packageImg.dispose();
-		brickImg.dispose();
-		pluginImg.dispose();
 	}
 }

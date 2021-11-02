@@ -2,16 +2,15 @@ package bndtools.model.resolution;
 
 import java.util.Map.Entry;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.resource.R5LabelFormatter;
-import org.bndtools.utils.jface.ImageCachingLabelProvider;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.osgi.resource.Capability;
 
-import bndtools.Plugin;
-
-public class CapabilityLabelProvider extends ImageCachingLabelProvider {
+public class CapabilityLabelProvider extends StyledCellLabelProvider {
 
 	private final boolean shortenNamespaces;
 
@@ -20,7 +19,6 @@ public class CapabilityLabelProvider extends ImageCachingLabelProvider {
 	}
 
 	public CapabilityLabelProvider(boolean shortenNamespaces) {
-		super(Plugin.PLUGIN_ID);
 		this.shortenNamespaces = shortenNamespaces;
 	}
 
@@ -34,9 +32,8 @@ public class CapabilityLabelProvider extends ImageCachingLabelProvider {
 		cell.setStyleRanges(label.getStyleRanges());
 
 		// Get the icon from the capability namespace
-		Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(cap.getNamespace()), true);
-		if (icon != null)
-			cell.setImage(icon);
+		Image icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(cap.getNamespace()), false);
+		cell.setImage(icon);
 	}
 
 	@Override

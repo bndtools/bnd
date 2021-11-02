@@ -311,8 +311,7 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
 			if (Plugin.getDefault()
 				.getImageRegistry()
 				.get(KEY_JAVA_PROJECT) == null) {
-				Image image = Icons.desc("projects")
-					.createImage();
+				Image image = Icons.image("projects");
 				Plugin.getDefault()
 					.getImageRegistry()
 					.put(KEY_JAVA_PROJECT, image);

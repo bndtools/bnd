@@ -10,8 +10,6 @@ import bndtools.launch.ui.ProjectLaunchTabPiece;
 
 public class OSGiJUnitLaunchTab extends GenericStackedLaunchTab {
 
-	private Image image = null;
-
 	@Override
 	protected ILaunchTabPiece[] createStack() {
 		return new ILaunchTabPiece[] {
@@ -26,21 +24,6 @@ public class OSGiJUnitLaunchTab extends GenericStackedLaunchTab {
 
 	@Override
 	public Image getImage() {
-		synchronized (this) {
-			if (image == null) {
-				image = Icons.desc("bundle")
-					.createImage();
-			}
-			return image;
-		}
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		synchronized (this) {
-			if (image != null)
-				image.dispose();
-		}
+		return Icons.image("bundle");
 	}
 }

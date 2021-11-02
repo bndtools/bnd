@@ -1,5 +1,6 @@
 package bndtools.editor.project;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -20,17 +21,11 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class BuildOperationsPart extends SectionPart {
 
-	private final Image	refreshImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
-		.createImage();
-	private final Image	cleanImg	= AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/clear.gif")
-		.createImage();
+	private static final Image	refreshImg	= Icons.image("icons/arrow_refresh.png");
+	private static final Image	cleanImg	= Icons.image("icons/clear.gif");
 
 	/**
 	 * Create the SectionPart.
@@ -111,13 +106,6 @@ public class BuildOperationsPart extends SectionPart {
 			project.build(buildType, monitor);
 			return Status.OK_STATUS;
 		}
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		refreshImg.dispose();
-		cleanImg.dispose();
 	}
 
 }

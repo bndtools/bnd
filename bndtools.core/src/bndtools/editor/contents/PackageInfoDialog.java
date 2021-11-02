@@ -271,11 +271,9 @@ public class PackageInfoDialog extends TitleAreaDialog {
 
 	private static class PackageNameLabelProvider extends StyledCellLabelProvider {
 
-		private final Image image;
+		private final static Image image = Icons.image("package");
 
 		public PackageNameLabelProvider(Device device) {
-			image = Icons.desc("package") //$NON-NLS-1$
-				.createImage(device);
 		}
 
 		@Override
@@ -284,12 +282,6 @@ public class PackageInfoDialog extends TitleAreaDialog {
 
 			cell.setImage(image);
 			cell.setText(pkg.getName());
-		}
-
-		@Override
-		public void dispose() {
-			super.dispose();
-			image.dispose();
 		}
 	}
 

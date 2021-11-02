@@ -388,7 +388,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 	private Action reloadAction() {
 		Action rebuild = new Action("Reload workspace", Icons.desc("refresh")) {
-			WorkspaceSynchronizer	s;
+			WorkspaceSynchronizer s;
 
 			@Override
 			public void run() {
@@ -397,7 +397,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 					if (workspace.isDefaultWorkspace())
 						return;
 
-					setImageDescriptor(Icons.desc("refresh.disable"));
+					setImageDescriptor(Icons.desc("refresh.disabled"));
 					setEnabled(false);
 
 					s = new WorkspaceSynchronizer();
@@ -425,7 +425,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	}
 
 	private Action pinAction() {
-		Action pin = new Action("Pin project", Icons.desc("pin")) {
+		Action pin = new Action("Pin project", Icons.desc("pin.plus")) {
 
 			@Override
 			public void run() {

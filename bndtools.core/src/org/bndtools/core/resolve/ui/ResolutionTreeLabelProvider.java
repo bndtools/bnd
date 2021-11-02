@@ -2,8 +2,9 @@ package org.bndtools.core.resolve.ui;
 
 import java.util.Map.Entry;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.resource.R5LabelFormatter;
-import org.bndtools.utils.jface.ImageCachingLabelProvider;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
@@ -11,9 +12,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-import bndtools.Plugin;
-
-public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
+public class ResolutionTreeLabelProvider extends StyledCellLabelProvider {
 
 	private final boolean shortenNamespaces;
 
@@ -22,7 +21,6 @@ public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
 	}
 
 	public ResolutionTreeLabelProvider(boolean shortenNamespaces) {
-		super(Plugin.PLUGIN_ID);
 		this.shortenNamespaces = shortenNamespaces;
 	}
 
@@ -38,7 +36,7 @@ public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
 			R5LabelFormatter.appendCapability(label, item.getCapability(), shortenNamespaces);
 
 			// Get the icon from the capability namespace
-			icon = getImage(R5LabelFormatter.getNamespaceImagePath(item.getCapability()
+			icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(item.getCapability()
 				.getNamespace()), true);
 		} else if (element instanceof Requirement) {
 			Requirement requirement = (Requirement) element;

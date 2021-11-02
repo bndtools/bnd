@@ -14,6 +14,7 @@ import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.bndtools.build.api.BuildErrorDetailsHandlers;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -35,7 +36,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormPage;
@@ -45,11 +45,9 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.Plugin;
 import bndtools.editor.BndEditor;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.common.MDSashForm;
@@ -62,17 +60,10 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
 	private static final ILogger			logger				= Logger.getLogger(ProjectBuildPage.class);
 
 	private final BndEditModel				model;
-	private final Image						imgError			= PlatformUI.getWorkbench()
-		.getSharedImages()
-		.getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
-	private final Image						imgWarning			= PlatformUI.getWorkbench()
-		.getSharedImages()
-		.getImage(ISharedImages.IMG_OBJS_WARN_TSK);
-
-	private final ImageDescriptor			imgErrorOverlay		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_co.gif");
-	private final ImageDescriptor			imgWarningOverlay	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_co.gif");
+	private static final Image				imgError			= Icons.image(ISharedImages.IMG_OBJS_ERROR_TSK);
+	private static final Image				imgWarning			= Icons.image(ISharedImages.IMG_OBJS_WARN_TSK);
+	private static final ImageDescriptor	imgErrorOverlay		= Icons.desc("icons/error_co.gif");
+	private static final ImageDescriptor	imgWarningOverlay	= Icons.desc("icons/warning_co.gif");
 
 	private final Map<String, Integer>		messageSeverityMap	= new LinkedHashMap<>();
 	private final Map<String, IAction[]>	messageFixesMap		= new HashMap<>();

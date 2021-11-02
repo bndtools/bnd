@@ -7,8 +7,7 @@ import org.eclipse.swt.graphics.Image;
 
 public class PrivatePackageTableLabelProvider extends LabelProvider implements ITableLabelProvider {
 
-	private final Image packageImg = Icons.desc("package")
-		.createImage();
+	private final static Image packageImg = Icons.image("package");
 
 	@Override
 	public Image getColumnImage(Object element, int columnIndex) {
@@ -25,11 +24,5 @@ public class PrivatePackageTableLabelProvider extends LabelProvider implements I
 			text = (String) element;
 		}
 		return text;
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		packageImg.dispose();
 	}
 }

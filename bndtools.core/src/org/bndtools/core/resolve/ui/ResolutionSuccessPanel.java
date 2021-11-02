@@ -318,7 +318,7 @@ public class ResolutionSuccessPanel {
 		return checkedOptional.isEmpty();
 	}
 
-	public void dispose() {}
+	void dispose() {}
 
 	private void doOptionalReasonUpdate(Resource resource) {
 		reasonsContentProvider.setOptional(true);
@@ -342,4 +342,5 @@ public class ResolutionSuccessPanel {
 			.buildSyntheticRequirement();
 		return req;
 	}
+
 }
