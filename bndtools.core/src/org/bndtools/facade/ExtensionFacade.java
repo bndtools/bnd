@@ -1,6 +1,5 @@
 package org.bndtools.facade;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,10 +26,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
-import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import aQute.bnd.exceptions.Exceptions;
 
@@ -59,92 +56,6 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 				downstreamClass
 			}, this);
 		}
-	}
-
-	static class Customizer<T> implements ServiceTrackerCustomizer<Object, T> {
-
-		final Class<?>							downstreamClass;
-		final WeakReference<ExtensionFacade<T>>	parent;
-
-		Customizer(ExtensionFacade<T> parent, Class<?> downstreamClass) {
-			// Reference back to the parent facade needs to be weak
-			// so as not to prevent it being garbage collected once it
-			// becomes unreachable.
-			this.parent = new WeakReference<>(parent);
-			this.downstreamClass = downstreamClass;
-		}
-
-		@Override
-		public T addingService(ServiceReference<Object> reference) {
-			consoleLog.debug("{} addingService: {}", parent.get(), reference);
-
-			ServiceObjects<?> objs = bc.getServiceObjects(reference);
-			final Object service = objs.getService();
-
-			// if (service instanceof IExecutableExtension) {
-			// IExecutableExtension ee = (IExecutableExtension) service;
-			// try {
-			// log("Initializing the ExecutableExtension");
-			// ee.setInitializationData(config, propertyName, data);
-			// } catch (CoreException e) {
-			// e.printStackTrace();
-			// return null;
-			// }
-			// }
-			// if (service instanceof IExecutableExtensionFactory) {
-			// IExecutableExtensionFactory factory =
-			// (IExecutableExtensionFactory) service;
-			// try {
-			// log("Running factory.create()");
-			// @SuppressWarnings("unchecked")
-			// final T retval = (T) factory.create();
-			// onNewService.forEach(callback -> {
-			// log("notifying " + callback);
-			// callback.accept(reference, retval);
-			// });
-			// return retval;
-			// } catch (CoreException e) {
-			// e.printStackTrace();
-			// return null;
-			// }
-			// }
-			if (downstreamClass != null && !downstreamClass.isAssignableFrom(service.getClass())) {
-				String msg = String.format("%s downstreamClass is not an instance of %s, was %s", parent.get(),
-					downstreamClass.getCanonicalName(), service.getClass());
-				consoleLog.error(msg);
-				uiLog.logError(msg, null);
-				return null;
-			}
-			consoleLog.debug("{} Returning non-factory extension", parent.get());
-			@SuppressWarnings("unchecked")
-			final T retval = (T) service;
-			ExtensionFacade<T> parent = this.parent.get();
-			if (parent != null) {
-				parent.onNewService.forEach(callback -> {
-					consoleLog.debug("{} notifying callback of new service: {}", parent, callback);
-					callback.accept(reference, retval);
-				});
-			}
-			return retval;
-		}
-
-		@Override
-		public void modifiedService(ServiceReference<Object> reference, T service) {}
-
-		@Override
-		public void removedService(ServiceReference<Object> reference, T service) {
-			consoleLog.debug("{} notifying service removal", parent.get());
-			ExtensionFacade<T> parent = this.parent.get();
-			if (parent != null) {
-				parent.onClosedService.forEach(callback -> {
-					consoleLog.debug("{} notifying callback of service removal: {}", parent, callback);
-					callback.accept(reference, service);
-				});
-			}
-			ServiceObjects<Object> objs = bc.getServiceObjects(reference);
-			objs.ungetService(service);
-		}
-
 	}
 
 	List<BiConsumer<ServiceReference<Object>, T>>	onNewService	= new ArrayList<>();
@@ -295,8 +206,7 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 		try {
 			filter = bc.createFilter("(component.name=" + id + ")");
 			consoleLog.debug("{} Tracking services with filter: {}", this, filter);
-			Customizer<T> customizer = new Customizer<T>(this, downstreamClass);
-			tracker = new ServiceTracker<Object, T>(bc, filter, customizer);
+			tracker = new ExtensionServiceTracker<T>(this, downstreamClass, bc, filter);
 			tracker.open();
 		} catch (InvalidSyntaxException e) {
 			consoleLog.error("{} couldn't build filter for {}", this, filter, e);
@@ -307,13 +217,5 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 	@Override
 	public String toString() {
 		return "[" + id + ":" + System.identityHashCode(this) + "]";
-	}
-
-	@Override
-	public void finalize() {
-		if (tracker != null) {
-			consoleLog.debug("{} finalize(): closing tracker", this);
-			tracker.close();
-		}
 	}
 }
