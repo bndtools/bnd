@@ -47,6 +47,7 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 	private StructuredViewer	structuredViewer;
 	private Workspace			workspace;
 	private LoadingContentJob	loadingJob;
+	private volatile boolean	disposed	= false;
 
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
@@ -112,7 +113,10 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 		}
 
 		Display.getDefault()
-			.asyncExec(() -> structuredViewer.refresh(true));
+			.asyncExec(() -> {
+				if (!disposed)
+					structuredViewer.refresh(true);
+			});
 
 		if (statuses.size() > 0) {
 			return new MultiStatus(Plugin.PLUGIN_ID, IStatus.ERROR, statuses.toArray(new IStatus[0]),
@@ -123,7 +127,9 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 	}
 
 	@Override
-	public void dispose() {}
+	public void dispose() {
+		disposed = true;
+	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
@@ -169,4 +175,5 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 		};
 
 	}
+
 }
