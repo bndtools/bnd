@@ -90,8 +90,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 																							.indexOf(search) == -1) {
 																						return false;
 																					}
-																					return !selectedBundles
-																						.containsKey(bsn);
 																				}
 																				return true;
 																			}
@@ -143,18 +141,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 			}
 		});
 		selectionSearchTxt.addModifyListener(e -> availableViewer.setFilters(alreadySelectedFilter));
-		availableViewer.addSelectionChangedListener(event -> {
-			IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
-			for (Iterator<?> iter = sel.iterator(); iter.hasNext();) {
-				Object element = iter.next();
-				if (element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion
-					|| element instanceof ProjectBundle) {
-					addButton.setEnabled(true);
-					return;
-				}
-			}
-			addButton.setEnabled(false);
-		});
+		availableViewer.addSelectionChangedListener(event -> addButtonEnable());
 		availableViewer.addOpenListener(event -> doAdd());
 
 		GridLayout layout;
@@ -172,6 +159,13 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		availableTree.setLayoutData(gd);
 
 		return panel;
+	}
+
+	private void addButtonEnable() {
+		IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
+		List<VersionedClause> versionClauses = getVersionClauses(sel);
+		versionClauses.removeAll(selectedBundles.values());
+		addButton.setEnabled(!versionClauses.isEmpty());
 	}
 
 	Control createSelectedBundlesPanel(Composite parent) {
@@ -267,6 +261,21 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 	void doAdd() {
 		IStructuredSelection selection = (IStructuredSelection) availableViewer.getSelection();
+		List<VersionedClause> adding = getVersionClauses(selection);
+		if (!adding.isEmpty()) {
+			for (VersionedClause clause : adding) {
+				if (!selectedBundles.containsKey(clause.getName())) {
+					selectedBundles.put(clause.getName(), clause);
+					selectedViewer.add(clause);
+				}
+			}
+			availableViewer.refresh();
+			propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
+			addButtonEnable();
+		}
+	}
+
+	private List<VersionedClause> getVersionClauses(IStructuredSelection selection) {
 		List<VersionedClause> adding = new ArrayList<>(selection.size());
 		for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
 			Object item = iter.next();
@@ -281,14 +290,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 				adding.add(new VersionedClause(bsn, attribs));
 			}
 		}
-		if (!adding.isEmpty()) {
-			for (VersionedClause clause : adding) {
-				selectedBundles.put(clause.getName(), clause);
-			}
-			selectedViewer.add(adding.toArray());
-			availableViewer.refresh();
-			propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
-		}
+		return adding;
 	}
 
 	void doRemove() {
