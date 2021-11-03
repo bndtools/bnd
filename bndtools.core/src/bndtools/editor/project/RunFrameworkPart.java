@@ -185,4 +185,10 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 			}
 		}
 	}
+
+	@Override
+	public void dispose() {
+		fwkContentProvider.dispose();
+		super.dispose();
+	}
 }
