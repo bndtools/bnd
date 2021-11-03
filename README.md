@@ -65,6 +65,10 @@ Release versions of Bnd artifacts including Maven and Gradle plugins are availab
 
 Release versions of the Bndtools Eclipse Features are available from the Bndtools p2 update site: <https://bndtools.jfrog.io/bndtools/update-latest>.
 
+To see older versions of the Bndtools Eclipse Features in Eclipse's "Install New Software" dialog, make sure to uncheck "Show only latest versions of available software"
+
+<img src="https://user-images.githubusercontent.com/277682/140074527-388c3cd2-f1ad-4c4f-8fce-3d3ebf98ba61.png" width="300" alt="Uncheck Show only latest versions of available software">
+
 For macOS there is also a [Homebrew formula](https://formulae.brew.sh/formula/bnd).
 
 ## Feedback
