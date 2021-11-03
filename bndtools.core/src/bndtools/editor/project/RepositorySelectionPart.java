@@ -57,6 +57,7 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.EditorPart;
 import org.osgi.service.repository.Repository;
 
@@ -79,7 +80,7 @@ import bndtools.shared.URLDialog;
 
 public class RepositorySelectionPart extends BndEditorPart implements IResourceChangeListener {
 
-	private static final Image			projectImg			= Icons.image(ISharedImages.IMG_OBJ_PROJECT);
+	private static final Image			projectImg			= Icons.image(IDE.SharedImages.IMG_OBJ_PROJECT);
 	private static final Image			repoImg				= Icons.image(ISharedImages.IMG_OBJ_FOLDER);
 	private final Object				MESSAGE_KEY			= new Object();
 	private final EditorPart			editor;
