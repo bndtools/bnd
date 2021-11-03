@@ -88,9 +88,10 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 				}
 			}
 		} catch (ClassNotFoundException e) {
-			return Result.err("no such class %s in %s for plugin %s", e.getMessage(), pluginName);
+			return Result.err("no such class %s in %s for plugin %s", c.getName(), e.getMessage(), pluginName);
 		} catch (Exception e) {
-			return Result.err("could not instantiate class %s in %s for plugin %s: %s", e.getMessage(), pluginName,
+			return Result.err("could not instantiate class %s in %s for plugin %s: %s", c.getName(), e.getMessage(),
+				pluginName,
 				Exceptions.causes(e));
 		}
 	}
