@@ -59,5 +59,4 @@ Import-Package: \
 	org.bndtools.utils.*
 
 -includeresource: \
-	plugin.xml=_plugin.xml, \
-	resources
+	plugin.xml=_plugin.xml

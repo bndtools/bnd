@@ -8,8 +8,7 @@ import org.eclipse.swt.graphics.Image;
 
 public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
 
-	Image bundleImg = Icons.desc("bundle")
-		.createImage();
+	final static Image bundleImg = Icons.image("bundle");
 
 	@Override
 	public void update(ViewerCell cell) {
@@ -25,9 +24,4 @@ public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
 		cell.setImage(bundleImg);
 	}
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		bundleImg.dispose();
-	}
 }

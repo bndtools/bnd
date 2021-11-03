@@ -9,15 +9,10 @@ import org.eclipse.swt.graphics.Image;
 
 public class URLLabelProvider extends StyledCellLabelProvider {
 
-	private final Image	linkImg;
-	private final Image	fileImg;
+	private final static Image	linkImg	= Icons.image("link");
+	private final static Image	fileImg	= Icons.image("file");
 
-	public URLLabelProvider(Device device) {
-		linkImg = Icons.desc("link")
-			.createImage(device);
-		fileImg = Icons.desc("file")
-			.createImage();
-	}
+	public URLLabelProvider(Device display) {}
 
 	@Override
 	public void update(ViewerCell cell) {
@@ -40,12 +35,5 @@ public class URLLabelProvider extends StyledCellLabelProvider {
 
 		cell.setText(text);
 		cell.setImage(img);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		linkImg.dispose();
-		fileImg.dispose();
 	}
 }

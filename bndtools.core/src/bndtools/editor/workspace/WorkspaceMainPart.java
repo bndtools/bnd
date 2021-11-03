@@ -2,6 +2,7 @@ package bndtools.editor.workspace;
 
 import java.util.Collections;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -30,7 +31,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -39,16 +39,10 @@ public class WorkspaceMainPart extends SectionPart {
 
 	private final boolean	mainFile;
 
-	private final Color		warningColor;
-	private final Image		bndFileImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png")
-		.createImage();
-	private final Image		extFileImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png")
-		.createImage();
-	private final Image		warningImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif")
-		.createImage();
+	private final Color			warningColor;
+	private static final Image	bndFileImg	= Icons.image("icons/bndtools-logo-16x16.png");
+	private static final Image	extFileImg	= Icons.image("icons/bullet_go.png");
+	private static final Image	warningImg	= Icons.image("icons/warning_obj.gif");
 
 	public WorkspaceMainPart(boolean mainFile, Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -190,9 +184,6 @@ public class WorkspaceMainPart extends SectionPart {
 	public void dispose() {
 		super.dispose();
 		warningColor.dispose();
-		bndFileImg.dispose();
-		extFileImg.dispose();
-		warningImg.dispose();
 	}
 
 }

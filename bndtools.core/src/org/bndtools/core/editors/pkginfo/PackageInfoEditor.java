@@ -127,7 +127,7 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
 			resource.getWorkspace()
 				.removeResourceChangeListener(this);
 
-		if (imgTitleBase != null)
+		if (imgTitleBase != null && imgTitleBase != getDefaultImage())
 			imgTitleBase.dispose();
 		if (imgTitleWarning != null)
 			imgTitleWarning.dispose();

@@ -1,5 +1,6 @@
 package bndtools.utils;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -22,9 +23,6 @@ import org.eclipse.ui.forms.IMessage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Hyperlink;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class MessagesPopupDialog extends PopupDialog {
 
@@ -33,9 +31,7 @@ public class MessagesPopupDialog extends PopupDialog {
 	private final IWorkbenchPart	part;
 	private final HyperlinkGroup	hyperlinkGroup;
 
-	private final Image				bulletImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/bullet_go.png")
-		.createImage();
+	private static final Image		bulletImg	= Icons.image("/icons/bullet_go.png");
 
 	public MessagesPopupDialog(Control controlAttachment, IMessage[] messages, IWorkbenchPart part) {
 		super(null, PopupDialog.INFOPOPUP_SHELLSTYLE, true, false, false, false, false, null, null);
@@ -46,13 +42,6 @@ public class MessagesPopupDialog extends PopupDialog {
 		this.hyperlinkGroup = new HyperlinkGroup(controlAttachment.getDisplay());
 		this.hyperlinkGroup.setHyperlinkUnderlineMode(HyperlinkSettings.UNDERLINE_ALWAYS);
 
-	}
-
-	@Override
-	public boolean close() {
-		boolean result = super.close();
-		bulletImg.dispose();
-		return result;
 	}
 
 	@SuppressWarnings("unused")

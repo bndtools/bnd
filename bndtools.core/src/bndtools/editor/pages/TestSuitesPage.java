@@ -2,6 +2,7 @@ package bndtools.editor.pages;
 
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -15,10 +16,8 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.Plugin;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.TestSuitesPart;
@@ -27,9 +26,7 @@ import bndtools.utils.MessageHyperlinkAdapter;
 public class TestSuitesPage extends FormPage {
 
 	private final BndEditModel				model;
-	private final Image						junitImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif")
-		.createImage();
+	private final Image						junitImg	= Icons.image("/icons/junit.gif");
 
 	public static final IFormPageFactory	FACTORY		= new IFormPageFactory() {
 															@Override
@@ -96,11 +93,5 @@ public class TestSuitesPage extends FormPage {
 
 		layout = new GridLayout();
 		rightPanel.setLayout(layout);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		junitImg.dispose();
 	}
 }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -49,7 +50,6 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.namespace.PackageNamespace;
 
 import aQute.bnd.osgi.Clazz;
@@ -62,12 +62,7 @@ import bndtools.tasks.BndFileCapReqLoader;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
 
-	private final Image		imgRefresh			= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png")						//$NON-NLS-1$
-		.createImage();
-	private final Image		imgShowSelfImports	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif")				//$NON-NLS-1$
-		.createImage();
+	private static final Image	imgShowSelfImports	= Icons.image("/icons/package_folder_impexp.gif");	//$NON-NLS-1$
 
 	private Tree			tree;
 	private TreeViewer		viewer;
@@ -248,9 +243,6 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 		ResourcesPlugin.getWorkspace()
 			.removeResourceChangeListener(this);
 		super.dispose();
-		imgRefresh.dispose();
-		imgShowSelfImports.dispose();
-
 	}
 
 	@Override

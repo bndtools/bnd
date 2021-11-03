@@ -244,7 +244,7 @@ public class Plugin extends AbstractUIPlugin {
 	}
 
 	public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
+		return Icons.desc(imageFilePath);
 	}
 
 	public HeadlessBuildManager getHeadlessBuildManager() {

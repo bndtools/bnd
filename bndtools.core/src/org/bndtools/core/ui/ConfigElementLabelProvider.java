@@ -3,6 +3,7 @@ package org.bndtools.core.ui;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.eclipse.ConfigurationElementCategory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -39,7 +40,7 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
 		if (data instanceof ConfigurationElementCategory) {
 			ConfigurationElementCategory category = (ConfigurationElementCategory) data;
 			cell.setText(category.toString());
-			iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/fldr_obj.gif");
+			iconDescriptor = Icons.desc("icons/fldr_obj.gif");
 		} else if (data instanceof IConfigurationElement) {
 			IConfigurationElement element = (IConfigurationElement) data;
 			cell.setText(element.getAttribute("name"));

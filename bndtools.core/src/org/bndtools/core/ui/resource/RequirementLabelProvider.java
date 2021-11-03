@@ -1,14 +1,13 @@
 package org.bndtools.core.ui.resource;
 
-import org.bndtools.utils.jface.ImageCachingLabelProvider;
+import org.bndtools.core.ui.icons.Icons;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.osgi.resource.Requirement;
 
-import bndtools.Plugin;
-
-public class RequirementLabelProvider extends ImageCachingLabelProvider {
+public class RequirementLabelProvider extends StyledCellLabelProvider {
 
 	protected final boolean shortenNamespaces;
 
@@ -17,7 +16,6 @@ public class RequirementLabelProvider extends ImageCachingLabelProvider {
 	}
 
 	public RequirementLabelProvider(boolean shortenNamespaces) {
-		super(Plugin.PLUGIN_ID);
 		this.shortenNamespaces = shortenNamespaces;
 	}
 
@@ -32,9 +30,8 @@ public class RequirementLabelProvider extends ImageCachingLabelProvider {
 			cell.setText(label.getString());
 			cell.setStyleRanges(label.getStyleRanges());
 
-			Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(requirement.getNamespace()), true);
-			if (icon != null)
-				cell.setImage(icon);
+			Image icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(requirement.getNamespace()));
+			cell.setImage(icon);
 		}
 	}
 

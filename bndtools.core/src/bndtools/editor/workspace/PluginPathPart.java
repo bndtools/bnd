@@ -238,8 +238,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
 
 	private static final class PluginPathLabelProvider extends StyledCellLabelProvider {
 
-		private final Image jarImg = Icons.desc("jar")
-			.createImage();
+		private final static Image jarImg = Icons.image("jar");
 
 		@Override
 		public void update(ViewerCell cell) {
@@ -247,12 +246,6 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
 
 			cell.setText(path);
 			cell.setImage(jarImg);
-		}
-
-		@Override
-		public void dispose() {
-			super.dispose();
-			jarImg.dispose();
 		}
 	}
 

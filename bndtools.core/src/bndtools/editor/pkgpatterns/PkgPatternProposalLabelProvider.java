@@ -6,10 +6,8 @@ import org.eclipse.swt.graphics.Image;
 
 public class PkgPatternProposalLabelProvider extends LabelProvider {
 
-	private final Image	singleImg	= Icons.desc("package")
-		.createImage();
-	private final Image	multiImg	= Icons.desc("packages")
-		.createImage();
+	private final Image	singleImg	= Icons.image("package");
+	private final Image	multiImg	= Icons.image("packages");
 
 	@Override
 	public String getText(Object element) {
@@ -22,10 +20,4 @@ public class PkgPatternProposalLabelProvider extends LabelProvider {
 		return wildcard ? multiImg : singleImg;
 	}
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		singleImg.dispose();
-		multiImg.dispose();
-	}
 }

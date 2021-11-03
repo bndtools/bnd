@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.wizard.WizardPage;
@@ -18,7 +19,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
@@ -34,7 +34,7 @@ public class WorkspaceSetupWizardPage extends WizardPage {
 	private LocationSelection			location			= LocationSelection.WORKSPACE;
 	private boolean						cleanBuild			= true;
 
-	private Image						bannerImg;
+	private static final Image			bannerImg			= Icons.image("/banner.png");
 
 	public WorkspaceSetupWizardPage() {
 		super("Workspace Setup");
@@ -52,8 +52,6 @@ public class WorkspaceSetupWizardPage extends WizardPage {
 		composite.setLayout(layout);
 		setControl(composite);
 
-		bannerImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "banner.png")
-			.createImage(parent.getDisplay());
 		Label lblBanner = new Label(composite, SWT.NONE);
 		lblBanner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		lblBanner.setImage(bannerImg);
@@ -108,12 +106,6 @@ public class WorkspaceSetupWizardPage extends WizardPage {
 		String locationError = location.validate();
 		setErrorMessage(locationError);
 		setPageComplete(locationError == null);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		bannerImg.dispose();
 	}
 
 	public void setLocation(LocationSelection location) {

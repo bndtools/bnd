@@ -51,27 +51,24 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.EditorPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.deployer.repository.AbstractIndexedRepo;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.EclipseWorkspaceRepository;
@@ -82,28 +79,8 @@ import bndtools.shared.URLDialog;
 
 public class RepositorySelectionPart extends BndEditorPart implements IResourceChangeListener {
 
-	private final Image					refreshImg			= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
-		.createImage();
-	private final Image					bundleImg			= Icons.desc("bundle")
-		.createImage();
-	private final Image					nonObrRepoImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif")
-		.createImage();
-	private final Image					imgUp				= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
-		.createImage();
-	private final Image					imgDown				= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
-		.createImage();
-	private final Image					imgLink				= Icons.desc("link")
-		.createImage();
-	private final Image					projectImg			= PlatformUI.getWorkbench()
-		.getSharedImages()
-		.getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-	private final Image					repoImg				= PlatformUI.getWorkbench()
-		.getSharedImages()
-		.getImage(ISharedImages.IMG_OBJ_FOLDER);
+	private static final Image			projectImg			= Icons.image(ISharedImages.IMG_OBJ_PROJECT);
+	private static final Image			repoImg				= Icons.image(ISharedImages.IMG_OBJ_FOLDER);
 	private final Object				MESSAGE_KEY			= new Object();
 	private final EditorPart			editor;
 	private final Button				btnStandaloneCheckbox;
@@ -509,12 +486,6 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 	public void dispose() {
 		ResourcesPlugin.getWorkspace()
 			.removeResourceChangeListener(this);
-		refreshImg.dispose();
-		bundleImg.dispose();
-		nonObrRepoImg.dispose();
-		imgUp.dispose();
-		imgDown.dispose();
-		imgLink.dispose();
 		super.dispose();
 	}
 

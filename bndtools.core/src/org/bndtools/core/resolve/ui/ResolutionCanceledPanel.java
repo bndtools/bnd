@@ -4,7 +4,6 @@ import org.bndtools.core.resolve.ResolutionResult;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -14,21 +13,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class ResolutionCanceledPanel {
-
-	private final Image			clipboardImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_copy.png")
-		.createImage();
-	private final Image			treeViewImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif")
-		.createImage();
-	private final Image			flatViewImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif")
-		.createImage();
 
 	private Composite			composite;
 
@@ -105,9 +91,5 @@ public class ResolutionCanceledPanel {
 		this.resolutionResult = resolutionResult;
 	}
 
-	public void dispose() {
-		clipboardImg.dispose();
-		treeViewImg.dispose();
-		flatViewImg.dispose();
-	}
+	void dispose() {}
 }

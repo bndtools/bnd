@@ -5,17 +5,11 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class ClassPathLabelProvider extends StyledCellLabelProvider {
 
-	private final Image	jarImg		= Icons.desc("jar")
-		.createImage();
-	private final Image	folderImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif")
-		.createImage();
+	private final static Image	jarImg		= Icons.image("jar");
+	private final static Image	folderImg	= Icons.image("/icons/fldr_obj.gif");
 
 	@Override
 	public void update(ViewerCell cell) {
@@ -26,12 +20,5 @@ public class ClassPathLabelProvider extends StyledCellLabelProvider {
 			cell.setImage(folderImg);
 		else
 			cell.setImage(jarImg);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		jarImg.dispose();
-		folderImg.dispose();
 	}
 }

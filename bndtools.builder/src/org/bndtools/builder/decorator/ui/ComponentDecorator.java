@@ -3,8 +3,8 @@ package org.bndtools.builder.decorator.ui;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.builder.ComponentMarker;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -18,7 +18,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * A decorator for {@link CompilationUnit}'s that adds an icon if the class
@@ -29,8 +28,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  */
 public class ComponentDecorator extends LabelProvider implements ILightweightLabelDecorator {
 	private static final ILogger	logger			= Logger.getLogger(ComponentDecorator.class);
-	private final ImageDescriptor	componentIcon	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(BndtoolsBuilder.PLUGIN_ID, "icons/component_s_flip.png");
+	private final static ImageDescriptor	componentIcon	= Icons.desc("icons/component_s_flip.png");
 
 	@Override
 	public void decorate(Object element, IDecoration decoration) {

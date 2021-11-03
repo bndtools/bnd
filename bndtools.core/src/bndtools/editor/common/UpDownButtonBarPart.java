@@ -3,6 +3,7 @@ package bndtools.editor.common;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
@@ -13,16 +14,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class UpDownButtonBarPart {
 
-	private final Image	imgUp	= AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
-		.createImage();
-	private final Image	imgDown	= AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
-		.createImage();
+	private static final Image	imgUp	= Icons.image("/icons/arrow_up.png");
+	private static final Image	imgDown	= Icons.image("/icons/arrow_down.png");
 
 	public interface UpDownListener {
 		void changed(List<Object> list);
@@ -59,13 +55,6 @@ public class UpDownButtonBarPart {
 			public void widgetSelected(SelectionEvent e) {
 				doMoveDown();
 			}
-		});
-
-		toolbar.addDisposeListener(de -> {
-			if (!imgUp.isDisposed())
-				imgUp.dispose();
-			if (!imgDown.isDisposed())
-				imgDown.dispose();
 		});
 		return toolbar;
 	}

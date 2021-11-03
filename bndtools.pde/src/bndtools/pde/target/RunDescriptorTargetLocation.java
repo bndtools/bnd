@@ -166,4 +166,7 @@ public class RunDescriptorTargetLocation extends BndTargetLocation {
 			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, "No run descriptor file specified"));
 		}
 	}
+
+	@Override
+	public void dispose() {}
 }

@@ -9,6 +9,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -24,7 +25,6 @@ import org.eclipse.pde.internal.core.target.TargetDefinition;
 import org.eclipse.pde.ui.target.ITargetLocationEditor;
 import org.eclipse.pde.ui.target.ITargetLocationUpdater;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -45,8 +45,7 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 
 	public BndTargetLocation(String type, String containerIconName) {
 		this.type = Objects.requireNonNull(type);
-		this.containerIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/" + containerIconName)
-			.createImage();
+		this.containerIcon = Icons.image("/icons/" + containerIconName);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -89,11 +88,6 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 
 	@Override
 	public void addListener(ILabelProviderListener listener) {}
-
-	@Override
-	public void dispose() {
-		containerIcon.dispose();
-	}
 
 	@Override
 	public boolean isLabelProperty(Object element, String property) {

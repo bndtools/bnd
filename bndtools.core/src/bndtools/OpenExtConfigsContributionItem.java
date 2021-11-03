@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -20,7 +21,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.central.Central;
 
@@ -29,8 +29,7 @@ public class OpenExtConfigsContributionItem extends CompoundContributionItem {
 	private static final ILogger				logger		= Logger.getLogger(OpenExtConfigsContributionItem.class);
 
 	private static final IContributionItem[]	EMPTY		= new IContributionItem[0];
-	private static final ImageDescriptor		extFileImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png");
+	private static final ImageDescriptor		extFileImg	= Icons.desc("icons/bullet_go.png");
 
 	@Override
 	protected IContributionItem[] getContributionItems() {

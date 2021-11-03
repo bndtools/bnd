@@ -12,6 +12,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
@@ -19,7 +20,9 @@ import bndtools.Plugin;
 
 public final class Icons {
 
-	private static final String ICONS_MISSING_GIF = "icons/missing.gif";
+	private static final String		ICONS_MISSING_GIF	= "icons/missing.gif";
+	private static ISharedImages	shared				= PlatformUI.getWorkbench()
+		.getSharedImages();
 
 	private static class Key {
 		final String	name;
@@ -73,17 +76,36 @@ public final class Icons {
 	}
 
 	public static ImageDescriptor desc(String name, boolean nullIfAbsent) {
+		if (name == null) {
+			if (nullIfAbsent)
+				return null;
+			name = "unknown";
+		} else if (name.indexOf('/') >= 0) {
+			return AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, name);
+		}
+
 		String path = path(name);
-		if (nullIfAbsent && path == ICONS_MISSING_GIF)
-			return null;
 
 		if (isSystem(path)) {
-			path = path.substring(1);
-			return PlatformUI.getWorkbench()
-				.getSharedImages()
-				.getImageDescriptor(path);
+			return shared.getImageDescriptor(path.substring(1));
 		}
-		return AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, path);
+
+		if (path == ICONS_MISSING_GIF) {
+			ImageDescriptor imageDescriptor = shared.getImageDescriptor(name);
+			if (imageDescriptor != null)
+				return imageDescriptor;
+
+			System.out.println(" missing " + name);
+			if (nullIfAbsent)
+				return null;
+		}
+
+		ImageDescriptor desc = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, path);
+		if (desc == null) {
+			System.out.println(" missing badly " + name);
+
+		}
+		return desc;
 	}
 
 	public static void clear() {
@@ -98,6 +120,20 @@ public final class Icons {
 
 					return true;
 				});
+		}
+	}
+
+	public static Image image(String name, boolean nullIfAbsent) {
+
+		ImageDescriptor desc = desc(name, nullIfAbsent);
+		if (desc == null)
+			return null;
+
+		Key k = new Key(name);
+		synchronized (images) {
+			Image image = desc.createImage();
+			images.put(k, image);
+			return image;
 		}
 	}
 

@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
@@ -43,7 +44,6 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
@@ -53,12 +53,8 @@ import bndtools.Plugin;
 
 public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
-	private final Image									editImg			= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/pencil.png")
-		.createImage();
-	private final Image									refreshImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
-		.createImage();
+	private final Image									editImg			= Icons.image("/icons/pencil.png");
+	private final Image									refreshImg		= Icons.image("icons/arrow_refresh.png");
 
 	private final Map<String, IConfigurationElement>	configElements	= new HashMap<>();
 
@@ -206,8 +202,6 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		super.dispose();
 		if (model != null)
 			model.removePropertyChangeListener(Constants.PLUGIN, this);
-		editImg.dispose();
-		refreshImg.dispose();
 	}
 
 	@Override

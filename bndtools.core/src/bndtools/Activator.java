@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -84,7 +85,7 @@ public class Activator extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+		return Icons.desc(path);
 	}
 
 	static volatile boolean busy;

@@ -62,15 +62,14 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.Clazz;
-import aQute.lib.io.IO;
 import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;
@@ -315,8 +314,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 		};
 		toggleShowSelfImports.setChecked(false);
-		toggleShowSelfImports.setImageDescriptor(
-			AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif"));
+		toggleShowSelfImports.setImageDescriptor(Icons.desc("/icons/package_folder_impexp.gif"));
 		toggleShowSelfImports.setToolTipText(
 			"Show resolved requirements.\n\nInclude requirements that are resolved within the set of selected bundles.");
 

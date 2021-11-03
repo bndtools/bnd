@@ -169,4 +169,8 @@ public class RepositoryTargetLocation extends BndTargetLocation {
 			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, "No repository name specified"));
 		}
 	}
+
+	@Override
+	public void dispose() {
+	}
 }

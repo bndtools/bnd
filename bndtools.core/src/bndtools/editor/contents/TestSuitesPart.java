@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -61,11 +62,9 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ResourceTransfer;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
-import bndtools.Plugin;
 import bndtools.internal.testcaseselection.ITestCaseFilter;
 import bndtools.internal.testcaseselection.JavaSearchScopeTestCaseLister;
 import bndtools.internal.testcaseselection.TestCaseSelectionDialog;
@@ -78,12 +77,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
 	private TableViewer				viewer;
 
-	private final Image				imgUp	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
-		.createImage();
-	private final Image				imgDown	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
-		.createImage();
+	private static final Image		imgUp	= Icons.image("/icons/arrow_up.png");
+	private static final Image		imgDown	= Icons.image("/icons/arrow_down.png");
 
 	public TestSuitesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -442,8 +437,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 }
 
 class TestSuiteLabelProvider extends StyledCellLabelProvider {
-	private final Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif")
-		.createImage();
+	private static final Image suiteImg = Icons.image("/icons/tsuite.gif");
 
 	// private Image testImg =
 	// AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID,
@@ -454,12 +448,6 @@ class TestSuiteLabelProvider extends StyledCellLabelProvider {
 		String fqName = (String) cell.getElement();
 		cell.setText(fqName);
 		cell.setImage(suiteImg);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		suiteImg.dispose();
 	}
 
 }

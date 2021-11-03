@@ -51,8 +51,7 @@ class ProjectTemplateSelectionWizardPage extends TemplateSelectionWizardPage {
 			composite.setLayout(layout);
 
 			Label lblWarning = new Label(composite, SWT.NONE);
-			warningImg = Icons.desc("warning.big")
-				.createImage(parent.getDisplay());
+			warningImg = Icons.image("warning.big");
 			lblWarning.setImage(warningImg);
 
 			Link link = new Link(composite, SWT.NONE);
@@ -118,8 +117,6 @@ class ProjectTemplateSelectionWizardPage extends TemplateSelectionWizardPage {
 	@Override
 	public void dispose() {
 		super.dispose();
-		if (warningImg != null && !warningImg.isDisposed())
-			warningImg.dispose();
 	}
 
 }

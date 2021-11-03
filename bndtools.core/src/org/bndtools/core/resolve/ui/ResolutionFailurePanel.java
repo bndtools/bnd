@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.bndtools.core.resolve.ResolutionResult;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -30,25 +31,17 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
 
 import biz.aQute.resolve.ResolveProcess;
-import bndtools.Plugin;
 import bndtools.model.obr.SorterComparatorAdapter;
 
 public class ResolutionFailurePanel {
 
-	private final Image				clipboardImg	= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_copy.png")
-		.createImage();
-	private final Image				treeViewImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif")
-		.createImage();
-	private final Image				flatViewImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif")
-		.createImage();
+	private static final Image		clipboardImg	= Icons.image("icons/page_copy.png");
+	private static final Image		treeViewImg		= Icons.image("icons/tree_mode.gif");
+	private static final Image		flatViewImg		= Icons.image("icons/flat_mode.gif");
 
 	private Composite				composite;
 
@@ -183,12 +176,6 @@ public class ResolutionFailurePanel {
 		return writer.toString();
 	}
 
-	public void dispose() {
-		clipboardImg.dispose();
-		treeViewImg.dispose();
-		flatViewImg.dispose();
-	}
-
 	@SuppressWarnings("unused")
 	private void createUnresolvedViewToolBar(final Composite parent) {
 		ToolBar unresolvedToolBar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
@@ -311,5 +298,7 @@ public class ResolutionFailurePanel {
 			appendLabels(child, contentProvider, builder, indent + 1);
 		}
 	}
+
+	void dispose() {}
 
 }

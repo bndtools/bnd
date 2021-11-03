@@ -162,12 +162,10 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
 	@Override
 	public void dispose() {
-		super.dispose();
-
 		resolutionFailurePanel.dispose();
 		resolutionSuccessPanel.dispose();
 		resolutionCanceledPanel.dispose();
-
+		super.dispose();
 	}
 
 	public void setAllowCompleteUnresolved(boolean allowFinishUnresolved) {

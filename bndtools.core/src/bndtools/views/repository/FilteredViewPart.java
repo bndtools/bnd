@@ -1,5 +1,6 @@
 package bndtools.views.repository;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -11,7 +12,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 
@@ -107,7 +107,7 @@ public abstract class FilteredViewPart extends ViewPart {
 	private class FilterAction extends Action {
 		public FilterAction() {
 			super("Filter", IAction.AS_CHECK_BOX);
-			setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/filter.gif"));
+			setImageDescriptor(Icons.desc("/icons/filter.gif"));
 		}
 
 		@Override

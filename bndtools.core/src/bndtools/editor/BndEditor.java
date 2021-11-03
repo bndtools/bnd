@@ -23,6 +23,7 @@ import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -70,7 +71,6 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
@@ -122,9 +122,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 	private final Map<String, IFormPageFactory>	pageFactories		= new LinkedHashMap<>();
 
-	private final Image							buildFileImg		= AbstractUIPlugin
-		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png")
-		.createImage();
+	private final static Image					buildFileImg		= Icons.image("icons/bndtools-logo-16x16.png");
 
 	private BndSourceEditorPage					sourcePage;
 	private Promise<Workspace>					modelReady;
@@ -725,7 +723,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 		LaunchUtils.endRun((Run) model.getProject());
 
-		buildFileImg.dispose();
 		if (resolveHandlerActivation != null) {
 			resolveHandlerActivation.getHandlerService()
 				.deactivateHandler(resolveHandlerActivation);
