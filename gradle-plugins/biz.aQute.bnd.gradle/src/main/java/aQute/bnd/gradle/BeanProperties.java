@@ -54,15 +54,18 @@ public class BeanProperties extends Properties {
 
 	@Override
 	public String getProperty(String key) {
-		final Matcher m = KEY_P.matcher(key);
-		if (!m.find()) {
-			return defaultValue(key);
-		}
-		String name = m.group("name");
-		Object value = value(name, get(name), m.group("index"));
-		while ((value != null) && m.find()) {
-			name = m.group("name");
-			value = value(name, getField(value, name), m.group("index"));
+		Object value = get(key); // full key lookup first
+		if (value == null) {
+			final Matcher m = KEY_P.matcher(key);
+			if (!m.find()) {
+				return defaultValue(key);
+			}
+			String name = m.group("name");
+			value = value(name, get(name), m.group("index"));
+			while ((value != null) && m.find()) {
+				name = m.group("name");
+				value = value(name, getField(value, name), m.group("index"));
+			}
 		}
 		value = unwrap(value);
 		return (value != null) ? value.toString() : defaultValue(key);

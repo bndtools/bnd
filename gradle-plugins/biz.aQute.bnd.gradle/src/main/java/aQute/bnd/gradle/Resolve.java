@@ -49,6 +49,10 @@ import biz.aQute.resolve.ResolveProcess;
  * The default is false.</li>
  * <li>workingDirectory - This is the directory for the resolve process. The
  * default for workingDirectory is temporaryDir.</li>
+ * <li>properties - Properties that are available for evaluation of the bnd
+ * instructions for non-Bnd Workspace builds. The default is the properties of
+ * the task and project objects. This must not be used for Bnd Workspace
+ * builds.</li>
  * <li>failOnChanges - If true the task will fail if the resolve process results
  * in a different value for -runbundles than the current value. The default is
  * false.</li>

@@ -61,6 +61,10 @@ import aQute.lib.strings.Strings;
  * default is false.</li>
  * <li>workingDirectory - This is the directory for the export operation. The
  * default for workingDirectory is temporaryDir.</li>
+ * <li>properties - Properties that are available for evaluation of the bnd
+ * instructions for non-Bnd Workspace builds. The default is the properties of
+ * the task and project objects. This must not be used for Bnd Workspace
+ * builds.</li>
  * <li>destinationDirectory - This is the directory for the output. The default
  * for destinationDirectory is project.base.distsDirectory.dir("executable") if
  * the exporter is "bnd.executablejar",
