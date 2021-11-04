@@ -199,7 +199,8 @@ public class Resolve extends AbstractBndrun {
 	 */
 	public Resolve() {
 		super();
-		outputBndrun = getProject().getObjects()
+		org.gradle.api.Project project = getProject();
+		outputBndrun = project.getObjects()
 			.fileProperty()
 			.convention(getBndrun());
 	}

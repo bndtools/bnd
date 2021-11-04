@@ -100,9 +100,10 @@ public class TestOSGi extends Bndrun {
 	 */
 	public TestOSGi() {
 		super();
-		Provider<Directory> testResultsDir = testResultsDir(getProject());
+		org.gradle.api.Project project = getProject();
+		Provider<Directory> testResultsDir = testResultsDir(project);
 		String taskName = getName();
-		resultsDirectory = getProject().getObjects()
+		resultsDirectory = project.getObjects()
 			.directoryProperty()
 			.convention(testResultsDir.map(d -> d.dir(taskName)));
 	}

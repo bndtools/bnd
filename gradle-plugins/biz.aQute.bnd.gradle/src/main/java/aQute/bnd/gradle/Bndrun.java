@@ -75,9 +75,10 @@ public class Bndrun extends AbstractBndrun {
 	 */
 	public Bndrun() {
 		super();
-		ObjectFactory objects = getProject().getObjects();
+		org.gradle.api.Project project = getProject();
+		ObjectFactory objects = project.getObjects();
 		javaLauncher = objects.property(JavaLauncher.class)
-			.convention(defaultToolFor(getProject(), JavaToolchainService::launcherFor));
+			.convention(defaultToolFor(project, JavaToolchainService::launcherFor));
 	}
 
 	/**

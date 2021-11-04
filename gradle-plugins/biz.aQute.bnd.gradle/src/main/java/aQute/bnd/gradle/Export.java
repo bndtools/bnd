@@ -143,10 +143,11 @@ public class Export extends AbstractBndrun {
 	 */
 	public Export() {
 		super();
-		ObjectFactory objects = getProject().getObjects();
+		org.gradle.api.Project project = getProject();
+		ObjectFactory objects = project.getObjects();
 		exporter = objects.property(String.class)
-			.convention(getProject().provider(() -> getBundlesOnly() ? RUNBUNDLES : EXECUTABLE_JAR));
-		Provider<Directory> distsDirectory = distDirectory(getProject());
+			.convention(project.provider(() -> getBundlesOnly() ? RUNBUNDLES : EXECUTABLE_JAR));
+		Provider<Directory> distsDirectory = distDirectory(project);
 		destinationDirectory = objects.directoryProperty()
 			.convention(distsDirectory.flatMap(distsDir -> {
 				return distsDir.dir(getExporter().map(exporterName -> {

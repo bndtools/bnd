@@ -203,14 +203,15 @@ public class Index extends DefaultTask {
 	 */
 	public Index() {
 		super();
-		ObjectFactory objects = getProject().getObjects();
+		org.gradle.api.Project project = getProject();
+		ObjectFactory objects = project.getObjects();
 		indexName = objects.property(String.class)
 			.convention("index.xml");
 		repositoryName = objects.property(String.class)
 			.convention(getName());
 		bundles = objects.fileCollection();
 		destinationDirectory = objects.directoryProperty()
-			.convention(getProject().getLayout()
+			.convention(project.getLayout()
 				.getBuildDirectory());
 		base = objects.property(URI.class)
 			.convention(destinationDirectory.map(d -> unwrapFile(d).toURI()));
