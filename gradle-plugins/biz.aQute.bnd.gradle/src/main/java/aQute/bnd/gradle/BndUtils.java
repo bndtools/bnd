@@ -3,6 +3,7 @@ package aQute.bnd.gradle;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.gradle.api.Buildable;
@@ -111,8 +112,8 @@ public class BndUtils {
 	 * @return The value of the specified Provider or {@code null} if the
 	 *         Provider does not have a value.
 	 */
-	public static <T> T unwrapOrNull(Provider<? extends T> provider) {
-		return provider.getOrNull();
+	public static <T> Optional<T> unwrapOptional(Provider<? extends T> provider) {
+		return Optional.ofNullable(provider.getOrNull());
 	}
 
 	/**
@@ -144,8 +145,8 @@ public class BndUtils {
 	 * @return The File object of the specified Provider or {@code null} if the
 	 *         Provider does not have a value.
 	 */
-	public static File unwrapFileOrNull(Provider<? extends FileSystemLocation> provider) {
-		return provider.isPresent() ? unwrapFile(provider) : null;
+	public static Optional<File> unwrapFileOptional(Provider<? extends FileSystemLocation> provider) {
+		return provider.isPresent() ? Optional.of(unwrapFile(provider)) : Optional.empty();
 	}
 
 	/**

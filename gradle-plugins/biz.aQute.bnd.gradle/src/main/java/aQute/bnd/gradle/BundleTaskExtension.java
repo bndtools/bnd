@@ -7,8 +7,8 @@ import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
-import static aQute.bnd.gradle.BndUtils.unwrapFileOrNull;
-import static aQute.bnd.gradle.BndUtils.unwrapOrNull;
+import static aQute.bnd.gradle.BndUtils.unwrapFileOptional;
+import static aQute.bnd.gradle.BndUtils.unwrapOptional;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
@@ -19,6 +19,7 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
@@ -39,7 +40,6 @@ import org.gradle.api.tasks.ClasspathNormalizer;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
@@ -95,7 +95,7 @@ public class BundleTaskExtension {
 	@InputFile
 	@PathSensitive(RELATIVE)
 	@NormalizeLineEndings
-	@Optional
+	@org.gradle.api.tasks.Optional
 	public RegularFileProperty getBndfile() {
 		return bndfile;
 	}
@@ -122,7 +122,7 @@ public class BundleTaskExtension {
 	 * @return The property for the bnd instructions.
 	 */
 	@Input
-	@Optional
+	@org.gradle.api.tasks.Optional
 	public Provider<String> getBnd() {
 		return bnd;
 	}
@@ -322,9 +322,9 @@ public class BundleTaskExtension {
 							.store(writer, null);
 						// if the bnd file exists, add its contents to the
 						// tmp bnd file
-						File bndfile = unwrapFileOrNull(getBndfile());
-						if (Objects.nonNull(bndfile) && bndfile.isFile()) {
-							builder.loadProperties(bndfile)
+						Optional<File> bndfile = unwrapFileOptional(getBndfile()).filter(File::isFile);
+						if (bndfile.isPresent()) {
+							builder.loadProperties(bndfile.get())
 								.store(writer, null);
 						} else {
 							String bnd = unwrap(getBnd());
@@ -351,7 +351,7 @@ public class BundleTaskExtension {
 					String archiveFileName = unwrap(getTask().getArchiveFileName());
 					String archiveBaseName = unwrap(getTask().getArchiveBaseName());
 					String archiveClassifier = unwrap(getTask().getArchiveClassifier());
-					String archiveVersion = unwrapOrNull(getTask().getArchiveVersion());
+					String archiveVersion = unwrapOptional(getTask().getArchiveVersion()).orElse(null);
 
 					// Include entire contents of Jar task generated jar
 					// (except the
