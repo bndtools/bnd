@@ -314,11 +314,14 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		builderInstrs.compression()
 			.ifPresent(jar::setCompression);
 
-		Parameters ir = getProject().getIncludeResource();
-		if (!ir.isEmpty()) {
+		String includeresource = getProject().mergeProperties(Constants.INCLUDERESOURCE);
+		if (!Strings.nonNullOrEmpty(includeresource)) {
+			includeresource = getProject().mergeProperties(Constants.INCLUDE_RESOURCE);
+		}
+		if (Strings.nonNullOrEmpty(includeresource)) {
 			try (Builder b = new Builder()) {
 				b.setBase(getProject().getBase());
-				b.setIncludeResource(ir.toString());
+				b.setProperty(Constants.INCLUDERESOURCE, includeresource);
 				b.setProperty(Constants.RESOURCEONLY, "true");
 				b.build();
 				if (b.isOk()) {
