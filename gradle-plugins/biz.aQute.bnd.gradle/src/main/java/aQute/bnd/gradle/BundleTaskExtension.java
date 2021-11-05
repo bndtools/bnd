@@ -7,8 +7,8 @@ import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
-import static aQute.bnd.gradle.BndUtils.unwrapFileOrNull;
-import static aQute.bnd.gradle.BndUtils.unwrapOrNull;
+import static aQute.bnd.gradle.BndUtils.unwrapFileOptional;
+import static aQute.bnd.gradle.BndUtils.unwrapOptional;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
@@ -19,6 +19,7 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
@@ -33,13 +34,13 @@ import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.ClasspathNormalizer;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
@@ -51,6 +52,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -73,6 +75,9 @@ import aQute.lib.utf8properties.UTF8Properties;
  * to "project.sourceSets.main".</li>
  * <li>classpath - This is the FileCollection to use for the buildpath for the
  * bnd builder. It defaults to "project.sourceSets.main.compileClasspath".</li>
+ * <li>properties - Properties that are available for evaluation of the bnd
+ * instructions. The default is the properties of the task and project
+ * objects.</li>
  * </ul>
  */
 public class BundleTaskExtension {
@@ -84,6 +89,7 @@ public class BundleTaskExtension {
 	private final RegularFileProperty			bndfile;
 	private final ConfigurableFileCollection	classpath;
 	private final Provider<String>				bnd;
+	private final MapProperty<String, Object>	properties;
 
 	/**
 	 * The bndfile property.
@@ -95,7 +101,7 @@ public class BundleTaskExtension {
 	@InputFile
 	@PathSensitive(RELATIVE)
 	@NormalizeLineEndings
-	@Optional
+	@org.gradle.api.tasks.Optional
 	public RegularFileProperty getBndfile() {
 		return bndfile;
 	}
@@ -122,9 +128,49 @@ public class BundleTaskExtension {
 	 * @return The property for the bnd instructions.
 	 */
 	@Input
-	@Optional
+	@org.gradle.api.tasks.Optional
 	public Provider<String> getBnd() {
 		return bnd;
+	}
+
+	/**
+	 * Properties that are available for evaluation of the bnd instructions.
+	 * <p>
+	 * If this property is not set, the properties of the following are
+	 * available:
+	 * <dl>
+	 * <dt>{@code task}</dt>
+	 * <dd>The Task object of this extension.</dd>
+	 * <dt>{@code project}</dt>
+	 * <dd>The Project object for the task of this extension.</dd>
+	 * </dl>
+	 * If the {@code task} property is not set, the properties of the Task
+	 * object of this extension will automatically be available.
+	 * <p>
+	 * The following properties are set by the builder and are also available:
+	 * <dl>
+	 * <dt>{@code project.dir}</dt>
+	 * <dd>The project directory.</dd>
+	 * <dt>{@code project.output}</dt>
+	 * <dd>The build directory.</dd>
+	 * <dt>{@code project.buildpath}</dt>
+	 * <dd>The project buildpath.</dd>
+	 * <dt>{@code project.sourcepath<}</dt>
+	 * <dd>The project sourcepath.</dd>
+	 * </dl>
+	 * <p>
+	 * Note: The defaults for this property use the Project object which makes
+	 * the task ineligible for the Gradle configuration cache. If you want to
+	 * use this task with the Gradle configuration cache, you must set this
+	 * property to ensure it does not use the Project object. Of course, this
+	 * then means you cannot use <code>${project.xxx}</code> style expressions
+	 * in the bnd instructions unless you set those values in this property.
+	 *
+	 * @return Properties available for evaluation of the bnd instructions.
+	 */
+	@Input
+	public MapProperty<String, Object> getProperties() {
+		return properties;
 	}
 
 	private final ConfigurableFileCollection		allSource;
@@ -157,6 +203,8 @@ public class BundleTaskExtension {
 		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 		setSourceSet(mainSourceSet);
 		classpath(mainSourceSet.getCompileClasspath());
+		properties = objects.mapProperty(String.class, Object.class)
+			.convention(Maps.of("project", "__convention__"));
 		// need to programmatically add to inputs since @InputFiles in a
 		// extension is not processed
 		task.getInputs()
@@ -173,6 +221,8 @@ public class BundleTaskExtension {
 		}
 		task.getInputs()
 			.property("bnd", getBnd());
+		task.getInputs()
+			.property("properties", getProperties());
 	}
 
 	/**
@@ -302,8 +352,10 @@ public class BundleTaskExtension {
 				FileCollection sourcepath = getAllSource().filter(file -> file.exists());
 				// create Builder
 				Properties gradleProperties = new BeanProperties();
-				gradleProperties.put("task", getTask());
-				gradleProperties.put("project", getTask().getProject());
+				gradleProperties.putAll(unwrap(getProperties()));
+				gradleProperties.computeIfPresent("project",
+					(k, v) -> "__convention__".equals(v) ? getTask().getProject() : v);
+				gradleProperties.putIfAbsent("task", getTask());
 				try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
 					// load bnd properties
 					File temporaryBndFile = File.createTempFile("bnd", ".bnd", getTask().getTemporaryDir());
@@ -322,9 +374,9 @@ public class BundleTaskExtension {
 							.store(writer, null);
 						// if the bnd file exists, add its contents to the
 						// tmp bnd file
-						File bndfile = unwrapFileOrNull(getBndfile());
-						if (Objects.nonNull(bndfile) && bndfile.isFile()) {
-							builder.loadProperties(bndfile)
+						Optional<File> bndfile = unwrapFileOptional(getBndfile()).filter(File::isFile);
+						if (bndfile.isPresent()) {
+							builder.loadProperties(bndfile.get())
 								.store(writer, null);
 						} else {
 							String bnd = unwrap(getBnd());
@@ -351,7 +403,7 @@ public class BundleTaskExtension {
 					String archiveFileName = unwrap(getTask().getArchiveFileName());
 					String archiveBaseName = unwrap(getTask().getArchiveBaseName());
 					String archiveClassifier = unwrap(getTask().getArchiveClassifier());
-					String archiveVersion = unwrapOrNull(getTask().getArchiveVersion());
+					String archiveVersion = unwrapOptional(getTask().getArchiveVersion()).orElse(null);
 
 					// Include entire contents of Jar task generated jar
 					// (except the

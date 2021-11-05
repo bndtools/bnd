@@ -241,3 +241,8 @@ tasks.test {
 		}
 	}
 }
+
+tasks.named<Delete>("cleanTest") {
+	val target = layout.getBuildDirectory().dir("testresources")
+	delete(target)
+}

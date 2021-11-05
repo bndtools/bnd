@@ -216,13 +216,14 @@ public class Baseline extends DefaultTask {
 	 */
 	public Baseline() {
 		super();
-		this.layout = getProject().getLayout();
-		this.providers = getProject().getProviders();
-		ObjectFactory objects = getProject().getObjects();
+		org.gradle.api.Project project = getProject();
+		this.layout = project.getLayout();
+		this.providers = project.getProviders();
+		ObjectFactory objects = project.getObjects();
 		baselineReportDirName = objects.property(String.class)
 			.convention("baseline");
 		baselineReportDirectory = objects.directoryProperty()
-			.convention(getProject().getExtensions()
+			.convention(project.getExtensions()
 				.getByType(ReportingExtension.class)
 				.getBaseDirectory()
 				.dir(baselineReportDirName));

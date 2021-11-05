@@ -3,7 +3,7 @@ package aQute.bnd.gradle;
 import static aQute.bnd.build.Project.BNDFILE;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
-import static aQute.bnd.gradle.BndUtils.unwrapOrNull;
+import static aQute.bnd.gradle.BndUtils.unwrapOptional;
 
 import java.util.Objects;
 
@@ -102,7 +102,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 			Jar bundleTask = task.getBundleTask();
 			if (Objects.nonNull(bundleTask)) {
 				String archiveBaseName = unwrap(bundleTask.getArchiveBaseName());
-				String archiveVersion = unwrapOrNull(bundleTask.getArchiveVersion());
+				String archiveVersion = unwrapOptional(bundleTask.getArchiveVersion()).orElse(null);
 				String group = project.getGroup()
 					.toString();
 				task.getLogger()

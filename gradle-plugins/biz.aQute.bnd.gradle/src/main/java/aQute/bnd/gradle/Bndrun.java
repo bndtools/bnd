@@ -44,6 +44,10 @@ import aQute.lib.io.IO;
  * set.</li>
  * <li>workingDirectory - This is the directory for the execution. The default
  * for workingDirectory is temporaryDir.</li>
+ * <li>properties - Properties that are available for evaluation of the bnd
+ * instructions for non-Bnd Workspace builds. The default is the properties of
+ * the task and project objects. This must not be used for Bnd Workspace
+ * builds.</li>
  * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd
  * Workspace builds. The default is "sourceSets.main.runtimeClasspath" plus
  * "configurations.archives.artifacts.files". This must not be used for Bnd
@@ -75,9 +79,10 @@ public class Bndrun extends AbstractBndrun {
 	 */
 	public Bndrun() {
 		super();
-		ObjectFactory objects = getProject().getObjects();
+		org.gradle.api.Project project = getProject();
+		ObjectFactory objects = project.getObjects();
 		javaLauncher = objects.property(JavaLauncher.class)
-			.convention(defaultToolFor(getProject(), JavaToolchainService::launcherFor));
+			.convention(defaultToolFor(project, JavaToolchainService::launcherFor));
 	}
 
 	/**

@@ -1,0 +1,9 @@
+-include: ${.}/included.bnd
+
+-runfw: ${runfw}
+
+-runrequires.junit: osgi.identity;filter:='(osgi.identity=${junit})'
+
+-runproperties:
+
+-runtrace: true

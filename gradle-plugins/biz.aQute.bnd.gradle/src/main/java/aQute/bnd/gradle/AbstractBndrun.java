@@ -4,7 +4,9 @@ import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
 import static aQute.bnd.gradle.BndUtils.builtBy;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
+import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
+import static aQute.bnd.gradle.BndUtils.unwrapOptional;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
@@ -23,6 +25,8 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.MapProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
@@ -42,6 +46,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
@@ -62,6 +67,10 @@ import aQute.lib.strings.Strings;
  * The default is false.</li>
  * <li>workingDirectory - This is the directory for the execution. The default
  * for workingDirectory is temporaryDir.</li>
+ * <li>properties - Properties that are available for evaluation of the bnd
+ * instructions for non-Bnd Workspace builds. The default is the properties of
+ * the task and project objects. This must not be used for Bnd Workspace
+ * builds.</li>
  * </ul>
  */
 public abstract class AbstractBndrun extends DefaultTask {
@@ -72,6 +81,10 @@ public abstract class AbstractBndrun extends DefaultTask {
 	private final String						projectName;
 	private final Provider<String>				targetVersion;
 	private final FileCollection				artifacts;
+	private final MapProperty<String, Object>	properties;
+	private final Property<Boolean>				offline;
+	private final Property<Project>				bndProject;
+	private final Property<Workspace>			bndWorkspace;
 
 	/**
 	 * The bndrun file for the execution.
@@ -148,6 +161,52 @@ public abstract class AbstractBndrun extends DefaultTask {
 	}
 
 	/**
+	 * Properties that are available for evaluation of the bnd instructions for
+	 * non-Bnd Workspace builds.
+	 * <p>
+	 * This must not be used for Bnd Workspace builds.
+	 * <p>
+	 * If this property is not set, the properties of the following are
+	 * available:
+	 * <dl>
+	 * <dt>{@code task}</dt>
+	 * <dd>This Task object.</dd>
+	 * <dt>{@code project}</dt>
+	 * <dd>The Project object for this task.</dd>
+	 * </dl>
+	 * If the {@code task} property is not set, the properties of this Task
+	 * object will automatically be available.
+	 * <p>
+	 * Note: The defaults for this property use the Project object which makes
+	 * the task ineligible for the Gradle configuration cache. If you want to
+	 * use this task with the Gradle configuration cache, you must set this
+	 * property to ensure it does not use the Project object. Of course, this
+	 * then means you cannot use <code>${project.xxx}</code> style expressions
+	 * in the bnd instructions unless you set those values in this property.
+	 *
+	 * @return Properties available for evaluation of the bnd instructions.
+	 */
+	@Input
+	public MapProperty<String, Object> getProperties() {
+		return properties;
+	}
+
+	@Internal
+	Provider<Boolean> getOffline() {
+		return offline;
+	}
+
+	@Internal
+	Provider<Workspace> getBndWorkspace() {
+		return bndWorkspace;
+	}
+
+	@Internal
+	Provider<Project> getBndProject() {
+		return bndProject;
+	}
+
+	/**
 	 * Create a Bndrun task.
 	 */
 	@SuppressWarnings("deprecation")
@@ -173,15 +232,33 @@ public abstract class AbstractBndrun extends DefaultTask {
 			.getByName(Dependency.ARCHIVES_CONFIGURATION);
 		artifacts = archivesConfiguration.getArtifacts()
 			.getFiles();
-		if (project.hasProperty("bndWorkspace")) {
-			// bundles must not be used for Bnd workspace builds
+		properties = objects.mapProperty(String.class, Object.class);
+		offline = objects.property(Boolean.class)
+			.convention(Boolean.valueOf(project.getGradle()
+				.getStartParameter()
+				.isOffline()));
+		bndWorkspace = objects.property(Workspace.class)
+			.value((Workspace) project.findProperty("bndWorkspace"));
+		bndProject = objects.property(Project.class);
+
+		if (bndWorkspace.isPresent()) {
+			// bundles and properties must not be used for Bnd workspace builds
 			bundles.disallowChanges();
+			properties.disallowChanges();
+			if (project.getPluginManager()
+				.hasPlugin(BndPlugin.PLUGINID)) {
+				BndPluginExtension extension = project.getExtensions()
+					.getByType(BndPluginExtension.class);
+				bndProject.value(extension.getProject());
+			}
+			offline.value(bndWorkspace.map(ws -> Boolean.valueOf(ws.isOffline())));
 		} else {
 			bundles(mainSourceSet.getRuntimeClasspath());
 			bundles(artifacts);
 			// We add this in case someone actually looks for this convention
 			getConvention().getPlugins()
 				.put("bundles", new FileSetRepositoryConvention(this));
+			properties.convention(Maps.of("project", "__convention__"));
 		}
 	}
 
@@ -218,26 +295,23 @@ public abstract class AbstractBndrun extends DefaultTask {
 	 */
 	@TaskAction
 	public void bndrunAction() throws Exception {
-		Workspace workspace = (Workspace) getProject().findProperty("bndWorkspace");
 		File bndrunFile = unwrapFile(getBndrun());
-		File workingDirFile = unwrapFile(getWorkingDirectory());
-		if (Objects.nonNull(workspace) && getProject().getPluginManager()
-			.hasPlugin(BndPlugin.PLUGINID)) {
-			BndPluginExtension extension = getProject().getExtensions()
-				.getByType(BndPluginExtension.class);
-			if (Objects.equals(bndrunFile, extension.getProject()
-				.getPropertiesFile())) {
-				worker(extension.getProject());
-				return;
-			}
+		Optional<Project> project = unwrapOptional(getBndProject());
+		if (project.isPresent() && Objects.equals(bndrunFile, project.get()
+			.getPropertiesFile())) {
+			worker(project.get());
+			return;
 		}
-		try (biz.aQute.resolve.Bndrun run = createBndrun(workspace, bndrunFile)) {
+		File workingDirFile = unwrapFile(getWorkingDirectory());
+		Optional<Workspace> workspace = unwrapOptional(getBndWorkspace());
+		try (biz.aQute.resolve.Bndrun run = createBndrun(workspace.orElse(null), bndrunFile)) {
 			Workspace runWorkspace = run.getWorkspace();
 			IO.mkdirs(workingDirFile);
-			if (Objects.isNull(workspace)) {
+			if (!workspace.isPresent()) {
 				Properties gradleProperties = new BeanProperties(runWorkspace.getProperties());
-				gradleProperties.put("task", this);
-				gradleProperties.put("project", getProject());
+				gradleProperties.putAll(unwrap(getProperties()));
+				gradleProperties.computeIfPresent("project", (k, v) -> "__convention__".equals(v) ? getProject() : v);
+				gradleProperties.putIfAbsent("task", this);
 				run.setParent(new Processor(runWorkspace, gradleProperties, false));
 				run.clear();
 				run.forceRefresh(); // setBase must be called after forceRefresh
@@ -248,11 +322,8 @@ public abstract class AbstractBndrun extends DefaultTask {
 				File cnf = new File(workingDirFile, Workspace.CNFDIR);
 				IO.mkdirs(cnf);
 				runWorkspace.setBuildDir(cnf);
-				runWorkspace.setOffline(Objects.nonNull(workspace) ? workspace.isOffline()
-					: getProject().getGradle()
-						.getStartParameter()
-						.isOffline());
-				if (Objects.isNull(workspace)) {
+				runWorkspace.setOffline(unwrap(getOffline()).booleanValue());
+				if (!workspace.isPresent()) {
 					FileSetRepository fileSetRepository = new FileSetRepository(getName(), getBundles().getFiles());
 					runWorkspace.addBasicPlugin(fileSetRepository);
 					for (RepositoryPlugin repo : runWorkspace.getRepositories()) {

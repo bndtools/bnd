@@ -1,0 +1,98 @@
+/*
+ *
+ */
+
+import aQute.bnd.gradle.Bundle
+import aQute.bnd.gradle.Resolve
+import aQute.bnd.gradle.TestOSGi
+
+plugins {
+	id 'biz.aQute.bnd.builder'
+}
+
+ext.projectprop = 'prop.project'
+group = 'test.bnd.gradle'
+version = '1.0.0'
+
+repositories {
+	mavenLocal().metadataSources { mavenPom(); artifact() }
+	mavenCentral()
+}
+
+dependencies {
+	implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
+	runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+}
+
+def jar = tasks.named('jar') {
+	ext.taskprop = 'prop.task'
+	manifest {
+		attributes('Implementation-Title': project.archivesBaseName,
+		'Implementation-Version': project.version,
+		'-includeresource': '{${.}/bar.txt}',
+		'-include': '${.}/other.bnd',
+		'Override': 'This should be overridden by the bnd file'
+		)
+	}
+	bundle.bnd = ['Override': 'This will be ignored since there is a bnd file for this task']
+	bundle.properties.put("project.group", provider({project.group}))
+	bundle.properties.put("project.name", provider({project.name}))
+	bundle.properties.put("project.projectprop", provider({project.projectprop}))
+	bundle.properties.put("task.project.projectprop", provider({project.projectprop}))
+}
+
+def bundle = tasks.register('bundle', Bundle.class) {
+	description = 'Bundle'
+	group = 'build'
+	from sourceSets.test.output
+	archiveClassifier = 'bundle'
+	bundle {
+		bnd = '''
+-exportcontents: doubler.impl
+-sources: true
+My-Header: my-value
+text: TEXT
+Bundle-Name: ${project.group}:${task.archiveBaseName}-${task.archiveClassifier}
+Project-Name: ${project.name}
+Project-Dir: ${project.dir}
+Project-Output: ${project.output}
+Project-Sourcepath: ${project.sourcepath}
+Project-Buildpath: ${project.buildpath}
+'''
+		bnd 'Here: ${.}'
+		properties = [
+			"task.archiveClassifier" : "overridden"
+		]
+		properties.put("project.group", provider({project.group}))
+		properties.put("project.name", provider({project.name}))
+		sourceSet = sourceSets.test
+		classpath = configurations.compileClasspath
+		classpath jar
+	}
+	archiveVersion = '1.1.0'
+}
+
+artifacts {
+	runtimeOnly bundle
+	archives bundle
+}
+
+def resolveTask = tasks.register('resolve', Resolve) {
+	description = 'Resolve testosgi.bndrun'
+	group = 'test'
+	dependsOn tasks.withType(Jar)
+	bndrun = file('testosgi.bndrun')
+	outputBndrun = layout.buildDirectory.file('testosgi.bndrun')
+	properties.empty() // Enable configuration cache
+}
+
+def testOSGiTask = tasks.register('testOSGi', TestOSGi) {
+	description = 'OSGi Test testosgi.bndrun'
+	group = 'test'
+	bndrun = resolveTask.flatMap { it.outputBndrun }
+	properties.empty() // Enable configuration cache
+}
+
+def checkTask = tasks.named('check') {
+	dependsOn(testOSGiTask)
+}

@@ -39,6 +39,7 @@ task same(type: Resolve) {
 	bndrun = file("${name}.bndrun")
 	failOnChanges = true
 	bundles = configurations.bundles
+	properties = ["project.osgiIdentity" : osgiIdentity]
 }
 
 task changefail(type: Resolve) {

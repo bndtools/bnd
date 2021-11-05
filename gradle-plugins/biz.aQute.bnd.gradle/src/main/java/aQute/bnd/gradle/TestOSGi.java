@@ -48,6 +48,10 @@ import aQute.lib.io.IO;
  * false.</li>
  * <li>workingDirectory - This is the directory for the test case execution. The
  * default for workingDir is temporaryDir.</li>
+ * <li>properties - Properties that are available for evaluation of the bnd
+ * instructions for non-Bnd Workspace builds. The default is the properties of
+ * the task and project objects. This must not be used for Bnd Workspace
+ * builds.</li>
  * <li>javaLauncher - Configures the default java executable to be used for
  * execution.</li>
  * <li>resultsDirectory - This is the directory where the test case results are
@@ -100,9 +104,10 @@ public class TestOSGi extends Bndrun {
 	 */
 	public TestOSGi() {
 		super();
-		Provider<Directory> testResultsDir = testResultsDir(getProject());
+		org.gradle.api.Project project = getProject();
+		Provider<Directory> testResultsDir = testResultsDir(project);
 		String taskName = getName();
-		resultsDirectory = getProject().getObjects()
+		resultsDirectory = project.getObjects()
 			.directoryProperty()
 			.convention(testResultsDir.map(d -> d.dir(taskName)));
 	}

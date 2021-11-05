@@ -69,6 +69,35 @@ plugins {
 }
 ```
 
+## Gradle Configuration Cache Support
+
+By default, the tasks of the Gradle Plugin for non-Bnd Workspace Builds use the Gradle Project object at task execution time to allow the Bnd instructions to resolve macro references such as `${project.group}` which evaluates to the value of the `group` property of the Gradle Project object.
+However, Gradle's [Configuration Cache][23] support requires that a Gradle Project object cannot be used at task execution time.
+To prevent a task of the Gradle Plugin for non-Bnd Workspace Builds from using the Gradle Project object at task execution time, the task's `properties` property must be set to some value.
+This can be simply done by setting it empty.
+For example:
+
+```groovy
+tasks.named("jar") {
+  bundle {
+    properties.empty()
+  }
+}
+```
+
+If you need to reference some project properties in the Bnd instructions and still use the Configuration Cache, then you will need to put the needed project properties in the task's `properties` property.
+For example:
+
+```groovy
+tasks.named("jar") {
+  bundle {
+    properties.put("project.group", provider({project.group}))
+  }
+}
+```
+
+This sets the `project.group` key in the `properties` property to the value of a provider which returns the value of the project's `group` property.  A provider is used for late binding of the value.
+
 ## Create a task of the `Bundle` type
 
 The `Bundle` task type is an extension of the [`Jar` task type][18] that adds a `bundle` extension with properties and uses Bnd to generate a bundle.
@@ -92,7 +121,7 @@ If this property is not set or the bnd file does not exist, then the `bnd` prope
 
 ### bnd
 
-The bnd instructions to use to create the bundle.
+The Bnd instructions to use to create the bundle.
 This property is ignored if the `bndfile` property refers to a file that exists.
 If the `bndfile` property is not set or does not refer to a file that exists, or this property is not set, this is OK.
 But without some instructions to Bnd, your bundle will not be very interesting.
@@ -108,6 +137,11 @@ You will only need to specify this property if you want to use a different Sourc
 The FileCollection object to use as the classpath for the Bnd builder.
 The default value is _${project.sourceSets.main.compileClasspath}_.
 You will only need to specify this property if you want to specify additional classpath elements or replace the classpath.
+
+### properties 
+
+Properties that are available for evaluation of the Bnd instructions.
+The default is the properties of the Gradle task and project objects.
 
 ### Example
 
@@ -348,6 +382,12 @@ This property must not be used for and is ignored in Bnd Workspace builds.
 If `true` failure reports will include optional requirements.
 The default is `true`.
 
+### properties 
+
+Properties that are available for evaluation of the Bnd instructions.
+The default is the properties of the Gradle task and project objects.
+This property must not be used for and is ignored in Bnd Workspace builds.
+
 ## Create a task of the `Export` type
 
 The `Export` task type will export a standalone bndrun file.
@@ -394,6 +434,12 @@ The default is _${temporaryDir}_.
 
 The collection of files to use for locating bundles during the bndrun export.
 The default is _${project.sourceSets.main.runtimeClasspath}_ plus _${project.configurations.archives.artifacts.files}_.
+This property must not be used for and is ignored in Bnd Workspace builds.
+
+### properties 
+
+Properties that are available for evaluation of the Bnd instructions.
+The default is the properties of the Gradle task and project objects.
 This property must not be used for and is ignored in Bnd Workspace builds.
 
 ## Create a task of the `TestOSGi` type
@@ -451,6 +497,12 @@ The default is _${project.java.testResultsDir}/${task.name}_.
 
 Specify the default java executable to be used for execution.
 This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`. 
+
+### properties 
+
+Properties that are available for evaluation of the Bnd instructions.
+The default is the properties of the Gradle task and project objects.
+This property must not be used for and is ignored in Bnd Workspace builds.
 
 ## Create a task of the `Index` type
 
@@ -559,6 +611,12 @@ This property must not be used for and is ignored in Bnd Workspace builds.
 Specify the default java executable to be used for execution.
 This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`. 
 
+### properties 
+
+Properties that are available for evaluation of the Bnd instructions.
+The default is the properties of the Gradle task and project objects.
+This property must not be used for and is ignored in Bnd Workspace builds.
+
 # Gradle Plugins for Bnd Workspace Builds
 
 The Bnd Gradle Plugins for Bnd Workspace builds uses the information specified in the Bnd Workspace's `cnf/build.bnd` file and each project's `bnd.bnd` file to build the projects.
@@ -624,6 +682,12 @@ While this is the same as the previous `settings.gradle` example, since it is th
 The plugin will apply the `biz.aQute.bnd` Gradle plugin to each Gradle project which is a Bnd project.
 
 In general, your Gradle scripts will not apply the `biz.aQute.bnd` Gradle plugin directly to a project since this is handled by using the `biz.aQute.bnd.workspace` Gradle plugin in the `settings.gradle` file or the `build.gradle` file in the root project.
+
+## Gradle Configuration Cache Not Supported
+
+The tasks of the Gradle Plugin for Bnd Workspace Builds use the Bnd Workspace model objects such as Workspace and Project at task execution time to perform Bnd operations.
+However, Gradle's [Configuration Cache][23] support requires that all objects used at task execution time must be serializablea and the Bnd Workspace model objects are not serializable.
+So the Gradle Plugin for Bnd Workspace Builds cannot be used with Gradle's Configuration Cache.
 
 ## Gradle Tasks
 
@@ -791,3 +855,4 @@ For full details on what the Bnd Gradle Plugins do, check out the [source code][
 [20]: #gradle-plugins-for-bnd-workspace-builds
 [21]: #gradle-plugin-for-non-bnd-workspace-builds
 [22]: https://docs.gradle.org/5.0/userguide/osgi_plugin.html
+[23]: https://docs.gradle.org/current/userguide/configuration_cache.html
