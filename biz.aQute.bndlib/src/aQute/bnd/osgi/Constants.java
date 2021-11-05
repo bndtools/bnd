@@ -213,6 +213,7 @@ public interface Constants {
 	String		REPRODUCIBLE								= "-reproducible";
 
 	String		RESOLVE										= "-resolve";
+	String		RESOLVEDEBUG								= "-resolvedebug";
 
 	/**
 	 * Exclude the system resource from the resulting wiring in resolve. The
