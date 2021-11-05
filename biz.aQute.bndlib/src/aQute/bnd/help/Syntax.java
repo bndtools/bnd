@@ -602,12 +602,12 @@ public class Syntax implements Constants {
 		new Syntax(REPRODUCIBLE, "Use a fixed timestamp for all jar entries.", REPRODUCIBLE + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
 
-		new Syntax("-resolve.effective",
+		new Syntax(RESOLVE_EFFECTIVE,
 			"Each requirement and capability has an effective or is effective=resolve. An effective of resolve is always processed by the resolver.",
-			"-resolve.effective=resolve,active", "qname (',' qname )", null),
+			RESOLVE_EFFECTIVE + "=resolve,active", "qname (',' qname )", null),
 
-		new Syntax("-resolve.preferences", "Override the default order and selection of repositories.",
-			"-resolve.preferences=com.example.bundle.most.priority", "${packages}", null),
+		new Syntax(RESOLVE_PREFERENCES, "Override the default order and selection of repositories.",
+			RESOLVE_PREFERENCES + "=com.example.bundle.most.priority", "${packages}", null),
 
 		new Syntax(RUNTIMEOUT, "Specifies the test execution timeout.", RUNTIMEOUT + "=10000", null, null),
 		new Syntax(REQUIRE_BND, "Require a specific version of bnd.", REQUIRE_BND + "=\"(version>=4.1)\"",
