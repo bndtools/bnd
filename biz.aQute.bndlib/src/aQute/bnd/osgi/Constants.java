@@ -213,12 +213,15 @@ public interface Constants {
 	String		REPRODUCIBLE								= "-reproducible";
 
 	String		RESOLVE										= "-resolve";
+	String		RESOLVEDEBUG								= "-resolvedebug";
 
 	/**
 	 * Exclude the system resource from the resulting wiring in resolve. The
 	 * default is true
 	 */
 	String		RESOLVE_EXCLUDESYSTEM						= "-resolve.excludesystem";
+	String		RESOLVE_EFFECTIVE							= "-resolve.effective";
+	String		RESOLVE_PREFERENCES							= "-resolve.preferences";
 
 	String		RUNNOREFERENCES								= "-runnoreferences";
 	String		RUNFRAMEWORKRESTART							= "-runframeworkrestart";

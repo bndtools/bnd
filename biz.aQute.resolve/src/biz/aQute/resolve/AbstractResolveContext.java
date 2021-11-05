@@ -59,11 +59,11 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
-import aQute.bnd.unmodifiable.Sets;
 
 /**
  * This is the Resolve Context as outlined in the Resolver specification. It
@@ -129,7 +129,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private void initAndReport() {
 		init();
 		if ((getLevel() > 0) && reported.compareAndSet(false, true)) {
-			DebugReporter dr = new DebugReporter(System.out, this, level);
+			DebugReporter dr = new DebugReporter(System.out, this, getLevel());
 			dr.report();
 		}
 	}

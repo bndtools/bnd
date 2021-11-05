@@ -63,8 +63,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		.getLogger(BndrunResolveContext.class);
 
 	private static final String			BND_AUGMENT					= "bnd.augment";
-	public static final String			RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
-	public static final String			PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
+
+	@Deprecated
+	public static final String			RUN_EFFECTIVE_INSTRUCTION	= Constants.RESOLVE_EFFECTIVE;
+	@Deprecated
+	public static final String			PROP_RESOLVE_PREFERENCES	= Constants.RESOLVE_PREFERENCES;
 	private static final String			NAMESPACE_WHITELIST			= "x-whitelist";
 
 	private Registry					registry;
@@ -129,7 +132,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			initialized = true;
 
 			if (getLevel() <= 0) {
-				Integer level = Converter.cnv(Integer.class, properties.getProperty("-resolvedebug", "0"));
+				Integer level = Converter.cnv(Integer.class, properties.getProperty(Constants.RESOLVEDEBUG, "0"));
 				if (level != null)
 					setLevel(level);
 			}
@@ -314,7 +317,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * Load the effective set from the properties
 	 */
 	Map<String, Set<String>> loadEffectiveSet() {
-		String effective = properties.getProperty(RUN_EFFECTIVE_INSTRUCTION);
+		String effective = properties.getProperty(Constants.RESOLVE_EFFECTIVE);
 		if (effective == null)
 			return null;
 
@@ -505,7 +508,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	}
 
 	private void loadPreferences() {
-		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES), project);
+		resolvePrefs = new Parameters(properties.getProperty(Constants.RESOLVE_PREFERENCES), project);
 	}
 
 	// Remove any capabilities that come from resources whose osgi.identity

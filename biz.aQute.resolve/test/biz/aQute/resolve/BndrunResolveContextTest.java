@@ -31,6 +31,7 @@ import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -156,7 +157,7 @@ public class BndrunResolveContextTest {
 	@Test
 	public void testEffective2() throws Exception {
 		BndEditModel model = new BndEditModel();
-		model.genericSet(BndrunResolveContext.RUN_EFFECTIVE_INSTRUCTION, "active, arbitrary");
+		model.genericSet(Constants.RESOLVE_EFFECTIVE, "active, arbitrary");
 
 		BndrunResolveContext context = new BndrunResolveContext(model, new MockRegistry(), log);
 
@@ -185,7 +186,7 @@ public class BndrunResolveContextTest {
 	@Test
 	public void testEffective3() throws Exception {
 		BndEditModel model = new BndEditModel();
-		model.genericSet(BndrunResolveContext.RUN_EFFECTIVE_INSTRUCTION,
+		model.genericSet(Constants.RESOLVE_EFFECTIVE,
 			"active;skip:=\"filtered.ns,another.filtered.ns\", arbitrary");
 
 		BndrunResolveContext context = new BndrunResolveContext(model, new MockRegistry(), log);
