@@ -192,6 +192,21 @@ public abstract class AbstractBndrun extends DefaultTask {
 	}
 
 	@Internal
+	String getProjectName() {
+		return projectName;
+	}
+
+	@Internal
+	Provider<String> getTargetVersion() {
+		return targetVersion;
+	}
+
+	@Internal
+	FileCollection getArtifacts() {
+		return artifacts;
+	}
+
+	@Internal
 	Provider<Boolean> getOffline() {
 		return offline;
 	}
@@ -372,7 +387,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 	protected void inferRunEE(Processor run) {
 		String runee = run.getProperty(Constants.RUNEE);
 		if (Objects.isNull(runee)) {
-			runee = Optional.ofNullable(targetVersion.getOrElse(System.getProperty("java.specification.version")))
+			runee = Optional.ofNullable(getTargetVersion().getOrElse(System.getProperty("java.specification.version")))
 				.flatMap(EE::highestFromTargetVersion)
 				.orElse(EE.JavaSE_1_8) // Fallback to Java 8
 				.getEEName();
@@ -389,15 +404,15 @@ public abstract class AbstractBndrun extends DefaultTask {
 	 */
 	protected void inferRunRequires(Processor run) {
 		String runrequires = run.getProperty(Constants.RUNREQUIRES);
-		if (Objects.isNull(runrequires) && !artifacts.isEmpty()) {
-			runrequires = artifacts.getFiles()
+		if (Objects.isNull(runrequires) && !getArtifacts().isEmpty()) {
+			runrequires = getArtifacts().getFiles()
 				.stream()
 				.filter(File::isFile)
 				.map(file -> Optional.of(file)
 					.map(asFunctionOrElse(Domain::domain, null))
 					.map(Domain::getBundleSymbolicName)
 					.map(Map.Entry::getKey)
-					.orElse(projectName))
+					.orElseGet(this::getProjectName))
 				.distinct()
 				.map(bsn -> String.format("osgi.identity;filter:='(osgi.identity=%s)'", bsn))
 				.collect(Strings.joining());
