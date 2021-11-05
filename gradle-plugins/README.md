@@ -685,8 +685,8 @@ In general, your Gradle scripts will not apply the `biz.aQute.bnd` Gradle plugin
 
 ## Gradle Configuration Cache Not Supported
 
-The tasks of the Gradle Plugin for Bnd Workspace Builds use the Bnd Workspace model objects such as Workspace and Project at task execution time to perform Bnd operations.
-However, Gradle's [Configuration Cache][23] support requires that all objects used at task execution time must be serializablea and the Bnd Workspace model objects are not serializable.
+The tasks of the Gradle Plugin for Bnd Workspace Builds use the Bnd Workspace model objects such as [Workspace][8] and [Project][9] at task execution time to perform Bnd operations.
+However, Gradle's [Configuration Cache][23] support requires that all objects used at task execution time must be serializable and the Bnd Workspace model objects are not serializable.
 So the Gradle Plugin for Bnd Workspace Builds cannot be used with Gradle's Configuration Cache.
 
 ## Gradle Tasks
@@ -838,7 +838,7 @@ For full details on what the Bnd Gradle Plugins do, check out the [source code][
 
 [1]: https://gradle.org/
 [2]: https://github.com/bndtools/bnd/tree/master/gradle-plugins/biz.aQute.bnd.gradle
-[3]: https://gradle.org/docs/current/userguide/java_plugin.html
+[3]: https://docs.gradle.org/current/userguide/java_plugin.html
 [4]: https://bnd.bndtools.org/instructions/buildpath.html
 [5]: https://bnd.bndtools.org/instructions/testpath.html
 [6]: https://bnd.bndtools.org/instructions/releaserepo.html
