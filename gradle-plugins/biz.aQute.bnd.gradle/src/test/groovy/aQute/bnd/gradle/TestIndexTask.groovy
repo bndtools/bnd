@@ -1,11 +1,11 @@
 package aQute.bnd.gradle
 
-import java.util.jar.*
-import java.util.zip.*
-
-
-import org.gradle.testkit.runner.GradleRunner
 import static org.gradle.testkit.runner.TaskOutcome.*
+
+import java.util.jar.Attributes
+import java.util.jar.JarFile
+import java.util.zip.GZIPInputStream
+
 import spock.lang.Specification
 
 class TestIndexTask extends Specification {

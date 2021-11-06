@@ -1,9 +1,9 @@
 package aQute.bnd.gradle
 
-import aQute.bnd.version.MavenVersion
-
 import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.GradleRunner
+
+import aQute.bnd.version.MavenVersion
 
 class TestHelper {
 
@@ -32,7 +32,7 @@ class TestHelper {
 
 	private static String gradleVersion() {
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
-			return "7.3-rc-3"
+			return "7.3-rc-5"
 		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
 			return "7.0"

@@ -1,14 +1,10 @@
 package aQute.bnd.gradle
 
-import java.util.jar.*
-import java.util.regex.Pattern
-
-import org.gradle.testkit.runner.GradleRunner
 import static org.gradle.testkit.runner.TaskOutcome.*
-import spock.lang.Specification
 
-import aQute.libg.reporter.slf4j.Slf4jReporter
 import aQute.lib.utf8properties.UTF8Properties
+import aQute.libg.reporter.slf4j.Slf4jReporter
+import spock.lang.Specification
 
 class TestResolveTask extends Specification {
 
