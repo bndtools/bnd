@@ -15,6 +15,12 @@ updates:
     schedule:
       interval: "daily"
 
+  # Maintain dependencies for gradle
+  - package-ecosystem: "gradle"
+    directory: "/gradle-plugins"
+    schedule:
+      interval: "daily"
+
   # Maintain dependencies for bundler
   - package-ecosystem: "bundler"
     directory: "/docs"
