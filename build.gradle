@@ -117,10 +117,6 @@ subprojects {
 	}
 }
 
-tasks.named("wrapper") {
-	jarFile = rootProject.file(".gradle-wrapper/gradle-wrapper.jar")
-}
-
 tasks.register("buildscriptDependencies") {
 	doLast {
 		println "Java version: ${JavaVersion.current()}"
