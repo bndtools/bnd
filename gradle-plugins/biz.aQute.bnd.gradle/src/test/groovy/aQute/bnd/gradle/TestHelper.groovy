@@ -1,9 +1,9 @@
 package aQute.bnd.gradle
 
-import aQute.bnd.version.MavenVersion
-
 import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.GradleRunner
+
+import aQute.bnd.version.MavenVersion
 
 class TestHelper {
 
