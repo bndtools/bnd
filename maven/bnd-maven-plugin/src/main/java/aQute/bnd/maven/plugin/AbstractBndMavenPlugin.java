@@ -1,5 +1,7 @@
 package aQute.bnd.maven.plugin;
 
+import static aQute.bnd.maven.lib.executions.PluginExecutions.isPackagingGoal;
+
 /*
  * Copyright (c) Paremus and others (2015, 2016). All Rights Reserved.
  *
@@ -51,6 +53,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.mapping.MappingUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -77,38 +80,38 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBndMavenPlugin extends AbstractMojo {
-	protected final Logger	logger					= LoggerFactory.getLogger(getClass());
-	static final String		MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
-	static final String		MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
-	static final String		PACKAGING_JAR			= "jar";
-	static final String		PACKAGING_WAR			= "war";
-	static final String		TSTAMP					= "${tstamp}";
-	static final String		SNAPSHOT				= "SNAPSHOT";
-	static final String		OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
+	protected final Logger		logger					= LoggerFactory.getLogger(getClass());
+	static final String			MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
+	static final String			MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
+	static final String			PACKAGING_JAR			= "jar";
+	static final String			PACKAGING_WAR			= "war";
+	static final String			TSTAMP					= "${tstamp}";
+	static final String			SNAPSHOT				= "SNAPSHOT";
+	static final String			OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	File					targetDir;
+	File						targetDir;
 
 	@Parameter(defaultValue = "true")
-	boolean					includeClassesDir;
+	boolean						includeClassesDir;
 
 	@Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
-	File					warOutputDir;
+	File						warOutputDir;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
-	MavenProject			project;
+	MavenProject				project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	Settings				settings;
+	Settings					settings;
 
 	@Parameter(defaultValue = "${mojoExecution}", readonly = true)
-	MojoExecution			mojoExecution;
+	MojoExecution				mojoExecution;
 
 	@Parameter(property = "bnd.packagingTypes", defaultValue = PACKAGING_JAR + "," + PACKAGING_WAR)
-	List<String>			packagingTypes;
+	List<String>				packagingTypes;
 
 	@Parameter(property = "bnd.skipIfEmpty", defaultValue = "false")
-	boolean					skipIfEmpty;
+	boolean						skipIfEmpty;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -121,7 +124,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = Project.BNDFILE)
 	// This is not used and is for doc only; see loadProjectProperties
 	@SuppressWarnings("unused")
-	String					bndfile;
+	String						bndfile;
 
 	/**
 	 * Bnd instructions for this project specified directly in the pom file.
@@ -135,12 +138,15 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@Parameter
 	// This is not used and is for doc only; see loadProjectProperties
 	@SuppressWarnings("unused")
-	String					bnd;
+	String						bnd;
 
 	@Component
-	BuildContext			buildContext;
+	BuildContext				buildContext;
 
-	File					propertiesFile;
+	@Component
+	MavenProjectHelper			projectHelper;
+
+	File						propertiesFile;
 
 	public abstract File getSourceDir();
 
@@ -154,25 +160,33 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	public abstract boolean isSkip();
 
+	public Optional<String> getClassifier() {
+		return Optional.empty();
+	}
+
+	public Optional<String> getType() {
+		return Optional.empty();
+	}
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		// Exit without generating anything if this is neither a jar or war
+		// project. Probably it's just a parent project.
+		if (!packagingTypes.contains(project.getPackaging())) {
+			logger.debug("skip project with packaging=" + project.getPackaging());
+			return;
+		}
+
 		if (isSkip()) {
-			logger.debug("skip project as configured");
+			logger.info("skip project as configured");
 			return;
 		}
 
 		File classesDir = getClassesDir();
 
 		if (skipIfEmpty && includeClassesDir && isEmpty(classesDir)) {
-			logger.debug(
+			logger.info(
 				"skip project because includeClassesDir=true, compiler output directory is empty and skipIfEmpty=true");
-			return;
-		}
-
-		// Exit without generating anything if this is neither a jar or war
-		// project. Probably it's just a parent project.
-		if (!packagingTypes.contains(project.getPackaging())) {
-			logger.info("skip project with packaging=" + project.getPackaging());
 			return;
 		}
 
@@ -473,8 +487,31 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				// Build bnd Jar (in memory)
 				Jar bndJar = builder.build();
 
-				// Expand Jar into target/classes
-				expandJar(bndJar, outputDir);
+				String goal = mojoExecution.getMojoDescriptor()
+					.getGoal();
+
+				// If a bnd-maven-plugin packaging goal is used it means
+				// this execution is responsible for creating and attaching the
+				// target artifact to the project
+				if (isPackagingGoal(goal)) {
+					// However, if extensions for this plugin are not enabled
+					// the maven-(j|w)wa-plugin will also execute, resulting in
+					// conflicting results
+					if (mojoExecution.getPlugin()
+						.isExtensions()) {
+
+						// Write the jar directly and attach it to the project
+						attachArtifactToProject(bndJar);
+					}
+					else {
+						throw new MojoExecutionException(String.format(
+							"In order to use the bnd-maven-plugin packaging goal %s, <extensions>true</extensions> must be set on the plugin",
+							goal));
+					}
+				} else {
+					// Expand Jar into target/classes
+					expandJar(bndJar, outputDir);
+				}
 			} else {
 				logger.debug("No build");
 			}
@@ -524,6 +561,45 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		// use quoted string if necessary
 		OSGiHeader.quote(builder, value);
 		return builder;
+	}
+
+	private void attachArtifactToProject(Jar bndJar) {
+		File artifactFile = createArtifactFile();
+
+		try (OutputStream os = buildContext.newFileOutputStream(artifactFile)) {
+			bndJar.write(os);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
+		Optional<String> classifier = getClassifier();
+
+		// If there is a classifier artifact must be attached to the
+		// project using that classifier
+		if (classifier.isPresent()) {
+			projectHelper.attachArtifact(project, getType().orElse(""), classifier.get(), artifactFile);
+		} else {
+			// If there is no classifier, then this artifact is the main
+			// artifact
+
+			Artifact artifact = project.getArtifact();
+			if (Optional.ofNullable(artifact.getFile())
+				.map(File::isFile)
+				.orElse(Boolean.FALSE)) {
+
+				logger.warn("The main artifact on {} was already set. It will be replaced by {}", project,
+					mojoExecution);
+			}
+			artifact.setFile(artifactFile);
+		}
+	}
+
+	private File createArtifactFile() {
+		return new File(targetDir, project.getBuild()
+			.getFinalName()
+			+ getClassifier().map("-"::concat)
+				.orElse("")
+			+ "." + project.getPackaging());
 	}
 
 	private File loadProperties(Builder builder) throws Exception {
@@ -672,6 +748,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		Path path = directory.toPath();
 		try (Stream<Path> entries = Files.walk(path)) {
 			return !entries.filter(p -> !Files.isDirectory(p))
+				.filter(p -> !path.relativize(p)
+					.startsWith("META-INF/"))
 				.findFirst()
 				.isPresent();
 		} catch (IOException ioe) {
