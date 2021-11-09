@@ -129,7 +129,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		}
 
 		/* Add cnf project to the graph */
-		result = dynamicObject.tryGetProperty("cnf");
+		result = dynamicObject.tryGetProperty("bnd_cnf");
 		String cnf = result.isFound() ? (String) result.getValue() : Workspace.CNFDIR;
 		projectNames.add(cnf);
 
