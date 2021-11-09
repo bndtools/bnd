@@ -62,6 +62,10 @@ import aQute.lib.io.IO;
  * </ul>
  */
 public class TestOSGi extends Bndrun {
+	/**
+	 * Option to specify test names.
+	 */
+	public static final String		OPTION_TESTS	= "tests";
 	private final DirectoryProperty	resultsDirectory;
 	private List<String>			tests;
 
@@ -94,7 +98,7 @@ public class TestOSGi extends Bndrun {
 	 *
 	 * @param tests The test class names to be run.
 	 */
-	@Option(option = "tests", description = "Configures the test class names to be run.")
+	@Option(option = OPTION_TESTS, description = "Configures the test class names to be run.")
 	public void setTests(List<String> tests) {
 		this.tests = tests;
 	}
