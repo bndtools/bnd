@@ -15,6 +15,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.UntrackedTask;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 
@@ -56,6 +57,7 @@ import aQute.lib.io.IO;
  * execution.</li>
  * </ul>
  */
+@UntrackedTask(because = "Task executes bndrun")
 public class Bndrun extends AbstractBndrun {
 	private final Property<JavaLauncher> javaLauncher;
 
