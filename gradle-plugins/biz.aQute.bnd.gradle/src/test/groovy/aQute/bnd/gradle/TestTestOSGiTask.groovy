@@ -5,6 +5,7 @@ import static org.gradle.testkit.runner.TaskOutcome.*
 import java.util.jar.Attributes
 import java.util.jar.JarFile
 
+import groovy.xml.XmlSlurper
 import spock.lang.Specification
 
 class TestTestOSGiTask extends Specification {

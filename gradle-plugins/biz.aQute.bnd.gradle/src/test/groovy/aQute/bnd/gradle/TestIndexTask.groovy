@@ -6,6 +6,7 @@ import java.util.jar.Attributes
 import java.util.jar.JarFile
 import java.util.zip.GZIPInputStream
 
+import groovy.xml.XmlSlurper
 import spock.lang.Specification
 
 class TestIndexTask extends Specification {
