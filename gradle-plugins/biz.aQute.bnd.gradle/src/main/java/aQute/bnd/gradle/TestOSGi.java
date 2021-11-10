@@ -1,5 +1,6 @@
 package aQute.bnd.gradle;
 
+import static aQute.bnd.gradle.BndUtils.defaultToolFor;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.testResultsDir;
 import static aQute.bnd.gradle.BndUtils.unwrap;
@@ -12,11 +13,16 @@ import java.util.Objects;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.options.Option;
+import org.gradle.jvm.toolchain.JavaLauncher;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import aQute.bnd.build.Project;
 import aQute.lib.io.IO;
@@ -61,13 +67,15 @@ import aQute.lib.io.IO;
  * class.</li>
  * </ul>
  */
-public class TestOSGi extends Bndrun {
+public class TestOSGi extends AbstractBndrun {
 	/**
 	 * Option to specify test names.
 	 */
-	public static final String		OPTION_TESTS	= "tests";
-	private final DirectoryProperty	resultsDirectory;
-	private List<String>			tests;
+	public static final String				OPTION_TESTS	= "tests";
+
+	private final DirectoryProperty			resultsDirectory;
+	private List<String>					tests;
+	private final Property<JavaLauncher>	javaLauncher;
 
 	/**
 	 * The directory where the test case results are placed.
@@ -104,16 +112,33 @@ public class TestOSGi extends Bndrun {
 	}
 
 	/**
+	 * Configures the default java executable to be used for execution.
+	 * <p>
+	 * This java launcher is used if the bndrun does not specify the
+	 * {@code java} property or specifies it with the default value
+	 * {@code java}.
+	 *
+	 * @return The JavaLauncher property.
+	 */
+	@Nested
+	@Optional
+	public Property<JavaLauncher> getJavaLauncher() {
+		return javaLauncher;
+	}
+
+	/**
 	 * Create a TestOSGi task.
 	 */
 	public TestOSGi() {
 		super();
 		org.gradle.api.Project project = getProject();
+		ObjectFactory objects = project.getObjects();
 		Provider<Directory> testResultsDir = testResultsDir(project);
 		String taskName = getName();
-		resultsDirectory = project.getObjects()
-			.directoryProperty()
+		resultsDirectory = objects.directoryProperty()
 			.convention(testResultsDir.map(d -> d.dir(taskName)));
+		javaLauncher = objects.property(JavaLauncher.class)
+			.convention(defaultToolFor(project, JavaToolchainService::launcherFor));
 	}
 
 	/**
