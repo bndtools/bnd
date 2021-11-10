@@ -312,8 +312,9 @@ public abstract class AbstractBndrun extends DefaultTask {
 	public void bndrunAction() throws Exception {
 		File bndrunFile = unwrapFile(getBndrun());
 		Optional<Project> project = unwrapOptional(getBndProject());
-		if (project.isPresent() && Objects.equals(bndrunFile, project.get()
-			.getPropertiesFile())) {
+		if (project.map(Processor::getPropertiesFile)
+			.filter(bndrunFile::equals)
+			.isPresent()) {
 			worker(project.get());
 			return;
 		}
