@@ -32,7 +32,7 @@ class TestHelper {
 
 	private static String gradleVersion() {
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
-			return "7.3-rc-5"
+			return "7.3"
 		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
 			return "7.0"
