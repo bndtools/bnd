@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.gradle.StartParameter;
 import org.gradle.api.Action;
@@ -42,7 +44,11 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	/**
 	 * Name of the plugin.
 	 */
-	public static final String PLUGINID = "biz.aQute.bnd.workspace";
+	public static final String			PLUGINID			= "biz.aQute.bnd.workspace";
+
+	private static final Pattern		OPTION_P			= Pattern.compile("--(?<option>\\w+)(?:=(?<value>\\S+)?)?");
+	private static final Pattern		TASKNAME_SPLITTER	= Pattern.compile(":");
+	private static final Set<String>	SPECIAL_FOLDERS		= Sets.of("buildSrc", "gradle");
 
 	/**
 	 * Apply the {@code biz.aQute.bnd.workspace} plugin.
@@ -86,13 +92,20 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		for (Iterator<String> iter = startParameter.getTaskNames()
 			.iterator(); iter.hasNext();) {
 			String taskName = iter.next();
-			if (Objects.equals(taskName, "--tests")) {
-				if (iter.hasNext()) {
-					iter.next();
+			Matcher m = OPTION_P.matcher(taskName);
+			if (m.matches()) {
+				taskName = m.group("value"); // option value may be a task name
+				if (Objects.equals(TestOSGi.OPTION_TESTS, m.group("option"))) {
+					if (Objects.isNull(taskName) && iter.hasNext()) {
+						iter.next();
+					}
+					continue; // ignore --tests value
 				}
-				continue;
+				if (Objects.isNull(taskName)) {
+					continue; // no task name to process
+				}
 			}
-			String[] elements = taskName.split(":");
+			String[] elements = TASKNAME_SPLITTER.split(taskName);
 			switch (elements.length) {
 				case 1 :
 					projectNames.add(defaultProjectName);
@@ -119,12 +132,12 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		 * except special gradle folders
 		 */
 		if (projectNames.remove("")) {
-			Set<String> specialFolders = Sets.of("buildSrc", "gradle");
 			for (File dir : rootDir.listFiles(File::isDirectory)) {
 				String projectName = dir.getName();
-				if (!projectName.startsWith(".") && !specialFolders.contains(projectName)) {
-					projectNames.add(projectName);
+				if (projectName.startsWith(".") || SPECIAL_FOLDERS.contains(projectName)) {
+					continue;
 				}
+				projectNames.add(projectName);
 			}
 		}
 
@@ -203,7 +216,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			projectNames.removeAll(projectGraph);
 		}
 
-		projectGraph.forEach(settings::include);
+		settings.include(projectGraph.toArray(new String[0]));
 
 		/* Apply workspace plugin to root project */
 		gradle.rootProject(project -> {
