@@ -43,6 +43,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -429,8 +430,21 @@ public class Central implements IStartupParticipant {
 				}
 				IResourceDelta rootDelta = event.getDelta();
 				if (isCnfChanged(workspace, rootDelta)) {
-					logger.error("cnf changed; refreshing workspace");
-					workspace.refresh();
+					logger.info("cnf changed; refreshing workspace");
+					// Move off notification thread
+					Job job = new Job("Refreshing workspace for cnf change") {
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							try {
+								// Avoid race condition with BndtoolsBuilder
+								bndCall(after -> workspace.refresh(), monitor);
+							} catch (Exception e) {
+								return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "error during workspace refresh", e);
+							}
+							return Status.OK_STATUS;
+						}
+					};
+					job.schedule();
 				}
 			});
 	}
