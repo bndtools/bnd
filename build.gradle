@@ -113,6 +113,9 @@ subprojects {
 			if (System.getProperty("maven.repo.local")) {
 				systemProperty("maven.repo.local", IO.getFile(gradle.getStartParameter().getCurrentDir(), System.getProperty("maven.repo.local")))
 			}
+			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+				systemProperty("java.security.manager", "allow")
+			}
 		}
 	}
 }
