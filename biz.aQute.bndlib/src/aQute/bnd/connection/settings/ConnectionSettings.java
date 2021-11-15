@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXParseException;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
@@ -44,7 +45,6 @@ import aQute.bnd.util.home.Home;
 import aQute.lib.collections.Iterables;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.mavenpasswordobfuscator.MavenPasswordObfuscator;
@@ -209,17 +209,23 @@ public class ConnectionSettings {
 		ServerDTO server = Converter.cnv(ServerDTO.class, value);
 		if (isBasicAuth(server) || isBearerAuth(server) || isPrivateKey(server) || isHttpsVerification(server)) {
 
-			if (server.id == null)
+			if (server.id == null) {
 				server.id = "*";
-			else
-				server.id = normalize(server.id);
+			} else {
+				String normalized = normalize(server.id);
+				if (server.id != normalized) { // normalized
+					server.id = normalized;
+				} else if ((server.match == null) && (server.id.indexOf('*') < 0)) {
+					server.match = "*" + server.id + "*";
+				}
+			}
 			add(server);
 		}
 	}
 
 	private static final Pattern URI_P = Pattern.compile("([^:/?#]+)://([^:/?#]+)(?::(\\d+))?.*");
 
-	private static String normalize(String id) {
+	static String normalize(String id) {
 		Matcher m = URI_P.matcher(id);
 		if (!m.matches()) {
 			return id;
@@ -232,12 +238,17 @@ public class ConnectionSettings {
 
 		StringBuilder address = new StringBuilder();
 		address.append(scheme)
-			.append("://")
+			.append(':')
+			.append('/')
+			.append('/')
 			.append(host);
 
-		if (port != null && !port.equals(Integer.toString(URIUtil.getDefaultPort(scheme)))) {
-			address.append(":")
-				.append(port);
+		if (port != null) {
+			int defaultPort = URIUtil.getDefaultPort(scheme);
+			if ((defaultPort < 0) || !port.equals(Integer.toString(defaultPort))) {
+				address.append(':')
+					.append(port);
+			}
 		}
 		return address.toString();
 	}

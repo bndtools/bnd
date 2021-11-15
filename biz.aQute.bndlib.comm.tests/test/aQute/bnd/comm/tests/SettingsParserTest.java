@@ -46,7 +46,7 @@ public class SettingsParserTest {
 	}
 
 	@Test
-	public void testValidXLMViaWorkspace() throws Exception {
+	public void testValidXMLViaWorkspace() throws Exception {
 		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
 			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/valid.xml");
 			HttpClient plugin = ws.getPlugin(HttpClient.class);
@@ -57,7 +57,7 @@ public class SettingsParserTest {
 	}
 
 	@Test
-	public void testInvalidXLMViaWorkspace() throws Exception {
+	public void testInvalidXMLViaWorkspace() throws Exception {
 		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
 			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/invalid.xml");
 			HttpClient plugin = ws.getPlugin(HttpClient.class);
@@ -201,6 +201,48 @@ public class SettingsParserTest {
 			handler = cs.createURLConnectionHandler(s);
 
 			assertTrue(handler.matches(new URL("https://www.server.net")));
+		}
+	}
+
+	@Test
+	public void testSimpleIDGlob() throws Exception {
+		try (Processor proc = new Processor(); HttpClient hc = new HttpClient()) {
+			proc.setProperty("-connection-settings",
+				"server;id=\"jfrog\";username=\"myUser\";password=\"myPassword\","
+					+ "server;id=\"bndtools.jfrog.io\";username=\"myUser\";password=\"myPassword\","
+					+ "server;id=\"oss.sonatype.org\";username=\"myUser\";password=\"myPassword\"");
+			ConnectionSettings cs = new ConnectionSettings(proc, hc);
+			cs.readSettings();
+			List<ServerDTO> serverDTOs = cs.getServerDTOs();
+			assertThat(serverDTOs).hasSize(3);
+
+			ServerDTO s = serverDTOs.get(0);
+
+			assertThat(s).hasFieldOrPropertyWithValue("id", "jfrog")
+				.hasFieldOrPropertyWithValue("match", "*jfrog*");
+
+			URLConnectionHandler handler = cs.createURLConnectionHandler(s);
+
+			assertThat(handler.matches(new URL("https://bndtools.jfrog.io/bndtools/libs-release-local/"))).isTrue();
+
+			s = serverDTOs.get(1);
+
+			assertThat(s).hasFieldOrPropertyWithValue("id", "bndtools.jfrog.io")
+				.hasFieldOrPropertyWithValue("match", "*bndtools.jfrog.io*");
+
+			handler = cs.createURLConnectionHandler(s);
+
+			assertThat(handler.matches(new URL("https://bndtools.jfrog.io/bndtools/libs-release-local/"))).isTrue();
+
+			s = serverDTOs.get(2);
+
+			assertThat(s).hasFieldOrPropertyWithValue("id", "oss.sonatype.org")
+				.hasFieldOrPropertyWithValue("match", "*oss.sonatype.org*");
+
+			handler = cs.createURLConnectionHandler(s);
+
+			assertThat(handler.matches(new URL("https://oss.sonatype.org/service/local/staging/deploy/maven2/")))
+				.isTrue();
 		}
 	}
 }
