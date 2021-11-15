@@ -2,34 +2,41 @@
  * dist Gradle build script
  */
 
-var buildProject = project
+var jarDependencies = tasks.named("jarDependencies")
 
-/* Configure the workspace project */
-configure(parent) {
-	layout.getBuildDirectory().value(buildProject.layout.getBuildDirectory())
-
-	var build = tasks.register(bnd_defaultTask) {
-		dependsOn(buildProject.absoluteProjectPath("jarDependencies"))
-		dependsOn(buildProject.absoluteProjectPath("checkDependencies"))
-		dependsOn(buildProject.absoluteProjectPath("releaseNeeded"))
-		description = "Assembles, tests and releases the ${buildProject.name} project."
-		group = "build"
-	}
-	defaultTasks = [
-		absoluteProjectPath(build.name)
-	]
+var checkDependencies = tasks.named("checkDependencies") {
+	mustRunAfter(jarDependencies)
 }
 
-tasks.named("checkDependencies") {
-	mustRunAfter("jarDependencies")
+var releaseDependencies = tasks.named("releaseDependencies") {
+	mustRunAfter(jarDependencies, checkDependencies)
 }
 
-tasks.named("releaseDependencies") {
-	mustRunAfter("jarDependencies", "checkDependencies")
-}
+var releaseNeeded = tasks.named("releaseNeeded")
 
-tasks.named("clean") {
+var clean = tasks.named("clean") {
 	File releaserepo = file(bnd.get("releaserepo", "bundles")) /* Release repository. */
 	delete(releaserepo)
 	delete("m2")
+}
+
+/* Configure the workspace project */
+var buildProject = project
+
+configure(parent) {
+	layout.getBuildDirectory().value(buildProject.layout.getBuildDirectory())
+
+	var build = tasks.register("build") {
+		dependsOn(jarDependencies, checkDependencies)
+		description = "Assembles and tests the ${buildProject.name} project."
+		group = "build"
+	}
+
+	var publish = tasks.register("publish") {
+		dependsOn(releaseDependencies)
+		description = "Publishes the ${buildProject.name} project."
+		group = "release"
+	}
+
+	defaultTasks += absoluteProjectPath(build.name)
 }

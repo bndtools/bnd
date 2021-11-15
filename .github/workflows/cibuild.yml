@@ -66,10 +66,17 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
+        server-id: bndtools.jfrog.io
+        server-username: JFROG_USERNAME
+        server-password: JFROG_PASSWORD
     - name: Build
       id: build
       run: |
         ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
+    - name: Publish
+      id: publish
+      run: |
+        ./.github/scripts/ci-publish.sh
       env:
         CANONICAL: ${{ matrix.canonical && !strategy.fail-fast }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}

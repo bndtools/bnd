@@ -25,21 +25,18 @@ Bndtools is the development environment of Bnd.
 
 ## Building
 
-Gradle is used to build Bnd/Bndtools.
-The repo has a `build.gradle` file that builds all projects in proper order.
+We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
+We require at least Java 8.
 
-`./gradlew :build` - Assembles, tests, and releases the non-plugin projects into `dist/bundles`.
+- `./gradlew :build` - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
+- `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
+- `./mvnw --file=maven install` - Assembles and tests the Bnd Maven plugins.
+- `./gradlew :publish` - Assembles and publishes the Bnd Workspace projects into `dist/bundles`.
+- `./gradlew :gradle-plugins:publish` - Assembles and publishes the Bnd Gradle plugins into `dist/bundles`.
+- `./mvnw -Pdist --file=maven deploy` - Assembles and publishes the Bnd Maven plugins into `dist/bundles`.
 
-After building the non-plugin projects, you can build the Maven and Gradle plugin projects
-
-`./gradlew :maven:deploy` - Assembles, tests, and releases the Maven plugin projects into `dist/bundles`.
-
-`./gradlew :gradle-plugins:build :gradle-plugins:publish` - Assembles, tests, and releases the Gradle plugin projects into `dist/bundles`.
-
-The repo includes the gradle wrapper, `gradlew`, command.
-
-Bnd/Bndtools is continuously built on [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22).
-[![GitHub Actions CI Build Status](https://github.com/bndtools/bnd/workflows/CI%20Build/badge.svg)](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22)
+Bnd/Bndtools is continuously built on [GitHub Actions](https://github.com/bndtools/bnd/actions/workflows/cibuild.yml).
+[![GitHub Actions CI Build Status](https://github.com/bndtools/bnd/actions/workflows/cibuild.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/cibuild.yml)
 
 [CodeQL](https://github.com/bndtools/bnd/security/code-scanning?query=tool%3ACodeQL) is used for continuous security analysis.
 

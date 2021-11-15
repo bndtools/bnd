@@ -61,10 +61,8 @@ A plugin to generate and export reports of projects.
 
 # Building the Maven Plugins
 
-You must first run `./gradlew :build` to build the Bnd artifacts and install them in your local
-maven repo. You can then run Maven to build the Bnd Maven plugins. You can run
-`./gradlew :maven:deploy` to build the Bnd Maven plugins with the `deploy` goal which will deploy
-the built Bnd Maven plugins into the releaserepo.
+You must first run `./gradlew :build` to build the Bnd artifacts and install them in your local maven repo.
+You can then run `./mvnw --file=maven install` to build the Bnd Maven plugins.
 
 ---
 
