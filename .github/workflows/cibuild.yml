@@ -69,7 +69,7 @@ jobs:
     - name: Build
       id: build
       run: |
-        ${{ format(matrix.runner, './.github/scripts/cibuild.sh') }}
+        ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
       env:
         CANONICAL: ${{ matrix.canonical && !strategy.fail-fast }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
