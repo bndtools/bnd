@@ -13,13 +13,14 @@ This information will help us review and fix your issue faster.
 
 The only thing you need to build Bnd/Bndtools is Java.
 We require at least Java 8.
-We use Gradle to build and the repo includes `gradlew`.
-You can use your system `gradle` but we require at least version 5.0.
+We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
 
-- `./gradlew` - Assembles, tests and releases the non-maven projects into `dist/bundles`
-- `./gradlew :dist:buildNeeded` - Assembles and tests the non-maven projects.
-- `./gradlew :dist:releaseNeeded` - Assembles and releases the non-maven projects into `dist/bundles`.
-- `./gradlew :build :maven:deploy` - Assembles, tests, and releases all the projects into `dist/bundles`.
+- `./gradlew :build` - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
+- `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
+- `./mvnw --file=maven install` - Assembles and tests the Bnd Maven plugins.
+- `./gradlew :publish` - Assembles and publishes the Bnd Workspace projects into `dist/bundles`.
+- `./gradlew :gradle-plugins:publish` - Assembles and publishes the Bnd Gradle plugins into `dist/bundles`.
+- `./mvnw -Pdist --file=maven deploy` - Assembles and publishes the Bnd Maven plugins into `dist/bundles`.
 
 We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22) for continuous integration and the repo includes a `.github/workflows/cibuild.yml` file to build via GitHub Actions.
 

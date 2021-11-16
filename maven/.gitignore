@@ -1,5 +1,2 @@
 /target/
 .flattened-pom.xml
-/bin/
-/generated/
-.classpath

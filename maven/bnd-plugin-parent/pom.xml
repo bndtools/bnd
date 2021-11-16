@@ -427,7 +427,10 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<execute>
+											<runOnConfiguration>true</runOnConfiguration>
+											<runOnIncremental>true</runOnIncremental>
+										</execute>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -558,47 +561,41 @@
 		</profile>
 		<profile>
 			<id>dist</id>
-			<distributionManagement>
-				<snapshotRepository>
-					<id>dist</id>
-					<url>${releaserepo}</url>
-				</snapshotRepository>
-				<repository>
-					<id>dist</id>
-					<url>${releaserepo}</url>
-				</repository>
-			</distributionManagement>
-		</profile>
-		<profile>
-			<id>ossrh</id>
 			<properties>
+				<releaserepo>file:${basedir}/../../dist/bundles</releaserepo>
 				<skipTests>true</skipTests>
 				<invoker.skip>true</invoker.skip>
 			</properties>
 			<distributionManagement>
 				<snapshotRepository>
-					<id>https://oss.sonatype.org</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+					<id>dist</id>
+					<url>${releaserepo}</url>
 				</snapshotRepository>
 				<repository>
-					<id>https://oss.sonatype.org</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<id>dist</id>
+					<url>${releaserepo}</url>
 				</repository>
 			</distributionManagement>
 		</profile>
 		<profile>
 			<id>jfrog</id>
+			<activation>
+				<property>
+					<name>env.CANONICAL</name>
+					<value>true</value>
+				</property>
+			</activation>
 			<properties>
 				<skipTests>true</skipTests>
 				<invoker.skip>true</invoker.skip>
 			</properties>
 			<distributionManagement>
 				<snapshotRepository>
-					<id>https://bndtools.jfrog.io</id>
+					<id>bndtools.jfrog.io</id>
 					<url>https://bndtools.jfrog.io/bndtools/libs-snapshot-local/</url>
 				</snapshotRepository>
 				<repository>
-					<id>https://bndtools.jfrog.io</id>
+					<id>bndtools.jfrog.io</id>
 					<url>https://bndtools.jfrog.io/bndtools/libs-release-local/</url>
 				</repository>
 			</distributionManagement>

@@ -2,6 +2,6 @@
 set -ev
 ./gradlew --no-daemon --version
 ./mvnw --version
-./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :build :maven:deploy "$@"
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :build "$@"
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :gradle-plugins:build
-./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :gradle-plugins:publish
+./mvnw -Dmaven.repo.local=dist/m2 --batch-mode --no-transfer-progress --file=maven install
