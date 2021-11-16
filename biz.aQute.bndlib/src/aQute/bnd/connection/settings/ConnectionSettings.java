@@ -223,7 +223,7 @@ public class ConnectionSettings {
 		}
 	}
 
-	private static final Pattern URI_P = Pattern.compile("([^:/?#]+)://([^:/?#]+)(?::(\\d+))?.*");
+	private static final Pattern URI_P = Pattern.compile("([^:/?#]+)://([^:/?#]+)(?::([^:/?#]+))?.*");
 
 	static String normalize(String id) {
 		Matcher m = URI_P.matcher(id);
@@ -462,6 +462,12 @@ public class ConnectionSettings {
 			}
 			ServerDTO deflt = null;
 			for (ServerDTO serverDTO : settings.servers) {
+				String normalized = normalize(serverDTO.id);
+				if (serverDTO.id != normalized) { // normalized
+					serverDTO.id = normalized;
+				} else if ((serverDTO.match == null) && (serverDTO.id.indexOf('*') < 0)) {
+					serverDTO.match = "*" + serverDTO.id + "*";
+				}
 				serverDTO.trust = makeAbsolute(file.getParentFile(), serverDTO.trust);
 
 				if (MavenPasswordObfuscator.isObfuscatedPassword(serverDTO.password)) {

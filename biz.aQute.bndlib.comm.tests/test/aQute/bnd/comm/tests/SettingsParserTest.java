@@ -57,6 +57,17 @@ public class SettingsParserTest {
 	}
 
 	@Test
+	public void testSimpleIdXMLViaWorkspace() throws Exception {
+		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
+			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/simpleid.xml");
+			HttpClient plugin = ws.getPlugin(HttpClient.class);
+			assertThat(ws.check()).isTrue();
+			URLConnectionHandler handler = plugin.findMatchingHandler(new URL("https://httpbin.org"));
+			assertThat(handler).isNotNull();
+		}
+	}
+
+	@Test
 	public void testInvalidXMLViaWorkspace() throws Exception {
 		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
 			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/invalid.xml");
