@@ -419,6 +419,7 @@ public class OSGiRepositoryTest {
 		try (OSGiRepository r = new OSGiRepository();
 			Processor p = new Processor();
 			HttpClient httpClient = new HttpClient()) {
+			p.setProperty(Constants.CONNECTION_SETTINGS, "false");
 			Map<String, String> map = new HashMap<>();
 			map.put("locations", "https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.10/index.xml.gz");
 			map.put("cache", cache.getPath());

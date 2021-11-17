@@ -76,6 +76,7 @@ public class AlsoLauncherTest {
 		IO.delete(new File(wsRoot, "cnf/cache"));
 		workspace = new Workspace(wsRoot);
 		workspace.setProperty(Constants.PROFILE, "prod");
+		workspace.setProperty(Constants.CONNECTION_SETTINGS, "false");
 		project = workspace.getProject("demo");
 		project.setTrace(true);
 		assertTrue(project.check());
