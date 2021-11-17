@@ -2271,7 +2271,6 @@ public class Project extends Processor {
 		if (workspace.doExtend(this)) {
 			super.propertiesChanged();
 		}
-		workspace.postPropertiesChanged(this);
 		workspace.notifier.changedProject(this);
 	}
 

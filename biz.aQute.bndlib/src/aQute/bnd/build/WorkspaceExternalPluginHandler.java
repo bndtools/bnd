@@ -27,7 +27,6 @@ import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.memoize.Memoize;
-import aQute.bnd.osgi.PluginsContainer;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.MainClassNamespace;
 import aQute.bnd.result.Result;
@@ -322,22 +321,4 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			}
 		return Result.ok(urlClassLoader);
 	}
-
-	void setAbstractPlugins(Processor p, PluginsContainer plugins) {
-		for (Map.Entry<Class<?>, Attrs> entry : plugins.getInterfaces()
-			.entrySet()) {
-
-			Result<List<Object>> r = getImplementations(entry.getKey(), entry.getValue());
-			if (r.isErr()) {
-				p.error("%s", r.error()
-					.get());
-			} else {
-				for (Object plugin : r.unwrap()) {
-					plugins.addCloseable(plugin);
-				}
-			}
-		}
-
-	}
-
 }

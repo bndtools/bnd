@@ -10,14 +10,12 @@ import java.io.OutputStream;
 import java.lang.invoke.MethodType;
 import java.net.URL;
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -28,12 +26,15 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.SupplierWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.memoize.CloseableMemoize;
 import aQute.bnd.osgi.Processor.CL;
+import aQute.bnd.result.Result;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryDonePlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
@@ -48,7 +49,6 @@ import aQute.libg.cryptography.SHA1;
 public class PluginsContainer extends AbstractSet<Object> implements Set<Object>, Registry {
 	private static final Logger			logger				= LoggerFactory.getLogger(PluginsContainer.class);
 	private static final MethodType		defaultConstructor	= methodType(void.class);
-	private static Object				IGNORE				= new Object();
 
 	private final Set<Object>			plugins				= new CopyOnWriteArraySet<>();
 	private final Set<AutoCloseable>	closeablePlugins	= new CopyOnWriteArraySet<>();
@@ -56,7 +56,54 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	// The following are only mutated during init(), so they don't need to
 	// be concurrent-safe
 	private final Set<String>			missingCommand		= new HashSet<>();
-	private final Map<Class<?>, Attrs>	interfaces			= new HashMap<>();
+	private Workspace					ws;
+	private Processor					processor;
+
+	public interface PluginProvider {
+		Stream<?> provide(Class<?> type);
+	}
+
+	class AbstractPlugin<T> implements PluginProvider {
+		final Class<T>	serviceClass;
+		final List<T>	externals	= new ArrayList<>();
+		final Attrs		attrs;
+		boolean			inited;
+
+		AbstractPlugin(Class<T> type, Attrs attrs) {
+			serviceClass = type;
+			this.attrs = attrs;
+		}
+
+		@SuppressWarnings("unchecked")
+		void init() {
+			if (!inited) {
+				inited = true;
+				Result<List<Object>> implementations = ws.getExternalPlugins()
+					.getImplementations(serviceClass, attrs);
+				if (implementations.isOk()) {
+					List<T> impls = (List<T>) implementations.unwrap();
+					for (T pl : impls) {
+						processor.customize(pl, attrs, PluginsContainer.this);
+						if (pl instanceof AutoCloseable)
+							closeablePlugins.add((AutoCloseable) pl);
+						externals.add(pl);
+					}
+				} else {
+					ws.error("failed to load external plugins for %s, attrs = %s", serviceClass, attrs);
+				}
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Stream<?> provide(Class<?> type) {
+			if (type != serviceClass)
+				return Stream.empty();
+
+			init();
+			return externals.stream();
+		}
+	}
 
 	protected PluginsContainer() {}
 
@@ -64,6 +111,12 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	 * Init actions occur inside of the first-level memoizer.
 	 */
 	protected void init(Processor processor) {
+		this.processor = processor;
+		if (processor instanceof Workspace)
+			ws = (Workspace) processor;
+		else if (processor instanceof Project)
+			ws = ((Project) processor).getWorkspace();
+
 		String spe = processor.getProperty(Constants.PLUGIN);
 		if (Constants.NONE.equals(spe)) {
 			return;
@@ -84,6 +137,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		spe = processor.mergeLocalProperties(Constants.PLUGIN);
 		String pluginPath = processor.mergeProperties(Constants.PLUGINPATH);
 		loadPlugins(processor, spe, pluginPath);
+
 	}
 
 	/**
@@ -109,9 +163,16 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	}
 
 	protected <T> Stream<T> stream(Class<T> type) {
-		@SuppressWarnings("unchecked")
-		Stream<T> stream = (Stream<T>) stream().filter(type::isInstance);
-		return stream;
+		return stream().flatMap(o -> expand(o, type))
+			.filter(type::isInstance)
+			.map(type::cast);
+	}
+
+	private Stream<?> expand(Object o, Class<?> type) {
+		if (o instanceof PluginProvider)
+			return ((PluginProvider) o).provide(type);
+		else
+			return Stream.of(o);
 	}
 
 	@Override
@@ -151,10 +212,6 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		return plugins().spliterator();
 	}
 
-	@Override
-	public Stream<Object> stream() {
-		return plugins().stream();
-	}
 
 	@Override
 	public int size() {
@@ -363,8 +420,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		try {
 			Class<?> c = loader.loadClass(className);
 			if (c.isInterface()) {
-				interfaces.put(c, attrs);
-				return IGNORE;
+				AbstractPlugin<?> abstractPlugin = new AbstractPlugin<>(c, attrs);
+				add(abstractPlugin);
 			} else {
 				Object plugin = publicLookup().findConstructor(c, defaultConstructor)
 					.invoke();
@@ -401,10 +458,6 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		closeablePlugins.clear();
 		plugins.clear();
 		missingCommand.clear();
-	}
-
-	public Map<Class<?>, Attrs> getInterfaces() {
-		return Collections.unmodifiableMap(interfaces);
 	}
 
 }

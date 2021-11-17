@@ -509,7 +509,6 @@ public class Workspace extends Processor {
 		if (doExtend(this)) {
 			super.propertiesChanged();
 		}
-		postPropertiesChanged(this);
 		forceInitialization();
 	}
 
@@ -1838,21 +1837,6 @@ public class Workspace extends Processor {
 			return true;
 		} else
 			return false;
-	}
-
-	/**
-	 * Called by Workspace, Project, and Run after all properties are
-	 * initialized and the plugins container is reset. This must be called so
-	 * that the Plugins Container is not reset after this call, which was the
-	 * problem with doExtend
-	 */
-
-	public void postPropertiesChanged(Processor processor) {
-		PluginsContainer plugins = processor.getPlugins();
-		if (!plugins.getInterfaces()
-			.isEmpty()) {
-			getExternalPlugins().setAbstractPlugins(processor, plugins);
-		}
 	}
 
 	/**
