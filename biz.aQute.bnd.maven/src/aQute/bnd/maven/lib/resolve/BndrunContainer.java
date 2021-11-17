@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -294,12 +293,9 @@ public class BndrunContainer {
 		String runee = run.getProperty(Constants.RUNEE);
 
 		if (runee == null) {
-			EE ee = Optional.ofNullable(project.getBuild()
-				.getPluginsAsMap()
-				.get("org.apache.maven.plugins:maven-compiler-plugin"))
-				// when executed in a project with POM packaging the
-				// following always returns null
-				.map(Plugin::getConfiguration)
+			EE ee = Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-compiler-plugin"))
+				.map(p -> Optional.ofNullable(p.getConfiguration())
+					.orElseGet(() -> new Xpp3Dom("configuration")))
 				.map(Xpp3Dom.class::cast)
 				.map(dom -> {
 					Xpp3Dom child = dom.getChild("release");
