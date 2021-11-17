@@ -47,7 +47,7 @@ jobs:
         - os: 'ubuntu-latest'
           java: '17'
           runner: 'xvfb-run --auto-servernum {0}'
-          canonical: true
+          canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
           fetch-depth: '0'
         - os: 'windows-latest'
           java: '8'
@@ -71,6 +71,7 @@ jobs:
       run: |
         ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
     - name: Configure settings.xml for Publish
+      if: ${{ matrix.canonical }}
       uses: actions/setup-java@v2
       with:
         distribution: 'temurin'
@@ -83,7 +84,7 @@ jobs:
       run: |
         ./.github/scripts/ci-publish.sh
       env:
-        CANONICAL: ${{ matrix.canonical && !strategy.fail-fast }}
+        CANONICAL: ${{ matrix.canonical }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload Test Reports

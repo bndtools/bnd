@@ -41,6 +41,4 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 -releaserepo: Release
 -releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
 
--connection-settings.jfrog: ${if;${-releaserepo.jfrog};${.}/jfrog-settings.xml}
-
 -baselinerepo: Baseline
