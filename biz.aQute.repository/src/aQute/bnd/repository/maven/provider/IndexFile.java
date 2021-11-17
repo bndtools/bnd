@@ -17,10 +17,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
@@ -49,6 +51,7 @@ import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.zip.ZipUtil;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
@@ -65,6 +68,7 @@ import aQute.service.reporter.Reporter;
  */
 class IndexFile {
 	private final static Logger					logger		= LoggerFactory.getLogger(IndexFile.class);
+	private final static Pattern				mavenNamePattern	= Pattern.compile("[.,;\"'-]+");
 
 	final File									indexFile;
 	final IMavenRepo							repo;
@@ -338,17 +342,26 @@ class IndexFile {
 	}
 
 	private Map<Archive, Resource> parseMulti(Archive archive, File multi) throws Exception {
+		Set<String> multis = new HashSet<>();
 		Map<Archive, Resource> result = new HashMap<>();
 		try (Jar jar = new Jar(multi)) {
-			int n = 1000;
 			for (Entry<String, aQute.bnd.osgi.Resource> entry : jar.getResources()
 				.entrySet()) {
 				String path = entry.getKey()
 					.toLowerCase();
 				if (path.endsWith(".jar")) {
+					String name = Optional.ofNullable(Strings.lastPathSegment(path))
+						.map(r -> r[1])
+						.orElse(path);
+					name = Strings.extension(name)[0];
+					name = ZipUtil.cleanPath(name);
+					name = mavenNamePattern.matcher(name)
+						.replaceAll("_");
+					while (!multis.add(name)) {
+						name = name.concat("_");
+					}
 					Archive nextArchive = new Archive(archive.revision, null, Archive.JAR_EXTENSION,
-						String.format("%s%04d", archive.classifier, n));
-					n++;
+						name);
 					File dest = repo.toLocalFile(nextArchive);
 					if (!dest.isFile() || dest.lastModified() < multi.lastModified()) {
 						try (OutputStream out = IO.outputStream(dest)) {
