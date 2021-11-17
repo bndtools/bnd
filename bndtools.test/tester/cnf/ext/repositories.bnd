@@ -24,3 +24,4 @@ mavencentral:           https://repo.maven.apache.org/maven2
         location="${workspace}/cnf/cache/stable/Eclipse-m2e-1.10.0/index.xml"
 
 -buildrepo: Local
+-connection-settings: false

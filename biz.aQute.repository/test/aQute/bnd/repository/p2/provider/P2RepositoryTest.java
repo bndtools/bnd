@@ -17,6 +17,7 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -34,6 +35,7 @@ public class P2RepositoryTest {
 	public void testSimple() throws Exception {
 		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
 			w.setBase(tmp);
 			p2r.setRegistry(w);
 
@@ -53,6 +55,7 @@ public class P2RepositoryTest {
 
 		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
 			w.setTrace(true);
 			w.setBase(tmp);
 			p2r.setRegistry(w);
@@ -74,6 +77,7 @@ public class P2RepositoryTest {
 	public void testPack200Async() throws Exception {
 		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
 			w.setTrace(true);
 			w.setBase(tmp);
 			p2r.setRegistry(w);
@@ -148,6 +152,7 @@ public class P2RepositoryTest {
 	public void testPack200() throws Exception {
 		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
 			w.setTrace(true);
 			w.setBase(tmp);
 			p2r.setRegistry(w);
