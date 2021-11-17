@@ -81,6 +81,7 @@ jobs:
         server-password: JFROG_PASSWORD
     - name: Publish
       id: publish
+      if: ${{ matrix.canonical }}
       run: |
         ./.github/scripts/ci-publish.sh
       env:
