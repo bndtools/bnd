@@ -1060,7 +1060,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 			}
 			case PARAMETER : {
 				if (!"<init>".equals(member.getName())) {
-					analyzer.error("In component '%s', @Reference cannot be used for method parameters", className)
+					analyzer.error(
+						"In component '%s', @Reference can be used on parameters only for constructors; method '%s' is not a constructor",
+						className, member)
 						.details(getDetails(def, ErrorType.REFERENCE));
 					return;
 				}
