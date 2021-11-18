@@ -7,7 +7,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -117,8 +116,7 @@ public interface MavenRunListenerHelper {
 	default Optional<PluginExecution> getBndMavenPluginById(IMavenProjectFacade projectFacade, String id)
 		throws CoreException {
 		return Optional.ofNullable(getMavenProject(projectFacade).getPlugin(id))
-			.map(Plugin::getExecutionsAsMap)
-			.map(Map<String, PluginExecution>::values)
+			.map(Plugin::getExecutions)
 			.orElseGet(ArrayList::new)
 			.stream()
 			.findFirst();
