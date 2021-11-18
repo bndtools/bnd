@@ -314,6 +314,11 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			if (!isTest) {
 				mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin",
 					monitor1, "jar");
+
+				if (mojoExecutions.isEmpty()) {
+					mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-war-plugin",
+						monitor1, "war");
+				}
 			} else {
 				mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin",
 					monitor1, "test-jar");
