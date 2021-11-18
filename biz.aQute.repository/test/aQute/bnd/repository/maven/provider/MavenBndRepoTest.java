@@ -244,7 +244,8 @@ public class MavenBndRepoTest {
 		File file2 = repo.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 		assertNotNull(file2);
 
-		File file3 = repo.get("group:artifact:jar:1003", Version.parseVersion(multi_version), null);
+		File file3 = repo.get("group:artifact:jar:name_njbartlett_eclipse_macbadge_1_0_0_201110100042",
+			Version.parseVersion(multi_version), null);
 		assertNotNull(file3);
 		assertTrue(file3.isFile());
 
