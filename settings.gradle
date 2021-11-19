@@ -7,10 +7,15 @@ import aQute.bnd.osgi.Constants
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
 	repositories {
-		mavenCentral()
 		maven {
-			url = uri(bnd_repourl)
+			name = "Bnd Snapshots"
+			url = uri(bnd_snapshots)
 		}
+		maven {
+			name = "Bnd Releases"
+			url = uri(bnd_releases)
+		}
+		mavenCentral()
 	}
 	var bndConfiguration = configurations.create("bnd") {
 		/* Since the files in the repository change with each build, we need to recheck for changes */
@@ -21,7 +26,13 @@ buildscript {
 	}
 	configurations.classpath.extendsFrom(bndConfiguration)
 	dependencies {
-		bnd(bnd_plugin)
+		bnd("biz.aQute.bnd:biz.aQute.bnd.gradle") {
+			version {
+				require bnd_version
+				// Prefer RC over SNAPSHOT for next branch
+				prefer "latest.release" 
+			}
+		}
 		components {
 			all { ComponentMetadataDetails details ->
 				if ((details.id.group == "biz.aQute.bnd") || (details.id.group == "biz.aQute.bnd.workspace")) {

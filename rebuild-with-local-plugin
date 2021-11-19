@@ -16,4 +16,4 @@ if [ -z "$ARGS" ]; then
 fi
 set -ev
 
-$REPO/gradlew --no-daemon -Pbnd_repourl=$REPO/dist/bundles $ARGS
+$REPO/gradlew --no-daemon -Pbnd_snapshots=$REPO/dist/bundles $ARGS
