@@ -1,8 +1,5 @@
 /*
  * Master Gradle build script
- *
- * Depends on bndPlugin property set by settings.gradle.
- * and bnd_* values from gradle.properties.
  */
 
 import aQute.lib.io.IO
@@ -123,10 +120,11 @@ subprojects {
 
 tasks.register("buildscriptDependencies") {
 	doLast {
-		println "Java version: ${JavaVersion.current()}"
-		println "Bnd version:  ${About.getBndVersion()}"
-		println "bnd_plugin:   ${bnd_plugin}"
-		println "bnd_repourl:  ${bnd_repourl}"
+		println "Java version:  ${JavaVersion.current()}"
+		println "Bnd version:   ${About.getBndVersion()}"
+		println "bnd_version:   ${bnd_version}"
+		println "bnd_snapshots: ${bnd_snapshots}"
+		println "bnd_releases:  ${bnd_releases}"
 		println buildscript.configurations.classpath.asPath
 	}
 }
