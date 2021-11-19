@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.SupplierWithException;
@@ -44,7 +45,12 @@ import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 
 /**
- * The plugin set for a Processor.
+ * The plugin set for a Processor. Plugins are general service objects and can
+ * be any type. The PluginsContainer treats the @{link {@link PluginProvider}
+ * special. If it is used with a type, it will expand the when it encounters a
+ * {@link ProviderType} plugin, see {@link #getPlugin(Class)} and
+ * {@link #getPlugin(Class)}. These provided plugins are _not_ part of the this
+ * set so they won't be explicitly returned when {@link #plugins()} is called.
  */
 public class PluginsContainer extends AbstractSet<Object> implements Set<Object>, Registry {
 	private static final Logger			logger				= LoggerFactory.getLogger(PluginsContainer.class);
@@ -59,11 +65,24 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	private Workspace					ws;
 	private Processor					processor;
 
+	/**
+	 * A Plugin Provider provides plugins when accessed with a type selector.
+	 * The provided plugins are not part of the container's plugin set.
+	 */
 	public interface PluginProvider {
-		Stream<?> provide(Class<?> type);
+		/**
+		 * provide the plugins for the given type if the type is equal.
+		 *
+		 * @param <X> the type of this provider
+		 * @param type the class of the provider type, never null
+		 * @return a stream with the provided plugins, can be empty
+		 */
+		<X> Stream<X> provide(Class<X> type);
 	}
 
-	class AbstractPlugin<T> implements PluginProvider {
+	@SuppressWarnings("unchecked")
+	class AbstractPlugin<T> implements PluginProvider, AutoCloseable {
+
 		final Class<T>	serviceClass;
 		final List<T>	externals	= new ArrayList<>();
 		final Attrs		attrs;
@@ -74,18 +93,18 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 			this.attrs = attrs;
 		}
 
-		@SuppressWarnings("unchecked")
-		void init() {
+		synchronized void init() {
 			if (!inited) {
 				inited = true;
+				if (ws == null)
+					return;
+
 				Result<List<Object>> implementations = ws.getExternalPlugins()
 					.getImplementations(serviceClass, attrs);
 				if (implementations.isOk()) {
 					List<T> impls = (List<T>) implementations.unwrap();
 					for (T pl : impls) {
 						processor.customize(pl, attrs, PluginsContainer.this);
-						if (pl instanceof AutoCloseable)
-							closeablePlugins.add((AutoCloseable) pl);
 						externals.add(pl);
 					}
 				} else {
@@ -94,14 +113,29 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 			}
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
-		public Stream<?> provide(Class<?> type) {
+		public <X> Stream<X> provide(Class<X> type) {
 			if (type != serviceClass)
 				return Stream.empty();
 
 			init();
-			return externals.stream();
+			return (Stream<X>) externals.stream();
+		}
+
+		@Override
+		public synchronized void close() throws Exception {
+			externals.forEach(p -> {
+				if (p instanceof AutoCloseable) {
+					IO.close((AutoCloseable) p);
+				}
+			});
+			externals.clear();
+		}
+
+		@Override
+		public String toString() {
+			return "AbstractPlugin [serviceClass=" + serviceClass + ", externals=" + externals + ", attrs=" + attrs
+				+ ", inited=" + inited + "]";
 		}
 	}
 
@@ -158,12 +192,22 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		}
 	}
 
+	/**
+	 * Return the set of resolved plugins. Resolving the provider plugins costs
+	 * significant time and they are not always needed. For example, an Export
+	 * Plugin will only be needed when there is an actual export. However, many
+	 * parts of the code depend on the full view. Therefore, this method must
+	 * force the lazy resolution of all provided plugins.
+	 *
+	 * @return a list with resolved plugins.
+	 */
 	protected Set<Object> plugins() {
 		return plugins;
 	}
 
 	protected <T> Stream<T> stream(Class<T> type) {
-		return stream().flatMap(o -> expand(o, type))
+		return plugins().stream()
+			.flatMap(o -> expand(o, type))
 			.filter(type::isInstance)
 			.map(type::cast);
 	}
@@ -175,12 +219,21 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 			return Stream.of(o);
 	}
 
+	/**
+	 * Return all plugins while expanding any {@link PluginProvider} that match
+	 * the given type
+	 */
+
 	@Override
 	public <T> T getPlugin(Class<T> type) {
 		Optional<T> first = stream(type).findFirst();
 		return first.orElse(null);
 	}
 
+	/**
+	 * Return all plugins while expanding any {@link PluginProvider} that match
+	 * the given type
+	 */
 	@Override
 	public <T> List<T> getPlugins(Class<T> type) {
 		List<T> list = stream(type).collect(toList());
@@ -212,6 +265,10 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		return plugins().spliterator();
 	}
 
+	@Override
+	public Stream<Object> stream() {
+		return plugins().stream();
+	}
 
 	@Override
 	public int size() {
@@ -421,7 +478,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 			Class<?> c = loader.loadClass(className);
 			if (c.isInterface()) {
 				AbstractPlugin<?> abstractPlugin = new AbstractPlugin<>(c, attrs);
-				add(abstractPlugin);
+				addCloseable(abstractPlugin);
+				return abstractPlugin;
 			} else {
 				Object plugin = publicLookup().findConstructor(c, defaultConstructor)
 					.invoke();

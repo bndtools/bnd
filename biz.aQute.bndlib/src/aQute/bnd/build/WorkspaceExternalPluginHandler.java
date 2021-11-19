@@ -28,9 +28,9 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.CL;
 import aQute.bnd.osgi.resource.MainClassNamespace;
 import aQute.bnd.result.Result;
-import aQute.bnd.service.Plugin;
 import aQute.bnd.service.externalplugin.ExternalPluginNamespace;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
@@ -40,10 +40,10 @@ import aQute.lib.strings.Strings;
 import aQute.libg.command.Command;
 
 public class WorkspaceExternalPluginHandler implements AutoCloseable {
-	final static Logger						logger	= LoggerFactory.getLogger("aQute.bnd.build");
-
-	final Workspace							workspace;
-	final Map<Capability, URLClassLoader>	loaders	= new HashMap<>();
+	final static Logger			logger	= LoggerFactory.getLogger("aQute.bnd.build");
+	final static Method			close	= getMethod(AutoCloseable.class, "close");
+	final Workspace				workspace;
+	final Map<Capability, CL>	loaders	= new HashMap<>();
 
 	WorkspaceExternalPluginHandler(Workspace workspace) {
 		this.workspace = workspace;
@@ -248,11 +248,10 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 							if (delegate.isPresent()) {
 								Object object = delegate.get();
 								if (object instanceof AutoCloseable)
-									((AutoCloseable) object).close();
+									return method.invoke(object, args);
 							}
 							return null;
 						}
-
 
 						Object object = delegate.get();
 						if (object == null)
@@ -279,7 +278,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			return null;
 		}
 		try {
-			Result<URLClassLoader> loader = getLoader(cap);
+			Result<? extends ClassLoader> loader = getLoader(cap);
 			if (loader.isErr())
 				return loader.asError();
 
@@ -287,12 +286,6 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 				.loadClass(implementation);
 
 			Object plugin = loadedClass.newInstance();
-			if (plugin instanceof Plugin) {
-				((Plugin) plugin).setProperties(attrs);
-			}
-			if (plugin instanceof java.io.Closeable) {
-				// TODO
-			}
 			return Result.ok(plugin);
 		} catch (Exception e) {
 			Workspace.logger.info("failed to load class %s for external plugin load for %s: e", implementation, cap, e);
@@ -300,25 +293,30 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		}
 	}
 
-	private synchronized Result<URLClassLoader> getLoader(Capability cap) {
-		URLClassLoader urlClassLoader = loaders.get(cap);
+	private synchronized Result<CL> getLoader(Capability cap) {
+		CL urlClassLoader = loaders.get(cap);
 		if (urlClassLoader == null)
 			try {
 				Result<File> bundle = workspace.getBundle(cap.getResource());
 				if (bundle.isErr())
 					return bundle.asError();
 
-				URL url = bundle.unwrap()
-					.toURI()
-					.toURL();
-
-				urlClassLoader = new URLClassLoader(new URL[] {
-					url
-				}, Workspace.class.getClassLoader());
-
+				File file = bundle.unwrap();
+				urlClassLoader = new CL(workspace);
+				urlClassLoader.add(file);
+				loaders.put(cap, urlClassLoader);
 			} catch (Exception e) {
 				return Result.err("failed to create class loader for %s: %s", cap, e);
 			}
 		return Result.ok(urlClassLoader);
 	}
+
+	private static Method getMethod(Class<?> class1, String name, Class<?>... args) {
+		try {
+			return class1.getMethod(name, args);
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
 }
