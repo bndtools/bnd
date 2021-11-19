@@ -8,7 +8,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,11 +19,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.bndtools.api.PopulatedRepository;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -46,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.maven.MavenCapability;
+import aQute.bnd.maven.lib.artifact.ProjectArtifactCollector;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.AbstractIndexingRepository;
@@ -99,6 +97,7 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 	private final Function<String, RequirementExpression>				identificationExpressionFunction;
 	private final BiFunction<String, Version, RequirementExpression>	identificationAndVersionExpressionFunction;
 	private final RequirementExpression									identificationExpression;
+	private final ProjectArtifactCollector								projectArtifactCollector	= new ProjectArtifactCollector();
 
 	public MavenWorkspaceRepository() {
 		super();
@@ -454,57 +453,29 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 	}
 
 	Set<Artifact> collect(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
-		logger.debug("{}: Collecting files for project {}", getName(), projectFacade.getProject());
+		final IProject eclipseProject = projectFacade.getProject();
 
-		Set<Artifact> files = new HashSet<>();
+		logger.debug("{}: Collecting files for project {}", getName(), eclipseProject);
 
-		if (!isValid(projectFacade.getProject())) {
-			logger.debug("{}: Project {} determined invalid", getName(), projectFacade.getProject());
-			return files;
-		}
+		if (isValid(eclipseProject)) {
+			try {
+				MavenProject mavenProject = projectFacade.getMavenProject(monitor);
 
-		try {
-			MavenProject mavenProject = projectFacade.getMavenProject(monitor);
-
-			List<MojoExecution> mojoExecutions = projectFacade.getMojoExecutions( //
-				"org.apache.maven.plugins", "maven-jar-plugin", monitor, "jar", "test-jar");
-
-			logger.debug("Project {} found {} mojos", projectFacade.getFullPath(), mojoExecutions.size());
-
-			for (MojoExecution mojoExecution : mojoExecutions) {
-				String finalName = Optional.ofNullable( //
-					maven.getMojoParameterValue(mavenProject, mojoExecution, "finalName", String.class, monitor))
-					.orElse("");
-				String classifier = Optional.ofNullable( //
-					maven.getMojoParameterValue(mavenProject, mojoExecution, "classifier", String.class, monitor))
-					.orElse("");
-
-				StringBuilder fileName = new StringBuilder(finalName);
-				if (!classifier.isEmpty()) {
-					fileName.append("-")
-						.append(classifier);
+				Set<Artifact> collected = projectArtifactCollector.collect(mavenProject);
+				if (logger.isDebugEnabled()) {
+					collected.forEach(artifact -> logger.debug("{}: Collected file {} for project {}", getName(),
+						artifact.getFile(), eclipseProject));
 				}
-				fileName.append(".jar");
-
-				File bundleFile = new File(mavenProject.getBuild()
-					.getDirectory(), fileName.toString());
-
-				if (bundleFile.exists()) {
-					logger.debug("{}: Collected file {} for project {}", getName(), bundleFile,
-						projectFacade.getProject());
-					Artifact artifact = new DefaultArtifact(mavenProject.getGroupId(), mavenProject.getArtifactId(),
-						classifier, "jar", mavenProject.getVersion(),
-						Collections.singletonMap("from", projectFacade.getProject()
-							.toString()),
-						bundleFile);
-					files.add(artifact);
-				}
+				return collected;
+			} catch (Exception e) {
+				logger.error("{}: Failed to collected files for project {}", getName(), eclipseProject, e);
 			}
-		} catch (Exception e) {
-			logger.error("{}: Failed to collected files for project {}", getName(), projectFacade.getProject(), e);
+		}
+		else {
+			logger.debug("{}: Project {} determined invalid", getName(), eclipseProject);
 		}
 
-		return files;
+		return Collections.emptySet();
 	}
 
 	@Override

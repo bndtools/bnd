@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
@@ -17,8 +16,6 @@ import java.util.stream.Collectors;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.DefaultDependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionException;
@@ -26,9 +23,9 @@ import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
@@ -39,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.maven.lib.artifact.ProjectArtifactCollector;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.unmodifiable.Lists;
@@ -77,6 +75,7 @@ public class DependencyResolver {
 	private final org.apache.maven.artifact.factory.ArtifactFactory					artifactFactory;
 	private final boolean															useMavenDependencies;
 	private final boolean															includeDependencyManagement;
+	private final ProjectArtifactCollector											projectArtifactCollector	= new ProjectArtifactCollector();
 
 	/**
 	 * Shortcut with {@code scopes = ['compile', 'runtime']},
@@ -266,17 +265,10 @@ public class DependencyResolver {
 			.keys()
 			.collect(toSet());
 
-		String finalName = project.getBuild()
-			.getFinalName();
-
-		Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-jar-plugin"))
-			.map(Plugin::getExecutions)
-			.orElseGet(ArrayList<PluginExecution>::new)
+		projectArtifactCollector.collect(project)
 			.stream()
-			.map(PluginExecution::getConfiguration)
-			.filter(Objects::nonNull)
-			.map(Xpp3Dom.class::cast)
-			.forEach(c -> readConfiguration(c, finalName, bundles));
+			.map(Artifact::getFile)
+			.forEach(bundles::add);
 
 		if (bundlesInputParameter != null) {
 			bundles.addAll(bundlesInputParameter);
@@ -292,23 +284,6 @@ public class DependencyResolver {
 			remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
 		}
 		return remoteRepositories;
-	}
-
-	private void readConfiguration(Xpp3Dom xpp3Dom, String finalName, Collection<File> bundles) {
-		String classifier = Optional.ofNullable(xpp3Dom.getChild("classifier"))
-			.map(Xpp3Dom::getValue)
-			.orElse("");
-		StringBuilder fileName = new StringBuilder(finalName);
-		if (!classifier.isEmpty()) {
-			fileName.append("-")
-				.append(classifier);
-		}
-		fileName.append(".jar");
-		File current = new File(project.getBuild()
-			.getDirectory(), fileName.toString());
-		if (current.exists() && !bundles.contains(current)) {
-			bundles.add(current);
-		}
 	}
 
 	private void discoverArtifacts(Map<File, ArtifactResult> files, List<DependencyNode> nodes, String parent,

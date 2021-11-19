@@ -50,6 +50,7 @@ import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import aQute.bnd.maven.lib.executions.PluginExecutions;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
@@ -140,10 +141,12 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
 				final IProject project = projectFacade.getProject();
 
-				// check if we need to run. After the jars get build, opened or
-				// just viewed we might be called and another run can cause a
-				// build loop
-				if (!needsBuilding(getDelta(project), projectFacade)) {
+				// Check if we need to run. If extensions are enabled then we
+				// don't need to run since bnd-maven-plugin is doing the
+				// packaging. After the jars get build, opened or just viewed we
+				// might be called and another run can cause a build loop
+				if (hasBndPackaging(execution, projectFacade) || !needsBuilding(getDelta(project), projectFacade)) {
+
 					monitor.done();
 					return null;
 				}
@@ -206,6 +209,17 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			}
 
 		};
+	}
+
+	private boolean hasBndPackaging(MojoExecution execution, IMavenProjectFacade projectFacade) {
+		boolean isTest = execution.getGoal().endsWith("-tests");
+
+		return execution.getPlugin()
+			.getExecutions()
+			.stream()
+			.filter(PluginExecutions::isPackagingGoal)
+			.map(PluginExecutions::extractClassifier)
+			.anyMatch(classifier -> isTest ? "tests".equals(classifier) : "".equals(classifier));
 	}
 
 	private boolean needsBuilding(IResourceDelta delta, IMavenProjectFacade projectFacade) {
@@ -300,6 +314,11 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			if (!isTest) {
 				mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin",
 					monitor1, "jar");
+
+				if (mojoExecutions.isEmpty()) {
+					mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-war-plugin",
+						monitor1, "war");
+				}
 			} else {
 				mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin",
 					monitor1, "test-jar");
