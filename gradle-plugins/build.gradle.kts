@@ -20,13 +20,13 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	))
 }
 
-val localrepo = System.getProperty("maven.repo.local")
-if (localrepo != null) {
-	var rootGradle = gradle
-	while (rootGradle.getParent() != null) {
-		rootGradle = rootGradle.getParent()
+val localrepo: String? = System.getProperty("maven.repo.local")
+localrepo?.let {
+	var rootGradle: Gradle = gradle
+	while (rootGradle.parent != null) {
+		rootGradle = rootGradle.parent!!
 	}
-	val maven_repo_local by extra(rootGradle.getStartParameter().getCurrentDir().resolve(localrepo).normalize().getAbsolutePath())
+	val maven_repo_local by extra(rootGradle.startParameter.currentDir.resolve(it).normalize().absolutePath)
 }
 
 tasks.register("clean") {

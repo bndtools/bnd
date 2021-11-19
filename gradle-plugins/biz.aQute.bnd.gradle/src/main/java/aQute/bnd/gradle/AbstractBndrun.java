@@ -241,7 +241,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 			.named(mainSourceSet.getCompileJavaTaskName(), JavaCompile.class)
 			.map(t -> t.getOptions()
 				.getRelease()
-				.map(r -> r.toString())
+				.map(Object::toString)
 				.getOrElse(t.getTargetCompatibility()));
 		Configuration archivesConfiguration = project.getConfigurations()
 			.getByName(Dependency.ARCHIVES_CONFIGURATION);

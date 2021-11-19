@@ -48,13 +48,13 @@ sourceSets.test {
 	compileClasspath += dslSourceSet.output
 	runtimeClasspath += dslSourceSet.output
 }
-val dslCompileOnly by configurations.getting {
+val dslCompileOnly: Configuration by configurations.getting {
 	extendsFrom(configurations.compileOnly.get())
 }
-val dslImplementation by configurations.getting {
+val dslImplementation: Configuration by configurations.getting {
 	extendsFrom(configurations.implementation.get())
 }
-val dslRuntimeOnly by configurations.getting {
+val dslRuntimeOnly: Configuration by configurations.getting {
 	extendsFrom(configurations.runtimeOnly.get())
 }
 
@@ -107,7 +107,7 @@ publishing {
 	repositories {
 		maven {
 			name = "Dist"
-			url = uri(rootProject.layout.getProjectDirectory()).resolve(bnd_distrepo)
+			url = uri(rootProject.layout.projectDirectory).resolve(bnd_distrepo)
 		}
 		if (System.getenv("CANONICAL").toBoolean()) {
 			val releaseType = if (version.toString().endsWith("SNAPSHOT")) "snapshot" else "release"
@@ -221,11 +221,11 @@ tasks.test {
 			events("STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED")
 		}
 	}
-	val testresources = layout.getProjectDirectory().dir("testresources")
-	val target = layout.getBuildDirectory().dir("testresources")
+	val testresources = layout.projectDirectory.dir("testresources")
+	val target = layout.buildDirectory.dir("testresources")
 	inputs.files(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
 	systemProperty("bnd_version", bnd_version)
-	systemProperty("org.gradle.warning.mode", gradle.getStartParameter().getWarningMode().name.toLowerCase())
+	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name.toLowerCase())
 	maven_repo_local?.let {
 		systemProperty("maven.repo.local", it)
 	}
@@ -243,6 +243,6 @@ tasks.test {
 }
 
 tasks.named<Delete>("cleanTest") {
-	val target = layout.getBuildDirectory().dir("testresources")
+	val target = layout.buildDirectory.dir("testresources")
 	delete(target)
 }
