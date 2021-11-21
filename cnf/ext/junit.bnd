@@ -14,8 +14,8 @@ junit.platform.version=1.8.1
 assertj.version=3.21.0
 awaitility.version=4.1.1
 hamcrest.version=2.2
-org.mockito.version=4.0.0
-net.bytebuddy.version=1.11.19
+org.mockito.version=4.1.0
+net.bytebuddy.version=1.12.1
 org.objenesis.version=3.2
 osgi-test.version=1.0.1
 
