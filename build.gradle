@@ -2,8 +2,8 @@
  * Master Gradle build script
  */
 
-import aQute.lib.io.IO
 import aQute.bnd.osgi.About
+import aQute.lib.io.IO
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	ext.jpmsOptions = [
