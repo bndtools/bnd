@@ -293,7 +293,8 @@ public class BndrunContainer {
 		String runee = run.getProperty(Constants.RUNEE);
 
 		if (runee == null) {
-			EE ee = Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-compiler-plugin"))
+			EE ee = isImplicitEE() ? getJavaSpecificationVersionOrMinSupportedVersion()
+				: Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-compiler-plugin"))
 				.map(p -> Optional.ofNullable(p.getConfiguration())
 					.orElseGet(() -> new Xpp3Dom("configuration")))
 				.map(Xpp3Dom.class::cast)
@@ -325,16 +326,17 @@ public class BndrunContainer {
 					return System.getProperty("java.specification.version");
 				})
 				.flatMap(EE::highestFromTargetVersion)
-				.orElseGet(() -> Optional.ofNullable(System.getProperty("java.specification.version"))
-					.flatMap(EE::highestFromTargetVersion)
-					// if that all fails at least we know bnd needs at least
-					// Java 8 at this point
-					.orElse(EE.JavaSE_1_8));
+					.orElseGet(this::getJavaSpecificationVersionOrMinSupportedVersion);
 
 			run.setProperty(Constants.RUNEE, ee.getEEName());
 
 			logger.info("Bnd inferred {}: {}", Constants.RUNEE, run.getProperty(Constants.RUNEE));
 		}
+	}
+
+	private boolean isImplicitEE() {
+		return System.getProperties()
+			.containsKey("bnd.implicit.ee");
 	}
 
 	private String getNamePart(File runFile) {
@@ -354,6 +356,14 @@ public class BndrunContainer {
 			mavenProperties.put(key, projectProperties.get(key));
 		}
 		return new Processor(workspace, mavenProperties, false);
+	}
+
+	private EE getJavaSpecificationVersionOrMinSupportedVersion() {
+		return Optional.ofNullable(System.getProperty("java.specification.version"))
+			.flatMap(EE::highestFromTargetVersion)
+			// if that all fails at least we know bnd needs at least
+			// Java 8 at this point
+			.orElse(EE.JavaSE_1_8);
 	}
 
 }
