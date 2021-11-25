@@ -21,19 +21,29 @@ All plugins are (unfortunately) loaded in a single class loader.
 	-plugin*       ::= plugin-def ( ',' plugin-def )*
 	plugin-def     ::= qname ( ';' ( attribute | directive ) )*
 
+The `qname` must identify a class, if it is an interface then this will load proxies to any external plugins. This class will be loaded with the `-pluginpath` and/or the `path:` directive.
+
 Any attributes are passed to the plugin if it implements the `aQute.bnd.servce.Plugin` interface. Consult the actual plugin for the possible attributes. 
 
 The following directives are architected.
 
 * `path:` – This directive specifies a comma separated list of file paths, the list must be enclosed in quotes when it contains a comma. Each of these files must be a directory or a JAR file and is added to the plugin class loader in the given sequence. 
 * `command:` – If this directive is specified errors on initializing this plugin are only reported if this command is an instruction in the current properties. The purpose of this is to allow plugins to be built in the `cnf` directory; since the plugin does not exist during its first compilation errors would be reported. Since this project does not use the command itself, it can safely ignore this error.
+* `name` – Specifies the name of an external plugin. This name is a glob and can this be wildcarded. If not specified the name is `*`, which will load all external plugins for that type.
+
+## External Plugins
+
+If the specified `qname` identifies an interface then the current repositories are searched for _external plugins_ that implement this interface. Any found implementations are turned into a proxy that will lazily load the implementation class. The attributes in the clause will be given as properties when the plugin implements Closeable. External plugins that implement Closeable will be closed as normal plugins.
 
 ## Typical Example
+
+The following example installs an embedded FileRepo and will load all exporters from this repository.
 
 	-plugin.repo.main:\
 	  aQute.lib.deployer.FileRepo; \
 	  	name='Main'; \
-	  	location=${build}/repo/main
+	  	location=${build}/repo/main, \
+	  aQute.bnd.service.export.Exporter;name=*
 	
 ## Errors & Warnings
 

@@ -1556,6 +1556,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return new URL[0];
 		}
 
+		@Override
+		public void add(File file) {
+			super.add(file);
+		}
+
 	}
 
 	protected CL getLoader() {
