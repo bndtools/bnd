@@ -219,8 +219,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 	 *            the name of the plugin, wildcards allowed
 	 * @return a list of plugins loaded from the external plugin set
 	 */
-	@SuppressWarnings("unchecked")
-	public Result<List<Object>> getImplementations(Class<?> interf, Attrs attrs) {
+	public <T> Result<List<T>> getImplementations(Class<T> interf, Attrs attrs) {
 		assert interf.isInterface();
 
 		try {
@@ -230,10 +229,11 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 				.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE, filter)
 				.collect(Collectors.toList());
 
-			List<Object> plugins = new ArrayList<>();
+			List<T> plugins = new ArrayList<>();
 			for (Capability c : externalCapabilities) {
 				Memoize<Object> delegate = Memoize.supplier(() -> load(c, attrs).unwrap());
-				Object proxy = Proxy.newProxyInstance(interf.getClassLoader(), new Class[] {
+				@SuppressWarnings("unchecked")
+				T proxy = (T) Proxy.newProxyInstance(interf.getClassLoader(), new Class[] {
 					interf, AutoCloseable.class
 				}, new InvocationHandler() {
 

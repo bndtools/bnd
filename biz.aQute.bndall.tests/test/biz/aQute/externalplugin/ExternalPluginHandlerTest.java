@@ -45,36 +45,35 @@ public class ExternalPluginHandlerTest {
 	}
 
 	@Test
-	@SuppressWarnings({
-		"unchecked", "rawtypes"
-	})
+	@SuppressWarnings("rawtypes")
 	public void testListOfImplementations() throws Exception {
 		Callable callable;
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
 
-			Result<List<Object>> implementations = ws.getExternalPlugins()
+			Result<List<Callable>> implementations = ws.getExternalPlugins()
 				.getImplementations(Callable.class, Attrs.EMPTY_ATTRS);
 
 			assertThat(implementations.isOk()).isTrue();
-			List<Object> unwrap = implementations.unwrap();
+			List<Callable> unwrap = implementations.unwrap();
 			assertThat(unwrap).hasSize(1);
 
-			callable = (Callable) unwrap.get(0);
+			callable = unwrap.get(0);
 			assertThat(callable.call()).isEqualTo("hello");
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void testMultipleImplementations() throws Exception {
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
 
-			Result<List<Object>> implementations = ws.getExternalPlugins()
+			Result<List<Generator>> implementations = ws.getExternalPlugins()
 				.getImplementations(Generator.class, Attrs.EMPTY_ATTRS);
 
 			assertThat(implementations.isOk()).isTrue();
-			List<Object> unwrap = implementations.unwrap();
+			List<Generator> unwrap = implementations.unwrap();
 			assertThat(unwrap).hasSize(4);
 		}
 	}
