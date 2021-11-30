@@ -84,23 +84,27 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		private final Class<T>			serviceClass;
 		private final Memoize<List<T>>	externals;
 		private final Attrs				attrs;
+		private volatile Workspace		workspace;
 
 		AbstractPlugin(Class<T> type, Attrs attrs) {
 			serviceClass = type;
 			this.attrs = attrs;
+			if (processor instanceof Workspace) {
+				workspace = (Workspace) processor;
+			} else if (processor instanceof Project) {
+				workspace = ((Project) processor).getWorkspace();
+			} else {
+				workspace = null;
+			}
 			externals = Memoize.supplier(() -> {
-				Workspace ws;
-				if (processor instanceof Workspace) {
-					ws = (Workspace) processor;
-				} else if (processor instanceof Project) {
-					ws = ((Project) processor).getWorkspace();
-				} else {
+				Workspace ws = this.workspace;
+				if (ws == null) {
 					return Collections.emptyList();
 				}
 				Result<List<T>> implementations = ws.getExternalPlugins()
-					.getImplementations(serviceClass, attrs);
+					.getImplementations(this.serviceClass, this.attrs);
 				implementations.accept(
-					ok -> ok.forEach(p -> processor.customize(p, attrs, PluginsContainer.this)),
+					ok -> ok.forEach(p -> ws.customize(p, this.attrs, PluginsContainer.this)),
 					error -> ws.error("%s", error));
 				return implementations.orElseGet(Collections::emptyList);
 			});
@@ -118,14 +122,13 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		}
 
 		@Override
-		public synchronized void close() throws Exception {
-			List<T> list = externals.get();
-			list.forEach(p -> {
+		public void close() throws Exception {
+			workspace = null;
+			externals.accept(list -> list.forEach(p -> {
 				if (p instanceof AutoCloseable) {
 					IO.close((AutoCloseable) p);
 				}
-			});
-			list.clear();
+			}));
 		}
 
 		@Override
