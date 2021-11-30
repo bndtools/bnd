@@ -10,9 +10,9 @@ import java.io.OutputStream;
 import java.lang.invoke.MethodType;
 import java.net.URL;
 import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.SupplierWithException;
@@ -34,6 +33,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.memoize.CloseableMemoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Processor.CL;
 import aQute.bnd.result.Result;
 import aQute.bnd.service.Registry;
@@ -47,9 +47,9 @@ import aQute.libg.cryptography.SHA1;
 /**
  * The plugin set for a Processor. Plugins are general service objects and can
  * be any type. The PluginsContainer treats the @{link {@link PluginProvider}
- * special. If it is used with a type, it will expand the when it encounters a
- * {@link ProviderType} plugin, see {@link #getPlugin(Class)} and
- * {@link #getPlugin(Class)}. These provided plugins are _not_ part of the this
+ * special. If it is used with a type, it will expand when it encounters a
+ * {@link PluginProvider} plugin, see {@link #getPlugin(Class)} and
+ * {@link #getPlugins(Class)}. These provided plugins are _not_ part of the this
  * set so they won't be explicitly returned when {@link #plugins()} is called.
  */
 public class PluginsContainer extends AbstractSet<Object> implements Set<Object>, Registry {
@@ -57,85 +57,81 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	private static final MethodType		defaultConstructor	= methodType(void.class);
 
 	private final Set<Object>			plugins				= new CopyOnWriteArraySet<>();
-	private final Set<AutoCloseable>	closeablePlugins	= new CopyOnWriteArraySet<>();
 
 	// The following are only mutated during init(), so they don't need to
 	// be concurrent-safe
 	private final Set<String>			missingCommand		= new HashSet<>();
-	private Workspace					ws;
+	private final Set<AutoCloseable>	closeablePlugins	= new HashSet<>();
 	private Processor					processor;
 
 	/**
 	 * A Plugin Provider provides plugins when accessed with a type selector.
 	 * The provided plugins are not part of the container's plugin set.
+	 *
 	 */
 	public interface PluginProvider {
 		/**
 		 * provide the plugins for the given type if the type is equal.
 		 *
-		 * @param <X> the type of this provider
+		 * @param <X> the requested type
 		 * @param type the class of the provider type, never null
 		 * @return a stream with the provided plugins, can be empty
 		 */
 		<X> Stream<X> provide(Class<X> type);
 	}
 
-	@SuppressWarnings("unchecked")
 	class AbstractPlugin<T> implements PluginProvider, AutoCloseable {
-
-		final Class<T>	serviceClass;
-		final List<T>	externals	= new ArrayList<>();
-		final Attrs		attrs;
-		boolean			inited;
+		private final Class<T>			serviceClass;
+		private final Memoize<List<T>>	externals;
+		private final Attrs				attrs;
 
 		AbstractPlugin(Class<T> type, Attrs attrs) {
 			serviceClass = type;
 			this.attrs = attrs;
-		}
-
-		synchronized void init() {
-			if (!inited) {
-				inited = true;
-				if (ws == null)
-					return;
-
-				Result<List<Object>> implementations = ws.getExternalPlugins()
-					.getImplementations(serviceClass, attrs);
-				if (implementations.isOk()) {
-					List<T> impls = (List<T>) implementations.unwrap();
-					for (T pl : impls) {
-						processor.customize(pl, attrs, PluginsContainer.this);
-						externals.add(pl);
-					}
+			externals = Memoize.supplier(() -> {
+				Workspace ws;
+				if (processor instanceof Workspace) {
+					ws = (Workspace) processor;
+				} else if (processor instanceof Project) {
+					ws = ((Project) processor).getWorkspace();
 				} else {
-					ws.error("failed to load external plugins for %s, attrs = %s", serviceClass, attrs);
+					return Collections.emptyList();
 				}
-			}
+				Result<List<T>> implementations = ws.getExternalPlugins()
+					.getImplementations(serviceClass, attrs);
+				implementations.accept(
+					ok -> ok.forEach(p -> processor.customize(p, attrs, PluginsContainer.this)),
+					error -> ws.error("%s", error));
+				return implementations.orElseGet(Collections::emptyList);
+			});
 		}
 
 		@Override
 		public <X> Stream<X> provide(Class<X> type) {
-			if (type != serviceClass)
-				return Stream.empty();
-
-			init();
-			return (Stream<X>) externals.stream();
+			if (type.isAssignableFrom(serviceClass)) {
+				@SuppressWarnings("unchecked")
+				Stream<X> stream = (Stream<X>) externals.get()
+					.stream();
+				return stream;
+			}
+			return Stream.empty();
 		}
 
 		@Override
 		public synchronized void close() throws Exception {
-			externals.forEach(p -> {
+			List<T> list = externals.get();
+			list.forEach(p -> {
 				if (p instanceof AutoCloseable) {
 					IO.close((AutoCloseable) p);
 				}
 			});
-			externals.clear();
+			list.clear();
 		}
 
 		@Override
 		public String toString() {
-			return "AbstractPlugin [serviceClass=" + serviceClass + ", externals=" + externals + ", attrs=" + attrs
-				+ ", inited=" + inited + "]";
+			return "AbstractPlugin [serviceClass=" + serviceClass + ", externals=" + externals.peek() + ", attrs="
+				+ attrs + ", inited=" + externals.isPresent() + "]";
 		}
 	}
 
@@ -146,10 +142,6 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	 */
 	protected void init(Processor processor) {
 		this.processor = processor;
-		if (processor instanceof Workspace)
-			ws = (Workspace) processor;
-		else if (processor instanceof Project)
-			ws = ((Project) processor).getWorkspace();
 
 		String spe = processor.getProperty(Constants.PLUGIN);
 		if (Constants.NONE.equals(spe)) {
@@ -207,16 +199,17 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 
 	protected <T> Stream<T> stream(Class<T> type) {
 		return plugins().stream()
-			.flatMap(o -> expand(o, type))
-			.filter(type::isInstance)
-			.map(type::cast);
-	}
-
-	private Stream<?> expand(Object o, Class<?> type) {
-		if (o instanceof PluginProvider)
-			return ((PluginProvider) o).provide(type);
-		else
-			return Stream.of(o);
+			.flatMap(plugin -> {
+				if (type.isInstance(plugin)) {
+					@SuppressWarnings("unchecked")
+					Stream<T> stream = Stream.of((T) plugin);
+					return stream;
+				}
+				if (plugin instanceof PluginProvider) {
+					return ((PluginProvider) plugin).provide(type);
+				}
+				return Stream.empty();
+			});
 	}
 
 	/**
@@ -476,17 +469,19 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		boolean ignoreError) {
 		try {
 			Class<?> c = loader.loadClass(className);
+			Object plugin;
 			if (c.isInterface()) {
-				AbstractPlugin<?> abstractPlugin = new AbstractPlugin<>(c, attrs);
-				addCloseable(abstractPlugin);
-				return abstractPlugin;
+				plugin = new AbstractPlugin<>(c, attrs);
 			} else {
-				Object plugin = publicLookup().findConstructor(c, defaultConstructor)
+				plugin = publicLookup().findConstructor(c, defaultConstructor)
 					.invoke();
 				processor.customize(plugin, attrs, this);
-				addCloseable(plugin);
-				return plugin;
 			}
+			add(plugin);
+			if (plugin instanceof AutoCloseable) {
+				closeablePlugins.add((AutoCloseable) plugin);
+			}
+			return plugin;
 		} catch (NoClassDefFoundError e) {
 			if (!ignoreError)
 				processor.exception(e, "Failed to load plugin %s;%s", className, attrs);
@@ -499,12 +494,6 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 			processor.exception(e, "Unexpected error loading plugin %s-%s", className, attrs);
 		}
 		return null;
-	}
-
-	public void addCloseable(Object plugin) {
-		if (plugin instanceof AutoCloseable)
-			closeablePlugins.add((AutoCloseable) plugin);
-		add(plugin);
 	}
 
 	boolean isMissingPlugin(String name) {
