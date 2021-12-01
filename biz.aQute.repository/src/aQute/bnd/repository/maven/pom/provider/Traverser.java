@@ -94,11 +94,11 @@ class Traverser {
 							.age(1, TimeUnit.DAYS)
 							.go(uri);
 						POM pom = new POM(repo, in);
-						parsePom(pom, ROOT);
+						parsePom(pom, ROOT, false);
 					}
 				} else {
 					for (Archive archive : archives)
-						parse(archive, ROOT);
+						parse(archive, ROOT, false);
 				}
 			} finally {
 				finish();
@@ -114,8 +114,19 @@ class Traverser {
 		}
 	}
 
-	private void parse(final Archive archive, final String parent) {
-		if (transitive || parent == ROOT) {
+	/**
+	 * This method will parse the given Archive. It will decide itself if the
+	 * archive needs parsing, dependent on the setting for transitive
+	 * dependencies, if it handles the root or if it is forced to do it.
+	 *
+	 * @param archive The {@link Archive} to parse
+	 * @param parent The gav of the Parent. It can be identified if we have the
+	 *            first hirachy element in hand, if it equals
+	 *            {@link Traverser#ROOT}
+	 * @param force Forces the parsing of the Archive
+	 */
+	private void parse(final Archive archive, final String parent, boolean force) {
+		if (transitive || force || parent == ROOT) {
 			//
 			// Prune duplicates by adding the archive to a set. We
 			// use a dummy for the resource, the resource is set later
@@ -137,7 +148,7 @@ class Traverser {
 				.execute(() -> {
 					try {
 						logger.debug("parse archive {}", archive);
-						parseArchive(archive);
+						parseArchive(archive, parent == ROOT);
 					} catch (Throwable throwable) {
 						logger.debug(" failed to parse archive {}: {}", archive, throwable);
 						ResourceBuilder rb = new ResourceBuilder();
@@ -166,7 +177,7 @@ class Traverser {
 		return resources;
 	}
 
-	private void parseArchive(Archive archive) throws Exception {
+	private void parseArchive(Archive archive, boolean root) throws Exception {
 		POM pom = repo.getPom(archive.getRevision());
 		String parent = archive.getRevision()
 			.toString();
@@ -177,13 +188,19 @@ class Traverser {
 				parseResource(archive, parent);
 			return;
 		}
-		parsePom(pom, parent);
+		// If we the Traverser gets a Archive that represents a POM Artifact, we
+		// need to parse its dependencies even if we don't want transitive
+		// dependencies. If we would not do this, transitive=false would beat
+		// the original purpose of the repository, which was using a pom as an
+		// index.
+		boolean forceDependencyParsing = root && pom.isPomOnly();
+		parsePom(pom, parent, forceDependencyParsing);
 
 		if (!pom.isPomOnly())
 			parseResource(archive, parent);
 	}
 
-	private void parsePom(POM pom, String parent) throws Exception {
+	private void parsePom(POM pom, String parent, boolean forceDependencyParsing) throws Exception {
 
 		Map<Program, Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 			transitive, dependencyManagement);
@@ -194,7 +211,7 @@ class Traverser {
 			if (archive == null) {
 				logger.debug("pom {} has bad dependency {}", pom.getRevision(), d);
 			} else
-				parse(archive, parent);
+				parse(archive, parent, forceDependencyParsing);
 		}
 	}
 

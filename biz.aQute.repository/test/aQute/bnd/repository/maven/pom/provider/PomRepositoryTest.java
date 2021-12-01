@@ -92,6 +92,21 @@ public class PomRepositoryTest {
 	}
 
 	@Test
+	public void testPomIndexNoTransitive() throws Exception {
+		MavenRepository mr = getRepo();
+
+		Revision revision = Program.valueOf("org.osgi.enroute", "enterprise-api")
+			.version("7.0.0");
+
+		HttpClient client = new HttpClient();
+		Traverser t = new Traverser(mr, client, false, false).revision(revision);
+		Map<Archive, Resource> value = t.getResources()
+			.getValue();
+		assertEquals(3, value.size());
+		assertAllBndCap(value);
+	}
+
+	@Test
 	public void testPomNotTransitive() throws Exception {
 		MavenRepository mr = getRepo();
 
