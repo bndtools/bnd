@@ -40,7 +40,6 @@ import aQute.maven.provider.POM;
 class Traverser {
 	private final static Logger				logger		= LoggerFactory.getLogger(Traverser.class);
 	static final Resource					DUMMY		= new ResourceBuilder().build();
-	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive, Resource>	resources	= new ConcurrentHashMap<>();
 	private final PromiseFactory			promiseFactory;
 	final List<Archive>						archives;
@@ -94,11 +93,11 @@ class Traverser {
 							.age(1, TimeUnit.DAYS)
 							.go(uri);
 						POM pom = new POM(repo, in);
-						parsePom(pom, ROOT);
+						parsePom(pom, true, true);
 					}
 				} else {
 					for (Archive archive : archives)
-						parse(archive, ROOT);
+						parse(archive, true, true);
 				}
 			} finally {
 				finish();
@@ -114,8 +113,15 @@ class Traverser {
 		}
 	}
 
-	private void parse(final Archive archive, final String parent) {
-		if (transitive || parent == ROOT) {
+	/**
+	 * Parse the specified Archive.
+	 *
+	 * @param archive The {@link Archive} to parse
+	 * @param rootDependency The archive is a root dependency.
+	 * @param parse Request parsing even when non-transitive.
+	 */
+	private void parse(Archive archive, boolean rootDependency, boolean parse) {
+		if (parse || transitive) {
 			//
 			// Prune duplicates by adding the archive to a set. We
 			// use a dummy for the resource, the resource is set later
@@ -137,7 +143,7 @@ class Traverser {
 				.execute(() -> {
 					try {
 						logger.debug("parse archive {}", archive);
-						parseArchive(archive);
+						parseArchive(archive, rootDependency);
 					} catch (Throwable throwable) {
 						logger.debug(" failed to parse archive {}: {}", archive, throwable);
 						ResourceBuilder rb = new ResourceBuilder();
@@ -166,25 +172,39 @@ class Traverser {
 		return resources;
 	}
 
-	private void parseArchive(Archive archive) throws Exception {
+	/**
+	 * Parse the specified Archive (asynchronously).
+	 *
+	 * @param archive The {@link Archive} to parse
+	 * @param rootDependency The archive is a root dependency.
+	 */
+	private void parseArchive(Archive archive, boolean rootDependency) throws Exception {
 		POM pom = repo.getPom(archive.getRevision());
-		String parent = archive.getRevision()
-			.toString();
-
 		if (pom == null) {
 			logger.debug("no pom found for archive {} ", archive);
 			if (!archive.isPom())
-				parseResource(archive, parent);
+				parseResource(archive);
 			return;
 		}
-		parsePom(pom, parent);
+		// For a root dependency having "pom" packaging, we
+		// need to parse its dependencies even if we don't want transitive
+		// dependencies.
+		boolean pomPackaging = pom.isPomOnly();
+		parsePom(pom, false, pomPackaging && rootDependency);
 
-		if (!pom.isPomOnly())
-			parseResource(archive, parent);
+		if (!pomPackaging) {
+			parseResource(archive);
+		}
 	}
 
-	private void parsePom(POM pom, String parent) throws Exception {
-
+	/**
+	 * Parse the specified POM.
+	 *
+	 * @param pom The {@link POM} to parse
+	 * @param rootDependency The pom is a root dependency.
+	 * @param parse Request parsing even when non-transitive.
+	 */
+	private void parsePom(POM pom, boolean rootDependency, boolean parse) throws Exception {
 		Map<Program, Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 			transitive, dependencyManagement);
 		for (Dependency d : dependencies.values()) {
@@ -194,11 +214,11 @@ class Traverser {
 			if (archive == null) {
 				logger.debug("pom {} has bad dependency {}", pom.getRevision(), d);
 			} else
-				parse(archive, parent);
+				parse(archive, rootDependency, parse);
 		}
 	}
 
-	private void parseResource(Archive archive, String parent) throws Exception {
+	private void parseResource(Archive archive) throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 
 		String name = archive.getWithoutVersion();

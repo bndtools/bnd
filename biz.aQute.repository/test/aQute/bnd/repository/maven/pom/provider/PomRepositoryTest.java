@@ -92,18 +92,31 @@ public class PomRepositoryTest {
 	}
 
 	@Test
+	public void testPomIndexNoTransitive() throws Exception {
+		try (MavenRepository mr = getRepo()) {
+			Revision revision = Program.valueOf("org.osgi.enroute", "enterprise-api")
+				.version("7.0.0");
+
+			Traverser t = new Traverser(mr, client, false, false).revision(revision);
+			Map<Archive, Resource> value = t.getResources()
+				.getValue();
+			assertThat(value).hasSize(3);
+			assertAllBndCap(value);
+		}
+	}
+
+	@Test
 	public void testPomNotTransitive() throws Exception {
-		MavenRepository mr = getRepo();
+		try (MavenRepository mr = getRepo()) {
+			Revision revision = Program.valueOf("org.apache.aries.blueprint", "org.apache.aries.blueprint.cm")
+				.version("1.0.8");
 
-		Revision revision = Program.valueOf("org.apache.aries.blueprint", "org.apache.aries.blueprint.cm")
-			.version("1.0.8");
-
-		HttpClient client = new HttpClient();
-		Traverser t = new Traverser(mr, client, false, false).revision(revision);
-		Map<Archive, Resource> value = t.getResources()
-			.getValue();
-		assertEquals(1, value.size());
-		assertAllBndCap(value);
+			Traverser t = new Traverser(mr, client, false, false).revision(revision);
+			Map<Archive, Resource> value = t.getResources()
+				.getValue();
+			assertEquals(1, value.size());
+			assertAllBndCap(value);
+		}
 	}
 
 	@Test
