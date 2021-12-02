@@ -76,6 +76,7 @@ import aQute.bnd.build.ProjectLauncher.LiveCoding;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.buildtool.ToolManager;
 import aQute.bnd.enroute.commands.EnrouteCommand;
 import aQute.bnd.enroute.commands.EnrouteOptions;
 import aQute.bnd.exceptions.Exceptions;
@@ -2264,8 +2265,9 @@ public class bnd extends Processor {
 		report.addAttribute("coverage-all", all);
 	}
 
-	private void doHtmlReport(@SuppressWarnings("unused") Tag report, File file, Document doc,
-		@SuppressWarnings("unused") XPath xpath) throws Exception {
+	private void doHtmlReport(@SuppressWarnings("unused")
+	Tag report, File file, Document doc, @SuppressWarnings("unused")
+	XPath xpath) throws Exception {
 		String path = file.getAbsolutePath();
 		if (path.endsWith(".xml"))
 			path = path.substring(0, path.length() - 4);
@@ -4582,5 +4584,64 @@ public class bnd extends Processor {
 			error("path contains entry that has an error %s", c);
 		}
 		return c.getFile();
+	}
+
+	/**
+	 * Install the build tool
+	 */
+
+	interface BuildtoolOptions extends workspaceOptions {
+		boolean force();
+	}
+
+	public void _buildtool(BuildtoolOptions options) throws Exception {
+
+		Workspace ws = getWorkspace(options.workspace());
+		Parameters buildtool = new Parameters(ws.mergeProperties("-buildtool"));
+
+		for( Map.Entry<String, Attrs> entry : buildtool.entrySet()) {
+			String key = Processor.removeDuplicateMarker(entry.getKey());
+			Attrs attrs = entry.getValue();
+
+			String url = getUrl(key, attrs);
+			if ( url == null) {
+				error("unknown value for 'version' %s, 'version' can be a valid OSGi version, 'file', or 'url'", attrs);
+				return;
+			}
+			try (ToolManager toolmanager = new ToolManager(ws, this::progress)) {
+				toolmanager.install(url, attrs, options.force());
+				getInfo(toolmanager);
+			}
+		}
+		getInfo(ws);
+	}
+
+	private String getUrl(String key, Attrs attrs) {
+		String version = attrs.getVersion();
+		if (Verifier.isVersion(version)) {
+			return "https://github.com/bndtools/workspace.tool." + key + "/archive/refs/tags/" + version + ".zip";
+		} else {
+			switch (version) {
+				case "file" :
+					return getFile(key).toURI()
+						.toString();
+				case "url" :
+					return key;
+				default :
+					return null;
+			}
+		}
+	}
+
+	/**
+	 * Progress is not a logging function. It is used to trace progress for the
+	 * command line. To trace, use a logger.
+	 */
+	@Override
+	public void progress(String format, Object... args) {
+		if (isTrace()) {
+			String message = formatArrays(format, args);
+			err.println(message);
+		}
 	}
 }
