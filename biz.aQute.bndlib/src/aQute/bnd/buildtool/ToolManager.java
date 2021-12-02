@@ -22,7 +22,6 @@ import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.osgi.Verifier;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -48,12 +47,6 @@ public class ToolManager extends Processor {
 		try {
 			if (client.isOffline()) {
 				return "The workspace is off line";
-			}
-
-			if (Verifier.isVersion(url)) {
-				aQute.bnd.version.Version v = new aQute.bnd.version.Version(url);
-				url = "https://github.com/bndtools/gradle.workspace/archive/refs/tags/" + v.toStringWithoutQualifier()
-					+ ".zip";
 			}
 
 			URI uri = new URI(url);

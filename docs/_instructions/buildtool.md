@@ -50,11 +50,12 @@ The `tool.bnd` file must contain a `-tool` instruction.
 This is a normal _instructions_. The keys are matched against the file names relative from the _root_. The first matching
 instruction, provides the instructions how to process the file. The following attributes are available.
 
-* `skip=true` : Skip these files
-* `macro=true` : Process macros. The macros can use the workspace macros and any macros specified in the `tool.bnd` file.
-* `append=true` : Append the extra attributes of the `-buildtool` instruction to the matching files. This will happen in the format of bnd/properties files.
-* `exec=true` : Make the file executable for the owner
+* `skip=*` : Skip these files
+* `macro=*` : Process macros. The macros can use the workspace macros and any macros specified in the `tool.bnd` file.
+* `append=*` : Append the extra attributes of the `-buildtool` instruction to the matching files. This will happen in the format of bnd/properties files.
+* `exec=*` : Make the file executable for the owner
 
+The attributes _must_ have a value, this value is ignored.
 
 ## Example
 
