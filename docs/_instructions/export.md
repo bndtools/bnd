@@ -30,7 +30,7 @@ The Exporters use a plugin mechanism and therefore the list is not closed. The f
 
 * `bnd.executablejar.pack` – Exports a JAR file using the launcher from the `-runpath` or the default if no launcher is specified.
 * `bnd.executablejar` – Similar to the previous but does not support profiles, has no automatic bsn assigned, and entries are not signed. The reason there are two types for the more or less the same format with subtle differences is for backward compatibility.
-* `bnd.runbundles` – A JAR with the runbundles
+* `bnd.runbundles` – A JAR with the runbundles. As optional Attributes `targetDir` will output all runbundles in the set directory in the resulting jar and `template` will use a given jar/zip or directory as template to which the bundles will be added.
 * `osgi.subsystem.application` – Export into an application subsystem
 * `osgi.subsystem.feature` – Export into a feature subsystem 
 * `osgi.subsystem.composite` – Export into a composite subsystem
