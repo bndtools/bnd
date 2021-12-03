@@ -121,7 +121,7 @@ public interface Memoize<S> extends Supplier<S> {
 	 * @since 1.1
 	 */
 	static <T> Memoize<T> predicateSupplier(Supplier<? extends T> supplier, Predicate<? super T> predicate) {
-		return new PredicateMemoizingSupplier<>(supplier, predicate);
+		return new MemoizingSupplier<>(supplier, predicate);
 	}
 
 	/**
