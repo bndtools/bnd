@@ -1979,6 +1979,7 @@ public class Project extends Processor {
 					File actual = write(f -> {
 						IO.copy(ee.getValue()
 							.openInputStream(), f);
+						IO.close(ee.getValue());
 					}, outputFile);
 
 					if (actual != null) {
