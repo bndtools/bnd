@@ -1,6 +1,8 @@
 package aQute.bnd.osgi;
 
+import java.io.File;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 public class JarResource extends WriteResource {
 	private final Jar		jar;
@@ -23,6 +25,16 @@ public class JarResource extends WriteResource {
 	@Override
 	public void write(OutputStream out) throws Exception {
 		jar.write(out);
+	}
+
+	@Override
+	public void write(File file) throws Exception {
+		jar.write(file);
+	}
+
+	@Override
+	public void write(Path path) throws Exception {
+		jar.write(path.toFile());
 	}
 
 	public Jar getJar() {
