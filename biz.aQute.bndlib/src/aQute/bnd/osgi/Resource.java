@@ -15,11 +15,24 @@ import java.util.Locale;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.URLResource.JarURLUtil;
+import aQute.lib.io.IO;
 
 public interface Resource extends Closeable {
 	InputStream openInputStream() throws Exception;
 
 	void write(OutputStream out) throws Exception;
+
+	default void write(File file) throws Exception {
+		try (OutputStream out = IO.outputStream(file)) {
+			write(out);
+		}
+	}
+
+	default void write(Path path) throws Exception {
+		try (OutputStream out = IO.outputStream(path)) {
+			write(out);
+		}
+	}
 
 	long lastModified();
 

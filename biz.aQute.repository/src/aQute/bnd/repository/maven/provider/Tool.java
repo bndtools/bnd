@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toList;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -68,10 +67,8 @@ public class Tool extends Processor {
 			}
 			File out = IO.getFile(sources, path.substring(prefix_length));
 			IO.mkdirs(out.getParentFile());
-			try (OutputStream os = IO.outputStream(out)) {
-				e.getValue()
-					.write(os);
-			}
+			e.getValue()
+				.write(out);
 		}
 	}
 

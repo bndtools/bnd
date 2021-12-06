@@ -1,7 +1,6 @@
 package bndtools.command;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map.Entry;
 
@@ -60,9 +59,7 @@ public class BndExportJarHandler extends AbstractHandler {
 					if (export != null) {
 						try (Resource resource = export.getValue()) {
 							File exported = IO.getBasedFile(exportDir, export.getKey());
-							try (OutputStream out = IO.outputStream(exported)) {
-								resource.write(out);
-							}
+							resource.write(exported);
 							exported.setLastModified(resource.lastModified());
 							if (Central.isBndProject(project)) {
 								project.refreshLocal(IResource.DEPTH_INFINITE, monitor);

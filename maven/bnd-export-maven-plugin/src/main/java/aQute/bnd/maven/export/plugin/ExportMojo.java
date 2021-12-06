@@ -4,7 +4,6 @@ import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -183,9 +182,7 @@ public class ExportMojo extends AbstractMojo {
 				} else {
 					try (Resource r = export.getValue()) {
 						File exported = IO.getBasedFile(targetDir, export.getKey());
-						try (OutputStream out = IO.outputStream(exported)) {
-							r.write(out);
-						}
+						r.write(exported);
 						exported.setLastModified(r.lastModified());
 						attach(exported, bndrun);
 					}

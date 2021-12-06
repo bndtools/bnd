@@ -96,6 +96,16 @@ public class FileResource implements Resource {
 	}
 
 	@Override
+	public void write(File file) throws Exception {
+		IO.copy(this.file, file.toPath());
+	}
+
+	@Override
+	public void write(Path path) throws Exception {
+		IO.copy(file, path);
+	}
+
+	@Override
 	public long lastModified() {
 		return lastModified;
 	}
