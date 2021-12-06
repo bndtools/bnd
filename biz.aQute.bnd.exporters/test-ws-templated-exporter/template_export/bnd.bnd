@@ -1,0 +1,2 @@
+-runpath: \
+	org.apache.felix.framework;version='[5.6.8,6)'

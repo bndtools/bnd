@@ -31,6 +31,7 @@ The Exporters use a plugin mechanism and therefore the list is not closed. The f
 * `bnd.executablejar.pack` – Exports a JAR file using the launcher from the `-runpath` or the default if no launcher is specified.
 * `bnd.executablejar` – Similar to the previous but does not support profiles, has no automatic bsn assigned, and entries are not signed. The reason there are two types for the more or less the same format with subtle differences is for backward compatibility.
 * `bnd.runbundles` – A JAR with the runbundles. As optional Attributes `targetDir` will output all runbundles in the set directory in the resulting jar and `template` will use a given jar/zip or directory as template to which the bundles will be added.
+* `bnd.templated` – Uses a template and can fill in the blanks. For more details, see the section below.
 * `osgi.subsystem.application` – Export into an application subsystem
 * `osgi.subsystem.feature` – Export into a feature subsystem 
 * `osgi.subsystem.composite` – Export into a composite subsystem
@@ -49,3 +50,14 @@ For example:
 ## Backward Compatibility
 
 If the  `filespec` clause does not set the `type` nor the `name` then it is assumed the backward compatible mode is required. This will set the output name to the file name with a `.jar` extension and it will set the bundle symbolic name.
+
+## `bnd.templated` Exporter
+
+| Attribute                     | Type    | Default | Description                                                  |
+| ----------------------------- | ------- | ------- | ------------------------------------------------------------ |
+| `runbundlesDir`               | String  |         | A directory inside the created jar/zip, where the `-runbundles` are exported to. This becomes mandatory the moment `-runbundles` are present. |
+| `runbundlesOverwriteExisting` | boolean | true    | If e.g. used with a template, existing files will be overwritten in the target `runbundlesDir` |
+| `runpathDir`                  | String  |         | A directory inside the created jar/zip, where the `-runpath` are exported to. This becomes mandatory the moment `-runpath` are present. |
+| `runpathOverwriteExisting`    | boolean | true    | If e.g. used with a template, existing files will be overwritten in the target `runpathDir` |
+| `template`                    | String  |         | A template jar or zip that will be used as the basis for the export result. |
+
