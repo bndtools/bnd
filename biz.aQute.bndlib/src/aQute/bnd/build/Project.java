@@ -1977,9 +1977,9 @@ public class Project extends Processor {
 				for (Map.Entry<File, Resource> ee : exports.entrySet()) {
 					File outputFile = ee.getKey();
 					File actual = write(f -> {
-						IO.copy(ee.getValue()
-							.openInputStream(), f);
-						IO.close(ee.getValue());
+						try (Resource r = ee.getValue()) {
+							IO.copy(r.openInputStream(), f);
+						}
 					}, outputFile);
 
 					if (actual != null) {
