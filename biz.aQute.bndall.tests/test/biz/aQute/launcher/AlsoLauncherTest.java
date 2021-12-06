@@ -171,6 +171,29 @@ public class AlsoLauncherTest {
 	}
 
 	@Test
+	public void testExportRunBundlesTemplateCheckTemplateClosed() throws Exception {
+		project.setProperty("-resourceonly", "true");
+		project.setProperty("-includeresource", "hello;literal=true");
+
+		project.setProperty("-export", "x.bndrun;type=bnd.runbundles;name=runbundles.jar;template=" + project.getBase()
+			.getAbsolutePath() + "/generated/demo.jar");
+		File file = project.getFile("generated/demo.jar");
+		file.delete();
+		assertThat(file).doesNotExist();
+
+		File[] build = project.build();
+		assertThat(project.check()).isTrue();
+		assertThat(build).hasSize(2);
+		assertThat(build[0]).isEqualTo(file);
+
+		File run = project.getFile("generated/runbundles.jar");
+		assertThat(build[1]).isEqualTo(run);
+
+		file = project.getFile("generated/demo.jar");
+		file.delete();
+	}
+
+	@Test
 	public void testExportRunBundlesPlain() throws Exception {
 		project.setProperty("-resourceonly", "true");
 		project.setProperty("-includeresource", "hello;literal=true");

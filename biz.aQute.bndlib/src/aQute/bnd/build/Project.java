@@ -1975,16 +1975,15 @@ public class Project extends Processor {
 				}
 
 				for (Map.Entry<File, Resource> ee : exports.entrySet()) {
-					File outputFile = ee.getKey();
-					File actual = write(f -> {
-						IO.copy(ee.getValue()
-							.openInputStream(), f);
-					}, outputFile);
+					try (Resource resource = ee.getValue()) {
+						File outputFile = ee.getKey();
+						File actual = write(resource::write, outputFile);
 
-					if (actual != null) {
-						buildFilesSet.add(actual);
-					} else {
-						error("Could not save %s", ee.getKey());
+						if (actual != null) {
+							buildFilesSet.add(actual);
+						} else {
+							error("Could not save %s", outputFile);
+						}
 					}
 				}
 
