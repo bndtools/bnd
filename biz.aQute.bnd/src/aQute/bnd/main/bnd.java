@@ -1551,9 +1551,7 @@ public class bnd extends Processor {
 				if (path.equals(outputFile.getName()))
 					path = outputFile.getName() + ".pom";
 				File pom = new File(outputFile.getParentFile(), path);
-				try (OutputStream os = IO.outputStream(pom)) {
-					r.write(os);
-				}
+				r.write(pom);
 			}
 
 			getInfo(b, b.getPropertiesFile()

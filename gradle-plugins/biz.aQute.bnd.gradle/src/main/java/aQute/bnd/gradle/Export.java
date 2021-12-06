@@ -8,7 +8,6 @@ import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -193,9 +192,7 @@ public class Export extends AbstractBndrun {
 				} else {
 					try (Resource r = export.getValue()) {
 						File exported = IO.getBasedFile(destinationDirFile, export.getKey());
-						try (OutputStream out = IO.outputStream(exported)) {
-							r.write(out);
-						}
+						r.write(exported);
 						exported.setLastModified(r.lastModified());
 					}
 				}

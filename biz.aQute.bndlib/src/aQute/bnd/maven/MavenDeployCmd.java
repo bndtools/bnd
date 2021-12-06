@@ -2,7 +2,6 @@ package aQute.bnd.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -218,9 +217,7 @@ public class MavenDeployCmd extends Processor {
 
 	private File write(File base, Resource r, String fileName) throws Exception {
 		File f = Processor.getFile(base, fileName);
-		try (OutputStream out = IO.outputStream(f)) {
-			r.write(out);
-		}
+		r.write(f);
 		return f;
 	}
 

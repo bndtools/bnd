@@ -7,7 +7,6 @@ import static java.util.stream.Collectors.toSet;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Formatter;
@@ -364,10 +363,8 @@ class IndexFile {
 						name);
 					File dest = repo.toLocalFile(nextArchive);
 					if (!dest.isFile() || dest.lastModified() < multi.lastModified()) {
-						try (OutputStream out = IO.outputStream(dest)) {
-							entry.getValue()
-								.write(out);
-						}
+						entry.getValue()
+							.write(dest);
 						dest.setLastModified(multi.lastModified());
 					}
 					result.putAll(parseSingleOrMultiFile(nextArchive, dest));
