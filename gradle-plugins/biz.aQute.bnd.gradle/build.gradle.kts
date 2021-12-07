@@ -40,22 +40,27 @@ repositories {
 }
 
 // SourceSet for Kotlin DSL code so that it can be built after the main SourceSet
-val dslSourceSet = sourceSets.create("dsl") {
-	compileClasspath += sourceSets.main.get().output
-	runtimeClasspath += sourceSets.main.get().output
+sourceSets {
+	val dsl by registering {
+		compileClasspath += main.get().output
+		runtimeClasspath += main.get().output
+	}
+	test {
+		compileClasspath += dsl.get().output
+		runtimeClasspath += dsl.get().output
+	}
 }
-sourceSets.test {
-	compileClasspath += dslSourceSet.output
-	runtimeClasspath += dslSourceSet.output
-}
-val dslCompileOnly: Configuration by configurations.getting {
-	extendsFrom(configurations.compileOnly.get())
-}
-val dslImplementation: Configuration by configurations.getting {
-	extendsFrom(configurations.implementation.get())
-}
-val dslRuntimeOnly: Configuration by configurations.getting {
-	extendsFrom(configurations.runtimeOnly.get())
+
+configurations {
+	val dslCompileOnly by existing {
+		extendsFrom(compileOnly.get())
+	}
+	val dslImplementation by existing {
+		extendsFrom(implementation.get())
+	}
+    val dslRuntimeOnly by existing {
+		extendsFrom(runtimeOnly.get())
+	}
 }
 
 // Dependencies
@@ -186,14 +191,14 @@ tasks.withType<AbstractArchiveTask> {
 	isReproducibleFileOrder = true
 }
 
-// Include dsl SourceSet output
 tasks.pluginUnderTestMetadata {
-	pluginClasspath.from(dslSourceSet.output)
+    // Include dsl SourceSet
+	pluginClasspath.from(sourceSets["dsl"].output)
 }
 
 tasks.jar {
 	// Include dsl SourceSet
-	from(dslSourceSet.output)
+	from(sourceSets["dsl"].output)
 	// Include generated pom file
 	into(archiveBaseName.map { "META-INF/maven/${project.group}/${it}" }) {
 		from(tasks.named("generatePomFileForPluginMavenPublication"))
@@ -203,7 +208,7 @@ tasks.jar {
 
 tasks.named<Jar>("sourcesJar") {
 	// Include dsl SourceSet
-	from(dslSourceSet.allSource)
+	from(sourceSets["dsl"].allSource)
 }
 
 // Configure test
