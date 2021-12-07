@@ -29,22 +29,22 @@ localrepo?.let {
 	val maven_repo_local by extra(rootGradle.startParameter.currentDir.resolve(it).normalize().absolutePath)
 }
 
-tasks.register("clean") {
+val clean by tasks.registering {
 	val taskName = name
 	dependsOn(subprojects.map { it.tasks.named(taskName) })
 }
 
-tasks.register("testClasses") {
+val testClasses by tasks.registering {
 	val taskName = name
 	dependsOn(subprojects.map { it.tasks.named(taskName) })
 }
 
-tasks.register("build") {
+val build by tasks.registering {
 	val taskName = name
 	dependsOn(subprojects.map { it.tasks.named(taskName) })
 }
 
-tasks.register("publish") {
+val publish by tasks.registering {
 	val taskName = name
 	dependsOn(subprojects.map { it.tasks.named(taskName) })
 }
