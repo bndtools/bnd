@@ -91,9 +91,6 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 
 	private Promise<Resource> parseFile(File file) {
 		Promise<Resource> resource = promiseFactory.submit(() -> {
-			if (!file.isFile()) {
-				return null;
-			}
 			ResourceBuilder rb = new ResourceBuilder();
 			try {
 				boolean hasIdentity = rb.addFile(file, null);

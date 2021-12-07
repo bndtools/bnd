@@ -712,11 +712,12 @@ public class ResourceBuilder {
 		if (manifest != null) {
 			hasIdentity = addManifest(manifest);
 		}
-		String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
-		String sha256 = SHA256.digest(file)
-			.asHex();
-		addContentCapability(uri, sha256, file.length(), mime);
-
+		if (! file.isDirectory()) {
+			String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
+			String sha256 = SHA256.digest(file)
+				.asHex();
+			addContentCapability(uri, sha256, file.length(), mime);
+		}
 		if (hasIdentity) {
 			addHashes(file);
 		}

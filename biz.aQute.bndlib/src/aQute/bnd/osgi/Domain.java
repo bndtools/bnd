@@ -477,6 +477,25 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public static Domain domain(File file) throws IOException {
+		// also support directories
+		if (file.isDirectory()) {
+			File manifestFile = new File(file, "META-INF/MANIFEST.MF");
+			if (manifestFile.exists()) {
+				Manifest m = new Manifest();
+				try (InputStream in = IO.stream(manifestFile)) {
+					m.read(in);
+				}
+				Domain domain = domain(m);
+				File localization = new File(file, domain.getLocalization());
+				if (localization.exists()) {
+					try (InputStream in = IO.stream(manifestFile)) {
+						domain.translation.load(in);
+					}
+				}
+				return domain;
+			}
+		}
+
 		if (file.getName()
 			.endsWith(".mf")) {
 			try (InputStream in = IO.stream(file)) {
