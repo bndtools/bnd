@@ -794,11 +794,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return getProperties().getProperty(key);
 	}
 
-	public void mergeProperties(File file, boolean override) {
+	public void mergeProperties(File file, boolean overwrite) {
 		if (file.isFile()) {
 			try {
 				Properties properties = loadProperties(file);
-				mergeProperties(properties, override);
+				mergeProperties(properties, overwrite);
 			} catch (Exception e) {
 				error("Error loading properties file: %s", file);
 			}
@@ -810,10 +810,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
-	public void mergeProperties(Properties properties, boolean override) {
+	public void mergeProperties(Properties properties, boolean overwrite) {
 		for (String key : Iterables.iterable(properties.propertyNames(), String.class::cast)) {
 			String value = properties.getProperty(key);
-			if (override || !getProperties().containsKey(key))
+			if (overwrite || !getProperties().containsKey(key))
 				setProperty(key, value);
 		}
 	}
@@ -879,7 +879,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						value = value.substring(1)
 							.trim();
 					} else if (value.startsWith("~")) {
-						// Overwrite properties!
+						// Don't overwrite properties!
 						overwrite = false;
 						value = value.substring(1)
 							.trim();
@@ -958,7 +958,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			sub = loadProperties(file);
 
 		doIncludes(file.getParentFile(), sub);
-		// make sure we do not override properties
+		// take care regarding overwriting properties
 		for (Map.Entry<?, ?> entry : sub.entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
@@ -1382,7 +1382,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Add or override a new property.
+	 * Add or overwrite a new property.
 	 *
 	 * @param key
 	 * @param value
@@ -2231,7 +2231,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return fl;
 
 			// Get the includes (actually should parse the header
-			// to see if they override or only provide defaults?
+			// to see if they overwrite or only provide defaults?
 
 			for (Iterator<File> iter = new ArrayDeque<>(getIncluded()).descendingIterator(); iter.hasNext();) {
 				File file = iter.next();
