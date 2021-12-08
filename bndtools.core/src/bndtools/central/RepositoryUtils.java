@@ -47,7 +47,7 @@ public class RepositoryUtils {
 
 	public static List<RepositoryPlugin> listRepositories(final Workspace localWorkspace, final boolean hideCache) {
 		try {
-			return Central.bndCall(after -> {
+			return localWorkspace.readLocked(() -> {
 				List<RepositoryPlugin> plugins = localWorkspace.getPlugins(RepositoryPlugin.class);
 				plugins.addAll(getAdditionalPlugins());
 				List<RepositoryPlugin> repos = new ArrayList<>(plugins.size() + 1);

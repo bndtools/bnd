@@ -143,7 +143,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 				}
 				// We must safely call bnd to list workspace repo
 				try {
-					Central.bndCall(after -> workspaceRepo.list(null), monitor);
+					ws.readLocked(() -> workspaceRepo.list(null), monitor::isCanceled);
 				} catch (TimeoutException | InterruptedException e) {
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
 						"Unable to acquire lock to refresh repository " + repo.getName(), e);

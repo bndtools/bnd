@@ -109,7 +109,7 @@ public class SynchronizeWorkspaceWithEclipse {
 					List<Project> createProjects = new ArrayList<>(100);
 					List<IProject> removeProjects = new ArrayList<>(100);
 
-					Central.bndCall(after -> {
+					workspace.writeLocked(() -> {
 						Collection<Project> allProjects = workspace.getAllProjects();
 						// Step 2: look for projects to add/update
 						SubMonitor loopMonitor = subMonitor.split(1)
@@ -141,7 +141,7 @@ public class SynchronizeWorkspaceWithEclipse {
 							removeProjects.add(project);
 						}
 						return null;
-					});
+					}, subMonitor::isCanceled);
 
 					// Step 4: add/refresh projects that were found
 					SubMonitor loopMonitor = subMonitor.split(1)

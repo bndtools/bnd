@@ -104,7 +104,7 @@ public class WorkspaceSynchronizer {
 				createProject(ws.getFile(Workspace.CNFDIR), null, subMonitor.split(1));
 			}
 
-			List<String> models = Central.bndCall(after -> {
+			List<String> models = ws.writeLocked(() -> {
 				ws.refreshProjects();
 				ws.forceRefresh();
 				return ws.getBuildOrder()
@@ -112,8 +112,7 @@ public class WorkspaceSynchronizer {
 					.filter(Project::isValid)
 					.map(Project::getName)
 					.collect(Collectors.toList());
-
-			}, monitor);
+			}, monitor::isCanceled);
 
 			projects.remove(Workspace.CNFDIR);
 			models.remove(Workspace.CNFDIR);
