@@ -4,21 +4,36 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.PopulatedRepository;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 
 public class RepositoryUtils {
 	private static final ILogger												logger	= Logger
 		.getLogger(RepositoryUtils.class);
-	private static volatile ServiceTracker<RepositoryPlugin, RepositoryPlugin>	pluginTracker;
+	private static final Memoize<ServiceTracker<RepositoryPlugin, RepositoryPlugin>>	pluginTracker;
+	static {
+		pluginTracker = Memoize.predicateSupplier(() -> {
+			Optional<ServiceTracker<RepositoryPlugin, RepositoryPlugin>> tracker = Optional
+				.ofNullable(FrameworkUtil.getBundle(RepositoryUtils.class))
+				.map(Bundle::getBundleContext)
+				.map(context -> new ServiceTracker<>(context, RepositoryPlugin.class, null));
+			tracker.ifPresent(ServiceTracker::open);
+			return tracker.orElse(null);
+		}, Objects::nonNull);
+	}
 
 	public static List<RepositoryPlugin> listRepositories(boolean hideCache) {
 		Workspace workspace;
@@ -69,12 +84,9 @@ public class RepositoryUtils {
 	}
 
 	private static Collection<RepositoryPlugin> getAdditionalPlugins() {
-		if (pluginTracker == null) {
-			pluginTracker = new ServiceTracker<>(FrameworkUtil.getBundle(RepositoryUtils.class)
-				.getBundleContext(), RepositoryPlugin.class, null);
-			pluginTracker.open();
-		}
-		return pluginTracker.getTracked()
-			.values();
+		return Optional.ofNullable(pluginTracker.get())
+			.map(ServiceTracker::getTracked)
+			.map(Map::values)
+			.orElse(Collections.emptyList());
 	}
 }
