@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.BundleId;
@@ -99,7 +100,8 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 	@Override
 	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 		try {
-			IStatus status = Central.bndCall(after -> {
+			Workspace ws = project.getWorkspace();
+			IStatus status = ws.readLocked(() -> {
 
 				BndEditModel model = new BndEditModel(project);
 				model.load();
@@ -120,7 +122,7 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 				Central.refreshFile(project.getPropertiesFile());
 				return Status.OK_STATUS;
 
-			}, monitor);
+			}, monitor::isCanceled);
 
 			classes.entrySet()
 				.stream()

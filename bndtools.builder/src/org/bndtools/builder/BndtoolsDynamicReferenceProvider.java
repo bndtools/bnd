@@ -26,7 +26,7 @@ public class BndtoolsDynamicReferenceProvider implements IDynamicReferenceProvid
 			IProject project = buildConfiguration.getProject();
 			Workspace ws = Central.getWorkspace();
 			if (!ws.isDefaultWorkspace()) {
-				return Central.bndCall(after -> getDependencies(project, ws));
+				return ws.readLocked(() -> getDependencies(project, ws));
 			}
 			return Collections.emptyList();
 		} catch (Exception e) {

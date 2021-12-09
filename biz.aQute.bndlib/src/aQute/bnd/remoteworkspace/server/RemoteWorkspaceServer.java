@@ -76,13 +76,7 @@ public class RemoteWorkspaceServer implements Closeable {
 		ServerSocket server = new ServerSocket(0, 10, InetAddress.getLoopbackAddress());
 
 		RemoteWorkspace workspaceLocker = Aspects.intercept(RemoteWorkspace.class, new Instance())
-			.around((inv, c) -> workspace.readLocked(() -> {
-				try {
-					return c.call();
-				} catch (Throwable e) {
-					throw Exceptions.duck(e);
-				}
-			}))
+			.around((inv, c) -> workspace.readLocked(c))
 			.build();
 
 		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, l -> workspaceLocker, true,

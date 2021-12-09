@@ -93,10 +93,10 @@ public class BndContainerSourceManager {
 			return classPathEntries;
 		}
 
+		final List<RepositoryPlugin> repositories = RepositoryUtils.listRepositories(true);
 		final Properties props = loadSourceAttachmentProperties(project);
 
 		final List<IClasspathEntry> configuredClassPathEntries = new ArrayList<>(classPathEntries.size());
-
 		for (final IClasspathEntry entry : classPathEntries) {
 			if (entry.getEntryKind() != IClasspathEntry.CPE_LIBRARY || entry.getSourceAttachmentPath() != null) {
 				configuredClassPathEntries.add(entry);
@@ -124,7 +124,7 @@ public class BndContainerSourceManager {
 					extraProps.put(attr.getName(), attr.getValue());
 				}
 
-				File sourceBundle = getSourceBundle(entry.getPath(), extraProps);
+				File sourceBundle = getSourceBundle(entry.getPath(), extraProps, repositories);
 				if (sourceBundle != null) {
 					srcPath = new Path(sourceBundle.getAbsolutePath());
 				}
@@ -141,7 +141,7 @@ public class BndContainerSourceManager {
 		return configuredClassPathEntries;
 	}
 
-	private static File getSourceBundle(IPath path, Map<String, String> props) {
+	private static File getSourceBundle(IPath path, Map<String, String> props, List<RepositoryPlugin> repositories) {
 		if (Central.getWorkspaceIfPresent() == null) {
 			return null;
 		}
@@ -172,7 +172,7 @@ public class BndContainerSourceManager {
 				version = props.get("version");
 			}
 
-			for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
+			for (RepositoryPlugin repo : repositories) {
 				if (repo == null) {
 					continue;
 				}

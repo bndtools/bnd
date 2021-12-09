@@ -55,7 +55,7 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 
 			Processor processor = new Processor();
 
-			Central.bndCall(after -> {
+			Central.bndCall(workspace::readLocked, after -> {
 				Project model = workspace.getProject(project.getName());
 				if (model != null) {
 
@@ -89,7 +89,7 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 					});
 				}
 				return null;
-			});
+			}, null);
 		} catch (Exception e) {
 			logger.logError("generating phase, aboutToBuild", e);
 		}

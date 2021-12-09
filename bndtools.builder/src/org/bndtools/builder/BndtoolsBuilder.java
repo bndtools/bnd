@@ -161,8 +161,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 			try {
 				markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
-
-				Central.bndCall(after -> {
+				Workspace ws = model.getWorkspace();
+				Central.bndCall(ws::readLocked, after -> {
 					if (!model.isValid()) {
 						after.accept("Not a valid project" + model, () -> {
 							markers.createMarker(null, IMarker.SEVERITY_ERROR, "Not a valid bnd project",
@@ -355,10 +355,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				return;
 
 			try {
-				Central.bndCall(after -> {
+				Workspace ws = model.getWorkspace();
+				ws.readLocked(() -> {
 					model.clean();
 					return null;
-				}, monitor);
+				}, monitor::isCanceled);
 			} catch (TimeoutException | InterruptedException e) {
 				logger.logWarning("Unable to clean project " + myProject.getName(), e);
 				return;

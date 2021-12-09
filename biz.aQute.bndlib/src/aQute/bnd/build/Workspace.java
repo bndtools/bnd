@@ -39,9 +39,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BooleanSupplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -201,7 +200,8 @@ public class Workspace extends Processor {
 	private volatile WorkspaceData								data				= new WorkspaceData();
 	private File												buildDir;
 	private final ProjectTracker								projects			= new ProjectTracker(this);
-	private final ReadWriteLock									lock				= new ReentrantReadWriteLock(true);
+	private final WorkspaceLock		workspaceLock						= new WorkspaceLock(true);
+	private static final long		WORKSPACE_LOCK_DEFAULT_TIMEOUTMS	= 120_000L;
 	final WorkspaceNotifier										notifier			= new WorkspaceNotifier(this);
 
 	public static boolean										remoteWorkspaces	= false;
@@ -456,16 +456,21 @@ public class Workspace extends Processor {
 
 	@Override
 	public boolean refresh() {
-		refreshData();
-		gestalt = null;
-		if (super.refresh()) {
-
-			for (Project project : getAllProjects()) {
-				project.propertiesChanged();
-			}
-			return true;
+		try {
+			return writeLocked(() -> {
+				refreshData();
+				gestalt = null;
+				if (super.refresh()) {
+					for (Project project : getAllProjects()) {
+						project.propertiesChanged();
+					}
+					return true;
+				}
+				return false;
+			});
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
-		return false;
 	}
 
 	/**
@@ -484,32 +489,40 @@ public class Workspace extends Processor {
 
 	@Override
 	public void propertiesChanged() {
-		refreshData();
-		gestalt = null;
-		File extDir = new File(getBuildDir(), EXT);
-		File[] extensions = extDir.listFiles();
-		if (extensions != null) {
-			Collator collator = Collator.getInstance(Locale.ROOT);
-			collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-			collator.setStrength(Collator.IDENTICAL); // case-sensitive order
-			Arrays.sort(extensions, (e1, e2) -> collator.compare(e1.getName(), e2.getName()));
-			for (File extension : extensions) {
-				String extensionName = extension.getName();
-				if (extensionName.endsWith(".bnd")) {
-					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
-					try {
-						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
-					} catch (Exception e) {
-						exception(e, "PropertiesChanged: %s", e);
+		try {
+			writeLocked(() -> {
+				refreshData();
+				gestalt = null;
+				File extDir = new File(getBuildDir(), EXT);
+				File[] extensions = extDir.listFiles();
+				if (extensions != null) {
+					Collator collator = Collator.getInstance(Locale.ROOT);
+					collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+					collator.setStrength(Collator.IDENTICAL); // case-sensitive
+																// order
+					Arrays.sort(extensions, (e1, e2) -> collator.compare(e1.getName(), e2.getName()));
+					for (File extension : extensions) {
+						String extensionName = extension.getName();
+						if (extensionName.endsWith(".bnd")) {
+							extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
+							try {
+								doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
+							} catch (Exception e) {
+								exception(e, "PropertiesChanged: %s", e);
+							}
+						}
 					}
 				}
-			}
+				super.propertiesChanged();
+				if (doExtend(this)) {
+					super.propertiesChanged();
+				}
+				forceInitialization();
+				return null;
+			});
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
-		super.propertiesChanged();
-		if (doExtend(this)) {
-			super.propertiesChanged();
-		}
-		forceInitialization();
 	}
 
 	private void forceInitialization() {
@@ -1467,47 +1480,65 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Lock the workspace and its corresponding projects for reading. The r
-	 * parameter when called can freely use any read function in the workspace.
+	 * Lock the workspace for reading. The callable parameter when called can
+	 * freely use any read function in the workspace.
 	 *
-	 * @param r the lambda to run
+	 * @param callable the Callable to run
+	 * @param canceled Has the operation been cancelled?
 	 * @param timeoutInMs the timeout in milliseconds
 	 * @return the value of the lambda
+	 * @throws InterruptedException If the thread is interrupted while waiting
+	 *             for the lock.
+	 * @throws TimeoutException If the lock was not obtained within the timeout
+	 *             period or the specified monitor is cancelled while waiting to
+	 *             obtain the lock.
+	 * @throws Exception If the callable throws an exception.
 	 */
-	public <T> T readLocked(Callable<T> r, long timeoutInMs) throws Exception {
-		return locked(r, timeoutInMs, lock.readLock());
+	public <T> T readLocked(Callable<T> callable, BooleanSupplier canceled, long timeoutInMs) throws Exception {
+		return workspaceLock.locked(workspaceLock.readLock(), timeoutInMs, callable, canceled);
 	}
 
-	public <T> T readLocked(Callable<T> r) throws Exception {
-		return readLocked(r, 120000);
+	public <T> T readLocked(Callable<T> callable, BooleanSupplier canceled) throws Exception {
+		return workspaceLock.locked(workspaceLock.readLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, canceled);
+	}
+
+	public <T> T readLocked(Callable<T> callable, long timeoutInMs) throws Exception {
+		return workspaceLock.locked(workspaceLock.readLock(), timeoutInMs, callable, () -> false);
+	}
+
+	public <T> T readLocked(Callable<T> callable) throws Exception {
+		return workspaceLock.locked(workspaceLock.readLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, () -> false);
 	}
 
 	/**
-	 * Lock the workspace and its corresponding projects for all functions. The
-	 * r parameter when called can freely use any function in the workspace.
+	 * Lock the workspace for all functions including modification. The callable
+	 * parameter when called can freely use any function in the workspace.
 	 *
-	 * @param r the lambda to run
+	 * @param callable the Callable to run
+	 * @param canceled Has the operation been cancelled?
 	 * @param timeoutInMs the timeout in milliseconds
 	 * @return the value of the lambda
+	 * @throws InterruptedException If the thread is interrupted while waiting
+	 *             for the lock.
+	 * @throws TimeoutException If the lock was not obtained within the timeout
+	 *             period or the specified monitor is cancelled while waiting to
+	 *             obtain the lock.
+	 * @throws Exception If the callable throws an exception.
 	 */
-	public <T> T writeLocked(Callable<T> r, long timeoutInMs) throws Exception {
-		return locked(r, timeoutInMs, lock.writeLock());
+	public <T> T writeLocked(Callable<T> callable, BooleanSupplier canceled, long timeoutInMs) throws Exception {
+		return workspaceLock.locked(workspaceLock.writeLock(), timeoutInMs, callable, canceled);
 	}
 
-	public <T> T writeLocked(Callable<T> r) throws Exception {
-		return writeLocked(r, 120000);
+	public <T> T writeLocked(Callable<T> callable, BooleanSupplier canceled) throws Exception {
+		return workspaceLock.locked(workspaceLock.writeLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, canceled);
 	}
 
-	<T> T locked(Callable<T> r, long timeoutInMs, Lock readLock) throws Exception {
-		boolean locked = readLock.tryLock(timeoutInMs, TimeUnit.MILLISECONDS);
-		if (!locked)
-			throw new TimeoutException();
+	public <T> T writeLocked(Callable<T> callable, long timeoutInMs) throws Exception {
+		return workspaceLock.locked(workspaceLock.writeLock(), timeoutInMs, callable, () -> false);
+	}
 
-		try {
-			return r.call();
-		} finally {
-			readLock.unlock();
-		}
+	public <T> T writeLocked(Callable<T> callable) throws Exception {
+		return workspaceLock.locked(workspaceLock.writeLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, () -> false);
 	}
 
 	/**
@@ -1605,8 +1636,8 @@ public class Workspace extends Processor {
 	 * @see #search(String, String)
 	 */
 	public Result<Map<String, List<BundleId>>> search(String partialFqn) throws Exception {
-		return data.classIndex.get()
-			.search(partialFqn);
+		return readLocked(() -> data.classIndex.get()
+			.search(partialFqn));
 	}
 
 	/**
@@ -1623,8 +1654,8 @@ public class Workspace extends Processor {
 	 * @see #search(String)
 	 */
 	public Result<Map<String, List<BundleId>>> search(String packageName, String className) throws Exception {
-		return data.classIndex.get()
-			.search(packageName, className);
+		return readLocked(() -> data.classIndex.get()
+			.search(packageName, className));
 	}
 
 	/**

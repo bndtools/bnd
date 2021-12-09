@@ -3,8 +3,6 @@ package bndtools.central;
 import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,14 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CancellationException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,7 +26,6 @@ import org.bndtools.api.ModelListener;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -43,7 +38,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -61,6 +55,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.annotation.plugin.InternalPluginDefinition;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.BiFunctionWithException;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.exceptions.RunnableWithException;
@@ -104,7 +99,6 @@ public class Central implements IStartupParticipant {
 
 	private RepositoryListenerPluginTracker						repoListenerTracker;
 	private final InternalPluginTracker							internalPlugins;
-	final static List<Thread>									waiters						= new ArrayList<>();
 
 	@SuppressWarnings("unused")
 	private static WorkspaceRepositoryChangeDetector			workspaceRepositoryChangeDetector;
@@ -229,7 +223,7 @@ public class Central implements IStartupParticipant {
 		if (getInstance() == null) {
 			throw new IllegalStateException("Central is not initialised");
 		}
-		Workspace ws;
+		final Workspace ws;
 		java.util.function.Consumer<Workspace> resolve = null;
 		synchronized (workspace) {
 			if (workspace.peek() == null) { // No workspace has been created
@@ -249,19 +243,25 @@ public class Central implements IStartupParticipant {
 					// There is a "cnf" project and the current workspace is
 					// not the same as the directory the cnf project is in,
 					// so switch the workspace to the directory
-					ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
-					ws.forceRefresh();
-					ws.refresh();
-					ws.refreshProjects();
+					ws.writeLocked(() -> {
+						ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
+						ws.forceRefresh();
+						ws.refresh();
+						ws.refreshProjects();
+						return null;
+					});
 					resolve = tryResolve(cnfWorkspaceDeferred);
 				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
 					// There is no "cnf" project and the current workspace is
 					// not the default, so switch the workspace to the default
 					cnfWorkspaceDeferred = promiseFactory().deferred();
-					ws.setFileSystem(Workspace.BND_DEFAULT_WS, Workspace.CNFDIR);
-					ws.forceRefresh();
-					ws.refresh();
-					ws.refreshProjects();
+					ws.writeLocked(() -> {
+						ws.setFileSystem(Workspace.BND_DEFAULT_WS, Workspace.CNFDIR);
+						ws.forceRefresh();
+						ws.refresh();
+						ws.refreshProjects();
+						return null;
+					});
 				}
 			}
 		}
@@ -306,9 +306,6 @@ public class Central implements IStartupParticipant {
 
 			// Initialize projects in synchronized block
 			ws.getBuildOrder();
-
-			// Monitor changes in cnf so we can refresh the workspace
-			addCnfChangeListener(ws);
 
 			workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
 			workspaceService = context.registerService(Workspace.class, ws, null);
@@ -417,57 +414,6 @@ public class Central implements IStartupParticipant {
 		} catch (CoreException e) {
 			return false;
 		}
-	}
-
-	private static void addCnfChangeListener(final Workspace workspace) {
-		ResourcesPlugin.getWorkspace()
-			.addResourceChangeListener(event -> {
-				if (Central.getInstance() == null) { // plugin is not active
-					return;
-				}
-				if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
-					return;
-				}
-				IResourceDelta rootDelta = event.getDelta();
-				if (isCnfChanged(workspace, rootDelta)) {
-					logger.info("cnf changed; refreshing workspace");
-					// Move off notification thread
-					Job job = new Job("Refreshing workspace for cnf change") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							try {
-								// Avoid race condition with BndtoolsBuilder
-								bndCall(after -> workspace.refresh(), monitor);
-							} catch (Exception e) {
-								return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "error during workspace refresh", e);
-							}
-							return Status.OK_STATUS;
-						}
-					};
-					job.schedule();
-				}
-			});
-	}
-
-	private static boolean isCnfChanged(Workspace workspace, IResourceDelta rootDelta) {
-		try {
-			IPath path = toPath(workspace.getPropertiesFile());
-			if (path != null && rootDelta.findMember(path) != null) {
-				return true;
-			}
-			List<File> includedFiles = workspace.getIncluded();
-			if (includedFiles != null) {
-				for (File includedFile : includedFiles) {
-					path = toPath(includedFile);
-					if (path != null && rootDelta.findMember(path) != null) {
-						return true;
-					}
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Central.isCnfChanged() failed", e);
-		}
-		return false;
 	}
 
 	public static boolean isChangeDelta(IResourceDelta delta) {
@@ -716,65 +662,11 @@ public class Central implements IStartupParticipant {
 	}
 
 	/**
-	 * Reentrant lock for serializing access to bnd code.
-	 */
-	private static final class BndLock extends ReentrantLock {
-		private static final long	serialVersionUID	= 1L;
-		private final AtomicLong	progress			= new AtomicLong();
-
-		long progress() {
-			return progress.get();
-		}
-
-		@Override
-		public void unlock() {
-			progress.incrementAndGet();
-			super.unlock();
-		}
-
-		Throwable getOwnerCause() {
-			final Thread owner = getOwner();
-			if (owner == null) {
-				return null;
-			}
-			final Throwable cause = new Throwable(
-				owner + " owns the bndLock\n\nFull thread dump:\n" + dumpAllThreads() + "Owner stacktrace:");
-			cause.setStackTrace(owner.getStackTrace());
-			return cause;
-		}
-
-		private String dumpAllThreads() {
-			ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-			return Arrays
-				.stream(threadMXBean.dumpAllThreads(threadMXBean.isObjectMonitorUsageSupported(),
-					threadMXBean.isSynchronizerUsageSupported()))
-				.map(Object::toString)
-				.collect(Collectors.joining());
-		}
-	}
-
-	private static final BndLock bndLock = new BndLock();
-
-	/**
-	 * Used to serialize access to bnd code which is not thread safe.
+	 * Used to serialize access to the Bnd Workspace.
 	 *
-	 * @param callable The code to execute while holding the central lock.
-	 * @return The result of the specified callable.
-	 * @throws InterruptedException If the thread is interrupted while waiting
-	 *             for the lock.
-	 * @throws TimeoutException If the lock was not obtained within the timeout
-	 *             period.
-	 * @throws Exception If the callable throws an exception.
-	 */
-	public static <V> V bndCall(FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable)
-		throws Exception {
-		return bndCall(callable, null);
-	}
-
-	/**
-	 * Used to serialize access to bnd code which is not thread safe.
-	 *
-	 * @param callable The code to execute while holding the central lock.
+	 * @param lockMethod The Workspace lock method to use.
+	 * @param callable The code to execute while holding the lock. The argument
+	 *            can be used to register after lock release actions.
 	 * @param monitorOrNull If the monitor is cancelled, a TimeoutException will
 	 *            be thrown, can be null
 	 * @return The result of the specified callable.
@@ -785,95 +677,51 @@ public class Central implements IStartupParticipant {
 	 *             obtain the lock.
 	 * @throws Exception If the callable throws an exception.
 	 */
-	public static <V> V bndCall(FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable,
+	public static <V> V bndCall(BiFunctionWithException<Callable<V>, BooleanSupplier, V> lockMethod,
+		FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable,
 		IProgressMonitor monitorOrNull) throws Exception {
-		synchronized (waiters) {
-			waiters.add(Thread.currentThread());
-			logger.info("Enter bnd lock: {}", waiters);
-		}
+		IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
+		Task task = new Task() {
+			@Override
+			public void worked(int units) {
+				monitor.worked(units);
+			}
+
+			@Override
+			public void done(String message, Throwable e) {}
+
+			@Override
+			public boolean isCanceled() {
+				return monitor.isCanceled();
+			}
+
+			@Override
+			public void abort() {
+				monitor.setCanceled(true);
+			}
+		};
+		List<Runnable> after = new ArrayList<>();
+		MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0,
+			"Errors occurred while calling bndCall after actions");
 		try {
-			IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
-			Task task = new Task() {
-
-				@Override
-				public void worked(int units) {
-					monitor.worked(units);
-				}
-
-				@Override
-				public void done(String message, Throwable e) {}
-
-				@Override
-				public boolean isCanceled() {
-					return monitor.isCanceled();
-				}
-
-				@Override
-				public void abort() {
-					monitor.setCanceled(true);
-				}
-			};
-			boolean interrupted = Thread.interrupted();
-			try {
-				List<Runnable> after = new ArrayList<>();
-				MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0,
-					"Errors occurred while calling bndCall after actions");
-				long progress = bndLock.progress();
-				for (int i = 0; i < 120; i++) {
-					if (monitor.isCanceled()) {
-						throw (CancellationException) new CancellationException("Cancelled waiting to acquire bndLock["
-							+ bndLock + "]; has waiters: " + bndLock.getQueueLength())
-								.initCause(bndLock.getOwnerCause());
-					}
-					boolean locked = false;
+			Callable<V> with = () -> TaskManager.with(task, () -> callable.apply((name, runnable) -> after.add(() -> {
+				monitor.subTask(name);
 					try {
-						locked = bndLock.tryLock(1, TimeUnit.SECONDS);
-					} catch (InterruptedException e) {
-						interrupted = true;
-						throw e;
-					}
-					if (locked) {
-						try {
-							return TaskManager.with(task, () -> callable.apply((name, runnable) -> after.add(() -> {
-								monitor.subTask(name);
-								try {
-									runnable.run();
-								} catch (Exception e) {
-									if (!(e instanceof OperationCanceledException)) {
-										status.add(new Status(IStatus.ERROR, runnable.getClass(),
-											"Unexpected exception in bndCall after action: " + name, e));
-									}
-								}
-							})));
-						} finally {
-							bndLock.unlock();
-							for (Runnable runnable : after) {
-								runnable.run();
-							}
-							if (!status.isOK()) {
-								throw new CoreException(status);
-							}
+					runnable.run();
+				} catch (Exception e) {
+					if (!(e instanceof OperationCanceledException)) {
+						status.add(new Status(IStatus.ERROR, runnable.getClass(),
+							"Unexpected exception in bndCall after action: " + name, e));
 						}
 					}
-					long currentProgress = bndLock.progress();
-					if (progress != currentProgress) {
-						progress = currentProgress;
-						i = 0;
-					}
-				}
-				throw (TimeoutException) new TimeoutException(
-					"Unable to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength())
-						.initCause(bndLock.getOwnerCause());
-			} finally {
-				if (interrupted) {
-					Thread.currentThread()
-						.interrupt();
-				}
-			}
+			})));
+			return lockMethod.apply(with, monitor::isCanceled);
 		} finally {
-			synchronized (waiters) {
-				waiters.remove(Thread.currentThread());
-				logger.info("Exit bnd lock: {}", waiters);
+			for (Runnable runnable : after) {
+				runnable.run();
+			}
+			if (!status.isOK()) {
+				throw new CoreException(status);
 			}
 		}
 	}
