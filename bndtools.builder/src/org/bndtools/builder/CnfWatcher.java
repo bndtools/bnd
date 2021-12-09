@@ -70,24 +70,24 @@ public class CnfWatcher implements IResourceChangeListener {
 				.next();
 			DeltaWrapper dw = new DeltaWrapper(p, delta, new BuildLogger(BuildLogger.LOG_NONE, "", 0));
 			if (dw.hasCnfChanged()) {
-				workspace.clear();
-				workspace.forceRefresh();
-				workspace.getPlugins();
-
-				BndtoolsBuilder.dirty.addAll(allProjects);
-
-				WorkspaceJob j = new WorkspaceJob("Update errors on workspace") {
+				WorkspaceJob j = new WorkspaceJob("Refreshing workspace for cnf change") {
 					@Override
 					public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
 						try {
+							workspace.clear();
+							workspace.refresh();
+							workspace.getPlugins();
+
+							BndtoolsBuilder.dirty.addAll(allProjects);
 							MarkerSupport ms = new MarkerSupport(cnfProject);
 							ms.deleteMarkers("*");
 							ms.setMarkers(workspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
-							return Status.OK_STATUS;
 						} catch (Exception e) {
-							return new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, "updating errors for workspace",
+							return new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID,
+								"error during workspace refresh",
 								e);
 						}
+						return Status.OK_STATUS;
 					}
 				};
 				j.schedule();

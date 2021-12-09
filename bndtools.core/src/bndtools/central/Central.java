@@ -26,7 +26,6 @@ import org.bndtools.api.ModelListener;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -39,7 +38,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -309,9 +307,6 @@ public class Central implements IStartupParticipant {
 			// Initialize projects in synchronized block
 			ws.getBuildOrder();
 
-			// Monitor changes in cnf so we can refresh the workspace
-			addCnfChangeListener(ws);
-
 			workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
 			workspaceService = context.registerService(Workspace.class, ws, null);
 			return ws;
@@ -419,58 +414,6 @@ public class Central implements IStartupParticipant {
 		} catch (CoreException e) {
 			return false;
 		}
-	}
-
-	private static void addCnfChangeListener(final Workspace workspace) {
-		ResourcesPlugin.getWorkspace()
-			.addResourceChangeListener(event -> {
-				if (Central.getInstance() == null) { // plugin is not active
-					return;
-				}
-				if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
-					return;
-				}
-				IResourceDelta rootDelta = event.getDelta();
-				if (isCnfChanged(workspace, rootDelta)) {
-					logger.info("cnf changed; refreshing workspace");
-					// Move off notification thread
-					Job job = new Job("Refreshing workspace for cnf change") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							try {
-								workspace.refresh();
-							} catch (Exception e) {
-								return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "error during workspace refresh", e);
-							}
-							return Status.OK_STATUS;
-						}
-					};
-					job.schedule();
-				}
-			});
-	}
-
-	private static boolean isCnfChanged(Workspace workspace, IResourceDelta rootDelta) {
-		try {
-			IPath path = toPath(workspace.getPropertiesFile());
-			if (path != null && rootDelta.findMember(path) != null) {
-				logger.debug("cnf changed; path={}", path);
-				return true;
-			}
-			List<File> includedFiles = workspace.getIncluded();
-			if (includedFiles != null) {
-				for (File includedFile : includedFiles) {
-					path = toPath(includedFile);
-					if (path != null && rootDelta.findMember(path) != null) {
-						logger.debug("cnf changed; path={}", path);
-						return true;
-					}
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Central.isCnfChanged() failed", e);
-		}
-		return false;
 	}
 
 	public static boolean isChangeDelta(IResourceDelta delta) {
