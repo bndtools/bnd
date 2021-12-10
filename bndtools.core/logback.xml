@@ -6,6 +6,8 @@
   </appender>
 
   <logger name="aQute" level="INFO" />
+  <logger name="bndtools" level="INFO" />
+  <logger name="org.bndtools" level="INFO" />
 
   <root level="ERROR">
     <appender-ref ref="STDOUT" />

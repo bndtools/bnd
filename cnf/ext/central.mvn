@@ -54,7 +54,7 @@ org.apache.felix:org.apache.felix.gogo.shell:1.1.0
 org.apache.felix:org.apache.felix.resolver:2.0.0
 org.apache.felix:org.apache.felix.scr:2.1.12
 org.apache.felix:org.apache.felix.inventory:1.0.6
-org.apache.felix:org.apache.felix.logback:1.0.2
+org.apache.felix:org.apache.felix.logback:1.0.4
 
 ch.qos.logback:logback-classic:1.2.3
 ch.qos.logback:logback-core:1.2.3
