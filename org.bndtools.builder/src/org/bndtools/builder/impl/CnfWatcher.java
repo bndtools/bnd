@@ -1,0 +1,110 @@
+package org.bndtools.builder.impl;
+
+import static org.bndtools.builder.impl.BuilderConstants.PLUGIN_ID;
+
+import java.util.Collection;
+
+import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
+import org.bndtools.api.builder.BuildLoggerConstants;
+import org.bndtools.utils.workspace.WorkspaceUtils;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import bndtools.central.Central;
+
+@Component(immediate = true)
+public class CnfWatcher implements IResourceChangeListener {
+	private static final ILogger	logger		= Logger.getLogger(CnfWatcher.class);
+	static final org.slf4j.Logger	consoleLog	= org.slf4j.LoggerFactory.getLogger(CnfWatcher.class);
+
+	@Reference
+	BndtoolsBuilder					builder;
+
+	// Bnd workspace, not Eclipse workspace.
+	@Reference
+	Workspace						workspace;
+
+	@Activate
+	void activate() {
+		consoleLog.debug("Activating CnfWatcher");
+		ResourcesPlugin.getWorkspace()
+			.addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+	}
+
+	@Deactivate
+	void deactivate() {
+		ResourcesPlugin.getWorkspace()
+			.removeResourceChangeListener(this);
+	}
+
+	@Override
+	public void resourceChanged(final IResourceChangeEvent event) {
+		if (Central.hasCnfWorkspace()) {
+			processEvent(event);
+		} else {
+			Central.onCnfWorkspace(workspace -> processEvent(event));
+		}
+	}
+
+	private void processEvent(IResourceChangeEvent event) {
+		try {
+			final IProject cnfProject = WorkspaceUtils.findCnfProject(ResourcesPlugin.getWorkspace()
+				.getRoot(), workspace);
+			if (cnfProject == null)
+				return;
+
+			IResourceDelta delta = event.getDelta();
+			if (delta.findMember(cnfProject.getFullPath()) == null)
+				return;
+
+			Collection<Project> allProjects = workspace.getAllProjects();
+			if (allProjects.isEmpty())
+				return;
+
+			Project p = allProjects.iterator()
+				.next();
+			DeltaWrapper dw = new DeltaWrapper(p, delta, new BuildLogger(BuildLoggerConstants.LOG_NONE, "", 0));
+			if (dw.hasCnfChanged()) {
+				WorkspaceJob j = new WorkspaceJob("Refreshing workspace for cnf change") {
+					@Override
+					public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
+						try {
+							workspace.clear();
+							workspace.refresh();
+							workspace.getPlugins();
+
+							BndtoolsBuilder.dirty.addAll(allProjects);
+							MarkerSupport ms = new MarkerSupport(cnfProject);
+							ms.deleteMarkers("*");
+							ms.setMarkers(workspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
+						} catch (Exception e) {
+							return new Status(IStatus.ERROR, PLUGIN_ID,
+								"error during workspace refresh",
+								e);
+						}
+						return Status.OK_STATUS;
+					}
+				};
+				j.schedule();
+			}
+		} catch (Exception e) {
+			logger.logError("Detecting changes in cnf failed, ignoring", e);
+		}
+	}
+}

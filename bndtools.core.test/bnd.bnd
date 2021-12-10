@@ -21,6 +21,7 @@
     bndtools.builder,\
     bndtools.core,\
     bndtools.core.services,\
+    org.bndtools.builder,\
     org.bndtools.headless.build.manager,\
     org.bndtools.headless.build.plugin.ant,\
     org.bndtools.headless.build.plugin.gradle,\
@@ -85,7 +86,9 @@
 	org.osgi.service.event,\
 	org.osgi.service.repository;version=latest,\
 	osgi.annotation,\
-	org.eclipse.jdt.core.manipulation
+	org.eclipse.jdt.core.manipulation,\
+	org.osgi.test.common,\
+	org.osgi.test.junit5
 
 # Don't run testOSGi in parallel with other tasks claiming launchpad
 -noparallel: launchpad;task="testOSGi"

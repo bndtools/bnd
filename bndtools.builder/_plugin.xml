@@ -15,7 +15,7 @@
 		name="Bndtools Nature"
 		>
 		<runtime>
-			<run class="org.bndtools.builder.BndProjectNature" />
+			<run class="org.bndtools.facade.ExtensionFacade:org.eclipse.core.resources.IProjectNature:org.bndtools.builder.impl.BndProjectNature" />
 		</runtime>
 		<requires-nature id="org.eclipse.jdt.core.javanature" />
 		<builder id="bndtools.core.bndbuilder" />
@@ -27,8 +27,8 @@
 		name="Bndtools Builder"
 		>
 		<builder callOnEmptyDelta="false" hasNature="true">
-			<run class="org.bndtools.builder.BndtoolsBuilder" />
-            <dynamicReference class="org.bndtools.builder.BndtoolsDynamicReferenceProvider"  />
+			<run class="org.bndtools.builder.facade.BuilderFacade" />
+            <dynamicReference class="org.bndtools.facade.ExtensionFacade:org.eclipse.core.resources.IDynamicReferenceProvider:org.bndtools.builder.impl.BndtoolsDynamicReferenceProvider"  />
 		</builder>
 	</extension>
 
@@ -36,8 +36,8 @@
 		point="org.eclipse.jdt.core.compilationParticipant"
 		name="Bnd Container Compilation Participant"
 		>
-		<compilationParticipant class="org.bndtools.builder.classpath.BndContainerCompilationParticipant"
-			id="bndtools.builder.classpath.compilationparticipant"
+		<compilationParticipant class="org.bndtools.facade.ExtensionFacade"
+			id="org.bndtools.builder.classpath.BndContainerCompilationParticipant"
 			modifiesEnvironment="true"
 			>
 		</compilationParticipant>
@@ -47,37 +47,34 @@
         point="org.eclipse.jdt.core.compilationParticipant"
         name="Bnd Source Generation Compilation Participant"
         >
-        <compilationParticipant class="org.bndtools.builder.BndSourceGenerateCompilationParticipant"
-            id="bndtools.builder.generate.compilationparticipant"
+        <compilationParticipant class="org.bndtools.facade.ExtensionFacade"
+            id="org.bndtools.builder.impl.BndSourceGenerateCompilationParticipant"
             modifiesEnvironment="true"
             createsProblems="true"
             >
         </compilationParticipant>
     </extension>
-    
-    
-	
 
 	<extension point="org.eclipse.ui.decorators">
 		<decorator
-			id="bndtools.packageDecorator"
+			id="org.bndtools.builder.decorator.ui.PackageDecorator"
 			label="Bndtools OSGi Package Decorations"
 			objectClass="org.eclipse.jdt.core.IPackageFragment" state="true"
 			adaptable="true"
 			lightweight="true"
-			class="org.bndtools.builder.decorator.ui.PackageDecorator"
+			class="org.bndtools.facade.ExtensionFacade:org.eclipse.jface.viewers.ILightweightLabelDecorator"
 			location="TOP_LEFT">
 			<description>Marks exported packages with a '+' decoration, and
 				excluded packages with a strike-through.</description>
 		</decorator>
 
 		<decorator
-			id="bndtools.componentDecorator"
+			id="org.bndtools.builder.decorator.ui.ComponentDecorator"
 			label="Bndtools OSGi Component Decorations"
 			state="true"
 			adaptable="true"
 			lightweight="true"
-			class="org.bndtools.builder.decorator.ui.ComponentDecorator"
+			class="org.bndtools.facade.ExtensionFacade:org.eclipse.jface.viewers.ILightweightLabelDecorator"
 			location="TOP_RIGHT">
 			<enablement>
 				<or>
@@ -173,7 +170,7 @@
 	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">
 		<classpathContainerInitializer
 			id="aQute.bnd.classpath.container"
-			class="org.bndtools.builder.classpath.BndContainerInitializer"
+			class="org.bndtools.facade.ExtensionFacade::org.bndtools.builder.classpath.BndContainerInitializer"
 		/>
 	</extension>
 
@@ -181,13 +178,8 @@
 		<classpathContainerPage
 			id="aQute.bnd.classpath.container"
 			name="Bnd Bundle Path"
-			class="org.bndtools.builder.classpath.BndContainerPage"
+			class="org.bndtools.facade.ExtensionFacade::org.bndtools.builder.classpath.BndContainerPage"
 		/>
-	</extension>
-
-	<extension point="bndtools.core.bndtoolsStartupParticipant">
-		<startupParticipant
-			class="org.bndtools.builder.jobs.newproject.NewProjectJobsStartupParticipant" />
 	</extension>
 
 	<extension point="bndtools.core.buildErrorDetailsHandlers">
@@ -213,20 +205,5 @@
 	<extension point="org.eclipse.ui.ide.markerResolution">
 		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
 			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
-	</extension>
-
-	<extension point="bndtools.core.validators">
-		<validator name="BSN check"
-			class="org.bndtools.builder.validate.BsnValidator" />
-	</extension>
-
-	<extension point="bndtools.core.validators">
-		<validator name="Project paths check"
-			class="org.bndtools.builder.validate.ProjectPathsValidator" />
-	</extension>
-
-	<extension point="bndtools.core.validators">
-		<validator name="Java versions check"
-			class="org.bndtools.builder.validate.JavaVersionsValidator" />
 	</extension>
 </plugin>

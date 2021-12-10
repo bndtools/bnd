@@ -1,10 +1,14 @@
 package org.bndtools.builder;
 
-import org.bndtools.build.api.IProjectDecorator;
-import org.bndtools.builder.decorator.ui.ProjectDecoratorImpl;
+import org.bndtools.builder.facade.BuilderFacade;
+import org.bndtools.facade.ExtensionFacade;
 import org.osgi.framework.BundleContext;
 
 public class BuilderPlugin extends org.eclipse.core.runtime.Plugin {
+	public static final String		PLUGIN_ID	= "bndtools.builder";
+
+	static final Class<?>			BUILDER_FACADE		= BuilderFacade.class;
+	static final Class<?>			EXTENSION_FACADE	= ExtensionFacade.class;
 
 	private static BuilderPlugin instance = null;
 
@@ -20,7 +24,6 @@ public class BuilderPlugin extends org.eclipse.core.runtime.Plugin {
 		synchronized (BuilderPlugin.class) {
 			instance = this;
 		}
-		context.registerService(IProjectDecorator.class, new ProjectDecoratorImpl(), null);
 	}
 
 	@Override

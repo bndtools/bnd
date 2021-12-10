@@ -49,13 +49,6 @@
 	<extension-point id="editorPages"
 		name="Bnd Editor Pages" schema="schema/editorPages" />
 
-	<extension point="bndtoolsStartupParticipant">
-		<startupParticipant
-			class="bndtools.central.Central" />
-		<startupParticipant
-			class="bndtools.javasearch.JavaSearchStartupParticipant" />
-	</extension>
-
 	<!-- EDITORS -->
 	<extension point="org.eclipse.ui.editors">
 		<editor class="bndtools.editor.BndEditor" default="false"
@@ -180,9 +173,9 @@
 			</enablement>
 		</quickFixProcessor>
 		<quickFixProcessor
-			id="org.bndtools.core.editors.quickfix.facade.QuickFixProcessorFacade"
+			id="org.bndtools.core.editors.quickfix.BuildpathQuickFixProcessor"
 			name="bnd -buildpath Quick Fix" requiredSourceLevel="1.5"
-			class="org.bndtools.core.editors.quickfix.facade.QuickFixProcessorFacade"
+			class="org.bndtools.facade.ExtensionFacade:org.eclipse.jdt.ui.text.java.IQuickFixProcessor"
 			icon="icons/bricks.png">
 			<handledMarkerTypes>
 				<markerType id="org.eclipse.jdt.core.problem" />

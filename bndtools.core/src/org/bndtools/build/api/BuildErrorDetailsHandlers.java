@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.builder.BuildErrorDetailsHandler;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 

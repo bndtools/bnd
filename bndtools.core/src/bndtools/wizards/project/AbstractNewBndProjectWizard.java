@@ -15,7 +15,7 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectPaths;
-import org.bndtools.build.api.BuildErrorDetailsHandler;
+import org.bndtools.api.builder.BuildErrorDetailsHandler;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.utils.copy.ResourceCopier;
 import org.bndtools.utils.javaproject.JavaProjectUtils;

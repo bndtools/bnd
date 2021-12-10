@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Objects;
 
 import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.builder.BuildListener;
 import org.bndtools.build.api.AbstractBuildListener;
-import org.bndtools.build.api.BuildListener;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.core.resources.IMarker;

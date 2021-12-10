@@ -8,8 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.builder.MarkerData;
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
-import org.bndtools.build.api.MarkerData;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;

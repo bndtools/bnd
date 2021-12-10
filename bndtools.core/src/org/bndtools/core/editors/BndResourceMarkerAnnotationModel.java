@@ -1,6 +1,6 @@
 package org.bndtools.core.editors;
 
-import org.bndtools.build.api.BuildErrorDetailsHandler;
+import org.bndtools.api.builder.BuildErrorDetailsHandler;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.texteditor.MarkerAnnotation;

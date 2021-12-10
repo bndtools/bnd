@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.build.api.BuildErrorDetailsHandler;
+import org.bndtools.api.builder.BuildErrorDetailsHandler;
 import org.bndtools.build.api.BuildErrorDetailsHandlers;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;

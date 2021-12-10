@@ -1,6 +1,5 @@
 package bndtools.core.test.utils;
 
-import static aQute.bnd.exceptions.RunnableWithException.asRunnable;
 import static bndtools.core.test.utils.TaskUtils.log;
 
 import java.lang.reflect.Modifier;
@@ -11,23 +10,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.core.resources.IWorkspace;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
+import org.osgi.test.common.service.ServiceConfiguration;
+import org.osgi.test.junit5.service.ServiceExtension;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 
 /**
  * Jupiter extension for setting up a test workspace. This extension does the
  * following:
  * <ol>
- * <li>Waits for the workbench initialisation to complete</li>
- * <li>Ensures that bndtools.core has been started properly</li>
+ * <li>Waits for the workbench initialization to complete</li>
  * <li>Clears the current workspace</li>
- * <li>Imports the template workspace (if specified by {@codee @Workbench}) to
+ * <li>Imports the template workspace (if specified by {@code @Workbench}) to
  * the current workspace</li>
  * </ol>
  *
@@ -38,26 +36,15 @@ public class WorkbenchExtension implements BeforeAllCallback {
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
 		TaskUtils.setAutobuild(false);
-		BundleContext bc = FrameworkUtil.getBundle(context.getRequiredTestClass())
-			.getBundleContext();
 
-		// The bndtools.core plugin must be initialized on the UI thread or else
-		// it will cause an NPE. Because BundleEngine/Jupiter will probably not
-		// be running on the main thread, we cannot rely on the automatic OSGi
-		// class loading to load the bundle the first time that the class is
-		// accessed, as then the bundle will be started by the tester thread and
-		// we'll get the NPE. So we check if it's already running, and if not
-		// then we manually start it on the UI thread.
-		Bundle bndtoolsCore = Stream.of(bc.getBundles())
-			.filter(bundle -> bundle.getSymbolicName()
-				.equals("bndtools.core"))
-			.findAny()
-			.orElseThrow(() -> new IllegalStateException("Couldn't find bndtools.core bundle"));
+		// Wait for the Bnd Workspace service to be available before proceeding.
+		ServiceConfiguration<Workspace> sc = ServiceExtension.getServiceConfiguration(Workspace.class, "",
+			new String[] {}, 1, 10000, context);
 
-		if ((bndtoolsCore.getState() & Bundle.ACTIVE) == 0) {
-			Display.getDefault()
-				.syncExec(asRunnable(() -> bndtoolsCore.start()));
-		}
+		// Wait for the Eclipse Workspace service to be available before
+		// proceeding.
+		ServiceConfiguration<IWorkspace> sc2 = ServiceExtension.getServiceConfiguration(IWorkspace.class, "",
+			new String[] {}, 1, 10000, context);
 
 		WorkbenchTest test = context.getRequiredTestClass()
 			.getAnnotation(WorkbenchTest.class);

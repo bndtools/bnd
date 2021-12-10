@@ -1,5 +1,6 @@
 package org.bndtools.build.api;
 
+import org.bndtools.api.builder.BuildListener;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 

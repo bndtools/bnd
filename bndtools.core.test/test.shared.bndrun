@@ -18,6 +18,7 @@
 	bnd.identity;id='com.google.guava',\
 	bnd.identity;id='javax.annotation',\
 	bnd.identity;id='org.apache.ant',\
+	bnd.identity;id='org.bndtools.builder',\
 	bnd.identity;id='org.bndtools.headless.build.manager',\
 	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
 	bnd.identity;id='org.bndtools.headless.build.plugin.gradle',\

@@ -44,6 +44,7 @@
 	bnd.identity;id='org.apache.felix.gogo.runtime',\
 	bnd.identity;id='org.apache.felix.gogo.shell',\
 	bnd.identity;id='org.bndtools.applaunch',\
+	bnd.identity;id='org.bndtools.builder',\
 	bnd.identity;id='org.bndtools.headless.build.manager',\
 	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
 	bnd.identity;id='org.bndtools.headless.build.plugin.gradle',\

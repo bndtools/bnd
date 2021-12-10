@@ -2,24 +2,17 @@ package bndtools;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.IStartupParticipant;
-import org.bndtools.api.Logger;
-import org.bndtools.core.editors.quickfix.facade.QuickFixProcessorFacade;
 import org.bndtools.core.ui.icons.Icons;
+import org.bndtools.facade.ExtensionFacade;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -39,8 +32,7 @@ import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
 
-	private static final ILogger									logger				= Logger
-		.getLogger(Plugin.class);
+	static final Class<?>											EXTENSION_FACADE	= ExtensionFacade.class;
 
 	public static final String										PLUGIN_ID			= "bndtools.core";
 	public static final String										BND_EDITOR_ID		= PLUGIN_ID + ".bndEditor";
@@ -54,7 +46,6 @@ public class Plugin extends AbstractUIPlugin {
 
 	private BundleContext											bundleContext;
 	private Activator												bndActivator;
-	private final List<IStartupParticipant>							startupParticipants	= new LinkedList<>();
 
 	private volatile ServiceTracker<IWorkspace, IWorkspace>			workspaceTracker;
 	private volatile ServiceRegistration<URLStreamHandlerService>	urlHandlerReg;
@@ -80,9 +71,6 @@ public class Plugin extends AbstractUIPlugin {
 
 		headlessBuildManager = new HeadlessBuildManagerTracker(context);
 		headlessBuildManager.open();
-
-		runStartupParticipants();
-		QuickFixProcessorFacade.setup(context);
 	}
 
 	private void registerWorkspaceURLHandler(BundleContext context) {
@@ -97,37 +85,6 @@ public class Plugin extends AbstractUIPlugin {
 			new WorkspaceURLStreamHandlerService(workspaceTracker), props);
 	}
 
-	private void runStartupParticipants() {
-		IConfigurationElement[] elements = Platform.getExtensionRegistry()
-			.getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
-
-		for (IConfigurationElement element : elements) {
-			try {
-				Object obj = element.createExecutableExtension("class");
-				if (obj instanceof Runnable) {
-					Runnable participant = (Runnable) obj;
-					participant.run();
-				} else if (obj instanceof IStartupParticipant) {
-					IStartupParticipant isp = (IStartupParticipant) obj;
-					startupParticipants.add(isp);
-					isp.start();
-				}
-			} catch (CoreException e) {
-				logger.logError("Error executing startup participant", e);
-			}
-		}
-	}
-
-	private void stopStartupParticipants() {
-		for (IStartupParticipant isp : startupParticipants) {
-			try {
-				isp.stop();
-			} catch (Exception e) {
-				logger.logError("Error stopping startup participant", e);
-			}
-		}
-	}
-
 	private void unregisterWorkspaceURLHandler() {
 		urlHandlerReg.unregister();
 		workspaceTracker.close();
@@ -135,9 +92,6 @@ public class Plugin extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		QuickFixProcessorFacade.cleanup();
-		stopStartupParticipants();
-
 		bndActivator.stop(context);
 		headlessBuildManager.close();
 		versionControlIgnoresManager.close();
