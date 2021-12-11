@@ -1,8 +1,11 @@
 package aQute.bnd.build;
 
+import static aQute.bnd.stream.DropWhile.dropWhile;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
@@ -42,8 +45,19 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 
 	private void trace(String name, Lock lock) {
 		if (logger.isDebugEnabled()) {
-			String trace = Arrays.stream(new Exception().getStackTrace())
-				.skip(3L)
+			String trace = dropWhile(Arrays.stream(new Exception().getStackTrace()), ste -> {
+				String className = ste.getClassName();
+				if (Objects.equals(className, "aQute.bnd.build.WorkspaceLock")) {
+					return true;
+				}
+				if (Objects.equals(className, "aQute.bnd.build.Workspace")) {
+					String methodName = ste.getMethodName();
+					if (Objects.equals(methodName, "readLocked") || Objects.equals(methodName, "writeLocked")) {
+						return true;
+					}
+				}
+				return false;
+			})
 				.limit(5L)
 				.map(Object::toString)
 				.collect(Strings.joining("\n\tat ", "\n\tat ", "", ""));
