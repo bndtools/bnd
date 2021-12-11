@@ -2,6 +2,7 @@ package test.annotationheaders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -106,8 +107,6 @@ public class SPIAnnotationsTest {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
 			b.setPrivatePackage("test.annotationheaders.spi.providerE");
-			b.setProperty("-includeresource",
-				"META-INF/services/test.annotationheaders.spi.SPIService=testresources/services");
 			b.setProperty("Provide-Capability",
 				"osgi.serviceloader;osgi.serviceloader=\"test.annotationheaders.spi.SPIService\"");
 			b.build();
@@ -115,7 +114,7 @@ public class SPIAnnotationsTest {
 				.getManifest()
 				.write(System.out);
 			assertTrue(b.check(
-				"osgi.serviceloader capability found with no 'register:' directive. Descriptor cannot be managed for osgi.serviceloader;osgi.serviceloader=\"test.annotationheaders.spi.SPIService\""));
+				"osgi.serviceloader capability found with no 'register:' directive. Descriptor 'META-INF/services/test.annotationheaders.spi.SPIService' cannot be generated unless the osgi.serviceloader capability specifies the 'register:' directive"));
 
 			Attributes mainAttributes = b.getJar()
 				.getManifest()
@@ -135,7 +134,45 @@ public class SPIAnnotationsTest {
 			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
 			assertNull(p.get("register:"));
 
-			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+			assertNoServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService");
+		}
+	}
+
+	@Test
+	public void testServiceProvider_nowarning_onexisting() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerE");
+			b.setProperty("-includeresource",
+				"META-INF/services/test.annotationheaders.spi.SPIService;literal='some.other.Provider'");
+			b.setProperty("Provide-Capability",
+				"osgi.serviceloader;osgi.serviceloader=\"test.annotationheaders.spi.SPIService\"");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(1, req.size());
+
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(1, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNull(p.get("register:"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService", "some.other.Provider");
+			assertServiceMappingFileNotContains(b.getJar(), "test.annotationheaders.spi.SPIService",
 				"another.provider.ProviderImpl");
 		}
 	}
@@ -580,11 +617,23 @@ public class SPIAnnotationsTest {
 		assertTrue(filter.matchMap(map));
 	}
 
+	void assertNoServiceMappingFile(Jar jar, String spi) throws Exception {
+		Resource resource = jar.getResource("META-INF/services/" + spi);
+		assertNull(resource);
+	}
+
 	void assertServiceMappingFile(Jar jar, String spi, String impl) throws Exception {
 		Resource resource = jar.getResource("META-INF/services/" + spi);
 		assertNotNull(resource);
 		String contents = IO.collect(resource.openInputStream());
 		assertTrue(contents.contains(impl), "does not contain " + impl);
+	}
+
+	void assertServiceMappingFileNotContains(Jar jar, String spi, String impl) throws Exception {
+		Resource resource = jar.getResource("META-INF/services/" + spi);
+		assertNotNull(resource);
+		String contents = IO.collect(resource.openInputStream());
+		assertFalse(contents.contains(impl), "does contain " + impl);
 	}
 
 }
