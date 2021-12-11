@@ -37,15 +37,13 @@ public class SPIDescriptorGenerator implements VerifierPlugin {
 				.equals("osgi.serviceloader"))
 			.values()
 			.forEachOrdered(attrs -> {
+				String serviceType = attrs.get("osgi.serviceloader");
 				String serviceImpl = attrs.get("register:");
-				if (serviceImpl == null) {
-					analyzer.warning(
-						"osgi.serviceloader capability found with no 'register:' directive. Descriptor cannot be managed for osgi.serviceloader;%s",
-						attrs);
-				} else {
-					String serviceType = attrs.get("osgi.serviceloader");
-					providerTypes.computeIfAbsent(serviceType, k -> new ArrayList<>())
-						.add(serviceImpl);
+
+				ArrayList<String> list = providerTypes.computeIfAbsent(serviceType, k -> new ArrayList<>());
+
+				if (serviceImpl != null) {
+					list.add(serviceImpl);
 				}
 			});
 
@@ -55,6 +53,14 @@ public class SPIDescriptorGenerator implements VerifierPlugin {
 
 			Resource resource = analyzer.getJar()
 				.getResource(key);
+
+			if (resource == null && list.isEmpty()) {
+				analyzer.warning(
+					"osgi.serviceloader capability found with no 'register:' directive. Descriptor 'META-INF/services/%s' cannot be generated unless the osgi.serviceloader capability specifies the 'register:' directive",
+					entry.getKey());
+
+				continue;
+			}
 
 			String value = "";
 
