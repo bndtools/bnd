@@ -1473,7 +1473,7 @@ public class MapStreamTest {
 	@Test
 	public void dropWhileAll() {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
-			.dropWhile((k, v) -> !k.equals("none"));
+			.dropWhile((k, v) -> !k.equals("all"));
 		assertThat(supplier.get()
 			.count()).isEqualTo(0);
 		assertThat(supplier.get()
