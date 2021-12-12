@@ -1,5 +1,7 @@
 package aQute.bnd.stream;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -11,8 +13,8 @@ abstract class AbstractWhile<T> implements Spliterator<T>, Consumer<T> {
 	T							item;
 
 	AbstractWhile(Spliterator<T> spliterator, Predicate<? super T> predicate) {
-		this.spliterator = spliterator;
-		this.predicate = predicate;
+		this.spliterator = requireNonNull(spliterator);
+		this.predicate = requireNonNull(predicate);
 	}
 
 	@Override

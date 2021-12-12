@@ -2,6 +2,7 @@ package aQute.bnd.stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,7 +18,6 @@ public class WhileTest {
 	Set<String> testSet;
 
 	@BeforeEach
-	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
 		testSet = new HashSet<>();
 		testSet.add("key1");
@@ -62,6 +62,12 @@ public class WhileTest {
 	}
 
 	@Test
+	public void takeWhileNull() {
+		assertThatNullPointerException().isThrownBy(() -> TakeWhile.takeWhile(testSet.stream(), null));
+		assertThatNullPointerException().isThrownBy(() -> TakeWhile.takeWhile(null, k -> true));
+	}
+
+	@Test
 	public void dropWhile() {
 		Supplier<Stream<String>> supplier = () -> DropWhile.dropWhile(testSet.stream()
 			.sorted(), k -> !k.equals("key3"));
@@ -91,6 +97,12 @@ public class WhileTest {
 		assertThat(supplier.get()).isEmpty();
 		assertThat(supplier.get()
 			.collect(toList())).isEmpty();
+	}
+
+	@Test
+	public void dropWhileNull() {
+		assertThatNullPointerException().isThrownBy(() -> DropWhile.dropWhile(testSet.stream(), null));
+		assertThatNullPointerException().isThrownBy(() -> DropWhile.dropWhile(null, k -> false));
 	}
 
 }
