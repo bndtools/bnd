@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 class ImmutableIterator<E> implements Iterator<E> {
-	final E[]	elements;
-	int			index;
+	final Object[]	elements;
+	int				index;
 
-	ImmutableIterator(E[] elements) {
+	ImmutableIterator(Object[] elements) {
 		this.elements = elements;
 	}
 
@@ -16,10 +16,11 @@ class ImmutableIterator<E> implements Iterator<E> {
 		return index < elements.length;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public E next() {
 		if (hasNext()) {
-			return elements[index++];
+			return (E) elements[index++];
 		}
 		throw new NoSuchElementException();
 	}

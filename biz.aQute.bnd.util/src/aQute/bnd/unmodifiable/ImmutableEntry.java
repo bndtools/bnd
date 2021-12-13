@@ -1,14 +1,53 @@
 package aQute.bnd.unmodifiable;
 
-import static java.util.Objects.requireNonNull;
-
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map.Entry;
 
-final class ImmutableEntry<K, V> extends SimpleImmutableEntry<K, V> implements Entry<K, V> {
-	private static final long serialVersionUID = 1L;
+final class ImmutableEntry<K, V> implements Entry<K, V> {
+	private final K	key;
+	private final V	value;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param key Must not be {@code null}.
+	 * @param value Must not be {@code null}.
+	 */
 	ImmutableEntry(K key, V value) {
-		super(requireNonNull(key), requireNonNull(value));
+		this.key = key;
+		this.value = value;
+	}
+
+	@Override
+	public K getKey() {
+		return key;
+	}
+
+	@Override
+	public V getValue() {
+		return value;
+	}
+
+	@Override
+	public V setValue(V value) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int hashCode() {
+		return key.hashCode() ^ value.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Entry)) {
+			return false;
+		}
+		Entry<?, ?> entry = (Entry<?, ?>) obj;
+		return key.equals(entry.getKey()) && value.equals(entry.getValue());
+	}
+
+	@Override
+	public String toString() {
+		return key + "=" + value;
 	}
 }

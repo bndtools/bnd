@@ -4,11 +4,11 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 final class ImmutableListIterator<E> extends ImmutableIterator<E> implements ListIterator<E> {
-	ImmutableListIterator(E[] elements) {
+	ImmutableListIterator(Object[] elements) {
 		super(elements);
 	}
 
-	ImmutableListIterator(E[] elements, int index) {
+	ImmutableListIterator(Object[] elements, int index) {
 		super(elements);
 		this.index = index;
 		if ((index < 0) || (index > elements.length)) {
@@ -21,10 +21,11 @@ final class ImmutableListIterator<E> extends ImmutableIterator<E> implements Lis
 		return index > 0;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public E previous() {
 		if (hasPrevious()) {
-			return elements[--index];
+			return (E) elements[--index];
 		}
 		throw new NoSuchElementException();
 	}

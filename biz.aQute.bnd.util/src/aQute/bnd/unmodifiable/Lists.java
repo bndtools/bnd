@@ -59,7 +59,7 @@ public class Lists {
 		if (length == 0) {
 			return of();
 		}
-		return new ImmutableList<>((E[]) Arrays.copyOf(elements, length, Object[].class));
+		return new ImmutableList<E>(Arrays.copyOf(elements, length, Object[].class));
 	}
 
 	public static <E> List<E> copyOf(Collection<? extends E> collection) {
@@ -69,6 +69,6 @@ public class Lists {
 		if (collection.isEmpty()) {
 			return of();
 		}
-		return new ImmutableList<>((E[]) collection.toArray());
+		return new ImmutableList<E>(collection.toArray());
 	}
 }
