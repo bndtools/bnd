@@ -22,17 +22,16 @@ import java.util.function.UnaryOperator;
 
 final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomAccess, Serializable {
 	final static ImmutableList<?>	EMPTY	= new ImmutableList<>();
-	final E[]						elements;
+	final Object[]					elements;
 
-	@SafeVarargs
-	ImmutableList(E... elements) {
+	ImmutableList(Object... elements) {
 		this.elements = elements;
-		for (E element : elements) {
+		for (Object element : elements) {
 			requireNonNull(element);
 		}
 	}
 
-	private ImmutableList(E[] elements, int fromIndex, int toIndex) {
+	private ImmutableList(Object[] elements, int fromIndex, int toIndex) {
 		this.elements = Arrays.copyOfRange(elements, fromIndex, toIndex);
 	}
 
@@ -61,9 +60,10 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 		return elements.length;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public E get(int index) {
-		return elements[index];
+		return (E) elements[index];
 	}
 
 	@Override
@@ -135,7 +135,7 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 			return false;
 		}
 		Iterator<?> iter = ((List<?>) o).iterator();
-		for (E element : elements) {
+		for (Object element : elements) {
 			if (!iter.hasNext() || !element.equals(iter.next())) {
 				return false;
 			}
@@ -146,7 +146,7 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@Override
 	public int hashCode() {
 		int hashCode = 1;
-		for (E element : elements) {
+		for (Object element : elements) {
 			hashCode = 31 * hashCode + element.hashCode();
 		}
 		return hashCode;

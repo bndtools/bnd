@@ -59,7 +59,7 @@ public class Sets {
 		if (length == 0) {
 			return of();
 		}
-		return new ImmutableSet<>((E[]) Arrays.copyOf(elements, length, Object[].class));
+		return new ImmutableSet<E>(Arrays.copyOf(elements, length, Object[].class));
 	}
 
 	public static <E> Set<E> copyOf(Collection<? extends E> collection) {
@@ -69,7 +69,7 @@ public class Sets {
 		if (collection.isEmpty()) {
 			return of();
 		}
-		return new ImmutableSet<>((E[]) collection.stream()
+		return new ImmutableSet<E>(collection.stream()
 			.distinct()
 			.toArray());
 	}

@@ -1,6 +1,7 @@
 package aQute.bnd.unmodifiable;
 
-import java.util.Arrays;
+import static java.util.Objects.requireNonNull;
+
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -14,52 +15,47 @@ public class Maps {
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1) {
-		return new ImmutableMap<>(entry(k1, v1));
+		return new ImmutableMap<>(k1, v1);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2));
+		return new ImmutableMap<>(k1, v1, k2, v2);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3), entry(k4, v4));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3, k4, v4);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3), entry(k4, v4), entry(k5, v5));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3), entry(k4, v4), entry(k5, v5),
-			entry(k6, v6));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7,
 		V v7) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3), entry(k4, v4), entry(k5, v5),
-			entry(k6, v6), entry(k7, v7));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7,
 		V v7, K k8, V v8) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3), entry(k4, v4), entry(k5, v5),
-			entry(k6, v6), entry(k7, v7), entry(k8, v8));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7, k8, v8);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7,
 		V v7, K k8, V v8, K k9, V v9) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3), entry(k4, v4), entry(k5, v5),
-			entry(k6, v6), entry(k7, v7), entry(k8, v8), entry(k9, v9));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7, k8, v8, k9, v9);
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7,
 		V v7, K k8, V v8, K k9, V v9, K k10, V v10) {
-		return new ImmutableMap<>(entry(k1, v1), entry(k2, v2), entry(k3, v3), entry(k4, v4), entry(k5, v5),
-			entry(k6, v6), entry(k7, v7), entry(k8, v8), entry(k9, v9), entry(k10, v10));
+		return new ImmutableMap<>(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7, k8, v8, k9, v9, k10, v10);
 	}
 
 	@SafeVarargs
@@ -68,7 +64,13 @@ public class Maps {
 		if (length == 0) {
 			return of();
 		}
-		return new ImmutableMap<>(entries(Arrays.copyOf(entries, length, Entry[].class)));
+		Object[] objects = new Object[length * 2];
+		int i = 0;
+		for (Entry<? extends K, ? extends V> entry : entries) {
+			objects[i++] = entry.getKey();
+			objects[i++] = entry.getValue();
+		}
+		return new ImmutableMap<>(objects);
 	}
 
 	public static <K, V> Map<K, V> copyOf(Map<? extends K, ? extends V> map) {
@@ -78,21 +80,17 @@ public class Maps {
 		if (map.isEmpty()) {
 			return of();
 		}
-		return new ImmutableMap<>(entries(map.entrySet()
-			.toArray(new Entry[0])));
-	}
-
-	private static <K, V> Entry<K, V>[] entries(Entry<? extends K, ? extends V>[] entries) {
-		for (int i = 0, len = entries.length; i < len; i++) {
-			Entry<? extends K, ? extends V> entry = entries[i];
-			if (!(entry instanceof ImmutableEntry)) {
-				entries[i] = entry(entry.getKey(), entry.getValue());
-			}
+		int length = map.size();
+		Object[] objects = new Object[length * 2];
+		int i = 0;
+		for (Entry<? extends K, ? extends V> entry : map.entrySet()) {
+			objects[i++] = entry.getKey();
+			objects[i++] = entry.getValue();
 		}
-		return (Entry<K, V>[]) entries;
+		return new ImmutableMap<>(objects);
 	}
 
 	public static <K, V> Entry<K, V> entry(K key, V value) {
-		return new ImmutableEntry<>(key, value);
+		return new ImmutableEntry<>(requireNonNull(key), requireNonNull(value));
 	}
 }

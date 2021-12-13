@@ -16,16 +16,15 @@ import java.util.function.Predicate;
 
 final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializable {
 	final static ImmutableSet<?>	EMPTY	= new ImmutableSet<>();
-	final E[]						elements;
+	final Object[]					elements;
 	final transient short[]			hash_bucket;
 
-	@SafeVarargs
-	ImmutableSet(E... elements) {
+	ImmutableSet(Object... elements) {
 		this.elements = elements;
 		this.hash_bucket = hash(elements);
 	}
 
-	private static <E> short[] hash(E[] elements) {
+	private static short[] hash(Object[] elements) {
 		int length = elements.length;
 		if (length == 0) {
 			return new short[1];
@@ -45,7 +44,7 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 	}
 
 	// https://en.wikipedia.org/wiki/Linear_probing
-	private static <E> int linear_probe(E[] elements, short[] hash_bucket, Object e) {
+	private static int linear_probe(Object[] elements, short[] hash_bucket, Object e) {
 		int length = hash_bucket.length;
 		for (int hash = (e.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
 			int slot = Short.toUnsignedInt(hash_bucket[hash]) - 1;
@@ -118,7 +117,7 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 			return false;
 		}
 		try {
-			for (E element : elements) {
+			for (Object element : elements) {
 				if (!other.contains(element)) {
 					return false;
 				}
@@ -132,7 +131,7 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 	@Override
 	public int hashCode() {
 		int hashCode = 0;
-		for (E element : elements) {
+		for (Object element : elements) {
 			hashCode += element.hashCode();
 		}
 		return hashCode;

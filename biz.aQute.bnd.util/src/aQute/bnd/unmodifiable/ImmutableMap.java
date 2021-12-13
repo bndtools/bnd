@@ -1,31 +1,40 @@
 package aQute.bnd.unmodifiable;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.AbstractCollection;
 import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Serializable {
 	@SuppressWarnings("unchecked")
 	final static ImmutableMap<?, ?>	EMPTY	= new ImmutableMap<>();
-	final Entry<K, V>[]				entries;
+	final Object[]					entries;
 	final transient short[]			hash_bucket;
-	transient Set<Entry<K, V>>		entrySet;
 
-	@SafeVarargs
-	ImmutableMap(Entry<K, V>... entries) {
+	ImmutableMap(Object... entries) {
 		this.entries = entries;
 		this.hash_bucket = hash(entries);
 	}
 
-	private static <K, V> short[] hash(Entry<K, V>[] entries) {
-		int length = entries.length;
+	private static short[] hash(Object[] entries) {
+		if ((entries.length & 1) != 0) {
+			throw new IllegalArgumentException("entries is not even length");
+		}
+		int length = entries.length >>> 1;
 		if (length == 0) {
 			return new short[1];
 		}
@@ -33,26 +42,27 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			throw new IllegalArgumentException("map too large: " + length);
 		}
 		short[] hash_bucket = new short[length * 2];
-		for (int i = 0; i < length;) {
-			int slot = linear_probe(entries, hash_bucket, entries[i].getKey());
+		for (int i = 0, j = 0; i < length;) {
+			Object key = entries[j++];
+			int slot = linear_probe(entries, hash_bucket, key);
 			if (slot >= 0) {
-				throw new IllegalArgumentException("duplicate key: " + entries[i].getKey());
+				throw new IllegalArgumentException("duplicate key: " + key);
 			}
 			hash_bucket[-1 - slot] = (short) ++i;
+			requireNonNull(entries[j++]);
 		}
 		return hash_bucket;
 	}
 
 	// https://en.wikipedia.org/wiki/Linear_probing
-	private static <K, V> int linear_probe(Entry<K, V>[] entries, short[] hash_bucket, Object key) {
+	private static int linear_probe(Object[] entries, short[] hash_bucket, Object key) {
 		int length = hash_bucket.length;
 		for (int hash = (key.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
 			int slot = Short.toUnsignedInt(hash_bucket[hash]) - 1;
 			if (slot < 0) { // empty
 				return -1 - hash;
 			}
-			if (entries[slot].getKey()
-				.equals(key)) { // found
+			if (entries[slot << 1].equals(key)) { // found
 				return slot;
 			}
 		}
@@ -63,17 +73,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	}
 
 	@Override
-	public Set<Entry<K, V>> entrySet() {
-		Set<Entry<K, V>> set = entrySet;
-		if (set != null) {
-			return set;
-		}
-		return entrySet = new ImmutableSet<>(entries);
-	}
-
-	@Override
 	public int size() {
-		return entries.length;
+		return entries.length >>> 1;
 	}
 
 	@Override
@@ -87,8 +88,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	@Override
 	public boolean containsValue(Object value) {
 		if (value != null) {
-			for (Entry<K, V> entry : entries) {
-				if (value.equals(entry.getValue())) {
+			for (int i = 1; i < entries.length; i += 2) {
+				if (value.equals(entries[i])) {
 					return true;
 				}
 			}
@@ -96,12 +97,13 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 		return false;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key) {
 		if (key != null) {
 			int slot = linear_probe(key);
 			if (slot >= 0) {
-				return entries[slot].getValue();
+				return (V) entries[(slot << 1) + 1];
 			}
 		}
 		return null;
@@ -116,17 +118,16 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			return false;
 		}
 		Map<?, ?> other = (Map<?, ?>) o;
-		if (entries.length != other.size()) {
+		if (size() != other.size()) {
 			return false;
 		}
 		try {
-			for (Entry<K, V> entry : entries) {
-				if (!entry.getValue()
-					.equals(other.get(entry.getKey()))) {
+			for (int i = 0; i < entries.length; i += 2) {
+				if (!entries[i + 1].equals(other.get(entries[i]))) {
 					return false;
 				}
 			}
-		} catch (ClassCastException checkedMap) {
+		} catch (ClassCastException checked) {
 			return false;
 		}
 		return true;
@@ -135,10 +136,235 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	@Override
 	public int hashCode() {
 		int hashCode = 0;
-		for (Entry<K, V> entry : entries) {
-			hashCode += entry.hashCode();
+		for (int i = 0; i < entries.length; i += 2) {
+			hashCode += entries[i].hashCode() ^ entries[i + 1].hashCode();
 		}
 		return hashCode;
+	}
+
+	@Override
+	public Set<Entry<K, V>> entrySet() {
+		return new EntrySet();
+	}
+
+	@Override
+	public Set<K> keySet() {
+		return new KeySet();
+	}
+
+	@Override
+	public Collection<V> values() {
+		return new ValueCollection();
+	}
+
+	abstract class ElementCollection<E> extends AbstractCollection<E> implements Collection<E> {
+		abstract E element(Object k, Object v);
+
+		@Override
+		abstract public boolean contains(Object o);
+
+		final class ElementIterator implements Iterator<E> {
+			private int			index;
+			private final int	end;
+
+			ElementIterator(int index, int end) {
+				this.index = index;
+				this.end = end;
+			}
+
+			@Override
+			public boolean hasNext() {
+				return index < end;
+			}
+
+			@Override
+			public E next() {
+				if (hasNext()) {
+					Object k = entries[index++];
+					Object v = entries[index++];
+					return element(k, v);
+				}
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		}
+
+		@Override
+		public Iterator<E> iterator() {
+			return new ElementIterator(0, entries.length);
+		}
+
+		final class ElementSpliterator implements Spliterator<E> {
+			private int			index;
+			private final int	end;
+
+			ElementSpliterator(int index, int end) {
+				this.index = index;
+				this.end = end;
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super E> action) {
+				requireNonNull(action);
+				if (index < end) {
+					Object k = entries[index++];
+					Object v = entries[index++];
+					action.accept(element(k, v));
+					return true;
+				}
+				return false;
+			}
+
+			@Override
+			public void forEachRemaining(Consumer<? super E> action) {
+				requireNonNull(action);
+				while (index < end) {
+					Object k = entries[index++];
+					Object v = entries[index++];
+					action.accept(element(k, v));
+				}
+			}
+
+			@Override
+			public Spliterator<E> trySplit() {
+				int split = ((index + end) >>> 2) << 1;
+				if (index < split) {
+					ElementSpliterator spliterator = new ElementSpliterator(index, split);
+					index = split;
+					return spliterator;
+				}
+				return null; // no split
+			}
+
+			@Override
+			public long estimateSize() {
+				return getExactSizeIfKnown();
+			}
+
+			@Override
+			public int characteristics() {
+				int characteristics = Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL
+					| Spliterator.SIZED | Spliterator.SUBSIZED;
+				if (ElementCollection.this instanceof Set) {
+					characteristics |= Spliterator.DISTINCT;
+				}
+				return characteristics;
+			}
+
+			@Override
+			public long getExactSizeIfKnown() {
+				return (end - index) >>> 1;
+			}
+		}
+
+		@Override
+		public Spliterator<E> spliterator() {
+			return new ElementSpliterator(0, entries.length);
+		}
+
+		@Override
+		public void forEach(Consumer<? super E> action) {
+			requireNonNull(action);
+			for (int index = 0, end = entries.length; index < end;) {
+				Object k = entries[index++];
+				Object v = entries[index++];
+				action.accept(element(k, v));
+			}
+		}
+
+		@Override
+		public int size() {
+			return ImmutableMap.this.size();
+		}
+	}
+
+	abstract class ElementSet<E> extends ElementCollection<E> implements Set<E> {
+		@Override
+		public boolean equals(Object o) {
+			if (o == this) {
+				return true;
+			}
+			if (!(o instanceof Set)) {
+				return false;
+			}
+			Set<?> other = (Set<?>) o;
+			if (size() != other.size()) {
+				return false;
+			}
+			try {
+				return containsAll(other);
+			} catch (ClassCastException checked) {
+				return false;
+			}
+		}
+
+		@Override
+		abstract public int hashCode();
+	}
+
+	final class EntrySet extends ElementSet<Entry<K, V>> {
+		@Override
+		@SuppressWarnings("unchecked")
+		Entry<K, V> element(Object k, Object v) {
+			return (Entry<K, V>) new ImmutableEntry<>(k, v);
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			if (!(o instanceof Entry)) {
+				return false;
+			}
+			Entry<?, ?> other = (Entry<?, ?>) o;
+			V v = ImmutableMap.this.get(other.getKey());
+			if (v == null) {
+				return false;
+			}
+			return v.equals(other.getValue());
+		}
+
+		@Override
+		public int hashCode() {
+			return ImmutableMap.this.hashCode();
+		}
+	}
+
+	final class KeySet extends ElementSet<K> {
+		@Override
+		@SuppressWarnings("unchecked")
+		K element(Object k, Object v) {
+			return (K) k;
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			return ImmutableMap.this.containsKey(o);
+		}
+
+		@Override
+		public int hashCode() {
+			int hashCode = 0;
+			for (int i = 0; i < entries.length; i += 2) {
+				hashCode += entries[i].hashCode();
+			}
+			return hashCode;
+		}
+	}
+
+	final class ValueCollection extends ElementCollection<V> {
+		@Override
+		@SuppressWarnings("unchecked")
+		V element(Object k, Object v) {
+			return (V) v;
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			return ImmutableMap.this.containsValue(o);
+		}
 	}
 
 	@Override
@@ -222,15 +448,7 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 		private transient Object[]	data;
 
 		SerializationProxy(ImmutableMap<?, ?> map) {
-			final Entry<?, ?>[] entries = map.entries;
-			final int length = entries.length;
-			final Object[] local = new Object[length * 2];
-			int i = 0;
-			for (Entry<?, ?> entry : entries) {
-				local[i++] = entry.getKey();
-				local[i++] = entry.getValue();
-			}
-			data = local;
+			data = map.entries;
 		}
 
 		private void writeObject(ObjectOutputStream oos) throws IOException {
@@ -249,7 +467,7 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			if (length < 0) {
 				throw new InvalidObjectException("negative length");
 			}
-			if ((length % 2) != 0) {
+			if ((length & 1) != 0) {
 				throw new InvalidObjectException("odd length");
 			}
 			final Object[] local = new Object[length];
@@ -265,14 +483,7 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 				if (local.length == 0) {
 					return EMPTY;
 				}
-				final int length = local.length / 2;
-				@SuppressWarnings("unchecked")
-				Entry<Object, Object>[] entries = new Entry[length];
-				for (int i = 0; i < length; i++) {
-					final int j = i * 2;
-					entries[i] = new ImmutableEntry<>(local[j], local[j + 1]);
-				}
-				return new ImmutableMap<>(entries);
+				return new ImmutableMap<>(local);
 			} catch (RuntimeException e) {
 				InvalidObjectException ioe = new InvalidObjectException("invalid");
 				ioe.initCause(e);

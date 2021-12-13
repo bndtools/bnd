@@ -8,11 +8,19 @@ import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 import org.assertj.core.api.MapAssert;
 import org.junit.jupiter.api.Test;
@@ -315,7 +323,9 @@ public class MapsTest {
 		hashMap.put("k2", "v2");
 		hashMap.put("k1", "v1");
 
-		assertThat(map.hashCode()).isEqualTo(hashMap.hashCode());
+		assertThat(map).hasSameHashCodeAs(hashMap);
+		assertThat(map.entrySet()).hasSameHashCodeAs(hashMap.entrySet());
+		assertThat(map.keySet()).hasSameHashCodeAs(hashMap.keySet());
 	}
 
 	@Test
@@ -326,26 +336,36 @@ public class MapsTest {
 		hashMap.put("k1", "v1");
 
 		assertThat(map).isEqualTo(hashMap);
+		assertThat(map.entrySet()).isEqualTo(hashMap.entrySet());
+		assertThat(map.keySet()).isEqualTo(hashMap.keySet());
 
 		hashMap = new HashMap<>();
 		hashMap.put("k1", "v1");
 		hashMap.put("k2", "v1");
 		assertThat(map).isNotEqualTo(hashMap);
+		assertThat(map.entrySet()).isNotEqualTo(hashMap.entrySet());
+		assertThat(map.keySet()).isEqualTo(hashMap.keySet());
 
 		hashMap = new HashMap<>();
 		hashMap.put("k1", "v1");
 		hashMap.put("k3", "v3");
 		assertThat(map).isNotEqualTo(hashMap);
+		assertThat(map.entrySet()).isNotEqualTo(hashMap.entrySet());
+		assertThat(map.keySet()).isNotEqualTo(hashMap.keySet());
 
 		hashMap = new HashMap<>();
 		hashMap.put("k1", "v1");
 		assertThat(map).isNotEqualTo(hashMap);
+		assertThat(map.entrySet()).isNotEqualTo(hashMap.entrySet());
+		assertThat(map.keySet()).isNotEqualTo(hashMap.keySet());
 
 		hashMap = new HashMap<>();
 		hashMap.put("k1", "v1");
 		hashMap.put("k2", "v2");
 		hashMap.put("k3", "v3");
 		assertThat(map).isNotEqualTo(hashMap);
+		assertThat(map.entrySet()).isNotEqualTo(hashMap.entrySet());
+		assertThat(map.keySet()).isNotEqualTo(hashMap.keySet());
 	}
 
 	@Test
@@ -363,6 +383,335 @@ public class MapsTest {
 			.entrySet();
 		assertThat(entrySet.contains(new SimpleEntry<>("k1", "v2"))).isFalse();
 		assertThat(entrySet.contains(null)).isFalse();
+	}
+
+	@Test
+	public void entry_set_stream() {
+		Set<Entry<String, String>> entrySet = Maps.of("k1", "v1", "k2", "v2")
+			.entrySet();
+		assertThat(entrySet.stream()).containsExactly(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+	}
+
+	@Test
+	public void entry_set_foreach() {
+		Set<Entry<String, String>> entrySet = Maps.of("k1", "v1", "k2", "v2")
+			.entrySet();
+		Set<Entry<String, String>> set = new HashSet<>();
+		entrySet.forEach(set::add);
+		assertThat(set).containsExactlyInAnyOrder(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+	}
+
+	@Test
+	public void entry_set_iterator() {
+		Set<Entry<String, String>> entrySet = Maps.of("k1", "v1", "k2", "v2")
+			.entrySet();
+		Iterator<Entry<String, String>> iterator = entrySet.iterator();
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(new SimpleEntry<>("k1", "v1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> iterator.remove());
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(new SimpleEntry<>("k2", "v2"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> iterator.remove());
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+	}
+
+	@Test
+	public void entry_set_iterator_empty() {
+		Set<Entry<String, String>> entrySet = Maps.<String, String> of()
+			.entrySet();
+		Iterator<Entry<String, String>> iterator = entrySet.iterator();
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+	}
+
+	static class Holder<E> implements Consumer<E> {
+		E value;
+
+		@Override
+		public void accept(E t) {
+			this.value = t;
+		}
+	}
+
+	@Test
+	public void entry_set_spliterator() {
+		final int max = (1 << Short.SIZE) - 1;
+		@SuppressWarnings("unchecked")
+		Entry<String, String>[] entries = new Entry[max];
+		for (int i = 0; i < max; i++) {
+			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+		}
+		Map<String, String> map = Maps.ofEntries(entries);
+		assertThat(map).hasSize(max);
+		Set<Entry<String, String>> entrySet = map.entrySet();
+		Spliterator<Entry<String, String>> spliterator = entrySet.spliterator();
+		assertThat(spliterator).hasCharacteristics(Spliterator.DISTINCT);
+		assertThat(spliterator.estimateSize()).isEqualTo(entrySet.size());
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(entrySet.size());
+
+		Spliterator<Entry<String, String>> trySplit = spliterator.trySplit();
+		assertThat(trySplit).hasCharacteristics(Spliterator.DISTINCT);
+		assertThat(trySplit.getExactSizeIfKnown() + spliterator.getExactSizeIfKnown()).isEqualTo(entrySet.size());
+
+		long firstSize = trySplit.getExactSizeIfKnown();
+		Holder<Entry<String, String>> holder = new Holder<>();
+		assertThat(trySplit.tryAdvance(holder)).isTrue();
+		assertThat(holder.value).isEqualTo(new SimpleEntry<>("k1", "v1"));
+		trySplit.forEachRemaining(holder);
+		assertThat(trySplit.tryAdvance(holder)).isFalse();
+		assertThat(holder.value)
+			.isEqualTo(new SimpleEntry<>(String.format("k%d", firstSize), String.format("v%d", firstSize)));
+		assertThat(trySplit.trySplit()).isNull();
+
+		long splitPoint = firstSize + 1;
+		assertThat(spliterator.tryAdvance(holder)).isTrue();
+		assertThat(holder.value)
+			.isEqualTo(new SimpleEntry<>(String.format("k%d", splitPoint), String.format("v%d", splitPoint)));
+		while (spliterator.tryAdvance(holder)) {}
+		assertThat(holder.value).isEqualTo(new SimpleEntry<>(String.format("k%d", max), String.format("v%d", max)));
+		assertThat(spliterator.trySplit()).isNull();
+	}
+
+	@Test
+	public void entry_set_spliterator_empty() {
+		Set<Entry<String, String>> entrySet = Maps.<String, String> of()
+			.entrySet();
+		Spliterator<Entry<String, String>> spliterator = entrySet.spliterator();
+		assertThat(spliterator).hasCharacteristics(Spliterator.DISTINCT);
+		assertThat(spliterator.estimateSize()).isEqualTo(entrySet.size());
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(entrySet.size());
+
+		assertThat(spliterator.trySplit()).isNull();
+
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(entrySet.size());
+		Holder<Entry<String, String>> holder = new Holder<>();
+		assertThat(spliterator.tryAdvance(holder)).isFalse();
+	}
+
+	@Test
+	public void key_set_contains() {
+		Set<String> keySet = Maps.of("k1", "v1", "k2", "v2")
+			.keySet();
+		assertThat(keySet).containsExactly("k1", "k2");
+
+		assertThat(keySet.contains("k1")).isTrue();
+		assertThat(keySet.contains("k2")).isTrue();
+		assertThat(keySet.contains("k3")).isFalse();
+		assertThat(keySet.contains(null)).isFalse();
+
+		keySet = Maps.<String, String> of()
+			.keySet();
+		assertThat(keySet.contains("k1")).isFalse();
+		assertThat(keySet.contains(null)).isFalse();
+	}
+
+	@Test
+	public void key_set_stream() {
+		Set<String> keySet = Maps.of("k1", "v1", "k2", "v2")
+			.keySet();
+		assertThat(keySet.stream()).containsExactly("k1", "k2");
+	}
+
+	@Test
+	public void key_set_foreach() {
+		Set<String> keySet = Maps.of("k1", "v1", "k2", "v2")
+			.keySet();
+		Set<String> set = new HashSet<>();
+		keySet.forEach(set::add);
+		assertThat(set).containsExactlyInAnyOrder("k1", "k2");
+	}
+
+	@Test
+	public void key_set_iterator() {
+		Set<String> keySet = Maps.of("k1", "v1", "k2", "v2")
+			.keySet();
+		Iterator<String> iterator = keySet.iterator();
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("k1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> iterator.remove());
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("k2");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> iterator.remove());
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+	}
+
+	@Test
+	public void key_set_iterator_empty() {
+		Set<String> keySet = Maps.<String, String> of()
+			.keySet();
+		Iterator<String> iterator = keySet.iterator();
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+	}
+
+	@Test
+	public void key_set_spliterator() {
+		final int max = (1 << Short.SIZE) - 1;
+		@SuppressWarnings("unchecked")
+		Entry<String, String>[] entries = new Entry[max];
+		for (int i = 0; i < max; i++) {
+			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+		}
+		Map<String, String> map = Maps.ofEntries(entries);
+		assertThat(map).hasSize(max);
+		Set<String> keySet = map.keySet();
+		Spliterator<String> spliterator = keySet.spliterator();
+		assertThat(spliterator).hasCharacteristics(Spliterator.DISTINCT);
+		assertThat(spliterator.estimateSize()).isEqualTo(keySet.size());
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(keySet.size());
+
+		Spliterator<String> trySplit = spliterator.trySplit();
+		assertThat(trySplit).hasCharacteristics(Spliterator.DISTINCT);
+		assertThat(trySplit.getExactSizeIfKnown() + spliterator.getExactSizeIfKnown()).isEqualTo(keySet.size());
+
+		long firstSize = trySplit.getExactSizeIfKnown();
+		Holder<String> holder = new Holder<>();
+		assertThat(trySplit.tryAdvance(holder)).isTrue();
+		assertThat(holder.value).isEqualTo("k1");
+		trySplit.forEachRemaining(holder);
+		assertThat(trySplit.tryAdvance(holder)).isFalse();
+		assertThat(holder.value).isEqualTo(String.format("k%d", firstSize));
+		assertThat(trySplit.trySplit()).isNull();
+
+		long splitPoint = firstSize + 1;
+		assertThat(spliterator.tryAdvance(holder)).isTrue();
+		assertThat(holder.value).isEqualTo(String.format("k%d", splitPoint));
+		while (spliterator.tryAdvance(holder)) {}
+		assertThat(holder.value).isEqualTo(String.format("k%d", max));
+		assertThat(spliterator.trySplit()).isNull();
+	}
+
+	@Test
+	public void key_set_spliterator_empty() {
+		Set<String> keySet = Maps.<String, String> of()
+			.keySet();
+		Spliterator<String> spliterator = keySet.spliterator();
+		assertThat(spliterator).hasCharacteristics(Spliterator.DISTINCT);
+		assertThat(spliterator.estimateSize()).isEqualTo(keySet.size());
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(keySet.size());
+
+		assertThat(spliterator.trySplit()).isNull();
+
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(keySet.size());
+		Holder<String> holder = new Holder<>();
+		assertThat(spliterator.tryAdvance(holder)).isFalse();
+	}
+
+	@Test
+	public void value_collection_contains() {
+		Collection<String> values = Maps.of("k1", "v1", "k2", "v2", "k3", "v1")
+			.values();
+		assertThat(values).containsExactly("v1", "v2", "v1");
+
+		assertThat(values.contains("v1")).isTrue();
+		assertThat(values.contains("v2")).isTrue();
+		assertThat(values.contains("v3")).isFalse();
+		assertThat(values.contains(null)).isFalse();
+
+		values = Maps.<String, String> of()
+			.values();
+		assertThat(values.contains("v1")).isFalse();
+		assertThat(values.contains(null)).isFalse();
+	}
+
+	@Test
+	public void value_collection_stream() {
+		Collection<String> values = Maps.of("k1", "v1", "k2", "v2", "k3", "v1")
+			.values();
+		assertThat(values.stream()).containsExactly("v1", "v2", "v1");
+		assertThat(values.stream()
+			.distinct()).containsExactly("v1", "v2");
+	}
+
+	@Test
+	public void value_collection_foreach() {
+		Collection<String> values = Maps.of("k1", "v1", "k2", "v2", "k3", "v1")
+			.values();
+		List<String> list = new ArrayList<>();
+		values.forEach(list::add);
+		assertThat(list).containsExactly("v1", "v2", "v1");
+	}
+
+	@Test
+	public void value_collection_iterator() {
+		Collection<String> values = Maps.of("k1", "v1", "k2", "v2", "k3", "v1")
+			.values();
+		Iterator<String> iterator = values.iterator();
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("v1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> iterator.remove());
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("v2");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> iterator.remove());
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("v1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> iterator.remove());
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+	}
+
+	@Test
+	public void value_collection_iterator_empty() {
+		Collection<String> values = Maps.<String, String> of()
+			.values();
+		Iterator<String> iterator = values.iterator();
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+	}
+
+	@Test
+	public void value_collection_spliterator() {
+		final int max = (1 << Short.SIZE) - 1;
+		@SuppressWarnings("unchecked")
+		Entry<String, String>[] entries = new Entry[max];
+		for (int i = 0; i < max; i++) {
+			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+		}
+		Map<String, String> map = Maps.ofEntries(entries);
+		assertThat(map).hasSize(max);
+		Collection<String> values = map.values();
+		Spliterator<String> spliterator = values.spliterator();
+		assertThat(spliterator.characteristics() & Spliterator.DISTINCT).isZero();
+		assertThat(spliterator.estimateSize()).isEqualTo(values.size());
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(values.size());
+
+		Spliterator<String> trySplit = spliterator.trySplit();
+		assertThat(trySplit.characteristics() & Spliterator.DISTINCT).isZero();
+		assertThat(trySplit.getExactSizeIfKnown() + spliterator.getExactSizeIfKnown()).isEqualTo(values.size());
+
+		long firstSize = trySplit.getExactSizeIfKnown();
+		Holder<String> holder = new Holder<>();
+		assertThat(trySplit.tryAdvance(holder)).isTrue();
+		assertThat(holder.value).isEqualTo("v1");
+		trySplit.forEachRemaining(holder);
+		assertThat(trySplit.tryAdvance(holder)).isFalse();
+		assertThat(holder.value).isEqualTo(String.format("v%d", firstSize));
+		assertThat(trySplit.trySplit()).isNull();
+
+		long splitPoint = firstSize + 1;
+		assertThat(spliterator.tryAdvance(holder)).isTrue();
+		assertThat(holder.value).isEqualTo(String.format("v%d", splitPoint));
+		while (spliterator.tryAdvance(holder)) {}
+		assertThat(holder.value).isEqualTo(String.format("v%d", max));
+		assertThat(spliterator.trySplit()).isNull();
+	}
+
+	@Test
+	public void value_collection_spliterator_empty() {
+		Collection<String> values = Maps.<String, String> of()
+			.values();
+		Spliterator<String> spliterator = values.spliterator();
+		assertThat(spliterator.characteristics() & Spliterator.DISTINCT).isZero();
+		assertThat(spliterator.estimateSize()).isEqualTo(values.size());
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(values.size());
+
+		assertThat(spliterator.trySplit()).isNull();
+
+		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(values.size());
+		Holder<String> holder = new Holder<>();
+		assertThat(spliterator.tryAdvance(holder)).isFalse();
 	}
 
 	// Strings can have a hashCode of Integer.MIN_VALUE. For example:

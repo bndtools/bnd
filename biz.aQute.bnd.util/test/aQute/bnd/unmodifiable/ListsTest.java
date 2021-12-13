@@ -235,7 +235,7 @@ public class ListsTest {
 		List<String> list = Lists.of("e1", "e2", "e3", "e1", "e5");
 		assertThat(list.indexOf("e1")).isEqualTo(0);
 		assertThat(list.lastIndexOf("e1")).isEqualTo(3);
-		ListIterator<String> listIterator = list.listIterator(0);
+		ListIterator<String> listIterator = list.listIterator();
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> listIterator.add("a"));
 
 		assertThat(listIterator.hasPrevious()).isFalse();
@@ -252,6 +252,71 @@ public class ListsTest {
 		assertThat(listIterator.previousIndex()).isEqualTo(0);
 		assertThat(listIterator.nextIndex()).isEqualTo(1);
 		assertThat(listIterator.next()).isEqualTo("e2");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(1);
+		assertThat(listIterator.nextIndex()).isEqualTo(2);
+		assertThat(listIterator.next()).isEqualTo("e3");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(2);
+		assertThat(listIterator.nextIndex()).isEqualTo(3);
+		assertThat(listIterator.next()).isEqualTo("e1");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(3);
+		assertThat(listIterator.nextIndex()).isEqualTo(4);
+		assertThat(listIterator.next()).isEqualTo("e5");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isFalse();
+		assertThat(listIterator.previousIndex()).isEqualTo(4);
+		assertThat(listIterator.nextIndex()).isEqualTo(5);
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> listIterator.next());
+
+		assertThat(listIterator.previous()).isEqualTo("e5");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(3);
+		assertThat(listIterator.nextIndex()).isEqualTo(4);
+
+		assertThat(listIterator.previous()).isEqualTo("e1");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(2);
+		assertThat(listIterator.nextIndex()).isEqualTo(3);
+
+		assertThat(listIterator.previous()).isEqualTo("e3");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(1);
+		assertThat(listIterator.nextIndex()).isEqualTo(2);
+
+		assertThat(listIterator.previous()).isEqualTo("e2");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(0);
+		assertThat(listIterator.nextIndex()).isEqualTo(1);
+
+		assertThat(listIterator.previous()).isEqualTo("e1");
+		assertThat(listIterator.hasPrevious()).isFalse();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(-1);
+		assertThat(listIterator.nextIndex()).isEqualTo(0);
+
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> listIterator.previous());
+	}
+
+	@Test
+	public void list_iterator_index() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e1", "e5");
+		assertThat(list.indexOf("e1")).isEqualTo(0);
+		assertThat(list.lastIndexOf("e1")).isEqualTo(3);
+		ListIterator<String> listIterator = list.listIterator(2);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> listIterator.add("a"));
 
 		assertThat(listIterator.hasPrevious()).isTrue();
 		assertThat(listIterator.hasNext()).isTrue();
