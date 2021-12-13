@@ -14,6 +14,7 @@ Export-Package: \
     aQute.bnd.build.model;-noimport:=true,\
     aQute.bnd.build.model.clauses;-noimport:=true,\
     aQute.bnd.build.model.conversions;-noimport:=true,\
+    aQute.bnd.buildtool;-noimport:=true,\
     aQute.bnd.component.error;-noimport:=true,\
     aQute.bnd.differ;-noimport:=true,\
     aQute.bnd.filerepo;-noimport:=true,\
