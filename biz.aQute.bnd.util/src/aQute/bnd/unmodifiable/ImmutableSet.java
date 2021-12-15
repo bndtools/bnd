@@ -33,12 +33,13 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 			throw new IllegalArgumentException("set too large: " + length);
 		}
 		short[] hash_bucket = new short[length * 2];
-		for (int i = 0; i < length;) {
-			int slot = linear_probe(elements, hash_bucket, elements[i]);
-			if (slot >= 0) {
-				throw new IllegalArgumentException("duplicate element: " + elements[i]);
+		for (int slot = 0; slot < length;) {
+			Object e = elements[slot];
+			int hash = -1 - linear_probe(elements, hash_bucket, e);
+			if (hash < 0) {
+				throw new IllegalArgumentException("duplicate element: " + e);
 			}
-			hash_bucket[-1 - slot] = (short) ++i;
+			hash_bucket[hash] = (short) ++slot;
 		}
 		return hash_bucket;
 	}
@@ -47,12 +48,12 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 	private static int linear_probe(Object[] elements, short[] hash_bucket, Object e) {
 		int length = hash_bucket.length;
 		for (int hash = (e.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
-			int slot = Short.toUnsignedInt(hash_bucket[hash]) - 1;
-			if (slot < 0) { // empty
+			int index = Short.toUnsignedInt(hash_bucket[hash]) - 1;
+			if (index < 0) { // empty
 				return -1 - hash;
 			}
-			if (elements[slot].equals(e)) { // found
-				return slot;
+			if (elements[index].equals(e)) { // found
+				return index;
 			}
 		}
 	}

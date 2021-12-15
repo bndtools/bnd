@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Serializable {
-	@SuppressWarnings("unchecked")
 	final static ImmutableMap<?, ?>	EMPTY	= new ImmutableMap<>();
 	final Object[]					entries;
 	final transient short[]			hash_bucket;
@@ -42,14 +41,14 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			throw new IllegalArgumentException("map too large: " + length);
 		}
 		short[] hash_bucket = new short[length * 2];
-		for (int i = 0, j = 0; i < length;) {
-			Object key = entries[j++];
-			int slot = linear_probe(entries, hash_bucket, key);
-			if (slot >= 0) {
+		for (int slot = 0, index = 0; slot < length;) {
+			Object key = entries[index++];
+			int hash = -1 - linear_probe(entries, hash_bucket, key);
+			if (hash < 0) {
 				throw new IllegalArgumentException("duplicate key: " + key);
 			}
-			hash_bucket[-1 - slot] = (short) ++i;
-			requireNonNull(entries[j++]);
+			hash_bucket[hash] = (short) ++slot;
+			requireNonNull(entries[index++]);
 		}
 		return hash_bucket;
 	}
@@ -58,12 +57,12 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	private static int linear_probe(Object[] entries, short[] hash_bucket, Object key) {
 		int length = hash_bucket.length;
 		for (int hash = (key.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
-			int slot = Short.toUnsignedInt(hash_bucket[hash]) - 1;
-			if (slot < 0) { // empty
+			int index = (Short.toUnsignedInt(hash_bucket[hash]) - 1) << 1;
+			if (index < 0) { // empty
 				return -1 - hash;
 			}
-			if (entries[slot << 1].equals(key)) { // found
-				return slot;
+			if (entries[index].equals(key)) { // found
+				return index;
 			}
 		}
 	}
@@ -101,9 +100,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	@Override
 	public V get(Object key) {
 		if (key != null) {
-			int slot = linear_probe(key);
-			if (slot >= 0) {
-				return (V) entries[(slot << 1) + 1];
+			int index = linear_probe(key);
+			if (index >= 0) {
+				return (V) entries[index + 1];
 			}
 		}
 		return null;
@@ -122,8 +121,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			return false;
 		}
 		try {
-			for (int i = 0; i < entries.length; i += 2) {
-				if (!entries[i + 1].equals(other.get(entries[i]))) {
+			for (int index = 0, length = entries.length; index < length; index += 2) {
+				if (!entries[index + 1].equals(other.get(entries[index]))) {
 					return false;
 				}
 			}
@@ -136,8 +135,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	@Override
 	public int hashCode() {
 		int hashCode = 0;
-		for (int i = 0; i < entries.length; i += 2) {
-			hashCode += entries[i].hashCode() ^ entries[i + 1].hashCode();
+		for (int index = 0, length = entries.length; index < length; index += 2) {
+			hashCode += entries[index].hashCode() ^ entries[index + 1].hashCode();
 		}
 		return hashCode;
 	}
