@@ -86,9 +86,9 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@Override
 	public int indexOf(Object o) {
 		if (o != null) {
-			for (int i = 0, len = elements.length; i < len; i++) {
-				if (o.equals(elements[i])) {
-					return i;
+			for (int index = 0, length = elements.length; index < length; index++) {
+				if (o.equals(elements[index])) {
+					return index;
 				}
 			}
 		}
@@ -98,9 +98,9 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@Override
 	public int lastIndexOf(Object o) {
 		if (o != null) {
-			for (int i = elements.length - 1; i >= 0; i--) {
-				if (o.equals(elements[i])) {
-					return i;
+			for (int index = elements.length - 1; index >= 0; index--) {
+				if (o.equals(elements[index])) {
+					return index;
 				}
 			}
 		}
