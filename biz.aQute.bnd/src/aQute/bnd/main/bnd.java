@@ -3199,7 +3199,7 @@ public class bnd extends Processor {
 			filter = new Glob("*");
 		List<Actionable> actionables = project.getPlugins(Actionable.class);
 		if (actionables.isEmpty()) {
-			error("No actionables in [%s]", project.getPlugins());
+			error("No actionables in [%s]", project.getPlugins(Object.class));
 			return;
 		}
 		for (Actionable o : actionables) {
@@ -3600,7 +3600,7 @@ public class bnd extends Processor {
 		}
 
 		int n = 0;
-		for (Object o : ws.getPlugins()) {
+		for (Object o : ws.getPlugins(Object.class)) {
 			String s = o.toString();
 			if (s.trim()
 				.length() == 0)
