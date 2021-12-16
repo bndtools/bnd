@@ -62,7 +62,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	// be concurrent-safe
 	private final Set<String>			missingCommand		= new HashSet<>();
 	private final Set<AutoCloseable>	closeablePlugins	= new HashSet<>();
-	private Processor					processor;
+	Processor							processor;
 
 	/**
 	 * A Plugin Provider provides plugins when accessed with a type selector.
@@ -78,6 +78,30 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		 * @return a stream with the provided plugins, can be empty
 		 */
 		<X> Stream<X> provide(Class<X> type);
+	}
+
+	class ParentPluginProvider implements PluginProvider {
+
+		ParentPluginProvider() {}
+
+		@Override
+		public <X> Stream<X> provide(Class<X> type) {
+			Processor parent = processor.getParent();
+			if (parent == null) {
+				return Stream.empty();
+			}
+			return parent.getPlugins()
+				.stream(type);
+		}
+
+		@Override
+		public String toString() {
+			Processor parent = processor.getParent();
+			if (parent == null) {
+				return "[parent none]";
+			}
+			return "[parent " + parent + " " + parent.getPlugins() + "]";
+		}
 	}
 
 	class AbstractPlugin<T> implements PluginProvider, AutoCloseable {
@@ -155,10 +179,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		add(processor);
 		processor.setTypeSpecificPlugins(this);
 
-		if (processor.getParent() != null) {
-			addAll(processor.getParent()
-				.getPlugins());
-		}
+		add(new ParentPluginProvider());
 
 		/*
 		 * Look only local
@@ -206,6 +227,9 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 				if (type.isInstance(plugin)) {
 					@SuppressWarnings("unchecked")
 					Stream<T> stream = Stream.of((T) plugin);
+					if (plugin instanceof PluginProvider) {
+						return Stream.concat(stream, ((PluginProvider) plugin).provide(type));
+					}
 					return stream;
 				}
 				if (plugin instanceof PluginProvider) {
@@ -263,7 +287,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 
 	@Override
 	public Stream<Object> stream() {
-		return plugins().stream();
+		return stream(Object.class);
 	}
 
 	@Override
