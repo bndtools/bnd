@@ -45,8 +45,7 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 			if (config.readTimeout() != 0)
 				connection.setConnectTimeout(config.readTimeout());
 
-			MapStream.of(headers)
-				.forEachOrdered(connection::setRequestProperty);
+			headers.forEach(connection::setRequestProperty);
 
 			if (connection instanceof HttpURLConnection) {
 				HttpURLConnection http = (HttpURLConnection) connection;

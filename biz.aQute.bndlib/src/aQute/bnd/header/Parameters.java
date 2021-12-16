@@ -43,7 +43,7 @@ public class Parameters implements Map<String, Attrs> {
 		this();
 		MapStream.ofNullable(basic)
 			.mapValue(Attrs::new)
-			.forEach(map::put);
+			.forEachOrdered(map::put);
 	}
 
 	@Override

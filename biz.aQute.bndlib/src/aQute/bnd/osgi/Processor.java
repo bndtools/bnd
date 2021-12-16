@@ -837,8 +837,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void addProperties(Map<?, ?> properties) {
-		MapStream.of(properties)
-			.forEachOrdered((k, v) -> setProperty(k.toString(), String.valueOf(v)));
+		properties.forEach((k, v) -> setProperty(k.toString(), String.valueOf(v)));
 	}
 
 	public void addIncluded(File file) {
