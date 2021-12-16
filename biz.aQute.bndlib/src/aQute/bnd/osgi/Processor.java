@@ -216,7 +216,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private long								lastModified;
 	private File								propertiesFile;
 	private boolean								fixup			= true;
-	Processor									parent;
+	private Processor							parent;
 	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
 
 	Collection<String>							filter;
@@ -268,12 +268,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public Processor(Processor parent, Properties props, boolean wrap) {
 		this(props, wrap);
 		this.parent = parent;
-		updateModified(parent.lastModified(), "parent");
+		if (parent != null) {
+			updateModified(parent.lastModified(), "parent");
+		}
 	}
 
 	public void setParent(Processor parent) {
 		this.parent = parent;
-		Properties updated = new UTF8Properties(parent.getProperties0());
+		Properties updated = (parent != null) ? new UTF8Properties(parent.getProperties0()) : new UTF8Properties();
 		updated.putAll(getProperties0());
 		properties = updated;
 		propertiesChanged();
@@ -284,9 +286,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public Processor getTop() {
-		if (parent == null)
+		if (getParent() == null)
 			return this;
-		return parent.getTop();
+		return getParent().getTop();
 	}
 
 	public void getInfo(Reporter processor, String prefix) {
@@ -1354,10 +1356,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public Set<String> getPropertyKeys(boolean inherit) {
 		Set<String> result;
-		if (parent == null || !inherit) {
+		if (getParent() == null || !inherit) {
 			result = new TreeSet<>();
 		} else {
-			result = parent.getPropertyKeys(inherit);
+			result = getParent().getPropertyKeys(inherit);
 			if (filter != null) {
 				result.removeAll(filter);
 			}
@@ -2028,10 +2030,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private Iterable<String> iterable(boolean inherit, Predicate<String> keyFilter) {
 		Set<Object> first = getProperties0().keySet();
 		Iterable<? extends Object> second;
-		if (parent == null || !inherit) {
+		if (getParent() == null || !inherit) {
 			second = Collections.emptyList();
 		} else {
-			second = parent.iterable(inherit,
+			second = getParent().iterable(inherit,
 				(filter == null) ? keyFilter : keyFilter.and(key -> !filter.contains(key)));
 		}
 
@@ -2211,10 +2213,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		@SuppressWarnings("resource")
 		Processor rover = this;
 		while (rover.getPropertiesFile() == null)
-			if (rover.parent == null) {
+			if (rover.getParent() == null) {
 				return new FileLine(new File("ANONYMOUS"), 0, 0);
 			} else
-				rover = rover.parent;
+				rover = rover.getParent();
 
 		return new FileLine(rover.getPropertiesFile(), 0, 0);
 	}
@@ -2249,8 +2251,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		// Ok, report the error on the sub file
 		// Sometimes we do not have a file ...
-		if (f == null && parent != null)
-			f = parent.getPropertiesFile();
+		if (f == null && getParent() != null)
+			f = getParent().getPropertiesFile();
 
 		if (f == null)
 			return null;
@@ -2563,8 +2565,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * batch mode. If interactive, things can get refreshed.
 	 */
 	public boolean isInteractive() {
-		if (parent != null) {
-			return parent.isInteractive();
+		if (getParent() != null) {
+			return getParent().isInteractive();
 		}
 		return false;
 	}
@@ -2707,8 +2709,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private List<File> getSelfAndAncestors(List<File> l) {
-		if (parent != null)
-			parent.getSelfAndAncestors(l);
+		if (getParent() != null)
+			getParent().getSelfAndAncestors(l);
 		l.addAll(getIncluded());
 
 		File f = getPropertiesFile();
