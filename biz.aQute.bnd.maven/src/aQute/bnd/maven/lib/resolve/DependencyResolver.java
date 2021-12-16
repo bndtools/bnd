@@ -236,7 +236,7 @@ public class DependencyResolver {
 				MapStream.of(resolved)
 					.filterValue(v -> containsAnotherVersion.negate()
 						.test(v, dependencies.values()))
-					.forEach(dependencies::put);
+					.forEachOrdered(dependencies::put);
 			} finally {
 				resetOriginalDependencies(originalDependencies);
 			}

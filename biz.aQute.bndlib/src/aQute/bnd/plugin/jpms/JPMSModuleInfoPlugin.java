@@ -111,7 +111,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			}
 		}
 
-		private Access(int value) {
+		Access(int value) {
 			this.value = value;
 		}
 
@@ -305,7 +305,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		analyzer.getContained()
 			.stream()
 			.filterValue(attrs -> attrs.containsKey(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
-			.forEach((packageRef, attrs) -> {
+			.forEachOrdered((packageRef, attrs) -> {
 				Set<String> targets = splitAsStream(attrs.get(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
 					.collect(toCollection(LinkedHashSet<String>::new));
 
@@ -385,7 +385,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			.mapValue(referencedPackages -> MapStream.of(referencedPackages)
 				.keys()
 				.collect(toList()))
-			.forEach((moduleName, referencedModulePackages) -> {
+			.forEachOrdered((moduleName, referencedModulePackages) -> {
 				Attrs moduleMappingAttrs = Optional.ofNullable(moduleInfoOptions.get(moduleName))
 					.orElseGet(Attrs::new);
 

@@ -219,7 +219,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		MapStream.of(definitionsByName)
 			.filterValue(l -> l.size() > 1)
-			.forEach((k, v) -> analyzer.error("Same component name %s used in multiple component implementations: %s",
+			.forEachOrdered(
+				(k, v) -> analyzer.error("Same component name %s used in multiple component implementations: %s",
 				k, v.stream()
 					.map(def -> def.implementation)
 					.collect(toList())));

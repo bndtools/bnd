@@ -424,8 +424,7 @@ public class Workspace extends Processor {
 		//
 
 		Attrs sysProps = OSGiHeader.parseProperties(mergeProperties(SYSTEMPROPERTIES));
-		sysProps.stream()
-			.forEachOrdered(System::setProperty);
+		sysProps.forEach(System::setProperty);
 	}
 
 	public Project getProjectFromFile(File projectDir) {

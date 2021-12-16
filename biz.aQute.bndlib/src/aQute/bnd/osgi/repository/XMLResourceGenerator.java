@@ -172,8 +172,7 @@ public class XMLResourceGenerator {
 	}
 
 	private void directives(Tag cr, Map<String, String> directives) {
-		MapStream.of(directives)
-			.forEach((key, value) -> {
+		directives.forEach((key, value) -> {
 				Tag d = new Tag(cr, TAG_DIRECTIVE);
 				d.addAttribute(ATTR_NAME, key);
 				d.addAttribute(ATTR_VALUE, value);
@@ -186,7 +185,7 @@ public class XMLResourceGenerator {
 			.filterValue(Objects::nonNull)
 			.mapValue(TypedAttribute::getTypedAttribute)
 			.filterValue(Objects::nonNull)
-			.forEach((key, ta) -> {
+			.forEachOrdered((key, ta) -> {
 				String value = (isContent && ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(key))
 					? relativize(ta.value)
 					: ta.value;

@@ -27,7 +27,6 @@ import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
-import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -277,7 +276,7 @@ public class JarPrinter extends Processor {
 	 */
 	public JarPrinter doManifest(Manifest manifest) {
 		MultiMap<String, String> table = new MultiMap<>();
-		MapStream.of(manifest.getMainAttributes())
+		manifest.getMainAttributes()
 			.forEach((k, v) -> {
 				String key = k.toString();
 				if (OSGI_SYNTAX_HEADERS.contains(key)) {
