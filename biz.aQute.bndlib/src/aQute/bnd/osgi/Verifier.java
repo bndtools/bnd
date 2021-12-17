@@ -459,9 +459,9 @@ public class Verifier extends Processor {
 					+ " %s is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error",
 					bactivator), bactivator, ActivatorErrorType.IS_IMPORTED);
 			}
-		} else if (parent != null) {
+		} else if (getParent() != null) {
 			// If we have access to the parent we can do deeper checking
-			String raw = parent.getUnprocessedProperty(BUNDLE_ACTIVATOR, null);
+			String raw = getParent().getUnprocessedProperty(BUNDLE_ACTIVATOR, null);
 			if (raw != null) {
 				// The activator was specified, but nothing showed up.
 				if (raw.isEmpty()) {
