@@ -419,6 +419,25 @@ public class BndPlugin implements Plugin<Project> {
 			boolean javacDebug = bndProject.is("javac.debug");
 			boolean javacDeprecation = isTrue(bndProject.getProperty("javac.deprecation", "true"));
 			String javacEncoding = bndProject.getProperty("javac.encoding", "UTF-8");
+			if (isGradleCompatible("7.1")) {
+				JavaPluginExtension javaPlugin = project.getExtensions()
+					.getByType(JavaPluginExtension.class);
+				if (javacSource.isPresent()) {
+					javaPlugin.setSourceCompatibility(unwrap(javacSource));
+				}
+				if (javacTarget.isPresent()) {
+					javaPlugin.setTargetCompatibility(unwrap(javacTarget));
+				}
+			} else {
+				org.gradle.api.plugins.JavaPluginConvention javaPlugin = project.getConvention()
+					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class);
+				if (javacSource.isPresent()) {
+					javaPlugin.setSourceCompatibility(unwrap(javacSource));
+				}
+				if (javacTarget.isPresent()) {
+					javaPlugin.setTargetCompatibility(unwrap(javacTarget));
+				}
+			}
 			tasks.withType(JavaCompile.class)
 				.configureEach(t -> {
 					CompileOptions options = t.getOptions();
