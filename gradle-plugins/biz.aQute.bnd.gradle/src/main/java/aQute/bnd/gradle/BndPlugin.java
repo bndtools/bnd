@@ -407,18 +407,37 @@ public class BndPlugin implements Plugin<Project> {
 			ConfigurableFileCollection javacBootclasspath = objects.fileCollection()
 				.from(decontainer(bndProject.getBootclasspath()));
 			String javac = bndProject.getProperty("javac", "javac");
-			Property<String> javacSource = objects.property(String.class)
-				.convention(bndProject.getProperty("javac.source"));
-			Property<String> javacTarget = objects.property(String.class)
-				.convention(bndProject.getProperty("javac.target"));
-			Property<String> javacProfile = objects.property(String.class);
-			if (!bndProject.getProperty("javac.profile", "")
-				.isEmpty()) {
-				javacProfile.convention(bndProject.getProperty("javac.profile"));
-			}
+			Provider<String> javacSource = objects.property(String.class)
+				.convention(emptyAsNull(bndProject.getProperty("javac.source")))
+				.forUseAtConfigurationTime();
+			Provider<String> javacTarget = objects.property(String.class)
+				.convention(emptyAsNull(bndProject.getProperty("javac.target")))
+				.forUseAtConfigurationTime();
+			Provider<String> javacProfile = objects.property(String.class)
+				.convention(emptyAsNull(bndProject.getProperty("javac.profile")))
+				.forUseAtConfigurationTime();
 			boolean javacDebug = bndProject.is("javac.debug");
 			boolean javacDeprecation = isTrue(bndProject.getProperty("javac.deprecation", "true"));
 			String javacEncoding = bndProject.getProperty("javac.encoding", "UTF-8");
+			if (isGradleCompatible("7.1")) {
+				JavaPluginExtension javaPlugin = project.getExtensions()
+					.getByType(JavaPluginExtension.class);
+				if (javacSource.isPresent()) {
+					javaPlugin.setSourceCompatibility(unwrap(javacSource));
+				}
+				if (javacTarget.isPresent()) {
+					javaPlugin.setTargetCompatibility(unwrap(javacTarget));
+				}
+			} else {
+				org.gradle.api.plugins.JavaPluginConvention javaPlugin = project.getConvention()
+					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class);
+				if (javacSource.isPresent()) {
+					javaPlugin.setSourceCompatibility(unwrap(javacSource));
+				}
+				if (javacTarget.isPresent()) {
+					javaPlugin.setTargetCompatibility(unwrap(javacTarget));
+				}
+			}
 			tasks.withType(JavaCompile.class)
 				.configureEach(t -> {
 					CompileOptions options = t.getOptions();
@@ -1014,6 +1033,10 @@ public class BndPlugin implements Plugin<Project> {
 			}
 			throw new GradleException(String.format(str, p.getName(), errorCount));
 		}
+	}
+
+	private String emptyAsNull(String value) {
+		return Strings.nonNullOrEmpty(value) ? value : null;
 	}
 
 	private static Object getter(Object target, String name) {
