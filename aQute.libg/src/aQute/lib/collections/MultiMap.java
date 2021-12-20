@@ -362,4 +362,20 @@ public class MultiMap<K, V> implements Map<K, List<V>> {
 		return map.toString();
 	}
 
+	/**
+	 * Index a collection.
+	 *
+	 * @param collection the collection to index
+	 * @param classifier the function to map a value in the collection to the
+	 *            key
+	 * @return the current map
+	 */
+	public MultiMap<K, V> groupBy(Collection<? extends V> collection,
+		Function<? super V, ? extends K> classifier) {
+		assert collection != null;
+		assert classifier != null;
+		collection.forEach(v -> add(classifier.apply(v), v));
+		return this;
+	}
+
 }
