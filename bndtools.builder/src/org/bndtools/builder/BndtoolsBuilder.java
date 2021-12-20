@@ -205,9 +205,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						model.prepare();
 
 						Processor processor = new Processor();
+						markers.validate(model);
 						processor.getInfo(model);
 						after.accept("Decorating " + myProject, () -> {
-							markers.validate(model);
 							markers.setMarkers(processor, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
 						});
 						model.clear();
