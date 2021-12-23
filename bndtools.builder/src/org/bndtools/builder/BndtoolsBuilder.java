@@ -204,7 +204,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						model.setDelayRunDependencies(true);
 						model.prepare();
 
-						Processor processor = new Processor();
+						Processor processor = new Processor(model);
 						markers.validate(model);
 						processor.getInfo(model);
 						after.accept("Decorating " + myProject, () -> {
