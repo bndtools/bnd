@@ -34,6 +34,8 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Processor;
@@ -41,7 +43,8 @@ import aQute.bnd.unmodifiable.Maps;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDetailsHandler {
-
+	final static Logger						logger						= LoggerFactory
+		.getLogger(AbstractBuildErrorDetailsHandler.class);
 	private static final Map<Code, String> PRIMITIVES_TO_SIGNATURES = Maps.of(PrimitiveType.VOID, "V",
 		PrimitiveType.BOOLEAN, "Z", PrimitiveType.BYTE, "B", PrimitiveType.SHORT, "S", PrimitiveType.CHAR, "C",
 		PrimitiveType.INT, "I", PrimitiveType.FLOAT, "F", PrimitiveType.LONG, "J", PrimitiveType.DOUBLE, "D");
@@ -375,16 +378,16 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 	 * can have Builder, Workspace, Project. etc. If it is a project, we defer
 	 * to the old method. Otherwise we allow others to override this method.
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
-		if (model instanceof Project)
+		if (model instanceof Project) {
+			logger.warn(
+				"error details handler implements a deprecated method, please replace with generateMarkerData(...Processor...)");
 			return generateMarkerData(project, (Project) model, location);
+		}
 
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+		logger.info("generateMarkerData: why not overridden?");
 		return Collections.emptyList();
 	}
 

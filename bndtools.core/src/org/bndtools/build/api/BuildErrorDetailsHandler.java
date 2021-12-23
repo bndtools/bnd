@@ -20,10 +20,7 @@ import aQute.service.reporter.Report.Location;
  */
 @ProviderType
 public interface BuildErrorDetailsHandler {
-
 	String PROP_HAS_RESOLUTIONS = "bndHasResolutions";
-
-	List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception;
 
 	/**
 	 * Bridge method to convert a Processor model to a Project model. This is
@@ -43,5 +40,16 @@ public interface BuildErrorDetailsHandler {
 	List<IMarkerResolution> getResolutions(IMarker marker);
 
 	List<ICompletionProposal> getProposals(IMarker marker);
+
+	/**
+	 * Replaced by {@link #generateMarkerData(IProject, Processor, Location)},
+	 * in many cases details are on other processors than Project.
+	 */
+	@Deprecated
+	default List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+		// this is impossible to happen since old code overrides this method.
+		throw new UnsupportedOperationException(
+			"error details handler implements a deprecated method, please replace with generateMarkerData(...Processor...)");
+	}
 
 }
