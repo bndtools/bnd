@@ -42,8 +42,8 @@ import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
-import aQute.bnd.build.Project;
 import aQute.bnd.differ.Baseline.Info;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.IRegion;
 import aQute.bnd.properties.LineType;
 import aQute.bnd.properties.PropertiesLineReader;
@@ -71,7 +71,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 	private static final ILogger	logger						= Logger.getLogger(BaselineErrorHandler.class);
 
 	@Override
-	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+	public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
 		List<MarkerData> result = new LinkedList<>();
 
 		Info baselineInfo = (Info) location.details;
