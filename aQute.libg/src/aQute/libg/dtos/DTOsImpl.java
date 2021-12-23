@@ -67,7 +67,7 @@ public class DTOsImpl implements DTOs {
 
 		void verifyCycle(Object o) {
 			if (isCycle(o)) {
-				throw new IllegalArgumentException("Cycle in DTO " + getPath(0));
+				throw new IllegalArgumentException("Cycle in DTO " + Arrays.toString(getPath(0)));
 			}
 		}
 	}

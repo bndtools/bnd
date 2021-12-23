@@ -32,7 +32,7 @@ public interface OnWorkspace extends AutoCloseable {
 	/**
 	 * The set of projects has changed for some reason
 	 *
-	 * @param cb the callback, will get the current set of projects
+	 * @param projects the callback, will get the current set of projects
 	 */
 	OnWorkspace projects(Consumer<? super Collection<Project>> projects);
 

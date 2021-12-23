@@ -1,7 +1,6 @@
 package bndtools.central.sync;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,8 +116,6 @@ public class WorkspaceSynchronizer {
 			projects.remove(Workspace.CNFDIR);
 			models.remove(Workspace.CNFDIR);
 
-			Set<String> changed = new HashSet<>();
-
 			System.out.println("Projects    " + projects.keySet());
 			System.out.println("Models      " + new TreeSet<>(models));
 			System.out.println("To create   " + new TreeSet<>(Logic.remove(models, projects.keySet())));
@@ -132,7 +129,6 @@ public class WorkspaceSynchronizer {
 
 				File dir = ws.getFile(mm);
 				project = createProject(dir, null, subMonitor);
-				changed.add(mm);
 			}
 
 			projects.values()
@@ -162,7 +158,6 @@ public class WorkspaceSynchronizer {
 				IProject project = toBeDeleted.getValue();
 				System.out.println("deleting " + toBeDeleted);
 				project.delete(true, subMonitor);
-				changed.add(toBeDeleted.getKey());
 			}
 
 			if (refresh && monitor != null) {
