@@ -687,10 +687,6 @@ public class Project extends Processor {
 							if (isPedantic())
 								warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
 						} else {
-							if (cc.getError() != null) {
-								error("Cannot find %s", cc).context(bsn)
-									.header(source);
-							}
 							result.add(cc);
 						}
 					}
