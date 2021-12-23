@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -38,6 +37,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.collections.Logic;
 import bndtools.central.Central;
 import bndtools.central.RepositoryUtils;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
@@ -118,7 +118,9 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 		final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		availableViewer = new TreeViewer(availableTree);
-		availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
+		availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false) {
+
+		});
 		availableViewer.setContentProvider(new RepositoryTreeContentProvider());
 		availableViewer.setAutoExpandLevel(2);
 
@@ -141,7 +143,9 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 			}
 		});
 		selectionSearchTxt.addModifyListener(e -> availableViewer.setFilters(alreadySelectedFilter));
-		availableViewer.addSelectionChangedListener(event -> addButtonEnable());
+		availableViewer.addSelectionChangedListener(event -> {
+			enabledStatus();
+		});
 		availableViewer.addOpenListener(event -> doAdd());
 
 		GridLayout layout;
@@ -161,11 +165,15 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		return panel;
 	}
 
-	private void addButtonEnable() {
-		IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
-		List<VersionedClause> versionClauses = getVersionClauses(sel);
-		versionClauses.removeAll(selectedBundles.values());
-		addButton.setEnabled(!versionClauses.isEmpty());
+	private void enabledStatus() {
+		Collection<VersionedClause> availableSelection = getVersionClauses(
+			(IStructuredSelection) availableViewer.getSelection());
+		IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
+		Collection<VersionedClause> resultSelection = selection.toList();
+		Collection<VersionedClause> result = selectedBundles.values();
+
+		addButton.setEnabled(!availableSelection.isEmpty() && !Logic.hasOverlap(availableSelection, result));
+		removeButton.setEnabled(!resultSelection.isEmpty());
 	}
 
 	Control createSelectedBundlesPanel(Composite parent) {
@@ -180,8 +188,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		selectedViewer.setInput(selectedBundles);
 
 		selectedViewer.addSelectionChangedListener(event -> {
-			ISelection sel = selectedViewer.getSelection();
-			removeButton.setEnabled(!sel.isEmpty());
+			enabledStatus();
 		});
 		selectedViewer.addOpenListener(event -> doRemove());
 
@@ -271,7 +278,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 			}
 			availableViewer.refresh();
 			propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
-			addButtonEnable();
+			enabledStatus();
 		}
 	}
 
@@ -301,6 +308,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		selectedViewer.remove(selection.toArray());
 		availableViewer.refresh();
 		propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
+		enabledStatus();
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
