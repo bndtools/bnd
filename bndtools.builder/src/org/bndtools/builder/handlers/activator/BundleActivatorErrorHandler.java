@@ -14,14 +14,14 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
-import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier.BundleActivatorError;
 import aQute.service.reporter.Report.Location;
 
 public class BundleActivatorErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	@Override
-	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+	public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
 		List<MarkerData> result = new ArrayList<>();
 
 		BundleActivatorError baError = (BundleActivatorError) location.details;
