@@ -169,7 +169,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		Collection<VersionedClause> availableSelection = getVersionClauses(
 			(IStructuredSelection) availableViewer.getSelection());
 		IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
-		Collection<VersionedClause> resultSelection = selection.toList();
+		List<?> resultSelection = selection.toList();
 		Collection<VersionedClause> result = selectedBundles.values();
 
 		addButton.setEnabled(!availableSelection.isEmpty() && !Logic.hasOverlap(availableSelection, result));
