@@ -2,7 +2,6 @@ package org.bndtools.builder.handlers.baseline;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -22,6 +21,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.service.reporter.Report.Location;
 import bndtools.central.Central;
@@ -34,37 +34,38 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
 	private final static Pattern	VERSION_ACCEPTING_MACRO			= Pattern.compile(VERSION_ACCEPTING_MACRO_STRING);
 
 	@Override
-	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+	public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
+		List<MarkerData> result = new ArrayList<>();
 
-		List<MarkerData> result = new LinkedList<>();
+		if (model instanceof Project) {
+			BundleInfo info = (BundleInfo) location.details;
+			try (ProjectBuilder pb = ((Project) model).getBuilder(null)) {
+				for (Builder builder : pb.getSubBuilders()) {
+					if (builder.getBsn()
+						.equals(info.bsn)) {
+						String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, null);
+						FileLine loc = builder.getHeader(Constants.BUNDLE_VERSION, currentVersion);
 
-		BundleInfo info = (BundleInfo) location.details;
-		try (ProjectBuilder pb = model.getBuilder(null)) {
-			for (Builder builder : pb.getSubBuilders()) {
-				if (builder.getBsn()
-					.equals(info.bsn)) {
-					String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, null);
-					FileLine loc = builder.getHeader(Constants.BUNDLE_VERSION, currentVersion);
+						Map<String, Object> attribs = new HashMap<>();
+						attribs.put(IMarker.MESSAGE, location.message);
+						attribs.put(IMarker.LINE_NUMBER, loc.line);
+						attribs.put(IMarker.CHAR_START, loc.start);
+						attribs.put(IMarker.CHAR_END, loc.end);
+						attribs.put(BndtoolsConstants.BNDTOOLS_MARKER_PROJECT_ATTR, project.getName());
 
-					Map<String, Object> attribs = new HashMap<>();
-					attribs.put(IMarker.MESSAGE, location.message);
-					attribs.put(IMarker.LINE_NUMBER, loc.line);
-					attribs.put(IMarker.CHAR_START, loc.start);
-					attribs.put(IMarker.CHAR_END, loc.end);
-					attribs.put(BndtoolsConstants.BNDTOOLS_MARKER_PROJECT_ATTR, project.getName());
-
-					String qualifier = null;
-					if (currentVersion != null) {
-						Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
-						if (m.matches()) {
-							qualifier = m.group(4);
+						String qualifier = null;
+						if (currentVersion != null) {
+							Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
+							if (m.matches()) {
+								qualifier = m.group(4);
+							}
 						}
-					}
-					attribs.put(PROP_SUGGESTED_VERSION,
-						info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
+						attribs.put(PROP_SUGGESTED_VERSION,
+							info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
 
-					IResource bndFile = Central.toResource(loc.file);
-					result.add(new MarkerData(bndFile, attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+						IResource bndFile = Central.toResource(loc.file);
+						result.add(new MarkerData(bndFile, attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+					}
 				}
 			}
 		}

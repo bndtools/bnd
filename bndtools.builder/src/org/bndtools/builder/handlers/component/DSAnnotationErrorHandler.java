@@ -12,14 +12,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
-import aQute.bnd.build.Project;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
+import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Report.Location;
 
 public class DSAnnotationErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	@Override
-	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+	public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
 		List<MarkerData> result = new ArrayList<>();
 
 		DeclarativeServicesAnnotationError dsError = (DeclarativeServicesAnnotationError) location.details;
