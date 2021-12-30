@@ -2,8 +2,8 @@ package org.bndtools.builder.handlers.baseline;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +72,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	@Override
 	public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
-		List<MarkerData> result = new LinkedList<>();
+		List<MarkerData> result = new ArrayList<>();
 
 		Info baselineInfo = (Info) location.details;
 		IJavaProject javaProject = JavaCore.create(project);
@@ -85,7 +85,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	List<MarkerData> generatePackageInfoMarkers(Info baselineInfo, IJavaProject javaProject, String message)
 		throws JavaModelException {
-		List<MarkerData> markers = new LinkedList<>();
+		List<MarkerData> markers = new ArrayList<>();
 		for (IClasspathEntry entry : javaProject.getRawClasspath()) {
 			if (IClasspathEntry.CPE_SOURCE == entry.getEntryKind()) {
 				IPath entryPath = entry.getPath();
@@ -171,7 +171,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	List<MarkerData> generateStructuralChangeMarkers(Info baselineInfo, IJavaProject javaProject)
 		throws JavaModelException {
-		List<MarkerData> markers = new LinkedList<>();
+		List<MarkerData> markers = new ArrayList<>();
 
 		Delta packageDelta = baselineInfo.packageDiff.getDelta();
 
@@ -226,7 +226,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	List<MarkerData> generateAddedMethodMarker(IJavaProject javaProject, String className, final String methodName,
 		final Delta requiresDelta) throws JavaModelException {
-		final List<MarkerData> markers = new LinkedList<>();
+		final List<MarkerData> markers = new ArrayList<>();
 		final CompilationUnit ast = createAST(javaProject, className);
 
 		if (ast != null) {
@@ -263,7 +263,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	List<MarkerData> generateRemovedMethodMarker(IJavaProject javaProject, final String className,
 		final String methodName, final Delta requiresDelta) throws JavaModelException {
-		final List<MarkerData> markers = new LinkedList<>();
+		final List<MarkerData> markers = new ArrayList<>();
 		final CompilationUnit ast = createAST(javaProject, className);
 		if (ast != null) {
 			ast.accept(new ASTVisitor() {
@@ -297,7 +297,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	@Override
 	public List<IMarkerResolution> getResolutions(IMarker marker) {
-		List<IMarkerResolution> result = new LinkedList<>();
+		List<IMarkerResolution> result = new ArrayList<>();
 
 		final String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
 		if (suggestedVersion != null) {
@@ -330,7 +330,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
 	@Override
 	public List<ICompletionProposal> getProposals(IMarker marker) {
-		List<ICompletionProposal> proposals = new LinkedList<>();
+		List<ICompletionProposal> proposals = new ArrayList<>();
 
 		String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
 		int start = marker.getAttribute(IMarker.CHAR_START, 0);

@@ -1,5 +1,6 @@
 package org.bndtools.builder.handlers.baseline;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,7 +74,7 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
 
 	@Override
 	public List<ICompletionProposal> getProposals(IMarker marker) {
-		List<ICompletionProposal> result = new LinkedList<>();
+		List<ICompletionProposal> result = new ArrayList<>();
 
 		String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
 		int start = marker.getAttribute(IMarker.CHAR_START, 0);
