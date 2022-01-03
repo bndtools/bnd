@@ -816,7 +816,6 @@ public class NanoHTTPD {
 					f = IO.getFile(homeDir, uri + "/index.htm");
 				// No index file, list the directory if it is readable
 				else if (allowDirectoryListing && f.canRead()) {
-					String[] files = f.list();
 					String msg = "<html><body><h1>Directory " + uri + "</h1><br/>";
 
 					if (uri.length() > 1) {
@@ -826,34 +825,32 @@ public class NanoHTTPD {
 							msg += "<b><a href=\"" + uri.substring(0, slash + 1) + "\">..</a></b><br/>";
 					}
 
-					if (files != null) {
-						for (int i = 0; i < files.length; ++i) {
-							File curFile = new File(f, files[i]);
-							boolean dir = curFile.isDirectory();
-							if (dir) {
-								msg += "<b>";
-								files[i] += "/";
-							}
-
-							msg += "<a href=\"" + encodeUri(uri + files[i]) + "\">" + files[i] + "</a>";
-
-							// Show file size
-							if (curFile.isFile()) {
-								long len = curFile.length();
-								msg += " &nbsp;<font size=2>(";
-								if (len < 1024)
-									msg += len + " bytes";
-								else if (len < 1024 * 1024)
-									msg += len / 1024 + "." + (len % 1024 / 10 % 100) + " KB";
-								else
-									msg += len / (1024 * 1024) + "." + len % (1024 * 1024) / 10 % 100 + " MB";
-
-								msg += ")</font>";
-							}
-							msg += "<br/>";
-							if (dir)
-								msg += "</b>";
+					for (String name : IO.list(f)) {
+						File curFile = new File(f, name);
+						boolean dir = curFile.isDirectory();
+						if (dir) {
+							msg += "<b>";
+							name += "/";
 						}
+
+						msg += "<a href=\"" + encodeUri(uri + name) + "\">" + name + "</a>";
+
+						// Show file size
+						if (curFile.isFile()) {
+							long len = curFile.length();
+							msg += " &nbsp;<font size=2>(";
+							if (len < 1024)
+								msg += len + " bytes";
+							else if (len < 1024 * 1024)
+								msg += len / 1024 + "." + (len % 1024 / 10 % 100) + " KB";
+							else
+								msg += len / (1024 * 1024) + "." + len % (1024 * 1024) / 10 % 100 + " MB";
+
+							msg += ")</font>";
+						}
+						msg += "<br/>";
+						if (dir)
+							msg += "</b>";
 					}
 					msg += "</body></html>";
 					res = new Response(HTTP_OK, MIME_HTML, msg);

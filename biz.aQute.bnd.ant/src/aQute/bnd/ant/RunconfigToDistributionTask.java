@@ -1,15 +1,14 @@
 package aQute.bnd.ant;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.function.BiPredicate;
 
 import org.apache.tools.ant.BuildException;
 
@@ -115,9 +114,9 @@ public class RunconfigToDistributionTask extends BaseTask {
 
 	private Map<String, Jar> indexBundleSnapshots() {
 		Map<String, Jar> snapshots = new HashMap<>();
-		File[] projectFolders = rootDir.listFiles(new NonTestProjectFileFilter());
+		List<File> projectFolders = IO.listFiles(rootDir, new NonTestProjectFileFilter());
 		for (File projectFolder : projectFolders) {
-			File[] generatedFiles = new File(projectFolder, "generated").listFiles(new JarFileFilter());
+			List<File> generatedFiles = IO.listFiles(new File(projectFolder, "generated"), new JarFileFilter());
 			for (File generatedFile : generatedFiles) {
 				Jar jar;
 				try {
@@ -134,19 +133,17 @@ public class RunconfigToDistributionTask extends BaseTask {
 		return snapshots;
 	}
 
-	private static class NonTestProjectFileFilter implements FileFilter {
+	private static class NonTestProjectFileFilter implements BiPredicate<File, String> {
 		public NonTestProjectFileFilter() {}
 
 		@Override
-		public boolean accept(File projectFolder) {
-			return !projectFolder.getName()
-				.endsWith(".test") && containsGeneratedFolder(projectFolder);
+		public boolean test(File dir, String name) {
+			return !name.endsWith(".test") && containsGeneratedFolder(new File(dir, name));
 		}
 
 		private boolean containsGeneratedFolder(File projectFolder) {
 			if (projectFolder.isDirectory()) {
-				List<File> files = Arrays.asList(projectFolder.listFiles());
-				for (File file : files) {
+				for (File file : IO.listFiles(projectFolder)) {
 					if (file.isDirectory() && file.getName()
 						.equals("generated")) {
 						return true;
@@ -158,13 +155,12 @@ public class RunconfigToDistributionTask extends BaseTask {
 		}
 	}
 
-	private static class JarFileFilter implements FileFilter {
+	private static class JarFileFilter implements BiPredicate<File, String> {
 		public JarFileFilter() {}
 
 		@Override
-		public boolean accept(File file) {
-			return file.getName()
-				.endsWith(".jar");
+		public boolean test(File dir, String name) {
+			return name.endsWith(".jar");
 		}
 	}
 

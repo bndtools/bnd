@@ -1153,7 +1153,7 @@ public class Builder extends Analyzer {
 	private void traverse(List<String> paths, File item) {
 
 		if (item.isDirectory()) {
-			for (File sub : item.listFiles()) {
+			for (File sub : IO.listFiles(item)) {
 				traverse(paths, sub);
 			}
 		} else if (item.isFile())
@@ -1170,8 +1170,7 @@ public class Builder extends Analyzer {
 	 */
 	private long findLastModifiedWhileOlder(File file, long lastModified) {
 		if (file.isDirectory()) {
-			File children[] = file.listFiles();
-			for (File child : children) {
+			for (File child : IO.listFiles(file)) {
 				if (child.lastModified() > lastModified)
 					return child.lastModified();
 
@@ -1216,7 +1215,12 @@ public class Builder extends Analyzer {
 			return;
 		}
 
-		File[] fs = dir.listFiles(filter);
+		List<File> fs;
+		try (Stream<String> names = IO.listStream(dir)) {
+			fs = names.map(name -> new File(dir, name))
+				.filter(filter::accept)
+				.collect(toList());
+		}
 		for (File file : fs) {
 			if (file.isDirectory()) {
 				if (recursive) {
@@ -1236,7 +1240,7 @@ public class Builder extends Analyzer {
 				files.put(p, file);
 			}
 		}
-		if (fs.length == 0) {
+		if (fs.isEmpty()) {
 			File empty = new File(dir, Constants.EMPTY_HEADER);
 			files.put(appendPath(path, empty.getName()), empty);
 		}
@@ -1360,9 +1364,7 @@ public class Builder extends Analyzer {
 
 		logger.debug("copy d={} s={} path={}", jar, from, path);
 		if (from.isDirectory()) {
-
-			File files[] = from.listFiles();
-			for (File file : files) {
+			for (File file : IO.listFiles(from)) {
 				copy(jar, appendPath(path, file.getName()), file, preprocess, extra);
 			}
 		} else {
@@ -1502,9 +1504,9 @@ public class Builder extends Analyzer {
 
 		Instructions instructions = new Instructions(subsMap);
 
-		List<File> members = new ArrayList<>(Arrays.asList(getBase().listFiles()));
+		List<File> members = IO.listFiles(getBase());
 
-		nextFile: while (members.size() > 0) {
+		nextFile: while (!members.isEmpty()) {
 
 			File file = members.remove(0);
 

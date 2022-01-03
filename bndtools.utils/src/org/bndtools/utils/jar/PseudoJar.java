@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,20 +54,16 @@ public class PseudoJar implements Closeable {
 	}
 
 	private static void index(String prefix, File dir, List<String> index) {
-		File[] children = dir.listFiles();
-		Arrays.sort(children, (f1, f2) -> f1.getName()
-			.compareTo(f2.getName()));
-		if (children != null)
-			for (File child : children) {
-				String path = prefix + child.getName();
-				if (child.isDirectory())
-					path += "/";
+		for (File child : IO.listFiles(dir)) {
+			String path = prefix + child.getName();
+			if (child.isDirectory())
+				path += "/";
 
-				index.add(path);
+			index.add(path);
 
-				if (child.isDirectory())
-					index(path, child, index);
-			}
+			if (child.isDirectory())
+				index(path, child, index);
+		}
 	}
 
 	public Manifest readManifest() throws IOException {

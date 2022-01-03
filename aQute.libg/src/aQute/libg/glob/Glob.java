@@ -1,10 +1,14 @@
 package aQute.libg.glob;
 
 import java.io.File;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -193,16 +197,24 @@ public class Glob {
 	}
 
 	public void getFiles(File root, List<File> result, boolean recursive, boolean usePath) {
-		if (root == null || !root.isDirectory())
-			return;
-
-		for (File sub : root.listFiles()) {
-			if (sub.isFile()) {
-				String s = usePath ? sub.getAbsolutePath() : sub.getName();
-				if (matcher(s).matches())
-					result.add(sub);
-			} else if (recursive && sub.isDirectory())
-				getFiles(sub, result, recursive, usePath);
+		if ((root != null) && root.isDirectory()) {
+			File[] files = root.listFiles();
+			if (files != null) {
+				Collator collator = Collator.getInstance(Locale.ROOT);
+				collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+				collator.setStrength(Collator.IDENTICAL); // case-sensitive
+				Arrays.sort(files, Comparator.comparing(File::getName, collator::compare));
+				for (File sub : files) {
+					if (sub.isFile()) {
+						String s = usePath ? sub.getAbsolutePath() : sub.getName();
+						if (matcher(s).matches()) {
+							result.add(sub);
+						}
+					} else if (recursive && sub.isDirectory()) {
+						getFiles(sub, result, recursive, usePath);
+					}
+				}
+			}
 		}
 	}
 

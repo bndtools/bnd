@@ -2538,16 +2538,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (path.length() > 0)
 			path = path.concat("/");
 
-		String subs[] = current.list();
-		if (subs != null) {
-			for (String sub : subs) {
-				File f = new File(current, sub);
-				if (f.isFile()) {
-					if (instr.matches(sub) ^ instr.isNegated())
-						list.add(path + sub);
-				} else
-					tree(list, f, path + sub, instr);
-			}
+		for (String sub : IO.list(current)) {
+			File f = new File(current, sub);
+			if (f.isFile()) {
+				if (instr.matches(sub) ^ instr.isNegated())
+					list.add(path + sub);
+			} else
+				tree(list, f, path + sub, instr);
 		}
 	}
 

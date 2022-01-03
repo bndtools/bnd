@@ -32,7 +32,6 @@ import java.util.Deque;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -954,21 +953,18 @@ public class Macro {
 			throw new IllegalArgumentException(String.format(
 				"the ${%s} macro directory parameter points to a file instead of a directory: %s", args[0], dir));
 
-		File[] array = dir.listFiles();
-		if ((array == null) || (array.length == 0)) {
+		List<File> files = IO.listFiles(dir);
+		if (files.isEmpty()) {
 			return "";
 		}
-		Arrays.sort(array);
 		Function<File, String> mapper = relative ? File::getName : IO::absolutePath;
 		if (args.length < 3) {
-			String result = Arrays.stream(array)
+			String result = files.stream()
 				.map(mapper)
 				.collect(Strings.joining());
 			return result;
 		}
-		List<File> files = new LinkedList<>();
-		Collections.addAll(files, array);
-		List<String> result = new ArrayList<>(array.length);
+		List<String> result = new ArrayList<>(files.size());
 		Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
 			.map(Instruction::new)
@@ -1270,7 +1266,8 @@ public class Macro {
 			return IO.collect(f)
 				.replaceAll("\\\\", "\\\\\\\\");
 		} else if (f.isDirectory()) {
-			return Arrays.toString(f.list());
+			return IO.list(f)
+				.toString();
 		} else {
 			try {
 				URL url = new URL(args[1]);

@@ -75,8 +75,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 		List<File> result = new ArrayList<>();
 		if (vsdir.isDirectory()) {
-			String versions[] = vsdir.list();
-			for (String v : versions) {
+			for (String v : IO.list(vsdir)) {
 				String vv = Analyzer.cleanupVersion(v);
 				if (Verifier.isVersion(vv)) {
 					Version vvv = new Version(vv);
@@ -111,7 +110,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 	void find(List<String> bsns, Pattern pattern, File base, String name) {
 		if (base.isDirectory()) {
-			String list[] = base.list();
+			List<String> list = IO.list(base);
 			boolean found = false;
 			for (String entry : list) {
 				char c = entry.charAt(0);

@@ -510,9 +510,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (reporter != null)
 				reporter.error("FileRepo root directory is not set.");
 		} else {
-			File[] list = root.listFiles();
-			if (list != null) {
-				for (File f : list) {
+			if (root.isDirectory()) {
+				for (File f : IO.listFiles(root)) {
 					if (!f.isDirectory())
 						continue; // ignore non-directories
 					String fileName = f.getName();
@@ -534,9 +533,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		File dir = new File(root, bsn);
 		boolean latest = false;
 		if (dir.isDirectory()) {
-			String versions[] = dir.list();
 			List<Version> list = new ArrayList<>();
-			for (String v : versions) {
+			for (String v : IO.list(dir)) {
 				Matcher m = REPO_FILE.matcher(v);
 				if (m.matches()) {
 					String version = m.group(2);

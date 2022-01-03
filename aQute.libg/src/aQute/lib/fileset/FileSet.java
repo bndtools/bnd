@@ -113,7 +113,7 @@ public class FileSet {
 	public Set<File> getFiles() {
 		Set<File> files = new HashSet<>();
 		if (base.isDirectory()) {
-			for (File sub : base.listFiles()) {
+			for (File sub : IO.listFiles(base)) {
 				dfa.match(files, sub);
 			}
 		}
@@ -215,7 +215,7 @@ public class FileSet {
 			if (input.isDirectory()) {
 				if (glob.matcher(input.getName())
 					.matches()) {
-					for (File sub : input.listFiles()) {
+					for (File sub : IO.listFiles(input)) {
 						next.match(files, sub);
 					}
 				}
@@ -249,7 +249,7 @@ public class FileSet {
 		@Override
 		void match(Collection<File> files, File input) {
 			if (input.isDirectory()) {
-				for (File sub : input.listFiles()) {
+				for (File sub : IO.listFiles(input)) {
 					next.match(files, sub);
 					this.match(files, sub);
 				}

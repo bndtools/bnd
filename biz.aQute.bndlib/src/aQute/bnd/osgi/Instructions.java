@@ -340,7 +340,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		//
 
 		if (base != null) {
-			nextFile: for (File f : base.listFiles()) {
+			nextFile: for (File f : IO.listFiles(base)) {
 				for (Entry<Instruction, Attrs> instr : entrySet()) {
 					if (instr.getKey()
 						.isLiteral())

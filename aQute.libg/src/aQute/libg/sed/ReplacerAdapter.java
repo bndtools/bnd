@@ -35,7 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.lib.collections.ExtList;
-import aQute.lib.collections.SortedList;
 import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -800,7 +799,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			throw new IllegalArgumentException(
 				"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
 
-		List<File> files = new ArrayList<>(new SortedList<>(dir.listFiles()));
+		List<File> files = IO.listFiles(dir);
 
 		for (int i = 2; i < args.length; i++) {
 			Glob filters = new Glob(args[i]);
@@ -893,7 +892,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (f.isFile()) {
 			return IO.collect(f);
 		} else if (f.isDirectory()) {
-			return Arrays.toString(f.list());
+			return IO.list(f)
+				.toString();
 		} else {
 			try {
 				URL url = new URL(args[1]);

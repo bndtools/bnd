@@ -2,6 +2,7 @@ package aQute.lib.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;
 import java.io.CharArrayWriter;
@@ -21,6 +22,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UTFDataFormatException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -48,14 +50,25 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
+import java.text.CollationKey;
+import java.text.Collator;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.lib.stringrover.StringRover;
@@ -105,10 +118,137 @@ public class IO {
 			.matches())) {
 			files.add(current);
 		} else if (current.isDirectory()) {
-			for (File sub : current.listFiles()) {
+			for (File sub : listFiles(current)) {
 				traverse(files, sub, glob);
 			}
 		}
+	}
+
+	public static Collator fileCollator() {
+		Collator collator = Collator.getInstance(Locale.ROOT);
+		collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+		collator.setStrength(Collator.IDENTICAL); // case-sensitive
+		return collator;
+	}
+
+	public static <FILE> Comparator<FILE> fileComparator(Function<? super FILE, ? extends String> keyExtractor) {
+		return Comparator.comparing(keyExtractor, fileCollator()::compare);
+	}
+
+	public static Stream<String> listStream(File dir, BiPredicate<? super File, ? super String> filter) {
+		if ((dir != null) && dir.isDirectory()) {
+			String[] names = dir.list();
+			if (names != null) {
+				Stream<String> result = StreamSupport
+					.stream(Spliterators.<String> spliterator(names, Spliterator.IMMUTABLE | Spliterator.DISTINCT),
+						false)
+					.filter(name -> filter.test(dir, name))
+					.map(fileCollator()::getCollationKey)
+					.sorted()
+					.map(CollationKey::getSourceString);
+				return result;
+			}
+		}
+		return Stream.empty();
+	}
+
+	public static Stream<String> listStream(File dir) {
+		return listStream(dir, (d, n) -> true);
+	}
+
+	public static List<String> list(File dir, BiPredicate<? super File, ? super String> filter) {
+		try (Stream<String> stream = listStream(dir, filter)) {
+			return stream.collect(toList());
+		}
+	}
+
+	public static List<String> list(File dir) {
+		return list(dir, (d, n) -> true);
+	}
+
+	public static List<File> listFiles(File dir, BiPredicate<? super File, ? super String> filter) {
+		try (Stream<String> stream = listStream(dir, filter)) {
+			return stream.map(name -> new File(dir, name))
+				.collect(toList());
+		}
+	}
+
+	public static List<File> listFiles(File dir) {
+		return listFiles(dir, (d, n) -> true);
+	}
+
+	public static Stream<String> listStream(Path dir, Predicate<? super Path> filter) {
+		if ((dir != null) && Files.isDirectory(dir)) {
+			try {
+				Stream<String> result = Files.list(dir)
+					.filter(filter)
+					.map(Path::getFileName)
+					.map(Path::toString)
+					.map(fileCollator()::getCollationKey)
+					.sorted()
+					.map(CollationKey::getSourceString);
+				return result;
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+		return Stream.empty();
+	}
+
+	public static Stream<String> listStream(Path dir, BiPredicate<? super Path, ? super String> filter) {
+		if ((dir != null) && Files.isDirectory(dir)) {
+			try {
+				Stream<String> result = Files.list(dir)
+					.map(Path::getFileName)
+					.map(Path::toString)
+					.filter(name -> filter.test(dir, name))
+					.map(fileCollator()::getCollationKey)
+					.sorted()
+					.map(CollationKey::getSourceString);
+				return result;
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+		return Stream.empty();
+	}
+
+	public static Stream<String> listStream(Path dir) {
+		return listStream(dir, p -> true);
+	}
+
+	public static List<String> list(Path dir, Predicate<? super Path> filter) {
+		try (Stream<String> stream = listStream(dir, filter)) {
+			return stream.collect(toList());
+		}
+	}
+
+	public static List<String> list(Path dir, BiPredicate<? super Path, ? super String> filter) {
+		try (Stream<String> stream = listStream(dir, filter)) {
+			return stream.collect(toList());
+		}
+	}
+
+	public static List<String> list(Path dir) {
+		return list(dir, p -> true);
+	}
+
+	public static List<Path> listPaths(Path dir, Predicate<? super Path> filter) {
+		try (Stream<String> stream = listStream(dir, filter)) {
+			return stream.map(name -> dir.resolve(name))
+				.collect(toList());
+		}
+	}
+
+	public static List<Path> listPaths(Path dir, BiPredicate<? super Path, ? super String> filter) {
+		try (Stream<String> stream = listStream(dir, filter)) {
+			return stream.map(name -> dir.resolve(name))
+				.collect(toList());
+		}
+	}
+
+	public static List<Path> listPaths(Path dir) {
+		return listPaths(dir, p -> true);
 	}
 
 	public static File copy(byte[] data, File file) throws IOException {

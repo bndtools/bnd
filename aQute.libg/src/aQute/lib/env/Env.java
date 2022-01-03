@@ -132,7 +132,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		if (!file.isDirectory())
 			setProperties(file);
 		else {
-			for (File sub : file.listFiles()) {
+			for (File sub : IO.listFiles(file)) {
 				if (matching == null || matching.matcher(sub.getName())
 					.matches()) {
 					addProperties(file, matching);
