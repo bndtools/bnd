@@ -27,7 +27,7 @@
 	osgi.identity;filter:='(osgi.identity=*win32*)',\
 
 -runbundles: \
-	assertj-core;version='[3.21.0,3.21.1)',\
+	assertj-core;version='[3.22.0,3.22.1)',\
 	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
