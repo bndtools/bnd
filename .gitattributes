@@ -46,6 +46,7 @@ LICENSE crlf=input
 
 # No EOL translation
 *.bat -crlf
+*.cmd -crlf
 
 # Binary. No EOL translation, no diff
 *.ico binary
