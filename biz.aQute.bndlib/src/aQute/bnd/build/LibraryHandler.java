@@ -61,7 +61,7 @@ class LibraryHandler implements AutoCloseable {
 				return;
 			}
 			if (in.isDirectory()) {
-				for (File sub : in.listFiles()) {
+				for (File sub : IO.listFiles(in)) {
 					if (sub.getName()
 						.endsWith(".bnd")) {
 						doInclude(p, sub, header, name, resource);

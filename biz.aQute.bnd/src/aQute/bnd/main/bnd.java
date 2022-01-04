@@ -641,9 +641,7 @@ public class bnd extends Processor {
 			else
 				path += "/";
 
-			String[] subs = f.list();
-			for (String sub : subs) {
-
+			for (String sub : IO.list(f)) {
 				add(jar, base, path + sub, report);
 			}
 		}
@@ -1818,8 +1816,7 @@ public class bnd extends Processor {
 				}
 			}
 
-			for (File file : project.getBase()
-				.listFiles()) {
+			for (File file : IO.listFiles(project.getBase())) {
 				if (file.getName()
 					.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 					Run run = Workspace.getRun(file);
@@ -2801,7 +2798,7 @@ public class bnd extends Processor {
 		}
 
 		if (args.isEmpty()) {
-			args = new ExtList<>(getBase().list((dir, name) -> name.endsWith(".jar")));
+			args = IO.list(getBase(), (dir, name) -> name.endsWith(".jar"));
 		}
 
 		Set<String> headers = opts.headers();

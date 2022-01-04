@@ -37,7 +37,7 @@ public class RemoteSink implements Sink {
 		areasDir = new File(root, "areas");
 		IO.mkdirs(areasDir);
 
-		for (File areaDir : areasDir.listFiles()) {
+		for (File areaDir : IO.listFiles(areasDir)) {
 			areas.put(areaDir.getName(), read(areaDir));
 		}
 
@@ -173,10 +173,9 @@ public class RemoteSink implements Sink {
 
 		if (f.isDirectory()) {
 			StringBuilder sb = new StringBuilder();
-			for (String s : f.list()) {
-				sb.append(s)
-					.append("\n");
-			}
+			IO.list(f)
+				.forEach(s -> sb.append(s)
+					.append('\n'));
 			return sb.toString()
 				.getBytes(UTF_8);
 		} else if (f.isFile()) {

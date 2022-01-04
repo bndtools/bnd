@@ -18,6 +18,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 
 /**
@@ -93,8 +94,7 @@ public class Plugins {
 		List<String> args = opts._arguments();
 
 		if (args.isEmpty()) {
-			for (String file : ws.getFile("cnf/ext")
-				.list()) {
+			for (String file : IO.list(ws.getFile("cnf/ext"))) {
 				Matcher m = PLUGIN_FILE_P.matcher(file);
 				if (m.matches()) {
 					bnd.out.println(m.group(1));

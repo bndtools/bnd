@@ -1,13 +1,14 @@
 package aQute.bnd.filerepo;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -42,16 +43,17 @@ public class FileRepo {
 		// that match the desired range are included in
 		// this list.
 		//
-		return f.listFiles((FilenameFilter) (dir, name) -> {
-			Matcher m = REPO_FILE.matcher(name);
-			if (!m.matches())
-				return false;
-			if (versionRange == null)
-				return true;
+		return IO.listFiles(f, (dir, name) -> {
+				Matcher m = REPO_FILE.matcher(name);
+				if (!m.matches())
+					return false;
+				if (versionRange == null)
+					return true;
 
-			Version v = new Version(m.group(2));
-			return versionRange.includes(v);
-		});
+				Version v = new Version(m.group(2));
+				return versionRange.includes(v);
+			})
+			.toArray(new File[0]);
 	}
 
 	public List<String> list(String regex) throws Exception {
@@ -59,25 +61,26 @@ public class FileRepo {
 			regex = ".*";
 		final Pattern pattern = Pattern.compile(regex);
 
-		String list[] = root.list((dir, name) -> {
-			Matcher matcher = pattern.matcher(name);
-			return matcher.matches();
+		return IO.list(root, (dir, name) -> {
+				Matcher matcher = pattern.matcher(name);
+				return matcher.matches();
 		});
-		return Arrays.asList(list);
 	}
 
 	public List<Version> versions(String bsn) throws Exception {
 		File dir = new File(root, bsn);
-		final List<Version> versions = new ArrayList<>();
-		dir.list((dir1, name) -> {
-			Matcher m = REPO_FILE.matcher(name);
-			if (m.matches()) {
-				versions.add(new Version(m.group(2)));
-				return true;
-			}
-			return false;
-		});
-		return versions;
+		try (Stream<String> names = IO.listStream(dir)) {
+			List<Version> versions = names.map(name -> {
+				Matcher m = REPO_FILE.matcher(name);
+				if (m.matches()) {
+					return new Version(m.group(2));
+				}
+				return null;
+			})
+				.filter(Objects::nonNull)
+				.collect(toList());
+			return versions;
+		}
 	}
 
 	public File get(String bsn, VersionRange range, int strategy) throws Exception {

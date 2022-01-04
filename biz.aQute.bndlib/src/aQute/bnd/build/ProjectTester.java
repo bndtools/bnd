@@ -56,7 +56,7 @@ public abstract class ProjectTester {
 
 	public Collection<File> getReports() {
 		List<File> reports = new ArrayList<>();
-		for (File report : reportDir.listFiles()) {
+		for (File report : IO.listFiles(reportDir)) {
 			if (report.isFile())
 				reports.add(report);
 		}

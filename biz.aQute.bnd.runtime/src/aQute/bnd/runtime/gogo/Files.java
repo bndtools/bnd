@@ -25,6 +25,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.felix.service.command.CommandSession;
@@ -32,6 +33,7 @@ import org.apache.felix.service.command.Descriptor;
 import org.osgi.framework.BundleContext;
 
 import aQute.lib.dtoformatter.DTOFormatter;
+import aQute.lib.io.IO;
 
 public class Files {
 	public Files(BundleContext bc, DTOFormatter formatter) {}
@@ -109,6 +111,7 @@ public class Files {
 				};
 			}
 		}
+		Arrays.sort(files, IO.fileComparator(File::getName));
 		return files;
 	}
 

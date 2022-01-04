@@ -1,12 +1,12 @@
 package org.bndtools.templating.jgit;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.bndtools.templating.FileResource;
@@ -173,7 +173,7 @@ public class GitCloneTemplate implements Template {
 		}
 
 		final File exclude = gitDir;
-		FileFilter filter = path -> !path.equals(exclude);
+		Predicate<File> filter = path -> !path.equals(exclude);
 		return toResourceMap(workingDir, filter);
 	}
 
@@ -198,29 +198,26 @@ public class GitCloneTemplate implements Template {
 		return params.helpUri;
 	}
 
-	private static ResourceMap toResourceMap(File baseDir, FileFilter filter) {
+	private static ResourceMap toResourceMap(File baseDir, Predicate<File> filter) {
 		ResourceMap result = new ResourceMap();
-		File[] files = baseDir.listFiles(filter);
-		if (files != null)
-			for (File file : files) {
-				recurse("", file, filter, result);
-			}
+		IO.listFiles(baseDir)
+			.forEach(file -> recurse("", file, filter, result));
 		return result;
 	}
 
-	private static void recurse(String prefix, File file, FileFilter filter, ResourceMap resourceMap) {
-		if (file.isDirectory()) {
-			String path = prefix + file.getName() + "/";
-			resourceMap.put(path, new FolderResource());
+	private static void recurse(String prefix, File file, Predicate<File> filter, ResourceMap resourceMap) {
+		if (filter.test(file)) {
+			if (file.isDirectory()) {
+				String path = prefix + file.getName() + "/";
+				resourceMap.put(path, new FolderResource());
 
-			File[] children = file.listFiles(filter);
-			for (File child : children) {
-				recurse(path, child, filter, resourceMap);
+				IO.listFiles(file)
+					.forEach(child -> recurse(path, child, filter, resourceMap));
+			} else {
+				String path = prefix + file.getName();
+				// TODO: WTF is the encoding?
+				resourceMap.put(path, new FileResource(file, "UTF-8"));
 			}
-		} else {
-			String path = prefix + file.getName();
-			// TODO: WTF is the encoding?
-			resourceMap.put(path, new FileResource(file, "UTF-8"));
 		}
 	}
 }

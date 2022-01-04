@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 
 public class JUnitLauncher extends ProjectLauncher {
@@ -87,7 +88,7 @@ public class JUnitLauncher extends ProjectLauncher {
 		boolean added = false;
 
 		if (testSrc.isDirectory()) {
-			for (File sub : testSrc.listFiles()) {
+			for (File sub : IO.listFiles(testSrc)) {
 				return traverse(fqns, sub, prefix + sub.getName() + ".", filter) || added;
 			}
 		} else if (testSrc.isFile()) {

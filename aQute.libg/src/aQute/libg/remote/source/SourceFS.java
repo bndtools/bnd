@@ -91,7 +91,7 @@ class SourceFS {
 			fd.touched = true;
 		} else if (f.isDirectory()) {
 			fd.dir = true;
-			for (File sub : f.listFiles()) {
+			for (File sub : IO.listFiles(f)) {
 				toRemote(sub);
 			}
 		}

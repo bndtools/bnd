@@ -4,7 +4,6 @@ import static aQute.bnd.deployer.repository.RepoConstants.DEFAULT_CACHE_DIR;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -18,12 +17,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
@@ -82,7 +81,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	private String				onlydirs				= null;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>		newFilesInCoordination	= new LinkedList<>();
+	private final List<URI>		newFilesInCoordination	= new ArrayList<>();
 	private static final String	EMPTY_LOCATION			= "";
 
 	public static final String	PROP_LOCATIONS			= "locations";
@@ -262,7 +261,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		if (!storageDir.isDirectory())
 			return;
 
-		LinkedList<File> files = new LinkedList<>();
+		List<File> files = new ArrayList<>();
 		String[] onlydirsFiles = null;
 		if (onlydirs != null) {
 			String[] onlydirs2 = onlydirs.split(",");
@@ -278,32 +277,35 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	}
 
 	private void listRecurse(final Pattern pattern, final String[] onlydirsFiles, File root, File dir,
-		LinkedList<File> files) {
-		final LinkedList<File> dirs = new LinkedList<>();
-		File[] moreFiles = dir.listFiles((FileFilter) f -> {
-			if (f.isDirectory()) {
-				boolean addit = true;
-				if (onlydirsFiles != null) {
-					String fabs = f.getAbsolutePath();
-					addit = false;
-					for (String dirtest : onlydirsFiles) {
-						if (dirtest.startsWith(fabs) || fabs.startsWith(dirtest)) {
-							addit = true;
-							break;
+		List<File> files) {
+		final List<File> dirs = new ArrayList<>();
+		try (Stream<String> names = IO.listStream(dir)) {
+			names.map(name -> new File(dir, name))
+				.filter(f -> {
+					if (f.isDirectory()) {
+						boolean addit = true;
+						if (onlydirsFiles != null) {
+							String fabs = f.getAbsolutePath();
+							addit = false;
+							for (String dirtest : onlydirsFiles) {
+								if (dirtest.startsWith(fabs) || fabs.startsWith(dirtest)) {
+									addit = true;
+									break;
+								}
+							}
 						}
+						if (addit) {
+							dirs.add(f);
+						}
+					} else if (f.isFile()) {
+						Matcher matcher = pattern.matcher(f.getName());
+						return matcher.matches();
 					}
-				}
-				if (addit) {
-					dirs.add(f);
-				}
-			} else if (f.isFile()) {
-				Matcher matcher = pattern.matcher(f.getName());
-				return matcher.matches();
-			}
-			return false;
-		});
-		// Add the files that we found.
-		files.addAll(Arrays.asList(moreFiles));
+					return false;
+				})
+				// Add the files that we found.
+				.forEachOrdered(files::add);
+		}
 
 		// keep recursing
 		for (File d : dirs) {

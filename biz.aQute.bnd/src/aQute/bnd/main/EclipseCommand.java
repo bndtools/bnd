@@ -2,6 +2,7 @@ package aQute.bnd.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -40,7 +41,7 @@ public class EclipseCommand extends Processor {
 			return;
 		}
 
-		File[] toCopy = sourceDir.listFiles();
+		List<File> toCopy = IO.listFiles(sourceDir);
 
 		for (Project p : workspace.getAllProjects()) {
 			if (p.getName()

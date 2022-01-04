@@ -15,7 +15,6 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -493,23 +492,13 @@ public class Workspace extends Processor {
 				refreshData();
 				gestalt = null;
 				File extDir = new File(getBuildDir(), EXT);
-				File[] extensions = extDir.listFiles();
-				if (extensions != null) {
-					Collator collator = Collator.getInstance(Locale.ROOT);
-					collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-					collator.setStrength(Collator.IDENTICAL); // case-sensitive
-																// order
-					Arrays.sort(extensions, (e1, e2) -> collator.compare(e1.getName(), e2.getName()));
-					for (File extension : extensions) {
-						String extensionName = extension.getName();
-						if (extensionName.endsWith(".bnd")) {
-							extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
-							try {
-								doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
-							} catch (Exception e) {
-								exception(e, "PropertiesChanged: %s", e);
-							}
-						}
+				for (File extension : IO.listFiles(extDir, (dir, name) -> name.endsWith(".bnd"))) {
+					String extensionName = extension.getName();
+					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
+					try {
+						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
+					} catch (Exception e) {
+						exception(e, "PropertiesChanged: %s", e);
 					}
 				}
 				super.propertiesChanged();
