@@ -1,15 +1,16 @@
 package aQute.lib.io;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.CollationKey;
+import java.text.Collator;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import aQute.libg.glob.PathSet;
 
@@ -101,16 +102,56 @@ public class FileTree {
 	}
 
 	private List<File> getFiles(File baseDir, Predicate<String> matches) throws IOException {
-		Path basePath = baseDir.toPath();
-		try (Stream<Path> walker = Files.walk(basePath)
-			.skip(1)) {
-			List<File> result = Stream.concat(files.stream(), //
-				walker.filter(p -> matches.test(basePath.relativize(p)
-					.toString()))
-					.sorted()
-					.map(Path::toFile))
-				.distinct()
-				.collect(toList());
+		return new TreeWalker(baseDir, matches, files).getFiles();
+	}
+
+	// Depth first tree walker. Sorts directory entries using IO.fileCollator.
+	static class TreeWalker {
+		private final Path				basePath;
+		private final Predicate<String>	matches;
+		private final List<File>		files;
+		private final Collator			fileCollator	= IO.fileCollator();
+		private final Deque<File>		queue			= new ArrayDeque<>();
+
+		TreeWalker(File baseDir, Predicate<String> matches, List<File> files) {
+			basePath = baseDir.toPath();
+			this.matches = matches;
+			this.files = new ArrayList<>(files);
+			queueDirectoryContents(baseDir);
+		}
+
+		private void queueDirectoryContents(File dir) {
+			if (dir.isDirectory()) {
+				String[] names = dir.list();
+				if (names != null) {
+					final int length = names.length;
+					CollationKey[] keys = new CollationKey[length];
+					for (int i = 0; i < length; i++) {
+						keys[i] = fileCollator.getCollationKey(names[i]);
+					}
+					Arrays.sort(keys);
+					for (int i = length - 1; i >= 0; i--) {
+						queue.addFirst(new File(dir, keys[i].getSourceString()));
+					}
+				}
+			}
+		}
+
+		List<File> getFiles() {
+			ArrayList<File> result = new ArrayList<>();
+			while (!queue.isEmpty()) {
+				File next = queue.pollFirst();
+				queueDirectoryContents(next);
+				Path path = basePath.relativize(next.toPath());
+				if (matches.test(path.toString())) {
+					files.remove(next);
+					result.add(next);
+				}
+			}
+			if (!files.isEmpty()) {
+				result.addAll(files);
+			}
+			result.trimToSize();
 			return result;
 		}
 	}

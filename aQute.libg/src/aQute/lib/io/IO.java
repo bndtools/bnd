@@ -140,8 +140,8 @@ public class IO {
 			String[] names = dir.list();
 			if (names != null) {
 				Stream<String> result = StreamSupport
-					.stream(Spliterators.<String> spliterator(names, Spliterator.IMMUTABLE | Spliterator.DISTINCT),
-						false)
+					.stream(Spliterators.<String> spliterator(names,
+						Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.DISTINCT), false)
 					.filter(name -> filter.test(dir, name))
 					.map(fileCollator()::getCollationKey)
 					.sorted()
