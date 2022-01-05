@@ -38,8 +38,10 @@ import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -85,28 +87,32 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		SYNTHETIC(ACC_SYNTHETIC),
 		MANDATED(ACC_MANDATED);
 
-		public static Access parse(String input) {
-			switch (input) {
-				case "OPEN" :
+		public static Set<Access> parse(String input) {
+			switch (input.toLowerCase(Locale.ROOT)) {
 				case "open" :
 				case "0x0020" :
 				case "32" :
-					return OPEN;
-				case "SYNTHETIC" :
+					return EnumSet.of(OPEN);
 				case "synthetic" :
 				case "0x1000" :
 				case "4096" :
-					return SYNTHETIC;
-				case "MANDATED" :
+					return EnumSet.of(SYNTHETIC);
 				case "mandated" :
 				case "0x8000" :
 				case "32768" :
-					return MANDATED;
+					return EnumSet.of(MANDATED);
 				default :
+					if (input.indexOf(',') > -1) {
+						return Strings.splitAsStream(input)
+							.map(Access::parse)
+							.flatMap(Set::stream)
+							.collect(toCollection(() -> EnumSet.noneOf(Access.class)));
+					}
 					int parsedValue = Integer.decode(input);
 					return Arrays.stream(values())
 						.filter(a -> a.getValue() == parsedValue)
 						.findFirst()
+						.map(EnumSet::of)
 						.orElseThrow(() -> new IllegalArgumentException(input));
 			}
 		}
@@ -297,7 +303,9 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		ModuleInfoBuilder builder = new ModuleInfoBuilder().module_name(name)
 			.module_version(version)
 			.module_flags(Access.parse(access)
-				.getValue());
+				.stream()
+				.mapToInt(Access::getValue)
+				.reduce(0, (l, r) -> l | r));
 		return builder;
 	}
 
