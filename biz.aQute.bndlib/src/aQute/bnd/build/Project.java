@@ -3519,8 +3519,7 @@ public class Project extends Processor {
 
 			FileTree tree = new FileTree();
 
-			OptionalLong newest = tree.getFiles(getBase(), Strings.split(useSrc))
-				.stream()
+			OptionalLong newest = tree.stream(getBase(), Strings.split(useSrc))
 				.filter(File::isFile)
 				.mapToLong(File::lastModified)
 				.max();
@@ -3537,8 +3536,7 @@ public class Project extends Processor {
 				.map(p -> getFile(p).isDirectory() && !p.endsWith("/") ? p + "/" : p)
 				.collect(Collectors.toList());
 
-			List<File> dependentFiles = tree.getFiles(getBase(), defaultIncludes)
-				.stream()
+			List<File> dependentFiles = tree.stream(getBase(), defaultIncludes)
 				.filter(File::isFile)
 				.filter(f -> f.lastModified() < time)
 				.sorted()

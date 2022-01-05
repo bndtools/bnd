@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -63,9 +62,8 @@ public class ClassReferenceTest {
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			FileTree tree = new FileTree();
-			List<File> files = tree.getFiles(new File("compilerversions/src"), "*");
-			return files.stream()
-				.filter(File::isDirectory)
+			Stream<File> files = tree.stream(new File("compilerversions/src"), "*");
+			return files.filter(File::isDirectory)
 				.map(File::getName)
 				.map(Arguments::of);
 		}

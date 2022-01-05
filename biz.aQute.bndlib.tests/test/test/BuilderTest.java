@@ -1045,9 +1045,8 @@ public class BuilderTest {
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			FileTree tree = new FileTree();
-			List<File> files = tree.getFiles(new File("compilerversions/src"), "*");
-			return files.stream()
-				.filter(File::isDirectory)
+			Stream<File> files = tree.stream(new File("compilerversions/src"), "*");
+			return files.filter(File::isDirectory)
 				.map(File::getName)
 				.map(name -> {
 					String[] split = Strings.first(name, '_');
