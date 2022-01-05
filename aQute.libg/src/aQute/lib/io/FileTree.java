@@ -1,7 +1,6 @@
 package aQute.lib.io;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.text.CollationKey;
 import java.text.Collator;
@@ -10,7 +9,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import aQute.libg.glob.PathSet;
 
@@ -81,9 +85,8 @@ public class FileTree {
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.
 	 * @return A list of files.
-	 * @throws IOException If an exception occurs.
 	 */
-	public List<File> getFiles(File baseDir, String... defaultIncludes) throws IOException {
+	public List<File> getFiles(File baseDir, String... defaultIncludes) {
 		return getFiles(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
 	}
 
@@ -95,28 +98,65 @@ public class FileTree {
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.
 	 * @return A list of files.
-	 * @throws IOException If an exception occurs.
 	 */
-	public List<File> getFiles(File baseDir, List<String> defaultIncludes) throws IOException {
+	public List<File> getFiles(File baseDir, List<String> defaultIncludes) {
 		return getFiles(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
 	}
 
-	private List<File> getFiles(File baseDir, Predicate<String> matches) throws IOException {
-		return new TreeWalker(baseDir, matches, files).getFiles();
+	private List<File> getFiles(File baseDir, Predicate<String> matches) {
+		ArrayList<File> result = new ArrayList<>();
+		new FileTreeSpliterator(baseDir, matches, files).forEachRemaining(result::add);
+		result.trimToSize();
+		return result;
 	}
 
-	// Depth first tree walker. Sorts directory entries using IO.fileCollator.
-	static class TreeWalker {
+	/**
+	 * Return a stream of files using the specified baseDir and the configured
+	 * include and exclude Ant-style glob expressions.
+	 *
+	 * @param baseDir The base directory for locating files.
+	 * @param defaultIncludes The default include patterns to use if no include
+	 *            patterns were configured.
+	 * @return A stream of files.
+	 */
+	public Stream<File> stream(File baseDir, String... defaultIncludes) {
+		return stream(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
+	}
+
+	/**
+	 * Return a stream of files using the specified baseDir and the configured
+	 * include and exclude Ant-style glob expressions.
+	 *
+	 * @param baseDir The base directory for locating files.
+	 * @param defaultIncludes The default include patterns to use if no include
+	 *            patterns were configured.
+	 * @return A stream of files.
+	 */
+	public Stream<File> stream(File baseDir, List<String> defaultIncludes) {
+		return stream(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
+	}
+
+	private Stream<File> stream(File baseDir, Predicate<String> matches) {
+		return StreamSupport.stream(new FileTreeSpliterator(baseDir, matches, files), false);
+	}
+
+	// Spliterator which performs a depth-first walk.
+	// Sorts entries within a directory using IO.fileCollator.
+	static class FileTreeSpliterator extends AbstractSpliterator<File> {
 		private final Path				basePath;
 		private final Predicate<String>	matches;
 		private final List<File>		files;
+		private final Spliterator<File>	extra;
 		private final Collator			fileCollator	= IO.fileCollator();
 		private final Deque<File>		queue			= new ArrayDeque<>();
 
-		TreeWalker(File baseDir, Predicate<String> matches, List<File> files) {
+		FileTreeSpliterator(File baseDir, Predicate<String> matches, List<File> files) {
+			super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.DISTINCT);
 			basePath = baseDir.toPath();
 			this.matches = matches;
-			this.files = new ArrayList<>(files);
+			List<File> copy = new ArrayList<>(files); // mutable copy
+			this.files = copy;
+			extra = copy.spliterator(); // late-binding
 			queueDirectoryContents(baseDir);
 		}
 
@@ -137,22 +177,33 @@ public class FileTree {
 			}
 		}
 
-		List<File> getFiles() {
-			ArrayList<File> result = new ArrayList<>();
+		@Override
+		public void forEachRemaining(Consumer<? super File> action) {
 			while (!queue.isEmpty()) {
 				File next = queue.pollFirst();
 				queueDirectoryContents(next);
 				Path path = basePath.relativize(next.toPath());
 				if (matches.test(path.toString())) {
 					files.remove(next);
-					result.add(next);
+					action.accept(next);
 				}
 			}
-			if (!files.isEmpty()) {
-				result.addAll(files);
+			extra.forEachRemaining(action);
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super File> action) {
+			while (!queue.isEmpty()) {
+				File next = queue.pollFirst();
+				queueDirectoryContents(next);
+				Path path = basePath.relativize(next.toPath());
+				if (matches.test(path.toString())) {
+					files.remove(next);
+					action.accept(next);
+					return true;
+				}
 			}
-			result.trimToSize();
-			return result;
+			return extra.tryAdvance(action);
 		}
 	}
 

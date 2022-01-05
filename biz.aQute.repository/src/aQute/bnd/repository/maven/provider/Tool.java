@@ -8,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -84,80 +83,75 @@ public class Tool extends Processor {
 		}
 
 		IO.mkdirs(javadoc);
-		List<String> args = new ArrayList<>();
-		args.add("-quiet");
-		args.add("-protected");
-		args.add(String.format("%s '%s'", "-d", fileName(javadoc)));
-		args.add("-charset 'UTF-8'");
-		args.add(String.format("%s '%s'", "-sourcepath", fileName(sources)));
-
-		Properties pp = new UTF8Properties();
-		pp.putAll(options);
-
-		Domain manifest = Domain.domain(jar.getManifest());
-		String name = manifest.getBundleName();
-		if (name == null)
-			name = manifest.getBundleSymbolicName()
-				.getKey();
-
-		String version = manifest.getBundleVersion();
-		if (version == null)
-			version = Version.LOWEST.toString();
-
-		String bundleDescription = manifest.getBundleDescription();
-
-		if (bundleDescription != null && !Strings.trim(bundleDescription)
-			.isEmpty()) {
-			printOverview(manifest, name, version, bundleDescription);
-		}
-
-		set(pp, "-doctitle", name);
-		set(pp, "-windowtitle", name);
-		set(pp, "-header", manifest.getBundleVendor());
-		set(pp, "-bottom", manifest.getBundleCopyright());
-		set(pp, "-footer", manifest.getBundleDocURL());
-
-		args.add("-tag 'Immutable:t:\"Immutable\"'");
-		args.add("-tag 'ThreadSafe:t:\"ThreadSafe\"'");
-		args.add("-tag 'NotThreadSafe:t:\"NotThreadSafe\"'");
-		args.add("-tag 'GuardedBy:mf:\"Guarded By:\"'");
-		args.add("-tag 'security:m:\"Required Permissions\"'");
-		args.add("-tag 'noimplement:t:\"Consumers of this API must not implement this interface\"'");
-
-		for (Enumeration<?> e = pp.propertyNames(); e.hasMoreElements();) {
-			String key = (String) e.nextElement();
-			String value = pp.getProperty(key);
-
-			if (key.startsWith("-")) {
-				//
-				// Allow people to add the same command multiple times
-				// by suffixing it with '.' something
-				//
-				int n = key.lastIndexOf('.');
-				if (n > 0) {
-					key = key.substring(0, n);
-				}
-
-				args.add(String.format("%s '%s'", key, escape(value)));
-			}
-		}
-
-		FileTree sourcefiles = new FileTree();
-		if (exportsOnly) {
-			Parameters exports = manifest.getExportPackage();
-			exports.keySet()
-				.stream()
-				.map(packageName -> Descriptors.fqnToBinary(packageName) + "/*.java")
-				.forEach(sourcefiles::addIncludes);
-		}
-		for (File f : sourcefiles.getFiles(sources, "**/*.java")) {
-			args.add(String.format("'%s'", fileName(f)));
-		}
 
 		try (PrintWriter writer = IO.writer(javadocOptions)) {
-			for (String arg : args) {
-				writer.println(arg);
+			writer.println("-quiet");
+			writer.println("-protected");
+			writer.printf("%s '%s'%n", "-d", fileName(javadoc));
+			writer.println("-charset 'UTF-8'");
+			writer.printf("%s '%s'%n", "-sourcepath", fileName(sources));
+
+			Properties pp = new UTF8Properties();
+			pp.putAll(options);
+
+			Domain manifest = Domain.domain(jar.getManifest());
+			String name = manifest.getBundleName();
+			if (name == null)
+				name = manifest.getBundleSymbolicName()
+					.getKey();
+
+			String version = manifest.getBundleVersion();
+			if (version == null)
+				version = Version.LOWEST.toString();
+
+			String bundleDescription = manifest.getBundleDescription();
+
+			if (bundleDescription != null && !Strings.trim(bundleDescription)
+				.isEmpty()) {
+				printOverview(manifest, name, version, bundleDescription);
 			}
+
+			set(pp, "-doctitle", name);
+			set(pp, "-windowtitle", name);
+			set(pp, "-header", manifest.getBundleVendor());
+			set(pp, "-bottom", manifest.getBundleCopyright());
+			set(pp, "-footer", manifest.getBundleDocURL());
+
+			writer.println("-tag 'Immutable:t:\"Immutable\"'");
+			writer.println("-tag 'ThreadSafe:t:\"ThreadSafe\"'");
+			writer.println("-tag 'NotThreadSafe:t:\"NotThreadSafe\"'");
+			writer.println("-tag 'GuardedBy:mf:\"Guarded By:\"'");
+			writer.println("-tag 'security:m:\"Required Permissions\"'");
+			writer.println("-tag 'noimplement:t:\"Consumers of this API must not implement this interface\"'");
+
+			for (Enumeration<?> e = pp.propertyNames(); e.hasMoreElements();) {
+				String key = (String) e.nextElement();
+				String value = pp.getProperty(key);
+
+				if (key.startsWith("-")) {
+					//
+					// Allow people to add the same command multiple times
+					// by suffixing it with '.' something
+					//
+					int n = key.lastIndexOf('.');
+					if (n > 0) {
+						key = key.substring(0, n);
+					}
+
+					writer.printf("%s '%s'%n", key, escape(value));
+				}
+			}
+
+			FileTree sourcefiles = new FileTree();
+			if (exportsOnly) {
+				Parameters exports = manifest.getExportPackage();
+				exports.keySet()
+					.stream()
+					.map(packageName -> Descriptors.fqnToBinary(packageName) + "/*.java")
+					.forEach(sourcefiles::addIncludes);
+			}
+			sourcefiles.stream(sources, "**/*.java")
+				.forEachOrdered(f -> writer.printf("'%s'%n", fileName(f)));
 		}
 
 		Command command = new Command();
