@@ -9,10 +9,12 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
@@ -26,26 +28,43 @@ import aQute.lib.io.IO;
 
 public class JPMSModuleInfoPluginTest {
 
+	@ParameterizedTest(name = "Validate Module Access inputs with invalid content {arguments}")
+	@ValueSource(strings = {
+		"OPEN,SYNTHETIC,3", //
+		"OPEN,47,MANDATED", //
+		"99,MANDATED,SYNTHETIC", //
+		"foo,MANDATED,SYNTHETIC" //
+	})
+	@DisplayName("Validate Module Access inputs produce correct access")
+	public void moduleAccessWithException(String access) throws Exception {
+		Assertions.assertThrows(org.opentest4j.AssertionFailedError.class, () -> {
+			moduleAccess(access, 0);
+		});
+	}
+
 	@ParameterizedTest(name = "Validate Module Access inputs {arguments}")
-	@CsvSource({
-		"OPEN,32", //
-		"open,32", //
-		"0x0020,32", //
-		"0x20,32", //
-		"32,32", //
-		"SYNTHETIC,4096", //
-		"synthetic,4096", //
-		"0x1000,4096", //
-		"4096,4096", //
-		"MANDATED,32768", //
-		"mandated,32768", //
-		"0x8000,32768", //
-		"32768,32768" //
+	@CsvSource(delimiterString = "|", value = {
+		"OPEN|32", //
+		"open|32", //
+		"0x0020|32", //
+		"0x20|32", //
+		"32|32", //
+		"SYNTHETIC|4096", //
+		"synthetic|4096", //
+		"0x1000|4096", //
+		"4096|4096", //
+		"MANDATED|32768", //
+		"mandated|32768", //
+		"0x8000|32768", //
+		"32768|32768", //
+		"OPEN,SYNTHETIC|4128", //
+		"OPEN,MANDATED|32800", //
+		"MANDATED,SYNTHETIC|36864" //
 	})
 	@DisplayName("Validate Module Access inputs produce correct access")
 	public void moduleAccess(String access, int flags) throws Exception {
 		try (Builder b = new Builder()) {
-			b.setProperty(Constants.JPMS_MODULE_INFO, "foo;access=" + access);
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo;access='" + access + "'");
 			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
 			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
 			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.a.*");
