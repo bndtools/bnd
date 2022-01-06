@@ -179,8 +179,7 @@ public class FileTree {
 
 		@Override
 		public void forEachRemaining(Consumer<? super File> action) {
-			while (!queue.isEmpty()) {
-				File next = queue.pollFirst();
+			for (File next; (next = queue.pollFirst()) != null;) {
 				queueDirectoryContents(next);
 				Path path = basePath.relativize(next.toPath());
 				if (matches.test(path.toString())) {
@@ -193,8 +192,7 @@ public class FileTree {
 
 		@Override
 		public boolean tryAdvance(Consumer<? super File> action) {
-			while (!queue.isEmpty()) {
-				File next = queue.pollFirst();
+			for (File next; (next = queue.pollFirst()) != null;) {
 				queueDirectoryContents(next);
 				Path path = basePath.relativize(next.toPath());
 				if (matches.test(path.toString())) {
