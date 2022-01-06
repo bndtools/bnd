@@ -1,11 +1,11 @@
 package aQute.bnd.deployer.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -43,24 +43,19 @@ public class CachingUriResourceHandlerTest {
 		URI uri = new URI(baseUri + "/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new HttpClient(), null);
 
-		try {
-			handle.request();
-			fail("Should throw IOException");
-		} catch (IOException e) {
-			// expected
+		assertThatIOException().isThrownBy(() -> handle.request());
 
-			/* cleanup */
-			List<String> cacheFiles = Arrays.asList(cacheDir.list());
-			String uriCacheDir = URLEncoder.encode(baseUri.toURL()
-				.toExternalForm(), "UTF-8");
-			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
-			assert (cacheFiles.contains(uriCacheDir));
-			if (cacheFiles.size() == 2) {
-				assert (cacheFiles.contains(".gitignore"));
-			}
-			IO.getFile(testDirName + "/" + uriCacheDir)
-				.delete();
+		/* cleanup */
+		List<String> cacheFiles = Arrays.asList(cacheDir.list());
+		String uriCacheDir = URLEncoder.encode(baseUri.toURL()
+			.toExternalForm(), "UTF-8");
+		assertThat(cacheFiles).hasSizeBetween(1, 2)
+			.contains(uriCacheDir);
+		if (cacheFiles.size() == 2) {
+			assertThat(cacheFiles).contains(".gitignore");
 		}
+		IO.getFile(testDirName + "/" + uriCacheDir)
+			.delete();
 	}
 
 	@Test
@@ -87,10 +82,10 @@ public class CachingUriResourceHandlerTest {
 			List<String> cacheFiles = Arrays.asList(cacheDir.list());
 			String uriCacheDir = URLEncoder.encode(baseUri.toURL()
 				.toExternalForm(), "UTF-8");
-			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
-			assert (cacheFiles.contains(uriCacheDir));
+			assertThat(cacheFiles).hasSizeBetween(1, 2)
+				.contains(uriCacheDir);
 			if (cacheFiles.size() == 2) {
-				assert (cacheFiles.contains(".gitignore"));
+				assertThat(cacheFiles).contains(".gitignore");
 			}
 			IO.getFile(testDirName + "/" + uriCacheDir)
 				.delete();
@@ -168,10 +163,10 @@ public class CachingUriResourceHandlerTest {
 
 			/* cleanup */
 			List<String> cacheFiles = Arrays.asList(cacheDir.list());
-			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
-			assert (cacheFiles.contains(uriCacheDir));
+			assertThat(cacheFiles).hasSizeBetween(1, 2)
+				.contains(uriCacheDir);
 			if (cacheFiles.size() == 2) {
-				assert (cacheFiles.contains(".gitignore"));
+				assertThat(cacheFiles).contains(".gitignore");
 			}
 			IO.delete(IO.getFile(testDirName + "/" + uriCacheDir));
 		} finally {
