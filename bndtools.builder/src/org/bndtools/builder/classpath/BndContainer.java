@@ -64,7 +64,7 @@ public class BndContainer implements IClasspathContainer, Serializable {
 		return getDescription();
 	}
 
-	long lastModified() {
+	public long lastModified() {
 		return lastModified;
 	}
 

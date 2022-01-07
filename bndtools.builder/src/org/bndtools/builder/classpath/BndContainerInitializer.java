@@ -141,7 +141,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	 * @param javaProject The java project of interest. Must not be null.
 	 * @return The BndContainer for the java project.
 	 */
-	static IClasspathContainer getClasspathContainer(IJavaProject javaProject) {
+	public static IClasspathContainer getClasspathContainer(IJavaProject javaProject) {
 		return JavaModelManager.getJavaModelManager()
 			.containerGet(javaProject, BndtoolsConstants.BND_CLASSPATH_ID);
 	}
