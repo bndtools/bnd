@@ -136,3 +136,22 @@ See https://github.github.com/maven-plugins/site-plugin/authentication.html for 
 
 The bnd command line provides a number of commands to display and verify the settings as well as getting the information from
 getting a remote file.
+
+	$ bnd com
+	Available sub-commands: 
+
+    clear                       -         Clear the cached file that is
+                                         associated with the givenURI 
+    info                        -         Show the information used by the
+                                          Http Client to get aremote file 
+    settings                    -         Show the bnd -connection-settings 
+
+## Certificate Authentication
+
+[Certificate authentication][1] is only suppprted using the Java settings through system properties. Either with `-D` on the command line 
+or in the `eclipse.ini` file or through some other means. In that case, make sure not specify the `<trust/>` nor `<verify/>` element 
+in a `connection-settings.xml`. The reason is that once you specify those element, the built-in Java mechanism is replaced with bnd code.
+
+
+[1]: https://bnd.discourse.group/t/using-client-certificate-for-server-authentication/85
+
