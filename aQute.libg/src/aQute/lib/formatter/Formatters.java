@@ -1,7 +1,6 @@
 package aQute.lib.formatter;
 
 import java.time.ZonedDateTime;
-import java.util.Formatter;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -10,8 +9,9 @@ import java.util.regex.Pattern;
 import aQute.lib.date.Dates;
 
 public class Formatters {
-	private final static Pattern PRINTF_P = Pattern.compile(
-		"%((?<index>\\d+)\\$|(?<previous><))?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(\\.(\\d+))?(?<conversion>a|A|b|B|c|C|d|e|E|f|g|G|h|H|n|o|s|S|x|X|(?:[tT][HIklMSLNpzZsQBbhAaCYyjmdeRTrDFc])|%)");
+	private final static Pattern	FORMATTER_P		= Pattern.compile(
+		"%(?<argument>(?<index>\\d+)\\$|<)?[-#+ 0,(]*\\d*(?:\\.\\d+)?(?<conversion>[bBhHsScCdoxXeEfgGaA%n]|(?:[tT][HIklMSLNpzZsQBbhAaCYyjmdeRTrDFc]))");
+	private static final Pattern	FLOATING_ZERO	= Pattern.compile("[-+]?0+\\.0+[dDfF]?");
 
 	/**
 	 * Format a string where the arguments are all strings. The string is
@@ -25,39 +25,38 @@ public class Formatters {
 	 */
 
 	public static String format(String format, Function<String, Boolean> isTruthy, int offset, String... args) {
-		Object[] formatArgs = new Object[args.length - offset + 10];
+		Object[] formatArgs = new Object[args.length - offset];
 
-		Matcher m = PRINTF_P.matcher(format);
-		int automatic = offset;
-		int index;
+		Matcher m = FORMATTER_P.matcher(format);
 
-		while (m.find()) {
-
+		for (int automatic = 0; m.find();) {
 			char conversion = m.group("conversion")
 				.charAt(0);
 
+			// %n
 			if (conversion == 'n' || conversion == '%')
 				continue;
 
-			String indexString = m.group("index");
-			if (indexString != null) {
-				index = Integer.parseInt(indexString) + offset - 1;
-			} else {
-				String previousString = m.group("previous");
-				if (previousString != null) {
+			int index;
+			if (m.group("argument") != null) {
+				String indexString = m.group("index");
+				if (indexString != null) { // n$
+					index = Integer.parseInt(indexString) - 1;
+				} else { // <
 					continue;
-				} else {
-					index = automatic++;
 				}
+			} else {
+				index = automatic++;
 			}
 
+			String arg = args[index + offset];
+			// bBhHsScCdoxXeEfgGaAtT
 			switch (conversion) {
-				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
 				case 'd' :
 				case 'o' :
 				case 'x' :
 				case 'X' :
-					formatArgs[index - offset] = Long.parseLong(args[index]);
+					formatArgs[index] = Long.valueOf(arg);
 					break;
 
 				case 'a' :
@@ -67,53 +66,48 @@ public class Formatters {
 				case 'f' :
 				case 'g' :
 				case 'G' :
-					formatArgs[index - offset] = Double.parseDouble(args[index]);
+					formatArgs[index] = Double.valueOf(arg);
 					break;
 
 				case 'c' :
 				case 'C' :
-					if (args[index].length() == 1)
-						formatArgs[index - offset] = args[index].charAt(0);
+					if (arg.length() == 1)
+						formatArgs[index] = Character.valueOf(arg.charAt(0));
 					else {
 						try {
-							int parseInt = Integer.parseInt(args[index]);
-							formatArgs[index - offset] = parseInt;
+							Integer parseInt = Integer.valueOf(arg);
+							formatArgs[index] = parseInt;
 						} catch (NumberFormatException ne) {
-							throw new IllegalArgumentException("Character expected but found '" + args[index] + "'");
+							throw new IllegalArgumentException("Character expected but found '" + arg + "'");
 						}
 					}
 					break;
 
 				case 'B' :
 				case 'b' :
-					String v = args[index].toLowerCase();
-					formatArgs[index - offset] = isTruthy.apply(v);
+					formatArgs[index] = isTruthy.apply(arg.toLowerCase(Locale.ROOT));
+					break;
+
+				case 't' :
+				case 'T' :
+					ZonedDateTime date = Dates.parse(arg);
+					if (date == null) {
+						throw new IllegalArgumentException("Illegal Date Format " + arg);
+					}
+					formatArgs[index] = date;
 					break;
 
 				case 'h' :
 				case 'H' :
 				case 's' :
 				case 'S' :
-					formatArgs[index - offset] = args[index];
-					break;
-
-				case 't' :
-				case 'T' :
-					String inputDate = args[index];
-					ZonedDateTime date = Dates.parse(inputDate);
-					if (date == null) {
-						throw new IllegalArgumentException("Illegal Date Format " + inputDate);
-					}
-					formatArgs[index - offset] = date;
+				default :
+					formatArgs[index] = arg;
 					break;
 			}
 		}
 
-		try (Formatter f = new Formatter(Locale.ROOT)) {
-			f.format(format, formatArgs);
-			return f.toString();
-		}
-
+		return String.format(Locale.ROOT, format, formatArgs);
 	}
 
 	/**
@@ -128,22 +122,23 @@ public class Formatters {
 		return format(format, Formatters::isTruthy, 0, args);
 	}
 
-	private static boolean isTruthy(String arg) {
+	private static Boolean isTruthy(String arg) {
 		if (arg == null)
-			return false;
+			return Boolean.FALSE;
+		arg = arg.trim();
 		if (arg.isEmpty())
-			return false;
+			return Boolean.FALSE;
 
 		if ("false".equalsIgnoreCase(arg))
-			return false;
+			return Boolean.FALSE;
 
 		if ("0".equals(arg))
-			return false;
+			return Boolean.FALSE;
 
-		if ("(+|-)?0.0[DFdf]?".matches(arg))
-			return false;
+		if (FLOATING_ZERO.matcher(arg).matches())
+			return Boolean.FALSE;
 
-		return true;
+		return Boolean.TRUE;
 	}
 
 }

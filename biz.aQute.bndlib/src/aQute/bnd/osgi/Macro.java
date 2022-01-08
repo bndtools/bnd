@@ -2045,10 +2045,10 @@ public class Macro {
 
 	static final String _formatHelp = "${format;<format>[;args...]}";
 
-	public String _format(String[] macroArgs) throws Exception {
-		verifyCommand(macroArgs, _formatHelp, null, 2, Integer.MAX_VALUE);
+	public String _format(String[] args) throws Exception {
+		verifyCommand(args, _formatHelp, null, 2, Integer.MAX_VALUE);
 
-		return Formatters.format(macroArgs[1], asFunction(this::isTruthy), 2, macroArgs);
+		return Formatters.format(args[1], asFunction(this::isTruthy), 2, args);
 	}
 
 	static final String _isemptyHelp = "${isempty;[<target>...]}";
