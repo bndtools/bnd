@@ -236,7 +236,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 					return ((PluginProvider) plugin).provide(type);
 				}
 				return Stream.empty();
-			});
+			})
+			.distinct();
 	}
 
 	/**
