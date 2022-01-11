@@ -1,5 +1,6 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,26 +31,26 @@ public class PluginTest {
 		main = new Processor();
 	}
 
-	static public class Foo {
-
-	}
-
 	@Test
 	public void testPluginInheritance() throws IOException {
 		Processor top = new Processor();
 		Processor middle = new Processor(top);
 		Processor bottom = new Processor(middle);
 
-		top.setProperty("-plugin.top", Foo.class.getName() + ";l=top");
-		middle.setProperty("-plugin.middle", Foo.class.getName() + ";l=middle");
+		top.setProperty("-plugin.top", TPlugin.class.getName() + ";l=top");
+		middle.setProperty("-plugin.middle", TPlugin.class.getName() + ";l=middle");
 
-		assertEquals(1, top.getPlugins(Foo.class)
-			.size());
-		assertEquals(2, middle.getPlugins(Foo.class)
-			.size());
-		assertEquals(2, bottom.getPlugins(Foo.class)
-			.size());
-		assertEquals(top.getPlugin(Foo.class), bottom.getPlugin(Foo.class));
+		assertThat(top.getPlugins(TPlugin.class)).hasSize(1);
+		assertThat(middle.getPlugins(TPlugin.class)).hasSize(2)
+			.containsAll(top.getPlugins(TPlugin.class));
+		assertThat(bottom.getPlugins(TPlugin.class)).hasSize(2)
+			.containsExactlyElementsOf(middle.getPlugins(TPlugin.class));
+		assertThat(bottom.getPlugin(TPlugin.class)).isSameAs(middle.getPlugin(TPlugin.class))
+			.isNotSameAs(top.getPlugin(TPlugin.class));
+		assertThat(middle.getPlugin(TPlugin.class).properties).containsEntry("l", "middle");
+		assertThat(top.getPlugin(TPlugin.class).properties).containsEntry("l", "top");
+		assertThat(middle.getPlugin(TPlugin.class).reporter).isSameAs(middle);
+		assertThat(top.getPlugin(TPlugin.class).reporter).isSameAs(top);
 		assertTrue(top.check());
 		assertTrue(middle.check());
 		assertTrue(bottom.check());
@@ -73,7 +74,7 @@ public class PluginTest {
 			.contains("Missing plugin"));
 	}
 
-	static class TPlugin implements Plugin {
+	public static class TPlugin implements Plugin {
 		Map<String, String>	properties;
 		Reporter			reporter;
 
@@ -97,16 +98,6 @@ public class PluginTest {
 			assertEquals("1", plugin.properties.get("a"));
 			assertEquals("2", plugin.properties.get("b"));
 			assertSame(main, plugin.reporter);
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testLoadPlugin() {
-		main.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
-		for (java.applet.Applet applet : main.getPlugins(java.applet.Applet.class)) {
-			assertEquals("thinlet.Thinlet", applet.getClass()
-				.getName());
 		}
 	}
 

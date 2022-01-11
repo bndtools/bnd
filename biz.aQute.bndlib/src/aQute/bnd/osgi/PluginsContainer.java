@@ -20,9 +20,14 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,41 +72,17 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	/**
 	 * A Plugin Provider provides plugins when accessed with a type selector.
 	 * The provided plugins are not part of the container's plugin set.
-	 *
 	 */
+	@ProviderType
 	public interface PluginProvider {
 		/**
-		 * provide the plugins for the given type if the type is equal.
+		 * Provide the plugins for the given type if the type is equal.
 		 *
 		 * @param <X> the requested type
 		 * @param type the class of the provider type, never null
-		 * @return a stream with the provided plugins, can be empty
+		 * @return a stream supplying the provided plugins, can be empty
 		 */
 		<X> Stream<X> provide(Class<X> type);
-	}
-
-	class ParentPluginProvider implements PluginProvider {
-
-		ParentPluginProvider() {}
-
-		@Override
-		public <X> Stream<X> provide(Class<X> type) {
-			Processor parent = processor.getParent();
-			if (parent == null) {
-				return Stream.empty();
-			}
-			return parent.getPlugins()
-				.stream(type);
-		}
-
-		@Override
-		public String toString() {
-			Processor parent = processor.getParent();
-			if (parent == null) {
-				return "[parent none]";
-			}
-			return "[parent " + parent + " " + parent.getPlugins() + "]";
-		}
 	}
 
 	class AbstractPlugin<T> implements PluginProvider, AutoCloseable {
@@ -179,8 +160,6 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		add(processor);
 		processor.setTypeSpecificPlugins(this);
 
-		add(new ParentPluginProvider());
-
 		/*
 		 * Look only local
 		 */
@@ -209,45 +188,137 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	}
 
 	/**
-	 * Return the set of resolved plugins. Resolving the provider plugins costs
-	 * significant time and they are not always needed. For example, an Export
-	 * Plugin will only be needed when there is an actual export. However, many
-	 * parts of the code depend on the full view. Therefore, this method must
-	 * force the lazy resolution of all provided plugins.
-	 *
-	 * @return a list with resolved plugins.
+	 * Return the set of plugins added to this container.
+	 * <p>
+	 * This will include {@link PluginProvider}s themselves, if any, rather than
+	 * any plugins the {@link PluginProvider}s may provide.
+	 * <p>
+	 * Use {@link #stream(Class)} or @{link {@link #spliterator(Class)} to
+	 * return the complete plugins including any plugins the
+	 * {@link PluginProvider}s may provide as well as the plugins from the
+	 * parent processor. The complete plugins may have duplicates if the same
+	 * plugin is added into different processors in the hierarchy.
 	 */
 	protected Set<Object> plugins() {
 		return plugins;
 	}
 
 	/**
-	 * Aggregates the stream but may have duplicate plugins if the same plugin
-	 * is added into different processors in the hierarchy.
+	 * Returns a stream of plugins of the specified type ordered by the
+	 * processor hierarchy.
+	 * <p>
+	 * The supplied plugins may have duplicates if the same plugin is added into
+	 * different processors in the hierarchy.
 	 */
 	protected <T> Stream<T> stream(Class<T> type) {
-		return plugins().stream()
-			.flatMap(plugin -> {
-				if (type.isInstance(plugin)) {
-					@SuppressWarnings("unchecked")
-					Stream<T> stream = Stream.of((T) plugin);
-					if (plugin instanceof PluginProvider) {
-						return Stream.concat(stream, ((PluginProvider) plugin).provide(type));
-					}
-					return stream;
-				}
-				if (plugin instanceof PluginProvider) {
-					return ((PluginProvider) plugin).provide(type);
-				}
-				return Stream.empty();
-			});
+		return StreamSupport.stream(spliterator(type), false);
 	}
 
 	/**
-	 * Return all plugins while expanding any {@link PluginProvider} that match
-	 * the given type
+	 * Returns a spliterator of plugins of the specified type ordered by the
+	 * processor hierarchy.
+	 * <p>
+	 * The supplied plugins may have duplicates if the same plugin is added into
+	 * different processors in the hierarchy.
 	 */
+	protected <T> Spliterator<T> spliterator(Class<T> type) {
+		return new PluginsSpliterator<>(type);
+	}
 
+	/**
+	 * A spliterator of plugins of the specified type ordered by the processor
+	 * hierarchy.
+	 * <p>
+	 * The supplied plugins may have duplicates if the same plugin is added into
+	 * different processors in the hierarchy.
+	 * <p>
+	 * We supply the parent's plugins after this container's plugins so that
+	 * there is a hierarchical ordering where this container's plugins come
+	 * before the parent's plugins. Then {@link #getPlugin(Class)} will select a
+	 * matching plugin from this container, if it exists, versus one from the
+	 * parent.
+	 */
+	class PluginsSpliterator<T> extends AbstractSpliterator<T> implements Consumer<Object> {
+		private final Class<T>				type;
+		private final Spliterator<Object>	self;
+		private Spliterator<T>				provider;
+		private Spliterator<T>				parent;
+		private Object						plugin;
+
+		PluginsSpliterator(Class<T> type) {
+			super(Long.MAX_VALUE, Spliterator.IMMUTABLE | Spliterator.ORDERED);
+			this.type = type;
+			this.self = plugins().spliterator();
+			this.provider = Spliterators.emptySpliterator();
+		}
+
+		/**
+		 * Defer creating the parent spliterator since we may not need it if the
+		 * stream operation short circuits such as findFirst.
+		 */
+		private Spliterator<T> parent() {
+			Spliterator<T> spliterator = this.parent;
+			if (spliterator != null) {
+				return spliterator;
+			}
+			Processor parent = processor.getParent();
+			return this.parent = (parent != null) ? parent.getPlugins()
+				.spliterator(type) : Spliterators.emptySpliterator();
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super T> action) {
+			if (provider.tryAdvance(action)) {
+				return true;
+			}
+			while (self.tryAdvance(this)) {
+				boolean instance = type.isInstance(plugin);
+				if (plugin instanceof PluginProvider) {
+					provider = ((PluginProvider) plugin).provide(type)
+						.spliterator();
+					if (!instance && provider.tryAdvance(action)) {
+						return true;
+					}
+				}
+				if (instance) {
+					@SuppressWarnings("unchecked")
+					T p = (T) plugin;
+					action.accept(p);
+					return true;
+				}
+			}
+			return parent().tryAdvance(action);
+		}
+
+		@Override
+		public void forEachRemaining(Consumer<? super T> action) {
+			provider.forEachRemaining(action);
+			while (self.tryAdvance(this)) {
+				if (type.isInstance(plugin)) {
+					@SuppressWarnings("unchecked")
+					T p = (T) plugin;
+					action.accept(p);
+				}
+				if (plugin instanceof PluginProvider) {
+					((PluginProvider) plugin).provide(type)
+						.forEachOrdered(action);
+				}
+			}
+			parent().forEachRemaining(action);
+		}
+
+		@Override
+		public void accept(Object plugin) {
+			this.plugin = plugin;
+		}
+	}
+
+	/**
+	 * Return the first plugin of the specified type.
+	 * <p>
+	 * This may invoke any {@link PluginProvider}s that match the specified
+	 * type.
+	 */
 	@Override
 	public <T> T getPlugin(Class<T> type) {
 		Optional<T> first = stream(type).findFirst();
@@ -255,8 +326,10 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	}
 
 	/**
-	 * Return all plugins while expanding any {@link PluginProvider} that match
-	 * the given type
+	 * Return all plugins of the specified type. Duplicates are removed.
+	 * <p>
+	 * This will invoke any {@link PluginProvider}s that match the specified
+	 * type.
 	 */
 	@Override
 	public <T> List<T> getPlugins(Class<T> type) {
@@ -282,12 +355,12 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 
 	@Override
 	public Iterator<Object> iterator() {
-		return plugins().iterator();
+		return stream().iterator();
 	}
 
 	@Override
 	public Spliterator<Object> spliterator() {
-		return plugins().spliterator();
+		return stream().spliterator();
 	}
 
 	@Override
