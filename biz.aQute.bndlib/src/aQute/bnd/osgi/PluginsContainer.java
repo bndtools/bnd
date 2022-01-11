@@ -221,6 +221,10 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		return plugins;
 	}
 
+	/**
+	 * Aggregates the stream but may have duplicate plugins if the same plugin
+	 * is added into different processors in the hierarchy.
+	 */
 	protected <T> Stream<T> stream(Class<T> type) {
 		return plugins().stream()
 			.flatMap(plugin -> {
@@ -236,8 +240,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 					return ((PluginProvider) plugin).provide(type);
 				}
 				return Stream.empty();
-			})
-			.distinct();
+			});
 	}
 
 	/**
@@ -247,7 +250,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 
 	@Override
 	public <T> T getPlugin(Class<T> type) {
-		Optional<T> first = stream(type).findFirst();
+		Optional<T> first = stream(type).distinct()
+			.findFirst();
 		return first.orElse(null);
 	}
 
@@ -257,7 +261,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	 */
 	@Override
 	public <T> List<T> getPlugins(Class<T> type) {
-		List<T> list = stream(type).collect(toList());
+		List<T> list = stream(type).distinct()
+			.collect(toList());
 		return list;
 	}
 
@@ -288,7 +293,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 
 	@Override
 	public Stream<Object> stream() {
-		return stream(Object.class);
+		return stream(Object.class).distinct();
 	}
 
 	@Override
@@ -410,7 +415,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 				 * connection so they can sign it or decorate it with a password
 				 * etc.
 				 */
-				stream(URLConnectionHandler.class).forEach(c::addURLConnectionHandler);
+				getPlugins(URLConnectionHandler.class).forEach(c::addURLConnectionHandler);
 				return c;
 			}));
 		Parameters pluginPathParameters = new Parameters(pluginPath, processor);
