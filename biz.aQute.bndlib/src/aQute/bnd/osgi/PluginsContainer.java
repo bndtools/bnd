@@ -250,8 +250,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 
 	@Override
 	public <T> T getPlugin(Class<T> type) {
-		Optional<T> first = stream(type).distinct()
-			.findFirst();
+		Optional<T> first = stream(type).findFirst();
 		return first.orElse(null);
 	}
 
