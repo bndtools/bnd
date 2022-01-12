@@ -189,8 +189,8 @@ It is possible to only check for correct package versions and leave out the bund
 |`failOnMissing`        | See [Fail on missing baseline](#fail-on-missing-baseline). _Defaults to `true`._ Override with property `bnd.baseline.fail.on.missing`.|
 |`includeDistributionManagement`| See [Include Distribution Management](#include-distribution-management). _Defaults to `true`._ Override with property `bnd.baseline.include.distribution.management`.|
 |`fullReport`           | See [Full Reporting](#full-reporting). _Defaults to `false`._ Override with property `bnd.baseline.full.report`.|
-|`diffpackages`         | See [Diffpackages](#diffpackages). _Defaults to `*`._|
-|`diffignores`          | See [Diffignores](#diffignores). _Optional._|
+|`diffpackages`         | See [Diffpackages](#diffpackages). _Defaults to `*`._ Override with property `bnd.baseline.diffpackages`.|
+|`diffignores`          | See [Diffignores](#diffignores). _Optional._ Override with property `bnd.baseline.diffignores`.|
 |`continueOnError`      | See [Continue on Error](#continue-on-error). _Defaults to `false`._ Override with property `bnd.baseline.continue.on.error`.|
 |`skip`                 | Skip the baseline process altogether. _Defaults to `false`._ Override with property `bnd.baseline.skip`.|
 |`releaseversions`                 | When searching a version range for the baseline, only consider release versions. That is, don't consider `alpha`, `beta`, `milestone`, or `rc` versions. `snapshot` versions are never considered when searching for the baseline. _Defaults to `false`._ Override with property `bnd.baseline.releaseversions`.|
