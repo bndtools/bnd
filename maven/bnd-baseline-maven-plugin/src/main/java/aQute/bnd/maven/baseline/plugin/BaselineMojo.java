@@ -74,10 +74,10 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter
 	private Base					base;
 
-	@Parameter(required = false)
+	@Parameter(required = false, property = "bnd.baseline.diffignores")
 	private List<String>			diffignores;
 
-	@Parameter(required = false, defaultValue = "*")
+	@Parameter(required = false, defaultValue = "*", property = "bnd.baseline.diffpackages")
 	private List<String>			diffpackages;
 
 	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")
