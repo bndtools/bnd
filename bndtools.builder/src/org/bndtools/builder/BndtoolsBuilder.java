@@ -12,6 +12,7 @@ import java.util.concurrent.TimeoutException;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.builder.classpath.BndContainer;
 import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.eclipse.core.resources.IMarker;
@@ -25,6 +26,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
@@ -231,8 +233,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						force = true;
 					}
 
-					if (!force && delta.hasNoTarget(model)) {
-						buildLog.basic("project has no target files");
+					if (!force && delta.hasOutOfDateTarget(model, lastModifiedClasspathContainer(myProject))) {
+						buildLog.basic("project has no or out-of-date target files");
 						force = true;
 					}
 
@@ -378,6 +380,18 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	private boolean requestClasspathContainerUpdate(IProject myProject) throws CoreException {
 		IJavaProject javaProject = JavaCore.create(myProject);
 		return (javaProject == null) ? false : BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
+	}
+
+	private long lastModifiedClasspathContainer(IProject myProject) {
+		IJavaProject javaProject = JavaCore.create(myProject);
+		if (javaProject != null) {
+			IClasspathContainer container = BndContainerInitializer.getClasspathContainer(javaProject);
+			if (container instanceof BndContainer) {
+				BndContainer bndContainer = (BndContainer) container;
+				return bndContainer.lastModified();
+			}
+		}
+		return 0L;
 	}
 
 	private void deleteBuildFiles(Project model) throws Exception {

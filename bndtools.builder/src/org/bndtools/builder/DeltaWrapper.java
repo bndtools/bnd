@@ -222,10 +222,10 @@ class DeltaWrapper {
 	}
 
 	/**
-	 * Check if the target JARs have gone. We look for the buildfiles and the
-	 * listed jars. If anything is odd, we rebuild.
+	 * Check if the target JARs have gone or out-of-date. We look for the
+	 * buildfiles and the listed jars. If anything is odd, we rebuild.
 	 */
-	public boolean hasNoTarget(Project model) throws Exception {
+	public boolean hasOutOfDateTarget(Project model, long lastModified) throws Exception {
 
 		//
 		// $/buildfiles must exists
@@ -236,7 +236,7 @@ class DeltaWrapper {
 			return true;
 
 		File file = IO.getFile(model.getTarget(), Constants.BUILDFILES);
-		if (!file.isFile())
+		if (!file.isFile() || (file.lastModified() < lastModified))
 			return true;
 
 		//
@@ -257,7 +257,7 @@ class DeltaWrapper {
 					continue;
 
 				File f = IO.getFile(model.getTarget(), line);
-				if (!f.isFile())
+				if (!f.isFile() || (f.lastModified() < lastModified))
 					return true;
 			}
 
