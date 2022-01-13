@@ -134,6 +134,7 @@ public class Workspace extends Processor {
 		final CloseableMemoize<WorkspaceClassIndex>				classIndex;
 		final CloseableMemoize<WorkspaceExternalPluginHandler>	externalPlugins;
 		final CloseableMemoize<LibraryHandler>					libraryHandler;
+		final Memoize<Parameters>								gestalt;
 
 		WorkspaceData() {
 			repositories = Memoize.supplier(Workspace.this::initRepositories);
@@ -141,6 +142,11 @@ public class Workspace extends Processor {
 			classIndex = CloseableMemoize.closeableSupplier(() -> new WorkspaceClassIndex(Workspace.this));
 			externalPlugins = CloseableMemoize
 				.closeableSupplier(() -> new WorkspaceExternalPluginHandler(Workspace.this));
+			gestalt = Memoize.supplier(() -> {
+				Parameters gestalt = getMergedParameters(Constants.GESTALT);
+				gestalt.mergeWith(overallGestalt, false);
+				return gestalt;
+			});
 			RemoteWorkspaceServer s = null;
 			if (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE))) {
 				try {
@@ -191,7 +197,6 @@ public class Workspace extends Processor {
 	 */
 	final ThreadLocal<Reporter>									signalBusy			= new ThreadLocal<>();
 	ResourceRepositoryImpl										resourceRepositoryImpl;
-	private Parameters											gestalt;
 	private String												driver;
 	private final WorkspaceLayout								layout;
 	final Set<Project>											trail				= Collections
@@ -457,7 +462,6 @@ public class Workspace extends Processor {
 		try {
 			return writeLocked(() -> {
 				refreshData();
-				gestalt = null;
 				if (super.refresh()) {
 					for (Project project : getAllProjects()) {
 						project.propertiesChanged();
@@ -490,7 +494,6 @@ public class Workspace extends Processor {
 		try {
 			writeLocked(() -> {
 				refreshData();
-				gestalt = null;
 				File extDir = new File(getBuildDir(), EXT);
 				for (File extension : IO.listFiles(extDir, (dir, name) -> name.endsWith(".bnd"))) {
 					String extensionName = extension.getName();
@@ -1142,18 +1145,15 @@ public class Workspace extends Processor {
 	 * method adds a gestalt to the VM. Per workspace it is possible to augment
 	 * this.
 	 */
-
 	public static void addGestalt(String part, Attrs attrs) {
-		Attrs already = overallGestalt.get(part);
-		if (attrs == null)
-			attrs = new Attrs();
-
-		if (already != null) {
-			already.putAll(attrs);
-		} else
-			already = attrs;
-
-		overallGestalt.put(part, already);
+		overallGestalt.compute(part, (k, already) -> {
+			if (already == null) {
+				already = (attrs != null) ? attrs : new Attrs();
+			} else if (attrs != null) {
+				already.putAll(attrs);
+			}
+			return already;
+		});
 	}
 
 	/**
@@ -1164,14 +1164,10 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Get the attrs for a gestalt part
+	 * Get the complete gestalt
 	 */
 	public Parameters getGestalt() {
-		if (gestalt == null) {
-			gestalt = getMergedParameters(Constants.GESTALT);
-			gestalt.mergeWith(overallGestalt, false);
-		}
-		return gestalt;
+		return data.gestalt.get();
 	}
 
 	/**
