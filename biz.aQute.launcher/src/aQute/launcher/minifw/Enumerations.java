@@ -24,6 +24,14 @@ public class Enumerations<E> implements Enumeration<E> {
 	public static <E> Stream<E> stream(Enumeration<? extends E> enumeration) {
 		return StreamSupport.stream(new AbstractSpliterator<E>(Long.MAX_VALUE, Spliterator.ORDERED) {
 			@Override
+			public void forEachRemaining(Consumer<? super E> action) {
+				requireNonNull(action);
+				while (enumeration.hasMoreElements()) {
+					action.accept(enumeration.nextElement());
+				}
+			}
+
+			@Override
 			public boolean tryAdvance(Consumer<? super E> action) {
 				requireNonNull(action);
 				if (enumeration.hasMoreElements()) {

@@ -164,57 +164,94 @@ public class QuotedTokenizer implements Iterable<String> {
 	}
 
 	private static Stream<String> stream(QuotedTokenizer qt) {
-		return StreamSupport.stream(spliterator(qt), false);
+		return StreamSupport.stream(new TokenSpliterator(qt), false);
 	}
 
 	@Override
 	public Spliterator<String> spliterator() {
-		return spliterator(copy());
+		return new TokenSpliterator(copy());
 	}
 
-	private static Spliterator<String> spliterator(QuotedTokenizer qt) {
-		return new AbstractSpliterator<String>(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL) {
-			@Override
-			public boolean tryAdvance(Consumer<? super String> action) {
-				requireNonNull(action);
-				String next = qt.nextToken();
-				if (next != null) {
-					action.accept(next);
-					return true;
-				}
-				return false;
+	static final class TokenSpliterator extends AbstractSpliterator<String> {
+		private final QuotedTokenizer qt;
+
+		TokenSpliterator(QuotedTokenizer qt) {
+			super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL);
+			this.qt = qt;
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super String> action) {
+			requireNonNull(action);
+			String next = qt.nextToken();
+			if (next != null) {
+				action.accept(next);
+				return true;
 			}
-		};
+			return false;
+		}
+
+		@Override
+		public void forEachRemaining(Consumer<? super String> action) {
+			requireNonNull(action);
+			for (String next; (next = qt.nextToken()) != null;) {
+				action.accept(next);
+			}
+		}
 	}
 
 	@Override
 	public Iterator<String> iterator() {
-		return iterator(copy());
+		return new TokenIterator(copy());
 	}
 
-	private static Iterator<String> iterator(QuotedTokenizer qt) {
-		return new Iterator<String>() {
-			private boolean	hasNext	= false;
-			private String	next;
+	static final class TokenIterator implements Iterator<String> {
+		private final QuotedTokenizer	qt;
+		private boolean					hasNext	= false;
+		private String					next;
 
-			@Override
-			public boolean hasNext() {
-				if (hasNext) {
-					return true;
-				}
-				next = qt.nextToken();
-				return hasNext = (next != null);
-			}
+		TokenIterator(QuotedTokenizer qt) {
+			this.qt = qt;
+		}
 
-			@Override
-			public String next() {
-				if (hasNext()) {
-					hasNext = false;
-					return next;
-				}
-				throw new NoSuchElementException();
+		@Override
+		public boolean hasNext() {
+			if (hasNext) {
+				return true;
 			}
-		};
+			next = qt.nextToken();
+			return hasNext = (next != null);
+		}
+
+		@Override
+		public String next() {
+			if (hasNext()) {
+				hasNext = false;
+				return next;
+			}
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public void forEachRemaining(Consumer<? super String> action) {
+			requireNonNull(action);
+			if (hasNext) {
+				action.accept(next);
+				hasNext = false;
+			}
+			for (String next; (next = qt.nextToken()) != null;) {
+				action.accept(next);
+			}
+		}
+	}
+
+	@Override
+	public void forEach(Consumer<? super String> action) {
+		requireNonNull(action);
+		QuotedTokenizer qt = copy();
+		for (String next; (next = qt.nextToken()) != null;) {
+			action.accept(next);
+		}
 	}
 
 	/**

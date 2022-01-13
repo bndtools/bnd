@@ -142,7 +142,7 @@ public class FileTree {
 
 	// Spliterator which performs a depth-first walk.
 	// Sorts entries within a directory using IO.fileCollator.
-	static class FileTreeSpliterator extends AbstractSpliterator<File> {
+	final static class FileTreeSpliterator extends AbstractSpliterator<File> {
 		private final Path				basePath;
 		private final Predicate<String>	matches;
 		private final List<File>		files;
@@ -151,7 +151,8 @@ public class FileTree {
 		private final Deque<File>		queue			= new ArrayDeque<>();
 
 		FileTreeSpliterator(File baseDir, Predicate<String> matches, List<File> files) {
-			super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.DISTINCT);
+			super(Long.MAX_VALUE,
+				Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.DISTINCT | Spliterator.NONNULL);
 			basePath = baseDir.toPath();
 			this.matches = matches;
 			List<File> copy = new ArrayList<>(files); // mutable copy

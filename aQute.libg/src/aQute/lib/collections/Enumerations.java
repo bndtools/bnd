@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -13,12 +14,13 @@ public class Enumerations {
 
 	private Enumerations() {}
 
-	private static class EnumerationSpliterator<T, R> implements Enumeration<R> {
+	final static class EnumerationSpliterator<T, R> implements Enumeration<R>, Consumer<T> {
 		private final Spliterator<? extends T>			spliterator;
 		private final Function<? super T, ? extends R>	mapper;
 		private final Predicate<? super R>				filter;
 		private boolean									hasNext	= false;
 		private R										next;
+		private T										t;
 
 		EnumerationSpliterator(Spliterator<? extends T> spliterator, Function<? super T, ? extends R> mapper,
 			Predicate<? super R> filter) {
@@ -29,27 +31,32 @@ public class Enumerations {
 
 		@Override
 		public boolean hasMoreElements() {
-			do {
-				if (hasNext) {
-					return true;
-				}
-			} while (spliterator.tryAdvance((T t) -> {
+			if (hasNext) {
+				return true;
+			}
+			while (spliterator.tryAdvance(this)) {
 				R r = mapper.apply(t);
 				if (filter.test(r)) {
 					next = r;
-					hasNext = true;
+					return hasNext = true;
 				}
-			}));
+			}
 			return false;
 		}
 
 		@Override
 		public R nextElement() {
 			if (hasMoreElements()) {
+				R r = next;
 				hasNext = false;
-				return next;
+				return r;
 			}
 			throw new NoSuchElementException();
+		}
+
+		@Override
+		public void accept(T t) {
+			this.t = t;
 		}
 	}
 

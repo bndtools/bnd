@@ -1622,17 +1622,22 @@ public class Clazz {
 	}
 
 	private Stream<Clazz> hierarchyStream(Analyzer analyzer) {
-		requireNonNull(analyzer);
-		Spliterator<Clazz> spliterator = new AbstractSpliterator<Clazz>(Long.MAX_VALUE,
-			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
-			private Clazz clazz = Clazz.this;
+		return StreamSupport.stream(new HierarchySpliterator(analyzer), false);
+	}
 
-			@Override
-			public boolean tryAdvance(Consumer<? super Clazz> action) {
-				requireNonNull(action);
-				if (clazz == null) {
-					return false;
-				}
+	final class HierarchySpliterator extends AbstractSpliterator<Clazz> {
+		private final Analyzer	analyzer;
+		private Clazz			clazz	= Clazz.this;
+
+		HierarchySpliterator(Analyzer analyzer) {
+			super(Long.MAX_VALUE, Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL);
+			this.analyzer = requireNonNull(analyzer);
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super Clazz> action) {
+			requireNonNull(action);
+			if (clazz != null) {
 				action.accept(clazz);
 				TypeRef type = clazz.superClass;
 				if (type == null) {
@@ -1650,29 +1655,61 @@ public class Clazz {
 				}
 				return true;
 			}
-		};
-		return StreamSupport.stream(spliterator, false);
+			return false;
+		}
+
+		@Override
+		public void forEachRemaining(Consumer<? super Clazz> action) {
+			requireNonNull(action);
+			while (clazz != null) {
+				action.accept(clazz);
+				TypeRef type = clazz.superClass;
+				if (type == null) {
+					clazz = null;
+				} else {
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					}
+				}
+			}
+		}
 	}
 
 	private Stream<TypeRef> typeStream(Analyzer analyzer, Function<? super Clazz, Collection<? extends TypeRef>> func,
 		Set<TypeRef> visited) {
-		requireNonNull(analyzer);
-		requireNonNull(func);
-		Spliterator<TypeRef> spliterator = new AbstractSpliterator<TypeRef>(Long.MAX_VALUE,
-			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
-			private final Deque<TypeRef>	queue	= new ArrayDeque<>(func.apply(Clazz.this));
-			private final Set<TypeRef>		seen	= (visited != null) ? visited : new HashSet<>();
+		return StreamSupport.stream(new TypeSpliterator(analyzer, func, visited), false);
+	}
 
-			@Override
-			public boolean tryAdvance(Consumer<? super TypeRef> action) {
-				requireNonNull(action);
-				TypeRef type;
-				do {
-					type = queue.poll();
-					if (type == null) {
-						return false;
-					}
-				} while (seen.contains(type));
+	final class TypeSpliterator extends AbstractSpliterator<TypeRef> {
+		private final Analyzer													analyzer;
+		private final Function<? super Clazz, Collection<? extends TypeRef>>	func;
+		private final Set<TypeRef>												visited;
+		private final Deque<TypeRef>											queue;
+		private final Set<TypeRef>												seen;
+
+		TypeSpliterator(Analyzer analyzer, Function<? super Clazz, Collection<? extends TypeRef>> func,
+			Set<TypeRef> visited) {
+			super(Long.MAX_VALUE, Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL);
+			this.analyzer = requireNonNull(analyzer);
+			this.func = requireNonNull(func);
+			this.visited = visited;
+			queue = new ArrayDeque<>(func.apply(Clazz.this));
+			seen = (visited != null) ? visited : new HashSet<>();
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super TypeRef> action) {
+			requireNonNull(action);
+			for (TypeRef type; (type = queue.pollFirst()) != null;) {
+				if (seen.contains(type)) {
+					continue;
+				}
 				seen.add(type);
 				action.accept(type);
 				if (visited != null) {
@@ -1691,8 +1728,34 @@ public class Clazz {
 				}
 				return true;
 			}
-		};
-		return StreamSupport.stream(spliterator, false);
+			return false;
+		}
+
+		@Override
+		public void forEachRemaining(Consumer<? super TypeRef> action) {
+			requireNonNull(action);
+			for (TypeRef type; (type = queue.pollFirst()) != null;) {
+				if (seen.contains(type)) {
+					continue;
+				}
+				seen.add(type);
+				action.accept(type);
+				if (visited != null) {
+					Clazz clazz;
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					} else {
+						queue.addAll(func.apply(clazz));
+					}
+				}
+			}
+		}
 	}
 
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
