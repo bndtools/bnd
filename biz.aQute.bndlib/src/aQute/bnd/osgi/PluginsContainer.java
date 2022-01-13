@@ -3,6 +3,7 @@ package aQute.bnd.osgi;
 import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -85,7 +86,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		<X> Stream<X> provide(Class<X> type);
 	}
 
-	class AbstractPlugin<T> implements PluginProvider, AutoCloseable {
+	final class AbstractPlugin<T> implements PluginProvider, AutoCloseable {
 		private final Class<T>			serviceClass;
 		private final Memoize<List<T>>	externals;
 		private final Attrs				attrs;
@@ -238,7 +239,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	 * matching plugin from this container, if it exists, versus one from the
 	 * parent.
 	 */
-	class PluginsSpliterator<T> extends AbstractSpliterator<T> implements Consumer<Object> {
+	final class PluginsSpliterator<T> extends AbstractSpliterator<T> implements Consumer<Object> {
 		private final Class<T>				type;
 		private final Spliterator<Object>	self;
 		private Spliterator<T>				provider;
@@ -246,8 +247,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		private Object						plugin;
 
 		PluginsSpliterator(Class<T> type) {
-			super(Long.MAX_VALUE, Spliterator.IMMUTABLE | Spliterator.ORDERED);
-			this.type = type;
+			super(Long.MAX_VALUE, Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL);
+			this.type = requireNonNull(type);
 			this.self = plugins().spliterator();
 			this.provider = Spliterators.emptySpliterator();
 		}

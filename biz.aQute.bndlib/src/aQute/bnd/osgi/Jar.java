@@ -160,37 +160,70 @@ public class Jar implements Closeable {
 			Jar jar = ((JarResource) jarResource).getJar();
 			return jar.getResources(filter);
 		}
-		ZipInputStream jin = new ZipInputStream(jarResource.openInputStream());
-		Spliterator<Resource> spliterator = new AbstractSpliterator<Resource>(Long.MAX_VALUE,
-			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
-			ByteBufferOutputStream bbos = new ByteBufferOutputStream(BUFFER_SIZE);
-
-			@Override
-			public boolean tryAdvance(Consumer<? super Resource> action) {
-				requireNonNull(action);
-				try {
-					for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
-						if (entry.isDirectory()) {
-							continue;
-						}
-						String path = ZipUtil.cleanPath(entry.getName());
-						if (filter.test(path)) {
-							bbos.clear()
-								.write(jin);
-							Resource resource = new EmbeddedResource(bbos.toByteBuffer(),
-								ZipUtil.getModifiedTime(entry));
-							action.accept(resource);
-							return true;
-						}
-					}
-					return false;
-				} catch (IOException e) {
-					return false;
-				}
-			}
-		};
+		ZipResourceSpliterator spliterator = new ZipResourceSpliterator(jarResource, filter);
 		return StreamSupport.stream(spliterator, false)
-			.onClose(() -> IO.close(jin));
+			.onClose(spliterator);
+	}
+
+	static final class ZipResourceSpliterator extends AbstractSpliterator<Resource> implements Runnable {
+		private final ZipInputStream			jin;
+		private final Predicate<String>			filter;
+		private final ByteBufferOutputStream	bbos	= new ByteBufferOutputStream(BUFFER_SIZE);
+
+		ZipResourceSpliterator(Resource resource, Predicate<String> filter) throws Exception {
+			super(Long.MAX_VALUE, Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL);
+			this.jin = new ZipInputStream(resource.openInputStream());
+			this.filter = requireNonNull(filter);
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super Resource> action) {
+			requireNonNull(action);
+			try {
+				for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+					if (entry.isDirectory()) {
+						continue;
+					}
+					String path = ZipUtil.cleanPath(entry.getName());
+					if (filter.test(path)) {
+						bbos.clear()
+							.write(jin);
+						Resource resource = new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry));
+						action.accept(resource);
+						return true;
+					}
+				}
+				return false;
+			} catch (IOException e) {
+				return false;
+			}
+		}
+
+		@Override
+		public void forEachRemaining(Consumer<? super Resource> action) {
+			requireNonNull(action);
+			try {
+				for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+					if (entry.isDirectory()) {
+						continue;
+					}
+					String path = ZipUtil.cleanPath(entry.getName());
+					if (filter.test(path)) {
+						bbos.clear()
+							.write(jin);
+						Resource resource = new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry));
+						action.accept(resource);
+					}
+				}
+			} catch (IOException e) {
+				return;
+			}
+		}
+
+		@Override
+		public void run() {
+			IO.close(jin);
+		}
 	}
 
 	public Jar(String name, String path) throws IOException {

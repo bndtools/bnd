@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -63,13 +66,30 @@ public class QuotedTokenizerTest {
 	}
 
 	@Test
-	public void testIteration() {
+	public void testIterable() {
 		Iterable<String> iterable = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",");
 		assertThat(iterable).hasSize(14)
 			.containsSequence("1.jar", "", "", "", "", "", "", "", "", "", "", "", "", "2.jar");
 		iterable = new QuotedTokenizer(
 			"org.apache.servicemix.bundles.junit;version=\"[4.11,5)\",org.assertj.core;version=\"[3,4)\"", ",");
 		assertThat(iterable).hasSize(2)
+			.containsSequence("org.apache.servicemix.bundles.junit;version=\"[4.11,5)\"",
+				"org.assertj.core;version=\"[3,4)\"");
+	}
+
+	@Test
+	public void testIterator() {
+		Iterator<String> iterator = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",").iterator();
+		assertThat(iterator).hasNext()
+			.toIterable()
+			.hasSize(14)
+			.containsSequence("1.jar", "", "", "", "", "", "", "", "", "", "", "", "", "2.jar");
+		iterator = new QuotedTokenizer(
+			"org.apache.servicemix.bundles.junit;version=\"[4.11,5)\",org.assertj.core;version=\"[3,4)\"", ",")
+				.iterator();
+		assertThat(iterator).hasNext()
+			.toIterable()
+			.hasSize(2)
 			.containsSequence("org.apache.servicemix.bundles.junit;version=\"[4.11,5)\"",
 				"org.assertj.core;version=\"[3,4)\"");
 	}
@@ -83,6 +103,22 @@ public class QuotedTokenizerTest {
 			"org.apache.servicemix.bundles.junit;version=\"[4.11,5)\",org.assertj.core;version=\"[3,4)\"", ",")
 				.stream();
 		assertThat(stream).hasSize(2)
+			.containsSequence("org.apache.servicemix.bundles.junit;version=\"[4.11,5)\"",
+				"org.assertj.core;version=\"[3,4)\"");
+	}
+
+	@Test
+	public void testForEach() {
+		QuotedTokenizer qt = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",");
+		List<String> tokens = new ArrayList<>();
+		qt.forEach(tokens::add);
+		assertThat(tokens).hasSize(14)
+			.containsSequence("1.jar", "", "", "", "", "", "", "", "", "", "", "", "", "2.jar");
+		qt = new QuotedTokenizer(
+			"org.apache.servicemix.bundles.junit;version=\"[4.11,5)\",org.assertj.core;version=\"[3,4)\"", ",");
+		tokens = new ArrayList<>();
+		qt.forEach(tokens::add);
+		assertThat(tokens).hasSize(2)
 			.containsSequence("org.apache.servicemix.bundles.junit;version=\"[4.11,5)\"",
 				"org.assertj.core;version=\"[3,4)\"");
 	}
