@@ -19,6 +19,20 @@ public final class DropWhile<T> extends AbstractWhile<T> {
 	}
 
 	@Override
+	public void forEachRemaining(Consumer<? super T> action) {
+		if (drop) {
+			drop = false;
+			while (spliterator.tryAdvance(this)) {
+				if (!predicate.test(item)) {
+					action.accept(item);
+					break;
+				}
+			}
+		}
+		spliterator.forEachRemaining(action);
+	}
+
+	@Override
 	public boolean tryAdvance(Consumer<? super T> action) {
 		if (drop) {
 			drop = false;
