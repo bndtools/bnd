@@ -11,6 +11,8 @@ Bundle-Description: Class file and Manifest header Transformation Support
 	aQute.bnd.classfile.*,\
 	aQute.bnd.signatures.*,\
 	aQute.bnd.header.*,\
+	aQute.bnd.memoize.*,\
+	aQute.bnd.stream.*,\
 	aQute.lib.utf8properties.*;-split-package:=first,\
 	aQute.libg.uri.*;-split-package:=first
 

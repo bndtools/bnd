@@ -19,6 +19,16 @@ public final class TakeWhile<T> extends AbstractWhile<T> {
 	}
 
 	@Override
+	public void forEachRemaining(Consumer<? super T> action) {
+		if (take) {
+			while (spliterator.tryAdvance(this) && predicate.test(item)) {
+				action.accept(item);
+			}
+			take = false;
+		}
+	}
+
+	@Override
 	public boolean tryAdvance(Consumer<? super T> action) {
 		if (take) {
 			if (spliterator.tryAdvance(this) && predicate.test(item)) {
