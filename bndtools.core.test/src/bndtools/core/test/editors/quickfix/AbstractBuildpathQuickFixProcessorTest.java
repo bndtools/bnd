@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,11 +64,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.deployer.repository.LocalIndexedRepo;
 import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
@@ -188,40 +184,14 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	}
 
 	static void clearBuildpath() {
-		log("clearing buildpath");
-		try {
-			BndEditModel model = new BndEditModel(bndProject);
-			model.load();
-			List<VersionedClause> buildPath = model.getBuildPath();
-			if (buildPath != null && !buildPath.isEmpty()) {
-				model.setBuildPath(Collections.emptyList());
-				model.saveChanges();
-				Central.refresh(bndProject);
-				TaskUtils.requestClasspathUpdate("clearBuildpath()");
-				TaskUtils.waitForBuild("clearBuildpath()");
-			} else {
-				log("buildpath was not set; not trying to clear it");
-			}
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
+		if (TaskUtils.clearBuildpath(bndProject)) {
+			TaskUtils.waitForBuild("clearBuildPath()");
 		}
 	}
 
 	static void addBundlesToBuildpath(String... bundleNames) {
-		try {
-			BndEditModel model = new BndEditModel(bndProject);
-			model.load();
-
-			for (String bundleName : bundleNames) {
-				model.addPath(new VersionedClause(bundleName, null), Constants.BUILDPATH);
-			}
-			model.saveChanges();
-			Central.refresh(bndProject);
-			TaskUtils.requestClasspathUpdate("addBundleToBuildpath()");
-			TaskUtils.waitForBuild("addBundleToBuildpath()");
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
+		TaskUtils.addBundlesToBuildpath(bndProject, bundleNames);
+		TaskUtils.waitForBuild("addBundlesToBuildpath()");
 	}
 
 	// void dumpProblems(Stream<? extends IProblem> problems) {

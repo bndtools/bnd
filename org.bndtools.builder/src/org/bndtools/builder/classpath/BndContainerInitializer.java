@@ -1,5 +1,7 @@
 package org.bndtools.builder.classpath;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

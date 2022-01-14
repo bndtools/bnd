@@ -15,11 +15,12 @@ Import-Package: \
     org.bndtools.utils.*
 
 -buildpath: \
-	osgi.core;version=latest;maven-scope=provided,\
-	org.osgi.namespace.service;version=latest;maven-scope=provided,\
-	org.osgi.service.component.annotations;maven-scope=provided,\
-	org.osgi.util.function;version=latest,\
-	org.osgi.util.promise;version=latest,\
+	osgi.core,\
+	osgi.annotation,\
+	org.osgi.namespace.service,\
+	org.osgi.service.component.annotations,\
+	org.osgi.util.function,\
+	org.osgi.util.promise,\
 	aQute.libg;version=project,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\

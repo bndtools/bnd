@@ -42,6 +42,7 @@
 	aQute.libg.*;-split-package:=merge-first
 
 -buildpath: \
+	${junit-osgi},\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
@@ -49,17 +50,8 @@
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
 	bndtools.core.services;version=snapshot,\
-	assertj-core,\
-	net.bytebuddy.byte-buddy,\
 	javax.inject,\
-	org.apiguardian:apiguardian-api,\
-	org.opentest4j,\
-	org.apache.servicemix.bundles.junit,\
-	junit-platform-commons,\
-	junit-platform-engine,\
-	junit-jupiter-api,\
-	junit-jupiter-engine,\
-	junit-jupiter-params,\
+	org.bndtools.builder,\
 	org.eclipse.core.jobs,\
 	org.eclipse.core.resources,\
 	org.eclipse.core.runtime,\
@@ -81,14 +73,12 @@
 	org.eclipse.e4.ui.model.workbench,\
 	org.eclipse.e4.ui.workbench,\
 	org.eclipse.e4.ui.workbench.swt,\
+	org.eclipse.jdt.core.manipulation,\
 	org.osgi.service.component.annotations;version='1.3.0',\
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.event,\
 	org.osgi.service.repository;version=latest,\
-	osgi.annotation,\
-	org.eclipse.jdt.core.manipulation,\
-	org.osgi.test.common,\
-	org.osgi.test.junit5
+	osgi.annotation
 
 # Don't run testOSGi in parallel with other tasks claiming launchpad
 -noparallel: launchpad;task="testOSGi"

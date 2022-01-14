@@ -45,6 +45,8 @@ junit-osgi: \
 	org.osgi.service.resolver;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
+	org.osgi.test.assertj.framework;version=latest,\
+	org.osgi.test.assertj.promise;version=latest,\
 	org.osgi.test.common;version=latest,\
 	org.osgi.test.junit5;version=latest
 

@@ -1,6 +1,6 @@
 Test-Cases: ${classes;CONCRETE;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable} 
 
--privatepackage: !bndtools.core.test.launch,bndtools.core.test*
+-privatepackage: !bndtools.core.test.launch,bndtools.core.test*,org.bndtools.test.*
 Bundle-Activator: bndtools.core.test.Activator
 Bundle-ActivationPolicy: lazy
 
@@ -9,4 +9,4 @@ Import-Package: org.eclipse.ui.dialogs;bundle-symbolic-name="org.eclipse.ui.work
 
 # This is a hack to make the test bundle restart whenever the services bundle restarts
 # so that the tests will re-run automatically
-Require-Bundle: bndtools.core.services
+Require-Bundle: bndtools.core.services,org.bndtools.builder

@@ -101,6 +101,8 @@ net.bytebuddy:byte-buddy-agent:${bytebuddy.version}
 org.objenesis:objenesis:${objenesis.version}
 org.xmlunit:xmlunit-core:2.6.3
 org.xmlunit:xmlunit-assertj:2.6.3
+org.osgi:org.osgi.test.assertj.framework:${osgi-test.version}
+org.osgi:org.osgi.test.assertj.promise:${osgi-test.version}
 org.osgi:org.osgi.test.common:${osgi-test.version}
 org.osgi:org.osgi.test.junit5:${osgi-test.version}
 
