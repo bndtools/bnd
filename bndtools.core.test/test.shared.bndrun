@@ -85,17 +85,17 @@
 # The following directives are useful to have when you are debugging in the IDE
 # or at your console, but are too noisy in a CI environment.
 #
-#-runtrace: true
+-runtrace: true
 #
 # For debugging, uncomment this directive and comment out "-runpath.ci"
-#-runpath.debug: \
-#	ch.qos.logback.classic,\
-#	ch.qos.logback.core,\
-#	org.apache.felix.logback
+-runpath.debug: \
+	ch.qos.logback.classic,\
+	ch.qos.logback.core,\
+	org.apache.felix.logback
 #
 # For debugging, extra trace output by the tester.
-#-runproperties.debug: \
-#    tester.trace=true
+-runproperties.debug: \
+    tester.trace=true
 #-runrequires.debug: \
 #	bnd.identity;id='org.apache.felix.gogo.command',\
 #	bnd.identity;id='org.apache.felix.gogo.runtime',\
@@ -106,8 +106,8 @@
 # This directive should be uncommented when you are running in the CI environment
 # so that the test output is not too noisy. For debugging, comment this
 # directive and uncomment -runpath.debug
--runpath.ci: \
-	slf4j.nop
+#-runpath.ci: \
+#	slf4j.nop
 
 -runpath: \
 	slf4j.api
