@@ -7,6 +7,7 @@ import java.lang.reflect.Proxy;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -30,21 +31,27 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.memoize.Memoize;
 
 public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExtensionFactory, InvocationHandler {
 
-	static org.slf4j.Logger		consoleLog	= org.slf4j.LoggerFactory.getLogger(ExtensionFacade.class);
-	static ILogger				uiLog		= Logger.getLogger(ExtensionFacade.class);
+	static org.slf4j.Logger				consoleLog	= org.slf4j.LoggerFactory.getLogger(ExtensionFacade.class);
+	static ILogger						uiLog		= Logger.getLogger(ExtensionFacade.class);
+	// The memoize defers initialization until later, after class
+	// initialization, because sometimes (due to lazy bundle activation) the
+	// bundle context can come back null when call getBundleContext() during
+	// class initialization.
+	final static Memoize<BundleContext>	bc			= Memoize
+		.predicateSupplier(() -> Optional.ofNullable(FrameworkUtil.getBundle(ExtensionFacade.class))
+			.map(Bundle::getBundleContext)
+			.orElse(null), Objects::nonNull);
 
-	ServiceTracker<Object, T>	tracker;
-	String						id;
-	IConfigurationElement		config;
-	String						propertyName;
-	Class<T>					downstreamClass;
-	Object						data;
-	static final BundleContext	bc			= Optional.ofNullable(FrameworkUtil.getBundle(ExtensionFacade.class))
-		.map(Bundle::getBundleContext)
-		.orElse(null);
+	ServiceTracker<Object, T>			tracker;
+	String								id;
+	IConfigurationElement				config;
+	String								propertyName;
+	Class<T>							downstreamClass;
+	Object								data;
 
 	@Override
 	public Object create() throws CoreException {
@@ -126,7 +133,8 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 					String bp = ep.getContributor()
 						.getName();
 
-					Optional<Bundle> b = Stream.of(bc.getBundles())
+					Optional<Bundle> b = Stream.of(bc.get()
+						.getBundles())
 						.filter(x -> bp.equals(x.getSymbolicName()))
 						.findFirst();
 
@@ -201,12 +209,13 @@ public class ExtensionFacade<T> implements IExecutableExtension, IExecutableExte
 	}
 
 	private void initializeTracker(String id) {
-		consoleLog.debug("{} Initializing tracker", this);
+		consoleLog.debug("{} Initializing tracker {} for bundle context: {}", this, id, bc);
 		Filter filter = null;
 		try {
-			filter = bc.createFilter("(component.name=" + id + ")");
+			filter = bc.get()
+				.createFilter("(component.name=" + id + ")");
 			consoleLog.debug("{} Tracking services with filter: {}", this, filter);
-			tracker = new ExtensionServiceTracker<T>(this, downstreamClass, bc, filter);
+			tracker = new ExtensionServiceTracker<T>(this, downstreamClass, bc.get(), filter);
 			tracker.open();
 		} catch (InvalidSyntaxException e) {
 			consoleLog.error("{} couldn't build filter for {}", this, filter, e);
