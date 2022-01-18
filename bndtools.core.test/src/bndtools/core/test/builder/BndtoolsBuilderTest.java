@@ -175,16 +175,16 @@ public class BndtoolsBuilderTest {
 
 	@Test
 	void nonExistingBuildpath_generatesErrorMarker() throws CoreException {
-		TaskUtils.addBundlesToBuildpath(bndProject, "non.existing.bundle");
-		TaskUtils.setAutobuild(true);
-		TaskUtils.waitForAutobuild("nonExistingBuildpath");
+		TaskUtils.waitForAutobuild(monitor -> {
+			TaskUtils.setAutobuild(true);
+			TaskUtils.addBundlesToBuildpath(bndProject, "non.existing.bundle");
+		}, "nonExistingBuildpath - turn on autobuild");
 
 		softly.assertThat(getBndMarkers(MARKER_BND_PATH_PROBLEM))
 			.as("markers")
 			.anySatisfy(nonExistingBundle());
 
-		TaskUtils.clearBuildpath(bndProject);
-		TaskUtils.waitForAutobuild("nonExistingBuildpath");
+		TaskUtils.waitForAutobuild(monitor -> TaskUtils.clearBuildpath(bndProject), "nonExistingBuildpath - after");
 
 		softly.assertThat(getBndMarkers(MARKER_BND_PATH_PROBLEM))
 			.as("markers after clear")

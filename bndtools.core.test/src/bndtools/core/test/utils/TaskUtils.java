@@ -2,6 +2,8 @@ package bndtools.core.test.utils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IResourceVisitor;
@@ -10,9 +12,13 @@ import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
@@ -39,14 +45,15 @@ public class TaskUtils {
 
 	public static void log(SupplierWithException<String> msg) {
 		try {
-			log(msg.get());
+			// System.err.println(System.currentTimeMillis() + ": " +
+			// msg.get());
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
 	public static void log(String msg) {
-		// System.err.println(System.currentTimeMillis() + ": " + msg);
+		// log(() -> msg);
 	}
 
 	public static void dumpWorkspace() {
@@ -143,9 +150,17 @@ public class TaskUtils {
 		setAutobuild(false);
 	}
 
+	/**
+	 * Waits for autobuild to finish. Usually, you'll want to use
+	 * {@link #waitForAutobuild(ICoreRunnable, String)} to avoid timing issues,
+	 * otherwise this method can return immediately in the small window before
+	 * autobuild starts.
+	 *
+	 * @param context
+	 */
 	public static void waitForAutobuild(String context) {
+		final IJobManager jm = Job.getJobManager();
 		try {
-			IJobManager jm = Job.getJobManager();
 			// Wait for manual build to finish if running
 			jm.join(ResourcesPlugin.FAMILY_MANUAL_BUILD,
 				new LoggingProgressMonitor(context + ": Waiting for manual build"));
@@ -154,6 +169,45 @@ public class TaskUtils {
 		} catch (InterruptedException e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	public static boolean isAutobuild(Job job) {
+		return job.belongsTo(ResourcesPlugin.FAMILY_AUTO_BUILD);
+	}
+
+	public static void waitForAutobuild(ICoreRunnable modTask, String context) {
+
+		final IJobManager jm = Job.getJobManager();
+		final CountDownLatch startFlag = new CountDownLatch(1);
+		final CountDownLatch endFlag = new CountDownLatch(1);
+		IJobChangeListener l = new JobChangeAdapter() {
+			@Override
+			public void running(IJobChangeEvent event) {
+				if (isAutobuild(event.getJob())) {
+					log(context + ": autobuild starting: " + event.getJob());
+					startFlag.countDown();
+					jm.removeJobChangeListener(this);
+				}
+			}
+		};
+		try {
+			ResourcesPlugin.getWorkspace()
+				.run(monitor -> {
+					log(context + ": adding autobuild listener");
+					jm.addJobChangeListener(l);
+					log(context + ": autobuild listener added, running task");
+					modTask.run(monitor);
+				}, new LoggingProgressMonitor(context));
+			if (startFlag.await(10000, TimeUnit.MILLISECONDS) == false) {
+				throw new IllegalStateException("Autobuild didn't start within 10s: " + context);
+			}
+			waitForAutobuild(context);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		} finally {
+			jm.removeJobChangeListener(l);
+		}
+		log(context + ": finished");
 	}
 
 	public static void addBundlesToBuildpath(Project bndProject, String... bundleNames) {
