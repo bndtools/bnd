@@ -13,7 +13,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,9 +36,11 @@ public class CnfWatcher implements IResourceChangeListener {
 	@Reference
 	BndtoolsBuilder					builder;
 
-	// Bnd workspace, not Eclipse workspace.
 	@Reference
-	Workspace						workspace;
+	IWorkspace						eclipseWorkspace;
+
+	@Reference
+	Workspace						bndWorkspace;
 
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
@@ -51,8 +53,7 @@ public class CnfWatcher implements IResourceChangeListener {
 
 	private void processEvent(IResourceChangeEvent event) {
 		try {
-			final IProject cnfProject = WorkspaceUtils.findCnfProject(ResourcesPlugin.getWorkspace()
-				.getRoot(), workspace);
+			final IProject cnfProject = WorkspaceUtils.findCnfProject(eclipseWorkspace.getRoot(), bndWorkspace);
 			if (cnfProject == null)
 				return;
 
@@ -60,7 +61,7 @@ public class CnfWatcher implements IResourceChangeListener {
 			if (delta.findMember(cnfProject.getFullPath()) == null)
 				return;
 
-			Collection<Project> allProjects = workspace.getAllProjects();
+			Collection<Project> allProjects = bndWorkspace.getAllProjects();
 			if (allProjects.isEmpty())
 				return;
 
@@ -72,14 +73,14 @@ public class CnfWatcher implements IResourceChangeListener {
 					@Override
 					public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
 						try {
-							workspace.clear();
-							workspace.refresh();
-							workspace.getPlugins();
+							bndWorkspace.clear();
+							bndWorkspace.refresh();
+							bndWorkspace.getPlugins();
 
 							BndtoolsBuilder.dirty.addAll(allProjects);
 							MarkerSupport ms = new MarkerSupport(cnfProject);
 							ms.deleteMarkers("*");
-							ms.setMarkers(workspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
+							ms.setMarkers(bndWorkspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
 						} catch (Exception e) {
 							return new Status(IStatus.ERROR, PLUGIN_ID,
 								"error during workspace refresh",
