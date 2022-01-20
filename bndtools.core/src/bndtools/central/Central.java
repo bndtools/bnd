@@ -111,9 +111,10 @@ public class Central implements ICentral {
 		repoListenerTracker.open();
 		internalPlugins = new InternalPluginTracker(bc);
 		internalPlugins.open();
-		// Trigger building of the Workspace object and registering it a service
 
-		promiseFactory().submit(Central::getWorkspace);
+		// Trigger building of the Workspace object and registering it a service
+		promiseFactory().submit(Central::getWorkspace)
+			.onFailure(failure -> logger.error("Exception creating Bnd Workspace", failure));
 	}
 
 	@Deactivate
