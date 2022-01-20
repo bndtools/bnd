@@ -47,7 +47,6 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.ServiceScope;
 import org.osgi.util.function.Consumer;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
@@ -76,7 +75,7 @@ import bndtools.Plugin;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 import bndtools.preferences.BndPreferences;
 
-@Component(scope=ServiceScope.SINGLETON, immediate=true)
+@Component(immediate = true)
 public class Central implements ICentral {
 
 	private static final org.slf4j.Logger						logger						= LoggerFactory
@@ -98,10 +97,7 @@ public class Central implements ICentral {
 	private final List<ModelListener>							listeners					= new CopyOnWriteArrayList<>();
 
 	private RepositoryListenerPluginTracker						repoListenerTracker;
-	private InternalPluginTracker							internalPlugins;
-
-	@SuppressWarnings("unused")
-	private static WorkspaceRepositoryChangeDetector			workspaceRepositoryChangeDetector;
+	private InternalPluginTracker								internalPlugins;
 
 	private static RepositoriesViewRefresher					repositoriesViewRefresher	= new RepositoriesViewRefresher();
 	private static ServiceRegistration<Workspace>				workspaceService;
@@ -142,7 +138,8 @@ public class Central implements ICentral {
 		return instance;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see bndtools.central.Central#getModel(org.eclipse.jdt.core.IJavaProject)
 	 */
 	@Override
@@ -307,7 +304,6 @@ public class Central implements ICentral {
 			// Initialize projects in synchronized block
 			ws.getBuildOrder();
 
-			workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
 			workspaceService = context.registerService(Workspace.class, ws, null);
 			return ws;
 		} catch (Exception e) {
@@ -424,7 +420,8 @@ public class Central implements ICentral {
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see bndtools.central.Central#changed(aQute.bnd.build.Project)
 	 */
 	@Override
@@ -439,8 +436,10 @@ public class Central implements ICentral {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see bndtools.central.Central#addModelListener(org.bndtools.api.ModelListener)
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * bndtools.central.Central#addModelListener(org.bndtools.api.ModelListener)
 	 */
 	@Override
 	public void addModelListener(ModelListener m) {
@@ -449,8 +448,10 @@ public class Central implements ICentral {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see bndtools.central.Central#removeModelListener(org.bndtools.api.ModelListener)
+	/*
+	 * (non-Javadoc)
+	 * @see bndtools.central.Central#removeModelListener(org.bndtools.api.
+	 * ModelListener)
 	 */
 	@Override
 	public void removeModelListener(ModelListener m) {
@@ -628,7 +629,8 @@ public class Central implements ICentral {
 				.refreshLocal(IResource.DEPTH_INFINITE, null);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see bndtools.central.Central#close()
 	 */
 	@Override
@@ -694,8 +696,8 @@ public class Central implements ICentral {
 	 * @throws Exception If the callable throws an exception.
 	 */
 	public static <V> V bndCall(BiFunctionWithException<Callable<V>, BooleanSupplier, V> lockMethod,
-		FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable,
-		IProgressMonitor monitorOrNull) throws Exception {
+		FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable, IProgressMonitor monitorOrNull)
+		throws Exception {
 		IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
 		Task task = new Task() {
 			@Override
@@ -722,14 +724,14 @@ public class Central implements ICentral {
 		try {
 			Callable<V> with = () -> TaskManager.with(task, () -> callable.apply((name, runnable) -> after.add(() -> {
 				monitor.subTask(name);
-					try {
+				try {
 					runnable.run();
 				} catch (Exception e) {
 					if (!(e instanceof OperationCanceledException)) {
 						status.add(new Status(IStatus.ERROR, runnable.getClass(),
 							"Unexpected exception in bndCall after action: " + name, e));
-						}
 					}
+				}
 			})));
 			return lockMethod.apply(with, monitor::isCanceled);
 		} finally {

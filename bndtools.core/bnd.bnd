@@ -40,8 +40,8 @@ Export-Package: org.osgi.service.metatype.annotations
 	osgi.annotation,\
 	org.osgi.service.metatype.annotations,\
 	osgi.core,\
-	org.osgi.service.component;version='1.3.0',\
-	org.osgi.service.component.annotations;version='1.3.0',\
+	org.osgi.service.component;version='1.4.0',\
+	org.osgi.service.component.annotations;version='1.4.0',\
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.metatype;version='1.3.0',\
 	org.osgi.service.prefs;version=latest,\

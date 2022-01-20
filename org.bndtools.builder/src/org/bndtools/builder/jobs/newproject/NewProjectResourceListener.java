@@ -11,30 +11,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
-@Component(immediate = true, scope = ServiceScope.SINGLETON)
+@Component
 public class NewProjectResourceListener implements IResourceChangeListener {
 	private static final ILogger	logger	= Logger.getLogger(NewProjectResourceListener.class);
-
-	@Reference
-	IWorkspace						workspace;
-
-	@Activate
-	void start() {
-		workspace.addResourceChangeListener(this);
-	}
-
-	@Deactivate
-	void stop() {
-		workspace.removeResourceChangeListener(this);
-	}
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {

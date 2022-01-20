@@ -1,7 +1,5 @@
 package bndtools.central;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -13,26 +11,34 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.service.RepositoryListenerPlugin;
 
-public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceChangeListener {
+@Component(property = {
+	"org.eclipse.core.resources.eventmask:Integer=" + IResourceChangeEvent.POST_CHANGE
+})
+public class WorkspaceRepositoryChangeDetector implements IResourceChangeListener {
 
-	private final Workspace				workspace;
-	private final IWorkspace			iworkspace;
-	private final WorkspaceRepository	repository;
-	private final IProject				cnfProject;
+	@Reference
+	Workspace					workspace;
 
-	private final AtomicBoolean			refresh	= new AtomicBoolean();
+	@Reference
+	IWorkspace					iworkspace;
+	private WorkspaceRepository	repository;
+	private IProject			cnfProject;
+
+	private final AtomicBoolean	refresh	= new AtomicBoolean();
 
 	class RootFolderVisitor implements IResourceDeltaVisitor {
 		ProjectFolderVisitor projectFolder = new ProjectFolderVisitor();
@@ -100,10 +106,9 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
 
 	}
 
-	public WorkspaceRepositoryChangeDetector(Workspace workspace) {
-		this.workspace = workspace;
+	@Activate
+	void activate() {
 		this.repository = workspace.getWorkspaceRepository();
-		this.iworkspace = ResourcesPlugin.getWorkspace();
 
 		IProject cnf = null;
 
@@ -112,14 +117,6 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
 		} catch (Exception ex) {}
 
 		this.cnfProject = cnf;
-
-		iworkspace.addResourceChangeListener(this);
-		workspace.addClose(this);
-	}
-
-	@Override
-	public void close() throws IOException {
-		iworkspace.removeResourceChangeListener(this);
 	}
 
 	@Override
@@ -128,35 +125,31 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
 			if (refresh.get())
 				return;
 
-			if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+			RootFolderVisitor rootFolderVisitor = new RootFolderVisitor();
+			event.getDelta()
+				.accept(rootFolderVisitor);
 
-				RootFolderVisitor rootFolderVisitor = new RootFolderVisitor();
-				event.getDelta()
-					.accept(rootFolderVisitor);
-
-				if (refresh.getAndSet(false)) {
-					WorkspaceJob job = new WorkspaceJob("Refresh Workspace Repository") {
-						@Override
-						public IStatus runInWorkspace(IProgressMonitor monitor) {
-							if (monitor == null)
-								monitor = new NullProgressMonitor();
-							List<RepositoryListenerPlugin> plugins = workspace
-								.getPlugins(RepositoryListenerPlugin.class);
-							monitor.beginTask("Refresh ", plugins.size());
-							int n = 0;
-							for (RepositoryListenerPlugin rlp : plugins)
-								try {
-									monitor.worked(n++);
-									rlp.repositoryRefreshed(repository);
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							monitor.done();
-							return Status.OK_STATUS;
-						}
-					};
-					job.schedule(500);
-				}
+			if (refresh.getAndSet(false)) {
+				WorkspaceJob job = new WorkspaceJob("Refresh Workspace Repository") {
+					@Override
+					public IStatus runInWorkspace(IProgressMonitor monitor) {
+						if (monitor == null)
+							monitor = new NullProgressMonitor();
+						List<RepositoryListenerPlugin> plugins = workspace.getPlugins(RepositoryListenerPlugin.class);
+						monitor.beginTask("Refresh ", plugins.size());
+						int n = 0;
+						for (RepositoryListenerPlugin rlp : plugins)
+							try {
+								monitor.worked(n++);
+								rlp.repositoryRefreshed(repository);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+				};
+				job.schedule(500);
 			}
 		} catch (CoreException e) {
 			// TODO Auto-generated catch block

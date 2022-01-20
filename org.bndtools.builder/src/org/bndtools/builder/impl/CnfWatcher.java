@@ -19,16 +19,16 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.central.Central;
 
-@Component(immediate = true)
+@Component(property = {
+	"org.eclipse.core.resources.eventmask:Integer=" + IResourceChangeEvent.POST_CHANGE
+})
 public class CnfWatcher implements IResourceChangeListener {
 	private static final ILogger	logger		= Logger.getLogger(CnfWatcher.class);
 	static final org.slf4j.Logger	consoleLog	= org.slf4j.LoggerFactory.getLogger(CnfWatcher.class);
@@ -39,19 +39,6 @@ public class CnfWatcher implements IResourceChangeListener {
 	// Bnd workspace, not Eclipse workspace.
 	@Reference
 	Workspace						workspace;
-
-	@Activate
-	void activate() {
-		consoleLog.debug("Activating CnfWatcher");
-		ResourcesPlugin.getWorkspace()
-			.addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
-	}
-
-	@Deactivate
-	void deactivate() {
-		ResourcesPlugin.getWorkspace()
-			.removeResourceChangeListener(this);
-	}
 
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
