@@ -7,6 +7,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +15,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
+import org.bndtools.api.IProjectValidator;
+import org.bndtools.api.IValidator;
 import org.bndtools.api.Logger;
 import org.bndtools.builder.classpath.BndContainer;
 import org.bndtools.builder.classpath.BndContainerInitializer;
@@ -37,13 +40,17 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.CompileErrorAction;
@@ -74,13 +81,78 @@ import bndtools.preferences.CompileErrorAction;
 	ProjectBuilderDelegate.class, BndtoolsBuilder.class
 }, scope = ServiceScope.PROTOTYPE)
 public class BndtoolsBuilder extends ProjectBuilderDelegate {
-	public static final String		BUILDER_ID	= BndtoolsConstants.BUILDER_ID;
-	private static final ILogger	logger		= Logger.getLogger(BndtoolsBuilder.class);
-	static final Set<Project>		dirty		= Collections.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
-	static BndPreferences			prefs		= new BndPreferences();
+	public static final String			BUILDER_ID	= BndtoolsConstants.BUILDER_ID;
+	private static final ILogger		logger		= Logger.getLogger(BndtoolsBuilder.class);
+	static final Set<Project>			dirty		= Collections
+		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
+	static BndPreferences				prefs		= new BndPreferences();
 
-	private BuildLogger				buildLog;
-	private boolean					postponed;
+	private BuildLogger					buildLog;
+	private boolean						postponed;
+
+	@Reference
+	volatile List<IValidator>			validators;
+
+	@Reference
+	volatile List<IProjectValidator>	projectValidators;
+
+	void validate(Project model) throws Exception {
+		// Cache reference as it is volatile
+		List<IValidator> validators = this.validators;
+		if (validators != null) {
+			try (ProjectBuilder pb = model.getBuilder(null)) {
+				for (Builder builder : pb.getSubBuilders()) {
+					for (IValidator v : validators) {
+						try {
+							IStatus status = v.validate(builder);
+							report(builder, status);
+							model.getInfo(builder);
+						} catch (Exception e) {
+							logger.logError("Validator error for validator " + v + " on project " + model.getName(), e);
+						}
+					}
+				}
+			}
+		}
+		List<IProjectValidator> projectValidators = this.projectValidators;
+		if (projectValidators != null) {
+			for (IProjectValidator pv : projectValidators) {
+				try {
+					pv.validateProject(model);
+				} catch (Exception e) {
+					logger.logError("Project validator error for validator " + pv + " on project " + model.getName(),
+						e);
+				}
+			}
+		}
+	}
+
+	private static void report(Processor reporter, IStatus status) {
+		if (status == null || status.isOK())
+			return;
+
+		if (status.isMultiStatus()) {
+			for (IStatus s : status.getChildren())
+				report(reporter, s);
+		} else {
+			SetLocation location;
+			Throwable exception = status.getException();
+			if (exception != null)
+				if (status.getSeverity() == IStatus.ERROR)
+					location = reporter.exception(exception, status.getMessage());
+				else
+					location = reporter.warning(status.getMessage() + ": " + exception);
+			else {
+				if (status.getSeverity() == IStatus.ERROR) {
+					location = reporter.error(status.getMessage());
+				} else {
+					location = reporter.warning(status.getMessage());
+				}
+			}
+			location.file(reporter.getPropertiesFile()
+				.getAbsolutePath());
+		}
+	}
 
 	/**
 	 * Called from Eclipse when it thinks this project should be build. We're
@@ -212,8 +284,8 @@ public class BndtoolsBuilder extends ProjectBuilderDelegate {
 						model.setDelayRunDependencies(true);
 						model.prepare();
 
-						Processor processor = new Processor(model);
-						markers.validate(model);
+						Processor processor = new Processor();
+						validate(model);
 						processor.getInfo(model);
 						after.accept("Decorating " + myProject, () -> {
 							markers.setMarkers(processor, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);

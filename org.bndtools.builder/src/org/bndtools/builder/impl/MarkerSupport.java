@@ -5,7 +5,6 @@ import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_FILE_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_HEADER_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_PROJECT_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_REFERENCE_ATTR;
-import static org.bndtools.api.BndtoolsConstants.CORE_PLUGIN_ID;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_BLOCKER;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_PATH_PROBLEM;
@@ -13,15 +12,12 @@ import static org.bndtools.api.BndtoolsConstants.MARKER_BND_PROBLEM;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM;
 import static org.bndtools.api.BndtoolsConstants.MARKER_JAVA_BASELINE;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
-import org.bndtools.api.IProjectValidator;
-import org.bndtools.api.IValidator;
 import org.bndtools.api.Logger;
 import org.bndtools.api.builder.BuildErrorDetailsHandler;
 import org.bndtools.api.builder.MarkerData;
@@ -32,19 +28,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Report.Location;
-import aQute.service.reporter.Reporter.SetLocation;
 
 class MarkerSupport {
 	private static final ILogger			logger			= Logger.getLogger(MarkerSupport.class);
@@ -196,73 +186,5 @@ class MarkerSupport {
 				}
 			}
 		return false;
-	}
-
-	static List<IValidator> loadValidators() {
-		List<IValidator> validators = null;
-		IConfigurationElement[] validatorElems = Platform.getExtensionRegistry()
-			.getConfigurationElementsFor(CORE_PLUGIN_ID, "validators");
-		if (validatorElems != null && validatorElems.length > 0) {
-			validators = new ArrayList<>(validatorElems.length);
-			for (IConfigurationElement elem : validatorElems) {
-				try {
-					validators.add((IValidator) elem.createExecutableExtension("class"));
-				} catch (Exception e) {
-					logger.logError("Unable to instantiate validator: " + elem.getAttribute("name"), e);
-				}
-			}
-		}
-		return validators;
-	}
-
-	void validate(Project model) throws Exception {
-		List<IValidator> validators = loadValidators();
-		if (validators != null) {
-
-			for (IValidator v : validators) {
-				try {
-					if (v instanceof IProjectValidator) {
-						((IProjectValidator) v).validateProject(model);
-					} else {
-						try (ProjectBuilder pb = model.getBuilder(null)) {
-							for (Builder builder : pb.getSubBuilders()) {
-								IStatus status = v.validate(builder);
-								report(builder, status);
-								model.getInfo(builder);
-							}
-						}
-					}
-				} catch (Exception e) {
-					logger.logError("Validator error", e);
-				}
-			}
-		}
-	}
-
-	private void report(Processor reporter, IStatus status) {
-		if (status == null || status.isOK())
-			return;
-
-		if (status.isMultiStatus()) {
-			for (IStatus s : status.getChildren())
-				report(reporter, s);
-		} else {
-			SetLocation location;
-			Throwable exception = status.getException();
-			if (exception != null)
-				if (status.getSeverity() == IStatus.ERROR)
-					location = reporter.exception(exception, status.getMessage());
-				else
-					location = reporter.warning(status.getMessage() + ": " + exception);
-			else {
-				if (status.getSeverity() == IStatus.ERROR) {
-					location = reporter.error(status.getMessage());
-				} else {
-					location = reporter.warning(status.getMessage());
-				}
-			}
-			location.file(reporter.getPropertiesFile()
-				.getAbsolutePath());
-		}
 	}
 }

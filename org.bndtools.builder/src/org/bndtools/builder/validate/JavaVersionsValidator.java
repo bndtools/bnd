@@ -3,23 +3,16 @@ package org.bndtools.builder.validate;
 import java.util.Map;
 
 import org.bndtools.api.IProjectValidator;
-import org.bndtools.api.IValidator;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import bndtools.central.Central;
 
-public class JavaVersionsValidator implements IValidator, IProjectValidator {
-
-	@Override
-	public IStatus validate(Builder builder) {
-		return Status.OK_STATUS;
-	}
+@Component
+public class JavaVersionsValidator implements IProjectValidator {
 
 	@Override
 	public void validateProject(Project model) throws Exception {

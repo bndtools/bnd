@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.bndtools.api.IValidator;
 import org.eclipse.core.runtime.IStatus;
+import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
@@ -12,6 +13,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 
+@Component
 public class BsnValidator implements IValidator {
 
 	@Override

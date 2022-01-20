@@ -12,18 +12,15 @@ import java.util.Set;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.IProjectValidator;
-import org.bndtools.api.IValidator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -33,7 +30,8 @@ import bndtools.central.Central;
  * Verify that the build path setup for Eclipse matches the actual settings in
  * bnd.
  */
-public class ProjectPathsValidator implements IValidator, IProjectValidator {
+@Component
+public class ProjectPathsValidator implements IProjectValidator {
 	final static IPath JRE_CONTAINER = new Path("org.eclipse.jdt.launching.JRE_CONTAINER");
 
 	/*
@@ -42,15 +40,6 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 	enum SetupTypes {
 		testsrc,
 		bndcontainer;
-	}
-
-	/*
-	 * Old validate method for backward compatibility (did not want to create
-	 * yet another extension point for this).
-	 */
-	@Override
-	public IStatus validate(Builder builder) {
-		return Status.OK_STATUS;
 	}
 
 	/**
