@@ -265,7 +265,7 @@ public class About {
 		bndInfo = Memoize.supplier(() -> {
 			Properties properties = new UTF8Properties();
 			try {
-				URL url = Analyzer.class.getResource("bnd.info");
+				URL url = About.class.getResource("bnd.info");
 				if (url != null) {
 					try (InputStream in = url.openStream()) {
 						properties.load(in);
