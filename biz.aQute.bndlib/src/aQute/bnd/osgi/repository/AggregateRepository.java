@@ -1,7 +1,8 @@
 package aQute.bnd.osgi.repository;
 
-import static aQute.bnd.stream.MapStream.toMap;
 import static java.util.Collections.singleton;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +15,6 @@ import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.stream.MapStream;
 
 public class AggregateRepository extends BaseRepository {
 	private final List<Repository> repositories;
@@ -24,29 +24,23 @@ public class AggregateRepository extends BaseRepository {
 	}
 
 	public AggregateRepository(Repository... repositories) {
-		this.repositories = new ArrayList<>();
+		this.repositories = new ArrayList<>(repositories.length);
 		Collections.addAll(this.repositories, repositories);
 	}
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		Map<Requirement, Collection<Capability>> result = MapStream.of(repositories.stream()
-			.flatMap(repository -> repository.findProviders(requirements)
-				.entrySet()
-				.stream()))
-			.collect(toMap(ResourceUtils::capabilitiesCombiner));
+		Map<Requirement, Collection<Capability>> result = requirements.stream()
+			.collect(toMap(identity(), this::findProviders));
 		return result;
 	}
 
-	public Collection<Capability> findProviders(Requirement req) {
-		if (req == null) {
-			return new ArrayList<>();
-		}
-
-		Collection<Capability> capabilities = findProviders(singleton(req)).get(req);
-
-		assert capabilities != null : "findProviders must return a map containing the collection";
-
+	public Collection<Capability> findProviders(Requirement requirement) {
+		Collection<Requirement> requirements = singleton(requirement);
+		Collection<Capability> capabilities = repositories.stream()
+			.map(repository -> repository.findProviders(requirements)
+				.get(requirement))
+			.reduce(new ArrayList<>(), ResourceUtils::capabilitiesCombiner);
 		return capabilities;
 	}
 }
