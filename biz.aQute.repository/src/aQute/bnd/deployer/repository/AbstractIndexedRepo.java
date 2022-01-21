@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +44,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
@@ -423,13 +423,11 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			throw new RuntimeException(e);
 		}
 
-		Map<Requirement, Collection<Capability>> result = new HashMap<>();
-		for (Requirement requirement : requirements) {
-			List<Capability> matches = new LinkedList<>();
-			result.put(requirement, matches);
-
+		Map<Requirement, Collection<Capability>> result = ResourceUtils.findProviders(requirements, requirement -> {
+			List<Capability> matches = new ArrayList<>();
 			capabilityIndex.appendMatchingCapabilities(requirement, matches);
-		}
+			return matches;
+		});
 		return result;
 	}
 

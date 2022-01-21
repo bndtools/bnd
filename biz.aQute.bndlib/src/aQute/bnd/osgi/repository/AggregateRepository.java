@@ -1,8 +1,6 @@
 package aQute.bnd.osgi.repository;
 
 import static java.util.Collections.singleton;
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,8 +28,8 @@ public class AggregateRepository extends BaseRepository {
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		Map<Requirement, Collection<Capability>> result = requirements.stream()
-			.collect(toMap(identity(), this::findProviders));
+		Map<Requirement, Collection<Capability>> result = ResourceUtils.findProviders(requirements,
+			this::findProviders);
 		return result;
 	}
 

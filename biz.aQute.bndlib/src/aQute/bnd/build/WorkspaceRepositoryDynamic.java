@@ -1,8 +1,6 @@
 package aQute.bnd.build;
 
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,9 +32,8 @@ class WorkspaceRepositoryDynamic extends BaseRepository implements Repository, W
 			.flatMap(Collection::stream)
 			.collect(toList());
 
-		Map<Requirement, Collection<Capability>> result = requirements.stream()
-			.collect(toMap(identity(), requirement -> findProvider(resources, requirement),
-				ResourceUtils::capabilitiesCombiner));
+		Map<Requirement, Collection<Capability>> result = ResourceUtils.findProviders(requirements,
+			requirement -> findProvider(resources, requirement));
 		return result;
 	}
 

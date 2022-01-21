@@ -4,6 +4,7 @@ import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
@@ -746,5 +747,19 @@ public class ResourceUtils {
 		rightCollection.removeAll(leftCollection);
 		leftCollection.addAll(rightCollection);
 		return leftCollection;
+	}
+
+	public static <CAPABILITY extends Capability, COLLECTION extends Collection<CAPABILITY>> Map<Requirement, Collection<Capability>> findProviders(
+		Collection<? extends Requirement> requirements, Function<? super Requirement, COLLECTION> provider) {
+		@SuppressWarnings("unchecked")
+		Map<Requirement, Collection<Capability>> result = (Map<Requirement, Collection<Capability>>) requirements
+			.stream()
+			.collect(toMap(Function.identity(), provider, ResourceUtils::capabilitiesCombiner));
+		return result;
+	}
+
+	public static Map<Requirement, Collection<Capability>> emptyProviders(
+		Collection<? extends Requirement> requirements) {
+		return findProviders(requirements, requirement -> new ArrayList<>());
 	}
 }

@@ -44,7 +44,7 @@ public class CapabilityIndex {
 		}
 	}
 
-	public void appendMatchingCapabilities(Requirement requirement, Collection<? super Capability> capabilities) {
+	public void appendMatchingCapabilities(Requirement requirement, Collection<Capability> capabilities) {
 		List<Capability> caps;
 
 		synchronized (this) {
