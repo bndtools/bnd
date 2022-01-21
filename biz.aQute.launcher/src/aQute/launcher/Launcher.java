@@ -758,9 +758,9 @@ public class Launcher implements ServiceListener, FrameworkListener {
 					installedBundles.put(f, b);
 					tobestarted.add(b);
 				} else
-					error("should installing %s but file does not exist", f);
+					error("should install %s but file does not exist", f);
 			} catch (Exception e) {
-				error("Failed to uninstall bundle %s, exception %s", f, e);
+				error("Failed to install bundle %s, exception %s", f, e);
 			}
 
 		for (File f : tobeupdated)
