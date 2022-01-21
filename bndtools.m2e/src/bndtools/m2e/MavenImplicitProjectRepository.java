@@ -23,11 +23,12 @@ import org.osgi.resource.Requirement;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Run;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.Exceptions;
 import bndtools.central.Central;
 
 public class MavenImplicitProjectRepository extends AbstractMavenRepository
@@ -50,7 +51,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		if (fileSetRepository == null) {
-			return Collections.emptyMap();
+			return ResourceUtils.emptyProviders(requirements);
 		}
 		return fileSetRepository.findProviders(requirements);
 	}

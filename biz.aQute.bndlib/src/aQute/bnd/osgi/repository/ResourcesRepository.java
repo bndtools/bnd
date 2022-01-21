@@ -1,8 +1,5 @@
 package aQute.bnd.osgi.repository;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -40,8 +37,7 @@ public class ResourcesRepository extends BaseRepository {
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		return requirements.stream()
-			.collect(toMap(identity(), this::findProvider, ResourceUtils::capabilitiesCombiner));
+		return ResourceUtils.findProviders(requirements, this::findProvider);
 	}
 
 	public List<Capability> findProvider(Requirement requirement) {

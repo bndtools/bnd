@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -35,27 +36,21 @@ public class AugmentRepository extends BaseRepository {
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		Map<Requirement, Collection<Capability>> fromRepos = repository.findProviders(requirements);
 
-		for (Requirement requirement : requirements) {
-
-			List<Capability> provided = new ArrayList<>();
-			boolean replaced = false;
-
-			for (Capability originalCapability : fromRepos.get(requirement)) {
-				if (isValid(originalCapability)) {
-					Capability wrappedCapability = wrapped.get(originalCapability);
-					if (wrappedCapability != null) {
-						provided.add(wrappedCapability);
-						replaced = true;
-					} else
-						provided.add(originalCapability);
-				}
-			}
-
-			Collection<Capability> additional = ResourceUtils.findProviders(requirement, augmentedCapabilities);
-			replaced |= provided.addAll(additional);
-			if (replaced)
-				fromRepos.put(requirement, provided);
-		}
+		fromRepos.replaceAll((requirement, capabilities) -> {
+			List<Capability> additional = ResourceUtils.findProviders(requirement, augmentedCapabilities);
+			List<Capability> updated = Stream.concat(capabilities.stream()
+				.map(capability -> {
+					if (isValid(capability)) {
+						Capability wrappedCapability = wrapped.get(capability);
+						if (wrappedCapability != null) {
+							return wrappedCapability;
+						}
+					}
+					return capability;
+				}), additional.stream())
+				.collect(ResourceUtils.toCapabilities());
+			return updated;
+		});
 
 		return fromRepos;
 	}
