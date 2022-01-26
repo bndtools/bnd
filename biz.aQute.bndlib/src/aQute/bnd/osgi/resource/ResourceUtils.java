@@ -744,8 +744,10 @@ public class ResourceUtils {
 
 	public static <CAPABILITY extends Capability, COLLECTION extends Collection<CAPABILITY>> COLLECTION capabilitiesCombiner(
 		COLLECTION leftCollection, COLLECTION rightCollection) {
-		rightCollection.removeAll(leftCollection);
-		leftCollection.addAll(rightCollection);
+		if (leftCollection.isEmpty()) {
+			return rightCollection;
+		}
+		rightCollection.forEach(capability -> capabilitiesAccumulator(leftCollection, capability));
 		return leftCollection;
 	}
 
