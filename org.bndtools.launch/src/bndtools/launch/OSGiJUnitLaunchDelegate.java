@@ -85,9 +85,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
 	@Override
 	protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
-		synchronized (model) {
-			bndTester = model.getProjectTester();
-		}
+		bndTester = model.getProjectTester();
 
 		if (bndTester instanceof EclipseJUnitTester)
 			bndEclipseTester = (EclipseJUnitTester) bndTester;
