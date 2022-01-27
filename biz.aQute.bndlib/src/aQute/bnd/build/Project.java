@@ -2497,7 +2497,7 @@ public class Project extends Processor {
 	}
 
 	public boolean isRunTrace() {
-		return isTrue(getProperty(RUNTRACE));
+		return is(RUNTRACE);
 	}
 
 	public void runLocal() throws Exception {

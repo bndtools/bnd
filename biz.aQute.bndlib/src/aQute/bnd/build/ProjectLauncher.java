@@ -166,25 +166,26 @@ public abstract class ProjectLauncher extends Processor {
 					addRunBundle(IO.absolutePath(file));
 		}
 
-		Collection<Container> runpath = getProject().getRunpath();
 		runsystempackages = new Parameters(getProject().mergeProperties(Constants.RUNSYSTEMPACKAGES), getProject());
 		runsystemcapabilities = new Parameters(getProject().mergeProperties(Constants.RUNSYSTEMCAPABILITIES),
 			getProject());
-		framework = getRunframework(getProject().getProperty(Constants.RUNFRAMEWORK));
+		setRunFramework(getRunframework(getProject().getProperty(Constants.RUNFRAMEWORK)));
 
-		timeout = Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), 0);
-		trace = getProject().isRunTrace();
+		setTimeout(Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), 0L), TimeUnit.MILLISECONDS);
+		setTrace(getProject().isRunTrace());
 
+		Collection<Container> runpath = getProject().getRunpath();
 		runpath.addAll(getProject().getRunFw());
-
 		for (Container c : runpath) {
 			addClasspath(c);
 		}
 
-		runvm.addAll(getProject().getRunVM());
-		runprogramargs.addAll(getProject().getRunProgramArgs());
+		getProject().getRunVM()
+			.forEach(this::addRunVM);
+		getProject().getRunProgramArgs()
+			.forEach(this::addRunProgramArgs);
 		runproperties = getProject().getRunProperties();
-		runframeworkrestart = isTrue(getProject().getProperty(Constants.RUNFRAMEWORKRESTART));
+		runframeworkrestart = getProject().is(Constants.RUNFRAMEWORKRESTART);
 		storageDir = getProject().getRunStorage();
 
 		setKeep(getProject().getRunKeep());
@@ -194,9 +195,8 @@ public abstract class ProjectLauncher extends Processor {
 	private int getRunframework(String property) {
 		if (Constants.RUNFRAMEWORK_NONE.equalsIgnoreCase(property))
 			return NONE;
-		else if (Constants.RUNFRAMEWORK_SERVICES.equalsIgnoreCase(property))
+		if (Constants.RUNFRAMEWORK_SERVICES.equalsIgnoreCase(property))
 			return SERVICES;
-
 		return SERVICES;
 	}
 

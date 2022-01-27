@@ -234,7 +234,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.runbundles.addAll(runbundles);
 		lc.trace = getTrace();
 		lc.timeout = getTimeout();
-		lc.services = super.getRunFramework() == SERVICES ? true : false;
+		lc.services = getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
 		lc.activationEager = launcherInstrs.runoptions()
@@ -355,9 +355,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		// Copy the bundles to the JAR
 
-		List<String> runbundles = (List<String>) getRunBundles();
 		List<String> actualPaths = new ArrayList<>();
 
+		Collection<String> runbundles = getRunBundles();
 		for (String path : runbundles) {
 			logger.debug("embedding run bundles {}", path);
 			File file = getOriginalFile(path);
