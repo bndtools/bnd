@@ -1182,7 +1182,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		if (!parms.keep && workingdir.exists()) {
 			trace("deleting working dir %s because not kept", workingdir);
 			delete(workingdir);
-			p.setProperty(Constants.FRAMEWORK_STORAGE_CLEAN, "true");
+			p.setProperty(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		}
 
 		IO.mkdirs(workingdir);
