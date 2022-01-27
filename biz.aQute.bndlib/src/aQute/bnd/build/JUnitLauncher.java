@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 
@@ -20,8 +19,6 @@ public class JUnitLauncher extends ProjectLauncher {
 	boolean						junit4Main;
 	private Classpath			cp;
 	private Command				java;
-	private long				timeout;
-	// private boolean trace;
 	private List<String>		fqns	= new ArrayList<>();
 
 	public JUnitLauncher(Project project) throws Exception {
@@ -46,9 +43,6 @@ public class JUnitLauncher extends ProjectLauncher {
 			return;
 		}
 
-		timeout = Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), 0);
-		// trace =
-		// Processor.isTrue(getProject().getProperty(Constants.RUNTRACE));
 		cp = new Classpath(getProject(), "junit");
 		addClasspath(getProject().getTestpath());
 		File output = getProject().getOutput();
@@ -68,8 +62,8 @@ public class JUnitLauncher extends ProjectLauncher {
 		java.addAll(getProject().getRunVM());
 		java.add(getMainTypeName());
 		java.addAll(fqns);
-		if (timeout != 0)
-			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
+		if (getTimeout() != 0L)
+			java.setTimeout(getTimeout() + 1000L, TimeUnit.MILLISECONDS);
 
 		logger.debug("cmd line {}", java);
 		try {
