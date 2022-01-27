@@ -42,6 +42,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Jar.Compression;
@@ -398,7 +399,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Resource preJar = Resource.fromURL(this.getClass()
 			.getResource("/" + PRE_JAR));
 		try (Jar pre = Jar.fromResource("pre", preJar)) {
-			jar.addAll(pre);
+			jar.addAll(pre, new Instruction("!{META-INF,OSGI-OPT}/*"));
 		}
 
 		String embeddedLauncherName = main.getValue(MAIN_CLASS);
