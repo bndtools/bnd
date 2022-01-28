@@ -30,6 +30,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -184,12 +185,11 @@ public abstract class ProjectLauncher extends Processor {
 			.forEach(this::addRunVM);
 		getProject().getRunProgramArgs()
 			.forEach(this::addRunProgramArgs);
-		runproperties = getProject().getRunProperties();
+		runproperties = null; // set in getRunProperties
 		runframeworkrestart = getProject().is(Constants.RUNFRAMEWORKRESTART);
 		storageDir = getProject().getRunStorage();
 
 		setKeep(getProject().getRunKeep());
-		calculatedProperties(runproperties);
 	}
 
 	private int getRunframework(String property) {
@@ -292,7 +292,17 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public Map<String, String> getRunProperties() {
-		return runproperties;
+		Map<String, String> properties = runproperties;
+		if (properties != null) {
+			return properties;
+		}
+		properties = getProject().getRunProperties();
+		try {
+			calculatedProperties(properties);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+		return runproperties = properties;
 	}
 
 	public File getStorageDir() {
@@ -645,30 +655,6 @@ public abstract class ProjectLauncher extends Processor {
 	 */
 
 	public void calculatedProperties(Map<String, String> properties) throws Exception {
-
-		if (getTrace())
-			properties.put(Constants.LAUNCH_TRACE, "true");
-
-		boolean eager = launcherInstrs.runoptions()
-			.contains(LauncherInstructions.RunOption.eager);
-		if (eager)
-			properties.put(Constants.LAUNCH_ACTIVATION_EAGER, Boolean.toString(eager));
-
-		Collection<String> activators = getActivators();
-		if (!activators.isEmpty())
-			properties.put(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
-
-		if (!keep)
-			properties.put(org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN,
-				org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-
-		if (!runsystemcapabilities.isEmpty())
-			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
-				runsystemcapabilities.toString());
-
-		if (!runsystempackages.isEmpty())
-			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, runsystempackages.toString());
-
 		setupStartlevels(properties);
 	}
 
@@ -709,7 +695,7 @@ public abstract class ProjectLauncher extends Processor {
 	 * start level to the desired level. Either the set
 	 * {@link Constants#RUNSTARTLEVEL_BEGIN} or the maximum level + 2.
 	 */
-	private void setupStartlevels(Map<String, String> properties) throws Exception, IOException {
+	private void setupStartlevels(Map<String, String> properties) throws Exception {
 		Parameters runbundles = new Parameters();
 		int maxLevel = -1;
 
