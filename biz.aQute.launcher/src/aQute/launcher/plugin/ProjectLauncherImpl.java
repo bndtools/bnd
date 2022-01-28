@@ -42,6 +42,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Jar.Compression;
@@ -233,7 +234,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.runbundles.addAll(runbundles);
 		lc.trace = getTrace();
 		lc.timeout = getTimeout();
-		lc.services = super.getRunFramework() == SERVICES ? true : false;
+		lc.services = getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
 		lc.activationEager = launcherInstrs.runoptions()
@@ -354,9 +355,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		// Copy the bundles to the JAR
 
-		List<String> runbundles = (List<String>) getRunBundles();
 		List<String> actualPaths = new ArrayList<>();
 
+		Collection<String> runbundles = getRunBundles();
 		for (String path : runbundles) {
 			logger.debug("embedding run bundles {}", path);
 			File file = getOriginalFile(path);
@@ -398,7 +399,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Resource preJar = Resource.fromURL(this.getClass()
 			.getResource("/" + PRE_JAR));
 		try (Jar pre = Jar.fromResource("pre", preJar)) {
-			jar.addAll(pre);
+			jar.addAll(pre, new Instruction("!{META-INF,OSGI-OPT}/*"));
 		}
 
 		String embeddedLauncherName = main.getValue(MAIN_CLASS);

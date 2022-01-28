@@ -15,6 +15,7 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.RunSession;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.help.instructions.LauncherInstructions;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
@@ -62,7 +63,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	}
 
 	/**
-	 * Called when a change in the IDE is detected. We will then upate from the
+	 * Called when a change in the IDE is detected. We will then update from the
 	 * project and then update the remote framework.
 	 */
 	@Override
@@ -93,11 +94,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		prepared = true;
 		super.prepare();
 
-		updateFromProject();
-
 		Map<String, String> properties = new HashMap<>(getRunProperties());
-
-		calculatedProperties(properties);
 
 		Collection<String> embeddedActivators = getActivators();
 		if (embeddedActivators != null && !embeddedActivators.isEmpty()) {
@@ -119,6 +116,36 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			RunSessionImpl session = new RunSessionImpl(this, dto, sessionProperties);
 			sessions.add(session);
 		}
+	}
+
+	@Override
+	public void calculatedProperties(Map<String, String> properties) throws Exception {
+		if (getTrace())
+			properties.put(Constants.LAUNCH_TRACE, "true");
+
+		boolean eager = launcherInstrs.runoptions()
+			.contains(LauncherInstructions.RunOption.eager);
+		if (eager)
+			properties.put(Constants.LAUNCH_ACTIVATION_EAGER, "true");
+
+		Collection<String> activators = getActivators();
+		if (!activators.isEmpty())
+			properties.put(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
+
+		if (!isKeep())
+			properties.put(org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN,
+				org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+
+		Map<?, ?> runsystemcapabilities = getSystemCapabilitiesParameters();
+		if (!runsystemcapabilities.isEmpty())
+			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
+				runsystemcapabilities.toString());
+
+		Map<?, ?> runsystempackages = getSystemPackages();
+		if (!runsystempackages.isEmpty())
+			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, runsystempackages.toString());
+
+		super.calculatedProperties(properties);
 	}
 
 	/**

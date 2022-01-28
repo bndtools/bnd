@@ -9,5 +9,5 @@
     org.apache.felix.configadmin;startlevel=5, \
     org.apache.felix.inventory
     
-    
+-runtimeout: 0 minutes
 -runtrace: true

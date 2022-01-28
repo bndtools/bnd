@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -1862,16 +1863,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (tm == null)
 			return dflt;
 
-		tm = tm.toUpperCase();
-		TimeUnit unit = TimeUnit.MILLISECONDS;
-		Matcher m = DURATION_P.matcher(tm);
+		Matcher m = DURATION_P.matcher(tm.toUpperCase(Locale.ROOT));
 		if (m.matches()) {
-			long duration = Long.parseLong(tm);
+			long duration = Long.parseLong(m.group(1));
 			String u = m.group(2);
-			if (u != null)
-				unit = TimeUnit.valueOf(u);
-			duration = TimeUnit.MILLISECONDS.convert(duration, unit);
-			return duration;
+			TimeUnit unit = (u != null) ? TimeUnit.valueOf(u) : TimeUnit.MILLISECONDS;
+			return unit.toMillis(duration);
 		}
 		return dflt;
 	}

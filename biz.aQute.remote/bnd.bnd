@@ -7,6 +7,7 @@
 aQute.agent.server.port = 29998
 
 -buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
     aQute.libg;version=project,\
     biz.aQute.bnd.util;version=latest,\

@@ -81,29 +81,29 @@ public class LauncherConstants {
 	 * Translate a constants to properties.
 	 */
 	public <P extends Properties> P getProperties(P p) {
-		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");
-		p.setProperty(LAUNCH_SERVICES, services + "");
+		p.setProperty(LAUNCH_NOREFERENCES, String.valueOf(noreferences));
+		p.setProperty(LAUNCH_SERVICES, String.valueOf(services));
 		if (storageDir != null)
 			p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
-		p.setProperty(LAUNCH_KEEP, keep + "");
+		p.setProperty(LAUNCH_KEEP, String.valueOf(keep));
 
 		p.setProperty(LAUNCH_RUNBUNDLES, join(runbundles, ","));
 
 		if (systemPackages != null)
-			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages + "");
+			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages);
 		if (systemCapabilities != null)
-			p.setProperty(LAUNCH_SYSTEMCAPABILITIES, systemCapabilities + "");
-		p.setProperty(Constants.LAUNCH_TRACE, trace + "");
-		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
+			p.setProperty(LAUNCH_SYSTEMCAPABILITIES, systemCapabilities);
+		p.setProperty(Constants.LAUNCH_TRACE, String.valueOf(trace));
+		p.setProperty(LAUNCH_TIMEOUT, String.valueOf(timeout));
 		p.setProperty(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
-		p.setProperty(LAUNCH_EMBEDDED, embedded + "");
-		p.setProperty(LAUNCH_FRAMEWORK_RESTART, frameworkRestart + "");
+		p.setProperty(LAUNCH_EMBEDDED, String.valueOf(embedded));
+		p.setProperty(LAUNCH_FRAMEWORK_RESTART, String.valueOf(frameworkRestart));
 
 		if (name != null)
 			p.setProperty(LAUNCH_NAME, name);
 
 		p.setProperty(LAUNCH_NOTIFICATION_PORT, String.valueOf(notificationPort));
-		p.setProperty(Constants.LAUNCH_ACTIVATION_EAGER, activationEager + "");
+		p.setProperty(Constants.LAUNCH_ACTIVATION_EAGER, String.valueOf(activationEager));
 
 		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
 			if (entry.getValue() == null) {
@@ -129,24 +129,24 @@ public class LauncherConstants {
 	 * @param p
 	 */
 	public LauncherConstants(Properties p) {
-		services = Boolean.valueOf(p.getProperty(LAUNCH_SERVICES));
+		services = Boolean.parseBoolean(p.getProperty(LAUNCH_SERVICES));
 		if (p.getProperty(LAUNCH_STORAGE_DIR) != null)
 			storageDir = new File(p.getProperty(LAUNCH_STORAGE_DIR));
-		noreferences = Boolean.valueOf(p.getProperty(LAUNCH_NOREFERENCES));
-		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
+		noreferences = Boolean.parseBoolean(p.getProperty(LAUNCH_NOREFERENCES));
+		keep = Boolean.parseBoolean(p.getProperty(LAUNCH_KEEP));
 		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
 
 		systemPackages = p.getProperty(LAUNCH_SYSTEMPACKAGES);
 		systemCapabilities = p.getProperty(LAUNCH_SYSTEMCAPABILITIES);
-		trace = Boolean.valueOf(p.getProperty(Constants.LAUNCH_TRACE));
+		trace = Boolean.parseBoolean(p.getProperty(Constants.LAUNCH_TRACE));
 		timeout = Long.parseLong(p.getProperty(LAUNCH_TIMEOUT));
 		activators.addAll(split(p.getProperty(Constants.LAUNCH_ACTIVATORS), " ,"));
 		String s = p.getProperty(LAUNCH_EMBEDDED);
 		embedded = s != null && Boolean.parseBoolean(s);
 		name = p.getProperty(LAUNCH_NAME);
-		notificationPort = Integer.valueOf(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
-		activationEager = Boolean.valueOf(p.getProperty(Constants.LAUNCH_ACTIVATION_EAGER));
-		frameworkRestart = Boolean.valueOf(p.getProperty(LAUNCH_FRAMEWORK_RESTART));
+		notificationPort = Integer.parseInt(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
+		activationEager = Boolean.parseBoolean(p.getProperty(Constants.LAUNCH_ACTIVATION_EAGER));
+		frameworkRestart = Boolean.parseBoolean(p.getProperty(LAUNCH_FRAMEWORK_RESTART));
 		@SuppressWarnings({
 			"unchecked", "rawtypes"
 		})

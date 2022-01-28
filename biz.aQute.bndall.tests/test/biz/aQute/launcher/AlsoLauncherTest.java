@@ -926,7 +926,7 @@ public class AlsoLauncherTest {
 	@Test
 	public void testTimeoutActivator() throws Exception {
 		try (ProjectLauncher l = project.getProjectLauncher()) {
-			l.setTimeout(100, TimeUnit.MILLISECONDS);
+			l.setTimeout(100L, TimeUnit.MILLISECONDS);
 			l.setTrace(false);
 			assertThat(l.launch()).isEqualTo(ProjectLauncher.TIMEDOUT);
 		}
@@ -936,7 +936,7 @@ public class AlsoLauncherTest {
 	@Test
 	public void testTimeout() throws Exception {
 		try (ProjectLauncher l = project.getProjectLauncher()) {
-			l.setTimeout(100, TimeUnit.MILLISECONDS);
+			l.setTimeout(100L, TimeUnit.MILLISECONDS);
 			l.setTrace(false);
 			l.getRunProperties()
 				.put("test.cmd", "timeout");
@@ -981,7 +981,7 @@ public class AlsoLauncherTest {
 
 	private void assertExitCode(String cmd, int rv) throws Exception {
 		try (ProjectLauncher l = project.getProjectLauncher()) {
-			l.setTimeout(25000, TimeUnit.MILLISECONDS);
+			l.setTimeout(25000L, TimeUnit.MILLISECONDS);
 			l.setTrace(true);
 			l.getRunProperties()
 				.put("test.cmd", cmd);
@@ -998,7 +998,7 @@ public class AlsoLauncherTest {
 			runbundles + "," + new File("jar/mandatorynoversion.jar;version=file").getAbsolutePath());
 		ProjectTester tester = project.getProjectTester();
 		try (ProjectLauncher l = tester.getProjectLauncher()) {
-			l.setTimeout(25000, TimeUnit.MILLISECONDS);
+			l.setTimeout(25000L, TimeUnit.MILLISECONDS);
 			l.setTrace(true);
 			AtomicBoolean reported = new AtomicBoolean(false);
 			tester.registerForNotifications((a, b) -> {
@@ -1028,7 +1028,7 @@ public class AlsoLauncherTest {
 						error.set(notification);
 					}
 				});
-				l.setTimeout(5000, TimeUnit.MILLISECONDS);
+				l.setTimeout(5000L, TimeUnit.MILLISECONDS);
 				l.setTrace(true);
 				l.launch();
 
