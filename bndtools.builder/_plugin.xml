@@ -170,7 +170,7 @@
 	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">
 		<classpathContainerInitializer
 			id="aQute.bnd.classpath.container"
-			class="org.bndtools.facade.ExtensionFacade::org.bndtools.builder.classpath.BndContainerInitializer"
+			class="org.bndtools.builder.classpath.facade.ClasspathContainerInitializerFacade"
 		/>
 	</extension>
 
