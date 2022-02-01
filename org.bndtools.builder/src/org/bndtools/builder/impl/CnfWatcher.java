@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -33,14 +34,17 @@ public class CnfWatcher implements IResourceChangeListener {
 	private static final ILogger	logger		= Logger.getLogger(CnfWatcher.class);
 	static final org.slf4j.Logger	consoleLog	= org.slf4j.LoggerFactory.getLogger(CnfWatcher.class);
 
-	@Reference
-	BndtoolsBuilder					builder;
+	final IWorkspace				eclipseWorkspace;
+	final Workspace					bndWorkspace;
 
-	@Reference
-	IWorkspace						eclipseWorkspace;
-
-	@Reference
-	Workspace						bndWorkspace;
+	@Activate
+	public CnfWatcher(
+		@Reference BndtoolsBuilder unused, //
+		@Reference IWorkspace eclipseWS, //
+		@Reference Workspace bndWS) {
+		this.eclipseWorkspace = eclipseWS;
+		this.bndWorkspace = bndWS;
+	}
 
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
@@ -82,9 +86,7 @@ public class CnfWatcher implements IResourceChangeListener {
 							ms.deleteMarkers("*");
 							ms.setMarkers(bndWorkspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
 						} catch (Exception e) {
-							return new Status(IStatus.ERROR, PLUGIN_ID,
-								"error during workspace refresh",
-								e);
+							return new Status(IStatus.ERROR, PLUGIN_ID, "error during workspace refresh", e);
 						}
 						return Status.OK_STATUS;
 					}
