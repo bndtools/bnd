@@ -47,7 +47,7 @@ public class DependencyResolver {
 	private static final Logger														logger					= LoggerFactory
 		.getLogger(DependencyResolver.class);
 
-	private static final BiPredicate<ArtifactResult, ArtifactResult>				sameExceptVersion		= (a,
+	private static final BiPredicate<ArtifactResult, ArtifactResult>				sameExactVersion		= (a,
 		b) -> Objects.equals(a.getArtifact()
 			.getArtifactId(),
 			b.getArtifact()
@@ -59,10 +59,14 @@ public class DependencyResolver {
 			&& Objects.equals(a.getArtifact()
 				.getClassifier(),
 				b.getArtifact()
-					.getClassifier());
-	private static final BiPredicate<ArtifactResult, Collection<ArtifactResult>>	containsAnotherVersion	= (
+					.getClassifier())
+			&& Objects.equals(a.getArtifact()
+				.getVersion(),
+				b.getArtifact()
+					.getVersion());
+	private static final BiPredicate<ArtifactResult, Collection<ArtifactResult>>	containsExactVersion		= (
 		resolvedArtifact, collection) -> collection.stream()
-			.anyMatch(ra -> sameExceptVersion.test(ra, resolvedArtifact));
+			.anyMatch(ra -> sameExactVersion.test(ra, resolvedArtifact));
 
 	private final boolean															includeTransitive;
 	private final MavenProject														project;
@@ -234,7 +238,7 @@ public class DependencyResolver {
 				}
 
 				MapStream.of(resolved)
-					.filterValue(v -> containsAnotherVersion.negate()
+					.filterValue(v -> containsExactVersion.negate()
 						.test(v, dependencies.values()))
 					.forEachOrdered(dependencies::put);
 			} finally {
@@ -305,8 +309,9 @@ public class DependencyResolver {
 				// we don't already have another version (earlier means higher
 				// precedence regardless of version)
 				if (scopes.contains(node.getDependency()
-					.getScope()) && containsAnotherVersion.negate()
-						.test(resolvedArtifact, files.values())) {
+					.getScope()) && containsExactVersion.negate()
+						.test(resolvedArtifact, files.values())
+				) {
 					files.put(resolvedArtifact.getArtifact()
 						.getFile(), resolvedArtifact);
 				}
