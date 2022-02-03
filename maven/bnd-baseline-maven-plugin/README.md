@@ -72,7 +72,7 @@ break all WAR files and therefore be a *major* change.
 
 The distinction between interfaces designed for providers to implement (like `javax.servlet.ServletContext`)
  and those designed for consumers (like `javax.servlet.Servlet`) can be made using the 
-`org.osgi.annotation.versioning.ProviderType` and `org.osgi.annotation.versioningConsumerType` annotations
+`org.osgi.annotation.versioning.ProviderType` and `org.osgi.annotation.versioning.ConsumerType` annotations
 
 ### Configuring the `bnd-baseline-maven-plugin`
 
