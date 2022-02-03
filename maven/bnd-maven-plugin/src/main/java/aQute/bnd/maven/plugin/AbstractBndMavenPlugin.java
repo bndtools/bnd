@@ -565,6 +565,15 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	private void attachArtifactToProject(Jar bndJar) {
 		File artifactFile = createArtifactFile();
+		File outputDir = artifactFile.getParentFile();
+
+		if (!outputDir.exists()) {
+			try {
+				IO.mkdirs(outputDir);
+			} catch (IOException ioe) {
+				throw Exceptions.duck(ioe);
+			}
+		}
 
 		try (OutputStream os = buildContext.newFileOutputStream(artifactFile)) {
 			bndJar.write(os);

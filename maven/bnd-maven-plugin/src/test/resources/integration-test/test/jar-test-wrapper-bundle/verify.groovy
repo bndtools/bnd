@@ -30,7 +30,7 @@ assert wrapper_manifest.getValue('Project-Name') == moduleDir
 assert wrapper_manifest.getValue('Project-Dir') == new File(basedir, moduleDir).absolutePath.replace(File.separatorChar, '/' as char)
 assert wrapper_manifest.getValue('Project-Output') == new File(basedir, "${moduleDir}/target").absolutePath
 assert wrapper_manifest.getValue('Project-Buildpath')
-//assert !wrapper_manifest.getValue('Project-Sourcepath')
+assert !wrapper_manifest.getValue('Project-Sourcepath')
 assert wrapper_manifest.getValue('Parent-Here') == new File(basedir, 'jar-parent').absolutePath.replace(File.separatorChar, '/' as char)
 
 // Check contents
