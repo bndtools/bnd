@@ -1,0 +1,2 @@
+X-ParentProjectProperty: overridden
+-exportcontents: ${packages;VERSIONED}

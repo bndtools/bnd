@@ -1,0 +1,7 @@
+Export-Package: \
+	org.example.api,\
+	org.example.types
+Bundle-SymbolicName: test.wrapper.bundle
+X-ParentProjectProperty: overridden
+-include: other.bnd
+-includeresource: lib/osgi.annotation.jar=osgi.annotation-*.jar; lib:=true
