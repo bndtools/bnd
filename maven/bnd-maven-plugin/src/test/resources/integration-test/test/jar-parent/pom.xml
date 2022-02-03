@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>test</artifactId>
+	<artifactId>jar-test</artifactId>
 	<version>0.0.2</version>
 	<packaging>pom</packaging>
 
@@ -13,27 +13,6 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<someParentVar>parentValue</someParentVar>
 	</properties>
-
-	<modules>
-		<module>test-api-bundle</module>
-		<module>test-impl-bundle</module>
-		<module>test-wrapper-bundle</module>
-		<module>test-in-build-pluginManagement-inheritance</module>
-		<module>test-bnd-process-tests-goal</module>
-		<module>test-bnd-process-tests-goal-fragment</module>
-		<module>test-war-bundle</module>
-		<module>test-bnd-process-skipIfEmpty</module>
-		<module>test-bnd-process-tests-skipIfEmpty</module>
-		<module>jar-test-api-bundle</module>
-		<module>jar-test-impl-bundle</module>
-		<module>jar-test-wrapper-bundle</module>
-		<module>jar-test-in-build-pluginManagement-inheritance</module>
-		<module>jar-test-bnd-process-tests-goal</module>
-		<module>jar-test-bnd-process-tests-goal-fragment</module>
-		<module>jar-test-war-bundle</module>
-		<module>jar-test-bnd-process-skipIfEmpty</module>
-		<module>jar-test-bnd-process-tests-skipIfEmpty</module>
-	</modules>
 
 	<build>
 		<pluginManagement>
@@ -55,11 +34,12 @@
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
 				<version>@project.version@</version>
+				<extensions>true</extensions>
 				<executions>
 					<execution>
-						<id>default-bnd-process</id>
+						<id>default-jar</id>
 						<goals>
-							<goal>bnd-process</goal>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -73,25 +53,11 @@ Project-Output: ${project.output}
 Project-Sourcepath: ${project.sourcepath}
 Project-Buildpath: ${project.buildpath}
 Parent-Here: ${.}
--include: ${.}/other.bnd
+-include: ${.}/../other.bnd
 ]]></bnd>
 				</configuration>
 			</plugin>
 
-			<!-- The following configuration is required because bnd-maven-plugin
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up
-				the manifest from this location, then the following config is not needed. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive>
-				</configuration>
-			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
