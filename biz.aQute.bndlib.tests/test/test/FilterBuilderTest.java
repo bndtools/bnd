@@ -20,6 +20,7 @@ public class FilterBuilderTest {
 	public void testAnd() {
 		fb.and();
 		fb.eq("a", "b");
+		fb.endAnd();
 		assertEquals("(a=b)", fb.toString());
 	}
 
@@ -27,6 +28,7 @@ public class FilterBuilderTest {
 	public void testOr() {
 		fb.or();
 		fb.eq("a", "b");
+		fb.endOr();
 		assertEquals("(a=b)", fb.toString());
 	}
 
@@ -35,6 +37,7 @@ public class FilterBuilderTest {
 		fb.and();
 		fb.eq("a", "b");
 		fb.eq("c", "d");
+		fb.endAnd();
 		assertEquals("(&(a=b)(c=d))", fb.toString());
 	}
 
@@ -43,6 +46,7 @@ public class FilterBuilderTest {
 		fb.or();
 		fb.eq("a", "b");
 		fb.eq("c", "d");
+		fb.endOr();
 		assertEquals("(|(a=b)(c=d))", fb.toString());
 	}
 
@@ -59,6 +63,7 @@ public class FilterBuilderTest {
 		fb.end();
 		fb.eq("i", "j");
 		fb.neq("k", "l");
+		fb.end();
 		assertEquals("(&(|(a=b)(c=d))(|(e=f)(g=h))(i=j)(!(k=l)))", fb.toString());
 	}
 
