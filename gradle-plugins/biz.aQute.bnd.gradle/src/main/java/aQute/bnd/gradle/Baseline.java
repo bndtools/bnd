@@ -380,35 +380,37 @@ public class Baseline extends DefaultTask {
 				.collect(toList());
 			BundleInfo bundleInfo = baseliner.getBundleInfo();
 			try (Formatter f = new Formatter(report, "UTF-8", Locale.US)) {
-				f.format("===============================================================%n");
-				f.format("%s %s %s-%s", bundleInfo.mismatch ? "*" : " ", bundleInfo.bsn, newer.getVersion(),
-					older.getVersion());
-
+				String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s\n";
+				f.format("===============================================================\n");
+				f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "");
+				Diff diff = baseliner.getDiff();
+				f.format(format, bundleInfo.mismatch ? "*" : " ", bundleInfo.bsn, diff.getType(), diff.getDelta(),
+					newer.getVersion(), older.getVersion(),
+					bundleInfo.mismatch && Objects.nonNull(bundleInfo.suggestedVersion) ? bundleInfo.suggestedVersion
+						: "-",
+					"");
 				if (bundleInfo.mismatch) {
 					failure = true;
-					if (Objects.nonNull(bundleInfo.suggestedVersion)) {
-						f.format(" suggests %s", bundleInfo.suggestedVersion);
-					}
-					f.format("%n%#2S", baseliner.getDiff());
+					f.format("%#2S\n", diff);
 				}
 
-				f.format("%n===============================================================%n");
-
-				String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n";
-				f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "If Prov.");
-
-				for (Info info : infos) {
-					Diff packageDiff = info.packageDiff;
-					f.format(format, info.mismatch ? "*" : " ", packageDiff.getName(), packageDiff.getType(),
-						packageDiff.getDelta(), info.newerVersion,
-						Objects.nonNull(info.olderVersion) && info.olderVersion.equals(Version.LOWEST) ? "-"
-							: info.olderVersion,
-						Objects.nonNull(info.suggestedVersion)
-							&& info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok" : info.suggestedVersion,
-						Objects.nonNull(info.suggestedIfProviders) ? info.suggestedIfProviders : "-");
-					if (info.mismatch) {
-						failure = true;
-						f.format("%#2S%n", packageDiff);
+				if (!infos.isEmpty()) {
+					f.format("===============================================================\n");
+					f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "If Prov.");
+					for (Info info : infos) {
+						diff = info.packageDiff;
+						f.format(format, info.mismatch ? "*" : " ", diff.getName(), diff.getType(), diff.getDelta(),
+							info.newerVersion,
+							Objects.nonNull(info.olderVersion) && info.olderVersion.equals(Version.LOWEST) ? "-"
+								: info.olderVersion,
+							Objects.nonNull(info.suggestedVersion)
+								&& info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok"
+									: info.suggestedVersion,
+							Objects.nonNull(info.suggestedIfProviders) ? info.suggestedIfProviders : "-");
+						if (info.mismatch) {
+							failure = true;
+							f.format("%#2S\n", diff);
+						}
 					}
 				}
 			}
