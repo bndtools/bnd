@@ -50,6 +50,7 @@ import aQute.bnd.osgi.repository.AbstractIndexingRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.InfoCapability;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.FilterBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -119,13 +120,21 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 		};
 
 		identificationAndVersionExpressionFunction = (bsn, version) -> {
-			RequirementBuilder builder = new RequirementBuilder(BND_INFO);
-			builder.addFilter("name", bsn, version.toString(), null);
 			return combiner.or( //
 				combiner.identity(
-					CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, bsn, version.toString())
+					new RequirementBuilder(IdentityNamespace.IDENTITY_NAMESPACE) //
+						.addFilter(new FilterBuilder().and()
+							.eq(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
+							.eq(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version)
+							.end())
 						.buildSyntheticRequirement()), //
-				combiner.identity(builder.buildSyntheticRequirement()));
+				combiner.identity( //
+					new RequirementBuilder(BND_INFO) //
+						.addFilter(new FilterBuilder().and()
+							.eq(Constants.NAME_ATTRIBUTE, bsn)
+							.eq("version", version)
+							.end())
+						.buildSyntheticRequirement()));
 		};
 	}
 
