@@ -225,7 +225,7 @@ public class Baseline {
 
 						// Calculate the new delta assuming we fix all the major
 						// interfaces by making them providers
-						Delta tryDelta = pdiff.getDelta(diff -> {
+						Delta otherDelta = pdiff.getDelta(diff -> {
 							if (diff.getType() == Type.INTERFACE && diff.getDelta() == MAJOR) {
 								info.providers.add(Descriptors.getShortName(diff.getName()));
 								return true;
@@ -233,8 +233,8 @@ public class Baseline {
 							return false;
 						});
 
-						if (tryDelta != MAJOR) {
-							info.suggestedIfProviders = bump(tryDelta, info.olderVersion, 1, 0);
+						if (otherDelta != MAJOR) {
+							info.suggestedIfProviders = bump(MINOR, info.olderVersion, 1, 0);
 						}
 					}
 				}
