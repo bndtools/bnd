@@ -22,9 +22,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
@@ -139,9 +137,7 @@ public interface MavenRunListenerHelper {
 		MavenProject mavenProject = getMavenProject(projectFacade);
 		Plugin plugin = getMavenProject(projectFacade).getPlugin(pluginId);
 		if (plugin == null) {
-			IStatus status = new Status(IStatus.ERROR, "bndtools.m2e", IStatus.ERROR,
-				createErrorMessage(pluginId), null);
-			throw new CoreException(status);
+			return null;
 		}
 		List<String> tasks = plugin
 			.getExecutionsAsMap()
