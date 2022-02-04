@@ -252,9 +252,13 @@ public class ProjectGenerate implements AutoCloseable {
 				@SuppressWarnings("unchecked")
 				Optional<String> error = redirect.apply(() -> p.generate(bc, spec.instance()));
 
+				project.getInfo(bc, pluginName);
 				if (error.isPresent())
 					return err(error.get() + " : " + redirect.getContent());
 
+				if (!bc.isOk()) {
+					return err("errors");
+				}
 				return ok(true);
 			});
 		return call.error()
