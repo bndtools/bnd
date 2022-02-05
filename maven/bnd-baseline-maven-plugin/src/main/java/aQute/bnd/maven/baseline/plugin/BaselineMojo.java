@@ -1,12 +1,15 @@
 package aQute.bnd.maven.baseline.plugin;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Formatter;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -40,6 +43,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.diff.Diff;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.ReporterAdapter;
@@ -263,34 +267,53 @@ public class BaselineMojo extends AbstractMojo {
 				.getFile())) {
 			boolean failed = false;
 
-			for (Info info : baseline.baseline(newer, older, diffpackages)) {
-				if (info.mismatch) {
-					failed = true;
-					if (logger.isErrorEnabled()) {
-						sb.setLength(0);
-						f.format(
-							"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s",
-							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
-							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
-						if (fullReport) {
-							f.format("%n%#S", info.packageDiff);
-						}
-						logger.error(f.toString());
-					}
-				}
-			}
+			List<Info> infos = baseline.baseline(newer, older, diffpackages)
+				.stream()
+				.filter(info -> info.mismatch)
+				.sorted(Comparator.comparing(info -> info.packageName))
+				.collect(toList());
 
-			BundleInfo binfo = baseline.getBundleInfo();
-			if (binfo.mismatch) {
+			String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s";
+			BundleInfo bundleInfo = baseline.getBundleInfo();
+			if (bundleInfo.mismatch) {
 				failed = true;
 				if (logger.isErrorEnabled()) {
 					sb.setLength(0);
-					f.format("The bundle version change (%s to %s) is too low, the new version must be at least %s",
-						binfo.olderVersion, binfo.newerVersion, binfo.suggestedVersion);
+					f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "");
+					logger.error(f.toString());
+					sb.setLength(0);
+					Diff diff = baseline.getDiff();
+					f.format(format, "*", bundleInfo.bsn, diff.getType(), diff.getDelta(), newer.getVersion(),
+						older.getVersion(),
+						Objects.nonNull(bundleInfo.suggestedVersion) ? bundleInfo.suggestedVersion : "-", "");
 					if (fullReport) {
-						f.format("%n%#S", baseline.getDiff());
+						f.format("\n%#2S", diff);
 					}
 					logger.error(f.toString());
+				}
+			}
+
+			if (!infos.isEmpty()) {
+				failed = true;
+				if (logger.isErrorEnabled()) {
+					sb.setLength(0);
+					f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "If Prov.");
+					logger.error(f.toString());
+					for (Info info : infos) {
+						sb.setLength(0);
+						Diff diff = info.packageDiff;
+						f.format(format, "*", diff.getName(), diff.getType(), diff.getDelta(), info.newerVersion,
+							Objects.nonNull(info.olderVersion)
+								&& info.olderVersion.equals(aQute.bnd.version.Version.LOWEST) ? "-" : info.olderVersion,
+								Objects.nonNull(info.suggestedVersion)
+								&& info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok"
+									: info.suggestedVersion,
+							Objects.nonNull(info.suggestedIfProviders) ? info.suggestedIfProviders : "-");
+						if (fullReport) {
+							f.format("\n%#2S", diff);
+						}
+						logger.error(f.toString());
+					}
 				}
 			}
 			return failed;

@@ -20,18 +20,18 @@ assert build_log =~ Pattern.quote('[INFO] Baselining check succeeded checking bi
 assert build_log =~ Pattern.quote('[INFO] Baselining check succeeded checking biz.aQute.bnd-test:valid-with-provider-no-bundle-version-change:jar:1.0.1 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1')
 
 // With provider
-assert build_log =~ Pattern.quote('[ERROR] Baseline mismatch for package bnd.test, MINOR change. Current is 1.0.0, repo is 1.0.0, suggest 1.1.0 or -')
+assert build_log =~ Pattern.quote('[ERROR] * bnd.test                                           PACKAGE    MINOR      1.0.0      1.0.0      1.1.0      -')
 
 assert build_log =~ Pattern.quote('[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-provider:jar:1.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.')
 
 // With provider (require bundle version change)
-assert build_log =~ Pattern.quote('[ERROR] The bundle version change (1.0.1 to 1.0.1) is too low, the new version must be at least 1.1.0')
+assert build_log =~ Pattern.quote('[ERROR] * valid-no-previous                                  BUNDLE     MAJOR      1.0.1      1.0.1      1.1.0')
 
 assert build_log =~ Pattern.quote('[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-provider-require-bundle-version-change:jar:1.0.1 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.')
 
 
 // With consumer
-assert build_log =~ Pattern.quote('[ERROR] Baseline mismatch for package bnd.test, MAJOR change. Current is 1.0.0, repo is 1.0.0, suggest 2.0.0 or 1.0.0')
+assert build_log =~ Pattern.quote('[ERROR] * bnd.test                                           PACKAGE    MAJOR      1.0.0      1.0.0      2.0.0      1.1.0')
 
 assert build_log =~ Pattern.quote('[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-consumer:jar:1.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.')
 
