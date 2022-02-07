@@ -1,4 +1,5 @@
 Bundle-Version: 1.0.0
-Export-Package: simple*
+Export-Package: !simple.internal.*,simple*
 
+-privatepackage: simple.internal
 -includepackage: iface.embedded

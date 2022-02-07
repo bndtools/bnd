@@ -20,7 +20,6 @@ import static org.eclipse.jdt.core.compiler.IProblem.UnresolvedVariable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,8 +42,6 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.ui.text.correction.AssistContext;
@@ -128,7 +125,6 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 		if (!sourceFolder.exists()) {
 			sourceFolder.create(true, true, new LoggingProgressMonitor("create()ing source folder"));
 		}
-
 		IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(sourceFolder);
 		pack = root.createPackageFragment("test", false,
 			new LoggingProgressMonitor("createPackageFragment() \"test\""));
@@ -243,22 +239,10 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			this.source = source;
 
 			// First create our AST
-			ICompilationUnit icu = pack.createCompilationUnit(className + ".java", source, true, null);
-
-			ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
-			Map<String, String> options = JavaCore.getOptions();
-			// Need to set 1.5 or higher for the "import static" syntax to work.
-			// Need to set 1.8 or higher to test parameterized type usages.
-			JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
-			parser.setCompilerOptions(options);
-			parser.setSource(icu);
-			parser.setResolveBindings(true);
-			parser.setBindingsRecovery(true);
-			parser.setKind(ASTParser.K_COMPILATION_UNIT);
-			parser.setUnitName(className + ".java");
-			parser.setEnvironment(new String[] {}, new String[] {}, new String[] {}, true);
-			CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
+			ICompilationUnit icu = TaskUtils.createCompilationUnit(pack, className, source);
+			// The quick fix processor depends on the presence of binding
+			// information, hence we request the parser to generate it
+			CompilationUnit cu = TaskUtils.buildAST(icu, true);
 			assistContext = new AssistContext(icu, offset, length);
 
 			problems = Arrays.asList(cu.getProblems());

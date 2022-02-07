@@ -130,10 +130,10 @@ public abstract class AbstractIMarkerAssert<SELF extends AbstractIMarkerAssert<S
 		return myself;
 	}
 
-	public <NARROW extends AbstractIMarkerAssert<NARROW, IMarker>> NARROW hasType(
+	public <NARROW extends AbstractIMarkerAssert<NARROW, ?>> NARROW hasType(
 		InstanceOfAssertFactory<IMarker, NARROW> expected) {
 		isNotNull();
-		return expected.createAssert(actual)
+		return isNotNull().asInstanceOf((InstanceOfAssertFactory<?, NARROW>) expected)
 			.isCorrectType();
 	}
 
@@ -400,8 +400,7 @@ public abstract class AbstractIMarkerAssert<SELF extends AbstractIMarkerAssert<S
 		Matcher m = p.matcher(message);
 		if (!m.find()) {
 			throw failure("%nExpecting%n  <%s>%nto have message containing match:%n  <%s>%n but was:%n  <%s>", actual,
-				expected,
-				message);
+				expected, message);
 		}
 		return myself;
 	}
@@ -465,10 +464,10 @@ public abstract class AbstractIMarkerAssert<SELF extends AbstractIMarkerAssert<S
 		}
 	}
 
-	protected Integer getIntAttribute(String attributeName) {
+	protected int getIntAttribute(String attributeName) {
 		try {
 			hasAttribute(attributeName);
-			return (Integer) actual.getAttribute(attributeName);
+			return (int) actual.getAttribute(attributeName);
 		} catch (CoreException e) {
 			throw Exceptions.duck(e);
 		}

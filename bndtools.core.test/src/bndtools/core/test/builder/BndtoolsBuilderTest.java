@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.bndtools.test.assertj.bndtools.imarker.BndPathProblemAssert;
-import org.bndtools.test.assertj.eclipse.resources.AllSoftAssertions;
+import org.bndtools.test.assertj.eclipse.resources.ResourcesSoftAssertions;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -22,7 +22,6 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.text.java.IQuickFixProcessor;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -49,7 +48,7 @@ public class BndtoolsBuilderTest {
 	static Project								bndProject;
 	// Injected by SoftAssertionsExtension
 	@InjectSoftAssertions
-	protected AllSoftAssertions					softly;
+	protected ResourcesSoftAssertions					softly;
 
 	@BeforeAll
 	static void beforeAllBase() throws Exception {
@@ -97,17 +96,27 @@ public class BndtoolsBuilderTest {
 		TaskUtils.buildClean("beforeEach");
 	}
 
-	@AfterAll
-	static void afterAll() {
-		TaskUtils.setAutobuild(false);
-	}
-
 	@Test
 	void clean_emptiesGenerated() throws Exception {
 		TaskUtils.buildIncremental("clean");
 		IFolder generated = eclipseProject.getFolder("generated");
-		// Precondition
+		// Want to check that the entire generated folder is recursively removed
+		// - create some more things in the folder.
+		IFile dummy = generated.getFile("dummy.txt");
+		dummy.create(IO.stream("dummy content"), true, null);
+		IFolder subFolder = generated.getFolder("subFolder");
+		subFolder.create(true, true, null);
+		IFile subDummy = subFolder.getFile("dummy2.txt");
+		subDummy.create(IO.stream("other content"), true, null);
+
+		// Preconditions
 		softly.assertThat(generated.getFile("test.jar"))
+			.exists();
+		softly.assertThat(subFolder)
+			.as("subFolder")
+			.exists();
+		softly.assertThat(subDummy)
+			.as("subDummy")
 			.exists();
 
 		// * Clean
@@ -116,6 +125,10 @@ public class BndtoolsBuilderTest {
 			.as("generated")
 			.isNullOrEmpty();
 		softly.assertThat(generated.getFile("test.jar"))
+			.doesNotExist();
+		softly.assertThat(subFolder)
+			.doesNotExist();
+		softly.assertThat(subDummy)
 			.doesNotExist();
 	}
 
@@ -160,7 +173,7 @@ public class BndtoolsBuilderTest {
 
 	Consumer<IMarker> nonExistingBundle() {
 		return marker -> {
-			AllSoftAssertions softly = new AllSoftAssertions();
+			ResourcesSoftAssertions softly = new ResourcesSoftAssertions();
 			softly.assertThat(marker)
 				.isError()
 				.hasMessageContaining("non.existing.bundle")
@@ -175,16 +188,15 @@ public class BndtoolsBuilderTest {
 
 	@Test
 	void nonExistingBuildpath_generatesErrorMarker() throws CoreException {
-		TaskUtils.waitForAutobuild(monitor -> {
-			TaskUtils.setAutobuild(true);
-			TaskUtils.addBundlesToBuildpath(bndProject, "non.existing.bundle");
-		}, "nonExistingBuildpath - turn on autobuild");
+		TaskUtils.addBundlesToBuildpath(bndProject, "non.existing.bundle");
+		TaskUtils.buildIncremental("nonExistingBuildpath - turn on autobuild");
 
 		softly.assertThat(getBndMarkers(MARKER_BND_PATH_PROBLEM))
 			.as("markers")
 			.anySatisfy(nonExistingBundle());
 
-		TaskUtils.waitForAutobuild(monitor -> TaskUtils.clearBuildpath(bndProject), "nonExistingBuildpath - after");
+		TaskUtils.clearBuildpath(bndProject);
+		TaskUtils.buildIncremental("nonExistingBuildpath - after");
 
 		softly.assertThat(getBndMarkers(MARKER_BND_PATH_PROBLEM))
 			.as("markers after clear")
@@ -193,8 +205,7 @@ public class BndtoolsBuilderTest {
 
 	@Test
 	void deleteOutputFile_shouldRebuild() throws CoreException {
-		TaskUtils.setAutobuild(true);
-		TaskUtils.waitForAutobuild("deleteOutputFile");
+		TaskUtils.buildIncremental("deleteOutputFile");
 		// TaskUtils.doAutobuildAndWait("deleteOutputFile_shouldRebuild");
 		IFile jarFile = getJarFile();
 		softly.assertThat(jarFile)
@@ -208,7 +219,7 @@ public class BndtoolsBuilderTest {
 		// .as("after delete")
 		// .doesNotExist();
 		//
-		TaskUtils.waitForAutobuild("deleteOutputFile");
+		TaskUtils.buildIncremental("deleteOutputFile");
 		// TaskUtils.doAutobuildAndWait("deleteOutputFile_shouldRebuild");
 
 		softly.assertThat(jarFile)
@@ -226,8 +237,7 @@ public class BndtoolsBuilderTest {
 		file.create(IO.stream("package testpkg; public class Uncompilable {}}"), true, null);
 		// file.refreshLocal(DEPTH_ZERO, null);
 		try {
-			TaskUtils.setAutobuild(true);
-			TaskUtils.waitForAutobuild("compileError - with the error");
+			TaskUtils.buildIncremental("compileError - with the error");
 
 			softly.assertThat(jarFile)
 				.hasModificationStamp(stamp);
@@ -241,7 +251,7 @@ public class BndtoolsBuilderTest {
 			file.delete(true, null);
 		}
 		// todo: * remove compile error -> build again
-		TaskUtils.waitForAutobuild("compileError - after delete");
+		TaskUtils.buildIncremental("compileError - after delete");
 		softly.assertThat(jarFile)
 			.doesNotHaveModificationStamp(stamp);
 	}
@@ -281,11 +291,11 @@ public class BndtoolsBuilderTest {
 	@Disabled("According to the comments, this test should pass - but it currently fails")
 	@Test
 	void whenBuildFileIsTouched_outputIsRebuilt() throws CoreException {
-		TaskUtils.doAutobuildAndWait("touchBuildFile");
+		TaskUtils.buildIncremental("touchBuildFile");
 
 		long stamp = getJarModStamp();
 		getBuildFile().touch(null);
-		TaskUtils.doAutobuildAndWait("afterTouchBndFile");
+		TaskUtils.buildIncremental("afterTouchBndFile");
 
 		softly.assertThat(getJarFile())
 			.as("after")
@@ -297,13 +307,11 @@ public class BndtoolsBuilderTest {
 	@Disabled("According to the comments, this test should pass - but it currently fails")
 	@Test
 	void whenBndFileIsTouched_outputIsRebuilt() throws CoreException {
-		TaskUtils.setAutobuild(true);
-		TaskUtils.waitForAutobuild("touchBndFile");
+		TaskUtils.buildIncremental("touchBndFile");
 
 		long stamp = getJarModStamp();
 		getBndFile().touch(null);
-		TaskUtils.setAutobuild(true);
-		TaskUtils.waitForAutobuild("afterTouchBndFile");
+		TaskUtils.buildIncremental("afterTouchBndFile");
 
 		softly.assertThat(getJarFile())
 			.as("after")
@@ -315,24 +323,29 @@ public class BndtoolsBuilderTest {
 
 	@Test
 	void whenDependentProjectAdded_outputIsRebuilt() {
-		TaskUtils.setAutobuild(true);
-		TaskUtils.waitForAutobuild("dependentProjectAdded");
+		TaskUtils.buildIncremental("dependentProjectAdded");
 
 		long stamp = getJarModStamp();
 
 		TaskUtils.addBundlesToBuildpath(bndProject, "local-proj");
-		TaskUtils.waitForAutobuild("added local-proj");
+		TaskUtils.buildIncremental("added local-proj");
 
 		softly.assertThat(getJarFile())
 			.as("after")
 			.doesNotHaveModificationStamp(stamp);
 	}
 
+	IFile getJar(IProject project) {
+		return project.getFile("generated/" + project.getName() + ".jar");
+	}
+
 	@Test
 	void whenDependentProjectUpdated_outputIsRebuilt() throws CoreException {
 		TaskUtils.addBundlesToBuildpath(bndProject, "local-proj");
-		TaskUtils.setAutobuild(true);
-		TaskUtils.waitForAutobuild("dependentProjectUpdated");
+
+		TaskUtils.buildIncremental("dependentProjectUpdated");
+
+		eclipseProject.getFile("generated/test.jar");
 
 		long stamp = getJarModStamp();
 
@@ -345,12 +358,12 @@ public class BndtoolsBuilderTest {
 			throw new IllegalStateException("Could not get project \"local-proj\" from the current workspace");
 		}
 
+		IFile localJar = getJar(localProject);
 		IFile file = localProject.getFile("src/my/local/ws/pkg/Compilable.java");
 		IFile jarFile = getJarFile();
-
 		file.create(IO.stream("package my.local.ws.pkg; public class Compilable {}"), true, null);
 		try {
-			TaskUtils.waitForAutobuild("after upstream dependency updated");
+			TaskUtils.buildIncremental("after upstream dependency updated");
 
 			softly.assertThat(jarFile)
 				.doesNotHaveModificationStamp(stamp);
@@ -358,8 +371,7 @@ public class BndtoolsBuilderTest {
 		} finally {
 			file.delete(true, null);
 		}
-
-		TaskUtils.waitForAutobuild("removed added file");
+		TaskUtils.buildIncremental("removed added file");
 
 		softly.assertThat(getJarFile())
 			.as("after")

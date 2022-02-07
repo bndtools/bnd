@@ -68,7 +68,7 @@ public class IResourceAssert extends AbstractIResourceAssert<IResourceAssert, IR
 		return hasType(IResource.ROOT);
 	}
 
-	private static String typeToString(int type) {
+	public static String typeToString(int type) {
 		switch (type) {
 			case IResource.FILE :
 				return "FILE";

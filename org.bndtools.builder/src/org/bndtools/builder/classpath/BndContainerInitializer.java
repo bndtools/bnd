@@ -21,7 +21,6 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
-import org.bndtools.api.builder.BuildLoggerConstants;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.PseudoJar;
 import org.eclipse.core.resources.IProject;
@@ -65,6 +64,8 @@ import bndtools.preferences.BndPreferences;
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
 
 	private static final ILogger												logger				= Logger
+		.getLogger(BndContainerInitializer.class);
+	private static final org.slf4j.Logger										consoleLog			= org.slf4j.LoggerFactory
 		.getLogger(BndContainerInitializer.class);
 	private static final ClasspathContainerSerializationHelper<BndContainer>	serializationHelper	= new ClasspathContainerSerializationHelper<>();
 
@@ -275,7 +276,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 		static void setClasspathContainer(IJavaProject javaProject, BndContainer container) throws JavaModelException {
 			BndPreferences prefs = new BndPreferences();
-			if (prefs.getBuildLogging() == BuildLoggerConstants.LOG_FULL) {
+			// if (prefs.getBuildLogging() == BuildLoggerConstants.LOG_FULL) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(container.getDescription())
 					.append(" for ")
@@ -291,9 +292,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 					sb.append("\n--- ")
 						.append(cpe);
 				}
-				logger.logInfo(sb.append("\n")
-					.toString(), null);
-			}
+				String msg = sb.append("\n")
+					.toString();
+				// logger.logInfo(msg, null);
+				consoleLog.debug(msg);
+				// }
 
 			JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
 				javaProject
