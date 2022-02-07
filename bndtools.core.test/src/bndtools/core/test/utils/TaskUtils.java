@@ -1,11 +1,17 @@
 package bndtools.core.test.utils;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.bndtools.api.BndtoolsConstants;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceDescription;
@@ -28,9 +34,11 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.deployer.repository.LocalIndexedRepo;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.SupplierWithException;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.io.IO;
 import bndtools.central.Central;
 
 public class TaskUtils {
@@ -136,6 +144,32 @@ public class TaskUtils {
 		log(context + ": done classpath update");
 	}
 
+	public static void requestClasspathUpdate(String context, String name) {
+		IProject project = ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.getProject(name);
+		requestClasspathUpdate(context, JavaCore.create(project));
+	}
+
+	public static void requestClasspathUpdate(String context, IProject project) {
+		requestClasspathUpdate(context, JavaCore.create(project));
+	}
+
+	public static void requestClasspathUpdate(String context, IJavaProject project) {
+		try {
+			log(context + ": Initiating classpath update");
+			ClasspathContainerInitializer initializer = JavaCore
+				.getClasspathContainerInitializer(BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
+			if (initializer != null) {
+				log(() -> context + ": Updating classpath for " + project.getElementName());
+				initializer.requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, project, null);
+			}
+		} catch (CoreException e) {
+			throw Exceptions.duck(e);
+		}
+		log(context + ": done classpath update");
+	}
+
 	public static void waitForBuild(String context) {
 		log(context + ": Initiating build");
 		buildIncremental(context);
@@ -155,6 +189,11 @@ public class TaskUtils {
 	 * {@link #waitForAutobuild(ICoreRunnable, String)} to avoid timing issues,
 	 * otherwise this method can return immediately in the small window before
 	 * autobuild starts.
+	 * <p>
+	 * Note: the autobuild job takes a second or so to respond to changes in the
+	 * workspace before triggering the incremental build. This really slows down
+	 * tests. Usually, it is best to call {@link #buildIncremental(String)}
+	 * directly as it will not have this lag and usually finishes quickly.
 	 *
 	 * @param context
 	 */
@@ -220,6 +259,7 @@ public class TaskUtils {
 			}
 			model.saveChanges();
 			Central.refresh(bndProject);
+			bndProject.refresh();
 			requestClasspathUpdate("addBundleToBuildpath()");
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -245,5 +285,37 @@ public class TaskUtils {
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	public static void importFodder() throws Exception, IOException {
+		final LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
+			.getRepository("Local Index");
+
+		if (localRepo == null) {
+			log("Central.getWorkspace(): " + Central.getWorkspace()
+				.getBase());
+			dumpWorkspace();
+			throw new IllegalStateException("Could not find Local Index");
+		}
+
+		Path bundleRoot = Paths.get(System.getProperty("bndtools.core.test.dir"))
+			.resolve("./generated/");
+		log("Attempting to import fodder bundles from " + bundleRoot);
+		Files.walk(bundleRoot, 1)
+			.filter(x -> x.getFileName()
+				.toString()
+				.contains(".fodder."))
+			.forEach(bundle -> {
+				try {
+					log("Adding fodder bundle to localRepo: " + bundle);
+					localRepo.put(IO.stream(bundle), null);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
+		log(() -> ("Local Index contains:\n\t" + localRepo.list("*")
+			.stream()
+			.collect(Collectors.joining(",\n\t"))));
+		updateWorkspace("beforeAllBase()");
 	}
 }

@@ -1,6 +1,5 @@
 package bndtools.core.test.editors.quickfix;
 
-import static bndtools.core.test.utils.TaskUtils.log;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jdt.core.compiler.IProblem.CannotThrowType;
 import static org.eclipse.jdt.core.compiler.IProblem.DiscouragedReference;
@@ -19,9 +18,6 @@ import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
 import static org.eclipse.jdt.core.compiler.IProblem.UnhandledException;
 import static org.eclipse.jdt.core.compiler.IProblem.UnresolvedVariable;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +60,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.deployer.repository.LocalIndexedRepo;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.unmodifiable.Sets;
-import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.core.test.utils.LoggingProgressMonitor;
 import bndtools.core.test.utils.TaskUtils;
@@ -110,38 +104,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 
 	@BeforeAll
 	static void beforeAllBase() throws Exception {
-		// Get a handle on the repo. I have seen this come back null on occasion
-		// but not exactly sure why and spinning doesn't seem to fix it; ref
-		// #4253
-		final LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
-			.getRepository("Local Index");
-
-		if (localRepo == null) {
-			log("Central.getWorkspace(): " + Central.getWorkspace()
-				.getBase());
-			TaskUtils.dumpWorkspace();
-			throw new IllegalStateException("Could not find Local Index");
-		}
-
-		Path bundleRoot = Paths.get(System.getProperty("bndtools.core.test.dir"))
-			.resolve("./generated/");
-		log("Attempting to import fodder bundles from " + bundleRoot);
-		Files.walk(bundleRoot, 1)
-			.filter(x -> x.getFileName()
-				.toString()
-				.contains(".fodder."))
-			.forEach(bundle -> {
-				try {
-					log("Adding fodder bundle to localRepo: " + bundle);
-					localRepo.put(IO.stream(bundle), null);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			});
-		TaskUtils.log(() -> ("Local Index contains:\n\t" + localRepo.list("*")
-			.stream()
-			.collect(Collectors.joining(",\n\t"))));
-		TaskUtils.updateWorkspace("beforeAllBase()");
+		TaskUtils.importFodder();
 
 		initSUTClass();
 
