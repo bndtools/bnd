@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -83,7 +84,7 @@ public class HttpRequest<T> {
 
 	public HttpRequest<T> verb(String verb) {
 		this.verb = verb;
-		switch (verb.toUpperCase()) {
+		switch (verb.toUpperCase(Locale.ROOT)) {
 			case "GET" :
 			case "HEAD" :
 			case "PUT" :

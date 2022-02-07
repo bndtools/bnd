@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Locale;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -162,7 +163,7 @@ public class RemoteRepoTest {
 		remoteFoobar.getParentFile()
 			.mkdirs();
 		IO.store("bla", remoteFoobar);
-		IO.store(" FFA6706FF2127A749973072756F83C532E43ED02\r\n".toLowerCase(), remoteFoobarSha1);
+		IO.store(" FFA6706FF2127A749973072756F83C532E43ED02\r\n".toLowerCase(Locale.ROOT), remoteFoobarSha1);
 
 		assertEquals(State.UPDATED, repo.fetch("foo/bar", localFoobar)
 			.getState());

@@ -1,5 +1,7 @@
 package bndtools.release.ui;
 
+import java.util.Locale;
+
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
@@ -32,14 +34,14 @@ public class InfoLabelProvider extends ColumnLabelProvider {
 			}
 			return BundleTreeImages.resolveImage("bundle", apiDiff.getDelta() //$NON-NLS-1$
 				.toString()
-				.toLowerCase(), null, null);
+				.toLowerCase(Locale.ROOT), null, null);
 		}
 		if (element instanceof Info) {
 			Info tree = (Info) element;
 			String type = "package"; //$NON-NLS-1$
 			String delta = "changed" + '_' + tree.packageDiff.getDelta() //$NON-NLS-1$
 				.toString()
-				.toLowerCase();
+				.toLowerCase(Locale.ROOT);
 			String impExp = "export"; //$NON-NLS-1$
 			return BundleTreeImages.resolveImage(type, delta, impExp, null);
 		}

@@ -954,7 +954,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	public File getIndexFile() {
-		return IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
+		return IO.getFile(base, configuration.index(name.toLowerCase(Locale.ROOT) + ".mvn"));
 	}
 
 	public Set<Archive> getArchives() {

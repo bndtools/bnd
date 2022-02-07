@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -151,11 +152,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private CapReqLoader getLoaderForFile(File file) {
 		CapReqLoader loader;
 		if (file.getName()
-			.toLowerCase()
+			.toLowerCase(Locale.ROOT)
 			.endsWith(".bnd")) {
 			loader = new BndFileCapReqLoader(file);
 		} else if (file.getName()
-			.toLowerCase()
+			.toLowerCase(Locale.ROOT)
 			.endsWith(".jar")) {
 			loader = new JarFileCapReqLoader(file);
 		} else {

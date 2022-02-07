@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,7 @@ import test.lib.NanoHTTPD;
 public class CachingUriResourceHandlerTest {
 
 	private static final String	EXPECTED_SHA	= "d0002141a722ef03ecd8fd2e0d3e4d3bc680ba91483cb4962f68a41a12dd01ab"
-		.toUpperCase();
+		.toUpperCase(Locale.ROOT);
 
 	static File					currentDir		= new File(System.getProperty("user.dir"));
 

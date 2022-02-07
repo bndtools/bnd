@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +51,7 @@ public class HexTest {
 	public void testHex() {
 		byte[] bytes = Hex.toByteArray("b10a8db164e0754105b7a99be72e3fe5");
 		String s = Hex.toHexString(bytes);
-		assertEquals("b10a8db164e0754105b7a99be72e3fe5", s.toLowerCase());
+		assertEquals("b10a8db164e0754105b7a99be72e3fe5", s.toLowerCase(Locale.ROOT));
 	}
 
 	@Test

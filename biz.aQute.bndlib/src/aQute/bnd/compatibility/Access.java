@@ -1,6 +1,7 @@
 package aQute.bnd.compatibility;
 
 import java.lang.reflect.Modifier;
+import java.util.Locale;
 
 /**
  * Access modifier
@@ -25,6 +26,6 @@ public enum Access {
 
 	@Override
 	public String toString() {
-		return super.toString().toLowerCase();
+		return super.toString().toLowerCase(Locale.ROOT);
 	}
 }

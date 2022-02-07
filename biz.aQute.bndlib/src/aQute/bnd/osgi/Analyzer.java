@@ -2841,7 +2841,7 @@ public class Analyzer extends Processor {
 
 		Set<Clazz> matched = new HashSet<>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
-			String typeName = args[i].toUpperCase();
+			String typeName = args[i].toUpperCase(Locale.ROOT);
 			Clazz.QUERY type;
 			switch (typeName) {
 				case "EXTENDING" :
@@ -2894,7 +2894,7 @@ public class Analyzer extends Processor {
 			queryType = null;
 			instr = null;
 		} else if (args.length >= 2) {
-			queryType = Packages.QUERY.valueOf(args[1].toUpperCase());
+			queryType = Packages.QUERY.valueOf(args[1].toUpperCase(Locale.ROOT));
 			if (args.length > 2)
 				instr = new Instruction(args[2]);
 			else
@@ -3612,7 +3612,7 @@ public class Analyzer extends Processor {
 						break;
 					}
 
-					Check c = Check.valueOf(k.toUpperCase()
+					Check c = Check.valueOf(k.toUpperCase(Locale.ROOT)
 						.replace('-', '_'));
 					checks.add(c);
 

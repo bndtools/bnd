@@ -355,7 +355,7 @@ public class OSInformation {
 			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
 			nc.osnames = "MacOSX,Mac OS X";
 			return nc;
-		} else if (sysPropOsName.toLowerCase()
+		} else if (sysPropOsName.toLowerCase(Locale.ROOT)
 			.startsWith("linux")) {
 			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
 			nc.osnames = "Linux";

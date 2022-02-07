@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -103,7 +104,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 			}
 
 			if (!((proxy.getType() == IResource.FILE) && proxy.getName()
-				.toLowerCase()
+				.toLowerCase(Locale.ROOT)
 				.endsWith(".bnd"))) {
 				return false;
 			}

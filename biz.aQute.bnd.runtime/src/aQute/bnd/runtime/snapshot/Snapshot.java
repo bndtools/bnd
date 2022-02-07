@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -156,7 +157,7 @@ public class Snapshot implements BundleActivator {
 				if (className != null) {
 					int x = className.lastIndexOf('.');
 					className = className.substring(x + 1);
-					name = className.toLowerCase() + "-" + name;
+					name = className.toLowerCase(Locale.ROOT) + "-" + name;
 				}
 				name += ".json";
 			} else

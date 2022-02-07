@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -1938,7 +1939,7 @@ public class Builder extends Analyzer {
 			}
 		}
 		return content.trim()
-			.toUpperCase();
+			.toUpperCase(Locale.ROOT);
 	}
 
 	/**

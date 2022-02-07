@@ -9,6 +9,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
@@ -89,7 +90,7 @@ public class P2IndexerTest {
 					.getRepository();
 				RequirementBuilder rb = new RequirementBuilder("osgi.content");
 
-				rb.addDirective("filter", "(osgi.content~=" + sha256.toLowerCase() + ")");
+				rb.addDirective("filter", "(osgi.content~=" + sha256.toLowerCase(Locale.ROOT) + ")");
 
 				Requirement req = rb.synthetic();
 				Collection<Capability> collection = repository.findProviders(Collections.singleton(req))
@@ -204,7 +205,7 @@ public class P2IndexerTest {
 					.getRepository();
 				RequirementBuilder rb = new RequirementBuilder("osgi.content");
 
-				rb.addDirective("filter", "(osgi.content~=" + sha256.toLowerCase() + ")");
+				rb.addDirective("filter", "(osgi.content~=" + sha256.toLowerCase(Locale.ROOT) + ")");
 
 				Requirement req = rb.synthetic();
 				Collection<Capability> collection = repository.findProviders(Collections.singleton(req))

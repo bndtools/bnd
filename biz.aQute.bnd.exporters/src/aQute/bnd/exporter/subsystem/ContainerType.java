@@ -1,7 +1,8 @@
 package aQute.bnd.exporter.subsystem;
 
 import java.io.File;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.Locale;
 
 import org.osgi.framework.Constants;
 import org.osgi.service.subsystem.SubsystemConstants;;
@@ -111,9 +112,10 @@ public enum ContainerType {
 			return null;
 		}
 		String filename = file.getName()
-			.toLowerCase();
-		return Stream.of(ContainerType.values())
-			.filter(c -> filename.endsWith("." + c.getExtension()))
+			.toLowerCase(Locale.ROOT);
+		return Arrays.stream(ContainerType.values())
+			.filter(c -> filename.endsWith(".".concat(c.getExtension()
+				.toLowerCase(Locale.ROOT))))
 			.findFirst()
 			.orElse(null);
 	}

@@ -3,6 +3,7 @@ package aQute.libg.shacache;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
@@ -81,7 +82,7 @@ public class ShaCache {
 					// and copy it.
 					//
 
-					File tmp = IO.createTempFile(root, sha.toLowerCase(), ".shacache");
+					File tmp = IO.createTempFile(root, sha.toLowerCase(Locale.ROOT), ".shacache");
 					IO.copy(in, tmp);
 					String digest = SHA1.digest(tmp)
 						.asHex();
@@ -141,7 +142,7 @@ public class ShaCache {
 			try {
 				InputStream in = s.get(sha);
 				if (in != null) {
-					File tmp = IO.createTempFile(root, sha.toLowerCase(), ".shacache");
+					File tmp = IO.createTempFile(root, sha.toLowerCase(Locale.ROOT), ".shacache");
 					IO.copy(in, tmp);
 					String digest = SHA1.digest(tmp)
 						.asHex();

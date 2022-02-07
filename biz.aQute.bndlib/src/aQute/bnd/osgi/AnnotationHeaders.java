@@ -467,8 +467,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 							.getFQN()
 							.equals(STD_REQUIREMENT_RESOLUTION)) {
 
-						o = String.valueOf(o)
-							.toLowerCase();
+						o = o.toString()
+							.toLowerCase(Locale.ROOT);
 					}
 
 					attributesAndDirectives.putTyped(attributeName, o);
@@ -518,14 +518,14 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				object = current.getClassName();
 			}
 
-			String returnFQN = method.getType()
-				.getFQN();
-
-			if ((object != null) && (returnFQN.equals(CARDINALITY) || returnFQN.equals(RESOLUTION)
-				|| returnFQN.equals(STD_REQUIREMENT_CARDINALITY) || returnFQN.equals(STD_REQUIREMENT_RESOLUTION))) {
-
-				object = String.valueOf(object)
-					.toLowerCase();
+			if (object != null) {
+				String returnFQN = method.getType()
+					.getFQN();
+				if ((returnFQN.equals(CARDINALITY) || returnFQN.equals(RESOLUTION)
+					|| returnFQN.equals(STD_REQUIREMENT_CARDINALITY) || returnFQN.equals(STD_REQUIREMENT_RESOLUTION))) {
+					object = object.toString()
+						.toLowerCase(Locale.ROOT);
+				}
 			}
 
 			return object;

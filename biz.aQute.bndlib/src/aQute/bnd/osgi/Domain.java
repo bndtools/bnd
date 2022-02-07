@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -34,13 +35,13 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.maven.PomParser;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -518,7 +519,7 @@ public abstract class Domain implements Iterable<String> {
 			}
 		} catch (ZipException e) {
 			if (file.getName()
-				.toLowerCase()
+				.toLowerCase(Locale.ROOT)
 				.endsWith(".jar"))
 				throw new ZipException("invalid jar format: " + file);
 		}

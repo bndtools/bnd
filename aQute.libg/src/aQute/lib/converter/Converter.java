@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Stack;
@@ -280,7 +281,7 @@ public class Converter {
 				try {
 					return Enum.valueOf((Class<Enum>) resultType, input);
 				} catch (Exception e) {
-					input = input.toUpperCase();
+					input = input.toUpperCase(Locale.ROOT);
 					return Enum.valueOf((Class<Enum>) resultType, input);
 				}
 			}

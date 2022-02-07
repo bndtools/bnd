@@ -1,5 +1,7 @@
 package aQute.bnd.compatibility;
 
+import java.util.Locale;
+
 /**
  * The kind of thing we scope
  */
@@ -13,6 +15,6 @@ public enum Kind {
 
 	@Override
 	public String toString() {
-		return super.toString().toLowerCase();
+		return super.toString().toLowerCase(Locale.ROOT);
 	}
 }

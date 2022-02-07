@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -627,7 +628,7 @@ public class CommandLine {
 			return ""; // Is a flag
 
 		return "<" + lastPart(clazz.getName()
-			.toLowerCase()) + ">";
+			.toLowerCase(Locale.ROOT)) + ">";
 	}
 
 	public Object getResult() {

@@ -1,5 +1,7 @@
 package aQute.maven.api;
 
+import java.util.Locale;
+
 public enum MavenScope {
 	/**
 	 * compile - this is the default scope, used if none is specified. Compile
@@ -48,7 +50,7 @@ public enum MavenScope {
 	}
 
 	public static MavenScope getScope(String scope) {
-		switch (scope.toLowerCase()) {
+		switch (scope.toLowerCase(Locale.ROOT)) {
 			case "import" :
 				return MavenScope.import_;
 

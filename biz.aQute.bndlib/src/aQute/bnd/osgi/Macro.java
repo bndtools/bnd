@@ -1972,7 +1972,7 @@ public class Macro {
 	public String _toupper(String[] args) throws Exception {
 		verifyCommand(args, _tolowerHelp, null, 2, 2);
 
-		return args[1].toUpperCase();
+		return args[1].toUpperCase(Locale.ROOT);
 	}
 
 	static final String _tolowerHelp = "${tolower;<target>}";
@@ -1980,7 +1980,7 @@ public class Macro {
 	public String _tolower(String[] args) throws Exception {
 		verifyCommand(args, _tolowerHelp, null, 2, 2);
 
-		return args[1].toLowerCase();
+		return args[1].toLowerCase(Locale.ROOT);
 	}
 
 	static final String _compareHelp = "${compare;<astring>;<bstring>}";

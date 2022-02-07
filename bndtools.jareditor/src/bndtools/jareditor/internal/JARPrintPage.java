@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.filesystem.EFS;
@@ -342,8 +343,8 @@ public class JARPrintPage extends FormPage {
 		if (findText == null || findText.isEmpty())
 			return Collections.emptyList();
 
-		content = content.toLowerCase();
-		findText = findText.toLowerCase();
+		content = content.toLowerCase(Locale.ROOT);
+		findText = findText.toLowerCase(Locale.ROOT);
 		List<Integer> indexes = new ArrayList<>();
 		int index = 0;
 		int wordLength = 0;
