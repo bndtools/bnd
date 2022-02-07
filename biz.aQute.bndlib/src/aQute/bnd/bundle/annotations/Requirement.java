@@ -117,33 +117,7 @@ public @interface Requirement {
 	 * If not specified, the {@code cardinality} directive is omitted from the
 	 * requirement clause.
 	 */
-	Cardinality cardinality() default Cardinality.SINGLE;
-
-	/**
-	 * Cardinality for this requirement.
-	 */
-	public enum Cardinality {
-		/**
-		 * Indicates if the requirement can only be wired a single time.
-		 */
-		SINGLE("single"), // Namespace.CARDINALITY_SINGLE
-
-		/**
-		 * Indicates if the requirement can be wired multiple times.
-		 */
-		MULTIPLE("multiple"); // Namespace.CARDINALITY_MULTIPLE
-
-		private final String value;
-
-		Cardinality(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return value;
-		}
-	}
+	String cardinality() default "SINGLE";
 
 	/**
 	 * The resolution policy of this requirement.
@@ -155,33 +129,5 @@ public @interface Requirement {
 	 * If not specified, the {@code resolution} directive is omitted from the
 	 * requirement clause.
 	 */
-	Resolution resolution() default Resolution.MANDATORY;
-
-	/**
-	 * Resolution for this requirement.
-	 */
-	public enum Resolution {
-		/**
-		 * A mandatory requirement forbids the bundle to resolve when the
-		 * requirement is not satisfied.
-		 */
-		MANDATORY("mandatory"), // Namespace.RESOLUTION_MANDATORY
-
-		/**
-		 * An optional requirement allows a bundle to resolve even if the
-		 * requirement is not satisfied.
-		 */
-		OPTIONAL("optional"); // Namespace.RESOLUTION_OPTIONAL
-
-		private final String value;
-
-		Resolution(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return value;
-		}
-	}
+	String resolution() default "MANDATORY";
 }

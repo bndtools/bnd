@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -18,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.osgi.resource.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import aQute.bnd.bundle.annotations.Header;
 import aQute.bnd.bundle.annotations.Headers;
 import aQute.bnd.bundle.annotations.Requirement;
 import aQute.bnd.bundle.annotations.Requirements;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -42,13 +45,12 @@ import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
-import aQute.bnd.unmodifiable.Sets;
 
 /**
  * This class parses the 'header annotations'. Header annotations are
@@ -740,23 +742,58 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 					"The Requirement annotation with namespace %s applied to class %s has invalid filter information.",
 					annotation.namespace(), current.getFQN());
 			}
-			req.append(";filter:='")
+			req.append(';')
+				.append(Namespace.REQUIREMENT_FILTER_DIRECTIVE)
+				.append(':')
+				.append('=')
+				.append('\'')
 				.append(filter)
 				.append('\'');
 		}
 
 		if (a.containsKey("resolution")) {
-			req.append(";resolution:=")
-				.append(annotation.resolution());
+			String resolution = annotation.resolution()
+				.toLowerCase(Locale.ROOT);
+			switch (resolution) {
+				case Namespace.RESOLUTION_MANDATORY :
+				case Namespace.RESOLUTION_OPTIONAL :
+					req.append(';')
+						.append(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)
+						.append(':')
+						.append('=')
+						.append(resolution);
+					break;
+				default :
+					analyzer.error("Requirement annotation in %s has invalid resolution value: %s", current,
+						annotation.resolution());
+					break;
+			}
 		}
 
 		if (a.containsKey("cardinality")) {
-			req.append(";cardinality:=")
-				.append(annotation.cardinality());
+			String cardinality = annotation.cardinality()
+				.toLowerCase(Locale.ROOT);
+			switch (cardinality) {
+				case Namespace.CARDINALITY_SINGLE :
+				case Namespace.CARDINALITY_MULTIPLE :
+					req.append(';')
+						.append(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE)
+						.append(':')
+						.append('=')
+						.append(cardinality);
+					break;
+				default :
+					analyzer.error("Requirement annotation in %s has invalid cardinality value: %s", current,
+						annotation.cardinality());
+					break;
+			}
 		}
 
 		if (a.containsKey("effective")) {
-			req.append(";effective:=");
+			req.append(';')
+				.append(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE)
+				.append(':')
+				.append('=');
 			escape(req, annotation.effective());
 		}
 

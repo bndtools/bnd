@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -841,7 +842,8 @@ public class Analyzer extends Processor {
 
 						Object substitution = a.get("substitution");
 						if (substitution != null) {
-							switch (substitution.toString()) {
+							switch (substitution.toString()
+								.toUpperCase(Locale.ROOT)) {
 								case "CONSUMER" :
 									info.put(PROVIDE_DIRECTIVE, "false");
 									break;
