@@ -3,9 +3,9 @@ package test.annotationheaders.attrs.std.a;
 import org.osgi.annotation.bundle.Attribute;
 import org.osgi.annotation.bundle.Directive;
 import org.osgi.annotation.bundle.Requirement;
-import org.osgi.annotation.bundle.Requirement.Resolution;
+import org.osgi.resource.Namespace;
 
-@Custom(name = "bar", resolution = Resolution.OPTIONAL)
+@Custom(name = "bar", resolution = Namespace.RESOLUTION_OPTIONAL)
 public class ResolutionDirectiveOverride {}
 
 @Requirement(namespace = "foo")
@@ -14,5 +14,5 @@ public class ResolutionDirectiveOverride {}
 	String name();
 
 	@Directive
-	Resolution resolution() default Resolution.MANDATORY;
+	String resolution() default Namespace.RESOLUTION_MANDATORY;
 }

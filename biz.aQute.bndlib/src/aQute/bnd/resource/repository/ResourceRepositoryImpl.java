@@ -19,6 +19,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -30,6 +31,7 @@ import java.util.zip.InflaterInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.repository.ResourceRepository;
@@ -38,7 +40,6 @@ import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.DefaultURLConnectionHandler;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
@@ -429,7 +430,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 			String deflate = http.getHeaderField("Content-Encoding");
 			in = http.getInputStream();
-			if (deflate != null && deflate.toLowerCase()
+			if (deflate != null && deflate.toLowerCase(Locale.ROOT)
 				.contains("deflate")) {
 				in = new InflaterInputStream(in);
 				logger.debug("inflate");

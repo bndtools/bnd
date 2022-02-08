@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -29,9 +30,9 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.lib.tag.Tag;
-import aQute.bnd.unmodifiable.Sets;
 
 public class HeaderReader extends Processor {
 	private final static Pattern		PROPERTY_PATTERN	= Pattern
@@ -64,7 +65,7 @@ public class HeaderReader extends Processor {
 			cd.immediate = Boolean.valueOf(info.get(COMPONENT_IMMEDIATE));
 		if (info.get(COMPONENT_CONFIGURATION_POLICY) != null)
 			cd.configurationPolicy = ConfigurationPolicy.valueOf(info.get(COMPONENT_CONFIGURATION_POLICY)
-				.toUpperCase());
+				.toUpperCase(Locale.ROOT));
 		cd.activate = checkIdentifier(COMPONENT_ACTIVATE, info.get(COMPONENT_ACTIVATE));
 		cd.deactivate = checkIdentifier(COMPONENT_DEACTIVATE, info.get(COMPONENT_DEACTIVATE));
 		cd.modified = checkIdentifier(COMPONENT_MODIFIED, info.get(COMPONENT_MODIFIED));

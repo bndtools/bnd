@@ -1,5 +1,7 @@
 package aQute.bnd.exporter.subsystem;
 
+import java.util.Locale;
+
 public enum EsaArchiveType {
 	NONE,
 	CONTENT,
@@ -10,7 +12,7 @@ public enum EsaArchiveType {
 			return CONTENT; // default
 		}
 		try {
-			return valueOf(archiveContent.toUpperCase());
+			return valueOf(archiveContent.toUpperCase(Locale.ROOT));
 		} catch (IllegalArgumentException e) {
 			return null;
 		}

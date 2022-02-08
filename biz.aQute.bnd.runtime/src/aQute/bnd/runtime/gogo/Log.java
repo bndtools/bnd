@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.WeakHashMap;
 
 import org.apache.felix.service.command.CommandSession;
@@ -118,7 +119,7 @@ public class Log implements Closeable {
 	}
 
 	private List<LogEntry> log0(String level, int number) {
-		Level l = Level.valueOf(level.toUpperCase());
+		Level l = Level.valueOf(level.toUpperCase(Locale.ROOT));
 		List<LogEntry> result = new ArrayList<>();
 		for (int i = entries.size() - 1; i >= 0 && result.size() <= number; i--) {
 			LogEntry entry = entries.get(i);

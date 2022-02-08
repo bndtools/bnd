@@ -22,8 +22,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.osgi.annotation.versioning.ConsumerType;
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.annotation.versioning.Version;
 
 /**
@@ -76,40 +74,8 @@ public @interface Export {
 	 * bundles are willing to import exported packages; these imports will allow
 	 * a framework to substitute exports for imports.
 	 * <p>
-	 * If not specified, the {@link Substitution#CALCULATED} substitution policy
-	 * is used for this package.
+	 * If not specified, the {@code CALCULATED} substitution policy is used for
+	 * this package.
 	 */
-	Substitution substitution() default Substitution.CALCULATED;
-
-	/**
-	 * Substitution policy for this package.
-	 */
-	public enum Substitution {
-		/**
-		 * Use a consumer type version range for the import package clause when
-		 * substitutably importing a package.
-		 *
-		 * @see ConsumerType
-		 */
-		CONSUMER,
-
-		/**
-		 * Use a provider type version range for the import package clause when
-		 * substitutably importing a package.
-		 *
-		 * @see ProviderType
-		 */
-		PROVIDER,
-
-		/**
-		 * The package must not be substitutably imported.
-		 */
-		NOIMPORT,
-
-		/**
-		 * The policy value is calculated by inspection of the classes in the
-		 * package.
-		 */
-		CALCULATED
-	}
+	String substitution() default "CALCULATED";
 }

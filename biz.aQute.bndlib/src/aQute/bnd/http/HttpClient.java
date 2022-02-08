@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.URLCache.Info;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Registry;
@@ -62,7 +63,6 @@ import aQute.bnd.service.url.URLConnector;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.util.home.Home;
 import aQute.lib.date.Dates;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.reporter.ReporterAdapter;
@@ -895,7 +895,7 @@ public class HttpClient implements Closeable, URLConnector {
 		if (scheme == null) {
 			return "Invalid uri, no scheme: " + u;
 		}
-		switch (scheme.toLowerCase()) {
+		switch (scheme.toLowerCase(Locale.ROOT)) {
 			case "http" :
 			case "https" :
 			case "file" :

@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toCollection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -186,7 +187,7 @@ public class PermissionGenerator {
 		EnumSet<Parameter> parameters = EnumSet.noneOf(Parameter.class);
 		// Skip the key name, so start at index 1
 		for (int ix = 1; ix < args.length; ix++) {
-			String name = args[ix].toUpperCase();
+			String name = args[ix].toUpperCase(Locale.ROOT);
 			try {
 				parameters.add(Parameter.valueOf(name));
 			} catch (IllegalArgumentException ex) {

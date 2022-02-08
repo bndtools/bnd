@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.bndtools.api.ILogger;
@@ -73,7 +74,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 																				Object parentElement, Object element) {
 																				String search = selectionSearchTxt
 																					.getText()
-																					.toLowerCase();
+																					.toLowerCase(Locale.ROOT);
 
 																				String bsn = null;
 																				if (element instanceof RepositoryBundle) {
@@ -86,7 +87,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 																				if (bsn != null) {
 																					if (search.length() > 0
-																						&& bsn.toLowerCase()
+																						&& bsn.toLowerCase(Locale.ROOT)
 																							.indexOf(search) == -1) {
 																						return false;
 																					}

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -96,7 +97,7 @@ public class ReposTemplateLoaderTest {
 		byte[] digest = digestStream.getMessageDigest()
 			.digest();
 		assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest)
-			.toLowerCase());
+			.toLowerCase(Locale.ROOT));
 
 		entry = iter.next();
 		assertEquals("src/main/java/", entry.getKey());
@@ -146,7 +147,7 @@ public class ReposTemplateLoaderTest {
 		byte[] digest = digestStream.getMessageDigest()
 			.digest();
 		assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest)
-			.toLowerCase());
+			.toLowerCase(Locale.ROOT));
 
 		entry = iter.next();
 		assertEquals("src/main/java/", entry.getKey());
@@ -212,7 +213,7 @@ public class ReposTemplateLoaderTest {
 		byte[] digest = digestStream.getMessageDigest()
 			.digest();
 		assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest)
-			.toLowerCase());
+			.toLowerCase(Locale.ROOT));
 	}
 
 }

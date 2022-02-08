@@ -1,5 +1,7 @@
 package bndtools.release.ui;
 
+import java.util.Locale;
+
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
@@ -56,13 +58,13 @@ public class TreeLabelProvider extends ColumnLabelProvider {
 			return BundleTreeImages.resolveImage("bundle", ((Baseline) element).getDiff() //$NON-NLS-1$
 				.getDelta()
 				.toString()
-				.toLowerCase(), null, null);
+				.toLowerCase(Locale.ROOT), null, null);
 		}
 		if (element instanceof Diff) {
 			Diff tree = (Diff) element;
 			String type = tree.getType()
 				.toString()
-				.toLowerCase();
+				.toLowerCase(Locale.ROOT);
 
 			String strDelta = getDeltaString(tree);
 			String impExp = null;
@@ -81,7 +83,7 @@ public class TreeLabelProvider extends ColumnLabelProvider {
 			Tree tree = (Tree) element;
 			String type = tree.getType()
 				.toString()
-				.toLowerCase();
+				.toLowerCase(Locale.ROOT);
 			String impExp = null;
 			if (tree.getType() == Type.PACKAGE) {
 				impExp = "export"; //$NON-NLS-1$
@@ -100,7 +102,7 @@ public class TreeLabelProvider extends ColumnLabelProvider {
 	private static String getDeltaString(Diff diff) {
 		return diff.getDelta()
 			.toString()
-			.toLowerCase();
+			.toLowerCase(Locale.ROOT);
 	}
 
 }

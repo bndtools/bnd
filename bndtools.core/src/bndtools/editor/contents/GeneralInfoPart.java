@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.bndtools.api.ILogger;
@@ -297,8 +298,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 							ITypeHierarchy hierarchy = activatorType.newTypeHierarchy(javaProject, monitor);
 							for (IType subType : hierarchy.getAllSubtypes(activatorType)) {
 								if (!Flags.isAbstract(subType.getFlags()) && subType.getElementName()
-									.toLowerCase()
-									.contains(prefix.toLowerCase())) {
+									.toLowerCase(Locale.ROOT)
+									.contains(prefix.toLowerCase(Locale.ROOT))) {
 									result.add(new JavaTypeContentProposal(subType));
 								}
 							}
@@ -327,8 +328,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		protected boolean match(String contents, int position, IContentProposal proposal) {
 			String prefix = contents.substring(0, position);
 			return ((JavaTypeContentProposal) proposal).getTypeName()
-				.toLowerCase()
-				.startsWith(prefix.toLowerCase());
+				.toLowerCase(Locale.ROOT)
+				.startsWith(prefix.toLowerCase(Locale.ROOT));
 		}
 	}
 }

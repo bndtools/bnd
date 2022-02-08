@@ -11,6 +11,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -112,7 +113,8 @@ public class POM implements IPom {
 				for (int j = i + 1; j < jlimit; j++) {
 					c = (char) array[j];
 					if (c == ';') {
-						String entity = new String(array, i + 1, j - (i + 1), StandardCharsets.US_ASCII).toLowerCase();
+						String entity = new String(array, i + 1, j - (i + 1), StandardCharsets.US_ASCII)
+							.toLowerCase(Locale.ROOT);
 						switch (entity) {
 							case "lt" :
 							case "gt" :

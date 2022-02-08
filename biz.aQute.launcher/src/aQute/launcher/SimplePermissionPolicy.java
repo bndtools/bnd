@@ -104,7 +104,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 	public PermissionInfo[] getPermissions(Bundle bundle) {
 		URL url = bundle.getEntry("/OSGI-INF/permissions.perm");
 		if (url == null)
-			url = bundle.getEntry("/OSGI-INF/permissions.perm".toUpperCase());
+			url = bundle.getEntry("/OSGI-INF/PERMISSIONS.PERM");
 
 		PermissionInfo[] info = null;
 		if (url != null)

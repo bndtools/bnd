@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 import aQute.lib.io.IO;
 
@@ -381,7 +382,7 @@ public class ClassDumper {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < 16 && index < code.length; i++) {
 				String s = Integer.toHexString((0xFF & code[index++]))
-					.toUpperCase();
+					.toUpperCase(Locale.ROOT);
 				if (s.length() == 1)
 					sb.append("0");
 				sb.append(s);

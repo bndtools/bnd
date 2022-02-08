@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.FutureTask;
@@ -305,9 +306,9 @@ public class MavenEntry implements Closeable {
 			IO.copy(actualFile, md);
 			byte[] digest = md.digest();
 			String source = IO.collect(digestFile)
-				.toUpperCase();
+				.toUpperCase(Locale.ROOT);
 			String hex = Hex.toHexString(digest)
-				.toUpperCase();
+				.toUpperCase(Locale.ROOT);
 			if (source.startsWith(hex)) {
 				System.err.println("Verified ok " + actualFile + " digest " + algorithm);
 				return true;

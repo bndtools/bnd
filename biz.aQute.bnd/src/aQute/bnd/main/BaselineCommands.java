@@ -14,6 +14,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -47,6 +48,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
@@ -55,7 +57,6 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
-import aQute.bnd.unmodifiable.Lists;
 import aQute.lib.xml.XML;
 
 /**
@@ -245,7 +246,8 @@ public class BaselineCommands {
 	protected void doDiff(Diff diff, StringBuilder sb) {
 		String type = String.valueOf(diff.getType());
 
-		String output = String.format("%s%-5s %-10s %s", sb, getShortDelta(diff.getDelta()), type.toLowerCase(),
+		String output = String.format("%s%-5s %-10s %s", sb, getShortDelta(diff.getDelta()),
+			type.toLowerCase(Locale.ROOT),
 			diff.getName());
 
 		bnd.out.println(output);

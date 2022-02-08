@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -980,7 +981,7 @@ public class Project extends Processor {
 		String runBuildsStr = getProperty(Constants.RUNBUILDS);
 		if (runBuildsStr == null)
 			result = !getPropertiesFile().getName()
-				.toLowerCase()
+				.toLowerCase(Locale.ROOT)
 				.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
 		else
 			result = Boolean.parseBoolean(runBuildsStr);

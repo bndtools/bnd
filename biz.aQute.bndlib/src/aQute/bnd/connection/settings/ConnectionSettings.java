@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -232,7 +233,7 @@ public class ConnectionSettings {
 		}
 
 		String scheme = m.group(1)
-			.toLowerCase();
+			.toLowerCase(Locale.ROOT);
 		String host = m.group(2);
 		String port = m.group(3);
 
@@ -365,7 +366,7 @@ public class ConnectionSettings {
 		public ProxySetup forURL(URL url) throws Exception {
 			Proxy.Type type;
 
-			switch (proxyDTO.protocol.toUpperCase()) {
+			switch (proxyDTO.protocol.toUpperCase(Locale.ROOT)) {
 
 				case "DIRECT" :
 					type = Type.DIRECT;

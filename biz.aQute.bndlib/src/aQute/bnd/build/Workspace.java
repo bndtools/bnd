@@ -1232,7 +1232,7 @@ public class Workspace extends Processor {
 				alias = ann.name();
 			else {
 				alias = Strings.getLastSegment(plugin.getName())
-					.toLowerCase();
+					.toLowerCase(Locale.ROOT);
 				if (alias.endsWith("plugin")) {
 					alias = alias.substring(0, alias.length() - "plugin".length());
 				}

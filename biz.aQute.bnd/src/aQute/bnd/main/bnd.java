@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -690,7 +691,7 @@ public class bnd extends Processor {
 			for (String path : selected) {
 				if (opts.verbose())
 					err.printf("%8s: %s\n", compression.toString()
-						.toLowerCase(), path);
+						.toLowerCase(Locale.ROOT), path);
 
 				File f = getFile(store, path);
 				File pf = f.getParentFile();
@@ -3746,7 +3747,7 @@ public class bnd extends Processor {
 						.entrySet()) {
 						String header = e.getKey()
 							.toString()
-							.toLowerCase();
+							.toLowerCase(Locale.ROOT);
 						if (header.startsWith("bundle-"))
 							continue;
 

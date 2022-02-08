@@ -13,6 +13,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -321,7 +322,7 @@ class IndexFile {
 		if (multi.isEmpty())
 			return false;
 
-		String[] extension = Strings.extension(name.toLowerCase());
+		String[] extension = Strings.extension(name.toLowerCase(Locale.ROOT));
 		return extension.length == 2 && multi.contains(extension[1]);
 	}
 

@@ -3,9 +3,9 @@ package test.annotationheaders.attrs.std.b;
 import org.osgi.annotation.bundle.Attribute;
 import org.osgi.annotation.bundle.Directive;
 import org.osgi.annotation.bundle.Requirement;
-import org.osgi.annotation.bundle.Requirement.Cardinality;
+import org.osgi.resource.Namespace;
 
-@Custom(name = "bar", cardinality = Cardinality.MULTIPLE)
+@Custom(name = "bar", cardinality = Namespace.CARDINALITY_MULTIPLE)
 public class CardinalityDirectiveOverride {}
 
 @Requirement(namespace = "foo")
@@ -14,5 +14,5 @@ public class CardinalityDirectiveOverride {}
 	String name();
 
 	@Directive
-	Cardinality cardinality() default Cardinality.SINGLE;
+	String cardinality() default Namespace.CARDINALITY_SINGLE;
 }

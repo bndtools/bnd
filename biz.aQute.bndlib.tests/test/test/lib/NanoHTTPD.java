@@ -239,7 +239,7 @@ public class NanoHTTPD {
 				port = Integer.parseInt(args[i + 1]);
 			else if (args[i].equalsIgnoreCase("-d"))
 				wwwroot = new File(args[i + 1]).getAbsoluteFile();
-			else if (args[i].toLowerCase()
+			else if (args[i].toLowerCase(Locale.ROOT)
 				.endsWith("licence")) {
 				myOut.println(LICENCE + "\n");
 				break;
@@ -460,7 +460,7 @@ public class NanoHTTPD {
 						if (p >= 0)
 							header.put(line.substring(0, p)
 								.trim()
-								.toLowerCase(),
+								.toLowerCase(Locale.ROOT),
 								line.substring(p + 1)
 									.trim());
 						line = in.readLine();
@@ -496,7 +496,7 @@ public class NanoHTTPD {
 						if (p != -1)
 							item.put(mpline.substring(0, p)
 								.trim()
-								.toLowerCase(),
+								.toLowerCase(Locale.ROOT),
 								mpline.substring(p + 1)
 									.trim());
 						mpline = in.readLine();
@@ -515,7 +515,7 @@ public class NanoHTTPD {
 							if (p != -1)
 								disposition.put(token.substring(0, p)
 									.trim()
-									.toLowerCase(),
+									.toLowerCase(Locale.ROOT),
 									token.substring(p + 1)
 										.trim());
 						}
@@ -869,7 +869,7 @@ public class NanoHTTPD {
 				if (dot >= 0)
 					mime = theMimeTypes.get(f.getCanonicalPath()
 						.substring(dot + 1)
-						.toLowerCase());
+						.toLowerCase(Locale.ROOT));
 				if (mime == null)
 					mime = MIME_DEFAULT_BINARY;
 

@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -63,7 +64,7 @@ public class MavenDependencyGraph {
 				optional = (Boolean) xpath.evaluate("optinal", node, XPathConstants.BOOLEAN);
 				String scope = xpath.evaluate("scope", node);
 				if (scope != null && scope.length() > 0) {
-					this.scope = Scope.valueOf(scope.toUpperCase());
+					this.scope = Scope.valueOf(scope.toUpperCase(Locale.ROOT));
 				}
 				NodeList evaluate = (NodeList) xpath.evaluate("//dependencies/dependency", doc, XPathConstants.NODESET);
 

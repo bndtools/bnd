@@ -7,6 +7,7 @@ import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -307,7 +308,7 @@ public class Verifier extends Processor {
 						if (del == '=')
 							value = qt.nextToken();
 
-						String key = name.toLowerCase();
+						String key = name.toLowerCase(Locale.ROOT);
 						if (key.equals("osname")) {
 							// ...
 						} else if (key.equals("osversion")) {

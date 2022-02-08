@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.TreeSet;
 
 import org.bndtools.api.ILogger;
@@ -114,8 +115,8 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
 		final String prefix = contents.substring(0, position);
 		return ((PkgPatternProposal) proposal).getPackageFragment()
 			.getElementName()
-			.toLowerCase()
-			.indexOf(prefix.toLowerCase()) > -1;
+			.toLowerCase(Locale.ROOT)
+			.indexOf(prefix.toLowerCase(Locale.ROOT)) > -1;
 	}
 
 }

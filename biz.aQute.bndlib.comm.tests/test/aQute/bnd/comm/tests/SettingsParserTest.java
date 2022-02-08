@@ -9,6 +9,7 @@ import java.io.File;
 import java.net.Proxy.Type;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -118,7 +119,7 @@ public class SettingsParserTest {
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("http-proxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals(Type.HTTP.name(), p.protocol.toUpperCase());
+		assertEquals(Type.HTTP.name(), p.protocol.toUpperCase(Locale.ROOT));
 		assertEquals("localhost", p.host);
 		assertEquals(80, p.port);
 		assertEquals(null, p.nonProxyHosts);
@@ -128,7 +129,7 @@ public class SettingsParserTest {
 		p = settings.proxies.get(1);
 		assertEquals("https-proxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals("HTTPS", p.protocol.toUpperCase());
+		assertEquals("HTTPS", p.protocol.toUpperCase(Locale.ROOT));
 		assertEquals("localhost", p.host);
 		assertEquals(443, p.port);
 		assertEquals(null, p.nonProxyHosts);
@@ -143,7 +144,7 @@ public class SettingsParserTest {
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase());
+		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase(Locale.ROOT));
 		assertEquals(1080, p.port);
 		assertEquals(null, p.nonProxyHosts);
 		assertEquals("proxyuser", p.username);
@@ -157,7 +158,7 @@ public class SettingsParserTest {
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase());
+		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase(Locale.ROOT));
 		assertEquals(1080, p.port);
 		assertEquals(null, p.nonProxyHosts);
 		assertEquals(null, p.username);
@@ -171,7 +172,7 @@ public class SettingsParserTest {
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase());
+		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase(Locale.ROOT));
 		assertEquals(1080, p.port);
 		assertEquals("*.google.com|ibiblio.org", p.nonProxyHosts);
 		assertEquals(null, p.username);
