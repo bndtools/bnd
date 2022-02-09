@@ -414,46 +414,28 @@ public class BndPlugin implements Plugin<Project> {
 			ConfigurableFileCollection javacBootclasspath = objects.fileCollection()
 				.from(decontainer(bndProject.getBootclasspath()));
 			String javac = bndProject.getProperty("javac", "javac");
-			Provider<String> javacSource = objects.property(String.class)
-				.convention(emptyAsNull(bndProject.getProperty("javac.source")))
-				.forUseAtConfigurationTime();
-			Provider<String> javacTarget = objects.property(String.class)
-				.convention(emptyAsNull(bndProject.getProperty("javac.target")))
-				.forUseAtConfigurationTime();
-			Provider<String> javacProfile = objects.property(String.class)
-				.convention(emptyAsNull(bndProject.getProperty("javac.profile")))
-				.forUseAtConfigurationTime();
+			Optional<String> javacSource = optional(bndProject.getProperty("javac.source"));
+			Optional<String> javacTarget = optional(bndProject.getProperty("javac.target"));
+			Optional<String> javacProfile = optional(bndProject.getProperty("javac.profile"));
 			boolean javacDebug = bndProject.is("javac.debug");
 			boolean javacDeprecation = isTrue(bndProject.getProperty("javac.deprecation", "true"));
 			String javacEncoding = bndProject.getProperty("javac.encoding", "UTF-8");
 			if (isGradleCompatible("7.1")) {
 				JavaPluginExtension javaPlugin = project.getExtensions()
 					.getByType(JavaPluginExtension.class);
-				if (javacSource.isPresent()) {
-					javaPlugin.setSourceCompatibility(unwrap(javacSource));
-				}
-				if (javacTarget.isPresent()) {
-					javaPlugin.setTargetCompatibility(unwrap(javacTarget));
-				}
+				javacSource.ifPresent(javaPlugin::setSourceCompatibility);
+				javacTarget.ifPresent(javaPlugin::setTargetCompatibility);
 			} else {
 				org.gradle.api.plugins.JavaPluginConvention javaPlugin = project.getConvention()
 					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class);
-				if (javacSource.isPresent()) {
-					javaPlugin.setSourceCompatibility(unwrap(javacSource));
-				}
-				if (javacTarget.isPresent()) {
-					javaPlugin.setTargetCompatibility(unwrap(javacTarget));
-				}
+				javacSource.ifPresent(javaPlugin::setSourceCompatibility);
+				javacTarget.ifPresent(javaPlugin::setTargetCompatibility);
 			}
 			tasks.withType(JavaCompile.class)
 				.configureEach(t -> {
 					CompileOptions options = t.getOptions();
-					if (javacSource.isPresent()) {
-						t.setSourceCompatibility(unwrap(javacSource));
-					}
-					if (javacTarget.isPresent()) {
-						t.setTargetCompatibility(unwrap(javacTarget));
-					}
+					javacSource.ifPresent(t::setSourceCompatibility);
+					javacTarget.ifPresent(t::setTargetCompatibility);
 					if (javacSource.isPresent() && javacTarget.isPresent()) {
 						Property<Boolean> supportsRelease = objects.property(Boolean.class)
 							.value(t.getJavaCompiler()
@@ -465,8 +447,8 @@ public class BndPlugin implements Plugin<Project> {
 								if (supportsRelease.getOrElse(Boolean.valueOf(JavaVersion.current()
 									.isJava9Compatible()))
 									.booleanValue()) {
-									JavaVersion sourceVersion = JavaVersion.toVersion(unwrap(javacSource));
-									JavaVersion targetVersion = JavaVersion.toVersion(unwrap(javacTarget));
+									JavaVersion sourceVersion = JavaVersion.toVersion(javacSource.get());
+									JavaVersion targetVersion = JavaVersion.toVersion(javacTarget.get());
 									if (Objects.equals(sourceVersion, targetVersion) && javacBootclasspath.isEmpty()
 										&& !javacProfile.isPresent()) {
 										return Integer.valueOf(sourceVersion.getMajorVersion());
@@ -891,7 +873,7 @@ public class BndPlugin implements Plugin<Project> {
 								f.format("-target:                %s%n", compileJava.getTargetCompatibility());
 							}
 							if (javacProfile.isPresent()) {
-								f.format("-profile:               %s%n", unwrap(javacProfile));
+								f.format("-profile:               %s%n", javacProfile.get());
 							}
 							System.out.print(f.toString());
 						}
@@ -994,12 +976,12 @@ public class BndPlugin implements Plugin<Project> {
 			.collect(toList());
 	}
 
-	private <ITERABLE extends Iterable<String>> CommandLineArgumentProvider argProvider(Provider<ITERABLE> provider) {
+	private <ITERABLE extends Iterable<String>> CommandLineArgumentProvider argProvider(Optional<ITERABLE> provider) {
 		return new CommandLineArgumentProvider() {
 			@SuppressWarnings("unchecked")
 			@Override
-			public ITERABLE asArguments() {
-				return provider.getOrElse((ITERABLE) Collections.<String> emptyList());
+			public Iterable<String> asArguments() {
+				return provider.orElseGet(() -> (ITERABLE) Collections.<String> emptyList());
 			}
 		};
 	}
@@ -1042,8 +1024,8 @@ public class BndPlugin implements Plugin<Project> {
 		}
 	}
 
-	private String emptyAsNull(String value) {
-		return Strings.nonNullOrEmpty(value) ? value : null;
+	private Optional<String> optional(String value) {
+		return Strings.nonNullOrEmpty(value) ? Optional.of(value) : Optional.empty();
 	}
 
 	private static Object getter(Object target, String name) {
