@@ -20,7 +20,7 @@
 		<java.release>8</java.release>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<osgi.annotation.version>8.0.1</osgi.annotation.version>
+		<osgi.annotation.version>8.1.0</osgi.annotation.version>
 		<jpmsOptions></jpmsOptions>
 		<mavenOpts>${jpmsOptions}</mavenOpts>
 		<!-- The following versions must match those in cnf/ext/maven-plugin.bnd -->
