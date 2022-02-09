@@ -265,6 +265,13 @@ public class BndPlugin implements Plugin<Project> {
 					}
 					jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
 				});
+				if (Objects.nonNull(generate)) {
+					tasks.named(sourceSet.getProcessResourcesTaskName(), t -> {
+						t.getInputs()
+							.files(generate)
+							.withPropertyName(generate.getName());
+					});
+				}
 				sourceSet.getOutput()
 					.dir(Maps.of("builtBy", compileTaskName), destinationDir);
 			});
