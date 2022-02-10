@@ -429,8 +429,9 @@ When using the `bnd-process-tests` goal it is important to take the following in
             </configuration>
         </execution>
     </executions>
-</plugin>193
+</plugin>
 ```
+
 ## Aspects Common to both test goals
 
 ### Test Cases
