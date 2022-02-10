@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,7 +35,8 @@ import aQute.maven.api.Program;
 @Description("Maintain Maven Bnd Repository GAV files")
 @SuppressWarnings("deprecation")
 public class MbrCommand extends Processor {
-	final static Pattern					SNAPSHOTLIKE_P				= Pattern.compile("-[^.]+$");
+	final static Pattern					SNAPSHOTLIKE_P				= Pattern
+		.compile("(-[^.]+)|(.*(beta|alfa|alpha|rc).?\\d+$)", Pattern.CASE_INSENSITIVE);
 	final static Predicate<MavenVersion>	notSnapshotlikePredicate	= v -> !SNAPSHOTLIKE_P.matcher(v.toString())
 		.find();
 
@@ -163,7 +165,7 @@ public class MbrCommand extends Processor {
 			bnd.trace("repo %s", repo.getName());
 			Map<Archive, MavenVersion> content = new HashMap<>();
 
-			for (Archive archive : repo.getArchives()) {
+			for (Archive archive : new TreeSet<>(repo.getArchives())) {
 				List<MavenVersion> list = updates.get(archive);
 				if (list == null || list.isEmpty()) {
 					content.put(archive, archive.revision.version);

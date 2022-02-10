@@ -16,8 +16,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-import aQute.bnd.version.Version;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
 
 public class FilterParser {
@@ -1086,13 +1086,19 @@ public class FilterParser {
 	}
 
 	public static String toString(Requirement r) {
+		return toString(r, true);
+	}
+
+	public static String toString(Requirement r, boolean namespace) {
 		try {
 			StringBuilder sb = new StringBuilder();
-			String category = namespaceToCategory(r.getNamespace());
-			if (category != null && category.length() > 0)
-				sb.append(namespaceToCategory(category))
-					.append(": ");
 
+			if (namespace) {
+				String category = namespaceToCategory(r.getNamespace());
+				if (category != null && category.length() > 0)
+					sb.append(namespaceToCategory(category))
+						.append(": ");
+			}
 			FilterParser fp = new FilterParser();
 			String filter = r.getDirectives()
 				.get("filter");

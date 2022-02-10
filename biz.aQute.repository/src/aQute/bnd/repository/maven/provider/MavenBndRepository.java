@@ -962,6 +962,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return index.getArchives();
 	}
 
+	public Collection<org.osgi.resource.Resource> getResources() {
+		init();
+		return index.getResources();
+	}
+
 	public List<Revision> getRevisions(Program program) throws Exception {
 		if (!init())
 			return Collections.emptyList();

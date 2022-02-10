@@ -67,10 +67,38 @@ import aQute.lib.strings.Strings;
 
 public class ResourceUtils {
 
+	public static final Comparator<Requirement>			REQUIREMENT_COMPARATOR		=																	//
+
+		(Requirement o1, Requirement o2) -> {
+			if (o1 == o2)
+				return 0;
+
+			if (o1 == null)
+				return -1;
+
+			if (o2 == null)
+				return 1;
+
+			if (o1.equals(o2))
+				return 0;
+
+			String ns1 = o1.getNamespace();
+			String ns2 = o2.getNamespace();
+			int compareTo = ns1.compareTo(ns2);
+			if (compareTo != 0)
+				return compareTo;
+
+			String f1 = o1.getDirectives()
+				.get("filter");
+			String f2 = o2.getDirectives()
+				.get("filter");
+			return f1.compareTo(f2);
+		};
+
 	/**
 	 * A comparator that compares the identity versions
 	 */
-	public static final Comparator<? super Resource>	IDENTITY_VERSION_COMPARATOR	=								//
+	public static final Comparator<? super Resource>		IDENTITY_VERSION_COMPARATOR	=								//
 		(o1, o2) -> {
 			if (o1 == o2)
 				return 0;
@@ -99,7 +127,7 @@ public class ResourceUtils {
 			return new Version(v1).compareTo(new Version(v2));
 		};
 
-	private static final Comparator<? super Resource>	RESOURCE_COMPARATOR			=								//
+	private static final Comparator<? super Resource>		RESOURCE_COMPARATOR			=								//
 		(o1, o2) -> {
 			if (o1 == o2)
 				return 0;
@@ -120,10 +148,10 @@ public class ResourceUtils {
 				.compareTo(o2.toString());
 		};
 
-	public static final Resource						DUMMY_RESOURCE				= new ResourceBuilder().build();
-	public static final String							WORKSPACE_NAMESPACE			= "bnd.workspace.project";
+	public static final Resource							DUMMY_RESOURCE				= new ResourceBuilder().build();
+	public static final String								WORKSPACE_NAMESPACE			= "bnd.workspace.project";
 
-	private static final Converter						cnv							= new Converter()
+	private static final Converter							cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
 
 	public interface IdentityCapability extends Capability {
@@ -690,6 +718,15 @@ public class ResourceUtils {
 	public static int compareTo(Resource a, Resource b) {
 		IdentityCapability left = ResourceUtils.getIdentityCapability(a);
 		IdentityCapability right = ResourceUtils.getIdentityCapability(b);
+		if (left == right)
+			return 0;
+
+		if (left == null) {
+			return 1;
+		}
+		if (right == null) {
+			return -1;
+		}
 
 		int compare = Objects.compare(left.osgi_identity(), right.osgi_identity(), nullsFirst);
 		if (compare != 0) {
