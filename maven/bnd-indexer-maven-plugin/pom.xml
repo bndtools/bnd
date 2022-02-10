@@ -43,10 +43,6 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.service.repository</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.eclipse.aether</groupId>
 			<artifactId>aether-api</artifactId>
 		</dependency>
@@ -57,6 +53,10 @@
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bndlib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.repository</artifactId>
 		</dependency>
 	</dependencies>
 
