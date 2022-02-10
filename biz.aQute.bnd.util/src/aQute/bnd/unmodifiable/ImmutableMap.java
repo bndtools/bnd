@@ -157,7 +157,7 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	}
 
 	abstract class ElementCollection<E> extends AbstractCollection<E> implements Collection<E> {
-		abstract E element(Object k, Object v);
+		abstract E element(int index);
 
 		@Override
 		abstract public boolean contains(Object o);
@@ -179,9 +179,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			@Override
 			public E next() {
 				if (hasNext()) {
-					Object k = entries[index++];
-					Object v = entries[index++];
-					return element(k, v);
+					E element = element(index);
+					index += 2;
+					return element;
 				}
 				throw new NoSuchElementException();
 			}
@@ -210,9 +210,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			public boolean tryAdvance(Consumer<? super E> action) {
 				requireNonNull(action);
 				if (index < end) {
-					Object k = entries[index++];
-					Object v = entries[index++];
-					action.accept(element(k, v));
+					E element = element(index);
+					index += 2;
+					action.accept(element);
 					return true;
 				}
 				return false;
@@ -222,9 +222,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			public void forEachRemaining(Consumer<? super E> action) {
 				requireNonNull(action);
 				while (index < end) {
-					Object k = entries[index++];
-					Object v = entries[index++];
-					action.accept(element(k, v));
+					E element = element(index);
+					index += 2;
+					action.accept(element);
 				}
 			}
 
@@ -269,9 +269,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 		public void forEach(Consumer<? super E> action) {
 			requireNonNull(action);
 			for (int index = 0, end = entries.length; index < end;) {
-				Object k = entries[index++];
-				Object v = entries[index++];
-				action.accept(element(k, v));
+				E element = element(index);
+				index += 2;
+				action.accept(element);
 			}
 		}
 
@@ -308,8 +308,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	final class EntrySet extends ElementSet<Entry<K, V>> {
 		@Override
 		@SuppressWarnings("unchecked")
-		Entry<K, V> element(Object k, Object v) {
-			return (Entry<K, V>) new ImmutableEntry<>(k, v);
+		Entry<K, V> element(int index) {
+			return new ImmutableEntry<>((K) entries[index], (V) entries[index + 1]);
 		}
 
 		@Override
@@ -334,8 +334,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	final class KeySet extends ElementSet<K> {
 		@Override
 		@SuppressWarnings("unchecked")
-		K element(Object k, Object v) {
-			return (K) k;
+		K element(int index) {
+			return (K) entries[index];
 		}
 
 		@Override
@@ -356,8 +356,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	final class ValueCollection extends ElementCollection<V> {
 		@Override
 		@SuppressWarnings("unchecked")
-		V element(Object k, Object v) {
-			return (V) v;
+		V element(int index) {
+			return (V) entries[index + 1];
 		}
 
 		@Override
