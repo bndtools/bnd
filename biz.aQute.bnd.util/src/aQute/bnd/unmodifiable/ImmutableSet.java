@@ -1,5 +1,7 @@
 package aQute.bnd.unmodifiable;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -12,6 +14,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializable {
@@ -103,6 +106,16 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 			array[length] = null;
 		}
 		return array;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void forEach(Consumer<? super E> action) {
+		requireNonNull(action);
+		Object[] elements = this.elements;
+		for (int index = 0, end = elements.length; index < end; index++) {
+			action.accept((E) elements[index]);
+		}
 	}
 
 	@Override

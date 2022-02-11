@@ -17,6 +17,7 @@ import java.util.ListIterator;
 import java.util.RandomAccess;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -86,7 +87,8 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@Override
 	public int indexOf(Object o) {
 		if (o != null) {
-			for (int index = 0, length = elements.length; index < length; index++) {
+			Object[] elements = this.elements;
+			for (int index = 0, end = elements.length; index < end; index++) {
 				if (o.equals(elements[index])) {
 					return index;
 				}
@@ -98,6 +100,7 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@Override
 	public int lastIndexOf(Object o) {
 		if (o != null) {
+			Object[] elements = this.elements;
 			for (int index = elements.length - 1; index >= 0; index--) {
 				if (o.equals(elements[index])) {
 					return index;
@@ -124,6 +127,16 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 			array[length] = null;
 		}
 		return array;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void forEach(Consumer<? super E> action) {
+		requireNonNull(action);
+		Object[] elements = this.elements;
+		for (int index = 0, end = elements.length; index < end; index++) {
+			action.accept((E) elements[index]);
+		}
 	}
 
 	@Override

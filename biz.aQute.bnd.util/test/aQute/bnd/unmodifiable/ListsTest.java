@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -228,6 +229,32 @@ public class ListsTest {
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.replaceAll(i -> i));
 		assertThatExceptionOfType(UnsupportedOperationException.class)
 			.isThrownBy(() -> list.sort(String.CASE_INSENSITIVE_ORDER));
+	}
+
+	@Test
+	public void foreach() {
+		List<String> source = Lists.of("e1", "e2", "e3", "e1", "e5");
+		Iterator<String> iterator = source.iterator();
+		List<String> list = new ArrayList<>();
+		iterator.forEachRemaining(list::add);
+		assertThat(list).containsExactly("e1", "e2", "e3", "e1", "e5");
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
+		list = new ArrayList<>();
+		source.forEach(list::add);
+		assertThat(list).containsExactly("e1", "e2", "e3", "e1", "e5");
+	}
+
+	@Test
+	public void iterator_empty() {
+		Iterator<String> iterator = Lists.<String> of()
+			.iterator();
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
