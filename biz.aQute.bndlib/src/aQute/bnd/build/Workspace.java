@@ -1645,7 +1645,7 @@ public class Workspace extends Processor {
 	/**
 	 * Strategy to use when creating a workspace ResourceRepository.
 	 */
-	enum ResourceRepositoryStrategy {
+	public enum ResourceRepositoryStrategy {
 		/**
 		 * All Repository plugins and the Workspace repository.
 		 * <p>
@@ -1671,7 +1671,7 @@ public class Workspace extends Processor {
 	 * @return an aggregate repository
 	 * @throws Exception
 	 */
-	Repository getResourceRepository(ResourceRepositoryStrategy strategy) throws Exception {
+	public Repository getResourceRepository(ResourceRepositoryStrategy strategy) throws Exception {
 		List<Repository> plugins;
 
 		switch (strategy) {

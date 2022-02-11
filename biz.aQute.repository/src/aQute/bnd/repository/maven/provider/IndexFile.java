@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -502,6 +503,11 @@ class IndexFile {
 		return archives.keySet();
 	}
 
+	Collection<Resource> getResources() {
+		sync(updateSerializer);
+		return archives.values();
+	}
+
 	Archive find(String bsn, Version version) throws Exception {
 
 		//
@@ -633,4 +639,5 @@ class IndexFile {
 		}
 		return null;
 	}
+
 }

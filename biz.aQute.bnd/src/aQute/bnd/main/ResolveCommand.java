@@ -18,6 +18,7 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.Workspace.ResourceRepositoryStrategy;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.OSGI_CORE;
 import aQute.bnd.build.model.clauses.VersionedClause;
@@ -29,6 +30,7 @@ import aQute.bnd.main.bnd.excludeOptions;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.getopt.Arguments;
@@ -40,6 +42,7 @@ import biz.aQute.resolve.Bndrun;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolverValidator;
 import biz.aQute.resolve.ResolverValidator.Resolution;
+import biz.aQute.resolve.ResolverValidator.ResolutionType;
 import biz.aQute.resolve.RunResolution;
 
 public class ResolveCommand extends Processor {
@@ -103,7 +106,7 @@ public class ResolveCommand extends Processor {
 
 	@Description("Validate an OBR file by trying to resolve each entry against itself")
 	@Arguments(arg = {
-		"index-path"
+		"[index-path]"
 	})
 	interface ValidateOptions extends Options {
 		@Description("Specify the execution environment used as part of the base, default is JavaSE_1_8")
@@ -123,6 +126,16 @@ public class ResolveCommand extends Processor {
 
 		@Description("Include all output details")
 		boolean all();
+
+		@Description("Show resolution failed errors")
+		boolean failedshow();
+
+		@Description("List cross reference: mimssing-req -> resources*")
+		boolean xref();
+
+		@Description("Show any unused entries. This will only try to resolve the workspace entries and then list the entries in the repos that are not used")
+		boolean unused();
+
 	}
 
 	@Description("Resolve a repository index against a base to determine if the index is 'complete'")
@@ -152,47 +165,86 @@ public class ResolveCommand extends Processor {
 		}
 
 		List<String> args = options._arguments();
-		File index = getFile(args.remove(0));
-		logger.debug("validating {}", index);
 
 		try (ResolverValidator validator = new ResolverValidator(bnd)) {
 			validator.use(bnd);
-			validator.addRepository(index.toURI());
 			validator.setSystem(system.build());
 
-			List<Resolution> result = validator.validate();
-			Set<Requirement> done = new HashSet<>();
-
-			for (Resolution res : result) {
-				if (options.all()) {
-					bnd.out.format("%s %-60s %s%n", res.succeeded ? "OK" : "**", res.resource,
-						res.message == null ? "" : res.message);
+			List<Resolution> result;
+			if (args.isEmpty()) {
+				Workspace w = bnd.getWorkspace();
+				if (w == null) {
+					bnd.error("No arguments, reverting to workspace mode but not in a workspace directory: %s",
+						IO.work);
+					return;
 				}
-				if (!res.succeeded) {
-					for (Requirement req : res.missing) {
-						if (done.contains(req))
-							continue;
 
-						bnd.out.format("    missing   %s%n", req);
-						done.add(req);
-					}
-					if (options.all()) {
-						for (Requirement req : res.repos) {
-							bnd.out.format("    repos     %s%n", req);
-						}
-						for (Requirement req : res.system) {
-							bnd.out.format("    system    %s%n", req);
-						}
-						for (Requirement req : res.optionals) {
-							bnd.out.format("    optional  %s%n", req);
-						}
-					}
-				}
+				Repository repository = w.getResourceRepository(ResourceRepositoryStrategy.ALL);
+				if (options.unused()) {
+					Repository wsRepo = w.getResourceRepository(ResourceRepositoryStrategy.WORKSPACE);
+					result = validator.validateResources(repository, ResolverValidator.getAllResources(wsRepo));
+				} else
+					result = validator.validateResources(repository);
+			} else {
+				File index = getFile(args.remove(0));
+				logger.debug("validating {}", index);
+				validator.addRepository(index.toURI());
+				result = validator.validate();
 			}
 
+			boolean dump = true;
+			if (options.unused()) {
+				bnd.out.println(validator.unused(result));
+				dump = false;
+			}
+			if (options.xref()) {
+				bnd.out.println(validator.xrefMissing(result));
+				dump = false;
+			}
+			if (dump)
+				dump(options, result);
+
+			if (!options.failedshow())
+				validator.getErrors()
+					.removeIf(s -> s.contains("Resolution failed."));
 			bnd.getInfo(validator);
 		}
 
+	}
+
+	private void dump(ValidateOptions options, List<Resolution> result) {
+		Set<Requirement> done = new HashSet<>();
+
+		for (Resolution res : result) {
+			if (options.all()) {
+				bnd.out.format("%-8s %-60s %s%n", res.type, res.resource, res.message == null ? "" : res.message);
+			}
+			if (res.type == ResolutionType.FAIL) {
+				for (Requirement req : res.missing) {
+					if (done.contains(req))
+						continue;
+
+					if (req.getNamespace()
+						.contains("unresolve"))
+						continue;
+
+					String show = FilterParser.toString(req);
+					bnd.out.format("    missing   %s%n", show);
+					done.add(req);
+				}
+				if (options.all()) {
+					for (Requirement req : res.repos) {
+						bnd.out.format("    repos     %s%n", req);
+					}
+					for (Requirement req : res.system) {
+						bnd.out.format("    system    %s%n", req);
+					}
+					for (Requirement req : res.optionals) {
+						bnd.out.format("    optional  %s%n", req);
+					}
+				}
+			}
+		}
 	}
 
 	@Description("Resolve a bndrun file")

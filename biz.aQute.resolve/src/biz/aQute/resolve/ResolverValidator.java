@@ -14,6 +14,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -29,11 +31,14 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.ResolutionDirective;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.justif.Justif;
 import aQute.lib.strings.Strings;
 
 public class ResolverValidator extends Processor {
@@ -44,9 +49,15 @@ public class ResolverValidator extends Processor {
 	List<URI>					repositories	= new ArrayList<>();
 	Resource					system			= null;
 
+	public enum ResolutionType {
+		OK,
+		FAIL,
+		UNUSED
+	}
+
 	public static class Resolution {
 		public Resource				resource;
-		public boolean				succeeded;
+		public ResolutionType		type;
 		public String				message;
 		public Set<Resource>		resolved	= new LinkedHashSet<>();
 		public List<Requirement>	system		= new ArrayList<>();
@@ -54,6 +65,8 @@ public class ResolverValidator extends Processor {
 		public List<Requirement>	missing		= new ArrayList<>();
 		public List<Requirement>	optionals	= new ArrayList<>();
 		public List<Requirement>	unresolved	= new ArrayList<>();
+		@Deprecated
+		public boolean				succeeded;
 	}
 
 	public ResolverValidator(Processor parent) throws Exception {
@@ -98,8 +111,10 @@ public class ResolverValidator extends Processor {
 
 	public List<Resolution> validateResources(Repository repository, Collection<Resource> resources) throws Exception {
 		setProperty("-runfw", "dummy");
+		setProperty("-runprovidedcapabilities.extra", "${native_capability}");
 		List<Resolution> result = new ArrayList<>();
 		List<Resource> resourceList = new ArrayList<>(resources);
+
 		while (!resourceList.isEmpty()) {
 			Resource resource = resourceList.remove(0);
 			Resolution resolution = resolve(repository, resource);
@@ -109,10 +124,25 @@ public class ResolverValidator extends Processor {
 					Resolution curResolution = new Resolution();
 					curResolution.resource = resolved;
 					curResolution.succeeded = true;
+					curResolution.type = ResolutionType.OK;
 					result.add(curResolution);
 				}
 			}
 		}
+		Set<Resource> unused = getAllResources(repository);
+		result.forEach(reso -> {
+			unused.remove(reso.resource);
+			unused.removeAll(reso.resolved);
+		});
+		unused.forEach(resource -> {
+			Resolution r = new Resolution();
+			r.resource = resource;
+			r.message = "Unused resource";
+			r.type = ResolutionType.UNUSED;
+			r.succeeded = false;
+			result.add(r);
+		});
+
 		return result;
 	}
 
@@ -154,6 +184,7 @@ public class ResolverValidator extends Processor {
 
 		try {
 			Map<Resource, List<Wire>> resolve2 = resolver.resolve(context);
+			resolution.type = ResolutionType.OK;
 			resolution.succeeded = true;
 			resolution.resolved = resolve2.keySet();
 
@@ -161,6 +192,7 @@ public class ResolverValidator extends Processor {
 		} catch (ResolutionException e) {
 			logger.debug("resolving {} failed", resource);
 
+			resolution.type = ResolutionType.FAIL;
 			resolution.succeeded = false;
 			resolution.message = e.getMessage();
 
@@ -200,7 +232,7 @@ public class ResolverValidator extends Processor {
 				}
 			}
 
-			error(ResolveProcess.format(e, false));
+			error("%s", ResolveProcess.format(e, false));
 		} catch (Exception e) {
 			e.printStackTrace();
 			error("resolving %s failed with %s", context.getInputResource()
@@ -209,5 +241,70 @@ public class ResolverValidator extends Processor {
 		}
 
 		return resolution;
+	}
+
+	/**
+	 * Validate all resources in the repository against the repository and the
+	 * system resource as setup.
+	 *
+	 * @param repository the repository providing the resources & used to
+	 *            resolve against
+	 * @return a list of resolutions, one per resource
+	 */
+	public List<Resolution> validateResources(Repository repository) throws Exception {
+		return validateResources(repository, getAllResources(repository));
+	}
+
+	/**
+	 * Printout a cross reference of the results of missing requirements ->
+	 * using resources.
+	 *
+	 * @param result the resolutions with missing requirements
+	 * @return a formatted report string
+	 */
+	public String xrefMissing(List<Resolution> result) {
+		MultiMap<Requirement, Resolution> grouped = new MultiMap<>();
+		result.forEach(reso -> reso.missing.forEach(req -> grouped.add(req, reso)));
+
+		TreeSet<Requirement> ts = new TreeSet<Requirement>(ResourceUtils.REQUIREMENT_COMPARATOR);
+		ts.addAll(grouped.keySet());
+
+		Justif j = new Justif(300, 20, 70, 90, 120);
+		String ns = null;
+		String del = "";
+		for (Requirement requirement : ts) {
+
+			if (!requirement.getNamespace()
+				.equals(ns)) {
+				ns = requirement.getNamespace();
+				if (ns.matches("osgi.unresolvable|osgi.compile.time.only"))
+					continue;
+				j.formatter()
+					.format("%s%-20s", del, ns);
+				String nicer = FilterParser.namespaceToCategory(ns);
+				if (!nicer.equals(ns)) {
+					j.formatter()
+						.format("\t2%s\n", nicer);
+				} else
+					j.formatter()
+						.format("\n");
+				del = "\n";
+			}
+
+			String filter = FilterParser.toString(requirement, false);
+			TreeSet<Resource> resources = new TreeSet<>(ResourceUtils.IDENTITY_VERSION_COMPARATOR);
+			grouped.get(requirement)
+				.forEach(resolution -> resources.add(resolution.resource));
+			j.entry("   " + filter, " ", resources);
+		}
+
+		return j.wrap();
+	}
+
+	public String unused(List<Resolution> result) {
+		return result.stream()
+			.filter(r -> r.type == ResolutionType.UNUSED)
+			.map(r -> r.resource.toString())
+			.collect(Collectors.joining("\n"));
 	}
 }
