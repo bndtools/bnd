@@ -1,6 +1,7 @@
 package aQute.bnd.unmodifiable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
@@ -11,16 +12,15 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
-import java.util.function.Consumer;
 
 import org.assertj.core.api.MapAssert;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ public class MapsTest {
 	public void one() {
 		Map<String, String> map = Maps.of("k1", "v1");
 		assertThat(map).hasSize(1)
-			.containsEntry("k1", "v1");
+			.containsExactly(new SimpleEntry<>("k1", "v1"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -61,8 +61,8 @@ public class MapsTest {
 	public void two() {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2");
 		assertThat(map).hasSize(2)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -73,9 +73,9 @@ public class MapsTest {
 	public void three() {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3");
 		assertThat(map).hasSize(3)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -86,10 +86,10 @@ public class MapsTest {
 	public void four() {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
 		assertThat(map).hasSize(4)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3")
-			.containsEntry("k4", "v4");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"), //
+				new SimpleEntry<>("k4", "v4"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -100,11 +100,11 @@ public class MapsTest {
 	public void five() {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5");
 		assertThat(map).hasSize(5)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3")
-			.containsEntry("k4", "v4")
-			.containsEntry("k5", "v5");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"), //
+				new SimpleEntry<>("k4", "v4"), //
+				new SimpleEntry<>("k5", "v5"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -115,12 +115,12 @@ public class MapsTest {
 	public void six() {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6");
 		assertThat(map).hasSize(6)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3")
-			.containsEntry("k4", "v4")
-			.containsEntry("k5", "v5")
-			.containsEntry("k6", "v6");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"), //
+				new SimpleEntry<>("k4", "v4"), //
+				new SimpleEntry<>("k5", "v5"), //
+				new SimpleEntry<>("k6", "v6"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -132,13 +132,13 @@ public class MapsTest {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
 			"v7");
 		assertThat(map).hasSize(7)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3")
-			.containsEntry("k4", "v4")
-			.containsEntry("k5", "v5")
-			.containsEntry("k6", "v6")
-			.containsEntry("k7", "v7");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"), //
+				new SimpleEntry<>("k4", "v4"), //
+				new SimpleEntry<>("k5", "v5"), //
+				new SimpleEntry<>("k6", "v6"), //
+				new SimpleEntry<>("k7", "v7"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -150,14 +150,14 @@ public class MapsTest {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
 			"v7", "k8", "v8");
 		assertThat(map).hasSize(8)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3")
-			.containsEntry("k4", "v4")
-			.containsEntry("k5", "v5")
-			.containsEntry("k6", "v6")
-			.containsEntry("k7", "v7")
-			.containsEntry("k8", "v8");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"), //
+				new SimpleEntry<>("k4", "v4"), //
+				new SimpleEntry<>("k5", "v5"), //
+				new SimpleEntry<>("k6", "v6"), //
+				new SimpleEntry<>("k7", "v7"), //
+				new SimpleEntry<>("k8", "v8"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -169,15 +169,15 @@ public class MapsTest {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
 			"v7", "k8", "v8", "k9", "v9");
 		assertThat(map).hasSize(9)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3")
-			.containsEntry("k4", "v4")
-			.containsEntry("k5", "v5")
-			.containsEntry("k6", "v6")
-			.containsEntry("k7", "v7")
-			.containsEntry("k8", "v8")
-			.containsEntry("k9", "v9");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"), //
+				new SimpleEntry<>("k4", "v4"), //
+				new SimpleEntry<>("k5", "v5"), //
+				new SimpleEntry<>("k6", "v6"), //
+				new SimpleEntry<>("k7", "v7"), //
+				new SimpleEntry<>("k8", "v8"), //
+				new SimpleEntry<>("k9", "v9"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -189,16 +189,16 @@ public class MapsTest {
 		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
 			"v7", "k8", "v8", "k9", "v9", "k10", "v10");
 		assertThat(map).hasSize(10)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2")
-			.containsEntry("k3", "v3")
-			.containsEntry("k4", "v4")
-			.containsEntry("k5", "v5")
-			.containsEntry("k6", "v6")
-			.containsEntry("k7", "v7")
-			.containsEntry("k8", "v8")
-			.containsEntry("k9", "v9")
-			.containsEntry("k10", "v10");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"), //
+				new SimpleEntry<>("k3", "v3"), //
+				new SimpleEntry<>("k4", "v4"), //
+				new SimpleEntry<>("k5", "v5"), //
+				new SimpleEntry<>("k6", "v6"), //
+				new SimpleEntry<>("k7", "v7"), //
+				new SimpleEntry<>("k8", "v8"), //
+				new SimpleEntry<>("k9", "v9"), //
+				new SimpleEntry<>("k10", "v10"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -246,8 +246,8 @@ public class MapsTest {
 		entries[0].setValue("changed");
 		entries[1] = new SimpleEntry<>("changed", "v2");
 		assertThat(map).hasSize(2)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -268,8 +268,8 @@ public class MapsTest {
 		Map<String, String> map = Maps.copyOf(source);
 		source.put("k2", "changed");
 		assertThat(map).hasSize(2)
-			.containsEntry("k1", "v1")
-			.containsEntry("k2", "v2");
+			.containsExactly(new SimpleEntry<>("k1", "v1"), //
+				new SimpleEntry<>("k2", "v2"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -369,6 +369,14 @@ public class MapsTest {
 	}
 
 	@Test
+	public void foreach() {
+		Map<String, String> source = Maps.of("k1", "v1", "k2", "v2");
+		Map<String, String> map = new LinkedHashMap<>();
+		source.forEach(map::put);
+		assertThat(map).containsExactly(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+	}
+
+	@Test
 	public void entry_set_contains() {
 		Set<Entry<String, String>> entrySet = Maps.of("k1", "v1", "k2", "v2")
 			.entrySet();
@@ -396,9 +404,24 @@ public class MapsTest {
 	public void entry_set_foreach() {
 		Set<Entry<String, String>> entrySet = Maps.of("k1", "v1", "k2", "v2")
 			.entrySet();
-		Set<Entry<String, String>> set = new HashSet<>();
+		Set<Entry<String, String>> set = new LinkedHashSet<>();
 		entrySet.forEach(set::add);
-		assertThat(set).containsExactlyInAnyOrder(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+		assertThat(set).containsExactly(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+
+		Iterator<Entry<String, String>> iterator = entrySet.iterator();
+		set = new LinkedHashSet<>();
+		iterator.forEachRemaining(set::add);
+		assertThat(set).containsExactly(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+		Holder<Entry<String, String>> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
+
+		Spliterator<Entry<String, String>> spliterator = entrySet.spliterator();
+		set = new LinkedHashSet<>();
+		spliterator.forEachRemaining(set::add);
+		assertThat(set).containsExactly(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+		assertThatCode(() -> spliterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -423,15 +446,9 @@ public class MapsTest {
 		Iterator<Entry<String, String>> iterator = entrySet.iterator();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
-	}
-
-	static class Holder<E> implements Consumer<E> {
-		E value;
-
-		@Override
-		public void accept(E t) {
-			this.value = t;
-		}
+		Holder<Entry<String, String>> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -440,7 +457,7 @@ public class MapsTest {
 		@SuppressWarnings("unchecked")
 		Entry<String, String>[] entries = new Entry[max];
 		for (int i = 0; i < max; i++) {
-			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+			entries[i] = new SimpleEntry<>(String.format("k%d", i + 1), String.format("v%d", i + 1));
 		}
 		Map<String, String> map = Maps.ofEntries(entries);
 		assertThat(map).hasSize(max);
@@ -487,6 +504,7 @@ public class MapsTest {
 		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(entrySet.size());
 		Holder<Entry<String, String>> holder = new Holder<>();
 		assertThat(spliterator.tryAdvance(holder)).isFalse();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -517,9 +535,24 @@ public class MapsTest {
 	public void key_set_foreach() {
 		Set<String> keySet = Maps.of("k1", "v1", "k2", "v2")
 			.keySet();
-		Set<String> set = new HashSet<>();
+		Set<String> set = new LinkedHashSet<>();
 		keySet.forEach(set::add);
-		assertThat(set).containsExactlyInAnyOrder("k1", "k2");
+		assertThat(set).containsExactly("k1", "k2");
+
+		Iterator<String> iterator = keySet.iterator();
+		set = new LinkedHashSet<>();
+		iterator.forEachRemaining(set::add);
+		assertThat(set).containsExactly("k1", "k2");
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
+
+		Spliterator<String> spliterator = keySet.spliterator();
+		set = new LinkedHashSet<>();
+		spliterator.forEachRemaining(set::add);
+		assertThat(set).containsExactly("k1", "k2");
+		assertThatCode(() -> spliterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -544,6 +577,9 @@ public class MapsTest {
 		Iterator<String> iterator = keySet.iterator();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -552,7 +588,7 @@ public class MapsTest {
 		@SuppressWarnings("unchecked")
 		Entry<String, String>[] entries = new Entry[max];
 		for (int i = 0; i < max; i++) {
-			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+			entries[i] = new SimpleEntry<>(String.format("k%d", i + 1), String.format("v%d", i + 1));
 		}
 		Map<String, String> map = Maps.ofEntries(entries);
 		assertThat(map).hasSize(max);
@@ -597,6 +633,7 @@ public class MapsTest {
 		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(keySet.size());
 		Holder<String> holder = new Holder<>();
 		assertThat(spliterator.tryAdvance(holder)).isFalse();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -632,6 +669,21 @@ public class MapsTest {
 		List<String> list = new ArrayList<>();
 		values.forEach(list::add);
 		assertThat(list).containsExactly("v1", "v2", "v1");
+
+		Iterator<String> iterator = values.iterator();
+		list = new ArrayList<>();
+		iterator.forEachRemaining(list::add);
+		assertThat(list).containsExactly("v1", "v2", "v1");
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
+
+		Spliterator<String> spliterator = values.spliterator();
+		list = new ArrayList<>();
+		spliterator.forEachRemaining(list::add);
+		assertThat(list).containsExactly("v1", "v2", "v1");
+		assertThatCode(() -> spliterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -659,6 +711,9 @@ public class MapsTest {
 		Iterator<String> iterator = values.iterator();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 	@Test
@@ -667,7 +722,7 @@ public class MapsTest {
 		@SuppressWarnings("unchecked")
 		Entry<String, String>[] entries = new Entry[max];
 		for (int i = 0; i < max; i++) {
-			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+			entries[i] = new SimpleEntry<>(String.format("k%d", i + 1), String.format("v%d", i + 1));
 		}
 		Map<String, String> map = Maps.ofEntries(entries);
 		assertThat(map).hasSize(max);
@@ -678,6 +733,7 @@ public class MapsTest {
 		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(values.size());
 
 		Spliterator<String> trySplit = spliterator.trySplit();
+		assertThat(trySplit).isNotNull();
 		assertThat(trySplit.characteristics() & Spliterator.DISTINCT).isZero();
 		assertThat(trySplit.getExactSizeIfKnown() + spliterator.getExactSizeIfKnown()).isEqualTo(values.size());
 
@@ -712,6 +768,7 @@ public class MapsTest {
 		assertThat(spliterator.getExactSizeIfKnown()).isEqualTo(values.size());
 		Holder<String> holder = new Holder<>();
 		assertThat(spliterator.tryAdvance(holder)).isFalse();
+		assertThat(holder.set).isFalse();
 	}
 
 	// Strings can have a hashCode of Integer.MIN_VALUE. For example:
@@ -728,9 +785,9 @@ public class MapsTest {
 		Map<String, String> map = Maps.of("polygenelubricants", "v1", "GydZG_", "v2", "DESIGNING WORKHOUSES", "v3");
 
 		assertThat(map).hasSize(3)
-			.containsEntry("polygenelubricants", "v1")
-			.containsEntry("GydZG_", "v2")
-			.containsEntry("DESIGNING WORKHOUSES", "v3");
+			.containsExactly(new SimpleEntry<>("polygenelubricants", "v1"), //
+				new SimpleEntry<>("GydZG_", "v2"), //
+				new SimpleEntry<>("DESIGNING WORKHOUSES", "v3"));
 	}
 
 	@Test
@@ -739,7 +796,7 @@ public class MapsTest {
 		@SuppressWarnings("unchecked")
 		Entry<String, String>[] entries = new Entry[max];
 		for (int i = 0; i < max; i++) {
-			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+			entries[i] = new SimpleEntry<>(String.format("k%d", i + 1), String.format("v%d", i + 1));
 		}
 		Map<String, String> map = Maps.ofEntries(entries);
 		MapAssert<String, String> assertion = assertThat(map).hasSize(max);
@@ -754,7 +811,7 @@ public class MapsTest {
 		@SuppressWarnings("unchecked")
 		Entry<String, String>[] entries = new Entry[over_max];
 		for (int i = 0; i < over_max; i++) {
-			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+			entries[i] = new SimpleEntry<>(String.format("k%d", i + 1), String.format("v%d", i + 1));
 		}
 		assertThatIllegalArgumentException().isThrownBy(() -> Maps.ofEntries(entries));
 	}
