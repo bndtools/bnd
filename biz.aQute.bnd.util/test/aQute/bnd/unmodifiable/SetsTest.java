@@ -1,6 +1,7 @@
 package aQute.bnd.unmodifiable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
@@ -10,7 +11,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
 
@@ -362,6 +365,32 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
 		assertThat(set.spliterator()).hasCharacteristics(Spliterator.DISTINCT, Spliterator.ORDERED,
 			Spliterator.IMMUTABLE, Spliterator.SIZED, Spliterator.SUBSIZED, Spliterator.NONNULL);
+	}
+
+	@Test
+	public void foreach() {
+		Set<String> source = Sets.of("e1", "e2", "e3", "e4", "e5");
+		Iterator<String> iterator = source.iterator();
+		List<String> list = new ArrayList<>();
+		iterator.forEachRemaining(list::add);
+		assertThat(list).containsExactly("e1", "e2", "e3", "e4", "e5");
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
+		list = new ArrayList<>();
+		source.forEach(list::add);
+		assertThat(list).containsExactly("e1", "e2", "e3", "e4", "e5");
+	}
+
+	@Test
+	public void iterator_empty() {
+		Iterator<String> iterator = Sets.<String> of()
+			.iterator();
+		assertThat(iterator.hasNext()).isFalse();
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> iterator.next());
+		Holder<String> holder = new Holder<>();
+		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
+		assertThat(holder.set).isFalse();
 	}
 
 }

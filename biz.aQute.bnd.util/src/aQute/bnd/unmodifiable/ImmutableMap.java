@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -87,8 +88,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 	@Override
 	public boolean containsValue(Object value) {
 		if (value != null) {
-			for (int i = 1; i < entries.length; i += 2) {
-				if (value.equals(entries[i])) {
+			Object[] entries = this.entries;
+			for (int index = 1, end = entries.length; index < end; index += 2) {
+				if (value.equals(entries[index])) {
 					return true;
 				}
 			}
@@ -121,7 +123,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			return false;
 		}
 		try {
-			for (int index = 0, length = entries.length; index < length; index += 2) {
+			Object[] entries = this.entries;
+			for (int index = 0, end = entries.length; index < end; index += 2) {
 				if (!entries[index + 1].equals(other.get(entries[index]))) {
 					return false;
 				}
@@ -134,29 +137,46 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 
 	@Override
 	public int hashCode() {
+		Object[] entries = this.entries;
 		int hashCode = 0;
-		for (int index = 0, length = entries.length; index < length; index += 2) {
+		for (int index = 0, end = entries.length; index < end; index += 2) {
 			hashCode += entries[index].hashCode() ^ entries[index + 1].hashCode();
 		}
 		return hashCode;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public void forEach(BiConsumer<? super K, ? super V> action) {
+		requireNonNull(action);
+		Object[] entries = this.entries;
+		for (int index = 0, end = entries.length; index < end; index += 2) {
+			action.accept((K) entries[index], (V) entries[index + 1]);
+		}
+	}
+
 	@Override
 	public Set<Entry<K, V>> entrySet() {
-		return new EntrySet();
+		return new EntrySet<>(this);
 	}
 
 	@Override
 	public Set<K> keySet() {
-		return new KeySet();
+		return new KeySet<>(this);
 	}
 
 	@Override
 	public Collection<V> values() {
-		return new ValueCollection();
+		return new ValueCollection<>(this);
 	}
 
-	abstract class ElementCollection<E> extends AbstractCollection<E> implements Collection<E> {
+	abstract static class ElementCollection<E> extends AbstractCollection<E> implements Collection<E> {
+		final ImmutableMap<?, ?> map;
+
+		ElementCollection(ImmutableMap<?, ?> map) {
+			this.map = map;
+		}
+
 		abstract E element(int index);
 
 		@Override
@@ -190,11 +210,21 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			public void remove() {
 				throw new UnsupportedOperationException();
 			}
+
+			@Override
+			public void forEachRemaining(Consumer<? super E> action) {
+				requireNonNull(action);
+				while (index < end) {
+					E element = element(index);
+					index += 2;
+					action.accept(element);
+				}
+			}
 		}
 
 		@Override
 		public Iterator<E> iterator() {
-			return new ElementIterator(0, entries.length);
+			return new ElementIterator(0, map.entries.length);
 		}
 
 		final class ElementSpliterator implements Spliterator<E> {
@@ -262,26 +292,28 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 
 		@Override
 		public Spliterator<E> spliterator() {
-			return new ElementSpliterator(0, entries.length);
+			return new ElementSpliterator(0, map.entries.length);
 		}
 
 		@Override
 		public void forEach(Consumer<? super E> action) {
 			requireNonNull(action);
-			for (int index = 0, end = entries.length; index < end;) {
-				E element = element(index);
-				index += 2;
-				action.accept(element);
+			for (int index = 0, end = map.entries.length; index < end; index += 2) {
+				action.accept(element(index));
 			}
 		}
 
 		@Override
 		public int size() {
-			return ImmutableMap.this.size();
+			return map.size();
 		}
 	}
 
-	abstract class ElementSet<E> extends ElementCollection<E> implements Set<E> {
+	abstract static class ElementSet<E> extends ElementCollection<E> implements Set<E> {
+		ElementSet(ImmutableMap<?, ?> map) {
+			super(map);
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (o == this) {
@@ -305,10 +337,15 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 		abstract public int hashCode();
 	}
 
-	final class EntrySet extends ElementSet<Entry<K, V>> {
+	final static class EntrySet<K, V> extends ElementSet<Entry<K, V>> {
+		EntrySet(ImmutableMap<K, V> map) {
+			super(map);
+		}
+
 		@Override
 		@SuppressWarnings("unchecked")
 		Entry<K, V> element(int index) {
+			Object[] entries = map.entries;
 			return new ImmutableEntry<>((K) entries[index], (V) entries[index + 1]);
 		}
 
@@ -318,7 +355,7 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 				return false;
 			}
 			Entry<?, ?> other = (Entry<?, ?>) o;
-			V v = ImmutableMap.this.get(other.getKey());
+			Object v = map.get(other.getKey());
 			if (v == null) {
 				return false;
 			}
@@ -327,42 +364,51 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 
 		@Override
 		public int hashCode() {
-			return ImmutableMap.this.hashCode();
+			return map.hashCode();
 		}
 	}
 
-	final class KeySet extends ElementSet<K> {
+	final static class KeySet<K> extends ElementSet<K> {
+		KeySet(ImmutableMap<K, ?> map) {
+			super(map);
+		}
+
 		@Override
 		@SuppressWarnings("unchecked")
 		K element(int index) {
-			return (K) entries[index];
+			return (K) map.entries[index];
 		}
 
 		@Override
 		public boolean contains(Object o) {
-			return ImmutableMap.this.containsKey(o);
+			return map.containsKey(o);
 		}
 
 		@Override
 		public int hashCode() {
+			Object[] entries = map.entries;
 			int hashCode = 0;
-			for (int i = 0; i < entries.length; i += 2) {
-				hashCode += entries[i].hashCode();
+			for (int index = 0, end = entries.length; index < end; index += 2) {
+				hashCode += entries[index].hashCode();
 			}
 			return hashCode;
 		}
 	}
 
-	final class ValueCollection extends ElementCollection<V> {
+	final static class ValueCollection<V> extends ElementCollection<V> {
+		ValueCollection(ImmutableMap<?, V> map) {
+			super(map);
+		}
+
 		@Override
 		@SuppressWarnings("unchecked")
 		V element(int index) {
-			return (V) entries[index + 1];
+			return (V) map.entries[index + 1];
 		}
 
 		@Override
 		public boolean contains(Object o) {
-			return ImmutableMap.this.containsValue(o);
+			return map.containsValue(o);
 		}
 	}
 
