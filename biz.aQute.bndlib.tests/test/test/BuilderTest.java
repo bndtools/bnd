@@ -936,7 +936,8 @@ public class BuilderTest {
 	 */
 
 	@Test
-	public void testDigests() throws Exception {
+	public void testDigests(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
@@ -944,7 +945,7 @@ public class BuilderTest {
 			b.setProperty(Constants.DIGESTS, "MD5, SHA1");
 			Jar jar = b.build();
 			assertTrue(b.check());
-			File f = File.createTempFile("test", ".jar");
+			File f = File.createTempFile("test", ".jar", tmp);
 			jar.write(f);
 
 			Jar other = new Jar(f);
@@ -1845,7 +1846,8 @@ public class BuilderTest {
 	}
 
 	@Test
-	public void testNoManifest() throws Exception {
+	public void testNoManifest(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-nomanifest", "true");
@@ -1854,8 +1856,7 @@ public class BuilderTest {
 			Jar jar = b.build();
 			assertTrue(b.check());
 
-			File f = new File("tmp.jar");
-			f.deleteOnExit();
+			File f = new File(tmp, "tmp.jar");
 			jar.write(f);
 
 			JarInputStream jin = new JarInputStream(new FileInputStream(f));

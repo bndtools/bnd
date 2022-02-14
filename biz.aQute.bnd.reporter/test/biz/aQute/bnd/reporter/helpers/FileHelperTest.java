@@ -6,9 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
+
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 
 public class FileHelperTest {
 
@@ -44,16 +47,17 @@ public class FileHelperTest {
 	}
 
 	@Test
-	public void testSearch() throws IOException {
-		final File oneWithExtDir = Files.createTempDirectory("bndtest-oneWithExtDir")
+	public void testSearch(@InjectTemporaryDirectory
+	Path tmp) throws IOException {
+		final File oneWithExtDir = Files.createTempDirectory(tmp, "bndtest-oneWithExtDir")
 			.toFile();
-		final File oneWithoutExtDir = Files.createTempDirectory("bndtest-oneWithoutExtDir")
+		final File oneWithoutExtDir = Files.createTempDirectory(tmp, "bndtest-oneWithoutExtDir")
 			.toFile();
-		final File twoWithExtDir = Files.createTempDirectory("bndtest-twoWithExtDir")
+		final File twoWithExtDir = Files.createTempDirectory(tmp, "bndtest-twoWithExtDir")
 			.toFile();
-		final File twoWithoutExtDir = Files.createTempDirectory("bndtest-twoWithoutExtDir")
+		final File twoWithoutExtDir = Files.createTempDirectory(tmp, "bndtest-twoWithoutExtDir")
 			.toFile();
-		final File multiDir = Files.createTempDirectory("bndtest-multi")
+		final File multiDir = Files.createTempDirectory(tmp, "bndtest-multi")
 			.toFile();
 
 		final File baseOneWithExt = Files.createFile(Paths.get(oneWithExtDir.getAbsolutePath() + "/base.md"))
@@ -82,25 +86,6 @@ public class FileHelperTest {
 			.toFile();
 		final File temp2MultiDir = Files.createFile(Paths.get(multiDir.getAbsolutePath() + "/base.twig"))
 			.toFile();
-
-		baseOneWithExt.deleteOnExit();
-		baseOneWithoutExtDir.deleteOnExit();
-		baseTwoWithExtDir.deleteOnExit();
-		tempTwoWithExtDir.deleteOnExit();
-		baseTwoWithoutExtDir.deleteOnExit();
-		tempTwoWithoutExtDir.deleteOnExit();
-		baseMultiDir.deleteOnExit();
-		other1MultiDir.deleteOnExit();
-		other2MultiDir.deleteOnExit();
-		other3MultiDir.deleteOnExit();
-		other4MultiDir.deleteOnExit();
-		tempMultiDir.deleteOnExit();
-		temp2MultiDir.deleteOnExit();
-		oneWithExtDir.deleteOnExit();
-		oneWithoutExtDir.deleteOnExit();
-		twoWithExtDir.deleteOnExit();
-		twoWithoutExtDir.deleteOnExit();
-		multiDir.deleteOnExit();
 
 		assertEquals(null, FileHelper.searchSiblingWithDifferentExtension(new File("notnot"), new String[] {
 			"xslt"

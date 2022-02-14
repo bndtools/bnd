@@ -24,13 +24,15 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 @SuppressWarnings("resource")
 public class ManifestTest {
 
 	@Test
-	public void testNameSection() throws Exception {
+	public void testNameSection(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Export-Package", "org.osgi.framework");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -38,12 +40,10 @@ public class ManifestTest {
 
 		Jar jar = b.build();
 		jar.calcChecksums(null);
-		File f = File.createTempFile("abc", ".jar");
-		f.deleteOnExit();
+		File f = File.createTempFile("abc", ".jar", tmp);
 		jar.write(f);
 
 		jar = new Jar(f);
-		f.delete();
 		assertTrue(b.check());
 
 		Resource r = jar.getResource("META-INF/MANIFEST.MF");
@@ -71,7 +71,8 @@ public class ManifestTest {
 	}
 
 	@Test
-	public void testUnicode() throws Exception {
+	public void testUnicode(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Builder b = new Builder();
 		String longSentence = "\u1401\u1402\u1403\u1404\u1405\u1406\u1407\u1408\u1409\u140A\u140B\u140C\u140D\u140E\u140F\u1410\u1411\u1412\u1413\u1414\u1415\u1416\u1417\u1418\u1419\u141A\u141B\u141C\u141D\u141E\u141F\u1420\u1421\u1422\u1422\u1423\u1424\u1425\u1426\u1427\u1428\u1429\u1429\u142A\u142B\u142C\u142D\u142E\u142F\u1430\u1431\u1432\u1433\u1434\u1435\u1436\u1437\u1438\u1439\u143A\u143B\u143C\u143D\u143E\u143F\u1440\u1441\u1442\u1443\u1444\u1444\u1445\u1446\u1447\u1448\u1449\u144A\u144B\u144C\u144D";
 		String shortSentence = "\u1401\u1402\u1403\u1404\u1405\u1406\u1407\u1408\u1409\u140A\u140B\u140C\u140D\u140E\u140F\u1410\u1411\u1412\u1413\u1414\u1415\u1416";
@@ -87,12 +88,10 @@ public class ManifestTest {
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "jar/osgi.jar");
 		Jar jar = b.build();
-		File f = File.createTempFile("abc", ".jar");
-		f.deleteOnExit();
+		File f = File.createTempFile("abc", ".jar", tmp);
 		jar.write(f);
 
 		jar = new Jar(f);
-		f.delete();
 
 		assertEquals(0, b.getErrors()
 			.size());
@@ -118,7 +117,8 @@ public class ManifestTest {
 	}
 
 	@Test
-	public void test72() throws Exception {
+	public void test72(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Builder b = new Builder();
 		b.setProperty("H65", "01234567890123456789012345678901234567890123456789012345678901234");
 		b.setProperty("H66", "012345678901234567890123456789012345678901234567890123456789012345");
@@ -128,12 +128,10 @@ public class ManifestTest {
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "jar/osgi.jar");
 		Jar jar = b.build();
-		File f = File.createTempFile("abc", ".jar");
-		f.deleteOnExit();
+		File f = File.createTempFile("abc", ".jar", tmp);
 		jar.write(f);
 
 		jar = new Jar(f);
-		f.delete();
 
 		assertEquals(0, b.getErrors()
 			.size());

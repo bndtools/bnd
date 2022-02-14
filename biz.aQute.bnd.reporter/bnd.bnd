@@ -24,6 +24,7 @@ jtwig.version: 5.86.1.RELEASE
 	com.github.javaparser.javaparser-core;version=3.13
 	
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
 	${junit}
 	
 Export-Package: \

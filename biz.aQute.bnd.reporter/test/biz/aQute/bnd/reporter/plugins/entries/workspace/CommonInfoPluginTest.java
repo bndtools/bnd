@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -14,11 +15,13 @@ import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
 
 public class CommonInfoPluginTest {
-
+	@InjectTemporaryDirectory
+	Path tmp;
 	@Test
 	public void testNoPropAndHeader() throws Exception {
 		final CommonInfoPlugin plugin = new CommonInfoPlugin();
@@ -128,17 +131,14 @@ public class CommonInfoPluginTest {
 	}
 
 	private Workspace getWorkspace(final String... prop) throws Exception {
-		final File wsFile = Files.createTempDirectory("bnd-ws")
+		final File wsFile = Files.createTempDirectory(tmp, "bnd-ws")
 			.toFile();
-		wsFile.deleteOnExit();
 
 		final File cnf = Files.createDirectory(Paths.get(wsFile.getPath(), "cnf"))
 			.toFile();
-		cnf.deleteOnExit();
 
 		final File build = new File(cnf, "build.bnd");
 		build.createNewFile();
-		build.deleteOnExit();
 
 		final Workspace ws = new Workspace(wsFile);
 

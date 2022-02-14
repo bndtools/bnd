@@ -343,31 +343,25 @@ public class AlsoLauncherTest {
 					"jar/org.opentest4j" //
 			);
 
-			File tmp = File.createTempFile("foo", ".jar");
-			try {
+			File tmp = File.createTempFile("foo", ".jar", testDir);
+			jar.write(tmp);
+			Command cmd = new Command();
+			cmd.add(project.getJavaExecutable("java"));
+			cmd.add("-jar");
+			cmd.add(tmp.getAbsolutePath());
 
-				jar.write(tmp);
-				Command cmd = new Command();
-				cmd.add(project.getJavaExecutable("java"));
-				cmd.add("-jar");
-				cmd.add(tmp.getAbsolutePath());
+			StringBuilder stdout = new StringBuilder();
+			StringBuilder stderr = new StringBuilder();
+			int execute = cmd.execute(stdout, stderr);
+			String output = stdout.append(stderr)
+				.toString();
+			System.out.println(output);
 
-				StringBuilder stdout = new StringBuilder();
-				StringBuilder stderr = new StringBuilder();
-				int execute = cmd.execute(stdout, stderr);
-				String output = stdout.append(stderr)
-					.toString();
-				System.out.println(output);
+			// These must be bsns ow
+			assertThat(output).contains("installing jar/org.apache.felix.scr",
+				"installing jar/org.apache.felix.configadmin");
 
-				// These must be bsns ow
-				assertThat(output).contains("installing jar/org.apache.felix.scr",
-					"installing jar/org.apache.felix.configadmin");
-
-				assertThat(execute).isEqualTo(42);
-
-			} finally {
-				tmp.delete();
-			}
+			assertThat(execute).isEqualTo(42);
 		}
 	}
 

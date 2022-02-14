@@ -17,6 +17,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.signing.JartoolSigner;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
 
@@ -26,7 +27,8 @@ import aQute.libg.generics.Create;
 public class JarSignerTest {
 
 	@Test
-	public void testNoManifest() throws Exception {
+	public void testNoManifest(@InjectTemporaryDirectory
+	File tmpdir) throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-sign", "test");
 		b.setProperty(Constants.PLUGIN, JartoolSigner.class.getName()
@@ -36,8 +38,7 @@ public class JarSignerTest {
 		b.setProperty("Include-Resource", "WEB-INF/classes=@jar/osgi.jar");
 
 		Jar jar = b.build();
-		File tmp = new File("xyztmp.jar");
-		tmp.deleteOnExit();
+		File tmp = new File(tmpdir, "xyztmp.jar");
 
 		jar.write(tmp);
 
