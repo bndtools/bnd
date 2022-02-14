@@ -16,8 +16,8 @@ Bnd traverse the packages on the classpath and copies them to the output based o
 
 The `-split-package:` directive on the Export-Package/Private-Package clause allows fine grained control over what should be done with split packages. The following values are architected:
 
-||`merge&#x2011;first`||Merge split packages but do not add resources that come later in the classpath. That is, the first resource wins. This is the default, although the default will generate a warning||
-||`merge&#x2011;last`||Merge split packages but overwrite resources that come earlier in the classpath. That is, the last resource wins.||
+||<nobr>`merge-first`</nobr>||Merge split packages but do not add resources that come later in the classpath. That is, the first resource wins. This is the default, although the default will generate a warning||
+||<nobr>`merge-last`</nobr>||Merge split packages but overwrite resources that come earlier in the classpath. That is, the last resource wins.||
 ||`first`||Do not merge, only use the first package found||
 ||`error`||Generate an error when a split package is detected||
 
