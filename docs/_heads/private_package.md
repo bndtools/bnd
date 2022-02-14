@@ -11,13 +11,13 @@ The method of inclusion is identical to the Export-Package header, the only diff
 
 
 
-###Split packages
+### Split packages
 Bnd traverse the packages on the classpath and copies them to the output based on the instructions given by the Export-Package and Private-Package headers. This opens up for the possibility that there are multiple packages with the same name on the class path. It is better to avoid this situation because it means there is no cohesive definition of the package and it is just, eh, messy. However, there are valid cases that packages should be merged from different sources. For example, when a standard package needs to be merged with implementation code like the osgi packages sometimes (unfortunately) do. Without any extra instructions, bnd will merge multiple packages where the last one wins if the packages contain duplicate resources, but it will give a warning to notify the unwanted case of split packages.
 
 The `-split-package:` directive on the Export-Package/Private-Package clause allows fine grained control over what should be done with split packages. The following values are architected:
 
-||`merge-first`||Merge split packages but do not add resources that come later in the classpath. That is, the first resource wins. This is the default, although the default will generate a warning||
-||`merge-last`||Merge split packages but overwrite resources that come earlier in the classpath. That is, the last resource wins.||
+||`merge&#x2011;first`||Merge split packages but do not add resources that come later in the classpath. That is, the first resource wins. This is the default, although the default will generate a warning||
+||`merge&#x2011;last`||Merge split packages but overwrite resources that come earlier in the classpath. That is, the last resource wins.||
 ||`first`||Do not merge, only use the first package found||
 ||`error`||Generate an error when a split package is detected||
 
