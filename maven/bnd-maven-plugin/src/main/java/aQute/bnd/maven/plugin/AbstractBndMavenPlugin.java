@@ -2,6 +2,8 @@ package aQute.bnd.maven.plugin;
 
 import static aQute.bnd.maven.lib.executions.PluginExecutions.isPackagingGoal;
 
+import java.io.CharArrayWriter;
+
 /*
  * Copyright (c) Paremus and others (2015, 2016). All Rights Reserved.
  *
@@ -68,6 +70,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -80,38 +83,38 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBndMavenPlugin extends AbstractMojo {
-	protected final Logger		logger					= LoggerFactory.getLogger(getClass());
-	static final String			MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
-	static final String			MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
-	static final String			PACKAGING_JAR			= "jar";
-	static final String			PACKAGING_WAR			= "war";
-	static final String			TSTAMP					= "${tstamp}";
-	static final String			SNAPSHOT				= "SNAPSHOT";
-	static final String			OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
+	protected final Logger	logger					= LoggerFactory.getLogger(getClass());
+	static final String		MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
+	static final String		MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
+	static final String		PACKAGING_JAR			= "jar";
+	static final String		PACKAGING_WAR			= "war";
+	static final String		TSTAMP					= "${tstamp}";
+	static final String		SNAPSHOT				= "SNAPSHOT";
+	static final String		OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	File						targetDir;
+	File					targetDir;
 
 	@Parameter(defaultValue = "true")
-	boolean						includeClassesDir;
+	boolean					includeClassesDir;
 
 	@Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
-	File						warOutputDir;
+	File					warOutputDir;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
-	MavenProject				project;
+	MavenProject			project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	Settings					settings;
+	Settings				settings;
 
 	@Parameter(defaultValue = "${mojoExecution}", readonly = true)
-	MojoExecution				mojoExecution;
+	MojoExecution			mojoExecution;
 
 	@Parameter(property = "bnd.packagingTypes", defaultValue = PACKAGING_JAR + "," + PACKAGING_WAR)
-	List<String>				packagingTypes;
+	List<String>			packagingTypes;
 
 	@Parameter(property = "bnd.skipIfEmpty", defaultValue = "false")
-	boolean						skipIfEmpty;
+	boolean					skipIfEmpty;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -124,7 +127,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = Project.BNDFILE)
 	// This is not used and is for doc only; see loadProjectProperties
 	@SuppressWarnings("unused")
-	String						bndfile;
+	String					bndfile;
 
 	/**
 	 * Bnd instructions for this project specified directly in the pom file.
@@ -138,15 +141,15 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@Parameter
 	// This is not used and is for doc only; see loadProjectProperties
 	@SuppressWarnings("unused")
-	String						bnd;
+	String					bnd;
 
 	@Component
-	BuildContext				buildContext;
+	BuildContext			buildContext;
 
 	@Component
-	MavenProjectHelper			projectHelper;
+	MavenProjectHelper		projectHelper;
 
-	File						propertiesFile;
+	File					propertiesFile;
 
 	public abstract File getSourceDir();
 
@@ -502,8 +505,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 						// Write the jar directly and attach it to the project
 						attachArtifactToProject(bndJar);
-					}
-					else {
+					} else {
 						throw new MojoExecutionException(String.format(
 							"In order to use the bnd-maven-plugin packaging goal %s, <extensions>true</extensions> must be set on the plugin",
 							goal));
@@ -564,6 +566,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	}
 
 	private void attachArtifactToProject(Jar bndJar) {
+		addMavenMetadataToJar(bndJar);
+
 		File artifactFile = createArtifactFile();
 		File outputDir = artifactFile.getParentFile();
 
@@ -600,6 +604,43 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 					mojoExecution);
 			}
 			artifact.setFile(artifactFile);
+		}
+	}
+
+	private void addMavenMetadataToJar(Jar bndJar) {
+		MavenProject workingProject = project.clone();
+
+		if (workingProject.getArtifact()
+			.isSnapshot()) {
+			workingProject.setVersion(workingProject.getArtifact()
+				.getVersion());
+		}
+
+		String groupId = workingProject.getGroupId();
+		String artifactId = workingProject.getArtifactId();
+		String version = workingProject.getVersion();
+
+		try {
+			bndJar.putResource("META-INF/maven/" + groupId + "/" + artifactId + "/pom.xml",
+				new FileResource(project.getFile()));
+
+			UTF8Properties properties = new UTF8Properties();
+
+			properties.setProperty("groupId", groupId);
+			properties.setProperty("artifactId", artifactId);
+			properties.setProperty("version", version);
+
+			getClassifier().ifPresent(c -> properties.setProperty("classifier", c));
+
+			try (CharArrayWriter sw = new CharArrayWriter()) {
+				properties.store(sw, null);
+
+				bndJar.putResource("META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties",
+					new EmbeddedResource(sw.toString(), project.getFile()
+						.lastModified()));
+			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
 	}
 
