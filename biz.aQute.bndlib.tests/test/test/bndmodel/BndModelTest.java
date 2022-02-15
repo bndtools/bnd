@@ -18,6 +18,7 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.Document;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class BndModelTest {
@@ -79,10 +80,12 @@ public class BndModelTest {
 	}
 
 	@Test
-	public void testSetBuildPath() throws Exception {
+	public void testSetBuildPath(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 
 		BndEditModel model = new BndEditModel();
-		File bndFile = getFile(BND_BUILDPATH);
+		File bndFile = File.createTempFile("bndtest", "bnd", tmp);
+		IO.store(BND_BUILDPATH, bndFile);
 
 		model.loadFrom(bndFile);
 		List<VersionedClause> buildPath = model.getBuildPath();
@@ -116,12 +119,5 @@ public class BndModelTest {
 		assertEquals("a, b, c", p.getProperty(Constants.RUNBUNDLES), "Set in file, refers to macro");
 		assertEquals("framework", p.getProperty(Constants.RUNFW), "Changes, refers to macro");
 
-	}
-
-	private static File getFile(String data) throws IOException {
-		File file = File.createTempFile("bndtest", "bnd");
-		file.deleteOnExit();
-		IO.store(data, file);
-		return file;
 	}
 }

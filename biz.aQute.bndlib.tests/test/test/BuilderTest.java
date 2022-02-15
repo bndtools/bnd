@@ -27,11 +27,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.zip.ZipOutputStream;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +58,7 @@ import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
@@ -157,25 +161,48 @@ public class BuilderTest {
 	 */
 
 	@Test
-	public void testCompressionSet() throws Exception {
+	public void testCompressionSet(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("foo;literal='x'");
 			Jar build = b.build();
-			assertEquals(Jar.Compression.DEFLATE, build.hasCompression());
+			assertThat(build.hasCompression()).isEqualTo(Jar.Compression.DEFLATE);
+			File out = new File(tmp, "default.jar");
+			build.write(out);
+			try (JarFile jarFile = new JarFile(out)) {
+				JarEntry entry = jarFile.getJarEntry("foo");
+				assertThat(entry.getMethod()).isEqualTo(ZipOutputStream.DEFLATED);
+				assertThat(entry.getCrc()).isEqualTo(2363233923L);
+			}
 		}
 
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("foo;literal='x'");
 			b.setProperty(Constants.COMPRESSION, "STORE");
 			Jar build = b.build();
-			assertEquals(Jar.Compression.STORE, build.hasCompression());
+			assertThat(build.hasCompression()).isEqualTo(Jar.Compression.STORE);
+			File out = new File(tmp, "store.jar");
+			build.write(out);
+			try (JarFile jarFile = new JarFile(out)) {
+				JarEntry entry = jarFile.getJarEntry("foo");
+				assertThat(entry.getMethod()).isEqualTo(ZipOutputStream.STORED);
+				assertThat(entry.getCrc()).isEqualTo(2363233923L);
+				assertThat(entry.getCompressedSize()).isEqualTo(entry.getSize());
+			}
 		}
 
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("foo;literal='x'");
 			b.setProperty(Constants.COMPRESSION, "DEFLATE");
 			Jar build = b.build();
-			assertEquals(Jar.Compression.DEFLATE, build.hasCompression());
+			assertThat(build.hasCompression()).isEqualTo(Jar.Compression.DEFLATE);
+			File out = new File(tmp, "deflate.jar");
+			build.write(out);
+			try (JarFile jarFile = new JarFile(out)) {
+				JarEntry entry = jarFile.getJarEntry("foo");
+				assertThat(entry.getMethod()).isEqualTo(ZipOutputStream.DEFLATED);
+				assertThat(entry.getCrc()).isEqualTo(2363233923L);
+			}
 		}
 	}
 
@@ -909,7 +936,8 @@ public class BuilderTest {
 	 */
 
 	@Test
-	public void testDigests() throws Exception {
+	public void testDigests(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
@@ -917,7 +945,7 @@ public class BuilderTest {
 			b.setProperty(Constants.DIGESTS, "MD5, SHA1");
 			Jar jar = b.build();
 			assertTrue(b.check());
-			File f = File.createTempFile("test", ".jar");
+			File f = File.createTempFile("test", ".jar", tmp);
 			jar.write(f);
 
 			Jar other = new Jar(f);
@@ -1818,7 +1846,8 @@ public class BuilderTest {
 	}
 
 	@Test
-	public void testNoManifest() throws Exception {
+	public void testNoManifest(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-nomanifest", "true");
@@ -1827,8 +1856,7 @@ public class BuilderTest {
 			Jar jar = b.build();
 			assertTrue(b.check());
 
-			File f = new File("tmp.jar");
-			f.deleteOnExit();
+			File f = new File(tmp, "tmp.jar");
 			jar.write(f);
 
 			JarInputStream jin = new JarInputStream(new FileInputStream(f));

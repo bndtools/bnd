@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
@@ -722,15 +721,21 @@ public class Jar implements Closeable {
 	private void putEntry(ZipOutputStream jout, ZipEntry entry, Resource r) throws Exception {
 
 		if (compression == Compression.STORE) {
-			byte[] content = IO.read(r.openInputStream());
+			ByteBuffer buffer = r.buffer();
+			if (buffer == null) {
+				buffer = IO.copy(r.openInputStream(), new ByteBufferOutputStream())
+					.toByteBuffer();
+			}
 			entry.setMethod(ZipOutputStream.STORED);
 			CRC32 crc = new CRC32();
-			crc.update(content);
+			buffer.mark();
+			crc.update(buffer);
+			buffer.reset();
 			entry.setCrc(crc.getValue());
-			entry.setSize(content.length);
-			entry.setCompressedSize(content.length);
+			entry.setSize(buffer.remaining());
+			entry.setCompressedSize(buffer.remaining());
 			jout.putNextEntry(entry);
-			jout.write(content);
+			IO.copy(buffer, jout);
 		} else {
 			jout.putNextEntry(entry);
 			r.write(jout);
@@ -797,16 +802,13 @@ public class Jar implements Closeable {
 		attributes(manifest.getMainAttributes(), out);
 		out.write(EOL);
 
-		TreeSet<String> keys = new TreeSet<>();
-		for (Object o : manifest.getEntries()
-			.keySet())
-			keys.add(o.toString());
-
-		for (String key : keys) {
-			writeEntry(out, "Name", key);
-			attributes(manifest.getAttributes(key), out);
-			out.write(EOL);
-		}
+		MapStream.of(manifest.getEntries())
+			.sortedByKey()
+			.forEachOrdered(asBiConsumer((key, attributes) -> {
+				writeEntry(out, "Name", key);
+				attributes(attributes, out);
+				out.write(EOL);
+			}));
 		out.flush();
 	}
 
@@ -870,7 +872,7 @@ public class Jar implements Closeable {
 	private static void attributes(Attributes value, OutputStream out) throws IOException {
 		MapStream.of(value)
 			.map((k, v) -> MapStream.entry(k.toString(), v.toString()))
-			.filterKey(k -> !k.equals("Manifest-Version"))
+			.filterKey(k -> !k.equalsIgnoreCase("Manifest-Version"))
 			.sortedByKey(String.CASE_INSENSITIVE_ORDER)
 			.forEachOrdered(asBiConsumer((k, v) -> writeEntry(out, k, v)));
 	}
@@ -973,9 +975,10 @@ public class Jar implements Closeable {
 				ZipUtil.setModifiedTime(ze, lastModified());
 			}
 			if (compression == Compression.STORE) {
+				ze.setMethod(ZipOutputStream.STORED);
 				ze.setCrc(0L);
-				ze.setSize(0);
-				ze.setCompressedSize(0);
+				ze.setSize(0L);
+				ze.setCompressedSize(0L);
 			}
 			zip.putNextEntry(ze);
 			zip.closeEntry();

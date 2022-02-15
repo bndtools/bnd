@@ -20,16 +20,20 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.PermissionGenerator;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 
 public class PermissionGeneratorTest {
-	private static Set<String> getPermissionsGeneratedFor(String permissionFile) throws Exception {
+	@InjectTemporaryDirectory
+	File tmp;
+
+	private Set<String> getPermissionsGeneratedFor(String permissionFile) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
 		b.setProperty("Private-Package", "test.component");
 		b.setProperty("Export-Package", "test.api");
 		b.setProperty("-includeresource.resourceprops", "resource.props;literal=\"\"");
 
-		File tmpFile = File.createTempFile("bndtest", "permissions.perm");
+		File tmpFile = File.createTempFile("bndtest", "permissions.perm", tmp);
 		FileWriter fileWriter = new FileWriter(tmpFile);
 		fileWriter.write(permissionFile);
 		fileWriter.close();
@@ -93,6 +97,7 @@ public class PermissionGeneratorTest {
             "aQute.bnd.osgi",
             "aQute.bnd.service.diff",
             "aQute.bnd.test",
+            "aQute.bnd.test.jupiter",
             "aQute.bnd.version",
             "aQute.lib.filter",
             "aQute.lib.io",

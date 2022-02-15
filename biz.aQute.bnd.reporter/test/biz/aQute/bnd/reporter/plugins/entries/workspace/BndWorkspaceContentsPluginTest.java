@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -14,10 +15,12 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
 
 public class BndWorkspaceContentsPluginTest {
-
+	@InjectTemporaryDirectory
+	Path tmp;
 	@Test
 	public void testEmptyWorkspace() throws Exception {
 		final BndWorkspaceContentsPlugin plugin = new BndWorkspaceContentsPlugin();
@@ -48,17 +51,14 @@ public class BndWorkspaceContentsPluginTest {
 	}
 
 	private Workspace getWorkspace() throws Exception {
-		final File wsFile = Files.createTempDirectory("bnd-ws")
+		final File wsFile = Files.createTempDirectory(tmp, "bnd-ws")
 			.toFile();
-		wsFile.deleteOnExit();
 
 		final File cnf = Files.createDirectory(Paths.get(wsFile.getPath(), "cnf"))
 			.toFile();
-		cnf.deleteOnExit();
 
 		final File build = new File(cnf, "build.bnd");
 		build.createNewFile();
-		build.deleteOnExit();
 
 		final Workspace ws = new Workspace(wsFile);
 
@@ -71,20 +71,16 @@ public class BndWorkspaceContentsPluginTest {
 		final File p1 = Files.createDirectory(Paths.get(ws.getBase()
 			.getPath(), project1))
 			.toFile();
-		p1.deleteOnExit();
 
 		final File bnd1 = new File(p1, "bnd.bnd");
 		bnd1.createNewFile();
-		bnd1.deleteOnExit();
 
 		final File p2 = Files.createDirectory(Paths.get(ws.getBase()
 			.getPath(), project2))
 			.toFile();
-		p2.deleteOnExit();
 
 		final File bnd2 = new File(p2, "bnd.bnd");
 		bnd2.createNewFile();
-		bnd2.deleteOnExit();
 		ws.refreshProjects();
 		return ws;
 	}

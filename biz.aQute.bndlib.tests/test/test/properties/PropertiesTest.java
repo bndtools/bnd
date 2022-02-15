@@ -13,12 +13,14 @@ import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class PropertiesTest {
 
 	@Test
-	public void testBndEditModel() throws Exception {
+	public void testBndEditModel(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 
 		Document doc = new Document("# Hello\nBundle-Description:\tTest \u2649\n"
 			+ "\n\nBundle-SymbolicName:\ttest.properties\n" + "Private-Package:\tpp1\n" + "-privatepackage:\tppA\n");
@@ -35,7 +37,7 @@ public class PropertiesTest {
 
 		System.out.println(doc.get());
 
-		File file = File.createTempFile("test", ".properties");
+		File file = File.createTempFile("test", ".properties", tmp);
 		IO.copy(model.toAsciiStream(doc), file);
 
 		model = new BndEditModel();

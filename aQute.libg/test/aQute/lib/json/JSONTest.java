@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
@@ -675,7 +676,8 @@ public class JSONTest {
 	}
 
 	@Test
-	public void testDecodeBasic() throws Exception {
+	public void testDecodeBasic(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
 		// Dates
@@ -728,20 +730,16 @@ public class JSONTest {
 			.get(Pattern.class) + "");
 
 		// Check the file system
-		File f = File.createTempFile("tmp", ".tmp");
-		try {
-			IO.store("Hello", f);
-			String encoded = new JSONCodec().enc()
-				.put(f)
-				.toString();
-			File otherTempFile = dec.from(encoded)
-				.get(File.class);
-			String hello = IO.collect(otherTempFile);
-			assertEquals("Hello", hello);
-			assertNotSame(f, otherTempFile);
-		} finally {
-			IO.delete(new File("tmp"));
-		}
+		File f = File.createTempFile("tmp", ".tmp", tmp);
+		IO.store("Hello", f);
+		String encoded = new JSONCodec().enc()
+			.put(f)
+			.toString();
+		File otherTempFile = dec.from(encoded)
+			.get(File.class);
+		String hello = IO.collect(otherTempFile);
+		assertEquals("Hello", hello);
+		assertNotSame(f, otherTempFile);
 
 		// Enums
 		assertEquals(E.A, dec.from("\"A\"")
