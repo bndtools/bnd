@@ -1,9 +1,3 @@
-package aQute.bnd.maven.plugin;
-
-import static aQute.bnd.maven.lib.executions.PluginExecutions.isPackagingGoal;
-
-import java.io.CharArrayWriter;
-
 /*
  * Copyright (c) Paremus and others (2015, 2016). All Rights Reserved.
  *
@@ -19,6 +13,10 @@ import java.io.CharArrayWriter;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package aQute.bnd.maven.plugin;
+
+import static aQute.bnd.maven.lib.executions.PluginExecutions.isPackagingGoal;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,10 +65,10 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 import aQute.bnd.build.Project;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.maven.PomPropertiesResource;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -502,7 +500,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 					// conflicting results
 					if (mojoExecution.getPlugin()
 						.isExtensions()) {
-
+						// Add META-INF/maven metadata to jar
+						addMavenMetadataToJar(bndJar);
 						// Write the jar directly and attach it to the project
 						attachArtifactToProject(bndJar);
 					} else {
@@ -566,8 +565,6 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	}
 
 	private void attachArtifactToProject(Jar bndJar) {
-		addMavenMetadataToJar(bndJar);
-
 		File artifactFile = createArtifactFile();
 		File outputDir = artifactFile.getParentFile();
 
@@ -607,41 +604,19 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		}
 	}
 
-	private void addMavenMetadataToJar(Jar bndJar) {
-		MavenProject workingProject = project.clone();
+	private void addMavenMetadataToJar(Jar bndJar) throws IOException {
+		String groupId = project.getGroupId();
+		String artifactId = project.getArtifactId();
+		String version = project.getArtifact()
+			.isSnapshot()
+				? project.getArtifact()
+					.getVersion()
+				: project.getVersion();
 
-		if (workingProject.getArtifact()
-			.isSnapshot()) {
-			workingProject.setVersion(workingProject.getArtifact()
-				.getVersion());
-		}
-
-		String groupId = workingProject.getGroupId();
-		String artifactId = workingProject.getArtifactId();
-		String version = workingProject.getVersion();
-
-		try {
-			bndJar.putResource("META-INF/maven/" + groupId + "/" + artifactId + "/pom.xml",
-				new FileResource(project.getFile()));
-
-			UTF8Properties properties = new UTF8Properties();
-
-			properties.setProperty("groupId", groupId);
-			properties.setProperty("artifactId", artifactId);
-			properties.setProperty("version", version);
-
-			getClassifier().ifPresent(c -> properties.setProperty("classifier", c));
-
-			try (CharArrayWriter sw = new CharArrayWriter()) {
-				properties.store(sw, null);
-
-				bndJar.putResource("META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties",
-					new EmbeddedResource(sw.toString(), project.getFile()
-						.lastModified()));
-			}
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
+		bndJar.putResource(String.format("META-INF/maven/%s/%s/pom.xml", groupId, artifactId),
+			new FileResource(project.getFile()));
+		PomPropertiesResource pomProperties = new PomPropertiesResource(groupId, artifactId, version);
+		bndJar.putResource(pomProperties.getWhere(), pomProperties);
 	}
 
 	private File createArtifactFile() {
