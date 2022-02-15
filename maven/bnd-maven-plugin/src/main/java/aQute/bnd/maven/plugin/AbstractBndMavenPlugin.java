@@ -564,28 +564,21 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		return builder;
 	}
 
-	private void attachArtifactToProject(Jar bndJar) {
+	private void attachArtifactToProject(Jar bndJar) throws Exception {
 		File artifactFile = createArtifactFile();
 		File outputDir = artifactFile.getParentFile();
 
 		if (!outputDir.exists()) {
-			try {
-				IO.mkdirs(outputDir);
-			} catch (IOException ioe) {
-				throw Exceptions.duck(ioe);
-			}
+			IO.mkdirs(outputDir);
 		}
 
 		try (OutputStream os = buildContext.newFileOutputStream(artifactFile)) {
 			bndJar.write(os);
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
 		}
-
-		Optional<String> classifier = getClassifier();
 
 		// If there is a classifier artifact must be attached to the
 		// project using that classifier
+		Optional<String> classifier = getClassifier();
 		if (classifier.isPresent()) {
 			projectHelper.attachArtifact(project, getType().orElse(""), classifier.get(), artifactFile);
 		} else {
