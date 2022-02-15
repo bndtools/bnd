@@ -19,13 +19,21 @@ public class PomPropertiesResource extends WriteResource {
 			.replaceFirst("(?<=^|/)pom\\.xml$", "pom\\.properties");
 	}
 
+	public PomPropertiesResource(String groupId, String artifactId, String version) {
+		pomProperties = new UTF8Properties();
+		pomProperties.setProperty("groupId", groupId);
+		pomProperties.setProperty("artifactId", artifactId);
+		pomProperties.setProperty("version", version);
+		where = String.format("META-INF/maven/%s/%s/pom.properties", groupId, artifactId);
+	}
+
 	public String getWhere() {
 		return where;
 	}
 
 	@Override
 	public long lastModified() {
-		return 0;
+		return 0L;
 	}
 
 	@Override
