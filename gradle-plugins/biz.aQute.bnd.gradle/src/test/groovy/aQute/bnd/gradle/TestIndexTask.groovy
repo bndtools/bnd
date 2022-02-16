@@ -1,5 +1,6 @@
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.TestHelper.formatTime
 import static org.gradle.testkit.runner.TaskOutcome.*
 
 import java.util.jar.Attributes
@@ -48,10 +49,12 @@ class TestIndexTask extends Specification {
 
 		jartask_manifest.getValue("Bundle-SymbolicName") == "${testProject}"
 		jartask_manifest.getValue("Bundle-Version") == "1.0.0"
+		formatTime(jartask_jar.getEntry("doubler/Doubler.class")) == "2022-01-02T12:43:14Z"
 		jartask_jar.close()
 
 		bundletask_manifest.getValue("Bundle-SymbolicName") == "${testProject}_bundle"
 		bundletask_manifest.getValue("Bundle-Version") == "1.1.0"
+		formatTime(bundletask_jar.getEntry("doubler/impl/DoublerImplTest.class")) != "2022-01-02T12:43:14Z"
 		bundletask_jar.close()
 
 		when:

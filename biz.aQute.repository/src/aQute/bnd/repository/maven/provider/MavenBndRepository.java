@@ -328,7 +328,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 		jar.ensureManifest();
 		jar.setName(Archive.SOURCES_CLASSIFIER); // set jar name to classifier
-		jar.setReproducible(context.is(Constants.REPRODUCIBLE));
+		jar.setReproducible(context.getProperty(Constants.REPRODUCIBLE));
 		tool.addClose(jar);
 		return jar;
 	}
@@ -346,7 +346,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 		jar.ensureManifest();
 		jar.setName(Archive.JAVADOC_CLASSIFIER); // set jar name to classifier
-		jar.setReproducible(context.is(Constants.REPRODUCIBLE));
+		jar.setReproducible(context.getProperty(Constants.REPRODUCIBLE));
 		tool.addClose(jar);
 		return jar;
 	}

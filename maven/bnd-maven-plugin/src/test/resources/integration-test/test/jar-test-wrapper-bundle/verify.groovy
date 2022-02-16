@@ -1,3 +1,5 @@
+import java.time.*;
+import java.time.format.*;
 import java.util.jar.*;
 
 def bsn = 'test.wrapper.bundle'
@@ -39,8 +41,13 @@ assert jar.getEntry('org/example/api/') != null
 assert jar.getEntry('org/example/types/') != null
 assert jar.getEntry('lib/osgi.annotation.jar') != null
 
-assert jar.getEntry("META-INF/maven/biz.aQute.bnd-test/${moduleDir}/pom.xml") != null
+JarEntry pomXml = jar.getJarEntry("META-INF/maven/biz.aQute.bnd-test/${moduleDir}/pom.xml")
+assert pomXml != null
 assert jar.getEntry("META-INF/maven/biz.aQute.bnd-test/${moduleDir}/pom.properties") != null
+
+long time = pomXml.getTime();
+String outputTimestamp = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(time + TimeZone.getDefault().getOffset(time)),ZoneId.of("UTC")));
+assert outputTimestamp != "2022-01-02T12:43:14Z"
 
 def groupId = 'biz.aQute.bnd-test'
 

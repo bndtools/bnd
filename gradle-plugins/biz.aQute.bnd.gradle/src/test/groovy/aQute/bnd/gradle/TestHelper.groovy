@@ -1,11 +1,19 @@
 package aQute.bnd.gradle
 
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.zip.ZipEntry
+
 import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.GradleRunner
 
 import aQute.bnd.version.MavenVersion
 
 class TestHelper {
+	private final static TimeZone DEFAULT_TIME_ZONE = TimeZone.getDefault();
+	private final static ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
 
 	private TestHelper() { }
 
@@ -38,5 +46,12 @@ class TestHelper {
 			return "7.0"
 		}
 		return "6.7"
+	}
+
+	public static String formatTime(ZipEntry entry) {
+		long entryTime = entry.getTime()
+		long offsetTime = entryTime + DEFAULT_TIME_ZONE.getOffset(entryTime)
+		ZonedDateTime timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(offsetTime), UTC_ZONE_ID)
+		return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(timestamp)
 	}
 }
