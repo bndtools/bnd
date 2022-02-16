@@ -189,13 +189,14 @@ public class Builder extends Analyzer {
 		Jar dot = getJar();
 		if (dot == null) {
 			dot = new Jar("dot");
-
-			buildInstrs.compression()
-				.ifPresent(dot::setCompression);
-
-			dot.setReproducible(is(REPRODUCIBLE));
 			setJar(dot);
 		}
+
+		buildInstrs.compression()
+			.ifPresent(dot::setCompression);
+
+		dot.setReproducible(getProperty(REPRODUCIBLE));
+
 		try {
 			long modified = Long.parseLong(getProperty("base.modified"));
 			dot.updateModified(modified, "Base modified");

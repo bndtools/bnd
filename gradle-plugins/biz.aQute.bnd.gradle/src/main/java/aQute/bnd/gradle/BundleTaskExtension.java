@@ -412,8 +412,22 @@ public class BundleTaskExtension {
 					IO.copy(archiveFile, archiveCopyFile);
 					Jar bundleJar = new Jar(archiveFileName, archiveCopyFile);
 					String reproducible = builder.getProperty(Constants.REPRODUCIBLE);
-					bundleJar.setReproducible(Objects.nonNull(reproducible) ? Processor.isTrue(reproducible)
-						: !getTask().isPreserveFileTimestamps());
+					if (Objects.isNull(reproducible)) {
+						if (!getTask().isPreserveFileTimestamps()) {
+							builder.setProperty(Constants.REPRODUCIBLE, Boolean.TRUE.toString());
+						}
+					}
+					String compression = builder.getProperty(Constants.COMPRESSION);
+					if (Objects.isNull(compression)) {
+						switch (getTask().getEntryCompression()) {
+							case STORED :
+								builder.setProperty(Constants.COMPRESSION, Jar.Compression.STORE.name());
+								break;
+							case DEFLATED :
+								// default
+								break;
+						}
+					}
 					bundleJar.updateModified(archiveFile.lastModified(), "time of Jar task generated jar");
 					bundleJar.setManifest(new Manifest());
 					builder.setJar(bundleJar);

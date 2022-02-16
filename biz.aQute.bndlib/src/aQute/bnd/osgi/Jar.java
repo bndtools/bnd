@@ -22,11 +22,12 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.EnumSet;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
+import aQute.lib.date.Dates;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
@@ -86,10 +88,9 @@ public class Jar implements Closeable {
 	 * Java 7 doesn't do that. So make sure that your seconds are even.
 	 * Moreover, parsing happens via `new Date(millis)` in
 	 * {@link java.util.zip.ZipUtils}#javaToDosTime() so we must use default
-	 * timezone and locale. The date is 1980 February 1st CET.
+	 * timezone and locale. The date is 1980-02-01T00:00:00Z.
 	 */
-	private static final long	ZIP_ENTRY_CONSTANT_TIME	= new GregorianCalendar(1980, Calendar.FEBRUARY, 1, 0, 0, 0)
-		.getTimeInMillis();
+	private static final long	ZIP_ENTRY_CONSTANT_TIME	= 318211200000L;
 
 	public enum Compression {
 		DEFLATE,
@@ -121,6 +122,7 @@ public class Jar implements Closeable {
 	private SHA256												sha256;
 	private boolean												calculateFileDigest;
 	private int													fileLength				= -1;
+	private long												zipEntryConstantTime	= ZIP_ENTRY_CONSTANT_TIME;
 
 	public Jar(String name) {
 		this.name = name;
@@ -699,11 +701,7 @@ public class Jar implements Closeable {
 		check();
 		createDirectories(directories, jout, manifestName);
 		JarEntry ze = new JarEntry(manifestName);
-		if (isReproducible()) {
-			ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
-		} else {
-			ZipUtil.setModifiedTime(ze, lastModified());
-		}
+		ZipUtil.setModifiedTime(ze, isReproducible() ? zipEntryConstantTime : lastModified());
 		Resource r = new WriteResource() {
 
 			@Override
@@ -941,7 +939,7 @@ public class Jar implements Closeable {
 			ZipEntry ze = new ZipEntry(path);
 			ze.setMethod(ZipEntry.DEFLATED);
 			if (isReproducible()) {
-				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
+				ZipUtil.setModifiedTime(ze, zipEntryConstantTime);
 			} else {
 				long lastModified = resource.lastModified();
 				if (lastModified == 0L) {
@@ -967,11 +965,7 @@ public class Jar implements Closeable {
 				return;
 			createDirectories(directories, zip, path);
 			ZipEntry ze = new ZipEntry(path + '/');
-			if (isReproducible()) {
-				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
-			} else {
-				ZipUtil.setModifiedTime(ze, lastModified());
-			}
+			ZipUtil.setModifiedTime(ze, isReproducible() ? zipEntryConstantTime : lastModified());
 			if (compression == Compression.STORE) {
 				ze.setCrc(0L);
 				ze.setSize(0);
@@ -1230,8 +1224,39 @@ public class Jar implements Closeable {
 		return reproducible;
 	}
 
+	public void setReproducible(String outputTimestamp) {
+		reproducible = Processor.isTrue(outputTimestamp);
+		if (!reproducible || Boolean.parseBoolean(outputTimestamp = outputTimestamp.trim())) {
+			zipEntryConstantTime = ZIP_ENTRY_CONSTANT_TIME;
+			return; // false or just plain "true"
+		}
+		// is it epoch seconds?
+		// https://reproducible-builds.org/docs/source-date-epoch/
+		try {
+			zipEntryConstantTime = Long.parseUnsignedLong(outputTimestamp) * 1000L;
+			return;
+		} catch (NumberFormatException e) {
+			// ignore
+		}
+		// is it a date?
+		try {
+			ZonedDateTime dateTime = Dates.toZonedDateTime(DateTimeFormatter.ISO_DATE_TIME.parse(outputTimestamp));
+			zipEntryConstantTime = dateTime.toInstant()
+				.toEpochMilli();
+			return;
+		} catch (DateTimeParseException e) {
+			// ignore
+		}
+		zipEntryConstantTime = ZIP_ENTRY_CONSTANT_TIME;
+	}
+
+	/**
+	 * @deprecated Replaced by {@link #setReproducible(String)}.
+	 */
+	@Deprecated
 	public void setReproducible(boolean reproducible) {
 		this.reproducible = reproducible;
+		zipEntryConstantTime = ZIP_ENTRY_CONSTANT_TIME;
 	}
 
 	public void copy(Jar srce, String path, boolean overwrite) {
