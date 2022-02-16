@@ -88,7 +88,6 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	static final String		PACKAGING_WAR			= "war";
 	static final String		TSTAMP					= "${tstamp}";
 	static final String		SNAPSHOT				= "SNAPSHOT";
-	static final String		OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	File					targetDir;
@@ -113,6 +112,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	@Parameter(property = "bnd.skipIfEmpty", defaultValue = "false")
 	boolean					skipIfEmpty;
+
+	@Parameter(defaultValue = "${project.build.outputTimestamp}")
+	private String			outputTimestamp;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -327,7 +329,16 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			processBuilder(builder);
 
 			// https://maven.apache.org/guides/mini/guide-reproducible-builds.html
-			boolean isReproducible = projectProperties.getProperty(OUTPUT_TIMESTAMP) != null;
+			boolean isReproducible = Strings.nonNullOrEmpty(outputTimestamp)
+				// no timestamp configured (1 character configuration is useful
+				// to override a full value during pom inheritance)
+				&& ((outputTimestamp.length() > 1) || Character.isDigit(outputTimestamp.charAt(0)));
+			if (isReproducible) {
+				builder.setProperty(Constants.REPRODUCIBLE, outputTimestamp);
+				if (builder.getProperty(Constants.NOEXTRAHEADERS) == null) {
+					builder.setProperty(Constants.NOEXTRAHEADERS, Boolean.TRUE.toString());
+				}
+			}
 
 			// Set Bundle-SymbolicName
 			if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
@@ -470,12 +481,6 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				}
 			}
 
-			if (isReproducible) {
-				if (builder.getProperty(Constants.NOEXTRAHEADERS) == null) {
-					builder.setProperty(Constants.NOEXTRAHEADERS, "true");
-				}
-			}
-
 			logger.debug("builder properties: {}", builder.getProperties());
 			logger.debug("builder delta: {}", delta);
 
@@ -564,28 +569,21 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		return builder;
 	}
 
-	private void attachArtifactToProject(Jar bndJar) {
+	private void attachArtifactToProject(Jar bndJar) throws Exception {
 		File artifactFile = createArtifactFile();
 		File outputDir = artifactFile.getParentFile();
 
 		if (!outputDir.exists()) {
-			try {
-				IO.mkdirs(outputDir);
-			} catch (IOException ioe) {
-				throw Exceptions.duck(ioe);
-			}
+			IO.mkdirs(outputDir);
 		}
 
 		try (OutputStream os = buildContext.newFileOutputStream(artifactFile)) {
 			bndJar.write(os);
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
 		}
-
-		Optional<String> classifier = getClassifier();
 
 		// If there is a classifier artifact must be attached to the
 		// project using that classifier
+		Optional<String> classifier = getClassifier();
 		if (classifier.isPresent()) {
 			projectHelper.attachArtifact(project, getType().orElse(""), classifier.get(), artifactFile);
 		} else {

@@ -11,6 +11,10 @@
 	<artifactId>jar-test-wrapper-bundle</artifactId>
 	<version>0.0.1-BUILD-SNAPSHOT</version>
 
+	<properties>
+		<project.build.outputTimestamp>-</project.build.outputTimestamp>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

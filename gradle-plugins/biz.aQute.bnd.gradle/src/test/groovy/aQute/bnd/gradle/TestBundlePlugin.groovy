@@ -1,5 +1,6 @@
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.TestHelper.formatTime
 import static org.gradle.testkit.runner.TaskOutcome.*
 
 import java.util.jar.Attributes
@@ -65,6 +66,7 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Gradle-Missing-Prop") == "\${task.projectprop}"
 		jartask_manifest.getValue("Here") == testProjectDir.absolutePath.replace(File.separatorChar, (char)'/')
 		jartask_jar.getEntry("doubler/Doubler.class")
+		formatTime(jartask_jar.getEntry("doubler/Doubler.class")) == "2022-01-02T12:43:14Z"
 		jartask_jar.getEntry("doubler/packageinfo")
 		jartask_jar.getEntry("doubler/impl/DoublerImpl.class")
 		jartask_jar.getEntry("doubler/impl/packageinfo")
@@ -100,6 +102,7 @@ class TestBundlePlugin extends Specification {
 		!bundletask_jar.getEntry("doubler/Doubler.class")
 		!bundletask_jar.getEntry("doubler/impl/DoublerImpl.class")
 		bundletask_jar.getEntry("doubler/impl/DoublerImplTest.class")
+		formatTime(bundletask_jar.getEntry("doubler/impl/DoublerImplTest.class")) != "2022-01-02T12:43:14Z"
 		bundletask_jar.getEntry("OSGI-OPT/src/")
 		!bundletask_jar.getEntry("foo.txt")
 		!bundletask_jar.getEntry("bar.txt")
