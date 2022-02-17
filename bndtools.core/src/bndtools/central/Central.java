@@ -224,17 +224,43 @@ public class Central implements IStartupParticipant {
 			throw new IllegalStateException("Central is not initialised");
 		}
 		final Workspace ws;
-		java.util.function.Consumer<Workspace> resolve = null;
+		Consumer<Workspace> afterLock = null;
 		synchronized (workspace) {
 			if (workspace.peek() == null) { // No workspace has been created
 				ws = workspace.get();
 				// Resolve with new workspace
-				resolve = tryResolve(anyWorkspaceDeferred);
+				afterLock = tryResolve(anyWorkspaceDeferred);
 				if (!ws.isDefaultWorkspace()) {
-					resolve = resolve.andThen(tryResolve(cnfWorkspaceDeferred));
+					afterLock = afterLock.andThen(tryResolve(cnfWorkspaceDeferred));
 				}
 			} else {
 				ws = workspace.get();
+				// get the parent directory of the "cnf" project, if there is
+				// one
+				File workspaceDirectory = getWorkspaceDirectory();
+				// Check to see if we need to adjust it...
+				if (workspaceDirectory != null && !workspaceDirectory.equals(ws.getBase())) {
+					// There is a "cnf" project and the current workspace is
+					// not the same as the directory the cnf project is in,
+					// so switch the workspace to the directory
+					afterLock = Central::adjustWorkspace;
+				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
+					// There is no "cnf" project and the current workspace is
+					// not the default, so switch the workspace to the default
+					afterLock = Central::adjustWorkspace;
+				}
+			}
+		}
+		if (afterLock != null) { // perform after lock action
+			afterLock.accept(ws);
+		}
+		return ws;
+	}
+
+	private static void adjustWorkspace(Workspace ws) throws Exception {
+		// Get write lock on another thread
+		promiseFactory().submit(() -> {
+			Consumer<Workspace> afterLock = ws.writeLocked(() -> {
 				// get the parent directory of the "cnf" project, if there is
 				// one
 				File workspaceDirectory = getWorkspaceDirectory();
@@ -243,35 +269,31 @@ public class Central implements IStartupParticipant {
 					// There is a "cnf" project and the current workspace is
 					// not the same as the directory the cnf project is in,
 					// so switch the workspace to the directory
-					ws.writeLocked(() -> {
-						ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
-						ws.forceRefresh();
-						ws.refresh();
-						ws.refreshProjects();
-						return null;
-					});
-					resolve = tryResolve(cnfWorkspaceDeferred);
+					ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
+					ws.forceRefresh();
+					ws.refresh();
+					ws.refreshProjects();
+					return tryResolve(cnfWorkspaceDeferred);
 				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
 					// There is no "cnf" project and the current workspace is
 					// not the default, so switch the workspace to the default
 					cnfWorkspaceDeferred = promiseFactory().deferred();
-					ws.writeLocked(() -> {
-						ws.setFileSystem(Workspace.BND_DEFAULT_WS, Workspace.CNFDIR);
-						ws.forceRefresh();
-						ws.refresh();
-						ws.refreshProjects();
-						return null;
-					});
+					ws.setFileSystem(Workspace.BND_DEFAULT_WS, Workspace.CNFDIR);
+					ws.forceRefresh();
+					ws.refresh();
+					ws.refreshProjects();
+					return null;
 				}
+				return null;
+			});
+			if (afterLock != null) { // perform after lock action
+				afterLock.accept(ws);
 			}
-		}
-		if (resolve != null) { // resolve deferred if requested
-			resolve.accept(ws);
-		}
-		return ws;
+			return ws;
+		});
 	}
 
-	private static <T> java.util.function.Consumer<T> tryResolve(Deferred<T> deferred) {
+	private static <T> Consumer<T> tryResolve(Deferred<T> deferred) {
 		return value -> {
 			try {
 				deferred.resolve(value);
