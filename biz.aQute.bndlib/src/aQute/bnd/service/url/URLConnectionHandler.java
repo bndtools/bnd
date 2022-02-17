@@ -48,4 +48,14 @@ public interface URLConnectionHandler {
 	 * @return true if matched, false if not.
 	 */
 	boolean matches(URL url);
+
+	/**
+	 * Limit the number of concurrent connections for this handler. If this
+	 * returns 0, there is no limit.
+	 *
+	 * @return the number of max concurrent connections or 0 for no limit
+	 */
+	default int maxConcurrentConnections() {
+		return 0;
+	}
 }

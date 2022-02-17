@@ -54,6 +54,7 @@ public class SettingsParserTest {
 			assertThat(ws.check()).isTrue();
 			URLConnectionHandler handler = plugin.findMatchingHandler(new URL("http://httpbin.org"));
 			assertThat(handler).isNotNull();
+			assertThat(handler.maxConcurrentConnections()).isEqualTo(10);
 		}
 	}
 
@@ -191,7 +192,7 @@ public class SettingsParserTest {
 	public void testWildcardURL() throws Exception {
 		try (Processor proc = new Processor(); HttpClient hc = new HttpClient()) {
 			proc.setProperty("-connection-settings",
-				"server;id=\"https://*.server.net:8080\";username=\"myUser\";password=\"myPassword\","
+				"server;id=\"https://*.server.net:8080\";username=\"myUser\";password=\"myPassword\";maxConcurrentConnections=11,"
 					+ "server;id=\"https://*.server.net/\";username=\"myUser\";password=\"myPassword\"");
 			ConnectionSettings cs = new ConnectionSettings(proc, hc);
 			cs.readSettings();
@@ -199,11 +200,12 @@ public class SettingsParserTest {
 			assertEquals(2, serverDTOs.size());
 
 			ServerDTO s = serverDTOs.get(0);
-
+			assertThat(s.maxConcurrentConnections).isEqualTo(11);
 			assertEquals("https://*.server.net:8080", s.id);
 
 			URLConnectionHandler handler = cs.createURLConnectionHandler(s);
 
+			assertThat(handler.maxConcurrentConnections()).isEqualTo(11);
 			assertTrue(handler.matches(new URL("https://www.server.net:8080")));
 
 			s = serverDTOs.get(1);

@@ -12,8 +12,13 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
@@ -32,6 +38,7 @@ import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.url.HttpsVerification;
 import aQute.http.testservers.HttpTestServer.Config;
@@ -76,6 +83,19 @@ public class HttpClientTest {
 				rsp.code = 200;
 				return "ok";
 			}
+		}
+
+		AtomicInteger n = new AtomicInteger();
+
+		public void _solitary(Request rq, Response rsp, int max) throws Exception {
+			System.out.println("in solitary");
+			int x = n.incrementAndGet();
+			if (x > max) {
+				rsp.code = 400;
+				return;
+			}
+			Thread.sleep(200);
+			x = n.decrementAndGet();
 		}
 
 		volatile boolean firstTimeout = true;
@@ -134,6 +154,71 @@ public class HttpClientTest {
 		httpsServer.start();
 
 		httpServer.second = false;
+	}
+
+	@Test
+	public void testLimitConnections() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				AtomicInteger max = new AtomicInteger(1);
+				client.addURLConnectionHandler(new URLConnectionHandler() {
+					@Override
+					public boolean matches(URL url) {
+						return true;
+					}
+
+					@Override
+					public void handle(URLConnection connection) throws Exception {}
+
+					@Override
+					public int maxConcurrentConnections() {
+						return max.get();
+					}
+				});
+
+				testParallel(client, max.get());
+				max.set(3);
+				testParallel(client, max.get());
+				try {
+					max.set(0);
+					testParallel(client, 1);
+					fail("expected a failure");
+				} catch (AssertionFailedError e) {
+					// ok
+				}
+
+			}
+		}
+	}
+
+	private void testParallel(HttpClient client, int max) {
+		List<CompletableFuture<TaggedData>> fs = new ArrayList<>();
+		for (int n = 0; n < 10; n++) {
+			CompletableFuture<TaggedData> f = CompletableFuture.supplyAsync(() -> {
+				try {
+					TaggedData tag = client.build()
+						.timeout(10000)
+						.asTag()
+						.go(httpServer.getBaseURI("solitary/" + max));
+					System.out.println("response "+tag.getResponseCode());
+					return tag;
+				} catch (Exception e) {
+					throw new RuntimeException();
+				}
+			});
+			fs.add(f);
+		}
+
+		fs.forEach(tag -> {
+			try {
+				TaggedData d = tag.get();
+				assertThat(d).isNotNull();
+				TaggedData taggedData = tag.get();
+				assertThat(taggedData.getResponseCode()).isEqualTo(200);
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException();
+			}
+		});
 	}
 
 	@Test

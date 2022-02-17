@@ -31,11 +31,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
@@ -101,6 +103,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private ConnectionSettings					connectionSettings;
 	int											retries					= 3;
 	long										retryDelay				= 0L;
+	final Map<URLConnectionHandler, Semaphore>	blocker					= new HashMap<>();
 
 	public HttpClient() {
 		promiseFactory = Processor.getPromiseFactory();
@@ -563,7 +566,10 @@ public class HttpClient implements Closeable, URLConnector {
 
 		private TaggedData connect() throws Exception {
 			final ProxySetup proxy = getProxySetup(request.url);
-			final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
+			final URLConnectionHandler matching = findMatchingHandler(request.url);
+			Semaphore semaphore = getConnectionBlocker(matching);
+
+			final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy, matching);
 			final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
 
 			if (request.ifNoneMatch != null) {
@@ -588,14 +594,35 @@ public class HttpClient implements Closeable, URLConnector {
 
 			configureHttpConnection(request.verb, hcon);
 
-			TaggedData tag = connectWithProxy(proxy, () -> doConnect(request.upload, request.download, con, hcon));
-			logger.debug("result {}", tag);
-			return connected = tag;
+			try {
+				semaphore.acquire();
+				TaggedData tag = connectWithProxy(proxy, () -> doConnect(request.upload, request.download, con, hcon));
+				logger.debug("result {}", tag);
+				return connected = tag;
+			} finally {
+				semaphore.release();
+			}
+		}
+
+		/*
+		 * Returns a blocker for the connections created from this
+		 * URLConnectionHandler. If this connection handler is not blocking we
+		 * return a fresh semaphore that thus will never block. If we do have a
+		 * limit, then use an existing semaphore or create a new one with the
+		 * amount of maxConcurrentConnections
+		 */
+		private Semaphore getConnectionBlocker(final URLConnectionHandler matching) {
+			if (matching != null && matching.maxConcurrentConnections() > 0) {
+				synchronized (blocker) {
+					return blocker.computeIfAbsent(matching, m -> new Semaphore(m.maxConcurrentConnections()));
+				}
+			} else {
+				return new Semaphore(1);
+			}
 		}
 
 		private TaggedData doConnect(Object put, Type ref, URLConnection con, HttpURLConnection hcon) throws Exception {
 			final ProgressPlugin.Task task = getTask();
-
 			if (put != null) {
 				task.worked(1);
 				doOutput(put, con);
@@ -784,10 +811,10 @@ public class HttpClient implements Closeable, URLConnector {
 			return entity;
 		}
 
-		private URLConnection getProxiedAndConfiguredConnection(URL url, ProxySetup proxy) throws Exception {
+		private URLConnection getProxiedAndConfiguredConnection(URL url, ProxySetup proxy,
+			URLConnectionHandler matching) throws Exception {
 			final URLConnection urlc = proxy != null ? url.openConnection(proxy.proxy) : url.openConnection();
 
-			URLConnectionHandler matching = findMatchingHandler(url);
 			if (matching == null) {
 				return urlc;
 			}
