@@ -63,7 +63,7 @@ public class BndPomRepository extends BaseRepository
 	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 	private static final int	DEFAULT_POLL_TIME	= 300;
 
-	private Promise<Boolean>	initialized;
+	private volatile Promise<Boolean>	initialized;
 
 	private PomConfiguration	configuration;
 	private Registry			registry;
@@ -80,11 +80,14 @@ public class BndPomRepository extends BaseRepository
 
 	private String				status;
 
-	@SuppressWarnings("deprecation")
 	private boolean init() {
 		try {
 			if (initialized == null) {
-				prepare();
+				synchronized (configuration) {
+					if (initialized == null) {
+						prepare();
+					}
+				}
 			}
 			return initialized.getValue();
 		} catch (Exception e) {
