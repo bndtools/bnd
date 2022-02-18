@@ -1,21 +1,23 @@
 package aQute.bnd.build;
 
 import static java.nio.file.Files.isRegularFile;
-import static java.nio.file.Files.newDirectoryStream;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.CollationKey;
+import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 
 /**
@@ -23,20 +25,20 @@ import aQute.lib.io.IO;
  * can change asynchronously we guard access from here.
  */
 class ProjectTracker implements AutoCloseable {
-	private final Workspace				workspace;
-	private final Map<String, Project>	models;
-	private Collection<Project>			lastUpdate	= new ArrayList<>();
-	private boolean						changed;
+	private final Workspace						workspace;
+	private final Map<CollationKey, Project>	projects;
+	private boolean								changed;
+	private final Collator						fileCollator	= IO.fileCollator();
 
 	ProjectTracker(Workspace workspace) {
 		changed = true;
 		this.workspace = workspace;
-		models = new HashMap<>();
+		projects = new TreeMap<>();
 	}
 
 	@Override
 	public synchronized void close() {
-		models.values()
+		projects.values()
 			.forEach(IO::close);
 	}
 
@@ -50,9 +52,9 @@ class ProjectTracker implements AutoCloseable {
 	/*
 	 * Answer a snapshot of the current list of projects
 	 */
-	synchronized Set<Project> getAllProjects() {
+	synchronized List<Project> getAllProjects() {
 		update();
-		return new HashSet<>(models.values());
+		return new ArrayList<>(projects.values());
 	}
 
 	/*
@@ -60,12 +62,29 @@ class ProjectTracker implements AutoCloseable {
 	 */
 	synchronized Optional<Project> getProject(String name) {
 		update();
-		if (!models.containsKey(name) && workspace.getFile(name + "/" + Project.BNDFILE)
+		CollationKey key = fileCollator.getCollationKey(name);
+		if (!projects.containsKey(key) && workspace.getFile(name + "/" + Project.BNDFILE)
 			.isFile()) {
 			changed = true;
 			update();
 		}
-		return Optional.ofNullable(models.get(name));
+		return Optional.ofNullable(projects.get(key));
+	}
+
+	private List<CollationKey> list(Path dir) {
+		if ((dir != null) && Files.isDirectory(dir)) {
+			try (Stream<Path> stream = Files.list(dir)) {
+				List<CollationKey> result = stream.filter(Files::isDirectory)
+					.map(path -> fileCollator.getCollationKey(path.getFileName()
+						.toString()))
+					.sorted()
+					.collect(toList());
+				return result;
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+		return Collections.emptyList();
 	}
 
 	/*
@@ -77,50 +96,52 @@ class ProjectTracker implements AutoCloseable {
 		}
 		changed = false;
 
+		boolean notify = false;
 		try {
 			Path base = workspace.getBase()
 				.toPath();
-			Set<String> older = new HashSet<>(models.keySet());
-			try (DirectoryStream<Path> directories = newDirectoryStream(base, Files::isDirectory)) {
-				for (Path directory : directories) {
-					models.compute(directory.getFileName()
-						.toString(), (name, project) -> {
-							if (project != null) {
-								older.remove(name);
-								if (directory.equals(project.getBase()
-									.toPath()) && project.isValid()) {
-									return project;
-								}
-								IO.close(project);
-							}
-							if (isRegularFile(directory.resolve(Project.BNDPATH))) {
-								project = new Project(workspace, directory.toFile());
-								if (project.isValid()) {
-									return project;
-								}
-								IO.close(project);
-							}
-							return null;
-						});
+			List<CollationKey> older = new ArrayList<>(projects.keySet());
+			for (CollationKey key : list(base)) {
+				String name = key.getSourceString();
+				Path directory = base.resolve(name);
+				Project project = projects.get(key);
+				if (project != null) {
+					older.remove(key);
+					if (directory.equals(project.getBase()
+						.toPath()) && project.isValid()) {
+						continue;
+					}
+					IO.close(project);
 				}
-			} catch (IOException e) {
-				throw Exceptions.duck(e);
+				if (isRegularFile(directory.resolve(Project.BNDPATH))) {
+					project = new Project(workspace, directory.toFile());
+					if (project.isValid()) {
+						projects.put(key, project);
+						notify = true;
+						continue;
+					}
+					IO.close(project);
+				}
+				projects.remove(key);
+				notify = true;
 			}
 
 			older.stream()
-				.map(models::remove)
+				.map(projects::remove)
 				.forEach(IO::close);
 		} finally {
-			Collection<Project> newSet = models.values();
-			lastUpdate = newSet;
-			workspace.notifier.projects(lastUpdate);
+			if (notify) {
+				workspace.notifier.projects(new ArrayList<>(projects.values()));
+			}
 		}
 	}
 
 	@Override
 	public String toString() {
-		return models.keySet()
-			.toString();
+		return projects.keySet()
+			.stream()
+			.map(CollationKey::getSourceString)
+			.collect(joining(",", "[", "]"));
 	}
 
 	synchronized void forceRefresh() {
