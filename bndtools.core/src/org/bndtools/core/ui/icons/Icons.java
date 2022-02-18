@@ -141,7 +141,7 @@ public final class Icons {
 		synchronized (images) {
 			Key k = new Key(name, decorators);
 			Image image = images.get(k);
-			if (image != null)
+			if (image != null && !image.isDisposed())
 				return image;
 
 			if (decorators.length == 0) {
