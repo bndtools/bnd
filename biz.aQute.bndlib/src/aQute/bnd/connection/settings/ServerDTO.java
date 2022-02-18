@@ -19,4 +19,5 @@ public class ServerDTO extends DTO {
 	public String	match;
 	public boolean	verify	= true;
 	public String	trust;
+	public int		maxConcurrentConnections	= 0;
 }

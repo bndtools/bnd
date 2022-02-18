@@ -72,6 +72,7 @@ The settings files have the following XML structure:
 	        <password>password</password>
 		    <verify> true | false </verify>
 		    <trust> comma separated paths to X509 certificates </trust>
+            <maxConcurrentConnections>10</maxConcurrentConnections>
 	    </server>
 	  </servers>
 	</settings>
@@ -116,7 +117,8 @@ The first server that matches the id will provide the parameters.
 | `username`        |              |                | User name for authentication to the server |
 | `password`        |              |                | Password for authentication to the server  |
 | `verify`          |  `true`      | `false | true` | Enable/disable the verification of the host name against a certificate for HTTPS |
-| `trust`           |              |                | Provide paths to certificate that provide trust to the host certificate. The format most of a X.509 certificat file. Normally the extension is `.cer` |
+| `trust`           |              |                | Provide paths to certificate that provide trust to the host certificate. The format most of a X.509 certificate file. Normally the extension is `.cer` |
+| `maxConcurrentConnections`|0 (unlimited)|0..      | Limits the number of parallel connections to a host. Some hosts use the number of concurrent connections as a sign of a denial of service attack. |
 
 ## oAuth2 authentication
 

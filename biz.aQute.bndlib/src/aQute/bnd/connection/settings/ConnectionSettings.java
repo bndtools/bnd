@@ -295,9 +295,11 @@ public class ConnectionSettings {
 		private final Glob					match;
 		private final URLConnectionHandler	handler;
 		private final URLConnectionHandler	https;
+		private final int					maxConcurrentConnections;
 
 		SettingsURLConnectionHandler(ServerDTO serverDTO, Processor processor) {
 			match = new Glob(serverDTO.match != null ? serverDTO.match : serverDTO.id);
+			maxConcurrentConnections = serverDTO.maxConcurrentConnections;
 			if (serverDTO.password == null) {
 				handler = null;
 			} else if (serverDTO.username != null) {
@@ -335,6 +337,10 @@ public class ConnectionSettings {
 			}
 		}
 
+		@Override
+		public int maxConcurrentConnections() {
+			return maxConcurrentConnections;
+		}
 		private boolean isHttps(URLConnection connection) {
 			return "https".equalsIgnoreCase(connection.getURL()
 				.getProtocol());
@@ -342,7 +348,8 @@ public class ConnectionSettings {
 
 		@Override
 		public String toString() {
-			return "Server [ match=" + match + ", handler=" + handler + ", https=" + https + "]";
+			return "Server [ match=" + match + ", handler=" + handler + ", maxConcurrentConnections="
+				+ maxConcurrentConnections + ", https=" + https + "]";
 		}
 	}
 
