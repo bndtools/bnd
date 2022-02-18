@@ -173,15 +173,7 @@ embed.illustration {
     text-align: center;
     border-radius: 5px;
     padding:2px;
-    transform: rotateY(0deg);
-    animation-name: turn;
-    animation-duration: 1s;
+    font-size: $font-size;
+    font-weight: normal;
  }
  
- @keyframes turn {
-  from {
-        transform: rotateY(90deg);
-    }
-  to {    transform: rotateY(0deg);
-    }
-}
