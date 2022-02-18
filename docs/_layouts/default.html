@@ -17,6 +17,12 @@
 			
 		<li span=9>
 			<div class=notes-margin>
+			    {% if page.class %}
+                   <div class="pageclass">
+                      {{page.class}}
+                   </div>
+                {% endif %}     
+			
 				<h1>{{h1}} {{page.title}}</h1>
 				{{content}}
 			</div>

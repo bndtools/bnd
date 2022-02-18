@@ -21,6 +21,7 @@ For example:
     Bundle-Version= ${version}
     Bundle-Description= This bundle has version ${version}
 
+
 ## Macro patterns
 The default macro pattern is the `${...}` pattern, a dollar sign ('$') followed by a left curly bracket ('{') and closed by a right curly bracket ('}'). However, since bndlib is often used inside other systems it also supports alternative macro patterns:
 

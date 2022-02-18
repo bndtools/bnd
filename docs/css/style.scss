@@ -164,3 +164,24 @@ embed.illustration {
 .releases:hover .dropbtn {
   background-color: #99594b;
 }
+
+.pageclass {
+    background-color: #99594b;
+    color: white;
+    width: 80px;
+    float: right;
+    text-align: center;
+    border-radius: 5px;
+    padding:2px;
+    transform: rotateY(0deg);
+    animation-name: turn;
+    animation-duration: 1s;
+ }
+ 
+ @keyframes turn {
+  from {
+        transform: rotateY(90deg);
+    }
+  to {    transform: rotateY(0deg);
+    }
+}

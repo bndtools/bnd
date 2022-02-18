@@ -4,10 +4,20 @@ layout: default
 ---
 
 <div>
-<dl class="property-index">
-
-{% for instruction in site.instructions %}<dt><a href="{{ instruction.url | prepend: site.baseurl }}">{{instruction.title | escape}}</a></dt><dd>{{instruction.summary | escape}}</dd>
-{% endfor %}
-
-</dl>
+<table class="property-index">
+    <thead>
+        <th>Instruction</th>
+        <th>Description</th>
+        <th>Class</th>
+    </thead>
+    <tbody>
+        {% for instruction in site.instructions %}
+        <tr>
+            <td><a href="{{ instruction.url | prepend: site.baseurl }}">{{instruction.title | escape}}</a></td>
+            <td>{{instruction.summary | escape}}</td>
+            <td>{{instruction.class}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 </div>
