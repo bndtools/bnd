@@ -235,11 +235,16 @@ public class POM implements IPom {
 		properties.put("pom.groupId", group);
 		properties.put("pom.artifactId", artifact);
 		properties.put("pom.version", version);
-		if (parent.revision != null)
-			properties.put("parent.version", parent.getVersion()
-				.toString());
-		else
-			properties.put("parent.version", "parent version from " + revision + " but not parent?");
+		if (parent.revision != null) {
+			String parentVersionString = parent.getVersion()
+				.toString();
+			properties.put("project.parent.version", parentVersionString);
+			properties.put("parent.version", parentVersionString);
+		} else {
+			String parentVersionString = "parent version from " + revision + " but not parent?";
+			properties.put("project.parent.version", parentVersionString);
+			properties.put("parent.version", parentVersionString);
+		}
 		properties.put("version", version);
 		properties.put("pom.currentVersion", version);
 		properties.put("pom.packaging", this.packaging);

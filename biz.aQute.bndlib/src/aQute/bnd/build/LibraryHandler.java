@@ -213,7 +213,12 @@ class LibraryHandler implements AutoCloseable {
 						error(p, header, name, "Invalid version %s", versionString);
 						continue;
 					}
-					we = getLibrary(name, versionString);
+					// If the processor is the Workspace, we can't use the
+					// Workspace Repo since the projects depend upon the
+					// Workspace which we are augmenting
+					ResourceRepositoryStrategy strategy = (p == ws) ? ResourceRepositoryStrategy.REPOS
+						: ResourceRepositoryStrategy.ALL;
+					we = getLibrary(name, versionString, strategy);
 				}
 
 				if (we == null) {
@@ -238,9 +243,10 @@ class LibraryHandler implements AutoCloseable {
 		}
 	}
 
-	private RepoLibrary getLibrary(String name, String versionRange) throws Exception {
+	private RepoLibrary getLibrary(String name, String versionRange, ResourceRepositoryStrategy strategy)
+		throws Exception {
 		String filter = LibraryNamespace.filter(name, versionRange);
-		return ws.findProviders(LibraryNamespace.NAMESPACE, filter, ResourceRepositoryStrategy.ALL)
+		return ws.findProviders(LibraryNamespace.NAMESPACE, filter, strategy)
 			.map(c -> new RepoLibrary(name, c))
 			.sorted()
 			.findFirst()

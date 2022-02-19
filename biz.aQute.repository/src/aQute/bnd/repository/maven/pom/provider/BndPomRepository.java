@@ -28,6 +28,7 @@ import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BaseRepository;
@@ -63,7 +64,7 @@ public class BndPomRepository extends BaseRepository
 	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 	private static final int	DEFAULT_POLL_TIME	= 300;
 
-	private Promise<Boolean>	initialized;
+	private final Memoize<Promise<Boolean>>	prepared;
 
 	private PomConfiguration	configuration;
 	private Registry			registry;
@@ -80,33 +81,45 @@ public class BndPomRepository extends BaseRepository
 
 	private String				status;
 
-	@SuppressWarnings("deprecation")
+	public BndPomRepository() {
+		prepared = Memoize.supplier(this::preparePromise);
+	}
+
 	private boolean init() {
 		try {
-			if (initialized == null) {
-				prepare();
-			}
-			return initialized.getValue();
+			return prepared.get() // start preparation
+				.getValue(); // wait for completion
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public void prepare() throws Exception {
+	public void prepare() {
+		prepared.get(); // start preparation
+	}
+
+	private Promise<Boolean> preparePromise() {
 		if (configuration.name() == null) {
 			status("Must get a name");
 		}
 
 		this.name = configuration.name();
 
-		if (configuration.snapshotUrl() != null && configuration.snapshotUrls() != null) {
-			status("snapshotUrl and snapshotUrls property is set. Please only use snapshotUrl.");
+		if (configuration.snapshotUrl() != null) {
+			@SuppressWarnings("deprecation")
+			String snapshotUrls = configuration.snapshotUrls();
+			if (snapshotUrls != null) {
+				status("snapshotUrl and snapshotUrls property is set. Please only use snapshotUrl.");
+			}
 		}
 
-		if (configuration.releaseUrl() != null && configuration.releaseUrls() != null) {
-			status("releaseUrl and releaseUrls property is set. Please only use releaseUrl.");
+		if (configuration.releaseUrl() != null) {
+			@SuppressWarnings("deprecation")
+			String releaseUrls = configuration.releaseUrls();
+			if (releaseUrls != null) {
+				status("releaseUrl and releaseUrls property is set. Please only use releaseUrl.");
+			}
 		}
 
 		if (configuration.pom() != null) {
@@ -136,12 +149,11 @@ public class BndPomRepository extends BaseRepository
 			status("Neither pom, archive nor query property are set");
 		}
 
-		initialized = Processor.getPromiseFactory()
-			.submit(this::internalInitialize);
+		return Processor.getPromiseFactory()
+			.submit(this::prepareAsync);
 	}
 
-	@SuppressWarnings("deprecation")
-	private boolean internalInitialize() {
+	private boolean prepareAsync() {
 		if (!isOk()) {
 			return false;
 		}
@@ -151,10 +163,18 @@ public class BndPomRepository extends BaseRepository
 			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 			File location = workspace.getFile(getLocation());
 
-			String releaseUrl = configuration.releaseUrl() != null ? configuration.releaseUrl()
-				: configuration.releaseUrls();
-			String snapshotUrl = configuration.snapshotUrl() != null ? configuration.snapshotUrl()
-				: configuration.snapshotUrls();
+			String releaseUrl = configuration.releaseUrl();
+			if (releaseUrl == null) {
+				@SuppressWarnings("deprecation")
+				String releaseUrls = configuration.releaseUrls();
+				releaseUrl = releaseUrls;
+			}
+			String snapshotUrl = configuration.snapshotUrl();
+			if (snapshotUrl == null) {
+				@SuppressWarnings("deprecation")
+				String snapshotUrls = configuration.snapshotUrls();
+				snapshotUrl = snapshotUrls;
+			}
 
 			List<MavenBackingRepository> release = MavenBackingRepository.create(releaseUrl, reporter, localRepo,
 				client);
@@ -206,15 +226,19 @@ public class BndPomRepository extends BaseRepository
 			AtomicBoolean inPoll = new AtomicBoolean();
 			pomPoller = Processor.getScheduledExecutor()
 				.scheduleAtFixedRate(() -> {
-					if (inPoll.getAndSet(true))
+					if (inPoll.getAndSet(true)) {
 						return;
-					try {
-						poll();
-					} catch (Exception e) {
-						reporter.exception(e, "Error when polling for %s for change", this);
-					} finally {
-						inPoll.set(false);
 					}
+					Processor.getExecutor()
+						.execute(() -> {
+							try {
+								poll();
+							} catch (Exception e) {
+								reporter.exception(e, "Error when polling for %s for change", this);
+							} finally {
+								inPoll.set(false);
+							}
+						});
 				}, polltime, polltime, TimeUnit.SECONDS);
 		}
 	}
