@@ -116,7 +116,8 @@ public class LibraryTest {
 			b1.setBundleVersion("0.0.1");
 			b1.setProperty("Provide-Capability",
 				"bnd.library; bnd.library=foo; version= 1.2.3; path           = lib/foo");
-			b1.setIncludeResource("lib/foo/project.bnd;literal='foo=1.2.3\n'");
+			b1.setIncludeResource(
+				"lib/foo/project.bnd;literal='foo=1.2.3\n',lib/foo/workspace.bnd;literal='ws=1.2.3\n'");
 			Jar j1 = b1.build();
 			repository.put(new JarResource(j1).openInputStream(), null);
 
@@ -125,7 +126,8 @@ public class LibraryTest {
 			b2.setBundleVersion("0.0.2");
 			b2.setProperty("Provide-Capability",
 				"bnd.library; bnd.library=foo; version= 1.2.4; path           = lib/foo");
-			b2.setIncludeResource("lib/foo/project.bnd;literal='foo=1.2.4\n'");
+			b2.setIncludeResource(
+				"lib/foo/project.bnd;literal='foo=1.2.4\n',lib/foo/workspace.bnd;literal='ws=1.2.4\n'");
 			Jar j2 = b2.build();
 			repository.put(new JarResource(j2).openInputStream(), null);
 
@@ -134,7 +136,8 @@ public class LibraryTest {
 			b3.setBundleVersion("0.0.3");
 			b3.setProperty("Provide-Capability",
 				"bnd.library; bnd.library=foo; version= 1.2.2; path           = lib/foo");
-			b3.setIncludeResource("lib/foo/project.bnd;literal='foo=1.2.2\n'");
+			b3.setIncludeResource(
+				"lib/foo/project.bnd;literal='foo=1.2.2\n',lib/foo/workspace.bnd;literal='ws=1.2.2\n'");
 			Jar j3 = b3.build();
 			repository.put(new JarResource(j3).openInputStream(), null);
 		}
@@ -150,5 +153,10 @@ public class LibraryTest {
 
 		}
 
+		IO.store("-library=foo", new File(IO.mkdirs(new File(testDir, "cnf/ext")), "test.bnd"));
+		try (Workspace ws = new Workspace(testDir)) {
+			assertThat(ws.getProperty("ws")).isEqualTo("1.2.4");
+			assertThat(ws.getProperty("foo")).isNull();
+		}
 	}
 }
