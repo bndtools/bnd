@@ -175,9 +175,9 @@ class LibraryHandler implements AutoCloseable {
 
 		Parameters es = new Parameters(library);
 
-		for (Entry<String, Attrs> entry : es.entrySet())
+		for (Entry<String, Attrs> entry : es.entrySet()) {
+			String name = Processor.removeDuplicateMarker(entry.getKey());
 			try {
-				String name = Processor.removeDuplicateMarker(entry.getKey());
 				boolean ignoreErrors = false;
 				if (name.startsWith("-")) {
 					name = name.substring(1);
@@ -228,8 +228,9 @@ class LibraryHandler implements AutoCloseable {
 				}
 				we.process(p, entry.getValue(), header);
 			} catch (Exception e) {
-				e.printStackTrace();
+				error(p, header, name, "Error loading %s for %s:  %s", header, name, Exceptions.toString(e));
 			}
+		}
 	}
 
 	private void error(Processor p, String header, String clause, String format, Object... args) {
