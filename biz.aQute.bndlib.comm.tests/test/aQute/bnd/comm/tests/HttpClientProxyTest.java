@@ -409,11 +409,13 @@ public class HttpClientProxyTest {
 
 	private void createSecureSocks5() throws IOException, InterruptedException {
 		int retry = 5;
+		IOException fail = null;
 		while (true) {
+			final int socksProxyPort = socksProxyPort();
 			UserManager userManager = new MemoryBasedUserManager();
 			userManager.create(new User("proxyuser", "good"));
 			SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder()
-				.setBindPort(socksProxyPort())
+				.setBindPort(socksProxyPort)
 				.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator(userManager) {
 					@Override
 					public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
@@ -458,9 +460,14 @@ public class HttpClientProxyTest {
 				socks5Proxy.start();
 				break;
 			} catch (Exception e) {
-				if (--retry <= 0) {
-					throw e;
+				IOException x = new IOException("Failed to start Socks Proxy Server on port " + socksProxyPort, e);
+				if (fail != null) {
+					x.addSuppressed(fail);
 				}
+				if (--retry <= 0) {
+					throw x;
+				}
+				fail = x;
 			}
 		}
 	}
