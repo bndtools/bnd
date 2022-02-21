@@ -10,13 +10,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.PropertiesResource;
 import aQute.bnd.osgi.Resource;
-import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
-import aQute.lib.utf8properties.UTF8Properties;
 
 class GenerateLauncherJarRunnable implements IRunnableWithProgress {
 
@@ -42,17 +40,19 @@ class GenerateLauncherJarRunnable implements IRunnableWithProgress {
 						// Set launch.embedded=false since we expanded to folder
 						Resource launcherprops = jar.getResource("launcher.properties");
 						if (launcherprops != null) {
-							UTF8Properties props = new UTF8Properties();
-							try (InputStream in = launcherprops.openInputStream()) {
-								props.load(in);
+							PropertiesResource updated;
+							if (launcherprops instanceof PropertiesResource) {
+								updated = (PropertiesResource) launcherprops;
+							} else {
+								updated = new PropertiesResource();
+								try (InputStream in = launcherprops.openInputStream()) {
+									updated.getProperties()
+										.load(in);
+								}
 							}
-							props.put("launch.embedded", Boolean.toString(false));
-							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(
-								((int) launcherprops.size()) + 1)) {
-								props.store(bbos);
-								launcherprops = new EmbeddedResource(bbos.toByteBuffer(), launcherprops.lastModified());
-							}
-							jar.putResource("launcher.properties", launcherprops);
+							updated.getProperties()
+								.setProperty("launch.embedded", Boolean.toString(false));
+							jar.putResource("launcher.properties", updated);
 						}
 						jar.writeFolder(destination);
 						File start = IO.getFile(destination, "start");
