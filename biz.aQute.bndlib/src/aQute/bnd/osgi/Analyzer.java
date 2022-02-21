@@ -798,7 +798,14 @@ public class Analyzer extends Processor {
 						String version = a.get("value");
 						if (!info.containsKey(Constants.VERSION_ATTRIBUTE)) {
 							if (version != null) {
-								version = getReplacer().process(version);
+								String processedVersion = getReplacer().process(version);
+								if (!Objects.equals(version, processedVersion)) {
+									warning("In class %s,"
+										+ " Version(\"%s\") does not have a literal version value and uses Bnd macros."
+										+ " This is highly unrecommended as it can produce results that vary depending upon the context in which it is evaluated.",
+										clazz, version);
+									version = processedVersion;
+								}
 								if (Verifier.VERSION.matcher(version)
 									.matches())
 									info.put(VERSION_ATTRIBUTE, version);

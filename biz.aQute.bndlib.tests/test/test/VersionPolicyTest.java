@@ -129,7 +129,7 @@ public class VersionPolicyTest {
 			a.build();
 			Map<String, String> attrs = a.getExports()
 				.getByFQN("test.versionpolicy.api");
-			assertEquals("1.2.0.xyz", attrs.get("version"));
+			assertEquals("1.2.0", attrs.get("version"));
 			assertEquals("PrivateImpl", attrs.get("exclude:"));
 			assertEquals("a", attrs.get("mandatory:"));
 		}
