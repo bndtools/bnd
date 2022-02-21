@@ -1,4 +1,4 @@
-@Version("1.2.0.${def;build;nothing}")
+@Version("1.2.0")
 @Export(exclude = PrivateImpl.class, mandatory = "a=b")
 package test.versionpolicy.api;
 

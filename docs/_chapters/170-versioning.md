@@ -68,30 +68,25 @@ For this reason, bnd provides a way to store the version of the package together
 The @Version annotation is placed on the package. Since Java 5 it is possible to create a package-info.java file that can be used to annotate packages:
 
     package-info.java:
-        @Version("1.2.0.${build}")
+        @org.osgi.annotation.versioning.Version.Version("1.2.0")
         package com.example;
-
-        import aQute.bnd.annotation.Version;
 
 A non-annotation based alternative is the `packageinfo` file. When bnd scans the Java archives it will look in each package for this packageinfo file. The format of this file is very simple:
 
     packageinfo:
-        version 1.2.0.v${build}
-
-In either case, the value for the version may contain macros.
+        version 1.2.0
 
 If you now export the package (from any bundle that has the package on its class path), it will be properly versioned.
 
     bnd.bnd:
-        build = ${tstamp}
         Export-Package: com.example.*
 
 The resulting manifest will look like:
 
     Manifest:
-        Export-Package: com.example; version=1.2.0.v201010101010
+        Export-Package: com.example; version=1.2.0
 
-If you export a a package from another bundle, bnd will also look in the manifest of that other bundle for a version.
+If you export a package from another bundle, bnd will also look in the manifest of that other bundle for a version.
 
 Using packageinfo (or the @Version annotation) is highly recommended.
 
