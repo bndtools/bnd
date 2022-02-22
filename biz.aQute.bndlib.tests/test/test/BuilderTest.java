@@ -1,5 +1,6 @@
 package test;
 
+import static aQute.bnd.osgi.Constants.RESOLUTION_DIRECTIVE;
 import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,6 +39,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipOutputStream;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -3060,6 +3063,63 @@ public class BuilderTest {
 				.getVersion());
 		} finally {
 			b.close();
+		}
+	}
+
+	/**
+	 * Check imports discovered from bundle classpath.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testBundleClasspath4() throws Exception {
+		try (Builder builder = new Builder()) {
+			Properties p = new Properties();
+			p.put("-includeresource", "jar/cxf-rt-rs-sse-3.2.5.jar;lib:=true");
+			p.put("Export-Package", "test.referApi");
+			builder.setProperties(p);
+			builder.setClasspath(new File[] {
+				new File("bin_test")
+			});
+			Jar jar = builder.build();
+			assertTrue(builder.check());
+
+			report("testBundleClasspath3", builder, jar);
+			assertEquals(0, builder.getErrors()
+				.size());
+			assertEquals(0, builder.getWarnings()
+				.size());
+
+			Domain domain = Domain.domain(jar.getManifest());
+
+			assertEquals(".,cxf-rt-rs-sse-3.2.5.jar", domain.getBundleClasspath()
+				.toString());
+			assertNotNull(jar.getResource("cxf-rt-rs-sse-3.2.5.jar"));
+
+			Parameters importPackage = domain.getImportPackage();
+
+			Domain cxfrtrssse = Domain.domain(IO.getFile("jar/cxf-rt-rs-sse-3.2.5.jar"));
+
+			SoftAssertions softly = new SoftAssertions();
+
+			cxfrtrssse.getImportPackage()
+				.stream()
+				.forEach((pkg, attrs) -> {
+					// Get the resolution on the imported package on the
+					// embedded jar
+					Optional.ofNullable(attrs.get(RESOLUTION_DIRECTIVE))
+						.ifPresent(
+							// Check that it matches the (default) resolution
+							// that BND calculated
+							expected -> {
+								Attrs calculatedAttrs = importPackage.get(pkg);
+								softly.assertThat(calculatedAttrs.get(RESOLUTION_DIRECTIVE))
+									.as(() -> "resolution on package " + pkg)
+									.isEqualTo(expected);
+							});
+			});
+
+			softly.assertAll();
 		}
 	}
 
