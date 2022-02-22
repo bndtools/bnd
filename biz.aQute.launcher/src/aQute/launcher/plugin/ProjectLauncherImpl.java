@@ -15,13 +15,14 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -33,8 +34,6 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.header.Attrs;
-import aQute.bnd.header.OSGiHeader;
-import aQute.bnd.header.Parameters;
 import aQute.bnd.help.instructions.LauncherInstructions.Executable;
 import aQute.bnd.help.instructions.LauncherInstructions.RunOption;
 import aQute.bnd.osgi.Builder;
@@ -48,12 +47,12 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Jar.Compression;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.PropertiesResource;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferDataInput;
-import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -303,130 +302,119 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public Jar executable() throws Exception {
-
 		Executable instrs = launcherInstrs.executable();
 		Optional<Compression> rejar = instrs.rejar();
 		logger.debug("rejar {}", rejar);
 		Map<Glob, List<Glob>> strip = extractStripMapping(instrs.strip());
 		logger.debug("strip {}", strip);
+		try (Builder builder = new Builder()) {
+			Project project = getProject();
+			builder.setBase(project.getBase());
+			builder.setProperty(Constants.RESOURCEONLY, Boolean.TRUE.toString());
 
-		Jar jar = new Jar(getProject().getName());
+			Jar jar = new Jar(project.getName());
+			builder.setJar(jar);
+			builder.addClasspath(jar);
 
-		builderInstrs.compression()
-			.ifPresent(jar::setCompression);
+			// Use properties from the project
+			copyProperties(project::getProperty, builder::setProperty,
+				// jar properties
+				Constants.COMPRESSION, Constants.REPRODUCIBLE, Constants.DIGESTS,
+				// jpms properties
+				Constants.JPMS_MODULE_INFO, Constants.AUTOMATIC_MODULE_NAME);
+			copyProperties(project::mergeProperties, builder::setProperty,
+				// include resource properties
+				Constants.INCLUDERESOURCE, Constants.INCLUDE_RESOURCE);
 
-		String includeresource = getProject().mergeProperties(Constants.INCLUDERESOURCE);
-		if (!Strings.nonNullOrEmpty(includeresource)) {
-			includeresource = getProject().mergeProperties(Constants.INCLUDE_RESOURCE);
-		}
-		if (Strings.nonNullOrEmpty(includeresource)) {
-			try (Builder b = new Builder()) {
-				b.setBase(getProject().getBase());
-				b.setProperty(Constants.INCLUDERESOURCE, includeresource);
-				b.setProperty(Constants.RESOURCEONLY, "true");
-				b.build();
-				if (b.isOk()) {
-					Jar resources = b.getJar();
-					jar.addAll(resources);
-					// make sure copied resources are not closed
-					// when Builder and its Jar are closed
-					resources.getResources()
-						.clear();
+			List<String> classpath = new ArrayList<>();
+
+			List<String> runpath = getRunpath();
+			for (String path : runpath) {
+				logger.debug("embedding runpath {}", path);
+				File file = getOriginalFile(path);
+				if (file.isFile()) {
+					String newPath = nonCollidingPath(file, jar, null);
+					jar.putResource(newPath, getJarFileResource(file, rejar, strip));
+					classpath.add(newPath);
 				}
-				getProject().getInfo(b);
 			}
-		}
 
-		List<String> runpath = getRunpath();
+			// Copy the bundles to the JAR
 
-		Set<String> runpathShas = new LinkedHashSet<>();
-		Set<String> runbundleShas = new LinkedHashSet<>();
-		List<String> classpath = new ArrayList<>();
+			List<String> actualPaths = new ArrayList<>();
 
-		for (String path : runpath) {
-			logger.debug("embedding runpath {}", path);
-			File file = getOriginalFile(path);
-			if (file.isFile()) {
-				String newPath = nonCollidingPath(file, jar, null);
-				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
-				classpath.add(newPath);
+			Collection<String> runbundles = getRunBundles();
+			for (String path : runbundles) {
+				logger.debug("embedding run bundles {}", path);
+				File file = getOriginalFile(path);
+				if (!file.isFile())
+					project.error("Invalid entry in -runbundles %s", file);
+				else {
+					String newPath = nonCollidingPath(file, jar, instrs.location());
+					jar.putResource(newPath, getJarFileResource(file, rejar, strip));
+					actualPaths.add(newPath);
+				}
 			}
-		}
 
-		// Copy the bundles to the JAR
+			LauncherConstants lc = getConstants(actualPaths, true);
+			lc.embedded = true;
 
-		List<String> actualPaths = new ArrayList<>();
-
-		Collection<String> runbundles = getRunBundles();
-		for (String path : runbundles) {
-			logger.debug("embedding run bundles {}", path);
-			File file = getOriginalFile(path);
-			if (!file.isFile())
-				getProject().error("Invalid entry in -runbundles %s", file);
-			else {
-				String newPath = nonCollidingPath(file, jar, instrs.location());
-				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
-				actualPaths.add(newPath);
-			}
-		}
-
-		LauncherConstants lc = getConstants(actualPaths, true);
-		lc.embedded = true;
-
-		try (ByteBufferOutputStream bout = new ByteBufferOutputStream()) {
-			lc.getProperties(new UTF8Properties())
-				.store(bout, "");
 			jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES,
-				new EmbeddedResource(bout.toByteBuffer(), 0L));
+				new PropertiesResource(lc.getProperties(new UTF8Properties())));
+
+			Properties flattenedProperties = project.getFlattenedProperties();
+			Instructions instructions = new Instructions(project.getProperty(Constants.REMOVEHEADERS));
+			Collection<Object> result = instructions.select(flattenedProperties.keySet(), false);
+			flattenedProperties.keySet()
+				.removeAll(result);
+
+			Manifest manifest = new Manifest();
+			Attributes main = manifest.getMainAttributes();
+			main.putValue(Constants.MAIN_CLASS, EMBEDDED_LAUNCHER);
+			main.putValue(EMBEDDED_RUNPATH, join(classpath));
+			for (Entry<Object, Object> e : flattenedProperties.entrySet()) {
+				String key = (String) e.getKey();
+				String value = (String) e.getValue();
+				if (Strings.nonNullOrEmpty(key) && Character.isUpperCase(key.charAt(0))
+					&& Strings.nonNullOrEmpty(value)) {
+					main.putValue(key, value.trim());
+				}
+			}
+
+			Resource preJar = Resource.fromURL(this.getClass()
+				.getResource("/" + PRE_JAR));
+			try (Jar pre = Jar.fromResource("pre", preJar)) {
+				jar.addAll(pre, new Instruction("!{META-INF,OSGI-OPT}/*"));
+			}
+
+			String embeddedLauncherName = main.getValue(Constants.MAIN_CLASS);
+			logger.debug("Use '{}' launcher class", embeddedLauncherName);
+			// jpms properties
+			builder.setProperty(Constants.MAIN_CLASS, embeddedLauncherName);
+			doStart(jar, embeddedLauncherName);
+
+			jar = builder.build();
+
+			// overwrite calculated information
+			jar.setName(project.getName());
+			jar.setManifest(manifest);
+
+			project.getInfo(builder);
+
+			cleanup();
+			builder.removeClose(jar); // detach jar from builder
+			return jar;
 		}
+	}
 
-		Properties flattenedProperties = getProject().getFlattenedProperties();
-		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
-		Collection<Object> result = instructions.select(flattenedProperties.keySet(), false);
-		flattenedProperties.keySet()
-			.removeAll(result);
-
-		Manifest m = new Manifest();
-		Attributes main = m.getMainAttributes();
-		main.putValue(MAIN_CLASS, EMBEDDED_LAUNCHER);
-		main.putValue(EMBEDDED_RUNPATH, join(classpath));
-		for (Entry<Object, Object> e : flattenedProperties.entrySet()) {
-			String key = (String) e.getKey();
-			if (key.length() > 0 && Character.isUpperCase(key.charAt(0)))
-				main.putValue(key, (String) e.getValue());
-		}
-
-		Resource preJar = Resource.fromURL(this.getClass()
-			.getResource("/" + PRE_JAR));
-		try (Jar pre = Jar.fromResource("pre", preJar)) {
-			jar.addAll(pre, new Instruction("!{META-INF,OSGI-OPT}/*"));
-		}
-
-		String embeddedLauncherName = main.getValue(MAIN_CLASS);
-		logger.debug("Use '{}' launcher class", embeddedLauncherName);
-		doStart(jar, embeddedLauncherName);
-		Parameters digests = OSGiHeader.parseHeader(getProject().getProperty(DIGESTS));
-		if (!digests.isEmpty()) {
-			jar.setDigestAlgorithms(digests.keySet()
-				.toArray(new String[0]));
-		}
-		jar.setManifest(m);
-
-		String moduleInstruction = getProject().getProperty(Constants.JPMS_MODULE_INFO);
-		if (moduleInstruction != null) {
-			String name = jar.getName();
-			try (Builder b = new Builder()) {
-				b.setProperty(Constants.JPMS_MODULE_INFO, moduleInstruction);
-				b.setJar(jar);
-				b.addClasspath(jar);
-				jar = b.build();
-				b.removeClose(jar);
-				jar.setName(name);
+	private void copyProperties(Function<String, String> getProperty, BiConsumer<String, String> setProperty,
+		String... keys) {
+		for (String key : keys) {
+			String value = getProperty.apply(key);
+			if (Strings.nonNullOrEmpty(value)) {
+				setProperty.accept(key, value);
 			}
 		}
-
-		cleanup();
-		return jar;
 	}
 
 	private Map<Glob, List<Glob>> extractStripMapping(List<String> strip) {
