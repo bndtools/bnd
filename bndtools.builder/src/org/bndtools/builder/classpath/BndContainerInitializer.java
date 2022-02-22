@@ -516,6 +516,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 				// Use packages=* for full access
 				return Strings.splitAsStream(packageList)
 					.map(exportPkg -> {
+						int ruleKind = IAccessRule.K_ACCESSIBLE;
+						if (exportPkg.startsWith("!")) {
+							exportPkg = exportPkg.substring(1);
+							ruleKind = IAccessRule.K_NON_ACCESSIBLE;
+						}
 						Matcher m = packagePattern.matcher(exportPkg);
 						StringBuilder pathStr = new StringBuilder(exportPkg.length() + 1);
 						int start = 0;
@@ -526,7 +531,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 						}
 						pathStr.append(exportPkg, start, exportPkg.length())
 							.append("/*");
-						return JavaCore.newAccessRule(new Path(pathStr.toString()), IAccessRule.K_ACCESSIBLE);
+						return JavaCore.newAccessRule(new Path(pathStr.toString()), ruleKind);
 					})
 					.collect(toList());
 			}
