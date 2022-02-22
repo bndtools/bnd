@@ -3,7 +3,7 @@
 
 -buildpath: \
     osgi.annotation;version=latest;maven-scope=provided, \
-    aQute.libg;version=project,\
+    aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
     osgi.core;version=latest;maven-scope=provided,\
     org.osgi.service.coordinator;maven-scope=provided,\
     org.osgi.service.cm, \
@@ -24,6 +24,7 @@
     slf4j.simple;version=latest
 
 -conditionalpackage: \
+ 	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*,\
     aQute.bnd.*,\

@@ -24,6 +24,7 @@ Import-Package: \
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*
 

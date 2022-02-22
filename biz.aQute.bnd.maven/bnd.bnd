@@ -19,7 +19,7 @@ Import-Package: \
 	org.osgi.service.repository;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.resolve;version=latest,\
@@ -36,6 +36,7 @@ Import-Package: \
 	org.slf4j.api;version=latest
 
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
     aQute.lib.*, \
     aQute.libg.*
 

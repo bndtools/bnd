@@ -9,6 +9,7 @@
 -sources: false
 
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
 	aQute.libg.*,\
 	aQute.lib.*,\
 	aQute.configurable,\
@@ -82,7 +83,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.osgi.service.resolver;version=latest, \
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
     biz.aQute.bnd.ant;version=latest,\

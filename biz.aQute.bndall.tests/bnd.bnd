@@ -25,7 +25,7 @@
 
 -runtrace: true
 -buildpath:  \
-    aQute.libg;version=project, \
+    aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*", \
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest
 
