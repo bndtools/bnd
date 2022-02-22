@@ -7,7 +7,7 @@
 	org.osgi.namespace.service;version=latest;maven-scope=provided,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.resolve;version=latest,\
@@ -54,6 +54,7 @@ Import-Package: \
  *
 
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
 	aQute.lib.*;-split-package:=merge-first, \
 	aQute.libg.*;-split-package:=merge-first, \
 	org.bndtools.utils.*

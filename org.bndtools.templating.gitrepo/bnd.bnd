@@ -8,7 +8,7 @@
 	org.osgi.service.metatype;version=1.3.0,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	bndtools.api;version=latest,\
@@ -30,6 +30,7 @@
 -includeresource: /=resources/unprocessed,\
     {/=resources/processed}
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*,\
     org.bndtools.utils.*

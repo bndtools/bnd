@@ -3,7 +3,7 @@
 
 -buildpath: \
 	osgi.annotation;version=latest,\
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest
 
@@ -11,6 +11,7 @@
 	${junit}
 
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
     aQute.lib.*, \
     aQute.libg.*
 

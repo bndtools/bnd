@@ -13,7 +13,7 @@
 	${junit},\
 	biz.aQute.launchpad;version=latest, \
 	biz.aQute.bnd.util;version=latest,\
-	aQute.libg;version=project
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*"
 
 # Don't release since this is a test project
 -buildrepo:

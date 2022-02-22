@@ -12,7 +12,7 @@
     org.osgi.service.metatype.annotations;version=latest;maven-scope=provided,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
@@ -46,6 +46,7 @@ Export-Package: \
 	aQute.p2.packed
 
 -conditionalpackage:\
+	!aQute.lib.exceptions.*,\
 	aQute.lib.*,\
 	aQute.libg.*, \
 	org.tukaani.xz.*, \

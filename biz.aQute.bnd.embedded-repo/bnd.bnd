@@ -7,7 +7,8 @@ Fragment-Host: biz.aQute.bndlib;bundle-version="${range;[===,=+0);${base.version
 
 Bundle-Description: Embedded Repo for bnd workspace.
 
--buildpath: aQute.libg;version=project,\
+-buildpath: \
+    aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
     biz.aQute.bnd.util;version=latest;maven-optional=true,\
     biz.aQute.bndlib;version=latest;maven-optional=true
 

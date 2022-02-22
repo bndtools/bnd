@@ -15,6 +15,7 @@ Import-Package: \
 	bndtools.release*
 
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*,\
 	org.bndtools.utils.*;-split-package:=first
@@ -25,7 +26,7 @@ Import-Package: \
 -buildpath:\
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
 	bndtools.utils;version=project;packages=*,\

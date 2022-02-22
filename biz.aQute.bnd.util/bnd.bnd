@@ -14,6 +14,7 @@ Bundle-Description: Util classes
 	aQute.bnd.*;from:=${p}
 
 -conditionalpackage: \
+	!aQute.lib.exceptions.*,\
 	aQute.lib.*,\
 	aQute.libg.*
 
@@ -21,7 +22,7 @@ Bundle-Description: Util classes
 
 -buildpath: \
 	osgi.annotation;version=latest,\
-	aQute.libg;version=project
+	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*"
 
 -testpath: \
 	${junit},\
