@@ -1,5 +1,7 @@
 package aQute.launcher.plugin;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.DataInput;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -355,6 +357,16 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 					actualPaths.add(newPath);
 				}
 			}
+
+			List<String> bcpList = new ArrayList<>();
+
+			bcpList.add(".");
+			bcpList.addAll(classpath);
+			bcpList.addAll(actualPaths);
+
+			builder.setProperty(BUNDLE_CLASSPATH, bcpList.stream()
+				.collect(joining(",")));
+			builder.setProperty(Constants.FIXUPMESSAGES, "Classes found in the wrong directory,private references");
 
 			LauncherConstants lc = getConstants(actualPaths, true);
 			lc.embedded = true;

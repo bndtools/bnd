@@ -361,6 +361,12 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 						.findAny()
 						.orElse(null);
 					if (eeModuleName == null) {
+						if ((importAttrs != null)
+							&& "optional".equalsIgnoreCase(importAttrs.get(Constants.RESOLUTION_DIRECTIVE))) {
+
+							return false;
+						}
+
 						if (logger.isWarnEnabled())
 							logger.warn("Can't find a module name for imported package: {}", packageRef.getFQN());
 

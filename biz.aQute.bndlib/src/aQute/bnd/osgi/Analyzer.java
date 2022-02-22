@@ -2614,6 +2614,11 @@ public class Analyzer extends Processor {
 	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry) throws Exception {
 		Map<String, Clazz> mismatched = new HashMap<>();
 
+		Parameters importPackage = Optional.ofNullable(jar.getManifest())
+			.map(Domain::domain)
+			.map(Domain::getImportPackage)
+			.orElseGet(() -> new Parameters());
+
 		next: for (String path : jar.getResources()
 			.keySet()) {
 			if (path.startsWith(prefix)) {
@@ -2663,7 +2668,12 @@ public class Analyzer extends Processor {
 						Set<PackageRef> refs = new LinkedHashSet<>(clazz.getReferred());
 						refs.addAll(referencesByAnnotation(clazz));
 						for (PackageRef p : refs) {
-							referred.put(p);
+							Attrs attrs = importPackage.get(p.getFQN());
+							if (attrs != null) {
+								referred.put(p, attrs);
+							} else {
+								referred.put(p);
+							}
 						}
 						refs.remove(packageRef);
 						uses.addAll(packageRef, refs);

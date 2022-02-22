@@ -189,3 +189,23 @@ The following is an example with multiple attributes and instructions:
     java.management;ignore=true;
 ```
 
+## Exporting Executable JARs
+
+Bnd's `export` functionality allows for the creation of *executable jars* which contain *fully assembled applications* whose only external dependency is a JDK.
+
+When the `-jpms-module-info` instruction is used in a `bndrun` file that is the target of the export function the executable jar that is created will contain a generated `module-info.class` containing whatever information bnd's JPMS heuristics could glean from the assembly.
+
+e.g.
+
+```properties
+-jpms-module-info: \
+	${project.artifactId};\
+		version=${project.version};\
+		ee=JavaSE-${java.specification.version}
+```
+
+The example above produces a module-info.class whose module id comes from the property `project.artifactId`, version from the property `project.version` and `ee` from the property `java.specification.version`.
+
+### Launcher Main Class
+
+When the `-jpms-module-info` instruction is used in a `bndrun` file that is the target of the export function bnd launcher's main class will be applied to the module info implicitly.
