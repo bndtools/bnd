@@ -616,12 +616,13 @@ public class Project extends Processor {
 	 */
 
 	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
-		Instructions decorator = new Instructions(mergeProperties(source + "+"));
+		Parameters bundles = parseHeader(spec);
+		if (source != null) {
+			Instructions decorator = new Instructions(mergeProperties(source + "+"));
+			decorator.decorate(bundles);
+		}
 
 		List<Container> result = new ArrayList<>();
-		Parameters bundles = new Parameters(spec, this);
-		decorator.decorate(bundles);
-
 		try {
 			for (Entry<String, Attrs> entry : bundles.entrySet()) {
 				String bsn = removeDuplicateMarker(entry.getKey());
