@@ -1,6 +1,7 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Processor;
 import aQute.libg.glob.AntGlob;
 import aQute.libg.glob.Glob;
 
@@ -26,29 +28,120 @@ public class InstructionTest {
 	}
 
 	@Test
+	public void buildpath_decoration() throws Exception {
+		try (Processor p = new Processor()) {
+			p.setProperty("maven.target.version", "3.3.9");
+			p.setProperty("-buildpath+.maven",
+				"org.apache.maven:*;version=${maven.target.version};maven-scope=provided");
+			p.setProperty("-buildpath",
+				"osgi.annotation;version=latest;maven-scope=provided,org.osgi.dto;version='1.0',org.osgi.resource;version='1.0',org.osgi.framework;version='1.8',org.osgi.service.repository;version=latest,org.osgi.util.function;version=latest,org.osgi.util.promise;version=latest,aQute.libg;version=project;packages=\"!aQute.lib.exceptions.*,*\",biz.aQute.bnd.util;version=latest,biz.aQute.bndlib;version=latest,biz.aQute.resolve;version=latest,biz.aQute.repository;version=latest,org.eclipse.m2e.maven.runtime,org.apache.maven:maven-artifact,org.apache.maven:maven-core,org.apache.maven:maven-model,org.apache.maven:maven-plugin-api,org.apache.maven:maven-repository-metadata,org.apache.maven:maven-settings,org.codehaus.plexus:plexus-utils,org.eclipse.aether.api;version=1.0.2.v20150114,org.slf4j.api;version=latest");
+			Parameters bundles = p.getMergedParameters("-buildpath");
+			assertThat(bundles.get("org.apache.maven:maven-artifact")).isEmpty();
+			assertThat(bundles.get("org.apache.maven:maven-core")).isEmpty();
+			assertThat(bundles.get("org.apache.maven:maven-model")).isEmpty();
+			assertThat(bundles.get("org.apache.maven:maven-plugin-api")).isEmpty();
+			assertThat(bundles.get("org.apache.maven:maven-repository-metadata")).isEmpty();
+			assertThat(bundles.get("org.apache.maven:maven-settings")).isEmpty();
+
+			Instructions decorator = new Instructions(p.mergeProperties("-buildpath" + "+"));
+			decorator.decorate(bundles, true);
+			System.out.println(bundles);
+			assertThat(bundles.get("org.apache.maven:maven-artifact")).containsOnly(entry("version", "3.3.9"),
+				entry("maven-scope", "provided"));
+			assertThat(bundles.get("org.apache.maven:maven-core")).containsOnly(entry("version", "3.3.9"),
+				entry("maven-scope", "provided"));
+			assertThat(bundles.get("org.apache.maven:maven-model")).containsOnly(entry("version", "3.3.9"),
+				entry("maven-scope", "provided"));
+			assertThat(bundles.get("org.apache.maven:maven-plugin-api")).containsOnly(entry("version", "3.3.9"),
+				entry("maven-scope", "provided"));
+			assertThat(bundles.get("org.apache.maven:maven-repository-metadata"))
+				.containsOnly(entry("version", "3.3.9"), entry("maven-scope", "provided"));
+			assertThat(bundles.get("org.apache.maven:maven-settings")).containsOnly(entry("version", "3.3.9"),
+				entry("maven-scope", "provided"));
+
+		}
+	}
+
+	@Test
 	public void testDecorate() {
 		Instructions instrs = new Instructions("a;x=1,b*;y=2, literal;n=1, foo.com.example.bar;startlevel=10");
 		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1");
 		instrs.decorate(params, true);
 		System.out.println(params);
-		assertThat(params.get("a")).isNotNull()
-			.containsEntry("v", "0")
-			.containsEntry("x", "1");
+		assertThat(params.keySet()).containsExactly("foo.com.example.bar", "a", "bbb", "literal");
 
-		assertThat(params.get("bbb")).isNotNull()
-			.containsEntry("v", "1")
-			.containsEntry("y", "2");
+		assertThat(params.get("a"))
+			.containsOnly(entry("v", "0"), entry("x", "1"));
 
-		assertThat(params.get("bbb")).isNotNull()
-			.containsEntry("v", "1")
-			.containsEntry("y", "2");
+		assertThat(params.get("bbb"))
+			.containsOnly(entry("v", "1"), entry("y", "2"));
 
-		assertThat(params.get("foo.com.example.bar")).isNotNull()
-			.containsEntry("version", "1")
-			.containsEntry("startlevel", "10");
+		assertThat(params.get("foo.com.example.bar"))
+			.containsOnly(entry("version", "1"), entry("startlevel", "10"));
 
-		assertThat(params.get("literal")).isNotNull()
-			.containsEntry("n", "1");
+		assertThat(params.get("literal"))
+			.containsOnly(entry("n", "1"));
+	}
+
+	@Test
+	public void unused_literals_at_start() {
+		Instructions instrs = new Instructions("=!literal.*;n=1, {a};x=1,b*;y=2, foo.com.example.bar;startlevel=10");
+		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1");
+		instrs.decorate(params, true);
+		System.out.println(params);
+		assertThat(params.keySet()).containsExactly("!literal.*", "foo.com.example.bar", "a", "bbb");
+
+		assertThat(params.get("a"))
+			.containsOnly(entry("v", "0"), entry("x", "1"));
+
+		assertThat(params.get("bbb"))
+			.containsOnly(entry("v", "1"), entry("y", "2"));
+
+		assertThat(params.get("foo.com.example.bar"))
+			.containsOnly(entry("version", "1"), entry("startlevel", "10"));
+
+		assertThat(params.get("!literal.*"))
+			.containsOnly(entry("n", "1"));
+	}
+
+	@Test
+	public void unused_literals_only() {
+		Instructions instrs = new Instructions("=!literal, literal2;n=1");
+		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1");
+		instrs.decorate(params, true);
+		System.out.println(params);
+		assertThat(params.keySet()).containsExactly("!literal", "literal2", "foo.com.example.bar", "a", "bbb");
+
+		assertThat(params.get("a")).containsOnly(entry("v", "0"));
+
+		assertThat(params.get("bbb")).containsOnly(entry("v", "1"));
+
+		assertThat(params.get("bbb")).containsOnly(entry("v", "1"));
+
+		assertThat(params.get("foo.com.example.bar")).containsOnly(entry("version", "1"));
+
+		assertThat(params.get("!literal")).isEmpty();
+		assertThat(params.get("literal2")).containsOnly(entry("n", "1"));
+	}
+
+	@Test
+	public void unused_literals_split() {
+		Instructions instrs = new Instructions("=!literal.*,!unused.negated, *,{unused.nonliteral}, literal2;n=1");
+		Parameters params = new Parameters("foo.com.example.*;version=1, a;v=0, bbb;v=1");
+		instrs.decorate(params, true);
+		System.out.println(params);
+		assertThat(params.keySet()).containsExactly("!literal.*", "foo.com.example.*", "a", "bbb", "literal2");
+
+		assertThat(params.get("a")).containsOnly(entry("v", "0"));
+
+		assertThat(params.get("bbb")).containsOnly(entry("v", "1"));
+
+		assertThat(params.get("bbb")).containsOnly(entry("v", "1"));
+
+		assertThat(params.get("foo.com.example.*")).containsOnly(entry("version", "1"));
+
+		assertThat(params.get("!literal.*")).isEmpty();
+		assertThat(params.get("literal2")).containsOnly(entry("n", "1"));
 	}
 
 	@Test
@@ -57,14 +150,13 @@ public class InstructionTest {
 		Parameters params = new Parameters("abc, def, ghi");
 		instrs.decorate(params);
 		System.out.println(params);
-		assertThat(params.get("abc")).isNotNull()
-			.containsEntry("x", "0");
+		assertThat(params.keySet()).containsExactly("abc", "def", "ghi");
 
-		assertThat(params.get("def")).isNotNull()
-			.containsEntry("x", "1");
+		assertThat(params.get("abc")).containsOnly(entry("x", "0"));
 
-		assertThat(params.get("ghi")).isNotNull()
-			.containsEntry("x", "0");
+		assertThat(params.get("def")).containsOnly(entry("x", "1"));
+
+		assertThat(params.get("ghi")).containsOnly(entry("x", "0"));
 	}
 
 	@Test
@@ -73,13 +165,11 @@ public class InstructionTest {
 		Parameters params = new Parameters("abc, def, ghi");
 		instrs.decorate(params);
 		System.out.println(params);
-		assertThat(params.get("abc")).isNotNull()
-			.containsEntry("x", "0");
+		assertThat(params.keySet()).containsExactly("abc", "ghi");
 
-		assertThat(params.get("def")).isNull();
+		assertThat(params.get("abc")).containsOnly(entry("x", "0"));
 
-		assertThat(params.get("ghi")).isNotNull()
-			.containsEntry("x", "0");
+		assertThat(params.get("ghi")).containsOnly(entry("x", "0"));
 	}
 
 	@Test
