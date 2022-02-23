@@ -619,7 +619,7 @@ public class Project extends Processor {
 		Parameters bundles = parseHeader(spec);
 		if (source != null) {
 			Instructions decorator = new Instructions(mergeProperties(source + "+"));
-			decorator.decorate(bundles);
+			decorator.decorate(bundles, true);
 		}
 
 		List<Container> result = new ArrayList<>();

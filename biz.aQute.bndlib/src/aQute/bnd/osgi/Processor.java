@@ -2546,7 +2546,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	public Parameters decorated(String key, boolean literalsIncluded) {
-		Parameters parameters = new Parameters(mergeProperties(key), this);
+		Parameters parameters = getMergedParameters(key);
 		Instructions decorator = new Instructions(mergeProperties(key + "+"));
 		decorator.decorate(parameters, literalsIncluded);
 		return parameters;
