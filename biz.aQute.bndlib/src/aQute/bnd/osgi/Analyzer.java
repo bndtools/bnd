@@ -663,8 +663,8 @@ public class Analyzer extends Processor {
 		// The manifest has priority over the packageinfo or package-info.java
 		//
 
-		Attrs attrs = map.get(packageRef);
-		if (attrs != null && attrs.size() > 1)
+		if (MapStream.ofNullable(map.get(packageRef))
+			.anyMatch((k, __) -> !k.startsWith("-internal")))
 			return;
 
 		//
