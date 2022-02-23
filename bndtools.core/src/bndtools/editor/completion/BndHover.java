@@ -12,6 +12,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Point;
 
+import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Processor;
 
@@ -33,9 +34,10 @@ public class BndHover extends DefaultTextHover {
 			try {
 				String key = doc.get(hoverRegion.getOffset(), hoverRegion.getLength())
 					.trim();
+				Processor properties = bndEditor.getModel()
+					.getProperties();
+
 				if (key.indexOf('$') >= 0) {
-					Processor properties = bndEditor.getModel()
-						.getProperties();
 
 					properties.setProperty(".", properties.getBase()
 						.getAbsolutePath());
@@ -51,13 +53,26 @@ public class BndHover extends DefaultTextHover {
 				}
 
 				Syntax syntax = Syntax.HELP.get(key);
-				if (syntax == null)
-					return null;
-
 				StringBuilder sb = new StringBuilder();
-				sb.append(syntax.getLead());
-				sb.append("\nE.g. ");
-				sb.append(syntax.getExample());
+				if (syntax == null) {
+					if (!key.startsWith("-"))
+						key = "-" + key;
+					syntax = Syntax.HELP.get("-" + key);
+				}
+
+				if (syntax != null) {
+
+					sb.append(syntax.getLead());
+					sb.append("\nE.g. ");
+					sb.append(syntax.getExample());
+				}
+				Parameters decorated = properties.decorated(key);
+				if (!decorated.isEmpty()) {
+					sb.append("\n")
+						.append(key)
+						.append("=")
+						.append(decorated);
+				}
 
 				String text = sb.toString();
 
