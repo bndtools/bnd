@@ -310,7 +310,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		try (Builder builder = new Builder()) {
 			Project project = getProject();
 			builder.setBase(project.getBase());
-			builder.setProperty(Constants.RESOURCEONLY, Boolean.TRUE.toString());
 
 			Jar jar = new Jar(project.getName());
 			builder.setJar(jar);
