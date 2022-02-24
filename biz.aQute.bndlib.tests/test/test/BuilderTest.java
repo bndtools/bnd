@@ -1599,6 +1599,7 @@ public class BuilderTest {
 				.putValue("Export-Package", "org.osgi.service.event; version=100");
 			fromManifest.setManifest(mms);
 
+			fromPackageInfo.putResource("org/osgi/service/event/Foo.class", new EmbeddedResource("the class", 0L));
 			fromPackageInfo.putResource("org/osgi/service/event/packageinfo", new EmbeddedResource("version 99", 0L));
 
 			Manifest mboth = new Manifest();
@@ -2516,7 +2517,9 @@ public class BuilderTest {
 	public void testExportContents() throws Exception {
 		Builder builder = new Builder();
 		try {
-			builder.setProperty(Constants.INCLUDE_RESOURCE, "test/activator/inherits=test/test/activator/inherits");
+			builder.setProperty(".", IO.work.getAbsolutePath());
+			builder.setProperty(Constants.INCLUDE_RESOURCE,
+				"test/activator/inherits=${.}/bin_test/test/activator/inherits");
 			builder.setProperty("-exportcontents", "*;x=true;version=1");
 			builder.build();
 			assertTrue(builder.check());

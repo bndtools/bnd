@@ -645,11 +645,12 @@ public class Analyzer extends Processor {
 		//
 		// We should ignore empty directories/packages. Empty packages should
 		// not take the package slot. See #708
+		// But there must be classes!
 		//
 
 		String packagePath = appendPath(prefix, packageRef.getBinary());
-		Map<String, Resource> dir = jar.getDirectory(packagePath);
-		if (dir == null || dir.isEmpty())
+		if (MapStream.ofNullable(jar.getDirectory(packagePath))
+			.noneMatch((k, __) -> k.endsWith(CLASS_EXTENSION)))
 			return;
 
 		//

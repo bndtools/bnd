@@ -408,6 +408,7 @@ public interface Constants {
 	Pattern		VALID_PROPERTY_TYPES						= Pattern
 		.compile("(String|Long|Double|Float|Integer|Byte|Character|Boolean|Short)");
 
+	String		CLASS_EXTENSION								= ".class";
 	String		DEFAULT_BND_EXTENSION						= ".bnd";
 	String		DEFAULT_JAR_EXTENSION						= ".jar";
 	String		DEFAULT_BAR_EXTENSION						= ".bar";
