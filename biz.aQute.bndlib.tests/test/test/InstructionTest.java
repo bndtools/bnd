@@ -145,6 +145,25 @@ public class InstructionTest {
 	}
 
 	@Test
+	public void duplicates() {
+		Instructions instrs = new Instructions("a;x=1,b*;y=2, literal;n=1, foo.com.example.bar;startlevel=10");
+		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1, a;k=1, a;z=9", null, true);
+		instrs.decorate(params, true);
+		System.out.println(params);
+		assertThat(params.keySet()).containsExactly("foo.com.example.bar", "a", "bbb", "a~", "a~~", "literal");
+
+		assertThat(params.get("a")).containsOnly(entry("v", "0"), entry("x", "1"));
+		assertThat(params.get("a~")).containsOnly(entry("k", "1"), entry("x", "1"));
+		assertThat(params.get("a~~")).containsOnly(entry("z", "9"), entry("x", "1"));
+
+		assertThat(params.get("bbb")).containsOnly(entry("v", "1"), entry("y", "2"));
+
+		assertThat(params.get("foo.com.example.bar")).containsOnly(entry("version", "1"), entry("startlevel", "10"));
+
+		assertThat(params.get("literal")).containsOnly(entry("n", "1"));
+	}
+
+	@Test
 	public void testDecoratePriority() {
 		Instructions instrs = new Instructions("def;x=1, *;x=0");
 		Parameters params = new Parameters("abc, def, ghi");

@@ -386,7 +386,8 @@ public class Instructions implements Map<Instruction, Attrs> {
 			.iterator(); it.hasNext();) {
 			Entry<String, Attrs> next = it.next();
 
-			Instruction matching = matcher(next.getKey());
+			String key = Processor.removeDuplicateMarker(next.getKey());
+			Instruction matching = matcher(key);
 			if (matching != null) {
 				if (addLiterals) {
 					int index = unused.indexOf(matching);
