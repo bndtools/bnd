@@ -12,11 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
@@ -398,8 +400,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 				if (matching.isNegated())
 					it.remove();
 				else {
-					next.getValue()
-						.putAll(get(matching));
+					decorateAttrs(next.getValue(), get(matching));
 				}
 			}
 		}
@@ -423,7 +424,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 					copy = new Parameters(parameters);
 					parameters.clear();
 				}
-				parameters.put(ins.getLiteral(), new Attrs(get(ins)));
+				parameters.put(ins.getLiteral(), decorateAttrs(new Attrs(), get(ins)));
 			}
 			if (copy != null) {
 				parameters.putAll(copy);
@@ -431,4 +432,21 @@ public class Instructions implements Map<Instruction, Attrs> {
 		}
 	}
 
+	private Attrs decorateAttrs(Attrs target, Attrs decoration) {
+		decoration.forEach((key, value) -> {
+			if (Objects.equals("!", value)) { // ! value means remove
+				target.remove(key);
+				return;
+			}
+			Type type = decoration.getType(key);
+			if (key.startsWith("~")) { // ~key means no overwrite
+				key = key.substring(1);
+				if (target.containsKey(key)) {
+					return;
+				}
+			}
+			target.put(key, type, value);
+		});
+		return target;
+	}
 }
