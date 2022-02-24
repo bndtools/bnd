@@ -39,6 +39,21 @@ import aQute.lib.strings.Strings;
 public class MacroTest {
 
 	@Test
+	public void testDecoration() throws IOException {
+		try (Processor p = new Processor()) {
+			p.setProperty("a", "a,b,c,d");
+			p.setProperty("a+", "a;a=1");
+			p.setProperty("a+.c", "c;c=1");
+			p.setProperty("a+.f", "f");
+			p.setProperty("withoutliteral", "${decorated;a}");
+			p.setProperty("withliteral", "${decorated;a;true}");
+
+			assertThat(p.getProperty("withoutliteral")).isEqualTo("a;a=1,b,c;c=1,d");
+			assertThat(p.getProperty("withliteral")).isEqualTo("a;a=1,b,c;c=1,d,f");
+		}
+	}
+
+	@Test
 	public void testExtendedMacroParameters() throws IOException {
 		try (Processor p = new Processor()) {
 			p.setProperty("a", "aaa ${1} ${2}");
