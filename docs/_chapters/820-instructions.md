@@ -92,6 +92,28 @@ As an example, lets set the `-buildpath` instruction:
 
 This will result in a buildpath of (when debug is not false) of: `com.example.foo;version=1.2, com.example.foo.debug;version=1.2`.
 
+## Decorated Instructions
+
+Instructions can also be _decorated_. A _decorator_ is a header that ends with a `+` sign. A header `-runbundles` is first merged and then decorated by getting all the properties with the keys that match`-runbundles+(.*)`.  Notice that for the decorator the root key includes the `+` sign, the suffixes must come after the `+` sign.
+
+The decorator is a Parameters, it consists of a key and a set of attributes. The decoratar key is usually a glob. 
+
+After the instruction is merged, each key is matched against all globs in the decorator following the order of the decorator. When the first match is found, the attributes of the decorator clause that matches are stored with the attributes of the instruction, overriding any attribute with the same attribute key. A key in the instruction can only match one decorator glob.
+
+Example:
+
+     -foo       a, b, c;skip=true, d
+     -foo+      b;skip=true,c;skip=false
+     -foo+.d    d;skip=true
+     
+
+In this case, the first entry is `b` and it is matched against the second entry in the `-foo` instruction. Since the decorator has the `skip=true` attribute, it is carried over to the instruction. The result is therefore:
+
+    a, b;skip=true; c;skip=false, d;skip=true
+    
+* Decoration is not used for all instructions. It should be indicated on the instruction page if it is applied.
+* There is a macro [`decorated`](/macros/decorated.html) that can be used to apply decoration to any property key
+
 ## SELECTOR
 
 If a value in an instruction has a _scope_ then you will be able to use a _selector_. A scope is a well defined, finite, set. For example, if you use the '-exportcontents' instruction you can specify the packages that can be exported. Since you can only export the packages that are inside your bundle, the scope is the set of package names that were collected so far.

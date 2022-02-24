@@ -1,12 +1,12 @@
 ---
 layout: default
 class: Macro
-title: decorated ';' NAME [ ';' BOOLEAN ] ?
+title: decorated ';' NAME [ ';' BOOLEAN ]
 summary: The merged and decorated Parameters object
 ---
 
 The `decorated` macro is intended to make it very simple to decorate information based on a _Parameters_. Parameters 
-are the Bnd workhorse to store information. The macro takes the following arguments:
+are the bnd workhorse to store information. The macro takes the following arguments:
 
     name    The name of the macro (not the value)
     boolean Whether to add unused literals. Defaults to false.
@@ -26,3 +26,5 @@ from the decorator.
     > parameters+=(c|d);attr=X,x,y,z
     > ${decorated;parameters;true}
     a,b,c;attr=X,d;attr=X,x,y,z
+
+See [instructions](/chapters/820-instructions.html) for more information about decorated parameters.
