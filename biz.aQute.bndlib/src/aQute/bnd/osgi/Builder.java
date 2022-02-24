@@ -402,7 +402,7 @@ public class Builder extends Analyzer {
 	@Override
 	protected Jar getExtra() throws Exception {
 		Parameters conditionals = getMergedParameters(CONDITIONAL_PACKAGE);
-		conditionals.putAll(getMergedParameters(CONDITIONALPACKAGE));
+		conditionals.putAll(decorated(CONDITIONALPACKAGE, true));
 		if (conditionals.isEmpty())
 			return null;
 		logger.debug("do Conditional Package {}", conditionals);
@@ -628,9 +628,9 @@ public class Builder extends Analyzer {
 		}
 
 		Parameters private_package = getParameters(PRIVATE_PACKAGE);
-		Parameters privatepackage = getParameters(PRIVATEPACKAGE);
+		Parameters privatepackage = decorated(PRIVATEPACKAGE, true);
 		Parameters testpackage = new Parameters();
-		Parameters includepackage = buildInstrs.includepackage();
+		Parameters includepackage = decorated(INCLUDEPACKAGE, true);
 
 		if (buildInstrs.undertest()) {
 			String h = mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional");
@@ -900,16 +900,15 @@ public class Builder extends Analyzer {
 	 * @throws FileNotFoundException
 	 */
 	private void doIncludeResources(Jar jar) throws Exception {
-		String includes = getProperty("Bundle-Includes");
-		if (includes == null) {
-			includes = mergeProperties(INCLUDERESOURCE);
-			if (includes == null || includes.length() == 0)
-				includes = mergeProperties(Constants.INCLUDE_RESOURCE);
-		} else
+		Parameters includes = parseHeader(getProperty("Bundle-Includes"));
+		if (includes.isEmpty()) {
+			includes = decorated(Constants.INCLUDERESOURCE, true);
+			includes.putAll(getMergedParameters(Constants.INCLUDE_RESOURCE));
+		} else {
 			warning("Please use -includeresource instead of Bundle-Includes");
+		}
 
 		doIncludeResource(jar, includes);
-
 	}
 
 	private void doIncludeResource(Jar jar, String includes) throws Exception {

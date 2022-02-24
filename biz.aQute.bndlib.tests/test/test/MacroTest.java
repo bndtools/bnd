@@ -267,7 +267,7 @@ public class MacroTest {
 		try (Processor proc = new Processor()) {
 			proc.setProperty("foo", "a;v=1, b;v=2;x='3,4,5'");
 			proc.setProperty("foo.1", "c;v=3");
-			proc.setProperty("foo+", "*;v=0");
+			proc.setProperty("foo+", "z;v=1,*;v=0");
 			String process = proc.getReplacer()
 				.process("${decorated;foo}");
 			assertThat(process).isEqualTo("a;v=0,b;v=0;x=\"3,4,5\",c;v=0");
@@ -282,7 +282,7 @@ public class MacroTest {
 			proc.setProperty("foo+", "z;v=1,*;v=0");
 			String process = proc.getReplacer()
 				.process("${decorated;foo;true}");
-			assertThat(process).isEqualTo("a;v=0,b;v=0;x=\"3,4,5\",c;v=0,z;v=1");
+			assertThat(process).isEqualTo("z;v=1,a;v=0,b;v=0;x=\"3,4,5\",c;v=0");
 		}
 	}
 

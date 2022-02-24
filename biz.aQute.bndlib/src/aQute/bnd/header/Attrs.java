@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -224,6 +225,11 @@ public class Attrs implements Map<String, String> {
 	}
 
 	@Override
+	public void forEach(BiConsumer<? super String, ? super String> action) {
+		map.forEach(action);
+	}
+
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public String get(Object key) {
@@ -250,6 +256,18 @@ public class Attrs implements Map<String, String> {
 	@Override
 	public Set<String> keySet() {
 		return map.keySet();
+	}
+
+	public String put(String key, Type type, String value) {
+		if (key == null) {
+			return null;
+		}
+		if ((type == null) || (type == Type.STRING)) {
+			types.remove(key);
+		} else {
+			types.put(key, type);
+		}
+		return map.put(key, value);
 	}
 
 	@Override
@@ -552,20 +570,12 @@ public class Attrs implements Map<String, String> {
 	 * Merge the attributes
 	 */
 
-	public void mergeWith(Attrs other, boolean override) {
-		MapStream<String, String> stream = other.stream();
-		if (!override) {
-			stream = stream.filterKey(key -> !containsKey(key));
-		}
-		stream.peekKey(key -> {
-			Type t = other.getType(key);
-			if (t != Type.STRING) {
-				types.put(key, t);
-			} else {
-				types.remove(key);
+	public void mergeWith(Attrs other, boolean overwrite) {
+		other.forEach((key, value) -> {
+			if (overwrite || !map.containsKey(key)) {
+				put(key, other.getType(key), value);
 			}
-		})
-			.forEachOrdered(map::put);
+		});
 	}
 
 	/**

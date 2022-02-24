@@ -96,9 +96,10 @@ This will result in a buildpath of (when debug is not false) of: `com.example.fo
 
 Instructions can also be _decorated_. A _decorator_ is a header that ends with a `+` sign. A header `-runbundles` is first merged and then decorated by getting all the properties with the keys that match`-runbundles+(.*)`.  Notice that for the decorator the root key includes the `+` sign, the suffixes must come after the `+` sign.
 
-The decorator is a Parameters, it consists of a key and a set of attributes. The decoratar key is usually a glob. 
+The decorator is a Parameters, it consists of a key and a set of attributes. The decorator key is usually a glob. 
 
-After the instruction is merged, each key is matched against all globs in the decorator following the order of the decorator. When the first match is found, the attributes of the decorator clause that matches are stored with the attributes of the instruction, overriding any attribute with the same attribute key. A key in the instruction can only match one decorator glob.
+After the instruction is merged, the key of each Parameter entry is matched against all globs in the decorator following the order of the decorator. When the first match is found, the attributes of the decorator clause that matches are stored with the attributes of the Parameter entry, overriding any attribute with the same attribute key. A Parameter entry key can only match one decorator glob.
+If the value of the decorator clause attribute is `!`, then the attribute is removed from the Parameter entry. If the name of the  decorator clause attribute starts with `~`, then, using the attribute name after removing the leading `~`, the attribute value will not overwrite an existing value.
 
 Example:
 

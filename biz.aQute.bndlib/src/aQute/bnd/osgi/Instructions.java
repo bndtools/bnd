@@ -7,16 +7,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
@@ -380,34 +382,71 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 * @param addLiterals add literals to the output
 	 */
 	public void decorate(Parameters parameters, boolean addLiterals) {
-		Iterator<Map.Entry<String, Attrs>> it = parameters.entrySet()
-			.iterator();
-		Set<Instruction> used = new HashSet<>(keySet());
+		List<Instruction> unused = addLiterals ? new ArrayList<>(keySet()) : Collections.emptyList();
 
-		while (it.hasNext()) {
+		for (Iterator<Entry<String, Attrs>> it = parameters.entrySet()
+			.iterator(); it.hasNext();) {
 			Entry<String, Attrs> next = it.next();
 
-			Instruction matching = matcher(next.getKey());
+			String key = Processor.removeDuplicateMarker(next.getKey());
+			Instruction matching = matcher(key);
 			if (matching != null) {
-				used.remove(matching);
+				if (addLiterals) {
+					int index = unused.indexOf(matching);
+					if (index >= 0) {
+						unused.set(index, null);
+					}
+				}
 				if (matching.isNegated())
 					it.remove();
 				else {
-					next.getValue()
-						.putAll(get(matching));
+					decorateAttrs(next.getValue(), get(matching));
 				}
 			}
 		}
 
+		// Add the literals
 		if (addLiterals) {
-			//
-			// Add the literals
-			used.stream()
-				.filter(Instruction::isLiteral)
-				.forEach(i -> {
-					parameters.put(i.getLiteral(), new Attrs(get(i)));
-				});
+			Parameters copy = null;
+			for (ListIterator<Instruction> li = unused.listIterator(); li.hasNext();) {
+				Instruction ins = li.next();
+				if ((ins == null) || !ins.isLiteral() || ins.isNegated()) {
+					if (copy != null) {
+						// end inserting at beginning
+						parameters.putAll(copy);
+						copy = null;
+					}
+					continue;
+				}
+				// ins is a non-negated literal
+				if (li.previousIndex() == 0) {
+					// if first item, start insert at beginning
+					copy = new Parameters(parameters);
+					parameters.clear();
+				}
+				parameters.put(ins.getLiteral(), decorateAttrs(new Attrs(), get(ins)));
+			}
+			if (copy != null) {
+				parameters.putAll(copy);
+			}
 		}
 	}
 
+	private Attrs decorateAttrs(Attrs target, Attrs decoration) {
+		decoration.forEach((key, value) -> {
+			if (Objects.equals("!", value)) { // ! value means remove
+				target.remove(key);
+				return;
+			}
+			Type type = decoration.getType(key);
+			if (key.startsWith("~")) { // ~key means no overwrite
+				key = key.substring(1);
+				if (target.containsKey(key)) {
+					return;
+				}
+			}
+			target.put(key, type, value);
+		});
+		return target;
+	}
 }
