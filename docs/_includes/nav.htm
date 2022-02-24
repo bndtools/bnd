@@ -1,13 +1,29 @@
 
-<ul class="container12 menu-bar">
-	<li span=11><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
 			class=menu-logo src="{{ '/img/bnd-80x40-white.png' | prepend:site.baseurl }}"></a>
 			<a href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro
 			</a><a href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers
 			</a><a href="{{ '/chapters/825-instructions-ref.html' | prepend:site.baseurl }}">Instructions
 			</a><a href="{{ '/chapters/855-macros-ref.html' | prepend:site.baseurl }}">Macros
 			</a><a href="{{ '/chapters/400-commands.html' | prepend:site.baseurl }}">Commands
-			</a><div class="releases"><button class="dropbtn">{{ site.releasename }}</button><div class="dropdown-content"></div></div>
-	<li class=menu-link span=1>
-			{% include github.htm %}
+			</a><div class="releases">
+			         <button class="dropbtn"><span class="fa fa-bars"></span> {{ site.releasename }}</button>
+			         <div class="dropdown-content"></div>
+			   </div>
+    <li span=4>     
+        <div class="search-container">
+			<form method="get" id="ddgSearch" action="https://duckduckgo.com/" target="1">
+			    <input type="hidden" name="sites" value="bndtools.org OR site:bnd.discourse.group OR site:stackoverflow.com"/>
+			    <input type="hidden" name="k7" value="#ffffff"/>
+			    <input type="hidden" name="k8" value="#222222"/>
+			    <input type="hidden" name="k9" value="#00278e"/>
+			    <input type="hidden" name="kx" value="#20692b"/>
+			    <input type="hidden" name="kj" value="#fafafa"/>
+			    <input type="hidden" name="kt" value="b"/>
+			    <input type="text" name="q" placeholder="Search…" aria-label="Search https://bndtools.org on DuckDuckGo"/>
+			    <button type="submit" class="fa fa-search"></button>
+            </form>
+       </div>
 </ul>
+<div class=menu-link span=0>{% include github.htm %}</div>

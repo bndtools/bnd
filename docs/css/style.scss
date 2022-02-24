@@ -88,7 +88,28 @@ $color-vignette:	#F0F0F0;
 			min-width: 1em;
 		}
 	}
-
+	
+	.search-container {
+        width: 100%;
+        input[type=text] {
+          width: calc(100% - 40px);
+          padding: 6px;
+          margin-top: 8px;
+          border: none;
+          float: left;
+        }
+        button {
+              float: right;
+              width: 32px;
+              padding: 6px 10px;
+              margin-top: 8px;
+              margin-right: 0px;
+              background: #ddd;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+        }
+    }
 }
 
 
@@ -127,11 +148,13 @@ embed.illustration {
 }
 
 .dropbtn {
-  background-color: #994b3a;
+  background-color:inherit;
+  border-radius:4px;
   color: white;
   padding: 6px;
   font-size: 12.6pt;
   border: none;
+  min-width: 100px;
   cursor: pointer;
 }
 
@@ -176,4 +199,6 @@ embed.illustration {
     font-size: $font-size;
     font-weight: normal;
  }
+ 
+
  
