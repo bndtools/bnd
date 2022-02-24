@@ -1182,7 +1182,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			for (Entry<String, String> entry : attrs.entrySet()) {
 				String key = entry.getKey();
 				// Skip directives we do not recognize
-				if (skipPrint(key))
+				if (!AttributeClasses.MANIFEST.test(key))
 					continue;
 
 				sb.append(";");
@@ -1193,7 +1193,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				String key = entry.getKey()
 					.toString();
 				// Skip directives we do not recognize
-				if (skipPrint(key))
+				if (!AttributeClasses.MANIFEST.test(key))
 					continue;
 
 				sb.append(";");
@@ -1205,23 +1205,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
-	private static boolean skipPrint(String key) {
-		switch (key) {
-			case INTERNAL_EXPORTED_DIRECTIVE :
-			case INTERNAL_EXPORT_TO_MODULES_DIRECTIVE :
-			case INTERNAL_OPEN_TO_MODULES_DIRECTIVE :
-			case INTERNAL_SOURCE_DIRECTIVE :
-			case NO_IMPORT_DIRECTIVE :
-			case PROVIDE_DIRECTIVE :
-			case SPLIT_PACKAGE_DIRECTIVE :
-			case FROM_DIRECTIVE :
-			case INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE :
-			case INTERNAL_BUNDLEVERSION_DIRECTIVE :
-				return true;
-			default :
-				return false;
-		}
-	}
 
 	/**
 	 * @param sb

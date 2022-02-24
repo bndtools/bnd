@@ -661,10 +661,12 @@ public class Analyzer extends Processor {
 
 		//
 		// The manifest has priority over the packageinfo or package-info.java
+		// so if any user defined attributes are set, skip this package info
 		//
 
 		Attrs attrs = map.get(packageRef);
-		if (attrs != null && attrs.size() > 1)
+		if (attrs != null && !attrs.select(AttributeClasses.MANIFEST)
+			.isEmpty())
 			return;
 
 		//

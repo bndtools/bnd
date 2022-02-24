@@ -16,12 +16,15 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.osgi.resource.Capability;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.AttributeClasses;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.lib.collections.ExtList;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter.SetLocation;
 
@@ -489,4 +492,25 @@ public class ProcessorTest {
 		}
 	}
 
+	@Test
+	public void isInternalTest() {
+		assertThat(AttributeClasses.MANIFEST.test("attribubte")).isTrue();
+		assertThat(AttributeClasses.MANIFEST.test("-foobar")).isTrue();
+		assertThat(AttributeClasses.MANIFEST.test("-internal-key")).isFalse();
+		assertThat(AttributeClasses.MANIFEST.test(Constants.SPLIT_PACKAGE_DIRECTIVE)).isFalse();
+		assertThat(AttributeClasses.MANIFEST.test(Constants.FROM_DIRECTIVE)).isFalse();
+	}
+
+	@Test
+	public void toExternalTest() {
+		Attrs attrs = new Attrs();
+		ExtList<String> value = new ExtList<>("a", "b", "c");
+		attrs.putTyped("foo", value);
+		attrs.putTyped("-internal-foo", value);
+		attrs.putTyped(Constants.SPLIT_PACKAGE_DIRECTIVE, "foobar;strategy=merge-first");
+		Attrs ext = attrs.select(AttributeClasses.MANIFEST);
+
+		assertThat(ext).hasSize(1);
+		assertThat(ext.getTyped("foo")).isEqualTo(value);
+	}
 }
