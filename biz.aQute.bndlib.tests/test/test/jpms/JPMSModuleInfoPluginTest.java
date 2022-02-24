@@ -149,7 +149,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/j"));
@@ -204,7 +204,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/j"));
@@ -265,7 +265,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/j"));
@@ -326,7 +326,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/j"));
@@ -387,7 +387,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/j"));
@@ -451,7 +451,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/i"));
@@ -516,7 +516,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/i"));
@@ -580,7 +580,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/i"));
@@ -643,7 +643,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/i"));
@@ -707,7 +707,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/i"));
@@ -785,7 +785,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/i"));
@@ -861,7 +861,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/i"));
@@ -923,7 +923,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(1)
 				.anyMatch(e -> e.exports.equals("test/jpms/h"));
@@ -1102,7 +1102,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(2)
 				.anyMatch(e -> e.opens.equals("test/jpms/e/other"))
 				.anyMatch(e -> e.opens.equals("test/jpms/e"));
@@ -1225,7 +1225,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(0);
 			assertThat(moduleAttribute.provides).hasSize(0);
@@ -1281,7 +1281,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(2)
 				.anyMatch(e -> e.exports.equals("test/jpms/b/other"))
@@ -1350,7 +1350,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.module_name).isEqualTo("foo");
 			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
-			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.module_flags).isEqualTo(32);
 			assertThat(moduleAttribute.opens).hasSize(0);
 			assertThat(moduleAttribute.exports).hasSize(0);
 			assertThat(moduleAttribute.provides).hasSize(0);

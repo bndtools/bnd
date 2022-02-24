@@ -34,7 +34,9 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
-import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
+import static java.util.stream.Collectors.toSet;
+import static org.osgi.framework.Constants.RESOLUTION_MANDATORY;
+import static org.osgi.framework.Constants.RESOLUTION_OPTIONAL;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -151,7 +154,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 		if (moduleProperty.isEmpty()) {
 			String name = name(analyzer);
-			int access = access(requireCapabilities);
+			int access = Access.OPEN.getValue();
 			String version = analyzer.getVersion();
 
 			moduleProperty = String.format("%s;access=%s;version=%s", name, access, version);
@@ -170,6 +173,10 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 		Parameters moduleInfoOptions = OSGiHeader.parseHeader(analyzer.getProperty(JPMS_MODULE_INFO_OPTIONS));
 
+		Packages contained = analyzer.getContained();
+		Packages referred = analyzer.getReferred();
+		Packages imports = analyzer.getImports();
+		Packages exports = analyzer.getExports();
 		Packages index = new Packages();
 
 		// Index the whole class path
@@ -185,25 +192,26 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			}
 			MapStream.of(jar.getDirectories())
 				.filter((path, resources) -> (resources != null) && !resources.isEmpty() && !path.isEmpty())
-				.keys()
-				.map(analyzer::getPackageRef)
-				.filter(PackageRef::isValidPackageName)
-				.forEachOrdered(packageRef -> index.put(packageRef, new Attrs(attrs)));
+				.map((k, v) -> MapStream.entry(analyzer.getPackageRef(k), imports.get(analyzer.getPackageRef(k))))
+				.filterKey(PackageRef::isValidPackageName)
+				.forEach((packageRef, packageAttrs) -> index.put(packageRef, new Attrs(packageAttrs, attrs)));
 		}
+
+		Set<PackageRef> bcpEntries = analyzer.getBundleClassPathTypes()
+			.keySet()
+			.stream()
+			.map(TypeRef::getPackageRef)
+			.collect(toSet());
 
 		ModuleInfoBuilder builder = nameAccessAndVersion(moduleInstructions, requireCapabilities, analyzer);
 
-		packages(analyzer, builder);
-		requires(moduleInstructions, analyzer, index, moduleInfoOptions, builder);
-		exportPackages(analyzer, builder);
-		openPackages(analyzer, builder);
-		serviceLoaderProviders(provideCapabilities, analyzer, builder);
-		serviceLoaderUses(requireCapabilities, analyzer, builder);
-		mainClass(analyzer, builder);
-
-		// TODO use annotations to store other header info???
-		// AnnotationVisitor visitAnnotation = classWriter.visitAnnotation(...,
-		// false);
+		packages(builder, analyzer);
+		requires(builder, analyzer, moduleInstructions, index, moduleInfoOptions, bcpEntries);
+		exportPackages(builder, analyzer, exports, bcpEntries);
+		openPackages(builder, contained);
+		serviceLoaderProviders(builder, analyzer, provideCapabilities, bcpEntries);
+		serviceLoaderUses(builder, analyzer, requireCapabilities, bcpEntries);
+		mainClass(builder, analyzer);
 
 		ByteBufferDataOutput bbout = new ByteBufferDataOutput();
 		builder.build()
@@ -232,38 +240,35 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				.findFirst()
 				.orElse(moduleName);
 
-			if (logger.isWarnEnabled())
-				logger.warn("Using module name '{}' for: {}", moduleName, jar);
+			if (logger.isDebugEnabled())
+				logger.debug("Using module name '{}' for: {}", moduleName, jar);
 		}
 		return moduleName;
-	}
-
-	private int access(Parameters requireCapabilities) {
-		return requireCapabilities.stream()
-			.filterKey(key -> removeDuplicateMarker(key).equals(EXTENDER_NAMESPACE))
-			.mapToInt((k, v) -> ACC_OPEN)
-			.findAny()
-			.orElse(0);
 	}
 
 	private String name(Analyzer analyzer) {
 		return analyzer.getProperty(AUTOMATIC_MODULE_NAME, analyzer.getBsn());
 	}
 
-	private void packages(Analyzer analyzer, ModuleInfoBuilder builder) {
-		analyzer.getContained()
-			.keySet()
-			.stream()
-			.filter(PackageRef::isValidPackageName)
-			.map(PackageRef::getBinary)
-			.sorted()
-			.forEachOrdered(builder::packages);
+	private void packages(ModuleInfoBuilder builder, Analyzer analyzer) {
+		MapStream.ofNullable(analyzer.getJar()
+			.getDirectories())
+			.filterKey(
+				k -> !k.startsWith("META-INF") && !k.startsWith("OSGI-INF") && !k.startsWith("WEB-INF") && !k.isEmpty())
+			.filterValue(Objects::nonNull)
+			.filterValue(m -> //
+			!m.values()
+				.isEmpty())
+			.keys()
+			.forEach(builder::packages);
 	}
 
-	private void exportPackages(Analyzer analyzer, ModuleInfoBuilder builder) {
-		Packages contained = analyzer.getContained();
-
-		analyzer.getExports()
+	private void exportPackages(ModuleInfoBuilder builder, Analyzer analyzer, Packages contained,
+		Set<PackageRef> bcpEntries) {
+		MapStream.of(analyzer.getExports())
+			// We can't export JPMS packages from the Bundle-ClassPath because
+			// jlink will fail
+			.filterKey(k -> !bcpEntries.contains(k))
 			.forEach((packageRef, attrs) -> {
 				Set<String> targets = Collections.emptySet();
 
@@ -272,15 +277,12 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 					targets = splitAsStream(containedAttrs.get(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE))
 						.collect(toCollection(setFactory()));
 				}
-
-				// TODO Do we want to handle access? I can't think of a reason.
 				// Allowed: 0 | ACC_SYNTHETIC | ACC_MANDATED
-
 				builder.exports(packageRef.getBinary(), 0, targets);
 			});
 	}
 
-	private void mainClass(Analyzer analyzer, ModuleInfoBuilder builder) {
+	private void mainClass(ModuleInfoBuilder builder, Analyzer analyzer) {
 		String mainClass = analyzer.getProperty(MAIN_CLASS);
 
 		if (mainClass != null) {
@@ -296,7 +298,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 		String name = instruction.getKey();
 		// Allowed: 0 | ACC_OPEN | ACC_SYNTHETIC | ACC_MANDATED
-		String access = attrs.computeIfAbsent(ACCESS_ATTRIBUTE, k -> Integer.toString(access(requireCapability)));
+		String access = attrs.computeIfAbsent(ACCESS_ATTRIBUTE, k -> Access.OPEN.name());
 		String version = attrs.computeIfAbsent(VERSION_ATTRIBUTE, k -> analyzer.getVersion());
 
 		ModuleInfoBuilder builder = new ModuleInfoBuilder().module_name(name)
@@ -308,9 +310,8 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		return builder;
 	}
 
-	private void openPackages(Analyzer analyzer, ModuleInfoBuilder builder) {
-		analyzer.getContained()
-			.stream()
+	private void openPackages(ModuleInfoBuilder builder, Packages contained) {
+		contained.stream()
 			.filterValue(attrs -> attrs.containsKey(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
 			.forEachOrdered((packageRef, attrs) -> {
 				Set<String> targets = splitAsStream(attrs.get(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
@@ -318,19 +319,30 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 				// TODO Do we want to handle access? I can't think of a reason.
 				// Allowed: 0 | ACC_SYNTHETIC | ACC_MANDATED
-
 				builder.opens(packageRef.getBinary(), 0, targets);
 			});
 	}
 
-	private void requires(Entry<String, Attrs> instruction, Analyzer analyzer, Packages index,
-		Parameters moduleInfoOptions, ModuleInfoBuilder builder) throws Exception {
+	private void requires(ModuleInfoBuilder builder, Analyzer analyzer, Entry<String, Attrs> instruction,
+		Packages index, Parameters moduleInfoOptions, Set<PackageRef> bcpEntries) throws Exception {
 
 		String eeAttribute = instruction.getValue()
 			.get(Constants.EE_ATTRIBUTE);
 
 		EE moduleEE = (eeAttribute != null) ? Optional.of(eeAttribute)
 			.map(EE::parse)
+			.map(ee -> {
+				if (ee.compareTo(EE.JavaSE_9) < 0) {
+					if (logger.isWarnEnabled()) {
+						logger.warn("The specified EE " + ee
+							+ " is less than the minimum for JPMS. Reseting to a reasonable default: "
+							+ DEFAULT_MODULE_EE);
+					}
+
+					return DEFAULT_MODULE_EE;
+				}
+				return ee;
+			})
 			.orElseThrow(() -> new IllegalArgumentException("unrecognize ee name: " + eeAttribute)) : DEFAULT_MODULE_EE;
 
 		Packages exports = analyzer.getExports();
@@ -348,6 +360,10 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 		Map<String, List<Entry<? extends PackageRef, ? extends Attrs>>> requiresMap = externallyReferred.stream()
 			.filterKey(packageRef -> {
+				if (bcpEntries.contains(packageRef)) {
+					return false;
+				}
+
 				Attrs attrs = index.get(packageRef);
 				Attrs importAttrs = imports.get(packageRef);
 
@@ -360,17 +376,32 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 						.findAny()
 						.orElse(null);
 					if (eeModuleName == null) {
-						if (logger.isWarnEnabled())
-							logger.warn("Can't find a module name for imported package: {}", packageRef.getFQN());
+						if (logger.isDebugEnabled() &&
+						// Ignore optional imports at this stage
+						MapStream.ofNullable(importAttrs)
+							.noneMatch((k, v) -> k.equals(RESOLUTION_DIRECTIVE) && v.equals(RESOLUTION_OPTIONAL))) {
+
+							logger.debug("Can't find a module name for imported package: {}", packageRef.getFQN());
+						}
 
 						return false;
 					}
 
-					attrs = Attrs.create(INTERNAL_MODULE_DIRECTIVE, eeModuleName);
+					attrs = (attrs != null) ? attrs : ((importAttrs != null) ? new Attrs(importAttrs) : new Attrs());
+					attrs.put(INTERNAL_MODULE_DIRECTIVE, eeModuleName);
 					index.put(packageRef, attrs);
 				}
 				if (importAttrs != null) {
-					attrs.mergeWith(importAttrs, false);
+					String existingResolution = attrs.get(RESOLUTION_DIRECTIVE);
+					String importResolution = importAttrs.get(RESOLUTION_DIRECTIVE);
+
+					if (RESOLUTION_OPTIONAL.equals(existingResolution)) {
+						if (null == importResolution) {
+							attrs.remove(RESOLUTION_DIRECTIVE);
+						} else if (RESOLUTION_MANDATORY.equals(importResolution)) {
+							attrs.put(RESOLUTION_DIRECTIVE, RESOLUTION_MANDATORY);
+						}
+					}
 				}
 				return true;
 			})
@@ -445,7 +476,8 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			});
 	}
 
-	private void serviceLoaderProviders(Parameters provideCapabilities, Analyzer analyzer, ModuleInfoBuilder builder) {
+	private void serviceLoaderProviders(ModuleInfoBuilder builder, Analyzer analyzer, Parameters provideCapabilities,
+		Set<PackageRef> bcpEntries) {
 		provideCapabilities.stream()
 			.filterKey(namespace -> removeDuplicateMarker(namespace).equals(SERVICELOADER_NAMESPACE))
 			// We need the `register:` directive to be present for this to work.
@@ -454,22 +486,37 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			.collect(groupingBy(attrs -> analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE)),
 				mapFactory(), toList()))
 			.forEach((typeRef, attrsList) -> {
+
+				// We can't provide JPMS services from packages on the
+				// Bundle-ClassPath because jlink will fail
+				if (bcpEntries.contains(typeRef.getPackageRef())) {
+					return;
+				}
+
 				Set<String> impls = attrsList.stream()
 					.map(attrs -> attrs.get(SERVICELOADER_REGISTER_DIRECTIVE))
-					.map(impl -> analyzer.getTypeRefFromFQN(impl)
-						.getBinary())
+					.map(impl -> analyzer.getTypeRefFromFQN(impl))
+					.filter(implTypeRef -> !bcpEntries.contains(implTypeRef.getPackageRef()))
+					.map(TypeRef::getBinary)
 					.collect(toCollection(setFactory()));
-				builder.provides(typeRef.getBinary(), impls);
+
+				if (!impls.isEmpty()) {
+					builder.provides(typeRef.getBinary(), impls);
+				}
 			});
 	}
 
-	private void serviceLoaderUses(Parameters requireCapabilities, Analyzer analyzer, ModuleInfoBuilder builder) {
+	private void serviceLoaderUses(ModuleInfoBuilder builder, Analyzer analyzer, Parameters requireCapabilities,
+		Set<PackageRef> bcpEntries) {
 		requireCapabilities.stream()
 			.filterKey(key -> removeDuplicateMarker(key).equals(SERVICELOADER_NAMESPACE))
 			.values()
 			.forEachOrdered(attrs -> {
 				TypeRef typeRef = analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE));
-				builder.uses(typeRef.getBinary());
+
+				if (!bcpEntries.contains(typeRef.getPackageRef())) {
+					builder.uses(typeRef.getBinary());
+				}
 			});
 	}
 
