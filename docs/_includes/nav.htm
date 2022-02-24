@@ -13,17 +13,12 @@
 			   </div>
     <li span=4>     
         <div class="search-container">
-			<form method="get" id="ddgSearch" action="https://duckduckgo.com/" target="1">
-			    <input type="hidden" name="sites" value="bndtools.org OR site:bnd.discourse.group"/>
-			    <input type="hidden" name="k7" value="#ffffff"/>
-			    <input type="hidden" name="k8" value="#222222"/>
-			    <input type="hidden" name="k9" value="#00278e"/>
-			    <input type="hidden" name="kx" value="#20692b"/>
-			    <input type="hidden" name="kj" value="#fafafa"/>
-			    <input type="hidden" name="kt" value="b"/>
-			    <input type="text" name="q" placeholder="Search…" aria-label="Search https://bndtools.org on DuckDuckGo"/>
+			<form method="get" id="search" action="https://google.com/search" target="_blank">
+			    <input type="hidden" name="as_q" value="site:bndtools.org OR site:bnd.discourse.group"/>
+			    <input type="text" name="q" placeholder="Search…" aria-label="Search https://google.com for bnd specific"/>
 			    <button type="submit" class="fa fa-search"></button>
             </form>
        </div>
 </ul>
 <div class=menu-link span=0>{% include github.htm %}</div>
+
