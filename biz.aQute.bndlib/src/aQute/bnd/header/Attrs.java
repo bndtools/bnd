@@ -629,8 +629,7 @@ public class Attrs implements Map<String, String> {
 		Attrs attrs = new Attrs();
 		forEach((k, v) -> {
 			if (predicate.test(k)) {
-				attrs.map.put(k, v);
-				attrs.types.put(k, this.types.get(k));
+				attrs.put(k, this.types.get(k), v);
 			}
 		});
 		return attrs;

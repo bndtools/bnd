@@ -20,7 +20,7 @@ public enum AttributeClasses implements Predicate<String> {
 	MANIFEST {
 		@Override
 		public boolean test(String key) {
-			return !INTERNAL.test(key) && !BND_USE.test(key);
+			return manifest.test(key);
 		}
 	},
 	/**
@@ -46,4 +46,7 @@ public enum AttributeClasses implements Predicate<String> {
 			return Constants.BND_USE_ATTRIBUTES.contains(key);
 		}
 	};
+
+	private final static Predicate<String> manifest = INTERNAL.or(BND_USE)
+		.negate();
 }
