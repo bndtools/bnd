@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -434,15 +433,21 @@ public class Instructions implements Map<Instruction, Attrs> {
 
 	private Attrs decorateAttrs(Attrs target, Attrs decoration) {
 		decoration.forEach((key, value) -> {
-			if (Objects.equals("!", value)) { // ! value means remove
-				target.remove(key);
-				return;
-			}
 			Type type = decoration.getType(key);
-			if (key.startsWith("~")) { // ~key means no overwrite
-				key = key.substring(1);
-				if (target.containsKey(key)) {
-					return;
+			if (key.length() > 1) {
+				switch (key.charAt(0)) {
+					case '!' :
+						key = key.substring(1);
+						target.remove(key);
+						return;
+					case '~' :
+						key = key.substring(1);
+						if (target.containsKey(key)) {
+							return;
+						}
+						break;
+					default :
+						break;
 				}
 			}
 			target.put(key, type, value);
