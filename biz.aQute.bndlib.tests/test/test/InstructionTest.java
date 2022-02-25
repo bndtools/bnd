@@ -31,11 +31,17 @@ public class InstructionTest {
 	public void buildpath_decoration() throws Exception {
 		try (Processor p = new Processor()) {
 			p.setProperty("maven.target.version", "3.3.9");
+			p.setProperty("-buildpath+", "\"{aQute.libg}\";version=project;packages=\"!aQute.lib.exceptions.*,*\"");
 			p.setProperty("-buildpath+.maven",
 				"org.apache.maven:*;version=${maven.target.version};maven-scope=provided");
 			p.setProperty("-buildpath",
-				"osgi.annotation;version=latest;maven-scope=provided,org.osgi.dto;version='1.0',org.osgi.resource;version='1.0',org.osgi.framework;version='1.8',org.osgi.service.repository;version=latest,org.osgi.util.function;version=latest,org.osgi.util.promise;version=latest,aQute.libg;version=project;packages=\"!aQute.lib.exceptions.*,*\",biz.aQute.bnd.util;version=latest,biz.aQute.bndlib;version=latest,biz.aQute.resolve;version=latest,biz.aQute.repository;version=latest,org.eclipse.m2e.maven.runtime,org.apache.maven:maven-artifact,org.apache.maven:maven-core,org.apache.maven:maven-model,org.apache.maven:maven-plugin-api,org.apache.maven:maven-repository-metadata,org.apache.maven:maven-settings,org.codehaus.plexus:plexus-utils,org.eclipse.aether.api;version=1.0.2.v20150114,org.slf4j.api;version=latest");
+				"osgi.annotation;version=latest;maven-scope=provided,org.osgi.dto;version='1.0',org.osgi.resource;version='1.0',org.osgi.framework;version='1.8',org.osgi.service.repository;version=latest,org.osgi.util.function;version=latest,org.osgi.util.promise;version=latest,aQute.libg,biz.aQute.bnd.util;version=latest,biz.aQute.bndlib;version=latest,biz.aQute.resolve;version=latest,biz.aQute.repository;version=latest,org.eclipse.m2e.maven.runtime,org.apache.maven:maven-artifact,org.apache.maven:maven-core,org.apache.maven:maven-model,org.apache.maven:maven-plugin-api,org.apache.maven:maven-repository-metadata,org.apache.maven:maven-settings,org.codehaus.plexus:plexus-utils,org.eclipse.aether.api;version=1.0.2.v20150114,org.slf4j.api;version=latest");
+
 			Parameters bundles = p.getMergedParameters("-buildpath");
+			assertThat(bundles.keySet()).contains("aQute.libg", "org.apache.maven:maven-artifact",
+				"org.apache.maven:maven-core", "org.apache.maven:maven-model", "org.apache.maven:maven-plugin-api",
+				"org.apache.maven:maven-repository-metadata", "org.apache.maven:maven-settings");
+			assertThat(bundles.get("aQute.libg")).isEmpty();
 			assertThat(bundles.get("org.apache.maven:maven-artifact")).isEmpty();
 			assertThat(bundles.get("org.apache.maven:maven-core")).isEmpty();
 			assertThat(bundles.get("org.apache.maven:maven-model")).isEmpty();
@@ -46,6 +52,11 @@ public class InstructionTest {
 			Instructions decorator = new Instructions(p.mergeProperties("-buildpath" + "+"));
 			decorator.decorate(bundles, true);
 			System.out.println(bundles);
+			assertThat(bundles.keySet()).contains("aQute.libg", "org.apache.maven:maven-artifact",
+				"org.apache.maven:maven-core", "org.apache.maven:maven-model", "org.apache.maven:maven-plugin-api",
+				"org.apache.maven:maven-repository-metadata", "org.apache.maven:maven-settings");
+			assertThat(bundles.get("aQute.libg")).containsOnly(entry("version", "project"),
+				entry("packages", "!aQute.lib.exceptions.*,*"));
 			assertThat(bundles.get("org.apache.maven:maven-artifact")).containsOnly(entry("version", "3.3.9"),
 				entry("maven-scope", "provided"));
 			assertThat(bundles.get("org.apache.maven:maven-core")).containsOnly(entry("version", "3.3.9"),
@@ -58,7 +69,21 @@ public class InstructionTest {
 				.containsOnly(entry("version", "3.3.9"), entry("maven-scope", "provided"));
 			assertThat(bundles.get("org.apache.maven:maven-settings")).containsOnly(entry("version", "3.3.9"),
 				entry("maven-scope", "provided"));
+		}
+	}
 
+	@Test
+	public void conditionalpackage_decoration() throws Exception {
+		try (Processor p = new Processor()) {
+			p.setProperty("-conditionalpackage+", "=!aQute.lib.exceptions.*");
+			p.setProperty("-conditionalpackage", "aQute.lib.*,aQute.libg.*");
+
+			Parameters parameters = p.getMergedParameters("-conditionalpackage");
+			assertThat(parameters.keySet()).containsExactly("aQute.lib.*", "aQute.libg.*");
+
+			parameters = p.decorated("-conditionalpackage", true);
+			System.out.println(parameters);
+			assertThat(parameters.keySet()).containsExactly("!aQute.lib.exceptions.*", "aQute.lib.*", "aQute.libg.*");
 		}
 	}
 
