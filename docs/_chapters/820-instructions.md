@@ -99,7 +99,8 @@ Instructions can also be _decorated_. A _decorator_ is a header that ends with a
 The decorator is a Parameters, it consists of a key and a set of attributes. The decorator key is usually a glob. 
 
 After the instruction is merged, the key of each Parameter entry is matched against all globs in the decorator following the order of the decorator. When the first match is found, the attributes of the decorator clause that matches are stored with the attributes of the Parameter entry, overriding any attribute with the same attribute key. A Parameter entry key can only match one decorator glob.
-If the value of the decorator clause attribute is `!`, then the attribute is removed from the Parameter entry. If the name of the  decorator clause attribute starts with `~`, then, using the attribute name after removing the leading `~`, the attribute value will not overwrite an existing value.
+If the name of the decorator clause attribute starts with `!`, then the attribute, using the attribute name after removing the leading `!`, is removed from the Parameter entry.
+If the name of the decorator clause attribute starts with `~`, then the decorator clause attribute value will not overwrite an existing value of the Parameter entry attribute, using the attribute name after removing the leading `~`.
 
 Example:
 

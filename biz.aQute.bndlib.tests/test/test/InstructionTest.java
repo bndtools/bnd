@@ -165,7 +165,7 @@ public class InstructionTest {
 
 	@Test
 	public void removal() {
-		Instructions instrs = new Instructions("a;x=1;k=!;q=!,b*;y=2, literal;n=1, foo.com.example.bar;startlevel=10");
+		Instructions instrs = new Instructions("a;x=1;!k=;!q=,b*;y=2, literal;n=1, foo.com.example.bar;startlevel=10");
 		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1, a;k=1, a;z=9", null, true);
 		instrs.decorate(params, true);
 		System.out.println(params);
