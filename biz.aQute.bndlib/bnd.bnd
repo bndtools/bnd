@@ -40,7 +40,6 @@ Export-Package: \
     aQute.service.reporter;-noimport:=true
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
 	aQute.lib.*,\
 	aQute.libg.*,\
 	aQute.service.*,\
@@ -66,7 +65,7 @@ Import-Package: \
 	org.osgi.service.repository;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*", \
+	aQute.libg, \
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bnd.util;version=latest,\
 	slf4j.api;version=latest

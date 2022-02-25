@@ -10,7 +10,7 @@
     org.osgi.namespace.service;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
-    aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+    aQute.libg,\
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest, \
     bndtools.api;version=latest, \

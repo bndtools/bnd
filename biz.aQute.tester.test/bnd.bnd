@@ -27,7 +27,7 @@
 	org.junit.jupiter.engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
 	assertj-core;version=latest,\
 	junit-platform-testkit;version="${junit.platform.eclipse.version}";strategy=lowest,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
 	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\

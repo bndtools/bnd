@@ -24,7 +24,6 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.bndtools.facade
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*,\
 	org.bndtools.utils.*,\
@@ -51,7 +50,7 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.osgi.namespace.service;version=latest;maven-scope=provided,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\

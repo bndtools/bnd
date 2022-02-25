@@ -8,7 +8,6 @@ Bundle-Description: \
 	of methods that are very useful to test HTTP communication.
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*,\
     fi.*,\
