@@ -2,7 +2,6 @@
 -privatepackage: aQute.launchpad.internal
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*
 

@@ -8,7 +8,7 @@
     org.osgi.service.metatype;version=1.3.0,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
@@ -27,7 +27,6 @@
 -conditionalpackage: \
 	org.stringtemplate.*, \
 	st4hidden.*, \
-	!aQute.lib.exceptions.*,\
 	aQute.lib.*,\
 	aQute.libg.*,\
 	com.github.mustachejava.*,\

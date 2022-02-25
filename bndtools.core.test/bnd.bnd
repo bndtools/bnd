@@ -36,12 +36,11 @@
 #	org.eclipse.search
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
 	aQute.lib.*;-split-package:=merge-first, \
 	aQute.libg.*;-split-package:=merge-first
 
 -buildpath: \
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\

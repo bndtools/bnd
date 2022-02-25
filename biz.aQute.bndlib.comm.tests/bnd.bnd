@@ -5,7 +5,7 @@
 -nobundles: true
 
 -testpath: \
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\
 	biz.aQute.repository;version=latest,\

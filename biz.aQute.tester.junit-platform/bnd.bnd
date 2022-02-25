@@ -27,7 +27,6 @@ Import-Package: \
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*
 
@@ -35,7 +34,7 @@ Import-Package: \
 
 -buildpath: \
 	osgi.annotation;version=latest,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	osgi.core;version=latest,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\

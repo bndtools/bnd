@@ -15,12 +15,11 @@ Import-Package: \
 	org.bndtools.core.editors.quickfix
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*
 
 -buildpath: \
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	bndtools.api;version=snapshot,\

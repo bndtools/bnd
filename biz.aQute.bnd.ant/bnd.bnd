@@ -4,7 +4,6 @@
 Bundle-Description: Bnd Ant Tasks
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
 	aQute.libg.*,\
 	aQute.lib.*
 
@@ -16,7 +15,7 @@ Export-Package: \
 
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\

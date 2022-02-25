@@ -7,7 +7,7 @@
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
 	org.osgi.framework;version=latest;maven-scope=provided,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest
@@ -18,7 +18,6 @@
 	slf4j.simple;version=latest
 
 -conditionalpackage: \
- 	!aQute.lib.exceptions.*,\
     aQute.lib.*,\
     aQute.libg.*
 

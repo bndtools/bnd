@@ -17,7 +17,6 @@ Bundle-Description: Class file and Manifest header Transformation Support
 	aQute.libg.uri.*;-split-package:=first
 
 -conditionalpackage: \
-	!aQute.lib.exceptions.*,\
 	aQute.*;-split-package:=first
 
 -sources: false
@@ -31,7 +30,7 @@ Bundle-Description: Class file and Manifest header Transformation Support
 -buildpath: \
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
-	aQute.libg;version=project;packages="!aQute.lib.exceptions.*,*",\
+	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest;maven-scope=compile
