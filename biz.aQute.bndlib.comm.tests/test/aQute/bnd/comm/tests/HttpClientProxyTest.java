@@ -18,10 +18,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.IntSupplier;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
@@ -52,6 +52,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.test.net.EphemeralPort;
 import aQute.http.testservers.HttpTestServer;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
@@ -242,32 +243,20 @@ public class HttpClientProxyTest {
 	private AtomicBoolean				proxyCalled				= new AtomicBoolean();
 	private HttpTestServer				httpTestServer;
 	private SocksProxyServer			socks5Proxy;
-	private static final AtomicInteger	httpProxyPort			= new AtomicInteger(IO.isWindows() ? 52080 : 2080);
-	private static final AtomicInteger	socksProxyPort			= new AtomicInteger(IO.isWindows() ? 53080 : 3080);
+
+	static final IntSupplier			portSupplier			= EphemeralPort.AUTOMATIC;
 
 	private AtomicReference<Throwable>	exception				= new AtomicReference<>();
 	private AtomicInteger				created					= new AtomicInteger();
 
 	// we use different ports because the servers seem to linger
-	private static final Random			random					= new Random();
-
-	private static int addRandom(int value) {
-		return value + 1 + random.nextInt(32);
-	}
-
-	private static int httpProxyPort() {
-		return httpProxyPort.updateAndGet(HttpClientProxyTest::addRandom);
-	}
-
-	private static int socksProxyPort() {
-		return socksProxyPort.updateAndGet(HttpClientProxyTest::addRandom);
-	}
 
 	void createAuthenticationHttpProxy() {
 		int retry = 5;
 		while (true) {
+			final int port = portSupplier.getAsInt();
 			HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-				.withPort(httpProxyPort())
+				.withPort(port)
 				.withProxyAuthenticator(new ProxyAuthenticator() {
 
 					@Override
@@ -298,8 +287,9 @@ public class HttpClientProxyTest {
 	void createPromiscuousHttpProxy() {
 		int retry = 5;
 		while (true) {
+			final int port = portSupplier.getAsInt();
 			HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-				.withPort(httpProxyPort())
+				.withPort(port)
 				.withFiltersSource(new ProxyCheckingFilter(false));
 			try {
 				httpProxy = bootstrap.start();
@@ -315,8 +305,9 @@ public class HttpClientProxyTest {
 	void createSecurePromiscuousHttpProxy() {
 		int retry = 5;
 		while (true) {
+			final int port = portSupplier.getAsInt();
 			HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-				.withPort(httpProxyPort())
+				.withPort(port)
 				.withManInTheMiddle(new MitmManager() {
 
 					SecureRandom random = new SecureRandom();
@@ -411,7 +402,7 @@ public class HttpClientProxyTest {
 		int retry = 5;
 		IOException fail = null;
 		while (true) {
-			final int socksProxyPort = socksProxyPort();
+			final int socksProxyPort = portSupplier.getAsInt();
 			UserManager userManager = new MemoryBasedUserManager();
 			userManager.create(new User("proxyuser", "good"));
 			SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder()
