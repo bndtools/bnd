@@ -1,25 +1,30 @@
 package aQute.bnd.comm.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.List;
+import java.util.function.IntSupplier;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.url.URLConnector;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
+import aQute.bnd.test.net.EphemeralPort;
 import aQute.http.testservers.HttpTestServer;
 import aQute.http.testservers.Httpbin;
+import aQute.lib.io.IO;
 import sockslib.common.AuthenticationException;
 import sockslib.common.Credentials;
 import sockslib.common.methods.UsernamePasswordMethod;
@@ -35,16 +40,22 @@ import sockslib.server.manager.UserManager;
 import sockslib.server.msg.CommandMessage;
 
 public class IndexedReposWithComms {
+	static final IntSupplier	portSupplier	= EphemeralPort.AUTOMATIC;
 
-	private static SocksProxyServer socks5Proxy;
+	@InjectTemporaryDirectory
+	File						testDir;
+	int							port;
+
+	@BeforeEach
+	void setUp() {
+		port = portSupplier.getAsInt();
+	}
 
 	@Test
 	public void testBasicWorkspace() throws Exception {
-		HttpTestServer ht = http();
-		try {
-			createSecureSocks5();
-			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/basic"));
-			assertNotNull(ws);
+		try (HttpTestServer ht = http();
+			AutoCloseable socks5Proxy = createSecureSocks5();
+			Workspace ws = createWorkspace("workspaces/basic", "cnf/settings.xml")) {
 
 			List<URLConnector> connectors = ws.getPlugins(URLConnector.class);
 			assertNotNull(connectors);
@@ -53,30 +64,32 @@ public class IndexedReposWithComms {
 
 			HttpClient hc = (HttpClient) connectors.get(0);
 
-			InputStream connect = hc.connect(new URL(ht.getBaseURI() + "/basic-auth/user/good"));
-			assertNotNull(connect);
-			aQute.lib.io.IO.copy(connect, System.out);
-			connect.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.toString());
-		} finally {
-			ht.close();
+			try (InputStream connect = hc.connect(new URL(ht.getBaseURI() + "/basic-auth/user/good"))) {
+				assertNotNull(connect);
+				IO.copy(connect, System.out);
+				System.out.println();
+			}
 		}
 	}
 
+	private Workspace createWorkspace(String folder, String settings) throws Exception {
+		IO.copy(IO.getFile(folder), testDir);
+		File settingsFile = new File(testDir, settings);
+		assertThat(settingsFile).isFile();
+		String contents = IO.collect(settingsFile);
+		contents = contents.replace("9090", Integer.toString(port));
+		IO.store(contents, settingsFile);
+		return new Workspace(testDir);
+	}
 	/*
 	 * Uses workspaces/indexed Sets up a OSGiRepository to the local server.
 	 */
 
 	@Test
-	public void testIndexedRepo() throws IOException, Exception {
-		try (HttpTestServer ht = http();) {
-			createSecureSocks5();
-
-			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
-			assertNotNull(ws);
+	public void testIndexedRepo() throws Exception {
+		try (HttpTestServer ht = http();
+			AutoCloseable socks5Proxy = createSecureSocks5();
+			Workspace ws = createWorkspace("workspaces/indexed", "cnf/settings.xml")) {
 			ws.setProperty("repo", ht.getBaseURI()
 				.toASCIIString() + "/index");
 			OSGiRepository plugin = ws.getPlugin(OSGiRepository.class);
@@ -86,7 +99,6 @@ public class IndexedReposWithComms {
 			List<String> list = plugin.list(null);
 			assertTrue(ws.check());
 			assertTrue(list.size() > 0);
-
 		}
 	}
 
@@ -95,12 +107,10 @@ public class IndexedReposWithComms {
 	 */
 
 	@Test
-	public void testIndexedRepoWithPassword() throws IOException, Exception {
-		try (HttpTestServer ht = https();) {
-			createSecureSocks5();
-
-			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
-			assertNotNull(ws);
+	public void testIndexedRepoWithPassword() throws Exception {
+		try (HttpTestServer ht = https();
+			AutoCloseable socks5Proxy = createSecureSocks5();
+			Workspace ws = createWorkspace("workspaces/indexed", "cnf/settings-withpassword.xml")) {
 			ws.setProperty("-connection-settings", "${build}/settings-withpassword.xml");
 			ws.setProperty("repo", ht.getBaseURI()
 				.toASCIIString() + "/index-auth/user/good");
@@ -111,16 +121,15 @@ public class IndexedReposWithComms {
 			List<String> list = plugin.list(null);
 			assertTrue(ws.check());
 			assertTrue(list.size() > 0);
-
 		}
 	}
 
-	private void createSecureSocks5() throws IOException, InterruptedException {
+	private AutoCloseable createSecureSocks5() throws IOException, InterruptedException {
 		UserManager userManager = new MemoryBasedUserManager();
 		userManager.create(new User("proxyuser", "good"));
 		SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder();
 		builder.setBindAddr(InetAddress.getLoopbackAddress());
-		builder.setBindPort(9090);
+		builder.setBindPort(port);
 		builder.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator(userManager) {
 			@Override
 			public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
@@ -129,7 +138,7 @@ public class IndexedReposWithComms {
 
 			}
 		}));
-		socks5Proxy = builder.build();
+		SocksProxyServer socks5Proxy = builder.build();
 
 		socks5Proxy.getSessionManager()
 			.addSessionListener("abc", new SessionListener() {
@@ -157,15 +166,10 @@ public class IndexedReposWithComms {
 			});
 
 		socks5Proxy.start();
+		return socks5Proxy::shutdown;
 	}
 
-	@AfterEach
-	public void tearDown() {
-		if (socks5Proxy != null)
-			socks5Proxy.shutdown();
-	}
-
-	HttpTestServer http() throws Exception, IOException {
+	HttpTestServer http() throws Exception {
 		HttpTestServer.Config config = new HttpTestServer.Config();
 		config.host = "localhost";
 		HttpTestServer ht = new Httpbin(config);
@@ -173,7 +177,7 @@ public class IndexedReposWithComms {
 		return ht;
 	}
 
-	HttpTestServer https() throws Exception, IOException {
+	HttpTestServer https() throws Exception {
 		HttpTestServer.Config config = new HttpTestServer.Config();
 		config.host = "localhost";
 		config.https = true;
