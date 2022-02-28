@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -613,5 +614,24 @@ public class Attrs implements Map<String, String> {
 	public Attrs with(String key, String value) {
 		put(key, value);
 		return this;
+	}
+
+	/**
+	 * Return a new Attrs that has only the attributes that match the predicate.
+	 * The primary use case for this is AttributeClasses.
+	 *
+	 * @param predicate a predicate that returns true if the attribute must be
+	 *            included in the result
+	 * @return a new Attrs that can be used and modified by the caller
+	 */
+
+	public Attrs select(Predicate<String> predicate) {
+		Attrs attrs = new Attrs();
+		forEach((k, v) -> {
+			if (predicate.test(k)) {
+				attrs.put(k, this.types.get(k), v);
+			}
+		});
+		return attrs;
 	}
 }

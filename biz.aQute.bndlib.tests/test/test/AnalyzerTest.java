@@ -49,6 +49,84 @@ public class AnalyzerTest {
 	static File cwd = new File(System.getProperty("user.dir"));
 
 	/**
+	 * Verify that the manifest overrides a version in a package info
+	 */
+
+	@Test
+	public void testManifestOverridesPackageInfo() throws Exception {
+		try(Builder source = new Builder() ){
+			source.setProperty("-exportcontents", "foo;version=1000");
+			source.setProperty("-includeresource", "foo/packageinfo;literal='version 1\n'");
+			Jar jar = source.build();
+			assertThat(jar.getResource("foo/packageinfo")).isNotNull();
+			assertThat(jar.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package")).isEqualTo("foo;version=1000");
+
+			try (Builder referrer = new Builder()) {
+				referrer.addClasspath(jar);
+				referrer.setProperty("Export-Package", "foo");
+				Jar rjar = source.build();
+				assertThat(rjar.getResource("foo/packageinfo")).isNotNull();
+				assertThat(rjar.getManifest()
+					.getMainAttributes()
+					.getValue("Export-Package")).isEqualTo("foo;version=1000");
+			}
+		}
+
+	}
+
+	@Test
+	public void testVersionIsLearnedFromPackageinfo() throws Exception {
+		try (Builder source = new Builder()) {
+			source.setProperty("-exportcontents", "foo");
+			source.setProperty("-includeresource", "foo/packageinfo;literal='version 1\n'");
+			Jar jar = source.build();
+			assertThat(jar.getResource("foo/packageinfo")).isNotNull();
+			assertThat(jar.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package")).isEqualTo("foo;version=1");
+
+			try (Builder referrer = new Builder()) {
+				referrer.addClasspath(jar);
+				referrer.setProperty("Export-Package", "foo");
+				Jar rjar = source.build();
+				assertThat(rjar.getResource("foo/packageinfo")).isNotNull();
+				assertThat(rjar.getManifest()
+					.getMainAttributes()
+					.getValue("Export-Package")).isEqualTo("foo;version=1");
+			}
+		}
+
+	}
+
+	@Test
+	public void testVersionIsLearnedFromPackageinfoWhenInternalAttributesAreSet() throws Exception {
+		try (Builder source = new Builder()) {
+			source.setProperty("-exportcontents", "foo;-internal-abc=1;-split-package:=merge");
+			source.setProperty("-includeresource", "foo/packageinfo;literal='version 1\n'");
+			Jar jar = source.build();
+			assertThat(source.check()).isTrue();
+
+			assertThat(jar.getResource("foo/packageinfo")).isNotNull();
+			assertThat(jar.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package")).isEqualTo("foo;version=1");
+
+			try (Builder referrer = new Builder()) {
+				referrer.addClasspath(jar);
+				referrer.setProperty("Export-Package", "foo");
+				Jar rjar = source.build();
+				assertThat(rjar.getResource("foo/packageinfo")).isNotNull();
+				assertThat(rjar.getManifest()
+					.getMainAttributes()
+					.getValue("Export-Package")).isEqualTo("foo;version=1");
+			}
+		}
+
+	}
+
+	/**
 	 * #1352 support globbing during includeresource's buildpath reference
 	 * resolution
 	 *

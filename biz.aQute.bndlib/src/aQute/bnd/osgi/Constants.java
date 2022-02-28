@@ -328,6 +328,7 @@ public interface Constants {
 	String		INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE		= "-internal-bundlesymbolicname:";
 	String		INTERNAL_BUNDLEVERSION_DIRECTIVE			= "-internal-bundleversion:";
 	String		INTERNAL_EXPORT_TO_MODULES_DIRECTIVE		= "-internal-export-to-modules:";
+	String		INTERNAL_MODULE_DIRECTIVE					= "-internal-module:";
 	String		INTERNAL_MODULE_VERSION_DIRECTIVE			= "-internal-module-version:";
 	String		INTERNAL_OPEN_TO_MODULES_DIRECTIVE			= "-internal-open-to-modules:";
 	String		INTERNAL_SOURCE_DIRECTIVE					= "-internal-source:";
@@ -533,6 +534,21 @@ public interface Constants {
 	String		LAUNCH_RUNBUNDLES_ATTRS						= "launch.runbundles.attrs";
 	String		LAUNCH_ACTIVATORS							= "launch.activators";
 	String		LAUNCH_ACTIVATION_EAGER						= "launch.activation.eager";
+
+	/**
+	 * Any attributes that should be removed from the attributes before
+	 * printing.
+	 */
+	Set<String>	BND_USE_ATTRIBUTES							= Sets.of(
+		//@formatter:off
+		FROM_DIRECTIVE,
+		NO_IMPORT_DIRECTIVE,
+		PROVIDE_DIRECTIVE,
+		SPLIT_PACKAGE_DIRECTIVE
+		//@formatter:on
+	);
+
+	String		INTERNAL_PREFIX								= "-internal-";
 
 	/*
 	 * Deprecated Section
