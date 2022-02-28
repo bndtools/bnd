@@ -67,8 +67,12 @@ public class Container {
 
 	}
 
+	public Container(Project project, String bsn, File file, Map<String, String> attributes) {
+		this(project, bsn, "project", TYPE.PROJECT, file, null, attributes, null);
+	}
+
 	public Container(Project project, File file, Map<String, String> attributes) {
-		this(project, file.getName(), "project", TYPE.PROJECT, file, null, attributes, null);
+		this(project, bsnFromFile(file), file, attributes);
 	}
 
 	public Container(Project project, File file) {
@@ -76,11 +80,11 @@ public class Container {
 	}
 
 	public Container(File file, DownloadBlocker db) {
-		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, null, db);
+		this(file, db, null);
 	}
 
 	public Container(File file, DownloadBlocker db, Attrs attributes) {
-		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, attributes, db);
+		this(null, bsnFromFile(file), "project", TYPE.EXTERNAL, file, null, attributes, db);
 	}
 
 	private Container(Project project, String message) {
@@ -90,6 +94,15 @@ public class Container {
 		this.warning = message;
 		this.type = TYPE.ERROR;
 		this.path = "unknown";
+	}
+
+	private static String bsnFromFile(File file) {
+		String name = file.getName();
+		int length = name.length();
+		if ((length > 4) && name.endsWith(".jar")) {
+			name = name.substring(0, length - 4);
+		}
+		return name;
 	}
 
 	public File getFile() {

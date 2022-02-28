@@ -2900,7 +2900,7 @@ public class Project extends Processor {
 			for (Builder b : pb.getSubBuilders()) {
 				if (b.getBsn()
 					.equals(bsn))
-					return new Container(this, getOutputFile(bsn, b.getVersion()), attrs);
+					return new Container(this, bsn, getOutputFile(bsn, b.getVersion()), attrs);
 			}
 		}
 		return null;
