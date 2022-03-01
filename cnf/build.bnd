@@ -32,12 +32,14 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 # the instruction
 
 -buildpath+: \
-    "{aQute.libg}";version=project;packages="!aQute.lib.exceptions.*,*"
+    "{aQute.libg}";version=project;packages="!aQute.lib.exceptions.*,*",\
+    "{osgi.annotation}";~version=latest;~maven-scope=provided
 -conditionalpackage+: \
     =!aQute.lib.exceptions.*
 
 -testpath+: \
-    "{aQute.libg}";version=project;packages="!aQute.lib.exceptions.*,*"
+    "{aQute.libg}";version=project;packages="!aQute.lib.exceptions.*,*",\
+    "{osgi.annotation}";~version=latest
 
 # Maven info. The maven artifactId defaults to Bundle-SymbolicName
 -groupid:               biz.aQute.bnd

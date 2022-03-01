@@ -29,7 +29,7 @@ Import-Package: \
 -maven-scope: provided
 
 -buildpath: \
-    osgi.annotation;version=latest,\
+    osgi.annotation,\
     osgi.core;version=latest,\
     org.osgi.service.component;version='[1.4,1.5)',\
     aQute.libg,\

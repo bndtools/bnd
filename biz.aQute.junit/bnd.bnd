@@ -4,7 +4,7 @@
 -maven-scope: provided
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	osgi.core;version=latest,\
 	aQute.libg,\
 	biz.aQute.tester;version=latest;packages=aQute.junit.*,\

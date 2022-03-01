@@ -28,7 +28,7 @@ Bundle-Description: Class file and Manifest header Transformation Support
 -maven-scope: provided
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	osgi.core;version=latest,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\

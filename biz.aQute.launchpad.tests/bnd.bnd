@@ -3,7 +3,7 @@
 
 -buildpath: \
     org.osgi.service.component.annotations;version='1.3.0', \
-    osgi.annotation; version=latest,\
+    osgi.annotation,\
     osgi.core; version=latest, \
     org.osgi.service.component;version='1.3.0'
 

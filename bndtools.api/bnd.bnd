@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	osgi.core;version=latest;maven-scope=provided, \
 	aQute.libg,\
     biz.aQute.bnd.util;version=latest, \

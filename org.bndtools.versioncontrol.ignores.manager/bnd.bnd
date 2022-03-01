@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath:  \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
     org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
     bndtools.api;version=latest
 

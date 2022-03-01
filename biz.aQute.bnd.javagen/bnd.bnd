@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest

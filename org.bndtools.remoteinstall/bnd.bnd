@@ -11,7 +11,7 @@ Import-Package: \
     aQute.remote.*
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	osgi.core;version=latest;maven-scope=provided,\
     org.osgi.service.component.annotations;version='1.3.0';maven-scope=provided,\
     aQute.libg,\

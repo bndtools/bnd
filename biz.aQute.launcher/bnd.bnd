@@ -4,7 +4,7 @@
 -dependson: demo
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	osgi.core;version=latest;maven-scope=provided,\
 	org.osgi.framework;version=latest;maven-scope=provided,\
 	aQute.libg,\

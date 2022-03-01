@@ -3,7 +3,7 @@
 -nobundles: true
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
     osgi.core;version=latest, \
     org.osgi.namespace.contract;version=latest,\
     org.osgi.namespace.extender;version=latest,\

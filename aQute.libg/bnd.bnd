@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
-    osgi.annotation;version=latest;maven-scope=provided,\
+    osgi.annotation,\
 	slf4j.api;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest, \

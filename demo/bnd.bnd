@@ -25,7 +25,7 @@ Import-Package: \
 	*
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	osgi.core;version=latest;maven-scope=provided,\
 	${junit}
 

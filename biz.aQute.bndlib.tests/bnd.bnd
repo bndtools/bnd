@@ -5,7 +5,7 @@
 -nobundles: true
 
 -testpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	osgi.core;version=latest,\
 	org.osgi.namespace.extender;version=latest,\
 	org.osgi.namespace.service;version=latest,\

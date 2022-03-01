@@ -52,7 +52,7 @@ Import-Package: \
 -includeresource: ${workspace}/LICENSE, img/=img/, {readme.md}
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	org.osgi.dto;version='1.0',\
 	org.osgi.resource;version='1.0',\
 	org.osgi.framework;version='1.8',\

@@ -20,7 +20,7 @@ Bundle-Description: Util classes
 -maven-scope: provided
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	aQute.libg
 
 -testpath: \
