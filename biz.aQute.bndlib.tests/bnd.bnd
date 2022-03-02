@@ -7,8 +7,8 @@
 -testpath: \
 	osgi.annotation,\
 	osgi.core;version=latest,\
-	org.osgi.namespace.extender;version=latest,\
-	org.osgi.namespace.service;version=latest,\
+	org.osgi.namespace.extender,\
+	org.osgi.namespace.service,\
 	org.osgi.service.blueprint;version=latest,\
 	org.osgi.service.cdi;version=latest,\
 	org.osgi.service.component;version=latest,\

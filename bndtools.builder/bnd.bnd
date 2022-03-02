@@ -4,7 +4,7 @@
 -buildpath: \
 	osgi.annotation,\
 	osgi.core;version=latest;maven-scope=provided,\
-	org.osgi.namespace.service;version=latest;maven-scope=provided,\
+	org.osgi.namespace.service,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg,\

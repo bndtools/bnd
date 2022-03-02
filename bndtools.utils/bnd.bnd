@@ -5,9 +5,9 @@
 -buildpath: \
 	osgi.annotation,\
     osgi.core;version=latest, \
-    org.osgi.namespace.contract;version=latest,\
-    org.osgi.namespace.extender;version=latest,\
-    org.osgi.namespace.service;version=latest,\
+    org.osgi.namespace.contract,\
+    org.osgi.namespace.extender,\
+    org.osgi.namespace.service,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
     aQute.libg,\

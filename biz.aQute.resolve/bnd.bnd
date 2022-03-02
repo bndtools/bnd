@@ -6,8 +6,8 @@
 	org.osgi.dto;version='1.0',\
 	org.osgi.resource;version='1.0',\
 	org.osgi.framework;version='1.8',\
-	org.osgi.namespace.contract;version=latest;maven-scope=provided,\
-	org.osgi.namespace.service;version=latest;maven-scope=provided,\
+	org.osgi.namespace.contract,\
+	org.osgi.namespace.service,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
 	org.osgi.service.resolver;version=latest, \
