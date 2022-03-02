@@ -4,9 +4,11 @@
 -buildpath: \
     osgi.annotation,\
 	slf4j.api;version=latest,\
+	org.osgi.dto;version='1.0',\
+	org.osgi.resource;version='1.0',\
+	org.osgi.framework;version='1.8',\
 	org.osgi.util.function;version=latest,\
-	org.osgi.util.promise;version=latest, \
-	osgi.core;version=latest
+	org.osgi.util.promise;version=latest
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
