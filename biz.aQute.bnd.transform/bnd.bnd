@@ -29,7 +29,6 @@ Bundle-Description: Class file and Manifest header Transformation Support
 
 -buildpath: \
 	osgi.annotation,\
-	osgi.core;version=latest,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\

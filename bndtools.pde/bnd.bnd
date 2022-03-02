@@ -3,7 +3,7 @@
 
 -buildpath: \
 	osgi.annotation,\
-	osgi.core;version=latest;maven-scope=provided,\
+	osgi.core,\
 	aQute.libg,\
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\

@@ -34,6 +34,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 -buildpath+: \
     "{aQute.libg}";version=project;packages="!aQute.lib.exceptions.*,*",\
     "{osgi.annotation}";~version=latest;~maven-scope=provided,\
+    "{osgi.core}";~version=latest;~maven-scope=provided,\
     "org.osgi.namespace.*";~version=latest;~maven-scope=provided,\
     "org.osgi.service.*.annotations";~version=latest;~maven-scope=provided
 
@@ -43,6 +44,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 -testpath+: \
     "{aQute.libg}";version=project;packages="!aQute.lib.exceptions.*,*",\
     "{osgi.annotation}";~version=latest,\
+    "{osgi.core}";~version=latest,\
     "org.osgi.namespace.*";~version=latest,\
     "org.osgi.service.*.annotations";~version=latest
 

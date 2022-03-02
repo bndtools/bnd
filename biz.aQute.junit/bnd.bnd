@@ -5,7 +5,7 @@
 
 -buildpath: \
 	osgi.annotation,\
-	osgi.core;version=latest,\
+	osgi.core,\
 	aQute.libg,\
 	biz.aQute.tester;version=latest;packages=aQute.junit.*,\
 	biz.aQute.bnd.util;version=latest,\

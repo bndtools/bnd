@@ -9,7 +9,7 @@
 -dependson biz.aQute.bnd.javagen
 
 -testpath: \
-    osgi.core;version=latest,\
+    osgi.core,\
     org.osgi.service.cm;version=latest,\
     org.osgi.service.component.annotations;version=latest,\
     biz.aQute.resolve;version=latest, \

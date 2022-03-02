@@ -4,7 +4,7 @@
 
 -buildpath: \
 	osgi.annotation,\
-    osgi.core;version=latest, \
+    osgi.core,\
     org.osgi.namespace.contract,\
     org.osgi.namespace.extender,\
     org.osgi.namespace.service,\

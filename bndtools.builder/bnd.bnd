@@ -3,7 +3,7 @@
 
 -buildpath: \
 	osgi.annotation,\
-	osgi.core;version=latest;maven-scope=provided,\
+	osgi.core,\
 	org.osgi.namespace.service,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\

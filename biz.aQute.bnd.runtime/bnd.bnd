@@ -3,7 +3,7 @@
 
 -buildpath: \
     osgi.annotation, \
-    osgi.core;version=latest;maven-scope=provided,\
+    osgi.core,\
     aQute.libg,\
     org.osgi.service.coordinator;maven-scope=provided,\
     org.osgi.service.cm, \

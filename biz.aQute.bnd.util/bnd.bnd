@@ -25,7 +25,7 @@ Bundle-Description: Util classes
 
 -testpath: \
 	${junit},\
-	osgi.core;version=latest,\
+	osgi.core,\
 	org.osgi.service.log;version=latest
 
 -builderignore: testresources
