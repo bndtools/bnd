@@ -4,6 +4,6 @@
 -buildpath: \
 	osgi.annotation,\
 	osgi.core,\
-	org.eclipse.osgi;maven-scope=provided
+	org.eclipse.osgi
 
 Bundle-Activator: org.bndtools.applaunch.Activator

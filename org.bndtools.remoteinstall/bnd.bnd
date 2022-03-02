@@ -26,7 +26,7 @@ Import-Package: \
     org.eclipse.equinox.common,\
     org.eclipse.equinox.preferences,\
     org.eclipse.jface,\
-    org.eclipse.osgi;maven-scope=provided,\
+    org.eclipse.osgi,\
     org.eclipse.swt,\
     org.eclipse.swt.cocoa.macosx.x86_64,\
     org.eclipse.ui.ide,\

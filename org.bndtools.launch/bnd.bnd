@@ -32,7 +32,7 @@ Import-Package: \
 	slf4j.api,\
 	org.apiguardian,\
 	org.eclipse.core.runtime,\
-	org.eclipse.osgi;maven-scope=provided,\
+	org.eclipse.osgi,\
 	org.eclipse.debug.core,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.core.resources,\

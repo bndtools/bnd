@@ -44,7 +44,7 @@ Import-Package: \
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.ui,\
-	org.eclipse.osgi;maven-scope=provided,\
+	org.eclipse.osgi,\
 	org.eclipse.core.commands,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.forms,\

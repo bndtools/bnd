@@ -22,7 +22,7 @@
 	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.workbench,\
-	org.eclipse.osgi;maven-scope=provided
+	org.eclipse.osgi
 
 Bundle-SymbolicName: ${p};singleton:=true
 Bundle-ActivationPolicy: lazy

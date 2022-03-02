@@ -15,7 +15,7 @@
 	bndtools.api;version=latest,\
 	bndtools.utils;version=project;packages='*',\
 	bndtools.core;version=snapshot,\
-	org.eclipse.osgi;maven-scope=provided,\
+	org.eclipse.osgi,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.resources,\
