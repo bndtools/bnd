@@ -367,7 +367,7 @@ public class POM implements IPom {
 				property = replaceMacros(property);
 			}
 			if (property == null) {
-				l.info("Undefined property in {} : key {}", this, m.group("prop"));
+				l.debug("Undefined property in {} : key {}", this, m.group("prop"));
 				property = m.group(0);
 			}
 			sb.append(value, start, m.start())
