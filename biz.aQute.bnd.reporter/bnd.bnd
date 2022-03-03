@@ -4,7 +4,7 @@
 jtwig.version: 5.86.1.RELEASE
  
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	org.osgi.dto;version=latest,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\

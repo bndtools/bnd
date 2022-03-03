@@ -20,12 +20,12 @@ Bundle-Description: Util classes
 -maven-scope: provided
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	aQute.libg
 
 -testpath: \
 	${junit},\
-	osgi.core;version=latest,\
+	osgi.core,\
 	org.osgi.service.log;version=latest
 
 -builderignore: testresources

@@ -33,9 +33,9 @@ Import-Package: \
 -maven-scope: provided
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	aQute.libg,\
-	osgi.core;version=latest,\
+	osgi.core,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.tester;version=snapshot;packages='aQute.junit.constants',\

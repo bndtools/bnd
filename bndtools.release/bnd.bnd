@@ -23,8 +23,8 @@ Import-Package: \
 					/=resources
 
 -buildpath:\
-	osgi.annotation;version=latest;maven-scope=provided,\
-	osgi.core;version=latest;maven-scope=provided,\
+	osgi.annotation,\
+	osgi.core,\
 	aQute.libg,\
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
@@ -44,7 +44,7 @@ Import-Package: \
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.ui,\
-	org.eclipse.osgi;maven-scope=provided,\
+	org.eclipse.osgi,\
 	org.eclipse.core.commands,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.forms,\

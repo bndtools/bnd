@@ -4,8 +4,8 @@
 -nobundles: true
 
 -buildpath: \
-	osgi.annotation;version=latest,\
-	osgi.core;version=latest,\
+	osgi.annotation,\
+	osgi.core,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.resolve;version=latest,\

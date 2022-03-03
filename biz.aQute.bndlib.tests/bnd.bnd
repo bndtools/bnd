@@ -5,10 +5,10 @@
 -nobundles: true
 
 -testpath: \
-	osgi.annotation;version=latest,\
-	osgi.core;version=latest,\
-	org.osgi.namespace.extender;version=latest,\
-	org.osgi.namespace.service;version=latest,\
+	osgi.annotation,\
+	osgi.core,\
+	org.osgi.namespace.extender,\
+	org.osgi.namespace.service,\
 	org.osgi.service.blueprint;version=latest,\
 	org.osgi.service.cdi;version=latest,\
 	org.osgi.service.component;version=latest,\

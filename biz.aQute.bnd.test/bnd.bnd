@@ -4,6 +4,6 @@
 -nobundles: true
 
 -buildpath: \
-	osgi.annotation;version=latest,\
+	osgi.annotation,\
 	org.osgi.test.common;version=latest,\
 	${junit}

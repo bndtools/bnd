@@ -2,8 +2,8 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
-	osgi.core;version=latest;maven-scope=provided,\
+	osgi.annotation,\
+	osgi.core,\
 	aQute.libg,\
     biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
@@ -22,7 +22,7 @@
 	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.workbench,\
-	org.eclipse.osgi;maven-scope=provided
+	org.eclipse.osgi
 
 Bundle-SymbolicName: ${p};singleton:=true
 Bundle-ActivationPolicy: lazy

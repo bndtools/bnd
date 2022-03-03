@@ -11,8 +11,11 @@ Import-Package: \
 	org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
 	*
 
+# Decorate maven runtime dependencies
+-buildpath+.maven: "org.apache.maven:maven-*";version="${maven.target.version}";maven-scope=provided
+
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	org.osgi.dto;version='1.0',\
 	org.osgi.resource;version='1.0',\
 	org.osgi.framework;version='1.8',\
@@ -25,14 +28,14 @@ Import-Package: \
 	biz.aQute.resolve;version=latest,\
 	biz.aQute.repository;version=latest,\
 	org.eclipse.m2e.maven.runtime,\
-	org.apache.maven:maven-artifact;version=${maven.target.version};maven-scope=provided,\
-	org.apache.maven:maven-core;version=${maven.target.version};maven-scope=provided,\
-	org.apache.maven:maven-model;version=${maven.target.version};maven-scope=provided,\
-	org.apache.maven:maven-plugin-api;version=${maven.target.version};maven-scope=provided,\
-	org.apache.maven:maven-repository-metadata;version=${maven.target.version};maven-scope=provided,\
-	org.apache.maven:maven-settings;version=${maven.target.version};maven-scope=provided,\
+	org.apache.maven:maven-artifact,\
+	org.apache.maven:maven-core,\
+	org.apache.maven:maven-model,\
+	org.apache.maven:maven-plugin-api,\
+	org.apache.maven:maven-repository-metadata,\
+	org.apache.maven:maven-settings,\
 	org.codehaus.plexus:plexus-utils,\
-	org.eclipse.aether.api;version=${aether.version},\
+	org.eclipse.aether.api;version="${aether.version}",\
 	org.slf4j.api;version=latest
 
 -conditionalpackage: \

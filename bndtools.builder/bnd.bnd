@@ -2,9 +2,9 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
-	osgi.core;version=latest;maven-scope=provided,\
-	org.osgi.namespace.service;version=latest;maven-scope=provided,\
+	osgi.annotation,\
+	osgi.core,\
+	org.osgi.namespace.service,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg,\
@@ -15,7 +15,7 @@
 	bndtools.api;version=latest,\
 	bndtools.utils;version=project;packages='*',\
 	bndtools.core;version=snapshot,\
-	org.eclipse.osgi;maven-scope=provided,\
+	org.eclipse.osgi,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.resources,\

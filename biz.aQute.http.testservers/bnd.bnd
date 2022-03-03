@@ -14,7 +14,7 @@ Bundle-Description: \
     org.bouncycastle.*
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	biz.aQute.bnd.util;version=latest,\

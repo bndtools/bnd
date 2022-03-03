@@ -30,8 +30,8 @@ Import-Package: \
 -maven-scope: provided
 
 -buildpath: \
-	osgi.annotation;version=latest,\
-	osgi.core;version=latest,\
+	osgi.annotation,\
+	osgi.core,\
     junit:junit;version="${junit4.tester.version}",\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest

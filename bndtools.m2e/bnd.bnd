@@ -2,10 +2,10 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
-	osgi.core;version=latest;maven-scope=provided,\
+	osgi.annotation,\
+	osgi.core,\
 	org.osgi.service.component;version='1.3.0',\
-	org.osgi.service.component.annotations;version='1.3.0';maven-scope=provided,\
+	org.osgi.service.component.annotations;version='1.3.0',\
 	org.osgi.service.repository;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
@@ -36,7 +36,7 @@
 	org.eclipse.jdt.core,\
 	org.eclipse.m2e.core,\
 	org.eclipse.m2e.jdt,\
-	org.eclipse.osgi;maven-scope=provided,\
+	org.eclipse.osgi,\
 	org.sonatype.plexus:plexus-build-api
 
 Bundle-SymbolicName: ${p};singleton:=true

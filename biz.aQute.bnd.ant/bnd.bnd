@@ -14,7 +14,7 @@ Export-Package: \
     aQute.bnd.ant
 
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.annotation,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\

@@ -9,7 +9,7 @@
 	org.junit.jupiter.params;version='${junit.jupiter.eclipse.version}',\
 	org.opentest4j,\
 	org.apiguardian,\
-	osgi.core;version=latest
+	osgi.core
 
 # Note: we don't use the ${junit} macro because we need to use the Eclipse
 # version of the JUnit 5 bundles in the test where possible for maximum

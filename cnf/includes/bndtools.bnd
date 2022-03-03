@@ -7,3 +7,6 @@ Bundle-DocURL: https://bndtools.org/
 # terrible at managing packages and Require-Bundle is too promiscuous.
 eclipse.importpackage: \
  org.eclipse.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
+ # Decorate Equinox OSGi framework dependency
+-buildpath+.equinox: "{org.eclipse.osgi}";maven-scope=provided
