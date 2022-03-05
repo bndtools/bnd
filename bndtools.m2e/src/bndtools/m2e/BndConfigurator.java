@@ -141,21 +141,26 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
 				final IProject project = projectFacade.getProject();
 
-				// Check if we need to run. If extensions are enabled then we
-				// don't need to run since bnd-maven-plugin is doing the
-				// packaging. After the jars get build, opened or just viewed we
-				// might be called and another run can cause a build loop
-				if (hasBndPackaging(execution, projectFacade) || !needsBuilding(getDelta(project), projectFacade)) {
-
+				// Check if we need to run.
+				if (!needsBuilding(getDelta(project), projectFacade)) {
 					monitor.done();
 					return null;
 				}
 
-				// build mojo like normal
+				// Build mojo like normal
 				final Set<IProject> build = super.build(kind, monitor);
 				monitor.worked(1);
-				// nothing to do if configuration build
+
+				// Nothing to do if configuration build
 				if (kind == AbstractBuildParticipant2.PRECONFIGURE_BUILD) {
+					return build;
+				}
+
+				// If a BND packaging goal was used we don't need to call the
+				// maven-{packaging}-plugin
+				if (hasBndPackaging(execution, projectFacade)) {
+					scheduleDecorate(projectFacade);
+					monitor.done();
 					return build;
 				}
 
@@ -329,19 +334,36 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			}
 
 			// We can now decorate based on the build we just did.
-			try {
-				IProjectDecorator decorator = Injector.ref.get();
-				if (decorator != null) {
-					BndProjectInfo info = new MavenProjectInfo(mavenProject);
-					decorator.updateDecoration(projectFacade.getProject(), info);
-				}
-			} catch (Exception e) {
-				logger.logError("Failed to decorate project " + projectFacade.getProject()
-					.getName(), e);
-			}
+			scheduleDecorate(projectFacade);
 
 			return null;
 		}, monitor);
+	}
+
+	public void scheduleDecorate(final IMavenProjectFacade projectFacade) {
+		final IProject project = projectFacade.getProject();
+
+		Job job = new WorkspaceJob("Executing " + project.getName() + " Bndtools decoration") {
+			@Override
+			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				try {
+					MavenProject mavenProject = getMavenProject(projectFacade, monitor);
+					IProjectDecorator decorator = Injector.ref.get();
+					if (decorator != null) {
+						BndProjectInfo info = new MavenProjectInfo(mavenProject);
+						decorator.updateDecoration(project, info);
+					}
+
+					monitor.done();
+					return Status.OK_STATUS;
+				} catch (Throwable e) {
+					return new Status(IStatus.ERROR, this.getClass(),
+						"Error executing " + project.getName() + " Bndtools decoration" + e.getMessage(), e);
+				}
+			}
+		};
+		job.setRule(project);
+		job.schedule();
 	}
 
 	@Component
