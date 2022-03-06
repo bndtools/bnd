@@ -24,7 +24,7 @@ public enum AttributeClasses implements Predicate<String> {
 		}
 	},
 	/**
-	 * Attributes set and used by bnd code to maintain inernal correlations.
+	 * Attributes set and used by bnd code to maintain internal correlations.
 	 * These attributes are never set by users. For example,
 	 * {@value Constants#INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE} These attributes
 	 * must not end up in the manifest.
