@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 import org.osgi.resource.Capability;
@@ -83,7 +84,8 @@ public class ProcessorTest {
 			assertNativeDefault("Mac OS X", "10.8.2", "x86_64", "(osgi.native.osversion=0010.8.2)");
 			assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
 				"(&(osgi.native.processor=x86-64)(osgi.native.processor=amd64)(osgi.native.processor=em64t)(osgi.native.processor=x86_64))");
-			assertNativeDefault("Mac OS X", "11.1", "aarch64", "(&(osgi.native.processor=aarch64)(osgi.native.processor=arm64))");
+			assertNativeDefault("Mac OS X", "11.1", "aarch64",
+				"(&(osgi.native.processor=aarch64)(osgi.native.processor=arm64))");
 
 			//
 			// Linux
@@ -494,11 +496,9 @@ public class ProcessorTest {
 
 	@Test
 	public void isInternalTest() {
-		assertThat(AttributeClasses.MANIFEST.test("attribubte")).isTrue();
-		assertThat(AttributeClasses.MANIFEST.test("-foobar")).isTrue();
-		assertThat(AttributeClasses.MANIFEST.test("-internal-key")).isFalse();
-		assertThat(AttributeClasses.MANIFEST.test(Constants.SPLIT_PACKAGE_DIRECTIVE)).isFalse();
-		assertThat(AttributeClasses.MANIFEST.test(Constants.FROM_DIRECTIVE)).isFalse();
+		assertThat((Predicate<String>) AttributeClasses.MANIFEST)
+			.accepts("attribubte", "-foobar")
+			.rejects("-internal-key", Constants.SPLIT_PACKAGE_DIRECTIVE, Constants.FROM_DIRECTIVE);
 	}
 
 	@Test
