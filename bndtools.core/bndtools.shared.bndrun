@@ -17,6 +17,8 @@
 -runproperties: \
 	eclipse.application=org.eclipse.ui.ide.workbench,\
 	eclipse.consoleLog=,\
+	eclipse.home.location=${fileuri;${.}/../bndtools.test/workspace},\
+	eclipse.launcher=bndtools.core,\
 	eclipse.product=org.eclipse.sdk.ide,\
 	osgi.console=,\
 	osgi.instance.area.default=../bndtools.test/workspace,\
