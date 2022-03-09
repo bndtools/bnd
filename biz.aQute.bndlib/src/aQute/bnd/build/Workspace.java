@@ -59,6 +59,7 @@ import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.WorkspaceNotifier.ET;
 import aQute.bnd.build.api.OnWorkspace;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
@@ -1523,6 +1524,43 @@ public class Workspace extends Processor {
 
 	public <T> T writeLocked(Callable<T> callable) throws Exception {
 		return workspaceLock.locked(workspaceLock.writeLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, () -> false);
+	}
+
+	/**
+	 * Lock the workspace for all functions including modification. The callable
+	 * parameter when called can freely use any function in the workspace. After
+	 * the callable returns, the write lock is downgraded to a read lock and the
+	 * function is called with the result of the callable.
+	 *
+	 * @param underWrite the Callable to run under the write lock
+	 * @param underRead the Function to run under the read lock
+	 * @param canceled Has the operation been cancelled?
+	 * @param timeoutInMs the timeout in milliseconds
+	 * @return the value of the function
+	 * @throws InterruptedException If the thread is interrupted while waiting
+	 *             for the lock.
+	 * @throws TimeoutException If the lock was not obtained within the timeout
+	 *             period or the specified monitor is cancelled while waiting to
+	 *             obtain the lock.
+	 * @throws Exception If the callable or function throws an exception.
+	 */
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead,
+		BooleanSupplier canceled, long timeoutInMs) throws Exception {
+		return workspaceLock.writeReadLocked(timeoutInMs, underWrite, underRead, canceled);
+	}
+
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead,
+		BooleanSupplier canceled) throws Exception {
+		return workspaceLock.writeReadLocked(WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, underWrite, underRead, canceled);
+	}
+
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead, long timeoutInMs)
+		throws Exception {
+		return workspaceLock.writeReadLocked(timeoutInMs, underWrite, underRead, () -> false);
+	}
+
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead) throws Exception {
+		return workspaceLock.writeReadLocked(WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, underWrite, underRead, () -> false);
 	}
 
 	/**
