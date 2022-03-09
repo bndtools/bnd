@@ -12,10 +12,10 @@ junit.platform.eclipse.version=1.6.0
 junit.jupiter.version=5.8.2
 junit.platform.version=1.8.2
 assertj.version=3.22.0
-awaitility.version=4.1.1
+awaitility.version=4.2.0
 hamcrest.version=2.2
-org.mockito.version=4.1.0
-net.bytebuddy.version=1.12.1
+org.mockito.version=4.4.0
+net.bytebuddy.version=1.12.8
 org.objenesis.version=3.2
 osgi-test.version=1.0.1
 
