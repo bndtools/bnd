@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.strings.Strings;
 
 /**
@@ -101,6 +102,30 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 				getQueuedThreads()));
 		e.initCause(getOwnerCause());
 		return e;
+	}
+
+	<T, U> T writeReadLocked(final long timeoutInMs, final Callable<U> underWrite,
+		final FunctionWithException<U, T> underRead, final BooleanSupplier canceled) throws Exception {
+		Callable<U> writeLocked = () -> {
+			U writeResult = underWrite.call();
+			// It is safe to let an exception propagate from here.
+			// Downgrade lock by taking read lock before returning to release
+			// write lock.
+			trace("Downgrading", writeLock());
+			readLock().lock();
+			return writeResult;
+		};
+		U writeResult = locked(writeLock(), timeoutInMs, writeLocked, canceled);
+		// If the call to locked completed normally, we hold the read
+		// lock obtained in the writeLocked callable.
+		try {
+			Callable<T> readLocked = () -> underRead.apply(writeResult);
+			return locked(readLock(), timeoutInMs, readLocked, canceled);
+		} finally {
+			// Must unlock the read lock taken above when we held the write
+			// lock.
+			readLock().unlock();
+		}
 	}
 
 	<T> T locked(final Lock lock, final long timeoutInMs, final Callable<T> callable, final BooleanSupplier canceled)
