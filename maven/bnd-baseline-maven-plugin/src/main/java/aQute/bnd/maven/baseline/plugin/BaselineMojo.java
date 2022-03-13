@@ -3,6 +3,7 @@ package aQute.bnd.maven.baseline.plugin;
 import static java.util.stream.Collectors.toList;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Formatter;
@@ -45,9 +46,8 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.version.MavenVersion;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.libg.reporter.ReporterAdapter;
-import aQute.service.reporter.Reporter;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
@@ -93,6 +93,9 @@ public class BaselineMojo extends AbstractMojo {
 	@Component
 	private RepositorySystem		system;
 
+	@Parameter(property = "bnd.baseline.report.file", defaultValue = "${project.build.directory}/baseline/${project.build.finalName}.txt")
+	private File					reportFile;
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
@@ -113,38 +116,15 @@ public class BaselineMojo extends AbstractMojo {
 
 		setupBase(artifact);
 
-		try (Processor processor = new Processor()) {
+		try {
 			searchForBaseVersion(aetherRepos);
 			if (base.getVersion() != null && !base.getVersion()
 				.isEmpty()) {
 
 				ArtifactResult artifactResult = locateBaseJar(aetherRepos);
 
-				Reporter reporter;
-				if (fullReport) {
-					reporter = new ReporterAdapter(System.out);
-					((ReporterAdapter) reporter).setTrace(true);
-				} else {
-					reporter = new ReporterAdapter();
-				}
-
-				DiffPluginImpl differ = new DiffPluginImpl();
-				differ.setIgnore(new Parameters(Strings.join(",", diffignores), processor));
-				Baseline baseline = new Baseline(reporter, differ);
-
-				if (checkFailures(artifact, artifactResult, baseline,
-					new Instructions(new Parameters(Strings.join(",", diffpackages), processor)))) {
-					if (continueOnError) {
-						logger.warn(
-							"The baselining check failed when checking {} against {} but the bnd-baseline-maven-plugin is configured not to fail the build.",
-							artifact, artifactResult.getArtifact());
-					} else {
-						throw new MojoFailureException("The baselining plugin detected versioning errors");
-					}
-				} else {
-					logger.info("Baselining check succeeded checking {} against {}", artifact,
-						artifactResult.getArtifact());
-				}
+				baselineAction(artifact.getFile(), artifactResult.getArtifact()
+					.getFile());
 			} else {
 				if (failOnMissing) {
 					throw new MojoFailureException("Unable to locate a previous version of the artifact");
@@ -258,65 +238,74 @@ public class BaselineMojo extends AbstractMojo {
 		return system.resolveArtifact(session, new ArtifactRequest(toFind, aetherRepos, "baseline"));
 	}
 
-	private boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline,
-		Instructions diffpackages) throws Exception, IOException {
-		StringBuffer sb = new StringBuffer();
-		try (Formatter f = new Formatter(sb, Locale.US);
-			Jar newer = new Jar(artifact.getFile());
-			Jar older = new Jar(artifactResult.getArtifact()
-				.getFile())) {
-			boolean failed = false;
-
-			List<Info> infos = baseline.baseline(newer, older, diffpackages)
+	private void baselineAction(File bundle, File baseline) throws Exception, IOException {
+		IO.mkdirs(reportFile.getParentFile());
+		boolean failure = false;
+		try (Processor processor = new Processor();
+			Jar newer = new Jar(bundle);
+			Jar older = new Jar(baseline)) {
+			logger.info("Baseline bundle {} against baseline {}", bundle, baseline);
+			DiffPluginImpl differ = new DiffPluginImpl();
+			differ.setIgnore(new Parameters(Strings.join(diffignores), processor));
+			Baseline baseliner = new Baseline(processor, differ);
+			List<Info> infos = baseliner
+				.baseline(newer, older, new Instructions(new Parameters(Strings.join(diffpackages), processor)))
 				.stream()
 				.filter(info -> info.mismatch)
 				.sorted(Comparator.comparing(info -> info.packageName))
 				.collect(toList());
-
-			String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s";
-			BundleInfo bundleInfo = baseline.getBundleInfo();
-			if (bundleInfo.mismatch) {
-				failed = true;
-				if (logger.isErrorEnabled()) {
-					sb.setLength(0);
-					f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "");
-					logger.error(f.toString());
-					sb.setLength(0);
-					Diff diff = baseline.getDiff();
-					f.format(format, "*", bundleInfo.bsn, diff.getType(), diff.getDelta(), newer.getVersion(),
-						older.getVersion(),
-						Objects.nonNull(bundleInfo.suggestedVersion) ? bundleInfo.suggestedVersion : "-", "");
-					if (fullReport) {
-						f.format("\n%#2S", diff);
-					}
-					logger.error(f.toString());
+			BundleInfo bundleInfo = baseliner.getBundleInfo();
+			try (Formatter f = new Formatter(reportFile, "UTF-8", Locale.US)) {
+				String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s\n";
+				f.format("===============================================================\n");
+				f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "");
+				Diff diff = baseliner.getDiff();
+				f.format(format, bundleInfo.mismatch ? "*" : " ", bundleInfo.bsn, diff.getType(), diff.getDelta(),
+					newer.getVersion(), older.getVersion(),
+					bundleInfo.mismatch && Objects.nonNull(bundleInfo.suggestedVersion) ? bundleInfo.suggestedVersion
+						: "-",
+					"");
+				if (fullReport || bundleInfo.mismatch) {
+					f.format("%#2S\n", diff);
 				}
-			}
+				if (bundleInfo.mismatch) {
+					failure = true;
+				}
 
-			if (!infos.isEmpty()) {
-				failed = true;
-				if (logger.isErrorEnabled()) {
-					sb.setLength(0);
+				if (!infos.isEmpty()) {
+					f.format("===============================================================\n");
 					f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "If Prov.");
-					logger.error(f.toString());
 					for (Info info : infos) {
-						sb.setLength(0);
-						Diff diff = info.packageDiff;
-						f.format(format, "*", diff.getName(), diff.getType(), diff.getDelta(), info.newerVersion,
+						diff = info.packageDiff;
+						f.format(format, info.mismatch ? "*" : " ", diff.getName(), diff.getType(), diff.getDelta(),
+							info.newerVersion,
 							Objects.nonNull(info.olderVersion)
 								&& info.olderVersion.equals(aQute.bnd.version.Version.LOWEST) ? "-" : info.olderVersion,
-								Objects.nonNull(info.suggestedVersion)
+							Objects.nonNull(info.suggestedVersion)
 								&& info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok"
 									: info.suggestedVersion,
 							Objects.nonNull(info.suggestedIfProviders) ? info.suggestedIfProviders : "-");
-						if (fullReport) {
-							f.format("\n%#2S", diff);
+						if (fullReport || info.mismatch) {
+							f.format("%#2S\n", diff);
 						}
-						logger.error(f.toString());
+						if (info.mismatch) {
+							failure = true;
+						}
 					}
 				}
 			}
-			return failed;
+		}
+
+		if (failure) {
+			String msg = String.format("Baseline problems detected. See the report in %s.\n%s", reportFile,
+				IO.collect(reportFile));
+			if (continueOnError) {
+				logger.warn(msg);
+			} else {
+				throw new MojoFailureException(msg);
+			}
+		} else {
+			logger.info("Baseline check succeeded. See the report in {}.", reportFile);
 		}
 	}
 }

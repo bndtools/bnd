@@ -11,28 +11,36 @@ def build_log = build_log_file.text
 assert build_log =~ Pattern.quote('[WARNING] No previous version of biz.aQute.bnd-test:valid-no-previous:jar:1.0.1 could be found to baseline against')
 
 // With previous-same
-assert build_log =~ Pattern.quote('[INFO] Baselining check succeeded checking biz.aQute.bnd-test:valid-with-previous-same:jar:1.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1')
+File valid_with_previous_same = new File("${basedir}/valid-with-previous-same/target/baseline/valid-with-previous-same-1.0.2.txt")
+assert valid_with_previous_same.isFile()
+assert build_log =~ Pattern.quote("[INFO] Baseline check succeeded. See the report in ${valid_with_previous_same}")
 
 // With previous-provider
-assert build_log =~ Pattern.quote('[INFO] Baselining check succeeded checking biz.aQute.bnd-test:valid-with-provider:jar:1.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1')
+File valid_with_provider = new File("${basedir}/valid-with-provider/target/baseline/valid-with-provider-1.0.2.txt")
+assert valid_with_provider.isFile()
+assert build_log =~ Pattern.quote("[INFO] Baseline check succeeded. See the report in ${valid_with_provider}")
 
 // With provider (no bundle version change required)
-assert build_log =~ Pattern.quote('[INFO] Baselining check succeeded checking biz.aQute.bnd-test:valid-with-provider-no-bundle-version-change:jar:1.0.1 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1')
+File valid_with_provider_no_bundle_version_change = new File("${basedir}/valid-with-provider-no-bundle-version-change/target/baseline/valid-with-provider-no-bundle-version-change-1.0.1.txt")
+assert valid_with_provider_no_bundle_version_change.isFile()
+assert build_log =~ Pattern.quote("[INFO] Baseline check succeeded. See the report in ${valid_with_provider_no_bundle_version_change}")
 
 // With provider
-assert build_log =~ Pattern.quote('[ERROR] * bnd.test                                           PACKAGE    MINOR      1.0.0      1.0.0      1.1.0      -')
-
-assert build_log =~ Pattern.quote('[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-provider:jar:1.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.')
+File invalid_with_provider = new File("${basedir}/invalid-with-provider/target/baseline/invalid-with-provider-1.0.2.txt")
+assert invalid_with_provider.isFile()
+assert build_log =~ Pattern.quote("[WARNING] Baseline problems detected. See the report in ${invalid_with_provider}")
+assert build_log =~ Pattern.quote('* bnd.test                                           PACKAGE    MINOR      1.0.0      1.0.0      1.1.0      -')
 
 // With provider (require bundle version change)
-assert build_log =~ Pattern.quote('[ERROR] * valid-no-previous                                  BUNDLE     MAJOR      1.0.1      1.0.1      1.1.0')
-
-assert build_log =~ Pattern.quote('[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-provider-require-bundle-version-change:jar:1.0.1 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.')
-
+File invalid_with_provider_require_bundle_version_change = new File("${basedir}/invalid-with-provider-require-bundle-version-change/target/baseline/invalid-with-provider-require-bundle-version-change-1.0.1.txt")
+assert invalid_with_provider_require_bundle_version_change.isFile()
+assert build_log =~ Pattern.quote("[WARNING] Baseline problems detected. See the report in ${invalid_with_provider_require_bundle_version_change}")
+assert build_log =~ Pattern.quote('* valid-no-previous                                  BUNDLE     MAJOR      1.0.1      1.0.1      1.1.0')
 
 // With consumer
-assert build_log =~ Pattern.quote('[ERROR] * bnd.test                                           PACKAGE    MAJOR      1.0.0      1.0.0      2.0.0      1.1.0')
-
-assert build_log =~ Pattern.quote('[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-consumer:jar:1.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:1.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.')
+File invalid_with_consumer = new File("${basedir}/invalid-with-consumer/target/baseline/invalid-with-consumer-1.0.2.text")
+assert invalid_with_consumer.isFile()
+assert build_log =~ Pattern.quote("[WARNING] Baseline problems detected. See the report in ${invalid_with_consumer}")
+assert build_log =~ Pattern.quote('* bnd.test                                           PACKAGE    MAJOR      1.0.0      1.0.0      2.0.0      1.1.0')
 
 

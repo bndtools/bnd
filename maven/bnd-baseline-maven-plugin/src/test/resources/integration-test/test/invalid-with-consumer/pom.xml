@@ -32,7 +32,8 @@
 					</base>
 					<includeDistributionManagement>true</includeDistributionManagement>
 					<continueOnError>true</continueOnError>
-					<fullReport>true</fullReport>
+					<fullReport>false</fullReport>
+					<reportFile>${project.build.directory}/baseline/${project.build.finalName}.text</reportFile>
 				</configuration>
 			</plugin>
 			<plugin>
