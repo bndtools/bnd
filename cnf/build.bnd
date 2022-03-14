@@ -65,10 +65,10 @@ Bundle-License:         "${SPDX-License-Identifier}";\
                         description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0, or the Eclipse Public License 2.0.";\
                         link="https://opensource.org/licenses/Apache-2.0,https://opensource.org/licenses/EPL-2.0"
 Bundle-DocURL:          https://bnd.bndtools.org/
-Bundle-SCM:             url=https://github.com/bndtools/bnd, \
-                        connection=scm:git:https://github.com/bndtools/bnd.git, \
-                        developerConnection=scm:git:git@github.com:bndtools/bnd.git, \
-                        tag=${Git-Descriptor}
+Bundle-SCM:             url=https://github.com/bndtools/bnd,\
+                        connection=scm:git:https://github.com/bndtools/bnd.git,\
+                        developerConnection=scm:git:git@github.com:bndtools/bnd.git,\
+                        tag=${base.version}${if;${def;-snapshot;SNAPSHOT};-${def;-snapshot;SNAPSHOT}}
 Bundle-Developers: \
     pkriens; \
         email=Peter.Kriens@aQute.biz; \

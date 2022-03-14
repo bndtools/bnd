@@ -154,6 +154,7 @@ publishing {
 					url.set("https://github.com/bndtools/bnd")
 					connection.set("scm:git:https://github.com/bndtools/bnd.git")
 					developerConnection.set("scm:git:git@github.com:bndtools/bnd.git")
+					tag.set(version.toString())
 				}
 				developers {
 					developer {

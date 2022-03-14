@@ -17,6 +17,7 @@
 		<url>https://github.com/bndtools/bnd</url>
 		<connection>scm:git:https://github.com/bndtools/bnd.git</connection>
 		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+		<tag>${revision}</tag>
 	</scm>
 
 	<prerequisites>

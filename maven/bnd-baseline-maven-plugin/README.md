@@ -194,6 +194,7 @@ It is possible to only check for correct package versions and leave out the bund
 |`continueOnError`      | See [Continue on Error](#continue-on-error). _Defaults to `false`._ Override with property `bnd.baseline.continue.on.error`.|
 |`skip`                 | Skip the baseline process altogether. _Defaults to `false`._ Override with property `bnd.baseline.skip`.|
 |`releaseversions`                 | When searching a version range for the baseline, only consider release versions. That is, don't consider `alpha`, `beta`, `milestone`, or `rc` versions. `snapshot` versions are never considered when searching for the baseline. _Defaults to `false`._ Override with property `bnd.baseline.releaseversions`.|
+|`reportFile`                 | The baseline report is placed in this file. _Defaults to `${project.build.directory}/baseline/${project.build.finalName}.txt`._ Override with property `bnd.baseline.report.file`.|
 
 
 [1]: https://docs.osgi.org/whitepaper/semantic-versioning/
