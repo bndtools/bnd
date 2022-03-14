@@ -18,104 +18,31 @@
 
 package aQute.bnd.test.jupiter;
 
-import static org.osgi.test.common.inject.FieldInjector.findAnnotatedFields;
-import static org.osgi.test.common.inject.FieldInjector.findAnnotatedNonStaticFields;
-import static org.osgi.test.common.inject.FieldInjector.setField;
-
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import org.osgi.test.common.inject.TargetType;
+import org.osgi.test.junit5.inject.InjectingExtension;
 
-public class TemporaryDirectoryExtension implements BeforeAllCallback, BeforeEachCallback, ParameterResolver {
+public class TemporaryDirectoryExtension extends InjectingExtension<InjectTemporaryDirectory> {
 
-	@Override
-	public void beforeAll(ExtensionContext extensionContext) throws Exception {
-		List<Field> fields = findAnnotatedFields(extensionContext.getRequiredTestClass(),
-			InjectTemporaryDirectory.class,
-			m -> Modifier.isStatic(m.getModifiers()));
-
-		fields.forEach(field -> {
-			assertValidFieldCandidate(field);
-			InjectTemporaryDirectory annotation = field.getAnnotation(InjectTemporaryDirectory.class);
-			Class<?> targetType = field.getType();
-			setField(field, null, resolveReturnValue(targetType, annotation, extensionContext));
-		});
+	public TemporaryDirectoryExtension() {
+		super(InjectTemporaryDirectory.class, File.class, Path.class, String.class);
 	}
 
 	@Override
-	public void beforeEach(ExtensionContext extensionContext) throws Exception {
-		for (Object instance : extensionContext.getRequiredTestInstances()
-			.getAllInstances()) {
-			List<Field> fields = findAnnotatedNonStaticFields(instance.getClass(), InjectTemporaryDirectory.class);
-
-			fields.forEach(field -> {
-				assertValidFieldCandidate(field);
-				InjectTemporaryDirectory annotation = field.getAnnotation(InjectTemporaryDirectory.class);
-				Class<?> targetType = field.getType();
-				setField(field, instance, resolveReturnValue(targetType, annotation, extensionContext));
-			});
-		}
-	}
-
-	@Override
-	public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
-		throws ParameterResolutionException {
-		Optional<InjectTemporaryDirectory> annotation = parameterContext
-			.findAnnotation(InjectTemporaryDirectory.class);
-		Parameter parameter = parameterContext.getParameter();
-		Class<?> targetType = parameter.getType();
-		return resolveReturnValue(targetType, annotation.get(), extensionContext);
-	}
-
-	@Override
-	public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
-		throws ParameterResolutionException {
-		if (!parameterContext.isAnnotated(InjectTemporaryDirectory.class)) {
-			return false;
-		}
-		Parameter parameter = parameterContext.getParameter();
-		Class<?> targetType = parameter.getType();
-		if (targetType.isAssignableFrom(File.class) || targetType.isAssignableFrom(Path.class)
-			|| targetType.isAssignableFrom(String.class)) {
-			return true;
-		}
-		throw new ParameterResolutionException("Can only resolve @" + InjectTemporaryDirectory.class.getSimpleName()
-			+ " parameter for File, Path, or String");
-	}
-
-	static void assertValidFieldCandidate(Field field) {
-		if (Modifier.isFinal(field.getModifiers()) || Modifier.isPrivate(field.getModifiers())) {
-			throw new ExtensionConfigurationException("@" + InjectTemporaryDirectory.class.getSimpleName() + " field ["
-				+ field.getName() + "] must not be final or private.");
-		}
-	}
-
-	static Object resolveReturnValue(Class<?> targetType, InjectTemporaryDirectory annotation,
+	protected Object resolveValue(TargetType targetType, InjectTemporaryDirectory annotation,
 		ExtensionContext extensionContext) throws ParameterResolutionException {
-
-		// supportsParameter() If Jupiter does the right thing then this method
-		// should not be called with an incorrect type
-		assert targetType.isAssignableFrom(File.class) || targetType.isAssignableFrom(Path.class)
-			|| targetType.isAssignableFrom(String.class);
 
 		File temporaryDirectory = new File(annotation.value());
 		Optional<Class<?>> testClass = extensionContext.getTestClass();
@@ -140,15 +67,17 @@ public class TemporaryDirectoryExtension implements BeforeAllCallback, BeforeEac
 			throw new ParameterResolutionException("unable to clear temporary directory", e);
 		}
 
-		if (targetType.isAssignableFrom(File.class)) {
+		if (targetType.matches(File.class)) {
 			return temporaryDirectory;
-		} else if (targetType.isAssignableFrom(Path.class)) {
+		}
+		if (targetType.matches(Path.class)) {
 			return temporaryDirectoryPath;
-		} else if (targetType.isAssignableFrom(String.class)) {
+		}
+		if (targetType.matches(String.class)) {
 			return temporaryDirectory.getAbsolutePath();
 		}
 		throw new ParameterResolutionException(
-			"Can only resolve @" + InjectTemporaryDirectory.class.getSimpleName()
+			"Can only resolve @" + annotation().getSimpleName()
 				+ " parameter for File, Path, or String");
 	}
 
