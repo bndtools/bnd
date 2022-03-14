@@ -17,7 +17,7 @@ hamcrest.version=2.2
 org.mockito.version=4.4.0
 net.bytebuddy.version=1.12.8
 org.objenesis.version=3.2
-osgi-test.version=1.0.1
+osgi-test.version=1.1.0
 
 junit: ${junit-osgi},\
 	org.osgi.dto;version='[1.0,1.1)',\
@@ -43,7 +43,8 @@ junit-osgi: \
 	org.osgi.service.resolver;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
-	org.osgi.test.common;version=latest
+	org.osgi.test.common;version=latest,\
+	org.osgi.test.junit5;version=latest
 
 mockito: org.mockito.mockito-core;version=latest,\
 	net.bytebuddy.byte-buddy;version=latest,\
