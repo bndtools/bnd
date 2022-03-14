@@ -251,7 +251,6 @@ public class BaselineMojo extends AbstractMojo {
 			List<Info> infos = baseliner
 				.baseline(newer, older, new Instructions(new Parameters(Strings.join(diffpackages), processor)))
 				.stream()
-				.filter(info -> info.mismatch)
 				.sorted(Comparator.comparing(info -> info.packageName))
 				.collect(toList());
 			BundleInfo bundleInfo = baseliner.getBundleInfo();
