@@ -1061,6 +1061,10 @@ public class Jar implements Closeable {
 		return source;
 	}
 
+	public void setSource(File source) {
+		this.source = source;
+	}
+
 	public boolean addAll(Jar src) {
 		check();
 		return addAll(src, null);
