@@ -1003,10 +1003,12 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		}
 	}
 
+	@Deprecated
 	public final static String _fileHelp = "${file;<base>;<paths>...}, create correct OS dependent path";
+	static final String			_osfileHelp	= "${osfile;<base>;<path>}, create correct OS dependent path";
 
 	public String _osfile(String args[]) {
-		verifyCommand(args, _fileHelp, null, 3, 3);
+		verifyCommand(args, _osfileHelp, null, 3, 3);
 		File base = new File(args[1]);
 		File f = IO.getFile(base, args[2]);
 		return f.getAbsolutePath();
