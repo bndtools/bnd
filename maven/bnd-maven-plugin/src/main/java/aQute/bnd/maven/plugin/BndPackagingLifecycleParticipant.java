@@ -40,17 +40,17 @@ import aQute.bnd.maven.lib.executions.PluginExecutions;
 @Component(role = AbstractMavenLifecycleParticipant.class, hint = "aQute.bnd.maven.plugin.BndPackagingLifecycleParticipant")
 public class BndPackagingLifecycleParticipant extends AbstractMavenLifecycleParticipant implements LogEnabled {
 
-	public static String	THIS_GROUP_ID					= "biz.aQute.bnd";
+	public static final String	THIS_GROUP_ID					= "biz.aQute.bnd";
 
-	public static String	THIS_ARTIFACT_ID				= "bnd-maven-plugin";
+	public static final String	THIS_ARTIFACT_ID				= "bnd-maven-plugin";
 
-	public static String	MAVEN_JAR_PLUGIN_GROUP_ID		= "org.apache.maven.plugins";
+	public static final String	MAVEN_JAR_PLUGIN_GROUP_ID		= "org.apache.maven.plugins";
 
-	public static String	MAVEN_JAR_PLUGIN_ARTIFACT_ID	= "maven-jar-plugin";
+	public static final String	MAVEN_JAR_PLUGIN_ARTIFACT_ID	= "maven-jar-plugin";
 
-	public static String	MAVEN_WAR_PLUGIN_GROUP_ID		= "org.apache.maven.plugins";
+	public static final String	MAVEN_WAR_PLUGIN_GROUP_ID		= "org.apache.maven.plugins";
 
-	public static String	MAVEN_WAR_PLUGIN_ARTIFACT_ID	= "maven-war-plugin";
+	public static final String	MAVEN_WAR_PLUGIN_ARTIFACT_ID	= "maven-war-plugin";
 
 	private Logger			logger;
 

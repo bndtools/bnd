@@ -1706,6 +1706,7 @@ public class MacroTest {
 		try (Processor p = new Processor()) {
 			p.setProperty("specs", "a0,b0, c0,    d0");
 			Macro m = new Macro(p);
+			assertEquals("libs/a0 libs/b0 libs/c0 libs/d0", m.process("${replace;${specs};.+;libs/$0; }"));
 			assertEquals("xa0y,xb0y,xc0y,xd0y", m.process("${replace;${specs};(\\S+);x$1y}"));
 			assertEquals("a,b,c,d", m.process("${replace;${specs};0}"));
 		} catch (IOException e) {
@@ -1908,6 +1909,7 @@ public class MacroTest {
 		try (Processor p = new Processor()) {
 			p.setProperty("a", "aaaa");
 			Macro m = new Macro(p);
+			assertEquals("aa bb cc dd ee ff", m.process("${sjoin; ;aa,bb,cc,dd,ee,ff}"));
 			assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc,dd,ee,ff}"));
 			assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc;dd,ee,ff}"));
 			assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa;bb;cc;dd;ee,ff}"));
