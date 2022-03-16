@@ -269,6 +269,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				}
 				if (cpe.isDirectory()) {
 					Jar cpeJar = new Jar(cpe);
+					cpeJar.setSource(new File(cpe.getParentFile(), createArtifactName(artifact)));
 					builder.addClose(cpeJar);
 					builder.updateModified(cpeJar.lastModified(), cpe.getPath());
 					buildpath.add(cpeJar);
@@ -623,6 +624,15 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			+ getClassifier().map("-"::concat)
 				.orElse("")
 			+ "." + project.getPackaging());
+	}
+
+	private String createArtifactName(Artifact artifact) {
+		String classifier = artifact.getClassifier();
+		if ((classifier == null) || classifier.isEmpty()) {
+			return String.format("%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), artifact.getType());
+		}
+		return String.format("%s-%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), classifier,
+			artifact.getType());
 	}
 
 	private File loadProperties(Builder builder) throws Exception {
