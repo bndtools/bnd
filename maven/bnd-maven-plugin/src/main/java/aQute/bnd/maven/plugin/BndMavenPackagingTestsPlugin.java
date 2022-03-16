@@ -1,5 +1,6 @@
 package aQute.bnd.maven.plugin;
 
+import java.io.File;
 import java.util.Optional;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -12,6 +13,14 @@ public class BndMavenPackagingTestsPlugin extends BndMavenTestsPlugin {
 
 	@Parameter(defaultValue = "tests")
 	private String classifier;
+
+	@Parameter(defaultValue = "${project.build.directory}")
+	private File	outputDir;
+
+	@Override
+	public File getOutputDir() {
+		return outputDir;
+	}
 
 	@Override
 	public Optional<String> getClassifier() {

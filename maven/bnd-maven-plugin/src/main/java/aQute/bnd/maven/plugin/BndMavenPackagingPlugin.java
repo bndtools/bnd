@@ -1,5 +1,6 @@
 package aQute.bnd.maven.plugin;
 
+import java.io.File;
 import java.util.Optional;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -12,6 +13,22 @@ public class BndMavenPackagingPlugin extends BndMavenPlugin {
 
 	@Parameter
 	private String classifier;
+
+	@Parameter(defaultValue = "${project.build.directory}")
+	private File	outputDir;
+
+	@Parameter(defaultValue = "${project.build.directory}")
+	private File					warOutputDir;
+
+	@Override
+	public File getOutputDir() {
+		return outputDir;
+	}
+
+	@Override
+	protected File getWarOutputDir() {
+		return warOutputDir;
+	}
 
 	@Override
 	public Optional<String> getClassifier() {

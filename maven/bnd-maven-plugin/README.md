@@ -50,8 +50,8 @@ The `jar` goal is not executed by default, therefore at least one explicit execu
 |`classifier`          | A string added to the artifact indicating a supplemental artifact produced by the project. If no value is provided it indicates the main artifact produced by the project. _Defaults to no value_.||`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
 |`classesDir`           | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.outputDirectory}`._|
 |`includeClassesDir` | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*. |
-|`outputDir`            | The directory where the `bnd-maven-plugin` will extract it's contents. _Defaults to `${project.build.outputDirectory}`._|
-|`warOutputDir`            | The directory where the `bnd-maven-plugin` will extract it's contents when packaging is `war`. _Defaults to `${project.build.directory}/${project.build.finalName}`._|
+|`outputDir`            | The directory where the `bnd-maven-plugin` will place the jar when packaging. _Defaults to `${project.build.directory}`._|
+|`warOutputDir`            | The directory where the `bnd-maven-plugin` will place the war when packaging is `war`. _Defaults to `${project.build.directory}`._|
 |`packagingTypes`                | The list of maven packaging types for which the plugin will execute. *Defaults to `jar,war`*. Override with property `bnd.packagingTypes`. |
 |`skip`                 | Skip the project. _Defaults to `false`._ Override with property `bnd.skip`.|
 |`skipIfEmpty`         | Skip processing if `includeClassesDir` is `true` and the `${project.build.outputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.|

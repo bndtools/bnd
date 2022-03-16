@@ -246,7 +246,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				if (wabProperty == null) {
 					builder.setProperty(Constants.WAB, "");
 				}
-				outputDir = warOutputDir;
+				outputDir = getWarOutputDir();
 				logger
 					.info("WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
 						+ outputDir);
@@ -508,14 +508,14 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 						// Add META-INF/maven metadata to jar
 						addMavenMetadataToJar(bndJar);
 						// Write the jar directly and attach it to the project
-						attachArtifactToProject(bndJar);
+						attachArtifactToProject(bndJar, outputDir);
 					} else {
 						throw new MojoExecutionException(String.format(
 							"In order to use the bnd-maven-plugin packaging goal %s, <extensions>true</extensions> must be set on the plugin",
 							goal));
 					}
 				} else {
-					// Expand Jar into target/classes
+					// Expand Jar into outputDir
 					expandJar(bndJar, outputDir);
 				}
 			} else {
@@ -529,6 +529,10 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		} catch (Exception e) {
 			throw new MojoExecutionException("bnd error: " + e.getMessage(), e);
 		}
+	}
+
+	protected File getWarOutputDir() {
+		return warOutputDir;
 	}
 
 	/**
@@ -569,9 +573,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		return builder;
 	}
 
-	private void attachArtifactToProject(Jar bndJar) throws Exception {
-		File artifactFile = createArtifactFile();
-		File outputDir = artifactFile.getParentFile();
+	private void attachArtifactToProject(Jar bndJar, File outputDir) throws Exception {
+		File artifactFile = createArtifactFile(outputDir);
 
 		if (!outputDir.exists()) {
 			IO.mkdirs(outputDir);
@@ -617,8 +620,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		bndJar.putResource(pomProperties.getWhere(), pomProperties);
 	}
 
-	private File createArtifactFile() {
-		return new File(targetDir, project.getBuild()
+	private File createArtifactFile(File outputDir) {
+		return new File(outputDir, project.getBuild()
 			.getFinalName()
 			+ getClassifier().map("-"::concat)
 				.orElse("")
