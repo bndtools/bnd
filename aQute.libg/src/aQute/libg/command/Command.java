@@ -159,7 +159,7 @@ public class Command {
 						} catch (InterruptedIOException e) {
 							// Ignore here
 						} catch (Exception e) {
-							// Who cares?
+							logger.debug("stdin copy exception in thread", e);
 						} finally {
 							IO.close(stdin);
 						}
@@ -169,6 +169,8 @@ public class Command {
 				} else {
 					try {
 						IO.copy(in, stdin);
+					} catch (Exception e) {
+						logger.debug("stdin copy exception", e);
 					} finally {
 						IO.close(stdin);
 					}
