@@ -57,9 +57,9 @@ public class AlsoLauncherTest {
 	@InjectTemporaryDirectory
 	File				testDir;
 
-	private Workspace			workspace;
-	private Project				project;
-	private Properties			prior;
+	private Workspace	workspace;
+	private Project		project;
+	private Properties	prior;
 
 	@BeforeEach
 	public void setUp() throws Exception {
@@ -141,7 +141,7 @@ public class AlsoLauncherTest {
 
 		try (Jar jar = new Jar(run)) {
 			jar.getResources()
-			.forEach((k, v) -> assertThat(k).startsWith("test/"));
+				.forEach((k, v) -> assertThat(k).startsWith("test/"));
 		}
 	}
 
@@ -150,9 +150,8 @@ public class AlsoLauncherTest {
 		project.setProperty("-resourceonly", "true");
 		project.setProperty("-includeresource", "hello;literal=true");
 
-		project.setProperty("-export",
-			"x.bndrun;type=bnd.runbundles;name=runbundles.jar;template=" + project.getBase()
-				.getAbsolutePath() + "/testresources/biz.aQute.launcher-4.1.0.jar");
+		project.setProperty("-export", "x.bndrun;type=bnd.runbundles;name=runbundles.jar;template=" + project.getBase()
+			.getAbsolutePath() + "/testresources/biz.aQute.launcher-4.1.0.jar");
 		File file = project.getFile("generated/demo.jar");
 		file.delete();
 		assertThat(file).doesNotExist();
@@ -213,7 +212,7 @@ public class AlsoLauncherTest {
 
 		try (Jar jar = new Jar(run)) {
 			jar.getResources()
-			.forEach((k, v) -> assertThat(k).startsWith("org.apache"));
+				.forEach((k, v) -> assertThat(k).startsWith("org.apache"));
 		}
 	}
 
@@ -478,22 +477,18 @@ public class AlsoLauncherTest {
 	@Test
 	public void testExpandedJarLauncher() throws Exception {
 		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=quit.no.exit");
+		File temporaryFolder = new File(testDir, "executable");
 		ProjectLauncher l = project.getProjectLauncher();
-		File temporaryFolder = Files.newTemporaryFolder();
-		try {
-			try (Jar executable = l.executable()) {
-				executable.writeFolder(temporaryFolder);
-			}
-			try (URLClassLoader loader = new URLClassLoader(new URL[] {
-				temporaryFolder.toURI()
-					.toURL()
-			}, null)) {
-				Class<?> launcher = loader.loadClass("aQute.launcher.pre.EmbeddedLauncher");
-				Method method = launcher.getMethod("main", String[].class);
-				method.invoke(null, (Object) new String[0]);
-			}
-		} finally {
-			IO.delete(temporaryFolder);
+		try (Jar executable = l.executable()) {
+			executable.writeFolder(temporaryFolder);
+		}
+		try (URLClassLoader loader = new URLClassLoader(new URL[] {
+			temporaryFolder.toURI()
+				.toURL()
+		}, null)) {
+			Class<?> launcher = loader.loadClass("aQute.launcher.pre.EmbeddedLauncher");
+			Method method = launcher.getMethod("main", String[].class);
+			method.invoke(null, (Object) new String[0]);
 		}
 	}
 
