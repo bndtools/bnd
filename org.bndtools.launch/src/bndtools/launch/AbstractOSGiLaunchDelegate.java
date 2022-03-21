@@ -1,5 +1,6 @@
 package bndtools.launch;
 
+import static aQute.bnd.build.ProjectLauncher.renderArguments;
 import static bndtools.launch.LaunchConstants.PLUGIN_ID;
 
 import java.io.File;
@@ -50,7 +51,6 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import aQute.bnd.osgi.Jar;
-import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.StatusCode;
 import bndtools.central.Central;
@@ -323,72 +323,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		return renderArguments(getProjectLauncher().getRunProgramArgs());
 	}
 
-	static String renderArguments(Collection<String> arguments) {
-		return renderArguments(arguments.toArray(new String[0]));
-	}
-
 	// The following were copied from org.eclipse.debug.core.DebugPlugin
 	// to fix a bug in escaping double quotes.
-
-	static String renderArguments(String[] arguments) {
-		boolean isWin32 = IO.isWindows();
-		StringBuilder buf = new StringBuilder();
-		int count = arguments.length;
-		for (int i = 0; i < count; i++) {
-			if (i > 0) {
-				buf.append(' ');
-			}
-
-			boolean containsSpace = false;
-			char[] characters = arguments[i].toCharArray();
-			for (char ch : characters) {
-				if (ch == ' ' || ch == '\t') {
-					containsSpace = true;
-					buf.append('"');
-					break;
-				}
-			}
-
-			int backslashes = 0;
-			for (int j = 0; j < characters.length; j++) {
-				char ch = characters[j];
-				if (ch == '"') {
-					if (isWin32) {
-						if (j == 0 && characters.length == 2 && characters[1] == '"') {
-							// empty string on windows platform, see bug 130767.
-							// Bug in constructor of JDK's
-							// java.lang.ProcessImpl.
-							buf.append("\"\""); //$NON-NLS-1$
-							break;
-						}
-						if (backslashes > 0) {
-							// Feature in Windows: need to double-escape
-							// backslashes in front of double quote.
-							for (; backslashes > 0; backslashes--) {
-								buf.append('\\');
-							}
-						}
-					}
-					buf.append('\\');
-				} else if (ch == '\\') {
-					if (isWin32) {
-						backslashes++;
-					} else {
-						buf.append('\\');
-					}
-				} else if (isWin32) {
-					backslashes = 0; // FIX for Eclipse code
-				}
-				buf.append(ch);
-			}
-			if (containsSpace) {
-				buf.append('"');
-			} else if (characters.length == 0) {
-				buf.append("\"\""); //$NON-NLS-1$
-			}
-		}
-		return buf.toString();
-	}
 
 	/**
 	 * This was first always overriding -runkeep. Now it can only override it if

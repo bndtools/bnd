@@ -1,5 +1,8 @@
 package biz.aQute.launcher;
 
+import static java.util.stream.Collectors.joining;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +13,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.assertj.core.api.SoftAssertions;
@@ -18,10 +25,14 @@ import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
@@ -30,12 +41,12 @@ import aQute.lib.io.IO;
 @ExtendWith(SoftAssertionsExtension.class)
 public class LauncherTest {
 	@InjectSoftAssertions
-	SoftAssertions softly;
+	SoftAssertions		softly;
 
 	@InjectTemporaryDirectory
 	File				testDir;
 
-	private Properties			prior;
+	private Properties	prior;
 
 	@BeforeEach
 	public void before() throws Exception {
@@ -211,7 +222,7 @@ public class LauncherTest {
 		String result = runFrameworkWithRunMethod(file);
 		softly.assertThat(result)
 			.contains("installing jar/demo.jar",
-			"[EmbeddedLauncher] looking for Embedded-Runpath in META-INF/MANIFEST.MF");
+				"[EmbeddedLauncher] looking for Embedded-Runpath in META-INF/MANIFEST.MF");
 	}
 
 	private void assertNoErrorsOrWarnings(Processor p, String context) throws IOException {
@@ -307,5 +318,291 @@ public class LauncherTest {
 		}
 
 		return new String(bout.toByteArray(), StandardCharsets.UTF_8);
+	}
+
+	static class ArgumentRendering {
+		Processor			p;
+		Collection<String>	arguments;
+		String[]			argumentsArray;
+		TestInfo			info;
+
+		@BeforeEach
+		void beforeEach(TestInfo info) {
+			this.info = info;
+			p = new Processor();
+			p.setProperty("-runvm.test1", "-Dfoo=\"xyz abc\"");
+			p.setProperty("-runvm.test2",
+				"-Dbar=xyz abc, -Dlauncher.properties=C:\\Users\\bj hargrave\\git\\bnd\\bndtools.core\\generated\\launch7354374140259840283.properties");
+			Parameters hdr = p.getMergedParameters(Constants.RUNVM);
+			arguments = hdr.keyList();
+			argumentsArray = arguments.stream()
+				// .flatMap(argument -> new QuotedTokenizer(argument, " \t",
+				// false, true).stream()
+				// .filter(
+				// Strings::notEmpty))
+				.toArray(String[]::new);
+		}
+
+		@AfterEach
+		void afterEach() {
+			IO.close(p);
+		}
+
+		void dump(String rendered, String[] roundTrip) {
+			System.out.printf("%s\ninput:\n%s\nrendered:\n«%s»\nroundTrip:\n%s\n\n", info.getDisplayName(),
+				arguments.stream()
+					.collect(joining("»,\n «", " «", "»")),
+				rendered, Arrays.stream(roundTrip)
+					.collect(joining("»,\n «", " «", "»")));
+		}
+
+		@Test
+		void testArgumentRendering() throws Exception {
+			String rendered = ProjectLauncher.renderArguments(argumentsArray);
+			String[] roundTrip = parseArguments(rendered);
+			// dump(rendered, roundTrip);
+			assertThat(roundTrip).containsExactly(argumentsArray);
+		}
+
+		@Test
+		void testArgumentRendering_forUnix() throws Exception {
+			String rendered = ProjectLauncher.renderArguments(argumentsArray, false);
+			String[] roundTrip = parseArgumentsImpl(rendered, false);
+			// dump(rendered, roundTrip);
+			assertThat(roundTrip).containsExactly(argumentsArray);
+			assertThat(rendered).as("shouldn't un-escape backslash")
+				.contains("\\\\");
+		}
+
+		@Test
+		void testArgumentRendering_forWindows() throws Exception {
+			String rendered = ProjectLauncher.renderArguments(argumentsArray, true);
+			String[] roundTrip = parseArgumentsWindows(rendered, false);
+			// dump(rendered, roundTrip);
+			assertThat(roundTrip).containsExactly(argumentsArray);
+			assertThat(rendered).as("should un-escape backslash")
+				.doesNotContain("\\\\");
+		}
+
+		// The following were copied from org.eclipse.debug.core.DebugPlugin for
+		// use in this test
+
+		public static String[] parseArguments(String args) {
+			if (args == null) {
+				return new String[0];
+			}
+
+			if (IO.isWindows()) {
+				return parseArgumentsWindows(args, false);
+			}
+
+			return parseArgumentsImpl(args, false);
+		}
+
+		private static String[] parseArgumentsImpl(String args, boolean split) {
+			// man sh, see topic QUOTING
+			List<String> result = new ArrayList<>();
+
+			final int DEFAULT = 0;
+			final int ARG = 1;
+			final int IN_DOUBLE_QUOTE = 2;
+			final int IN_SINGLE_QUOTE = 3;
+
+			int state = DEFAULT;
+			StringBuilder buf = new StringBuilder();
+			int len = args.length();
+			for (int i = 0; i < len; i++) {
+				char ch = args.charAt(i);
+				if (Character.isWhitespace(ch)) {
+					if (state == DEFAULT) {
+						// skip
+						continue;
+					} else if (state == ARG) {
+						state = DEFAULT;
+						result.add(buf.toString());
+						buf.setLength(0);
+						continue;
+					}
+				}
+				switch (state) {
+					case DEFAULT :
+					case ARG :
+						if (ch == '"') {
+							if (split) {
+								buf.append(ch);
+							}
+							state = IN_DOUBLE_QUOTE;
+						} else if (ch == '\'') {
+							if (split) {
+								buf.append(ch);
+							}
+							state = IN_SINGLE_QUOTE;
+						} else if (ch == '\\' && i + 1 < len) {
+							if (split) {
+								buf.append(ch);
+							}
+							state = ARG;
+							ch = args.charAt(++i);
+							buf.append(ch);
+						} else {
+							state = ARG;
+							buf.append(ch);
+						}
+						break;
+
+					case IN_DOUBLE_QUOTE :
+						if (ch == '"') {
+							if (split) {
+								buf.append(ch);
+							}
+							state = ARG;
+						} else if (ch == '\\' && i + 1 < len
+							&& (args.charAt(i + 1) == '\\' || args.charAt(i + 1) == '"')) {
+							if (split) {
+								buf.append(ch);
+							}
+							ch = args.charAt(++i);
+							buf.append(ch);
+						} else {
+							buf.append(ch);
+						}
+						break;
+
+					case IN_SINGLE_QUOTE :
+						if (ch == '\'') {
+							if (split) {
+								buf.append(ch);
+							}
+							state = ARG;
+						} else {
+							buf.append(ch);
+						}
+						break;
+
+					default :
+						throw new IllegalStateException();
+				}
+			}
+			if (buf.length() > 0 || state != DEFAULT) {
+				result.add(buf.toString());
+			}
+
+			return result.toArray(new String[result.size()]);
+		}
+
+		private static String[] parseArgumentsWindows(String args, boolean split) {
+			// see http://msdn.microsoft.com/en-us/library/a1y7w461.aspx
+			List<String> result = new ArrayList<>();
+
+			final int DEFAULT = 0;
+			final int ARG = 1;
+			final int IN_DOUBLE_QUOTE = 2;
+
+			int state = DEFAULT;
+			int backslashes = 0;
+			StringBuilder buf = new StringBuilder();
+			int len = args.length();
+			for (int i = 0; i < len; i++) {
+				char ch = args.charAt(i);
+				if (ch == '\\') {
+					backslashes++;
+					continue;
+				} else if (backslashes != 0) {
+					if (ch == '"') {
+						for (; backslashes >= 2; backslashes -= 2) {
+							buf.append('\\');
+							if (split) {
+								buf.append('\\');
+							}
+						}
+						if (backslashes == 1) {
+							if (state == DEFAULT) {
+								state = ARG;
+							}
+							if (split) {
+								buf.append('\\');
+							}
+							buf.append('"');
+							backslashes = 0;
+							continue;
+						} // else fall through to switch
+					} else {
+						// false alarm, treat passed backslashes literally...
+						if (state == DEFAULT) {
+							state = ARG;
+						}
+						for (; backslashes > 0; backslashes--) {
+							buf.append('\\');
+						}
+						// fall through to switch
+					}
+				}
+				if (Character.isWhitespace(ch)) {
+					if (state == DEFAULT) {
+						// skip
+						continue;
+					} else if (state == ARG) {
+						state = DEFAULT;
+						result.add(buf.toString());
+						buf.setLength(0);
+						continue;
+					}
+				}
+				switch (state) {
+					case DEFAULT :
+					case ARG :
+						if (ch == '"') {
+							state = IN_DOUBLE_QUOTE;
+							if (split) {
+								buf.append(ch);
+							}
+						} else {
+							state = ARG;
+							buf.append(ch);
+						}
+						break;
+
+					case IN_DOUBLE_QUOTE :
+						if (ch == '"') {
+							if (i + 1 < len && args.charAt(i + 1) == '"') {
+								/*
+								 * Undocumented feature in Windows: Two
+								 * consecutive double quotes inside a
+								 * double-quoted argument are interpreted as a
+								 * single double quote.
+								 */
+								buf.append('"');
+								i++;
+								if (split) {
+									buf.append(ch);
+								}
+							} else if (buf.length() == 0) {
+								// empty string on Windows platform. Account for
+								// bug
+								// in constructor of JDK's
+								// java.lang.ProcessImpl.
+								result.add("\"\""); //$NON-NLS-1$
+								state = DEFAULT;
+							} else {
+								state = ARG;
+								if (split) {
+									buf.append(ch);
+								}
+							}
+						} else {
+							buf.append(ch);
+						}
+						break;
+
+					default :
+						throw new IllegalStateException();
+				}
+			}
+			if (buf.length() > 0 || state != DEFAULT) {
+				result.add(buf.toString());
+			}
+
+			return result.toArray(new String[result.size()]);
+		}
 	}
 }

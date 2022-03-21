@@ -864,4 +864,71 @@ public abstract class ProjectLauncher extends Processor {
 	public boolean isRunFrameworkRestart() {
 		return runframeworkrestart;
 	}
+
+	public static String renderArguments(Collection<String> arguments) {
+		return renderArguments(arguments.toArray(new String[0]));
+	}
+
+	public static String renderArguments(String[] arguments) {
+		return renderArguments(arguments, IO.isWindows());
+	}
+
+	public static String renderArguments(String[] arguments, boolean isWin32) {
+		StringBuilder buf = new StringBuilder();
+		int count = arguments.length;
+		for (int i = 0; i < count; i++) {
+			if (i > 0) {
+				buf.append(' ');
+			}
+
+			boolean containsSpace = false;
+			char[] characters = arguments[i].toCharArray();
+			for (char ch : characters) {
+				if (ch == ' ' || ch == '\t') {
+					containsSpace = true;
+					buf.append('"');
+					break;
+				}
+			}
+
+			int backslashes = 0;
+			for (int j = 0; j < characters.length; j++) {
+				char ch = characters[j];
+				if (ch == '"') {
+					if (isWin32) {
+						if (j == 0 && characters.length == 2 && characters[1] == '"') {
+							// empty string on windows platform, see bug 130767.
+							// Bug in constructor of JDK's
+							// java.lang.ProcessImpl.
+							buf.append("\"\""); //$NON-NLS-1$
+							break;
+						}
+						if (backslashes > 0) {
+							// Feature in Windows: need to double-escape
+							// backslashes in front of double quote.
+							for (; backslashes > 0; backslashes--) {
+								buf.append('\\');
+							}
+						}
+					}
+					buf.append('\\');
+				} else if (ch == '\\') {
+					if (isWin32) {
+						backslashes++;
+					} else {
+						buf.append('\\');
+					}
+				} else if (isWin32) {
+					backslashes = 0; // FIX for Eclipse code
+				}
+				buf.append(ch);
+			}
+			if (containsSpace) {
+				buf.append('"');
+			} else if (characters.length == 0) {
+				buf.append("\"\""); //$NON-NLS-1$
+			}
+		}
+		return buf.toString();
+	}
 }
