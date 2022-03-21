@@ -30,13 +30,13 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 
 public class CapReqBuilder {
 
@@ -674,7 +674,8 @@ public class CapReqBuilder {
 
 		if (value instanceof String)
 			try {
-				return new Version((String) value);
+				String versionString = (String) value;
+				return new Version(versionString.trim());
 			} catch (Exception e) {
 				return value;
 			}
