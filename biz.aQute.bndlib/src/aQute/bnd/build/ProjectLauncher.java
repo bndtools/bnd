@@ -865,8 +865,13 @@ public abstract class ProjectLauncher extends Processor {
 		return runframeworkrestart;
 	}
 
+	static final String[] STRINGARRAY = new String[0];
 	public static String renderArguments(Collection<String> arguments) {
-		return renderArguments(arguments.toArray(new String[0]));
+		return renderArguments(arguments.toArray(STRINGARRAY));
+	}
+
+	public static String renderArguments(Collection<String> arguments, boolean isWin32) {
+		return renderArguments(arguments.toArray(STRINGARRAY), isWin32);
 	}
 
 	public static String renderArguments(String[] arguments) {

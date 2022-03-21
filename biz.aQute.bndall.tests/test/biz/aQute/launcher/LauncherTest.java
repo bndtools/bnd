@@ -399,7 +399,7 @@ public class LauncherTest {
 			return parseArgumentsImpl(args, false);
 		}
 
-		private static String[] parseArgumentsImpl(String args, boolean split) {
+		static String[] parseArgumentsImpl(String args, boolean split) {
 			// man sh, see topic QUOTING
 			List<String> result = new ArrayList<>();
 
@@ -490,7 +490,7 @@ public class LauncherTest {
 			return result.toArray(new String[result.size()]);
 		}
 
-		private static String[] parseArgumentsWindows(String args, boolean split) {
+		static String[] parseArgumentsWindows(String args, boolean split) {
 			// see http://msdn.microsoft.com/en-us/library/a1y7w461.aspx
 			List<String> result = new ArrayList<>();
 

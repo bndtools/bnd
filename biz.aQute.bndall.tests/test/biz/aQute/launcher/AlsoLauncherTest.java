@@ -16,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -27,10 +28,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.assertj.core.util.Files;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -41,6 +46,7 @@ import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
@@ -51,11 +57,16 @@ import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.command.Command;
+import biz.aQute.launcher.LauncherTest.ArgumentRendering;
 import biz.aQute.resolve.Bndrun;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class AlsoLauncherTest {
 	@InjectTemporaryDirectory
 	File				testDir;
+
+	@InjectSoftAssertions
+	SoftAssertions		softly;
 
 	private Workspace	workspace;
 	private Project		project;
@@ -489,6 +500,127 @@ public class AlsoLauncherTest {
 			Class<?> launcher = loader.loadClass("aQute.launcher.pre.EmbeddedLauncher");
 			Method method = launcher.getMethod("main", String[].class);
 			method.invoke(null, (Object) new String[0]);
+		}
+	}
+
+	static Pattern JAVACMD = Pattern.compile("java (.*) aQute.launcher.pre.EmbeddedLauncher([^\\n]*)$");
+
+	@Test
+	public void expandedJarLauncher_rendersVMAndProgramArgs() throws Exception {
+		project.setProperty("-runvm.test1", "-Dfoo=\"xyz abc\"");
+		project.setProperty("-runvm.test2",
+			"-Dbar=xyz abc, --add-opens=something, -Dlauncherer.properties=C:\\Users\\bj hargrave\\git\\bnd\\bndtools.core\\generated\\launch7354374140259840283.properties");
+		project.setProperty("-runprogramargs.test1", "123\\456");
+		project.setProperty("-runprogramargs.test2", "234, sdfs");
+
+		Parameters hdr = project.getMergedParameters(Constants.RUNVM);
+		List<String> expectedArgs = new ArrayList<>();
+		expectedArgs.add("-cp");
+		expectedArgs.add(".");
+		expectedArgs.addAll(hdr.keyList());
+
+		List<String> expectedProgramArgs = project.getMergedParameters(Constants.RUNPROGRAMARGS)
+			.keyList();
+
+		File temporaryFolder = new File(testDir, "executable");
+		ProjectLauncher l = project.getProjectLauncher();
+		try (Jar executable = l.executable()) {
+			executable.writeFolder(temporaryFolder);
+			final File start = new File(temporaryFolder, "start");
+			softly.assertThat(start)
+				.as("start")
+				.exists();
+			if (softly.wasSuccess()) {
+				String startContent = Files.contentOf(start, "UTF-8");
+				Matcher m = JAVACMD.matcher(startContent);
+				if (m.find()) {
+					final String vmArgs = m.group(1);
+					final String programArgs = m.group(2);
+					softly.assertThat(ArgumentRendering.parseArgumentsImpl(vmArgs, false))
+						.as("unix:vmArgs")
+						.containsExactlyElementsOf(expectedArgs);
+					softly.assertThat(programArgs)
+						.as("unix:progArgs")
+						.startsWith(" ");
+					softly.assertThat(ArgumentRendering.parseArgumentsImpl(programArgs.trim(), false))
+						.as("unix:trimmedProgramArgs")
+						.containsExactlyElementsOf(expectedProgramArgs);
+				} else {
+					softly.fail("unix: File content <%s> didn't match %s", startContent, JAVACMD);
+				}
+			}
+			final File startBat = new File(temporaryFolder, "start.bat");
+			softly.assertThat(startBat)
+				.as("start.bat")
+				.exists();
+			if (softly.wasSuccess()) {
+				String startContent = Files.contentOf(startBat, "UTF-8");
+				Matcher m = JAVACMD.matcher(startContent);
+				if (m.find()) {
+					final String vmArgs = m.group(1);
+					final String programArgs = m.group(2);
+					softly.assertThat(ArgumentRendering.parseArgumentsWindows(vmArgs, false))
+						.as("windows:vmArgs")
+						.containsExactlyElementsOf(expectedArgs);
+					softly.assertThat(programArgs)
+						.as("windows:progArgs")
+						.startsWith(" ");
+					softly.assertThat(ArgumentRendering.parseArgumentsWindows(programArgs.trim(), false))
+						.as("windows:trimmedProgramArgs")
+						.containsExactlyElementsOf(expectedProgramArgs);
+				} else {
+					softly.fail("windows: File content <%s> didn't match %s", startContent, JAVACMD);
+				}
+			}
+		}
+	}
+
+	@Test
+	public void expandedJarLauncher_handlesEmptyVMAndProgramArgs() throws Exception {
+		File temporaryFolder = new File(testDir, "executable");
+		ProjectLauncher l = project.getProjectLauncher();
+		try (Jar executable = l.executable()) {
+			executable.writeFolder(temporaryFolder);
+			final File start = new File(temporaryFolder, "start");
+			softly.assertThat(start)
+				.as("start")
+				.exists();
+			if (softly.wasSuccess()) {
+				String startContent = Files.contentOf(start, "UTF-8");
+				Matcher m = JAVACMD.matcher(startContent);
+				if (m.find()) {
+					final String vmArgs = m.group(1);
+					final String programArgs = m.group(2);
+					softly.assertThat(vmArgs.trim())
+						.as("unix:vmArgs")
+						.isEqualTo("-cp .");
+					softly.assertThat(programArgs.trim())
+						.as("unix:progArgs")
+						.isEmpty();
+				} else {
+					softly.fail("unix: File content <%s> didn't match %s", startContent, JAVACMD);
+				}
+			}
+			final File startBat = new File(temporaryFolder, "start.bat");
+			softly.assertThat(startBat)
+				.as("start.bat")
+				.exists();
+			if (softly.wasSuccess()) {
+				String startContent = Files.contentOf(startBat, "UTF-8");
+				Matcher m = JAVACMD.matcher(startContent);
+				if (m.find()) {
+					final String vmArgs = m.group(1);
+					final String programArgs = m.group(2);
+					softly.assertThat(vmArgs.trim())
+						.as("windows:vmArgs")
+						.isEqualTo("-cp .");
+					softly.assertThat(programArgs.trim())
+						.as("windows:progArgs")
+						.isEmpty();
+				} else {
+					softly.fail("windows: File content <%s> didn't match %s", startContent, JAVACMD);
+				}
+			}
 		}
 	}
 
