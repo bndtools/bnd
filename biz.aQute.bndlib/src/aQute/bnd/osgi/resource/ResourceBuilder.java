@@ -42,6 +42,7 @@ import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -52,7 +53,6 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.hierarchy.FolderNode;
@@ -225,10 +225,12 @@ public class ResourceBuilder {
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, name);
 
 		String versionString = manifest.getBundleVersion();
-		if ((versionString != null) && !aQute.bnd.version.Version.isVersion(versionString)) {
-			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + versionString);
+		Version version;
+		try {
+			version = Version.parseVersion(versionString);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Invalid version in bundle " + name, e);
 		}
-		Version version = Version.parseVersion(versionString);
 		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 
 		boolean singleton = "true".equals(attrs.get(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE + ":"));
