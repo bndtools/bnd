@@ -39,6 +39,7 @@ import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -46,9 +47,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -189,7 +188,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				.keys()
 				.map(analyzer::getPackageRef)
 				.filter(PackageRef::isValidPackageName)
-				.forEach(packageRef -> index.put(packageRef, new Attrs(attrs)));
+				.forEachOrdered(packageRef -> index.put(packageRef, new Attrs(attrs)));
 		}
 
 		ModuleInfoBuilder builder = nameAccessAndVersion(moduleInstructions, requireCapabilities, analyzer);
@@ -271,7 +270,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				Attrs containedAttrs = contained.get(packageRef);
 				if (containedAttrs != null && containedAttrs.containsKey(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE)) {
 					targets = splitAsStream(containedAttrs.get(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE))
-						.collect(toCollection(LinkedHashSet<String>::new));
+						.collect(toCollection(setFactory()));
 				}
 
 				// TODO Do we want to handle access? I can't think of a reason.
@@ -297,7 +296,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 		String name = instruction.getKey();
 		// Allowed: 0 | ACC_OPEN | ACC_SYNTHETIC | ACC_MANDATED
-		String access = attrs.computeIfAbsent(ACCESS_ATTRIBUTE, k -> String.valueOf(access(requireCapability)));
+		String access = attrs.computeIfAbsent(ACCESS_ATTRIBUTE, k -> Integer.toString(access(requireCapability)));
 		String version = attrs.computeIfAbsent(VERSION_ATTRIBUTE, k -> analyzer.getVersion());
 
 		ModuleInfoBuilder builder = new ModuleInfoBuilder().module_name(name)
@@ -315,7 +314,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			.filterValue(attrs -> attrs.containsKey(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
 			.forEachOrdered((packageRef, attrs) -> {
 				Set<String> targets = splitAsStream(attrs.get(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
-					.collect(toCollection(LinkedHashSet<String>::new));
+					.collect(toCollection(setFactory()));
 
 				// TODO Do we want to handle access? I can't think of a reason.
 				// Allowed: 0 | ACC_SYNTHETIC | ACC_MANDATED
@@ -377,15 +376,14 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			})
 			// group packages by module/contract
 			.collect(groupingBy(entry -> index.get(entry.getKey())
-				.get(INTERNAL_MODULE_DIRECTIVE)));
+				.get(INTERNAL_MODULE_DIRECTIVE), mapFactory(), toList()));
 
 		String manuallyRequiredModules = instruction.getValue()
 			.get(MODULES_ATTRIBUTE);
 
 		if (manuallyRequiredModules != null) {
-			splitAsStream(manuallyRequiredModules).forEach(moduleToAdd -> {
-				requiresMap.computeIfAbsent(moduleToAdd, key -> emptyList());
-			});
+			splitAsStream(manuallyRequiredModules)
+				.forEachOrdered(moduleToAdd -> requiresMap.computeIfAbsent(moduleToAdd, key -> emptyList()));
 		}
 
 		MapStream.of(requiresMap)
@@ -453,16 +451,14 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			// We need the `register:` directive to be present for this to work.
 			.filterValue(attrs -> attrs.containsKey(SERVICELOADER_REGISTER_DIRECTIVE))
 			.values()
-			.collect(groupingBy(attrs -> analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE))))
-			.entrySet()
-			.forEach(entry -> {
-				TypeRef typeRef = entry.getKey();
-				Set<String> impls = entry.getValue()
-					.stream()
+			.collect(groupingBy(attrs -> analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE)),
+				mapFactory(), toList()))
+			.forEach((typeRef, attrsList) -> {
+				Set<String> impls = attrsList.stream()
 					.map(attrs -> attrs.get(SERVICELOADER_REGISTER_DIRECTIVE))
 					.map(impl -> analyzer.getTypeRefFromFQN(impl)
 						.getBinary())
-					.collect(toCollection(LinkedHashSet<String>::new));
+					.collect(toCollection(setFactory()));
 				builder.provides(typeRef.getBinary(), impls);
 			});
 	}
@@ -471,15 +467,17 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		requireCapabilities.stream()
 			.filterKey(key -> removeDuplicateMarker(key).equals(SERVICELOADER_NAMESPACE))
 			.values()
-			.forEach(attrs -> {
+			.forEachOrdered(attrs -> {
 				TypeRef typeRef = analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE));
 				builder.uses(typeRef.getBinary());
 			});
 	}
 
-	static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-		Set<Object> seen = ConcurrentHashMap.newKeySet();
+	private static <T> Supplier<Set<T>> setFactory() {
+		return LinkedHashSet::new;
+	}
 
-		return t -> seen.add(keyExtractor.apply(t));
+	private static <K, V> Supplier<Map<K, V>> mapFactory() {
+		return LinkedHashMap::new;
 	}
 }
