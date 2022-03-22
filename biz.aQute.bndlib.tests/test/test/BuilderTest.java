@@ -1041,13 +1041,13 @@ public class BuilderTest {
 		}
 	}
 
-	private static final Pattern FILTER_VERSION = Pattern
-		.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
+	private static final Pattern FILTER_VERSION = Pattern.compile(
+		"\\(&\\(osgi\\.ee=(?<osgiee>JavaSE|JRE)\\)\\(version=(?<version>" + Version.VERSION_STRING + ")\\)\\)");
 
-	@ParameterizedTest(name = "package={0}, ee={1}, version={2}")
+	@ParameterizedTest(name = "package={0}, bree={1}, osgi.ee={2}, version={3}")
 	@ArgumentsSource(CompilerVersionsArgumentsProvider.class)
 	@DisplayName("${ee} Macro Testing")
-	public void testEEMacro2(String pkg, String eename, String version) throws Exception {
+	public void testEEMacro2(String pkg, String bree, String osgiee, String version) throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("compilerversions/compilerversions.jar"));
 			b.setPrivatePackage(pkg);
@@ -1056,8 +1056,7 @@ public class BuilderTest {
 			assertTrue(b.check());
 			Domain domain = Domain.domain(jar.getManifest());
 			Parameters ee = domain.getBundleRequiredExecutionEnvironment();
-			System.err.println(ee);
-			assertThat(ee).hasToString(eename);
+			assertThat(ee).hasToString(bree + "-" + version);
 
 			//
 			// Check the requirements
@@ -1068,7 +1067,8 @@ public class BuilderTest {
 			String filter = attrs.get("filter:");
 			Matcher m = FILTER_VERSION.matcher(filter);
 			assertTrue(m.matches());
-			assertThat(new Version(m.group(1))).isEqualTo(new Version(version));
+			assertThat(m.group("osgiee")).isEqualTo(osgiee);
+			assertThat(new Version(m.group("version"))).isEqualTo(new Version(version));
 		}
 	}
 
@@ -1079,23 +1079,24 @@ public class BuilderTest {
 			Stream<File> files = tree.stream(new File("compilerversions/src"), "*");
 			return files.filter(File::isDirectory)
 				.map(File::getName)
-				.map(name -> {
-					String[] split = Strings.first(name, '_');
+				.map(pkg -> {
+					String[] split = Strings.first(pkg, '_');
 					Version v = split[1].equals("jsr14") ? new Version(1, 4)
 						: Version.parseVersion(split[1].replace('_', '.'));
-					String eebase = "JavaSE";
+					String bree = "JavaSE";
+					String osgiee = "JavaSE";
 					String version;
 					if (v.getMajor() == 1) {
 						version = "1." + v.getMinor();
 						if (v.getMinor() == 1) {
-							eebase = "JRE";
+							bree = osgiee = "JRE";
 						} else if (v.getMinor() <= 5) {
-							eebase = "J2SE";
+							bree = "J2SE";
 						}
 					} else {
 						version = Integer.toString(v.getMajor());
 					}
-					return Arguments.of(name, eebase + "-" + version, version);
+					return Arguments.of(pkg, bree, osgiee, version);
 				});
 		}
 	}

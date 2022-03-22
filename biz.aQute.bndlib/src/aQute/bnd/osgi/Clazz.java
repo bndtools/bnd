@@ -116,7 +116,7 @@ public class Clazz {
 	private final static Logger logger = LoggerFactory.getLogger(Clazz.class);
 
 	public enum JAVA {
-		Java_1_1(45, "JRE-1.1", "(&(osgi.ee=JavaSE)(version=1.1))"), //
+		Java_1_1(45, "JRE-1.1", "(&(osgi.ee=JRE)(version=1.1))"), //
 		Java_1_2(46, "J2SE-1.2", "(&(osgi.ee=JavaSE)(version=1.2))"), //
 		Java_1_3(47, "J2SE-1.3", "(&(osgi.ee=JavaSE)(version=1.3))"), //
 		Java_1_4(48, "J2SE-1.4", "(&(osgi.ee=JavaSE)(version=1.4))"), //
