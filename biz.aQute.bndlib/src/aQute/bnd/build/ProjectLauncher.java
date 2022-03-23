@@ -44,6 +44,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
+import aQute.lib.strings.Strings;
 import aQute.lib.watcher.FileWatcher;
 import aQute.lib.watcher.FileWatcher.Builder;
 import aQute.libg.command.Command;
@@ -742,7 +743,7 @@ public abstract class ProjectLauncher extends Processor {
 				Domain domain = Domain.domain(c.getFile());
 				String bsn = domain.getBundleSymbolicName()
 					.getKey();
-				String bundleVersion = domain.getBundleVersion();
+				String bundleVersion = Strings.trim(domain.getBundleVersion());
 
 				if (!Verifier.isVersion(bundleVersion)) {
 					error("Invalid version on -runbundles. bsn=%s, version=%s", c.getBundleSymbolicName(),
