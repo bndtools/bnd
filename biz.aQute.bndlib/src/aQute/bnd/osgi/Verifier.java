@@ -3,6 +3,7 @@ package aQute.bnd.osgi;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -653,7 +654,9 @@ public class Verifier extends Processor {
 	}
 
 	private void doVerifierPlugins() {
-		for (VerifierPlugin plugin : getPlugins(VerifierPlugin.class)) {
+		List<VerifierPlugin> plugins = getPlugins(VerifierPlugin.class);
+		plugins.sort(Comparator.comparingInt(VerifierPlugin::ordering));
+		for (VerifierPlugin plugin : plugins) {
 			try {
 				Processor previous = beginHandleErrors(plugin.toString());
 				try {

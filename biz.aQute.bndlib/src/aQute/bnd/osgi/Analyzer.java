@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -973,7 +974,9 @@ public class Analyzer extends Processor {
 	 *
 	 */
 	void doPlugins() {
-		for (AnalyzerPlugin plugin : getPlugins(AnalyzerPlugin.class)) {
+		List<AnalyzerPlugin> plugins = getPlugins(AnalyzerPlugin.class);
+		plugins.sort(Comparator.comparingInt(AnalyzerPlugin::ordering));
+		for (AnalyzerPlugin plugin : plugins) {
 			try {
 				boolean reanalyze;
 				Processor previous = beginHandleErrors(plugin.toString());
