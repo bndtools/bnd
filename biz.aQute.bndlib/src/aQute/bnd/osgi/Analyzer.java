@@ -139,7 +139,7 @@ public class Analyzer extends Processor {
 	final protected AnalyzerMessages				msgs					= ReporterMessages.base(this,
 		AnalyzerMessages.class);
 	private AnnotationHeaders						annotationHeaders;
-	private Set<PackageRef>							packagesVisited			= new HashSet<>();
+	private final Set<PackageRef>					packagesVisited			= new HashSet<>();
 	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
 	private final Map<TypeRef, String>				bcpTypes				= map();
@@ -201,51 +201,7 @@ public class Analyzer extends Processor {
 	public void analyze() throws Exception {
 		if (!analyzed) {
 			analyzed = true;
-			uses.clear();
-			apiUses.clear();
-			classspace.clear();
-			classpathExports.clear();
-			contracts.clear();
-			packagesVisited.clear();
-			nonClassReferences.clear();
-			bcpTypes.clear();
-
-			// Parse all the class in the
-			// the jar according to the OSGi bcp
-			analyzeBundleClasspath();
-
-			//
-			// Get exported packages from the
-			// entries on the classpath and
-			// collect any contracts
-			//
-
-			for (Jar current : getClasspath()) {
-
-				getManifestInfoFromClasspath(current, classpathExports, contracts);
-
-				Manifest m = current.getManifest();
-				if (m == null)
-					for (String dir : current.getDirectories()
-						.keySet()) {
-						learnPackage(current, "", getPackageRef(dir), classpathExports);
-					}
-			}
-
-			addDefinedContracts();
-
-			// Handle the bundle activator
-
-			String s = getProperty(BUNDLE_ACTIVATOR);
-			if (s != null && !s.isEmpty()) {
-				activator = getTypeRefFromFQN(s);
-				referTo(activator);
-				logger.debug("activator {} {}", s, activator);
-			}
-
-			// Conditional packages
-
-			doConditionalPackages();
+			analyzeContent();
 
 			// Execute any plugins
 			// TODO handle better reanalyze
@@ -467,6 +423,59 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	private void reset() {
+		classspace.clear();
+		referred.clear();
+		uses.clear();
+		apiUses.clear();
+		classpathExports.clear();
+		contracts.clear();
+		packagesVisited.clear();
+		nonClassReferences.clear();
+		bcpTypes.clear();
+	}
+
+	private void analyzeContent() throws Exception {
+		reset();
+
+		// Parse all the classes in the
+		// the jar according to the OSGi Bundle-ClassPath
+		analyzeBundleClasspath();
+
+		//
+		// Get exported packages from the
+		// entries on the classpath and
+		// collect any contracts
+		//
+
+		for (Jar current : getClasspath()) {
+			getManifestInfoFromClasspath(current, classpathExports, contracts);
+
+			Manifest m = current.getManifest();
+			if (m == null) {
+				for (String dir : current.getDirectories()
+					.keySet()) {
+					learnPackage(current, "", getPackageRef(dir), classpathExports);
+				}
+			}
+		}
+
+		addDefinedContracts();
+
+		// Handle the bundle activator
+
+		String s = getProperty(BUNDLE_ACTIVATOR);
+		if (s != null && !s.isEmpty()) {
+			activator = getTypeRefFromFQN(s);
+			referTo(activator);
+			logger.debug("activator {} {}", s, activator);
+		}
+
+		// Conditional packages
+
+		doConditionalPackages();
+	}
+
 	/**
 	 * Get the packages from the host if this is a fragment bundle
 	 *
@@ -626,7 +635,7 @@ public class Analyzer extends Processor {
 		//
 		packagesVisited.clear();
 
-		for (Jar extra = getExtra(); extra != null; extra = getExtra()) {
+		for (Jar extra; (extra = getExtra()) != null;) {
 			dot.addAll(extra);
 			analyzeJar(extra, "", true, null);
 		}
@@ -971,9 +980,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 *
+	 * Call AnalyzerPlugins to analyze the content.
 	 */
-	void doPlugins() {
+	private void doPlugins() {
 		List<AnalyzerPlugin> plugins = getPlugins(AnalyzerPlugin.class);
 		plugins.sort(Comparator.comparingInt(AnalyzerPlugin::ordering));
 		for (AnalyzerPlugin plugin : plugins) {
@@ -986,8 +995,7 @@ public class Analyzer extends Processor {
 					endHandleErrors(previous);
 				}
 				if (reanalyze) {
-					classspace.clear();
-					analyzeBundleClasspath();
+					analyzeContent();
 				}
 			} catch (Exception e) {
 				exception(e, "Analyzer Plugin %s failed %s", plugin, e);
