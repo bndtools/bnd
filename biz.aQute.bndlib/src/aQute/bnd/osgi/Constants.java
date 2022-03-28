@@ -182,6 +182,7 @@ public interface Constants {
 	String		NOJUNIT										= "-nojunit";
 	String		NOJUNITOSGI									= "-nojunitosgi";
 	String		NOEE										= "-noee";
+	String		NOSERVICELOADERREGISTRAR					= "-noserviceloaderregistrar";
 
 	String		NOMANIFEST									= "-nomanifest";
 	String		MANIFEST_NAME								= "-manifest-name";
@@ -312,7 +313,7 @@ public interface Constants {
 		CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPRODUCIBLE, INCLUDEPACKAGE,
 		CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK, MAVEN_SCOPE, RUNSTARTLEVEL,
 		RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE, RUNFRAMEWORKRESTART,
-		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY);
+		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY, NOSERVICELOADERREGISTRAR);
 
 	// Ignore bundle specific headers. These headers do not make a lot of sense
 	// to inherit

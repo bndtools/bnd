@@ -64,6 +64,27 @@ public class SPIAnnotationsTest {
 	}
 
 	@Test
+	public void testServiceProviderWithoutServiceLoaderRegistrar() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerF");
+			b.set("-noserviceloaderregistrar", "true");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(1, req.size());
+		}
+	}
+
+	@Test
 	public void testServiceProvider_existingdescriptor() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));

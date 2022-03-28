@@ -568,6 +568,8 @@ public class Syntax implements Constants {
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
 			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOSERVICELOADERREGISTRAR, "Do not put the requirement `serviceloader.registrar` in the manifest.",
+			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NAMESECTION,
 			"Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages.",
 			NAMESECTION + "=*;baz=true, abc/def/bar/X.class;bar=3", null, null),

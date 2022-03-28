@@ -63,12 +63,14 @@ import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.service.classparser.ClassParser;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
@@ -1116,6 +1118,21 @@ public class Analyzer extends Processor {
 				// we add a
 
 				requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
+			}
+
+			if (isTrue(getProperty(NOSERVICELOADERREGISTRAR))) {
+				Attrs a = requirements.get("osgi.extender");
+
+				if (a.containsKey("filter:")) {
+					String filter = a.get("filter:");
+					Map<String, Object> testMatch = Maps.of("osgi.extender",
+						aQute.bnd.annotation.spi.Constants.SERVICELOADER_REGISTRAR, "version", "1.0.0");
+
+					if (ResourceUtils.filterPredicate(filter)
+						.test(testMatch)) {
+						requirements.remove("osgi.extender");
+					}
+				}
 			}
 
 			if (!requirements.isEmpty())

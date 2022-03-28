@@ -42,7 +42,7 @@ public class JsonProviderImpl extends JsonProvider {
 }
 ```
 
-`@ServiceProvider` also grants the developer control in defining many facets of the generated OSGi requirements and capabilities such as additional attributes and directives (attributes becoming service properties), `cardinality`, `effective` time, `resolution`, and package `uses`.
+`@ServiceProvider` also grants the developer control in defining many facets of the generated OSGi requirements and capabilities such as additional attributes and directives (attributes becoming service properties), `cardinality`, `effective` time, `resolution`, and package `uses`. The `@aQute.bnd.annotation.spi.ServiceProvider` annotation also generates a `osgi.serviceloader.registrar` requirement into the manifest. To avoid this you can use the `-noserviceloaderregistrar` instruction.
 
 #### OSGi Services
 
