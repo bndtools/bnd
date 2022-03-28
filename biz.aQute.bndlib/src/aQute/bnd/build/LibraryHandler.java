@@ -213,12 +213,19 @@ class LibraryHandler implements AutoCloseable {
 						error(p, header, name, "Invalid version %s", versionString);
 						continue;
 					}
-					// If the processor is the Workspace, we can't use the
-					// Workspace Repo since the projects depend upon the
-					// Workspace which we are augmenting
-					ResourceRepositoryStrategy strategy = (p == ws) ? ResourceRepositoryStrategy.REPOS
-						: ResourceRepositoryStrategy.ALL;
-					we = getLibrary(name, versionString, strategy);
+					/*
+					 * We can't use ResourceRepositoryStrategy.ALL since we are
+					 * initializing the Workspace or a Project and looking in
+					 * the WorkspaceRepositoryDynamic requires us to initialize
+					 * AND prepare ALL projects so the
+					 * WorkspaceRepositoryDynamic can index their built files
+					 * for capabilities. This would be a circularity problem. We
+					 * need to be able to initialize the Workspace and all
+					 * Projects before we prepare any Project. Initializing the
+					 * Workspace or a Project must not result in preparing any
+					 * Project.
+					 */
+					we = getLibrary(name, versionString, ResourceRepositoryStrategy.REPOS);
 				}
 
 				if (we == null) {
