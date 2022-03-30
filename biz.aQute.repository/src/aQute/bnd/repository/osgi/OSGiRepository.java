@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
@@ -41,7 +42,6 @@ import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.uri.URIUtil;
@@ -150,13 +150,16 @@ public class OSGiRepository extends BaseRepository
 	private void pollTask() {
 		if (inPoll.getAndSet(true))
 			return;
-		try {
-			poll();
-		} catch (Exception e) {
-			logger.debug("During polling", e);
-		} finally {
-			inPoll.set(false);
-		}
+		Processor.getExecutor()
+			.execute(() -> {
+				try {
+					poll();
+				} catch (Exception e) {
+					logger.debug("During polling", e);
+				} finally {
+					inPoll.set(false);
+				}
+			});
 	}
 
 	void poll() throws Exception {

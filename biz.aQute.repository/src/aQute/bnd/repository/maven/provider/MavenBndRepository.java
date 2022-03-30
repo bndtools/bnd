@@ -655,13 +655,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				.scheduleAtFixedRate(() -> {
 					if (inPoll.getAndSet(true))
 						return;
-					try {
-						poll();
-					} catch (Exception e) {
-						reporter.error("Error when polling index for %s for change", this);
-					} finally {
-						inPoll.set(false);
-					}
+					Processor.getExecutor()
+						.execute(() -> {
+							try {
+								poll();
+							} catch (Exception e) {
+								reporter.exception(e, "Error when polling index for %s for change", this);
+							} finally {
+								inPoll.set(false);
+							}
+						});
 				}, polltime, polltime, TimeUnit.SECONDS);
 		}
 	}
