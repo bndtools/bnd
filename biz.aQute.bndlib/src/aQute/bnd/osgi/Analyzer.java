@@ -424,6 +424,7 @@ public class Analyzer extends Processor {
 	}
 
 	private void reset() {
+		contained.clear();
 		classspace.clear();
 		referred.clear();
 		uses.clear();
@@ -436,8 +437,6 @@ public class Analyzer extends Processor {
 	}
 
 	private void analyzeContent() throws Exception {
-		reset();
-
 		// Parse all the classes in the
 		// the jar according to the OSGi Bundle-ClassPath
 		analyzeBundleClasspath();
@@ -995,7 +994,21 @@ public class Analyzer extends Processor {
 					endHandleErrors(previous);
 				}
 				if (reanalyze) {
+					// Builder adds -internal-source information
+					Map<PackageRef, String> sourceInformation = contained.stream()
+						.mapValue(attrs -> attrs.get(INTERNAL_SOURCE_DIRECTIVE))
+						.filterValue(Objects::nonNull)
+						.collect(MapStream.toMap());
+					reset();
 					analyzeContent();
+					// Restore -internal-source information
+					// if the package still exists
+					sourceInformation.forEach((pkgRef, source) -> {
+						Attrs attrs = contained.get(pkgRef);
+						if (attrs != null) {
+							attrs.put(INTERNAL_SOURCE_DIRECTIVE, source);
+						}
+					});
 				}
 			} catch (Exception e) {
 				exception(e, "Analyzer Plugin %s failed %s", plugin, e);
