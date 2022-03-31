@@ -24,7 +24,7 @@ As a running example, the [JDOM library][] version [1.1.2][] will be wrapped as
 an OSGi bundle.
 
 NB: Many of the tasks described here can be more easily performed with a
-full-featured OSGi IDE such as Bndtools, for example in the [OSGi enRoute Wrap Tutorial][]. However, this document is
+full-featured OSGi IDE such as Bndtools. However, this document is
 intended for users who perform these tasks infrequently and do not wish
 to download an IDE; instead a single, lightweight
 command-line tool is used. 
@@ -462,6 +462,5 @@ wrapping. The placeholders on the first three lines must be filled in:
 
 [JDOM library]: https://search.maven.org/search?q=g:org.jdom%20AND%20a:jdom&core=gav
 [1.1.2]: https://search.maven.org/artifact/org.jdom/jdom/1.1.2/jar
-[OSGi enRoute Wrap Tutorial]: http://enroute.osgi.org/tutorial_wrap/050-start
 [Semantic Versioning]: https://docs.osgi.org/whitepaper/semantic-versioning/
 

@@ -42,7 +42,7 @@ There are two possible options. The path/URL starts with a:
 	-include META-INF/MANIFEST.MF
 
 	# Use a URL
-	-include http://example.com/foo/bar/setup.bnd
+	-include https://example.com/foo/bar/setup.bnd
 
 	# Read several
 	-include first.bnd, second.properties

@@ -127,7 +127,7 @@ Bnd can help with the last two steps by adding the tester and engine bundles to 
 		bnd.identity;id='org.junit.vintage.engine',\
 		bnd.identity;id='biz.aQute.tester.junit-platform'
 
-See the [chapter on resolving](http://bnd.bndtools.org/chapters/250-resolving.html) for more information.
+See the [chapter on resolving](250-resolving.html) for more information.
 
 Note that if you're only using JUnit 3/4, you can omit the `-runrequires` line for the Jupiter engine, and conversely if you're only using JUnit Jupiter you can omit the Vintage engine. Alternatively/additionally, if you have any other `TestEngine` implementation bundles available, you can list these here instead/as well (though this has not been tested). 
 

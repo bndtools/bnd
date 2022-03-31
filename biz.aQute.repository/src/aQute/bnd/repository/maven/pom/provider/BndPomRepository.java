@@ -144,7 +144,7 @@ public class BndPomRepository extends BaseRepository
 			}
 		} else if (configuration.query() != null) {
 			this.query = configuration.query();
-			this.queryUrl = configuration.queryUrl("http://search.maven.org/solrsearch/select");
+			this.queryUrl = configuration.queryUrl("https://search.maven.org/solrsearch/select");
 		} else {
 			status("Neither pom, archive nor query property are set");
 		}

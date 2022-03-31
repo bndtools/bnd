@@ -335,6 +335,5 @@ The maven bnd plugin also changes the file layout to match the default maven fil
 
 * [Secrets of the Apache Felix Bundle Plugin Revealed][2] – Interesting blog about using the bndlib macros inside the plugin to handle semantic versioning
 
-[1]: http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html
-[2]: http://davidvaleri.wordpress.com/2011/04/07/secrets-of-the-felix-bundle-plug-in-macros-revealed/
-[3]: http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html#ApacheFelixMavenBundlePlugin(BND)
+[1]: https://felix.apache.org/documentation/subprojects/apache-felix-maven-bundle-plugin-bnd.html
+[2]: https://davidvaleri.wordpress.com/2011/04/07/secrets-of-the-felix-bundle-plug-in-macros-revealed/

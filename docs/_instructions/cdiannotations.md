@@ -20,7 +20,7 @@ The following `discover` modes are supported:
 | `discover`                    | Bean Discovery Mode                                          |
 | ----------------------------- | ------------------------------------------------------------ |
 | `all`                         | include all classes in the bundle as CDI beans               |
-| `annotated`                   | include classes annotated with [bean defining annotations](http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#bean_defining_annotations) as CDI beans |
+| `annotated`                   | include classes annotated with [bean defining annotations](https://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#bean_defining_annotations) as CDI beans |
 | `annotated_by_bean` (default) | include classes annotated with `org.osgi.service.cdi.annotations.Bean` or classes in packages annotated with `org.osgi.service.cdi.annotations.Beans` as CDI beans. *This is the **default** mode when `discover` is not specified.* |
 | `none`                        | do not include any classes in the bundle as CDI beans        |
 

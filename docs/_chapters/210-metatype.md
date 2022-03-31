@@ -171,7 +171,7 @@ Then bnd will detect this class as a Metatype and it generates the following XML
 
 As usual, XML does an outstanding job in obfuscating the interesting parts. If you're using the Apache Felix Webconsole (and if not, why not?) then you can edit this metatype on the web:
 
-%width=500px% http://www.aqute.biz/uploads/Bnd/webconsole.png
+%width=500px% https://www.aqute.biz/uploads/Bnd/webconsole.png
 
 This metatype can now be used in a simple example that prints the port number:
 
@@ -196,7 +196,7 @@ This metatype can now be used in a simple example that prints the port number:
 
 The editor can get quite rich with the metatype information. For example:
 
-http://www.aqute.biz/uploads/Bnd/complex.png
+https://www.aqute.biz/uploads/Bnd/complex.png
 
 This information came from the following Meta interface:
 

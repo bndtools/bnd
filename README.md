@@ -10,7 +10,7 @@ The git repository contains all the code.
 
 ## License
 
-This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0 which is available at <https://www.apache.org/licenses/LICENSE-2.0>, or the Eclipse Public License 2.0 which is available at <http://www.eclipse.org/legal/epl-2.0>.
+This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0 which is available at <https://www.apache.org/licenses/LICENSE-2.0>, or the Eclipse Public License 2.0 which is available at <https://www.eclipse.org/legal/epl-2.0>.
 
 ## API
 

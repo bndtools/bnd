@@ -143,10 +143,10 @@ You can add new entries by:
 * Dropping a URL to a POM. This pom will be parsed and then its coordinates are added. POMs from `search.maven.org` are also supported.
 * Using the menus to add all runtime or compile time dependencies of another entry.
 
-[Nexus]: http://www.sonatype.com/nexus-repository-sonatype
+[Nexus]: https://www.sonatype.com/products/repository-pro
 [Artifactory]: https://www.jfrog.com/open-source/
-[-maven-release]: /instructions/maven-release
-[-snapshot]: /instructions/snapshot
-[-pom]: /instructions/pom
-[-connection-settings]: /instructions/connection-settings
-[-buildrepo]: /instructions/buildrepo
+[-maven-release]: /instructions/maven-release.html
+[-snapshot]: /instructions/snapshot.html
+[-pom]: /instructions/pom.html
+[-connection-settings]: /instructions/connection-settings.html
+[-buildrepo]: /instructions/buildrepo.html

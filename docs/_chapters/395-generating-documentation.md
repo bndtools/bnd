@@ -37,7 +37,7 @@ For example, executing `bnd exportreport export` on a project with the following
 
 **bnd.bnd**
 
-    -exportreport: metadata.json, info.html;template=http://.../mytemplate.xslt
+    -exportreport: metadata.json, info.html;template=https://.../mytemplate.xslt
 
 will export two files: `metadata.json` (intermediate data) and `info.html` (final documentation file). 
 

@@ -43,7 +43,7 @@ Opening the `Run` tab of the bndrun editor on this file will show you all transi
 
 ## Searching
 
-Maven Central supports a [searching facility](http://blog.sonatype.com/2011/06/you-dont-need-a-browser-to-use-maven-central/) based on Solr. For example, you want all the artifacts of a given group id. In that case you could use the following Bnd Pom Repository plugin:
+Maven Central supports a [searching facility](https://blog.sonatype.com/2011/06/you-dont-need-a-browser-to-use-maven-central/) based on Solr. For example, you want all the artifacts of a given group id. In that case you could use the following Bnd Pom Repository plugin:
 
     -standalone: true
     -plugin.query = \
@@ -68,7 +68,7 @@ The query must return a JSON response.
 | `pom`            | `URI...` |      | A comma separated list of URLs to POM files.|
 | `location`       | `PATH` | `cnf/cache/pom-<name>.xml` | Optional cached index of the parsed POMs. |
 | `query`          | `STRING` |      | A Solr query string. This is the part after `?` and must be properly URL encoded|
-| `queryUrl`       | `URI` | `http://search.maven.org/solrsearch/select` | Optional URL to the search engine.|
+| `queryUrl`       | `URI` | `https://search.maven.org/solrsearch/select` | Optional URL to the search engine.|
 | `name`           | `STRING`|       | Required name of the repo.|
 | `transitive`     | `true|false` | `true` | If set to _truthy_ then dependencies are transitive.|
 | `poll.time`      | `integer`| 5 minutes | Number of seconds between checks for changes to POM files referenced by `pom` or `revision`. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|

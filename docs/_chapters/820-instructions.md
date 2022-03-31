@@ -61,7 +61,7 @@ The following terminals are pre-defined:
 	floor            ::= version
 	ceiling          ::= version
 	
-White spaces between terminals are ignored unless specifically noted. The only exception is the directive, a directive must be connected to the colon (':'). That is, bndlib stores attributes and directives in the same map and distinguishes them by the fact that directives end in a colon and attributes do not. For example, using a directive like `foo; path := http://www.xyz.com` will not work correctly because the `path :` is not a valid attribute nor directive name. Any value that contains a space, a tab, a comma, colon, semicolon, equal sign or any other character that is part of a terminal in the grammar must be quoted. 
+White spaces between terminals are ignored unless specifically noted. The only exception is the directive, a directive must be connected to the colon (':'). That is, bndlib stores attributes and directives in the same map and distinguishes them by the fact that directives end in a colon and attributes do not. For example, using a directive like `foo; path := https://www.xyz.com` will not work correctly because the `path :` is not a valid attribute nor directive name. Any value that contains a space, a tab, a comma, colon, semicolon, equal sign or any other character that is part of a terminal in the grammar must be quoted. 
 
 Almost all bndlib instructions follow the general OSGi syntax for a header. 
 

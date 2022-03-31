@@ -312,9 +312,9 @@ Note: the _runtime_ classifier is important, to  get the jacocoagent which defin
 
 __A few notes about  the example:__
 
-*  The example assumes a [bnd workspace](https://bndtools.org/workspace.html) in Eclipse and a Maven Repository using [_aQute.bnd.repository.maven.provider.MavenBndRepository_](https://bnd.bndtools.org/releases/4.0.0/plugins/maven.html)
-*  This allows specifying dependencies e.g. in _/cnf/central.maven_ (this is what is referenced above via the [_${repo}_ macro](https://bnd.bndtools.org/macros/repo.html))
+*  The example assumes a [bnd workspace](https://bndtools.org/workspace.html) in Eclipse and a Maven Repository using [_aQute.bnd.repository.maven.provider.MavenBndRepository_](/plugins/maven.html)
+*  This allows specifying dependencies e.g. in _/cnf/central.maven_ (this is what is referenced above via the [_${repo}_ macro](/macros/repo.html))
 *  the additional parameters _=output=tcpserver,jmx=true_ are [JaCoCo-specific](https://www.eclemma.org/jacoco/trunk/doc/agent.html) to start the agent as tcpserver and also expose functionality via JMX
 
-*  _runvm.coverage_ is a [merged instruction](https://bnd.bndtools.org/chapters/820-instructions.html#merged-instructions) (because of the suffix .coverage). It gets merged with a _-runvm_ parameter from the included parent myapp.bndrun. Advantage: Avoid repeating all the VM-options the from the parent _-runvm_ again, but just specify the additional parameters.
+*  _runvm.coverage_ is a [merged instruction](820-instructions.html#merged-instructions) (because of the suffix .coverage). It gets merged with a _-runvm_ parameter from the included parent myapp.bndrun. Advantage: Avoid repeating all the VM-options the from the parent _-runvm_ again, but just specify the additional parameters.
 *  Usage in Eclipse: open "Coverage View" , right click "Import Session", choose "Agent Adress 127.0.0.1 Port 6300", press "Next", Select the project to Monitor, Click "Finish"

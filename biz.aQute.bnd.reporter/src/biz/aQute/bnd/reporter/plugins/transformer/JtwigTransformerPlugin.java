@@ -65,9 +65,6 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 			.add(new TypedResourceLoader(ResourceReference.FILE, new FileResourceLoader(new File("."))));
 		eb.resources()
 			.resourceLoaders()
-			.add(new TypedResourceLoader("http", new HttpResourceLoader()));
-		eb.resources()
-			.resourceLoaders()
 			.add(new TypedResourceLoader("https", new HttpsResourceLoader()));
 
 		final JtwigTemplate template = JtwigTemplate.inlineTemplate(IO.collect(templateInputStream), eb.build());
@@ -87,45 +84,6 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 	@Override
 	public String[] getHandledModelExtensions() {
 		return _extI;
-	}
-
-	class HttpResourceLoader implements ResourceLoader {
-
-		@SuppressWarnings("unused")
-		@Override
-		public boolean exists(final String path) {
-			try {
-				new URL("http:" + path);
-				return true;
-			} catch (final MalformedURLException exception) {
-				return false;
-			}
-		}
-
-		@Override
-		public Optional<Charset> getCharset(final String path) {
-			return Optional.absent();
-		}
-
-		@Override
-		public InputStream load(final String path) {
-			try {
-				return Resource.fromURL(new URL("http:" + path))
-					.openInputStream();
-			} catch (final Exception exception) {
-				throw new ResourceNotFoundException(exception);
-			}
-		}
-
-		@Override
-		public Optional<URL> toUrl(final String path) {
-			try {
-				return Optional.of(new URL("http:" + path));
-			} catch (@SuppressWarnings("unused")
-			final MalformedURLException exception) {
-				return Optional.absent();
-			}
-		}
 	}
 
 	class HttpsResourceLoader implements ResourceLoader {
