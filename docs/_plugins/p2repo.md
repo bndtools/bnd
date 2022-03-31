@@ -25,7 +25,7 @@ It can take the following configuration properties:
 ```
 -plugin.p2: \
  	aQute.bnd.repository.p2.provider.P2Repository; \
- 	url = http://download.eclipse.org/modeling/emf/emf/builds/release/2.21; \
+ 	url = https://download.eclipse.org/modeling/emf/emf/builds/release/2.21; \
  	name = EMF
 ```
 

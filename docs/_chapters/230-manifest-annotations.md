@@ -133,8 +133,8 @@ This makes it possible to create an annotation for a subsystem. For example, an 
 
 ```java
 @BundleLicense(
-    name = "http://www.opensource.org/licenses/apache2.0.php",
-    link = "http://www.apache.org/licenses/LICENSE-2.0.html",
+    name = "https://www.opensource.org/licenses/apache2.0.php",
+    link = "https://www.apache.org/licenses/LICENSE-2.0.html",
     description = "Apache Software License 2.0")
 @interface ASL_2_0 {}
 

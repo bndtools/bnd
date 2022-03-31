@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.http.HttpClient;
@@ -13,6 +14,7 @@ import aQute.p2.packed.Unpack200;
 
 public class TargetImplTest {
 
+	@Disabled("The referenced p2 site, http://www.jmdns.org/update-site/3.5.4/, does not exist")
 	@Test
 	public void jmdns() throws Exception {
 		TargetImpl impl = new TargetImpl(new Unpack200(), new HttpClient(),

@@ -61,7 +61,7 @@ public class P2RepositoryTest {
 			p2r.setRegistry(w);
 
 			Map<String, String> config = new HashMap<>();
-			config.put("url", "http://download.eclipse.org/modeling/tmf/xtext/updates/releases/head/R201304180855/");
+			config.put("url", "https://download.eclipse.org/modeling/tmf/xtext/updates/releases/head/R201304180855/");
 			config.put("name", "test");
 			p2r.setProperties(config);
 			List<String> list = p2r.list(null);

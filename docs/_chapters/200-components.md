@@ -203,7 +203,7 @@ A unitary configuration can be set and changed but there is at most one of them.
 * require - This requires a unitary configuration to be set or one or more factory configurations before a component is created.
 * ignore - Ignore configuration information
 
-A related standard is the Metatype standard. The Metatype Service provides a repository of property descriptors. Bundles can provide these descriptors in their bundles in the OSGI-INF/metatype directory. There are tools, like the [Felix Webconsole][http://felix.apache.org/site/apache-felix-web-console.html], that can provide an editing window for a configuration that is typed with a metatype description.
+A related standard is the Metatype standard. The Metatype Service provides a repository of property descriptors. Bundles can provide these descriptors in their bundles in the OSGI-INF/metatype directory. There are tools, like the [Felix Webconsole](https://felix.apache.org/documentation/subprojects/apache-felix-web-console.html), that can provide an editing window for a configuration that is typed with a metatype description.
 
 In practice, this is a powerful model that provides a lot of configurability for your components with easy editing but getting it all right is not trivial. To make this easier, bnd has made it ease to use configurations.
 
@@ -248,5 +248,5 @@ If you change the message, you will see that the component is first deactivated 
 
 It is also possible to take advantage of the configuration factories. In this model 
 
-An example, that implements a simple socket server on a configurable port and returns a message when a telnet session is opened to that port can be found on [Github][https://github.com/bnd/aQute/blob/master/aQute.metatype/src/aQute/metatype/components/ServerSocketComponent.java].
+An example, that implements a simple socket server on a configurable port and returns a message when a telnet session is opened to that port can be found on [Github](https://github.com/bnd/aQute/blob/master/aQute.metatype/src/aQute/metatype/components/ServerSocketComponent.java).
 

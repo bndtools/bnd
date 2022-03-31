@@ -8,7 +8,7 @@ layout: default
 
 This Application Note is about _resolving_ in OSGi. The OSGi Framework has always used a _resolver_ to _wire_ a given set of bundles together, ensuring that only valid wires are made. However, the same OSGi resolver can also be used to select a set of bundles from a much larger set. This application note discusses this secondary usage.
 
-The resolver model is based on technology developed in OSGi since 2006 with [RFC-0112 Bundle Repository](http://www.openehealth.org/download/attachments/688284/rfc-0112_BundleRepository.pdf). This RFC laid out a model that was gradually implemented in the OSGi specifications and for which many tools were developed. Resolving automates a task that is mostly done manually today.
+The resolver model is based on technology developed in OSGi since 2006 with [RFC-0112 Bundle Repository](https://github.com/osgi/design/raw/main/rfcs/rfc0112/rfc-0112-OBR.pdf). This RFC laid out a model that was gradually implemented in the OSGi specifications and for which many tools were developed. Resolving automates a task that is mostly done manually today.
 
 
 ## What Problem is Being (Re)Solved?
@@ -75,7 +75,7 @@ To make the model more clear let's take a closer look to a simple bundle `com.ex
 
 Clearly, an `Export-Package: com.example.pe` is a bit easier to read than the corresponding capability, let alone the filter in the requirement. This is especially true when the versions are taken into account, with the assertion of the version range the filters become quite unreadable. Clearly, if this had to be maintained by human developers then a model like Maven would be far superior. Fortunately, almost all of the metadata that is needed to make this work does not require much extra work from the developer. For example, the `bnd` tool that is available in Maven, Gradle, Eclipse, Intellij and others can easily analyse a JAR file and automatically generate the requirements and capabilities based on the source code. 
 
-In certain cases it is necessary to provide requirements and capabilities that bnd cannot infer. However, [Manifest annotations](http://bnd.bndtools.org/chapters/230-manifest-annotations.html) support in bnd can be used to define an annotation that will add parameterised requirements to the resource.
+In certain cases it is necessary to provide requirements and capabilities that bnd cannot infer. However, [Manifest annotations](230-manifest-annotations.html) support in bnd can be used to define an annotation that will add parameterised requirements to the resource.
 
 Really, when you use an adequately appointed toolchain (like Bndtools) none of this gibberish is visible to normal developers unless they have a special case. The gibberish is left to the tools that prefer gibberish over natural language. 
 
@@ -136,7 +136,7 @@ Since bnd has an extensive library to parse bundles and generate the resources i
 
 ### Managing Repositories
 
-A repository generally represents a _release_ of a software product. For example, in OSGi enRoute, the OSGi Alliance has provided a _base API_ bundle. This bundle contains all the APIs of OSGi core, OSGi compendium, and an OSGi enRoute release. There is also an OSGi enRoute _distro_ for each release. The distro is a repository that provides access to implementations for the base API. The OSGi enRoute distro is maintained in a Maven POM. This POM lists the exact versions of a release. Many developers publish an OSGi Repository XML to allow the resolver access to the metadata of their bundles, for example [Knopflerfish](http://www.knopflerfish.org/releases/4.0.1/repository.xml) produces an OSGi XML Repository with all their bundles.
+A repository generally represents a _release_ of a software product. For example, in OSGi enRoute, the OSGi Alliance has provided a _base API_ bundle. This bundle contains all the APIs of OSGi core, OSGi compendium, and an OSGi enRoute release. There is also an OSGi enRoute _distro_ for each release. The distro is a repository that provides access to implementations for the base API. The OSGi enRoute distro is maintained in a Maven POM. This POM lists the exact versions of a release. Many developers publish an OSGi Repository XML to allow the resolver access to the metadata of their bundles, for example [Knopflerfish](https://www.knopflerfish.org/releases/4.0.1/repository.xml) produces an OSGi XML Repository with all their bundles.
 
 This model is in contrast with Maven Central and most other Maven repositories. These repositories are designed to contain everything that was ever released. An OSGi repository is more the content of a specific release. Since it generally only contains a specific release, it will disallow the resolver to use any unwanted resources.
 
@@ -188,7 +188,7 @@ There are some more panes that are useful but they will be handled in diagnosing
 * **Runtime Properties** – Makes it possible to define OSGi framework properties, command line arguments, and VM arguments.
 * **Run Blacklist** – Any resources selected by the requirements in the blacklist can never be used in a resolution.
 * **Run Bundles** – This is normally the output of the resolver. However, it is possible to add/remove bundles from this list when the resolver is bypassed. The `Run`, `Debug`, and `Export` functions always work from the `-runbundles` list.
-* **Resolve** – A popup that defines _when_ the [resolver will run](http://bnd.bndtools.org/instructions/resolve.html).
+* **Resolve** – A popup that defines _when_ the [resolver will run](/instructions/resolve.html).
 
 ## Resolving
 
@@ -288,30 +288,30 @@ It is still a mystery, try checking the `Run Blacklist` list. If it is not there
 
 ## OSGi bnd Snapshot Viewer
 
-Another tool for diagnosing potential issues in your OSGI framework (bundle, packages, services), the SCR info, configuration, log, and custom extensions is the [OSGi bnd Snapshot Viewer](https://bnd.bndtools.org/snapshot.html).
+Another tool for diagnosing potential issues in your OSGI framework (bundle, packages, services), the SCR info, configuration, log, and custom extensions is the [OSGi bnd Snapshot Viewer](/snapshot.html).
 
 
 ## The Source View
 
 So far this App Note only visited the _graphic user interface_ (GUI). However, bnd always keeps all information in simple properties files that can also edited as text. In the Run editor (that edits `bndrun` files) you can also select the `Source` view. Not all features of a `bndrun` file can be manipulated through the GUI. This section therefore shows what is in the source and it can be manipulated.
 
-Notice that most instructions are [_merge properties_](http://bnd.bndtools.org/chapters/820-instructions.html). That is, bnd will first find all properties that start with the instruction name and merge their values together. For example, if you set `-runrequires`, `-runrequires.foo`, and `-runrequires.bar` bnd will use the combination of these properties. The order is the sorting order of the names used.
+Notice that most instructions are [_merge properties_](820-instructions.html). That is, bnd will first find all properties that start with the instruction name and merge their values together. For example, if you set `-runrequires`, `-runrequires.foo`, and `-runrequires.bar` bnd will use the combination of these properties. The order is the sorting order of the names used.
 
-* [-runfw](http://bnd.bndtools.org/instructions/runfw.html) – Defines the framework to use
-* [-runbundles](http://bnd.bndtools.org/instructions/runbundles.html) – List of the bundles to run, calculated by the resolver.
-* [-runsystemcapabilities](http://bnd.bndtools.org/instructions/runsystemcapabilities.html) – Additional capabilities provided by the framework.
-* [-runsystempackages](http://bnd.bndtools.org/instructions/runsystempackages.html) – Additional packages exported by the framework.
-* [-runrequires](http://bnd.bndtools.org/instructions/runrequires.html) – The initial requirements
-* [-runprovidedcapabilities](http://bnd.bndtools.org/instructions/runprovidedcapabilities.html) – Only use with the `-distro` option, it contains additional capabilities that are not in the distro files.
-* [-runblacklist](http://bnd.bndtools.org/instructions/runblacklist.html) – Requirements that select resources that should never be part of the resolution.
-* [-runee](http://bnd.bndtools.org/instructions/runee.html) – The execution environment
-* [-runpath](http://bnd.bndtools.org/instructions/runpath.html) – The JARs that should be on the classpath. Exports and provided capabilities defined in the manifests of these JARs are added to the system capabilities.
-* [-runrepos](http://bnd.bndtools.org/instructions/runpath.html) – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.
-* [-augment](http://bnd.bndtools.org/instructions/augment.html) – Adds virtual capabilities and requirements to resources in the repository.
-* [-distro](http://bnd.bndtools.org/instructions/distro.html) – Directly provides the system capabilities in a JAR with Manifest. Is used when the resulotion is not used to create an executable JAR but to create a Java EE WAR or Karaf KAR where the application is running in a host environment.
-* [-resolve](http://bnd.bndtools.org/instructions/resolve.html) – Controls when the resolver runs
-* [-resolve.effective](http://bnd.bndtools.org/instructions/resolve.effective.html) – Sets the effectives for the resolver.
-* [-resolve.preferences](http://bnd.bndtools.org/instructions/resolve.preferences.html) – Can be used to make some resources more equal than others.
+* [-runfw](/instructions/runfw.html) – Defines the framework to use
+* [-runbundles](/instructions/runbundles.html) – List of the bundles to run, calculated by the resolver.
+* [-runsystemcapabilities](/instructions/runsystemcapabilities.html) – Additional capabilities provided by the framework.
+* [-runsystempackages](/instructions/runsystempackages.html) – Additional packages exported by the framework.
+* [-runrequires](/instructions/runrequires.html) – The initial requirements
+* [-runprovidedcapabilities](/instructions/runprovidedcapabilities.html) – Only use with the `-distro` option, it contains additional capabilities that are not in the distro files.
+* [-runblacklist](/instructions/runblacklist.html) – Requirements that select resources that should never be part of the resolution.
+* [-runee](/instructions/runee.html) – The execution environment
+* [-runpath](/instructions/runpath.html) – The JARs that should be on the classpath. Exports and provided capabilities defined in the manifests of these JARs are added to the system capabilities.
+* [-runrepos](/instructions/runpath.html) – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.
+* [-augment](/instructions/augment.html) – Adds virtual capabilities and requirements to resources in the repository.
+* [-distro](/instructions/distro.html) – Directly provides the system capabilities in a JAR with Manifest. Is used when the resulotion is not used to create an executable JAR but to create a Java EE WAR or Karaf KAR where the application is running in a host environment.
+* [-resolve](/instructions/resolve.html) – Controls when the resolver runs
+* [-resolve.effective](/instructions/resolve.effective.html) – Sets the effectives for the resolver.
+* [-resolve.preferences](/instructions/resolve.preferences.html) – Can be used to make some resources more equal than others.
 
 ## Augmenting Legacy Bundles
 
@@ -368,8 +368,11 @@ Currently the way to do that is to create a __distro__ of the target container. 
 
 ### How do you create a distro?
 
-1. Install the bnd remote agent bundle [1] in the target container runtime. This will automatically open a local socket on a default port used by the bnd cli next.
-2. Execute the following command using the bnd cli [2]: `bnd remote distro -o container-5.6.7.jar container 5.6.7`
+1. Install the [bnd remote agent bundle][1] in the target container runtime. This will automatically open a local socket on a default port used by the bnd cli next.
+2. Execute the following command using the [bnd cli][2]:
+
+		bnd remote distro -o container-5.6.7.jar container 5.6.7
+
 3. Take the jar `container-5.6.7.jar` created in 2. and place it into the the directory containing the bndrun file that is used to resolve your deployment jars.
 4. in the bndrun file add:
 
@@ -391,5 +394,5 @@ The resolver model provides an alternative (working inside maven if so desired) 
 Converting an existing build into a resolve based build can be daunting but the efforts are worth it. For bnd users that use the workspace model the advantages will flow freely.
 
 
-[1]: http://search.maven.org/remotecontent?filepath=biz/aQute/bnd/biz.aQute.remote.agent/3.5.0/biz.aQute.remote.agent-3.5.0.jar
-[2]: http://search.maven.org/remotecontent?filepath=biz/aQute/bnd/biz.aQute.bnd/3.5.0/biz.aQute.bnd-3.5.0.jar
+[1]: https://search.maven.org/artifact/biz.aQute.bnd/biz.aQute.remote.agent
+[2]: https://search.maven.org/artifact/biz.aQute.bnd/biz.aQute.bnd

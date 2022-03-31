@@ -24,7 +24,7 @@ public class MavenDeployCmd extends Processor {
 	private final static Logger	logger		= LoggerFactory.getLogger(MavenDeployCmd.class);
 
 	String						repository	= "nexus";
-	String						url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
+	String						url			= "https://oss.sonatype.org/service/local/staging/deploy/maven2";
 	String						homedir;
 	String						keyname;
 

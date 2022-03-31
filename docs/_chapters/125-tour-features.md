@@ -22,7 +22,7 @@ A common use of bnd is to wrap a JAR file; there are still too many files out th
 
 The OSGi metadata is stored in the _manifest_ of the JAR file. The manifest is a like a properties file stored in `META-INF/MANIFEST.MF` in the JAR file. The manifest format is [specified by Sun/Oracle][4]. Though the manifest is a text file and human readable it has a number of quirks that makes it hard to edit for humans. So even though it is text, the intention of the manifest was never to be done by hand, bnd like tools were always the intention. Tools can provide many useful defaults, handle expansions, and verify consistency,
 
-So let's use bnd to wrap the [javax.activation.jar][2] file even though it is already wrapped for us in the [Enterprise Bundle Repository][3]. Let's download it:
+So let's use bnd to wrap the [javax.activation.jar][2] file. Let's download it:
 
 	$ mkdir jar
 	$ bnd copy https://repo.maven.apache.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar \
@@ -505,9 +505,8 @@ There are some common pitfalls that can be prevented by following the tips:
 * If you have a problem, make an example that is as small as possible and send it to [me](mailto:Peter.Kriens@aQute.biz).
 
 
-[1]: http://www.bndtools.org
+[1]: https://bndtools.org
 [2]: https://repo.maven.apache.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
-[3]: http://ebr.springsource.com/repository/app/
-[4]: http://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#JARManifest
+[4]: https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#JAR_Manifest
 [5]: 170-versioning.html
 [6]: 120-install.html
