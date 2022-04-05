@@ -531,6 +531,10 @@ public class Jar implements Closeable {
 		}
 	}
 
+	public String getManifestName() {
+		return manifestName;
+	}
+
 	public void setManifestName(String manifestName) {
 		check();
 		manifestName = ZipUtil.cleanPath(manifestName);
