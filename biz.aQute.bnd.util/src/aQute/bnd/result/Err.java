@@ -74,7 +74,7 @@ final class Err<V> implements Result<V> {
 	 */
 	@Override
 	public V unwrap() {
-		throw new ResultException("Not an Ok value");
+		throw new ResultException(error);
 	}
 
 	/**
