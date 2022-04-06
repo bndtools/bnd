@@ -6,7 +6,7 @@ import aQute.service.reporter.Reporter;
 
 /**
  * An optional interface for plugins. If a plugin implements this interface then
- * it can receive the reminaing attributes and directives given in its clause as
+ * it can receive the remaining attributes and directives given in its clause as
  * well as the reporter to use.
  */
 public interface Plugin {
