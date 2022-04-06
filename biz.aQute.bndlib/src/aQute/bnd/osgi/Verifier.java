@@ -665,8 +665,7 @@ public class Verifier extends Processor {
 					endHandleErrors(previous);
 				}
 			} catch (Exception e) {
-				e.printStackTrace(System.err);
-				error("Verifier Plugin %s failed %s", plugin, e);
+				exception(e, "Verifier Plugin %s failed %s", plugin, e);
 			}
 		}
 	}
