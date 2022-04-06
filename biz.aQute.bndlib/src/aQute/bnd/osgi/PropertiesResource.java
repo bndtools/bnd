@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
@@ -10,7 +12,7 @@ public class PropertiesResource extends WriteResource {
 	private final Properties properties;
 
 	public PropertiesResource(Properties properties) {
-		this.properties = properties;
+		this.properties = requireNonNull(properties);
 	}
 
 	public PropertiesResource() {
