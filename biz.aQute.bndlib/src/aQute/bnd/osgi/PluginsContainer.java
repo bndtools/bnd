@@ -107,11 +107,18 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 				if (ws == null) {
 					return Collections.emptyList();
 				}
+				logger.debug("Loading external plugins {}", this.serviceClass);
 				Result<List<T>> implementations = ws.getExternalPlugins()
 					.getImplementations(this.serviceClass, this.attrs);
 				implementations.accept(
-					ok -> ok.forEach(p -> ws.customize(p, this.attrs, PluginsContainer.this)),
-					error -> ws.error("%s", error));
+					ok -> ok.forEach(p -> {
+						logger.debug("Customizing external plugin {} with [{}]", p, this.attrs);
+						processor.customize(p, this.attrs, PluginsContainer.this);
+					}),
+					error -> {
+						logger.debug("Loading external plugins {} failed with error {}", this.serviceClass, error);
+						processor.error("Loading external plugins %s failed with error %s", this.serviceClass, error);
+					});
 				return implementations.orElseGet(Collections::emptyList);
 			});
 		}

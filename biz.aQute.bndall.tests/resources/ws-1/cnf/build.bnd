@@ -1,1 +1,1 @@
--plugin java.util.concurrent.Callable
+-plugin java.util.concurrent.Callable;world=plugin-attrs

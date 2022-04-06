@@ -508,17 +508,26 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	protected <T> T customize(T plugin, Attrs map, PluginsContainer pluginsContainer) {
 		if (plugin instanceof Plugin) {
-			((Plugin) plugin).setReporter(this);
 			try {
-				if (map == null)
+				((Plugin) plugin).setReporter(this);
+			} catch (Exception e) {
+				exception(e, "While setting reporter on plugin %s", plugin);
+			}
+			try {
+				if (map == null) {
 					map = Attrs.EMPTY_ATTRS;
+				}
 				((Plugin) plugin).setProperties(map);
 			} catch (Exception e) {
 				exception(e, "While setting properties %s on plugin %s", map, plugin);
 			}
 		}
 		if (plugin instanceof RegistryPlugin) {
-			((RegistryPlugin) plugin).setRegistry(pluginsContainer);
+			try {
+				((RegistryPlugin) plugin).setRegistry(pluginsContainer);
+			} catch (Exception e) {
+				exception(e, "While setting registry on plugin %s", plugin);
+			}
 		}
 		return plugin;
 	}

@@ -1,5 +1,7 @@
 package aQute.bnd.build;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,6 +12,7 @@ import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,8 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.CL;
 import aQute.bnd.osgi.resource.MainClassNamespace;
 import aQute.bnd.result.Result;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.externalplugin.ExternalPluginNamespace;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
@@ -91,8 +96,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			return Result.err("no such class %s in %s for plugin %s", c.getName(), e.getMessage(), pluginName);
 		} catch (Exception e) {
 			return Result.err("could not instantiate class %s in %s for plugin %s: %s", c.getName(), e.getMessage(),
-				pluginName,
-				Exceptions.causes(e));
+				pluginName, Exceptions.causes(e));
 		}
 	}
 
@@ -224,23 +228,22 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		assert interf.isInterface();
 
 		try {
-
 			String filter = ExternalPluginNamespace.filter(attrs.getOrDefault("name", "*"), interf);
 			List<Capability> externalCapabilities = workspace
 				.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE, filter)
 				.collect(Collectors.toList());
 
+			Class<?>[] interfaces = new Class[] {
+				interf, AutoCloseable.class, Plugin.class, RegistryPlugin.class
+			};
+			ClassLoader loader = new ProxyClassLoader(interf.getClassLoader(), interfaces);
 			List<T> plugins = new ArrayList<>();
 			for (Capability c : externalCapabilities) {
 				Memoize<Object> delegate = Memoize.supplier(() -> load(c, attrs).unwrap());
 				@SuppressWarnings("unchecked")
-				T proxy = (T) Proxy.newProxyInstance(interf.getClassLoader(), new Class[] {
-					interf, AutoCloseable.class
-				}, new InvocationHandler() {
-
+				T proxy = (T) Proxy.newProxyInstance(loader, interfaces, new InvocationHandler() {
 					@Override
 					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
 						if (method.getDeclaringClass() == Object.class) {
 							return method.invoke(this, args);
 						}
@@ -257,6 +260,15 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 						Object object = delegate.get();
 						if (object == null)
 							throw new IllegalStateException("Could not load external plugin for capability " + c);
+
+						if ((method.getDeclaringClass() == Plugin.class) && !(object instanceof Plugin)) {
+							return null;
+						}
+						if ((method.getDeclaringClass() == RegistryPlugin.class)
+							&& !(object instanceof RegistryPlugin)) {
+							return null;
+						}
+
 						return method.invoke(object, args);
 					}
 
@@ -276,7 +288,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 	private Result<Object> load(Capability cap, Attrs attrs) {
 		String implementation = ExternalPluginNamespace.getImplementation(cap);
 		if (implementation == null) {
-			return null;
+			return Result.err("No implementation class %s", cap);
 		}
 		try {
 			Result<? extends ClassLoader> loader = getLoader(cap);
@@ -289,14 +301,14 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			Object plugin = loadedClass.newInstance();
 			return Result.ok(plugin);
 		} catch (Exception e) {
-			Workspace.logger.info("failed to load class %s for external plugin load for %s: e", implementation, cap, e);
-			return null;
+			Workspace.logger.info("failed to load class %s for external plugin load for %s", implementation, cap, e);
+			return Result.err("failed to load class %s for external plugin load for %s: %s", implementation, cap, e);
 		}
 	}
 
 	private synchronized Result<CL> getLoader(Capability cap) {
 		CL urlClassLoader = loaders.get(cap);
-		if (urlClassLoader == null)
+		if (urlClassLoader == null) {
 			try {
 				Result<File> bundle = workspace.getBundle(cap.getResource());
 				if (bundle.isErr())
@@ -309,6 +321,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			} catch (Exception e) {
 				return Result.err("failed to create class loader for %s: %s", cap, e);
 			}
+		}
 		return Result.ok(urlClassLoader);
 	}
 
@@ -320,4 +333,53 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Class loader that can be used to create a proxy in cases where the
+	 * interface classes are not visible from the class loader of the first
+	 * interface class.
+	 */
+	static class ProxyClassLoader extends ClassLoader {
+		private final Class<?>[]	classes;
+		private final ClassLoader[]	loaders;
+
+		public ProxyClassLoader(ClassLoader parent, Class<?>[] classes) {
+			super(parent);
+			this.classes = requireNonNull(classes);
+			this.loaders = Arrays.stream(classes)
+				.map(c -> {
+					ClassLoader loader = c.getClassLoader();
+					return (loader == null) ? getSystemClassLoader() : loader;
+				})
+				.distinct()
+				.toArray(ClassLoader[]::new);
+		}
+
+		@Override
+		public Class<?> findClass(String name) throws ClassNotFoundException {
+			for (Class<?> c : classes) {
+				if (name.equals(c.getName())) {
+					return c;
+				}
+			}
+			for (ClassLoader loader : loaders) {
+				try {
+					return loader.loadClass(name);
+				} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
+					// Try next
+				}
+			}
+			throw new ClassNotFoundException(name);
+		}
+
+		@Override
+		public URL findResource(String name) {
+			for (ClassLoader loader : loaders) {
+				URL url = loader.getResource(name);
+				if (url != null) {
+					return url;
+				}
+			}
+			return null;
+		}
+	}
 }

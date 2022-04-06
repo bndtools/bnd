@@ -40,7 +40,7 @@ public class ExternalPluginHandlerTest {
 				});
 			System.out.println(call);
 			assertThat(call.isOk()).isTrue();
-			assertThat(call.unwrap()).isEqualTo("hello");
+			assertThat(call.unwrap()).isEqualTo("hello, world");
 		}
 	}
 
@@ -59,7 +59,7 @@ public class ExternalPluginHandlerTest {
 			assertThat(unwrap).hasSize(1);
 
 			callable = unwrap.get(0);
-			assertThat(callable.call()).isEqualTo("hello");
+			assertThat(callable.call()).isEqualTo("hello, world");
 		}
 	}
 
@@ -86,9 +86,9 @@ public class ExternalPluginHandlerTest {
 
 			plugin = ws.getPlugin(Callable.class);
 			assertThat(plugin).isNotNull();
-			assertThat(plugin.call()).isEqualTo("hello");
+			assertThat(plugin.call()).isEqualTo("hello, plugin-attrs");
 		}
-		assertThat(plugin.call()).isEqualTo("goodbye");
+		assertThat(plugin.call()).isEqualTo("goodbye, plugin-attrs");
 	}
 
 	@Test
