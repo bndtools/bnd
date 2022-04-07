@@ -66,6 +66,7 @@ import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import aQute.lib.manifest.ManifestUtil;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA256;
@@ -774,9 +775,7 @@ public class Jar implements Closeable {
 	 * @throws IOException when something fails
 	 */
 	public static void outputManifest(Manifest manifest, OutputStream out) throws IOException {
-		try (ManifestResource manifestResource = new ManifestResource(manifest)) {
-			manifestResource.write(out);
-		}
+		ManifestUtil.write(manifest, out);
 	}
 
 	private static Manifest clean(Manifest org) {
