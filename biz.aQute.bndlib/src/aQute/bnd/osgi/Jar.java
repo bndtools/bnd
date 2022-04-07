@@ -780,14 +780,14 @@ public class Jar implements Closeable {
 	}
 
 	private static Manifest clean(Manifest org) {
-
 		Manifest result = new Manifest();
+		Attributes mainAttributes = result.getMainAttributes();
 		for (Map.Entry<?, ?> entry : org.getMainAttributes()
 			.entrySet()) {
 			String nice = clean((String) entry.getValue());
-			result.getMainAttributes()
-				.put(entry.getKey(), nice);
+			mainAttributes.put(entry.getKey(), nice);
 		}
+		mainAttributes.putIfAbsent(Attributes.Name.MANIFEST_VERSION, "1.0");
 		for (String name : org.getEntries()
 			.keySet()) {
 			Attributes attrs = result.getAttributes(name);
