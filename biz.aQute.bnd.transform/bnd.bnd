@@ -13,6 +13,8 @@ Bundle-Description: Class file and Manifest header Transformation Support
 	aQute.bnd.header.*,\
 	aQute.bnd.memoize.*,\
 	aQute.bnd.stream.*,\
+	aQute.bnd.unmodifiable.*,\
+	aQute.lib.manifest.*;-split-package:=first,\
 	aQute.lib.utf8properties.*;-split-package:=first,\
 	aQute.libg.uri.*;-split-package:=first
 
