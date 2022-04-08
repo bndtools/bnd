@@ -88,7 +88,7 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
     - name: Download dist/bundles
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: ${{ needs.build.outputs.dist-bundles }}
         path: dist/bundles
