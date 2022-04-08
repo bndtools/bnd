@@ -11,10 +11,13 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 
 public class TestActivator implements BundleActivator {
 
@@ -222,6 +225,53 @@ public class TestActivator implements BundleActivator {
 			props.setProperty("main.thread", "true");
 			context.registerService(Callable.class.getName(), r, (Dictionary) props);
 			// throws exception ...
+		} else if ("main.thread.callable.two.runs".equals(p)) {
+			final CountDownLatch latch = new CountDownLatch(1);
+			Callable<Integer> r = new Callable<Integer>() {
+
+				@Override
+				public Integer call() throws Exception {
+					try {
+						System.err.println("In main, return 198");
+						return 198;
+					} finally {
+						CompletableFuture.runAsync(() -> {
+							try {
+								Thread.sleep(4000);
+								Callable<Integer> c = new Callable<Integer>() {
+
+									@Override
+									public Integer call() throws Exception {
+										System.err.println("In main, return 0");
+										return 0;
+									}
+
+								};
+								Properties props = new Properties();
+								props.setProperty("main.thread", "true");
+								System.err.println("registering second main callable round");
+								ServiceRegistration registerService = context.registerService(Callable.class.getName(),
+									c, (Dictionary) props);
+								System.err.println("second main callable round has been registered");
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						});
+					}
+				}
+
+			};
+
+			Properties props = new Properties();
+			props.setProperty("main.thread", "true");
+			System.err.println("registering first main callable round");
+			ServiceRegistration registerService = context.registerService(Callable.class.getName(), r,
+				(Dictionary) props);
+			System.err.println("first main callable round has been registered");
+			latch.await(1, TimeUnit.SECONDS);
+			registerService.unregister();
+
 		} else if ("framework.restart".equals(p)) {
 			int count = Integer.getInteger("launch.framework.restart.count");
 			if (count == 0) {
