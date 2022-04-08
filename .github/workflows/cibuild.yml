@@ -90,7 +90,7 @@ jobs:
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
         path: |
