@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
@@ -384,10 +385,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 						IPath projectPath = root.getFile(path)
 							.getProject()
 							.getFullPath();
-						List<String> options = Strings.split(c.getAttributes()
-							.get("ide"));
+						String source = c.getAttributes()
+							.getOrDefault("source", "project");
 						boolean versionProject = isVersionProject(c);
-						if (versionProject || !options.contains("jar-only")) {
+						if (versionProject || Objects.equals(source, "project")) {
 							addProjectEntry(projectPath, accessRules, extraAttrs);
 						}
 						// if not version=project, add entry for generated jar
