@@ -24,6 +24,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 
+import aQute.bnd.osgi.Constants;
+
 public class BndContainer implements IClasspathContainer, Serializable {
 	private static final long					serialVersionUID		= 2L;
 	public static final String					DESCRIPTION				= "Bnd Bundle Path";
@@ -86,7 +88,10 @@ public class BndContainer implements IClasspathContainer, Serializable {
 		resources = null;
 	}
 
-	private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
+	private static final IClasspathAttribute	TEST	= JavaCore.newClasspathAttribute("test",
+		Boolean.TRUE.toString());
+	private static final IClasspathAttribute	PROJECT	= JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE,
+		Constants.VERSION_ATTR_PROJECT);
 
 	IRuntimeClasspathEntry[] getRuntimeClasspathEntries() throws JavaModelException {
 		List<IRuntimeClasspathEntry> runtime = new ArrayList<>();
@@ -99,6 +104,18 @@ public class BndContainer implements IClasspathContainer, Serializable {
 					break;
 				}
 				case IClasspathEntry.CPE_PROJECT : {
+					if (!hasAttribute(cpe, PROJECT)) {
+						/*
+						 * This project entry is not version=project, so the
+						 * library entry for the project will result in a
+						 * runtime entry being added.
+						 */
+						break;
+					}
+					/*
+					 * This project entry is version=project, so we must add a
+					 * runtime entry for each of the project's output folders.
+					 */
 					IProject project = ResourcesPlugin.getWorkspace()
 						.getRoot()
 						.getProject(cpe.getPath()
