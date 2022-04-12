@@ -384,9 +384,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 						IPath projectPath = root.getFile(path)
 							.getProject()
 							.getFullPath();
-						addProjectEntry(projectPath, accessRules, extraAttrs);
+						List<String> options = Strings.split(c.getAttributes()
+							.get("ide"));
+						boolean versionProject = isVersionProject(c);
+						if (versionProject || !options.contains("jar-only")) {
+							addProjectEntry(projectPath, accessRules, extraAttrs);
+						}
 						// if not version=project, add entry for generated jar
-						if (!isVersionProject(c)) {
+						if (!versionProject) {
 							/*
 							 * Supply an empty index for the generated JAR of a
 							 * workspace project dependency. This prevents the
