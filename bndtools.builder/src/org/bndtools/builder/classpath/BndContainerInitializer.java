@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
@@ -201,6 +200,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	private static class Updater {
 		private static final IAccessRule			DISCOURAGED			= JavaCore.newAccessRule(new Path("**"),
 			IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
+		private static final IAccessRule			NON_ACCESSIBLE		= JavaCore.newAccessRule(new Path("**"),
+			IAccessRule.K_NON_ACCESSIBLE | IAccessRule.IGNORE_IF_BETTER);
 		private static final IClasspathAttribute	EMPTY_INDEX			= JavaCore.newClasspathAttribute(
 			IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
 			"platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
@@ -385,14 +386,18 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 						IPath projectPath = root.getFile(path)
 							.getProject()
 							.getFullPath();
-						String source = c.getAttributes()
-							.getOrDefault("source", "project");
-						boolean versionProject = isVersionProject(c);
-						if (versionProject || Objects.equals(source, "project")) {
+						if (isVersionProject(c)) {
 							addProjectEntry(projectPath, accessRules, extraAttrs);
-						}
-						// if not version=project, add entry for generated jar
-						if (!versionProject) {
+						} else {
+							/*
+							 * If not version=project, add project entry for
+							 * source code before library entry for generated
+							 * jar. We use NON_ACCESSIBLE access to make eclipse
+							 * use the classes in the library entry and not the
+							 * project entry. We use the project entry for
+							 * source code only.
+							 */
+							addProjectEntry(projectPath, Collections.singletonList(NON_ACCESSIBLE), extraAttrs);
 							/*
 							 * Supply an empty index for the generated JAR of a
 							 * workspace project dependency. This prevents the
@@ -525,7 +530,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 						int ruleKind = IAccessRule.K_ACCESSIBLE;
 						if (exportPkg.startsWith("!")) {
 							exportPkg = exportPkg.substring(1);
-							ruleKind = IAccessRule.K_NON_ACCESSIBLE;
+							ruleKind = IAccessRule.K_NON_ACCESSIBLE | IAccessRule.IGNORE_IF_BETTER;
 						}
 						Matcher m = packagePattern.matcher(exportPkg);
 						StringBuilder pathStr = new StringBuilder(exportPkg.length() + 1);
