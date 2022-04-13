@@ -24,9 +24,7 @@ Bundle-Description: Util classes
 	aQute.libg
 
 -testpath: \
-	${junit},\
-	osgi.core,\
-	org.osgi.service.log;version=latest
+	${junit}
 
 -builderignore: testresources
 
