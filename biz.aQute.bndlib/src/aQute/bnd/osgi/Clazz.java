@@ -116,14 +116,14 @@ public class Clazz {
 	private final static Logger logger = LoggerFactory.getLogger(Clazz.class);
 
 	public enum JAVA {
-		Java_1_1(45, "JRE-1.1", "(&(osgi.ee=JRE)(version=1.1))"), //
-		Java_1_2(46, "J2SE-1.2", "(&(osgi.ee=JavaSE)(version=1.2))"), //
-		Java_1_3(47, "J2SE-1.3", "(&(osgi.ee=JavaSE)(version=1.3))"), //
-		Java_1_4(48, "J2SE-1.4", "(&(osgi.ee=JavaSE)(version=1.4))"), //
-		Java_5(49, "J2SE-1.5", "(&(osgi.ee=JavaSE)(version=1.5))"), //
-		Java_6(50, "JavaSE-1.6", "(&(osgi.ee=JavaSE)(version=1.6))"), //
-		Java_7(51, "JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"), //
-		Java_8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))") {
+		Java_1_1("JRE-1.1", "(&(osgi.ee=JRE)(version=1.1))"),
+		Java_1_2("J2SE-1.2", "(&(osgi.ee=JavaSE)(version=1.2))"),
+		Java_1_3("J2SE-1.3", "(&(osgi.ee=JavaSE)(version=1.3))"),
+		Java_1_4("J2SE-1.4", "(&(osgi.ee=JavaSE)(version=1.4))"),
+		Java_5("J2SE-1.5", "(&(osgi.ee=JavaSE)(version=1.5))"),
+		Java_6("JavaSE-1.6", "(&(osgi.ee=JavaSE)(version=1.6))"),
+		Java_7("JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"),
+		Java_8("JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))") {
 
 			Map<String, Set<String>> profiles;
 
@@ -141,25 +141,41 @@ public class Clazz {
 				}
 				return profiles;
 			}
-		}, //
-		Java_9(53, "JavaSE-9", "(&(osgi.ee=JavaSE)(version=9))"), //
-		Java_10(54, "JavaSE-10", "(&(osgi.ee=JavaSE)(version=10))"), //
-		Java_11(55, "JavaSE-11", "(&(osgi.ee=JavaSE)(version=11))"), //
-		Java_12(56, "JavaSE-12", "(&(osgi.ee=JavaSE)(version=12))"), //
-		Java_13(57, "JavaSE-13", "(&(osgi.ee=JavaSE)(version=13))"), //
-		Java_14(58, "JavaSE-14", "(&(osgi.ee=JavaSE)(version=14))"), //
-		Java_15(59, "JavaSE-15", "(&(osgi.ee=JavaSE)(version=15))"), //
-		Java_16(60, "JavaSE-16", "(&(osgi.ee=JavaSE)(version=16))"), //
-		Java_17(61, "JavaSE-17", "(&(osgi.ee=JavaSE)(version=17))"), //
-		Java_18(62, "JavaSE-18", "(&(osgi.ee=JavaSE)(version=18))"), //
-		Java_19(63, "JavaSE-19", "(&(osgi.ee=JavaSE)(version=19))"), //
-		Java_20(64, "JavaSE-20", "(&(osgi.ee=JavaSE)(version=20))"), //
-		Java_21(65, "JavaSE-21", "(&(osgi.ee=JavaSE)(version=21))"), //
+		},
+		Java_9,
+		Java_10,
+		Java_11,
+		Java_12,
+		Java_13,
+		Java_14,
+		Java_15,
+		Java_16,
+		Java_17,
+		Java_18,
+		Java_19,
+		Java_20,
+		Java_21,
 		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
-		final int		major;
-		final String	ee;
-		final String	filter;
+		private final int		major;
+		private final String	ee;
+		private final String	filter;
+
+		/**
+		 * For use by Java_9 and later.
+		 */
+		JAVA() {
+			this.major = ordinal() + 45;
+			String version = Integer.toString(ordinal() + 1);
+			this.ee = "JavaSE-" + version;
+			this.filter = "(&(osgi.ee=JavaSE)(version=" + version + "))";
+		}
+
+		JAVA(String ee, String filter) {
+			this.major = ordinal() + 45;
+			this.ee = ee;
+			this.filter = filter;
+		}
 
 		JAVA(int major, String ee, String filter) {
 			this.major = major;
@@ -167,11 +183,14 @@ public class Clazz {
 			this.filter = filter;
 		}
 
+		private static final JAVA[] values = values();
 		static JAVA format(int n) {
-			for (JAVA e : JAVA.values())
-				if (e.major == n)
-					return e;
-			return UNKNOWN;
+			int ordinal = n - 45;
+			if ((ordinal < 0) || (ordinal >= (values.length - 1))) {
+				return UNKNOWN;
+			}
+			JAVA java = values[ordinal];
+			return java;
 		}
 
 		public int getMajor() {

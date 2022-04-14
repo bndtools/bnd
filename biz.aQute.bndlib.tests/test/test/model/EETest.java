@@ -78,6 +78,18 @@ public class EETest {
 			.equals(ee.getEEName()));
 	}
 
+	@ParameterizedTest(name = "Validate Compatible EEs exist for {arguments}")
+	@ArgumentsSource(EEsArgumentsProvider.class)
+	@DisplayName("Validate Compatible EEs exist for each EE")
+	public void checkEEHasCompatible(EE ee) throws Exception {
+		if (ee == EE.JRE_1_1) {
+			// skip JRE_1_1
+			return;
+		}
+		EE[] compatible = ee.getCompatible();
+		assertThat(compatible).isNotEmpty();
+	}
+
 	@ParameterizedTest(name = "Validate Packages exist for {arguments}")
 	@ArgumentsSource(EEsArgumentsProvider.class)
 	@DisplayName("Validate Packages exist for each EE")
