@@ -11,10 +11,14 @@ import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
 public class TagResource extends WriteResource {
-	final Tag tag;
+	private final Tag tag;
 
 	public TagResource(Tag tag) {
 		this.tag = tag;
+	}
+
+	public Tag getTag() {
+		return tag;
 	}
 
 	@Override
@@ -22,7 +26,7 @@ public class TagResource extends WriteResource {
 		PrintWriter pw = IO.writer(out, UTF_8);
 		pw.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		try {
-			tag.print(0, pw);
+			getTag().print(0, pw);
 		} finally {
 			pw.flush();
 		}
