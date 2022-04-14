@@ -155,6 +155,9 @@ public class Clazz {
 		Java_19,
 		Java_20,
 		Java_21,
+		Java_22,
+		Java_23,
+		Java_24,
 		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
 		private final int		major;
