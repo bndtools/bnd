@@ -43,23 +43,22 @@ public enum EE {
 
 	JavaSE_1_8("JavaSE-1.8", "JavaSE", "1.8", JavaSE_1_7, JavaSE_compact3_1_8),
 
-	JavaSE_9("JavaSE-9", "JavaSE", "9", JavaSE_1_8),
-
-	JavaSE_10("JavaSE-10", "JavaSE", "10", JavaSE_9),
-
-	JavaSE_11("JavaSE-11", "JavaSE", "11", JavaSE_10),
-
-	JavaSE_12("JavaSE-12", "JavaSE", "12", JavaSE_11),
-
-	JavaSE_13("JavaSE-13", "JavaSE", "13", JavaSE_12),
-	JavaSE_14("JavaSE-14", "JavaSE", "14", JavaSE_13),
-	JavaSE_15("JavaSE-15", "JavaSE", "15", JavaSE_14),
-	JavaSE_16("JavaSE-16", "JavaSE", "16", JavaSE_15),
-	JavaSE_17("JavaSE-17", "JavaSE", "17", JavaSE_16),
-	JavaSE_18("JavaSE-18", "JavaSE", "18", JavaSE_17),
-	JavaSE_19("JavaSE-19", "JavaSE", "19", JavaSE_18),
-	JavaSE_20("JavaSE-20", "JavaSE", "20", JavaSE_19),
-	JavaSE_21("JavaSE-21", "JavaSE", "21", JavaSE_20),
+	JavaSE_9,
+	JavaSE_10,
+	JavaSE_11,
+	JavaSE_12,
+	JavaSE_13,
+	JavaSE_14,
+	JavaSE_15,
+	JavaSE_16,
+	JavaSE_17,
+	JavaSE_18,
+	JavaSE_19,
+	JavaSE_20,
+	JavaSE_21,
+	JavaSE_22,
+	JavaSE_23,
+	JavaSE_24,
 
 	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0");
 
@@ -71,6 +70,18 @@ public enum EE {
 	private transient EnumSet<EE>	compatibleSet;
 	private transient Parameters	packages	= null;
 	private transient Parameters	modules		= null;
+
+	/**
+	 * For use by JavaSE_9 and later.
+	 */
+	EE() {
+		int version = ordinal() - 5;
+		this.versionLabel = Integer.toString(version);
+		this.eeName = "JavaSE-" + versionLabel;
+		this.capabilityName = "JavaSE";
+		this.capabilityVersion = new Version(version);
+		this.compatible = null;
+	}
 
 	EE(String eeName, String capabilityName, String versionLabel, EE... compatible) {
 		this.eeName = eeName;
@@ -93,6 +104,15 @@ public enum EE {
 		return set.toArray(new EE[0]);
 	}
 
+	private static final EE[] values = values();
+	private Optional<EE> previous() {
+		int ordinal = ordinal() - 1;
+		if (ordinal >= 0) {
+			return Optional.of(values[ordinal]);
+		}
+		return Optional.empty();
+	}
+
 	private EnumSet<EE> getCompatibleSet() {
 		if (compatibleSet != null) {
 			return compatibleSet;
@@ -103,6 +123,12 @@ public enum EE {
 				set.add(ee);
 				set.addAll(ee.getCompatibleSet());
 			}
+		} else {
+			Optional<EE> previous = previous();
+			previous.ifPresent(ee -> {
+				set.add(ee);
+				set.addAll(ee.getCompatibleSet());
+			});
 		}
 		return compatibleSet = set;
 	}
@@ -138,14 +164,14 @@ public enum EE {
 			// earlier
 			.orElseThrow(() -> new IllegalArgumentException(
 				"Argument could not be recognized as a version string: " + targetVersion));
-		return Arrays.stream(values())
+		return Arrays.stream(values)
 			.filter(ee -> ee.capabilityVersion.compareTo(version) == 0)
 			.sorted(Collections.reverseOrder())
 			.findFirst();
 	}
 
 	public static EE parse(String str) {
-		for (EE ee : values()) {
+		for (EE ee : values) {
 			if (ee.eeName.equals(str))
 				return ee;
 		}
@@ -181,15 +207,11 @@ public enum EE {
 	private void init() {
 		try (InputStream stream = EE.class.getResourceAsStream(name() + ".properties")) {
 			if (stream == null) {
-				int ordinal = ordinal();
-				if (ordinal > 0) {
-					EE previousEE = values()[ordinal - 1];
-					packages = previousEE.getPackages();
-					modules = previousEE.getModules();
-				} else {
-					packages = new Parameters();
-					modules = new Parameters();
-				}
+				Optional<EE> previous = previous();
+				packages = previous.map(EE::getPackages)
+					.orElseGet(Parameters::new);
+				modules = previous.map(EE::getModules)
+					.orElseGet(Parameters::new);
 				return;
 			}
 			UTF8Properties props = new UTF8Properties();
