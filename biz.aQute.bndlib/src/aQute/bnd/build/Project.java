@@ -1467,7 +1467,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	private Container getBundleFromProject(String bsn, Map<String, String> attrs) throws Exception {
-		String pname = bsn;
+		String pname = attrs.getOrDefault("project", bsn);
 		while (true) {
 			Project p = getWorkspace().getProject(pname);
 			if (p != null && p.isValid()) {
@@ -2899,8 +2899,12 @@ public class Project extends Processor {
 		try (ProjectBuilder pb = getBuilder(null)) {
 			for (Builder b : pb.getSubBuilders()) {
 				if (b.getBsn()
-					.equals(bsn))
-					return new Container(this, bsn, getOutputFile(bsn, b.getVersion()), attrs);
+					.equals(bsn)) {
+					String version = b.getVersion();
+					Container c = new Container(this, bsn, version, Container.TYPE.PROJECT, getOutputFile(bsn, version),
+						null, attrs, null);
+					return c;
+				}
 			}
 		}
 		return null;

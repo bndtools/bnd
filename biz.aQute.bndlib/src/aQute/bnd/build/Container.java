@@ -68,7 +68,7 @@ public class Container {
 	}
 
 	public Container(Project project, String bsn, File file, Map<String, String> attributes) {
-		this(project, bsn, "project", TYPE.PROJECT, file, null, attributes, null);
+		this(project, bsn, Constants.VERSION_ATTR_PROJECT, TYPE.PROJECT, file, null, attributes, null);
 	}
 
 	public Container(Project project, File file, Map<String, String> attributes) {
@@ -84,7 +84,7 @@ public class Container {
 	}
 
 	public Container(File file, DownloadBlocker db, Attrs attributes) {
-		this(null, bsnFromFile(file), "project", TYPE.EXTERNAL, file, null, attributes, db);
+		this(null, bsnFromFile(file), Constants.VERSION_ATTR_PROJECT, TYPE.EXTERNAL, file, null, attributes, db);
 	}
 
 	private Container(Project project, String message) {
