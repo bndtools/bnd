@@ -1467,7 +1467,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	private Container getBundleFromProject(String bsn, Map<String, String> attrs) throws Exception {
-		String pname = bsn;
+		String pname = attrs.getOrDefault("project", bsn);
 		while (true) {
 			Project p = getWorkspace().getProject(pname);
 			if (p != null && p.isValid()) {
