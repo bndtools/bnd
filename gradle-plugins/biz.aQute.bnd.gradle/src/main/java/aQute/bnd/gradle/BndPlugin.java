@@ -54,6 +54,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.ClasspathNormalizer;
 import org.gradle.api.tasks.Delete;
 import org.gradle.api.tasks.SourceSet;
@@ -617,7 +618,7 @@ public class BndPlugin implements Plugin<Project> {
 
 			TaskProvider<Task> release = tasks.register("release", t -> {
 				t.setDescription("Release this project to the release repository.");
-				t.setGroup("release");
+				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 				t.setEnabled(!bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset")
 					.isEmpty());
 				t.getInputs()
@@ -639,13 +640,13 @@ public class BndPlugin implements Plugin<Project> {
 
 			TaskProvider<Task> releaseDependencies = tasks.register("releaseDependencies", t -> {
 				t.setDescription("Release all projects this project depends on.");
-				t.setGroup("release");
+				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 				t.dependsOn(getBuildDependencies("releaseNeeded"));
 			});
 
 			TaskProvider<Task> releaseNeeded = tasks.register("releaseNeeded", t -> {
 				t.setDescription("Release this project and all projects it depends on.");
-				t.setGroup("release");
+				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 				t.dependsOn(releaseDependencies, release);
 			});
 
@@ -731,7 +732,7 @@ public class BndPlugin implements Plugin<Project> {
 			List<TaskProvider<Export>> exportTasks = MapStream.of(bndruns)
 				.mapToObj((name, runFile) -> tasks.register("export.".concat(name), Export.class, t -> {
 					t.setDescription(String.format("Export the %s file.", runFile.getName()));
-					t.setGroup("export");
+					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
@@ -742,7 +743,7 @@ public class BndPlugin implements Plugin<Project> {
 
 			TaskProvider<Task> export = tasks.register("export", t -> {
 				t.setDescription("Export all the bndrun files.");
-				t.setGroup("export");
+				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 				t.dependsOn(exportTasks);
 			});
 
@@ -750,7 +751,7 @@ public class BndPlugin implements Plugin<Project> {
 				.mapToObj((name, runFile) -> tasks.register("runbundles.".concat(name), Export.class, t -> {
 					t.setDescription(
 						String.format("Create a distribution of the runbundles in the %s file.", runFile.getName()));
-					t.setGroup("export");
+					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
@@ -761,14 +762,14 @@ public class BndPlugin implements Plugin<Project> {
 
 			TaskProvider<Task> runbundles = tasks.register("runbundles", t -> {
 				t.setDescription("Create a distribution of the runbundles in each of the bndrun files.");
-				t.setGroup("export");
+				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 				t.dependsOn(runbundlesTasks);
 			});
 
 			List<TaskProvider<Resolve>> resolveTasks = MapStream.of(bndruns)
 				.mapToObj((name, runFile) -> tasks.register("resolve.".concat(name), Resolve.class, t -> {
 					t.setDescription(String.format("Resolve the runbundles required for %s file.", runFile.getName()));
-					t.setGroup("export");
+					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
@@ -777,14 +778,14 @@ public class BndPlugin implements Plugin<Project> {
 
 			TaskProvider<Task> resolve = tasks.register("resolve", t -> {
 				t.setDescription("Resolve the runbundles required for each of the bndrun files.");
-				t.setGroup("export");
+				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 				t.dependsOn(resolveTasks);
 			});
 
 			bndruns.forEach((name, runFile) -> {
 				tasks.register("run.".concat(name), Bndrun.class, t -> {
 					t.setDescription(String.format("Run the bndrun file %s.", runFile.getName()));
-					t.setGroup("export");
+					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
