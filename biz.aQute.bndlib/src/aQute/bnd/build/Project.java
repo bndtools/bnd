@@ -1270,7 +1270,7 @@ public class Project extends Processor {
 		if (useStrategy == Strategy.EXACT) {
 			if (!Verifier.isVersion(range))
 				return new Container(this, bsn, range, Container.TYPE.ERROR, null,
-					bsn + ";version=" + range + " Invalid version", null, null);
+					bsn + ";version=" + range + " Invalid version", attrs, null);
 
 			// For an exact range we just iterate over the repos
 			// and return the first we find.
