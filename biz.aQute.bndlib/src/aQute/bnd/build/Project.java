@@ -1242,6 +1242,9 @@ public class Project extends Processor {
 
 		if (range == null)
 			range = "0";
+		if (attrs == null) {
+			attrs = Collections.emptyMap();
+		}
 
 		if (VERSION_ATTR_SNAPSHOT.equals(range) || VERSION_ATTR_PROJECT.equals(range)) {
 			return getBundleFromProject(bsn, attrs);
@@ -1374,7 +1377,7 @@ public class Project extends Processor {
 		//
 
 		return new Container(this, bsn, range, Container.TYPE.ERROR, null,
-			bsn + ";version=" + range + " Not found in " + plugins, null, null);
+			bsn + ";version=" + range + " Not found in " + plugins, attrs, null);
 
 	}
 
