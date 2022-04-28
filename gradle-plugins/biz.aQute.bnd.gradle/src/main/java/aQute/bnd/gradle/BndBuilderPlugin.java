@@ -20,6 +20,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Jar;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
 import aQute.bnd.unmodifiable.Maps;
 
@@ -92,7 +93,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 
 		TaskProvider<Baseline> baselineTask = tasks.register("baseline", Baseline.class, t -> {
 			t.setDescription("Baseline the project bundle.");
-			t.setGroup("release");
+			t.setGroup(LifecycleBasePlugin.BUILD_GROUP);
 			t.setBundle(jar);
 			t.setBaseline(baseline);
 		});
