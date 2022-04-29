@@ -31,6 +31,7 @@ public class LauncherConstants {
 	public final static int			ACTIVATOR_ERROR					= 126 - 8;
 	public static final int			STOPPED							= 126 - 9;
 	public static final int			RETURN_INSTEAD_OF_EXIT			= 197;
+	public static final int			RELISTEN_FOR_MAIN_CALLABLE		= 198;
 	public final static String		LAUNCH_FRAMEWORK_RESTART_REASON	= "launch.framework.restart.reason";
 
 	// Local names

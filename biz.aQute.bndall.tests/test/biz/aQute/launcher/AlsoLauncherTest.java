@@ -1091,6 +1091,11 @@ public class AlsoLauncherTest {
 	}
 
 	@Test
+	public void testMainThreadCallableDontStopOnFirstCall() throws Exception {
+		assertExitCode("main.thread.callable.two.runs", 0);
+	}
+
+	@Test
 	public void testMainThreadCallable() throws Exception {
 		assertExitCode("main.thread.callable", 42);
 	}

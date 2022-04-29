@@ -433,23 +433,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 				}
 			}
 
-			// Wait until a Runnable is registered with main.thread=true.
-			// not that this will never happen when we're running on the mini fw
-			// but the test case normally exits.
-			synchronized (this) {
-				while (mainThread == null && !restart) {
-					trace("will wait for a registered Runnable");
-
-					wait();
-				}
-			}
-
-			if (mainThread != null) {
-				trace("will call main");
-				// report(System.err);
-				exitCode = mainThread.call();
-				trace("main return, code %s", exitCode);
-			}
+			exitCode = handleMainCallable();
 		} catch (Throwable e) {
 			error("Unexpected error in the run body: %s", e);
 			throw e;
@@ -462,6 +446,33 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		if (restart)
 			throw new FrameworkRestart();
 		return exitCode == null ? 0 : exitCode;
+	}
+
+	private Integer handleMainCallable() throws Exception {
+		boolean repeat = true;
+		while (repeat) {
+			synchronized (this) {
+				while (mainThread == null && !restart) {
+					trace("will wait for a registered Runnable or Callable");
+					wait();
+				}
+			}
+			if (mainThread != null) {
+				trace("will call main");
+				// report(System.err);
+				Integer code = mainThread.call();
+				if (code == null || code != LauncherConstants.RELISTEN_FOR_MAIN_CALLABLE) {
+					trace("main return, code %s", code);
+					return code;
+				}
+				synchronized (this) {
+					mainThread = null;
+				}
+			} else {
+				repeat = false;
+			}
+		}
+		return null;
 	}
 
 	private List<String> split(String value, String separator) {
