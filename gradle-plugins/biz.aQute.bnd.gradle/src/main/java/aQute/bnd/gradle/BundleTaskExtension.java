@@ -10,17 +10,22 @@ import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.gradle.BndUtils.unwrapFileOptional;
 import static aQute.bnd.gradle.BndUtils.unwrapOptional;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
 
@@ -32,6 +37,10 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.java.archives.Attributes;
+import org.gradle.api.java.archives.ManifestException;
+import org.gradle.api.java.archives.ManifestMergeSpec;
+import org.gradle.api.java.archives.internal.DefaultManifest;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
@@ -57,6 +66,7 @@ import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import groovy.lang.Closure;
 
 /**
  * BundleTaskExtension for Gradle.
@@ -90,6 +100,7 @@ public class BundleTaskExtension {
 	private final ConfigurableFileCollection	classpath;
 	private final Provider<String>				bnd;
 	private final MapProperty<String, Object>	properties;
+	private final EffectiveManifest				effectiveManifest;
 
 	/**
 	 * The bndfile property.
@@ -205,6 +216,12 @@ public class BundleTaskExtension {
 		classpath(mainSourceSet.getCompileClasspath());
 		properties = objects.mapProperty(String.class, Object.class)
 			.convention(Maps.of("project", "__convention__"));
+		// Wrap manifest
+		org.gradle.api.java.archives.Manifest manifest = task.getManifest();
+		effectiveManifest = new EffectiveManifest(manifest);
+		if (manifest != null) {
+			task.setManifest(effectiveManifest);
+		}
 		// need to programmatically add to inputs since @InputFiles in a
 		// extension is not processed
 		task.getInputs()
@@ -362,16 +379,19 @@ public class BundleTaskExtension {
 					try (Writer writer = IO.writer(temporaryBndFile)) {
 						// write any task manifest entries into the tmp bnd
 						// file
-						MapStream.of(getTask().getManifest()
-							.getEffectiveManifest()
-							.getAttributes())
-							.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
-							.mapValue(Object::toString)
-							.collect(MapStream.toMap((k1, k2) -> {
-								throw new IllegalStateException("Duplicate key " + k1);
-							}, UTF8Properties::new))
-							.replaceHere(projectDir)
-							.store(writer, null);
+						Optional<UTF8Properties> properties = Optional.ofNullable(getTask().getManifest())
+							.map(manifest -> MapStream.ofNullable(manifest.getEffectiveManifest()
+								.getAttributes())
+								.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
+								.mapValue(Object::toString)
+								.collect(MapStream.toMap((k1, k2) -> {
+									throw new IllegalStateException("Duplicate key " + k1);
+								}, UTF8Properties::new)));
+						if (properties.isPresent()) {
+							properties.get()
+								.replaceHere(projectDir)
+								.store(writer, null);
+						}
 						// if the bnd file exists, add its contents to the
 						// tmp bnd file
 						Optional<File> bndfile = unwrapFileOptional(getBndfile()).filter(File::isFile);
@@ -406,8 +426,7 @@ public class BundleTaskExtension {
 					String archiveVersion = unwrapOptional(getTask().getArchiveVersion()).orElse(null);
 
 					// Include entire contents of Jar task generated jar
-					// (except the
-					// manifest)
+					// (except the manifest)
 					File archiveCopyFile = new File(getTask().getTemporaryDir(), archiveFileName);
 					IO.copy(archiveFile, archiveCopyFile);
 					Jar bundleJar = new Jar(archiveFileName, archiveCopyFile);
@@ -441,8 +460,7 @@ public class BundleTaskExtension {
 							return true;
 						}
 						try (ZipFile zip = new ZipFile(file)) {
-							// make sure it is a valid zip file and not a
-							// pom
+							// make sure it is a valid zip file and not a pom
 							zip.entries();
 						} catch (IOException e) {
 							return false;
@@ -464,8 +482,7 @@ public class BundleTaskExtension {
 					getTask().getLogger()
 						.debug("builder sourcepath: {}", builder.getSourcePath());
 					// set bundle symbolic name from tasks's archiveBaseName
-					// property if
-					// necessary
+					// property if necessary
 					String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME);
 					if (isEmpty(bundleSymbolicName)) {
 						bundleSymbolicName = archiveClassifier.isEmpty() ? archiveBaseName
@@ -497,7 +514,8 @@ public class BundleTaskExtension {
 					builtJar.write(archiveFile);
 					long now = System.currentTimeMillis();
 					archiveFile.setLastModified(now);
-
+					// Set effective manifest to generated manifest
+					effectiveManifest.setEffectiveManifest(builtJar.getManifest());
 					logReport(builder, getTask().getLogger());
 					if (!builder.isOk()) {
 						failTask("Bundle " + archiveFileName + " has errors", archiveFile);
@@ -516,6 +534,117 @@ public class BundleTaskExtension {
 		private boolean isEmpty(String header) {
 			return Objects.isNull(header) || header.trim()
 				.isEmpty() || Constants.EMPTY_HEADER.equals(header);
+		}
+	}
+
+	static final class EffectiveManifest implements org.gradle.api.java.archives.Manifest {
+		final org.gradle.api.java.archives.Manifest	delegate;
+		Manifest									effectiveManifest;
+
+		EffectiveManifest(org.gradle.api.java.archives.Manifest delegate) {
+			this.delegate = delegate;
+			this.effectiveManifest = null;
+		}
+
+		void setEffectiveManifest(Manifest effectiveManifest) {
+			this.effectiveManifest = effectiveManifest;
+		}
+
+		@Override
+		public org.gradle.api.java.archives.Manifest attributes(Map<String, ?> attributes) throws ManifestException {
+			delegate.attributes(attributes);
+			return this;
+		}
+
+		@Override
+		public org.gradle.api.java.archives.Manifest attributes(Map<String, ?> attributes, String sectionName)
+			throws ManifestException {
+			delegate.attributes(attributes, sectionName);
+			return this;
+		}
+
+		@Override
+		public org.gradle.api.java.archives.Manifest from(Object... mergePath) {
+			delegate.from(mergePath);
+			return this;
+		}
+
+		@Override
+		public org.gradle.api.java.archives.Manifest from(Object mergePath, Closure<?> closure) {
+			delegate.from(mergePath, closure);
+			return this;
+		}
+
+		@Override
+		public org.gradle.api.java.archives.Manifest from(Object mergePath, Action<ManifestMergeSpec> action) {
+			delegate.from(mergePath, action);
+			return this;
+		}
+
+		@Override
+		public Attributes getAttributes() {
+			return delegate.getAttributes();
+		}
+
+		@Override
+		public org.gradle.api.java.archives.Manifest getEffectiveManifest() {
+			Manifest effectiveManifest = this.effectiveManifest;
+			if (effectiveManifest == null) {
+				return delegate.getEffectiveManifest();
+			}
+			org.gradle.api.java.archives.Manifest result = new DefaultManifest(null);
+			result.attributes(new AttributesMap(effectiveManifest.getMainAttributes()));
+			effectiveManifest.getEntries()
+				.forEach((section, attrs) -> result.attributes(new AttributesMap(attrs), section));
+			return result;
+		}
+
+		@Override
+		public Map<String, Attributes> getSections() {
+			return delegate.getSections();
+		}
+
+		@Override
+		public org.gradle.api.java.archives.Manifest writeTo(Object path) {
+			getEffectiveManifest().writeTo(path);
+			return this;
+		}
+	}
+
+	static final class AttributesMap extends AbstractMap<String, Object> {
+		final java.util.jar.Attributes source;
+
+		AttributesMap(java.util.jar.Attributes source) {
+			this.source = requireNonNull(source);
+		}
+
+		@Override
+		public Set<Entry<String, Object>> entrySet() {
+			Set<Entry<Object, Object>> entrySet = source.entrySet();
+			return new AbstractSet<Entry<String, Object>>() {
+				@Override
+				public Iterator<Entry<String, Object>> iterator() {
+					Iterator<Entry<Object, Object>> iterator = entrySet.iterator();
+					return new Iterator<Entry<String, Object>>() {
+						@Override
+						public boolean hasNext() {
+							return iterator.hasNext();
+						}
+
+						@Override
+						public Entry<String, Object> next() {
+							Entry<Object, Object> next = iterator.next();
+							return new AbstractMap.SimpleImmutableEntry<>(next.getKey()
+								.toString(), next.getValue());
+						}
+					};
+				}
+
+				@Override
+				public int size() {
+					return entrySet.size();
+				}
+			};
 		}
 	}
 }
