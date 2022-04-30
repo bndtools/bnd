@@ -5,6 +5,7 @@ import static org.gradle.testkit.runner.TaskOutcome.*
 
 import java.util.jar.Attributes
 import java.util.jar.JarFile
+import java.util.regex.Pattern
 
 import groovy.xml.XmlSlurper
 import spock.lang.Specification
@@ -110,6 +111,9 @@ class TestBundlePlugin extends Specification {
 		bundletask_jar.getInputStream(bundletask_jar.getEntry("test.txt")).text =~ /This is a test resource/
 		bundletask_jar.getEntry("commons-lang-2.6.jar")
 		bundletask_jar.close()
+
+		result.output =~ Pattern.quote("### jar Bundle-SymbolicName: builderplugin1")
+		result.output =~ Pattern.quote("### bundle Bundle-SymbolicName: builderplugin1-bundle")
 
 		when:
 		result = TestHelper.getGradleRunner()

@@ -62,6 +62,14 @@ Project-Buildpath: ${project.buildpath}
 	archiveVersion = '1.1.0'
 }
 
+assemble {
+	dependsOn bundle
+	doLast {
+		// Test that we store the generated manifest back into the task
+		println "### jar Bundle-SymbolicName: ${jar.manifest.effectiveManifest.attributes['Bundle-SymbolicName']}"
+		println "### bundle Bundle-SymbolicName: ${bundle.manifest.effectiveManifest.attributes['Bundle-SymbolicName']}"
+	}
+}
 artifacts {
 	runtimeOnly bundle
 	archives bundle

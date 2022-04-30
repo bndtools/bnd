@@ -228,9 +228,11 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			if (getClassesDir().isDirectory()) {
 				builder.addClasspath(getClassesDir());
 
-				Jar classesDirJar = new Jar(project.getName(), getClassesDir());
-				if (!includeClassesDir) {
-					classesDirJar.removePrefix(""); // clear the jar
+				Jar classesDirJar;
+				if (includeClassesDir) {
+					classesDirJar = new Jar(project.getName(), getClassesDir());
+				} else {
+					classesDirJar = new Jar(project.getName()); // empty jar
 				}
 				classesDirJar.setManifest(new Manifest());
 				builder.setJar(classesDirJar);
