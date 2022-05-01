@@ -3764,6 +3764,10 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	public Map<TypeRef, String> getBundleClassPathTypes() {
+		return bcpTypes;
+	}
+
 	public Optional<String> getBundleClassPathEntry(Clazz clazz) {
 		return Optional.ofNullable(bcpTypes.get(clazz.getClassName()));
 	}
