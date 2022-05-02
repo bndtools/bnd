@@ -269,6 +269,14 @@ public class EmbeddedLauncher {
 			return resource;
 
 		//
+		// Don't copy files if we're on Java9+ and have a "jrt" protocol.
+		// Jars are automatically copied to /tmp in that case.
+		//
+		if (resource.getProtocol()
+			.equalsIgnoreCase("jrt"))
+			return resource;
+
+		//
 		// Need to make a copy to a temp file
 		//
 

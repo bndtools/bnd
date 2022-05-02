@@ -1,0 +1,22 @@
+-standalone: true
+
+mavencentral:           https://repo.maven.apache.org/maven2
+
+-plugin.maven.central:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name="Maven Central";\
+        releaseUrl="${mavencentral}";\
+        index="${.}/central.mvn";\
+        readOnly=true
+
+-runfw: org.eclipse.osgi
+-runee: JavaSE-1.8
+
+-resolve.effective: resolve, active
+
+-runpath: \
+	slf4j.api,\
+	slf4j.simple
+
+-runbundles: \
+	org.apache.felix.scr;version=latest

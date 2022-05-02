@@ -100,6 +100,7 @@ import aQute.libg.uri.URIUtil;
 public class Launcher implements ServiceListener, FrameworkListener {
 
 	private static final String				BND_LAUNCHER			= ".bnd.launcher";
+	private static final String				JRT_PROTOCOL			= "jrt";
 
 	private PrintStream						out						= System.out;
 	private LauncherConstants				parms;
@@ -904,6 +905,9 @@ public class Launcher implements ServiceListener, FrameworkListener {
 				.getResource(path);
 			Bundle bundle;
 			if (connect) {
+				if (parms.embedded && JRT_PROTOCOL.equals(resource.getProtocol())) {
+					path = resource.toString();
+				}
 				trace("installing %s by connect", path);
 				bundle = context.installBundle(path);
 				updateDigest(digest, bundle);

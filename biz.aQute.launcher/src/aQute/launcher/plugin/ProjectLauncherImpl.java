@@ -1,5 +1,7 @@
 package aQute.launcher.plugin;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.DataInput;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -320,7 +322,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				// jar properties
 				Constants.COMPRESSION, Constants.REPRODUCIBLE, Constants.DIGESTS,
 				// jpms properties
-				Constants.JPMS_MODULE_INFO, Constants.AUTOMATIC_MODULE_NAME);
+				Constants.JPMS_MODULE_INFO, Constants.JPMS_MODULE_INFO_OPTIONS, Constants.AUTOMATIC_MODULE_NAME);
 			copyProperties(project::mergeProperties, builder::setProperty,
 				// include resource properties
 				Constants.INCLUDERESOURCE, Constants.INCLUDE_RESOURCE);
@@ -354,6 +356,20 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 					actualPaths.add(newPath);
 				}
 			}
+
+			List<String> bcpList = new ArrayList<>();
+			bcpList.add(".");
+			bcpList.addAll(classpath);
+			bcpList.addAll(actualPaths);
+
+			builder.setProperty(BUNDLE_CLASSPATH, bcpList.stream()
+				.collect(joining(",")));
+			builder.setProperty(EXPORT_CONTENTS, "aQute.launcher.pre");
+
+			// Ignore common warnings resulting from the Bundle-ClassPath which
+			// are irrelevant in this use case
+			builder.setProperty(FIXUPMESSAGES,
+				"Classes found in the wrong directory, private references, Export-Package duplicate package name, Invalid package name: * in Export-Package");
 
 			LauncherConstants lc = getConstants(actualPaths, true);
 			lc.embedded = true;
