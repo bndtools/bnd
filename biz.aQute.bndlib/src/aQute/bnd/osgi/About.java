@@ -69,8 +69,10 @@ public class About {
 	public static final Version					_6_1		= new Version(6, 1, 0);
 	public static final Version					_6_2		= new Version(6, 2, 0);
 	public static final Version					_6_3		= new Version(6, 3, 0);
-	public static final Version					CURRENT		= _6_3;
+	public static final Version					_6_4		= new Version(6, 4, 0);
+	public static final Version					CURRENT		= _6_4;
 
+	public static final String[]				CHANGES_6_4	= {};
 	public static final String[]				CHANGES_6_3	= {};
 	public static final String[]				CHANGES_6_2	= {};
 	public static final String[]				CHANGES_6_1	= {};
@@ -242,6 +244,7 @@ public class About {
 
 	public static final Map<Version, String[]>	CHANGES		= Maps.ofEntries(
 		// In decreasing order
+		Maps.entry(_6_4, CHANGES_6_4),																																							//
 		Maps.entry(_6_3, CHANGES_6_3),																																							//
 		Maps.entry(_6_2, CHANGES_6_2),																																							//
 		Maps.entry(_6_1, CHANGES_6_1),																																							//
