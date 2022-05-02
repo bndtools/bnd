@@ -2610,7 +2610,7 @@ public class Analyzer extends Processor {
 						if (!(resource instanceof JarResource)) {
 							addClose(jar);
 						}
-						analyzeJar(jar, "", false, path);
+						analyzeJar(jar, "", true, path);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
