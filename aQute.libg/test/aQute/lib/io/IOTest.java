@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -526,4 +527,19 @@ public class IOTest {
 		assertThat(buf).containsExactly(0, 0, 't', 'e', 's', 0, 0, 0, 0, 0);
 	}
 
+	@DisabledOnOs(WINDOWS)
+	@Test
+	void copy_execbit(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		File source = new File("testresources/execbit.sh");
+		assertThat(Files.getPosixFilePermissions(source.toPath())).contains(PosixFilePermission.OWNER_EXECUTE);
+
+		File target = new File(tmp, "execbit.sh");
+		assertThat(target).doesNotExist();
+
+		IO.copy(source, target);
+		assertThat(target).isFile();
+
+		assertThat(Files.getPosixFilePermissions(target.toPath())).contains(PosixFilePermission.OWNER_EXECUTE);
+	}
 }
