@@ -4,6 +4,7 @@ import static aQute.bnd.maven.lib.executions.PluginExecutions.extractClassifier;
 import static aQute.bnd.maven.lib.executions.PluginExecutions.matchesClassifier;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
@@ -52,7 +53,7 @@ public class BndPackagingLifecycleParticipant extends AbstractMavenLifecyclePart
 
 	public static final String	MAVEN_WAR_PLUGIN_ARTIFACT_ID	= "maven-war-plugin";
 
-	private Logger			logger;
+	private Logger				logger;
 
 	@Override
 	public void afterProjectsRead(final MavenSession session) throws MavenExecutionException {
@@ -86,11 +87,10 @@ public class BndPackagingLifecycleParticipant extends AbstractMavenLifecyclePart
 		this.logger = logger;
 	}
 
-	protected Optional<PluginExecution> findMatchingMavenPackagingPluginExecution(Plugin mavenPackagingPlugin,
-		String classifier) {
-		return mavenPackagingPlugin.getExecutions()
-			.stream()
-			.filter(ex -> matchesClassifier(ex, classifier))
+	protected Optional<PluginExecution> findMatchingMavenPackagingPluginExecution(
+		List<PluginExecution> mavenPackagingPluginExecutions, String classifier) {
+		return mavenPackagingPluginExecutions.stream()
+			.filter(execution -> matchesClassifier(execution, classifier))
 			.findFirst();
 	}
 
@@ -119,9 +119,11 @@ public class BndPackagingLifecycleParticipant extends AbstractMavenLifecyclePart
 	 * {@code null} if not present.
 	 */
 	protected Plugin getMavenJarPlugin(final Model model) {
-		final Build build = model.getBuild();
-		if (build != null) {
-			return getMavenJarPluginFromContainer(build);
+		if (Objects.equals(model.getPackaging(), "jar")) {
+			final Build build = model.getBuild();
+			if (build != null) {
+				return getMavenJarPluginFromContainer(build);
+			}
 		}
 		return null;
 	}
@@ -139,9 +141,11 @@ public class BndPackagingLifecycleParticipant extends AbstractMavenLifecyclePart
 	 * {@code null} if not present.
 	 */
 	protected Plugin getMavenWarPlugin(final Model model) {
-		final Build build = model.getBuild();
-		if (build != null) {
-			return getMavenWarPluginFromContainer(build);
+		if (Objects.equals(model.getPackaging(), "war")) {
+			final Build build = model.getBuild();
+			if (build != null) {
+				return getMavenWarPluginFromContainer(build);
+			}
 		}
 		return null;
 	}
@@ -166,7 +170,6 @@ public class BndPackagingLifecycleParticipant extends AbstractMavenLifecyclePart
 				}
 				result = plugin;
 			}
-
 		}
 		return result;
 	}
@@ -176,18 +179,27 @@ public class BndPackagingLifecycleParticipant extends AbstractMavenLifecyclePart
 			.orElse("");
 	}
 
-	protected void processExecutions(List<PluginExecution> bndMavenPluginExecutions, Plugin mavenPackagingPlugin, MavenProject project) {
+	protected void processExecutions(List<PluginExecution> bndMavenPluginExecutions, Plugin mavenPackagingPlugin,
+		MavenProject project) {
 		bndMavenPluginExecutions.stream()
 			.filter(PluginExecutions::isPackagingGoal)
-			.forEach(bndMavenPluginEx -> {
-				findMatchingMavenPackagingPluginExecution(mavenPackagingPlugin, extractClassifier(bndMavenPluginEx))
-					.ifPresent(packagingPluginEx -> {
-						mavenPackagingPlugin.getExecutions()
-							.remove(packagingPluginEx);
-
-						if (logger.isDebugEnabled()) {
-							logger.debug("Disabled execution of " + packagingPluginEx + " in " + project + " by "
-								+ THIS_ARTIFACT_ID);
+			.forEach(bndMavenPluginExecution -> {
+				String classifier = extractClassifier(bndMavenPluginExecution);
+				findMatchingMavenPackagingPluginExecution(mavenPackagingPlugin.getExecutions(), classifier)
+					.ifPresent(execution -> {
+						List<String> goals = execution.getGoals();
+						boolean removed = goals.removeIf(goal -> {
+							if (PluginExecutions.isPackagingGoal(goal)) {
+								if (logger.isDebugEnabled()) {
+									logger.debug(THIS_ARTIFACT_ID + " disabled " + mavenPackagingPlugin.getArtifactId()
+										+ ":" + goal + " (" + execution.getId() + ") @ " + project.getArtifactId());
+								}
+								return true;
+							}
+							return false;
+						});
+						if (removed && goals.isEmpty()) {
+							mavenPackagingPlugin.removeExecution(execution);
 						}
 					});
 			});
