@@ -3,22 +3,27 @@ package aQute.bnd.maven.lib.executions;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.maven.model.PluginExecution;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-import aQute.bnd.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Sets;
 
 public class PluginExecutions {
-
-	static final List<String> PACKAGING_GOALS = Lists.of("jar", "test-jar", "war");
+	static final Set<String> PACKAGING_GOALS = Sets.of("jar", "test-jar", "war");
 
 	private PluginExecutions() {}
 
 	public static String defaultClassifier(PluginExecution pluginExecution) {
 		List<String> goals = pluginExecution.getGoals();
-
-		return goals.contains("jar") ? "" : (goals.contains("test-jar") ? "tests" : "");
+		if (goals.contains("jar") || goals.contains("war")) {
+			return "";
+		}
+		if (goals.contains("test-jar")) {
+			return "tests";
+		}
+		return "";
 	}
 
 	public static String extractClassifier(PluginExecution pluginExecution) {
