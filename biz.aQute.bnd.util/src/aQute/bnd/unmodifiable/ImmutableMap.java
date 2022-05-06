@@ -42,14 +42,14 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			throw new IllegalArgumentException("map too large: " + length);
 		}
 		short[] hash_bucket = new short[length * 2];
-		for (int slot = 0, index = 0; slot < length;) {
-			Object key = entries[index++];
+		for (int slot = 0, index = 0; slot < length; index += 2) {
+			Object key = entries[index];
 			int hash = -1 - linear_probe(entries, hash_bucket, key);
 			if (hash < 0) {
 				throw new IllegalArgumentException("duplicate key: " + key);
 			}
 			hash_bucket[hash] = (short) ++slot;
-			requireNonNull(entries[index++]);
+			requireNonNull(entries[index + 1]);
 		}
 		return hash_bucket;
 	}
