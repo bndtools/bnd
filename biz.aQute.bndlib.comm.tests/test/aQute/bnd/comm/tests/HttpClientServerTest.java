@@ -85,7 +85,6 @@ public class HttpClientServerTest {
 			p.setProperty("-connection-log", log.toURI()
 				.getPath());
 			p.setProperty("-connection-settings", settings);
-			hc.setLog(log);
 
 			ConnectionSettings cs = new ConnectionSettings(p, hc);
 			cs.readSettings();
