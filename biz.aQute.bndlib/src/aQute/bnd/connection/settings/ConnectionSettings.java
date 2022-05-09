@@ -35,6 +35,7 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.service.url.ProxyHandler;
@@ -73,6 +74,13 @@ public class ConnectionSettings {
 	public ConnectionSettings(Processor processor, HttpClient client) throws Exception {
 		this.processor = Objects.requireNonNull(processor);
 		this.client = client;
+		String logfile = processor.getProperty(Constants.CONNECTION_LOG);
+		if (Strings.nonNullOrEmpty(logfile)) {
+			File file = IO.getFile(logfile);
+			file.getParentFile()
+				.mkdirs();
+			this.client.setLog(file);
+		}
 		mavenMasterPassphrase = new MasterPassphrase(processor);
 	}
 

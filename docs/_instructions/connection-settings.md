@@ -45,7 +45,7 @@ You can create a log file specific for the connections by specifying:
 
 	-connection-log: somefile.txt
 
-This file will contain the detailed trace output
+This file will contain the detailed trace output. The file given is relative to the working directory.
 
 ## Syntax
 

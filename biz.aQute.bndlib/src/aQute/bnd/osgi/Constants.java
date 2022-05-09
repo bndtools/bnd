@@ -116,6 +116,8 @@ public interface Constants {
 	String		DEFINE_CONTRACT								= "-define-contract";
 	String		CONDITIONALPACKAGE							= "-conditionalpackage";
 	String		CONNECTION_SETTINGS							= "-connection-settings";
+	String		CONNECTION_LOG								= "-connection-log";
+
 	String		COMPRESSION									= "-compression";
 	String		DIFFIGNORE									= "-diffignore";
 	String		DIFFPACKAGES								= "-diffpackages";
