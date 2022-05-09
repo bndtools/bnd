@@ -102,12 +102,27 @@ class Model {
 	}
 
 	void update() {
-		dirty.set(true);
+		if (dirty.getAndSet(true))
+			return;
+
 		Display.getDefault()
 			.asyncExec(this::update0);
 	}
 
+	/*
+	 * This runs async on the display thread.
+	 */
 	private void update0() {
+		try {
+			// coalesce some more updates on
+			// the worker thread(s).
+			Thread.sleep(10);
+		} catch (InterruptedException e) {
+			Thread.currentThread()
+				.interrupt();
+			return;
+		}
+
 		if (dirty.getAndSet(false)) {
 			updates.forEach(Runnable::run);
 		}
