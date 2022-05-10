@@ -308,6 +308,8 @@
 						<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
 						<cloneClean>true</cloneClean>
 						<properties>
+							<project.build.sourceEncoding>${project.build.sourceEncoding}</project.build.sourceEncoding>
+							<project.reporting.outputEncoding>${project.reporting.outputEncoding}</project.reporting.outputEncoding>
 							<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
 							<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
 							<maven.compiler.release>${maven.compiler.release}</maven.compiler.release>
@@ -318,9 +320,13 @@
 							<bndVersion>${project.version}</bndVersion>
 							<projectsDirectory>${basedir}/src/it</projectsDirectory>
 						</scriptVariables>
-						<showErrors>true</showErrors>
 						<mavenOpts>${mavenOpts}</mavenOpts>
-						<streamLogs>true</streamLogs>
+						<pomIncludes>
+							<pomInclude>*/pom.xml</pomInclude>
+						</pomIncludes>
+						<showErrors>true</showErrors>
+						<streamLogsOnFailures>true</streamLogsOnFailures>
+						<writeJunitReport>true</writeJunitReport>
 						<goals>
 							<goal>--no-transfer-progress</goal>
 							<goal>package</goal>
