@@ -7,11 +7,6 @@
 	<artifactId>run-test</artifactId>
 	<version>0.0.1</version>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
@@ -25,7 +20,7 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-run-maven-plugin</artifactId>
-				<version>@project.version@</version>
+				<version>${bnd.version}</version>
 				<configuration>
 					<bndrun>test.bndrun</bndrun>
 				</configuration>
@@ -33,7 +28,7 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
-				<version>@project.version@</version>
+				<version>${bnd.version}</version>
 				<configuration>
 					<bnd><![CDATA[
 						Bundle-Activator: run.Activator

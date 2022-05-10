@@ -313,8 +313,10 @@
 							<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
 							<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
 							<maven.compiler.release>${maven.compiler.release}</maven.compiler.release>
+							<bnd.version>${project.version}</bnd.version>
 							<projectsDirectory>${basedir}/src/it</projectsDirectory>
 							<localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+							<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
 						</properties>
 						<scriptVariables>
 							<bndVersion>${project.version}</bndVersion>
