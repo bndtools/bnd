@@ -328,10 +328,6 @@
 						<showErrors>true</showErrors>
 						<streamLogsOnFailures>true</streamLogsOnFailures>
 						<writeJunitReport>true</writeJunitReport>
-						<goals>
-							<goal>--no-transfer-progress</goal>
-							<goal>package</goal>
-						</goals>
 					</configuration>
 					<executions>
 						<execution>
