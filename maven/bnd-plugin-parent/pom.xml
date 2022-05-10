@@ -294,6 +294,7 @@
 					<configuration>
 						<detectJavaApiLink>false</detectJavaApiLink>
 						<doclint>none</doclint>
+						<notimestamp>true</notimestamp>
 					</configuration>
 				</plugin>
 				<plugin>
