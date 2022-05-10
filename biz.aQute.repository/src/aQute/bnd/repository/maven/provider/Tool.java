@@ -86,6 +86,7 @@ public class Tool extends Processor {
 
 		try (PrintWriter writer = IO.writer(javadocOptions)) {
 			writer.println("-quiet");
+			writer.println("-notimestamp"); // reproducibility
 			writer.println("-protected");
 			writer.printf("%s '%s'%n", "-d", fileName(javadoc));
 			writer.println("-charset 'UTF-8'");

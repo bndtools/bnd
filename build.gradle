@@ -42,6 +42,7 @@ subprojects {
 				"NotThreadSafe:t:",
 				"GuardedBy:mf:\"Guarded By:\""
 			]
+			options.noTimestamp = true
 		}
 		tasks.named("test") {
 			useJUnitPlatform()

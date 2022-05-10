@@ -192,6 +192,14 @@ tasks.withType<AbstractArchiveTask> {
 	isReproducibleFileOrder = true
 }
 
+// Reproducible javadoc
+tasks.withType<Javadoc> {
+	options {
+		this as StandardJavadocDocletOptions // unsafe cast
+		isNoTimestamp = true
+	}
+}
+
 tasks.pluginUnderTestMetadata {
     // Include dsl SourceSet
 	pluginClasspath.from(sourceSets["dsl"].output)
