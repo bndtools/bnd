@@ -9,27 +9,36 @@
 		<version>0.0.1</version>
 	</parent>
 
-	<artifactId>bad-remote-metadata</artifactId>
+	<artifactId>in-build</artifactId>
 	<packaging>pom</packaging>
 
 	<repositories>
 		<repository>
 			<id>Test Snapshots</id>
-			<url>file://@project.basedir@/src/test/resources/integration-test/test-repo</url>
+			<url>file://${projectsDirectory}/test-repo</url>
 			<releases>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.objenesis</groupId>
-			<artifactId>objenesis</artifactId>
-			<version>2.2</version>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.apache.felix.scr</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute</groupId>
+			<artifactId>bnd</artifactId>
+			<version>1.50.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.aries.async</groupId>
+			<artifactId>org.apache.aries.async</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -38,9 +47,6 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-indexer-maven-plugin</artifactId>
-				<configuration>
-					<localURLs>FORBIDDEN</localURLs>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

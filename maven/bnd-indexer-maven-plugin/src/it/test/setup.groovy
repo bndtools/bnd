@@ -1,7 +1,7 @@
 import java.nio.file.*;
 
-Path source = Paths.get("${pluginBasedir}/src/test/resources/integration-test/local-repo/org/objenesis");
-Path target = Paths.get("${pluginBuildDirectory}/integration-test/repo/org/objenesis");
+Path source = Paths.get("${projectsDirectory}/local-repo/org/objenesis");
+Path target = Paths.get("${localRepositoryPath}/org/objenesis");
 
 target.deleteDir();
 

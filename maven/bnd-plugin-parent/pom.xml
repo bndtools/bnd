@@ -302,22 +302,26 @@
 					<artifactId>maven-invoker-plugin</artifactId>
 					<version>3.2.2</version>
 					<configuration>
-						<cloneProjectsTo>${project.build.directory}/integration-test/projects</cloneProjectsTo>
+						<projectsDirectory>${basedir}/src/it</projectsDirectory>
+						<settingsFile>${basedir}/src/it/settings.xml</settingsFile>
+						<localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+						<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
 						<cloneClean>true</cloneClean>
-						<projectsDirectory>src/test/resources/integration-test</projectsDirectory>
-						<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
-						<streamLogs>true</streamLogs>
-						<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
 						<postBuildHookScript>verify.groovy</postBuildHookScript>
 						<properties>
 							<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
 							<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+							<maven.compiler.release>${maven.compiler.release}</maven.compiler.release>
+							<projectsDirectory>${basedir}/src/it</projectsDirectory>
+							<localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
 						</properties>
 						<scriptVariables>
 							<bndVersion>${project.version}</bndVersion>
+							<projectsDirectory>${basedir}/src/it</projectsDirectory>
 						</scriptVariables>
 						<showErrors>true</showErrors>
 						<mavenOpts>${mavenOpts}</mavenOpts>
+						<streamLogs>true</streamLogs>
 						<goals>
 							<goal>--no-transfer-progress</goal>
 							<goal>package</goal>
