@@ -7,10 +7,11 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
 		<version>1.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>valid-with-previous-same</artifactId>
+	<artifactId>invalid-with-consumer</artifactId>
 	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
@@ -29,9 +30,11 @@
 				<configuration>
 					<base>
 						<artifactId>valid-no-previous</artifactId>
-						<version>(,${project.version})</version>
 					</base>
 					<includeDistributionManagement>true</includeDistributionManagement>
+					<continueOnError>true</continueOnError>
+					<fullReport>false</fullReport>
+					<reportFile>${project.build.directory}/baseline/${project.build.finalName}.text</reportFile>
 				</configuration>
 			</plugin>
 			<plugin>

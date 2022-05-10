@@ -7,11 +7,12 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
 		<version>1.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>pre-diff</artifactId>
-	<version>1.0.0</version>
+	<artifactId>valid-with-previous-same</artifactId>
+	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -23,6 +24,17 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-baseline-maven-plugin</artifactId>
+				<configuration>
+					<base>
+						<artifactId>valid-no-previous</artifactId>
+						<version>(,${project.version})</version>
+					</base>
+					<includeDistributionManagement>true</includeDistributionManagement>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>

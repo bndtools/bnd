@@ -7,10 +7,11 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
 		<version>1.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>invalid-with-consumer</artifactId>
+	<artifactId>invalid-with-provider</artifactId>
 	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
@@ -32,8 +33,7 @@
 					</base>
 					<includeDistributionManagement>true</includeDistributionManagement>
 					<continueOnError>true</continueOnError>
-					<fullReport>false</fullReport>
-					<reportFile>${project.build.directory}/baseline/${project.build.finalName}.text</reportFile>
+					<fullReport>true</fullReport>
 				</configuration>
 			</plugin>
 			<plugin>

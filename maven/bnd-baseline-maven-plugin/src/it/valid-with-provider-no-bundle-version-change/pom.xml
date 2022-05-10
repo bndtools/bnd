@@ -7,10 +7,11 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
 		<version>1.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>invalid-with-provider-require-bundle-version-change</artifactId>
+	<artifactId>valid-with-provider-no-bundle-version-change</artifactId>
 	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
@@ -33,7 +34,10 @@
 					</base>
 					<includeDistributionManagement>true</includeDistributionManagement>
 					<fullReport>true</fullReport>
-					<continueOnError>true</continueOnError>
+					<!-- do not request bundle version changes -->
+					<diffignores>
+						<diffignore>Bundle-Version</diffignore>
+					</diffignores>
 				</configuration>
 			</plugin>
 			<plugin>
