@@ -75,7 +75,6 @@
 					</dependency>
 				</dependencies>
 				<configuration>
-					<preBuildHookScript>setup.groovy</preBuildHookScript>
 					<properties>
 						<jsse.enableSNIExtension>false</jsse.enableSNIExtension>
 						<!-- Used in the "no-dist-mgmt" deploy test -->

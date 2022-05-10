@@ -307,7 +307,6 @@
 						<localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
 						<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
 						<cloneClean>true</cloneClean>
-						<postBuildHookScript>verify.groovy</postBuildHookScript>
 						<properties>
 							<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
 							<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>

@@ -149,13 +149,13 @@ def build_log = build_log_file.text
 // No previous
 assert !(build_log =~ java.util.regex.Pattern.quote('Host test-bnd-process-tests-goal-fragment= for this fragment cannot be found on the classpath'))
 
-evaluate(new File(basedir, "jar-test-api-bundle/verify.groovy"))
-evaluate(new File(basedir, "jar-test-bnd-process-skipIfEmpty/verify.groovy"))
-evaluate(new File(basedir, "jar-test-bnd-process-tests-goal/verify.groovy"))
-evaluate(new File(basedir, "jar-test-bnd-process-tests-goal-fragment/verify.groovy"))
-evaluate(new File(basedir, "jar-test-bnd-process-tests-skipIfEmpty/verify.groovy"))
-evaluate(new File(basedir, "jar-test-impl-bundle/verify.groovy"))
-evaluate(new File(basedir, "jar-test-in-build-pluginManagement-inheritance/verify.groovy"))
-evaluate(new File(basedir, "jar-test-wrapper-bundle/verify.groovy"))
-evaluate(new File(basedir, "jar-test-war-bundle/verify.groovy"))
+evaluate(new File(basedir, "jar-test-api-bundle/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-bnd-process-skipIfEmpty/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-bnd-process-tests-goal/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-bnd-process-tests-goal-fragment/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-bnd-process-tests-skipIfEmpty/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-impl-bundle/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-in-build-pluginManagement-inheritance/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-wrapper-bundle/postbuild.groovy"))
+evaluate(new File(basedir, "jar-test-war-bundle/postbuild.groovy"))
 
