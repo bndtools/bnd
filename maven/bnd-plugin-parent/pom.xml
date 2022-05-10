@@ -324,6 +324,7 @@
 						<pomIncludes>
 							<pomInclude>*/pom.xml</pomInclude>
 						</pomIncludes>
+						<addTestClassPath>true</addTestClassPath>
 						<showErrors>true</showErrors>
 						<streamLogsOnFailures>true</streamLogsOnFailures>
 						<writeJunitReport>true</writeJunitReport>
