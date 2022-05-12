@@ -7,6 +7,7 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
 		<version>0.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
