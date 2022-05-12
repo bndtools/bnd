@@ -7,16 +7,18 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>reporter-test</artifactId>
 		<version>0.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>report-single-project-no-report</artifactId>
+	<artifactId>report-multi-project-scoped</artifactId>
 	<version>0.0.1</version>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
-	<properties>
-		<bnd.reporter.skip>true</bnd.reporter.skip>
-	</properties>
+	<modules>
+		<module>projectC</module>
+		<module>projectD</module>
+	</modules>
 
 	<build>
 		<plugins>
@@ -26,7 +28,8 @@
 				<configuration>
 					<reports>
 						<report>
-							<outputFile>metadata.json</outputFile>
+							<outputFile>metadata.xml</outputFile>
+							<scope>aggregator</scope>
 						</report>
 					</reports>
 				</configuration>

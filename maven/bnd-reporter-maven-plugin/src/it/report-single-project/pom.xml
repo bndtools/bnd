@@ -7,17 +7,13 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>reporter-test</artifactId>
 		<version>0.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>report-multi-project</artifactId>
+	<artifactId>report-single-project</artifactId>
 	<version>0.0.1</version>
-	<packaging>pom</packaging>
-
-	<modules>
-		<module>projectA</module>
-		<module>projectB</module>
-	</modules>
+	<packaging>jar</packaging>
 
 	<build>
 		<plugins>
@@ -27,7 +23,7 @@
 				<configuration>
 					<reports>
 						<report>
-							<outputFile>metadata.xml</outputFile>
+							<outputFile>metadata.json</outputFile>
 						</report>
 					</reports>
 				</configuration>
