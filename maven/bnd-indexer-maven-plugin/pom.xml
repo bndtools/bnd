@@ -61,19 +61,4 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-invoker-plugin</artifactId>
-				<configuration>
-					<properties>
-						<jsse.enableSNIExtension>false</jsse.enableSNIExtension>
-						<!-- Used in the "no-dist-mgmt" deploy test -->
-						<altSnapshotDeploymentRepository>LocalSnapshotDeploy::default::file://${project.build.directory}/it/test/localsnapshotdeployrepo</altSnapshotDeploymentRepository>
-					</properties>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
