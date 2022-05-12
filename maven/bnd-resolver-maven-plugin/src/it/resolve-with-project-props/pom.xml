@@ -7,33 +7,28 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>resolver-test</artifactId>
 		<version>0.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
-	<artifactId>resolve-from-scopes</artifactId>
+	<artifactId>resolve-with-project-props</artifactId>
 	<version>0.0.1</version>
-	<packaging>pom</packaging>
+
+	<properties>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<test.prop>false</test.prop>
+	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.equinox.event</artifactId>
-			<version>1.4.300</version>
-		</dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.service.event</artifactId>
-			<version>1.4.0</version>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.apache.felix.eventadmin</artifactId>
+			<version>1.4.8</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.eventadmin</artifactId>
-			<version>1.5.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.osgi</artifactId>
-			<version>3.13.100</version>
+			<artifactId>org.apache.felix.framework</artifactId>
+			<version>5.4.0</version>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
@@ -42,12 +37,25 @@
 		<plugins>
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>bnd-process</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-resolver-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-					<scopes>
-						<scope>runtime</scope>
-						<scope>test</scope>
-					</scopes>
+					<archive>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
 				</configuration>
 			</plugin>
 		</plugins>

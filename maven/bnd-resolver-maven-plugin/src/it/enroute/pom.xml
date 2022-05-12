@@ -7,6 +7,7 @@
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>resolver-test</artifactId>
 		<version>0.0.1</version>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<artifactId>enroute</artifactId>
@@ -70,12 +71,20 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/dependency/</outputDirectory>
+							<propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
 							<resources>
 								<resource>
 									<directory>${project.basedir}</directory>
 									<includes>
 										<include>app.bndrun</include>
 										<include>debug.bndrun</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.basedir}</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>inner-invoker.properties</include>
 									</includes>
 								</resource>
 							</resources>
@@ -94,13 +103,22 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
-							<pom>${project.build.directory}/dependency/pom.xml</pom>
-							<goals>
-								<goal>bnd-indexer:index@index</goal>
-								<goal>bnd-indexer:index@test-index</goal>
-								<goal>biz.aQute.bnd:bnd-resolver-maven-plugin:@project.version@:resolve</goal>
-							</goals>
-
+							<projectsDirectory>${project.build.directory}</projectsDirectory>
+							<settingsFile>${projectsDirectory}/settings.xml</settingsFile>
+							<localRepositoryPath>${localRepositoryPath}</localRepositoryPath>
+							<properties>
+								<project.build.sourceEncoding>${project.build.sourceEncoding}</project.build.sourceEncoding>
+								<project.reporting.outputEncoding>${project.reporting.outputEncoding}</project.reporting.outputEncoding>
+								<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+								<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+								<maven.compiler.release>${maven.compiler.release}</maven.compiler.release>
+							</properties>
+							<pomIncludes>
+								<pomInclude>dependency/pom.xml</pomInclude>
+							</pomIncludes>
+							<invokerPropertiesFile>${project.build.directory}/dependency/inner-invoker.properties</invokerPropertiesFile>
+							<showErrors>true</showErrors>
+							<streamLogs>true</streamLogs>
 						</configuration>
 					</execution>
 				</executions>
