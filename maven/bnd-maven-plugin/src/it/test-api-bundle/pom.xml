@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>biz.aQute.bnd-test</groupId>
+		<artifactId>test</artifactId>
+		<version>0.0.2</version>
+		<relativePath>../process-parent</relativePath>
+	</parent>
+	<artifactId>test-api-bundle</artifactId>
+	<name>Test API Bundle</name>
+	<version>0.0.1</version>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.cmpn</artifactId>
+			<version>6.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.annotation</artifactId>
+			<version>6.0.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+				<configuration>
+					<bnd><![CDATA[
+-exportcontents: \
+    org.example.api,\
+    org.example.types
+-sources: true
+Bundle-Version: ${project.version}.bndqual
+Here: ${.}
+]]></bnd>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
