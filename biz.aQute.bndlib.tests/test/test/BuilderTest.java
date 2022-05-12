@@ -2401,6 +2401,36 @@ public class BuilderTest {
 		}
 	}
 
+	@Test
+	public void testSignedJarConduit() throws Exception {
+		Properties p = new Properties();
+		p.setProperty("-conduit", "jar/osgi-3.0.0.jar");
+		Builder b = new Builder();
+		try {
+			b.setProperties(p);
+			Jar jars[] = b.builds();
+			assertTrue(b.check());
+			assertNotNull(jars);
+			assertEquals(1, jars.length);
+
+			Jar jar = jars[0];
+			Resource r = jar.getResource("META-INF/OSGI.RSA");
+			assertNotNull(r);
+
+			File f = new File("tmp.jar");
+			f.deleteOnExit();
+			jar.write(f);
+
+			try (Jar wj = new Jar(f)) {
+				Resource wr = wj.getResource("META-INF/OSGI.RSA");
+				assertNotNull(wr);
+				assertEquals(wj.getSHA256(), jar.getSHA256());
+			}
+		} finally {
+			b.close();
+		}
+	}
+
 	/**
 	 * Export a package that was loaded with resources
 	 *

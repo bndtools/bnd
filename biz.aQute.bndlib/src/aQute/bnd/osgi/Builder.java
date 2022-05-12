@@ -1423,6 +1423,7 @@ public class Builder extends Analyzer {
 			int n = 0;
 			for (String file : map.keySet()) {
 				Jar c = new Jar(getFile(file));
+				c.setDoNotTouchManifest();
 
 				buildInstrs.compression()
 					.ifPresent(c::setCompression);
