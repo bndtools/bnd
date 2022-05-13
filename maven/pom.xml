@@ -4,16 +4,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>biz.aQute.bnd</groupId>
-		<artifactId>bnd-plugin-parent</artifactId>
-		<version>${revision}</version>
-		<relativePath>bnd-plugin-parent</relativePath>
-	</parent>
-
+	<groupId>biz.aQute.bnd</groupId>
 	<artifactId>maven</artifactId>
-	<description>Reactor POM for the Bnd Maven plugins.</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<version>1.0.0</version>
+	<description>Reactor to build the Bnd Maven plugins.</description>
+	<name>Bnd Maven plugins reactor</name>
 	<packaging>pom</packaging>
 
 	<properties>
