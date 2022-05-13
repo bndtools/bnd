@@ -1,7 +1,4 @@
-import java.io.*;
 import java.util.regex.Pattern
-
-println "basedir ${basedir}"
 
 File build_log_file = new File("${basedir}/build.log")
 assert build_log_file.exists();
