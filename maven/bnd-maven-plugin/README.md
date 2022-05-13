@@ -160,7 +160,7 @@ The contents of `${project.build.outputDirectory}` is always included as input t
 Optionally, the plugin adds the entire content of `${project.build.outputDirectory}` to the bundle content (but no other packages from the build path). This behavior is **enabled** by default. (*See `includeClassesDir` configuration parameter*).
 
 For further usage information, see the integration test projects under the included
-`src/test/resources/integration-test/test` directory.
+`src/it` directory.
 
 ### Default Bundle Headers
 

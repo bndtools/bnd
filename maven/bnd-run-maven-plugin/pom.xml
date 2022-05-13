@@ -67,19 +67,4 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-invoker-plugin</artifactId>
-				<configuration>
-					<goals>
-						<goal>--no-transfer-progress</goal>
-						<goal>install</goal>
-						<goal>bnd-run:run</goal>
-					</goals>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

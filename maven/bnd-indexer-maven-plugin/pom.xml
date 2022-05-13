@@ -61,32 +61,4 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-invoker-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>biz.aQute.bnd</groupId>
-						<artifactId>biz.aQute.bndlib</artifactId>
-						<version>${project.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-				</dependencies>
-				<configuration>
-					<preBuildHookScript>setup.groovy</preBuildHookScript>
-					<scriptVariables>
-						<pluginBasedir>${project.basedir}</pluginBasedir>
-						<pluginBuildDirectory>${project.build.directory}</pluginBuildDirectory>
-					</scriptVariables>
-					<properties>
-						<jsse.enableSNIExtension>false</jsse.enableSNIExtension>
-						<!-- Used in the "no-dist-mgmt" deploy test -->
-						<altSnapshotDeploymentRepository>LocalSnapshotDeploy::default::file://${project.build.directory}/integration-test/projects/test/localsnapshotdeployrepo</altSnapshotDeploymentRepository>
-					</properties>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

@@ -5,6 +5,7 @@ import static org.eclipse.aether.metadata.Metadata.Nature.RELEASE;
 import static org.eclipse.aether.metadata.Metadata.Nature.SNAPSHOT;
 
 import java.io.File;
+import java.util.Objects;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
@@ -15,6 +16,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.metadata.DefaultMetadata;
+import org.eclipse.aether.repository.ArtifactRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
@@ -50,10 +52,8 @@ public class RemotePostProcessor implements PostProcessor {
 			return resolvedArtifact;
 		}
 
-		String repoId = resolvedArtifact.getRepository()
-			.getId();
-		Artifact artifact = resolvedArtifact.getArtifact();
-		if ("workspace".equals(repoId) || "local".equals(repoId)) {
+		if (isLocalRepository(resolvedArtifact.getRepository())) {
+			Artifact artifact = resolvedArtifact.getArtifact();
 			logger.debug("Post processing {} to determine a remote source", artifact);
 			ArtifactResult postProcessed;
 			if (artifact.isSnapshot()) {
@@ -66,6 +66,21 @@ public class RemotePostProcessor implements PostProcessor {
 			}
 		}
 		return resolvedArtifact;
+	}
+
+	private boolean isLocalRepository(ArtifactRepository repository) {
+		logger.debug("Checking for local repo {}", repository);
+		String repoId = repository.getId();
+		if (Objects.equals("workspace", repoId) || Objects.equals("local", repoId)) {
+			return true;
+		}
+		if (repository instanceof RemoteRepository) {
+			RemoteRepository remoteRepository = (RemoteRepository) repository;
+			if (Objects.equals("file", remoteRepository.getProtocol())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private ArtifactResult postProcessSnapshot(ArtifactRequest request, Artifact artifact)
