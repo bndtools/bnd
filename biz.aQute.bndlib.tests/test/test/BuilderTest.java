@@ -541,39 +541,29 @@ public class BuilderTest {
 	 */
 
 	@Test
-	public void testLastModifiedForManifest() throws Exception {
-		File file = new File("tmp.jar");
-		try {
-			long time = System.currentTimeMillis();
+	public void testLastModifiedForManifest(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		long time = System.currentTimeMillis();
 
-			Builder b = new Builder();
+		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setExportPackage("org.osgi.framework");
 			Jar build = b.build();
-			try {
-				assertTrue(b.check());
+			assertTrue(b.check());
 
-				build.write("tmp.jar");
-				Jar ajr = new Jar(file);
-				try {
-					Resource r = ajr.getResource("META-INF/MANIFEST.MF");
-					assertNotNull(r);
-					long t = r.lastModified();
-					Date date = new Date(t);
-					System.out.println(date + " " + t);
-					// TODO we need to adapt the timestamp handling
-					assertThat(t).as("%s %s", date, t)
-						.isEqualTo(1142555622000L);
-				} finally {
-					ajr.close();
-				}
-			} finally {
-				build.close();
+			File file = new File(tmp, "tmp.jar");
+			build.write(file);
+			try (Jar ajr = new Jar(file)) {
+				Resource r = ajr.getResource("META-INF/MANIFEST.MF");
+				assertNotNull(r);
+				long t = r.lastModified();
+				Date date = new Date(t);
+				System.out.println(date + " " + t);
+				// TODO we need to adapt the timestamp handling
+				assertThat(t).as("%s %s", date, t)
+					.isEqualTo(1142555622000L);
 			}
-		} finally {
-			file.delete();
 		}
-
 	}
 
 	/**
@@ -806,69 +796,49 @@ public class BuilderTest {
 	 * removes A from 'a', and checks again that the last modified data changed.
 	 */
 	@Test
-	public void testRemoveClassFromPackage() throws Exception {
-		try {
-			Builder b = new Builder();
-			try {
-				IO.getFile("bin_test/a1/a")
-					.mkdirs();
-				IO.copy(IO.getFile("bin_test/a/A.class"), IO.getFile("bin_test/a1/a/A.class"));
-				IO.copy(IO.getFile("bin_test/a/B.class"), IO.getFile("bin_test/a1/a/B.class"));
-				Jar classpath = new Jar(IO.getFile("bin_test/a1"));
-				b.addClasspath(classpath);
-				b.setPrivatePackage("a");
-				Jar result = b.build();
-				Resource ra = result.getResource("a/A.class");
-				Resource rb = result.getResource("a/B.class");
-				long lm1 = result.lastModified();
-				assertTrue(lm1 > 0, "Last modified date of bundle > 0");
+	public void testRemoveClassFromPackage(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		try (Builder b = new Builder()) {
+			IO.mkdirs(IO.getFile(tmp, "a"));
+			IO.copy(IO.getFile("bin_test/a/A.class"), IO.getFile(tmp, "a/A.class"));
+			IO.copy(IO.getFile("bin_test/a/B.class"), IO.getFile(tmp, "a/B.class"));
+			Jar classpath = new Jar(tmp);
+			b.addClasspath(classpath);
+			b.setPrivatePackage("a");
+			Jar result = b.build();
+			Resource ra = result.getResource("a/A.class");
+			assertThat(ra).isNotNull();
+			Resource rb = result.getResource("a/B.class");
+			assertThat(rb).isNotNull();
+			long lm1 = result.lastModified();
+			assertThat(lm1).as("Last modified date of bundle > 0")
+				.isGreaterThan(0L);
 
-				// windows has a very low resolution sometimes
-				Thread.sleep(IO.isWindows() ? 1000 : 100);
+			// windows has a very low resolution sometimes
+			Thread.sleep(IO.isWindows() ? 1000 : 100);
 
-				IO.getFile("bin_test/a1/a/B.class")
-					.delete();
-				classpath.remove("a/B.class");
-				classpath.updateModified(System.currentTimeMillis(), "Removed file B");
-				result = b.build();
-				long lm2 = result.lastModified();
-				assertTrue(lm2 > lm1, "Last modified date of bundle has increased after deleting class from package");
+			IO.delete(IO.getFile(tmp, "a/B.class"));
+			classpath.remove("a/B.class");
+			classpath.updateModified(System.currentTimeMillis(), "Removed file B");
+			result = b.build();
+			long lm2 = result.lastModified();
+			assertThat(lm2).as("Last modified date of bundle has increased after deleting class from package")
+				.isGreaterThan(lm1);
 
-				// windows has a very low resolution sometimes
-				Thread.sleep(IO.isWindows() ? 1000 : 100);
+			// windows has a very low resolution sometimes
+			Thread.sleep(IO.isWindows() ? 1000 : 100);
 
-				IO.getFile("bin_test/a1/a/A.class")
-					.delete();
-				classpath.remove("a/A.class");
-				classpath.updateModified(System.currentTimeMillis(), "Removed file A");
+			IO.delete(IO.getFile(tmp, "a/A.class"));
+			classpath.remove("a/A.class");
+			classpath.updateModified(System.currentTimeMillis(), "Removed file A");
 
-				// windows has a very low resolution sometimes
-				Thread.sleep(IO.isWindows() ? 1000 : 100);
+			// windows has a very low resolution sometimes
+			Thread.sleep(IO.isWindows() ? 1000 : 100);
 
-				result = b.build();
-				long lm3 = result.lastModified();
-				assertTrue(lm3 > lm2,
-					"Last modified date of bundle has increased after deleting last class from package");
-			} finally {
-				b.close();
-			}
-		} finally {
-			try {
-				IO.getFile("bin_test/a1/a/A.class")
-					.delete();
-			} catch (Exception e) {}
-			try {
-				IO.getFile("bin_test/a1/a/B.class")
-					.delete();
-			} catch (Exception e) {}
-			try {
-				IO.getFile("bin_test/a1/a")
-					.delete();
-			} catch (Exception e) {}
-			try {
-				IO.getFile("bin_test/a1")
-					.delete();
-			} catch (Exception e) {}
+			result = b.build();
+			long lm3 = result.lastModified();
+			assertThat(lm3).as("Last modified date of bundle has increased after deleting last class from package")
+				.isGreaterThan(lm2);
 		}
 	}
 
@@ -943,7 +913,7 @@ public class BuilderTest {
 	File tmp) throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setExportPackage("org.osgi.framework");
 			b.setProperty(Constants.DIGESTS, "MD5, SHA1");
 			Jar jar = b.build();
@@ -1860,7 +1830,7 @@ public class BuilderTest {
 			Jar jar = b.build();
 			assertTrue(b.check());
 
-			File f = new File(tmp, "tmp.jar");
+			File f = IO.getFile(tmp, "tmp.jar");
 			jar.write(f);
 
 			JarInputStream jin = new JarInputStream(new FileInputStream(f));
@@ -2402,11 +2372,11 @@ public class BuilderTest {
 	}
 
 	@Test
-	public void testSignedJarConduit() throws Exception {
+	public void testSignedJarConduit(@InjectTemporaryDirectory
+	File tmp) throws Exception {
 		Properties p = new Properties();
 		p.setProperty("-conduit", "jar/osgi-3.0.0.jar");
-		Builder b = new Builder();
-		try {
+		try (Builder b = new Builder()) {
 			b.setProperties(p);
 			Jar jars[] = b.builds();
 			assertTrue(b.check());
@@ -2417,8 +2387,7 @@ public class BuilderTest {
 			Resource r = jar.getResource("META-INF/OSGI.RSA");
 			assertNotNull(r);
 
-			File f = new File("tmp.jar");
-			f.deleteOnExit();
+			File f = IO.getFile(tmp, "tmp.jar");
 			jar.write(f);
 
 			try (Jar wj = new Jar(f)) {
@@ -2426,8 +2395,6 @@ public class BuilderTest {
 				assertNotNull(wr);
 				assertEquals(wj.getSHA256(), jar.getSHA256());
 			}
-		} finally {
-			b.close();
 		}
 	}
 
@@ -2911,8 +2878,7 @@ public class BuilderTest {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
-		String pwd = System.getProperty("user.dir");
-		base.put("pwd", new File(pwd).toURI()
+		base.put("pwd", IO.work.toURI()
 			.toString());
 		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
 
@@ -2977,8 +2943,7 @@ public class BuilderTest {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
-		String pwd = System.getProperty("user.dir");
-		base.put("pwd", new File(pwd).toURI()
+		base.put("pwd", IO.work.toURI()
 			.toString());
 		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
 
