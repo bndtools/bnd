@@ -88,7 +88,7 @@ public class BndContainer implements IClasspathContainer, Serializable {
 		resources = null;
 	}
 
-	private static final IClasspathAttribute	TEST	= JavaCore.newClasspathAttribute("test",
+	static final IClasspathAttribute			TEST	= JavaCore.newClasspathAttribute("test",
 		Boolean.TRUE.toString());
 	private static final IClasspathAttribute	PROJECT	= JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE,
 		Constants.VERSION_ATTR_PROJECT);
@@ -146,7 +146,7 @@ public class BndContainer implements IClasspathContainer, Serializable {
 		return runtime.toArray(EMPTY_RUNTIMEENTRIES);
 	}
 
-	private static boolean hasAttribute(IClasspathEntry cpe, IClasspathAttribute attr) {
+	static boolean hasAttribute(IClasspathEntry cpe, IClasspathAttribute attr) {
 		return Arrays.stream(cpe.getExtraAttributes())
 			.anyMatch(attr::equals);
 	}

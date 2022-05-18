@@ -1,6 +1,8 @@
 package org.bndtools.builder.classpath;
 
 import static java.util.stream.Collectors.toList;
+import static org.bndtools.builder.classpath.BndContainer.TEST;
+import static org.bndtools.builder.classpath.BndContainer.hasAttribute;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
@@ -200,13 +203,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	private static class Updater {
 		private static final IAccessRule			DISCOURAGED			= JavaCore.newAccessRule(new Path("**"),
 			IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
-		private static final IAccessRule			NON_ACCESSIBLE		= JavaCore.newAccessRule(new Path("**"),
-			IAccessRule.K_NON_ACCESSIBLE | IAccessRule.IGNORE_IF_BETTER);
 		private static final IClasspathAttribute	EMPTY_INDEX			= JavaCore.newClasspathAttribute(
 			IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
 			"platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
-		private static final IClasspathAttribute	TEST				= JavaCore.newClasspathAttribute("test",
-			Boolean.TRUE.toString());
 		private static final IClasspathAttribute	WITHOUT_TEST_CODE	= JavaCore
 			.newClasspathAttribute("without_test_code", Boolean.TRUE.toString());
 		private static final Pattern				packagePattern		= Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
@@ -302,7 +301,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			}, null);
 		}
 
-		private Void calculateProjectClasspath() {
+		private Void calculateProjectClasspath() throws CoreException {
 			if (!project.isOpen()) {
 				return null;
 			}
@@ -326,17 +325,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			return null;
 		}
 
-		private void calculateContainersClasspath(String instruction, Collection<Container> containers) {
-			boolean testattr = false;
-			if (instruction.equals(Constants.TESTPATH)) {
-				try {
-					testattr = Arrays.stream(javaProject.getRawClasspath())
-						.filter(cpe -> cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE)
-						.map(IClasspathEntry::getExtraAttributes)
-						.flatMap(Arrays::stream)
-						.anyMatch(TEST::equals);
-				} catch (JavaModelException e) {}
-			}
+		private void calculateContainersClasspath(String instruction, Collection<Container> containers)
+			throws CoreException {
+			boolean testattr = instruction.equals(Constants.TESTPATH) && Arrays.stream(javaProject.getRawClasspath())
+				.filter(cpe -> cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE)
+				.anyMatch(cpe -> hasAttribute(cpe, TEST));
 			for (Container c : containers) {
 				File file = c.getFile();
 				assert file.isAbsolute();
@@ -383,21 +376,36 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 						if (testattr) {
 							extraAttrs.add(WITHOUT_TEST_CODE);
 						}
-						IPath projectPath = root.getFile(path)
-							.getProject()
-							.getFullPath();
-						if (isVersionProject(c)) {
-							addProjectEntry(projectPath, accessRules, extraAttrs);
-						} else {
+						IProject otherProject = root.getFile(path)
+							.getProject();
+						if (isVersionProject(c)) { // version=project
+							addProjectEntry(otherProject.getFullPath(), accessRules, extraAttrs);
+						} else { // version=latest or version=snapshot
 							/*
-							 * If not version=project, add project entry for
-							 * source code before library entry for generated
-							 * jar. We use NON_ACCESSIBLE access to make eclipse
-							 * use the classes in the library entry and not the
-							 * project entry. We use the project entry for
-							 * source code only.
+							 * When the source value is not equal to "project"
+							 * (the default value), we make the source folder
+							 * discouraged. This can be necessary when using the
+							 * Eclipse Transformer Bnd Analyzer plugin which can
+							 * make the class files in the jar incompatible with
+							 * the class files in the source output folder. We
+							 * tried to always make the source folder
+							 * discouraged which worked fine for compiling but
+							 * it messed up the Open Type Hierarchy support in
+							 * Eclipse. See
+							 * https://github.com/bndtools/bnd/issues/5250. So
+							 * we maintain the prior behavior unless source is
+							 * set to a value other than "project". e.g.
+							 * source=none
 							 */
-							addProjectEntry(projectPath, Collections.singletonList(NON_ACCESSIBLE), extraAttrs);
+							String source = c.getAttributes()
+								.getOrDefault("source", "project");
+							List<IAccessRule> projectAccessRules = Objects.equals(source, "project") ? accessRules
+								: Collections.emptyList();
+							/*
+							 * Add project entry for source code before library
+							 * entry for generated jar.
+							 */
+							addProjectEntry(otherProject.getFullPath(), projectAccessRules, extraAttrs);
 							/*
 							 * Supply an empty index for the generated JAR of a
 							 * workspace project dependency. This prevents the
@@ -405,11 +413,37 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 							 * from appearing in the Open Type dialog.
 							 */
 							extraAttrs.add(EMPTY_INDEX);
-							addLibraryEntry(path, file, accessRules, extraAttrs);
+							/*
+							 * Compute source attachment path for library entry.
+							 */
+							IPath sourceAttachmentPath = calculateSourceAttachmentPath(path, file);
+							IPath sourceAttachmentRootPath = null; // default
+							if (sourceAttachmentPath == null) {
+								IJavaProject otherJavaProject = JavaCore.create(otherProject);
+								if (otherJavaProject != null) {
+									for (IClasspathEntry raw : otherJavaProject.getRawClasspath()) {
+										if ((raw.getEntryKind() == IClasspathEntry.CPE_SOURCE)
+											&& !hasAttribute(raw, TEST)) {
+											sourceAttachmentPath = raw.getSourceAttachmentPath();
+											if (sourceAttachmentPath != null) {
+												sourceAttachmentRootPath = raw.getSourceAttachmentRootPath();
+											} else {
+												sourceAttachmentPath = raw.getPath();
+											}
+											break;
+										}
+									}
+								}
+							}
+							addLibraryEntry(path, file, accessRules, extraAttrs, sourceAttachmentPath,
+								sourceAttachmentRootPath);
 						}
 						break;
 					default :
-						addLibraryEntry(path, file, accessRules, extraAttrs);
+						IPath sourceAttachmentPath = calculateSourceAttachmentPath(path, file);
+						IPath sourceAttachmentRootPath = null; // default
+						addLibraryEntry(path, file, accessRules, extraAttrs, sourceAttachmentPath,
+							sourceAttachmentRootPath);
 						break;
 				}
 			}
@@ -441,13 +475,15 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 					}
 					combinedAccessRules.addAll(accessRules);
 				}
-				builder.entry(i, JavaCore.newProjectEntry(path, toAccessRulesArray(combinedAccessRules), false,
-					entry.getExtraAttributes(), false));
+				IClasspathEntry projectEntry = JavaCore.newProjectEntry(path, toAccessRulesArray(combinedAccessRules),
+					false, entry.getExtraAttributes(), false);
+				builder.entry(i, projectEntry);
 				return;
 			}
 			// Add a new project entry for the project
-			builder.entry(JavaCore.newProjectEntry(path, toAccessRulesArray(accessRules), false,
-				toClasspathAttributesArray(extraAttrs), false));
+			IClasspathEntry projectEntry = JavaCore.newProjectEntry(path, toAccessRulesArray(accessRules), false,
+				toClasspathAttributesArray(extraAttrs), false);
+			builder.entry(projectEntry);
 		}
 
 		private IPath calculateSourceAttachmentPath(IPath path, File file) {
@@ -490,10 +526,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		}
 
 		private void addLibraryEntry(IPath path, File file, List<IAccessRule> accessRules,
-			List<IClasspathAttribute> extraAttrs) {
-			IPath sourceAttachmentPath = calculateSourceAttachmentPath(path, file);
-			builder.entry(JavaCore.newLibraryEntry(path, sourceAttachmentPath, null, toAccessRulesArray(accessRules),
-				toClasspathAttributesArray(extraAttrs), false));
+			List<IClasspathAttribute> extraAttrs, IPath sourceAttachmentPath, IPath sourceAttachmentRootPath) {
+			IClasspathEntry libraryEntry = JavaCore.newLibraryEntry(path, sourceAttachmentPath,
+				sourceAttachmentRootPath, toAccessRulesArray(accessRules), toClasspathAttributesArray(extraAttrs),
+				false);
+			builder.entry(libraryEntry);
 			builder.updateLastModified(file.lastModified());
 		}
 
