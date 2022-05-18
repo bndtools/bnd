@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -144,45 +145,38 @@ public class UTF8Properties extends Properties {
 		return new String(buffer); // default decoding
 	}
 
+	private static final Pattern LINE_SPLITTER = Pattern.compile("\n\r?");
+
+	@Override
+	public void store(Writer writer, String msg) throws IOException {
+		CharArrayWriter sw = new CharArrayWriter();
+		super.store(sw, null);
+
+		String[] lines = LINE_SPLITTER.split(sw.toString());
+
+		for (String line : lines) {
+			if (line.startsWith("#"))
+				continue;
+
+			writer.write(line);
+			writer.write('\n');
+		}
+	}
+
 	@Override
 	public void store(OutputStream out, String msg) throws IOException {
-		CharArrayWriter sw = new CharArrayWriter();
-		super.store(sw, null);
-
-		String[] lines = sw.toString()
-			.split("\n\r?");
-
-		byte[] newline = "\n".getBytes(UTF_8);
-		for (String line : lines) {
-			if (line.startsWith("#"))
-				continue;
-
-			out.write(line.getBytes(UTF_8));
-			out.write(newline);
+		Writer writer = new OutputStreamWriter(out, UTF_8);
+		try {
+			store(writer, msg);
+		} finally {
+			writer.flush();
 		}
 	}
 
-	@Override
-	public void store(Writer out, String msg) throws IOException {
-		CharArrayWriter sw = new CharArrayWriter();
-		super.store(sw, null);
-
-		String[] lines = sw.toString()
-			.split("\n\r?");
-
-		for (String line : lines) {
-			if (line.startsWith("#"))
-				continue;
-
-			out.write(line);
-			out.write('\n');
+	public void store(File file) throws IOException {
+		try (OutputStream out = IO.outputStream(file)) {
+			store(out, null);
 		}
-	}
-
-	public void store(File out) throws IOException {
-		CharArrayWriter sw = new CharArrayWriter();
-		super.store(sw, null);
-		IO.store(sw.toString(), out);
 	}
 
 	public void store(OutputStream out) throws IOException {
