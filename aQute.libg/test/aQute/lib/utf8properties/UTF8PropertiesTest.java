@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -12,6 +13,7 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Report.Location;
@@ -381,9 +383,25 @@ public class UTF8PropertiesTest {
 		StringWriter sw = new StringWriter();
 		p.store(sw, null);
 		String s = sw.toString();
-		assertThat(s).contains("#comment");
+		assertThat(s).doesNotStartWith("#")
+			.contains("#comment");
 		UTF8Properties p1 = new UTF8Properties();
 		p1.load(new StringReader(s));
+		assertThat(p1).containsExactlyInAnyOrderEntriesOf(p);
+	}
+
+	@Test
+	public void testWriteFile(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		UTF8Properties p = new UTF8Properties();
+		p.put("Foo", "Foo");
+		p.put("Bar", "Bar");
+		File props = new File(tmp, "props.properties");
+		p.store(props);
+		assertThat(props).isFile();
+		assertThat(IO.collect(props)).doesNotStartWith("#");
+		UTF8Properties p1 = new UTF8Properties();
+		p1.load(props, null);
 		assertThat(p1).containsExactlyInAnyOrderEntriesOf(p);
 	}
 
