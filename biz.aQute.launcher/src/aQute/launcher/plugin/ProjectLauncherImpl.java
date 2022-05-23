@@ -357,19 +357,24 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				}
 			}
 
-			List<String> bcpList = new ArrayList<>();
-			bcpList.add(".");
-			bcpList.addAll(classpath);
-			bcpList.addAll(actualPaths);
+			String moduleProperty = builder.getProperty(JPMS_MODULE_INFO);
+			if (moduleProperty != null) {
 
-			builder.setProperty(BUNDLE_CLASSPATH, bcpList.stream()
-				.collect(joining(",")));
-			builder.setProperty(EXPORT_CONTENTS, "aQute.launcher.pre");
+				List<String> bcpList = new ArrayList<>();
+				bcpList.add(".");
+				bcpList.addAll(classpath);
+				bcpList.addAll(actualPaths);
 
-			// Ignore common warnings resulting from the Bundle-ClassPath which
-			// are irrelevant in this use case
-			builder.setProperty(FIXUPMESSAGES,
-				"Classes found in the wrong directory, private references, Export-Package duplicate package name, Invalid package name: * in Export-Package");
+				builder.setProperty(BUNDLE_CLASSPATH, bcpList.stream()
+					.collect(joining(",")));
+				builder.setProperty(EXPORT_CONTENTS, "aQute.launcher.pre");
+
+				// Ignore common warnings resulting from the Bundle-ClassPath
+				// which
+				// are irrelevant in this use case
+				builder.setProperty(FIXUPMESSAGES,
+					"Classes found in the wrong directory, private references, Export-Package duplicate package name, Invalid package name: * in Export-Package");
+			}
 
 			LauncherConstants lc = getConstants(actualPaths, true);
 			lc.embedded = true;
