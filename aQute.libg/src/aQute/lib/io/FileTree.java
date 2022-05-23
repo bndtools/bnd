@@ -1,5 +1,7 @@
 package aQute.lib.io;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.text.CollationKey;
@@ -103,7 +105,16 @@ public class FileTree {
 		return getFiles(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
 	}
 
-	private List<File> getFiles(File baseDir, Predicate<String> matches) {
+	/**
+	 * Return a list of files using the specified baseDir and the specified
+	 * relative path matching predicate.
+	 *
+	 * @param baseDir The base directory for locating files.
+	 * @param matches The path matching predicate. The predicate only matches
+	 *            against the relative path from the specified baseDir.
+	 * @return A list of files.
+	 */
+	public List<File> getFiles(File baseDir, Predicate<String> matches) {
 		ArrayList<File> result = new ArrayList<>();
 		new FileTreeSpliterator(baseDir, matches, files).forEachRemaining(result::add);
 		result.trimToSize();
@@ -136,7 +147,16 @@ public class FileTree {
 		return stream(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
 	}
 
-	private Stream<File> stream(File baseDir, Predicate<String> matches) {
+	/**
+	 * Return a stream of files using the specified baseDir and the specified
+	 * relative path matching predicate.
+	 *
+	 * @param baseDir The base directory for locating files.
+	 * @param matches The path matching predicate. The predicate only matches
+	 *            against the relative path from the specified baseDir.
+	 * @return A stream of files.
+	 */
+	public Stream<File> stream(File baseDir, Predicate<String> matches) {
 		return StreamSupport.stream(new FileTreeSpliterator(baseDir, matches, files), false);
 	}
 
@@ -154,7 +174,7 @@ public class FileTree {
 			super(Long.MAX_VALUE,
 				Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.DISTINCT | Spliterator.NONNULL);
 			basePath = baseDir.toPath();
-			this.matches = matches;
+			this.matches = requireNonNull(matches);
 			List<File> copy = new ArrayList<>(files); // mutable copy
 			this.files = copy;
 			extra = copy.spliterator(); // late-binding
