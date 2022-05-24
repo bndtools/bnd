@@ -513,4 +513,20 @@ public class ProcessorTest {
 		assertThat(ext).hasSize(1);
 		assertThat(ext.getTyped("foo")).isEqualTo(value);
 	}
+
+	@Test
+	public void testMergAndSuffixes() throws IOException {
+		try (Processor p = new Processor()) {
+			p.setProperty("foo+", "a,b,c");
+			p.setProperty("foo+.1", "x,y,z");
+			p.setProperty("foo++", "d,e,f");
+
+			String plus = p.mergeProperties("foo+");
+			assertThat(plus).isEqualTo("a,b,c,x,y,z");
+
+			String plusplus = p.mergeProperties("foo++");
+			assertThat(plusplus).isEqualTo("d,e,f");
+		}
+
+	}
 }

@@ -31,7 +31,7 @@ public class InstructionTest {
 	public void buildpath_decoration() throws Exception {
 		try (Processor p = new Processor()) {
 			p.setProperty("maven.target.version", "3.3.9");
-			p.setProperty("-buildpath+", "\"{aQute.libg}\";version=project;packages=\"!aQute.lib.exceptions.*,*\"");
+			p.setProperty("-buildpath+", "aQute.libg;version=project;packages=\"!aQute.lib.exceptions.*,*\"");
 			p.setProperty("-buildpath+.maven",
 				"org.apache.maven:*;version=${maven.target.version};maven-scope=provided");
 			p.setProperty("-buildpath",
@@ -50,6 +50,8 @@ public class InstructionTest {
 			assertThat(bundles.get("org.apache.maven:maven-settings")).isEmpty();
 
 			Instructions decorator = new Instructions(p.mergeProperties("-buildpath" + "+"));
+			decorator.decorate(bundles);
+			decorator = new Instructions(p.mergeProperties("-buildpath" + "++"));
 			decorator.decorate(bundles, true);
 			System.out.println(bundles);
 			assertThat(bundles.keySet()).contains("aQute.libg", "org.apache.maven:maven-artifact",
@@ -75,13 +77,13 @@ public class InstructionTest {
 	@Test
 	public void conditionalpackage_decoration() throws Exception {
 		try (Processor p = new Processor()) {
-			p.setProperty("-conditionalpackage+", "=!aQute.lib.exceptions.*");
+			p.setProperty("-conditionalpackage++", "=!aQute.lib.exceptions.*");
 			p.setProperty("-conditionalpackage", "aQute.lib.*,aQute.libg.*");
 
 			Parameters parameters = p.getMergedParameters("-conditionalpackage");
 			assertThat(parameters.keySet()).containsExactly("aQute.lib.*", "aQute.libg.*");
 
-			parameters = p.decorated("-conditionalpackage", true);
+			parameters = p.decorated("-conditionalpackage");
 			System.out.println(parameters);
 			assertThat(parameters.keySet()).containsExactly("!aQute.lib.exceptions.*", "aQute.lib.*", "aQute.libg.*");
 		}

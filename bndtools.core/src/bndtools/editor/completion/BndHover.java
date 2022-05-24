@@ -66,7 +66,7 @@ public class BndHover extends DefaultTextHover {
 					sb.append("\nE.g. ");
 					sb.append(syntax.getExample());
 				}
-				Parameters decorated = properties.decorated(key, true);
+				Parameters decorated = properties.decorated(key);
 				if (!decorated.isEmpty()) {
 					sb.append("\n")
 						.append(key)
