@@ -40,6 +40,8 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 
 -conditionalpackage+: \
     =!aQute.lib.exceptions.*
+-conditionalpackage++: \
+    =!aQute.lib.exceptions.*
 
 -testpath+: \
     "{aQute.libg}";version=project;packages="!aQute.lib.exceptions.*,*",\
