@@ -38,7 +38,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
     "org.osgi.namespace.*";~version=latest;~maven-scope=provided,\
     "org.osgi.service.*.annotations";~version=latest;~maven-scope=provided
 
--conditionalpackage+: \
+-conditionalpackage++: \
     =!aQute.lib.exceptions.*
 
 -testpath+: \
