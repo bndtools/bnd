@@ -2532,7 +2532,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Return a parameters that contains the merged properties of the given key
-	 * and that is decorated by the merged properties of the key + '+'
+	 * and that is decorated by the merged properties of the key + '+',
+	 * optionally including literals, and decorated by the merged properties of
+	 * the key + '++', always including literals.
 	 *
 	 * @param key The key of the property
 	 */
@@ -2541,6 +2543,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Parameters parameters = getMergedParameters(key);
 		Instructions decorator = new Instructions(mergeProperties(key + "+"));
 		decorator.decorate(parameters, literalsIncluded);
+		decorator = new Instructions(mergeProperties(key + "++"));
+		decorator.decorate(parameters, true);
 		return parameters;
 	}
 

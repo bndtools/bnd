@@ -402,6 +402,7 @@ public class Builder extends Analyzer {
 	@Override
 	protected Jar getExtra() throws Exception {
 		Parameters conditionals = getMergedParameters(CONDITIONAL_PACKAGE);
+		// TODO change the decorated call to remove the second arg.
 		conditionals.putAll(decorated(CONDITIONALPACKAGE, true));
 		if (conditionals.isEmpty())
 			return null;
@@ -628,8 +629,10 @@ public class Builder extends Analyzer {
 		}
 
 		Parameters private_package = getParameters(PRIVATE_PACKAGE);
+		// TODO change the decorated call to remove the second arg.
 		Parameters privatepackage = decorated(PRIVATEPACKAGE, true);
 		Parameters testpackage = new Parameters();
+		// TODO change the decorated call to remove the second arg.
 		Parameters includepackage = decorated(INCLUDEPACKAGE, true);
 
 		if (buildInstrs.undertest()) {
@@ -902,6 +905,7 @@ public class Builder extends Analyzer {
 	private void doIncludeResources(Jar jar) throws Exception {
 		Parameters includes = parseHeader(getProperty("Bundle-Includes"));
 		if (includes.isEmpty()) {
+			// TODO change the decorated call to remove the second arg.
 			includes = decorated(Constants.INCLUDERESOURCE, true);
 			includes.putAll(getMergedParameters(Constants.INCLUDE_RESOURCE));
 		} else {

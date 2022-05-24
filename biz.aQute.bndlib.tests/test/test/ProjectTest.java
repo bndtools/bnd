@@ -226,26 +226,29 @@ public class ProjectTest {
 	public void testDecoration() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("multipath");
-		project.setProperty("-runbundles+", "org.apache.*;startlevel=10");
+		project.setProperty("-runbundles++",
+			"org.apache.*;startlevel=10, org.apache.felix.org.apache.felix.ipojo.ant;startlevel=1000");
 		assertNotNull(project);
 
 		List<Container> runbundles = new ArrayList<>(project.getRunbundles());
-		assertEquals(3, runbundles.size());
-		assertEquals("org.apache.felix.configadmin", runbundles.get(0)
-			.getBundleSymbolicName());
-		assertEquals("10", runbundles.get(0)
-			.getAttributes()
-			.get("startlevel"));
-		assertEquals("org.apache.felix.ipojo", runbundles.get(1)
-			.getBundleSymbolicName());
-		assertEquals("10", runbundles.get(1)
-			.getAttributes()
-			.get("startlevel"));
-		assertEquals("osgi.core", runbundles.get(2)
-			.getBundleSymbolicName());
-		assertThat(runbundles.get(2)
-			.getAttributes()
-			.get("startlevel")).isNull();
+		assertEquals(4, runbundles.size());
+
+		Container cm = runbundles.get(0);
+		Container ipojo = runbundles.get(1);
+		Container osgi = runbundles.get(2);
+		Container ant = runbundles.get(3);
+
+		assertThat(cm.getBundleSymbolicName()).isEqualTo("org.apache.felix.configadmin");
+		assertThat(cm.getAttributes()).containsEntry("startlevel", "10");
+
+		assertThat(ipojo.getBundleSymbolicName()).isEqualTo("org.apache.felix.ipojo");
+		assertThat(ipojo.getAttributes()).containsEntry("startlevel", "10");
+
+		assertThat(osgi.getBundleSymbolicName()).isEqualTo("osgi.core");
+		assertThat(osgi.getAttributes()).doesNotContainKey("startlevel");
+
+		assertThat(ant.getBundleSymbolicName()).isEqualTo("org.apache.felix.org.apache.felix.ipojo.ant");
+		assertThat(ant.getAttributes()).containsEntry("startlevel", "1000");
 
 		List<Container> runpath = new ArrayList<>(project.getRunpath());
 		assertEquals(3, runpath.size());
