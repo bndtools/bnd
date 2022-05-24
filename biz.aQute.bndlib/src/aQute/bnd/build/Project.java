@@ -620,6 +620,8 @@ public class Project extends Processor {
 		if (source != null) {
 			Instructions decorator = new Instructions(mergeProperties(source + "+"));
 			decorator.decorate(bundles, true);
+			decorator = new Instructions(mergeProperties(source + "++"));
+			decorator.decorate(bundles, true);
 		}
 
 		List<Container> result = new ArrayList<>();
