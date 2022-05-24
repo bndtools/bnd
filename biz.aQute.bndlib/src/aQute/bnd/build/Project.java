@@ -619,8 +619,7 @@ public class Project extends Processor {
 		Parameters bundles = parseHeader(spec);
 		if (source != null) {
 			Instructions decorator = new Instructions(mergeProperties(source + "+"));
-			// TODO change the decorated call to remove the second arg.
-			decorator.decorate(bundles, true);
+			decorator.decorate(bundles);
 			decorator = new Instructions(mergeProperties(source + "++"));
 			decorator.decorate(bundles, true);
 		}

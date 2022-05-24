@@ -402,8 +402,7 @@ public class Builder extends Analyzer {
 	@Override
 	protected Jar getExtra() throws Exception {
 		Parameters conditionals = getMergedParameters(CONDITIONAL_PACKAGE);
-		// TODO change the decorated call to remove the second arg.
-		conditionals.putAll(decorated(CONDITIONALPACKAGE, true));
+		conditionals.putAll(decorated(CONDITIONALPACKAGE));
 		if (conditionals.isEmpty())
 			return null;
 		logger.debug("do Conditional Package {}", conditionals);
@@ -629,11 +628,9 @@ public class Builder extends Analyzer {
 		}
 
 		Parameters private_package = getParameters(PRIVATE_PACKAGE);
-		// TODO change the decorated call to remove the second arg.
-		Parameters privatepackage = decorated(PRIVATEPACKAGE, true);
+		Parameters privatepackage = decorated(PRIVATEPACKAGE);
 		Parameters testpackage = new Parameters();
-		// TODO change the decorated call to remove the second arg.
-		Parameters includepackage = decorated(INCLUDEPACKAGE, true);
+		Parameters includepackage = decorated(INCLUDEPACKAGE);
 
 		if (buildInstrs.undertest()) {
 			String h = mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional");
@@ -905,8 +902,7 @@ public class Builder extends Analyzer {
 	private void doIncludeResources(Jar jar) throws Exception {
 		Parameters includes = parseHeader(getProperty("Bundle-Includes"));
 		if (includes.isEmpty()) {
-			// TODO change the decorated call to remove the second arg.
-			includes = decorated(Constants.INCLUDERESOURCE, true);
+			includes = decorated(Constants.INCLUDERESOURCE);
 			includes.putAll(getMergedParameters(Constants.INCLUDE_RESOURCE));
 		} else {
 			warning("Please use -includeresource instead of Bundle-Includes");
