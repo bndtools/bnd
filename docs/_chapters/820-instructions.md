@@ -94,13 +94,17 @@ This will result in a buildpath of (when debug is not false) of: `com.example.fo
 
 ## Decorated Instructions
 
-Instructions can also be _decorated_. A _decorator_ is a header that ends with a `+` sign. A header `-runbundles` is first merged and then decorated by getting all the properties with the keys that match`-runbundles+(.*)`.  Notice that for the decorator the root key includes the `+` sign, the suffixes must come after the `+` sign.
+Instructions can also be _decorated_. A _decorator_ is a header that ends with `+` or `++`. A header like `-runbundles` is first _merged_ and then _decorated_. 
 
-The decorator is a Parameters, it consists of a key and a set of attributes. The decorator key is usually a glob. 
+In this case, `-runbundles` is the _stem_. First, the total header is assembled by _merging_ the property that has that stem. If there are properties that match stem + `+.*` or `++.*`, then these properties are used to decorate the merged property. Notice that for the decorator the root key includes the `+` sign, the suffixes must come after the `+` sign. For example, for the header `foo`, the decorator would be `foo+` and that would match a key like `foo+.bar`.
 
-After the instruction is merged, the key of each Parameter entry is matched against all globs in the decorator following the order of the decorator. When the first match is found, the attributes of the decorator clause that matches are stored with the attributes of the Parameter entry, overriding any attribute with the same attribute key. A Parameter entry key can only match one decorator glob.
-If the name of the decorator clause attribute starts with `!`, then the attribute, using the attribute name after removing the leading `!`, is removed from the Parameter entry.
-If the name of the decorator clause attribute starts with `~`, then the decorator clause attribute value will not overwrite an existing value of the Parameter entry attribute, using the attribute name after removing the leading `~`.
+The decorator is a Parameters, it consists of a key and a set of attributes. The decorator key is usually a glob expressions. 
+
+After the header is merged, the key of each entry is matched against all globs in the decorator following the order of the decorator. When the first match is found, the attributes of the decorator clause that matches are stored with the attributes of the Parameter entry, overriding any attribute with the same attribute key. A Parameter entry key can only match one decorator glob expression.
+
+For example, `-runbundles a` and `-runbundles+ *;startlevel=20` will result in the content `a;startlevel=20`.
+
+If the name of the decorator clause attribute starts with `!`, then the attribute, using the attribute name after removing the leading `!`, is removed from the Parameter entry. If the name of the decorator clause attribute starts with `~`, then the decorator clause attribute value will not overwrite an existing value of the Parameter entry attribute, using the attribute name after removing the leading `~`.
 
 Example:
 
@@ -109,9 +113,11 @@ Example:
      -foo+.d    d;skip=true
      
 
-In this case, the first entry is `b` and it is matched against the second entry in the `-foo` instruction. Since the decorator has the `skip=true` attribute, it is carried over to the instruction. The result is therefore:
+In this case, the first entry matched is `b` and it is matched against the second entry in the `-foo` instruction. Since the decorator has the `skip=true` attribute, it is carried over to the instruction. The result is therefore:
 
     a, b;skip=true; c;skip=false, d;skip=true
+    
+If the decoration ends with 2 plus signs, for example `-foo++`, then the literals in the decoration headers will be added to the result if they are not matched to any key in the source header. If the decoration ends with a single `+` sign, literals that do not match are ignored.
     
 * Decoration is not used for all instructions. It should be indicated on the instruction page if it is applied.
 * There is a macro [`decorated`](/macros/decorated.html) that can be used to apply decoration to any property key

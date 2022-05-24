@@ -36,8 +36,8 @@ Use the [-runstartlevel][2] instruction to let the resolver calculate the start 
 resolver will add the `startlevel` attribute.
 
 Use the _decoration_ facility. With the decoration facility you can augment the `-runbundles` instruction by
-specifying the `-runbundles+` property. The keys are _glob_ expressions and any attributes or directives
-will be set (or overridden) on the merged `-runbundles` instruction.
+specifying the `-runbundles+` property (or the `-runbundles++` if you want to add literals). The keys are _glob_ expressions 
+and any attributes or directives will be set (or overridden) on the merged `-runbundles` instruction.
 
 	-runbundles: \
 		org.apache.felix.configadmin;version='[1.8.8,1.8.9)',\
