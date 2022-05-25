@@ -9,4 +9,4 @@ eclipse.importpackage: \
  org.eclipse.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
  # Decorate Equinox OSGi framework dependency
--buildpath+.equinox: "{org.eclipse.osgi}";maven-scope=provided
+-buildpath+.equinox: "org.eclipse.osgi";maven-scope=provided
