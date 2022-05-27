@@ -13,7 +13,10 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.SignerPlugin;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
@@ -28,7 +31,7 @@ import aQute.service.reporter.Reporter;
  */
 
 @aQute.bnd.annotation.plugin.BndPlugin(name = "Signer", parameters = JartoolSigner.Config.class)
-public class JartoolSigner implements Plugin, SignerPlugin {
+public class JartoolSigner implements Plugin, SignerPlugin, RegistryPlugin {
 	private final static Logger logger = LoggerFactory.getLogger(JartoolSigner.class);
 
 	@interface Config {
@@ -64,6 +67,8 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 	String	tsacert;
 	String	tsapolicyid;
 
+	private Processor	processor;
+
 	@Override
 	public void setProperties(Map<String, String> map) {
 		if (map.containsKey("keystore"))
@@ -91,7 +96,12 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 	@Override
 	public void setReporter(Reporter processor) {}
 
-	private static Pattern EXTENSIONS_P = Pattern.compile(".*\\.(DSA|RSA|SF|MF)$");
+	@Override
+	public void setRegistry(Registry registry) {
+		processor = registry.getPlugin(Processor.class);
+	}
+
+	private static Pattern	SIGNING_P	= Pattern.compile("META-INF/([^/]*\\.(DSA|RSA|EC|SF|MF)|SIG-[^/]*)");
 
 	@Override
 	public void sign(Builder builder, String alias) throws Exception {
@@ -102,12 +112,19 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		}
 
 		Jar jar = builder.getJar();
-		File tmp = File.createTempFile("signdjar", ".jar");
+		File tmp = File.createTempFile("signedjar", ".jar");
 		tmp.deleteOnExit();
 
 		jar.write(tmp);
 
 		Command command = new Command();
+		if ((path == null) || path.equals("jarsigner")) {
+			if (processor != null) {
+				path = processor.getJavaExecutable("jarsigner");
+			} else {
+				path = IO.getJavaExecutablePath("jarsigner");
+			}
+		}
 		command.add(path);
 		if (keystore != null) {
 			command.add("-keystore");
@@ -171,7 +188,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		builder.addClose(signed);
 
 		MapStream.of(signed.getDirectory("META-INF"))
-			.filterKey(path -> EXTENSIONS_P.matcher(path)
+			.filterKey(path -> SIGNING_P.matcher(path)
 				.matches())
 			.forEachOrdered(jar::putResource);
 		jar.setDoNotTouchManifest();

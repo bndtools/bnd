@@ -1,13 +1,12 @@
 package test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.Attributes;
+import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.signing.JartoolSigner;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
@@ -30,6 +28,7 @@ public class JarSignerTest {
 	public void testNoManifest(@InjectTemporaryDirectory
 	File tmpdir) throws Exception {
 		Builder b = new Builder();
+		b.setProperty("jarsigner", "jarsigner");
 		b.setProperty("-sign", "test");
 		b.setProperty(Constants.PLUGIN, JartoolSigner.class.getName()
 			+ ";keystore=testresources/keystore;keypass=testtest;storepass=testtest;sigfile=test");
@@ -44,9 +43,10 @@ public class JarSignerTest {
 
 		Jar jar2 = new Jar(tmp);
 		Manifest manifest = jar2.getManifest();
-		assertEquals("1.0", manifest.getMainAttributes()
-			.getValue("Manifest-Version"));
-		assertNotNull(manifest.getAttributes("WEB-INF/classes/org/osgi/framework/BundleContext.class"));
+		assertThat(manifest.getMainAttributes()).containsEntry(Name.MANIFEST_VERSION, "1.0");
+		assertThat(jar2.getResources()).containsKeys("META-INF/TEST.SF", "META-INF/TEST.EC");
+
+		assertThat(manifest.getAttributes("WEB-INF/classes/org/osgi/framework/BundleContext.class")).isNotNull();
 	}
 
 	@Test
@@ -63,11 +63,8 @@ public class JarSignerTest {
 			Jar jar = new Jar(IO.getFile("testresources/test.jar"));
 			b.setJar(jar);
 			signer.sign(b, "test");
-			System.err.println(Processor.join(b.getErrors(), "\n"));
-			assertEquals(1, b.getErrors()
-				.size());
-			assertEquals(0, b.getWarnings()
-				.size());
+			assertThat(b.getErrors()).hasSize(1);
+			assertThat(b.getWarnings()).isEmpty();
 		}
 	}
 
@@ -79,7 +76,7 @@ public class JarSignerTest {
 		properties.put("keypass", "testtest");
 		properties.put("storepass", "testtest");
 		properties.put("sigFile", "test");
-		properties.put("digestalg", "SHA-1");
+		properties.put("digestalg", "SHA-256");
 		signer.setProperties(properties);
 
 		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
@@ -89,28 +86,22 @@ public class JarSignerTest {
 		try (Builder b = new Builder()) {
 			b.setJar(jar);
 			signer.sign(b, "test");
-			System.err.println(Processor.join(b.getErrors(), "\n"));
-			System.err.println(Processor.join(b.getWarnings(), "\n"));
-			assertEquals(0, b.getErrors()
-				.size());
-			assertEquals(0, b.getWarnings()
-				.size());
-			assertNotNull(jar.getResource("META-INF/TEST.SF"));
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+			assertThat(jar.getResources()).containsKeys("META-INF/TEST.SF", "META-INF/TEST.EC");
 			Manifest m = jar.getManifest();
 
-			// Should have added 2 new resources: TEST.SF and TEST.DSA/RSA
-			assertEquals(names.size(), b.getJar()
-				.getResources()
-				.size() - 3);
+			// Should have added 2 new resources: TEST.SF and TEST.DSA/RSA/EC
+			assertThat(b.getJar()
+				.getResources()).hasSize(names.size() + 3);
 
-			Attributes a = m.getAttributes("aQute/rendezvous/DNS.class");
-			assertNotNull(a);
-			assertEquals("G0/1CIZlB4eIVyY8tU/ZfMCqZm4=", a.getValue("SHA-1-Digest"));
+			Name digestKey = new Name(properties.get("digestalg") + "-Digest");
+			assertThat(m.getAttributes("aQute/rendezvous/DNS.class")).containsEntry(digestKey,
+				"BMyZnHUVh1dDzBZSzaEyjRAZU+3pygawaasUDYLGEJ0=");
 
 			// Check if all resources are named
 			for (String name : names) {
-				System.err.println("name: " + name);
-				assertNotNull(m.getAttributes(name));
+				assertThat(m.getAttributes(name)).containsKey(digestKey);
 			}
 		}
 	}
