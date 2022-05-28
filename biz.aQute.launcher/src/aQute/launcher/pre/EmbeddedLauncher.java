@@ -102,8 +102,8 @@ public class EmbeddedLauncher {
 		throws Throwable {
 		ClassLoader cl = EmbeddedLauncher.class.getClassLoader();
 		if (isVerbose)
-			log("looking for " + EMBEDDED_RUNPATH + " in META-INF/MANIFEST.MF");
-		Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
+			log("looking for " + EMBEDDED_RUNPATH + " in " + JarFile.MANIFEST_NAME);
+		Enumeration<URL> manifests = cl.getResources(JarFile.MANIFEST_NAME);
 		while (manifests.hasMoreElements()) {
 			URL murl = manifests.nextElement();
 			if (isVerbose)

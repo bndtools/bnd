@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1461,7 +1462,7 @@ public class Verifier extends Processor {
 
 		for (String path : dot.getResources()
 			.keySet()) {
-			if (path.equals("META-INF/MANIFEST.MF"))
+			if (path.equals(JarFile.MANIFEST_NAME))
 				continue;
 
 			Attributes a = m.getAttributes(path);

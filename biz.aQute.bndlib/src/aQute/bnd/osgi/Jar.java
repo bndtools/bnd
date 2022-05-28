@@ -41,6 +41,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -96,7 +97,6 @@ public class Jar implements Closeable {
 		STORE
 	}
 
-	private static final String									DEFAULT_MANIFEST_NAME	= "META-INF/MANIFEST.MF";
 	private static final Pattern								DEFAULT_DO_NOT_COPY		= Pattern
 		.compile(Constants.DEFAULT_DO_NOT_COPY);
 
@@ -106,7 +106,7 @@ public class Jar implements Closeable {
 	private Optional<Manifest>									manifest;
 	private Optional<ModuleAttribute>							moduleAttribute;
 	private boolean												manifestFirst;
-	private String												manifestName			= DEFAULT_MANIFEST_NAME;
+	private String												manifestName			= JarFile.MANIFEST_NAME;
 	private String												name;
 	private File												source;
 	private ZipFile												zipFile;
@@ -122,6 +122,8 @@ public class Jar implements Closeable {
 	private boolean												calculateFileDigest;
 	private int													fileLength				= -1;
 	private long												zipEntryConstantTime	= ZIP_ENTRY_CONSTANT_TIME;
+	public static final Pattern									METAINF_SIGNING_P		= Pattern
+		.compile("META-INF/([^/]+\\.(?:DSA|RSA|EC|SF)|SIG-[^/]+)", Pattern.CASE_INSENSITIVE);
 
 	public Jar(String name) {
 		this.name = name;
@@ -590,6 +592,8 @@ public class Jar implements Closeable {
 		Set<String> done = new HashSet<>();
 
 		Set<String> directories = new HashSet<>();
+
+		// Write manifest first
 		if (doNotTouchManifest) {
 			Resource r = getResource(manifestName);
 			if (r != null) {
@@ -601,6 +605,22 @@ public class Jar implements Closeable {
 			done.add(manifestName);
 		}
 
+		// Then write any signature info next since JarInputStream really cares!
+		Map<String, Resource> metainf = getDirectory("META-INF");
+		if (metainf != null) {
+			List<String> signing = metainf.keySet()
+				.stream()
+				.filter(path -> METAINF_SIGNING_P.matcher(path)
+					.matches())
+				.collect(toList());
+			for (String path : signing) {
+				if (done.add(path)) {
+					writeResource(jout, directories, path, metainf.get(path));
+				}
+			}
+		}
+
+		// Write all remaining entries
 		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
 			// Skip metainf contents
 			if (!done.contains(entry.getKey()))
@@ -1245,16 +1265,16 @@ public class Jar implements Closeable {
 		return md.digest();
 	}
 
-	private final static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)",
-		Pattern.CASE_INSENSITIVE);
-
 	public void stripSignatures() {
-		Map<String, Resource> map = getDirectory("META-INF");
-		if (map != null) {
-			for (String file : new HashSet<>(map.keySet())) {
-				if (SIGNER_FILES_P.matcher(file)
+		Map<String, Resource> metainf = getDirectory("META-INF");
+		if (metainf != null) {
+			List<String> signing = metainf.keySet()
+				.stream()
+				.filter(path -> METAINF_SIGNING_P.matcher(path)
 					.matches())
-					remove(file);
+				.collect(toList());
+			for (String path : signing) {
+				remove(path);
 			}
 		}
 	}
