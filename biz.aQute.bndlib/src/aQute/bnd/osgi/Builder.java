@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1345,7 +1346,7 @@ public class Builder extends Analyzer {
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
-			if ("META-INF/MANIFEST.MF".equals(name))
+			if (JarFile.MANIFEST_NAME.equals(name))
 				continue;
 
 			if (doNotCopy(Strings.getLastSegment(name, '/')))

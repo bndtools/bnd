@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ public final class BundleUtils {
 	private static final Attributes.Name TESTCASES = new Attributes.Name(aQute.bnd.osgi.Constants.TESTCASES);
 
 	public static Stream<String> testCases(Bundle bundle) {
-		URL url = bundle.getEntry("META-INF/MANIFEST.MF");
+		URL url = bundle.getEntry(JarFile.MANIFEST_NAME);
 		if (url == null) {
 			return Stream.empty();
 		}

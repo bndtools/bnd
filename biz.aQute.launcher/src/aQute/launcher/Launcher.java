@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.Bundle;
@@ -221,7 +222,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	private static String getVersion() {
 		try {
 			Enumeration<URL> manifests = Launcher.class.getClassLoader()
-				.getResources("META-INF/MANIFEST.MF");
+				.getResources(JarFile.MANIFEST_NAME);
 			StringBuilder sb = new StringBuilder();
 			String del = "";
 			for (Enumeration<URL> u = manifests; u.hasMoreElements();) {
