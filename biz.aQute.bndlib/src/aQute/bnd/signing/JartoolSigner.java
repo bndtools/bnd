@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.jar.JarFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +113,11 @@ public class JartoolSigner implements Plugin, SignerPlugin, RegistryPlugin {
 		}
 
 		Jar jar = builder.getJar();
+		if (!jar.getManifestName()
+			.equals(JarFile.MANIFEST_NAME)) {
+			builder.error("Signing requires using the standard manifest name %s", JarFile.MANIFEST_NAME);
+			return;
+		}
 		File tmp = File.createTempFile("signedjar", ".jar");
 		tmp.deleteOnExit();
 
