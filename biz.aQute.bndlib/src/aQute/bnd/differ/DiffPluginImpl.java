@@ -1,5 +1,6 @@
 package aQute.bnd.differ;
 
+import static aQute.bnd.osgi.Jar.METAINF_SIGNING_P;
 import static aQute.bnd.service.diff.Delta.CHANGED;
 
 import java.io.File;
@@ -13,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -129,8 +129,6 @@ public class DiffPluginImpl implements Differ {
 	/**
 	 * Create an element representing all resources in the JAR
 	 */
-	private final static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
-
 	private Element resourcesElement(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
 
@@ -139,16 +137,20 @@ public class DiffPluginImpl implements Differ {
 		for (Map.Entry<String, Resource> entry : jar.getResources()
 			.entrySet()) {
 
+			String path = entry.getKey();
 			//
 			// The manifest and other (signer) files are ignored
 			// since they are extremely sensitive to time
 			//
 
-			if (META_INF_P.matcher(entry.getKey())
-				.matches())
+			if (jar.getManifestName()
+				.equals(path)
+				|| METAINF_SIGNING_P.matcher(path)
+				.matches()) {
 				continue;
+			}
 
-			if (localIgnore != null && localIgnore.matches(entry.getKey()))
+			if (localIgnore != null && localIgnore.matches(path))
 				continue;
 
 			//
@@ -158,8 +160,6 @@ public class DiffPluginImpl implements Differ {
 			// This code will not create an element for classes if a
 			// directory with source code can be found.
 			//
-
-			String path = entry.getKey();
 
 			if (path.endsWith(Constants.EMPTY_HEADER))
 				continue;

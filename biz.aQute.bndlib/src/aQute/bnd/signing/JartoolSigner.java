@@ -1,11 +1,13 @@
 package aQute.bnd.signing;
 
+import static aQute.bnd.osgi.Jar.METAINF_SIGNING_P;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
+import java.util.jar.JarFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,8 +103,6 @@ public class JartoolSigner implements Plugin, SignerPlugin, RegistryPlugin {
 		processor = registry.getPlugin(Processor.class);
 	}
 
-	private static Pattern	SIGNING_P	= Pattern.compile("META-INF/([^/]*\\.(DSA|RSA|EC|SF|MF)|SIG-[^/]*)");
-
 	@Override
 	public void sign(Builder builder, String alias) throws Exception {
 		File f = builder.getFile(keystore);
@@ -188,7 +188,7 @@ public class JartoolSigner implements Plugin, SignerPlugin, RegistryPlugin {
 		builder.addClose(signed);
 
 		MapStream.of(signed.getDirectory("META-INF"))
-			.filterKey(path -> SIGNING_P.matcher(path)
+			.filterKey(path -> JarFile.MANIFEST_NAME.equals(path) || METAINF_SIGNING_P.matcher(path)
 				.matches())
 			.forEachOrdered(jar::putResource);
 		jar.setDoNotTouchManifest();
