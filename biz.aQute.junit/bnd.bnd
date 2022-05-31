@@ -12,14 +12,16 @@
 	biz.aQute.bndlib;version=latest,\
     junit:junit;version="${junit4.version}",\
     org.hamcrest;version="${hamcrest.version}",\
-    assertj-core;version="${assertj.version}"
+    assertj-core;version="${assertj.version}",\
+	net.bytebuddy.byte-buddy;version="${bytebuddy.version}"
 
 -includepackage: \
 	aQute.junit.*,\
 	junit.*,\
 	org.junit.*,\
 	org.hamcrest.*,\
-	org.assertj.core.*
+	org.assertj.core.*,\
+	net.bytebuddy.*
 
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
@@ -28,7 +30,8 @@
 	org.junit.*;version="${junit4.version}",\
 	org.hamcrest.*;version="${hamcrest.version}",\
 	!org.assertj.core.internal.*,\
-	org.assertj.core.*
+	org.assertj.core.*,\
+	net.bytebuddy.*
 
 -fixupmessages.assertj: Export org.assertj.core.* private references
 
@@ -38,6 +41,7 @@
 Import-Package: \
 	aQute.*;resolution:=optional,\
 	junit.*;version="${range;[==,5);${junit3.version}}",\
+	!com.fasterxml.jackson.*,\
     !org.opentest4j,\
 	!org.junit.jupiter.*,\
 	!org.junit.platform.*,\
@@ -50,6 +54,7 @@ Import-Package: \
 
 # These packages can be referenced by assertj-core via Class.forName.
 DynamicImport-Package: \
+	com.fasterxml.jackson.*,\
     org.opentest4j,\
     org.testng,\
     org.testng.*,\
@@ -61,4 +66,4 @@ Embedded-Activator: ${Bundle-Activator}
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model
 
 -baseline: *
--diffpackages: !junit.*, !org.junit.*, !org.assertj.core.*, !org.hamcrest.*, *
+-diffpackages: !junit.*, !org.junit.*, !org.assertj.core.*, !net.bytebuddy.*, !org.hamcrest.*, *
