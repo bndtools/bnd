@@ -1,10 +1,11 @@
 import java.nio.file.*;
+import aQute.lib.io.IO
+
 
 Path source = Paths.get("${projectsDirectory}/local-repo/org/objenesis");
 Path target = Paths.get("${localRepositoryPath}/org/objenesis");
 
-target.deleteDir();
-
+IO.delete(target)
 
 source.toFile().eachFileRecurse({ f ->
     Path s = Paths.get(f.toURI());

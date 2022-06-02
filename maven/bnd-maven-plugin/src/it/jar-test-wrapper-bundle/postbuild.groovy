@@ -1,6 +1,8 @@
 import java.time.*;
 import java.time.format.*;
 import java.util.jar.*;
+import groovy.xml.XmlSlurper
+
 
 def bsn = 'test.wrapper.bundle'
 def moduleDir = 'jar-test-wrapper-bundle'

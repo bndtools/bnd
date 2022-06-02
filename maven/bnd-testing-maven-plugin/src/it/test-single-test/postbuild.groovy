@@ -1,3 +1,5 @@
+import groovy.xml.XmlSlurper
+
 File testsuite_xml = new File(basedir, "target/test-reports/test/TEST-test.xml")
 assert testsuite_xml.isFile();
 testsuite = new XmlSlurper().parse(testsuite_xml)

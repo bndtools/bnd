@@ -3,6 +3,7 @@ import aQute.bnd.build.model.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
 import aQute.lib.io.*;
+import groovy.xml.XmlSlurper
 
 // Check the bndrun file exist!
 File bndrunFile = new File(basedir, "test.bndrun")

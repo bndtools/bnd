@@ -1,4 +1,6 @@
 import java.util.jar.*;
+import groovy.xml.XmlSlurper
+
 
 def bsn = 'jar-test-api-bundle'
 def version = '0.0.1'

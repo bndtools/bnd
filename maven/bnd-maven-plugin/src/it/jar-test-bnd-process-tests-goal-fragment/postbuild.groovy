@@ -1,4 +1,6 @@
 import java.util.jar.*;
+import groovy.xml.XmlSlurper
+
 
 def bsn = 'jar-test-bnd-process-tests-goal-fragment'
 def version = '0.0.1-SNAPSHOT'
