@@ -1,7 +1,11 @@
-import aQute.bnd.osgi.repository.*;
-import aQute.bnd.osgi.resource.*;
-import org.osgi.resource.*;
-import org.osgi.service.repository.*;
+import aQute.bnd.osgi.repository.ResourcesRepository
+import aQute.bnd.osgi.repository.XMLResourceParser
+import aQute.bnd.osgi.resource.RequirementBuilder
+import aQute.bnd.osgi.resource.ResourceUtils
+import org.osgi.resource.Capability
+import org.osgi.resource.Requirement
+import org.osgi.resource.Resource
+import org.osgi.service.repository.Repository;
 
 public Repository check(String xmlFile, String gzipFile, int size, boolean localURL, boolean doCheck) {
 	// Check the bundles exist!

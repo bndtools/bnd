@@ -1,5 +1,3 @@
-import java.util.jar.*;
-
 def bsn = 'jar-test-bnd-process-skipIfEmpty'
 
 // Check the bundles exist!

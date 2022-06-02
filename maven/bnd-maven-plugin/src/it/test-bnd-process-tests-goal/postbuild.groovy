@@ -1,4 +1,5 @@
-import java.util.jar.*;
+import java.util.jar.Attributes
+import java.util.jar.JarFile;
 
 // Check the bundles exist!
 File tests_main_bundle = new File(basedir, 'target/test-bnd-process-tests-goal-0.0.1-SNAPSHOT.jar')

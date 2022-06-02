@@ -1,6 +1,7 @@
-import java.util.jar.*;
 import groovy.xml.XmlSlurper
 
+import java.util.jar.Attributes
+import java.util.jar.JarFile
 
 def bsn = 'jar-test-inheriting-api-bundle'
 def version = '0.0.1'

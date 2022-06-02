@@ -1,8 +1,8 @@
-import aQute.bnd.build.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.properties.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.Workspace
+import aQute.bnd.build.model.BndEditModel
+import aQute.bnd.osgi.Processor
+import aQute.bnd.properties.Document
+import aQute.lib.io.IO;
 
 // The resolve-from-dependencies case
 

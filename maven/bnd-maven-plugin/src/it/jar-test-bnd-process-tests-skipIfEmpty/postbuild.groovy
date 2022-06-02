@@ -1,6 +1,6 @@
-import java.util.jar.*;
 import groovy.xml.XmlSlurper
 
+import java.util.jar.JarFile
 
 def bsn = 'jar-test-bnd-process-tests-skipIfEmpty'
 def version = '0.0.1'
