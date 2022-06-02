@@ -1,4 +1,3 @@
-import java.io.*;
 import java.util.regex.Pattern
 
 File build_log_file = new File("${basedir}/build.log")

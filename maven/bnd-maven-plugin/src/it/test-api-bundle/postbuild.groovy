@@ -1,4 +1,5 @@
-import java.util.jar.*;
+import java.util.jar.Attributes
+import java.util.jar.JarFile;
 
 // Check the bundles exist!
 File api_bundle = new File(basedir, 'target/test-api-bundle-0.0.1.jar')

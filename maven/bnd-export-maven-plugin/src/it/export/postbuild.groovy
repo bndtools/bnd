@@ -1,10 +1,12 @@
-import aQute.bnd.build.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.properties.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
-import java.util.jar.*;
+import aQute.bnd.build.Workspace
+import aQute.bnd.build.model.BndEditModel
+import aQute.bnd.osgi.Processor
+import aQute.bnd.properties.Document
+import aQute.bnd.version.MavenVersion
+import aQute.lib.io.IO
+
+import java.util.jar.Attributes
+import java.util.jar.JarFile;
 
 def baseVersion = new MavenVersion(bndVersion).toReleaseVersion()
 

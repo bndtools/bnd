@@ -1,4 +1,5 @@
-import java.util.jar.*;
+import java.util.jar.Attributes
+import java.util.jar.JarFile;
 
 // Check the bundles exist!
 File in_build_pluginManagement_api_bundle = new File(basedir, 'test-inheriting-api-bundle/target/test-inheriting-api-bundle-0.0.1.jar')

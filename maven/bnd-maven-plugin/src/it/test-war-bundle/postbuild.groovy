@@ -1,4 +1,5 @@
-import java.util.jar.*;
+import java.util.jar.Attributes
+import java.util.jar.JarFile;
 
 // Check the bundles exist!
 File war_bundle = new File(basedir, 'target/test-war-bundle-0.0.1-SNAPSHOT.war')
