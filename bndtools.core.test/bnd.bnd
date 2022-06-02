@@ -48,6 +48,7 @@
 	bndtools.core;version=snapshot,\
 	bndtools.core.services;version=snapshot,\
 	assertj-core,\
+	net.bytebuddy.byte-buddy,\
 	javax.inject,\
 	org.apiguardian:apiguardian-api,\
 	org.opentest4j,\

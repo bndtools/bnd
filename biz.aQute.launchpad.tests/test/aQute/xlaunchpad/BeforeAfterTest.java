@@ -20,6 +20,7 @@ public class BeforeAfterTest {
 
 	static LaunchpadBuilder	builder						= new LaunchpadBuilder().runfw(org_apache_felix_framework)
 		.bundles("assertj-core")
+		.bundles("net.bytebuddy.byte-buddy")
 		.bundles(org_apache_felix_scr)
 		.debug();
 

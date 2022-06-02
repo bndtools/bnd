@@ -26,6 +26,7 @@
 	org.junit.platform.engine;version="${junit.platform.eclipse.version}";strategy=lowest,\
 	org.junit.jupiter.engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
 	assertj-core;version=latest,\
+	net.bytebuddy.byte-buddy;version=latest,\
 	junit-platform-testkit;version="${junit.platform.eclipse.version}";strategy=lowest,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=snapshot,\

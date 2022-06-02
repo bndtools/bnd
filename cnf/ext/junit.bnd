@@ -11,12 +11,12 @@ junit.jupiter.eclipse.version=5.6.0
 junit.platform.eclipse.version=1.6.0
 junit.jupiter.version=5.8.2
 junit.platform.version=1.8.2
-assertj.version=3.22.0
+assertj.version=3.23.1
 awaitility.version=4.2.0
 hamcrest.version=2.2
-org.mockito.version=4.4.0
-net.bytebuddy.version=1.12.8
-org.objenesis.version=3.2
+mockito.version=4.6.0
+bytebuddy.version=1.12.10
+objenesis.version=3.2
 osgi-test.version=1.1.0
 
 junit: ${junit-osgi},\
@@ -28,6 +28,7 @@ junit-osgi: \
 	junit-platform-commons;version=latest,\
 	junit-platform-engine;version=latest,\
 	assertj-core;version=latest,\
+	net.bytebuddy.byte-buddy;version=latest,\
 	org.opentest4j;version=latest,\
 	org.apiguardian:apiguardian-api;version=latest,\
 	junit-jupiter-api;version=latest,\
@@ -47,7 +48,7 @@ junit-osgi: \
 	org.osgi.test.junit5;version=latest
 
 mockito: org.mockito.mockito-core;version=latest,\
-	net.bytebuddy.byte-buddy;version=latest,\
+	net.bytebuddy.byte-buddy-agent;version=latest,\
 	org.objenesis;version=latest
 -runsystempackages.objenesis: sun.misc,sun.reflect
 
