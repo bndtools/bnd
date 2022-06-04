@@ -3,20 +3,28 @@ package test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.util.HashSet;
+import java.io.InputStream;
+import java.security.CodeSigner;
+import java.security.cert.Certificate;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Predicate;
 import java.util.jar.Attributes.Name;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.signing.JartoolSigner;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
+import aQute.lib.io.NonClosingInputStream;
 import aQute.libg.generics.Create;
 
 @SuppressWarnings({
@@ -80,28 +88,56 @@ public class JarSignerTest {
 		signer.setProperties(properties);
 
 		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
-		Set<String> names = new HashSet<>(jar.getResources()
-			.keySet());
-		names.remove("META-INF/MANIFEST.MF");
-		try (Builder b = new Builder()) {
-			b.setJar(jar);
-			signer.sign(b, "test");
-			assertThat(b.getErrors()).isEmpty();
-			assertThat(b.getWarnings()).isEmpty();
-			assertThat(jar.getResources()).containsKeys("META-INF/TEST.SF", "META-INF/TEST.EC");
-			Manifest m = jar.getManifest();
+		Predicate<String> signingResource = name -> Jar.METAINF_SIGNING_P.matcher(name)
+			.matches();
+		Condition<String> signingResourceCondition = new Condition<>(signingResource, "signing resource");
+		assertThat(jar.getResources()
+			.keySet()).as("jar entry names")
+				.haveExactly(0, signingResourceCondition);
+		try (Builder builder = new Builder()) {
+			builder.setJar(jar);
+			signer.sign(builder, "test");
+			assertThat(builder.getErrors()).isEmpty();
+			assertThat(builder.getWarnings()).isEmpty();
 
 			// Should have added 2 new resources: TEST.SF and TEST.DSA/RSA/EC
-			assertThat(b.getJar()
-				.getResources()).hasSize(names.size() + 3);
+			assertThat(jar.getResources()
+				.keySet()).as("jar entry names")
+					.haveExactly(2, signingResourceCondition);
 
+			// Check that each resources is digested
+			Manifest manifest = jar.getManifest();
 			Name digestKey = new Name(properties.get("digestalg") + "-Digest");
-			assertThat(m.getAttributes("aQute/rendezvous/DNS.class")).containsEntry(digestKey,
-				"BMyZnHUVh1dDzBZSzaEyjRAZU+3pygawaasUDYLGEJ0=");
+			for (String name : jar.getResources()
+				.keySet()) {
+				if (JarFile.MANIFEST_NAME.equals(name) || signingResource.test(name)) {
+					continue;
+				}
+				assertThat(manifest.getAttributes(name)).as("%s for %s", digestKey, name)
+					.containsKey(digestKey);
+			}
+			assertThat(manifest.getAttributes("aQute/rendezvous/DNS.class"))
+				.as("%s for %s", digestKey, "aQute/rendezvous/DNS.class")
+				.containsEntry(digestKey, "BMyZnHUVh1dDzBZSzaEyjRAZU+3pygawaasUDYLGEJ0=");
 
-			// Check if all resources are named
-			for (String name : names) {
-				assertThat(m.getAttributes(name)).containsKey(digestKey);
+			// Check that JarInputStream can verify
+			try (JarInputStream jin = new JarInputStream(new JarResource(jar).openInputStream());
+				InputStream in = new NonClosingInputStream(jin)) {
+				for (JarEntry entry; (entry = jin.getNextJarEntry()) != null;) {
+					String name = entry.getName();
+					if (entry.isDirectory() || signingResource.test(name)) {
+						continue;
+					}
+					IO.drain(in); // must read complete entry first
+					CodeSigner[] codeSigners = entry.getCodeSigners();
+					Certificate[] certificates = entry.getCertificates();
+					assertThat(codeSigners).as("%s for %s", "CodeSigners", name)
+						.isNotEmpty()
+						.doesNotContainNull();
+					assertThat(certificates).as("%s for %s", "Certificates", name)
+						.isNotEmpty()
+						.doesNotContainNull();
+				}
 			}
 		}
 	}
