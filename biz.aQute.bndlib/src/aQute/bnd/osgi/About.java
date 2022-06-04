@@ -68,7 +68,7 @@ public class About {
 	public static final Version					_6_0		= new Version(6, 0, 0);
 	public static final Version					_6_1		= new Version(6, 1, 0);
 	public static final Version					_6_2		= new Version(6, 2, 0);
-	public static final Version					_6_3		= new Version(6, 3, 0);
+	public static final Version					_6_3		= new Version(6, 3, 1);
 	public static final Version					CURRENT		= _6_3;
 
 	public static final String[]				CHANGES_6_3	= {};
