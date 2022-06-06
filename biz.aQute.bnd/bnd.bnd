@@ -21,7 +21,6 @@
 
 -includeresource: \
 	${workspace}/LICENSE, \
-	templates=templates, \
 	@${repo;biz.aQute.bnd.util;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.ant;latest}!/!META-INF/*, \
@@ -46,7 +45,6 @@ Import-Package: \
 # by hand even though they are in bndlib. However, they are added
 # and we can unfortunately not see those packages ...
 -privatepackage: \
-    aQute.bnd.enroute.commands,\
     aQute.bnd.main, \
     org.objectweb.asm.*,\
 	org.jtwig.*,\
@@ -137,7 +135,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	com.github.javaparser.javaparser-core;version=3.13
 
 
--builderignore: testdata, testruns, installers
+-builderignore: testdata, installers
 
 # Don't run tests in parallel with other projects claiming launchpad
 -noparallel: launchpad;task="test"

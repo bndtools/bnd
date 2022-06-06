@@ -78,8 +78,6 @@ import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.buildtool.ToolManager;
-import aQute.bnd.enroute.commands.EnrouteCommand;
-import aQute.bnd.enroute.commands.EnrouteOptions;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.subsystem.SubsystemExporter;
 import aQute.bnd.header.Attrs;
@@ -1874,15 +1872,6 @@ public class bnd extends Processor {
 	@Description("Manage the repositories")
 	public void _repo(repoOptions opts) throws Exception {
 		new RepoCommand(this, opts);
-	}
-
-	/**
-	 * Run enroute commands
-	 */
-
-	@Description("OSGi enRoute commands to maintain bnd workspaces (create workspace, add  project, etc)")
-	public void _enroute(EnrouteOptions opts) throws Exception {
-		new EnrouteCommand(this, opts);
 	}
 
 	/**
