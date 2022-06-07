@@ -1,20 +1,16 @@
 ---
 title: Bnd Pom Repository
 layout: default
-summary: A plugin to use a Maven POM as a repository 
+summary: A plugin to use a Maven POM as a repository
 ---
 
-A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects. 
+A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.
 
-The pom can be a file on the local file system, a URL, a group, artifact, version (GAV) coordinate, or a query expression on maven central. 
-
-## Use Cases
-
-The use case that triggered the development of the Bnd Pom Repository is OSGi enRoute. The artifacts in the OSGi enRoute effort needed to be shared between the Bndtools workspace and the Maven examples. Expressing the dependencies in a POM allows this. In the OSGi enRoute case the distro (the implementations for the OSGi enRoute API) are maintained in a [POM](https://github.com/osgi/osgi.enroute/blob/next/osgi.enroute.pom.distro/pom.xml). This POM is used to provide the compile time dependency (the OSGi enRoute Base API jar) as well as the runtime dependencies.
+The pom can be a file on the local file system, a URL, a group, artifact, version (GAV) coordinate, or a query expression on maven central.
 
 ## Example
 
-In OSGi enRoute we need the following dependencies in a `pom.xml` file:
+One can express dependencies in a `pom.xml` file:
 
     <dependencies>
         <dependency>
@@ -101,11 +97,11 @@ Notice that the id must match the scheme, the host, and the port if not the defa
 
 ## IDEs
 
-The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry. 
+The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.
 
 ## Caveats
 
-* The repository does not use any Maven code to parse the POMs to keep the dependencies to bnd low. It attempts to strictly follow the rules prescribed for POMs concerning properties, inheritance, and ordering. However, there are a number of issues with this approach. 
+* The repository does not use any Maven code to parse the POMs to keep the dependencies to bnd low. It attempts to strictly follow the rules prescribed for POMs concerning properties, inheritance, and ordering. However, there are a number of issues with this approach.
     * bnd attempts to follow the rules, maven sometimes relaxes its own and other specification rules so you could run into errors where POMs are wrong but still accepted by Maven.
     * It is possible to add dependencies via a plugin. This is not supported for what should be obvious reasons.
 * The parser ignores repositories in POMs and restricts the repositories to the ones listes in the `releaseUrl` and `snapshotUrl` configuration parameters. This is for security reasons.

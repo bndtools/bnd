@@ -121,20 +121,6 @@ $color-vignette:	#F0F0F0;
 	@include vignette();
 }
 
-.enroute {
-	@include vignette();
-	margin-top: $block-separation;
-	img {
-		width: 4em;
-		float: left;
-		vertical-align: middle;
-		margin-right: $text-separation;
-	}
-	&::after {
-		float:clear;
-	}
-}
-
 .selected {
 	&:before { content: "\25B7\00A0"; }
 	font-weight: bolder;

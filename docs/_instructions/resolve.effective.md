@@ -5,7 +5,7 @@ title: -resolve.effective qname (',' qname )
 summary: Set the use effectives for the resolver
 ---
 
-Each requirement and capability has an `effective` or is `effective=resolve`. An effective of `resolve` is always processed by the resolver. In OSGi enRoute, also any effective of `active` is processed since this is the mode that is compatible with bnd. However, in (very) special cases it is necessary to provide more rules. 
+Each requirement and capability has an `effective` or is `effective=resolve`. An effective of `resolve` is always processed by the resolver.However, in (very) special cases it is necessary to provide more rules.
 
 The `-resolve.effective` syntax is as follows:
 
@@ -17,7 +17,7 @@ The simplest model is to just list the names, for example:
 
 	-resolve.effective: resolve,active
 
-In this case, the resolver will only look at requirements that are either resolve or active (which is the default in OSGi enRoute). 
+In this case, the resolver will only look at requirements that are either resolve or active.
 
 Adding a `meta` effective could then be:
 
