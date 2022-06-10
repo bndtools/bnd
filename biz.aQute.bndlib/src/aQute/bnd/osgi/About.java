@@ -48,7 +48,7 @@ public class About {
 	public static final Version					_3_5		= new Version(3, 5, 0);
 	public static final Version					_4_0		= new Version(4, 0, 0);
 	public static final Version					_4_1		= new Version(4, 1, 0);
-	public static final Version					_4_2		= new Version(4, 2, 1);
+	public static final Version					_4_2		= new Version(4, 2, 2);
 	public static final Version					CURRENT		= _4_2;
 
 	public static final String[]				CHANGES_4_2	= {};
