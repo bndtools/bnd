@@ -1,4 +1,4 @@
-package aQute.bnd.comm.tests;
+package aQute.bnd.http;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,14 +10,17 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
-import aQute.bnd.http.HttpClient;
-import aQute.bnd.http.URLCache;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.progress.ProgressPlugin;
@@ -71,6 +74,24 @@ public class HttpClientTest extends TestCase {
 				return "ok";
 			}
 		}
+
+		AtomicInteger n = new AtomicInteger();
+
+		public void _solitary(Request rq, Response rsp, int max, int id) throws Exception {
+			int x = n.incrementAndGet();
+			System.out.println("entering solitary " + id + " max = " + max + " n=" + x);
+			try {
+				if (x > max) {
+					rsp.code = 400;
+					return;
+				}
+				Thread.sleep(200);
+			} finally {
+				System.out.println("leaving solitary " + id + " max = " + max + " n=" + x);
+				n.decrementAndGet();
+			}
+		}
+
 	}
 
 	@Override
@@ -585,5 +606,66 @@ public class HttpClientTest extends TestCase {
 				assertTrue(done.get());
 			}
 		}
+	}
+
+	public void testNoLimitConnection() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.maxConcurrentConnections = 0;
+				xtestParallel(client, 100);
+			}
+		}
+	}
+
+	public void testLimitConnectionSet() throws Exception {
+		try (Processor p = new Processor()) {
+			p.setProperty("-x-max-concurrent-connections", "55");
+			try (HttpClient client = new HttpClient()) {
+				client.readSettings(p);
+				assertThat(client.maxConcurrentConnections).isEqualTo(55);
+			}
+		}
+	}
+
+	public void testLimitConnections() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.maxConcurrentConnections = 3;
+				xtestParallel(client, 3);
+			}
+		}
+	}
+
+	AtomicInteger id = new AtomicInteger(1000);
+	private void xtestParallel(HttpClient client, int max) {
+		System.out.println("testing with max " + max);
+		List<CompletableFuture<TaggedData>> fs = new ArrayList<>();
+		for (int n = 0; n < 10; n++) {
+			int local = id.getAndIncrement();
+			CompletableFuture<TaggedData> f = CompletableFuture.supplyAsync(() -> {
+				try {
+					TaggedData tag = client.build()
+						.timeout(5000)
+						.asTag()
+						.go(httpServer.getBaseURI("solitary/" + max + "/" + local));
+					System.out.println("response " + tag.getResponseCode() + " Local " + local);
+					return tag;
+				} catch (Exception e) {
+					throw new RuntimeException();
+				}
+			});
+			fs.add(f);
+		}
+
+		fs.forEach(tag -> {
+			try {
+				TaggedData d = tag.get();
+				assertThat(d).isNotNull();
+				TaggedData taggedData = tag.get();
+				assertThat(taggedData.getResponseCode()).isEqualTo(200);
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException();
+			}
+		});
 	}
 }

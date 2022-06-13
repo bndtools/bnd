@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -79,21 +81,23 @@ public class HttpClient implements Closeable, URLConnector {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 	// These are not in HttpURLConnection
-	private static final int					HTTP_TEMPORARY_REDIRECT	= 307;					// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
-	private static final int					HTTP_PERMANENT_REDIRECT	= 308;					// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
+	private static final int					HTTP_TEMPORARY_REDIRECT		= 307;						// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
+	private static final int					HTTP_PERMANENT_REDIRECT		= 308;						// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
 
-	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
-	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
-	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
+	private final List<ProxyHandler>			proxyHandlers				= new ArrayList<>();
+	private final List<URLConnectionHandler>	connectionHandlers			= new ArrayList<>();
+	private ThreadLocal<PasswordAuthentication>	passwordAuthentication		= new ThreadLocal<>();
 	private boolean								inited;
-	private static JSONCodec					codec					= new JSONCodec();
-	private URLCache							cache					= new URLCache(
+	private static JSONCodec					codec						= new JSONCodec();
+	private URLCache							cache						= new URLCache(
 		IO.getFile(Home.getUserHomeBnd() + "/urlcache"));
-	private Registry							registry				= null;
+	private Registry							registry					= null;
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
 	private final PromiseFactory				promiseFactory;
 	private ConnectionSettings					connectionSettings;
+	final Map<String, Semaphore>				blocker						= new ConcurrentHashMap<>();
+	int											maxConcurrentConnections	= 0;
 
 	public HttpClient() {
 		promiseFactory = Processor.getPromiseFactory();
@@ -383,10 +387,12 @@ public class HttpClient implements Closeable, URLConnector {
 		} else {
 			task = new ProgressPlugin.Task() {
 				@Override
-				public void worked(int units) {}
+				public void worked(int units) {
+				}
 
 				@Override
-				public void done(String message, Throwable e) {}
+				public void done(String message, Throwable e) {
+				}
 
 				@Override
 				public boolean isCanceled() {
@@ -494,8 +500,7 @@ public class HttpClient implements Closeable, URLConnector {
 			con.setConnectTimeout(120000);
 			con.setReadTimeout(60000);
 		}
-
-		try {
+		try (AutoCloseable semaphore = getConnectionBlocker(hcon)) {
 
 			if (hcon == null) {
 				// not http
@@ -564,6 +569,29 @@ public class HttpClient implements Closeable, URLConnector {
 			task.done(ste.toString(), null);
 			return new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
 		}
+	}
+
+	/*
+	 * Blocks on maxConcurrentConnections per host:port combination.
+	 */
+	private AutoCloseable getConnectionBlocker(HttpURLConnection hcon) throws InterruptedException {
+		if (maxConcurrentConnections != 0) {
+			if (hcon != null) {
+				URL url = hcon.getURL();
+				if (url != null) {
+					String host = url.getHost();
+					if (host != null) {
+						String key = host + ":" + url.getPort();
+						Semaphore s = blocker.computeIfAbsent(key, k -> new Semaphore(maxConcurrentConnections));
+						s.acquire();
+						return s::release;
+					}
+				}
+			}
+		}
+		return () -> {
+			// not blocked
+		};
 	}
 
 	boolean isUpdateInfo(final URLConnection con, HttpRequest<?> request, int code) {
@@ -707,6 +735,15 @@ public class HttpClient implements Closeable, URLConnector {
 	public void readSettings(Processor processor) throws IOException, Exception {
 		connectionSettings = new ConnectionSettings(processor, this);
 		connectionSettings.readSettings();
+		try {
+			String maxConcurrentConnections = processor.get("-x-max-concurrent-connections");
+			if (maxConcurrentConnections == null)
+				return;
+			this.maxConcurrentConnections = Integer.parseInt(maxConcurrentConnections);
+		} catch (Exception e) {
+			processor.error("-x-max-concurrent-connections is set to %s but this is not a proper integer",
+				maxConcurrentConnections);
+		}
 	}
 
 	public URI makeDir(URI uri) throws URISyntaxException {
