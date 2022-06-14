@@ -374,7 +374,7 @@ public class BundleTaskExtension {
 							.ofNullable(manifest.getEffectiveManifest()
 								.getAttributes())
 							.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
-							.mapValue(Object::toString)
+							.mapValue(this::unwrapAttributeValue)
 							.collect(MapStream.toMap((k1, k2) -> {
 								throw new IllegalStateException("Duplicate key " + k1);
 							}, UTF8Properties::new)));
@@ -530,6 +530,16 @@ public class BundleTaskExtension {
 			builtManifest.getEntries()
 				.forEach((section, attrs) -> mergeManifest.attributes(new AttributesMap(attrs), section));
 			return mergeManifest;
+		}
+
+		private String unwrapAttributeValue(Object value) {
+			while (value instanceof Provider) {
+				value = ((Provider<?>) value).getOrNull();
+			}
+			if (value == null) {
+				return null;
+			}
+			return value.toString();
 		}
 
 		private void failTask(String msg, File archiveFile) {
