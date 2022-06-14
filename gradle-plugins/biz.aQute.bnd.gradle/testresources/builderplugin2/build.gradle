@@ -10,7 +10,6 @@ plugins {
 }
 
 group = 'test.bnd.gradle'
-version = '1.0.0'
 
 repositories {
 	mavenCentral()
@@ -46,9 +45,9 @@ task bundle(type: Bundle) {
 				"-include: jar:${file.asFile.toURI()}!/META-INF/MANIFEST.MF"
 			}
 		}
-		
+
 		bnd extraInstructions
-		
+
 		bnd '''
 Bundle-Name: ${project.group}:${task.archiveBaseName}-${task.archiveClassifier}
 '''

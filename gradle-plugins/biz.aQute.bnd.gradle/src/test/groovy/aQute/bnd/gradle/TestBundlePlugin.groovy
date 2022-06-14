@@ -147,17 +147,19 @@ class TestBundlePlugin extends Specification {
 		result.task(":bundle").outcome == SUCCESS
 		result.task(":jar").outcome == SUCCESS
 
-		File jartask_result = new File(testProjectBuildDir, "libs/${testProject}-1.0.0.jar")
+		File jartask_result = new File(testProjectBuildDir, "libs/${testProject}.jar")
 		jartask_result.isFile()
 		JarFile jartask_jar = new JarFile(jartask_result)
 		Attributes jartask_manifest = jartask_jar.getManifest().getMainAttributes()
 
-		File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}-1.0.0-bundle.jar")
+		File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}-bundle.jar")
 		bundletask_bundle.isFile()
 		JarFile bundletask_jar = new JarFile(bundletask_bundle)
 		Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
 
 		jartask_manifest.getValue("XX-Signed") == "true"
+		bundletask_manifest.getValue("Bundle-SymbolicName") == "${testProject}-bundle"
+		bundletask_manifest.getValue("Bundle-Version") == "0.0.0"
 		bundletask_manifest.getValue("XX-Signed") == "true"
 		bundletask_manifest.getValue("YY-Sealed") == "true"
 		bundletask_manifest.getValue("ZZ-Delivered") == "true"
