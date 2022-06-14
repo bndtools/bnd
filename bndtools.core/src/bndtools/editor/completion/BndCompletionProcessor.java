@@ -18,7 +18,7 @@ import aQute.bnd.help.Syntax;
 
 public class BndCompletionProcessor implements IContentAssistProcessor {
 
-	private static final Pattern PREFIX_PATTERN = Pattern.compile("^(?:.*\\s)*(.*)$");
+	private static final Pattern PREFIX_PATTERN = Pattern.compile("(\\S+)$");
 
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
@@ -26,7 +26,7 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
 			String pre = viewer.getDocument()
 				.get(0, offset);
 			Matcher matcher = PREFIX_PATTERN.matcher(pre);
-			if (matcher.matches()) {
+			if (matcher.find()) {
 				String prefix = matcher.group(1);
 				ICompletionProposal[] found = proposals(prefix, offset);
 				if (found.length == 1) {

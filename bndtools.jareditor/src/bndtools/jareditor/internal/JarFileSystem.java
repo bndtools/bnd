@@ -59,7 +59,7 @@ public class JarFileSystem extends FileSystem {
 	private final ConcurrentMap<IFileStore, Reference<JarRootNode>>	roots		= new ConcurrentHashMap<>();
 
 	private static final Pattern									JARF_P		= Pattern
-		.compile("jarf:///(?<fileuri>.*)!(?<path>(/[^!]*)+)");
+		.compile("jarf:///(?<fileuri>.*)!(?<path>/[^!]*)");
 
 	static abstract class JarNode extends FileStore {
 		private final JarFolderNode	parent;

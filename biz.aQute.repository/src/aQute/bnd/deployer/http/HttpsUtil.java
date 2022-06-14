@@ -13,10 +13,13 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+@Deprecated
 public class HttpsUtil {
 
+	@Deprecated
 	public static final String PROP_DISABLE_SERVER_CERT_VERIFY = "disableServerVerify";
 
+	@Deprecated
 	static void disableServerVerification(URLConnection connection) throws GeneralSecurityException {
 		if (!(connection instanceof HttpsURLConnection))
 			return;
