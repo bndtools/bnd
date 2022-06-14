@@ -10,7 +10,6 @@ plugins {
 }
 
 group = 'test.bnd.gradle'
-version = '1.0.0'
 
 repositories {
 	mavenCentral()
@@ -19,7 +18,6 @@ repositories {
 ext {
 	extraInstructions = provider {
 		'''\
-YY-Sealed: true
 ZZ-Delivered: true
 '''
 	}
@@ -28,7 +26,7 @@ ZZ-Delivered: true
 // Not a bundle.
 def jarTask = tasks.named('jar', Jar) {
 	manifest {
-		attributes('XX-Signed': true)
+		attributes('XX-Signed': provider({true}))
 	}
 }
 
@@ -37,6 +35,9 @@ task bundle(type: Bundle) {
 	group = 'build'
 	from jarTask.map { zipTree(it.archiveFile) }
 	archiveClassifier = 'bundle'
+	manifest {
+		attributes('YY-Sealed': provider({true}))
+	}
 
 	bundle {
 		bnd = jarTask.flatMap { jar ->
@@ -44,9 +45,9 @@ task bundle(type: Bundle) {
 				"-include: jar:${file.asFile.toURI()}!/META-INF/MANIFEST.MF"
 			}
 		}
-		
+
 		bnd extraInstructions
-		
+
 		bnd '''
 Bundle-Name: ${project.group}:${task.archiveBaseName}-${task.archiveClassifier}
 '''

@@ -8,7 +8,6 @@ import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.gradle.BndUtils.unwrapFileOptional;
-import static aQute.bnd.gradle.BndUtils.unwrapOptional;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -29,6 +28,17 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
 
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Maps;
+import aQute.bnd.version.MavenVersion;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -51,18 +61,6 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
 import org.gradle.work.NormalizeLineEndings;
-
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.stream.MapStream;
-import aQute.bnd.unmodifiable.Maps;
-import aQute.bnd.version.MavenVersion;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
-import aQute.lib.utf8properties.UTF8Properties;
 
 /**
  * BundleTaskExtension for Gradle.
@@ -96,6 +94,8 @@ public class BundleTaskExtension {
 	private final ConfigurableFileCollection	classpath;
 	private final Provider<String>				bnd;
 	private final MapProperty<String, Object>	properties;
+	private final Provider<String>				defaultBundleSymbolicName;
+	private final Provider<String>				defaultBundleVersion;
 
 	/**
 	 * The bndfile property.
@@ -131,7 +131,7 @@ public class BundleTaskExtension {
 	 * If the bndfile property points an existing file, this property is
 	 * ignored. Otherwise, the bnd instructions in this property will be used.
 	 *
-	 * @return The property for the bnd instructions.
+	 * @return The provider for the bnd instructions.
 	 */
 	@Input
 	@org.gradle.api.tasks.Optional
@@ -211,6 +211,13 @@ public class BundleTaskExtension {
 		classpath(mainSourceSet.getCompileClasspath());
 		properties = objects.mapProperty(String.class, Object.class)
 			.convention(Maps.of("project", "__convention__"));
+		defaultBundleSymbolicName = task.getArchiveBaseName()
+			.zip(task.getArchiveClassifier(), (baseName, classifier) -> classifier.isEmpty() ? baseName : baseName + "-" + classifier);
+		defaultBundleVersion = task.getArchiveVersion()
+			.orElse("0")
+			.map(version -> MavenVersion.parseMavenString(version)
+				.getOSGiVersion()
+				.toString());
 		// need to programmatically add to inputs since @InputFiles in a
 		// extension is not processed
 		task.getInputs()
@@ -229,6 +236,10 @@ public class BundleTaskExtension {
 			.property("bnd", getBnd());
 		task.getInputs()
 			.property("properties", getProperties());
+		task.getInputs()
+			.property("default Bundle-SymbolicName", getDefaultBundleSymbolicName());
+		task.getInputs()
+			.property("default Bundle-Version", getDefaultBundleVersion());
 	}
 
 	/**
@@ -331,6 +342,30 @@ public class BundleTaskExtension {
 		return buildFile;
 	}
 
+	/**
+	 * The default value for the Bundle-SymbolicName manifest header.
+	 * <p>
+	 * If the Bundle-SymbolicName manifest header is not set in the bnd instructions,
+	 * the value of this provider will be used.
+	 *
+	 * @return The provider for the default Bundle-SymbolicName manifest header.
+	 */
+	Provider<String> getDefaultBundleSymbolicName() {
+		return defaultBundleSymbolicName;
+	}
+
+	/**
+	 * The default value for the Bundle-Version manifest header.
+	 * <p>
+	 * If the Bundle-Version manifest header is not set in the bnd instructions,
+	 * the value of this provider will be used.
+	 *
+	 * @return The provider for the default Bundle-Version manifest header.
+	 */
+	Provider<String> getDefaultBundleVersion() {
+		return defaultBundleVersion;
+	}
+
 	ProjectLayout getLayout() {
 		return layout;
 	}
@@ -374,7 +409,7 @@ public class BundleTaskExtension {
 							.ofNullable(manifest.getEffectiveManifest()
 								.getAttributes())
 							.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
-							.mapValue(Object::toString)
+							.mapValue(this::unwrapAttributeValue)
 							.collect(MapStream.toMap((k1, k2) -> {
 								throw new IllegalStateException("Duplicate key " + k1);
 							}, UTF8Properties::new)));
@@ -412,9 +447,6 @@ public class BundleTaskExtension {
 					}
 					File archiveFile = unwrapFile(getTask().getArchiveFile());
 					String archiveFileName = unwrap(getTask().getArchiveFileName());
-					String archiveBaseName = unwrap(getTask().getArchiveBaseName());
-					String archiveClassifier = unwrap(getTask().getArchiveClassifier());
-					String archiveVersion = unwrapOptional(getTask().getArchiveVersion()).orElse(null);
 
 					// Include entire contents of Jar task generated jar
 					// (except the manifest)
@@ -472,22 +504,18 @@ public class BundleTaskExtension {
 						.toArray(new File[0]));
 					getTask().getLogger()
 						.debug("builder sourcepath: {}", builder.getSourcePath());
-					// set bundle symbolic name from tasks's archiveBaseName
-					// property if necessary
+					// set bundle symbolic name if necessary
 					String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME);
 					if (isEmpty(bundleSymbolicName)) {
-						bundleSymbolicName = archiveClassifier.isEmpty() ? archiveBaseName
-							: archiveBaseName + "-" + archiveClassifier;
+						bundleSymbolicName = unwrap(getDefaultBundleSymbolicName());
 						builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, bundleSymbolicName);
 					}
 
-					// set bundle version from task's archiveVersion if
-					// necessary
+					// set bundle version if necessary
 					String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION);
 					if (isEmpty(bundleVersion)) {
-						builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(archiveVersion)
-							.getOSGiVersion()
-							.toString());
+						bundleVersion = unwrap(getDefaultBundleVersion());
+						builder.setProperty(Constants.BUNDLE_VERSION, bundleVersion);
 					}
 
 					getTask().getLogger()
@@ -530,6 +558,16 @@ public class BundleTaskExtension {
 			builtManifest.getEntries()
 				.forEach((section, attrs) -> mergeManifest.attributes(new AttributesMap(attrs), section));
 			return mergeManifest;
+		}
+
+		private String unwrapAttributeValue(Object value) {
+			while (value instanceof Provider) {
+				value = ((Provider<?>) value).getOrNull();
+			}
+			if (value == null) {
+				return null;
+			}
+			return value.toString();
 		}
 
 		private void failTask(String msg, File archiveFile) {
