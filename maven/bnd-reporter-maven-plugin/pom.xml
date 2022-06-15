@@ -53,11 +53,11 @@
 		</dependency>
 
 		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.bndlib</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.bnd.reporter</artifactId>
 		</dependency>
 

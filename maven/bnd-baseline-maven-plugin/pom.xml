@@ -48,7 +48,7 @@
 			<artifactId>aether-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.bndlib</artifactId>
 		</dependency>
 	</dependencies>

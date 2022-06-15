@@ -48,15 +48,15 @@
 			<artifactId>aether-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.bnd.maven</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.bndlib</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.repository</artifactId>
 		</dependency>
 	</dependencies>
