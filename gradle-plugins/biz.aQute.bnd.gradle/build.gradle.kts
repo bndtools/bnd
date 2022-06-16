@@ -58,7 +58,7 @@ configurations {
 	val dslImplementation by existing {
 		extendsFrom(implementation.get())
 	}
-    val dslRuntimeOnly by existing {
+	val dslRuntimeOnly by existing {
 		extendsFrom(runtimeOnly.get())
 	}
 }
@@ -169,6 +169,15 @@ publishing {
 					}
 				}
 			}
+			val publication = this
+			tasks.register<WriteProperties>("generatePomPropertiesFor${publication.name.capitalize()}Publication") {
+				description = "Generates the Maven pom.properties file for publication '${publication.name}'."
+				group = PublishingPlugin.PUBLISH_TASK_GROUP
+				setOutputFile(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
+				property("groupId", provider { publication.groupId })
+				property("artifactId", provider { publication.artifactId })
+				property("version", provider { publication.version })
+			}
 		}
 	}
 }
@@ -201,17 +210,26 @@ tasks.withType<Javadoc> {
 }
 
 tasks.pluginUnderTestMetadata {
-    // Include dsl SourceSet
+	// Include dsl SourceSet
 	pluginClasspath.from(sourceSets["dsl"].output)
 }
 
 tasks.jar {
 	// Include dsl SourceSet
 	from(sourceSets["dsl"].output)
-	// Include generated pom file
-	into(archiveBaseName.map { "META-INF/maven/${project.group}/${it}" }) {
+	// META-INF/maven folder
+	val metaInfMaven = publishing.publications.named<MavenPublication>("pluginMaven").map {
+		"META-INF/maven/${it.groupId}/${it.artifactId}"
+	}
+	// Include generated pom.xml file
+	into(metaInfMaven) {
 		from(tasks.named("generatePomFileForPluginMavenPublication"))
-		rename(".*", "pom.xml")
+		rename { "pom.xml" }
+	}
+	// Include generated pom.properties file
+	into(metaInfMaven) {
+		from(tasks.named("generatePomPropertiesForPluginMavenPublication"))
+		rename { "pom.properties" }
 	}
 }
 
