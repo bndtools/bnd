@@ -181,6 +181,8 @@ It is possible to only check for correct package versions and leave out the bund
         </diffignores>
     </configuration>
 
+Note though that this will also completely ignore package removals, as in that case the package version from the base would need to be compared with the (ignored) bundle version, as the version of the deleted package is obviously no longer there.
+
 ## Configuration Properties
 
 |Configuration Property | Description |
