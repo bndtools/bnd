@@ -56,6 +56,9 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(property = "maven.test.skip", defaultValue = "false")
 	private boolean												skip;
 
+	@Parameter(property = "bnd.testing.failure.ignore", defaultValue = "false")
+	private boolean												testFailureIgnore;
+
 	@Parameter
 	private Bndruns												bndruns	= new Bndruns();
 
@@ -160,8 +163,9 @@ public class TestingMojo extends AbstractMojo {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 
-		if (errors > 0)
+		if (!isTestFailureIgnore() && (errors > 0)) {
 			throw new MojoFailureException(errors + " errors found");
+		}
 	}
 
 	private List<String> getTests() {
@@ -171,6 +175,10 @@ public class TestingMojo extends AbstractMojo {
 			return null;
 		}
 		return Strings.split(test);
+	}
+
+	private boolean isTestFailureIgnore() {
+		return testFailureIgnore;
 	}
 
 	private Operation getOperation() {

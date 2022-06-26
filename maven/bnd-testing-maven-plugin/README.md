@@ -67,6 +67,7 @@ An *implicit repository* containing the project artifact and project dependencie
 |`reportsDir`                    | The output directory for test reports. A subdirectory of `${bndrun}` will be created for each bndrun file supplied. _Defaults to `${project.build.directory}/test-reports`._|
 |`cwd`                           | The current working directory of the test process. A subdirectory of `${bndrun}` will be created for each bndrun file supplied. _Defaults to `${project.build.directory}/test`._|
 |`skipTests` OR `maven.test.skip`| Does not execute any tests. Used from the command line via `-D`. _Defaults to `false`._|
+|`testFailureIgnore`| Does not fail mojo if any tests fail. Used from the command line via `-Dbnd.testing.failure.ignore=true`. _Defaults to `false`._|
 |`testingSelect`                 | A file path to a test file, overrides anything else. _Defaults to `${testing.select}`._ Override with property `testing.select`.|
 |`testing`                       | A glob expression that is matched against the file name of the listed bndrun files. _Defaults to `${testing}`._ Override with property `testing`.|
 |`test`                          | A comma separated list of the fully qualified names of test classes to run. If not set, or empty, then all the test classes listed in the `Test-Classes` manifest header are run. Use a colon (:) to specify a test method to run on the specified test class. Override with property `test`.|
