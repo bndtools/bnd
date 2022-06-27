@@ -21,7 +21,6 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.lib.collections.LineCollection;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
@@ -191,10 +190,12 @@ public class MbrCommand extends Processor {
 		Iterator<String> lc;
 		if (repo.getIndexFile()
 			.isFile()) {
-			lc = new LineCollection(repo.getIndexFile());
+			lc = IO.reader(repo.getIndexFile())
+				.lines()
+				.iterator();
 			bnd.trace("reading %s", repo.getIndexFile());
 		} else {
-			lc = new ArrayList<String>().iterator();
+			lc = Collections.emptyIterator();
 		}
 
 		for (Iterator<String> i = lc; i.hasNext();) {
