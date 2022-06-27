@@ -634,4 +634,17 @@ public class Strings {
 		}
 		return s;
 	}
+
+	public static boolean startsWithIgnoreCase(String target, String prefix) {
+		return startsWithIgnoreCase(target, prefix, 0);
+	}
+
+	public static boolean startsWithIgnoreCase(String target, String prefix, int toffset) {
+		return target.regionMatches(true, toffset, prefix, 0, prefix.length());
+	}
+
+	public static boolean endsWithIgnoreCase(String target, String suffix) {
+		int suffixLen = suffix.length();
+		return target.regionMatches(true, target.length() - suffixLen, suffix, 0, suffixLen);
+	}
 }

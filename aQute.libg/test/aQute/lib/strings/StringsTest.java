@@ -5,9 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class StringsTest {
 
@@ -193,6 +197,73 @@ public class StringsTest {
 		assertThat(Strings.unescape("foo$002", '$')).isNotPresent();
 		assertThat(Strings.unescape("foo$", '$')).isNotPresent();
 		assertThat(Strings.unescape("foo$$", '$')).isNotPresent();
+	}
+
+	@ParameterizedTest(name = "Validate startsWithIgnoreCase {arguments}")
+	@CsvSource(value = {
+		"'foobar',''", //
+		"'foobar','foo'", //
+		"'foobar','Foo'", //
+		"'foobar','FOO'", //
+		"'FooBar','foo'", //
+		"'FOOBAR','Foo'", //
+		"'fOObar','FOO'", //
+		"'foobar','foof'", //
+		"'foobar','foobar'", //
+		"'foobar','FooBar'", //
+		"'foobar','foobarf'" //
+	})
+	@DisplayName("Validate startsWithIgnoreCase")
+	void starts_with_ignore_case(String target, String prefix) {
+		boolean expected = target.toLowerCase(Locale.ROOT)
+			.startsWith(prefix.toLowerCase(Locale.ROOT));
+		assertThat(Strings.startsWithIgnoreCase(target, prefix))
+			.isEqualTo(expected);
+	}
+
+	@ParameterizedTest(name = "Validate startsWithIgnoreCase index {arguments}")
+	@CsvSource(value = {
+		"'foobar','',2", //
+		"'foobar','',8", //
+		"'foobar','oba',2", //
+		"'foobar','oBa',2", //
+		"'foobar','OBA',2", //
+		"'FooBar','oba',2", //
+		"'FOObar','oBa',2", //
+		"'FooBar','OBA',2", //
+		"'foobar','obaf',2", //
+		"'foobar','bar',3", //
+		"'FOOBAR','bar',3", //
+		"'foobar','bar',4", //
+		"'foobar','bar',8" //
+	})
+	@DisplayName("Validate startsWithIgnoreCase index")
+	void starts_with_ignore_case_offset(String target, String prefix, int offset) {
+		boolean expected = target.toLowerCase(Locale.ROOT)
+			.startsWith(prefix.toLowerCase(Locale.ROOT), offset);
+		assertThat(Strings.startsWithIgnoreCase(target, prefix, offset))
+			.isEqualTo(expected);
+	}
+
+	@ParameterizedTest(name = "Validate endsWithIgnoreCase {arguments}")
+	@CsvSource(value = {
+		"'foobar',''", //
+		"'foobar','bar'", //
+		"'foobar','Bar'", //
+		"'foobar','BAR'", //
+		"'FooBar','bar'", //
+		"'FOOBAR','Bar'", //
+		"'foobAR','BAR'", //
+		"'foobar','fbar'", //
+		"'foobar','foobar'", //
+		"'foobar','FooBar'", //
+		"'foobar','ffoobar'" //
+	})
+	@DisplayName("Validate endsWithIgnoreCase")
+	void ends_with_ignore_case(String target, String suffix) {
+		boolean expected = target.toLowerCase(Locale.ROOT)
+			.endsWith(suffix.toLowerCase(Locale.ROOT));
+		assertThat(Strings.endsWithIgnoreCase(target, suffix)).isEqualTo(expected);
 	}
 
 }
