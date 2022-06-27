@@ -8,11 +8,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 
 import aQute.bnd.header.Attrs;
@@ -31,10 +30,11 @@ import aQute.bnd.service.diff.Differ;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Tree.Data;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
-import aQute.lib.collections.ExtList;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 
@@ -50,37 +50,32 @@ public class DiffPluginImpl implements Differ {
 	 * Headers that are considered major enough to parse according to spec and
 	 * compare their constituents
 	 */
-	final static Set<String>	MAJOR_HEADERS	= new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String>	MAJOR_HEADERS	= Sets.of(		//
+		Constants.EXPORT_PACKAGE,								//
+		Constants.IMPORT_PACKAGE,																							//
+		Constants.REQUIRE_BUNDLE,																							//
+		Constants.FRAGMENT_HOST,																							//
+		Constants.BUNDLE_SYMBOLICNAME,																						//
+		Constants.BUNDLE_LICENSE,																							//
+		Constants.BUNDLE_NATIVECODE,																						//
+		Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT,																		//
+		Constants.DYNAMICIMPORT_PACKAGE,																					//
+		Constants.BUNDLE_VERSION);
 
 	/**
 	 * Headers that are considered not major enough to be considered
 	 */
-	final static Set<String>	IGNORE_HEADERS	= new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String>	IGNORED_HEADERS	= Sets.of(		//
+		Constants.TOOL,											//
+		Constants.BND_LASTMODIFIED,																			//
+		Constants.CREATED_BY);
 
 	/**
 	 * Headers that have values that should be sorted
 	 */
-	final static Set<String>	ORDERED_HEADERS	= new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-
-	static {
-		MAJOR_HEADERS.add(Constants.EXPORT_PACKAGE);
-		MAJOR_HEADERS.add(Constants.IMPORT_PACKAGE);
-		MAJOR_HEADERS.add(Constants.REQUIRE_BUNDLE);
-		MAJOR_HEADERS.add(Constants.FRAGMENT_HOST);
-		MAJOR_HEADERS.add(Constants.BUNDLE_SYMBOLICNAME);
-		MAJOR_HEADERS.add(Constants.BUNDLE_LICENSE);
-		MAJOR_HEADERS.add(Constants.BUNDLE_NATIVECODE);
-		MAJOR_HEADERS.add(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
-		MAJOR_HEADERS.add(Constants.DYNAMICIMPORT_PACKAGE);
-		MAJOR_HEADERS.add(Constants.BUNDLE_VERSION);
-
-		IGNORE_HEADERS.add(Constants.TOOL);
-		IGNORE_HEADERS.add(Constants.BND_LASTMODIFIED);
-		IGNORE_HEADERS.add(Constants.CREATED_BY);
-
-		ORDERED_HEADERS.add(Constants.SERVICE_COMPONENT);
-		ORDERED_HEADERS.add(Constants.TESTCASES);
-	}
+	final static Set<String>	ORDERED_HEADERS	= Sets.of(		//
+		Constants.SERVICE_COMPONENT,							//
+		Constants.TESTCASES);
 
 	Instructions localIgnore = null;
 
@@ -215,7 +210,7 @@ public class DiffPluginImpl implements Differ {
 
 	/**
 	 * Create an element for each manifest header. There are
-	 * {@link #IGNORE_HEADERS} and {@link #MAJOR_HEADERS} that will be treated
+	 * {@link #IGNORED_HEADERS} and {@link #MAJOR_HEADERS} that will be treated
 	 * differently.
 	 *
 	 * @param manifest
@@ -229,9 +224,9 @@ public class DiffPluginImpl implements Differ {
 			.keySet()) {
 			String header = key.toString();
 			String value = manifest.getMainAttributes()
-				.getValue(header);
+				.getValue((Name) key);
 
-			if (IGNORE_HEADERS.contains(header))
+			if (IGNORED_HEADERS.contains(header))
 				continue;
 
 			if (localIgnore != null && localIgnore.matches(header)) {
@@ -252,9 +247,9 @@ public class DiffPluginImpl implements Differ {
 							String paramValue = parameter.getValue();
 							if (Constants.EXPORT_PACKAGE.equals(header)
 								&& Constants.USES_DIRECTIVE.equals(parameter.getKey())) {
-								ExtList<String> uses = ExtList.from(parameter.getValue());
-								Collections.sort(uses);
-								paramValue = uses.join();
+								paramValue = Strings.splitAsStream(paramValue)
+									.sorted()
+									.collect(Strings.joining());
 							}
 							parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + paramValue, null,
 								CHANGED, CHANGED, null));
@@ -264,9 +259,10 @@ public class DiffPluginImpl implements Differ {
 					result.add(new Element(Type.HEADER, header, clausesDef, CHANGED, CHANGED, null));
 				}
 			} else if (ORDERED_HEADERS.contains(header)) {
-				ExtList<String> values = ExtList.from(value);
-				Collections.sort(values);
-				result.add(new Element(Type.HEADER, header + ":" + values.join(), null, CHANGED, CHANGED, null));
+				String sorted = Strings.splitAsStream(value)
+					.sorted()
+					.collect(Strings.joining());
+				result.add(new Element(Type.HEADER, header + ":" + sorted, null, CHANGED, CHANGED, null));
 			} else {
 				result.add(new Element(Type.HEADER, header + ":" + value, null, CHANGED, CHANGED, null));
 			}
