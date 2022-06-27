@@ -40,7 +40,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.util.home.Home;
-import aQute.lib.collections.LineCollection;
 import aQute.lib.io.IO;
 import aQute.lib.settings.Settings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -145,11 +144,9 @@ public class MavenCommand extends Processor {
 			error("There is no settings file at '%s'", settings.getAbsolutePath());
 			return;
 		}
-		try (LineCollection lc = new LineCollection(IO.reader(settings))) {
-			while (lc.hasNext()) {
-				System.err.println(lc.next());
-			}
-		}
+		IO.reader(settings)
+			.lines()
+			.forEachOrdered(System.err::println);
 	}
 
 	/**

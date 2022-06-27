@@ -3735,9 +3735,8 @@ public class bnd extends Processor {
 						.getMainAttributes()
 						.entrySet()) {
 						String header = e.getKey()
-							.toString()
-							.toLowerCase(Locale.ROOT);
-						if (header.startsWith("bundle-"))
+							.toString();
+						if (Strings.startsWithIgnoreCase(header, "Bundle-"))
 							continue;
 
 						if (!isIn(Constants.BUNDLE_SPECIFIC_HEADERS, header))

@@ -1,7 +1,5 @@
 package bndtools.utils;
 
-import java.util.Locale;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -9,6 +7,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+
+import aQute.lib.strings.Strings;
 
 public class ClassFolderFilter extends ViewerFilter {
 
@@ -21,9 +21,7 @@ public class ClassFolderFilter extends ViewerFilter {
 			try {
 				IResource[] members = ((IContainer) element).members();
 				for (IResource member : members) {
-					if (member instanceof IFile && member.getName()
-						.toLowerCase(Locale.ENGLISH)
-						.endsWith(".class")) {
+					if (member instanceof IFile && Strings.endsWithIgnoreCase(member.getName(), ".class")) {
 						return true;
 					} else if (member instanceof IContainer) {
 						boolean memberResult = select(viewer, element, member);
