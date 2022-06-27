@@ -1315,7 +1315,7 @@ public class IO {
 	}
 
 	public static BufferedReader reader(ByteBuffer bb, Charset encoding) {
-		return reader(new ByteBufferInputStream(bb), encoding);
+		return reader(stream(bb), encoding);
 	}
 
 	public static BufferedReader reader(CharBuffer cb) {
