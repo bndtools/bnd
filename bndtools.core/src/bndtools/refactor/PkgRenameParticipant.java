@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -48,6 +47,7 @@ import aQute.bnd.properties.IDocument;
 import aQute.bnd.properties.IRegion;
 import aQute.bnd.properties.LineType;
 import aQute.bnd.properties.PropertiesLineReader;
+import aQute.lib.strings.Strings;
 
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
 	private static final ILogger							logger			= Logger
@@ -103,9 +103,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 				return true;
 			}
 
-			if (!((proxy.getType() == IResource.FILE) && proxy.getName()
-				.toLowerCase(Locale.ROOT)
-				.endsWith(".bnd"))) {
+			if (!((proxy.getType() == IResource.FILE) && Strings.endsWithIgnoreCase(proxy.getName(), ".bnd"))) {
 				return false;
 			}
 

@@ -2,10 +2,11 @@ package aQute.bnd.exporter.subsystem;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Locale;
 
 import org.osgi.framework.Constants;
-import org.osgi.service.subsystem.SubsystemConstants;;
+import org.osgi.service.subsystem.SubsystemConstants;
+
+import aQute.lib.strings.Strings;;
 
 public enum ContainerType {
 
@@ -111,11 +112,9 @@ public enum ContainerType {
 		if (file == null || !file.isFile()) {
 			return null;
 		}
-		String filename = file.getName()
-			.toLowerCase(Locale.ROOT);
+		String filename = file.getName();
 		return Arrays.stream(ContainerType.values())
-			.filter(c -> filename.endsWith(".".concat(c.getExtension()
-				.toLowerCase(Locale.ROOT))))
+			.filter(c -> Strings.endsWithIgnoreCase(filename, ".".concat(c.getExtension())))
 			.findFirst()
 			.orElse(null);
 	}

@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -44,6 +43,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Reporter;
 
@@ -518,9 +518,7 @@ public abstract class Domain implements Iterable<String> {
 				return domain;
 			}
 		} catch (ZipException e) {
-			if (file.getName()
-				.toLowerCase(Locale.ROOT)
-				.endsWith(".jar"))
+			if (Strings.endsWithIgnoreCase(file.getName(), ".jar"))
 				throw new ZipException("invalid jar format: " + file);
 		}
 

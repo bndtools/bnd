@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -1008,10 +1007,8 @@ public class BndEditModel {
 	}
 
 	public void setRunFramework(String clause) {
-		assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase(Locale.ROOT)
-			.trim()) || Constants.RUNFRAMEWORK_NONE.equals(
-				clause.toLowerCase(Locale.ROOT)
-					.trim()));
+		assert (Constants.RUNFRAMEWORK_SERVICES.equalsIgnoreCase(clause.trim())
+			|| Constants.RUNFRAMEWORK_NONE.equalsIgnoreCase(clause.trim()));
 		String oldValue = getRunFramework();
 		doSetObject(Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
 	}

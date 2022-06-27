@@ -54,6 +54,7 @@ import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.lib.strings.Strings;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.editor.utils.ToolTips;
@@ -327,9 +328,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 		@Override
 		protected boolean match(String contents, int position, IContentProposal proposal) {
 			String prefix = contents.substring(0, position);
-			return ((JavaTypeContentProposal) proposal).getTypeName()
-				.toLowerCase(Locale.ROOT)
-				.startsWith(prefix.toLowerCase(Locale.ROOT));
+			return Strings.startsWithIgnoreCase(((JavaTypeContentProposal) proposal).getTypeName(), prefix);
 		}
 	}
 }

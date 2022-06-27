@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,6 +70,7 @@ import org.osgi.resource.Resource;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;
@@ -151,13 +151,9 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 	private CapReqLoader getLoaderForFile(File file) {
 		CapReqLoader loader;
-		if (file.getName()
-			.toLowerCase(Locale.ROOT)
-			.endsWith(".bnd")) {
+		if (Strings.endsWithIgnoreCase(file.getName(), ".bnd")) {
 			loader = new BndFileCapReqLoader(file);
-		} else if (file.getName()
-			.toLowerCase(Locale.ROOT)
-			.endsWith(".jar")) {
+		} else if (Strings.endsWithIgnoreCase(file.getName(), ".jar")) {
 			loader = new JarFileCapReqLoader(file);
 		} else {
 			loader = null;

@@ -871,9 +871,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		updateModified(file.lastModified(), file.toString());
 		Properties sub;
-		if (file.getName()
-			.toLowerCase(Locale.ROOT)
-			.endsWith(".mf")) {
+		if (Strings.endsWithIgnoreCase(file.getName(), ".mf")) {
 			try (InputStream in = IO.stream(file)) {
 				sub = getManifestAsProperties(in);
 			}
