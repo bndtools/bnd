@@ -27,7 +27,7 @@ public class LineCollection implements Iterator<String>, Closeable {
 	}
 
 	public LineCollection(Reader reader) throws IOException {
-		this(new BufferedReader(reader));
+		this((reader instanceof BufferedReader) ? (BufferedReader) reader : new BufferedReader(reader));
 	}
 
 	public LineCollection(BufferedReader reader) throws IOException {
