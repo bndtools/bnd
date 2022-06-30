@@ -94,7 +94,7 @@ This will result in a buildpath of (when debug is not false) of: `com.example.fo
 
 ## Decorated Instructions
 
-Instructions can also be _decorated_. A _decorator_ is a header that ends with a `+` sign. A header like `-runbundles` is first _merged_ and then _decorated_. 
+Instructions can also be _decorated_. A _decorator_ is a header that ends with `+` or `++`. A header like `-runbundles` is first _merged_ and then _decorated_. 
 
 In this case, `-runbundles` is the _stem_. First, the total header is assembled by _merging_ the property that has that stem. If there are properties that match stem + `+.*` or `++.*`, then these properties are used to decorate the merged property. Notice that for the decorator the root key includes the `+` sign, the suffixes must come after the `+` sign. For example, for the header `foo`, the decorator would be `foo+` and that would match a key like `foo+.bar`.
 

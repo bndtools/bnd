@@ -1,7 +1,9 @@
 package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -116,6 +118,47 @@ public class RunResolutionTest {
 			.getRunbundles();
 		runbundles.forEach(c -> System.out.println(c.getFile()));
 		// assertThat(runbundles).hasSize(22);
+	}
+
+	@Test
+	public void testResolveCached() throws Exception {
+		File file = IO.getFile(tmp.toFile(), "resolver.bndrun");
+		Bndrun bndrun = Bndrun.createBndrun(workspace, file);
+		bndrun.testIgnoreDownloadErrors = true;
+		assertTrue(bndrun.check());
+		File cache = bndrun.getCacheFile(file);
+
+		System.out.println("get the embedded list of runbundles");
+		bndrun.setProperty("-resolve", "manual");
+		Collection<Container> manual = bndrun.getRunbundles();
+
+		System.out.println("remove the embedded list and set mode to 'cache'");
+		bndrun.setProperty("-resolve", "cache");
+		bndrun.unsetProperty("-runbundles");
+
+		assertThat(cache).doesNotExist();
+
+		System.out.println("First time we should resolve & create a cache file");
+		Collection<Container> cached = bndrun.getRunbundles();
+		assertThat(cache).isFile();
+		assertThat(cached).containsAll(manual);
+		assertThat(cached).hasSize(manual.size());
+		assertThat(cache.lastModified()).isGreaterThan(file.lastModified());
+
+		System.out
+			.println("Second time, the cache file should used, so make it valid but empty ");
+		long lastModified = cache.lastModified();
+		IO.store("-runbundles ", cache);
+		cache.setLastModified(file.lastModified() + 1000);
+		cached = bndrun.getRunbundles();
+		assertThat(cached).isEmpty();
+
+		System.out.println("Now make cache invalid, which be ignored");
+		IO.store("-runbundles is not a valid file", cache);
+		cache.setLastModified(file.lastModified() + 1000);
+		cached = bndrun.getRunbundles();
+		assertThat(manual).containsAll(cached);
+
 	}
 
 	@Test
