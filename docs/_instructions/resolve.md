@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Workspace
-title: -resolve (manual|auto|beforelaunch|batch)
+title: -resolve (manual|auto|beforelaunch|batch|cache)
 summary: Defines when/how resolving is done to calculate the -runbundles
 ---
 
@@ -13,6 +13,8 @@ The values are:
 * `auto` – Whenever the initial requirements are saved, the resolver will be used to set new `-runbundles`
 * `beforelaunch` – Calculate the `-runbundles` on demand. This ignores the value of the `-runbundles` and runs the resolver. The results of the resolver are cached. This cache works by creating a checksum over all the properties of the project.
 * `batch` – When running in batch mode, the run bundles will be resolved. In all other modes this will only resolve when the `-runbundles` are empty.
+* `cache` – Will use a cache file in the workspace cache. If that file is stale relative to the workspace or project or it does not exist, then the bnd(run) file will be resolved and the result is stored in the cache file.
+
  
 ## Example
 
