@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceLayout;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.VersionedClause;
@@ -194,38 +195,55 @@ public class Bndrun extends Run {
 		return super.getRunbundles();
 	}
 
+	enum CacheReason {
+		NO_CACHE_FILE,
+		NOT_A_BND_LAYOUT,
+		CACHE_STALE_PROJECT,
+		CACHE_STALE_WORKSPACE,
+		USE_CACHE,
+		INVALID_CACHE;
+
+	}
+
+	CacheReason testReason;
+
 	private Collection<Container> cache() throws Exception {
+		Workspace ws = getWorkspace();
 		File ours = getPropertiesFile();
 		File cache = getCacheFile(ours);
-		File workspace = getWorkspace().getPropertiesFile();
-		if (workspace == null)
-			workspace = ours;
 
-		String force;
-		if (!cache.isFile())
-			force = "no cache file";
-		else if (cache.lastModified() <= ours.lastModified())
-			force = "cache file is older than our properties";
-		else if (cache.lastModified() <= workspace.lastModified())
-			force = "cache file is older than our workspace";
+		long cacheLastModified = cache.lastModified();
+
+		CacheReason reason;
+		if (ws.getLayout() != WorkspaceLayout.BND)
+			reason = CacheReason.NOT_A_BND_LAYOUT;
+		else if (!cache.isFile())
+			reason = CacheReason.NO_CACHE_FILE;
+		else if (cacheLastModified <= ws.lastModified())
+			reason = CacheReason.CACHE_STALE_WORKSPACE;
+		else if (cacheLastModified <= lastModified())
+			reason = CacheReason.CACHE_STALE_PROJECT;
 		else
-			force = null;
-		trace("force = %s", force);
+			reason = CacheReason.USE_CACHE;
 
-		boolean tryCache = force == null;
+		testReason = reason;
+
+		trace("force = %s", reason);
 
 		try (Processor p = new Processor()) {
 
 			if (cache.isFile())
 				p.setProperties(cache);
 
-			if (tryCache) {
+			if (reason == CacheReason.USE_CACHE) {
 				trace("attempting to use cache");
 				String runbundles = p.getProperty(Constants.RUNBUNDLES);
 				Collection<Container> containers = parseRunbundles(runbundles);
 				if (isAllOk(containers)) {
+					trace("from cache %s", containers);
 					return containers;
 				} else {
+					testReason = CacheReason.INVALID_CACHE;
 					trace("the cached bundles were not ok, will resolve");
 				}
 			}
@@ -255,6 +273,7 @@ public class Bndrun extends Run {
 		}
 	}
 
+
 	/**
 	 * Return the file used to cache the resolved solution for the given file
 	 *
@@ -274,16 +293,9 @@ public class Bndrun extends Run {
 		}
 	}
 
-	boolean testIgnoreDownloadErrors = false;
-
 	private boolean isAllOk(Collection<Container> containers) {
 		for (Container c : containers) {
 			if (c.getError() != null) {
-				if (testIgnoreDownloadErrors) {
-					if (c.getError()
-						.contains("FileNotFoundException"))
-						continue;
-				}
 				return false;
 			}
 		}
