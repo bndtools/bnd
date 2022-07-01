@@ -1,8 +1,8 @@
+import java.util.*
+
 plugins {
-	`java-gradle-plugin`
 	groovy
 	`kotlin-dsl`
-	id("maven-publish")
 	id("com.gradle.plugin-publish") version "1.0.0"
 }
 
@@ -66,13 +66,11 @@ configurations {
 // Dependencies
 dependencies {
 	compileOnly(localGroovy())
-	compileOnly(gradleApi())
 	implementation("biz.aQute.bnd:biz.aQute.bnd.util:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.bndlib:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.repository:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.resolve:${version}")
 	runtimeOnly("biz.aQute.bnd:biz.aQute.bnd.embedded-repo:${version}")
-	testImplementation(gradleTestKit())
 	testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
 }
 
@@ -238,6 +236,8 @@ tasks.named<Jar>("sourcesJar") {
 	from(sourceSets["dsl"].allSource)
 }
 
+val testresourcesOutput = layout.buildDirectory.dir("testresources")
+
 // Configure test
 tasks.test {
 	useJUnitPlatform()
@@ -253,11 +253,10 @@ tasks.test {
 			events("STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED")
 		}
 	}
-	val testresources = layout.projectDirectory.dir("testresources")
-	val target = layout.buildDirectory.dir("testresources")
-	inputs.files(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
+	val testresourcesSource = layout.projectDirectory.dir("testresources")
+	inputs.files(testresourcesSource).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
 	systemProperty("bnd_version", bnd_version)
-	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name.toLowerCase())
+	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name.toLowerCase(Locale.ROOT))
 	maven_repo_local?.let {
 		systemProperty("maven.repo.local", it)
 	}
@@ -265,16 +264,15 @@ tasks.test {
 	doFirst {
 		// copy test resources into build dir
 		injected.fs.delete {
-			delete(target)
+			delete(testresourcesOutput)
 		}
 		injected.fs.copy {
-			from(testresources)
-			into(target)
+			from(testresourcesSource)
+			into(testresourcesOutput)
 		}
 	}
 }
 
 tasks.named<Delete>("cleanTest") {
-	val target = layout.buildDirectory.dir("testresources")
-	delete(target)
+	delete(testresourcesOutput)
 }
