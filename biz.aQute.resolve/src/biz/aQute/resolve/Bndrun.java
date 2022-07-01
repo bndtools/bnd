@@ -1,8 +1,10 @@
 package biz.aQute.resolve;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.osgi.resource.Requirement;
@@ -13,12 +15,14 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceLayout;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
@@ -27,6 +31,9 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.cryptography.SHA1;
 
 /**
  * This is a resolving version of the Run class. The name of this class is known
@@ -171,6 +178,9 @@ public class Bndrun extends Run {
 			default :
 				break;
 
+			case cache :
+				return cache();
+
 			case batch :
 				if (!gestalt.containsKey(Constants.GESTALT_BATCH) && !super.getRunbundles().isEmpty())
 					break;
@@ -183,6 +193,113 @@ public class Bndrun extends Run {
 					.orElseThrow(IllegalArgumentException::new);
 		}
 		return super.getRunbundles();
+	}
+
+	enum CacheReason {
+		NO_CACHE_FILE,
+		NOT_A_BND_LAYOUT,
+		CACHE_STALE_PROJECT,
+		CACHE_STALE_WORKSPACE,
+		USE_CACHE,
+		INVALID_CACHE;
+
+	}
+
+	CacheReason testReason;
+
+	private Collection<Container> cache() throws Exception {
+		Workspace ws = getWorkspace();
+		File ours = getPropertiesFile();
+		File cache = getCacheFile(ours);
+
+		long cacheLastModified = cache.lastModified();
+
+		CacheReason reason;
+		if (ws.getLayout() != WorkspaceLayout.BND)
+			reason = CacheReason.NOT_A_BND_LAYOUT;
+		else if (!cache.isFile())
+			reason = CacheReason.NO_CACHE_FILE;
+		else if (cacheLastModified < ws.lastModified())
+			reason = CacheReason.CACHE_STALE_WORKSPACE;
+		else if (cacheLastModified < lastModified())
+			reason = CacheReason.CACHE_STALE_PROJECT;
+		else
+			reason = CacheReason.USE_CACHE;
+
+		testReason = reason;
+
+		trace("force = %s", reason);
+
+		try (Processor p = new Processor()) {
+
+			if (cache.isFile())
+				p.setProperties(cache);
+
+			if (reason == CacheReason.USE_CACHE) {
+				trace("attempting to use cache");
+				String runbundles = p.getProperty(Constants.RUNBUNDLES);
+				Collection<Container> containers = parseRunbundles(runbundles);
+				if (isAllOk(containers)) {
+					trace("from cache %s", containers);
+					return containers;
+				} else {
+					testReason = CacheReason.INVALID_CACHE;
+					trace("the cached bundles were not ok, will resolve");
+				}
+			}
+			trace("resolving");
+
+			IO.delete(cache);
+			if (cache.isFile()) {
+				throw new IllegalStateException("cannot delete cache file " + cache);
+			}
+
+			RunResolution resolved = RunResolution.resolve(this, Collections.emptyList());
+			if (!resolved.isOK()) {
+				throw new IllegalStateException(resolved.report(false));
+			}
+
+			String spec = resolved.getRunBundlesAsString();
+
+			List<Container> containers = parseRunbundles(spec);
+			if (isAllOk(containers)) {
+				UTF8Properties props = new UTF8Properties(p.getProperties());
+				props.setProperty(Constants.RUNBUNDLES, spec);
+				cache.getParentFile()
+					.mkdirs();
+				props.store(cache);
+			}
+			return containers;
+		}
+	}
+
+
+	/**
+	 * Return the file used to cache the resolved solution for the given file
+	 *
+	 * @param file the file to find the cached file for
+	 * @return the cached file
+	 */
+	public File getCacheFile(File file) {
+		try {
+			String path = file.getAbsolutePath();
+			String digest = SHA1.digest(path.getBytes(StandardCharsets.UTF_8))
+				.asHex();
+			return getWorkspace().getCache("resolved-cache/".concat(digest)
+				.concat(".resolved"));
+		} catch (Exception e) {
+			// not gonna happen
+			throw Exceptions.duck(e);
+		}
+	}
+
+	private boolean isAllOk(Collection<Container> containers) {
+		for (Container c : containers) {
+			if (c.getError() != null) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

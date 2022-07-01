@@ -78,6 +78,11 @@ public interface ResolutionInstructions {
 		@SyntaxAnnotation(lead = "A resolve will take place before launching when in batch mode (e.g. Gradle) but not in IDE mode (e.g. Eclipse)")
 		batch,
 
+		/**
+		 * Run the resolver before launching during batch mode
+		 */
+		@SyntaxAnnotation(lead = "Resolve when the runbundles are needed unless there is a cache file that is newer than the bndrun/project & workspace. The cache file has the same name as the project/bndrun file but starts with a '.'")
+		cache,
 	}
 
 	@SyntaxAnnotation(lead = "Resolve mode defines when resolving takes place. The default, manual, requires a manual step in bndtools. Auto will resolve on save, and beforelaunch runs the resolver before being launched, batchlaunch is like beforelaunch but only in batch mode", example = "'-resolve manual", pattern = "(manual|auto|beforelaunch|batch)")
