@@ -1,6 +1,7 @@
 package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.result.Result;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
+import biz.aQute.resolve.Bndrun.CacheReason;
 
 public class RunResolutionTest {
 
@@ -121,45 +123,114 @@ public class RunResolutionTest {
 	}
 
 	@Test
-	public void testResolveCached() throws Exception {
+	public void testResolveCachedWithStandalone() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(tmp.toFile(), "resolver.bndrun"));
+		bndrun.setProperty("-resolve", "cache");
+		Collection<Container> runbundles = bndrun.getRunbundles();
+		assertThat(bndrun.testReason).isEqualTo(CacheReason.NOT_A_BND_LAYOUT);
+	}
 
-		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+	@Test
+	public void testResolveCached() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, workspace.getFile("test.simple/resolve.bndrun"));
+		bndrun.setTrace(true);
 		File file = bndrun.getPropertiesFile();
-		bndrun.testIgnoreDownloadErrors = true;
 		assertTrue(bndrun.check());
 		File cache = bndrun.getCacheFile(file);
+		File build = IO.getFile(ws.toFile(), "cnf/build.bnd");
 
-		System.out.println("get the embedded list of runbundles");
-		bndrun.setProperty("-resolve", "manual");
-		Collection<Container> manual = bndrun.getRunbundles();
+		try {
 
-		System.out.println("remove the embedded list and set mode to 'cache'");
-		bndrun.setProperty("-resolve", "cache");
-		bndrun.unsetProperty("-runbundles");
+			System.out.println("get the embedded list of runbundles, this is out benchmark");
+			bndrun.setProperty("-resolve", "manual");
+			Collection<Container> manual = bndrun.getRunbundles();
+			assertThat(manual).hasSize(2);
 
-		assertThat(cache).doesNotExist();
+			System.out.println("remove the embedded list and set mode to 'cache'");
+			bndrun.setProperty("-resolve", "cache");
+			bndrun.unsetProperty("-runbundles");
 
-		System.out.println("First time we should resolve & create a cache file");
-		Collection<Container> cached = bndrun.getRunbundles();
-		assertThat(cache).isFile();
-		assertThat(cached).containsAll(manual);
-		assertThat(cached).hasSize(manual.size());
-		assertThat(cache.lastModified()).isGreaterThan(file.lastModified());
+			assertThat(cache).doesNotExist();
 
-		System.out
-			.println("Second time, the cache file should used, so make it valid but empty ");
-		long lastModified = cache.lastModified();
-		IO.store("-runbundles ", cache);
-		cache.setLastModified(file.lastModified() + 1000);
-		cached = bndrun.getRunbundles();
-		assertThat(cached).isEmpty();
+			System.out.println("First time we should resolve & create a cache file");
+			Collection<Container> cached = bndrun.getRunbundles();
+			assertTrue(bndrun.check());
+			assertThat(cache).isFile();
+			assertThat(cached).containsExactlyElementsOf(manual);
+			assertThat(cache.lastModified()).isGreaterThan(bndrun.lastModified());
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.NO_CACHE_FILE);
 
-		System.out.println("Now make cache invalid, which be ignored");
-		IO.store("-runbundles is not a valid file", cache);
-		cache.setLastModified(file.lastModified() + 1000);
-		cached = bndrun.getRunbundles();
-		assertThat(manual).containsAll(cached);
+			System.out.println("Second time, the cache file should used, so make it valid but empty ");
+			long lastModified = cache.lastModified();
+			IO.store("-runbundles ", cache);
+			cached = bndrun.getRunbundles();
+			assertTrue(bndrun.check());
+			assertThat(cached).isEmpty();
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
 
+			System.out.println("Now make cache invalid, should be ignored");
+			IO.store("-runbundles is not a valid file", cache);
+			cached = bndrun.getRunbundles();
+			assertTrue(bndrun.check());
+			assertThat(cached).containsExactlyElementsOf(manual);
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.INVALID_CACHE);
+
+			System.out.println("Now empty cache, but still use it");
+			IO.store("-runbundles ", cache);
+			cached = bndrun.getRunbundles();
+			assertTrue(bndrun.check());
+			assertThat(cached).isEmpty();
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
+
+			System.out.println("Refresh and check we still use the cache");
+			assertFalse(bndrun.refresh());
+			bndrun.setProperty("-resolve", "cache");
+			bndrun.unsetProperty("-runbundles");
+			cached = bndrun.getRunbundles();
+			assertThat(cached).isEmpty();
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
+
+			System.out.println("Update an include file, refresh and check we still sue the cache");
+			File empty = IO.getFile(ws.toFile(), "test.simple/empty-included-in-resolve.bnd");
+			long now = System.currentTimeMillis();
+			empty.setLastModified(now);
+			assertThat(bndrun.lastModified()).isLessThan(now);
+			assertThat(cache.lastModified()).isLessThan(now);
+			assertTrue(bndrun.refresh());
+			bndrun.setProperty("-resolve", "cache");
+			bndrun.unsetProperty("-runbundles");
+			assertThat(bndrun.lastModified()).isGreaterThanOrEqualTo(now);
+			cached = bndrun.getRunbundles();
+			assertTrue(bndrun.check());
+			assertThat(cached).containsExactlyElementsOf(manual);
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.CACHE_STALE_PROJECT);
+			assertThat(cache.lastModified()).isGreaterThanOrEqualTo(now);
+			assertThat(cache.lastModified()).isGreaterThanOrEqualTo(bndrun.lastModified());
+
+			System.out.println("Next we use the cache");
+			cached = bndrun.getRunbundles();
+			assertThat(cached).containsExactlyElementsOf(manual);
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
+
+			System.out.println("Update the cnf/build file");
+			now = System.currentTimeMillis();
+			build.setLastModified(now);
+			assertTrue(workspace.refresh());
+			cached = bndrun.getRunbundles();
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.CACHE_STALE_WORKSPACE);
+
+			System.out.println("Next we use the cache again");
+			cached = bndrun.getRunbundles();
+			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
+
+			assertTrue(bndrun.check());
+		} catch (AssertionError e) {
+			System.out.println("bndrun     = " + bndrun.lastModified());
+			System.out.println("cache      = " + cache.lastModified());
+			System.out.println("workspace  = " + workspace.lastModified());
+			System.out.println("build      = " + build.lastModified());
+			throw e;
+		}
 	}
 
 	@Test
