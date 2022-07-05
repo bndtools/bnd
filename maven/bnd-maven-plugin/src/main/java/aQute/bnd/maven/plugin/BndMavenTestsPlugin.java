@@ -29,10 +29,17 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 
+/**
+ * Processes the test target classes to generate OSGi metadata.
+ * <p>
+ * This goal has the default phase of "process-test-classes".
+ */
 @Mojo(name = "bnd-process-tests", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 
 	/**
+	 * Whether the test artifact is an OSGi fragment.
+	 * <p>
 	 * If true, make the tests artifact a fragment using
 	 * <code>$&#123;project.artifactId&#125;</code> as the {@code Fragment-Host}
 	 * header and setting the {@code Bundle-SymbolicName} of the tests artifact
@@ -42,6 +49,9 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	private boolean									artifactFragment;
 
 	/**
+	 * The test case types to generate into the {@code Test-Cases}
+	 * manifest header.
+	 * <p>
 	 * Possible values are {@link TestCases#junit3 junit3},
 	 * {@link TestCases#junit4 junit4}, {@link TestCases#junit5 junit5},
 	 * {@link TestCases#all all}, {@link TestCases#testng testng}, and
@@ -56,21 +66,41 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	@Parameter(defaultValue = "${project.build.testResources}", readonly = true)
 	private List<org.apache.maven.model.Resource>	resources;
 
-	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true, required = false)
+	/**
+	 * The directory where the {@code maven-compiler-plugin} placed the main output.
+	 */
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private File									mainClassesDir;
 
-	@Parameter(defaultValue = "${project.build.testOutputDirectory}", readonly = true)
+	/**
+	 * The directory where the {@code maven-compiler-plugin} places its output.
+	 */
+	@Parameter(defaultValue = "${project.build.testOutputDirectory}")
 	private File									classesDir;
 
-	@Parameter(defaultValue = "${project.build.testOutputDirectory}", readonly = true)
+	/**
+	 * The directory where this plugin will store its output.
+	 */
+	@Parameter(defaultValue = "${project.build.testOutputDirectory}")
 	private File									outputDir;
 
-	@Parameter(defaultValue = "${project.build.testOutputDirectory}/META-INF/MANIFEST.MF", readonly = true)
+	/**
+	 * Specify the path to store the generated manifest file.
+	 */
+	@Parameter(defaultValue = "${project.build.testOutputDirectory}/META-INF/MANIFEST.MF")
 	private File									manifestPath;
 
+	/**
+	 * Skip this goal. The goal can also be skipped with the {@link #skipGoal}
+	 * configuration.
+	 */
 	@Parameter(property = "maven.test.skip", defaultValue = "false")
 	private boolean									skip;
 
+	/**
+	 * Skip this goal. The goal can also be skipped with the {@link #skip}
+	 * configuration.
+	 */
 	@Parameter(property = "bnd-tests.skip", defaultValue = "false")
 	private boolean									skipGoal;
 

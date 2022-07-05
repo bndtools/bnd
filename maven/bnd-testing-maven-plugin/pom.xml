@@ -9,8 +9,8 @@
 		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 	<artifactId>bnd-testing-maven-plugin</artifactId>
-	<description>Run the tests from an OSGi bndrun file</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The bnd testing maven plugin is used to run the tests from a bndrun file.</description>
+	<name>Bnd Testing Maven Plugin</name>
 	<packaging>maven-plugin</packaging>
 	<url>https://bnd.bndtools.org/</url>
 	<scm>

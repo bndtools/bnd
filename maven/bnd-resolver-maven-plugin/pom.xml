@@ -9,8 +9,8 @@
 		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 	<artifactId>bnd-resolver-maven-plugin</artifactId>
-	<description>Resolves the -runbundles for an OSGi bndrun file</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The bnd resolver maven plugin resolves the -runbundles for a bndrun file.</description>
+	<name>Bnd Resolver Maven Plugins</name>
 	<packaging>maven-plugin</packaging>
 	<url>https://bnd.bndtools.org/</url>
 	<scm>

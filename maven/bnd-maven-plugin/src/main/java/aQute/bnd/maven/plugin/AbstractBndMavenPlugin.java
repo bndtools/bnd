@@ -40,6 +40,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
@@ -80,6 +82,9 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
+/**
+ * Abstract base class for all bnd-maven-plugin mojos.
+ */
 public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	protected final Logger	logger					= LoggerFactory.getLogger(getClass());
 	static final String		MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
@@ -90,11 +95,18 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	static final String		SNAPSHOT				= "SNAPSHOT";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	File					targetDir;
+	File buildDir;
 
+	/**
+	 * Whether to include the contents of the {@code classesDir} directory
+	 * in the generated bundle.
+	 */
 	@Parameter(defaultValue = "true")
 	boolean					includeClassesDir;
 
+	/**
+	 * The directory where this plugin will store its output when packaging is {@code war}.
+	 */
 	@Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
 	File					warOutputDir;
 
@@ -107,14 +119,27 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${mojoExecution}", readonly = true)
 	MojoExecution			mojoExecution;
 
+	/**
+	 * The list of maven packaging types for which the plugin will execute.
+	 */
 	@Parameter(property = "bnd.packagingTypes", defaultValue = PACKAGING_JAR + "," + PACKAGING_WAR)
 	List<String>			packagingTypes;
 
+	/**
+	 * Skip processing if {@link #includeClassesDir} is {@code true} and the
+	 * {@code classesDir} directory is empty.
+	 */
 	@Parameter(property = "bnd.skipIfEmpty", defaultValue = "false")
 	boolean					skipIfEmpty;
 
+	/**
+	 * If set, the generated output will be reproducible.
+	 *
+	 * @see <a href="https://maven.apache.org/guides/mini/guide-reproducible-builds.html">Configuring
+	 * for Reproducible Builds</a>
+	 */
 	@Parameter(defaultValue = "${project.build.outputTimestamp}")
-	private String			outputTimestamp;
+	String			outputTimestamp;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -148,6 +173,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	@Component
 	MavenProjectHelper		projectHelper;
+
+	@Component
+	private ArtifactHandlerManager artifactHandlerManager;
 
 	File					propertiesFile;
 
@@ -208,7 +236,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 			builder.setBase(project.getBasedir());
 			propertiesFile = loadProperties(builder);
-			builder.setProperty("project.output", targetDir.getCanonicalPath());
+			builder.setProperty("project.output", buildDir.getCanonicalPath());
 
 			// If no bundle to be built, we have nothing to do
 			if (Processor.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
@@ -225,12 +253,12 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			// always add the outputDirectory to the classpath, but
 			// handle projects with no output directory, like
 			// 'test-wrapper-bundle'
-			if (getClassesDir().isDirectory()) {
-				builder.addClasspath(getClassesDir());
+			if (classesDir.isDirectory()) {
+				builder.addClasspath(classesDir);
 
 				Jar classesDirJar;
 				if (includeClassesDir) {
-					classesDirJar = new Jar(project.getName(), getClassesDir());
+					classesDirJar = new Jar(project.getName(), classesDir);
 				} else {
 					classesDirJar = new Jar(project.getName()); // empty jar
 				}
@@ -574,10 +602,10 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	private void attachArtifactToProject(Jar bndJar) throws Exception {
 		File artifactFile = createArtifactFile();
-		File outputDir = artifactFile.getParentFile();
+		File parent = artifactFile.getParentFile();
 
-		if (!outputDir.exists()) {
-			IO.mkdirs(outputDir);
+		if (!parent.exists()) {
+			IO.mkdirs(parent);
 		}
 
 		try (OutputStream os = buildContext.newFileOutputStream(artifactFile)) {
@@ -621,11 +649,19 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	}
 
 	private File createArtifactFile() {
-		return new File(targetDir, project.getBuild()
+		return new File(buildDir, project.getBuild()
 			.getFinalName()
 			+ getClassifier().map("-"::concat)
 				.orElse("")
-			+ "." + project.getPackaging());
+			+ "." + getExtension(project.getPackaging()));
+	}
+
+	private String getExtension(String type) {
+		ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(type);
+		if (artifactHandler != null) {
+			type = artifactHandler.getExtension();
+		}
+		return type;
 	}
 
 	private String createArtifactName(Artifact artifact) {
