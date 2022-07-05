@@ -40,6 +40,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
@@ -148,6 +150,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	@Component
 	MavenProjectHelper		projectHelper;
+
+	@Component
+	private ArtifactHandlerManager artifactHandlerManager;
 
 	File					propertiesFile;
 
@@ -625,7 +630,15 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			.getFinalName()
 			+ getClassifier().map("-"::concat)
 				.orElse("")
-			+ "." + project.getPackaging());
+			+ "." + getExtension(project.getPackaging()));
+	}
+
+	private String getExtension(String type) {
+		ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(type);
+		if (artifactHandler != null) {
+			type = artifactHandler.getExtension();
+		}
+		return type;
 	}
 
 	private String createArtifactName(Artifact artifact) {
