@@ -9,8 +9,8 @@
 		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 	<artifactId>bnd-export-maven-plugin</artifactId>
-	<description>Resolve and Export OSGi applications.</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The bnd export maven plugin can be used to export OSGi applications.</description>
+	<name>Bnd Export Maven Plugin</name>
 	<packaging>maven-plugin</packaging>
 	<url>https://bnd.bndtools.org/</url>
 	<scm>

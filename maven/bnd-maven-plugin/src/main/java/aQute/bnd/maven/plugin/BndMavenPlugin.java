@@ -9,6 +9,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+/**
+ * Processes the target classes to generate OSGi metadata.
+ * <p>
+ * This goal has the default phase of "process-classes".
+ */
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class BndMavenPlugin extends AbstractBndMavenPlugin {
 
@@ -18,15 +23,27 @@ public class BndMavenPlugin extends AbstractBndMavenPlugin {
 	@Parameter(defaultValue = "${project.build.resources}", readonly = true)
 	private List<org.apache.maven.model.Resource>	resources;
 
+	/**
+	 * The directory where the {@code maven-compiler-plugin} places its output.
+	 */
 	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private File									classesDir;
 
+	/**
+	 * The directory where this plugin will store its output.
+	 */
 	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private File									outputDir;
 
+	/**
+	 * Specify the path to store the generated manifest file.
+	 */
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF")
 	File											manifestPath;
 
+	/**
+	 * Skip this goal.
+	 */
 	@Parameter(property = "bnd.skip", defaultValue = "false")
 	boolean											skip;
 

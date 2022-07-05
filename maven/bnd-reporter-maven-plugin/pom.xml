@@ -9,8 +9,8 @@
 		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 	<artifactId>bnd-reporter-maven-plugin</artifactId>
-	<description>Generates and exports reports of projects</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The bnd reporter maven plugin generates and exports reports of projects.</description>
+	<name>Bnd Reporter Maven Plugin</name>
 	<packaging>maven-plugin</packaging>
 	<url>http://bnd.bndtools.org/</url>
 	<scm>

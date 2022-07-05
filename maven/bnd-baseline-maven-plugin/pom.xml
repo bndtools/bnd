@@ -11,8 +11,8 @@
 	</parent>
 
 	<artifactId>bnd-baseline-maven-plugin</artifactId>
-	<description>This maven plugin is used to baseline OSGi bundles.</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The bnd baseline maven plugin is used to baseline OSGi bundles.</description>
+	<name>Bnd Baseline Maven Plugin</name>
 	<packaging>maven-plugin</packaging>
 	<url>https://bnd.bndtools.org/</url>
 	<scm>

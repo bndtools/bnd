@@ -9,8 +9,8 @@
 		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 	<artifactId>bnd-run-maven-plugin</artifactId>
-	<description>Run an OSGi bndrun file</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The bnd run maven plugin is used to run a bndrun file.</description>
+	<name>Bnd Run Maven Plugin</name>
 	<packaging>maven-plugin</packaging>
 	<url>https://bnd.bndtools.org/</url>
 	<scm>
