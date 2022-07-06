@@ -57,7 +57,7 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Bundle-Name") == "test.bnd.gradle:${testProject}"
 		jartask_manifest.getValue("Project-Name") == "${testProject}"
 		new File(jartask_manifest.getValue("Project-Dir")).canonicalFile == testProjectDir
-		new File(jartask_manifest.getValue("Project-Output")).canonicalFile == testProjectBuildDir
+		new File(jartask_manifest.getValue("Project-Output")).canonicalFile == new File(testProjectBuildDir, "classes/java/main").canonicalFile
 		jartask_manifest.getValue("Project-Sourcepath")
 		jartask_manifest.getValue("Project-Buildpath")
 		jartask_manifest.getValue("Bundle-ClassPath") =~ /commons-lang-2\.6\.jar/
@@ -95,7 +95,7 @@ class TestBundlePlugin extends Specification {
 		bundletask_manifest.getValue("Bundle-Name") == "test.bnd.gradle:${testProject}-bundle"
 		bundletask_manifest.getValue("Project-Name") == "${testProject}"
 		new File(bundletask_manifest.getValue("Project-Dir")).canonicalFile == testProjectDir
-		new File(bundletask_manifest.getValue("Project-Output")).canonicalFile == testProjectBuildDir
+		new File(bundletask_manifest.getValue("Project-Output")).canonicalFile == new File(testProjectBuildDir, "classes/java/test").canonicalFile
 		bundletask_manifest.getValue("Project-Sourcepath")
 		bundletask_manifest.getValue("Project-Buildpath")
 		bundletask_manifest.getValue("Bundle-ClassPath") =~ /commons-lang-2\.6\.jar/
@@ -207,7 +207,7 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Bundle-Name") == "test.bnd.gradle:${testProject}"
 		jartask_manifest.getValue("Project-Name") == "${testProject}"
 		new File(jartask_manifest.getValue("Project-Dir")).canonicalFile == testProjectDir
-		new File(jartask_manifest.getValue("Project-Output")).canonicalFile == testProjectBuildDir
+		new File(jartask_manifest.getValue("Project-Output")).canonicalFile == new File(testProjectBuildDir, "classes/java/main").canonicalFile
 		jartask_manifest.getValue("Project-Sourcepath")
 		jartask_manifest.getValue("Project-Buildpath")
 		jartask_manifest.getValue("Bundle-ClassPath") =~ /commons-lang-2\.6\.jar/
@@ -244,7 +244,7 @@ class TestBundlePlugin extends Specification {
 		bundletask_manifest.getValue("Bundle-Name") == "test.bnd.gradle:${testProject}-bundle"
 		bundletask_manifest.getValue("Project-Name") == "${testProject}"
 		new File(bundletask_manifest.getValue("Project-Dir")).canonicalFile == testProjectDir
-		new File(bundletask_manifest.getValue("Project-Output")).canonicalFile == testProjectBuildDir
+		new File(bundletask_manifest.getValue("Project-Output")).canonicalFile == new File(testProjectBuildDir, "classes/java/test").canonicalFile
 		bundletask_manifest.getValue("Project-Sourcepath")
 		bundletask_manifest.getValue("Project-Buildpath")
 		bundletask_manifest.getValue("Bundle-ClassPath") =~ /commons-lang-2\.6\.jar/
@@ -316,7 +316,7 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Bundle-Name") == "test.bnd.gradle:${testProject}"
 		jartask_manifest.getValue("Project-Name") == "${testProject}"
 		new File(jartask_manifest.getValue("Project-Dir")).canonicalFile == testProjectDir
-		new File(jartask_manifest.getValue("Project-Output")).canonicalFile == testProjectBuildDir
+		new File(jartask_manifest.getValue("Project-Output")).canonicalFile == new File(testProjectBuildDir, "classes/java/main").canonicalFile
 		jartask_manifest.getValue("Project-Sourcepath")
 		jartask_manifest.getValue("Project-Buildpath")
 		jartask_manifest.getValue("Gradle-Project-Prop") == "prop.project"
@@ -353,7 +353,7 @@ class TestBundlePlugin extends Specification {
 		bundletask_manifest.getValue("Bundle-Name") == "test.bnd.gradle:${testProject}-overridden"
 		bundletask_manifest.getValue("Project-Name") == "${testProject}"
 		new File(bundletask_manifest.getValue("Project-Dir")).canonicalFile == testProjectDir
-		new File(bundletask_manifest.getValue("Project-Output")).canonicalFile == testProjectBuildDir
+		new File(bundletask_manifest.getValue("Project-Output")).canonicalFile == new File(testProjectBuildDir, "classes/java/test").canonicalFile
 		bundletask_manifest.getValue("Project-Sourcepath")
 		bundletask_manifest.getValue("Project-Buildpath")
 		bundletask_manifest.getValue("Here") == testProjectDir.absolutePath.replace(File.separatorChar, (char)'/')

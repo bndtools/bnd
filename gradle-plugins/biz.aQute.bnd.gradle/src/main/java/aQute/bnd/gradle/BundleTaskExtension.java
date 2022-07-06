@@ -44,6 +44,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFileProperty;
@@ -60,6 +61,7 @@ import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
+import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.work.NormalizeLineEndings;
 
 /**
@@ -185,6 +187,7 @@ public class BundleTaskExtension {
 	private final ProjectLayout						layout;
 	private final File								buildFile;
 	private final ListProperty<CharSequence>		instructions;
+	private final DirectoryProperty		            outputDirectory;
 
 	/**
 	 * Create a BundleTaskExtension for the specified Jar task.
@@ -206,6 +209,7 @@ public class BundleTaskExtension {
 		bnd = instructions.map(list -> Strings.join("\n", list));
 		classpath = objects.fileCollection();
 		allSource = objects.fileCollection();
+		outputDirectory = objects.directoryProperty();
 		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 		setSourceSet(mainSourceSet);
 		classpath(mainSourceSet.getCompileClasspath());
@@ -331,6 +335,11 @@ public class BundleTaskExtension {
 	public void setSourceSet(SourceSet sourceSet) {
 		getAllSource().setFrom(sourceSet.getAllSource()
 			.getSourceDirectories());
+		getOutputDirectory().value(getTask().getProject()
+			.getTasks()
+			.named(sourceSet.getCompileJavaTaskName(), AbstractCompile.class)
+			.flatMap(AbstractCompile::getDestinationDirectory));
+
 		jarLibraryElements(getTask(), sourceSet.getCompileClasspathConfigurationName());
 	}
 
@@ -340,6 +349,10 @@ public class BundleTaskExtension {
 
 	File getBuildFile() {
 		return buildFile;
+	}
+
+	DirectoryProperty getOutputDirectory() {
+		return outputDirectory;
 	}
 
 	/**
@@ -388,9 +401,9 @@ public class BundleTaskExtension {
 		public void execute(Task t) {
 			try {
 				File projectDir = unwrapFile(getLayout().getProjectDirectory());
-				File buildDir = unwrapFile(getLayout().getBuildDirectory());
+				File outputDir = unwrapFile(getOutputDirectory());
 				File buildFile = getBuildFile();
-				FileCollection sourcepath = getAllSource().filter(file -> file.exists());
+				FileCollection sourcepath = getAllSource().filter(File::exists);
 				Optional<org.gradle.api.java.archives.Manifest> taskManifest = Optional
 					.ofNullable(getTask().getManifest());
 				// create Builder
@@ -436,7 +449,7 @@ public class BundleTaskExtension {
 					}
 					// this will cause project.dir property to be set
 					builder.setProperties(temporaryBndFile, projectDir);
-					builder.setProperty("project.output", buildDir.getCanonicalPath());
+					builder.setProperty("project.output", outputDir.getCanonicalPath());
 					// If no bundle to be built, we have nothing to do
 					if (builder.is(Constants.NOBUNDLES)) {
 						return;

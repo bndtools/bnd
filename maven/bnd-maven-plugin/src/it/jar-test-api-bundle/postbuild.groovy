@@ -29,7 +29,7 @@ assert manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -in
 // Check bnd properties
 assert manifest.getValue('Project-Name') == 'Test API Bundle'
 assert manifest.getValue('Project-Dir') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
-assert manifest.getValue('Project-Output') == new File(basedir, "target").absolutePath
+assert manifest.getValue('Project-Output') == new File(basedir, "target/classes").absolutePath
 assert manifest.getValue('Project-Buildpath')
 assert manifest.getValue('Project-Sourcepath')
 assert manifest.getValue('Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)

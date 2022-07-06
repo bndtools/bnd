@@ -24,7 +24,7 @@ assert api_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via
 // Check bnd properties
 assert api_manifest.getValue('Project-Name') == 'Test API Bundle'
 assert api_manifest.getValue('Project-Dir') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
-assert api_manifest.getValue('Project-Output') == new File(basedir, 'target').absolutePath
+assert api_manifest.getValue('Project-Output') == new File(basedir, 'target/classes').absolutePath
 assert api_manifest.getValue('Project-Buildpath')
 assert api_manifest.getValue('Project-Sourcepath')
 assert api_manifest.getValue('Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)

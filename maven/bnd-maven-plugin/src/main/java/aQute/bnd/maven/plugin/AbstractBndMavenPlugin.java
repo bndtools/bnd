@@ -93,9 +93,6 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	static final String		TSTAMP					= "${tstamp}";
 	static final String		SNAPSHOT				= "SNAPSHOT";
 
-	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	File buildDir;
-
 	/**
 	 * Whether to include the contents of the {@code classesDir} directory
 	 * in the generated bundle.
@@ -174,7 +171,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	MavenProjectHelper		projectHelper;
 
 	@Component
-	private ArtifactHandlerManager artifactHandlerManager;
+	ArtifactHandlerManager artifactHandlerManager;
 
 	File					propertiesFile;
 
@@ -235,7 +232,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 			builder.setBase(project.getBasedir());
 			propertiesFile = loadProperties(builder);
-			builder.setProperty("project.output", buildDir.getCanonicalPath());
+			builder.setProperty("project.output", getClassesDir().getCanonicalPath());
 
 			// If no bundle to be built, we have nothing to do
 			if (Processor.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
