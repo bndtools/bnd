@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -34,11 +35,27 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.maven.PomPropertiesResource;
+import aQute.bnd.maven.lib.configuration.BeanProperties;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.version.MavenVersion;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.service.reporter.Report.Location;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -64,30 +81,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.header.OSGiHeader;
-import aQute.bnd.maven.PomPropertiesResource;
-import aQute.bnd.maven.lib.configuration.BeanProperties;
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.FileResource;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.version.MavenVersion;
-import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
-import aQute.lib.utf8properties.UTF8Properties;
-import aQute.service.reporter.Report.Location;
-
 /**
  * Abstract base class for all bnd-maven-plugin mojos.
  */
 public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	protected final Logger	logger					= LoggerFactory.getLogger(getClass());
-	static final String		MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
+	static final String     LAST_MODIFIED           = "aQute.bnd.maven.plugin.BndMavenPlugin.lastModified";
 	static final String		MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
 	static final String		PACKAGING_JAR			= "jar";
 	static final String		PACKAGING_WAR			= "war";
@@ -105,10 +104,10 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	boolean					includeClassesDir;
 
 	/**
-	 * The directory where this plugin will store its output when packaging is {@code war}.
+	 * The directory where the webapp is built when packaging is {@code war}.
 	 */
-	@Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
-	File					warOutputDir;
+	@Parameter(alias = "warOutputDir", defaultValue = "${project.build.directory}/${project.build.finalName}")
+	File                    webappDirectory;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	MavenProject			project;
@@ -201,8 +200,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		// Exit without generating anything if this is neither a jar or war
-		// project. Probably it's just a parent project.
+		// Exit without generating anything if the project packaging is not a
+		// packaging type. Probably it's just a parent project.
 		if (!packagingTypes.contains(project.getPackaging())) {
 			logger.debug("skip project with packaging=" + project.getPackaging());
 			return;
@@ -276,7 +275,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				if (wabProperty == null) {
 					builder.setProperty(Constants.WAB, "");
 				}
-				outputDir = warOutputDir;
+				outputDir = webappDirectory;
 				logger
 					.info("WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
 						+ outputDir);
@@ -330,8 +329,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			}
 
 			if (!wablibs.isEmpty()) {
-				String wablib = wablibs.stream()
-					.collect(Collectors.joining(","));
+				String wablib = String.join(",", wablibs);
 				builder.setProperty(Constants.WABLIB, wablib);
 			}
 
@@ -341,7 +339,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			logger.debug("builder classpath: {}", builder.getProperty("project.buildpath"));
 
 			// Compute bnd sourcepath
-			boolean delta = !buildContext.isIncremental() || manifestOutOfDate();
+			boolean delta = !buildContext.isIncremental() || outOfDate();
 			List<File> sourcepath = new ArrayList<>();
 			if (getSourceDir().exists()) {
 				sourcepath.add(getSourceDir().getCanonicalFile());
@@ -524,30 +522,35 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				// Build bnd Jar (in memory)
 				Jar bndJar = builder.build();
 
-				String goal = mojoExecution.getMojoDescriptor()
-					.getGoal();
-
 				// If a bnd-maven-plugin packaging goal is used it means
 				// this execution is responsible for creating and attaching the
 				// target artifact to the project
+				String goal = mojoExecution.getMojoDescriptor()
+					.getGoal();
 				if (isPackagingGoal(goal)) {
 					// However, if extensions for this plugin are not enabled
-					// the maven-(j|w)wa-plugin will also execute, resulting in
+					// the maven-(jar|war)-plugin will also execute, resulting in
 					// conflicting results
-					if (mojoExecution.getPlugin()
+					if (!mojoExecution.getPlugin()
 						.isExtensions()) {
-						// Add META-INF/maven metadata to jar
-						addMavenMetadataToJar(bndJar);
-						// Write the jar directly and attach it to the project
-						attachArtifactToProject(bndJar);
-					} else {
 						throw new MojoExecutionException(String.format(
 							"In order to use the bnd-maven-plugin packaging goal %s, <extensions>true</extensions> must be set on the plugin",
 							goal));
 					}
+					if (isWab) {
+						// Write Jar into webappDirectory
+						writeFolder(bndJar, webappDirectory);
+						File manifestPath = new File(webappDirectory, bndJar.getManifestName());
+						writeManifest(bndJar, manifestPath);
+					}
+					// Add META-INF/maven metadata to jar
+					addMavenMetadataToJar(bndJar);
+					// Write the jar directly and attach it to the project
+					attachArtifactToProject(bndJar);
 				} else {
-					// Expand Jar into target/classes
-					expandJar(bndJar, outputDir);
+					// Write Jar into outputDir
+					writeFolder(bndJar, outputDir);
+					writeManifest(bndJar, getManifestPath());
 				}
 			} else {
 				logger.debug("No build");
@@ -601,15 +604,22 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	}
 
 	private void attachArtifactToProject(Jar bndJar) throws Exception {
-		File artifactFile = createArtifactFile();
-		File parent = artifactFile.getParentFile();
+		File artifactFile = getArtifactFile();
+		if (outOfDate(artifactFile) || artifactFile.lastModified() < bndJar.lastModified()) {
+			if (logger.isDebugEnabled()) {
+				if (artifactFile.exists())
+					logger.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", artifactFile.lastModified(),
+						artifactFile));
+				else
+					logger.debug("Creating '{}'", artifactFile);
+			}
 
-		if (!parent.exists()) {
-			IO.mkdirs(parent);
-		}
-
-		try (OutputStream os = buildContext.newFileOutputStream(artifactFile)) {
-			bndJar.write(os);
+			Files.createDirectories(artifactFile.toPath()
+				.getParent());
+			try (OutputStream os = buildContext.newFileOutputStream(artifactFile)) {
+				bndJar.write(os);
+			}
+			buildContext.setValue(LAST_MODIFIED, artifactFile.lastModified());
 		}
 
 		// If there is a classifier artifact must be attached to the
@@ -648,7 +658,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		bndJar.putResource(pomProperties.getWhere(), pomProperties);
 	}
 
-	private File createArtifactFile() {
+	private File getArtifactFile() {
 		return new File(buildDir, project.getBuild()
 			.getFinalName()
 			+ getClassifier().map("-"::concat)
@@ -817,28 +827,26 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		}
 
 		Path path = directory.toPath();
+		Path meta_inf = Paths.get("META-INF");
 		try (Stream<Path> entries = Files.walk(path)) {
-			return !entries.filter(p -> !Files.isDirectory(p))
-				.filter(p -> !path.relativize(p)
-					.startsWith("META-INF/"))
-				.findFirst()
-				.isPresent();
+			return entries.allMatch(p -> Files.isDirectory(p) || path.relativize(p)
+				.startsWith(meta_inf));
 		} catch (IOException ioe) {
 			throw Exceptions.duck(ioe);
 		}
 	}
 
-	private void expandJar(Jar jar, File dir) throws Exception {
+	private void writeFolder(Jar jar, File directory) throws Exception {
 		final long lastModified = jar.lastModified();
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Bundle lastModified: %tF %<tT.%<tL", lastModified));
 		}
-		dir = dir.getAbsoluteFile();
-		Files.createDirectories(dir.toPath());
+		directory = directory.getAbsoluteFile();
+		Files.createDirectories(directory.toPath());
 
 		for (Map.Entry<String, Resource> entry : jar.getResources()
 			.entrySet()) {
-			File outFile = IO.getBasedFile(dir, entry.getKey());
+			File outFile = IO.getBasedFile(directory, entry.getKey());
 			Resource resource = entry.getValue();
 			// Skip the copy if the source and target are the same file
 			if (resource instanceof FileResource) {
@@ -863,33 +871,42 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				}
 			}
 		}
+	}
 
-		if (manifestOutOfDate() || getManifestPath().lastModified() < lastModified) {
+	private void writeManifest(Jar jar, File manifestPath) throws Exception {
+		final long lastModified = jar.lastModified();
+		if (outOfDate(manifestPath) || manifestPath.lastModified() < lastModified) {
 			if (logger.isDebugEnabled()) {
-				if (!manifestOutOfDate())
+				if (!outOfDate(manifestPath))
 					logger.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'",
-						getManifestPath().lastModified(), getManifestPath()));
+						manifestPath.lastModified(), manifestPath));
 				else
-					logger.debug("Creating '{}'", getManifestPath());
+					logger.debug("Creating '{}'", manifestPath);
 			}
-			Files.createDirectories(getManifestPath().toPath()
+			Files.createDirectories(manifestPath.toPath()
 				.getParent());
-			try (OutputStream manifestOut = buildContext.newFileOutputStream(getManifestPath())) {
+			try (OutputStream manifestOut = buildContext.newFileOutputStream(manifestPath)) {
 				jar.writeManifest(manifestOut);
 			}
-			buildContext.setValue(MANIFEST_LAST_MODIFIED, getManifestPath().lastModified());
+			buildContext.setValue(LAST_MODIFIED, manifestPath.lastModified());
 		}
 	}
 
-	private boolean manifestOutOfDate() {
-		if (!getManifestPath().isFile()) {
+	private boolean outOfDate() {
+		String goal = mojoExecution.getMojoDescriptor()
+			.getGoal();
+		return outOfDate(isPackagingGoal(goal) ? getArtifactFile() : getManifestPath());
+	}
+
+	private boolean outOfDate(File target) {
+		if (!target.isFile()) {
 			return true;
 		}
 
-		long manifestLastModified = 0L;
-		if (buildContext.getValue(MANIFEST_LAST_MODIFIED) != null) {
-			manifestLastModified = (Long) buildContext.getValue(MANIFEST_LAST_MODIFIED);
+		long lastModified = 0L;
+		if (buildContext.getValue(LAST_MODIFIED) != null) {
+			lastModified = (Long) buildContext.getValue(LAST_MODIFIED);
 		}
-		return getManifestPath().lastModified() != manifestLastModified;
+		return target.lastModified() != lastModified;
 	}
 }
