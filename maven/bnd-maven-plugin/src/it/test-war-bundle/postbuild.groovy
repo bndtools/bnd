@@ -1,9 +1,13 @@
 import java.util.jar.Attributes
-import java.util.jar.JarFile;
+import java.util.jar.JarFile
 
-// Check the bundles exist!
+import static org.assertj.core.api.Assertions.assertThat
+
+// Check the output exists!
 File war_bundle = new File(basedir, 'target/test-war-bundle-0.0.1-SNAPSHOT.war')
-assert war_bundle.isFile()
+File webapp_directory = new File(basedir, 'target/test-war-bundle-0.0.1-SNAPSHOT')
+assertThat(war_bundle).isFile()
+assertThat(webapp_directory).isDirectory()
 
 // Load manifests
 JarFile war_jar = new JarFile(war_bundle)
@@ -21,3 +25,12 @@ assert war_jar.getEntry('WEB-INF/classes/org/example/impl/') != null
 assert war_jar.getEntry('WEB-INF/lib/test-api-bundle-0.0.1.jar') != null
 assert war_jar.getEntry('WEB-INF/lib/osgi.cmpn-6.0.0.jar') == null
 assert war_jar.getEntry('WEB-INF/lib/osgi.annotation-6.0.1.jar') == null
+
+assertThat(new File(webapp_directory, 'META-INF/MANIFEST.MF')).isFile()
+assertThat(new File(webapp_directory, 'WEB-INF')).isDirectory()
+assertThat(new File(webapp_directory, 'WEB-INF/classes/org/example/impl')).isDirectory()
+assertThat(new File(webapp_directory, 'WEB-INF/lib/test-api-bundle-0.0.1.jar')).isFile()
+assertThat(new File(webapp_directory, 'WEB-INF/lib/osgi.cmpn-6.0.0.jar')).doesNotExist()
+assertThat(new File(webapp_directory, 'WEB-INF/lib/osgi.annotation-6.0.1.jar')).doesNotExist()
+
+true // success

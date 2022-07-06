@@ -52,6 +52,7 @@
 					<bnd><![CDATA[
 						Web-ContextPath: /${project.build.finalName}
 					]]></bnd>
+					<webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
 				</configuration>
 			</plugin>
 		</plugins>

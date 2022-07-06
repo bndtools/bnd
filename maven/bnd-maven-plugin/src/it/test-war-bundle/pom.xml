@@ -52,6 +52,8 @@
 					<bnd><![CDATA[
 						Web-ContextPath: /${project.build.finalName}
 					]]></bnd>
+					<!-- We use the old name, warOutputDir, which is aliased to webappDirectory -->
+					<warOutputDir>${project.build.directory}/${project.build.finalName}</warOutputDir>
 				</configuration>
 			</plugin>
 			<plugin>

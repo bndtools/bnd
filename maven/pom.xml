@@ -8,7 +8,7 @@
 	<artifactId>maven</artifactId>
 	<version>1.0.0</version>
 	<description>Reactor to build the Bnd Maven plugins.</description>
-	<name>Bnd Maven plugins reactor</name>
+	<name>Bnd Maven Plugins Reactor</name>
 	<packaging>pom</packaging>
 
 	<properties>
