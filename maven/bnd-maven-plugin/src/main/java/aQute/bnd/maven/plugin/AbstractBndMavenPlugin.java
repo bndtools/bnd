@@ -129,7 +129,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	boolean					skipIfEmpty;
 
 	/**
-	 * If set, the generated output will be reproducible.
+	 * Timestamp for reproducible output archive entries, either formatted as ISO 8601
+	 * {@code yyyy-MM-dd'T'HH:mm:ssXXX} or as an int representing seconds since the epoch.
 	 *
 	 * @see <a href="https://maven.apache.org/guides/mini/guide-reproducible-builds.html">Configuring
 	 * for Reproducible Builds</a>
@@ -193,6 +194,10 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	public Optional<String> getType() {
 		return Optional.empty();
+	}
+
+	File getWebappDirectory() {
+		return webappDirectory;
 	}
 
 	@Override
@@ -266,16 +271,13 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			boolean hasWablibs = builder.getProperty(Constants.WABLIB) != null;
 			String wabProperty = builder.getProperty(Constants.WAB);
 
-			File outputDir = getOutputDir();
-
 			if (isWab) {
 				if (wabProperty == null) {
 					builder.setProperty(Constants.WAB, "");
 				}
-				outputDir = webappDirectory;
 				logger
 					.info("WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
-						+ outputDir);
+						+ getWebappDirectory());
 			} else if ((wabProperty != null) || hasWablibs) {
 				throw new MojoFailureException(
 					Constants.WAB + " & " + Constants.WABLIB + " are not supported with packaging 'jar'");
@@ -536,8 +538,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 					}
 					if (isWab) {
 						// Write Jar into webappDirectory
-						writeFolder(bndJar, webappDirectory);
-						File manifestPath = new File(webappDirectory, bndJar.getManifestName());
+						File outputDirectory = getWebappDirectory();
+						writeContent(bndJar, outputDirectory);
+						File manifestPath = new File(outputDirectory, bndJar.getManifestName());
 						writeManifest(bndJar, manifestPath);
 					}
 					// Add META-INF/maven metadata to jar
@@ -545,8 +548,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 					// Write the jar directly and attach it to the project
 					attachArtifactToProject(bndJar);
 				} else {
-					// Write Jar into outputDir
-					writeFolder(bndJar, outputDir);
+					File outputDirectory = isWab ? getWebappDirectory() : getOutputDir();
+					// Write Jar content into outputDirectory
+					writeContent(bndJar, outputDirectory);
 					writeManifest(bndJar, getManifestPath());
 				}
 			} else {
@@ -656,7 +660,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	}
 
 	private File getArtifactFile() {
-		return new File(buildDir, project.getBuild()
+		return new File(getOutputDir(), project.getBuild()
 			.getFinalName()
 			+ getClassifier().map("-"::concat)
 				.orElse("")
@@ -833,7 +837,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		}
 	}
 
-	private void writeFolder(Jar jar, File directory) throws Exception {
+	private void writeContent(Jar jar, File directory) throws Exception {
 		final long lastModified = jar.lastModified();
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Bundle lastModified: %tF %<tT.%<tL", lastModified));
