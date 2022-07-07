@@ -1,5 +1,6 @@
 package aQute.bnd.maven.plugin;
 
+import java.io.File;
 import java.util.Optional;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -20,7 +21,13 @@ public class BndMavenPackagingPlugin extends BndMavenPlugin {
 	 * The classifier to use for the generated artifact.
 	 */
 	@Parameter
-	private String classifier;
+	String classifier;
+
+	/**
+	 * The directory where this plugin will store the generated artifact.
+	 */
+	@Parameter(defaultValue = "${project.build.directory}")
+	File outputDir;
 
 	@Override
 	public Optional<String> getClassifier() {
@@ -34,4 +41,8 @@ public class BndMavenPackagingPlugin extends BndMavenPlugin {
 		return Optional.of("jar");
 	}
 
+	@Override
+	public File getOutputDir() {
+		return outputDir;
+	}
 }

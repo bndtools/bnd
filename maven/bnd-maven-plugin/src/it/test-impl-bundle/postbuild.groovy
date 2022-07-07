@@ -35,7 +35,7 @@ assert impl_manifest.getValue('SomeParentVar') == 'parentValue'
 // Check bnd properties
 assert impl_manifest.getValue('Project-Name') == 'test-impl-bundle'
 assert impl_manifest.getValue('Project-Dir') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
-assert impl_manifest.getValue('Project-Output') == new File(basedir, 'target').absolutePath
+assert impl_manifest.getValue('Project-Output') == new File(basedir, 'target/classes').absolutePath
 assert impl_manifest.getValue('Project-Buildpath')
 assert impl_manifest.getValue('Project-Sourcepath')
 assert impl_manifest.getValue('Parent-Here') == new File(basedir, "../process-parent").canonicalPath.replace(File.separatorChar, '/' as char)

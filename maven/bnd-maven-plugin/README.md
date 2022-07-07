@@ -47,13 +47,15 @@ The `jar` goal is not executed by default, therefore at least one explicit execu
 |-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `bndfile`               | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.                                                                                                         |
 | `bnd`                   | Bnd instructions for this project specified directly in the pom file. This is generally be done using a `<![CDATA[  ]]>` section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
-| `classifier`            | A string added to the artifact indicating a supplemental artifact produced by the project. If no value is provided it indicates the main artifact produced by the project. _Defaults to no value_.                                                                                ||`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
+| `classifier`            | A string added to the artifact indicating a supplemental artifact produced by the project. If no value is provided it indicates the main artifact produced by the project. _Defaults to no value_.                                                                                |
 | `classesDir`            | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.outputDirectory}`._                                                                                                                                                              |
 | `includeClassesDir`     | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*.                                                                                                                                                                                                  |
-| `outputDir`             | The directory where the `bnd-maven-plugin` will extract it's contents. _Defaults to `${project.build.outputDirectory}`._                                                                                                                                                          |
+| `outputDir`             | The directory where this goal will store the generated artifact. _Defaults to `${project.build.directory}`._                                                                                                                                                                      |
+| `webappDirectory`       | The directory where the webapp is built when packaging is `war`. _Defaults to `${project.build.directory}/${project.build.finalName}`._                                                                                                                                           |
 | `packagingTypes`        | The list of maven packaging types for which the plugin will execute. *Defaults to `jar,war`*. Override with property `bnd.packagingTypes`.                                                                                                                                        |
 | `skip`                  | Skip the project. _Defaults to `false`._ Override with property `bnd.skip`.                                                                                                                                                                                                       |
-| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `${project.build.outputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                            |
+| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and `classesDir` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                                                      |
+| `outputTimestamp`       | Timestamp for [reproducible][1] output archive entries, either formatted as ISO 8601 `yyyy-MM-dd'T'HH:mm:ssXXX` or as an int representing seconds since the epoch. _Defaults to `${project.build.outputTimestamp}`_.                                                              |
 
 **No additional packaging plugins are necessary when using the `jar` goal.**
 
@@ -96,14 +98,15 @@ The `bnd-process` is not executed by default, therefore at least one explicit ex
 |-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `bndfile`               | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.                                                                                                         |
 | `bnd`                   | Bnd instructions for this project specified directly in the pom file. This is generally be done using a `<![CDATA[  ]]>` section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
-| `manifestPath`          | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._                                                                                                                                                                |
+| `manifestPath`          | Specify the path to store the generated manifest file. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._                                                                                                                                                     |
 | `classesDir`            | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.outputDirectory}`._                                                                                                                                                              |
 | `includeClassesDir`     | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*.                                                                                                                                                                                                  |
-| `outputDir`             | The directory where the `bnd-maven-plugin` will extract it's contents. _Defaults to `${project.build.outputDirectory}`._                                                                                                                                                          |
+| `outputDir`             | The directory where this goal will store its output. _Defaults to `${project.build.outputDirectory}`._                                                                                                                                                                            |
 | `webappDirectory`       | The directory where the webapp is built when packaging is `war`. _Defaults to `${project.build.directory}/${project.build.finalName}`._                                                                                                                                           |
 | `packagingTypes`        | The list of maven packaging types for which the plugin will execute. *Defaults to `jar,war`*. Override with property `bnd.packagingTypes`.                                                                                                                                        |
 | `skip`                  | Skip the project. _Defaults to `false`._ Override with property `bnd.skip`.                                                                                                                                                                                                       |
-| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `${project.build.outputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                            |
+| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `classesDir` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                                                  |
+| `outputTimestamp`       | Timestamp for [reproducible][1] output archive entries, either formatted as ISO 8601 `yyyy-MM-dd'T'HH:mm:ssXXX` or as an int representing seconds since the epoch. _Defaults to `${project.build.outputTimestamp}`_.                                                              |
 
 ### IMPORTANT NOTE about Maven JAR|WAR Plugin
 
@@ -154,16 +157,16 @@ It is also supported to specify the Bnd instructions embedded in the pom file. T
 
   **Note**: Deep indentation of the `<bnd>` content to match the xml indentation functions perfectly well.
 
-The contents of `${project.build.outputDirectory}` is always included as input to the plugin (*i.e. placed in the bnd builder's classpath*).
+The contents of `classesDir` is made available as input to the plugin (*i.e. placed in the bnd builder's classpath*).
 
-Optionally, the plugin adds the entire content of `${project.build.outputDirectory}` to the bundle content (but no other packages from the build path). This behavior is **enabled** by default. (*See `includeClassesDir` configuration parameter*).
+Optionally, the plugin adds the entire content of `classesDir` to the bundle content (but no other packages from the build path). This behavior is **enabled** by default. (*See `includeClassesDir` configuration parameter*).
 
 For further usage information, see the integration test projects under the included
 `src/it` directory.
 
 ### Default Bundle Headers
 
-The plugin will by default set some OSGi bundle headers derived from [pom elements](https://maven.apache.org/pom.html) (if not overwritten with explicit bnd instructions).
+The plugin will by default set some OSGi bundle headers derived from [pom elements][2] (if not overwritten with explicit bnd instructions).
 
 | OSGi Header           | Derived from POM Element                                        |
 |-----------------------|-----------------------------------------------------------------|
@@ -171,7 +174,7 @@ The plugin will by default set some OSGi bundle headers derived from [pom elemen
 | `Bundle-Name`         | `name`                                                          |
 | `Bundle-Version`      | `version`                                                       |
 | `Bundle-Description`  | `description`                                                   |
-| `Bundle-Vendor`       | `organisation.name`                                             |
+| `Bundle-Vendor`       | `organization.name`                                             |
 | `Bundle-License`      | `licenses`                                                      |
 | `Bundle-SCM`          | `scm`                                                           |
 | `Bundle-Developers`   | `developers` (child element `id` must be set on each developer) |
@@ -179,9 +182,9 @@ The plugin will by default set some OSGi bundle headers derived from [pom elemen
 
 ### Reproducible Builds
 
-If the Maven project property `project.build.outputTimestamp` is set, indicating [reproducible builds](https://maven.apache.org/guides/mini/guide-reproducible-builds.html), this plugin will automatically use the following Bnd instructions, if not otherwise configured.
+If the configuration parameter `outputTimestamp` is set, indicating [reproducible][1] output, this plugin will automatically use the following Bnd instructions, if not otherwise configured.
 
-To support reproducible builds, the following Bnd instructions need to be configured:
+To support reproducible output, the following Bnd instructions need to be configured:
 
 ```properties
 -noextraheaders: true
@@ -202,7 +205,7 @@ The plugin has 6 distinct usage scenarios broken into two groups.
 
 Given executions using the `jar` goal we have the following 3 cases:
 
-1. The common case where very little configuration is required; inputs and outputs are based on defaults. Bnd performs its analysis and enhances the jar with OSGi metadata obtained through introspection of classes, resources, dependencies, and [OSGi bundle annotations](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle):
+1. The common case where very little configuration is required; inputs and outputs are based on defaults. Bnd performs its analysis and enhances the jar with OSGi metadata obtained through introspection of classes, resources, dependencies, and [OSGi bundle annotations][3]:
 
    ```xml
    <plugin>
@@ -246,7 +249,7 @@ Given executions using the `jar` goal we have the following 3 cases:
 
 Given executions using the `bnd-process` goal we have the following 3 cases:
 
-1. The common case is that very little configuration is required; inputs and outputs are based on defaults. Bnd performs its analysis and enhances the jar with OSGi metadata obtained through introspection of classes, resources, dependencies, and [OSGi bundle annotations](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle):
+1. The common case is that very little configuration is required; inputs and outputs are based on defaults. Bnd performs its analysis and enhances the jar with OSGi metadata obtained through introspection of classes, resources, dependencies, and [OSGi bundle annotations][3]:
 
    ```xml
    <plugin>
@@ -354,17 +357,19 @@ The `test-jar` goal is not executed by default, therefore at least one explicit 
 | `bndfile`               | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.                                                                                                         |
 | `bnd`                   | Bnd instructions for this project specified directly in the pom file. This is generally be done using a `<![CDATA[  ]]>` section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
 | `classifier`            | A string added to the artifact indicating a supplemental artifact produced by the project. _Defaults to `tests`_.                                                                                                                                                                 |
+| `classesDir`            | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.testOutputDirectory}`._                                                                                                                                                          |
 | `includeClassesDir`     | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*.                                                                                                                                                                                                  |
-| `skip`                  | Skip the goal. _Defaults to `false`._ Override with property `bnd-tests.skip` or `maven.test.skip`.                                                                                                                                                                               |
 | `artifactFragment`      | If true, make the tests artifact a fragment using `${project.artifactId}` as the `Fragment-Host` header and setting the `Bundle-SymbolicName` of the tests artifact to `${project.artifactId}-tests`. *Defaults to `false`*.                                                      |
 | `testCases`             | Specify the filter that will determine which classes to identify as test cases. *Defaults to `junit5`*. See [Test Cases](#test-cases).                                                                                                                                            |
-| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `${project.build.testOutputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                        |
+| `skip`                  | Skip the goal. _Defaults to `false`._ Override with property `bnd-tests.skip` or `maven.test.skip`.                                                                                                                                                                               |
+| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `classesDir` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                                                  |
+| `outputDir`             | The directory where this goal will store the generated artifact. _Defaults to `${project.build.directory}`._                                                                                                                                                                      |
+| `packagingTypes`        | The list of maven packaging types for which the plugin will execute. *Defaults to `jar,war`*. Override with property `bnd.packagingTypes`.                                                                                                                                        |
+| `outputTimestamp`       | Timestamp for [reproducible][1] output archive entries, either formatted as ISO 8601 `yyyy-MM-dd'T'HH:mm:ssXXX` or as an int representing seconds since the epoch. _Defaults to `${project.build.outputTimestamp}`_.                                                              |
 
 Some details are predefined for simplicity:
 - `${project.build.testSourceDirectory}` is used as the source directory
 - `${project.build.testResources}` is used as the resources directory
-- `${project.build.testOutputDirectory}` is used as the source of input for bnd to analyse
-- `${project.build.testOutputDirectory}/META-INF/MANIFEST.MF` is used as the manifest path
 
 **No additional packaging plugins are necessary when using the `test-jar` goal.**
 
@@ -395,17 +400,20 @@ The `bnd-process-tests` is not executed by default, therefore at least one expli
 |-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `bndfile`               | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.                                                                                                         |
 | `bnd`                   | Bnd instructions for this project specified directly in the pom file. This is generally be done using a `<![CDATA[  ]]>` section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
+| `classesDir`            | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.testOutputDirectory}`._                                                                                                                                                          |
 | `includeClassesDir`     | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*.                                                                                                                                                                                                  |
-| `skip`                  | Skip the goal. _Defaults to `false`._ Override with property `bnd-tests.skip` or `maven.test.skip`.                                                                                                                                                                               |
 | `artifactFragment`      | If true, make the tests artifact a fragment using `${project.artifactId}` as the `Fragment-Host` header and setting the `Bundle-SymbolicName` of the tests artifact to `${project.artifactId}-tests`. *Defaults to `false`*.                                                      |
 | `testCases`             | Specify the filter that will determine which classes to identify as test cases. *Defaults to `junit5`*. See [Test Cases](#test-cases).                                                                                                                                            |
-| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `${project.build.testOutputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                        |
+| `skip`                  | Skip the goal. _Defaults to `false`._ Override with property `bnd-tests.skip` or `maven.test.skip`.                                                                                                                                                                               |
+| `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `classesDir` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                                                  |
+| `manifestPath`          | Specify the path to store the generated manifest file. _Defaults to `${project.build.testOutputDirectory}/META-INF/MANIFEST.MF`._                                                                                                                                                 |
+| `outputDir`             | The directory where this goal will store its output. _Defaults to `${project.build.testOutputDirectory}`._                                                                                                                                                                        |
+| `packagingTypes`        | The list of maven packaging types for which the plugin will execute. *Defaults to `jar,war`*. Override with property `bnd.packagingTypes`.                                                                                                                                        |
+| `outputTimestamp`       | Timestamp for [reproducible][1] output archive entries, either formatted as ISO 8601 `yyyy-MM-dd'T'HH:mm:ssXXX` or as an int representing seconds since the epoch. _Defaults to `${project.build.outputTimestamp}`_.                                                              |
 
 Some details are predefined for simplicity:
 - `${project.build.testSourceDirectory}` is used as the source directory
 - `${project.build.testResources}` is used as the resources directory
-- `${project.build.testOutputDirectory}` is used as the source of input for bnd to analyse
-- `${project.build.testOutputDirectory}/META-INF/MANIFEST.MF` is used as the manifest path
 
 ### IMPORTANT NOTE about Maven JAR Plugin
 
@@ -442,3 +450,7 @@ Bnd's integration testing uses the manifest header `Test-Cases` to identify clas
 - **`all`** - represents all the JUnit filters: `junit3`, `junit4`, and `junit5`.
 - **`testng`** - represents the filter `${classes;HIERARCHY_ANNOTATED;org.testng.annotations.Test;CONCRETE}`. Note: A JUnit Platform engine for TestNG, or other means to run TestNG tests, must be in the test execution runtime.
 - **`useTestCasesHeader`** - indicates that the `Test-Cases` header in the bnd configuration should be used instead. The build will fail if this value is set and there is no `Test-Cases` header in the bnd configuration.
+
+[1]: https://maven.apache.org/guides/mini/guide-reproducible-builds.html
+[2]: https://maven.apache.org/pom.html
+[3]: https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle

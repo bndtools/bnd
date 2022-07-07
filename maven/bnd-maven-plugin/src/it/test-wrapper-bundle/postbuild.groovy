@@ -26,7 +26,7 @@ assert wrapper_manifest.getValue('X-IncludedProperty') == 'Included via -include
 /// Check bnd properties
 assert wrapper_manifest.getValue('Project-Name') == 'test-wrapper-bundle'
 assert wrapper_manifest.getValue('Project-Dir') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
-assert wrapper_manifest.getValue('Project-Output') == new File(basedir, 'target').absolutePath
+assert wrapper_manifest.getValue('Project-Output') == new File(basedir, 'target/classes').absolutePath
 assert wrapper_manifest.getValue('Project-Buildpath')
 assert !wrapper_manifest.getValue('Project-Sourcepath')
 assert wrapper_manifest.getValue('Parent-Here') == new File(basedir, "../process-parent").canonicalPath.replace(File.separatorChar, '/' as char)
