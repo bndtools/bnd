@@ -183,24 +183,24 @@ publishing {
 // Handle JPMS options
 val jpmsOptions: List<String>? by rootProject.extra
 jpmsOptions?.let {
-	tasks.withType<GroovyCompile> {
+	tasks.withType<GroovyCompile>().configureEach {
 		groovyOptions.fork(mapOf("jvmArgs" to it))
 	}
 }
 
 // Disable gradle module metadata
-tasks.withType<GenerateModuleMetadata> {
+tasks.withType<GenerateModuleMetadata>().configureEach {
 	enabled = false
 }
 
 // Reproducible jars
-tasks.withType<AbstractArchiveTask> {
+tasks.withType<AbstractArchiveTask>().configureEach {
 	isPreserveFileTimestamps = false
 	isReproducibleFileOrder = true
 }
 
 // Reproducible javadoc
-tasks.withType<Javadoc> {
+tasks.withType<Javadoc>().configureEach {
 	options {
 		this as StandardJavadocDocletOptions // unsafe cast
 		isNoTimestamp = true
