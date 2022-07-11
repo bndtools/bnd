@@ -1,0 +1,53 @@
+name: Stale
+
+on:
+  schedule:
+    - cron: '30 1 * * *'
+
+env:
+  LC_ALL: en_US.UTF-8
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Stale
+    runs-on: 'ubuntu-latest'
+    steps:
+    - name: Stale Action
+      uses: actions/stale@v5
+      with:
+        days-before-stale: 365
+        days-before-close: 21
+        exempt-all-milestones: true
+        stale-issue-label: 'stale'
+        stale-issue-message: >
+          This issue has been automatically marked as stale because it has not had recent activity.
+          Given the limited bandwidth of the team, it will be automatically closed if no further
+          activity occurs.
+          If you feel this is something you could contribute, please have a look
+          at our [Contributor Guide](https://github.com/bndtools/bnd/blob/main/CONTRIBUTING.md).
+          Thank you for your contribution.
+        close-issue-message: >
+          This issue has been automatically closed due to inactivity. If you can reproduce this
+          on a recent version of Bnd/Bndtools
+          or if you have a good use case for this feature, please feel free
+          to reopen the issue with steps to reproduce, a quick explanation of your use case or a
+          high-quality pull request.
+        stale-pr-label: 'stale'
+        stale-pr-message: >
+          This pull request has been automatically marked as stale because it has not had recent activity.
+          Given the limited bandwidth of the team, it will be closed if no further activity occurs.
+          If you intend to work on this pull request, please reopen the PR.
+          Thank you for your contributions.
+        close-pr-message: >
+          This pull request has been automatically closed due to inactivity.
+          If you are still interested in contributing this, please ensure that
+          it is rebased against the latest `main` branch, all review
+          comments have been addressed and the build is passing.
