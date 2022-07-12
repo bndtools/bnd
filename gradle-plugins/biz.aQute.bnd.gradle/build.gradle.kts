@@ -3,7 +3,7 @@ import java.util.*
 plugins {
 	groovy
 	`kotlin-dsl`
-	id("com.gradle.plugin-publish") version "1.0.0"
+	id("com.gradle.plugin-publish")
 }
 
 interface Injected {
@@ -40,8 +40,9 @@ repositories {
 }
 
 // SourceSet for Kotlin DSL code so that it can be built after the main SourceSet
+val dsl by sourceSets.registering
 sourceSets {
-	val dsl by registering {
+	dsl {
 		compileClasspath += main.get().output
 		runtimeClasspath += main.get().output
 	}
@@ -131,6 +132,15 @@ publishing {
 				name.set(artifactId)
 				description.set("The Bnd Gradle plugins.")
 			}
+			val publication = this
+			tasks.register<WriteProperties>("generatePomPropertiesFor${publication.name.capitalize()}Publication") {
+				description = "Generates the Maven pom.properties file for publication '${publication.name}'."
+				group = PublishingPlugin.PUBLISH_TASK_GROUP
+				setOutputFile(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
+				property("groupId", provider { publication.groupId })
+				property("artifactId", provider { publication.artifactId })
+				property("version", provider { publication.version })
+			}
 		}
 		// Configure pom metadata
 		withType<MavenPublication> {
@@ -167,24 +177,7 @@ publishing {
 					}
 				}
 			}
-			val publication = this
-			tasks.register<WriteProperties>("generatePomPropertiesFor${publication.name.capitalize()}Publication") {
-				description = "Generates the Maven pom.properties file for publication '${publication.name}'."
-				group = PublishingPlugin.PUBLISH_TASK_GROUP
-				setOutputFile(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
-				property("groupId", provider { publication.groupId })
-				property("artifactId", provider { publication.artifactId })
-				property("version", provider { publication.version })
-			}
 		}
-	}
-}
-
-// Handle JPMS options
-val jpmsOptions: List<String>? by rootProject.extra
-jpmsOptions?.let {
-	tasks.withType<GroovyCompile>().configureEach {
-		groovyOptions.fork(mapOf("jvmArgs" to it))
 	}
 }
 
@@ -209,12 +202,12 @@ tasks.withType<Javadoc>().configureEach {
 
 tasks.pluginUnderTestMetadata {
 	// Include dsl SourceSet
-	pluginClasspath.from(sourceSets["dsl"].output)
+	pluginClasspath.from(dsl.get().output)
 }
 
 tasks.jar {
 	// Include dsl SourceSet
-	from(sourceSets["dsl"].output)
+	from(dsl.get().output)
 	// META-INF/maven folder
 	val metaInfMaven = publishing.publications.named<MavenPublication>("pluginMaven").map {
 		"META-INF/maven/${it.groupId}/${it.artifactId}"
@@ -233,7 +226,7 @@ tasks.jar {
 
 tasks.named<Jar>("sourcesJar") {
 	// Include dsl SourceSet
-	from(sourceSets["dsl"].allSource)
+	from(dsl.get().allSource)
 }
 
 val testresourcesOutput = layout.buildDirectory.dir("testresources")
