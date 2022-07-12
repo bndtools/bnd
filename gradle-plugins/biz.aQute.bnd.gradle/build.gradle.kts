@@ -3,7 +3,7 @@ import java.util.*
 plugins {
 	groovy
 	`kotlin-dsl`
-	id("com.gradle.plugin-publish") version "1.0.0"
+	id("com.gradle.plugin-publish")
 }
 
 interface Injected {
