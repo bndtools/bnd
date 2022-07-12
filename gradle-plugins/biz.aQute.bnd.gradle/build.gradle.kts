@@ -181,14 +181,6 @@ publishing {
 	}
 }
 
-// Handle JPMS options
-val jpmsOptions: List<String>? by rootProject.extra
-jpmsOptions?.let {
-	tasks.withType<GroovyCompile>().configureEach {
-		groovyOptions.fork(mapOf("jvmArgs" to it))
-	}
-}
-
 // Disable gradle module metadata
 tasks.withType<GenerateModuleMetadata>().configureEach {
 	enabled = false
