@@ -4,6 +4,7 @@ plugins {
 	groovy
 	`kotlin-dsl`
 	id("com.gradle.plugin-publish")
+	id("dev.hargrave.addmavendescriptor")
 }
 
 interface Injected {
@@ -132,15 +133,6 @@ publishing {
 				name.set(artifactId)
 				description.set("The Bnd Gradle plugins.")
 			}
-			val publication = this
-			tasks.register<WriteProperties>("generatePomPropertiesFor${publication.name.capitalize()}Publication") {
-				description = "Generates the Maven pom.properties file for publication '${publication.name}'."
-				group = PublishingPlugin.PUBLISH_TASK_GROUP
-				setOutputFile(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
-				property("groupId", provider { publication.groupId })
-				property("artifactId", provider { publication.artifactId })
-				property("version", provider { publication.version })
-			}
 		}
 		// Configure pom metadata
 		withType<MavenPublication> {
@@ -208,20 +200,6 @@ tasks.pluginUnderTestMetadata {
 tasks.jar {
 	// Include dsl SourceSet
 	from(dsl.get().output)
-	// META-INF/maven folder
-	val metaInfMaven = publishing.publications.named<MavenPublication>("pluginMaven").map {
-		"META-INF/maven/${it.groupId}/${it.artifactId}"
-	}
-	// Include generated pom.xml file
-	into(metaInfMaven) {
-		from(tasks.named("generatePomFileForPluginMavenPublication"))
-		rename { "pom.xml" }
-	}
-	// Include generated pom.properties file
-	into(metaInfMaven) {
-		from(tasks.named("generatePomPropertiesForPluginMavenPublication"))
-		rename { "pom.properties" }
-	}
 }
 
 tasks.named<Jar>("sourcesJar") {
