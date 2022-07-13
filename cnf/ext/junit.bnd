@@ -17,7 +17,7 @@ hamcrest.version=2.2
 mockito.version=4.6.0
 bytebuddy.version=1.12.10
 objenesis.version=3.2
-osgi-test.version=1.2.0
+osgi-test.version=1.2.1
 
 junit: ${junit-osgi},\
 	org.osgi.dto;version='[1.0,1.1)',\
