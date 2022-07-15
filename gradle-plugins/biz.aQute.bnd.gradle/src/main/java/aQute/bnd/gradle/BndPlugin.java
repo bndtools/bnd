@@ -105,6 +105,11 @@ public class BndPlugin implements Plugin<Project> {
 	private aQute.bnd.build.Project			bndProject;
 
 	/**
+	 * Default public constructor.
+	 */
+	public BndPlugin() {}
+
+	/**
 	 * Apply the {@code biz.aQute.bnd} plugin to the specified project.
 	 */
 	@SuppressWarnings("deprecation")
