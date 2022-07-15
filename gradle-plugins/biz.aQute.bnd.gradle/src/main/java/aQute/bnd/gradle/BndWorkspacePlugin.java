@@ -51,6 +51,11 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	private static final Set<String>	SPECIAL_FOLDERS		= Sets.of("buildSrc", "gradle");
 
 	/**
+	 * Default public constructor.
+	 */
+	public BndWorkspacePlugin() {}
+
+	/**
 	 * Apply the {@code biz.aQute.bnd.workspace} plugin.
 	 */
 	@Override

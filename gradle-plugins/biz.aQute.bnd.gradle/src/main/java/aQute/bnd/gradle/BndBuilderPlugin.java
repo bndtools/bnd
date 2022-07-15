@@ -47,6 +47,11 @@ public class BndBuilderPlugin implements Plugin<Project> {
 	public static final String	PLUGINID		= "biz.aQute.bnd.builder";
 
 	/**
+	 * Default public constructor.
+	 */
+	public BndBuilderPlugin() {}
+
+	/**
 	 * Apply the {@code biz.aQute.bnd.builder} plugin to the specified project.
 	 */
 	@Override

@@ -7,7 +7,8 @@ A Bnd Workspace build uses the information specified in the Bnd Workspace's `cnf
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
 These plugins requires at least Gradle 6.7 for Java 8 to Java 15,
 at least Gradle 7.0 for Java 16,
-and at least Gradle 7.3 for Java 17.
+at least Gradle 7.3 for Java 17,
+and at least Gradle 7.5 for Java 18.
 
 This README represents the capabilities and features of the Bnd Gradle Plugins in the branch containing this README.
 So for the `master` branch, this will be the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins).
@@ -138,7 +139,7 @@ The FileCollection object to use as the classpath for the Bnd builder.
 The default value is _${project.sourceSets.main.compileClasspath}_.
 You will only need to specify this property if you want to specify additional classpath elements or replace the classpath.
 
-### properties 
+### properties
 
 Properties that are available for evaluation of the Bnd instructions.
 The default is the properties of the Gradle task and project objects.
@@ -382,7 +383,7 @@ This property must not be used for and is ignored in Bnd Workspace builds.
 If `true` failure reports will include optional requirements.
 The default is `true`.
 
-### properties 
+### properties
 
 Properties that are available for evaluation of the Bnd instructions.
 The default is the properties of the Gradle task and project objects.
@@ -436,7 +437,7 @@ The collection of files to use for locating bundles during the bndrun export.
 The default is _${project.sourceSets.main.runtimeClasspath}_ plus _${project.configurations.archives.artifacts.files}_.
 This property must not be used for and is ignored in Bnd Workspace builds.
 
-### properties 
+### properties
 
 Properties that are available for evaluation of the Bnd instructions.
 The default is the properties of the Gradle task and project objects.
@@ -496,9 +497,9 @@ The default is _${project.java.testResultsDir}/${task.name}_.
 ### javaLauncher
 
 Specify the default java executable to be used for execution.
-This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`. 
+This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`.
 
-### properties 
+### properties
 
 Properties that are available for evaluation of the Bnd instructions.
 The default is the properties of the Gradle task and project objects.
@@ -609,9 +610,9 @@ This property must not be used for and is ignored in Bnd Workspace builds.
 ### javaLauncher
 
 Specify the default java executable to be used for execution.
-This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`. 
+This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`.
 
-### properties 
+### properties
 
 Properties that are available for evaluation of the Bnd instructions.
 The default is the properties of the Gradle task and project objects.
