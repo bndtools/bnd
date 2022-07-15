@@ -357,6 +357,10 @@ public class POM implements IPom {
 	private final static Pattern MACRO_P = Pattern.compile("\\$\\{(?<prop>(?<env>env\\.)?(?<key>[-.$\\w]+))\\}");
 
 	private String replaceMacros(String value) {
+		return replaceMacros0(value, new HashSet<>());
+	}
+
+	private String replaceMacros0(String value, Set<String> processing) {
 		Matcher m = MACRO_P.matcher(value);
 		StringBuilder sb = new StringBuilder();
 		int start = 0;
@@ -364,7 +368,14 @@ public class POM implements IPom {
 			String key = m.group("key");
 			String property = (m.group("env") != null) ? System.getenv(key) : this.properties.getProperty(key);
 			if (property != null && property.indexOf('$') >= 0) {
-				property = replaceMacros(property);
+				if (processing.add(property)) { // not currently processing
+					String processed = replaceMacros0(property, processing);
+					processing.remove(property);
+					property = processed;
+				} else {
+					l.debug("Recursive property in {} : key {}", this, m.group("prop"));
+					property = m.group(0);
+				}
 			}
 			if (property == null) {
 				l.debug("Undefined property in {} : key {}", this, m.group("prop"));
