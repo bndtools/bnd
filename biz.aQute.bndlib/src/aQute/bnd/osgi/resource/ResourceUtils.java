@@ -1,5 +1,6 @@
 package aQute.bnd.osgi.resource;
 
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
@@ -61,6 +62,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.library.LibraryNamespace;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
@@ -598,16 +600,47 @@ public class ResourceUtils {
 	}
 
 	public static Map<URI, String> getLocations(Resource resource) {
-		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class)
-			.filter(c -> Objects.nonNull(c.url()))
-			// We can't use Collectors.toMap since we must handle null
-			// ContentCapability::osgi_content values.
-			// .collect(toMap(ContentCapability::url,
-			// ContentCapability::osgi_content));
-			.collect(Collector.of(HashMap<URI, String>::new, (m, c) -> m.put(c.url(), c.osgi_content()), (m1, m2) -> {
+		Map<URI, Object> locations = MapStream.of(
+			capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE).map(asFunction(c -> {
+				Map<String, Object> attributes = c.getAttributes();
+				Object u = attributes.get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
+				if (u == null) {
+					return null;
+				}
+				URI uri = URI.create(u.toString());
+				Object osgi_content;
+				if (attributes instanceof DeferredValueMap) {
+					DeferredValueMap<String, Object> deferredMap = (DeferredValueMap<String, Object>) attributes;
+					Object value = deferredMap.getDeferred(ContentNamespace.CONTENT_NAMESPACE);
+					if (value instanceof DeferredValue) {
+						@SuppressWarnings("unchecked")
+						DeferredValue<?> deferred = (DeferredValue<?>) value;
+						if (String.class.isAssignableFrom(deferred.type())) {
+							osgi_content = deferred;
+						} else {
+							osgi_content = cnv.convert(String.class, deferred.get());
+						}
+					} else {
+						osgi_content = cnv.convert(String.class, value);
+					}
+				} else {
+					osgi_content = cnv.convert(String.class, attributes.get(ContentNamespace.CONTENT_NAMESPACE));
+				}
+				return MapStream.entry(uri, osgi_content);
+			}))
+				.filter(Objects::nonNull))
+			// We can't use MapStream.toMap since we must handle null
+			// osgi_content values.
+			// .collect(MapStream.toMap());
+			.collect(Collector.of(HashMap<URI, Object>::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), (m1, m2) -> {
 				m1.putAll(m2);
 				return m1;
 			}));
+		@SuppressWarnings({
+			"rawtypes", "unchecked"
+		})
+		Map<URI, String> result = new DeferredValueMap(locations);
+		return result;
 	}
 
 	public static List<Capability> findProviders(Requirement requirement,
