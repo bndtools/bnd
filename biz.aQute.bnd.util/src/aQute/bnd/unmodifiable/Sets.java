@@ -2,7 +2,10 @@ package aQute.bnd.unmodifiable;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 @SuppressWarnings("unchecked")
 public class Sets {
@@ -69,8 +72,18 @@ public class Sets {
 		if (collection.isEmpty()) {
 			return of();
 		}
+		if (collection instanceof Set) {
+			return new ImmutableSet<E>(collection.toArray());
+		}
 		return new ImmutableSet<E>(collection.stream()
 			.distinct()
 			.toArray());
+	}
+
+	public static <E> Collector<E, ?, Set<E>> toSet() {
+		return Collector.of((Supplier<Set<E>>) LinkedHashSet::new, Set::add, (l, r) -> {
+			l.addAll(r);
+			return l;
+		}, Sets::copyOf);
 	}
 }

@@ -1,8 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toSet;
 
 import java.io.Closeable;
 import java.io.File;
@@ -594,7 +592,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
 			}
 			Set<String> multi = Strings.splitAsStream(configuration.multi())
-				.collect(collectingAndThen(toSet(), Sets::copyOf));
+				.collect(Sets.toSet());
 			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
 			this.index.open();
 

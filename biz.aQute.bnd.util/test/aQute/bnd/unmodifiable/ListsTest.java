@@ -550,4 +550,23 @@ public class ListsTest {
 			Spliterator.SUBSIZED, Spliterator.NONNULL);
 	}
 
+	@Test
+	public void collector() {
+		List<String> source = new ArrayList<>();
+		source.add("e1");
+		source.add("e2");
+		source.add("e1");
+		List<String> list = source.stream()
+			.collect(Lists.toList());
+		source.set(0, "changed");
+		assertThat(list).hasSize(3)
+			.containsExactly("e1", "e2", "e1");
+		assertThat(list.stream()).hasSize(3)
+			.containsExactly("e1", "e2", "e1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.clear());
+	}
+
 }

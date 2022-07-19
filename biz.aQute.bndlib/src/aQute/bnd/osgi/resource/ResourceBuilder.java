@@ -1,5 +1,6 @@
 package aQute.bnd.osgi.resource;
 
+import static aQute.bnd.exceptions.SupplierWithException.asSupplierOrElse;
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
@@ -51,6 +52,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
@@ -652,7 +654,7 @@ public class ResourceBuilder {
 
 	public List<Capability> findCapabilities(String ns, String filter) {
 		if (filter == null || capabilities.isEmpty())
-			return Collections.emptyList();
+			return Lists.of();
 
 		List<Capability> capabilities = new ArrayList<>();
 		Filter f = new Filter(filter);
@@ -705,6 +707,19 @@ public class ResourceBuilder {
 		addCapability(c);
 	}
 
+	void addContentCapability(URI uri, DeferredValue<String> sha256, long length, String mime) {
+		assert uri != null;
+		assert sha256 != null;
+		assert length >= 0;
+
+		CapabilityBuilder c = new CapabilityBuilder(ContentNamespace.CONTENT_NAMESPACE);
+		c.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha256);
+		c.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, uri.toString());
+		c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, Long.valueOf(length));
+		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime != null ? mime : MIME_TYPE_BUNDLE);
+		addCapability(c);
+	}
+
 	public boolean addFile(File file, URI uri) throws Exception {
 		if (uri == null)
 			uri = file.toURI();
@@ -715,14 +730,22 @@ public class ResourceBuilder {
 			hasIdentity = addManifest(manifest);
 		}
 		String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
-		String sha256 = SHA256.digest(file)
-			.asHex();
+		int deferredHashCode = hashCode(file);
+		DeferredValue<String> sha256 = new DeferredComparableValue<>(String.class,
+			asSupplierOrElse(() -> SHA256.digest(file)
+				.asHex(), null),
+			deferredHashCode);
 		addContentCapability(uri, sha256, file.length(), mime);
 
 		if (hasIdentity) {
 			addHashes(file);
 		}
 		return hasIdentity;
+	}
+
+	private static int hashCode(File file) {
+		return file.getAbsoluteFile()
+			.hashCode();
 	}
 
 	/**

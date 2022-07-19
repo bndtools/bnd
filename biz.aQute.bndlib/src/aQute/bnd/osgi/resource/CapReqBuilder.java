@@ -150,7 +150,14 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) {
-		attributes.forEach(this::addAttribute);
+		for (Entry<? extends String, ? extends Object> entry : attributes.entrySet()) {
+			if (entry instanceof DeferredValueEntry) {
+				DeferredValueEntry<? extends String, ? extends Object> deferred = (DeferredValueEntry<? extends String, ? extends Object>) entry;
+				addAttribute(deferred.getKey(), deferred.getDeferredValue());
+			} else {
+				addAttribute(entry.getKey(), entry.getValue());
+			}
+		}
 		return this;
 	}
 

@@ -1,15 +1,11 @@
 package aQute.bnd.osgi.resource;
 
 import static aQute.lib.collections.Logic.retain;
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +18,7 @@ import org.osgi.service.repository.RepositoryContent;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
+import aQute.bnd.unmodifiable.Lists;
 
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
 
@@ -33,9 +30,9 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	private volatile transient Map<URI, String>		locations;
 
 	void setCapabilities(List<Capability> capabilities) {
-		allCapabilities = unmodifiableList(capabilities);
+		allCapabilities = Lists.copyOf(capabilities);
 		capabilityMap = capabilities.stream()
-			.collect(groupingBy(Capability::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
+			.collect(groupingBy(Capability::getNamespace, Lists.toList()));
 
 		locations = null; // clear so equals/hashCode can recompute
 	}
@@ -45,13 +42,13 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		List<Capability> caps = (namespace != null) ? ((capabilityMap != null) ? capabilityMap.get(namespace) : null)
 			: allCapabilities;
 
-		return (caps != null) ? caps : Collections.emptyList();
+		return (caps != null) ? caps : Lists.of();
 	}
 
 	void setRequirements(List<Requirement> requirements) {
-		allRequirements = unmodifiableList(requirements);
+		allRequirements = Lists.copyOf(requirements);
 		requirementMap = requirements.stream()
-			.collect(groupingBy(Requirement::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
+			.collect(groupingBy(Requirement::getNamespace, Lists.toList()));
 	}
 
 	@Override
@@ -59,7 +56,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		List<Requirement> reqs = (namespace != null) ? ((requirementMap != null) ? requirementMap.get(namespace) : null)
 			: allRequirements;
 
-		return (reqs != null) ? reqs : Collections.emptyList();
+		return (reqs != null) ? reqs : Lists.of();
 	}
 
 	@Override

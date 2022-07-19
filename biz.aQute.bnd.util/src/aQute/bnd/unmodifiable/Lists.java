@@ -1,8 +1,11 @@
 package aQute.bnd.unmodifiable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 @SuppressWarnings("unchecked")
 public class Lists {
@@ -70,5 +73,12 @@ public class Lists {
 			return of();
 		}
 		return new ImmutableList<E>(collection.toArray());
+	}
+
+	public static <E> Collector<E, ?, List<E>> toList() {
+		return Collector.of((Supplier<List<E>>) ArrayList::new, List::add, (l, r) -> {
+			l.addAll(r);
+			return l;
+		}, Lists::copyOf);
 	}
 }
