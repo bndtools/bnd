@@ -52,6 +52,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
@@ -653,7 +654,7 @@ public class ResourceBuilder {
 
 	public List<Capability> findCapabilities(String ns, String filter) {
 		if (filter == null || capabilities.isEmpty())
-			return Collections.emptyList();
+			return Lists.of();
 
 		List<Capability> capabilities = new ArrayList<>();
 		Filter f = new Filter(filter);

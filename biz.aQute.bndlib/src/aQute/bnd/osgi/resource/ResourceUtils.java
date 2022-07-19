@@ -17,7 +17,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +62,9 @@ import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.library.LibraryNamespace;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Maps;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
@@ -442,14 +444,14 @@ public class ResourceUtils {
 
 	public static Set<Resource> getResources(Collection<? extends Capability> providers) {
 		if (providers == null || providers.isEmpty())
-			return Collections.emptySet();
+			return Sets.of();
 
 		return getResources(providers.stream());
 	}
 
 	public static Map<Resource, List<Capability>> getIndexedByResource(Collection<? extends Capability> providers) {
 		if (providers == null || providers.isEmpty())
-			return Collections.emptyMap();
+			return Maps.of();
 		return providers.stream()
 			.collect(groupingBy(Capability::getResource, toCapabilities()));
 	}
@@ -718,7 +720,7 @@ public class ResourceUtils {
 		return runBundles;
 	}
 
-	private final static Collection<Requirement> all = Collections.singleton(createWildcardRequirement());
+	private final static Collection<Requirement> all = Lists.of(createWildcardRequirement());
 
 	/**
 	 * Return all resources from a repository as returned by the wildcard

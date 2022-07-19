@@ -27,7 +27,6 @@ import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.List;
@@ -39,6 +38,8 @@ import org.osgi.framework.Filter;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
+
+import aQute.bnd.unmodifiable.Maps;
 
 /**
  * RFC 1960-based Filter. Filter objects can be created by calling the
@@ -191,7 +192,7 @@ abstract class FilterImpl implements Filter {
 	 */
 	@Override
 	public boolean match(ServiceReference<?> reference) {
-		return matches0((reference != null) ? new ServiceReferenceMap(reference) : Collections.emptyMap());
+		return matches0((reference != null) ? new ServiceReferenceMap(reference) : Maps.of());
 	}
 
 	/**
@@ -208,7 +209,7 @@ abstract class FilterImpl implements Filter {
 	 */
 	@Override
 	public boolean match(Dictionary<String, ?> dictionary) {
-		return matches0((dictionary != null) ? new CaseInsensitiveMap(dictionary) : Collections.emptyMap());
+		return matches0((dictionary != null) ? new CaseInsensitiveMap(dictionary) : Maps.of());
 	}
 
 	/**
@@ -224,7 +225,7 @@ abstract class FilterImpl implements Filter {
 	 */
 	@Override
 	public boolean matchCase(Dictionary<String, ?> dictionary) {
-		return matches0((dictionary != null) ? DictionaryMap.asMap(dictionary) : Collections.emptyMap());
+		return matches0((dictionary != null) ? DictionaryMap.asMap(dictionary) : Maps.of());
 	}
 
 	/**
@@ -241,7 +242,7 @@ abstract class FilterImpl implements Filter {
 	 */
 	@Override
 	public boolean matches(Map<String, ?> map) {
-		return matches0((map != null) ? map : Collections.emptyMap());
+		return matches0((map != null) ? map : Maps.of());
 	}
 
 	abstract boolean matches0(Map<String, ?> map);
