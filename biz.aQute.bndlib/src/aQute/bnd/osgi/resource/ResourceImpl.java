@@ -1,9 +1,7 @@
 package aQute.bnd.osgi.resource;
 
 import static aQute.lib.collections.Logic.retain;
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -34,7 +32,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	void setCapabilities(List<Capability> capabilities) {
 		allCapabilities = Lists.copyOf(capabilities);
 		capabilityMap = capabilities.stream()
-			.collect(groupingBy(Capability::getNamespace, collectingAndThen(toList(), Lists::copyOf)));
+			.collect(groupingBy(Capability::getNamespace, Lists.toList()));
 
 		locations = null; // clear so equals/hashCode can recompute
 	}
@@ -50,7 +48,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	void setRequirements(List<Requirement> requirements) {
 		allRequirements = Lists.copyOf(requirements);
 		requirementMap = requirements.stream()
-			.collect(groupingBy(Requirement::getNamespace, collectingAndThen(toList(), Lists::copyOf)));
+			.collect(groupingBy(Requirement::getNamespace, Lists.toList()));
 	}
 
 	@Override

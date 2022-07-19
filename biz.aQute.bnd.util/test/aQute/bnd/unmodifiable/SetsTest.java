@@ -40,7 +40,7 @@ public class SetsTest {
 	public void one() {
 		Set<String> set = Sets.of("e1");
 		assertThat(set).hasSize(1)
-			.containsExactlyInAnyOrder("e1");
+			.containsExactly("e1");
 		assertThat(set.stream()).hasSize(1)
 			.containsExactly("e1");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -53,7 +53,7 @@ public class SetsTest {
 	public void two() {
 		Set<String> set = Sets.of("e1", "e2");
 		assertThat(set).hasSize(2)
-			.containsExactlyInAnyOrder("e1", "e2");
+			.containsExactly("e1", "e2");
 		assertThat(set.stream()).hasSize(2)
 			.containsExactly("e1", "e2");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -66,7 +66,7 @@ public class SetsTest {
 	public void three() {
 		Set<String> set = Sets.of("e1", "e2", "e3");
 		assertThat(set).hasSize(3)
-			.containsExactlyInAnyOrder("e1", "e2", "e3");
+			.containsExactly("e1", "e2", "e3");
 		assertThat(set.stream()).hasSize(3)
 			.containsExactly("e1", "e2", "e3");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -79,7 +79,7 @@ public class SetsTest {
 	public void four() {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4");
 		assertThat(set).hasSize(4)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4");
+			.containsExactly("e1", "e2", "e3", "e4");
 		assertThat(set.stream()).hasSize(4)
 			.containsExactly("e1", "e2", "e3", "e4");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -92,7 +92,7 @@ public class SetsTest {
 	public void five() {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
 		assertThat(set).hasSize(5)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5");
+			.containsExactly("e1", "e2", "e3", "e4", "e5");
 		assertThat(set.stream()).hasSize(5)
 			.containsExactly("e1", "e2", "e3", "e4", "e5");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -105,7 +105,7 @@ public class SetsTest {
 	public void six() {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6");
 		assertThat(set).hasSize(6)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6");
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6");
 		assertThat(set.stream()).hasSize(6)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -118,7 +118,7 @@ public class SetsTest {
 	public void seven() {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7");
 		assertThat(set).hasSize(7)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7");
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7");
 		assertThat(set.stream()).hasSize(7)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -131,7 +131,7 @@ public class SetsTest {
 	public void eight() {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
 		assertThat(set).hasSize(8)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
 		assertThat(set.stream()).hasSize(8)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -144,7 +144,7 @@ public class SetsTest {
 	public void nine() {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
 		assertThat(set).hasSize(9)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
 		assertThat(set.stream()).hasSize(9)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -157,7 +157,7 @@ public class SetsTest {
 	public void ten() {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
 		assertThat(set).hasSize(10)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
 		assertThat(set.stream()).hasSize(10)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -174,7 +174,7 @@ public class SetsTest {
 		Set<String> set = Sets.of(entries);
 		entries[0] = "changed";
 		assertThat(set).hasSize(11)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
 		assertThat(set.stream()).hasSize(11)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -209,7 +209,7 @@ public class SetsTest {
 		Set<String> set = Sets.copyOf(source);
 		source.set(0, "changed");
 		assertThat(set).hasSize(2)
-			.containsExactlyInAnyOrder("e1", "e2");
+			.containsExactly("e1", "e2");
 		assertThat(set.stream()).hasSize(2)
 			.containsExactly("e1", "e2");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -230,7 +230,7 @@ public class SetsTest {
 		Set<String> source = Sets.of("e1", "e2", "e3", "e4", "e5");
 		Object[] array = source.toArray();
 		assertThat(array).hasSize(5)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5");
+			.containsExactly("e1", "e2", "e3", "e4", "e5");
 	}
 
 	@Test
@@ -240,12 +240,12 @@ public class SetsTest {
 		String[] array = source.toArray(target);
 		assertThat(array).isNotSameAs(target)
 			.hasSize(5)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5");
+			.containsExactly("e1", "e2", "e3", "e4", "e5");
 
 		target = new String[source.size() + 1];
 		array = source.toArray(target);
 		assertThat(array).isSameAs(target)
-			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", null);
+			.containsExactly("e1", "e2", "e3", "e4", "e5", null);
 		assertThat(array[target.length - 1]).isNull();
 	}
 
@@ -295,7 +295,7 @@ public class SetsTest {
 
 		Set<String> set = Sets.of("e1", "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES", "e5");
 
-		assertThat(set).containsExactlyInAnyOrder("e5", "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES", "e1");
+		assertThat(set).containsExactly("e1", "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES", "e5");
 	}
 
 	@Test
@@ -391,6 +391,25 @@ public class SetsTest {
 		Holder<String> holder = new Holder<>();
 		assertThatCode(() -> iterator.forEachRemaining(holder)).doesNotThrowAnyException();
 		assertThat(holder.set).isFalse();
+	}
+
+	@Test
+	public void collector() {
+		List<String> source = new ArrayList<>();
+		source.add("e1");
+		source.add("e2");
+		source.add("e1");
+		Set<String> set = source.stream()
+			.collect(Sets.toSet());
+		source.set(0, "changed");
+		assertThat(set).hasSize(2)
+			.containsExactly("e1", "e2");
+		assertThat(set.stream()).hasSize(2)
+			.containsExactly("e1", "e2");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.clear());
 	}
 
 }
