@@ -69,6 +69,9 @@ public class Sets {
 		if (collection.isEmpty()) {
 			return of();
 		}
+		if (collection instanceof Set) {
+			return new ImmutableSet<E>(collection.toArray());
+		}
 		return new ImmutableSet<E>(collection.stream()
 			.distinct()
 			.toArray());
