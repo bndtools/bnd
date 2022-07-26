@@ -24,12 +24,13 @@ import java.security.MessageDigest;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.CRC32;
@@ -55,15 +57,12 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
 import aQute.lib.date.Dates;
-import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -74,6 +73,7 @@ import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.PathSet;
 
 public class Jar implements Closeable {
+	private static final String	MULTI_RELEASE_HEADER	= "Multi-Release";
 	private static final int	BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	/**
 	 * Note that setting the January 1st 1980 (or even worse, "0", as time)
@@ -101,12 +101,9 @@ public class Jar implements Closeable {
 		.compile(Constants.DEFAULT_DO_NOT_COPY);
 
 	public static final Object[]								EMPTY_ARRAY				= new Jar[0];
-	private final NavigableMap<String, Resource>				resources				= new TreeMap<>();
-	private final NavigableMap<String, Map<String, Resource>>	directories				= new TreeMap<>();
-	private Optional<Manifest>									manifest;
-	private Optional<ModuleAttribute>							moduleAttribute;
+	private final NavigableMap<Integer, ReleaseEntry>			releaseMap				= new TreeMap<>();
 	private boolean												manifestFirst;
-	private String												manifestName			= JarFile.MANIFEST_NAME;
+	String												manifestName			= JarFile.MANIFEST_NAME;
 	private String												name;
 	private File												source;
 	private ZipFile												zipFile;
@@ -124,6 +121,7 @@ public class Jar implements Closeable {
 	private long												zipEntryConstantTime	= ZIP_ENTRY_CONSTANT_TIME;
 	public static final Pattern									METAINF_SIGNING_P		= Pattern
 		.compile("META-INF/([^/]+\\.(?:DSA|RSA|EC|SF)|SIG-[^/]+)", Pattern.CASE_INSENSITIVE);
+	private int											release;
 
 	public Jar(String name) {
 		this.name = name;
@@ -345,6 +343,24 @@ public class Jar implements Closeable {
 		return this;
 	}
 
+	public boolean isMultireleaseJar() {
+		return release != ReleaseEntry.NO_RELEASE || releaseMap.size() > 1
+			|| manifest().map(Manifest::getMainAttributes)
+				.map(main -> Boolean.valueOf(main.getValue(MULTI_RELEASE_HEADER)))
+			.orElse(false);
+	}
+
+	public void setRelease(int release) {
+		this.release = release;
+	}
+
+	public IntStream getReleases() {
+		return releaseMap.keySet()
+			.stream()
+			.mapToInt(i -> i)
+			.filter(i -> i != ReleaseEntry.NO_RELEASE);
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -361,40 +377,34 @@ public class Jar implements Closeable {
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
 		path = ZipUtil.cleanPath(path);
-
-		if (path.equals(manifestName)) {
-			manifest = null;
-			if (resources.isEmpty())
-				manifestFirst = true;
-		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
-			moduleAttribute = null;
-		}
-		String dir = getParent(path);
-		Map<String, Resource> s = directories.get(dir);
-		if (s == null) {
-			s = new TreeMap<>();
-			directories.put(dir, s);
-			// make ancestor directories
-			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
-				dir = dir.substring(0, n);
-				if (directories.containsKey(dir))
-					break;
-				directories.put(dir, null);
+		int release = this.release;
+		if (path.equals(manifestName) && releaseMap.isEmpty()) {
+			// manifest must always be parsed first
+			manifestFirst = true;
+		} else if (release == ReleaseEntry.NO_RELEASE) {
+			// check if this is a multi release path...
+			Matcher matcher = ReleaseEntry.MULTI_RELEASE_PATH.matcher(path);
+			if (matcher.matches() && isMultireleaseJar()) {
+				release = Integer.parseInt(matcher.group(1));
+				path = matcher.group(2);
 			}
 		}
-		boolean duplicate = s.containsKey(path);
-		if (!duplicate || overwrite) {
-			resources.put(path, resource);
-			s.put(path, resource);
-			updateModified(resource.lastModified(), path);
-		}
-		return duplicate;
+		return getEntry(release)
+			.putResource(path, resource, overwrite);
+	}
+
+	private ReleaseEntry getEntry(int release) {
+		return releaseMap.computeIfAbsent(release, r -> new ReleaseEntry(this, r));
 	}
 
 	public Resource getResource(String path) {
 		check();
-		path = ZipUtil.cleanPath(path);
-		return resources.get(path);
+		String cleanPath = ZipUtil.cleanPath(path);
+		return entries()
+			.map(entry -> entry.getResource(cleanPath))
+			.filter(Objects::nonNull)
+			.findFirst()
+			.orElse(null);
 	}
 
 	public Stream<String> getResourceNames(Predicate<String> matches) {
@@ -404,32 +414,65 @@ public class Jar implements Closeable {
 	}
 
 	public Stream<Resource> getResources(Predicate<String> matches) {
-		return getResourceNames(matches).map(resources::get);
+		return getResources().entrySet()
+			.stream()
+			.filter(entry -> matches.test(entry.getKey()))
+			.map(Entry::getValue);
 	}
 
-	private String getParent(String path) {
+	public NavigableMap<String, Map<String, Resource>> getDirectories() {
 		check();
-		int n = path.lastIndexOf('/');
-		if (n < 0)
-			return "";
-
-		return path.substring(0, n);
-	}
-
-	public Map<String, Map<String, Resource>> getDirectories() {
-		check();
+		if (releaseMap.size() == 0) {
+			return Collections.emptyNavigableMap();
+		}
+		if (releaseMap.size() == 1) {
+			return Collections.unmodifiableNavigableMap(releaseMap.values()
+				.iterator()
+				.next()
+				.getDirectories());
+		}
+		NavigableMap<String, Map<String, Resource>> directories = new TreeMap<>();
+		entries().forEachOrdered(releaseEntry -> {
+			Map<String, Map<String, Resource>> entryMap = releaseEntry.getDirectories();
+			for (Entry<String, Map<String, Resource>> entryMapEntry : entryMap.entrySet()) {
+				Map<String, Resource> resourceMap = directories.computeIfAbsent(entryMapEntry.getKey(),
+					nil -> new TreeMap<>());
+				Map<String, Resource> value = entryMapEntry.getValue();
+				if (value == null) {
+					continue;
+				}
+				for (Entry<String, Resource> resources : value.entrySet()) {
+					resourceMap.putIfAbsent(resources.getKey(), resources.getValue());
+				}
+			}
+		});
 		return directories;
 	}
 
 	public Map<String, Resource> getDirectory(String path) {
 		check();
-		path = ZipUtil.cleanPath(path);
-		return directories.get(path);
+		return getDirectories().get(ZipUtil.cleanPath(path));
 	}
 
 	public Map<String, Resource> getResources() {
 		check();
-		return resources;
+		if (releaseMap.size() == 0) {
+			return Collections.emptyMap();
+		}
+		if (releaseMap.size() == 1) {
+			return Collections.unmodifiableMap(releaseMap.values()
+				.iterator()
+				.next()
+				.getResources());
+		}
+		TreeMap<String, Resource> map = new TreeMap<>();
+		entries().forEachOrdered(releaseEntry -> {
+			NavigableMap<String, Resource> resources = releaseEntry.getResources();
+			for (Entry<String, Resource> entry : resources.entrySet()) {
+				map.putIfAbsent(entry.getKey(), entry.getValue());
+			}
+		});
+		return Collections.unmodifiableMap(map);
 	}
 
 	public boolean addDirectory(Map<String, Resource> directory, boolean overwrite) {
@@ -450,46 +493,35 @@ public class Jar implements Closeable {
 
 	Optional<Manifest> manifest() {
 		check();
-		Optional<Manifest> optional = manifest;
-		if (optional != null) {
-			return optional;
-		}
-		try {
-			Resource manifestResource = getResource(manifestName);
-			if (manifestResource == null) {
-				return manifest = Optional.empty();
-			}
-			try (InputStream in = manifestResource.openInputStream()) {
-				return manifest = Optional.of(new Manifest(in));
-			}
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
+		return entries()
+			.flatMap(entry -> {
+				Optional<Manifest> manifest = entry.manifest();
+				if (manifest.isPresent()) {
+					return Stream.of(manifest.get());
+				}
+				return Stream.empty();
+			}).findFirst();
 	}
 
 	Optional<ModuleAttribute> moduleAttribute() throws Exception {
 		check();
-		Optional<ModuleAttribute> optional = moduleAttribute;
-		if (optional != null) {
-			return optional;
-		}
-		Resource module_info_resource = getResource(Constants.MODULE_INFO_CLASS);
-		if (module_info_resource == null) {
-			return moduleAttribute = Optional.empty();
-		}
-		ClassFile module_info;
-		ByteBuffer bb = module_info_resource.buffer();
-		if (bb != null) {
-			module_info = ClassFile.parseClassFile(ByteBufferDataInput.wrap(bb));
-		} else {
-			try (DataInputStream din = new DataInputStream(module_info_resource.openInputStream())) {
-				module_info = ClassFile.parseClassFile(din);
-			}
-		}
-		return moduleAttribute = Arrays.stream(module_info.attributes)
-			.filter(ModuleAttribute.class::isInstance)
-			.map(ModuleAttribute.class::cast)
+		return entries()
+			.flatMap(entry -> {
+				Optional<ModuleAttribute> moduleAttribute = entry.moduleAttribute();
+				if (moduleAttribute.isPresent()) {
+					return Stream.of(moduleAttribute.get());
+				}
+				return Stream.empty();
+
+			})
 			.findFirst();
+	}
+
+	private Stream<ReleaseEntry> entries() {
+		return releaseMap.headMap(release, true)
+			.descendingMap()
+			.values()
+			.stream();
 	}
 
 	public String getModuleName() throws Exception {
@@ -510,19 +542,19 @@ public class Jar implements Closeable {
 
 	public boolean exists(String path) {
 		check();
-		path = ZipUtil.cleanPath(path);
-		return resources.containsKey(path);
+		String cleanPath = ZipUtil.cleanPath(path);
+		return entries().anyMatch(entry -> entry.exists(cleanPath));
 	}
 
 	public boolean isEmpty() {
 		check();
-		return resources.isEmpty();
+		return entries().allMatch(ReleaseEntry::isEmpty);
 	}
 
 	public void setManifest(Manifest manifest) {
 		check();
 		manifestFirst = true;
-		this.manifest = Optional.ofNullable(manifest);
+		getEntry(release).setManifest(manifest);
 	}
 
 	public void setManifest(File file) throws IOException {
@@ -563,11 +595,11 @@ public class Jar implements Closeable {
 
 	public void write(OutputStream to) throws Exception {
 		check();
-
 		if (!doNotTouchManifest && !nomanifest && algorithms != null) {
 			doChecksums(to);
 			return;
 		}
+		setRelease(ReleaseEntry.NO_RELEASE);
 
 		OutputStream out = to;
 		Digester<SHA256> digester = null;
@@ -621,10 +653,15 @@ public class Jar implements Closeable {
 		}
 
 		// Write all remaining entries
-		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
-			// Skip metainf contents
-			if (!done.contains(entry.getKey()))
-				writeResource(jout, directories, entry.getKey(), entry.getValue());
+		for (ReleaseEntry releaseEntry : releaseMap.values()) {
+			for (Entry<String, Resource> entry : releaseEntry.getResources()
+				.entrySet()) {
+				String fullPath = releaseEntry.getFullPath(entry.getKey());
+				// Skip metainf contents
+				if (done.add(fullPath)) {
+					writeResource(jout, directories, fullPath, entry.getValue());
+				}
+			}
 		}
 		jout.finish();
 
@@ -646,7 +683,7 @@ public class Jar implements Closeable {
 				"The directory " + dir + " to write the JAR " + this + " to is not a directory");
 
 		check();
-
+		setRelease(ReleaseEntry.NO_RELEASE);
 		Set<String> done = new HashSet<>();
 
 		if (doNotTouchManifest) {
@@ -659,18 +696,23 @@ public class Jar implements Closeable {
 			File file = IO.getBasedFile(dir, manifestName);
 			IO.mkdirs(file.getParentFile());
 			try (OutputStream fout = IO.outputStream(file)) {
+				if (isMultireleaseJar()) {
+					manifest().ifPresent(manifest -> manifest.getMainAttributes()
+						.putValue(MULTI_RELEASE_HEADER, "true"));
+				}
 				writeManifest(fout);
 				done.add(manifestName);
 			}
 		}
-
-		for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
-			String path = entry.getKey();
-			if (done.contains(path))
-				continue;
-
-			Resource resource = entry.getValue();
-			copyResource(dir, path, resource);
+		for (ReleaseEntry releaseEntry : releaseMap.values()) {
+			for (Entry<String, Resource> entry : releaseEntry.getResources()
+				.entrySet()) {
+				String fullPath = releaseEntry.getFullPath(entry.getKey());
+				// Skip metainf contents
+				if (done.add(fullPath)) {
+					copyResource(dir, fullPath, entry.getValue());
+				}
+			}
 		}
 	}
 
@@ -722,6 +764,10 @@ public class Jar implements Closeable {
 
 	private void doManifest(ZipOutputStream jout, Set<String> directories, String manifestName) throws Exception {
 		check();
+		if (isMultireleaseJar()) {
+			manifest().ifPresent(manifest -> manifest.getMainAttributes()
+				.putValue(MULTI_RELEASE_HEADER, "true"));
+		}
 		createDirectories(directories, jout, manifestName);
 		JarEntry ze = new JarEntry(manifestName);
 		ZipUtil.setModifiedTime(ze, isReproducible() ? zipEntryConstantTime : lastModified());
@@ -941,11 +987,9 @@ public class Jar implements Closeable {
 	public void close() {
 		this.closed = true;
 		IO.close(zipFile);
-		resources.values()
-			.forEach(IO::close);
-		resources.clear();
-		directories.clear();
-		manifest = null;
+		releaseMap.values()
+			.forEach(ReleaseEntry::close);
+		releaseMap.clear();
 		source = null;
 	}
 
@@ -966,13 +1010,13 @@ public class Jar implements Closeable {
 
 	public boolean hasDirectory(String path) {
 		check();
-		path = ZipUtil.cleanPath(path);
-		return directories.containsKey(path);
+		String cleanPath = ZipUtil.cleanPath(path);
+		return entries().anyMatch(entry -> entry.hasDirectory(cleanPath));
 	}
 
 	public List<String> getPackages() {
 		check();
-		return MapStream.of(directories)
+		return MapStream.of(getDirectories())
 			.filterValue(mdir -> Objects.nonNull(mdir) && !mdir.isEmpty())
 			.keys()
 			.map(k -> k.replace('/', '.'))
@@ -995,24 +1039,26 @@ public class Jar implements Closeable {
 
 	public boolean rename(String oldPath, String newPath) {
 		check();
-		Resource resource = remove(oldPath);
-		if (resource == null)
-			return false;
-
-		return putResource(newPath, resource);
+		String cleanPathOld = ZipUtil.cleanPath(oldPath);
+		String cleanPathNew = ZipUtil.cleanPath(newPath);
+		boolean renamedAny = false;
+		for (ReleaseEntry entry : releaseMap.values()) {
+			renamedAny |= entry.rename(cleanPathOld, cleanPathNew);
+		}
+		return renamedAny;
 	}
 
 	public Resource remove(String path) {
 		check();
-		path = ZipUtil.cleanPath(path);
-		Resource resource = resources.remove(path);
-		if (resource != null) {
-			String dir = getParent(path);
-			Map<String, Resource> mdir = directories.get(dir);
-			// must be != null
-			mdir.remove(path);
+		String cleanPath = ZipUtil.cleanPath(path);
+		Resource firstRemoved = null;
+		for (ReleaseEntry entry : releaseMap.values()) {
+			Resource removed = entry.remove(cleanPath);
+			if (removed != null && firstRemoved == null) {
+				firstRemoved = removed;
+			}
 		}
-		return resource;
+		return firstRemoved;
 	}
 
 	/**
@@ -1035,11 +1081,14 @@ public class Jar implements Closeable {
 				"SHA1", "MD5"
 			};
 
-		Manifest m = getManifest();
-		if (m == null) {
-			m = new Manifest();
-			setManifest(m);
-		}
+		ReleaseEntry main = getEntry(ReleaseEntry.NO_RELEASE);
+
+		Manifest m = main.manifest()
+			.orElseGet(() -> {
+				Manifest manifest = new Manifest();
+				main.setManifest(manifest);
+				return manifest;
+			});
 
 		MessageDigest[] digests = new MessageDigest[algorithms.length];
 		int n = 0;
@@ -1048,37 +1097,40 @@ public class Jar implements Closeable {
 
 		byte[] buffer = new byte[BUFFER_SIZE];
 
-		for (Map.Entry<String, Resource> entry : resources.entrySet()) {
-			String path = entry.getKey();
-			// Skip the manifest
-			if (path.equals(manifestName))
-				continue;
+		for (ReleaseEntry releaseEntry : releaseMap.values()) {
+			for (Entry<String, Resource> resourceEntry : releaseEntry.getResources()
+				.entrySet()) {
+				String path = releaseEntry.getFullPath(resourceEntry.getKey());
+				// Skip the manifest
+				if (releaseEntry == main && path.equals(manifestName))
+					continue;
 
-			Attributes attributes = m.getAttributes(path);
-			if (attributes == null) {
-				attributes = new Attributes();
-				getManifest().getEntries()
+				Attributes attributes = m.getAttributes(path);
+				if (attributes == null) {
+					attributes = new Attributes();
+					getManifest().getEntries()
 					.put(path, attributes);
-			}
-			Resource r = entry.getValue();
-			ByteBuffer bb = r.buffer();
-			if ((bb != null) && bb.hasArray()) {
-				for (MessageDigest d : digests) {
-					d.update(bb);
-					bb.flip();
 				}
-			} else {
-				try (InputStream in = r.openInputStream()) {
-					for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
-						for (MessageDigest d : digests) {
-							d.update(buffer, 0, size);
+				Resource r = resourceEntry.getValue();
+				ByteBuffer bb = r.buffer();
+				if ((bb != null) && bb.hasArray()) {
+					for (MessageDigest d : digests) {
+						d.update(bb);
+						bb.flip();
+					}
+				} else {
+					try (InputStream in = r.openInputStream()) {
+						for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+							for (MessageDigest d : digests) {
+								d.update(buffer, 0, size);
+							}
 						}
 					}
 				}
-			}
-			for (MessageDigest d : digests) {
-				attributes.putValue(d.getAlgorithm() + "-Digest", Base64.encodeBase64(d.digest()));
-				d.reset();
+				for (MessageDigest d : digests) {
+					attributes.putValue(d.getAlgorithm() + "-Digest", Base64.encodeBase64(d.digest()));
+					d.reset();
+				}
 			}
 		}
 	}
@@ -1138,7 +1190,7 @@ public class Jar implements Closeable {
 	 */
 	public void ensureManifest() throws Exception {
 		if (!manifest().isPresent()) {
-			manifest = Optional.of(new Manifest());
+			setManifest(new Manifest());
 		}
 	}
 
@@ -1281,25 +1333,16 @@ public class Jar implements Closeable {
 
 	public void removePrefix(String prefixLow) {
 		prefixLow = ZipUtil.cleanPath(prefixLow);
-		String prefixHigh = prefixLow.concat("\uFFFF");
-		resources.subMap(prefixLow, prefixHigh)
-			.clear();
-		if (prefixLow.endsWith("/")) {
-			prefixLow = prefixLow.substring(0, prefixLow.length() - 1);
-			prefixHigh = prefixLow.concat("\uFFFF");
+		for (ReleaseEntry entry : releaseMap.values()) {
+			entry.removePrefix(prefixLow);
 		}
-		directories.subMap(prefixLow, prefixHigh)
-			.clear();
 	}
 
 	public void removeSubDirs(String dir) {
 		dir = ZipUtil.cleanPath(dir);
-		if (!dir.endsWith("/")) {
-			dir = dir.concat("/");
+		for (ReleaseEntry entry : releaseMap.values()) {
+			entry.removeSubDirs(dir);
 		}
-		List<String> subDirs = new ArrayList<>(directories.subMap(dir, dir.concat("\uFFFF"))
-			.keySet());
-		subDirs.forEach(subDir -> removePrefix(subDir.concat("/")));
 	}
 
 	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();

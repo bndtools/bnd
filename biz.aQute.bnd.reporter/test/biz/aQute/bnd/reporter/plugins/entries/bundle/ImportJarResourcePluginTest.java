@@ -28,8 +28,7 @@ public class ImportJarResourcePluginTest {
 			plugin.setReporter(p);
 			plugin.setRegistry(p);
 
-			jar.getResources()
-				.put("myDir/file.cool", new EmbeddedResource("test=test", 0L));
+			jar.putResource("myDir/file.cool", new EmbeddedResource("test=test", 0L));
 
 			final Map<String, String> prop = new HashMap<>();
 			prop.put(ImportJarResourcePlugin.PATH_PROPERTY, "myDir/file.cool");
