@@ -143,6 +143,7 @@ public class Analyzer extends Processor {
 	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
 	private final Map<TypeRef, String>				bcpTypes				= map();
+	private int										release					= -1;
 
 	public enum Check {
 		ALL,
@@ -168,6 +169,10 @@ public class Analyzer extends Processor {
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
 		super.setTypeSpecificPlugins(pluginsContainer);
 		pluginsContainer.add(new ClassIndexerAnalyzer());
+	}
+
+	public void setRelease(int release) {
+		this.release = release;
 	}
 
 	/**
@@ -201,6 +206,10 @@ public class Analyzer extends Processor {
 	public void analyze() throws Exception {
 		if (!analyzed) {
 			analyzed = true;
+			if (release > -1) {
+				getClasspath().forEach(j -> j.setRelease(release));
+				dot.setRelease(release);
+			}
 			analyzeContent();
 
 			// Execute any plugins

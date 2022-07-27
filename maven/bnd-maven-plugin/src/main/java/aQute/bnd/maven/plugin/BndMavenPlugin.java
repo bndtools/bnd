@@ -42,6 +42,13 @@ public class BndMavenPlugin extends AbstractBndMavenPlugin {
 	File											manifestPath;
 
 	/**
+	 * if enabled and a release is given the output folder is adjusted to put
+	 * the data into the appropriate versioned folder
+	 */
+	@Parameter
+	boolean											multiReleaseOutput;
+
+	/**
 	 * Skip this goal.
 	 */
 	@Parameter(property = "bnd.skip", defaultValue = "false")
@@ -69,6 +76,12 @@ public class BndMavenPlugin extends AbstractBndMavenPlugin {
 
 	@Override
 	public File getManifestPath() {
+		if (multiReleaseOutput && release > 0) {
+			File parent = manifestPath.getParentFile();
+			String name = manifestPath.getName();
+			String versionedPath = String.format("versions/%d/%s", release, name);
+			return new File(parent, versionedPath);
+		}
 		return manifestPath;
 	}
 

@@ -384,7 +384,7 @@ public class Jar implements Closeable {
 		} else if (release == ReleaseEntry.NO_RELEASE) {
 			// check if this is a multi release path...
 			Matcher matcher = ReleaseEntry.MULTI_RELEASE_PATH.matcher(path);
-			if (matcher.matches() && isMultireleaseJar()) {
+			if (matcher.matches() && (!manifestFirst || isMultireleaseJar())) {
 				release = Integer.parseInt(matcher.group(1));
 				path = matcher.group(2);
 			}

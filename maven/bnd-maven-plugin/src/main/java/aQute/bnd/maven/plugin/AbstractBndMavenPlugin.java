@@ -39,23 +39,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.header.OSGiHeader;
-import aQute.bnd.maven.PomPropertiesResource;
-import aQute.bnd.maven.lib.configuration.BeanProperties;
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.FileResource;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.version.MavenVersion;
-import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
-import aQute.lib.utf8properties.UTF8Properties;
-import aQute.service.reporter.Report.Location;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -80,6 +63,24 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
+
+import aQute.bnd.build.Project;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.maven.PomPropertiesResource;
+import aQute.bnd.maven.lib.configuration.BeanProperties;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.version.MavenVersion;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.service.reporter.Report.Location;
 
 /**
  * Abstract base class for all bnd-maven-plugin mojos.
@@ -165,6 +166,14 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@SuppressWarnings("unused")
 	String					bnd;
 
+	/**
+	 * This is similar to the release parameter of the maven-compiler plugin and
+	 * enables the processing of classes and resources for the given release,
+	 * the default value is 0 that is using the default release (pre Java 9)
+	 */
+	@Parameter(defaultValue = "0")
+	int						release;
+
 	@Component
 	BuildContext			buildContext;
 
@@ -233,6 +242,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		}
 
 		try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
+			builder.setRelease(release);
 			builder.setTrace(logger.isDebugEnabled());
 
 			builder.setBase(project.getBasedir());
