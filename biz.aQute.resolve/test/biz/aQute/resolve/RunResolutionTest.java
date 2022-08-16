@@ -190,12 +190,12 @@ public class RunResolutionTest {
 			assertThat(cached).isEmpty();
 			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
 
-			System.out.println("Update an include file, refresh and check we still sue the cache");
+			System.out.println("Update an include file, refresh and check we still use the cache");
 			File empty = IO.getFile(ws.toFile(), "test.simple/empty-included-in-resolve.bnd");
 			long now = System.currentTimeMillis();
 			empty.setLastModified(now);
-			assertThat(bndrun.lastModified()).isLessThan(now);
-			assertThat(cache.lastModified()).isLessThan(now);
+			assertThat(bndrun.lastModified()).isLessThanOrEqualTo(now);
+			assertThat(cache.lastModified()).isLessThanOrEqualTo(now);
 			assertTrue(bndrun.refresh());
 			bndrun.setProperty("-resolve", "cache");
 			bndrun.unsetProperty("-runbundles");
