@@ -212,19 +212,7 @@ public class Bndrun extends Run {
 		File ours = getPropertiesFile();
 		File cache = getCacheFile(ours);
 
-		long cacheLastModified = cache.lastModified();
-
-		CacheReason reason;
-		if (ws.getLayout() != WorkspaceLayout.BND)
-			reason = CacheReason.NOT_A_BND_LAYOUT;
-		else if (!cache.isFile())
-			reason = CacheReason.NO_CACHE_FILE;
-		else if (cacheLastModified < ws.lastModified())
-			reason = CacheReason.CACHE_STALE_WORKSPACE;
-		else if (cacheLastModified < lastModified())
-			reason = CacheReason.CACHE_STALE_PROJECT;
-		else
-			reason = CacheReason.USE_CACHE;
+		CacheReason reason = getCacheReason(cache);
 
 		testReason = reason;
 
@@ -271,6 +259,23 @@ public class Bndrun extends Run {
 			}
 			return containers;
 		}
+	}
+
+	CacheReason getCacheReason(File cached) {
+		long cacheLastModified = cached.lastModified();
+
+		CacheReason reason;
+		if (getWorkspace().getLayout() != WorkspaceLayout.BND)
+			reason = CacheReason.NOT_A_BND_LAYOUT;
+		else if (!cached.isFile())
+			reason = CacheReason.NO_CACHE_FILE;
+		else if (cacheLastModified < getWorkspace().lastModified())
+			reason = CacheReason.CACHE_STALE_WORKSPACE;
+		else if (cacheLastModified < lastModified())
+			reason = CacheReason.CACHE_STALE_PROJECT;
+		else
+			reason = CacheReason.USE_CACHE;
+		return reason;
 	}
 
 

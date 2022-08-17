@@ -138,6 +138,7 @@ public class RunResolutionTest {
 		assertTrue(bndrun.check());
 		File cache = bndrun.getCacheFile(file);
 		File build = IO.getFile(ws.toFile(), "cnf/build.bnd");
+		File empty = IO.getFile(ws.toFile(), "test.simple/empty-included-in-resolve.bnd");
 
 		try {
 
@@ -190,16 +191,25 @@ public class RunResolutionTest {
 			assertThat(cached).isEmpty();
 			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
 
+			System.out.println("Make sure modified time granularity is < then passed time");
+			Thread.sleep(100);
+
 			System.out.println("Update an include file, refresh and check we still use the cache");
-			File empty = IO.getFile(ws.toFile(), "test.simple/empty-included-in-resolve.bnd");
 			long now = System.currentTimeMillis();
 			empty.setLastModified(now);
-			assertThat(bndrun.lastModified()).isLessThanOrEqualTo(now);
-			assertThat(cache.lastModified()).isLessThanOrEqualTo(now);
+			now = empty.lastModified();
+
+			assertThat(bndrun.getCacheReason(cache)).isEqualTo(CacheReason.USE_CACHE);
+
+			assertThat(bndrun.lastModified()).isLessThan(now);
+			assertThat(cache.lastModified()).isLessThan(now);
 			assertTrue(bndrun.refresh());
 			bndrun.setProperty("-resolve", "cache");
 			bndrun.unsetProperty("-runbundles");
+			assertThat(bndrun.getCacheReason(cache)).isEqualTo(CacheReason.CACHE_STALE_PROJECT);
 			assertThat(bndrun.lastModified()).isGreaterThanOrEqualTo(now);
+			bndrun.setPedantic(true);
+			bndrun.setTrace(true);
 			cached = bndrun.getRunbundles();
 			assertTrue(bndrun.check());
 			assertThat(cached).containsExactlyElementsOf(manual);
@@ -212,10 +222,17 @@ public class RunResolutionTest {
 			assertThat(cached).containsExactlyElementsOf(manual);
 			assertThat(bndrun.testReason).isEqualTo(CacheReason.USE_CACHE);
 
+			System.out.println("Make sure modified time granularity is < then passed time");
+			Thread.sleep(100);
+
 			System.out.println("Update the cnf/build file");
 			now = System.currentTimeMillis();
 			build.setLastModified(now);
+			now = build.lastModified();
+
+			System.out.println("Refresh the workspace");
 			assertTrue(workspace.refresh());
+			assertThat(bndrun.getCacheReason(cache)).isEqualTo(CacheReason.CACHE_STALE_WORKSPACE);
 			cached = bndrun.getRunbundles();
 			assertThat(bndrun.testReason).isEqualTo(CacheReason.CACHE_STALE_WORKSPACE);
 
@@ -229,6 +246,7 @@ public class RunResolutionTest {
 			System.out.println("cache      = " + cache.lastModified());
 			System.out.println("workspace  = " + workspace.lastModified());
 			System.out.println("build      = " + build.lastModified());
+			System.out.println("empty      = " + empty.lastModified());
 			throw e;
 		}
 	}
