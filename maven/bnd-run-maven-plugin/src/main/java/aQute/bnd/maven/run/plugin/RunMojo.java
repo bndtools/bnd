@@ -9,6 +9,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectLauncher.LiveCoding;
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
+import aQute.bnd.maven.lib.resolve.Scope;
+import aQute.bnd.unmodifiable.Sets;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -24,15 +32,6 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.build.ProjectLauncher;
-import aQute.bnd.build.ProjectLauncher.LiveCoding;
-import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.configuration.Bundles;
-import aQute.bnd.maven.lib.resolve.BndrunContainer;
-import aQute.bnd.maven.lib.resolve.Operation;
-import aQute.bnd.maven.lib.resolve.Scope;
-import aQute.bnd.unmodifiable.Sets;
 
 @Mojo(name = "run", defaultPhase = LifecyclePhase.PACKAGE, requiresDirectInvocation = true, requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class RunMojo extends AbstractMojo {

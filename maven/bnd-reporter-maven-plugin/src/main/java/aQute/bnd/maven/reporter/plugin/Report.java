@@ -3,10 +3,9 @@ package aQute.bnd.maven.reporter.plugin;
 import java.util.HashMap;
 import java.util.Map;
 
+import aQute.bnd.header.OSGiHeader;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.StringUtils;
-
-import aQute.bnd.header.OSGiHeader;
 
 /**
  * Report Mojo configuration.

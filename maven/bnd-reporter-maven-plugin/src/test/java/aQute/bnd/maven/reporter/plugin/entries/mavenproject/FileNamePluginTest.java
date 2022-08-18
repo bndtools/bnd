@@ -7,10 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
-
-import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
 
 public class FileNamePluginTest {
 

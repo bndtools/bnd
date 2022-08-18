@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.maven.project.MavenProject;
-
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
 import aQute.bnd.service.Plugin;
@@ -25,6 +23,7 @@ import biz.aQute.bnd.reporter.manifest.dto.DeveloperDTO;
 import biz.aQute.bnd.reporter.manifest.dto.LicenseDTO;
 import biz.aQute.bnd.reporter.manifest.dto.ScmDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
+import org.apache.maven.project.MavenProject;
 
 /**
  * This plugins extract common info from a maven project pom.
