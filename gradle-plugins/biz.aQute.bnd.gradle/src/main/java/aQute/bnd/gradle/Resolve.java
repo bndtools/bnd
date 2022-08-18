@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
@@ -203,6 +204,7 @@ public class Resolve extends AbstractBndrun {
 	 */
 	public Resolve() {
 		super();
+		setGroup(JavaBasePlugin.VERIFICATION_GROUP);
 		org.gradle.api.Project project = getProject();
 		outputBndrun = project.getObjects()
 			.fileProperty()

@@ -1,6 +1,7 @@
 package aQute.bnd.gradle;
 
 import org.gradle.api.tasks.bundling.Jar;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
 /**
  * Bundle task type for Gradle.
@@ -34,6 +35,7 @@ public class Bundle extends Jar {
 	@SuppressWarnings("deprecation")
 	public Bundle() {
 		super();
+		setGroup(LifecycleBasePlugin.BUILD_GROUP);
 		BundleTaskExtension extension = getExtensions().create(BundleTaskExtension.NAME, BundleTaskExtension.class,
 			this);
 		getConvention().getPlugins()

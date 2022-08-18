@@ -14,6 +14,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
@@ -131,6 +132,7 @@ public class TestOSGi extends AbstractBndrun {
 	 */
 	public TestOSGi() {
 		super();
+		setGroup(JavaBasePlugin.VERIFICATION_GROUP);
 		org.gradle.api.Project project = getProject();
 		ObjectFactory objects = project.getObjects();
 		Provider<Directory> testResultsDir = testResultsDir(project);

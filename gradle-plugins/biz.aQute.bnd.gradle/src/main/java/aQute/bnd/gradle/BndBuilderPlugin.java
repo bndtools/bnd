@@ -98,7 +98,6 @@ public class BndBuilderPlugin implements Plugin<Project> {
 
 		TaskProvider<Baseline> baselineTask = tasks.register("baseline", Baseline.class, t -> {
 			t.setDescription("Baseline the project bundle.");
-			t.setGroup(LifecycleBasePlugin.BUILD_GROUP);
 			t.setBundle(jar);
 			t.setBaseline(baseline);
 		});

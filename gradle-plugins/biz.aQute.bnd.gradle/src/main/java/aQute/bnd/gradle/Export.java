@@ -19,6 +19,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.model.ReplacedBy;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
@@ -146,6 +147,7 @@ public class Export extends AbstractBndrun {
 	 */
 	public Export() {
 		super();
+		setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 		org.gradle.api.Project project = getProject();
 		ObjectFactory objects = project.getObjects();
 		exporter = objects.property(String.class)

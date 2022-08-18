@@ -32,7 +32,6 @@ def jarTask = tasks.named('jar', Jar) {
 
 task bundle(type: Bundle) {
 	description = 'Bundle'
-	group = 'build'
 	from jarTask.map { zipTree(it.archiveFile) }
 	archiveClassifier = 'bundle'
 	manifest {
