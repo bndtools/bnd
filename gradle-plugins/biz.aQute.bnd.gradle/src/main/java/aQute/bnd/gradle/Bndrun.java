@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.lib.io.IO;
 import org.gradle.api.GradleException;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
@@ -19,10 +22,6 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.UntrackedTask;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
-
-import aQute.bnd.build.Project;
-import aQute.bnd.build.ProjectLauncher;
-import aQute.lib.io.IO;
 
 /**
  * OSGi Bndrun task type for Gradle.

@@ -7,6 +7,12 @@ import java.io.File;
 import java.io.Writer;
 import java.util.Objects;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import biz.aQute.resolve.ResolveProcess;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.JavaBasePlugin;
@@ -14,13 +20,6 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.osgi.service.resolver.ResolutionException;
-
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Constants;
-import aQute.lib.io.IO;
-import aQute.lib.utf8properties.UTF8Properties;
-import biz.aQute.resolve.ResolveProcess;
 
 /**
  * Resolve task type for Gradle.

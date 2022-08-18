@@ -16,6 +16,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.repository.fileset.FileSetRepository;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.unmodifiable.Maps;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.artifacts.Configuration;
@@ -37,18 +48,6 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.work.NormalizeLineEndings;
-
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.EE;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Domain;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.repository.fileset.FileSetRepository;
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.unmodifiable.Maps;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
 
 /**
  * Abstract Bndrun task type for Gradle.

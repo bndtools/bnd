@@ -1,10 +1,11 @@
 package aQute.bnd.gradle
 
-import static org.gradle.testkit.runner.TaskOutcome.*
-
 import aQute.lib.utf8properties.UTF8Properties
 import aQute.libg.reporter.slf4j.Slf4jReporter
 import spock.lang.Specification
+
+import static org.gradle.testkit.runner.TaskOutcome.FAILED
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class TestResolveTask extends Specification {
 

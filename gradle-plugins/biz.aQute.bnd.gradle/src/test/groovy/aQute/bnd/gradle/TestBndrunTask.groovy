@@ -1,12 +1,12 @@
 package aQute.bnd.gradle
 
-import static org.gradle.testkit.runner.TaskOutcome.*
+import spock.lang.Specification
 
 import java.util.jar.Attributes
 import java.util.jar.JarFile
 import java.util.regex.Pattern
 
-import spock.lang.Specification
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class TestBndrunTask extends Specification {
 

@@ -12,6 +12,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
@@ -23,12 +28,6 @@ import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
-
-import aQute.bnd.build.Project;
-import aQute.bnd.osgi.JarResource;
-import aQute.bnd.osgi.Resource;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
 
 /**
  * Export task type for Gradle.

@@ -1,9 +1,8 @@
 package aQute.bnd.gradle;
 
+import aQute.bnd.repository.fileset.FileSetRepository;
 import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileCollection;
-
-import aQute.bnd.repository.fileset.FileSetRepository;
 
 /**
  * Task convention to make a FileSetRepository from a bundles property.

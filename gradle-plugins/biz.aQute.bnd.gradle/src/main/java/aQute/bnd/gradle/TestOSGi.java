@@ -10,6 +10,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Objects;
 
+import aQute.bnd.build.Project;
+import aQute.lib.io.IO;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
@@ -24,9 +26,6 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.options.Option;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
-
-import aQute.bnd.build.Project;
-import aQute.lib.io.IO;
 
 /**
  * OSGi Test task type for Gradle.

@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
+import aQute.service.reporter.Report;
+import aQute.service.reporter.Report.Location;
 import org.gradle.api.Buildable;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -25,9 +27,6 @@ import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JavaToolchainSpec;
 import org.gradle.util.GradleVersion;
-
-import aQute.service.reporter.Report;
-import aQute.service.reporter.Report.Location;
 
 /**
  * BndUtils class.
