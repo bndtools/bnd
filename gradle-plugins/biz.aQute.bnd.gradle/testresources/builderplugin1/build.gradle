@@ -37,7 +37,6 @@ jar {
 
 task bundle(type: Bundle) {
 	description = 'Bundle'
-	group = 'build'
 	from sourceSets.test.output
 	archiveClassifier = 'bundle'
 	bundle {

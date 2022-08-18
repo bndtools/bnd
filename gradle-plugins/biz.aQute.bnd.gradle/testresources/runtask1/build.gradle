@@ -21,7 +21,6 @@ dependencies {
 
 task run(type: Bndrun) {
 	description = "OSGi Bndrun ${name}.bndrun"
-	group = 'export'
 	inputs.files jar
 	bndrun = file("${name}.bndrun")
 	javaLauncher = javaToolchains.launcherFor {

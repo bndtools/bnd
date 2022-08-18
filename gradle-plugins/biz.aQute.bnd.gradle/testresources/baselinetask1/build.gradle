@@ -43,7 +43,6 @@ baseline {
 
 task baselineDiffpackages(type: Baseline) {
 	description = 'Baseline diffpackages'
-	group = 'build'
 	bundle = jar
 	baseline = configurations.baseline
 	diffpackages = ['!doubler']
@@ -53,7 +52,6 @@ task baselineDiffpackages(type: Baseline) {
 
 task baselineDiffignore(type: Baseline) {
 	description = 'Baseline diffignore'
-	group = 'build'
 	bundle jar
 	baseline configurations.baseline
 	diffignore 'foo.txt'
@@ -63,7 +61,6 @@ task baselineDiffignore(type: Baseline) {
 
 task baselineSelf(type: Baseline) {
 	description = 'Baseline Self'
-	group = 'build'
 	bundle jar
 	baseline jar.archiveFile
 	ignoreFailures = false

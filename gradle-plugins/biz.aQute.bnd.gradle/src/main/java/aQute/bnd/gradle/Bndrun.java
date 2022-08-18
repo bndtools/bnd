@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.gradle.api.GradleException;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.UntrackedTask;
@@ -81,6 +82,7 @@ public class Bndrun extends AbstractBndrun {
 	 */
 	public Bndrun() {
 		super();
+		setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 		org.gradle.api.Project project = getProject();
 		ObjectFactory objects = project.getObjects();
 		javaLauncher = objects.property(JavaLauncher.class)

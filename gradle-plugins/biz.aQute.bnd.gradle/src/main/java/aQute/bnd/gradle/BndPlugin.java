@@ -672,7 +672,6 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<TestOSGi> testOSGi = tasks.register("testOSGi", TestOSGi.class, t -> {
 				t.setDescription(
 					"Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.");
-				t.setGroup(LifecycleBasePlugin.VERIFICATION_GROUP);
 				t.setEnabled(
 					!bndProject.is(Constants.NOJUNITOSGI) && !bndProject.getUnprocessedProperty(Constants.TESTCASES, "")
 						.isEmpty());
@@ -737,7 +736,6 @@ public class BndPlugin implements Plugin<Project> {
 			List<TaskProvider<Export>> exportTasks = MapStream.of(bndruns)
 				.mapToObj((name, runFile) -> tasks.register("export.".concat(name), Export.class, t -> {
 					t.setDescription(String.format("Export the %s file.", runFile.getName()));
-					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
@@ -756,7 +754,6 @@ public class BndPlugin implements Plugin<Project> {
 				.mapToObj((name, runFile) -> tasks.register("runbundles.".concat(name), Export.class, t -> {
 					t.setDescription(
 						String.format("Create a distribution of the runbundles in the %s file.", runFile.getName()));
-					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
@@ -774,7 +771,6 @@ public class BndPlugin implements Plugin<Project> {
 			List<TaskProvider<Resolve>> resolveTasks = MapStream.of(bndruns)
 				.mapToObj((name, runFile) -> tasks.register("resolve.".concat(name), Resolve.class, t -> {
 					t.setDescription(String.format("Resolve the runbundles required for %s file.", runFile.getName()));
-					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
@@ -783,14 +779,13 @@ public class BndPlugin implements Plugin<Project> {
 
 			TaskProvider<Task> resolve = tasks.register("resolve", t -> {
 				t.setDescription("Resolve the runbundles required for each of the bndrun files.");
-				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
+				t.setGroup(LifecycleBasePlugin.VERIFICATION_GROUP);
 				t.dependsOn(resolveTasks);
 			});
 
 			bndruns.forEach((name, runFile) -> {
 				tasks.register("run.".concat(name), Bndrun.class, t -> {
 					t.setDescription(String.format("Run the bndrun file %s.", runFile.getName()));
-					t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);
@@ -801,7 +796,6 @@ public class BndPlugin implements Plugin<Project> {
 				tasks.register("testrun.".concat(name), TestOSGi.class, t -> {
 					t.setDescription(
 						String.format("Runs the OSGi JUnit tests in the bndrun file %s.", runFile.getName()));
-					t.setGroup(LifecycleBasePlugin.VERIFICATION_GROUP);
 					t.dependsOn(assemble);
 					t.getBndrun()
 						.fileValue(runFile);

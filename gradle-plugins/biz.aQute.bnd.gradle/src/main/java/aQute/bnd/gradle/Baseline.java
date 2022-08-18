@@ -49,6 +49,7 @@ import aQute.bnd.service.diff.Diff;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
 /**
  * Baseline task type for Gradle.
@@ -216,6 +217,7 @@ public class Baseline extends DefaultTask {
 	 */
 	public Baseline() {
 		super();
+		setGroup(LifecycleBasePlugin.BUILD_GROUP);
 		org.gradle.api.Project project = getProject();
 		this.layout = project.getLayout();
 		this.providers = project.getProviders();

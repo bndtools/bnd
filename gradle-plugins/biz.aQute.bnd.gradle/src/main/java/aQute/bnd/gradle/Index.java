@@ -20,6 +20,7 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
@@ -203,6 +204,7 @@ public class Index extends DefaultTask {
 	 */
 	public Index() {
 		super();
+		setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 		org.gradle.api.Project project = getProject();
 		ObjectFactory objects = project.getObjects();
 		indexName = objects.property(String.class)

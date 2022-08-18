@@ -37,7 +37,6 @@ jar {
 
 task bundle(type: Bundle) {
 	description = 'Bundle'
-	group = 'build'
 	from sourceSets.test.output
 	archiveBaseName = "${project.archivesBaseName}_bundle"
 	bundle {
@@ -69,7 +68,6 @@ artifacts {
 
 task indexer(type: Index) {
 	description = 'Indexer'
-	group = 'build'
 	repositoryName = project.name
 	bundles fileTree(destinationDirectory.dir(libsDirName)) {
 		include '**/*.jar'
@@ -89,7 +87,6 @@ task copybundles(type: Copy) {
 
 task indexer2(type: Index) {
 	description = 'Indexer'
-	group = 'build'
 	indexName = 'index2.xml'
 	gzip = true
 	destinationDirectory = indexDir

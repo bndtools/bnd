@@ -27,14 +27,12 @@ ext {
 
 task export(type: Export) {
 	description = "Export ${name}.bndrun"
-	group = 'export'
 	bndrun = layout.projectDirectory.file("${name}.bndrun")
 	bundles = configurations.bundles
 }
 
 task exporter(type: Export) {
 	description = "Exporter for ${name}.bndrun"
-	group = 'export'
 	bndrun = objects.fileProperty().value(layout.projectDirectory.file("${name}.bndrun"))
 	bundles = configurations.bundles
 	exporter = 'bnd.runbundles'
@@ -42,7 +40,6 @@ task exporter(type: Export) {
 
 task runbundles(type: Export) {
 	description = "Export ${name}.bndrun"
-	group = 'export'
 	bndrun = file("${name}.bndrun")
 	exporter = 'bnd.runbundles'
 	bundles = configurations.bundles
