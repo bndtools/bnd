@@ -11,11 +11,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.maven.project.MavenProject;
-import org.junit.jupiter.api.Test;
-
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
 import aQute.lib.io.IO;
+import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
 
 public class CodeSnippetPluginTest {
 

@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.maven.project.MavenProject;
-
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
 import aQute.bnd.maven.reporter.plugin.ReportGeneratorFactory;
@@ -25,6 +23,7 @@ import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorConstants;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
+import org.apache.maven.project.MavenProject;
 
 /**
  * This plugins extracts the child project data of a maven project. The user can

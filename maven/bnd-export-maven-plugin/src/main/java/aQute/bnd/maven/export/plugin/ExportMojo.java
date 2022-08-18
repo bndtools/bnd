@@ -9,6 +9,19 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
+import aQute.bnd.maven.lib.resolve.Scope;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.io.IO;
+import biz.aQute.resolve.ResolveProcess;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenSession;
@@ -27,20 +40,6 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.exporter.executable.ExecutableJarExporter;
-import aQute.bnd.exporter.runbundles.RunbundlesExporter;
-import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.configuration.Bundles;
-import aQute.bnd.maven.lib.resolve.BndrunContainer;
-import aQute.bnd.maven.lib.resolve.Operation;
-import aQute.bnd.maven.lib.resolve.Scope;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.JarResource;
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.unmodifiable.Sets;
-import aQute.lib.io.IO;
-import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class ExportMojo extends AbstractMojo {

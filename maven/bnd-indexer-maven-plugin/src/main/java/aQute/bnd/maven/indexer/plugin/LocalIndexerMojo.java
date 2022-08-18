@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
+import aQute.bnd.maven.lib.configuration.FileTree;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.SimpleIndexer;
+import aQute.lib.io.IO;
+import aQute.service.reporter.Report.Location;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -15,12 +20,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.maven.lib.configuration.FileTree;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.repository.SimpleIndexer;
-import aQute.lib.io.IO;
-import aQute.service.reporter.Report.Location;
 
 /**
  * Exports project dependencies to OSGi R5 index format.

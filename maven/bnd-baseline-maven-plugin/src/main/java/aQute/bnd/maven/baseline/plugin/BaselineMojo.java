@@ -12,6 +12,18 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Objects;
 
+import aQute.bnd.differ.Baseline;
+import aQute.bnd.differ.Baseline.BundleInfo;
+import aQute.bnd.differ.Baseline.Info;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.version.MavenVersion;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -35,19 +47,6 @@ import org.eclipse.aether.resolution.VersionRangeResult;
 import org.eclipse.aether.version.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.differ.Baseline;
-import aQute.bnd.differ.Baseline.BundleInfo;
-import aQute.bnd.differ.Baseline.Info;
-import aQute.bnd.differ.DiffPluginImpl;
-import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Instructions;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.service.diff.Diff;
-import aQute.bnd.version.MavenVersion;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
 
 /**
  * Exports project dependencies to OSGi R5 index format.

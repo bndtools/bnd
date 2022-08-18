@@ -5,6 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.reporter.ReportExporterService;
+import aQute.bnd.service.reporter.ReportGeneratorService;
+import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -14,12 +19,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.service.reporter.ReportExporterService;
-import aQute.bnd.service.reporter.ReportGeneratorService;
-import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
 
 /**
  * Exports a set of readme files (template can be parametrized with system

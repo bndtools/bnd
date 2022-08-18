@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
+import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.DistributionManagement;
 import org.apache.maven.model.License;
@@ -14,9 +16,6 @@ import org.apache.maven.model.Organization;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
-
-import aQute.bnd.maven.reporter.plugin.MavenProjectWrapper;
-import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
 
 public class CommonInfoPluginTest {
 

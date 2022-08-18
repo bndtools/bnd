@@ -13,6 +13,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.maven.lib.resolve.LocalURLs;
+import aQute.bnd.maven.lib.resolve.RemotePostProcessor;
+import aQute.bnd.maven.lib.resolve.Scope;
+import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA256;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -38,17 +48,6 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.osgi.service.repository.ContentNamespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.maven.lib.resolve.DependencyResolver;
-import aQute.bnd.maven.lib.resolve.LocalURLs;
-import aQute.bnd.maven.lib.resolve.RemotePostProcessor;
-import aQute.bnd.maven.lib.resolve.Scope;
-import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.repository.XMLResourceGenerator;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
-import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.lib.io.IO;
-import aQute.libg.cryptography.SHA256;
 
 /**
  * Exports project dependencies to OSGi R5 index format.

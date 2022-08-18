@@ -6,6 +6,14 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
+import aQute.bnd.maven.lib.resolve.Scope;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.unmodifiable.Sets;
+import biz.aQute.resolve.ResolveProcess;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -22,15 +30,6 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.configuration.Bundles;
-import aQute.bnd.maven.lib.resolve.BndrunContainer;
-import aQute.bnd.maven.lib.resolve.Operation;
-import aQute.bnd.maven.lib.resolve.Scope;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.unmodifiable.Sets;
-import biz.aQute.resolve.ResolveProcess;
 
 /**
  * Resolves the <code>-runbundles</code> for the given bndrun file.
