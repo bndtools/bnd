@@ -19,6 +19,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
+import aQute.bnd.differ.Baseline.BundleInfo;
+import aQute.bnd.differ.Baseline.Info;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -37,18 +48,6 @@ import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-
-import aQute.bnd.differ.Baseline.BundleInfo;
-import aQute.bnd.differ.Baseline.Info;
-import aQute.bnd.differ.DiffPluginImpl;
-import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Instructions;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.service.diff.Diff;
-import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
 /**

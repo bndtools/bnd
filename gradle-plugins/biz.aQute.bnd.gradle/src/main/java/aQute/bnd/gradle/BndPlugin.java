@@ -27,6 +27,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
+import aQute.bnd.osgi.About;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Maps;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
@@ -69,19 +81,6 @@ import org.gradle.api.tasks.testing.AbstractTestTask;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
 import org.gradle.process.CommandLineArgumentProvider;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.build.Container;
-import aQute.bnd.build.Container.TYPE;
-import aQute.bnd.build.Workspace;
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.exporter.executable.ExecutableJarExporter;
-import aQute.bnd.exporter.runbundles.RunbundlesExporter;
-import aQute.bnd.osgi.About;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.stream.MapStream;
-import aQute.bnd.unmodifiable.Maps;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
 
 /**
  * BndPlugin for Gradle.

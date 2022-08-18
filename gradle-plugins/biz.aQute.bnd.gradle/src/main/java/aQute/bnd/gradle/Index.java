@@ -13,6 +13,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.SimpleIndexer;
+import aQute.lib.io.IO;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -26,10 +29,6 @@ import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.repository.SimpleIndexer;
-import aQute.lib.io.IO;
 
 /**
  * Index task type for Gradle.

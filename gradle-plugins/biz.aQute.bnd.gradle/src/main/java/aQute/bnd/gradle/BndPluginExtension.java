@@ -2,11 +2,10 @@ package aQute.bnd.gradle;
 
 import java.util.Objects;
 
-import org.gradle.api.plugins.ExtensionAware;
-import org.gradle.api.plugins.ExtraPropertiesExtension;
-
 import aQute.bnd.build.Project;
 import groovy.lang.MissingPropertyException;
+import org.gradle.api.plugins.ExtensionAware;
+import org.gradle.api.plugins.ExtraPropertiesExtension;
 
 /**
  * BndPluginExtension for Gradle.

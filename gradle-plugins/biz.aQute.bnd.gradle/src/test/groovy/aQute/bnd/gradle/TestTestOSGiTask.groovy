@@ -1,12 +1,13 @@
 package aQute.bnd.gradle
 
-import static org.gradle.testkit.runner.TaskOutcome.*
+import groovy.xml.XmlSlurper
+import spock.lang.Specification
 
 import java.util.jar.Attributes
 import java.util.jar.JarFile
 
-import groovy.xml.XmlSlurper
-import spock.lang.Specification
+import static org.gradle.testkit.runner.TaskOutcome.FAILED
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class TestTestOSGiTask extends Specification {
 

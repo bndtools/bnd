@@ -10,6 +10,12 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.strings.Strings;
+import groovy.lang.Closure;
 import org.gradle.StartParameter;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -24,13 +30,6 @@ import org.gradle.api.tasks.Delete;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.DynamicObject;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
-
-import aQute.bnd.build.Workspace;
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.unmodifiable.Sets;
-import aQute.lib.strings.Strings;
-import groovy.lang.Closure;
 
 /**
  * BndWorkspacePlugin for Gradle.

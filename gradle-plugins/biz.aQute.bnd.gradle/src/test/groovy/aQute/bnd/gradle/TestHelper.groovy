@@ -1,15 +1,14 @@
 package aQute.bnd.gradle
 
+import aQute.bnd.version.MavenVersion
+import org.gradle.api.JavaVersion
+import org.gradle.testkit.runner.GradleRunner
+
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
-
-import org.gradle.api.JavaVersion
-import org.gradle.testkit.runner.GradleRunner
-
-import aQute.bnd.version.MavenVersion
 
 class TestHelper {
 	private final static TimeZone DEFAULT_TIME_ZONE = TimeZone.getDefault();

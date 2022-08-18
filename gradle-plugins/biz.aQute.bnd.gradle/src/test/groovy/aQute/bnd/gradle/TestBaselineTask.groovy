@@ -1,10 +1,10 @@
 package aQute.bnd.gradle
 
-import static org.gradle.testkit.runner.TaskOutcome.*
+import spock.lang.Specification
 
 import java.util.regex.Pattern
 
-import spock.lang.Specification
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class TestBaselineTask extends Specification {
 
