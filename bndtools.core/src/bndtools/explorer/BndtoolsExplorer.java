@@ -242,6 +242,12 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 	@Override
 	public int tryToReveal(Object element) {
+		int result = super.tryToReveal(element);
+		afterReveal(element);
+		return result;
+	}
+
+	private void afterReveal(Object element) {
 		if (element instanceof IResource) {
 			model.setActualSelection(element);
 			model.setSelectedProject(getProject((IResource) element));
@@ -249,13 +255,12 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			model.setActualSelection(null);
 			model.setSelectedProject(null);
 		}
-		return super.tryToReveal(element);
 	}
 
 	@Override
 	public void selectAndReveal(Object element) {
-		tryToReveal(element);
 		super.selectAndReveal(element);
+		afterReveal(element);
 	}
 
 	@Override
