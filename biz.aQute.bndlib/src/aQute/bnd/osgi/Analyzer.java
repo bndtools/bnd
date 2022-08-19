@@ -200,12 +200,13 @@ public class Analyzer extends Processor {
 	 */
 	public void analyze() throws Exception {
 		if (!analyzed) {
+			int release = getRelease();
 			analyzed = true;
-			analyzeContent();
+			analyzeContent(release);
 
 			// Execute any plugins
 			// TODO handle better reanalyze
-			doPlugins();
+			doPlugins(release);
 
 			//
 			// calculate class versions in use
@@ -293,7 +294,7 @@ public class Analyzer extends Processor {
 				getHostPackages().ifPresent(hostPackages -> referredAndExported.keySet()
 					.removeAll(hostPackages));
 
-				getRequireBundlePackages().ifPresent(hostPackages -> referredAndExported.keySet()
+				getRequireBundlePackages(release).ifPresent(hostPackages -> referredAndExported.keySet()
 					.removeAll(hostPackages));
 
 				String h = getProperty(IMPORT_PACKAGE);
@@ -423,6 +424,19 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	private int getRelease() {
+		String property = getProperty(JAVA_RELEASE);
+		if (property != null) {
+			try {
+				return Integer.parseInt(property.trim());
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException(
+					JAVA_RELEASE + " must be a valid integer but was " + property + " (" + e.getMessage() + ")", e);
+			}
+		}
+		return -1;
+	}
+
 	private void reset() {
 		contained.clear();
 		classspace.clear();
@@ -436,10 +450,10 @@ public class Analyzer extends Processor {
 		bcpTypes.clear();
 	}
 
-	private void analyzeContent() throws Exception {
+	private void analyzeContent(int release) throws Exception {
 		// Parse all the classes in the
 		// the jar according to the OSGi Bundle-ClassPath
-		analyzeBundleClasspath();
+		analyzeBundleClasspath(release);
 
 		//
 		// Get exported packages from the
@@ -448,9 +462,10 @@ public class Analyzer extends Processor {
 		//
 
 		for (Jar current : getClasspath()) {
-			getManifestInfoFromClasspath(current, classpathExports, contracts);
+			getManifestInfoFromClasspath(current, classpathExports, contracts, release);
 
-			Manifest m = current.getManifest();
+			Manifest m = current.getManifest(release)
+				.orElse(null);
 			if (m == null) {
 				for (String dir : current.getDirectories()
 					.keySet()) {
@@ -472,7 +487,7 @@ public class Analyzer extends Processor {
 
 		// Conditional packages
 
-		doConditionalPackages();
+		doConditionalPackages(release);
 	}
 
 	/**
@@ -504,7 +519,12 @@ public class Analyzer extends Processor {
 	 * @return the packages from the required bundles, with no Require-Bundle
 	 *         return an empty Optional
 	 */
+
 	public Optional<Set<PackageRef>> getRequireBundlePackages() {
+		return getRequireBundlePackages(Jar.MULTI_RELEASE_DEFAULT_VERSION);
+	}
+
+	public Optional<Set<PackageRef>> getRequireBundlePackages(int release) {
 
 		Parameters required = getRequireBundle();
 		if (required.isEmpty())
@@ -514,7 +534,8 @@ public class Analyzer extends Processor {
 			.stream()
 			.map(this::toJar)
 			.filter(Objects::nonNull)
-			.map(asFunctionOrElse(Jar::getManifest, null))
+			.map(asFunctionOrElse(jar -> jar.getManifest(release)
+				.orElse(null), null))
 			.filter(Objects::nonNull)
 			.flatMap(manifest -> {
 				Domain domain = Domain.domain(manifest);
@@ -625,7 +646,7 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	private void doConditionalPackages() throws Exception {
+	private void doConditionalPackages(int release) throws Exception {
 		//
 		// We need to find out the contained packages
 		// again ... so we need to clear any visited
@@ -636,7 +657,7 @@ public class Analyzer extends Processor {
 
 		for (Jar extra; (extra = getExtra()) != null;) {
 			dot.addAll(extra);
-			analyzeJar(extra, "", true, null);
+			analyzeJar(extra, "", true, null, release);
 		}
 	}
 
@@ -980,8 +1001,10 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Call AnalyzerPlugins to analyze the content.
+	 *
+	 * @param release the release flag for that content should be analyzed
 	 */
-	private void doPlugins() {
+	private void doPlugins(int release) {
 		List<AnalyzerPlugin> plugins = getPlugins(AnalyzerPlugin.class);
 		plugins.sort(Comparator.comparingInt(AnalyzerPlugin::ordering));
 		for (AnalyzerPlugin plugin : plugins) {
@@ -1000,7 +1023,7 @@ public class Analyzer extends Processor {
 						.filterValue(Objects::nonNull)
 						.collect(MapStream.toMap());
 					reset();
-					analyzeContent();
+					analyzeContent(release);
 					// Restore -internal-source information
 					// if the package still exists
 					sourceInformation.forEach((pkgRef, source) -> {
@@ -1913,10 +1936,11 @@ public class Analyzer extends Processor {
 		return result;
 	}
 
-	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts) {
+	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts, int release) {
 		logger.debug("get Manifest Info From Classpath for {}", jar);
 		try {
-			Manifest m = jar.getManifest();
+			Manifest m = jar.getManifest(release)
+				.orElse(null);
 			if (m != null) {
 				Domain domain = Domain.domain(m);
 				Parameters exported = domain.getExportPackage();
@@ -2577,11 +2601,11 @@ public class Analyzer extends Processor {
 		return getJar();
 	}
 
-	private void analyzeBundleClasspath() throws Exception {
+	private void analyzeBundleClasspath(int release) throws Exception {
 		Parameters bcp = getBundleClasspath();
 
 		if (bcp.isEmpty()) {
-			analyzeJar(dot, "", true, null);
+			analyzeJar(dot, "", true, null, release);
 		} else {
 			// Cleanup entries
 			bcp = bcp.stream()
@@ -2593,7 +2617,7 @@ public class Analyzer extends Processor {
 
 			for (String path : bcp.keySet()) {
 				if (path.equals(".")) {
-					analyzeJar(dot, "", okToIncludeDirs, null);
+					analyzeJar(dot, "", okToIncludeDirs, null, release);
 					continue;
 				}
 				//
@@ -2610,7 +2634,7 @@ public class Analyzer extends Processor {
 						if (!(resource instanceof JarResource)) {
 							addClose(jar);
 						}
-						analyzeJar(jar, "", true, path);
+						analyzeJar(jar, "", true, path, release);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
@@ -2623,7 +2647,7 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, path.concat("/"), true, path);
+						analyzeJar(dot, path.concat("/"), true, path, release);
 					} else {
 						Attrs info = bcp.get(path);
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
@@ -2639,16 +2663,19 @@ public class Analyzer extends Processor {
 	 * contained and referred set and uses. This method ignores the Bundle
 	 * classpath.
 	 */
-	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry) throws Exception {
+	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry, int release)
+		throws Exception {
 		Map<String, Clazz> mismatched = new HashMap<>();
 
-		Parameters importPackage = Optional.ofNullable(jar.getManifest())
+		Parameters importPackage = jar.getManifest(release)
 			.map(Domain::domain)
 			.map(Domain::getImportPackage)
 			.orElseGet(() -> new Parameters());
 
-		next: for (String path : jar.getResources()
-			.keySet()) {
+		Map<String, Resource> resources = jar.getVersionedResources(release);
+		next: for (Entry<String, Resource> entry : resources.entrySet()) {
+			String path = entry.getKey();
+			Resource resource = entry.getValue();
 			if (path.startsWith(prefix)) {
 
 				String relativePath = path.substring(prefix.length());
@@ -2665,7 +2692,6 @@ public class Analyzer extends Processor {
 
 				// Check class resources, we need to analyze them
 				if (path.endsWith(".class")) {
-					Resource resource = jar.getResource(path);
 					Clazz clazz;
 
 					try {

@@ -293,6 +293,7 @@ public interface Constants {
 	String		WORKINGSET									= "-workingset";
 	String		WORKINGSET_MEMBER							= "member";
 	String		REQUIRE_BND									= "-require-bnd";
+	String		JAVA_RELEASE								= "-release";
 
 	// Deprecated
 	String		CLASSPATH									= "-classpath";
@@ -314,7 +315,7 @@ public interface Constants {
 		CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPRODUCIBLE, INCLUDEPACKAGE,
 		CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK, MAVEN_SCOPE, RUNSTARTLEVEL,
 		RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE, RUNFRAMEWORKRESTART,
-		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY);
+		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY, JAVA_RELEASE);
 
 	// Ignore bundle specific headers. These headers do not make a lot of sense
 	// to inherit

@@ -24,16 +24,21 @@ import java.security.MessageDigest;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.TreeMap;
@@ -46,6 +51,8 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.CRC32;
@@ -74,6 +81,7 @@ import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.PathSet;
 
 public class Jar implements Closeable {
+
 	private static final int	BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	/**
 	 * Note that setting the January 1st 1980 (or even worse, "0", as time)
@@ -104,7 +112,7 @@ public class Jar implements Closeable {
 	private final NavigableMap<String, Resource>				resources				= new TreeMap<>();
 	private final NavigableMap<String, Map<String, Resource>>	directories				= new TreeMap<>();
 	private Optional<Manifest>									manifest;
-	private Optional<ModuleAttribute>							moduleAttribute;
+	private Map<Integer, Optional<ModuleAttribute>>				moduleAttributes				= new HashMap<>();
 	private boolean												manifestFirst;
 	private String												manifestName			= JarFile.MANIFEST_NAME;
 	private String												name;
@@ -124,6 +132,12 @@ public class Jar implements Closeable {
 	private long												zipEntryConstantTime	= ZIP_ENTRY_CONSTANT_TIME;
 	public static final Pattern									METAINF_SIGNING_P		= Pattern
 		.compile("META-INF/([^/]+\\.(?:DSA|RSA|EC|SF)|SIG-[^/]+)", Pattern.CASE_INSENSITIVE);
+	static final int											MULTI_RELEASE_MIN_VERSION		= 9;
+	static final int											MULTI_RELEASE_DEFAULT_VERSION	= 0;
+	static final int											MULTI_RELEASE_VERSION_GROUP		= 1;
+	static final int											MULTI_RELEASE_PATH_GROUP		= 2;
+	static final Pattern										MULTI_RELEASE_PATTERN			= Pattern
+		.compile("^META-INF/versions/(\\d+)/(.*)$", Pattern.CASE_INSENSITIVE);
 
 	public Jar(String name) {
 		this.name = name;
@@ -361,13 +375,22 @@ public class Jar implements Closeable {
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
 		path = ZipUtil.cleanPath(path);
+		versionedResources = null;
 
 		if (path.equals(manifestName)) {
 			manifest = null;
 			if (resources.isEmpty())
 				manifestFirst = true;
-		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
-			moduleAttribute = null;
+		} else {
+			if (path.equals(Constants.MODULE_INFO_CLASS)) {
+				moduleAttributes.remove(MULTI_RELEASE_DEFAULT_VERSION);
+			} else {
+				Matcher matcher = MULTI_RELEASE_PATTERN.matcher(path);
+				if (matcher.matches() && matcher.group(MULTI_RELEASE_PATH_GROUP)
+					.equals(Constants.MODULE_INFO_CLASS)) {
+					moduleAttributes.remove(Integer.parseInt(matcher.group(MULTI_RELEASE_VERSION_GROUP)));
+				}
+			}
 		}
 		String dir = getParent(path);
 		Map<String, Resource> s = directories.get(dir);
@@ -395,6 +418,27 @@ public class Jar implements Closeable {
 		check();
 		path = ZipUtil.cleanPath(path);
 		return resources.get(path);
+	}
+
+	/**
+	 * Returns a resource taking the release version into account.
+	 *
+	 * @param path the path of the resource to read
+	 * @param release the release to use
+	 * @return an optional representing the resource or an empty optional if the
+	 *         resource do not exits
+	 */
+	public Optional<Resource> getVersionedResource(String path, int release) {
+		check();
+		path = ZipUtil.cleanPath(path);
+		NavigableMap<Integer, Resource> map = getAllVersionMap()
+			.getOrDefault(path, Collections.emptyNavigableMap())
+			.headMap(release, true);
+		Entry<Integer, Resource> releaseEntry = map.lastEntry();
+		if (releaseEntry != null) {
+			return Optional.of(releaseEntry.getValue());
+		}
+		return Optional.empty();
 	}
 
 	public Stream<String> getResourceNames(Predicate<String> matches) {
@@ -432,6 +476,65 @@ public class Jar implements Closeable {
 		return resources;
 	}
 
+	/**
+	 * returns an (unmodifiable) view of resources in this jar according to the
+	 * given release version.
+	 *
+	 * @return a map whose keys are resource names and the value the resource
+	 */
+	public Map<String, Resource> getVersionedResources(int release) {
+		Map<String, NavigableMap<Integer, Resource>> versionedResources = getAllVersionMap();
+		return versionedResources.entrySet()
+			.stream()
+			.map(versions -> {
+				Entry<Integer, Resource> releaseEntry = versions.getValue()
+					.headMap(release, true)
+					.lastEntry();
+				if (releaseEntry != null) {
+					return new SimpleEntry<>(versions.getKey(), releaseEntry.getValue());
+				}
+				return null;
+			})
+			.filter(Objects::nonNull)
+			.collect(Collectors.toUnmodifiableMap(Entry::getKey, Entry::getValue));
+	}
+
+	/**
+	 * provides a stream of all additional releases declared by this jar
+	 *
+	 * @return a stream of additional releases declared by this jar
+	 */
+	public IntStream getReleaseVersions() {
+		return getAllVersionMap().values()
+			.stream()
+			.flatMap(map -> map.keySet()
+				.stream())
+			.mapToInt(i -> i)
+			.distinct()
+			.sorted();
+	}
+
+	private Map<String, NavigableMap<Integer, Resource>> getAllVersionMap() {
+		if (versionedResources == null) {
+			versionedResources = new HashMap<>();
+			for (Entry<String, Resource> entry : resources.entrySet()) {
+				Matcher matcher = Jar.MULTI_RELEASE_PATTERN.matcher(entry.getKey());
+				String path;
+				int version;
+				if (matcher.matches()) {
+					path = matcher.group(Jar.MULTI_RELEASE_PATH_GROUP);
+					version = Integer.parseInt(matcher.group(Jar.MULTI_RELEASE_VERSION_GROUP));
+				} else {
+					path = entry.getKey();
+					version = Jar.MULTI_RELEASE_DEFAULT_VERSION;
+				}
+				SortedMap<Integer, Resource> map = versionedResources.computeIfAbsent(path, nil -> new TreeMap<>());
+				map.put(version, entry.getValue());
+			}
+		}
+		return versionedResources;
+	}
+
 	public boolean addDirectory(Map<String, Resource> directory, boolean overwrite) {
 		check();
 		boolean duplicates = false;
@@ -446,6 +549,45 @@ public class Jar implements Closeable {
 
 	public Manifest getManifest() throws Exception {
 		return manifest().orElse(null);
+	}
+
+	/**
+	 * Creates a <b>copy</b> of the current jars manifest that is enhanced by
+	 * the supplemental manifest data (if any) for the given release.
+	 *
+	 * @param release the release for fetching an enhanced manifest
+	 * @return a <b>copy</b> that is <b>not</b> backed by the original manifest
+	 *         but copied and enhanced with the supplemental manifest data (if
+	 *         any) for the given release
+	 */
+	public Optional<Manifest> getManifest(int release) {
+		return manifest().map(original -> {
+			Manifest copy = new Manifest(original);
+			if (release >= MULTI_RELEASE_MIN_VERSION) {
+				Optional<Resource> releaseEntry = getVersionedResource(JarFile.MANIFEST_NAME, release);
+				releaseEntry.map(resource -> {
+					try (InputStream in = resource.openInputStream()) {
+						return new Manifest(in);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+				})
+					.ifPresent(supplemental -> {
+						enhanceManifestAttribute(supplemental, copy, Constants.REQUIRE_CAPABILITY);
+						enhanceManifestAttribute(supplemental, copy, Constants.IMPORT_PACKAGE);
+				});
+			}
+			return copy;
+		});
+	}
+
+	private static void enhanceManifestAttribute(Manifest supplemental, Manifest target, String key) {
+		String value = supplemental.getMainAttributes()
+			.getValue(key);
+		if (value != null) {
+			target.getMainAttributes()
+				.putValue(key, value);
+		}
 	}
 
 	Optional<Manifest> manifest() {
@@ -467,16 +609,26 @@ public class Jar implements Closeable {
 		}
 	}
 
-	Optional<ModuleAttribute> moduleAttribute() throws Exception {
+	Optional<ModuleAttribute> moduleAttribute(int release) throws Exception {
 		check();
-		Optional<ModuleAttribute> optional = moduleAttribute;
-		if (optional != null) {
-			return optional;
+		if (release < MULTI_RELEASE_MIN_VERSION) {
+			release = MULTI_RELEASE_DEFAULT_VERSION;
 		}
-		Resource module_info_resource = getResource(Constants.MODULE_INFO_CLASS);
-		if (module_info_resource == null) {
-			return moduleAttribute = Optional.empty();
+		Optional<ModuleAttribute> moduleAttribute = moduleAttributes.get(release);
+		if (moduleAttribute == null) {
+			Optional<Resource> resource = getVersionedResource(Constants.MODULE_INFO_CLASS, release);
+			if (resource.isPresent()) {
+				moduleAttribute = readModuleAttribute(resource.get());
+			} else {
+				moduleAttribute = Optional.empty();
+			}
+			moduleAttributes.put(release, moduleAttribute);
 		}
+		return moduleAttribute;
+	}
+
+	private static Optional<ModuleAttribute> readModuleAttribute(Resource module_info_resource)
+		throws Exception {
 		ClassFile module_info;
 		ByteBuffer bb = module_info_resource.buffer();
 		if (bb != null) {
@@ -486,25 +638,34 @@ public class Jar implements Closeable {
 				module_info = ClassFile.parseClassFile(din);
 			}
 		}
-		return moduleAttribute = Arrays.stream(module_info.attributes)
+		return Arrays.stream(module_info.attributes)
 			.filter(ModuleAttribute.class::isInstance)
 			.map(ModuleAttribute.class::cast)
 			.findFirst();
 	}
 
 	public String getModuleName() throws Exception {
-		return moduleAttribute().map(a -> a.module_name)
-			.orElseGet(this::automaticModuleName);
+		return getModuleName(MULTI_RELEASE_DEFAULT_VERSION);
 	}
 
-	String automaticModuleName() {
-		return manifest().map(m -> m.getMainAttributes()
+	public String getModuleName(int release) throws Exception {
+		return moduleAttribute(release).map(a -> a.module_name)
+			.orElseGet(() -> automaticModuleName(release));
+	}
+
+	String automaticModuleName(int release) {
+		return getManifest(release)
+			.map(m -> m.getMainAttributes()
 			.getValue(Constants.AUTOMATIC_MODULE_NAME))
 			.orElse(null);
 	}
 
 	public String getModuleVersion() throws Exception {
-		return moduleAttribute().map(a -> a.module_version)
+		return getModuleVersion(MULTI_RELEASE_DEFAULT_VERSION);
+	}
+
+	public String getModuleVersion(int release) throws Exception {
+		return moduleAttribute(release).map(a -> a.module_version)
 			.orElse(null);
 	}
 
@@ -947,6 +1108,8 @@ public class Jar implements Closeable {
 		directories.clear();
 		manifest = null;
 		source = null;
+		versionedResources = null;
+		moduleAttributes.clear();
 	}
 
 	public long lastModified() {
@@ -1303,6 +1466,7 @@ public class Jar implements Closeable {
 	}
 
 	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
+	private Map<String, NavigableMap<Integer, Resource>> versionedResources;
 
 	public Stream<Resource> getPomXmlResources() {
 		return getResources(pomXmlFilter);
