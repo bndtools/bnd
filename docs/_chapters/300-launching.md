@@ -266,6 +266,8 @@ It is possible to specity multiple remote clauses. All sections are started simu
 * `agent` – The port on which the agent is listening, the default is ${aQute.agent.server.port}.
 * `timeout` – Timeout in seconds for the debug connection
 
+Additionally, the communication can be traced by setting the `aQute.remote.util.Link.trace` system property to `true` on the target system.
+
 ### Example bndrun
 
 An example remote bndrun file:
