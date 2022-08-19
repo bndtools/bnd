@@ -44,6 +44,7 @@ public class Link<L, R> extends Thread implements Closeable {
 	final AtomicInteger						id			= new AtomicInteger(10000);
 	final ConcurrentMap<Integer, Result>	promises	= new ConcurrentHashMap<>();
 	final AtomicBoolean						quit		= new AtomicBoolean(false);
+	final boolean							tracing;
 	volatile boolean						transfer	= false;
 	private ThreadLocal<Integer>			msgid		= new ThreadLocal<>();
 
@@ -69,6 +70,8 @@ public class Link<L, R> extends Thread implements Closeable {
 		this.local = local == null ? (L) this : local;
 		this.in = new DataInputStream(in);
 		this.out = new DataOutputStream(out);
+		this.tracing = Boolean.getBoolean(Link.class.getName() + ".trace");
+
 	}
 
 	public Link(Class<R> type, L local, Socket socket) throws IOException {
@@ -276,7 +279,7 @@ public class Link<L, R> extends Thread implements Closeable {
 							String msg = codec.dec()
 								.from(result.value)
 								.get(String.class);
-							System.out.println("Exception " + msg);
+							trace("Exception " + msg);
 							throw new RuntimeException(msg);
 						}
 
@@ -307,7 +310,8 @@ public class Link<L, R> extends Thread implements Closeable {
 	}
 
 	private void trace(String string) {
-		System.out.println("# " + string);
+		if (tracing)
+			System.out.println("# " + string);
 	}
 
 	/*
