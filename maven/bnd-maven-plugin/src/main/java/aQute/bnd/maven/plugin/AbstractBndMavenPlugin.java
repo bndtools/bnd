@@ -302,8 +302,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 					builder.updateModified(cpeJar.lastModified(), cpe.getPath());
 					buildpath.add(cpeJar);
 				} else {
-					if (!artifact.getType()
-						.equals("jar")) {
+					if (!cpe.getName().endsWith(".jar")) {
 						/*
 						 * Check if it is a valid zip file. We don't create a
 						 * Jar object here because we want to avoid the cost of
