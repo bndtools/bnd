@@ -677,10 +677,10 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	private String createArtifactName(Artifact artifact) {
 		String classifier = artifact.getClassifier();
 		if ((classifier == null) || classifier.isEmpty()) {
-			return String.format("%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), artifact.getType());
+			return String.format("%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), getExtension(artifact.getType()));
 		}
 		return String.format("%s-%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), classifier,
-			artifact.getType());
+			getExtension(artifact.getType()));
 	}
 
 	private File loadProperties(Builder builder) throws Exception {
