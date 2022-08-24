@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.Export;
 import aQute.bnd.apiguardian.api.API;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -201,226 +202,286 @@ public class Analyzer extends Processor {
 	public void analyze() throws Exception {
 		if (!analyzed) {
 			analyzed = true;
-			analyzeContent();
-
-			// Execute any plugins
-			// TODO handle better reanalyze
-			doPlugins();
-
-			//
-			// calculate class versions in use
-			//
-			classspace.values()
+			int release = Jar.MULTI_RELEASE_DEFAULT_VERSION;
+			boolean multiRelease = Boolean.parseBoolean(getProperty("Multi-Release"));
+			if (multiRelease && !dot.isMultiRelease()) {
+				dot.setMultiRelease(true);
+			}
+			// we first need to analyze the content for the default release so
+			// we can find out what minimum java version is used by default
+			analyzeContent(release);
+			EE minEE = classspace.values()
 				.stream()
 				.filter(c -> !c.isModule())
 				.map(Clazz::getFormat)
-				.forEach(ees::add);
-
-			if (since(About._2_3)) {
-				try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
-					List<ClassParser> parsers = getPlugins(ClassParser.class);
-					for (ClassParser cp : parsers) {
-						cds.add(cp.getClassDataCollector(this));
-					}
-
-					//
-					// built ins
-					//
-
-					Instructions instructions = new Instructions(
-						OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
-					cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
-
-					for (Clazz c : classspace.values()) {
-						cds.parse(c);
-					}
+				.max(Comparator.naturalOrder())
+				.map(j -> EE.parse(j.getEE()))
+				.orElse(EE.OSGI_Minimum_1_0);
+			int minRelease = minEE.getReleaseTarget()
+				.orElse(Jar.MULTI_RELEASE_DEFAULT_VERSION);
+			if (minRelease >= Jar.MULTI_RELEASE_MIN_VERSION) {
+				release = minRelease;
+				// now we must check if there is any jar on the classpath that
+				// has a versioned entry that is lower or equal than our min
+				// release based on class versions, if this is the case we need
+				// to reanalyze because we probably have missed classes or
+				// manifests, this is independent whether multi-release is
+				// enabled or not
+				if (getClasspath().stream()
+					.flatMapToInt(Jar::getReleaseVersions)
+					.anyMatch(r -> r <= minRelease)) {
+					reset();
+					analyzeContent(minRelease);
 				}
 			}
+			analyze(release);
+			if (multiRelease) {
+				// now we need to analyze everything that is larger than the
+				// current release including the dot content
+				int[] supplementalReleases = Stream.concat(Stream.of(dot), getClasspath().stream())
+					.flatMapToInt(Jar::getReleaseVersions)
+					.filter(r -> r > minRelease)
+					.distinct()
+					.sorted()
+					.toArray();
+				for (int other : supplementalReleases) {
+					// we only make a copy of the analyzer here for manifest
+					// computation, but we don't want the resource be managed by
+					// the new instance and thus never close the analyzer
+					@SuppressWarnings("resource")
+					Analyzer analyzer = new Analyzer(this);
+					analyzer.dot = dot;
+					for (Jar file : getClasspath()) {
+						analyzer.addClasspath(file);
+					}
+					analyzer.analyzed = true;
+					analyzer.analyzeContent(other);
+					analyzer.analyze(other);
+					Manifest supplementalManifest = analyzer.calcManifest();
+					dot.setSupplementalManifest(supplementalManifest, other);
+				}
+			}
+		}
+	}
 
-			referred.keySet()
-				.removeAll(contained.keySet());
+	private void analyze(int release) throws Exception {
+		// Execute any plugins
+		// TODO handle better reanalyze
+		doPlugins(release);
 
-			//
-			// EXPORTS
-			//
-			{
-				Set<Instruction> unused = Create.set();
+		//
+		// calculate class versions in use
+		//
+		classspace.values()
+			.stream()
+			.filter(c -> !c.isModule())
+			.map(Clazz::getFormat)
+			.forEach(ees::add);
 
-				Instructions filter = new Instructions(getExportPackage());
-				filter.appendIfAbsent(getExportContents());
+		if (since(About._2_3)) {
+			try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
+				List<ClassParser> parsers = getPlugins(ClassParser.class);
+				for (ClassParser cp : parsers) {
+					cds.add(cp.getClassDataCollector(this));
+				}
 
 				//
-				// get the packages exported by the annotation. However,
-				// we remove any explicitly explicitly named private package so
-				// that
-				// you can always override an annotation
+				// built ins
 				//
 
-				Parameters exportedByAnnotation = getExportedByAnnotation();
-				exportedByAnnotation.keySet()
-					.removeAll(getPrivatePackage().keySet());
+				Instructions instructions = new Instructions(
+					OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
+				cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
 
-				filter.appendIfAbsent(exportedByAnnotation);
+				for (Clazz c : classspace.values()) {
+					cds.parse(c);
+				}
+			}
+		}
 
-				exports = filter(filter, contained, unused);
+		referred.keySet()
+			.removeAll(contained.keySet());
 
-				if (!unused.isEmpty()) {
-					warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused)
-						.header(Constants.EXPORT_PACKAGE)
+		//
+		// EXPORTS
+		//
+		{
+			Set<Instruction> unused = Create.set();
+
+			Instructions filter = new Instructions(getExportPackage());
+			filter.appendIfAbsent(getExportContents());
+
+			//
+			// get the packages exported by the annotation. However,
+			// we remove any explicitly explicitly named private package so
+			// that
+			// you can always override an annotation
+			//
+
+			Parameters exportedByAnnotation = getExportedByAnnotation();
+			exportedByAnnotation.keySet()
+				.removeAll(getPrivatePackage().keySet());
+
+			filter.appendIfAbsent(exportedByAnnotation);
+
+			exports = filter(filter, contained, unused);
+
+			if (!unused.isEmpty()) {
+				warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused)
+					.header(Constants.EXPORT_PACKAGE)
+					.context(unused.iterator()
+						.next()
+						.getInput());
+			}
+
+			// See what information we can find to augment the
+			// exports. I.e. look on the classpath
+			augmentExports(exports);
+		}
+
+		//
+		// IMPORTS
+		// Imports MUST come after exports because we use information from
+		// the exports
+		//
+		{
+			// Add all exports that do not have an -noimport: directive
+			// to the imports.
+			Packages referredAndExported = new Packages(referred);
+			referredAndExported.putAll(doExportsToImports(exports));
+
+			removeDynamicImports(referredAndExported);
+
+			getHostPackages().ifPresent(hostPackages -> referredAndExported.keySet()
+				.removeAll(hostPackages));
+
+			getRequireBundlePackages(release).ifPresent(hostPackages -> referredAndExported.keySet()
+				.removeAll(hostPackages));
+
+			String h = getProperty(IMPORT_PACKAGE);
+			if (h == null) // If not set use a default
+				h = "*";
+
+			if (isPedantic() && h.trim()
+				.length() == 0)
+				warning("Empty " + Constants.IMPORT_PACKAGE + " header");
+
+			Instructions filter = new Instructions(h);
+
+			Set<Instruction> unused = Create.set();
+			imports = filter(filter, referredAndExported, unused);
+			if (!unused.isEmpty()) {
+				// We ignore the end wildcard catch
+				if (!(unused.size() == 1 && unused.iterator()
+					.next()
+					.isAny()))
+					warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused)
+						.header(Constants.IMPORT_PACKAGE)
 						.context(unused.iterator()
 							.next()
 							.getInput());
-				}
-
-				// See what information we can find to augment the
-				// exports. I.e. look on the classpath
-				augmentExports(exports);
 			}
 
-			//
-			// IMPORTS
-			// Imports MUST come after exports because we use information from
-			// the exports
-			//
-			{
-				// Add all exports that do not have an -noimport: directive
-				// to the imports.
-				Packages referredAndExported = new Packages(referred);
-				referredAndExported.putAll(doExportsToImports(exports));
+			// See what information we can find to augment the
+			// imports. I.e. look in the exports
+			augmentImports(imports, exports);
 
-				removeDynamicImports(referredAndExported);
-
-				getHostPackages().ifPresent(hostPackages -> referredAndExported.keySet()
-					.removeAll(hostPackages));
-
-				getRequireBundlePackages().ifPresent(hostPackages -> referredAndExported.keySet()
-					.removeAll(hostPackages));
-
-				String h = getProperty(IMPORT_PACKAGE);
-				if (h == null) // If not set use a default
-					h = "*";
-
-				if (isPedantic() && h.trim()
-					.length() == 0)
-					warning("Empty " + Constants.IMPORT_PACKAGE + " header");
-
-				Instructions filter = new Instructions(h);
-
-				Set<Instruction> unused = Create.set();
-				imports = filter(filter, referredAndExported, unused);
-				if (!unused.isEmpty()) {
-					// We ignore the end wildcard catch
-					if (!(unused.size() == 1 && unused.iterator()
-						.next()
-						.isAny()))
-						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused)
-							.header(Constants.IMPORT_PACKAGE)
-							.context(unused.iterator()
-								.next()
-								.getInput());
+			// Determine if we should elide imports of java packages.
+			boolean noimportjava = is(NOIMPORTJAVA);
+			while (!noimportjava) {
+				if (getHighestEE().compareTo(Clazz.JAVA.Java_11) >= 0) {
+					// Requires Java 11 or later.
+					break; // So we import java packages.
 				}
-
-				// See what information we can find to augment the
-				// imports. I.e. look in the exports
-				augmentImports(imports, exports);
-
-				// Determine if we should elide imports of java packages.
-				boolean noimportjava = is(NOIMPORTJAVA);
-				while (!noimportjava) {
-					if (getHighestEE().compareTo(Clazz.JAVA.Java_11) >= 0) {
-						// Requires Java 11 or later.
-						break; // So we import java packages.
-					}
-					Attrs frameworkPackage = imports.get(getPackageRef("org/osgi/framework"));
-					if (frameworkPackage != null) {
-						VersionRange range = VersionRange.parseOSGiVersionRange(frameworkPackage.getVersion());
-						if (range != null) {
-							VersionRange intersection = frameworkPreR7.intersect(range);
-							if (intersection.isEmpty()) {
-								// Importing Core R7 or later framework.
-								break; // So we import java packages.
-							}
+				Attrs frameworkPackage = imports.get(getPackageRef("org/osgi/framework"));
+				if (frameworkPackage != null) {
+					VersionRange range = VersionRange.parseOSGiVersionRange(frameworkPackage.getVersion());
+					if (range != null) {
+						VersionRange intersection = frameworkPreR7.intersect(range);
+						if (intersection.isEmpty()) {
+							// Importing Core R7 or later framework.
+							break; // So we import java packages.
 						}
 					}
-					// We don't import Core R7 (or later) framework and we don't
-					// require Java 11 (or later). So we elide java imports.
-					noimportjava = true;
 				}
-				if (noimportjava) {
-					imports.keySet()
-						.removeIf(PackageRef::isJava);
-				}
+				// We don't import Core R7 (or later) framework and we don't
+				// require Java 11 (or later). So we elide java imports.
+				noimportjava = true;
 			}
-
-			//
-			// USES
-			//
-			// Add the uses clause to the exports
-
-			boolean api = true; // brave,
-								// lets see
-
-			doUses(exports, api ? apiUses : uses, imports);
-
-			//
-			// Verify that no exported package has a reference to a private
-			// package
-			// This can cause a lot of harm.
-			// TODO restrict the check to public API only, but even then
-			// exported packages
-			// should preferably not refer to private packages.
-			//
-			Set<PackageRef> privatePackages = getPrivates();
-
-			// References to java are not imported so they would show up as
-			// private
-			// packages, lets kill them as well.
-
-			privatePackages.removeIf(PackageRef::isJava);
-
-			for (PackageRef exported : exports.keySet()) {
-				List<PackageRef> used = uses.get(exported);
-				if (used != null) {
-					List<PackageRef> apiUsed = apiUses.get(exported);
-					if (apiUsed != null) {
-						Set<PackageRef> privateReferences = new TreeSet<>(apiUsed);
-						privateReferences.retainAll(privatePackages);
-						if (!privateReferences.isEmpty())
-							msgs.Export_Has_PrivateReferences_(exported, privateReferences.size(), privateReferences);
-					}
-				}
+			if (noimportjava) {
+				imports.keySet()
+					.removeIf(PackageRef::isJava);
 			}
-
-			//
-			// Checks
-			//
-			if (referred.containsKey(Descriptors.DEFAULT_PACKAGE)) {
-				error(
-					"The default package '.' is not permitted by the " + Constants.IMPORT_PACKAGE + " syntax.%n"
-						+ " This can be caused by compile errors in Eclipse because Eclipse creates%n"
-						+ "valid class files regardless of compile errors.%n"
-						+ "The following package(s) import from the default package %s",
-					uses.transpose()
-						.get(Descriptors.DEFAULT_PACKAGE));
-			}
-
-			// Check for use of the deprecated bnd @Export annotation
-
-			TypeRef bndAnnotation = descriptors.getTypeRefFromFQN(aQute.bnd.annotation.Export.class.getName());
-			contained.keySet()
-				.stream()
-				.map(this::getPackageInfo)
-				.filter(Objects::nonNull)
-				.distinct()
-				.filter(clz -> clz.annotations()
-					.contains(bndAnnotation))
-				.map(Clazz::getClassName)
-				.map(TypeRef::getPackageRef)
-				.map(PackageRef::getFQN)
-				.forEach(fqn -> warning(
-					"The annotation aQute.bnd.annotation.Export applied to package %s is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead",
-					fqn));
 		}
+
+		//
+		// USES
+		//
+		// Add the uses clause to the exports
+
+		boolean api = true; // brave,
+							// lets see
+
+		doUses(exports, api ? apiUses : uses, imports);
+
+		//
+		// Verify that no exported package has a reference to a private
+		// package
+		// This can cause a lot of harm.
+		// TODO restrict the check to public API only, but even then
+		// exported packages
+		// should preferably not refer to private packages.
+		//
+		Set<PackageRef> privatePackages = getPrivates();
+
+		// References to java are not imported so they would show up as
+		// private
+		// packages, lets kill them as well.
+
+		privatePackages.removeIf(PackageRef::isJava);
+
+		for (PackageRef exported : exports.keySet()) {
+			List<PackageRef> used = uses.get(exported);
+			if (used != null) {
+				List<PackageRef> apiUsed = apiUses.get(exported);
+				if (apiUsed != null) {
+					Set<PackageRef> privateReferences = new TreeSet<>(apiUsed);
+					privateReferences.retainAll(privatePackages);
+					if (!privateReferences.isEmpty())
+						msgs.Export_Has_PrivateReferences_(exported, privateReferences.size(), privateReferences);
+				}
+			}
+		}
+
+		//
+		// Checks
+		//
+		if (referred.containsKey(Descriptors.DEFAULT_PACKAGE)) {
+			error(
+				"The default package '.' is not permitted by the " + Constants.IMPORT_PACKAGE + " syntax.%n"
+					+ " This can be caused by compile errors in Eclipse because Eclipse creates%n"
+					+ "valid class files regardless of compile errors.%n"
+					+ "The following package(s) import from the default package %s",
+				uses.transpose()
+					.get(Descriptors.DEFAULT_PACKAGE));
+		}
+
+		// Check for use of the deprecated bnd @Export annotation
+
+		TypeRef bndAnnotation = descriptors.getTypeRefFromFQN(aQute.bnd.annotation.Export.class.getName());
+		contained.keySet()
+			.stream()
+			.map(this::getPackageInfo)
+			.filter(Objects::nonNull)
+			.distinct()
+			.filter(clz -> clz.annotations()
+				.contains(bndAnnotation))
+			.map(Clazz::getClassName)
+			.map(TypeRef::getPackageRef)
+			.map(PackageRef::getFQN)
+			.forEach(fqn -> warning(
+				"The annotation aQute.bnd.annotation.Export applied to package %s is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead",
+				fqn));
 	}
 
 	private void reset() {
@@ -436,10 +497,10 @@ public class Analyzer extends Processor {
 		bcpTypes.clear();
 	}
 
-	private void analyzeContent() throws Exception {
+	private void analyzeContent(int release) throws Exception {
 		// Parse all the classes in the
 		// the jar according to the OSGi Bundle-ClassPath
-		analyzeBundleClasspath();
+		analyzeBundleClasspath(release);
 
 		//
 		// Get exported packages from the
@@ -448,10 +509,10 @@ public class Analyzer extends Processor {
 		//
 
 		for (Jar current : getClasspath()) {
-			getManifestInfoFromClasspath(current, classpathExports, contracts);
+			getManifestInfoFromClasspath(current, classpathExports, contracts, release);
 
-			Manifest m = current.getManifest();
-			if (m == null) {
+			if (current.getManifest(release)
+				.orElse(null) == null) {
 				for (String dir : current.getDirectories()
 					.keySet()) {
 					learnPackage(current, "", getPackageRef(dir), classpathExports);
@@ -472,7 +533,7 @@ public class Analyzer extends Processor {
 
 		// Conditional packages
 
-		doConditionalPackages();
+		doConditionalPackages(release);
 	}
 
 	/**
@@ -505,6 +566,10 @@ public class Analyzer extends Processor {
 	 *         return an empty Optional
 	 */
 	public Optional<Set<PackageRef>> getRequireBundlePackages() {
+		return getRequireBundlePackages(Jar.MULTI_RELEASE_DEFAULT_VERSION);
+	}
+
+	private Optional<Set<PackageRef>> getRequireBundlePackages(int release) {
 
 		Parameters required = getRequireBundle();
 		if (required.isEmpty())
@@ -514,7 +579,8 @@ public class Analyzer extends Processor {
 			.stream()
 			.map(this::toJar)
 			.filter(Objects::nonNull)
-			.map(asFunctionOrElse(Jar::getManifest, null))
+			.map(asFunctionOrElse(t -> t.getManifest(release)
+				.orElse(null), null))
 			.filter(Objects::nonNull)
 			.flatMap(manifest -> {
 				Domain domain = Domain.domain(manifest);
@@ -625,7 +691,7 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	private void doConditionalPackages() throws Exception {
+	private void doConditionalPackages(int release) throws Exception {
 		//
 		// We need to find out the contained packages
 		// again ... so we need to clear any visited
@@ -636,7 +702,7 @@ public class Analyzer extends Processor {
 
 		for (Jar extra; (extra = getExtra()) != null;) {
 			dot.addAll(extra);
-			analyzeJar(extra, "", true, null);
+			analyzeJar(extra, "", true, null, release);
 		}
 	}
 
@@ -981,7 +1047,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Call AnalyzerPlugins to analyze the content.
 	 */
-	private void doPlugins() {
+	private void doPlugins(int release) {
 		List<AnalyzerPlugin> plugins = getPlugins(AnalyzerPlugin.class);
 		plugins.sort(Comparator.comparingInt(AnalyzerPlugin::ordering));
 		for (AnalyzerPlugin plugin : plugins) {
@@ -1000,7 +1066,7 @@ public class Analyzer extends Processor {
 						.filterValue(Objects::nonNull)
 						.collect(MapStream.toMap());
 					reset();
-					analyzeContent();
+					analyzeContent(release);
 					// Restore -internal-source information
 					// if the package still exists
 					sourceInformation.forEach((pkgRef, source) -> {
@@ -1913,10 +1979,11 @@ public class Analyzer extends Processor {
 		return result;
 	}
 
-	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts) {
+	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts, int release) {
 		logger.debug("get Manifest Info From Classpath for {}", jar);
 		try {
-			Manifest m = jar.getManifest();
+			Manifest m = jar.getManifest(release)
+				.orElse(null);
 			if (m != null) {
 				Domain domain = Domain.domain(m);
 				Parameters exported = domain.getExportPackage();
@@ -2577,11 +2644,11 @@ public class Analyzer extends Processor {
 		return getJar();
 	}
 
-	private void analyzeBundleClasspath() throws Exception {
+	private void analyzeBundleClasspath(int release) throws Exception {
 		Parameters bcp = getBundleClasspath();
 
 		if (bcp.isEmpty()) {
-			analyzeJar(dot, "", true, null);
+			analyzeJar(dot, "", true, null, release);
 		} else {
 			// Cleanup entries
 			bcp = bcp.stream()
@@ -2593,7 +2660,7 @@ public class Analyzer extends Processor {
 
 			for (String path : bcp.keySet()) {
 				if (path.equals(".")) {
-					analyzeJar(dot, "", okToIncludeDirs, null);
+					analyzeJar(dot, "", okToIncludeDirs, null, release);
 					continue;
 				}
 				//
@@ -2610,7 +2677,7 @@ public class Analyzer extends Processor {
 						if (!(resource instanceof JarResource)) {
 							addClose(jar);
 						}
-						analyzeJar(jar, "", true, path);
+						analyzeJar(jar, "", true, path, release);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
@@ -2623,7 +2690,7 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, path.concat("/"), true, path);
+						analyzeJar(dot, path.concat("/"), true, path, release);
 					} else {
 						Attrs info = bcp.get(path);
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
@@ -2639,16 +2706,18 @@ public class Analyzer extends Processor {
 	 * contained and referred set and uses. This method ignores the Bundle
 	 * classpath.
 	 */
-	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry) throws Exception {
+	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry, int release)
+		throws Exception {
 		Map<String, Clazz> mismatched = new HashMap<>();
 
-		Parameters importPackage = Optional.ofNullable(jar.getManifest())
+		Parameters importPackage = jar.getManifest(release)
 			.map(Domain::domain)
 			.map(Domain::getImportPackage)
 			.orElseGet(() -> new Parameters());
-
-		next: for (String path : jar.getResources()
-			.keySet()) {
+		Map<String, Resource> versionedResources = jar.getVersionedResources(release);
+		next: for (Entry<String, Resource> entry : versionedResources.entrySet()) {
+			String path = entry.getKey();
+			Resource resource = entry.getValue();
 			if (path.startsWith(prefix)) {
 
 				String relativePath = path.substring(prefix.length());
@@ -2665,7 +2734,6 @@ public class Analyzer extends Processor {
 
 				// Check class resources, we need to analyze them
 				if (path.endsWith(".class")) {
-					Resource resource = jar.getResource(path);
 					Clazz clazz;
 
 					try {

@@ -388,6 +388,14 @@ public class Jar implements Closeable {
 		return "Jar:" + name;
 	}
 
+	public void putVersionedResource(String path, int release, Resource resource) {
+		if (release >= MULTI_RELEASE_MIN_VERSION) {
+			putResource("META-INF/versions/" + release + "/" + ZipUtil.cleanPath(path), resource);
+		} else {
+			putResource(path, resource);
+		}
+	}
+
 	public boolean putResource(String path, Resource resource) {
 		return putResource(path, resource, true);
 	}
@@ -727,6 +735,13 @@ public class Jar implements Closeable {
 		check();
 		manifestFirst = true;
 		this.manifest = Optional.ofNullable(manifest);
+	}
+
+	public void setSupplementalManifest(Manifest manifest, int release) {
+		Manifest supplemental = new Manifest();
+		enhanceManifestAttribute(manifest, supplemental, Constants.REQUIRE_CAPABILITY);
+		enhanceManifestAttribute(manifest, supplemental, Constants.IMPORT_PACKAGE);
+		putVersionedResource(SUPPLEMENTAL_MANIFEST_PATH, release, new ManifestResource(supplemental));
 	}
 
 	public void setManifest(File file) throws IOException {
