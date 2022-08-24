@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
@@ -143,6 +144,21 @@ public enum EE {
 
 	public Version getCapabilityVersion() {
 		return capabilityVersion;
+	}
+
+	/**
+	 * @return the java release target corresponding to this EE
+	 */
+	public OptionalInt getReleaseTarget() {
+		Version version = getCapabilityVersion();
+		int major = version.getMajor();
+		if (major > 8) {
+			return OptionalInt.of(major);
+		}
+		if (major == 1 && version.getMinor() > 5) {
+			return OptionalInt.of(version.getMinor());
+		}
+		return OptionalInt.empty();
 	}
 
 	public static Optional<EE> highestFromTargetVersion(String targetVersion) {

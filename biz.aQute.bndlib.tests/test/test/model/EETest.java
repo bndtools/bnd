@@ -2,6 +2,8 @@ package test.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -88,6 +90,47 @@ public class EETest {
 		}
 		EE[] compatible = ee.getCompatible();
 		assertThat(compatible).isNotEmpty();
+	}
+
+	@ParameterizedTest(name = "Validate valid release target foe EEs exist for {arguments}")
+	@ArgumentsSource(EEsArgumentsProvider.class)
+	@DisplayName("Validate each EEs has valid release target")
+	public void checkEEHasValidRelease(EE ee) throws Exception {
+		switch (ee) {
+			case OSGI_Minimum_1_0 :
+			case OSGI_Minimum_1_1 :
+			case OSGI_Minimum_1_2 :
+			case J2SE_1_2 :
+			case J2SE_1_3 :
+			case J2SE_1_4 :
+			case J2SE_1_5 :
+			case JRE_1_1 :
+				assertTrue(ee.getReleaseTarget()
+					.isEmpty());
+				break;
+			case JavaSE_1_6 :
+				assertEquals(6, ee.getReleaseTarget()
+					.getAsInt());
+				break;
+			case JavaSE_1_7 :
+				assertEquals(7, ee.getReleaseTarget()
+					.getAsInt());
+				break;
+			case JavaSE_1_8 :
+			case JavaSE_compact1_1_8 :
+			case JavaSE_compact2_1_8 :
+			case JavaSE_compact3_1_8 :
+				assertEquals(8, ee.getReleaseTarget()
+					.getAsInt());
+				break;
+
+			default :
+				assertEquals(ee.getCapabilityVersion()
+					.getMajor(),
+					ee.getReleaseTarget()
+						.getAsInt());
+				break;
+		}
 	}
 
 	@ParameterizedTest(name = "Validate Packages exist for {arguments}")
