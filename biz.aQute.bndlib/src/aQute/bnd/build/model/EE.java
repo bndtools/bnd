@@ -152,7 +152,7 @@ public enum EE {
 	public OptionalInt getReleaseTarget() {
 		Version version = getCapabilityVersion();
 		int major = version.getMajor();
-		if (major > 8) {
+		if (major > 1) {
 			return OptionalInt.of(major);
 		}
 		if (major == 1 && version.getMinor() > 5) {
