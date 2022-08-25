@@ -90,6 +90,41 @@ public class EETest {
 		assertThat(compatible).isNotEmpty();
 	}
 
+	@ParameterizedTest(name = "Validate release target for {arguments}")
+	@ArgumentsSource(EEsArgumentsProvider.class)
+	@DisplayName("Validate release target for each EE")
+	public void checkEEHasValidRelease(EE ee) throws Exception {
+		switch (ee) {
+			case OSGI_Minimum_1_0 :
+			case OSGI_Minimum_1_1 :
+			case OSGI_Minimum_1_2 :
+			case J2SE_1_2 :
+			case J2SE_1_3 :
+			case J2SE_1_4 :
+			case J2SE_1_5 :
+			case JRE_1_1 :
+				assertThat(ee.getReleaseTarget()).isEmpty();
+				break;
+			case JavaSE_1_6 :
+				assertThat(ee.getReleaseTarget()).hasValue(6);
+				break;
+			case JavaSE_1_7 :
+				assertThat(ee.getReleaseTarget()).hasValue(7);
+				break;
+			case JavaSE_1_8 :
+			case JavaSE_compact1_1_8 :
+			case JavaSE_compact2_1_8 :
+			case JavaSE_compact3_1_8 :
+				assertThat(ee.getReleaseTarget()).hasValue(8);
+				break;
+
+			default :
+				assertThat(ee.getReleaseTarget()).hasValue(ee.getCapabilityVersion()
+					.getMajor());
+				break;
+		}
+	}
+
 	@ParameterizedTest(name = "Validate Packages exist for {arguments}")
 	@ArgumentsSource(EEsArgumentsProvider.class)
 	@DisplayName("Validate Packages exist for each EE")
