@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -222,7 +223,18 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 	}
 
 	private String getModuleName(Analyzer analyzer, Jar jar, Parameters moduleInfoOptions) throws Exception {
-		String moduleName = jar.getModuleName();
+		// we need to use the highest EE of the analyzed jar
+		int targetRelease = Optional.ofNullable(EE.parse(analyzer.getHighestEE()
+			.getEE()))
+			// but at minimum Java 9
+			.filter(ee -> {
+				OptionalInt target = ee.getReleaseTarget();
+				return target.isPresent() && target.getAsInt() > 8;
+			})
+			.orElse(EE.JavaSE_9)
+			.getReleaseTarget()
+			.getAsInt();
+		String moduleName = jar.getModuleName(targetRelease);
 		if (moduleName == null) {
 			if (jar.getSource() != null && jar.getSource()
 				.isDirectory()) {

@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
+import aQute.bnd.classfile.ModuleAttribute.Require;
 import aQute.bnd.classfile.ModuleMainClassAttribute;
 import aQute.bnd.classfile.ModulePackagesAttribute;
 import aQute.bnd.osgi.Builder;
@@ -1374,6 +1375,38 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(modulePackagesAttribute).isNotNull();
 			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/a");
+		}
+	}
+
+	@Test
+	public void multiReleaseDependency() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.k.*");
+			b.addClasspath(new File("bin_test"));
+			// the module name of this is 'com.google.gson' but it is also
+			// compiled for java 8, so the default module name would be 'gson'
+			// if multi-release is not handled correctly
+			b.addClasspath(IO.getFile("testresources/gson-2.9.1.jar"));
+			Jar jar = b.build();
+			assertTrue(b.check());
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+			assertThat(moduleAttribute.requires).hasSize(2)
+			.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("com.google.gson"));
 		}
 	}
 
