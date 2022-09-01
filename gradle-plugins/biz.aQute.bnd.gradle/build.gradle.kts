@@ -67,7 +67,6 @@ configurations {
 
 // Dependencies
 dependencies {
-	compileOnly(localGroovy())
 	implementation("biz.aQute.bnd:biz.aQute.bnd.util:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.bndlib:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.repository:${version}")
