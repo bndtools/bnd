@@ -67,13 +67,12 @@ configurations {
 
 // Dependencies
 dependencies {
-	compileOnly(localGroovy())
 	implementation("biz.aQute.bnd:biz.aQute.bnd.util:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.bndlib:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.repository:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.resolve:${version}")
 	runtimeOnly("biz.aQute.bnd:biz.aQute.bnd.embedded-repo:${version}")
-	testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
+	testImplementation("org.spockframework:spock-core:2.2-groovy-3.0")
 }
 
 // Gradle plugin descriptions
