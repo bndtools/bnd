@@ -1471,7 +1471,7 @@ public class Macro {
 		verifyCommand(args, _osfileHelp, null, 3, 3);
 		File base = new File(args[1]);
 		File f = IO.getFile(base, args[2]);
-		return IO.absolutePath(f);
+		return f.getAbsolutePath(); // Need to return path in OS specific form
 	}
 
 	public String _path(String[] args) {
