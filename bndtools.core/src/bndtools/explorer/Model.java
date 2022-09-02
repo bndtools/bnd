@@ -116,7 +116,7 @@ class Model {
 		try {
 			// coalesce some more updates on
 			// the worker thread(s).
-			Thread.sleep(10);
+			Thread.sleep(50);
 		} catch (InterruptedException e) {
 			Thread.currentThread()
 				.interrupt();
