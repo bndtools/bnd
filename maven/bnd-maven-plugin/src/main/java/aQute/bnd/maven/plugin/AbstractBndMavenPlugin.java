@@ -30,7 +30,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -39,32 +38,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.header.OSGiHeader;
-import aQute.bnd.maven.PomPropertiesResource;
-import aQute.bnd.maven.lib.configuration.BeanProperties;
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.FileResource;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.version.MavenVersion;
-import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
-import aQute.lib.utf8properties.UTF8Properties;
-import aQute.service.reporter.Report.Location;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.apache.maven.model.PluginManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -76,10 +55,27 @@ import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.mapping.MappingUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
+
+import aQute.bnd.build.Project;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.maven.PomPropertiesResource;
+import aQute.bnd.maven.lib.configuration.BeanProperties;
+import aQute.bnd.maven.lib.configuration.Configurations;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.version.MavenVersion;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
+import aQute.service.reporter.Report.Location;
 
 /**
  * Abstract base class for all bnd-maven-plugin mojos.
@@ -147,7 +143,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	 * instructions, if any, for the parent project.
 	 */
 	@Parameter(defaultValue = Project.BNDFILE)
-	// This is not used and is for doc only; see loadProjectProperties
+	// This is not used and is for doc only; see {@link
+	// Configurations#loadProperties(Processor, MavenProject, MojoExecution)}
 	@SuppressWarnings("unused")
 	String					bndfile;
 
@@ -161,7 +158,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	 * instructions, if any, for the parent project.
 	 */
 	@Parameter
-	// This is not used and is for doc only; see loadProjectProperties
+	// This is not used and is for doc only; See {@link
+	// Configurations#loadProperties(Processor, MavenProject, MojoExecution)}
 	@SuppressWarnings("unused")
 	String					bnd;
 
@@ -236,7 +234,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			builder.setTrace(logger.isDebugEnabled());
 
 			builder.setBase(project.getBasedir());
-			propertiesFile = loadProperties(builder);
+			propertiesFile = Configurations.loadProperties(builder, project, mojoExecution);
 			builder.setProperty("project.output", getClassesDir().getCanonicalPath());
 
 			// If no bundle to be built, we have nothing to do
@@ -302,7 +300,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 					builder.updateModified(cpeJar.lastModified(), cpe.getPath());
 					buildpath.add(cpeJar);
 				} else {
-					if (!cpe.getName().endsWith(".jar")) {
+					if (!artifact.getType()
+						.equals("jar")) {
 						/*
 						 * Check if it is a valid zip file. We don't create a
 						 * Jar object here because we want to avoid the cost of
@@ -677,101 +676,10 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	private String createArtifactName(Artifact artifact) {
 		String classifier = artifact.getClassifier();
 		if ((classifier == null) || classifier.isEmpty()) {
-			return String.format("%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), getExtension(artifact.getType()));
+			return String.format("%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), artifact.getType());
 		}
 		return String.format("%s-%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), classifier,
-			getExtension(artifact.getType()));
-	}
-
-	private File loadProperties(Builder builder) throws Exception {
-		// Load parent project properties first
-		loadParentProjectProperties(builder, project);
-
-		// Load current project properties
-		Xpp3Dom configuration = Optional.ofNullable(project.getBuildPlugins())
-			.flatMap(this::getConfiguration)
-			.orElseGet(this::defaultConfiguration);
-		return loadProjectProperties(builder, project, project, configuration);
-	}
-
-	private void loadParentProjectProperties(Builder builder, MavenProject currentProject) throws Exception {
-		MavenProject parentProject = currentProject.getParent();
-		if (parentProject == null) {
-			return;
-		}
-		loadParentProjectProperties(builder, parentProject);
-
-		// Get configuration from parent project
-		Xpp3Dom configuration = Optional.ofNullable(parentProject.getBuildPlugins())
-			.flatMap(this::getConfiguration)
-			.orElse(null);
-		if (configuration != null) {
-			// Load parent project's properties
-			loadProjectProperties(builder, parentProject, parentProject, configuration);
-			return;
-		}
-
-		// Get configuration in project's pluginManagement
-		configuration = Optional.ofNullable(currentProject.getPluginManagement())
-			.map(PluginManagement::getPlugins)
-			.flatMap(this::getConfiguration)
-			.orElseGet(this::defaultConfiguration);
-		// Load properties from parent project's bnd file or configuration in
-		// project's pluginManagement
-		loadProjectProperties(builder, parentProject, currentProject, configuration);
-	}
-
-	private File loadProjectProperties(Builder builder, MavenProject bndProject, MavenProject pomProject,
-		Xpp3Dom configuration) throws Exception {
-		// check for bnd file configuration
-		File baseDir = bndProject.getBasedir();
-		if (baseDir != null) { // file system based pom
-			File pomFile = bndProject.getFile();
-			builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
-			// check for bnd file
-			Xpp3Dom bndfileElement = configuration.getChild("bndfile");
-			String bndFileName = (bndfileElement != null) ? bndfileElement.getValue() : Project.BNDFILE;
-			File bndFile = IO.getFile(baseDir, bndFileName);
-			if (bndFile.isFile()) {
-				logger.debug("loading bnd properties from file: {}", bndFile);
-				// we use setProperties to handle -include
-				builder.setProperties(bndFile.getParentFile(), builder.loadProperties(bndFile));
-				return bndFile;
-			}
-			// no bnd file found, so we fall through
-		}
-
-		// check for bnd-in-pom configuration
-		baseDir = pomProject.getBasedir();
-		File pomFile = pomProject.getFile();
-		if (baseDir != null) {
-			builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
-		}
-		Xpp3Dom bndElement = configuration.getChild("bnd");
-		if (bndElement != null) {
-			logger.debug("loading bnd properties from bnd element in pom: {}", pomProject);
-			UTF8Properties properties = new UTF8Properties();
-			properties.load(bndElement.getValue(), pomFile, builder);
-			// we use setProperties to handle -include
-			builder.setProperties(baseDir, properties.replaceHere(baseDir));
-		}
-		return pomFile;
-	}
-
-	private Optional<Xpp3Dom> getConfiguration(List<Plugin> plugins) {
-		return plugins.stream()
-			.filter(p -> Objects.equals(p, mojoExecution.getPlugin()))
-			.map(Plugin::getExecutions)
-			.flatMap(List::stream)
-			.filter(e -> Objects.equals(e.getId(), mojoExecution.getExecutionId()))
-			.findFirst()
-			.map(PluginExecution::getConfiguration)
-			.map(Xpp3Dom.class::cast)
-			.map(Xpp3Dom::new);
-	}
-
-	private Xpp3Dom defaultConfiguration() {
-		return new Xpp3Dom("configuration");
+			artifact.getType());
 	}
 
 	protected void reportErrorsAndWarnings(Builder builder) throws MojoFailureException {

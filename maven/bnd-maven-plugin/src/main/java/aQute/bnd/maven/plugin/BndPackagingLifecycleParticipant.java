@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import aQute.bnd.maven.lib.executions.PluginExecutions;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
@@ -20,6 +19,8 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.logging.Logger;
+
+import aQute.bnd.maven.lib.executions.PluginExecutions;
 
 /**
  * This lifecycle participant is meant to simplify the changes required to the
