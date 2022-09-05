@@ -1,0 +1,5 @@
+-generate:\
+	src/main/resources/model/test.genmodel;\
+		generate="geckoEMF 1>out.log 2>out.log";\
+		genmodel="src/main/resources/model/test.genmodel";\
+		output=src/main/java

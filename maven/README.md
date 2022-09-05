@@ -59,6 +59,10 @@ A plugin to run a bndrun file.
 
 A plugin to generate and export reports of projects.
 
+## [bnd-generate-maven-plugin][11]
+
+A plugin to generate sources and resources.
+
 # Building the Maven Plugins
 
 You must first run `./gradlew :build` to build the Bnd artifacts and install them in your local maven repo.
@@ -113,3 +117,4 @@ pom's `pluginManagement` section, to configure the repository:
 [8]: bnd-testing-maven-plugin/README.md
 [9]: bnd-run-maven-plugin/README.md
 [10]: bnd-reporter-maven-plugin/README.md
+[11]: bnd-generate-maven-plugin/README.md
