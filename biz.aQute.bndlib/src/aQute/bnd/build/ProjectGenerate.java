@@ -92,7 +92,7 @@ public class ProjectGenerate implements AutoCloseable {
 
 		Set<File> sourceFiles = new FileSet(project.getBase(), source).getFiles();
 		if (sourceFiles.isEmpty())
-			return err("No source files/directories specified");
+			return err("No source files/directories found in fileset %s", source);
 
 		File out = project.getFile(output);
 		if (out.isDirectory()) {
