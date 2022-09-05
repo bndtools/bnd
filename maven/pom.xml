@@ -26,5 +26,6 @@
 		<module>bnd-resolver-maven-plugin</module>
 		<module>bnd-run-maven-plugin</module>
 		<module>bnd-reporter-maven-plugin</module>
+		<module>bnd-generate-maven-plugin</module>
 	</modules>
 </project>

@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>biz.aQute.bnd</groupId>
+		<artifactId>bnd-plugin-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../bnd-plugin-parent</relativePath>
+	</parent>
+	<artifactId>bnd-generate-maven-plugin</artifactId>
+	<description>Generate Code using the Plugin based BND Codegenerator function</description>
+	<name>Bnd Generate Maven Plugin</name>
+	<packaging>maven-plugin</packaging>
+	<url>https://bnd.bndtools.org/</url>
+	<scm>
+		<url>https://github.com/bndtools/bnd</url>
+		<connection>scm:git:https://github.com/bndtools/bnd.git</connection>
+		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+		<tag>${revision}</tag>
+	</scm>
+
+	<prerequisites>
+		<maven>${maven.target.version}</maven>
+	</prerequisites>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>biz.aQute.bnd.maven</artifactId>
+		</dependency>
+	</dependencies>
+</project>
