@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -305,9 +306,12 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						processor.close();
 					});
 					if (model.isCnf()) {
-						model.getWorkspace()
+						Job job = Job.create("refresh workspace", (m) -> {
+							model.getWorkspace()
 							.refresh(); // this is for bnd plugins built in
-										// cnf
+											// cnf
+						});
+						job.schedule(10);
 					}
 					return null;
 				}, monitor);

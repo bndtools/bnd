@@ -5,9 +5,11 @@ import static aQute.bnd.stream.DropWhile.dropWhile;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,6 +31,7 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 	private static final long	serialVersionUID	= 1L;
 	private static final Logger	logger				= LoggerFactory.getLogger(WorkspaceLock.class);
 	private final AtomicInteger	progress			= new AtomicInteger();
+	private final List<Thread>	readHolders			= new CopyOnWriteArrayList<>();
 
 	WorkspaceLock(boolean fair) {
 		super(fair);
@@ -130,7 +133,16 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 
 	<T> T locked(final Lock lock, final long timeoutInMs, final Callable<T> callable, final BooleanSupplier canceled)
 		throws Exception {
+		Thread thread = Thread.currentThread();
 		boolean interrupted = Thread.interrupted();
+		boolean write = lock == writeLock();
+		if (write) {
+			if (readHolders.contains(thread))
+				throw new IllegalStateException("About to enter a deadlock situation. The thread " + thread
+					+ " that already holds a read lock attempts to acquire the workspace write lock.");
+		} else
+			readHolders.add(thread);
+
 		trace("Enter", lock);
 		try {
 			int startingProgress = progress.get();
@@ -169,6 +181,7 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 			throw timeout(lock);
 		} finally {
 			trace("Exit", lock);
+			readHolders.remove(thread);
 			if (interrupted) {
 				Thread.currentThread()
 					.interrupt();
