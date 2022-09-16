@@ -4,6 +4,7 @@ import static aQute.bnd.result.Result.err;
 import static aQute.bnd.result.Result.ok;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -96,12 +97,27 @@ public class ProjectGenerate implements AutoCloseable {
 
 		File out = project.getFile(output);
 		if (out.isDirectory()) {
-			for (File f : out.listFiles()) {
-				IO.delete(f);
+			if (st.clear()
+				.orElseGet(() -> Boolean.TRUE)) {
+				for (File f : out.listFiles()) {
+					IO.delete(f);
+				}
 			}
 		} else {
 			out.mkdirs();
 		}
+
+		long latestModifiedSource = sourceFiles.stream()
+			.mapToLong(File::lastModified)
+			.max()
+			.getAsLong();
+
+		// the out folder serves as our trigger if a build is needed. Thus we
+		// use to output directory timestamp as marker we can compare against
+		// later. If clear is false a generator might decided to do nothing and
+		// could cause a build loop.
+		out.setLastModified(latestModifiedSource);
+
 		return Result.ok(null);
 	}
 
@@ -308,9 +324,15 @@ public class ProjectGenerate implements AutoCloseable {
 	}
 
 	public Set<File> getOutputDirs() {
+		return getOutputDirs(false);
+	}
+
+	private Set<File> getOutputDirs(boolean toClear) {
 		return project.instructions.generate()
 			.values()
 			.stream()
+			.filter(spec -> !toClear || spec.clear()
+				.orElse(Boolean.TRUE))
 			.map(GeneratorSpec::output)
 			.filter(Objects::nonNull)
 			.map(project::getFile)
@@ -349,11 +371,9 @@ public class ProjectGenerate implements AutoCloseable {
 			if (outputFiles.isEmpty())
 				return true;
 
-			long latestModifiedTarget = outputFiles.stream()
-				.filter(File::isFile)
-				.mapToLong(File::lastModified)
-				.min()
-				.orElse(0);
+			File out = project.getFile(output);
+
+			long latestModifiedTarget = out.lastModified();
 
 			boolean staleFiles = latestModifiedSource > latestModifiedTarget;
 			if (staleFiles)
@@ -363,8 +383,12 @@ public class ProjectGenerate implements AutoCloseable {
 	}
 
 	public void clean() {
-		getOutputDirs().stream()
-			.forEach(IO::delete);
+		for (File output : getOutputDirs(true))
+			try {
+				project.clean(output, "generate output " + output, false);
+			} catch (IOException e) {
+				Exceptions.duck(e);
+			}
 	}
 
 	@Override

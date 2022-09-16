@@ -112,6 +112,74 @@ public class ProjectGenerateTest {
 	@SuppressWarnings({
 		"unchecked", "rawtypes"
 	})
+	public void testSimpleGeneratorDontClearOutput() throws Exception {
+		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
+			getRepo(ws);
+			Project project = ws.getProject("p5");
+			project.setProperty("-generate",
+				"gen/**.java;output=src-gen/;generate='javagen -o src-gen/ gen/**.java';clear=false");
+
+			File outputdir = project.getFile("src-gen");
+
+			assertThat(project.getGenerate()
+				.getOutputDirs()).contains(outputdir);
+
+			File in = project.getFile("gen/Buildpath.java");
+			in.setLastModified(System.currentTimeMillis() - 2000);
+
+			File out = project.getFile("src-gen/foo/bar/Buildpath.java");
+			assertThat(out).doesNotExist();
+
+			File existing = project.getFile("src-gen/test.txt");
+			assertThat(existing).doesNotExist();
+
+			assertThat(project.getGenerate()
+				.needsBuild()).isTrue();
+
+			project.getGenerate()
+				.generate(true);
+			assertThat(project.check()).isTrue();
+			assertThat(out).isFile();
+
+			assertThat(project.getGenerate()
+				.needsBuild()).isFalse();
+
+			// new we simulate modification of a source by adding a file
+			existing.createNewFile();
+
+			// no reason to build
+			assertThat(project.getGenerate()
+				.needsBuild()).isFalse();
+
+			// delete the generated file
+			IO.delete(out);
+			// in some rear cases the whole process seamed to be to fast and the
+			// created file had the exact same timestamp. So we make sure the
+			// source is newer
+			in.setLastModified(System.currentTimeMillis() + 1);
+
+			assertThat(out).doesNotExist();
+
+			assertThat(project.getGenerate()
+				.needsBuild()).isTrue();
+
+			project.getGenerate()
+				.generate(true);
+
+			// check that our test file is still there and does exist
+			assertThat(existing).isFile();
+			assertThat(project.check()).isTrue();
+			assertThat(out).isFile();
+
+			assertThat(project.getGenerate()
+				.needsBuild()).isFalse();
+		}
+	}
+
+	@Test
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
 	public void testMainClassGenerator() throws Exception {
 		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
 			getRepo(ws);

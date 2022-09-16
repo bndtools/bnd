@@ -61,6 +61,9 @@ public interface ProjectInstructions {
 
 		@SyntaxAnnotation(lead = "Specify a JAR version for a Main class plugin (name in generate must be a fqn class name)")
 		Optional<String> version();
+
+		@SyntaxAnnotation(lead = "Determins if the output directory needs to be cleared before the generator runs. The default is true.")
+		Optional<Boolean> clear();
 	}
 
 }
