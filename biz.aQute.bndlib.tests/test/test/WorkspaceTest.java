@@ -2,6 +2,7 @@ package test;
 
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.osgi.framework.Version;
 
@@ -300,6 +302,84 @@ public class WorkspaceTest {
 		try (Workspace w = Workspace.getWorkspace(testDir)) {
 			assertEquals(version, w.getProperty("javac.source"));
 			assertEquals(version, w.getProperty("javac.target"));
+		}
+	}
+
+	@Test
+	void workspace_lock_deadlock() throws Exception {
+		IO.copy(new File("testresources/ws"), testDir);
+		try (Workspace ws = Workspace.getWorkspace(testDir)) {
+			ws.readLocked(() -> {
+				assertThatIllegalStateException().isThrownBy(() -> {
+					ws.writeLocked(() -> {
+						Assertions.fail("Invalid upgrade from readlock to writelock");
+						return null;
+					});
+				});
+				return null;
+			});
+		}
+	}
+
+	@Test
+	void workspace_lock_deadlock_nested_readlock() throws Exception {
+		IO.copy(new File("testresources/ws"), testDir);
+		try (Workspace ws = Workspace.getWorkspace(testDir)) {
+			ws.readLocked(() -> {
+				ws.readLocked(() -> {
+					assertThatIllegalStateException().isThrownBy(() -> {
+						ws.writeLocked(() -> {
+							Assertions.fail("Invalid upgrade from readlock to writelock");
+							return null;
+						});
+					});
+					return null;
+				});
+				return null;
+			});
+		}
+	}
+
+	@Test
+	void workspace_lock_deadlock_released_readlock() throws Exception {
+		IO.copy(new File("testresources/ws"), testDir);
+		try (Workspace ws = Workspace.getWorkspace(testDir)) {
+			ws.readLocked(() -> {
+				ws.readLocked(() -> { // nested and released
+					return null;
+				});
+				assertThatIllegalStateException().isThrownBy(() -> {
+					ws.writeLocked(() -> {
+						Assertions.fail("Invalid upgrade from readlock to writelock");
+						return null;
+					});
+				});
+				return null;
+			});
+		}
+	}
+
+	@Test
+	void workspace_lock_deadlock_write_read_write() throws Exception {
+		IO.copy(new File("testresources/ws"), testDir);
+		try (Workspace ws = Workspace.getWorkspace(testDir)) {
+			ws.writeLocked(() -> {
+				ws.writeLocked(() -> {
+					ws.readLocked(() -> { // nested and released
+						return null;
+					});
+					return null;
+				});
+				return null;
+			}, (t) -> {
+				assertThatIllegalStateException().isThrownBy(() -> {
+					ws.writeLocked(() -> {
+						Assertions.fail("Invalid upgrade from readlock to writelock");
+						return null;
+					});
+				});
+				return null;
+			}, 10_000L);
 		}
 	}
 }
