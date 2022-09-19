@@ -5,11 +5,11 @@ import static aQute.bnd.stream.DropWhile.dropWhile;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,7 +31,7 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 	private static final long	serialVersionUID	= 1L;
 	private static final Logger	logger				= LoggerFactory.getLogger(WorkspaceLock.class);
 	private final AtomicInteger	progress			= new AtomicInteger();
-	private final List<Thread>	readHolders			= new CopyOnWriteArrayList<>();
+	private final Queue<Thread>	readLockHolders		= new ConcurrentLinkedQueue<>();
 
 	WorkspaceLock(boolean fair) {
 		super(fair);
@@ -107,6 +107,13 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 		return e;
 	}
 
+	private IllegalStateException deadlock(Lock lock) {
+		IllegalStateException e = new IllegalStateException(String.format(
+			"Deadlock situation detected trying to %s acquire %s. The current thread already holds a read lock: %s",
+			type(lock), this, Thread.currentThread()));
+		return e;
+	}
+
 	<T, U> T writeReadLocked(final long timeoutInMs, final Callable<U> underWrite,
 		final FunctionWithException<U, T> underRead, final BooleanSupplier canceled) throws Exception {
 		Callable<U> writeLocked = () -> {
@@ -133,15 +140,9 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 
 	<T> T locked(final Lock lock, final long timeoutInMs, final Callable<T> callable, final BooleanSupplier canceled)
 		throws Exception {
-		Thread thread = Thread.currentThread();
 		boolean interrupted = Thread.interrupted();
-		boolean write = lock == writeLock();
-		if (write) {
-			if (readHolders.contains(thread))
-				throw new IllegalStateException("About to enter a deadlock situation. The thread " + thread
-					+ " that already holds a read lock attempts to acquire the workspace write lock.");
-		} else
-			readHolders.add(thread);
+		final Thread currentThread = Thread.currentThread();
+		final boolean readLockRequest = lock == readLock();
 
 		trace("Enter", lock);
 		try {
@@ -162,11 +163,23 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 				}
 				if (locked) {
 					try {
+						if (readLockRequest) {
+							readLockHolders.add(currentThread);
+							try {
+								return callable.call();
+							} finally {
+								readLockHolders.remove(currentThread);
+							}
+						}
 						return callable.call();
 					} finally {
 						progress.incrementAndGet();
 						lock.unlock();
 					}
+				}
+				// We cannot hold read lock when requesting write lock
+				if (!readLockRequest && readLockHolders.contains(currentThread)) {
+					throw deadlock(lock);
 				}
 				int currentProgress = progress.get();
 				if (startingProgress == currentProgress) {
@@ -181,10 +194,8 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 			throw timeout(lock);
 		} finally {
 			trace("Exit", lock);
-			readHolders.remove(thread);
 			if (interrupted) {
-				Thread.currentThread()
-					.interrupt();
+				currentThread.interrupt();
 			}
 		}
 	}
