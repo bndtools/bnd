@@ -21,7 +21,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
     - name: Stale Action
-      uses: actions/stale@v5
+      uses: actions/stale@v6
       with:
         days-before-stale: 365
         days-before-close: 21
