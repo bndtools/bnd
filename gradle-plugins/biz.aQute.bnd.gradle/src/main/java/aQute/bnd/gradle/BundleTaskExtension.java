@@ -50,6 +50,7 @@ import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.java.archives.internal.DefaultManifest;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.HasConfigurableValue;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
@@ -58,6 +59,7 @@ import org.gradle.api.tasks.ClasspathNormalizer;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
@@ -179,6 +181,16 @@ public class BundleTaskExtension {
 	@Input
 	public MapProperty<String, Object> getProperties() {
 		return properties;
+	}
+
+	/**
+	 * Allow limited access to the underlying <code>instructions</code>
+	 * property so that users can control when its value is finalized.
+	 * @return View of the underlying <code>instructions</code> property.
+	 */
+	@Internal
+	public HasConfigurableValue getInstructions() {
+		return instructions;
 	}
 
 	private final ConfigurableFileCollection		allSource;
