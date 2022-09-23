@@ -206,6 +206,11 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 	}
 
 	@Override
+	public String toString() {
+		return getName();
+	}
+
+	@Override
 	public boolean isEmpty() {
 		return list.get()
 			.isEmpty();
