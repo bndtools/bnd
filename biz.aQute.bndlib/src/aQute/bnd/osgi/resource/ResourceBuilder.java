@@ -73,12 +73,18 @@ public class ResourceBuilder {
 
 	private boolean								built			= false;
 
+	public ResourceBuilder() {}
+
 	public ResourceBuilder(Resource source) {
-		addCapabilities(source.getCapabilities(null));
-		addRequirements(source.getRequirements(null));
+		this();
+		addResource(source);
 	}
 
-	public ResourceBuilder() {}
+	public ResourceBuilder addResource(Resource source) {
+		addCapabilities(source.getCapabilities(null));
+		addRequirements(source.getRequirements(null));
+		return this;
+	}
 
 	public ResourceBuilder addCapability(Capability capability) {
 		CapReqBuilder builder = CapReqBuilder.clone(capability);
@@ -831,6 +837,11 @@ public class ResourceBuilder {
 		@Override
 		public Resource build() {
 			return null;
+		}
+
+		@Override
+		public ResourceBuilder addResource(Resource source) {
+			return ResourceBuilder.this.addResource(source);
 		}
 
 		@Override
