@@ -180,6 +180,28 @@ The plugin will by default set some OSGi bundle headers derived from [pom elemen
 | `Bundle-Developers`   | `developers` (child element `id` must be set on each developer) |
 | `Bundle-DocURL`       | `url`                                                           |
 
+### POM Properties
+
+The Bnd instructions can reference properties defined for the Maven project and Maven settings using the `project.` and `settings.` stems, respectively.
+Other properties defined in the POM can also be referenced.
+
+```xml
+<properties>
+	<implementation.vendor>Acme Inc.</implementation.vendor>
+</properties>
+<plugin>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>bnd-maven-plugin</artifactId>
+  <configuration>
+    <bnd><![CDATA[
+      Implementation-Title: ${project.name}
+      Implementation-Version: ${project.version}
+      Implementation-Vendor: ${implementation.vendor}
+    ]]></bnd>
+  </configuration>
+</plugin>
+```
+
 ### Reproducible Builds
 
 If the configuration parameter `outputTimestamp` is set, indicating [reproducible][1] output, this plugin will automatically use the following Bnd instructions, if not otherwise configured.
