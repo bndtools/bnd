@@ -1,6 +1,6 @@
 ---
 layout: default
-class: Project
+class: Builder
 title: -dsannotations-options SELECTORS
 summary: Options for controlling DS annotation processing.
 ---
@@ -12,7 +12,7 @@ The `-dsannotations-options` instruction configures how DS component annotations
 -dsannotations-options: version;minimum=1.2.0;maximum=1.3.0
 ```
 
-The example above, will restrict the use of OSGi DS annotations to minimum 1.2.0 and maximum 1.3.0 version. The version number denotes that the users are free to use any version equal to or higher than 1.2.0 but less than or equal to 1.3.0, provided that the users have the SCR annotations included in the workspace.
+The example above, will restrict the use of OSGi DS annotations to minimum 1.2.0 and maximum 1.3.0 version. The version number denotes that the users are free to use any version equal to or higher than 1.2.0 but less than or equal to 1.3.0, provided that the users have the DS annotations included on the build path.
 
 The following options are supported:
 

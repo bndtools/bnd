@@ -168,7 +168,6 @@ public interface Constants {
 	String		JAVA										= "java";
 	String		JAVA_DEBUG									= "java.debug";
 	String		MAKE										= "-make";
-	String		METATYPE									= "-metatype";
 	String		METATYPE_ANNOTATIONS						= "-metatypeannotations";
 	String		METATYPE_ANNOTATIONS_OPTIONS				= "-metatypeannotations-options";
 	String		MANIFEST									= "-manifest";
@@ -555,4 +554,7 @@ public interface Constants {
 	/*
 	 * Deprecated Section
 	 */
+	@Deprecated
+	String		METATYPE									= "-metatype";
+
 }

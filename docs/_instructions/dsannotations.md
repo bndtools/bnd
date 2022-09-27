@@ -1,8 +1,8 @@
 ---
 layout: default
-class: Project
+class: Builder
 title: -dsannotations SELECTORS
-summary: Selects the packages that need processing for standard OSGi DS annotations. 
+summary: Selects the packages that need processing for standard OSGi DS annotations.
 ---
 
 The `-dsannotations` instruction tells **bnd** which bundle classes, if any, to search for [Declarative Services (DS)](https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html) annotations. **bnd** will then process those classes into DS XML descriptors.
