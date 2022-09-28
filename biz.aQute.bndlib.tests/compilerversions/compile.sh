@@ -34,6 +34,7 @@
 # javac --release 16 -cp src src/jdk_16/*.java
 # javac --release 17 -cp src src/jdk_17/*.java
 # javac --release 18 -cp src src/jdk_18/*.java
+# javac --release 19 -cp src src/jdk_19/*.java
 
 # java -jar ../jar/ecj_3.2.2.jar -target 1.1 -source 1.3 -cp src src/eclipse_1_1/*.java
 # java -jar ../jar/ecj_3.2.2.jar -target 1.2 -source 1.3 -cp src src/eclipse_1_2/*.java
