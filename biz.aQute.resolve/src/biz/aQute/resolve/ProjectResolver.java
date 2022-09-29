@@ -32,6 +32,8 @@ import aQute.bnd.service.Strategy;
  * which is a Run which extends Project). This class is supposed to simplify the
  * sometimes bewildering number of moving cogs in resolving. It is a processor
  * and uses the facilities to provide the different logging schemes used.
+ * <p>
+ * See RunResolution for a replacement
  */
 
 @Deprecated
