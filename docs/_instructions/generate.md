@@ -18,6 +18,7 @@ This `-generate` instruction specifies the code generating steps that must be ex
 	        |   'classpath=' PATH
 	        |   'workingdir=' FILE
 	        |   'clear=' BOOLEAN
+	        |   'version=' RANGE
 
 For each clause, the key of the clause is used to establish an Ant File Set, e.g. `foo/**.in`. This a glob expression with the exception that the double wildcard ('**') indicates to any depth of directories. The `output` attribute _must_ specify a directory. If the output must be compiled this directory must be on the bnd source path.
 
@@ -38,7 +39,9 @@ Without a dot in the name, the name is assumes to be an _external plugin_ name, 
 
 The `generate` value is a _command line_. It can use the standard _unix_ like way of specifying a command. It supports flags (boolean parameters) and parameter that take a value. When this external plugin is executed, it is expected to create files fall within the _target_, if not, an error is reported. These changed or created files are refreshed in Eclipse.
 
-The command line can be broken in different commands with the semicolon (`';'`), like a unix shell. Redirection of stdin (`'<'`), stdout (`'>'`, or `'1>'`), and stderr (`'2>'`) are supported.  The path for redirection is relative to the project directory, even if `workingdir` has been specified. 
+The command line can be broken in different commands with the semicolon (`';'`), like a unix shell. Redirection of stdin (`'<'`), stdout (`'>'`, or `'1>'`), and stderr (`'2>'`) are supported.  The path for redirection is relative to the project directory, even if `workingdir` has been specified.
+
+With the `version` version range attribute it is possible to restrict the candidates if there are multiple versions available. The code will select the highest version if only one is used.
 
 ## Example with an External Plugin
 

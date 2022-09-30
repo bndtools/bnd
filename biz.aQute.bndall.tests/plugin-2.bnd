@@ -2,4 +2,4 @@
 
 Main-Class biz.aQute.bndall.tests.plugin_2.MainClass
 
-Provide-Capability bnd.mainclass; bnd.mainclass=biz.aQute.bndall.tests.plugin_2.MainClass
+Bundle-Version: 1.2.3

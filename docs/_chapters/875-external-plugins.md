@@ -13,6 +13,7 @@ External Plugins are external code to bnd code but that can be executed from wit
 | objectClass                   | The interface type the implementation should implement|
 | implementation                | The implementation fully qualified class name|
 | subtype                       | Optional subtype when the `objectClass` has a type parameter |
+| version                       | Optional version range to limit the candidates |
 
 There is an annotation, `aQute.bnd.service.externalplugin.ExternalPlugin`, that can be applied on a type.
 

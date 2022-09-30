@@ -16,10 +16,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 import org.osgi.resource.Capability;
 import org.slf4j.Logger;
@@ -55,18 +55,23 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 	}
 
 	public <T, R> Result<R> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R>> f) {
+		return call(pluginName, null, c, f);
+	}
+
+	public <T, R> Result<R> call(String pluginName, VersionRange range, Class<T> c,
+		FunctionWithException<T, Result<R>> f) {
 		try {
 
 			String filter = ExternalPluginNamespace.filter(pluginName, c);
 
-			Optional<Capability> optCap = workspace
-				.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE, filter)
-				.findAny();
+			List<Capability> caps = workspace.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE, filter)
+				.sorted(this::sort)
+				.collect(Collectors.toList());
 
-			if (!optCap.isPresent())
+			if (caps.isEmpty())
 				return Result.err("no such plugin %s for type %s", pluginName, c.getName());
 
-			Capability cap = optCap.get();
+			Capability cap = caps.get(0);
 
 			Result<File> bundle = workspace.getBundle(cap.getResource());
 			if (bundle.isErr())
@@ -121,21 +126,20 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 
 			String filter = MainClassNamespace.filter(mainClass, range);
 
-			Optional<Capability> optCap = workspace.findProviders(MainClassNamespace.MAINCLASS_NAMESPACE, filter)
-				.findAny();
+			List<Capability> caps = workspace.findProviders(MainClassNamespace.MAINCLASS_NAMESPACE, filter)
+				.sorted(this::sort)
+				.collect(Collectors.toList());
 
-			if (optCap.isPresent()) {
-
-				Capability cap = optCap.get();
-
-				Result<File> bundle = workspace.getBundle(cap.getResource());
-				if (bundle.isErr())
-					return bundle.asError();
-
-				cp.add(bundle.unwrap());
-			} else if (cp.isEmpty()) {
+			if (caps.isEmpty())
 				return Result.err("no bundle found with main class %s", mainClass);
-			}
+
+			Capability cap = caps.get(0);
+
+			Result<File> bundle = workspace.getBundle(cap.getResource());
+			if (bundle.isErr())
+				return bundle.asError();
+
+			cp.add(bundle.unwrap());
 
 			Command c = new Command();
 
@@ -228,9 +232,16 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		assert interf.isInterface();
 
 		try {
-			String filter = ExternalPluginNamespace.filter(attrs.getOrDefault("name", "*"), interf);
+			String v = attrs.getVersion();
+			VersionRange r = null;
+			if (v != null) {
+				r = VersionRange.valueOf(v);
+			}
+
+			String filter = ExternalPluginNamespace.filter(attrs.getOrDefault("name", "*"), interf, r);
 			List<Capability> externalCapabilities = workspace
 				.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE, filter)
+				.sorted(this::sort)
 				.collect(Collectors.toList());
 
 			Class<?>[] interfaces = new Class[] {
@@ -380,6 +391,22 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 				}
 			}
 			return null;
+		}
+	}
+
+	private int sort(Capability a, Capability b) {
+		String av = a.getAttributes()
+			.getOrDefault("version", "0.0.0")
+			.toString();
+		String bv = b.getAttributes()
+			.getOrDefault("version", "0.0.0")
+			.toString();
+		try {
+			Version avv = new Version(av);
+			Version bvv = new Version(bv);
+			return bvv.compareTo(avv);
+		} catch (Exception e) {
+			return bv.compareTo(av);
 		}
 	}
 }
