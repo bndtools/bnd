@@ -25,6 +25,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.service.parameters.ConsolidateParameters;
 import aQute.lib.collections.ExtList;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -529,4 +530,48 @@ public class ProcessorTest {
 		}
 
 	}
+
+	@Test
+	public void testClauses() throws IOException {
+		try (Processor p = new Processor()) {
+			assertThat(p.getParameters("foo")).isNotNull()
+				.isEmpty();
+
+			p.addClause("FOO", "abc", new Attrs());
+			p.addClause("FOO", "def", new Attrs());
+			p.addClause("FOO", "abc", new Attrs());
+			assertThat(p.getParameters("FOO")).hasSize(3);
+			assertThat(p.getParameters("FOO")
+				.toString()).isEqualTo("abc,def,abc");
+			assertThat(p.getProperty("FOO")).isEqualTo("abc,def,abc");
+			p.addClause("FOO", "abc", new Attrs());
+			assertThat(p.getProperty("FOO")).isEqualTo("abc,def,abc,abc");
+
+			p.setProperty("FOO", "nothing");
+			assertThat(p.getParameters("FOO")
+				.toString()).isEqualTo("nothing");
+
+			assertThat(p.getParameters("FOO")).isNotNull()
+				.containsKey("nothing");
+
+			p.addBasicPlugin((ConsolidateParameters) (k, pars) -> {
+				if (!k.equals("FOO"))
+					return null;
+				return pars.sort();
+			});
+
+			p.addClause("FOO", "def", new Attrs().set("a", "2"));
+			p.addClause("FOO", "abc", new Attrs().set("a", "3"));
+			p.addClause("FOO", "def", new Attrs().set("a", "1"));
+			p.addClause("FOO", "def", new Attrs().set("a", "1")
+				.set("b", "1"));
+
+			assertThat(p.getParameters("FOO")
+				.toString()).isEqualTo("nothing,def;a=2,abc;a=3,def;a=1,def;a=1;b=1");
+
+			assertThat(p.getProperty("FOO")).isEqualTo("abc;a=3,def;a=1,def;a=1;b=1,def;a=2,nothing");
+
+		}
+	}
+
 }

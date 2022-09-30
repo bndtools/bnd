@@ -8,9 +8,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collector;
 
 import aQute.bnd.stream.MapStream;
+import aQute.lib.collections.MultiMap;
 import aQute.service.reporter.Reporter;
 
 public class Parameters implements Map<String, Attrs> {
@@ -267,5 +269,39 @@ public class Parameters implements Map<String, Attrs> {
 	})
 	public Map<String, Map<String, String>> toBasic() {
 		return (Map) this;
+	}
+
+	/**
+	 * A Parameters can contain the same key multiple times. This maps the
+	 * clauses in the Parameters to a multi map with a clean key and a number of
+	 * attributes.
+	 *
+	 * @return a fresh multi map
+	 */
+	public Map<String, List<Attrs>> flatten() {
+		MultiMap<String, Attrs> mmap = new MultiMap<>();
+		for (Map.Entry<String, Attrs> e : map.entrySet()) {
+			mmap.add(removeDuplicateMarker(e.getKey()), e.getValue());
+		}
+		return mmap;
+	}
+
+	/**
+	 * Return a sorted Parameters that has the same keys and attributes but that
+	 * is sorted by key and attributes.
+	 *
+	 * @return a sorted Parameters (this is a fresh instance)
+	 */
+	public Parameters sort() {
+		Map<String, List<Attrs>> flatten = flatten();
+		Parameters result = new Parameters();
+		for (String s : new TreeSet<>(flatten.keySet())) {
+			flatten.get(s)
+				.stream()
+				.map(a -> a.sort())
+				.sorted(Attrs.COMPARATOR)
+				.forEach(attrs -> result.add(s, attrs));
+		}
+		return result;
 	}
 }

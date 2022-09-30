@@ -135,6 +135,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	Collection<String>							filter;
 	Boolean										strict;
 	boolean										fixupMessages;
+	final ClauseManager							clauses				= new ClauseManager(this);
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -940,6 +941,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void propertiesChanged() {
+		clauses.reset();
 		Processor p = getParent();
 		if (p != null) {
 			updateModified(p.lastModified(), "propertiesChanged");
@@ -1067,6 +1069,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
 		String value = null;
 		// Use the key as is first, if found ok
+
+		clauses.consolidate(key);
 
 		for (Processor proc = source; proc != null; proc = proc.getParent()) {
 			Object raw = proc.getProperties()
@@ -1292,7 +1296,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param value
 	 */
 	public void setProperty(String key, String value) {
-		getProperties().put(normalizeKey(key), value);
+		String normalizeKey = normalizeKey(key);
+		getProperties().put(normalizeKey, value);
+		clauses.reset(normalizeKey);
 	}
 
 	/**
@@ -2629,5 +2635,28 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public void setPropertiesFile(File source) {
 		this.propertiesFile = source;
+	}
+
+	/**
+	 * Add a clause to a Parameters like header
+	 *
+	 * @param key the header key of the Parameters, e.g. Require-Capability
+	 * @param name the name of the clause inside the parameters
+	 * @param attrs the set of attributes
+	 */
+
+	public void addClause(String key, String name, Attrs attrs) {
+		clauses.addClause(key, name, attrs);
+	}
+
+	/**
+	 * Get the parameters for a property.
+	 *
+	 * @param key the header key of the Parameters, e.g. Require-Capability
+	 */
+
+	@Override
+	public Parameters getParameters(String key) {
+		return clauses.getParameters(key);
 	}
 }

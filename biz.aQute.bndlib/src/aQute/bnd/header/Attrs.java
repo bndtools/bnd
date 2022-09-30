@@ -4,7 +4,9 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +73,8 @@ public class Attrs implements Map<String, String> {
 	public static final DataType<List<Double>>	LIST_DOUBLE		= () -> Type.DOUBLES;
 	public static final DataType<List<Version>>	LIST_VERSION	= () -> Type.VERSIONS;
 
+	public static Comparator<Attrs>				COMPARATOR		= Attrs::compareTo;
+
 	/**
 	 * Pattern for List with list type
 	 */
@@ -86,6 +90,7 @@ public class Attrs implements Map<String, String> {
 		this.map = map;
 		this.types = types;
 	}
+
 
 	public Attrs() {
 		this(new LinkedHashMap<>(), new HashMap<>());
@@ -634,4 +639,53 @@ public class Attrs implements Map<String, String> {
 		});
 		return attrs;
 	}
+
+	/**
+	 * Return a new Attributes that is sorted by key
+	 *
+	 * @return a sorted attributes
+	 */
+	public Attrs sort() {
+		Attrs attrs = new Attrs();
+		this.entrySet()
+			.stream()
+			.sorted((a, b) -> a.getKey()
+				.compareTo(b.getKey()))
+			.forEach(e -> attrs.put(e.getKey(), e.getValue()));
+		return attrs;
+	}
+
+	public Attrs set(String k, String v) {
+		put(k, v);
+		return this;
+	}
+
+	public int compareTo(Attrs b) {
+		Attrs a = this;
+		Iterator<Map.Entry<String, String>> ia = a.entrySet()
+			.iterator();
+		Iterator<Map.Entry<String, String>> ib = b.entrySet()
+			.iterator();
+		while (ia.hasNext()) {
+			if (!ib.hasNext())
+				return 1;
+
+			Entry<String, String> ea = ia.next();
+			Entry<String, String> eb = ib.next();
+			int n = ea.getKey()
+				.compareTo(eb.getKey());
+			if (n != 0)
+				return n;
+
+			n = ea.getValue()
+				.compareTo(eb.getValue());
+			if (n != 0)
+				return n;
+		}
+		if (ib.hasNext()) {
+			return -1;
+		}
+		return 0;
+	}
+
 }
