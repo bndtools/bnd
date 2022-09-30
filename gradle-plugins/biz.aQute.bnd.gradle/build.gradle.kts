@@ -72,7 +72,7 @@ dependencies {
 	implementation("biz.aQute.bnd:biz.aQute.repository:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.resolve:${version}")
 	runtimeOnly("biz.aQute.bnd:biz.aQute.bnd.embedded-repo:${version}")
-	testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+	testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
 }
 
 // Gradle plugin descriptions
