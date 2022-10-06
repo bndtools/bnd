@@ -125,6 +125,40 @@ public class ResolveTest {
 	}
 
 	/**
+	 * Check if we add a native capability when no native is around
+	 */
+
+	@Test
+	public void testDefaultNativeCapability() throws Exception {
+		try (Bndrun run = (Bndrun) Bndrun.createRun(null, IO.getFile("testdata/nativecap/native.bndrun"))) {
+			// require _any_ native capability
+			run.setProperty("-runrequires", "osgi.native;filter:=\"(osgi.native.osname=*)\"");
+			RunResolution resolve = run.resolve();
+			// only resolves when there was at least 1 native capability
+			assertThat(resolve.getRequired()).hasSize(1);
+		}
+
+	}
+
+	/**
+	 * Check if we do not add a native capability when no native is around
+	 */
+
+	@Test
+	public void testNoDefaultNativeCapability() throws Exception {
+		try (Bndrun run = (Bndrun) Bndrun.createRun(null, IO.getFile("testdata/nativecap/native.bndrun"))) {
+			// require _any_ native capability
+			run.setProperty("-runrequires", "osgi.native;filter:=\"(osgi.native.osname=*)\"");
+			// provide an invalid native capability so the previous filter does
+			// not match but we also do not add a capability
+			run.setProperty("-runsystemcapabilities", "osgi.native;foobar=1");
+			RunResolution resolve = run.resolve();
+			assertThat(resolve.getRequired()).isNull();
+		}
+
+	}
+
+	/**
 	 * The enRoute base guard resolved but is missing bundles, the runbundles do
 	 * not run
 	 */

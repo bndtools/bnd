@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -38,6 +39,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.AggregateRepository;
 import aQute.bnd.osgi.repository.AugmentRepository;
@@ -59,6 +61,8 @@ import aQute.lib.utf8properties.UTF8Properties;
  * BndEditModel & Project
  */
 public class BndrunResolveContext extends AbstractResolveContext {
+	private static final String			ALWAYS_TRUE					= "(!(_+_foo=bar))";
+
 	private final static Logger			logger						= LoggerFactory
 		.getLogger(BndrunResolveContext.class);
 
@@ -226,6 +230,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 					loadPath(system, runpath, Constants.RUNPATH);
 			}
 
+			if (system.findCapabilities(NativeNamespace.NATIVE_NAMESPACE, ALWAYS_TRUE)
+				.isEmpty()) {
+				Capability cap = OSInformation.getDefaultNativeCapability();
+				system.addCapability(cap);
+			}
 			//
 			// We've not gathered all the capabilities of the system
 			// so we can create the resource and set it as the system resource

@@ -11,9 +11,9 @@ import org.osgi.resource.Capability;
 
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
+import aQute.service.reporter.Reporter;
 
 /**
  * OS specific information, used by the native_capability macro for
@@ -187,14 +187,7 @@ public class OSInformation {
 	 * @return a provide capability clause for the native environment
 	 */
 	public static String getNativeCapabilityClause(Processor p, String args[]) throws Exception {
-		NativeCapability clause = new NativeCapability();
-
-		parseNativeCapabilityArgs(p, args, clause);
-
-		validateNativeCapability(clause);
-
-		Capability cap = createCapability(clause);
-
+		Capability cap = getNativeCapability(p, args);
 		return ResourceUtils.toProvideCapability(cap);
 	}
 
@@ -217,32 +210,9 @@ public class OSInformation {
 			throw new IllegalArgumentException("processor/osgi.native.processor not set in ${native_capability}");
 	}
 
-	static void parseNativeCapabilityArgs(Processor p, String[] args, NativeCapability clause) throws Exception {
-		if (args.length == 1) {
-
-			OSInformation osi = new OSInformation();
-			clause.osname.addAll(Strings.split(osi.osnames));
-			clause.osversion = osi.osversion;
-			String[] processorAliases = getProcessorAliases(System.getProperty("os.arch"));
-			if (processorAliases != null && processorAliases.length > 0) {
-				Collections.addAll(clause.processor, processorAliases);
-			}
-			clause.language = Locale.getDefault()
-				.toString();
-
-			StringBuilder sb = new StringBuilder();
-			sb.append("osname=")
-				.append(System.getProperty("os.name"));
-			sb.append(";")
-				.append("osversion=")
-				.append(MavenVersion.cleanupVersion(System.getProperty("os.version")));
-			sb.append(";")
-				.append("processor=")
-				.append(System.getProperty("os.arch"));
-			sb.append(";")
-				.append("lang=")
-				.append(clause.language);
-			String advice = sb.toString();
+	static void parseNativeCapabilityArgs(Reporter p, String[] args, NativeCapability clause) throws Exception {
+		if (args.length <= 1) {
+			setDefaults(clause);
 		} else {
 
 			String osname = null;
@@ -321,6 +291,18 @@ public class OSInformation {
 		}
 	}
 
+	private static void setDefaults(NativeCapability clause) {
+		OSInformation osi = new OSInformation();
+		clause.osname.addAll(Strings.split(osi.osnames));
+		clause.osversion = osi.osversion;
+		String[] processorAliases = getProcessorAliases(System.getProperty("os.arch"));
+		if (processorAliases != null && processorAliases.length > 0) {
+			Collections.addAll(clause.processor, processorAliases);
+		}
+		clause.language = Locale.getDefault()
+			.toString();
+	}
+
 	public static class OSNameVersion {
 		public Version	osversion;
 		public String	osnames;
@@ -369,5 +351,36 @@ public class OSInformation {
 			nc.osnames = "HPUX,hp-ux";
 		}
 		return nc;
+	}
+
+	/**
+	 * Return a native capability based on the given specification.
+	 *
+	 * @param p the processor for the error reporting
+	 * @param args a set of assignments. The following keys are supported:
+	 *            osgi.native.processor,osname, osgi.native.osname,
+	 *            osversion,osgi.native.osversion, osgi.native.language, lang
+	 * @return a native capability
+	 */
+
+	public static Capability getNativeCapability(Reporter p, String... args) throws Exception {
+		NativeCapability clause = new NativeCapability();
+
+		parseNativeCapabilityArgs(p, args, clause);
+
+		validateNativeCapability(clause);
+
+		return createCapability(clause);
+	}
+
+	/**
+	 * Return the default capability for the current platform
+	 *
+	 * @return a default capability for the current platform
+	 */
+	public static Capability getDefaultNativeCapability() throws Exception {
+		NativeCapability clause = new NativeCapability();
+		setDefaults(clause);
+		return createCapability(clause);
 	}
 }
