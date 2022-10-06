@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.osgi.resource.Capability;
 
 import aQute.bnd.header.Attrs;
@@ -532,13 +531,10 @@ public class ProcessorTest {
 
 	}
 
-	@TempDir
-	File tmpdir;
-
 	@Test
 	public void testIncludeItself() throws IOException {
-		File foo = new File(tmpdir, "foo.bnd");
-		IO.store("-include " + foo.getAbsolutePath() + "\nfoo=1\n", foo);
+		File foo = IO.getFile("generated/foo.bnd");
+		IO.store("-include foo.bnd\nfoo=1\n", foo);
 		try (Processor p = new Processor()) {
 			p.setProperties(foo);
 			assertTrue(p.check("Cyclic or multiple include of"));
