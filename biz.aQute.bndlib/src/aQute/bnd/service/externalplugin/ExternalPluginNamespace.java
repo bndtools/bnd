@@ -1,6 +1,7 @@
 package aQute.bnd.service.externalplugin;
 
 import org.osgi.framework.Constants;
+import org.osgi.framework.VersionRange;
 import org.osgi.resource.Capability;
 
 /**
@@ -39,7 +40,16 @@ public interface ExternalPluginNamespace {
 	 */
 	String	CAPABILITY_IMPLEMENTATION_ATTRIBUTE	= "implementation";
 
+	/**
+	 * The version of this bundle as set by Bundle-Version, not set if absent
+	 */
+	String	VERSION_ATTRIBUTE					= "version";
+
 	static String filter(String name, Class<?> type) {
+		return filter(name, type, null);
+	}
+
+	static String filter(String name, Class<?> type, VersionRange range) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(&(")
 			.append(NAME_A)
@@ -52,6 +62,12 @@ public interface ExternalPluginNamespace {
 			.append(")(")
 			.append(IMPLEMENTATION_A)
 			.append("=*))");
+		if (range != null) {
+			sb.insert(0, "(&")
+				.append(range.toFilterString(VERSION_ATTRIBUTE))
+				.append(')');
+		}
+
 		return sb.toString();
 	}
 

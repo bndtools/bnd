@@ -9,17 +9,17 @@ import aQute.bnd.service.Plugin;
 import aQute.bnd.service.externalplugin.ExternalPlugin;
 import aQute.service.reporter.Reporter;
 
-@ExternalPlugin(name = "hellocallable", objectClass = Callable.class, version = "1.0.0")
-public class CallablePlugin implements Callable<String>, Closeable, Plugin {
+@ExternalPlugin(name = "hellocallable", objectClass = Callable.class, version = "2.0.0")
+public class CallablePlugin2 implements Callable<String>, Closeable, Plugin {
 	boolean closed;
 	String	world	= "world";
 
 	@Override
 	public String call() throws Exception {
 		if (closed)
-			return "goodbye, " + world;
+			return "2goodbye, " + world;
 		else
-			return "hello, " + world;
+			return "2hello, " + world;
 	}
 
 	@Override

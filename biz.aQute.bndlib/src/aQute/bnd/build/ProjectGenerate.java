@@ -212,18 +212,18 @@ public class ProjectGenerate implements AutoCloseable {
 				InputStream stdin = fstdin == null ? null : IO.stream(fstdin);
 				OutputStream stdout = fstdout == null ? null : IO.outputStream(fstdout);
 				OutputStream stderr = fstderr == null ? null : IO.outputStream(fstderr);
+				VersionRange range = st.version()
+					.map(VersionRange::valueOf)
+					.orElse(null);
+
 				try {
 					if (pluginName.indexOf('.') >= 0) {
 						if (pluginName.startsWith("."))
 							pluginName = pluginName.substring(1);
 
-						VersionRange range = st.version()
-							.map(VersionRange::valueOf)
-							.orElse(null);
-
 						result = doGenerateMain(pluginName, range, st._attrs(), arguments, stdin, stdout, stderr);
 					} else {
-						result = doGeneratePlugin(pluginName, st._attrs(), arguments, stdin, stdout, stderr);
+						result = doGeneratePlugin(pluginName, range, st._attrs(), arguments, stdin, stdout, stderr);
 					}
 					if (result != null)
 						return block + " : " + result;
@@ -245,13 +245,14 @@ public class ProjectGenerate implements AutoCloseable {
 		return f;
 	}
 
-	private String doGeneratePlugin(String pluginName, Map<String, String> attrs, List<String> arguments,
+	private String doGeneratePlugin(String pluginName, VersionRange range, Map<String, String> attrs,
+		List<String> arguments,
 		InputStream stdin, OutputStream stdout, OutputStream stderr) {
 		BuildContext bc = new BuildContext(project, attrs, arguments, stdin, stdout, stderr);
 
 		Result<Boolean> call = project.getWorkspace()
 			.getExternalPlugins()
-			.call(pluginName, Generator.class, p -> {
+			.call(pluginName, range, Generator.class, p -> {
 
 				Class<?> type = SpecInterface.getParameterizedInterfaceType(p.getClass(), Generator.class);
 				if (type == null) {
