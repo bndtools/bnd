@@ -868,6 +868,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void doIncludeFile(File file, boolean overwrite, Properties target, String extensionName) throws Exception {
 		if (!addIncludedIfAbsent(file)) {
 			error("Cyclic or multiple include of %s", file);
+			return;
 		}
 		updateModified(file.lastModified(), file.toString());
 		Properties sub;
