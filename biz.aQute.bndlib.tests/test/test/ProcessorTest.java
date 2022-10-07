@@ -26,6 +26,7 @@ import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.collections.ExtList;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter.SetLocation;
 
@@ -529,4 +530,16 @@ public class ProcessorTest {
 		}
 
 	}
+
+	@Test
+	public void testIncludeItself() throws IOException {
+		File foo = IO.getFile("generated/foo.bnd");
+		IO.store("-include ./foo.bnd\nfoo=1\n", foo);
+		try (Processor p = new Processor()) {
+			p.setBase(foo.getParentFile());
+			p.setProperties(foo);
+			assertTrue(p.check("Cyclic or multiple include of"));
+		}
+	}
+
 }
