@@ -4,25 +4,22 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.function.Supplier;
 
+import aQute.bnd.memoize.Memoize;
+
 class DeferredValue<T> implements Supplier<T> {
 	private final Class<T>				type;
 	private final Supplier<? extends T>	supplier;
 	private final int					hashCode;
-	private T							value;
 
 	DeferredValue(Class<T> type, Supplier<? extends T> supplier, int hashCode) {
 		this.type = requireNonNull(type);
-		this.supplier = requireNonNull(supplier);
+		this.supplier = Memoize.supplier(supplier);
 		this.hashCode = hashCode;
 	}
 
 	@Override
 	public T get() {
-		T v = value;
-		if (v == null) {
-			return value = supplier.get();
-		}
-		return v;
+		return supplier.get();
 	}
 
 	Class<T> type() {

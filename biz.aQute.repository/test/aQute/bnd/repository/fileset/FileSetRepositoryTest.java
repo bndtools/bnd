@@ -30,6 +30,17 @@ public class FileSetRepositoryTest {
 		assertThat(repository.list(null)).contains("org.nanohttpd:nanohttpd", "javafx.base")
 			.doesNotContain("javax.annotation:jsr250-api");
 
+		// Do it again which will get file resources from the cache
+		repository = new FileSetRepository("test2", files);
+
+		assertThat(repository.list(null)).contains("org.nanohttpd:nanohttpd", "javafx.base")
+			.doesNotContain("javax.annotation:jsr250-api");
+
+		assertThat(repository.refresh()).isTrue();
+
+		assertThat(repository.list(null)).contains("org.nanohttpd:nanohttpd", "javafx.base")
+			.doesNotContain("javax.annotation:jsr250-api");
+
 	}
 
 }

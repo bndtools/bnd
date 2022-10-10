@@ -1,6 +1,5 @@
 package aQute.bnd.osgi.resource;
 
-import static aQute.bnd.exceptions.SupplierWithException.asSupplierOrElse;
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
@@ -61,7 +60,6 @@ import aQute.lib.hierarchy.FolderNode;
 import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
-import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -73,12 +71,18 @@ public class ResourceBuilder {
 
 	private boolean								built			= false;
 
+	public ResourceBuilder() {}
+
 	public ResourceBuilder(Resource source) {
-		addCapabilities(source.getCapabilities(null));
-		addRequirements(source.getRequirements(null));
+		this();
+		addResource(source);
 	}
 
-	public ResourceBuilder() {}
+	public ResourceBuilder addResource(Resource source) {
+		addCapabilities(source.getCapabilities(null));
+		addRequirements(source.getRequirements(null));
+		return this;
+	}
 
 	public ResourceBuilder addCapability(Capability capability) {
 		CapReqBuilder builder = CapReqBuilder.clone(capability);
@@ -724,28 +728,15 @@ public class ResourceBuilder {
 		if (uri == null)
 			uri = file.toURI();
 
-		Domain manifest = Domain.domain(file);
 		boolean hasIdentity = false;
-		if (manifest != null) {
-			hasIdentity = addManifest(manifest);
-		}
-		String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
-		int deferredHashCode = hashCode(file);
-		DeferredValue<String> sha256 = new DeferredComparableValue<>(String.class,
-			asSupplierOrElse(() -> SHA256.digest(file)
-				.asHex(), null),
-			deferredHashCode);
-		addContentCapability(uri, sha256, file.length(), mime);
-
-		if (hasIdentity) {
-			addHashes(file);
+		Resource fileResource = FileResourceCache.getInstance()
+			.getResource(file, uri);
+		if (fileResource != null) {
+			addResource(fileResource);
+			hasIdentity = !fileResource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
+				.isEmpty();
 		}
 		return hasIdentity;
-	}
-
-	private static int hashCode(File file) {
-		return file.getAbsoluteFile()
-			.hashCode();
 	}
 
 	/**
@@ -831,6 +822,11 @@ public class ResourceBuilder {
 		@Override
 		public Resource build() {
 			return null;
+		}
+
+		@Override
+		public ResourceBuilder addResource(Resource source) {
+			return ResourceBuilder.this.addResource(source);
 		}
 
 		@Override
