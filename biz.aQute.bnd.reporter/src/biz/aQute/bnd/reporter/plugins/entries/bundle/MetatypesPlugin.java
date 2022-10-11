@@ -74,7 +74,7 @@ public class MetatypesPlugin implements ReportEntryPlugin<Jar>, Plugin {
 	}
 
 	@Override
-	public Object extract(final Jar jar, final Locale locale) throws Exception {
+	public List<ObjectClassDefinitionDTO> extract(final Jar jar, final Locale locale) throws Exception {
 		Objects.requireNonNull(jar, "jar");
 		Objects.requireNonNull(locale, "locale");
 
