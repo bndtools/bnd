@@ -11,3 +11,5 @@ Import-Package: importp.a,\
 				
 Require-Capability: some.namespace;filter:="(somenamespace=hello)"
 Provide-Capability: some.namespace;somenamespace=world;version:Version=1.0.0
+
+-pom: true

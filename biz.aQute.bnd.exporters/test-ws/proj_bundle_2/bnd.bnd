@@ -11,3 +11,5 @@ Import-Package: importp.c,\
 
 Require-Capability: some.namespace;filter:="(somenamespace=foo)"
 Provide-Capability: some.namespace;somenamespace=bar;version:Version=1.0.0
+
+-pom: true

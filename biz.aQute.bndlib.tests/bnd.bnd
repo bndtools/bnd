@@ -22,6 +22,7 @@
 	org.osgi.service.metatype.annotations;version=latest,\
 	org.osgi.service.repository;version=latest,\
 	org.osgi.service.wireadmin;version=latest,\
+	org.osgi.service.feature;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.measurement;version=latest,\
 	org.osgi.util.promise;version=latest,\

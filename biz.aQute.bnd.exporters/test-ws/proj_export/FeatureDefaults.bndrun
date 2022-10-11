@@ -1,0 +1,19 @@
+-runrequires: bnd.identity;id='proj_bundle_1'
+
+-runbundles: \
+	proj_bundle_1;version='[0.0.1,1.0.0)',\
+	proj_bundle_2;version='[0.0.1,1.0.0)'
+
+voo: doo
+foo: bar
+
+Bundle-Category: TheCategory
+Bundle-SCM: TheSCM
+Bundle-Vendor: TheVendor
+Bundle-Name: TheName
+Bundle-Description: TheDescription
+Bundle-DocURL: TheDocUrl
+Bundle-License:  TheLicense
+Bundle-SymbolicName: TheSymbolicName
+
+-groupid: TheGroupId
