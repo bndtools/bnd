@@ -31,7 +31,7 @@ public class MavenCoordinatePlugin implements ReportEntryPlugin<Jar>, Plugin {
 	}
 
 	@Override
-	public Object extract(final Jar jar, final Locale locale) {
+	public MavenCoordinatesDTO extract(final Jar jar, final Locale locale) {
 		Objects.requireNonNull(jar, "jar");
 		Objects.requireNonNull(locale, "locale");
 
