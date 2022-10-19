@@ -1,6 +1,7 @@
 package aQute.bnd.maven.reporter.plugin;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,6 +125,8 @@ public class ExportMojo extends AbstractMojo {
 
 			for (Entry<String, Resource> result : reportResults.entrySet()) {
 				File file = new File(result.getKey());
+				Files.createDirectories(file.getParentFile()
+					.toPath());
 				try {
 					result.getValue()
 						.write(file);
