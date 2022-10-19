@@ -38,7 +38,6 @@ Export-Package: \
 	biz.aQute.bnd.reporter.manifest.dto,\
 	biz.aQute.bnd.reporter.maven.dto,\
 	biz.aQute.bnd.reporter.plugins.entries.bundle,\
-	biz.aQute.bnd.reporter.plugins.entries.bundle,\
 	biz.aQute.bnd.reporter.service.resource.converter
 
 -conditionalpackage: \
