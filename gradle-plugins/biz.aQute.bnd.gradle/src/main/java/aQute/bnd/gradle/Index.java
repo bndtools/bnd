@@ -5,6 +5,7 @@ import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static java.util.stream.Collectors.toList;
+import static org.gradle.api.tasks.PathSensitivity.NONE;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -24,10 +25,12 @@ import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.publish.plugins.PublishingPlugin;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.TaskAction;
 
 /**
@@ -69,6 +72,7 @@ import org.gradle.api.tasks.TaskAction;
  * is the name of the task.</li>
  * </ul>
  */
+@CacheableTask
 public class Index extends DefaultTask {
 	private final Property<URI>					base;
 	private final ConfigurableFileCollection	bundles;
@@ -97,6 +101,7 @@ public class Index extends DefaultTask {
 	 * @return The property for the bundles to be indexed.
 	 */
 	@InputFiles
+	@PathSensitive(NONE)
 	public ConfigurableFileCollection getBundles() {
 		return bundles;
 	}

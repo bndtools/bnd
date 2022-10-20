@@ -2,7 +2,6 @@ package aQute.bnd.gradle;
 
 import static aQute.bnd.gradle.BndUtils.defaultToolFor;
 import static aQute.bnd.gradle.BndUtils.logReport;
-import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.util.Objects;
@@ -19,9 +18,9 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
-import org.gradle.api.tasks.UntrackedTask;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.work.DisableCachingByDefault;
 
 /**
  * OSGi Bndrun task type for Gradle.
@@ -57,7 +56,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
  * execution.</li>
  * </ul>
  */
-@UntrackedTask(because = "Task executes bndrun")
+@DisableCachingByDefault(because = "Task executes bndrun")
 public class Bndrun extends AbstractBndrun {
 	private final Property<JavaLauncher> javaLauncher;
 
@@ -97,7 +96,7 @@ public class Bndrun extends AbstractBndrun {
 	@Override
 	protected void worker(Project run) throws Exception {
 		if (getJavaLauncher().isPresent() && Objects.equals(run.getProperty("java", "java"), "java")) {
-			run.setProperty("java", IO.absolutePath(unwrapFile(unwrap(getJavaLauncher()).getExecutablePath())));
+			run.setProperty("java", IO.absolutePath(unwrapFile(getJavaLauncher().map(JavaLauncher::getExecutablePath))));
 		}
 		getLogger().info("Running {} in {}", run.getPropertiesFile(), run.getBase());
 		getLogger().debug("Run properties: {}", run.getProperties());

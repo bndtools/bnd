@@ -16,6 +16,7 @@ import biz.aQute.resolve.ResolveProcess;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.JavaBasePlugin;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
@@ -65,6 +66,7 @@ import org.osgi.service.resolver.ResolutionException;
  * -runbundles property. The default is true.</li>
  * </ul>
  */
+@CacheableTask
 public class Resolve extends AbstractBndrun {
 	private boolean						failOnChanges	= false;
 	private final RegularFileProperty	outputBndrun;

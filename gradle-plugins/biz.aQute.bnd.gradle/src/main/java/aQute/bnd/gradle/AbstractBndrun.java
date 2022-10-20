@@ -7,6 +7,7 @@ import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.gradle.BndUtils.unwrapOptional;
+import static org.gradle.api.tasks.PathSensitivity.NONE;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
@@ -47,6 +48,7 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.work.DisableCachingByDefault;
 import org.gradle.work.NormalizeLineEndings;
 
 /**
@@ -72,6 +74,7 @@ import org.gradle.work.NormalizeLineEndings;
  * builds.</li>
  * </ul>
  */
+@DisableCachingByDefault(because = "Abstract base class; not used directly")
 public abstract class AbstractBndrun extends DefaultTask {
 	private final RegularFileProperty			bndrun;
 	private final ConfigurableFileCollection	bundles;
@@ -107,7 +110,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 	 *         Workspace builds.
 	 */
 	@InputFiles
-	@PathSensitive(RELATIVE)
+	@PathSensitive(NONE)
 	public ConfigurableFileCollection getBundles() {
 		return bundles;
 	}
