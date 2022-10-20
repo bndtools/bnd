@@ -25,6 +25,7 @@ import org.gradle.api.model.ReplacedBy;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.publish.plugins.PublishingPlugin;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
@@ -76,6 +77,7 @@ import org.gradle.api.tasks.OutputDirectory;
  * "bnd.executablejar".</li>
  * </ul>
  */
+@CacheableTask
 public class Export extends AbstractBndrun {
 	private boolean					bundlesOnly	= false;
 	private final DirectoryProperty	destinationDirectory;

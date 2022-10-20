@@ -4,7 +4,7 @@ import static aQute.bnd.gradle.BndUtils.builtBy;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static java.util.stream.Collectors.toList;
-import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
+import static org.gradle.api.tasks.PathSensitivity.NONE;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -43,10 +43,12 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.reporting.ReportingExtension;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
@@ -96,6 +98,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin;
  * The default is all exported packages.</li>
  * </ul>
  */
+@CacheableTask
 public class Baseline extends DefaultTask {
 	private boolean								ignoreFailures	= false;
 	private final ListProperty<String>			diffpackages;
@@ -242,7 +245,7 @@ public class Baseline extends DefaultTask {
 		bundleCollection = objects.fileCollection();
 		baselineCollection = objects.fileCollection();
 		getInputs().files(bundleCollection)
-			.withPathSensitivity(RELATIVE)
+			.withPathSensitivity(NONE)
 			.withPropertyName("bundleCollection");
 		getInputs().files(baselineCollection)
 			.withPropertyName("baselineCollection");
@@ -257,6 +260,7 @@ public class Baseline extends DefaultTask {
 	 * @return The provider of the bundle file to be baselined.
 	 */
 	@InputFile
+	@PathSensitive(NONE)
 	public Provider<RegularFile> getBundle() {
 		return layout.file(providers.provider(bundleCollection::getSingleFile));
 	}
@@ -281,6 +285,7 @@ public class Baseline extends DefaultTask {
 	 * @return The provider of the baseline bundle file.
 	 */
 	@InputFile
+	@PathSensitive(NONE)
 	public Provider<RegularFile> getBaseline() {
 		return layout.file(providers.provider(baselineCollection::getSingleFile));
 	}

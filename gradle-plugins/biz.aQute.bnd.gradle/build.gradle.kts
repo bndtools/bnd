@@ -246,3 +246,8 @@ tasks.test {
 tasks.named<Delete>("cleanTest") {
 	delete(testresourcesOutput)
 }
+
+tasks.withType<ValidatePlugins>().configureEach {
+	failOnWarning.set(true)
+	enableStricterValidation.set(true)
+}

@@ -1,5 +1,6 @@
 package aQute.bnd.gradle;
 
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
@@ -26,6 +27,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin;
  * }
  * </pre>
  */
+@CacheableTask
 public class Bundle extends Jar {
 	/**
 	 * Create a Bundle task.

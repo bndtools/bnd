@@ -3,7 +3,6 @@ package aQute.bnd.gradle;
 import static aQute.bnd.gradle.BndUtils.defaultToolFor;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.testResultsDir;
-import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
@@ -19,6 +18,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
@@ -67,6 +67,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
  * class.</li>
  * </ul>
  */
+@CacheableTask
 public class TestOSGi extends AbstractBndrun {
 	/**
 	 * Option to specify test names.
@@ -151,7 +152,7 @@ public class TestOSGi extends AbstractBndrun {
 	@Override
 	protected void worker(Project run) throws Exception {
 		if (getJavaLauncher().isPresent() && Objects.equals(run.getProperty("java", "java"), "java")) {
-			run.setProperty("java", IO.absolutePath(unwrapFile(unwrap(getJavaLauncher()).getExecutablePath())));
+			run.setProperty("java", IO.absolutePath(unwrapFile(getJavaLauncher().map(JavaLauncher::getExecutablePath))));
 		}
 		getLogger().info("Running tests for {} in {}", run.getPropertiesFile(), run.getBase());
 		getLogger().debug("Run properties: {}", run.getProperties());

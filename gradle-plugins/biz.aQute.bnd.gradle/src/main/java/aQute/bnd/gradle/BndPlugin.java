@@ -72,6 +72,7 @@ import org.gradle.api.tasks.Delete;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.AbstractCompile;
@@ -214,10 +215,14 @@ public class BndPlugin implements Plugin<Project> {
 					 * Workspace and project configuration changes should
 					 * trigger task
 					 */
-					t.getInputs()
+					TaskInputFilePropertyBuilder bndConfigurationInput = t.getInputs()
 						.files(bndConfiguration())
 						.withPathSensitivity(RELATIVE)
 						.withPropertyName("bndConfiguration");
+					if (isGradleCompatible("7.2")) {
+						bndConfigurationInput.normalizeLineEndings();
+					}
+
 					t.getOutputs()
 						.dirs(bndProject.getGenerate()
 							.getOutputDirs())
@@ -564,10 +569,13 @@ public class BndPlugin implements Plugin<Project> {
 					 * Workspace and project configuration changes should
 					 * trigger jar task
 					 */
-					t.getInputs()
+					TaskInputFilePropertyBuilder bndConfigurationInput = t.getInputs()
 						.files(bndConfiguration())
 						.withPathSensitivity(RELATIVE)
 						.withPropertyName("bndConfiguration");
+					if (isGradleCompatible("7.2")) {
+						bndConfigurationInput.normalizeLineEndings();
+					}
 					t.getOutputs()
 						.files(deliverables)
 						.withPropertyName("artifacts");
