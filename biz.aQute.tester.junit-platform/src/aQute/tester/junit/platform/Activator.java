@@ -49,6 +49,7 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.LoggingListener;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
+import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import org.osgi.annotation.bundle.Header;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -432,6 +433,7 @@ public class Activator implements BundleActivator, Runnable {
 			ServiceTracker<TestExecutionListener, TestExecutionListener> track = new ServiceTracker<>(context,
 				TestExecutionListener.class, null);
 			track.open();
+			final TestExecutionSummary execSummary;
 			try {
 				TestExecutionListener[] listenerArray = Stream
 					.concat(listeners.stream(), Arrays.stream(track.getServices(new TestExecutionListener[0])))
@@ -440,17 +442,20 @@ public class Activator implements BundleActivator, Runnable {
 			} catch (Throwable t) {
 				trace("%s", t);
 			} finally {
+				execSummary = summary.getSummary();
 				track.close();
-				trace(null, () -> {
-					CharArrayWriter sw = new CharArrayWriter();
-					summary.getSummary()
-						.printTo(new PrintWriter(sw));
-					return sw.toString();
-				});
+				if (execSummary != null) {
+					trace(null, () -> {
+						CharArrayWriter sw = new CharArrayWriter();
+						execSummary.printTo(new PrintWriter(sw));
+						return sw.toString();
+					});
+				} else {
+					trace("No summary available");
+				}
 			}
 
-			return summary.getSummary()
-				.getTotalFailureCount();
+			return (execSummary != null) ? execSummary.getTotalFailureCount() : -1;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
