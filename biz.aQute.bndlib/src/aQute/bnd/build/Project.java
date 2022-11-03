@@ -1966,30 +1966,34 @@ public class Project extends Processor {
 					return null;
 				}
 
-				Map<File, Resource> exports = builder.doExports(selectedRunFiles);
-
 				getInfo(builder);
 
 				if (!isOk()) {
 					return null;
 				}
 
-				for (Map.Entry<File, Resource> ee : exports.entrySet()) {
-					try (Resource resource = ee.getValue()) {
-						File outputFile = ee.getKey();
-						File actual = write(resource::write, outputFile);
+				if (!selectedRunFiles.isEmpty()) {
+					Map<File, Resource> exports = builder.doExports(selectedRunFiles);
 
-						if (actual != null) {
-							buildFilesSet.add(actual);
-						} else {
-							error("Could not save %s", outputFile);
+					getInfo(builder);
+
+					if (isOk()) {
+
+						for (Map.Entry<File, Resource> ee : exports.entrySet()) {
+							try (Resource resource = ee.getValue()) {
+								File outputFile = ee.getKey();
+								File actual = write(resource::write, outputFile);
+
+								if (actual != null) {
+									buildFilesSet.add(actual);
+								} else {
+									error("Could not save %s", outputFile);
+								}
+							}
 						}
 					}
 				}
 
-				if (!isOk()) {
-					return null;
-				}
 
 				boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
 				if (buildfiles != null) {
@@ -2622,7 +2626,8 @@ public class Project extends Processor {
 		return jar;
 	}
 
-	public String _project(@SuppressWarnings("unused") String args[]) {
+	public String _project(@SuppressWarnings("unused")
+	String args[]) {
 		return IO.absolutePath(getBase());
 	}
 
@@ -2713,7 +2718,8 @@ public class Project extends Processor {
 	/**
 	 * Run all before command plugins
 	 */
-	void before(@SuppressWarnings("unused") Project p, String a) {
+	void before(@SuppressWarnings("unused")
+	Project p, String a) {
 		List<CommandPlugin> testPlugins = getPlugins(CommandPlugin.class);
 		for (CommandPlugin testPlugin : testPlugins) {
 			testPlugin.before(this, a);
@@ -2723,7 +2729,8 @@ public class Project extends Processor {
 	/**
 	 * Run all after command plugins
 	 */
-	void after(@SuppressWarnings("unused") Project p, String a, Throwable t) {
+	void after(@SuppressWarnings("unused")
+	Project p, String a, Throwable t) {
 		List<CommandPlugin> testPlugins = getPlugins(CommandPlugin.class);
 		for (int i = testPlugins.size() - 1; i >= 0; i--) {
 			testPlugins.get(i)
@@ -2737,7 +2744,8 @@ public class Project extends Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void script(@SuppressWarnings("unused") String type, String script) throws Exception {
+	public void script(@SuppressWarnings("unused")
+	String type, String script) throws Exception {
 		script(type, script, new Object[0]);
 	}
 
@@ -2760,7 +2768,8 @@ public class Project extends Processor {
 			.eval((Map) p, new StringReader(script));
 	}
 
-	public String _repos(@SuppressWarnings("unused") String args[]) throws Exception {
+	public String _repos(@SuppressWarnings("unused")
+	String args[]) throws Exception {
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		List<String> names = new ArrayList<>();
 		for (RepositoryPlugin rp : repos)
