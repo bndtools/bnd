@@ -70,7 +70,7 @@ public class Plugin extends AbstractUIPlugin {
 		plugin = this;
 		this.bundleContext = context;
 
-		scheduler = Executors.newScheduledThreadPool(1);
+		scheduler = Executors.newScheduledThreadPool(4);
 
 		bndActivator = new Activator();
 		bndActivator.start(context);

@@ -24,6 +24,7 @@ class Model {
 	String					message	= "initializing workspace";
 	int						severity;
 	String					filterText;
+	final AtomicBoolean		filterDirty	= new AtomicBoolean(false);
 	final List<Runnable>	updates	= new ArrayList<>();
 	final AtomicBoolean		dirty	= new AtomicBoolean(false);
 	final Set<IProject>		pinned	= new HashSet<>();
@@ -48,6 +49,7 @@ class Model {
 			glob = null;
 		else
 			glob = new Glob(value);
+		filterDirty.set(true);
 		update();
 	}
 
@@ -77,6 +79,7 @@ class Model {
 	void setSeverity(int severity) {
 		if (this.severity != severity) {
 			this.severity = severity;
+			filterDirty.set(true);
 			update();
 		}
 	}
@@ -84,7 +87,7 @@ class Model {
 	private String getPrompt(Workspace ws) {
 		try {
 			if (prompt == null || prompt.isEmpty())
-				prompt = "<b>${basename;${workspace}}</b> ${def;Bundle-Version} <a href='prefs'>change macro def</a>";
+				prompt = "<b>${basename;${workspace}}</b> ${def;Bundle-Version} <a href='prefs'>[?]</a>";
 			else if ("-".equals(prompt))
 				return "";
 
@@ -113,16 +116,6 @@ class Model {
 	 * This runs async on the display thread.
 	 */
 	private void update0() {
-		try {
-			// coalesce some more updates on
-			// the worker thread(s).
-			Thread.sleep(50);
-		} catch (InterruptedException e) {
-			Thread.currentThread()
-				.interrupt();
-			return;
-		}
-
 		if (dirty.getAndSet(false)) {
 			updates.forEach(Runnable::run);
 		}
@@ -138,6 +131,7 @@ class Model {
 		} else {
 			pinned.add(p);
 		}
+		filterDirty.set(true);
 		update();
 	}
 

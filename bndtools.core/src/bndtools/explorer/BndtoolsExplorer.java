@@ -336,9 +336,11 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		if (!installed) {
 			installed = true;
 			installFilter();
+			model.filterDirty.set(true);
 		}
 
-		getTreeViewer().refresh();
+		if (model.filterDirty.getAndSet(false))
+			getTreeViewer().refresh();
 	}
 
 	private void installFilter() {
