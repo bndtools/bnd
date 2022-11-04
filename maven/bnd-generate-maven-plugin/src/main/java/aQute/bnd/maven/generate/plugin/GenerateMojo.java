@@ -104,7 +104,6 @@ public class GenerateMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-
 		if (skip) {
 			return;
 		}
@@ -148,12 +147,22 @@ public class GenerateMojo extends AbstractMojo {
 		return (taskName, project) -> {
 			int errors = 0;
 			try {
-				Result<Set<File>> result = project.getGenerate()
-					.generate(false);
-				if (result.isErr()) {
-					result.error()
+				List<File> files = getProjectFiles();
+				if (project.getGenerate()
+					.needsBuild(files)) {
+					Result<Set<File>> result = project.getGenerate()
+						.generate(false);
+					if (result.isErr()) {
+						result.error()
 						.ifPresent(error -> logger.error("Error   : {}", error));
-					errors++;
+						errors++;
+					} else {
+						Set<File> set = result.unwrap();
+						logger.info("Files generated: " + set.size());
+						set.forEach(f -> logger.info("  " + f.getPath()));
+					}
+				} else {
+					logger.info("Generated Code seems up to date, no run requried.");
 				}
 			} finally {
 				errors += BndContainer.report(project);
@@ -162,10 +171,25 @@ public class GenerateMojo extends AbstractMojo {
 		};
 	}
 
+	private List<File> getProjectFiles() {
+		List<File> files = new ArrayList<File>();
+		addProject(project, files);
+		return files;
+	}
+
+	private void addProject(MavenProject currentProject, List<File> files) {
+		if (currentProject == null) {
+			return;
+		}
+		files.add(currentProject.getFile());
+		addProject(currentProject.getParent(), files);
+	}
+
 	private String mapStep(Step step) {
 		StringJoiner joiner = new StringJoiner(";");
 		joiner.add(step.getTrigger());
 		joiner.add("output=" + step.getOutput());
+		joiner.add("clear=" + step.isClear());
 		if (step.getGenerateCommand() != null) {
 			joiner.add("generate=\"" + step.getGenerateCommand() + "\"");
 		}

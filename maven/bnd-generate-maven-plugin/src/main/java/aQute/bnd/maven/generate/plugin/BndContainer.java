@@ -170,7 +170,11 @@ public class BndContainer {
 	}
 
 	public Project init(String task, File wsDir, File workingDir, Properties mavenProperties) throws Exception {
-		File cnfDir = new File(wsDir, "tempGenerateWS/cnf");
+		File temporaryDir = workingDir.toPath()
+			.resolve("tmp")
+			.resolve(task)
+			.toFile();
+		File cnfDir = new File(temporaryDir, "cnf");
 		cnfDir.mkdirs();
 		File buildBnd = new File(cnfDir, "build.bnd");
 		buildBnd.createNewFile();
