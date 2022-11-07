@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -96,7 +97,7 @@ public class Launchpad implements AutoCloseable {
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
 	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<>();
 	final Injector<Service>						injector;
-	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
+	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new ConcurrentHashMap<>();
 	final Set<String>							frameworkExports;
 	final List<String>							errors					= new ArrayList<>();
 	final String								name;
