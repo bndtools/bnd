@@ -6,9 +6,9 @@ Bundle-Description:	    Shared logic used by bnd maven plugins
 -includepackage: aQute.bnd.maven.lib.*
 
 Import-Package: \
-	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
-	org.eclipse.aether.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
-	org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,4);${@bundleversion}}";version=!,\
+	org.eclipse.aether.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,4);${@bundleversion}}";version=!,\
+	org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,4);${@bundleversion}}";version=!,\
 	*
 
 # Decorate maven runtime dependencies
