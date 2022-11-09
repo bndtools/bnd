@@ -380,7 +380,23 @@ public class BaselineTest {
 			p3.build();
 			assertTrue(p3.check());
 
-			p3.setBundleVersion("5");
+			p3.setBundleVersion("1.0.1");
+			p3.build();
+			assertTrue(p3.check("There is no baseline for p3 in the baseline repo"));
+
+			p3.setBundleVersion("1.1");
+			p3.build();
+			assertTrue(p3.check("There is no baseline for p3 in the baseline repo"));
+
+			p3.setBundleVersion("2.0.0.XXXXXX");
+			p3.build();
+			assertTrue(p3.check());
+
+			p3.setBundleVersion("2.0.1");
+			p3.build();
+			assertTrue(p3.check("There is no baseline for p3 in the baseline repo"));
+
+			p3.setBundleVersion("2.1");
 			p3.build();
 			assertTrue(p3.check("There is no baseline for p3 in the baseline repo"));
 		} finally {

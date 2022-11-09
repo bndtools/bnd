@@ -517,17 +517,18 @@ public class ProjectBuilder extends Builder {
 			return null; // errors reported already
 
 		String bsn = getBsn();
-		Version version = new Version(getVersion());
+		Version version = Version.parseVersion(getVersion());
 		SortedSet<Version> versions = removeStagedAndFilter(repo.versions(bsn), repo, bsn);
 
 		if (versions.isEmpty()) {
 			// We have a repo
-			Version v = Version.parseVersion(getVersion())
-				.getWithoutQualifier();
-			if (v.compareTo(Version.ONE) > 0) {
+			// Baselining 0.x is uninteresting
+			// x.0.0 is a new major version so maybe there is no baseline
+			if ((version.getMajor() > 0) &&
+				((version.getMinor() > 0) || (version.getMicro() > 0))) {
 				warning(
-					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than 1.0.0 which suggests that there should be a prior version.",
-					getBsn(), repo, v);
+					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than %s which suggests that there should be a prior version.",
+					getBsn(), repo, version.getWithoutQualifier(), new Version(version.getMajor()));
 			}
 			return null;
 		}
