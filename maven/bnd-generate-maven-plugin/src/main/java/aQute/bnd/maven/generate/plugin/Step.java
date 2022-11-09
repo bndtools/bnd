@@ -47,6 +47,15 @@ public class Step {
 	private String		systemCommand	= null;
 
 	/**
+	 * The clear option in the resulting
+	 * <a href="https://bnd.bndtools.org/instructions/generate.html"> generate
+	 * instruction. It instruct the generator to not clear the ourput folder
+	 * before a run. The default is true.</a>
+	 */
+	@Parameter(required = false)
+	private boolean		clear			= true;
+
+	/**
 	 * Any additional properties that the specific generate plugin will support.
 	 */
 	@Parameter(property = "properties", required = false)
@@ -70,5 +79,9 @@ public class Step {
 
 	public Properties getProperties() {
 		return properties;
+	}
+
+	public boolean isClear() {
+		return clear;
 	}
 }

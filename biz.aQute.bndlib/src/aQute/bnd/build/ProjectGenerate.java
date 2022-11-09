@@ -341,6 +341,10 @@ public class ProjectGenerate implements AutoCloseable {
 	}
 
 	public boolean needsBuild() {
+		return needsBuild(project.getSelfAndAncestors());
+	}
+
+	public boolean needsBuild(List<File> ancestors) {
 		for (Entry<String, GeneratorSpec> e : project.instructions.generate()
 			.entrySet()) {
 
@@ -361,7 +365,7 @@ public class ProjectGenerate implements AutoCloseable {
 			if (sourceFiles.isEmpty())
 				return true; // error handling
 
-			sourceFiles.addAll(project.getSelfAndAncestors());
+			sourceFiles.addAll(ancestors);
 
 			long latestModifiedSource = sourceFiles.stream()
 				.mapToLong(File::lastModified)
