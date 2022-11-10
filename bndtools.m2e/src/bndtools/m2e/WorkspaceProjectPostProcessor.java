@@ -11,18 +11,22 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.maven.lib.resolve.PostProcessor;
 
-class WorkspaceProjectPostProcessor implements MavenRunListenerHelper, PostProcessor {
+class WorkspaceProjectPostProcessor implements PostProcessor {
 
 	private static final Logger		logger	= LoggerFactory.getLogger(WorkspaceProjectPostProcessor.class);
 
 	private final IProgressMonitor	monitor;
 
-	WorkspaceProjectPostProcessor(IProgressMonitor monitor) {
+	private final IMavenProjectRegistry	mavenProjectRegistry;
+
+	WorkspaceProjectPostProcessor(IMavenProjectRegistry mavenProjectRegistry, IProgressMonitor monitor) {
+		this.mavenProjectRegistry = mavenProjectRegistry;
 		this.monitor = monitor;
 	}
 

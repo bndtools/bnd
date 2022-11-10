@@ -33,18 +33,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaModelMarker;
-import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.embedder.IMaven;
-import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
-import org.eclipse.m2e.core.internal.MavenPluginActivator;
-import org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager;
 import org.eclipse.m2e.core.lifecyclemapping.model.IPluginExecutionMetadata;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
-import org.eclipse.m2e.core.project.ResolverConfiguration;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant;
 import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant2;
-import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator;
 import org.eclipse.m2e.core.project.configurator.MojoExecutionBuildParticipant;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
 import org.osgi.service.component.annotations.Component;
@@ -55,7 +50,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 
-public class BndConfigurator extends AbstractProjectConfigurator {
+public class BndConfigurator extends ServiceAwareM2EConfigurator {
 
 	private static final String					ARTIFACT_PATTERN				= "%s-%s.%s";
 	private static final String					CLASSIFIER_ARTIFACT_PATTERN	= "%s-%s-%s.%s";
@@ -190,7 +185,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 						try {
 							SubMonitor progress = SubMonitor.convert(monitor, 3);
-							execJarMojo(projectFacade, progress.split(1, SubMonitor.SUPPRESS_NONE), isTest);
+							execJarMojo(getMaven(), getRegistry(), projectFacade,
+								progress.split(1, SubMonitor.SUPPRESS_NONE), isTest);
 
 							// We need to trigger a refresh
 							IPath targetDirPath = Path.fromOSString(targetDirectory);
@@ -299,19 +295,13 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 		return mavenProject;
 	}
 
-	private void execJarMojo(final IMavenProjectFacade projectFacade, IProgressMonitor monitor, boolean isTest)
+	private void execJarMojo(IMaven maven, IMavenProjectRegistry projectRegistry,
+		final IMavenProjectFacade projectFacade, IProgressMonitor monitor, boolean isTest)
 		throws CoreException {
-		final IMaven maven = MavenPlugin.getMaven();
-		ProjectRegistryManager projectRegistryManager = MavenPluginActivator.getDefault()
-			.getMavenProjectManagerImpl();
+		projectFacade.getResolverConfiguration()
+			.setResolveWorkspaceProjects(true);
 
-		ResolverConfiguration resolverConfiguration = new ResolverConfiguration();
-		resolverConfiguration.setResolveWorkspaceProjects(true);
-
-		IMavenExecutionContext context = projectRegistryManager.createExecutionContext(projectFacade.getPom(),
-			resolverConfiguration);
-
-		context.execute((context1, monitor1) -> {
+		projectRegistry.execute(projectFacade, (context1, monitor1) -> {
 			SubMonitor progress = SubMonitor.convert(monitor1);
 			MavenProject mavenProject = getMavenProject(projectFacade, progress.split(1));
 

@@ -7,7 +7,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
@@ -19,9 +18,13 @@ import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.service.RepositoryPlugin;
 
 public abstract class AbstractMavenRepository extends BaseRepository
-	implements MavenRunListenerHelper, Repository, RepositoryPlugin, IMavenProjectChangedListener {
+	implements Repository, RepositoryPlugin, IMavenProjectChangedListener {
 
-	final IMavenProjectRegistry mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
+	final IMavenProjectRegistry mavenProjectRegistry;
+
+	protected AbstractMavenRepository(IMavenProjectRegistry mavenProjectRegistry) {
+		this.mavenProjectRegistry = mavenProjectRegistry;
+	}
 
 	@Override
 	public boolean canWrite() {

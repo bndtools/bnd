@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -41,7 +42,9 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 	private final Run						run;
 	private final IPath						bndrunFilePath;
 
-	public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade, Run run) {
+	public MavenImplicitProjectRepository(IMavenProjectRegistry mavenProjectRegistry,
+		IMavenProjectFacade projectFacade, Run run) {
+		super(mavenProjectRegistry);
 		this.projectFacade = projectFacade;
 		this.run = run;
 
@@ -125,7 +128,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 	}
 
 	protected void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
-		MavenProject mavenProject = getMavenProject(projectFacade);
+		MavenProject mavenProject = MavenRunListenerHelper.getMavenProject(projectFacade);
 		try {
 			BndrunContainer bndrunContainer = run.getPlugin(BndrunContainer.class);
 
