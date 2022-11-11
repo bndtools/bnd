@@ -666,7 +666,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	private String getExtension(String type) {
 		ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(type);
 		if (artifactHandler != null) {
-			type = artifactHandler.getExtension();
+			return artifactHandler.getExtension();
 		}
 		return type;
 	}
