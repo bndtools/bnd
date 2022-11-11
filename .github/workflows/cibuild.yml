@@ -57,24 +57,29 @@ jobs:
     name: Build JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
     - name: Git Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
       with:
         fetch-depth: ${{ matrix.fetch-depth }}
     - name: Set up Java ${{ matrix.java }}
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/gradle-build-action@v2
+      uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef
     - name: Build
       id: build
       run: |
         ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
     - name: Configure settings.xml for Publish
       if: ${{ matrix.canonical }}
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
@@ -92,7 +97,7 @@ jobs:
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
       with:
         name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
         path: |

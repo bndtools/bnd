@@ -20,8 +20,13 @@ jobs:
     name: Stale
     runs-on: 'ubuntu-latest'
     steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
     - name: Stale Action
-      uses: actions/stale@v6
+      uses: actions/stale@5ebf00ea0e4c1561e9b43a292ed34424fb1d4578
       with:
         days-before-stale: 365
         days-before-close: 21
