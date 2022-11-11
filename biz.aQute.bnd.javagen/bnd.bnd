@@ -14,8 +14,4 @@
     aQute.lib.*, \
     aQute.libg.*
 
-# Don't release since this project is only used in testing
--buildrepo:
--releaserepo:
--nojunit: true
--nojunitosgi: true
+# Tested in biz.aQute.bndall.tests/test/biz/aQute/bnd/project/ProjectGenerateTest.java
