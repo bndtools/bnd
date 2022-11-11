@@ -30,10 +30,15 @@ jobs:
       BUNDLE_GEMFILE: Gemfile
       BUNDLE_PATH: vendor/bundle
     steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
     - name: Git Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
     - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+      uses: ruby/setup-ruby@8ddb7b3348b3951590db24c346e94ebafdabc926
       with:
         ruby-version: 2.7
         bundler-cache: true
