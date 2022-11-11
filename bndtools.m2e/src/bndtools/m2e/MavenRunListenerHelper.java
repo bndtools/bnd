@@ -23,7 +23,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
@@ -34,11 +33,12 @@ import aQute.bnd.maven.lib.configuration.Bndruns;
 
 public interface MavenRunListenerHelper {
 
-	IMaven					maven					= MavenPlugin.getMaven();
-	IMavenProjectRegistry	mavenProjectRegistry	= MavenPlugin.getMavenProjectRegistry();
-	IWorkspace				iWorkspace				= ResourcesPlugin.getWorkspace();
+	// IMaven maven = MavenPlugin.getMaven();
+	// IMavenProjectRegistry mavenProjectRegistry =
+	// MavenPlugin.getMavenProjectRegistry();
+	// IWorkspace iWorkspace = ResourcesPlugin.getWorkspace();
 
-	default IResource getResource(Run run) {
+	static IResource getResource(Run run) {
 		File propertiesFile = run.getPropertiesFile();
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
@@ -54,7 +54,7 @@ public interface MavenRunListenerHelper {
 		return shortest;
 	}
 
-	default MavenProject getMavenProject(IMavenProjectFacade mavenProjectFacade) {
+	static MavenProject getMavenProject(IMavenProjectFacade mavenProjectFacade) {
 		try {
 			return mavenProjectFacade.getMavenProject(new NullProgressMonitor());
 		} catch (CoreException e) {
@@ -62,56 +62,61 @@ public interface MavenRunListenerHelper {
 		}
 	}
 
-	default IMavenProjectFacade getMavenProjectFacade(IResource resource) {
+	static IMavenProjectFacade getMavenProjectFacade(IMavenProjectRegistry mavenProjectRegistry, IResource resource) {
 		return mavenProjectRegistry.getProject(resource.getProject());
 	}
 
-	default boolean isMavenProject(IResource resource) {
-		if ((resource != null) && (resource.getProject() != null) && (getMavenProjectFacade(resource) != null)) {
+	static boolean isMavenProject(IMavenProjectRegistry mavenProjectRegistry, IResource resource) {
+		if ((resource != null) && (resource.getProject() != null)
+			&& (getMavenProjectFacade(mavenProjectRegistry, resource) != null)) {
 			return true;
 		}
 
 		return false;
 	}
 
-	default boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+	static boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
 		return getBndMavenPlugin(projectFacade).isPresent();
 	}
 
-	default Optional<PluginExecution> getBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+	static Optional<PluginExecution> getBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
 		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-maven-plugin");
 	}
 
-	default boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+	static boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
 		return getBndResolverMavenPlugin(projectFacade).isPresent();
 	}
 
-	default Optional<PluginExecution> getBndResolverMavenPlugin(IMavenProjectFacade projectFacade)
+	static Optional<PluginExecution> getBndResolverMavenPlugin(IMavenProjectFacade projectFacade)
 		throws CoreException {
 		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin");
 	}
 
-	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade, IProgressMonitor monitor)
+	static MojoExecution getBndResolverMojoExecution(IMaven maven, IMavenProjectFacade projectFacade,
+		IProgressMonitor monitor)
 		throws CoreException {
-		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin", "bnd-resolver:resolve@",
+		return getMojoExecution(maven, projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin",
+			"bnd-resolver:resolve@",
 			exe -> true, monitor);
 	}
 
-	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade,
+	static MojoExecution getBndResolverMojoExecution(IMaven maven, IMavenProjectFacade projectFacade,
 		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
-		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin", "bnd-resolver:resolve@",
+		return getMojoExecution(maven, projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin",
+			"bnd-resolver:resolve@",
 			predicate, monitor);
 	}
 
-	default boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+	static boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
 		return getBndTestingMavenPlugin(projectFacade).isPresent();
 	}
 
-	default Optional<PluginExecution> getBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+	static Optional<PluginExecution> getBndTestingMavenPlugin(IMavenProjectFacade projectFacade)
+		throws CoreException {
 		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin");
 	}
 
-	default Optional<PluginExecution> getBndMavenPluginById(IMavenProjectFacade projectFacade, String id)
+	static Optional<PluginExecution> getBndMavenPluginById(IMavenProjectFacade projectFacade, String id)
 		throws CoreException {
 		return Optional.ofNullable(getMavenProject(projectFacade).getPlugin(id))
 			.map(Plugin::getExecutions)
@@ -120,19 +125,21 @@ public interface MavenRunListenerHelper {
 			.findFirst();
 	}
 
-	default MojoExecution getBndTestingMojoExecution(IMavenProjectFacade projectFacade, IProgressMonitor monitor)
+	static MojoExecution getBndTestingMojoExecution(IMaven maven, IMavenProjectFacade projectFacade,
+		IProgressMonitor monitor)
 		throws CoreException {
-		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
+		return getMojoExecution(maven, projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
 			exe -> true, monitor);
 	}
 
-	default MojoExecution getBndTestingMojoExecution(IMavenProjectFacade projectFacade,
+	static MojoExecution getBndTestingMojoExecution(IMaven maven, IMavenProjectFacade projectFacade,
 		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
-		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
+		return getMojoExecution(maven, projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
 			predicate, monitor);
 	}
 
-	default MojoExecution getMojoExecution(IMavenProjectFacade projectFacade, String pluginId, String executionPrefix,
+	static MojoExecution getMojoExecution(IMaven maven, IMavenProjectFacade projectFacade, String pluginId,
+		String executionPrefix,
 		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
 		MavenProject mavenProject = getMavenProject(projectFacade);
 		Plugin plugin = getMavenProject(projectFacade).getPlugin(pluginId);
@@ -165,7 +172,7 @@ public interface MavenRunListenerHelper {
 		return builder.toString();
 	}
 
-	default boolean isOffline() {
+	static boolean isOffline(IMaven maven) {
 		try {
 			return maven.getSettings()
 				.isOffline();
@@ -174,19 +181,27 @@ public interface MavenRunListenerHelper {
 		}
 	}
 
-	default <T> T lookupComponent(Class<T> clazz) {
+	static <T> T lookupComponent(IMaven maven, Class<T> clazz) {
 		try {
 			Method lookupComponentMethod = maven.getClass()
-				.getMethod("lookupComponent", Class.class);
+				.getMethod("lookup", Class.class);
 
 			return clazz.cast(lookupComponentMethod.invoke(maven, clazz));
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 			| SecurityException e) {
-			return null;
+			try {
+				Method lookupComponentMethod = maven.getClass()
+					.getMethod("lookupComponent", Class.class);
+
+				return clazz.cast(lookupComponentMethod.invoke(maven, clazz));
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e2) {
+				return null;
+			}
 		}
 	}
 
-	default boolean containsBndrun(MojoExecution mojoExecution, MavenProject mavenProject, File bndrunFile,
+	static boolean containsBndrun(IMaven maven, MojoExecution mojoExecution, MavenProject mavenProject, File bndrunFile,
 		IProgressMonitor monitor) {
 		try {
 			Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,

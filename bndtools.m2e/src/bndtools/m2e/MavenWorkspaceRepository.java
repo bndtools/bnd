@@ -28,12 +28,14 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.repository.ExpressionCombiner;
 import org.osgi.service.repository.RequirementExpression;
 import org.osgi.util.promise.Promise;
@@ -67,7 +69,7 @@ import bndtools.central.Central;
 	IMavenProjectChangedListener.class, MavenWorkspaceRepository.class, RepositoryPlugin.class
 })
 public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProject, Artifact>
-	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, RepositoryPlugin, Actionable {
+	implements IMavenProjectChangedListener, PopulatedRepository, RepositoryPlugin, Actionable {
 
 	enum Kind {
 		ADDED(MavenProjectChangedEvent.KIND_ADDED),
@@ -99,6 +101,9 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 	private final BiFunction<String, Version, RequirementExpression>	identificationAndVersionExpressionFunction;
 	private final RequirementExpression									identificationExpression;
 	private final ProjectArtifactCollector								projectArtifactCollector	= new ProjectArtifactCollector();
+
+	@Reference
+	IMavenProjectRegistry												mavenProjectRegistry;
 
 	public MavenWorkspaceRepository() {
 		super();

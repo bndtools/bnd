@@ -2,6 +2,8 @@ package bndtools.m2e;
 
 import static aQute.bnd.exceptions.Exceptions.unchecked;
 import static aQute.bnd.exceptions.FunctionWithException.asFunction;
+import static bndtools.m2e.MavenRunListenerHelper.getMavenProject;
+import static bndtools.m2e.MavenRunListenerHelper.lookupComponent;
 
 import java.io.File;
 import java.util.Map;
@@ -18,13 +20,9 @@ import org.bndtools.api.Logger;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.m2e.core.MavenPlugin;
-import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
-import org.eclipse.m2e.core.internal.MavenPluginActivator;
-import org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager;
+import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
-import org.eclipse.m2e.core.project.IProjectConfigurationManager;
-import org.eclipse.m2e.core.project.ResolverConfiguration;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
 import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
@@ -34,29 +32,22 @@ import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import biz.aQute.resolve.Bndrun;
 
-public class MavenBndrunContainer implements MavenRunListenerHelper {
+public class MavenBndrunContainer {
 
 	private static final ILogger						logger					= Logger
 		.getLogger(MavenBndrunContainer.class);
 
 	private static final Version						scopesVersion			= new Version(4, 2, 0);
 
-	private static final IProjectConfigurationManager	configurationManager	= MavenPlugin
-		.getProjectConfigurationManager();
-	private static final ProjectRegistryManager			projectManager			= MavenPluginActivator.getDefault()
-		.getMavenProjectManagerImpl();
-
-	private static final MavenRunListenerHelper			helper					= new MavenRunListenerHelper() {};
-
+	private final IMavenProjectRegistry	mavenProjectRegistry;
 	private final BndrunContainer						bndrunContainer;
-	private final MavenProject							mavenProject;
-	private final IMavenExecutionContext				context;
+	private final IMavenProjectFacade					mavenProjectFacade;
 	private final IProgressMonitor						monitor;
 
-	public static MavenBndrunContainer getBndrunContainer(IMavenProjectFacade projectFacade,
-		MojoExecution mojoExecution, IProgressMonitor monitor) {
+	public static MavenBndrunContainer getBndrunContainer(IMaven maven, IMavenProjectRegistry mavenProjectRegistry,
+		IMavenProjectFacade projectFacade, MojoExecution mojoExecution, IProgressMonitor monitor) {
 
-		MavenProject mavenProject = helper.getMavenProject(projectFacade);
+		MavenProject mavenProject = getMavenProject(projectFacade);
 
 		Bundles bundles = null;
 		boolean useMavenDependencies = true;
@@ -95,29 +86,25 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 			}
 		}
 
-		return getBndrunContainer(projectFacade, bundles, useMavenDependencies, includeDependencyManagement,
-			scopeValues, monitor);
+		return getBndrunContainer(maven, mavenProjectRegistry, projectFacade, bundles, useMavenDependencies,
+			includeDependencyManagement, scopeValues, monitor);
 	}
 
-	public static MavenBndrunContainer getBndrunContainer(IMavenProjectFacade projectFacade, Bundles bundles,
+	public static MavenBndrunContainer getBndrunContainer(IMaven maven, IMavenProjectRegistry mavenProjectRegistry,
+		IMavenProjectFacade projectFacade, Bundles bundles,
 		boolean useMavenDependencies, boolean includeDependencyManagement, Set<String> scopeValues,
 		IProgressMonitor monitor) {
-		MavenProject mavenProject = helper.getMavenProject(projectFacade);
+		MavenProject mavenProject = getMavenProject(projectFacade);
 		try {
-			ResolverConfiguration resolverConfiguration = configurationManager
-				.getResolverConfiguration(projectFacade.getProject());
-			IMavenExecutionContext context = projectManager.createExecutionContext(projectFacade.getPom(),
-				resolverConfiguration);
-
-			BndrunContainer bndrunContainer = context.execute(mavenProject, (c, m) -> {
+			BndrunContainer bndrunContainer = mavenProjectRegistry.execute(projectFacade, (c, m) -> {
 				MavenSession mavenSession = c.getSession();
 				mavenSession.setCurrentProject(mavenProject);
 
 				@SuppressWarnings("deprecation")
 				Builder builder = new BndrunContainer.Builder(mavenProject, mavenSession, c.getRepositorySession(),
-					helper.lookupComponent(ProjectDependenciesResolver.class),
-					helper.lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class),
-					helper.lookupComponent(RepositorySystem.class));
+					lookupComponent(maven, ProjectDependenciesResolver.class),
+					lookupComponent(maven, org.apache.maven.artifact.factory.ArtifactFactory.class),
+					lookupComponent(maven, RepositorySystem.class));
 
 				Optional.ofNullable(bundles)
 					.map(asFunction(b -> b.getFiles(mavenProject.getBasedir())))
@@ -131,12 +118,12 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 						.collect(Collectors.toSet()));
 				}
 
-				builder.setPostProcessor(new WorkspaceProjectPostProcessor(m));
+				builder.setPostProcessor(new WorkspaceProjectPostProcessor(mavenProjectRegistry, m));
 
 				return builder.build();
 			}, monitor);
 
-			return new MavenBndrunContainer(bndrunContainer, mavenProject, context, monitor);
+			return new MavenBndrunContainer(bndrunContainer, mavenProjectRegistry, projectFacade, monitor);
 		} catch (Exception e) {
 			logger.logError("Failed to create Run for m2e project " + mavenProject.getName(), e);
 
@@ -144,22 +131,22 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 		}
 	}
 
-	public MavenBndrunContainer(BndrunContainer bndrunContainer, MavenProject mavenProject,
-		IMavenExecutionContext context, IProgressMonitor monitor) {
+	public MavenBndrunContainer(BndrunContainer bndrunContainer, IMavenProjectRegistry mavenProjectRegistry,
+		IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
 		this.bndrunContainer = bndrunContainer;
-		this.mavenProject = mavenProject;
-		this.context = context;
+		this.mavenProjectRegistry = mavenProjectRegistry;
+		this.mavenProjectFacade = projectFacade;
 		this.monitor = monitor;
 	}
 
 	public Bndrun init(File runFile, String task, File workingDir) throws Exception {
-		return context.execute( //
+		return mavenProjectRegistry.execute(mavenProjectFacade,
 			(c, m) -> unchecked(() -> bndrunContainer.init(runFile, task, workingDir)), monitor);
 	}
 
 	public Map<File, ArtifactResult> resolve() throws Exception {
-		return context.execute( //
-			(c, m) -> unchecked(() -> bndrunContainer.getDependencyResolver(mavenProject)
+		return mavenProjectRegistry.execute(mavenProjectFacade,
+			(c, m) -> unchecked(() -> bndrunContainer.getDependencyResolver(mavenProjectFacade.getMavenProject())
 				.resolve()),
 			monitor);
 	}

@@ -1,5 +1,12 @@
 package bndtools.m2e;
 
+import static bndtools.m2e.MavenRunListenerHelper.containsBndrun;
+import static bndtools.m2e.MavenRunListenerHelper.getBndResolverMojoExecution;
+import static bndtools.m2e.MavenRunListenerHelper.getBndTestingMojoExecution;
+import static bndtools.m2e.MavenRunListenerHelper.getMavenProject;
+import static bndtools.m2e.MavenRunListenerHelper.getMavenProjectFacade;
+import static bndtools.m2e.MavenRunListenerHelper.isMavenProject;
+
 import java.io.File;
 import java.util.function.Predicate;
 
@@ -9,12 +16,15 @@ import org.bndtools.api.RunMode;
 import org.bndtools.api.RunProvider;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -30,19 +40,25 @@ import biz.aQute.resolve.Bndrun;
  * that one does not check to see if the project is M2E.
  */
 @Component(property = Constants.SERVICE_RANKING + ":Integer=3000")
-public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
+public class MavenRunProvider implements RunProvider {
 
 	private static final Logger			logger	= LoggerFactory.getLogger(MavenRunProvider.class);
 
 	private MavenWorkspaceRepository	mavenWorkspaceRepository;
 
+	@Reference
+	IMaven								maven;
+	@Reference
+	IMavenProjectRegistry				mavenProjectRegistry;
+
 	@Override
 	public Bndrun create(IResource targetResource, RunMode mode) throws Exception {
-		if (!isMavenProject(targetResource)) {
+		if (!isMavenProject(mavenProjectRegistry, targetResource)) {
 			return null;
 		}
 
-		final IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
+		final IMavenProjectFacade projectFacade = getMavenProjectFacade(mavenProjectRegistry,
+			targetResource);
 
 		Bndrun bndrun = create0(targetResource, projectFacade, mode);
 		if (bndrun == null) {
@@ -51,11 +67,12 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 		Workspace workspace = bndrun.getWorkspace();
 
 		final MavenImplicitProjectRepository implicitRepo = new MavenImplicitProjectRepository( //
-			projectFacade, bndrun);
+			mavenProjectRegistry, projectFacade, bndrun);
 
 		mavenProjectRegistry.addMavenProjectChangedListener( //
 			implicitRepo);
-		iWorkspace.addResourceChangeListener( //
+		ResourcesPlugin.getWorkspace()
+			.addResourceChangeListener( //
 			implicitRepo, IResourceChangeEvent.POST_CHANGE);
 
 		workspace.addBasicPlugin(implicitRepo);
@@ -96,7 +113,7 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 			File location = targetResource.getLocation()
 				.toFile();
 			bndrunFile = location;
-			bndrunMatchs = mojoExecution -> containsBndrun(mojoExecution, mavenProject, location, monitor);
+			bndrunMatchs = mojoExecution -> containsBndrun(maven, mojoExecution, mavenProject, location, monitor);
 		}
 
 		MojoExecution mojoExecution;
@@ -105,7 +122,8 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 			case LAUNCH :
 			case EDIT :
 			case SOURCES :
-				if ((mojoExecution = getBndResolverMojoExecution(projectFacade, bndrunMatchs, monitor)) != null) {
+				if ((mojoExecution = getBndResolverMojoExecution(maven, projectFacade, bndrunMatchs,
+					monitor)) != null) {
 
 					if (bndrunFile == null) {
 						Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns",
@@ -115,15 +133,15 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 							.get(0);
 					}
 
-					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade,
-						mojoExecution, monitor);
+					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(maven,
+						mavenProjectRegistry, projectFacade, mojoExecution, monitor);
 
 					return mavenBndrunContainer.init(bndrunFile, mode.name(), new File(mavenProject.getBuild()
 						.getDirectory()));
 				}
 				break;
 			case TEST :
-				if ((mojoExecution = getBndTestingMojoExecution(projectFacade, bndrunMatchs, monitor)) != null) {
+				if ((mojoExecution = getBndTestingMojoExecution(maven, projectFacade, bndrunMatchs, monitor)) != null) {
 
 					if (bndrunFile == null) {
 						Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns",
@@ -133,8 +151,8 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 							.get(0);
 					}
 
-					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade,
-						mojoExecution, monitor);
+					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(maven,
+						mavenProjectRegistry, projectFacade, mojoExecution, monitor);
 
 					return mavenBndrunContainer.init(bndrunFile, mode.name(), new File(mavenProject.getBuild()
 						.getDirectory()));

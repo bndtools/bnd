@@ -11,9 +11,12 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +31,14 @@ public class MavenDependenciesRepository extends MavenWorkspaceRepository {
 	private final static Logger	logger		= LoggerFactory.getLogger(MavenDependenciesRepository.class);
 
 	private final Set<String>	allScopes	= Sets.of("compile", "provided", "runtime", "system", "test");
+
+	@Reference
+	IMaven						maven;
+
+	@Reference
+	void setRegistry(IMavenProjectRegistry mavenProjectRegistry) {
+		this.mavenProjectRegistry = mavenProjectRegistry;
+	}
 
 	@Override
 	public String getName() {
@@ -47,8 +58,8 @@ public class MavenDependenciesRepository extends MavenWorkspaceRepository {
 		}
 
 		try {
-			MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade, null,
-				true, true, allScopes, monitor);
+			MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(maven,
+				mavenProjectRegistry, projectFacade, null, true, true, allScopes, monitor);
 
 			mavenBndrunContainer.resolve()
 				.values()

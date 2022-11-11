@@ -36,14 +36,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaModelMarker;
-import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
 import org.eclipse.m2e.core.lifecyclemapping.model.IPluginExecutionMetadata;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant;
-import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator;
 import org.eclipse.m2e.core.project.configurator.MojoExecutionBuildParticipant;
 import org.eclipse.m2e.core.project.configurator.MojoExecutionKey;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
@@ -51,7 +50,7 @@ import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.maven.api.Archive;
 
-public class IndexConfigurator extends AbstractProjectConfigurator implements IResourceChangeListener {
+public class IndexConfigurator extends ServiceAwareM2EConfigurator implements IResourceChangeListener {
 
 	private static final String	INDEXER_PLUGIN_ARTIFACT_ID	= "bnd-indexer-maven-plugin";
 	private static final String	INDEXER_PLUGIN_GROUP_ID		= "biz.aQute.bnd";
@@ -66,6 +65,13 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 		private final SubMonitor			progress	= SubMonitor.convert(null);
 
 		private final WorkspaceRepository	wr			= new WorkspaceRepository("index", getClass());
+
+		private final IMavenProjectRegistry	registry;
+
+		public IndexerWorkspaceRepository(IMavenProjectRegistry registry) {
+			super();
+			this.registry = registry;
+		}
 
 		@Override
 		public boolean hasLocalMetadata() {
@@ -86,8 +92,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 		}
 
 		private File find(String groupId, String artifactId, String version, String extension) {
-			IMavenProjectFacade found = MavenPlugin.getMavenProjectRegistry()
-				.getMavenProject(groupId, artifactId, version);
+			IMavenProjectFacade found = registry.getMavenProject(groupId, artifactId, version);
 
 			if (found != null) {
 				return getMavenOutputFile(extension, found, progress.split(1));
@@ -104,8 +109,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 		@Override
 		public List<String> findVersions(org.eclipse.aether.artifact.Artifact artifact) {
 			List<String> versions = new ArrayList<>();
-			for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry()
-				.getProjects()) {
+			for (IMavenProjectFacade facade : registry.getProjects()) {
 				ArtifactKey key = facade.getArtifactKey();
 				if (key.getArtifactId()
 					.equals(artifact.getArtifactId())
@@ -132,8 +136,14 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 
 		private boolean								noMoreEvents;
 
-		public RebuildIndexCheck(String name, IResourceChangeEvent event, IMavenProjectFacade facade) {
+		private final IMaven						maven;
+		private final IMavenProjectRegistry			registry;
+
+		public RebuildIndexCheck(IMaven maven, IMavenProjectRegistry registry, String name, IResourceChangeEvent event,
+			IMavenProjectFacade facade) {
 			super(name);
+			this.maven = maven;
+			this.registry = registry;
 			this.events.add(event);
 			this.facade = facade;
 		}
@@ -176,8 +186,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 				IProject[] refs = facade.getProject()
 					.getReferencedProjects();
 				for (int i = 0; !needsBuild && i < refs.length; i++) {
-					IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry()
-						.getProject(refs[i]);
+					IMavenProjectFacade pf = registry.getProject(refs[i]);
 					needsBuild = pf != null ? needsBuild(delta, keysToTypes, pf, progress.split(1)) : false;
 				}
 
@@ -199,8 +208,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 							list.size());
 						list.forEach(me -> {
 							try {
-								MavenPlugin.getMaven()
-									.execute(getMavenProject(facade, indexMonitor), me, indexMonitor);
+								maven.execute(getMavenProject(facade, indexMonitor), me, indexMonitor);
 							} catch (CoreException e) {
 								logger.logError(
 									"An error occurred attempting to build the index for project " + facade.getProject()
@@ -310,11 +318,9 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 
 					final SubMonitor progress = SubMonitor.convert(monitor, "Executing indexer plugin", 2);
 
-					final IMaven maven = MavenPlugin.getMaven();
-
 					IMavenExecutionContext context = maven.createExecutionContext();
 					context.getExecutionRequest()
-						.setWorkspaceReader(new IndexerWorkspaceRepository());
+						.setWorkspaceReader(new IndexerWorkspaceRepository(getRegistry()));
 
 					final MavenProject mavenProject = getMavenProject(projectFacade, progress.split(1));
 
@@ -361,8 +367,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 	 */
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
-		projects: for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry()
-			.getProjects()) {
+		projects: for (IMavenProjectFacade facade : getRegistry().getProjects()) {
 			IProject currentProject = facade.getProject();
 			synchronized (pendingJobs) {
 				RebuildIndexCheck existing = pendingJobs.get(currentProject);
@@ -390,7 +395,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 								.findMember(projects[i].getFullPath()) != null;
 						}
 						if (doFullCheck) {
-							RebuildIndexCheck job = new RebuildIndexCheck(
+							RebuildIndexCheck job = new RebuildIndexCheck(getMaven(), getRegistry(),
 								"Checking index project " + currentProject.getName() + " for rebuild", event, facade);
 
 							// If someone else beat us to the punch then don't
