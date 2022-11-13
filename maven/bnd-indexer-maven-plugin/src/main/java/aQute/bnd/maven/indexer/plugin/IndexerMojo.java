@@ -59,6 +59,12 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject				project;
 
+	/**
+	 * The name of the created artifact (excluding extension and classifier).
+	 */
+	@Parameter(defaultValue = "${project.build.finalName}", readonly = true)
+	private String						finalName;
+
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		session;
 
@@ -191,8 +197,7 @@ public class IndexerMojo extends AbstractMojo {
 				.equals("jar")) {
 				File current = new File(project.getBuild()
 					.getDirectory(),
-					project.getBuild()
-						.getFinalName() + ".jar");
+					finalName + ".jar");
 				if (current.exists()) {
 					ResourceBuilder resourceBuilder = new ResourceBuilder();
 					resourceBuilder.addFile(current, current.toURI());
