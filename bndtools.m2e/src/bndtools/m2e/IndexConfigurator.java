@@ -112,11 +112,11 @@ public class IndexConfigurator extends ServiceAwareM2EConfigurator implements IR
 			List<String> versions = new ArrayList<>();
 			for (IMavenProjectFacade facade : registry.getProjects()) {
 				ArtifactKey key = facade.getArtifactKey();
-				if (key.getArtifactId()
+				if (ArtifactKeyHelper.getArtifactId(key)
 					.equals(artifact.getArtifactId())
-					&& key.getGroupId()
+					&& ArtifactKeyHelper.getGroupId(key)
 						.equals(artifact.getGroupId())) {
-					versions.add(key.getVersion());
+					versions.add(ArtifactKeyHelper.getVersion(key));
 				}
 			}
 			return versions;
