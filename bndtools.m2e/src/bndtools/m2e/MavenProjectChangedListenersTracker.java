@@ -1,5 +1,7 @@
 package bndtools.m2e;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
@@ -17,6 +19,23 @@ public class MavenProjectChangedListenersTracker extends
 		super(FrameworkUtil.getBundle(MavenProjectChangedListenersTracker.class)
 			.getBundleContext(), IMavenProjectChangedListener.class, null);
 		open();
+	}
+
+	/**
+	 * Needed in M2E version 2.0
+	 */
+	public void mavenProjectChanged(List<MavenProjectChangedEvent> events, IProgressMonitor monitor) {
+		getTracked().values()
+			.stream()
+			.forEach(listener -> {
+				try {
+					IMavenProjectChangedListener.class
+						.getMethod("mavenProjectChanged", List.class, IProgressMonitor.class)
+						.invoke(listener, events, monitor);
+				} catch (Throwable t) {
+					logger.error(t.getMessage(), t);
+				}
+			});
 	}
 
 	@Override

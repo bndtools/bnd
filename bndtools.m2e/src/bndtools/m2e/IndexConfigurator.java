@@ -3,6 +3,7 @@ package bndtools.m2e;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -367,7 +368,7 @@ public class IndexConfigurator extends ServiceAwareM2EConfigurator implements IR
 	 */
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
-		projects: for (IMavenProjectFacade facade : getRegistry().getProjects()) {
+		projects: for (IMavenProjectFacade facade : safeGetProjects()) {
 			IProject currentProject = facade.getProject();
 			synchronized (pendingJobs) {
 				RebuildIndexCheck existing = pendingJobs.get(currentProject);
@@ -430,6 +431,30 @@ public class IndexConfigurator extends ServiceAwareM2EConfigurator implements IR
 					continue projects;
 				}
 			}
+		}
+	}
+
+	/**
+	 * Needed to work safely with M2E 1.x and 2.x simultaneously
+	 *
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private IMavenProjectFacade[] safeGetProjects() {
+		Object projects;
+		try {
+			projects = IMavenProjectRegistry.class.getMethod("getProjects")
+				.invoke(getRegistry());
+		} catch (InvocationTargetException e) {
+			throw Exceptions.duck(e.getTargetException());
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
+		if (projects instanceof List) {
+			return ((List<?>) projects).toArray(new IMavenProjectFacade[0]);
+		} else {
+			return (IMavenProjectFacade[]) projects;
 		}
 	}
 }
