@@ -101,4 +101,11 @@ public abstract class AbstractMavenRepository extends BaseRepository
 		mavenProjectChanged(events.toArray(new MavenProjectChangedEvent[0]), monitor);
 	}
 
+	/**
+	 * Needed in M2E version 2.0 to link to when the interface doesn't include
+	 * it
+	 */
+	@Override
+	public abstract void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor);
+
 }
