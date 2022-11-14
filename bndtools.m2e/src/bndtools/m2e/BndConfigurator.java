@@ -254,20 +254,21 @@ public class BndConfigurator extends ServiceAwareM2EConfigurator {
 	private boolean isOurArtifact(String lastSegment, IMavenProjectFacade projectFacade) {
 		ArtifactKey artifactKey = projectFacade.getArtifactKey();
 		String artifact = null;
-		if (artifactKey.getClassifier() == null) {
-			artifact = String.format(ARTIFACT_PATTERN, artifactKey.getArtifactId(), artifactKey.getVersion(),
-				projectFacade.getMavenProject()
+		if (ArtifactKeyHelper.getClassifier(artifactKey) == null) {
+			artifact = String.format(ARTIFACT_PATTERN, ArtifactKeyHelper.getArtifactId(artifactKey),
+				ArtifactKeyHelper.getVersion(artifactKey), projectFacade.getMavenProject()
 					.getPackaging());
 		} else {
-			artifact = String.format(CLASSIFIER_ARTIFACT_PATTERN, artifactKey.getArtifactId(), artifactKey.getVersion(),
-				artifactKey.getClassifier(), projectFacade.getMavenProject()
+			artifact = String.format(CLASSIFIER_ARTIFACT_PATTERN, ArtifactKeyHelper.getArtifactId(artifactKey),
+				ArtifactKeyHelper.getVersion(artifactKey), ArtifactKeyHelper.getClassifier(artifactKey),
+				projectFacade.getMavenProject()
 					.getPackaging());
 		}
 		if (artifact.equals(lastSegment)) {
 			return true;
 		}
-		artifact = String.format(CLASSIFIER_ARTIFACT_PATTERN, artifactKey.getArtifactId(), artifactKey.getVersion(),
-			"tests", projectFacade.getMavenProject()
+		artifact = String.format(CLASSIFIER_ARTIFACT_PATTERN, ArtifactKeyHelper.getArtifactId(artifactKey),
+			ArtifactKeyHelper.getVersion(artifactKey), "tests", projectFacade.getMavenProject()
 				.getPackaging());
 		return artifact.equals(lastSegment);
 	}
