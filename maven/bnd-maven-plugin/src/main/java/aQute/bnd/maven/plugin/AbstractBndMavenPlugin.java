@@ -99,7 +99,13 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	 * The directory where the webapp is built when packaging is {@code war}.
 	 */
 	@Parameter(alias = "warOutputDir", defaultValue = "${project.build.directory}/${project.build.finalName}")
-	File                    webappDirectory;
+	File					webappDirectory;
+
+	/**
+	 * The name of the created artifact (excluding extension and classifier).
+	 */
+	@Parameter(defaultValue = "${project.build.finalName}", readonly = true)
+	String					finalName;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	MavenProject			project;
@@ -656,11 +662,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	}
 
 	private File getArtifactFile() {
-		return new File(getOutputDir(), project.getBuild()
-			.getFinalName()
-			+ getClassifier().map("-"::concat)
-				.orElse("")
-			+ "." + getExtension(project.getPackaging()));
+		return new File(getOutputDir(), finalName + getClassifier().map("-"::concat)
+			.orElse("") + "." + getExtension(project.getPackaging()));
 	}
 
 	private String getExtension(String type) {
