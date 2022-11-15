@@ -3,7 +3,9 @@ package aQute.bnd.maven.resolver.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
+import java.io.Writer;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import aQute.bnd.maven.lib.configuration.Bndruns;
@@ -13,6 +15,8 @@ import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
 import biz.aQute.resolve.ResolveProcess;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -80,6 +84,20 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(property = "bnd.resolve.skip", defaultValue = "false")
 	private boolean												skip;
 
+	/**
+	 * The bndrun files will be read from this directory.
+	 */
+	@Parameter(defaultValue = "${project.basedir}")
+	private File 												bndrunDir;
+
+	/**
+	 * The bndrun files will be written to this directory. If the
+	 * specified directory is the same as {@link #bndrunDir}, then
+	 * any changes to a bndrun file will cause the bndrun file to be overwritten.
+	 */
+	@Parameter(defaultValue = "${project.basedir}")
+	private File 												outputBndrunDir;
+
 	@Component
 	private RepositorySystem									system;
 
@@ -100,7 +118,7 @@ public class ResolverMojo extends AbstractMojo {
 		int errors = 0;
 
 		try {
-			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
+			List<File> bndrunFiles = bndruns.getFiles(bndrunDir, "*.bndrun");
 
 			if (bndrunFiles.isEmpty()) {
 				logger.warn(
@@ -119,6 +137,16 @@ public class ResolverMojo extends AbstractMojo {
 
 			for (File runFile : bndrunFiles) {
 				logger.info("Resolving {}:", runFile);
+				if (!Objects.equals(outputBndrunDir, bndrunDir)) {
+					IO.mkdirs(outputBndrunDir);
+					File outputRunFile = new File(outputBndrunDir, runFile.getName());
+					try (Writer writer = IO.writer(outputRunFile)) {
+						UTF8Properties props = new UTF8Properties();
+						props.setProperty(Constants.INCLUDE, String.format("\"~%s\"", escape(IO.absolutePath(runFile))));
+						props.store(writer, null);
+					}
+					runFile = outputRunFile;
+				}
 				errors += container.execute(runFile, "resolve", targetDir, operation);
 			}
 		} catch (Exception e) {
@@ -147,4 +175,16 @@ public class ResolverMojo extends AbstractMojo {
 		};
 	}
 
+	private String escape(String input) {
+		final int length = input.length();
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length;i++) {
+			char c = input.charAt(i);
+			if (c == '"') {
+				sb.append('\\');
+			}
+			sb.append(c);
+		}
+		return sb.length() == length ? input : sb.toString();
+	}
 }

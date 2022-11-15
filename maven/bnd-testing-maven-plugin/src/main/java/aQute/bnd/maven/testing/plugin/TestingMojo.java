@@ -103,6 +103,12 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File												targetDir;
 
+	/**
+	 * The bndrun files will be read from this directory.
+	 */
+	@Parameter(defaultValue = "${project.basedir}")
+	private File 												bndrunDir;
+
 	@Component
 	private RepositorySystem									system;
 
@@ -137,7 +143,7 @@ public class TestingMojo extends AbstractMojo {
 		int errors = 0;
 
 		try {
-			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
+			List<File> bndrunFiles = bndruns.getFiles(bndrunDir, "*.bndrun");
 
 			if (bndrunFiles.isEmpty()) {
 				logger.warn(
