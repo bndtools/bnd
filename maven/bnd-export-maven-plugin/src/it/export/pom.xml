@@ -16,8 +16,9 @@
 				<artifactId>bnd-export-maven-plugin</artifactId>
 				<version>${bnd.version}</version>
 				<configuration>
+					<bndrunDir>${project.basedir}</bndrunDir>
 					<bndruns>
-						<bndrun>test.bndrun</bndrun>
+						<include>test.bndrun</include>
 					</bndruns>
 					<failOnChanges>false</failOnChanges>
 					<resolve>true</resolve>
