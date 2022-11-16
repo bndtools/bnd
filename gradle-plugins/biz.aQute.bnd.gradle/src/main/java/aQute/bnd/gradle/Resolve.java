@@ -226,12 +226,25 @@ public class Resolve extends AbstractBndrun {
 		if (!Objects.equals(outputBndrunFile, bndrunFile)) {
 			try (Writer writer = IO.writer(outputBndrunFile)) {
 				UTF8Properties props = new UTF8Properties();
-				props.setProperty(Constants.INCLUDE, String.format("\"%s\"", IO.absolutePath(bndrunFile)));
+				props.setProperty(Constants.INCLUDE, String.format("\"~%s\"", escape(IO.absolutePath(bndrunFile))));
 				props.store(writer, null);
 			}
 			bndrunFile = outputBndrunFile;
 		}
 		return super.createBndrun(workspace, bndrunFile);
+	}
+
+	private String escape(String input) {
+		final int length = input.length();
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length;i++) {
+			char c = input.charAt(i);
+			if (c == '"') {
+				sb.append('\\');
+			}
+			sb.append(c);
+		}
+		return sb.length() == length ? input : sb.toString();
 	}
 
 	/**
