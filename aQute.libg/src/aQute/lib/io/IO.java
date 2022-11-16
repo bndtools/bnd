@@ -277,14 +277,12 @@ public class IO {
 	}
 
 	public static Writer copy(Reader r, Writer w) throws IOException {
-		try {
+		try (Closeable closeable = r) {
 			char[] buffer = new char[BUFFER_SIZE];
 			for (int size; (size = r.read(buffer, 0, buffer.length)) > 0;) {
 				w.write(buffer, 0, size);
 			}
 			return w;
-		} finally {
-			r.close();
 		}
 	}
 
@@ -343,14 +341,12 @@ public class IO {
 	}
 
 	public static OutputStream copy(InputStream in, OutputStream out) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 			return out;
-		} finally {
-			in.close();
 		}
 	}
 
@@ -359,28 +355,24 @@ public class IO {
 	}
 
 	public static ByteBufferOutputStream copy(InputStream in, ByteBufferOutputStream out) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			out.write(in);
 			return out;
-		} finally {
-			in.close();
 		}
 	}
 
 	public static DataOutput copy(InputStream in, DataOutput out) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 			return out;
-		} finally {
-			in.close();
 		}
 	}
 
 	public static WritableByteChannel copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE);
 			while (read(in, bb) > 0) {
 				bb.flip();
@@ -391,13 +383,11 @@ public class IO {
 				out.write(bb);
 			}
 			return out;
-		} finally {
-			in.close();
 		}
 	}
 
 	public static ByteBuffer copy(InputStream in, ByteBuffer bb) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			if (bb.hasArray()) {
 				byte[] buffer = bb.array();
 				int offset = bb.arrayOffset();
@@ -414,8 +404,6 @@ public class IO {
 				}
 			}
 			return bb;
-		} finally {
-			in.close();
 		}
 	}
 
@@ -424,13 +412,11 @@ public class IO {
 	}
 
 	public static byte[] copy(InputStream in, byte[] data, int off, int len) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			for (int remaining, size; (remaining = len - off) > 0 && (size = read(in, data, off, remaining)) > 0;) {
 				off += size;
 			}
 			return data;
-		} finally {
-			in.close();
 		}
 	}
 
@@ -489,19 +475,17 @@ public class IO {
 	}
 
 	public static MessageDigest copy(InputStream in, MessageDigest md) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				md.update(buffer, 0, size);
 			}
 			return md;
-		} finally {
-			in.close();
 		}
 	}
 
 	public static MessageDigest copy(ReadableByteChannel in, MessageDigest md) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			while (read(in, bb) > 0) {
 				bb.flip();
@@ -512,8 +496,6 @@ public class IO {
 				md.update(bb);
 			}
 			return md;
-		} finally {
-			in.close();
 		}
 	}
 
@@ -633,7 +615,7 @@ public class IO {
 	}
 
 	public static WritableByteChannel copy(InputStream in, WritableByteChannel out) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
 			for (int size, position; (size = read(in, buffer, position = bb.position(), bb.remaining())) > 0;) {
@@ -646,21 +628,17 @@ public class IO {
 				out.write(bb);
 			}
 			return out;
-		} finally {
-			in.close();
 		}
 	}
 
 	public static OutputStream copy(ReadableByteChannel in, OutputStream out) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
 			for (; read(in, bb) > 0; bb.clear()) {
 				out.write(buffer, 0, bb.position());
 			}
 			return out;
-		} finally {
-			in.close();
 		}
 	}
 
@@ -1086,15 +1064,13 @@ public class IO {
 	}
 
 	public static long drain(InputStream in) throws IOException {
-		try {
+		try (Closeable closeable = in) {
 			long result = 0L;
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				result += size;
 			}
 			return result;
-		} finally {
-			in.close();
 		}
 	}
 

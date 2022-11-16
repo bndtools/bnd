@@ -101,13 +101,8 @@ public class RunMojo extends AbstractMojo {
 
 			Operation operation = getOperation();
 
-			Bndruns bndruns = new Bndruns();
-			bndruns.addFile(bndrun);
-			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
-
-			File runFile = bndrunFiles.get(0);
-			logger.info("Running {}:", runFile);
-			errors += container.execute(runFile, "run", targetDir, operation);
+			logger.info("Running {}:", bndrun);
+			errors += container.execute(bndrun, "run", targetDir, operation);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}

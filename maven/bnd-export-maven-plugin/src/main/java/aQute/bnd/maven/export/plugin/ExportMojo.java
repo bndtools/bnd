@@ -96,6 +96,12 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(property = "bnd.export.include.dependency.management", defaultValue = "false")
 	private boolean												includeDependencyManagement;
 
+	/**
+	 * The bndrun files will be read from this directory.
+	 */
+	@Parameter(defaultValue = "${project.basedir}")
+	private File 												bndrunDir;
+
 	@Component
 	private RepositorySystem									system;
 
@@ -116,7 +122,7 @@ public class ExportMojo extends AbstractMojo {
 		int errors = 0;
 
 		try {
-			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
+			List<File> bndrunFiles = bndruns.getFiles(bndrunDir, "*.bndrun");
 
 			if (bndrunFiles.isEmpty()) {
 				logger.warn(
