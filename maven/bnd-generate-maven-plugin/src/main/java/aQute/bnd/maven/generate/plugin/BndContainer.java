@@ -153,6 +153,7 @@ public class BndContainer {
 			bnd.setProperties(properties.replaceHere(project.getBasedir()));
 
 			bnd.setProperty("project.output", workingDir.getCanonicalPath());
+			bnd.setProperty(aQute.bnd.osgi.Constants.DEFAULT_PROP_TARGET_DIR, workingDir.getCanonicalPath());
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Generate Project Properties");
@@ -170,7 +171,7 @@ public class BndContainer {
 	}
 
 	public Project init(String task, File wsDir, File workingDir, Properties mavenProperties) throws Exception {
-		File temporaryDir = workingDir.toPath()
+		File temporaryDir = wsDir.toPath()
 			.resolve("tmp")
 			.resolve(task)
 			.toFile();
