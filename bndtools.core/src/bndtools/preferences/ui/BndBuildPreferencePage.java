@@ -43,7 +43,7 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 			Messages.BndPreferencePage_cmbBuildLogging_Basic, Messages.BndPreferencePage_cmbBuildLogging_Full);
 
 		// Allow Build parallel
-		new Label(composite, SWT.NONE).setText("Allow build in parallel (highly experimental))");
+		new Label(composite, SWT.NONE).setText("Allow build in parallel (highly experimental)");
 		parallel = new Button(composite, SWT.CHECK);
 		parallel.setSelection(prefs.isParallel());
 
