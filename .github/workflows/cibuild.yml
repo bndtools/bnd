@@ -42,7 +42,7 @@ jobs:
         java:
         - '8'
         - '11'
-        - '18'
+        - '19'
         runner:
         - 'xvfb-run --auto-servernum {0}'
         include:

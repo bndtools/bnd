@@ -38,6 +38,9 @@ class TestHelper {
 	}
 
 	private static String gradleVersion() {
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_19)) {
+			return "7.6"
+		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
 			return "7.5"
 		}
