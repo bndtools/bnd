@@ -183,14 +183,10 @@ public class BndUtils {
 	 * @param project The Project.
 	 * @return The SourceSetContainer for the specified Project.
 	 */
-	@SuppressWarnings("deprecation")
 	public static SourceSetContainer sourceSets(Project project) {
-		SourceSetContainer sourceSets = isGradleCompatible("7.1") ? project.getExtensions()
+		SourceSetContainer sourceSets = project.getExtensions()
 			.getByType(JavaPluginExtension.class)
-			.getSourceSets()
-			: project.getConvention()
-				.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class)
-				.getSourceSets();
+			.getSourceSets();
 		return sourceSets;
 	}
 
@@ -200,14 +196,10 @@ public class BndUtils {
 	 * @param project The Project.
 	 * @return The distDirectory property for the specified Project.
 	 */
-	@SuppressWarnings("deprecation")
 	public static DirectoryProperty distDirectory(Project project) {
-		DirectoryProperty distDirectory = isGradleCompatible("7.1") ? project.getExtensions()
+		DirectoryProperty distDirectory = project.getExtensions()
 			.getByType(BasePluginExtension.class)
-			.getDistsDirectory()
-			: project.getConvention()
-				.getPlugin(org.gradle.api.plugins.BasePluginConvention.class)
-				.getDistsDirectory();
+			.getDistsDirectory();
 		return distDirectory;
 	}
 
@@ -217,15 +209,10 @@ public class BndUtils {
 	 * @param project The Project.
 	 * @return The testResultsDir property for the specified Project.
 	 */
-	@SuppressWarnings("deprecation")
 	public static Provider<Directory> testResultsDir(Project project) {
-		Provider<Directory> testResultsDir = isGradleCompatible("7.1") ? project.getExtensions()
+		Provider<Directory> testResultsDir = project.getExtensions()
 			.getByType(JavaPluginExtension.class)
-			.getTestResultsDir()
-			: project.getLayout()
-				.dir(project.provider(() -> project.getConvention()
-					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class)
-					.getTestResultsDir()));
+			.getTestResultsDir();
 		return testResultsDir;
 	}
 

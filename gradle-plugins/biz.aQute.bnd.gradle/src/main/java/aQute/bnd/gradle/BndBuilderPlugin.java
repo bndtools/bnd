@@ -67,14 +67,10 @@ public class BndBuilderPlugin implements Plugin<Project> {
 
 		TaskContainer tasks = project.getTasks();
 
-		@SuppressWarnings("deprecation")
 		TaskProvider<Jar> jar = tasks.named(JavaPlugin.JAR_TASK_NAME, Jar.class, t -> {
 			t.setDescription("Assembles a bundle containing the main classes.");
 			BundleTaskExtension extension = t.getExtensions()
 				.create(BundleTaskExtension.NAME, BundleTaskExtension.class, t);
-			t.getConvention()
-				.getPlugins()
-				.put(BundleTaskExtension.NAME, new BundleTaskConvention(extension));
 			if (unwrapFile(defaultBndfile).isFile()) {
 				extension.getBndfile()
 					.convention(defaultBndfile);

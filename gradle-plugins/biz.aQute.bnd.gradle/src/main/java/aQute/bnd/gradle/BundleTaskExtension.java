@@ -1,7 +1,6 @@
 package aQute.bnd.gradle;
 
 import static aQute.bnd.gradle.BndUtils.builtBy;
-import static aQute.bnd.gradle.BndUtils.isGradleCompatible;
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
@@ -232,10 +231,8 @@ public class BundleTaskExtension {
 			.file(getBndfile())
 			.optional()
 			.withPathSensitivity(RELATIVE)
-			.withPropertyName("bndfile");
-		if (isGradleCompatible("7.2")) {
-			bndfileInput.normalizeLineEndings();
-		}
+			.withPropertyName("bndfile")
+			.normalizeLineEndings();
 		task.getInputs()
 			.property("bnd", getBnd());
 		task.getInputs()

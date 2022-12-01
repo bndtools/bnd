@@ -226,7 +226,6 @@ public abstract class AbstractBndrun extends DefaultTask {
 	/**
 	 * Create a Bndrun task.
 	 */
-	@SuppressWarnings("deprecation")
 	public AbstractBndrun() {
 		super();
 		org.gradle.api.Project project = getProject();
@@ -272,9 +271,6 @@ public abstract class AbstractBndrun extends DefaultTask {
 		} else {
 			bundles(mainSourceSet.getRuntimeClasspath());
 			bundles(artifacts);
-			// We add this in case someone actually looks for this convention
-			getConvention().getPlugins()
-				.put("bundles", new FileSetRepositoryConvention(this));
 			properties.convention(Maps.of("project", "__convention__"));
 		}
 	}

@@ -34,14 +34,11 @@ public class Bundle extends Jar {
 	 * <p>
 	 * Also adds the BundleTaskExtension to this task.
 	 */
-	@SuppressWarnings("deprecation")
 	public Bundle() {
 		super();
 		setGroup(LifecycleBasePlugin.BUILD_GROUP);
 		BundleTaskExtension extension = getExtensions().create(BundleTaskExtension.NAME, BundleTaskExtension.class,
 			this);
-		getConvention().getPlugins()
-			.put(BundleTaskExtension.NAME, new BundleTaskConvention(extension));
 		doLast("buildBundle", extension.buildAction());
 	}
 }
