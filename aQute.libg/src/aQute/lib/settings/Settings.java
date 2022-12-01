@@ -154,7 +154,7 @@ public class Settings implements Map<String, String> {
 		check();
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-		keyGen.initialize(1024, random);
+		keyGen.initialize(2048, random);
 		KeyPair pair = keyGen.generateKeyPair();
 		privateKey = pair.getPrivate();
 		publicKey = pair.getPublic();
