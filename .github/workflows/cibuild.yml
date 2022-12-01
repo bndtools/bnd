@@ -40,8 +40,6 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '8'
-        - '11'
         - '19'
         runner:
         - 'xvfb-run --auto-servernum {0}'
