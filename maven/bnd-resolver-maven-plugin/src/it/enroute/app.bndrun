@@ -4,7 +4,6 @@ index: target/index.xml;name="app"
 
 -runrequires: osgi.identity;filter:='(osgi.identity=org.osgi.enroute.examples.quickstart.rest)'
 -runfw: org.eclipse.osgi
--runee: JavaSE-1.8
 
 -resolve.effective: active
 

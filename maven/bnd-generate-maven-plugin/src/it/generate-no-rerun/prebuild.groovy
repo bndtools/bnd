@@ -1,15 +1,3 @@
-import aQute.bnd.build.Workspace
-import aQute.bnd.build.model.BndEditModel
-import aQute.bnd.osgi.Processor
-import aQute.bnd.properties.Document
-import aQute.bnd.version.MavenVersion
-import aQute.lib.io.IO
-
-import java.util.jar.Attributes
-import java.util.jar.JarFile;
-
-def baseVersion = new MavenVersion(bndVersion).toReleaseVersion()
-
 // Check the ecore file exist!
 File ecore = new File(basedir,"src/main/resources/model/test.ecore")
 assert ecore.isFile()

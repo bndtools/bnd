@@ -1,6 +1,5 @@
 -standalone: target/index.xml
 
--runfw: 		org.apache.felix.framework;version='[5.6.10,5.6.10]'
--runee: 		JavaSE-1.8
+-runfw: 		org.apache.felix.framework
 
 -runrequires: osgi.identity;filter:='(osgi.identity=test-with-resolve)'
