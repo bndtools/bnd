@@ -1,6 +1,5 @@
 package aQute.bnd.gradle;
 
-import static aQute.bnd.gradle.BndUtils.isGradleCompatible;
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
@@ -59,6 +58,7 @@ import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePluginExtension;
+import org.gradle.api.plugins.Convention;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.HelpTasksPlugin;
 import org.gradle.api.plugins.JavaBasePlugin;
@@ -90,7 +90,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * If the bndWorkspace property is set, it will be used for the bnd Workspace.
  * <p>
- * If the bnd_defaultTask property is set, it will be used for the the default
+ * If the bnd_defaultTask property is set, it will be used for the default
  * task.
  */
 public class BndPlugin implements Plugin<Project> {
@@ -112,7 +112,6 @@ public class BndPlugin implements Plugin<Project> {
 	/**
 	 * Apply the {@code biz.aQute.bnd} plugin to the specified project.
 	 */
-	@SuppressWarnings("deprecation")
 	@Override
 	public void apply(Project project) {
 		try {
@@ -144,32 +143,20 @@ public class BndPlugin implements Plugin<Project> {
 			}
 			BndPluginExtension extension = project.getExtensions()
 				.create(BndPluginExtension.NAME, BndPluginExtension.class, bndProject);
-			project.getConvention()
-				.getPlugins()
-				.put(BndPluginExtension.NAME, new BndPluginConvention(extension));
 
 			layout.getBuildDirectory()
 				.fileValue(bndProject.getTargetDir());
 			project.getPluginManager()
 				.apply("java");
-			if (isGradleCompatible("7.1")) {
-				project.getExtensions()
-					.getByType(BasePluginExtension.class)
-					.getLibsDirectory()
-					.value(layout.getBuildDirectory());
-				project.getExtensions()
-					.getByType(JavaPluginExtension.class)
-					.getTestResultsDir()
-					.value(layout.getBuildDirectory()
-						.dir(bndProject.getProperty("test-reports", "test-reports")));
-			} else {
-				project.getConvention()
-					.getPlugin(org.gradle.api.plugins.BasePluginConvention.class)
-					.setLibsDirName(".");
-				project.getConvention()
-					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class)
-					.setTestResultsDirName(bndProject.getProperty("test-reports", "test-reports"));
-			}
+			project.getExtensions()
+				.getByType(BasePluginExtension.class)
+				.getLibsDirectory()
+				.value(layout.getBuildDirectory());
+			project.getExtensions()
+				.getByType(JavaPluginExtension.class)
+				.getTestResultsDir()
+				.value(layout.getBuildDirectory()
+					.dir(bndProject.getProperty("test-reports", "test-reports")));
 			String bnd_defaultTask = (String) project.findProperty("bnd_defaultTask");
 			if (Objects.nonNull(bnd_defaultTask)) {
 				project.setDefaultTasks(Strings.split(bnd_defaultTask));
@@ -218,10 +205,8 @@ public class BndPlugin implements Plugin<Project> {
 					TaskInputFilePropertyBuilder bndConfigurationInput = t.getInputs()
 						.files(bndConfiguration())
 						.withPathSensitivity(RELATIVE)
-						.withPropertyName("bndConfiguration");
-					if (isGradleCompatible("7.2")) {
-						bndConfigurationInput.normalizeLineEndings();
-					}
+						.withPropertyName("bndConfiguration")
+						.normalizeLineEndings();
 
 					t.getOutputs()
 						.dirs(bndProject.getGenerate()
@@ -315,8 +300,9 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, (SourceDirectorySet) sourceDirectorySet);
 							}
 						});
-					new DslObject(sourceSet).getConvention()
-						.getPlugins()
+					@SuppressWarnings("deprecation")
+					Convention sourceSetConvention = new DslObject(sourceSet).getConvention();
+					sourceSetConvention.getPlugins()
 						.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
 								Object sourceDirectorySet = getter(plugin, name);
@@ -361,8 +347,9 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, (SourceDirectorySet) sourceDirectorySet);
 							}
 						});
-					new DslObject(sourceSet).getConvention()
-						.getPlugins()
+					@SuppressWarnings("deprecation")
+					Convention sourceSetConvention = new DslObject(sourceSet).getConvention();
+					sourceSetConvention.getPlugins()
 						.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
 								Object sourceDirectorySet = getter(plugin, name);
@@ -421,17 +408,10 @@ public class BndPlugin implements Plugin<Project> {
 			boolean javacDebug = bndProject.is("javac.debug");
 			boolean javacDeprecation = isTrue(bndProject.getProperty("javac.deprecation", "true"));
 			String javacEncoding = bndProject.getProperty("javac.encoding", "UTF-8");
-			if (isGradleCompatible("7.1")) {
-				JavaPluginExtension javaPlugin = project.getExtensions()
-					.getByType(JavaPluginExtension.class);
-				javacSource.ifPresent(javaPlugin::setSourceCompatibility);
-				javacTarget.ifPresent(javaPlugin::setTargetCompatibility);
-			} else {
-				org.gradle.api.plugins.JavaPluginConvention javaPlugin = project.getConvention()
-					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class);
-				javacSource.ifPresent(javaPlugin::setSourceCompatibility);
-				javacTarget.ifPresent(javaPlugin::setTargetCompatibility);
-			}
+			JavaPluginExtension javaPlugin = project.getExtensions()
+				.getByType(JavaPluginExtension.class);
+			javacSource.ifPresent(javaPlugin::setSourceCompatibility);
+			javacTarget.ifPresent(javaPlugin::setTargetCompatibility);
 			tasks.withType(JavaCompile.class)
 				.configureEach(t -> {
 					CompileOptions options = t.getOptions();
@@ -572,10 +552,8 @@ public class BndPlugin implements Plugin<Project> {
 					TaskInputFilePropertyBuilder bndConfigurationInput = t.getInputs()
 						.files(bndConfiguration())
 						.withPathSensitivity(RELATIVE)
-						.withPropertyName("bndConfiguration");
-					if (isGradleCompatible("7.2")) {
-						bndConfigurationInput.normalizeLineEndings();
-					}
+						.withPropertyName("bndConfiguration")
+						.normalizeLineEndings();
 					t.getOutputs()
 						.files(deliverables)
 						.withPropertyName("artifacts");

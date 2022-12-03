@@ -44,13 +44,7 @@ class TestHelper {
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
 			return "7.5"
 		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
-			return "7.3.2"
-		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
-			return "7.0"
-		}
-		return "6.7"
+		return "7.3.2"
 	}
 
 	public static String formatTime(ZipEntry entry) {

@@ -16,13 +16,10 @@
 		<project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
-		<java.release>8</java.release>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<osgi.annotation.version>8.1.0</osgi.annotation.version>
-		<jpmsOptions></jpmsOptions>
+		<maven.compiler.release>17</maven.compiler.release>
+		<jpmsOptions>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.jar=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.util.zip=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jpmsOptions>
 		<mavenOpts>${jpmsOptions}</mavenOpts>
+		<osgi.annotation.version>8.1.0</osgi.annotation.version>
 		<groovy.version>3.0.13</groovy.version>
 		<!-- The following versions must match those in cnf/ext/maven-plugin.bnd -->
 		<maven.target.version>3.3.9</maven.target.version>
@@ -346,8 +343,6 @@
 						<properties>
 							<project.build.sourceEncoding>${project.build.sourceEncoding}</project.build.sourceEncoding>
 							<project.reporting.outputEncoding>${project.reporting.outputEncoding}</project.reporting.outputEncoding>
-							<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
-							<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
 							<maven.compiler.release>${maven.compiler.release}</maven.compiler.release>
 							<bnd.version>${project.version}</bnd.version>
 							<projectsDirectory>${basedir}/src/it</projectsDirectory>
@@ -512,16 +507,6 @@
 	</build>
 
 	<profiles>
-		<profile>
-			<id>java-release</id>
-			<activation>
-				<jdk>[9,)</jdk>
-			</activation>
-			<properties>
-				<maven.compiler.release>${java.release}</maven.compiler.release>
-				<jpmsOptions>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.jar=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.util.zip=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jpmsOptions>
-			</properties>
-		</profile>
 		<profile>
 			<id>maven-opts</id>
 			<activation>

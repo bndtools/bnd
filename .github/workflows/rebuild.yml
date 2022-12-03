@@ -79,8 +79,8 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '8'
-        - '18'
+        - '17'
+        - '19'
         runner:
         - 'xvfb-run --auto-servernum {0}'
     name: Rebuild JDK${{ matrix.java }} ${{ matrix.os }}

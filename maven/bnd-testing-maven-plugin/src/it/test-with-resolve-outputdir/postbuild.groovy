@@ -23,7 +23,7 @@ bem.loadFrom(doc)
 // Get the -runbundles.
 def bemRunBundles = bem.getRunBundles()
 assert bemRunBundles
-assert bemRunBundles.size() == 3
+assert bemRunBundles.size() >= 3
 
 File testsuite_xml = new File(basedir, "target/test-reports/test/TEST-test-with-resolve-outputdir-0.0.1.xml")
 assert testsuite_xml.isFile();
