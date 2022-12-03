@@ -28,7 +28,8 @@ public class Util {
 
 	public static <T extends Y, Y> T copy(Class<T> class1, Y src) {
 		try {
-			T newInstance = class1.newInstance();
+			T newInstance = class1.getConstructor()
+				.newInstance();
 
 			for (Field f : src.getClass()
 				.getFields()) {
@@ -40,7 +41,8 @@ public class Util {
 				}
 			}
 			return newInstance;
-		} catch (InstantiationException | IllegalAccessException e1) {
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException
+			| NoSuchMethodException e1) {
 			throw new RuntimeException(e1);
 		}
 	}

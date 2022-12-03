@@ -90,7 +90,8 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			}, WorkspaceExternalPluginHandler.class.getClassLoader())) {
 				@SuppressWarnings("unchecked")
 				Class<?> impl = cl.loadClass(className);
-				T instance = c.cast(impl.newInstance());
+				T instance = c.cast(impl.getConstructor()
+					.newInstance());
 				try {
 					return f.apply(instance);
 				} catch (Exception e) {
@@ -309,7 +310,8 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			Class<?> loadedClass = loader.unwrap()
 				.loadClass(implementation);
 
-			Object plugin = loadedClass.newInstance();
+			Object plugin = loadedClass.getConstructor()
+				.newInstance();
 			return Result.ok(plugin);
 		} catch (Exception e) {
 			Workspace.logger.info("failed to load class %s for external plugin load for %s", implementation, cap, e);

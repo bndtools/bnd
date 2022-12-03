@@ -48,7 +48,7 @@ public class HttpTestServerTest {
 	public void testCorrectCommonName() throws Exception {
 		try (HttpTestServer http = getHttps()) {
 			X509Certificate cert = http.getCertificateChain()[0];
-			String name = cert.getSubjectDN()
+			String name = cert.getSubjectX500Principal()
 				.getName();
 			Matcher m = DN_P.matcher(name);
 			assertTrue(m.find());
