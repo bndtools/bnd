@@ -7,10 +7,10 @@ Test-Cases: test.simple.Test
 -includeresource: ${.}/test.txt
 
 -runfw: org.eclipse.osgi;version='[3.13.0,3.13.1)'
--runee: JavaSE-1.8
+-runee: JavaSE-17
 
 -runbundles: osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)'
 
--runproperties: 
+-runproperties:
 
 -runtrace: true
