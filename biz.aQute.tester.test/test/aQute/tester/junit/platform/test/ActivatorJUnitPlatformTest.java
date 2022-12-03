@@ -357,6 +357,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 			// @formatter:on
 		}
 
+		@SuppressWarnings("removal")
 		@BeforeEach
 		public void setUp(TestInfo info) throws Exception {
 			this.info = info;
@@ -375,6 +376,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 			System.setSecurityManager(new ExitCheck());
 		}
 
+		@SuppressWarnings("removal")
 		@AfterEach
 		public void tearDown() {
 			System.setSecurityManager(oldManager);

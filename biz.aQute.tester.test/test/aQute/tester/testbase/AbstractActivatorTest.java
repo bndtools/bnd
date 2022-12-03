@@ -62,6 +62,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	protected Launchpad			lp;
+	@SuppressWarnings("removal")
 	protected SecurityManager	oldManager;
 	private final Path			resultsDir	= Paths.get("generated", "test-reports", "test")
 		.toAbsolutePath();
@@ -366,6 +367,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 
 	// To catch calls to System.exit() calls within bnd.aQute.junit that
 	// otherwise cause the entire test harness to exit.
+	@SuppressWarnings("removal")
 	public class ExitCheck extends SecurityManager {
 		@Override
 		public void checkPermission(Permission perm) {}
@@ -373,6 +375,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		@Override
 		public void checkPermission(Permission perm, Object context) {}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public void checkExit(int status) {
 			// Because the activator might have been loaded in a different
