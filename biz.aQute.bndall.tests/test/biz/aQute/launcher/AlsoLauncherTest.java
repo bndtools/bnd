@@ -338,7 +338,7 @@ public class AlsoLauncherTest {
 			assertThat(jar.getResources()
 				.keySet()).contains(//
 					"jar/biz.aQute.launcher.jar", // -runpath
-					"jar/org.apache.felix.framework-5.6.10.jar", // -runpath
+					"jar/org.apache.felix.framework-6.0.5.jar", // -runpath
 					"jar/org.apiguardian.api", //
 					"jar/demo", //
 					"jar/junit-jupiter-api", //
