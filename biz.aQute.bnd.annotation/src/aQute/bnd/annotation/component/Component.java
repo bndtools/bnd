@@ -37,6 +37,7 @@ public @interface Component {
 	/**
 	 * @deprecated
 	 */
+	@Deprecated
 	ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.optional;
 
 	String[] properties() default {};
