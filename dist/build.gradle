@@ -1,3 +1,5 @@
+import org.gradle.api.publish.plugins.PublishingPlugin
+
 /*
  * dist Gradle build script
  */
@@ -29,13 +31,13 @@ configure(parent) {
 	var build = tasks.register("build") {
 		dependsOn(jarDependencies, checkDependencies)
 		description = "Assembles and tests the ${buildProject.name} project."
-		group = "build"
+		group = LifecycleBasePlugin.BUILD_GROUP
 	}
 
 	var publish = tasks.register("publish") {
 		dependsOn(releaseDependencies)
 		description = "Publishes the ${buildProject.name} project."
-		group = "release"
+		group = PublishingPlugin.PUBLISH_TASK_GROUP
 	}
 
 	defaultTasks += absoluteProjectPath(build.name)
