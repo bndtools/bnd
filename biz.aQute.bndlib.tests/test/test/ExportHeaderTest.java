@@ -51,6 +51,7 @@ public class ExportHeaderTest {
 		});
 		Properties p = new Properties();
 		p.setProperty("Private-Package", "test.packageinfo.ref");
+		p.setProperty("-noimportjava", "true");
 		builder.setProperties(p);
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();

@@ -163,7 +163,8 @@ public class DTOsImpl implements DTOs {
 				return dest;
 			}
 
-			T dest = c.newInstance();
+			T dest = c.getConstructor()
+				.newInstance();
 
 			if (source instanceof Map) {
 				((Map) dest).putAll((Map) source);
@@ -216,7 +217,8 @@ public class DTOsImpl implements DTOs {
 				return dest;
 			}
 
-			T dest = c.newInstance();
+			T dest = c.getConstructor()
+				.newInstance();
 
 			if (source instanceof Map) {
 				Map<Object, Object> d = (Map<Object, Object>) dest;

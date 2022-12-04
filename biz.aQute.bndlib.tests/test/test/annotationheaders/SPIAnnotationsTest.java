@@ -613,7 +613,7 @@ public class SPIAnnotationsTest {
 		Filter filter = new Filter(p.get(Constants.FILTER_DIRECTIVE));
 		Map<String, Object> map = new HashMap<>();
 		map.put("osgi.ee", "JavaSE");
-		map.put("version", new Version(1, 8, 0));
+		map.put("version", new Version(17, 0, 0));
 		assertTrue(filter.matchMap(map));
 	}
 

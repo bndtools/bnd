@@ -1,5 +1,5 @@
 -runfw: org.eclipse.osgi
--runee: JavaSE-1.8
+-runee: JavaSE-17
 
 -runbundles: biz.aQute.junit,testosgitask4
 

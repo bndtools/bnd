@@ -522,6 +522,8 @@ public class BuilderTest {
 		importer.setPrivatePackage("test._708.a.b.c");
 		importer.addClasspath(temp.getJar());
 		importer.addClasspath(exporter.getJar());
+		importer.setProperty("-noimportjava", "true");
+
 		importer.build();
 		assertTrue(importer.check());
 
@@ -584,6 +586,7 @@ public class BuilderTest {
 
 			// the require bundle will then remove the osgi ref
 			b.setProperty("Require-Bundle", "osgi.core");
+			b.setProperty("-noimportjava", "true");
 			b.build();
 			assertTrue(b.check("Imports that lack version ranges: \\[javax.swing\\]"));
 			assertThat(b.getImports()

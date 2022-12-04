@@ -1,2 +1,2 @@
-javac.source=1.8
-javac.target=1.8
+javac.source=17
+javac.target=17

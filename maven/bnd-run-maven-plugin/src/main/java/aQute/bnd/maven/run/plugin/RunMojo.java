@@ -3,7 +3,6 @@ package aQute.bnd.maven.run.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -11,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.LiveCoding;
-import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.Operation;

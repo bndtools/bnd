@@ -18,6 +18,7 @@ public class FragmentTest {
 		b.addClasspath(IO.getFile("bin_test"));
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setExportPackage("test.fragments.imports");
+		b.setProperty("-noimportjava", "true");
 		return b;
 	}
 

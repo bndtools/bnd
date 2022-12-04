@@ -305,7 +305,8 @@ public class BundleBuilderTest {
 			assertThat(br.getBundle()).as("bundle")
 				.isSameAs(b);
 			@SuppressWarnings("unchecked")
-			Supplier<Bundle> s = (Supplier<Bundle>) inside.newInstance();
+			Supplier<Bundle> s = (Supplier<Bundle>) inside.getConstructor()
+				.newInstance();
 			Bundle suppliedBundle = s.get();
 			assertThat(suppliedBundle).as("suppliedBundle")
 				.isSameAs(b);

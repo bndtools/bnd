@@ -22,7 +22,6 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -853,9 +852,12 @@ abstract class FilterImpl implements Filter {
 			return null;
 		}
 
+		@SuppressWarnings({
+			"deprecation", "removal"
+		})
 		private static void setAccessible(AccessibleObject accessible) {
 			if (!accessible.isAccessible()) {
-				AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+				java.security.AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
 					accessible.setAccessible(true);
 					return null;
 				});

@@ -2299,7 +2299,9 @@ public class Macro {
 				Class<? extends Throwable> c = args.length > 2 ? (Class<Throwable>) Class.forName(args[2])
 					: RuntimeException.class;
 				Throwable e = args.length > 3 ? c.getConstructor(String.class)
-					.newInstance(args[3]) : c.newInstance();
+					.newInstance(args[3])
+					: c.getConstructor()
+						.newInstance();
 				throw e;
 			}
 		}

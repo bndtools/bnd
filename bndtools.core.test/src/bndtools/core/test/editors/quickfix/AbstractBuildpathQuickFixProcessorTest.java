@@ -233,7 +233,8 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 
 	@BeforeEach
 	void before() throws Exception {
-		sut = sutClass.newInstance();
+		sut = sutClass.getConstructor()
+			.newInstance();
 	}
 
 	private static final String			CLASS_HEADER	= "package test; import java.util.List;\n" + "" + "class "

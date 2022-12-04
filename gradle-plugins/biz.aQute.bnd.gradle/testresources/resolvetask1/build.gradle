@@ -17,7 +17,7 @@ configurations {
 }
 
 dependencies {
-	bundles 'org.apache.felix:org.apache.felix.framework:5.4.0'
+	bundles 'org.apache.felix:org.apache.felix.framework:6.0.5'
 	bundles 'org.apache.felix:org.apache.felix.eventadmin:1.4.6'
 }
 

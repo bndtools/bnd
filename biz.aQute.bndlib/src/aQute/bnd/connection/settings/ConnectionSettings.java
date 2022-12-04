@@ -635,11 +635,11 @@ public class ConnectionSettings {
 							List<X509Certificate> certificates = new ArrayList<>();
 							HttpsVerification.getCertificates(path, certificates);
 							for (X509Certificate certificate : certificates) {
-								f.format("        Subject     %s%n", certificate.getSubjectDN());
+								f.format("        Subject     %s%n", certificate.getSubjectX500Principal());
 								byte[] bytes = certificate.getSerialNumber()
 									.toByteArray();
 								f.format("        Serial Nr   %s%n", Hex.separated(bytes, ":"));
-								f.format("        Issuer      %s%n", certificate.getIssuerDN());
+								f.format("        Issuer      %s%n", certificate.getIssuerX500Principal());
 								f.format("        Type        %s%n", certificate.getType());
 								try {
 									certificate.checkValidity();

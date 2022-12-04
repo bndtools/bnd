@@ -95,7 +95,7 @@ var p2FeaturePde = tasks.register("p2FeaturePde", Zip.class) {
 
 var p2 = tasks.register("p2") {
 	description = "Publish the p2 repositories."
-	group = "release"
+	group = PublishingPlugin.PUBLISH_TASK_GROUP
 	var javaLauncher = javaToolchains.launcherFor {
 		languageVersion = JavaLanguageVersion.of(8)
 	}

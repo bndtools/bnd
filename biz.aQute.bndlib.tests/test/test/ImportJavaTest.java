@@ -92,7 +92,8 @@ public class ImportJavaTest {
 	@Test
 	public void import_java_old_framework() throws Exception {
 		builder.setProperty("Import-Package", "org.osgi.framework;version=\"[1.8,2)\",*");
-		builder.setProperty("-includepackage", "test.importjava");
+		builder.setProperty("-classpath", "compilerversions/compilerversions.jar");
+		builder.setProperty("-includepackage", "sun_1_8");
 		builder.setProperty("-noimportjava", "false");
 		Jar jar = builder.build();
 		assertTrue(builder.check());
@@ -100,7 +101,7 @@ public class ImportJavaTest {
 		manifest.write(System.err);
 		Domain d = Domain.domain(manifest);
 		Parameters imports = d.getImportPackage();
-		assertThat(imports).containsOnlyKeys("org.osgi.framework");
+		assertThat(imports).containsOnlyKeys("org.osgi.framework", "javax.swing");
 	}
 
 	@Test

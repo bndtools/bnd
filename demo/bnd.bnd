@@ -11,7 +11,7 @@ Bundle-SymbolicName: demo
     biz.aQute.tester;version=snapshot
 
 -runpath: \
-	org.apache.felix.framework;version='[5.6.8,6)', \
+	org.apache.felix.framework;version='[6.0.5,7)', \
 	biz.aQute.launcher; version=snapshot
 
 -runbundles: org.apache.felix.scr;version='[2.1.12,2.1.13)';startlevel=10,\
@@ -33,7 +33,7 @@ Import-Package: \
 -runvm: 
 #"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044"
 
--runee: JavaSE-1.6
+-runee: JavaSE-17
 
 base.version:   1.1.0
 

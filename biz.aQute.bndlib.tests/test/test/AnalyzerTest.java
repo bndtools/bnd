@@ -796,13 +796,13 @@ public class AnalyzerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testPrivataBundleActivatorNotImported() throws Exception {
-		Builder a = new Builder();
-		try {
+	public void testPrivateBundleActivatorNotImported() throws Exception {
+		try (Builder a = new Builder()) {
 			Properties p = new Properties();
 			p.put("Import-Package", "!org.osgi.service.component, *");
 			p.put("Private-Package", "test.activator");
 			p.put("Bundle-Activator", "test.activator.Activator");
+			p.put("-noimportjava", "true");
 			a.addClasspath(new File("bin_test"));
 			a.setProperties(p);
 			a.build();
@@ -815,8 +815,6 @@ public class AnalyzerTest {
 				.getValue("Import-Package");
 			System.err.println(imports);
 			assertEquals("org.osgi.framework", imports);
-		} finally {
-			a.close();
 		}
 	}
 

@@ -17,6 +17,7 @@ public class ReferencedAnnotationTest {
 			builder.addClasspath(new File("bin_test"));
 
 			builder.setIncludePackage("test.referenced.annotation.testReferenced");
+			builder.setProperty("-noimportjava", "true");
 			builder.build();
 			builder.check();
 			Packages imports = builder.getImports();

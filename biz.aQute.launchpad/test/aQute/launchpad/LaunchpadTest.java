@@ -47,7 +47,7 @@ import aQute.libg.parameters.ParameterMap;
 
 @ExtendWith(SoftAssertionsExtension.class)
 public class LaunchpadTest {
-	static final String					org_apache_felix_framework	= "org.apache.felix.framework;version='[5.6.10,5.6.11)'";
+	static final String		org_apache_felix_framework	= "org.apache.felix.framework;version='[6.0.5,7)'";
 	static final String					org_apache_felix_scr		= "org.apache.felix.scr;version='[2.1.12,2.1.13)'";
 	static final String					org_apache_felix_log		= "org.apache.felix.log;version='[1.2.0,1.2.1)'";
 	@InjectSoftAssertions

@@ -82,6 +82,7 @@ public @interface RequireCapability {
 	 *
 	 * @deprecated
 	 */
+	@Deprecated
 	aQute.bnd.annotation.headers.Resolution resolution() default aQute.bnd.annotation.headers.Resolution.mandatory;
 
 }

@@ -184,6 +184,7 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		runTests(2, JUnit4ContainerFailure.class, JUnit4ContainerError.class);
 	}
 
+	@SuppressWarnings("removal")
 	@BeforeEach
 	public void setUp(TestInfo info) throws Exception {
 		this.info = info;
@@ -206,6 +207,7 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		System.setSecurityManager(new ExitCheck());
 	}
 
+	@SuppressWarnings("removal")
 	@AfterEach
 	public void tearDown() {
 		System.setSecurityManager(oldManager);

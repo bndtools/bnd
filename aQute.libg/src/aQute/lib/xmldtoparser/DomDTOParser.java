@@ -63,7 +63,8 @@ public class DomDTOParser {
 	}
 
 	private static <T> T parse(Class<T> type, Node node) throws Exception {
-		T instance = type.newInstance();
+		T instance = type.getConstructor()
+			.newInstance();
 
 		NamedNodeMap attributes = node.getAttributes();
 		if (attributes != null) {

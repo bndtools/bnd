@@ -56,6 +56,7 @@ public class GogoShellTests extends AbstractActivatorTest {
 		super("aQute.tester.junit.platform.Activator", "biz.aQute.tester.junit-platform");
 	}
 
+	@SuppressWarnings("removal")
 	@BeforeAll
 	void beforeAll(TestInfo info) throws Exception {
 
@@ -145,6 +146,7 @@ public class GogoShellTests extends AbstractActivatorTest {
 		assertAll();
 	}
 
+	@SuppressWarnings("removal")
 	@AfterAll
 	void afterAll() {
 		IO.close(sock);
