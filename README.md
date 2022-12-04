@@ -26,7 +26,7 @@ Bndtools is the development environment of Bnd.
 ## Building
 
 We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
-We require at least Java 8.
+We require at least Java 17.
 
 - `./gradlew :build` - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
 - `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
