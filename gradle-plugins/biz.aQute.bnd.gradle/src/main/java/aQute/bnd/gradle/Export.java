@@ -21,13 +21,11 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.model.ObjectFactory;
-import org.gradle.api.model.ReplacedBy;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 
 /**
@@ -79,38 +77,8 @@ import org.gradle.api.tasks.OutputDirectory;
  */
 @CacheableTask
 public class Export extends AbstractBndrun {
-	private boolean					bundlesOnly	= false;
 	private final DirectoryProperty	destinationDirectory;
 	private final Property<String>	exporter;
-
-	/**
-	 * @return bundlesOnly
-	 * @deprecated Replaced by exporter.
-	 */
-	@ReplacedBy("exporter")
-	@Deprecated
-	public boolean isBundlesOnly() {
-		return bundlesOnly;
-	}
-
-	/**
-	 * @return bundlesOnly
-	 * @deprecated Replaced by exporter.
-	 */
-	@Internal
-	@Deprecated
-	public boolean getBundlesOnly() {
-		return isBundlesOnly();
-	}
-
-	/**
-	 * @param bundlesOnly Replaced by exporter.
-	 * @deprecated Replaced by exporter.
-	 */
-	@Deprecated
-	public void setBundlesOnly(boolean bundlesOnly) {
-		this.bundlesOnly = bundlesOnly;
-	}
 
 	/**
 	 * The destination directory for the export.
@@ -133,8 +101,7 @@ public class Export extends AbstractBndrun {
 	 * <p>
 	 * Bnd has two built-in exporter plugins. "bnd.executablejar" exports an
 	 * executable jar and "bnd.runbundles" exports the -runbundles files. The
-	 * default is "bnd.executablejar" unless bundlesOnly is false when the
-	 * default is "bnd.runbundles".
+	 * default is "bnd.executablejar".
 	 *
 	 * @return The name of the exporter for this task.
 	 */
@@ -152,7 +119,7 @@ public class Export extends AbstractBndrun {
 		org.gradle.api.Project project = getProject();
 		ObjectFactory objects = project.getObjects();
 		exporter = objects.property(String.class)
-			.convention(project.provider(() -> getBundlesOnly() ? RUNBUNDLES : EXECUTABLE_JAR));
+			.convention(EXECUTABLE_JAR);
 		Provider<Directory> distsDirectory = distDirectory(project);
 		destinationDirectory = objects.directoryProperty()
 			.convention(distsDirectory.flatMap(distsDir -> {
