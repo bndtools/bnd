@@ -3129,7 +3129,7 @@ public class Project extends Processor {
 	protected void report(Map<String, Object> table, boolean isProject) throws Exception {
 		if (isProject) {
 			table.put("Target", getTarget());
-			table.put("Source", getSrc());
+			table.put("Source", getSourcePath());
 			table.put("Output", getOutput());
 			File[] buildFiles = getBuildFiles();
 			if (buildFiles != null)
@@ -3186,7 +3186,8 @@ public class Project extends Processor {
 		javac.add("-sourcepath", sourcepath.toString());
 
 		Glob javaFiles = new Glob("*.java");
-		List<File> files = javaFiles.getFiles(getSrc(), true, false);
+		List<File> files = new ArrayList<>();
+		getSourcePath().forEach(src -> javaFiles.getFiles(src, files, true, false));
 
 		for (File file : files) {
 			javac.add(IO.absolutePath(file));

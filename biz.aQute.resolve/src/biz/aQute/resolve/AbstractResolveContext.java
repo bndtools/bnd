@@ -7,7 +7,6 @@ import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.osgi.framework.namespace.HostNamespace.HOST_NAMESPACE;
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
-import static org.osgi.namespace.contract.ContractNamespace.CONTRACT_NAMESPACE;
 import static org.osgi.service.repository.ContentNamespace.CONTENT_NAMESPACE;
 
 import java.io.File;
@@ -83,8 +82,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * The 'OSGiFramework' contract was something invented by the old indexer
 	 * which is no longer in use.
 	 */
-	@Deprecated
-	protected static final String					CONTRACT_OSGI_FRAMEWORK					= "OSGiFramework";
 	protected static final String					IDENTITY_INITIAL_RESOURCE				= Constants.IDENTITY_INITIAL_RESOURCE;
 	protected static final String					IDENTITY_SYSTEM_RESOURCE				= Constants.IDENTITY_SYSTEM_RESOURCE;
 
@@ -354,22 +351,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			return false;
 
 		return true;
-	}
-
-	/**
-	 * This method is BROKEN. The 'OSGiFramework' contract was something
-	 * invented by the old indexer which is no longer in use.
-	 */
-	@Deprecated
-	protected static Capability findFrameworkContractCapability(Resource resource) {
-		List<Capability> contractCaps = resource.getCapabilities(CONTRACT_NAMESPACE);
-		if (contractCaps != null)
-			for (Capability cap : contractCaps) {
-				if (CONTRACT_OSGI_FRAMEWORK.equals(cap.getAttributes()
-					.get(CONTRACT_NAMESPACE)))
-					return cap;
-			}
-		return null;
 	}
 
 	private static CacheKey getCacheKey(Requirement requirement) {

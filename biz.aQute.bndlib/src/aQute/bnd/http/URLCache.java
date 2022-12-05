@@ -46,11 +46,6 @@ public class URLCache {
 		URI				url;
 		ReentrantLock	lock	= new ReentrantLock();
 
-		@Deprecated
-		public Info(URI url) throws Exception {
-			this(getCacheFileFor(url), url);
-		}
-
 		public Info(File content, URI url) throws Exception {
 			this.file = content;
 			this.url = url;

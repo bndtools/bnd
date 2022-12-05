@@ -1462,9 +1462,6 @@ public class Macro {
 		}
 	}
 
-	@Deprecated
-	public final static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
-
 	static final String			_osfileHelp	= "${osfile;<base>;<path>}, create correct OS dependent path";
 
 	public String _osfile(String[] args) {

@@ -1180,15 +1180,6 @@ public class Jar implements Closeable {
 		zipEntryConstantTime = ZIP_ENTRY_CONSTANT_TIME;
 	}
 
-	/**
-	 * @deprecated Replaced by {@link #setReproducible(String)}.
-	 */
-	@Deprecated
-	public void setReproducible(boolean reproducible) {
-		this.reproducible = reproducible;
-		zipEntryConstantTime = ZIP_ENTRY_CONSTANT_TIME;
-	}
-
 	public void copy(Jar srce, String path, boolean overwrite) {
 		check();
 		addDirectory(srce.getDirectory(path), overwrite);

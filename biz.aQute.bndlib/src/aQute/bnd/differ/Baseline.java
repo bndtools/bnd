@@ -63,9 +63,6 @@ public class Baseline {
 		public Version	suggestedVersion;
 		public boolean	mismatch;
 		public String	reason;
-
-		@Deprecated
-		public Version	version;
 	}
 
 	final Differ		differ;
@@ -283,7 +280,7 @@ public class Baseline {
 
 		binfo.bsn = bsn;
 		binfo.suggestedVersion = suggestedVersion;
-		binfo.version = binfo.olderVersion = olderVersion;
+		binfo.olderVersion = olderVersion;
 		binfo.newerVersion = newerVersion;
 
 		if (newerVersion.getWithoutQualifier()

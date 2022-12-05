@@ -27,7 +27,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
@@ -35,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -77,17 +75,10 @@ import aQute.service.reporter.Reporter;
  */
 public class HttpClient implements Closeable, URLConnector {
 	final static Logger						logger			= LoggerFactory.getLogger(HttpClient.class);
-	@Deprecated
-	public static final SimpleDateFormat	sdf				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z",
-		Locale.ENGLISH);
 
 	static final long						INITIAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(3);
 	static final long						FINAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(5);
 	static final long						MAX_RETRY_DELAY	= TimeUnit.MINUTES.toMillis(10);
-
-	static {
-		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-	}
 
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();

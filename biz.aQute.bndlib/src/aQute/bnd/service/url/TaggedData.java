@@ -32,21 +32,6 @@ public class TaggedData implements Closeable {
 	private final File			file;
 	private final String		message;
 
-	@Deprecated
-	public TaggedData(String tag, InputStream inputStream, int responseCode, long modified, URI url) {
-		throw new RuntimeException();
-	}
-
-	@Deprecated
-	public TaggedData(String tag, InputStream inputStream, int responseCode) {
-		throw new RuntimeException();
-	}
-
-	@Deprecated
-	public TaggedData(String tag, InputStream inputStream) {
-		throw new RuntimeException();
-	}
-
 	public TaggedData(URLConnection con, InputStream in) throws Exception {
 		this(con, in, null);
 	}

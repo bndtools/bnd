@@ -28,15 +28,6 @@ import aQute.service.reporter.Reporter;
  * as local files. Resources that are already local (i.e. <code>file:...</code>
  * URLs) are returned directly.
  * </p>
- * <p>
- * Two alternative caching modes are available. When the mode is
- * {@link CachingMode#PreferCache}, the cached file will always be returned if
- * it exists; therefore to refresh from the remote resource it will be necessary
- * to delete the cache. When the mode is {@link CachingMode#PreferRemote}, the
- * first call to {@link #request()} will always attempt to download the remote
- * resource, and only uses the pre-downloaded cache if the remote could not be
- * downloaded (e.g. because the network is offline).
- * </p>
  *
  * @author njbartlett
  */
@@ -44,22 +35,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 
 	private static final String	SHA_256		= "SHA-256";
-
-	@Deprecated
-	public enum CachingMode {
-		/**
-		 * Always use the cached file, if it exists.
-		 */
-		@Deprecated
-		PreferCache,
-
-		/**
-		 * Download the remote resource if possible, falling back to the cached
-		 * file if remote fails. Subsequently the cached resource will be used.
-		 */
-		@Deprecated
-		PreferRemote;
-	}
 
 	static final String	FILE_SCHEME	= "file";
 	static final String	FILE_PREFIX	= FILE_SCHEME + ":";
@@ -83,15 +58,12 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	final File			cachedFile;
 	final File			shaFile;
 
-	final CachingMode	mode;
-
 	Reporter			reporter;
 
 	public CachingUriResourceHandle(URI uri, final File cacheDir, URLConnector connector, String sha)
 		throws IOException {
 		this.cacheDir = cacheDir;
 		this.connector = connector;
-		this.mode = CachingMode.PreferRemote;
 		this.sha = sha;
 
 		if (!uri.isAbsolute())

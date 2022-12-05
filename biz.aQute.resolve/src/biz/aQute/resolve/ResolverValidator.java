@@ -65,8 +65,6 @@ public class ResolverValidator extends Processor {
 		public List<Requirement>	missing		= new ArrayList<>();
 		public List<Requirement>	optionals	= new ArrayList<>();
 		public List<Requirement>	unresolved	= new ArrayList<>();
-		@Deprecated
-		public boolean				succeeded;
 	}
 
 	public ResolverValidator(Processor parent) throws Exception {
@@ -123,7 +121,6 @@ public class ResolverValidator extends Processor {
 				if (resourceList.remove(resolved)) {
 					Resolution curResolution = new Resolution();
 					curResolution.resource = resolved;
-					curResolution.succeeded = true;
 					curResolution.type = ResolutionType.OK;
 					result.add(curResolution);
 				}
@@ -139,7 +136,6 @@ public class ResolverValidator extends Processor {
 			r.resource = resource;
 			r.message = "Unused resource";
 			r.type = ResolutionType.UNUSED;
-			r.succeeded = false;
 			result.add(r);
 		});
 
@@ -185,7 +181,6 @@ public class ResolverValidator extends Processor {
 		try {
 			Map<Resource, List<Wire>> resolve2 = resolver.resolve(context);
 			resolution.type = ResolutionType.OK;
-			resolution.succeeded = true;
 			resolution.resolved = resolve2.keySet();
 
 			logger.debug("resolving {} succeeded", resource);
@@ -193,7 +188,6 @@ public class ResolverValidator extends Processor {
 			logger.debug("resolving {} failed", resource);
 
 			resolution.type = ResolutionType.FAIL;
-			resolution.succeeded = false;
 			resolution.message = e.getMessage();
 
 			for (Requirement req : e.getUnresolvedRequirements()) {
