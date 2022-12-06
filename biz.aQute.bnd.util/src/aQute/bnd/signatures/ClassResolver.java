@@ -16,8 +16,8 @@ public class ClassResolver {
 		if ((type instanceof BaseType) || (type instanceof ClassTypeSignature)) {
 			return (T) type;
 		}
-		if (type instanceof ArrayTypeSignature) {
-			return (T) resolveType((ArrayTypeSignature) type);
+		if (type instanceof ArrayTypeSignature arrayType) {
+			return (T) resolveType(arrayType);
 		}
 		return (T) resolveType((TypeVariableSignature) type);
 	}
@@ -25,9 +25,9 @@ public class ClassResolver {
 	public ArrayTypeSignature resolveType(ArrayTypeSignature arrayType) {
 		JavaTypeSignature component = arrayType.component;
 		int depth = 1;
-		while (component instanceof ArrayTypeSignature) {
+		while (component instanceof ArrayTypeSignature arrayComponent) {
 			depth++;
-			component = ((ArrayTypeSignature) component).component;
+			component = arrayComponent.component;
 		}
 		if ((component instanceof BaseType) || (component instanceof ClassTypeSignature)) {
 			return arrayType;
@@ -75,10 +75,9 @@ public class ClassResolver {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof ClassResolver)) {
+		if (!(obj instanceof ClassResolver other)) {
 			return false;
 		}
-		ClassResolver other = (ClassResolver) obj;
 		return Objects.equals(classSig, other.classSig);
 	}
 

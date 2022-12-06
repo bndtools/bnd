@@ -144,8 +144,8 @@ public class ResourceUtils {
 			if (o1.equals(o2))
 				return 0;
 
-			if (o1 instanceof ResourceImpl && o2 instanceof ResourceImpl) {
-				return ((ResourceImpl) o1).compareTo(o2);
+			if (o1 instanceof ResourceImpl resourceImpl1 && o2 instanceof ResourceImpl resourceImpl2) {
+				return resourceImpl1.compareTo(resourceImpl2);
 			}
 
 			return o1.toString()
@@ -297,18 +297,17 @@ public class ResourceUtils {
 	}
 
 	public static Version toVersion(Object v) {
-		if (v instanceof Version)
-			return (Version) v;
+		if (v instanceof Version version)
+			return version;
 
-		if (v instanceof org.osgi.framework.Version) {
-			org.osgi.framework.Version o = (org.osgi.framework.Version) v;
+		if (v instanceof org.osgi.framework.Version o) {
 			String q = o.getQualifier();
 			return q.isEmpty() ? new Version(o.getMajor(), o.getMinor(), o.getMicro())
 				: new Version(o.getMajor(), o.getMinor(), o.getMicro(), q);
 		}
 
-		if ((v instanceof String) && Version.isVersion((String) v)) {
-			return Version.valueOf((String) v);
+		if ((v instanceof String string) && Version.isVersion(string)) {
+			return Version.valueOf(string);
 		}
 
 		return null;
@@ -329,26 +328,26 @@ public class ResourceUtils {
 		if (uriObj == null)
 			return null;
 
-		if (uriObj instanceof URI)
-			return (URI) uriObj;
+		if (uriObj instanceof URI uri)
+			return uri;
 
 		try {
-			if (uriObj instanceof URL)
-				return ((URL) uriObj).toURI();
+			if (uriObj instanceof URL url)
+				return url.toURI();
 
-			if (uriObj instanceof String) {
+			if (uriObj instanceof String string) {
 				try {
-					URL url = new URL((String) uriObj);
+					URL url = new URL(string);
 					return url.toURI();
 				} catch (MalformedURLException mfue) {
 					// Ignore
 				}
 
-				File f = new File((String) uriObj);
+				File f = new File(string);
 				if (f.isFile()) {
 					return f.toURI();
 				}
-				return new URI((String) uriObj);
+				return new URI(string);
 			}
 
 		} catch (URISyntaxException e) {
@@ -359,32 +358,19 @@ public class ResourceUtils {
 	}
 
 	public static String getVersionAttributeForNamespace(String namespace) {
-		switch (namespace) {
-			case LibraryNamespace.NAMESPACE :
-			case "bnd.info" :
-				return "version";
-
-			case IdentityNamespace.IDENTITY_NAMESPACE :
-				return IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-			case BundleNamespace.BUNDLE_NAMESPACE :
-			case HostNamespace.HOST_NAMESPACE :
-				return AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
-			case PackageNamespace.PACKAGE_NAMESPACE :
-				return PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-			case ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE :
-				return ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-			case NativeNamespace.NATIVE_NAMESPACE :
-				return NativeNamespace.CAPABILITY_OSVERSION_ATTRIBUTE;
-			case ExtenderNamespace.EXTENDER_NAMESPACE :
-				return ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-			case ContractNamespace.CONTRACT_NAMESPACE :
-				return ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-			case ImplementationNamespace.IMPLEMENTATION_NAMESPACE :
-				return ImplementationNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-			case ServiceNamespace.SERVICE_NAMESPACE :
-			default :
-				return "version";
-		}
+		return switch (namespace) {
+			case LibraryNamespace.NAMESPACE, "bnd.info" -> "version";
+			case IdentityNamespace.IDENTITY_NAMESPACE -> IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case BundleNamespace.BUNDLE_NAMESPACE, HostNamespace.HOST_NAMESPACE -> AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+			case PackageNamespace.PACKAGE_NAMESPACE -> PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE -> ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case NativeNamespace.NATIVE_NAMESPACE -> NativeNamespace.CAPABILITY_OSVERSION_ATTRIBUTE;
+			case ExtenderNamespace.EXTENDER_NAMESPACE -> ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ContractNamespace.CONTRACT_NAMESPACE -> ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ImplementationNamespace.IMPLEMENTATION_NAMESPACE -> ImplementationNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ServiceNamespace.SERVICE_NAMESPACE -> "version";
+			default -> "version";
+		};
 	}
 
 	@SuppressWarnings("unchecked")

@@ -44,12 +44,10 @@ public class Crypto {
 	}
 
 	public static String toString(Object key) {
-		if (key instanceof RSAPrivateKey) {
-			RSAPrivateKey pk = (RSAPrivateKey) key;
+		if (key instanceof RSAPrivateKey pk) {
 			return "RSA.Private(" + pk.getModulus() + ":" + pk.getPrivateExponent() + ")";
 		}
-		if (key instanceof RSAPublicKey) {
-			RSAPublicKey pk = (RSAPublicKey) key;
+		if (key instanceof RSAPublicKey pk) {
 			return "RSA.Private(" + pk.getModulus() + ":" + pk.getPublicExponent() + ")";
 		}
 		return null;

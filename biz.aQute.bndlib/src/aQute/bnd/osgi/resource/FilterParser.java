@@ -233,8 +233,8 @@ public class FilterParser {
 		@Override
 		public boolean eval(Map<String, ?> map) {
 			Object target = map.get(key);
-			if (target instanceof Iterable) {
-				for (Object scalar : (Iterable<?>) target) {
+			if (target instanceof Iterable<?> iterable) {
+				for (Object scalar : iterable) {
 					if (eval(scalar))
 						return true;
 				}
@@ -632,9 +632,7 @@ public class FilterParser {
 			for (Expression e : exprs) {
 				if (e instanceof WithRangeExpression) {
 					wre = (WithRangeExpression) e;
-				} else if (e instanceof SimpleExpression) {
-					SimpleExpression se = (SimpleExpression) e;
-
+				} else if (e instanceof SimpleExpression se) {
 					if (se.key.equals("version") || se.key.equals("bundle-version")) {
 						if (se.op == Op.GREATER || se.op == Op.GREATER_OR_EQUAL)
 							lower = se;
@@ -787,8 +785,8 @@ public class FilterParser {
 
 		@Override
 		protected boolean eval(Object scalar) {
-			if (scalar instanceof String)
-				return pattern.matcher((String) scalar)
+			if (scalar instanceof String stringScalar)
+				return pattern.matcher(stringScalar)
 					.matches();
 			else
 				return false;
@@ -808,8 +806,8 @@ public class FilterParser {
 
 		@Override
 		protected boolean eval(Object scalar) {
-			if (scalar instanceof String) {
-				return ((String) scalar).trim()
+			if (scalar instanceof String stringScalar) {
+				return stringScalar.trim()
 					.equalsIgnoreCase(value);
 			} else
 				return false;

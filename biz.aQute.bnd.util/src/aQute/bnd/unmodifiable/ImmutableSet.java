@@ -123,10 +123,9 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 		if (o == this) {
 			return true;
 		}
-		if (!(o instanceof Set)) {
+		if (!(o instanceof Set<?> other)) {
 			return false;
 		}
-		Set<?> other = (Set<?>) o;
 		if (elements.length != other.size()) {
 			return false;
 		}

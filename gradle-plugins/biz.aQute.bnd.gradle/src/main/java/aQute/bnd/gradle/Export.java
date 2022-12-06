@@ -123,17 +123,14 @@ public class Export extends AbstractBndrun {
 		Provider<Directory> distsDirectory = distDirectory(project);
 		destinationDirectory = objects.directoryProperty()
 			.convention(distsDirectory.flatMap(distsDir -> {
-				return distsDir.dir(getExporter().map(exporterName -> {
-					switch (exporterName) {
-						case EXECUTABLE_JAR :
-							return "executable";
-						case RUNBUNDLES :
-							File bndrunFile = unwrapFile(getBndrun());
-							String[] parts = Strings.extension(bndrunFile.getName());
-							return String.format("runbundles/%s", (parts != null) ? parts[0] : bndrunFile.getName());
-						default :
-							return exporterName;
+				return distsDir.dir(getExporter().map(exporterName -> switch (exporterName) {
+					case EXECUTABLE_JAR -> "executable";
+					case RUNBUNDLES -> {
+						File bndrunFile = unwrapFile(getBndrun());
+						String[] parts = Strings.extension(bndrunFile.getName());
+						yield String.format("runbundles/%s", (parts != null) ? parts[0] : bndrunFile.getName());
 					}
+					default -> exporterName;
 				}));
 			}));
 	}

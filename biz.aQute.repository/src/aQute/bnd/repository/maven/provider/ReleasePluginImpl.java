@@ -44,12 +44,12 @@ class ReleasePluginImpl {
 	}
 
 	private boolean isIndexProject(Processor context) {
-		if (context instanceof Project) {
-			return context == indexProject;
+		if (context instanceof Project project) {
+			return project == indexProject;
 		}
 
-		if (context instanceof ProjectBuilder) {
-			return (((ProjectBuilder) context).getProject()) == indexProject;
+		if (context instanceof ProjectBuilder projectBuilder) {
+			return projectBuilder.getProject() == indexProject;
 		}
 
 		return false;

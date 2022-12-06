@@ -339,8 +339,8 @@ public class ProjectBuilder extends Builder {
 			if (newer.getWithoutQualifier()
 				.equals(older.getWithoutQualifier())) {
 				RepositoryPlugin rr = getBaselineRepo();
-				if (rr instanceof InfoRepository) {
-					ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
+				if (rr instanceof InfoRepository infoRepository) {
+					ResourceDescriptor descriptor = infoRepository.getDescriptor(getBsn(), older);
 					if (descriptor != null && descriptor.phase != Phase.STAGING) {
 						error(
 							"Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
@@ -626,7 +626,7 @@ public class ProjectBuilder extends Builder {
 		List<Version> filtered = new ArrayList<>(versions);
 		Collections.reverse(filtered);
 
-		InfoRepository ir = (repo instanceof InfoRepository) ? (InfoRepository) repo : null;
+		InfoRepository ir = (repo instanceof InfoRepository infoRepository) ? infoRepository : null;
 
 		//
 		// Filter any versions that only differ in qualifier

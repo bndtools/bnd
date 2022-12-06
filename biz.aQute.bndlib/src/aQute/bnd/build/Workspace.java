@@ -706,9 +706,9 @@ public class Workspace extends Processor {
 	private List<RepositoryPlugin> initRepositories() {
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin repo : plugins) {
-			if (repo instanceof Prepare) {
+			if (repo instanceof Prepare prepare) {
 				try {
-					((Prepare) repo).prepare();
+					prepare.prepare();
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -970,8 +970,8 @@ public class Workspace extends Processor {
 		List<String> digests = new ArrayList<>();
 		for (RepositoryPlugin repo : repos) {
 			try {
-				if (repo instanceof RepositoryDigest) {
-					byte[] digest = ((RepositoryDigest) repo).getDigest();
+				if (repo instanceof RepositoryDigest digestRepo) {
+					byte[] digest = digestRepo.getDigest();
 					digests.add(Hex.toHexString(digest));
 				} else {
 					if (args.length != 1)
@@ -1272,9 +1272,9 @@ public class Workspace extends Processor {
 			setup.format("\n\n");
 
 			String out = setup.toString();
-			if (l instanceof LifeCyclePlugin) {
-				out = ((LifeCyclePlugin) l).augmentSetup(out, alias, parameters);
-				((LifeCyclePlugin) l).init(this);
+			if (l instanceof LifeCyclePlugin lifeCyclePlugin) {
+				out = lifeCyclePlugin.augmentSetup(out, alias, parameters);
+				lifeCyclePlugin.init(this);
 			}
 
 			logger.debug("setup {}", out);

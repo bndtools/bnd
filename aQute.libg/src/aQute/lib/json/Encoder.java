@@ -125,8 +125,8 @@ public class Encoder implements Appendable, Closeable, Flushable {
 
 	@Override
 	public void close() throws IOException {
-		if (app != null && app instanceof Closeable) {
-			((Closeable) app).close();
+		if (app != null && app instanceof Closeable closeable) {
+			closeable.close();
 			closed = true;
 		}
 	}
@@ -145,8 +145,8 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		if (closed)
 			return;
 
-		if (app instanceof Flushable) {
-			((Flushable) app).flush();
+		if (app instanceof Flushable flushable) {
+			flushable.flush();
 		}
 	}
 

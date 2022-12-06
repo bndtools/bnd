@@ -23,10 +23,9 @@ public class TypeVariableSignature implements ReferenceTypeSignature, ThrowsSign
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof TypeVariableSignature)) {
+		if (!(obj instanceof TypeVariableSignature other)) {
 			return false;
 		}
-		TypeVariableSignature other = (TypeVariableSignature) obj;
 		return Objects.equals(identifier, other.identifier);
 	}
 

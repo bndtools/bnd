@@ -46,8 +46,8 @@ class ClassDataCollectors implements Closeable {
 	public void close() {
 		for (ClassDataCollector cd : delegates) {
 			try {
-				if (cd instanceof Closeable)
-					((Closeable) cd).close();
+				if (cd instanceof Closeable closeable)
+					closeable.close();
 			} catch (Exception e) {
 				reporter.exception(e, "Failure on call close[%s]", cd);
 			}

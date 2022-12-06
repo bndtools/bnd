@@ -371,31 +371,28 @@ public class StackMapTableAttribute implements Attribute {
 
 		static VerificationTypeInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
 			int tag = in.readUnsignedByte();
-			switch (tag) {
-				case ITEM_Top : // Top_variable_info
-				case ITEM_Integer : // Integer_variable_info
-				case ITEM_Float : // Float_variable_info
-				case ITEM_Double : // Double_variable_info
-				case ITEM_Long : // Long_variable_info
-				case ITEM_Null : // Null_variable_info
-				case ITEM_UninitializedThis : // UninitializedThis_variable_info
-				{
-					return new VerificationTypeInfo(tag);
-				}
-				case ITEM_Object : // Object_variable_info
+			return switch (tag) {
+				case ITEM_Top, // Top_variable_info
+					ITEM_Integer, // Integer_variable_info
+					ITEM_Float, // Float_variable_info
+					ITEM_Double, // Double_variable_info
+					ITEM_Long, // Long_variable_info
+					ITEM_Null, // Null_variable_info
+					ITEM_UninitializedThis -> // UninitializedThis_variable_info
+					new VerificationTypeInfo(tag);
+				case ITEM_Object -> // Object_variable_info
 				{
 					int cpool_index = in.readUnsignedShort();
-					return new ObjectVariableInfo(tag, constant_pool.className(cpool_index));
+					yield new ObjectVariableInfo(tag, constant_pool.className(cpool_index));
 				}
-				case ITEM_Uninitialized : // Uninitialized_variable_info
+				case ITEM_Uninitialized -> // Uninitialized_variable_info
 				{
 					int offset = in.readUnsignedShort();
-					return new UninitializedVariableInfo(tag, offset);
+					yield new UninitializedVariableInfo(tag, offset);
 				}
-				default : {
+				default ->
 					throw new IOException("Unrecognized verification type tag " + tag);
-				}
-			}
+			};
 		}
 
 		@Override

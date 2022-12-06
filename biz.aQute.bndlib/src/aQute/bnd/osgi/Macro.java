@@ -179,21 +179,17 @@ public class Macro {
 	}
 
 	public static char getTerminator(char c) {
-		switch (c) {
-			case '(' :
-				return ')';
-			case '[' :
-				return ']';
-			case '{' :
-				return '}';
-			case '<' :
-				return '>';
-			case '\u00ab' : // Guillemet double << >>
-				return '\u00bb';
-			case '\u2039' : // Guillemet single
-				return '\u203a';
-		}
-		return 0;
+		return switch (c) {
+			case '(' -> ')';
+			case '[' -> ']';
+			case '{' -> '}';
+			case '<' -> '>';
+			// Guillemet double << >>
+			case '\u00ab' -> '\u00bb';
+			// Guillemet single
+			case '\u2039' -> '\u203a';
+			default -> 0;
+		};
 	}
 
 	protected String getMacro(String key, Link link) {
@@ -1432,8 +1428,8 @@ public class Macro {
 						Object raw = proc.getProperties()
 							.get(key);
 						if (raw != null) {
-							if (raw instanceof String) {
-								value = (String) raw;
+							if (raw instanceof String string) {
+								value = string;
 							} else if (reporter.isPedantic()) {
 								reporter.warning("Key '%s' has a non-String value: %s:%s", key, raw.getClass()
 									.getName(), raw);

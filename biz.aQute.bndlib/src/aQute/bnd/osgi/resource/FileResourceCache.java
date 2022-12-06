@@ -120,10 +120,9 @@ class FileResourceCache {
 			if (this == obj) {
 				return true;
 			}
-			if (!(obj instanceof CacheKey)) {
+			if (!(obj instanceof CacheKey other)) {
 				return false;
 			}
-			CacheKey other = (CacheKey) obj;
 			return Objects.equals(fileKey, other.fileKey) && (lastModifiedTime == other.lastModifiedTime)
 				&& (size == other.size);
 		}

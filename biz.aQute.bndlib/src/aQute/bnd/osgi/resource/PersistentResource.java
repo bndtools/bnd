@@ -72,8 +72,8 @@ public class PersistentResource extends DTO implements Resource {
 		public Object getValue() {
 			if (converted == null && value != null) {
 				DataType t = DataType.values()[type];
-				if (value instanceof Collection) {
-					Object[] cnv = ((Collection<?>) value).toArray();
+				if (value instanceof Collection<?> collectionValue) {
+					Object[] cnv = collectionValue.toArray();
 					for (int i = 0; i < cnv.length; i++) {
 						cnv[i] = convert(t, cnv[i]);
 					}
@@ -97,8 +97,8 @@ public class PersistentResource extends DTO implements Resource {
 						return Converter.cnv(String.class, value);
 
 					case VERSION :
-						if (value instanceof String)
-							return Version.parseVersion((String) value);
+						if (value instanceof String stringValue)
+							return Version.parseVersion(stringValue);
 
 						return Converter.cnv(Version.class, value);
 
@@ -226,9 +226,9 @@ public class PersistentResource extends DTO implements Resource {
 		attr.key = key;
 		attr.value = value;
 
-		if (value instanceof Collection) {
-			if (((Collection<?>) value).size() > 0) {
-				Object member = ((Collection<?>) value).iterator()
+		if (value instanceof Collection<?> collectionValue) {
+			if (collectionValue.size() > 0) {
+				Object member = collectionValue.iterator()
 					.next();
 				attr.type = getType(member);
 			} else {

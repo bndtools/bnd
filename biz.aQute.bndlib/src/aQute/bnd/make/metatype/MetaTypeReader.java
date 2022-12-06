@@ -198,34 +198,17 @@ public class MetaTypeReader extends WriteResource {
 				throw new IllegalArgumentException("Can only handle array of depth one");
 			}
 		}
-		switch (rtype) {
-			case "Z" :
-			case "Ljava/lang/Boolean;" :
-				return Meta.Type.Boolean;
-			case "B" :
-			case "Ljava/lang/Byte;" :
-				return Meta.Type.Byte;
-			case "C" :
-			case "Ljava/lang/Character;" :
-				return Meta.Type.Character;
-			case "S" :
-			case "Ljava/lang/Short;" :
-				return Meta.Type.Short;
-			case "I" :
-			case "Ljava/lang/Integer;" :
-				return Meta.Type.Integer;
-			case "J" :
-			case "Ljava/lang/Long;" :
-				return Meta.Type.Long;
-			case "F" :
-			case "Ljava/lang/Float;" :
-				return Meta.Type.Float;
-			case "D" :
-			case "Ljava/lang/Double;" :
-				return Meta.Type.Double;
-			default :
-				return Meta.Type.String;
-		}
+		return switch (rtype) {
+			case "Z", "Ljava/lang/Boolean;" -> Meta.Type.Boolean;
+			case "B", "Ljava/lang/Byte;" -> Meta.Type.Byte;
+			case "C", "Ljava/lang/Character;" -> Meta.Type.Character;
+			case "S", "Ljava/lang/Short;" -> Meta.Type.Short;
+			case "I", "Ljava/lang/Integer;" -> Meta.Type.Integer;
+			case "J", "Ljava/lang/Long;" -> Meta.Type.Long;
+			case "F", "Ljava/lang/Float;" -> Meta.Type.Float;
+			case "D", "Ljava/lang/Double;" -> Meta.Type.Double;
+			default -> Meta.Type.String;
+		};
 	}
 
 	class Find extends ClassDataCollector {

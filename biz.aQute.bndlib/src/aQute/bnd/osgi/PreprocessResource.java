@@ -23,13 +23,13 @@ public class PreprocessResource extends AbstractResource {
 		try (ByteBufferOutputStream bout = new ByteBufferOutputStream();
 			PrintWriter pw = IO.writer(bout, Constants.DEFAULT_CHARSET)) {
 			ByteBuffer bb = resource.buffer();
-			BufferedReader r;
+			BufferedReader rdr;
 			if (bb != null) {
-				r = IO.reader(bb, Constants.DEFAULT_CHARSET);
+				rdr = IO.reader(bb, Constants.DEFAULT_CHARSET);
 			} else {
-				r = IO.reader(resource.openInputStream(), Constants.DEFAULT_CHARSET);
+				rdr = IO.reader(resource.openInputStream(), Constants.DEFAULT_CHARSET);
 			}
-			try (BufferedReader rdr = r) {
+			try (rdr) {
 				String line = rdr.readLine();
 				while (line != null) {
 					line = processor.getReplacer()

@@ -19,57 +19,59 @@ class Signatures {
 	static final JavaTypeSignature[] EMPTY_JavaTypeSignature = new JavaTypeSignature[0];
 
 	static JavaTypeSignature parseJavaTypeSignature(StringRover signature) {
-		switch (signature.charAt(0)) {
-			case 'B' :
+		return switch (signature.charAt(0)) {
+			case 'B' -> {
 				signature.increment();
-				return BaseType.B;
-			case 'C' :
+				yield BaseType.B;
+			}
+			case 'C' -> {
 				signature.increment();
-				return BaseType.C;
-			case 'D' :
+				yield BaseType.C;
+			}
+			case 'D' -> {
 				signature.increment();
-				return BaseType.D;
-			case 'F' :
+				yield BaseType.D;
+			}
+			case 'F' -> {
 				signature.increment();
-				return BaseType.F;
-			case 'I' :
+				yield BaseType.F;
+			}
+			case 'I' -> {
 				signature.increment();
-				return BaseType.I;
-			case 'J' :
+				yield BaseType.I;
+			}
+			case 'J' -> {
 				signature.increment();
-				return BaseType.J;
-			case 'S' :
+				yield BaseType.J;
+			}
+			case 'S' -> {
 				signature.increment();
-				return BaseType.S;
-			case 'Z' :
+				yield BaseType.S;
+			}
+			case 'Z' -> {
 				signature.increment();
-				return BaseType.Z;
-			default :
-				return parseReferenceTypeSignature(signature);
-		}
+				yield BaseType.Z;
+			}
+			default -> parseReferenceTypeSignature(signature);
+		};
 	}
 
 	static final ReferenceTypeSignature[] EMPTY_ReferenceTypeSignature = new ReferenceTypeSignature[0];
 
 	static ReferenceTypeSignature parseReferenceTypeSignature(StringRover signature) {
-		switch (signature.charAt(0)) {
-			case 'T' :
-				return parseTypeVariableSignature(signature);
-			case 'L' :
-				return parseClassTypeSignature(signature);
-			case '[' :
-				return parseArrayTypeSignature(signature);
-			default :
-				throw new IllegalArgumentException("invalid signature: " + signature);
-		}
+		return switch (signature.charAt(0)) {
+			case 'T' -> parseTypeVariableSignature(signature);
+			case 'L' -> parseClassTypeSignature(signature);
+			case '[' -> parseArrayTypeSignature(signature);
+			default -> throw new IllegalArgumentException("invalid signature: " + signature);
+		};
 	}
 
 	static void erasedBinaryReferences(JavaTypeSignature sig, Set<String> references) {
-		while (sig instanceof ArrayTypeSignature) {
-			sig = ((ArrayTypeSignature) sig).component;
+		while (sig instanceof ArrayTypeSignature type) {
+			sig = type.component;
 		}
-		if (sig instanceof ClassTypeSignature) {
-			ClassTypeSignature type = (ClassTypeSignature) sig;
+		if (sig instanceof ClassTypeSignature type) {
 			references.add(type.binary);
 			TypeArgument.erasedBinaryReferences(type.classType.typeArguments, references);
 			for (SimpleClassTypeSignature innerType : type.innerTypes) {

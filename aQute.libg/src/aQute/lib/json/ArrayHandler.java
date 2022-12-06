@@ -21,8 +21,8 @@ public class ArrayHandler extends Handler {
 		// Byte arrays should not be treated as arrays. We treat them
 		// as hex strings
 
-		if (object instanceof byte[]) {
-			StringHandler.string(app, Hex.toHexString((byte[]) object));
+		if (object instanceof byte[] array) {
+			StringHandler.string(app, Hex.toHexString(array));
 			return;
 		}
 		app.append("[");

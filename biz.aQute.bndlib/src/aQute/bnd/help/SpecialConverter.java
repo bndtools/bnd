@@ -24,15 +24,13 @@ class SpecialConverter extends Converter {
 
 		hook(null, (type, object) -> {
 
-			if (!(object instanceof String))
+			if (!(object instanceof String value))
 				return null;
 
 			if (isSyntaxInterface(type)) {
-				Attrs attrs = OSGiHeader.parseProperties((String) object);
+				Attrs attrs = OSGiHeader.parseProperties(value);
 				return AttrsHandler.getProperties(attrs, (Class<?>) type);
 			}
-
-			String value = (String) object;
 
 			if (type == Attrs.class)
 				return OSGiHeader.parseProperties(value);
@@ -42,9 +40,7 @@ class SpecialConverter extends Converter {
 
 			// Handle Map and Iterable
 
-			if (type instanceof ParameterizedType) {
-
-				ParameterizedType ptype = (ParameterizedType) type;
+			if (type instanceof ParameterizedType ptype) {
 				Class<?> rawClass = (Class<?>) ptype.getRawType();
 
 				if (rawClass == Map.class) {
@@ -78,10 +74,9 @@ class SpecialConverter extends Converter {
 	 *         converting a map to a type.
 	 */
 	public static boolean isSyntaxInterface(Type type) {
-		if (!(type instanceof Class))
+		if (!(type instanceof Class<?> clazz))
 			return false;
 
-		Class<?> clazz = (Class<?>) type;
 		return clazz.isInterface() && !(Iterable.class.isAssignableFrom(clazz)) && !(Map.class.isAssignableFrom(clazz));
 	}
 
@@ -89,13 +84,10 @@ class SpecialConverter extends Converter {
 		value = super.convert(type, value);
 
 		if (value == null) {
-			if (type instanceof ParameterizedType) {
-
-				ParameterizedType pType = (ParameterizedType) type;
+			if (type instanceof ParameterizedType pType) {
 				Type rawType = pType.getRawType();
 
-				if (rawType instanceof Class) {
-					Class<?> rawClass = (Class<?>) rawType;
+				if (rawType instanceof Class<?> rawClass) {
 					if (Map.class.isAssignableFrom(rawClass)) {
 						return super.convert(type, Collections.emptyMap());
 					} else if (Iterable.class.isAssignableFrom(rawClass)) {

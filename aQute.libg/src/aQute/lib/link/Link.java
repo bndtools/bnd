@@ -153,9 +153,9 @@ public class Link<L, R> extends Thread implements Closeable {
 		if (quit.getAndSet(true) == true)
 			return; // already closed
 
-		if (local instanceof Closeable)
+		if (local instanceof Closeable closeable)
 			try {
-				((Closeable) local).close();
+				closeable.close();
 			} catch (Exception e) {}
 
 		if (!transfer) {
@@ -442,8 +442,7 @@ public class Link<L, R> extends Thread implements Closeable {
 
 			out.writeShort(args.length);
 			for (Object arg : args) {
-				if (arg instanceof byte[]) {
-					byte[] data = (byte[]) arg;
+				if (arg instanceof byte[] data) {
 					out.writeInt(data.length);
 					out.write(data);
 				} else {

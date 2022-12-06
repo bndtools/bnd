@@ -46,10 +46,9 @@ public class MethodResolver extends ClassResolver {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof MethodResolver)) {
+		if (!(obj instanceof MethodResolver other)) {
 			return false;
 		}
-		MethodResolver other = (MethodResolver) obj;
 		return Objects.equals(methodSig, other.methodSig) && super.equals(other);
 	}
 

@@ -351,8 +351,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			Map<String, Repository> repoNameMap = new HashMap<>(allRepos.size());
 			for (Repository repo : allRepos) {
 				String name;
-				if (repo instanceof RepositoryPlugin) {
-					name = ((RepositoryPlugin) repo).getName();
+				if (repo instanceof RepositoryPlugin repositoryPlugin) {
+					name = repositoryPlugin.getName();
 				} else {
 					name = repo.toString();
 				}
@@ -429,9 +429,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (pathObject == null)
 			pathObject = "augments.bnd";
 
-		if (pathObject instanceof String) {
-			String path = (String) pathObject;
-
+		if (pathObject instanceof String path) {
 			HttpClient http = registry.getPlugin(HttpClient.class);
 
 			for (URI uri : locations.keySet())

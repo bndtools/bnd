@@ -349,10 +349,9 @@ public class MultiMap<K, V> implements Map<K, List<V>> {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof MultiMap)) {
+		if (!(obj instanceof MultiMap<?, ?> other)) {
 			return false;
 		}
-		MultiMap<?, ?> other = (MultiMap<?, ?>) obj;
 		return Objects.equals(map, other.map) && Objects.equals(keyClass, other.keyClass)
 			&& Objects.equals(valueClass, other.valueClass) && (noduplicates == other.noduplicates);
 	}

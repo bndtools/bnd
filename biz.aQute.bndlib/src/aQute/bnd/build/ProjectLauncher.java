@@ -716,8 +716,8 @@ public abstract class ProjectLauncher extends Processor {
 				continue;
 
 			Attrs runtimeAttrs;
-			if (attrs instanceof Attrs) {
-				runtimeAttrs = new Attrs((Attrs) attrs);
+			if (attrs instanceof Attrs a) {
+				runtimeAttrs = new Attrs(a);
 			} else {
 				runtimeAttrs = new Attrs(attrs);
 			}

@@ -43,8 +43,7 @@ abstract class CapReqFormatter {
 		if (value instanceof Long) {
 			return ":Long";
 		}
-		if (value instanceof Collection) {
-			Collection<?> v = (Collection<?>) value;
+		if (value instanceof Collection<?> v) {
 			if (v.isEmpty()) {
 				return ":List<String>";
 			}
@@ -70,8 +69,7 @@ abstract class CapReqFormatter {
 	}
 
 	private static String valueString(Object value) {
-		if (value instanceof Collection) {
-			Collection<?> v = (Collection<?>) value;
+		if (value instanceof Collection<?> v) {
 			return v.stream()
 				.map(String::valueOf)
 				.collect(Strings.joining());

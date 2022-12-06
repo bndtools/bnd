@@ -155,10 +155,10 @@ public class Version implements Comparable<Version> {
 
 	@Override
 	public boolean equals(Object ot) {
-		if (!(ot instanceof Version))
+		if (!(ot instanceof Version other))
 			return false;
 
-		return compareTo((Version) ot) == 0;
+		return compareTo(other) == 0;
 	}
 
 	@Override
@@ -167,16 +167,12 @@ public class Version implements Comparable<Version> {
 	}
 
 	public int get(int i) {
-		switch (i) {
-			case 0 :
-				return major;
-			case 1 :
-				return minor;
-			case 2 :
-				return micro;
-			default :
-				throw new IllegalArgumentException("Version can only get 0 (major), 1 (minor), or 2 (micro)");
-		}
+		return switch (i) {
+			case 0 -> major;
+			case 1 -> minor;
+			case 2 -> micro;
+			default -> throw new IllegalArgumentException("Version can only get 0 (major), 1 (minor), or 2 (micro)");
+		};
 	}
 
 	public static Version parseVersion(String version) {

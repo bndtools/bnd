@@ -43,18 +43,13 @@ public class Attrs implements Map<String, String> {
 		}
 
 		public Type plural() {
-			switch (this) {
-				case DOUBLE :
-					return DOUBLES;
-				case LONG :
-					return LONGS;
-				case STRING :
-					return STRINGS;
-				case VERSION :
-					return VERSIONS;
-				default :
-					return null;
-			}
+			return switch (this) {
+				case DOUBLE -> DOUBLES;
+				case LONG -> LONGS;
+				case STRING -> STRINGS;
+				case VERSION -> VERSIONS;
+				default -> null;
+			};
 		}
 	}
 
@@ -129,8 +124,9 @@ public class Attrs implements Map<String, String> {
 		if (!(value instanceof String)) {
 			Type type;
 
-			if (value instanceof Collection)
-				value = ((Collection<?>) value).toArray();
+			if (value instanceof Collection<?> collection) {
+				value = collection.toArray();
+			}
 
 			if (value.getClass()
 				.isArray()) {
@@ -358,8 +354,8 @@ public class Attrs implements Map<String, String> {
 
 	@Override
 	public void putAll(Map<? extends String, ? extends String> other) {
-		if (other instanceof Attrs) {
-			putAll((Attrs) other);
+		if (other instanceof Attrs attrs) {
+			putAll(attrs);
 			return;
 		}
 		other.forEach(this::put);
@@ -513,24 +509,16 @@ public class Attrs implements Map<String, String> {
 
 	public static Object convert(Type t, String s) {
 		if (t.sub == null) {
-			switch (t) {
-				case STRING :
-					return s;
-				case LONG :
-					return Long.parseLong(s.trim());
-				case VERSION :
-					return Version.parseVersion(s);
-				case DOUBLE :
-					return Double.parseDouble(s.trim());
-
-				case DOUBLES :
-				case LONGS :
-				case STRINGS :
-				case VERSIONS :
-					// Cannot happen since the sub is null
-					return null;
-			}
-			return null;
+			return switch (t) {
+				case STRING -> s;
+				case LONG -> Long.parseLong(s.trim());
+				case VERSION -> Version.parseVersion(s);
+				case DOUBLE -> Double.parseDouble(s.trim());
+				/*
+				 * Cannot happen since the sub is null
+				 */
+				case DOUBLES, LONGS, STRINGS, VERSIONS -> null;
+			};
 		}
 		List<Object> list = new ArrayList<>();
 

@@ -330,29 +330,23 @@ public class Baseline extends DefaultTask {
 		Deque<Object> queue = new ArrayDeque<>(bundleCollection.getBuiltBy());
 		while (!queue.isEmpty()) {
 			Object o = queue.removeFirst();
-			if (o instanceof org.gradle.api.tasks.bundling.Jar) {
-				org.gradle.api.tasks.bundling.Jar t = (org.gradle.api.tasks.bundling.Jar) o;
+			if (o instanceof org.gradle.api.tasks.bundling.Jar t) {
 				if (Objects.nonNull(t.getExtensions()
 					.findByName(BundleTaskExtension.NAME))) {
 					return t;
 				}
-			} else if (o instanceof Provider) {
-				Provider<?> p = (Provider<?>) o;
-				queue.addFirst(p.get());
-			} else if (o instanceof Map) {
-				Map<?, ?> m = (Map<?, ?>) o;
-				queue.addFirst(m.values());
-			} else if (o instanceof Collection) {
-				Collection<?> c = (Collection<?>) o;
-				queue.addFirst(c.toArray());
-			} else if ((o instanceof Iterable) && !(o instanceof Path)) {
-				Iterable<?> i = (Iterable<?>) o;
-				queue.addFirst(StreamSupport.stream(i.spliterator(), false)
+			} else if (o instanceof Provider<?> provider) {
+				queue.addFirst(provider.get());
+			} else if (o instanceof Map<?,?> map) {
+				queue.addFirst(map.values());
+			} else if (o instanceof Collection<?> collection) {
+				queue.addFirst(collection.toArray());
+			} else if ((o instanceof Iterable<?> iterable) && !(o instanceof Path)) {
+				queue.addFirst(StreamSupport.stream(iterable.spliterator(), false)
 					.toArray());
-			} else if (o instanceof Object[]) {
-				Object[] a = (Object[]) o;
-				for (int i = a.length - 1; i >= 0; i--) {
-					queue.addFirst(a[i]);
+			} else if (o instanceof Object[] array) {
+				for (int i = array.length - 1; i >= 0; i--) {
+					queue.addFirst(array[i]);
 				}
 			}
 		}

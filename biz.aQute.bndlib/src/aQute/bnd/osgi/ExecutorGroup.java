@@ -117,8 +117,7 @@ public class ExecutorGroup {
 		};
 		executors.forEach(executor -> {
 			executor.setThreadFactory(shutdownHookInstaller.apply(executor));
-			if (executor instanceof ScheduledThreadPoolExecutor) {
-				ScheduledThreadPoolExecutor scheduledExecutor = (ScheduledThreadPoolExecutor) executor;
+			if (executor instanceof ScheduledThreadPoolExecutor scheduledExecutor) {
 				scheduledExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 				scheduledExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
 			}

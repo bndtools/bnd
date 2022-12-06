@@ -280,10 +280,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			default :
 				// Handle annotations in a repeatable container annotation
 				Object value = annotation.get("value");
-				if (value instanceof Object[]) {
-					Object[] container = (Object[]) value;
-					if ((container.length > 0) && (container[0] instanceof Annotation)) {
-						if (Optional.ofNullable(analyzer.findClass(((Annotation) container[0]).getName()))
+				if (value instanceof Object[] container) {
+					if ((container.length > 0) && (container[0] instanceof Annotation contained)) {
+						if (Optional.ofNullable(analyzer.findClass(contained.getName()))
 							.flatMap(c -> c.annotations("java/lang/annotation/Repeatable")
 								.findFirst())
 							.filter(a -> name.equals(a.get("value")))
@@ -495,10 +494,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				}
 			}
 
-			if ((object instanceof Object[]) && (((Object[]) object).length > 0)
-				&& ((Object[]) object)[0] instanceof TypeRef) {
-
-				Object[] typeRefs = (Object[]) object;
+			if ((object instanceof Object[] typeRefs) && (typeRefs.length > 0) && typeRefs[0] instanceof TypeRef) {
 				Object[] copy = new Object[typeRefs.length];
 				for (int i = 0; i < typeRefs.length; i++) {
 					// we need to replace the value with the
@@ -967,8 +963,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		next.addProperties(MapStream.of(annotation.entrySet())
 			.filterKey(k -> k.startsWith("#"))
 			.map((k, v) -> {
-				if (k.equals("#uses") && (v instanceof Object[])) {
-					Object[] array = (Object[]) v;
+				if (k.equals("#uses") && (v instanceof Object[] array)) {
 					if ((array.length > 0) && (array[0] instanceof TypeRef)) {
 						String converted = Arrays.stream(array)
 							.map(TypeRef.class::cast)

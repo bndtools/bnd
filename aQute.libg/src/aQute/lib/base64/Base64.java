@@ -149,6 +149,7 @@ public class Base64 {
 
 			case 2 :
 				out.write(0xFF & (register >> 16));
+				break;
 		}
 	}
 

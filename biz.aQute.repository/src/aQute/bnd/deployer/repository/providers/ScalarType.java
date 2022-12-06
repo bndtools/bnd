@@ -7,24 +7,14 @@ public enum ScalarType {
 	Double;
 
 	public Object parseString(String input) {
-		Object result;
-
-		switch (this) {
-			case String :
-				result = input;
-				break;
-			case Long :
-				result = java.lang.Long.valueOf(input.trim());
-				break;
-			case Double :
-				result = java.lang.Double.valueOf(input.trim());
-				break;
-			case Version :
-				result = org.osgi.framework.Version.parseVersion(input.trim());
-				break;
-			default :
-				throw new IllegalArgumentException("Cannot parse input for unknown attribute type '" + name() + "'");
-		}
+		Object result = switch (this) {
+			case String -> input;
+			case Long -> java.lang.Long.valueOf(input.trim());
+			case Double -> java.lang.Double.valueOf(input.trim());
+			case Version -> org.osgi.framework.Version.parseVersion(input.trim());
+			default -> throw new IllegalArgumentException(
+				"Cannot parse input for unknown attribute type '" + name() + "'");
+		};
 
 		return result;
 	}

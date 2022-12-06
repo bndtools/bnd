@@ -33,10 +33,10 @@ public class DTOMap extends AbstractMap<String, Object> {
 
 	@Override
 	public boolean containsKey(Object key) {
-		if (!(key instanceof String))
+		if (!(key instanceof String string))
 			return false;
 
-		return dtos.bsearch(fields, 0, fields.length, (String) key) >= 0;
+		return dtos.bsearch(fields, 0, fields.length, string) >= 0;
 	}
 
 	@Override
@@ -62,10 +62,10 @@ public class DTOMap extends AbstractMap<String, Object> {
 	@Override
 	public Object get(Object key) {
 		try {
-			if (!(key instanceof String))
+			if (!(key instanceof String string))
 				return null;
 
-			Field field = dtos.getField(fields, (String) key);
+			Field field = dtos.getField(fields, string);
 			if (field == null)
 				return null;
 

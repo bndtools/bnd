@@ -308,16 +308,16 @@ public class Tag {
 							arrayElementName, nextDTO, false));
 					}
 				}
-			} else if (dto instanceof Collection) {
-				for (Object d : (Collection<?>) dto) {
+			} else if (dto instanceof Collection<?> collection) {
+				for (Object d : collection) {
 					if (d != null) {
 						result.addContent(Tag.convertDTO(
 							suffix ? computeArrayElementName(rootName, arrayElementName) : arrayElementName,
 							arrayElementName, d, false));
 					}
 				}
-			} else if (dto instanceof Map) {
-				for (Entry<?, ?> entry : ((Map<?, ?>) dto).entrySet()) {
+			} else if (dto instanceof Map<?, ?> map) {
+				for (Entry<?, ?> entry : map.entrySet()) {
 					if (entry.getValue() != null && entry.getKey() != null) {
 						result.addContent(
 							Tag.convertDTO(Objects.toString(entry.getKey()), arrayElementName, entry.getValue(), true));
@@ -430,9 +430,9 @@ public class Tag {
 	public List<Object> getContents(String tag) {
 		List<Object> out = new ArrayList<>();
 		for (Object o : content) {
-			if (o instanceof Tag && ((Tag) o).getName()
+			if (o instanceof Tag t && t.getName()
 				.equals(tag))
-				out.add(o);
+				out.add(t);
 		}
 		return out;
 	}
@@ -451,8 +451,8 @@ public class Tag {
 	 */
 	public void getContentsAsString(StringBuilder sb) {
 		for (Object o : content) {
-			if (o instanceof Tag)
-				((Tag) o).getContentsAsString(sb);
+			if (o instanceof Tag t)
+				t.getContentsAsString(sb);
 			else
 				sb.append(o);
 		}
@@ -481,11 +481,10 @@ public class Tag {
 			pw.print('>');
 			Object last = null;
 			for (Object c : content) {
-				if (c instanceof Tag) {
+				if (c instanceof Tag tag) {
 					if ((last == null) && (indent >= 0)) {
 						pw.print('\n');
 					}
-					Tag tag = (Tag) c;
 					tag.print(indent + 2, pw);
 				} else {
 					if (c == null)
@@ -575,8 +574,7 @@ public class Tag {
 			String name = path.substring(2, i < 0 ? path.length() : i);
 
 			for (Object o : content) {
-				if (o instanceof Tag) {
-					Tag child = (Tag) o;
+				if (o instanceof Tag child) {
 					if (match(name, child, mapping))
 						results.add(child);
 					child.select(path, results, mapping);
@@ -600,8 +598,7 @@ public class Tag {
 		}
 
 		for (Object o : content) {
-			if (o instanceof Tag) {
-				Tag child = (Tag) o;
+			if (o instanceof Tag child) {
 				if (child.getName()
 					.equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
@@ -734,8 +731,8 @@ public class Tag {
 		}
 
 		for (Object o : content) {
-			if (o instanceof Tag) {
-				invalid |= ((Tag) o).invalid(f);
+			if (o instanceof Tag t) {
+				invalid |= t.invalid(f);
 			}
 		}
 		return invalid;

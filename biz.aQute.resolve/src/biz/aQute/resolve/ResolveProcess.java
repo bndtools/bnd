@@ -62,8 +62,8 @@ public class ResolveProcess {
 			return resolveRequired(inputModel.getProperties(), inputModel.getProject(), plugins, resolver, callbacks,
 				log);
 		} catch (Exception e) {
-			if (e instanceof ResolutionException) {
-				throw (ResolutionException) e;
+			if (e instanceof ResolutionException re) {
+				throw re;
 			}
 			throw new ResolutionException(e);
 		}
@@ -242,9 +242,7 @@ public class ResolveProcess {
 
 		Throwable cause = re;
 		while (cause != null) {
-			if (cause instanceof ReasonException) {
-				ReasonException mre = (ReasonException) cause;
-
+			if (cause instanceof ReasonException mre) {
 				// there will only be one entry here
 				chain.addAll(mre.getUnresolvedRequirements());
 			}

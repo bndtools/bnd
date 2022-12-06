@@ -420,10 +420,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	static Version getVersion(Capability cap, String attr) {
 		Object versionatt = cap.getAttributes()
 			.get(attr);
-		if (versionatt instanceof Version)
-			return (Version) versionatt;
-		else if (versionatt instanceof String)
-			return Version.parseVersion((String) versionatt);
+		if (versionatt instanceof Version version)
+			return version;
+		else if (versionatt instanceof String string)
+			return Version.parseVersion(string);
 		else
 			return Version.emptyVersion;
 	}
@@ -685,11 +685,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		if (object == null)
 			return null;
 
-		if (object instanceof Version)
-			return (Version) object;
+		if (object instanceof Version version)
+			return version;
 
-		if (object instanceof String)
-			return Version.parseVersion((String) object);
+		if (object instanceof String string)
+			return Version.parseVersion(string);
 
 		throw new IllegalArgumentException(MessageFormat.format("Cannot convert type {0} to Version.", object.getClass()
 			.getName()));

@@ -63,9 +63,7 @@ public class WireImpl implements Wire {
 		if (obj == this)
 			return true;
 
-		if (obj instanceof Wire) {
-			Wire w = (Wire) obj;
-
+		if (obj instanceof Wire w) {
 			if (capability.equals(w.getCapability()) && requirement.equals(w.getRequirement())) {
 				Resource provider = getProvider();
 				Resource requirer = getRequirer();

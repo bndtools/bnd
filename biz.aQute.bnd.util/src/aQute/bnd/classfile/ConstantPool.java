@@ -47,8 +47,8 @@ public class ConstantPool {
 
 	public int tag(int index) {
 		Object entry = entry(index);
-		if (entry instanceof Info) {
-			return ((Info) entry).tag();
+		if (entry instanceof Info info) {
+			return info.tag();
 		} else if (entry instanceof String) {
 			return CONSTANT_Utf8;
 		} else if (entry instanceof Integer) {
@@ -863,22 +863,22 @@ public class ConstantPool {
 		out.writeShort(constant_pool_count);
 		for (int index = 1; index < constant_pool_count; index++) {
 			Object entry = entry(index);
-			if (entry instanceof Info) {
-				((Info) entry).write(out);
-			} else if (entry instanceof String) {
-				writeUtf8Info(out, (String) entry);
-			} else if (entry instanceof Integer) {
-				writeIntegerInfo(out, (Integer) entry);
-			} else if (entry instanceof Long) {
-				writeLongInfo(out, (Long) entry);
+			if (entry instanceof Info info) {
+				info.write(out);
+			} else if (entry instanceof String string_entry) {
+				writeUtf8Info(out, string_entry);
+			} else if (entry instanceof Integer integer_entry) {
+				writeIntegerInfo(out, integer_entry);
+			} else if (entry instanceof Long long_entry) {
+				writeLongInfo(out, long_entry);
 				// For some insane optimization reason, the Long(5) and
 				// Double(6) entries take two slots in the constant pool.
 				// See 4.4.5
 				index++;
-			} else if (entry instanceof Float) {
-				writeFloatInfo(out, (Float) entry);
-			} else if (entry instanceof Double) {
-				writeDoubleInfo(out, (Double) entry);
+			} else if (entry instanceof Float float_entry) {
+				writeFloatInfo(out, float_entry);
+			} else if (entry instanceof Double double_entry) {
+				writeDoubleInfo(out, double_entry);
 				// For some insane optimization reason, the Long(5) and
 				// Double(6) entries take two slots in the constant pool.
 				// See 4.4.5

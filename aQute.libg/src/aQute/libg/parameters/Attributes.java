@@ -65,18 +65,13 @@ public class Attributes implements Map<String, String> {
 		}
 
 		public Type plural() {
-			switch (this) {
-				case DOUBLE :
-					return DOUBLES;
-				case LONG :
-					return LONGS;
-				case STRING :
-					return STRINGS;
-				case VERSION :
-					return VERSIONS;
-				default :
-					return null;
-			}
+			return switch (this) {
+				case DOUBLE -> DOUBLES;
+				case LONG -> LONGS;
+				case STRING -> STRINGS;
+				case VERSION -> VERSIONS;
+				default -> null;
+			};
 		}
 	}
 
@@ -154,8 +149,8 @@ public class Attributes implements Map<String, String> {
 		if (!(value instanceof String)) {
 			Type type;
 
-			if (value instanceof Collection)
-				value = ((Collection<?>) value).toArray();
+			if (value instanceof Collection<?> collection)
+				value = collection.toArray();
 
 			if (value.getClass()
 				.isArray()) {
@@ -360,8 +355,8 @@ public class Attributes implements Map<String, String> {
 
 	@Override
 	public void putAll(Map<? extends String, ? extends String> other) {
-		if (other instanceof Attributes) {
-			putAll((Attributes) other);
+		if (other instanceof Attributes a) {
+			putAll(a);
 			return;
 		}
 		for (Map.Entry<? extends String, ? extends String> e : other.entrySet()) {

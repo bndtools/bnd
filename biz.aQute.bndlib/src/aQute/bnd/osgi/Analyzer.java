@@ -61,6 +61,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Clazz.JAVA;
+import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -1669,17 +1670,16 @@ public class Analyzer extends Processor {
 	 */
 	public void setClasspath(Collection<?> classpath) throws IOException {
 		for (Object cpe : classpath) {
-			if (cpe instanceof Jar) {
-				addClasspath((Jar) cpe);
-			} else if (cpe instanceof File) {
-				File f = (File) cpe;
+			if (cpe instanceof Jar jar) {
+				addClasspath(jar);
+			} else if (cpe instanceof File f) {
 				if (!f.exists()) {
 					error("Missing file on classpath: %s", IO.absolutePath(f));
 					continue;
 				}
 				addClasspath(f);
-			} else if (cpe instanceof String) {
-				Jar j = getJarFromName((String) cpe, " setting classpath");
+			} else if (cpe instanceof String string) {
+				Jar j = getJarFromName(string, " setting classpath");
 				if (j == null) {
 					continue;
 				}
@@ -2542,15 +2542,15 @@ public class Analyzer extends Processor {
 	}
 
 	public void addClasspath(Collection<?> jars) throws IOException {
-		for (Object jar : jars) {
-			if (jar instanceof Jar)
-				addClasspath((Jar) jar);
-			else if (jar instanceof File)
-				addClasspath((File) jar);
-			else if (jar instanceof String)
-				addClasspath(getFile((String) jar));
+		for (Object item : jars) {
+			if (item instanceof Jar jar)
+				addClasspath(jar);
+			else if (item instanceof File file)
+				addClasspath(file);
+			else if (item instanceof String string)
+				addClasspath(getFile(string));
 			else
-				error("Cannot convert to JAR to add to classpath %s. Not a File, Jar, or String", jar);
+				error("Cannot convert to JAR to add to classpath %s. Not a File, Jar, or String", item);
 		}
 	}
 
@@ -2885,25 +2885,13 @@ public class Analyzer extends Processor {
 		Set<Clazz> matched = new HashSet<>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
 			String typeName = args[i].toUpperCase(Locale.ROOT);
-			Clazz.QUERY type;
-			switch (typeName) {
-				case "EXTENDING" :
-					type = Clazz.QUERY.EXTENDS;
-					break;
-				case "IMPORTING" :
-					type = Clazz.QUERY.IMPORTS;
-					break;
-				case "ANNOTATION" :
-					type = Clazz.QUERY.ANNOTATED;
-					break;
-				case "IMPLEMENTING" :
-					type = Clazz.QUERY.IMPLEMENTS;
-					break;
-				default :
-					type = Clazz.QUERY.valueOf(typeName);
-					break;
-			}
-
+			QUERY type = switch (typeName) {
+				case "EXTENDING" -> Clazz.QUERY.EXTENDS;
+				case "IMPORTING" -> Clazz.QUERY.IMPORTS;
+				case "ANNOTATION" -> Clazz.QUERY.ANNOTATED;
+				case "IMPLEMENTING" -> Clazz.QUERY.IMPLEMENTS;
+				default -> Clazz.QUERY.valueOf(typeName);
+			};
 			Instruction instr;
 			if (Clazz.HAS_ARGUMENT.contains(type)) {
 				if (++i == args.length) {

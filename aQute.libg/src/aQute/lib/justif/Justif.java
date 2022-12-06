@@ -200,8 +200,8 @@ public class Justif {
 		sb.append("\t1");
 		sb.append(separator);
 		sb.append("\t2");
-		if (value instanceof Iterable) {
-			Iterator<?> it = ((Iterable<?>) value).iterator();
+		if (value instanceof Iterable<?> iterable) {
+			Iterator<?> it = iterable.iterator();
 			boolean hadone = false;
 			String del = "";
 			while (it.hasNext()) {

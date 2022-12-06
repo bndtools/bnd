@@ -50,26 +50,15 @@ public enum MavenScope {
 	}
 
 	public static MavenScope getScope(String scope) {
-		switch (scope.toLowerCase(Locale.ROOT)) {
-			case "import" :
-				return MavenScope.import_;
-
-			case "provided" :
-				return MavenScope.provided;
-
-			case "runtime" :
-				return MavenScope.runtime;
-
-			case "system" :
-				return MavenScope.system;
-
-			case "test" :
-				return MavenScope.test;
-
-			case "compile" :
-			default :
-				return MavenScope.compile;
-		}
+		return switch (scope.toLowerCase(Locale.ROOT)) {
+			case "import" -> MavenScope.import_;
+			case "provided" -> MavenScope.provided;
+			case "runtime" -> MavenScope.runtime;
+			case "system" -> MavenScope.system;
+			case "test" -> MavenScope.test;
+			case "compile" -> MavenScope.compile;
+			default -> MavenScope.compile;
+		};
 	}
 
 }

@@ -203,10 +203,9 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		if (methodSig.parameterTypes.length != 1)
 			return;
 		JavaTypeSignature parameterSig = resolver.resolveParameter(0);
-		if (!(parameterSig instanceof ClassTypeSignature)) {
+		if (!(parameterSig instanceof ClassTypeSignature param)) {
 			return;
 		}
-		ClassTypeSignature param = (ClassTypeSignature) parameterSig;
 		switch (param.binary) {
 			case "org/osgi/service/cdi/reference/BindService" :
 			case "org/osgi/service/cdi/reference/BindBeanServiceObjects" :
@@ -216,11 +215,10 @@ public class CDIAnnotationReader extends ClassDataCollector {
 					return;
 				}
 				ReferenceTypeSignature inferred = resolver.resolveType(param.classType.typeArguments[0]);
-				if (!(inferred instanceof ClassTypeSignature)) {
+				if (!(inferred instanceof ClassTypeSignature classSig)) {
 					analyzer.error("In bean %s, Bind parameter has unresolvable type argument: %s", clazz, inferred);
 					return;
 				}
-				ClassTypeSignature classSig = (ClassTypeSignature) inferred;
 				TypeRef typeRef = analyzer.getTypeRef(classSig.binary);
 				ReferenceDef referenceDef = new ReferenceDef();
 				referenceDef.service = typeRef.getFQN();
@@ -271,12 +269,12 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				resolver = new MethodResolver(classSig, methodSig);
 				JavaTypeSignature parameterType = ((MethodResolver) resolver).resolveParameter(parameter);
-				if (!(parameterType instanceof ClassTypeSignature)) {
+				if (!(parameterType instanceof ClassTypeSignature classParam)) {
 					analyzer.error("In bean %s, method %s, parameter %s with @Reference has unresolved type %s",
 						classSig, member.getName(), targetIndex, parameterType);
 					return;
 				}
-				type = (ClassTypeSignature) parameterType;
+				type = classParam;
 				break;
 			}
 			default : { // FIELD
@@ -298,12 +296,12 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				}
 				resolver = new FieldResolver(classSig, fieldSig);
 				ReferenceTypeSignature inferred = ((FieldResolver) resolver).resolveField();
-				if (!(inferred instanceof ClassTypeSignature)) {
+				if (!(inferred instanceof ClassTypeSignature inferredClass)) {
 					analyzer.error("In bean %s, field %s with @Reference has unresolved type: %s", classSig,
 						member.getName(), inferred);
 					return;
 				}
-				type = (ClassTypeSignature) inferred;
+				type = inferredClass;
 				break;
 			}
 		}
@@ -315,37 +313,37 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		// unwrap Provider
 		if (fqn.equals("javax.inject.Provider")) {
 			ReferenceTypeSignature inferred = resolver.resolveType(type.classType.typeArguments[0]);
-			if (!(inferred instanceof ClassTypeSignature)) {
+			if (!(inferred instanceof ClassTypeSignature inferredClass)) {
 				analyzer.error(
 					"In bean %s, in member %s with @Reference the type argument of Provider can't be resolved: %s",
 					clazz, member.getName(), inferred);
 				return;
 			}
-			type = (ClassTypeSignature) inferred;
+			type = inferredClass;
 			fqn = Descriptors.binaryToFQN(type.binary);
 		}
 
 		// unwrap Collection, List, Optional
 		if (fqn.equals("java.util.Collection") || fqn.equals("java.util.List")) {
 			ReferenceTypeSignature inferred = resolver.resolveType(type.classType.typeArguments[0]);
-			if (!(inferred instanceof ClassTypeSignature)) {
+			if (!(inferred instanceof ClassTypeSignature inferredClass)) {
 				analyzer.error(
 					"In bean %s, in member %s with @Reference the type argument of Collection or List can't be resolved: %s",
 					clazz, member.getName(), inferred);
 				return;
 			}
-			type = (ClassTypeSignature) inferred;
+			type = inferredClass;
 			fqn = Descriptors.binaryToFQN(type.binary);
 			cardinality = ReferenceCardinality.MULTIPLE;
 		} else if (fqn.equals("java.util.Optional")) {
 			ReferenceTypeSignature inferred = resolver.resolveType(type.classType.typeArguments[0]);
-			if (!(inferred instanceof ClassTypeSignature)) {
+			if (!(inferred instanceof ClassTypeSignature inferredClass)) {
 				analyzer.error(
 					"In bean %s, in member %s with @Reference the type argument of Optional can't be resolved: %s",
 					clazz, member.getName(), inferred);
 				return;
 			}
-			type = (ClassTypeSignature) inferred;
+			type = inferredClass;
 			fqn = Descriptors.binaryToFQN(type.binary);
 			cardinality = ReferenceCardinality.OPTIONAL;
 		}
@@ -354,23 +352,23 @@ public class CDIAnnotationReader extends ClassDataCollector {
 			|| fqn.equals("org.osgi.framework.ServiceReference")) {
 
 			ReferenceTypeSignature inferred = resolver.resolveType(type.classType.typeArguments[0]);
-			if (!(inferred instanceof ClassTypeSignature)) {
+			if (!(inferred instanceof ClassTypeSignature inferredClass)) {
 				analyzer.error(
 					"In bean %s, in member %s with @Reference the type argument of BeanServiceObjects or ServiceReference can't be resolved: %s",
 					clazz, member.getName(), inferred);
 				return;
 			}
-			type = (ClassTypeSignature) inferred;
+			type = inferredClass;
 			fqn = Descriptors.binaryToFQN(type.binary);
 		} else if (fqn.equals("java.util.Map$Entry")) {
 			ReferenceTypeSignature inferred = resolver.resolveType(type.innerTypes[0].typeArguments[1]);
-			if (!(inferred instanceof ClassTypeSignature)) {
+			if (!(inferred instanceof ClassTypeSignature inferredClass)) {
 				analyzer.error(
 					"In bean %s, in member %s with @Reference the second type argument of Map.Entry can't be resolved: %s",
 					clazz, member.getName(), inferred);
 				return;
 			}
-			type = (ClassTypeSignature) inferred;
+			type = inferredClass;
 			fqn = Descriptors.binaryToFQN(type.binary);
 		}
 
@@ -402,13 +400,12 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				}
 				FieldResolver resolver = new FieldResolver(classSig, fieldSig);
 				ReferenceTypeSignature type = resolver.resolveField();
-				if (!(type instanceof ClassTypeSignature)) {
+				if (!(type instanceof ClassTypeSignature returnType)) {
 					analyzer.error("In bean %s, field %s has an incompatible type for @Service: %s", clazz,
 						fieldDef.getName(), member.descriptor());
 					return;
 				}
 
-				ClassTypeSignature returnType = (ClassTypeSignature) type;
 				TypeRef typeRef = analyzer.getTypeRef(returnType.binary);
 				BeanDef beanDef = new BeanDef();
 				beanDef.service.add(typeRef);
@@ -426,12 +423,11 @@ public class CDIAnnotationReader extends ClassDataCollector {
 						methodDef.getName(), member.descriptor());
 					return;
 				}
-				if (!(result instanceof ClassTypeSignature)) {
+				if (!(result instanceof ClassTypeSignature returnType)) {
 					analyzer.error("In bean %s, method %s has an incompatible return type for @Service: %s", clazz,
 						methodDef.getName(), member.descriptor());
 					return;
 				}
-				ClassTypeSignature returnType = (ClassTypeSignature) result;
 				TypeRef typeRef = analyzer.getTypeRef(returnType.binary);
 				BeanDef producer = new BeanDef();
 				producer.service.add(typeRef);

@@ -67,11 +67,9 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 				.getAttributes();
 			String id = String.valueOf(attributes.get(IdentityNamespace.IDENTITY_NAMESPACE));
 
-			switch (id) {
-				case Constants.IDENTITY_INITIAL_RESOURCE :
-				case Constants.IDENTITY_SYSTEM_RESOURCE :
-					return id;
-				default :
+			return switch (id) {
+				case Constants.IDENTITY_INITIAL_RESOURCE, Constants.IDENTITY_SYSTEM_RESOURCE -> id;
+				default -> {
 					StringBuilder builder = new StringBuilder(id);
 					Object version = attributes.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 					if (version != null) {
@@ -84,8 +82,9 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 						builder.append(" type=")
 							.append(type);
 					}
-					return builder.toString();
-			}
+					yield builder.toString();
+				}
+			};
 		}
 		// Generic toString
 		return new StringBuilder("ResourceImpl [caps=").append(allCapabilities)
@@ -106,12 +105,12 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		if (this == other)
 			return true;
 
-		if (!(other instanceof Resource))
+		if (!(other instanceof Resource resource))
 			return false;
 
 		Map<URI, String> thisLocations = getLocations();
-		Map<URI, String> otherLocations = (other instanceof ResourceImpl) ? ((ResourceImpl) other).getLocations()
-			: ResourceUtils.getLocations((Resource) other);
+		Map<URI, String> otherLocations = (resource instanceof ResourceImpl resourceImpl) ? resourceImpl.getLocations()
+			: ResourceUtils.getLocations(resource);
 
 		Collection<URI> overlap = retain(thisLocations.keySet(), otherLocations.keySet());
 

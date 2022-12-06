@@ -154,8 +154,8 @@ public class JSONCodec {
 		if (UUID.class == type)
 			return uuidh;
 
-		if (type instanceof GenericArrayType) {
-			Type sub = ((GenericArrayType) type).getGenericComponentType();
+		if (type instanceof GenericArrayType gat) {
+			Type sub = gat.getGenericComponentType();
 			if (sub == byte.class)
 				return byteh;
 		}
@@ -167,10 +167,7 @@ public class JSONCodec {
 		if (h != null)
 			return h;
 
-		if (type instanceof Class) {
-
-			Class<?> clazz = (Class<?>) type;
-
+		if (type instanceof Class<?> clazz) {
 			if (Enum.class.isAssignableFrom(clazz))
 				h = new EnumHandler(clazz);
 			else if (Iterable.class.isAssignableFrom(clazz)) // A Non Generic
@@ -209,11 +206,9 @@ public class JSONCodec {
 			// We have generic information available
 			// We only support generics on Collection, Map, and arrays
 
-			if (type instanceof ParameterizedType) {
-				ParameterizedType pt = (ParameterizedType) type;
+			if (type instanceof ParameterizedType pt) {
 				Type rawType = pt.getRawType();
-				if (rawType instanceof Class) {
-					Class<?> rawClass = (Class<?>) rawType;
+				if (rawType instanceof Class<?> rawClass) {
 					if (Iterable.class.isAssignableFrom(rawClass))
 						h = new CollectionHandler(rawClass, pt.getActualTypeArguments()[0]);
 					else if (Map.class.isAssignableFrom(rawClass))
@@ -227,13 +222,12 @@ public class JSONCodec {
 						//
 						return getHandler(rawType, null);
 				}
-			} else if (type instanceof GenericArrayType) {
-				GenericArrayType gat = (GenericArrayType) type;
+			} else if (type instanceof GenericArrayType gat) {
 				if (gat.getGenericComponentType() == byte[].class)
 					h = byteh;
 				else
 					h = new ArrayHandler(getRawClass(type), gat.getGenericComponentType());
-			} else if (type instanceof TypeVariable) {
+			} else if (type instanceof TypeVariable<?> tv) {
 				if (actual != null)
 					//
 					// We can save ourselves a lot of work if we have
@@ -241,7 +235,6 @@ public class JSONCodec {
 					//
 					h = getHandler(actual, null);
 				else {
-					TypeVariable<?> tv = (TypeVariable<?>) type;
 					Type[] bounds = tv.getBounds();
 					if (bounds == null || bounds.length == 0) {
 						h = new ObjectHandler(this, Object.class);
@@ -505,17 +498,16 @@ public class JSONCodec {
 		r.read(); // skip closing
 	}
 
-	@SuppressWarnings("rawtypes")
 	Class<?> getRawClass(Type type) {
-		if (type instanceof Class)
-			return (Class) type;
+		if (type instanceof Class<?> ctype)
+			return ctype;
 
-		if (type instanceof ParameterizedType)
-			return getRawClass(((ParameterizedType) type).getRawType());
+		if (type instanceof ParameterizedType ptype)
+			return getRawClass(ptype.getRawType());
 
-		if (type instanceof GenericArrayType) {
-			Type subType = ((GenericArrayType) type).getGenericComponentType();
-			Class c = getRawClass(subType);
+		if (type instanceof GenericArrayType gat) {
+			Type subType = gat.getGenericComponentType();
+			Class<?> c = getRawClass(subType);
 			return Array.newInstance(c, 0)
 				.getClass();
 		}

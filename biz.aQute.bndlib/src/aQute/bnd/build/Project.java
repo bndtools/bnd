@@ -1338,20 +1338,12 @@ public class Project extends Processor {
 			// the first or last
 
 			if (!versions.isEmpty()) {
-				Version provider = null;
-
-				switch (useStrategy) {
-					case HIGHEST :
-						provider = versions.lastKey();
-						break;
-
-					case LOWEST :
-						provider = versions.firstKey();
-						break;
-					case EXACT :
-						// TODO need to handle exact better
-						break;
-				}
+				Version provider = switch (useStrategy) {
+					case HIGHEST -> versions.lastKey();
+					case LOWEST -> versions.firstKey();
+					// TODO need to handle exact better
+					case EXACT -> null;
+				};
 				if (provider != null) {
 					RepositoryPlugin repo = versions.get(provider);
 					if (repo == null) {
@@ -1503,9 +1495,7 @@ public class Project extends Processor {
 
 			// If not, and if the repository implements the OSGi Repository
 			// Service, use a capability search on the osgi.content namespace.
-			if (result == null && plugin instanceof Repository) {
-				Repository repo = (Repository) plugin;
-
+			if (result == null && plugin instanceof Repository repo) {
 				if (!SHA_256.equals(algo))
 					// R5 repos only support SHA-256
 					continue;

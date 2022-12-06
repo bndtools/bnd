@@ -68,8 +68,7 @@ public class ByteBufferOutputStream extends OutputStream {
 	}
 
 	public void write(InputStream in) throws IOException {
-		if (in instanceof ByteBufferInputStream) {
-			ByteBufferInputStream bbin = (ByteBufferInputStream) in;
+		if (in instanceof ByteBufferInputStream bbin) {
 			write(bbin.buffer());
 			return;
 		}

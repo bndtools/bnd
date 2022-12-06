@@ -148,22 +148,22 @@ public class Jar implements Closeable {
 
 	@SuppressWarnings("resource")
 	public static Jar fromResource(String name, Resource resource) throws Exception {
-		if (resource instanceof JarResource) {
-			return ((JarResource) resource).getJar();
-		} else if (resource instanceof FileResource) {
-			return new Jar(name, ((FileResource) resource).getFile());
+		if (resource instanceof JarResource jarResource) {
+			return jarResource.getJar();
+		} else if (resource instanceof FileResource fileResource) {
+			return new Jar(name, fileResource.getFile());
 		}
 		return new Jar(name).buildFromResource(resource);
 	}
 
-	public static Stream<Resource> getResources(Resource jarResource, Predicate<String> filter) throws Exception {
-		requireNonNull(jarResource);
+	public static Stream<Resource> getResources(Resource resource, Predicate<String> filter) throws Exception {
+		requireNonNull(resource);
 		requireNonNull(filter);
-		if (jarResource instanceof JarResource) {
-			Jar jar = ((JarResource) jarResource).getJar();
+		if (resource instanceof JarResource jarResource) {
+			Jar jar = jarResource.getJar();
 			return jar.getResources(filter);
 		}
-		ZipResourceSpliterator spliterator = new ZipResourceSpliterator(jarResource, filter);
+		ZipResourceSpliterator spliterator = new ZipResourceSpliterator(resource, filter);
 		return StreamSupport.stream(spliterator, false)
 			.onClose(spliterator);
 	}

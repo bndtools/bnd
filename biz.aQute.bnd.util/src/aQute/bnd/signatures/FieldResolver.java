@@ -28,10 +28,9 @@ public class FieldResolver extends ClassResolver {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof FieldResolver)) {
+		if (!(obj instanceof FieldResolver other)) {
 			return false;
 		}
-		FieldResolver other = (FieldResolver) obj;
 		return Objects.equals(fieldSig, other.fieldSig) && super.equals(other);
 	}
 

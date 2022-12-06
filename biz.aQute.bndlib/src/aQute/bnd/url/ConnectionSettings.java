@@ -47,8 +47,7 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 
 			headers.forEach(connection::setRequestProperty);
 
-			if (connection instanceof HttpURLConnection) {
-				HttpURLConnection http = (HttpURLConnection) connection;
+			if (connection instanceof HttpURLConnection http) {
 				if (config.chunk() > 0)
 					http.setChunkedStreamingMode(config.chunk());
 

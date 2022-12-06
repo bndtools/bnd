@@ -84,18 +84,10 @@ public class HttpRequest<T> {
 
 	public HttpRequest<T> verb(String verb) {
 		this.verb = verb;
-		switch (verb.toUpperCase(Locale.ROOT)) {
-			case "GET" :
-			case "HEAD" :
-			case "PUT" :
-			case "DELETE" :
-			case "OPTIONS" :
-			case "TRACE" :
-				return idemPotent(true);
-
-			default :
-				return idemPotent(false);
-		}
+		return switch (verb.toUpperCase(Locale.ROOT)) {
+			case "GET", "HEAD", "PUT", "DELETE", "OPTIONS", "TRACE" -> idemPotent(true);
+			default -> idemPotent(false);
+		};
 	}
 
 	/**

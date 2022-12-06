@@ -186,11 +186,10 @@ public class SpecInterface<T> {
 	public static Class<?> getParameterizedSuperType(Class<?> baseType) {
 		assert baseType != null;
 		Type type = baseType.getGenericSuperclass();
-		if (type instanceof ParameterizedType) {
-			ParameterizedType ptype = (ParameterizedType) type;
+		if (type instanceof ParameterizedType ptype) {
 			Type p1 = ptype.getActualTypeArguments()[0];
-			if (p1 instanceof Class) {
-				return (Class<?>) p1;
+			if (p1 instanceof Class<?> ctype) {
+				return ctype;
 			}
 		}
 		return null;
@@ -212,16 +211,15 @@ public class SpecInterface<T> {
 		assert interfce.isInterface();
 
 		for (Type type : baseType.getGenericInterfaces()) {
-			if (!(type instanceof ParameterizedType))
+			if (!(type instanceof ParameterizedType ptype))
 				continue;
 
-			ParameterizedType ptype = (ParameterizedType) type;
 			if (ptype.getRawType() != interfce)
 				continue;
 
 			Type p1 = ptype.getActualTypeArguments()[0];
-			if (p1 instanceof Class) {
-				return (Class<?>) p1;
+			if (p1 instanceof Class<?> ctype) {
+				return ctype;
 			}
 		}
 		return null;
@@ -235,8 +233,8 @@ public class SpecInterface<T> {
 		if (v != null) {
 			if (Converter.isMultiple(o.type)) {
 
-				if (v instanceof List) {
-					((List) v).add(value);
+				if (v instanceof List l) {
+					l.add(value);
 				} else {
 					List l = new ArrayList<>();
 					l.add(v);

@@ -101,8 +101,8 @@ public class Dates {
 	 * @return a {@link ZonedDateTime}
 	 */
 	public static ZonedDateTime toZonedDateTime(TemporalAccessor temporal) {
-		if (temporal instanceof ZonedDateTime)
-			return (ZonedDateTime) temporal;
+		if (temporal instanceof ZonedDateTime zdt)
+			return zdt;
 
 		LocalDate date = temporal.query(TemporalQueries.localDate());
 		LocalTime time = temporal.query(TemporalQueries.localTime());

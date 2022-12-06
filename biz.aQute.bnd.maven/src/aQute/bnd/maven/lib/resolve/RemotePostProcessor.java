@@ -74,8 +74,7 @@ public class RemotePostProcessor implements PostProcessor {
 		if (Objects.equals("workspace", repoId) || Objects.equals("local", repoId)) {
 			return true;
 		}
-		if (repository instanceof RemoteRepository) {
-			RemoteRepository remoteRepository = (RemoteRepository) repository;
+		if (repository instanceof RemoteRepository remoteRepository) {
 			if (Objects.equals("file", remoteRepository.getProtocol())) {
 				return true;
 			}

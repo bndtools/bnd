@@ -700,26 +700,17 @@ public class Descriptors {
 	}
 
 	public TypeRef getTypeRefFromFQN(String fqn) {
-		switch (fqn) {
-			case "boolean" :
-				return BOOLEAN;
-			case "byte" :
-				return BOOLEAN;
-			case "char" :
-				return CHAR;
-			case "short" :
-				return SHORT;
-			case "int" :
-				return INTEGER;
-			case "long" :
-				return LONG;
-			case "float" :
-				return FLOAT;
-			case "double" :
-				return DOUBLE;
-			default :
-				return getTypeRef(fqnToBinary(fqn));
-		}
+		return switch (fqn) {
+			case "boolean" -> BOOLEAN;
+			case "byte" -> BOOLEAN;
+			case "char" -> CHAR;
+			case "short" -> SHORT;
+			case "int" -> INTEGER;
+			case "long" -> LONG;
+			case "float" -> FLOAT;
+			case "double" -> DOUBLE;
+			default -> getTypeRef(fqnToBinary(fqn));
+		};
 	}
 
 	public TypeRef getTypeRefFromPath(String path) {
