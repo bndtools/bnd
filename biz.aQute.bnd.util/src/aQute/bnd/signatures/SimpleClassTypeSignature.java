@@ -33,10 +33,9 @@ public class SimpleClassTypeSignature {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof SimpleClassTypeSignature)) {
+		if (!(obj instanceof SimpleClassTypeSignature other)) {
 			return false;
 		}
-		SimpleClassTypeSignature other = (SimpleClassTypeSignature) obj;
 		return Objects.equals(identifier, other.identifier) && Arrays.equals(typeArguments, other.typeArguments);
 	}
 

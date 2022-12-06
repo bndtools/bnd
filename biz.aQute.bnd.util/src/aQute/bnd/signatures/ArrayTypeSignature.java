@@ -23,10 +23,9 @@ public class ArrayTypeSignature implements ReferenceTypeSignature {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof ArrayTypeSignature)) {
+		if (!(obj instanceof ArrayTypeSignature other)) {
 			return false;
 		}
-		ArrayTypeSignature other = (ArrayTypeSignature) obj;
 		return Objects.equals(component, other.component);
 	}
 

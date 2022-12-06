@@ -43,10 +43,9 @@ class DeferredValueEntry<K, V> implements Entry<K, V> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Entry)) {
+		if (!(obj instanceof Entry<?, ?> entry)) {
 			return false;
 		}
-		Entry<?, ?> entry = (Entry<?, ?>) obj;
 		return key.equals(entry.getKey()) && value.equals(entry.getValue());
 	}
 

@@ -278,8 +278,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			//
 
 			for (int i = 0; i < args.length; i++) {
-				if (args[i] instanceof Throwable) {
-					args[i] = Exceptions.causes((Throwable) args[i]);
+				if (args[i] instanceof Throwable t) {
+					args[i] = Exceptions.causes(t);
 				}
 			}
 			if (p.isFailOk())
@@ -507,26 +507,26 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param map
 	 */
 	protected <T> T customize(T plugin, Attrs map, PluginsContainer pluginsContainer) {
-		if (plugin instanceof Plugin) {
+		if (plugin instanceof Plugin pluginPlugin) {
 			try {
-				((Plugin) plugin).setReporter(this);
+				pluginPlugin.setReporter(this);
 			} catch (Exception e) {
-				exception(e, "While setting reporter on plugin %s", plugin);
+				exception(e, "While setting reporter on plugin %s", pluginPlugin);
 			}
 			try {
 				if (map == null) {
 					map = Attrs.EMPTY_ATTRS;
 				}
-				((Plugin) plugin).setProperties(map);
+				pluginPlugin.setProperties(map);
 			} catch (Exception e) {
-				exception(e, "While setting properties %s on plugin %s", map, plugin);
+				exception(e, "While setting properties %s on plugin %s", map, pluginPlugin);
 			}
 		}
-		if (plugin instanceof RegistryPlugin) {
+		if (plugin instanceof RegistryPlugin registryPlugin) {
 			try {
-				((RegistryPlugin) plugin).setRegistry(pluginsContainer);
+				registryPlugin.setRegistry(pluginsContainer);
 			} catch (Exception e) {
-				exception(e, "While setting registry on plugin %s", plugin);
+				exception(e, "While setting registry on plugin %s", registryPlugin);
 			}
 		}
 		return plugin;
@@ -713,7 +713,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public String getUnexpandedProperty(String key) {
 		if (filter != null && filter.contains(key)) {
 			Object raw = getProperties().get(key);
-			return (raw instanceof String) ? (String) raw : null;
+			return (raw instanceof String string) ? string : null;
 		}
 		return getProperties().getProperty(key);
 	}
@@ -1024,7 +1024,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public String getUnprocessedProperty(String key, String deflt) {
 		if (filter != null && filter.contains(key)) {
 			Object raw = getProperties().get(key);
-			return (raw instanceof String) ? (String) raw : deflt;
+			return (raw instanceof String string) ? string : deflt;
 		}
 		return getProperties().getProperty(key, deflt);
 	}
@@ -1073,8 +1073,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			Object raw = proc.getProperties()
 				.get(key);
 			if (raw != null) {
-				if (raw instanceof String) {
-					value = (String) raw;
+				if (raw instanceof String string) {
+					value = string;
 				} else if (isPedantic()) {
 					warning("Key '%s' has a non-String value: %s:%s", key, raw.getClass()
 						.getName(), raw);
@@ -1185,8 +1185,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static void printClause(Map<?, ?> map, StringBuilder sb) throws IOException {
-		if (map instanceof Attrs) {
-			Attrs attrs = (Attrs) map;
+		if (map instanceof Attrs attrs) {
 			for (Entry<String, String> entry : attrs.entrySet()) {
 				String key = entry.getKey();
 				// Skip directives we do not recognize
@@ -1940,7 +1939,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				(filter == null) ? keyFilter : keyFilter.and(key -> !filter.contains(key)));
 		}
 
-		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String) ? (String) o : null,
+		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String string) ? string : null,
 			keyFilter);
 		return iterable;
 	}

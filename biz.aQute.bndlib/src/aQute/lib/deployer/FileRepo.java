@@ -700,11 +700,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (target == null || target.length == 0)
 			return getName();
 
-		if (target.length == 1 && target[0] instanceof String)
-			return (String) target[0];
+		if (target.length == 1 && target[0] instanceof String string)
+			return string;
 
-		if (target.length == 2 && target[0] instanceof String && target[1] instanceof Version) {
-			return status((String) target[0], (Version) target[1]);
+		if (target.length == 2 && target[0] instanceof String string && target[1] instanceof Version version) {
+			return status(string, version);
 		}
 
 		return null;

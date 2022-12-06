@@ -41,8 +41,8 @@ public class MethodSignature implements Signature {
 		for (JavaTypeSignature parameterType : parameterTypes) {
 			Signatures.erasedBinaryReferences(parameterType, references);
 		}
-		if (resultType instanceof ReferenceTypeSignature) {
-			Signatures.erasedBinaryReferences((ReferenceTypeSignature) resultType, references);
+		if (resultType instanceof ReferenceTypeSignature sig) {
+			Signatures.erasedBinaryReferences(sig, references);
 		}
 		for (ThrowsSignature throwType : throwTypes) {
 			Signatures.erasedBinaryReferences((JavaTypeSignature) throwType, references);
@@ -64,10 +64,9 @@ public class MethodSignature implements Signature {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof MethodSignature)) {
+		if (!(obj instanceof MethodSignature other)) {
 			return false;
 		}
-		MethodSignature other = (MethodSignature) obj;
 		return Objects.equals(resultType, other.resultType) && Arrays.equals(typeParameters, other.typeParameters)
 			&& Arrays.equals(parameterTypes, other.parameterTypes) && Arrays.equals(throwTypes, other.throwTypes);
 	}
@@ -123,26 +122,23 @@ public class MethodSignature implements Signature {
 	}
 
 	static Result parseResult(StringRover signature) {
-		switch (signature.charAt(0)) {
-			case 'V' :
+		return switch (signature.charAt(0)) {
+			case 'V' -> {
 				signature.increment();
-				return VoidDescriptor.V;
-			default :
-				return parseJavaTypeSignature(signature);
-		}
+				yield VoidDescriptor.V;
+			}
+			default -> parseJavaTypeSignature(signature);
+		};
 	}
 
 	static final ThrowsSignature[] EMPTY_ThrowsSignature = new ThrowsSignature[0];
 
 	static ThrowsSignature parseThrowsSignature(StringRover signature) {
 		assert signature.charAt(0) == '^';
-		switch (signature.charAt(1)) {
-			case 'T' :
-				return parseTypeVariableSignature(signature.increment());
-			case 'L' :
-				return parseClassTypeSignature(signature.increment());
-			default :
-				throw new IllegalArgumentException("invalid signature: " + signature);
-		}
+		return switch (signature.charAt(1)) {
+			case 'T' -> parseTypeVariableSignature(signature.increment());
+			case 'L' -> parseClassTypeSignature(signature.increment());
+			default -> throw new IllegalArgumentException("invalid signature: " + signature);
+		};
 	}
 }

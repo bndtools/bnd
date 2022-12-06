@@ -100,8 +100,7 @@ public final class RepoResourceUtils {
 			.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 		if (versionObj == null) {
 			result = Version.emptyVersion;
-		} else if (versionObj instanceof org.osgi.framework.Version) {
-			org.osgi.framework.Version v = (org.osgi.framework.Version) versionObj;
+		} else if (versionObj instanceof org.osgi.framework.Version v) {
 			result = new Version(v.toString());
 		} else {
 			throw new IllegalArgumentException("Cannot convert to Version from type: " + versionObj.getClass());
@@ -115,20 +114,20 @@ public final class RepoResourceUtils {
 		if (caps.isEmpty())
 			throw new IllegalArgumentException("Resource has no content capability");
 
-		Object uri = caps.iterator()
+		Object uriObject = caps.iterator()
 			.next()
 			.getAttributes()
 			.get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
-		if (uri == null)
+		if (uriObject == null)
 			throw new IllegalArgumentException("Resource content has no 'uri' attribute.");
-		if (uri instanceof URI)
-			return (URI) uri;
+		if (uriObject instanceof URI uri)
+			return uri;
 
 		try {
-			if (uri instanceof URL)
-				return ((URL) uri).toURI();
-			if (uri instanceof String)
-				return new URI((String) uri);
+			if (uriObject instanceof URL url)
+				return url.toURI();
+			if (uriObject instanceof String string)
+				return new URI(string);
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.", e);
 		}
@@ -147,8 +146,8 @@ public final class RepoResourceUtils {
 			.get(ContentNamespace.CONTENT_NAMESPACE);
 		if (contentObj == null)
 			return null;
-		if (contentObj instanceof String)
-			return (String) contentObj;
+		if (contentObj instanceof String string)
+			return string;
 
 		throw new IllegalArgumentException("Content attribute is wrong type: " + contentObj.getClass()
 			.toString() + " (expected String).");

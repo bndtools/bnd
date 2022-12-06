@@ -920,11 +920,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 	}
 
-	@Deprecated
-	public IndexFile.BundleDescriptor getDescriptor(String bsn, aQute.bnd.version.Version version) {
-		throw new UnsupportedOperationException();
-	}
-
 	/*
 	 * Bndtools ask for a JAR with a bsn that as ".source" appended to get the
 	 * source code. We can automate that by looking for it. The bsn - ".source"

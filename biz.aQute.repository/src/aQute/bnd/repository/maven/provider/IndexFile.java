@@ -46,7 +46,6 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.BundleCap;
-import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
@@ -612,20 +611,6 @@ class IndexFile {
 			logger.info("Interrupted");
 			Thread.currentThread()
 				.interrupt();
-		}
-	}
-
-	//
-	// Deprecated to not have to increase the version with major
-	//
-	@Deprecated
-	public class BundleDescriptor extends ResourceDescriptor {
-		public long		lastModified;
-		public Archive	archive;
-		public boolean	merged;
-
-		public Resource getResource() {
-			throw new UnsupportedOperationException();
 		}
 	}
 

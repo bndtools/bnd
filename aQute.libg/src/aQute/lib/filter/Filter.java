@@ -259,8 +259,8 @@ public class Filter {
 				return compareSign(op, new BigInteger(s).compareTo((BigInteger) obj));
 			} else if (numClass == BigDecimal.class) {
 				return compareSign(op, new BigDecimal(s).compareTo((BigDecimal) obj));
-			} else if (obj instanceof Collection<?>) {
-				for (Object x : (Collection<?>) obj) {
+			} else if (obj instanceof Collection<?> collection) {
+				for (Object x : collection) {
 					if (compare(x, op, s)) {
 						return true;
 					}
@@ -485,7 +485,7 @@ public class Filter {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof Filter && filter.equals(((Filter) obj).filter);
+		return obj instanceof Filter f && filter.equals(f.filter);
 	}
 
 	@Override

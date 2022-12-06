@@ -40,10 +40,9 @@ public class ClassTypeSignature implements ReferenceTypeSignature, ThrowsSignatu
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof ClassTypeSignature)) {
+		if (!(obj instanceof ClassTypeSignature other)) {
 			return false;
 		}
-		ClassTypeSignature other = (ClassTypeSignature) obj;
 		return Objects.equals(packageSpecifier, other.packageSpecifier) && Objects.equals(classType, other.classType)
 			&& Arrays.equals(innerTypes, other.innerTypes);
 	}

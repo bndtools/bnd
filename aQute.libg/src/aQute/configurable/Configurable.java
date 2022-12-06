@@ -119,13 +119,11 @@ public class Configurable<T> {
 			// TODO type variables
 			// TODO wildcards
 
-			if (type instanceof ParameterizedType) {
-				ParameterizedType pType = (ParameterizedType) type;
+			if (type instanceof ParameterizedType pType) {
 				return convert(pType, o);
 			}
 
-			if (type instanceof GenericArrayType) {
-				GenericArrayType gType = (GenericArrayType) type;
+			if (type instanceof GenericArrayType gType) {
 				return convertArray(gType.getGenericComponentType(), o);
 			}
 
@@ -265,8 +263,7 @@ public class Configurable<T> {
 		}
 
 		Object convertArray(Type componentType, Object o) throws Exception {
-			if (o instanceof String) {
-				String s = (String) o;
+			if (o instanceof String s) {
 				if (componentType == Byte.class || componentType == byte.class)
 					return s.getBytes(UTF_8);
 				if (componentType == Character.class || componentType == char.class)
@@ -284,19 +281,19 @@ public class Configurable<T> {
 		}
 
 		private Class<?> getRawClass(Type type) {
-			if (type instanceof Class)
-				return (Class<?>) type;
+			if (type instanceof Class<?> clazz)
+				return clazz;
 
-			if (type instanceof ParameterizedType)
-				return (Class<?>) ((ParameterizedType) type).getRawType();
+			if (type instanceof ParameterizedType pType)
+				return (Class<?>) pType.getRawType();
 
 			throw new IllegalArgumentException(
 				"For the raw type, type must be ParamaterizedType or Class but is " + type);
 		}
 
 		private Collection<?> toCollection(Object o) {
-			if (o instanceof Collection)
-				return (Collection<?>) o;
+			if (o instanceof Collection<?> c)
+				return c;
 
 			if (o.getClass()
 				.isArray()) {
@@ -313,8 +310,7 @@ public class Configurable<T> {
 				return Arrays.asList((Object[]) o);
 			}
 
-			if (o instanceof String) {
-				String s = (String) o;
+			if (o instanceof String s) {
 				if (SPLITTER_P.matcher(s)
 					.find())
 					return Arrays.asList(s.split("\\|"));
@@ -325,8 +321,8 @@ public class Configurable<T> {
 		}
 
 		private Map<?, ?> toMap(Object o) {
-			if (o instanceof Map)
-				return (Map<?, ?>) o;
+			if (o instanceof Map<?, ?> m)
+				return m;
 
 			throw new IllegalArgumentException("Cannot convert " + o + " to a map as requested");
 		}

@@ -190,8 +190,8 @@ public class Container {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof Container)
-			return path.equals(((Container) other).path);
+		if (other instanceof Container container)
+			return path.equals(container.path);
 		return false;
 	}
 

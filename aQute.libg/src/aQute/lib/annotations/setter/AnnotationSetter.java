@@ -80,9 +80,9 @@ public class AnnotationSetter<T> {
 			}
 
 			private void print(StringBuilder sb, Object value) {
-				if (value instanceof String) {
+				if (value instanceof String string) {
 					sb.append("\"");
-					escape(sb, (String) value);
+					escape(sb, string);
 					sb.append("\"");
 
 				} else if (value.getClass()
@@ -99,11 +99,11 @@ public class AnnotationSetter<T> {
 					}
 					if (length != 1)
 						sb.append("}");
-				} else if (value instanceof Wrapper) {
-					sb.append(((Wrapper) value).value);
-				} else if (value instanceof Enum) {
-					String name = ((Enum<?>) value).name();
-					sb.append(getFQN(value.getClass()))
+				} else if (value instanceof Wrapper wrapper) {
+					sb.append(wrapper.value);
+				} else if (value instanceof Enum<?> e) {
+					String name = e.name();
+					sb.append(getFQN(e.getClass()))
 						.append(".")
 						.append(name);
 				} else {

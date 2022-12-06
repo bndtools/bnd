@@ -114,13 +114,11 @@ public class ResolveTest {
 
 	@Test
 	public void testDefaultVersionsForJava() throws Exception {
-		Run run = Run.createRun(null, IO.getFile("testdata/defltversions/run.bndrun"));
-		try (Workspace w = run.getWorkspace(); ProjectResolver pr = new ProjectResolver(run);) {
-			Map<Resource, List<Wire>> resolve = pr.resolve();
-			assertTrue(pr.check());
-			assertNotNull(resolve);
-			assertTrue(resolve.size() > 0);
-			System.out.println(resolve);
+		try (Bndrun run = (Bndrun) Bndrun.createRun(null, IO.getFile("testdata/defltversions/run.bndrun"))) {
+			RunResolution resolve = run.resolve();
+			Map<Resource, List<Wire>> required = resolve.getRequired();
+			assertThat(required).hasSizeGreaterThanOrEqualTo(1);
+			System.out.println(required);
 		}
 	}
 
@@ -328,7 +326,8 @@ public class ResolveTest {
 		requires.add(capReq.buildSyntheticRequirement());
 
 		model.setRunRequires(requires);
-		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		BndrunResolveContext context = new BndrunResolveContext(model.getProperties(), model.getProject(), registry,
+			log);
 		context.setLevel(0);
 		context.init();
 		try (ResolverLogger logger = new ResolverLogger(4)) {
@@ -359,7 +358,8 @@ public class ResolveTest {
 		requires.add(capReq.buildSyntheticRequirement());
 
 		model.setRunRequires(requires);
-		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		BndrunResolveContext context = new BndrunResolveContext(model.getProperties(), model.getProject(), registry,
+			log);
 		context.setLevel(0);
 		context.init();
 		try (ResolverLogger logger = new ResolverLogger(4)) {
@@ -458,7 +458,8 @@ public class ResolveTest {
 		requires.add(capReq.buildSyntheticRequirement());
 
 		model.setRunRequires(requires);
-		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		BndrunResolveContext context = new BndrunResolveContext(model.getProperties(), model.getProject(), registry,
+			log);
 
 		try (ResolverLogger logger = new ResolverLogger()) {
 			Resolver resolver = new BndResolver(logger);
@@ -605,7 +606,8 @@ public class ResolveTest {
 		runModel.setRunRequires(requirements);
 
 		// Resolve the bndrun
-		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+		BndrunResolveContext context = new BndrunResolveContext(runModel.getProperties(), runModel.getProject(),
+			registry, log);
 		Resolver resolver = new BndResolver(new org.apache.felix.resolver.Logger(4));
 		Collection<Resource> resolvedResources = new ResolveProcess()
 			.resolveRequired(runModel, registry, resolver, Collections.emptyList(), log)

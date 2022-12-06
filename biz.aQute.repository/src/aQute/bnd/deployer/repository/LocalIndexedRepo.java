@@ -595,24 +595,12 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		if (target.length == 2) {
 			ResourceHandle handle = getHandle(target);
 			if (handle != null) {
-				String where = "";
-				switch (handle.getLocation()) {
-					case local :
-						where = "";
-						break;
-
-					case remote :
-						where = UPWARDS_ARROW;
-						break;
-
-					case remote_cached :
-						where = DOWNWARDS_ARROW;
-						break;
-					default :
-						where = "?";
-						break;
-
-				}
+				String where = switch (handle.getLocation()) {
+					case local -> "";
+					case remote -> UPWARDS_ARROW;
+					case remote_cached -> DOWNWARDS_ARROW;
+					default -> "?";
+				};
 				return target[1] + " " + where;
 			}
 		}

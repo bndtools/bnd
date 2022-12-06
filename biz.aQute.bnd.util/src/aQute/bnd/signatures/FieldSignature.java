@@ -36,10 +36,9 @@ public class FieldSignature implements Signature {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof FieldSignature)) {
+		if (!(obj instanceof FieldSignature other)) {
 			return false;
 		}
-		FieldSignature other = (FieldSignature) obj;
 		return Objects.equals(type, other.type);
 	}
 

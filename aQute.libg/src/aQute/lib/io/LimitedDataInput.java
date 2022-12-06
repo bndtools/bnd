@@ -16,8 +16,7 @@ public class LimitedDataInput implements DataInput {
 		if (size < 0) {
 			throw new IllegalArgumentException("size must be non-negative");
 		}
-		if (in instanceof ByteBufferDataInput) {
-			ByteBufferDataInput bbin = (ByteBufferDataInput) in;
+		if (in instanceof ByteBufferDataInput bbin) {
 			ByteBuffer slice = bbin.slice(size);
 			return ByteBufferDataInput.wrap(slice);
 		}

@@ -382,8 +382,8 @@ public class RunResolution {
 
 	public RunResolution reportException() {
 		if (!isOK()) {
-			if (exception instanceof ResolutionException) {
-				project.error("Resolution failed %s", exception.getMessage());
+			if (exception instanceof ResolutionException re) {
+				project.error("Resolution failed %s", re.getMessage());
 			} else {
 				project.exception(exception, "Resolution failed unexpectedly");
 			}
@@ -392,8 +392,8 @@ public class RunResolution {
 	}
 
 	public String report(boolean optionals) {
-		if (exception instanceof ResolutionException) {
-			return ResolveProcess.format((ResolutionException) exception, optionals);
+		if (exception instanceof ResolutionException re) {
+			return ResolveProcess.format(re, optionals);
 		} else if (exception != null) {
 			return Exceptions.toString(Exceptions.unrollCause(exception));
 		} else if (log != null) {

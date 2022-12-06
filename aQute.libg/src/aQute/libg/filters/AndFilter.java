@@ -8,8 +8,8 @@ public final class AndFilter extends Filter {
 	private final List<Filter> children = new LinkedList<>();
 
 	public AndFilter addChild(Filter child) {
-		if (child instanceof AndFilter)
-			children.addAll(((AndFilter) child).children);
+		if (child instanceof AndFilter andChild)
+			children.addAll(andChild.children);
 		else
 			children.add(child);
 		return this;

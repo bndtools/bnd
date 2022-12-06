@@ -1069,18 +1069,13 @@ public class ResourceBuilder {
 		}
 
 		private static String map(String namespace) {
-			switch (namespace) {
-				case IdentityNamespace.IDENTITY_NAMESPACE :
-					return "1";
-				case PackageNamespace.PACKAGE_NAMESPACE :
-					return "2";
-				case BundleNamespace.BUNDLE_NAMESPACE :
-					return "3";
-				case HostNamespace.HOST_NAMESPACE :
-					return "4";
-				default :
-					return namespace;
-			}
+			return switch (namespace) {
+				case IdentityNamespace.IDENTITY_NAMESPACE -> "1";
+				case PackageNamespace.PACKAGE_NAMESPACE -> "2";
+				case BundleNamespace.BUNDLE_NAMESPACE -> "3";
+				case HostNamespace.HOST_NAMESPACE -> "4";
+				default -> namespace;
+			};
 		}
 	}
 

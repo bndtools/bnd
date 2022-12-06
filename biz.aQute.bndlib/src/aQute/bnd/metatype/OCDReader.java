@@ -195,8 +195,8 @@ class OCDReader {
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
 				if (prefixField.isFinal() && (prefixField.getType() == analyzer.getTypeRef("java/lang/String"))
-					&& (c instanceof String)) {
-					prefix = (String) c;
+					&& (c instanceof String p)) {
+					prefix = p;
 					ocd.updateVersion(MetatypeVersion.VERSION_1_4);
 				} else {
 					analyzer.warning(
@@ -466,40 +466,18 @@ class OCDReader {
 				analyzer.error("Can only handle array of depth one field , nested type %s", rtype);
 				return null;
 			}
-			switch (rtype) {
-				case "Z" :
-				case "Ljava/lang/Boolean;" :
-					return AttributeType.BOOLEAN;
-				case "B" :
-				case "Ljava/lang/Byte;" :
-					return AttributeType.BYTE;
-				case "C" :
-				case "Ljava/lang/Character;" :
-					return AttributeType.CHARACTER;
-				case "S" :
-				case "Ljava/lang/Short;" :
-					return AttributeType.SHORT;
-				case "I" :
-				case "Ljava/lang/Integer;" :
-					return AttributeType.INTEGER;
-				case "J" :
-				case "Ljava/lang/Long;" :
-					return AttributeType.LONG;
-				case "F" :
-				case "Ljava/lang/Float;" :
-					return AttributeType.FLOAT;
-				case "D" :
-				case "Ljava/lang/Double;" :
-					return AttributeType.DOUBLE;
-				case "Ljava/lang/String;" :
-				case "Ljava/lang/Class;" :
-					return AttributeType.STRING;
-				default :
-					if (acceptableType(rtype)) {
-						return AttributeType.STRING;
-					}
-					return null;
-			}
+			return switch (rtype) {
+				case "Z", "Ljava/lang/Boolean;" -> AttributeType.BOOLEAN;
+				case "B", "Ljava/lang/Byte;" -> AttributeType.BYTE;
+				case "C", "Ljava/lang/Character;" -> AttributeType.CHARACTER;
+				case "S", "Ljava/lang/Short;" -> AttributeType.SHORT;
+				case "I", "Ljava/lang/Integer;" -> AttributeType.INTEGER;
+				case "J", "Ljava/lang/Long;" -> AttributeType.LONG;
+				case "F", "Ljava/lang/Float;" -> AttributeType.FLOAT;
+				case "D", "Ljava/lang/Double;" -> AttributeType.DOUBLE;
+				case "Ljava/lang/String;", "Ljava/lang/Class;" -> AttributeType.STRING;
+				default -> acceptableType(rtype) ? AttributeType.STRING : null;
+			};
 		}
 
 		private boolean acceptableType(String rtype) {

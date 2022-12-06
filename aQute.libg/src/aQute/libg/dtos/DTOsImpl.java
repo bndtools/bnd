@@ -166,13 +166,13 @@ public class DTOsImpl implements DTOs {
 			T dest = c.getConstructor()
 				.newInstance();
 
-			if (source instanceof Map) {
-				((Map) dest).putAll((Map) source);
+			if (source instanceof Map map) {
+				((Map) dest).putAll(map);
 				return dest;
 			}
 
-			if (source instanceof Collection) {
-				((Collection) dest).addAll((Collection) source);
+			if (source instanceof Collection collection) {
+				((Collection) dest).addAll(collection);
 				return dest;
 			}
 
@@ -220,9 +220,8 @@ public class DTOsImpl implements DTOs {
 			T dest = c.getConstructor()
 				.newInstance();
 
-			if (source instanceof Map) {
+			if (source instanceof Map<?, ?> s) {
 				Map<Object, Object> d = (Map<Object, Object>) dest;
-				Map<Object, Object> s = (Map<Object, Object>) source;
 				for (Entry<?, ?> entry : s.entrySet()) {
 					Link next = new Link(link, entry.getKey(), source);
 					d.put(deepCopy(entry.getKey(), next), deepCopy(entry.getValue(), next));
@@ -230,8 +229,7 @@ public class DTOsImpl implements DTOs {
 				return dest;
 			}
 
-			if (source instanceof Collection) {
-				Collection s = (Collection) source;
+			if (source instanceof Collection s) {
 				Collection d = (Collection) dest;
 				int i = 0;
 				for (Object o : s) {
@@ -404,15 +402,14 @@ public class DTOsImpl implements DTOs {
 				return get(Array.get(dto, index), path, i + 1, max);
 			}
 
-			if (dto instanceof Collection) {
-				Collection<?> coll = (Collection<?>) dto;
+			if (dto instanceof Collection<?> coll) {
 				int index = Integer.parseInt(name);
 				if (index >= coll.size())
 					throw new IllegalArgumentException("path access contains a collection but the corresponding index is not an integer: "
 						+ Arrays.toString(path) + "[" + i + "]");
 
-				if (coll instanceof List) {
-					return get(((List<?>) coll).get(index), path, i + 1, max);
+				if (coll instanceof List<?> list) {
+					return get(list.get(index), path, i + 1, max);
 				}
 				for (Object o : coll) {
 					if (index-- == 0)
@@ -422,8 +419,8 @@ public class DTOsImpl implements DTOs {
 				return null; // unreachable
 			}
 
-			if (dto instanceof Map) {
-				Object value = ((Map<?, ?>) dto).get(name);
+			if (dto instanceof Map<?, ?> map) {
+				Object value = map.get(name);
 				return get(value, path, i + 1, max);
 			}
 
@@ -475,8 +472,7 @@ public class DTOsImpl implements DTOs {
 			if (older.equals(newer))
 				return true;
 
-			if (older instanceof Collection<?>) {
-				Collection<?> co = (Collection<?>) older;
+			if (older instanceof Collection<?> co) {
 				Collection<?> cn = (Collection<?>) newer;
 
 				if (co.size() != cn.size()) {
@@ -491,8 +487,7 @@ public class DTOsImpl implements DTOs {
 				// They're different, if it is a list we can find out which
 				//
 
-				if (older instanceof List<?>) {
-					List<?> clo = (List<?>) older;
+				if (older instanceof List<?> clo) {
 					List<?> cln = (List<?>) newer;
 
 					for (int i = 0; i < co.size(); i++) {
@@ -535,8 +530,7 @@ public class DTOsImpl implements DTOs {
 				return true;
 			}
 
-			if (older instanceof Map<?, ?>) {
-				Map<?, ?> co = (Map<?, ?>) older;
+			if (older instanceof Map<?, ?> co) {
 				Map<?, ?> cn = (Map<?, ?>) newer;
 
 				if (co.size() != cn.size()) {
@@ -555,12 +549,12 @@ public class DTOsImpl implements DTOs {
 
 				for (Map.Entry<?, ?> e : co.entrySet()) {
 					Object key = e.getKey();
-					if (!(key instanceof String)) {
+					if (!(key instanceof String string)) {
 						diffs.add(new Diff(Reason.NO_STRING_MAP, link));
 						return true;
 					}
 
-					String k = escape((String) key);
+					String k = escape(string);
 
 					Object no = co.get(key);
 					Object nn = cn.get(key);

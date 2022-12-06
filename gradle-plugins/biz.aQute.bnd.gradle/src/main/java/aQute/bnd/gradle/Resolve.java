@@ -256,12 +256,11 @@ public class Resolve extends AbstractBndrun {
 	 */
 	@Override
 	protected void worker(Project run) throws Exception {
-		if (run instanceof biz.aQute.resolve.Bndrun) {
-			worker((biz.aQute.resolve.Bndrun) run);
-			return;
+		if (!(run instanceof biz.aQute.resolve.Bndrun bndrun)) {
+			throw new GradleException(
+				"Resolving a project's bnd.bnd file is not supported by this task. This task can only resolve a bndrun file.");
 		}
-		throw new GradleException(
-			"Resolving a project's bnd.bnd file is not supported by this task. This task can only resolve a bndrun file.");
+		worker0(bndrun);
 	}
 
 	/**
@@ -270,7 +269,7 @@ public class Resolve extends AbstractBndrun {
 	 * @param run The Bndrun object.
 	 * @throws Exception If the worker action has an exception.
 	 */
-	private void worker(biz.aQute.resolve.Bndrun run) throws Exception {
+	private void worker0(biz.aQute.resolve.Bndrun run) throws Exception {
 		getLogger().info("Resolving runbundles required for {}", run.getPropertiesFile());
 		getLogger().debug("Run properties: {}", run.getProperties());
 		try {

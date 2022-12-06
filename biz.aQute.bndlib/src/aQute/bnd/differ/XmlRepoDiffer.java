@@ -203,16 +203,16 @@ public final class XmlRepoDiffer {
 		if (value != null) {
 			if (value instanceof String) {
 				Object v = attributes.get(value);
-				if (v instanceof List<?>) {
-					return ((List<?>) v).stream()
+				if (v instanceof List<?> list) {
+					return list.stream()
 						.map(Object::toString)
 						.collect(joining(KEY_DELIMITER));
 				} else {
 					return v.toString();
 				}
 			}
-			if (value instanceof List<?>) {
-				return ((List<?>) value).stream()
+			if (value instanceof List<?> list) {
+				return list.stream()
 					.map(attributes::get)
 					.map(Object::toString)
 					.collect(joining(KEY_DELIMITER));
@@ -380,9 +380,9 @@ public final class XmlRepoDiffer {
 			String key = entry.getKey();
 			Object val = entry.getValue();
 
-			if (val instanceof List<?>) {
+			if (val instanceof List<?> list) {
 				// expanding attribute or directive of type 'List'
-				((List<?>) val).forEach(v -> finalEntries.put(key, v));
+				list.forEach(v -> finalEntries.put(key, v));
 			} else {
 				finalEntries.put(key, val);
 			}
@@ -404,10 +404,10 @@ public final class XmlRepoDiffer {
 		if (value == null) {
 			return attributes;
 		}
-		if (value instanceof String) {
-			attributes.remove(value.toString());
-		} else if (value instanceof List<?>) {
-			((List<?>) value).stream()
+		if (value instanceof String string) {
+			attributes.remove(string);
+		} else if (value instanceof List<?> list) {
+			list.stream()
 				.map(Object::toString)
 				.forEach(attributes::remove);
 		}
@@ -490,8 +490,8 @@ public final class XmlRepoDiffer {
 				if (ex instanceof And || ex instanceof Or) {
 					return visit((SubExpression) ex);
 				}
-				if (ex instanceof SimpleExpression) {
-					return visit((SimpleExpression) ex);
+				if (ex instanceof SimpleExpression simpleExpression) {
+					return visit(simpleExpression);
 				}
 			}
 			return Pair.newInstance(null, null);

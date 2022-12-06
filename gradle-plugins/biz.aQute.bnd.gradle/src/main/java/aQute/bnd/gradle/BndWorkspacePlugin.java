@@ -60,10 +60,10 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	@Override
 	public void apply(Object target) {
 		try {
-			if (target instanceof Settings) {
-				configureSettings((Settings) target);
-			} else if (target instanceof Project) {
-				configureWorkspaceProject((Project) target);
+			if (target instanceof Settings settings) {
+				configureSettings(settings);
+			} else if (target instanceof Project project) {
+				configureWorkspaceProject(project);
 			} else {
 				throw new GradleException(String.format("The target %s is not a Settings or a Project", target));
 			}
@@ -110,17 +110,11 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 				}
 			}
 			String[] elements = TASKNAME_SPLITTER.split(taskName);
-			switch (elements.length) {
-				case 1 :
-					projectNames.add(defaultProjectName);
-					break;
-				case 2 :
-					projectNames.add(elements[0].isEmpty() ? bnd_build : elements[0]);
-					break;
-				default :
-					projectNames.add(elements[0].isEmpty() ? elements[1] : elements[0]);
-					break;
-			}
+			projectNames.add(switch (elements.length) {
+				case 1 -> defaultProjectName;
+				case 2 -> elements[0].isEmpty() ? bnd_build : elements[0];
+				default -> elements[0].isEmpty() ? elements[1] : elements[0];
+			});
 		}
 
 		/*
@@ -303,9 +297,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			.getExtraProperties();
 		if (ext.has("bndWorkspaceConfigure")) {
 			Object bndWorkspaceConfigure = ext.get("bndWorkspaceConfigure");
-			if (bndWorkspaceConfigure instanceof Closure) {
-				@SuppressWarnings("unchecked")
-				Closure<?> closure = (Closure<?>) bndWorkspaceConfigure;
+			if (bndWorkspaceConfigure instanceof Closure<?> closure) {
 				closure.call(workspace);
 			} else if (bndWorkspaceConfigure instanceof Action) {
 				@SuppressWarnings("unchecked")

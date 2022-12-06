@@ -319,8 +319,7 @@ public class Hierarchy implements Iterable<NamedNode> {
 					throw new NoSuchElementException();
 
 				Node ret = node;
-				if (node instanceof Folder) {
-					Folder folder = (Folder) node;
+				if (node instanceof Folder folder) {
 					if (folder.children.length > 0) {
 						node = folder.children[0];
 						return ret;
@@ -388,8 +387,8 @@ public class Hierarchy implements Iterable<NamedNode> {
 
 									@Override
 									public Object getValue() {
-										if (next instanceof Leaf) {
-											return ((Leaf) next).payload;
+										if (next instanceof Leaf leaf) {
+											return leaf.payload;
 										}
 										return null;
 									}
@@ -412,10 +411,9 @@ public class Hierarchy implements Iterable<NamedNode> {
 
 			@Override
 			public Object get(Object key) {
-				if (!(key instanceof String))
+				if (!(key instanceof String path))
 					return null;
 
-				String path = (String) key;
 				return find(path).filter(n -> n instanceof Leaf)
 					.map(Leaf.class::cast)
 					.map(Leaf::payload)

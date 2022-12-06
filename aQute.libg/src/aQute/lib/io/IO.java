@@ -277,7 +277,7 @@ public class IO {
 	}
 
 	public static Writer copy(Reader r, Writer w) throws IOException {
-		try (Closeable closeable = r) {
+		try (r) {
 			char[] buffer = new char[BUFFER_SIZE];
 			for (int size; (size = r.read(buffer, 0, buffer.length)) > 0;) {
 				w.write(buffer, 0, size);
@@ -341,7 +341,7 @@ public class IO {
 	}
 
 	public static OutputStream copy(InputStream in, OutputStream out) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
@@ -355,14 +355,14 @@ public class IO {
 	}
 
 	public static ByteBufferOutputStream copy(InputStream in, ByteBufferOutputStream out) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			out.write(in);
 			return out;
 		}
 	}
 
 	public static DataOutput copy(InputStream in, DataOutput out) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
@@ -372,7 +372,7 @@ public class IO {
 	}
 
 	public static WritableByteChannel copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE);
 			while (read(in, bb) > 0) {
 				bb.flip();
@@ -387,7 +387,7 @@ public class IO {
 	}
 
 	public static ByteBuffer copy(InputStream in, ByteBuffer bb) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			if (bb.hasArray()) {
 				byte[] buffer = bb.array();
 				int offset = bb.arrayOffset();
@@ -412,7 +412,7 @@ public class IO {
 	}
 
 	public static byte[] copy(InputStream in, byte[] data, int off, int len) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			for (int remaining, size; (remaining = len - off) > 0 && (size = read(in, data, off, remaining)) > 0;) {
 				off += size;
 			}
@@ -421,8 +421,7 @@ public class IO {
 	}
 
 	public static OutputStream copy(ByteBuffer bb, OutputStream out) throws IOException {
-		if (out instanceof ByteBufferOutputStream) {
-			ByteBufferOutputStream bbout = (ByteBufferOutputStream) out;
+		if (out instanceof ByteBufferOutputStream bbout) {
 			bbout.write(bb);
 		} else if (bb.hasArray()) {
 			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
@@ -440,8 +439,7 @@ public class IO {
 	}
 
 	public static DataOutput copy(ByteBuffer bb, DataOutput out) throws IOException {
-		if (out instanceof ByteBufferDataOutput) {
-			ByteBufferDataOutput bbout = (ByteBufferDataOutput) out;
+		if (out instanceof ByteBufferDataOutput bbout) {
 			bbout.write(bb);
 		} else if (bb.hasArray()) {
 			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
@@ -475,7 +473,7 @@ public class IO {
 	}
 
 	public static MessageDigest copy(InputStream in, MessageDigest md) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				md.update(buffer, 0, size);
@@ -485,7 +483,7 @@ public class IO {
 	}
 
 	public static MessageDigest copy(ReadableByteChannel in, MessageDigest md) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			while (read(in, bb) > 0) {
 				bb.flip();
@@ -513,7 +511,7 @@ public class IO {
 
 	public static URL copy(InputStream in, URL url, String method) throws IOException {
 		URLConnection c = url.openConnection();
-		HttpURLConnection http = (c instanceof HttpURLConnection) ? (HttpURLConnection) c : null;
+		HttpURLConnection http = (c instanceof HttpURLConnection httpCon) ? httpCon : null;
 		if (http != null && method != null) {
 			http.setRequestMethod(method);
 		}
@@ -615,7 +613,7 @@ public class IO {
 	}
 
 	public static WritableByteChannel copy(InputStream in, WritableByteChannel out) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
 			for (int size, position; (size = read(in, buffer, position = bb.position(), bb.remaining())) > 0;) {
@@ -632,7 +630,7 @@ public class IO {
 	}
 
 	public static OutputStream copy(ReadableByteChannel in, OutputStream out) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
 			for (; read(in, bb) > 0; bb.clear()) {
@@ -1064,7 +1062,7 @@ public class IO {
 	}
 
 	public static long drain(InputStream in) throws IOException {
-		try (Closeable closeable = in) {
+		try (in) {
 			long result = 0L;
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
@@ -1114,13 +1112,13 @@ public class IO {
 
 		boolean exceptionsWereThrown = false;
 		for (Object o : toBeClosed) {
-			if (o instanceof AutoCloseable) {
-				exceptionsWereThrown |= close((AutoCloseable) o) != null;
-			} else if (o instanceof Iterable) {
-				for (Object oo : (Iterable<?>) o) {
-					if (oo instanceof AutoCloseable) {
+			if (o instanceof AutoCloseable closeable) {
+				exceptionsWereThrown |= close(closeable) != null;
+			} else if (o instanceof Iterable<?> iterable) {
+				for (Object oo : iterable) {
+					if (oo instanceof AutoCloseable closeable) {
 						// do not recurse!
-						exceptionsWereThrown |= close((AutoCloseable) oo) != null;
+						exceptionsWereThrown |= close(closeable) != null;
 					}
 				}
 			}
@@ -1437,8 +1435,8 @@ public class IO {
 		@Override
 		public void flush() throws IOException {
 			synchronized (lock) {
-				if (appendable instanceof Flushable) {
-					((Flushable) appendable).flush();
+				if (appendable instanceof Flushable flushable) {
+					flushable.flush();
 				}
 			}
 		}
@@ -1447,8 +1445,8 @@ public class IO {
 		public void close() throws IOException {
 			synchronized (lock) {
 				flush();
-				if (appendable instanceof Closeable) {
-					((Closeable) appendable).close();
+				if (appendable instanceof Closeable closeable) {
+					closeable.close();
 				}
 			}
 		}
@@ -1610,29 +1608,15 @@ public class IO {
 				continue;
 
 			if (isWindows) {
-				switch (c) {
-					case '<' :
-					case '>' :
-					case '"' :
-					case '/' :
-					case '\\' :
-					case '|' :
-					case '*' :
-					case ':' :
-						sb.append('%');
-						break;
-					default :
-						sb.append(c);
-				}
+				sb.append(switch (c) {
+					case '<', '>', '"', '/', '\\', '|', '*', ':' -> '%';
+					default -> c;
+				});
 			} else {
-				switch (c) {
-					case ':' :
-					case '/' :
-						sb.append('%');
-						break;
-					default :
-						sb.append(c);
-				}
+				sb.append(switch (c) {
+					case '/', ':' -> '%';
+					default -> c;
+				});
 			}
 		}
 		if (sb.length() == 0 || (isWindows && RESERVED_WINDOWS_P.matcher(sb)
@@ -1739,8 +1723,7 @@ public class IO {
 			} else {
 				switch (b >> 4) {
 					// 2 byte encoding
-					case 0b1100 :
-					case 0b1101 : {
+					case 0b1100, 0b1101 : {
 						i++;
 						if (i >= size) {
 							throw new UTFDataFormatException("partial multi byte charater at end");

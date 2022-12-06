@@ -758,10 +758,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			File outFile = IO.getBasedFile(directory, entry.getKey());
 			Resource resource = entry.getValue();
 			// Skip the copy if the source and target are the same file
-			if (resource instanceof FileResource) {
-				@SuppressWarnings("resource")
-				FileResource fr = (FileResource) resource;
-				if (outFile.equals(fr.getFile())) {
+			if (resource instanceof FileResource fileResource) {
+				if (outFile.equals(fileResource.getFile())) {
 					continue;
 				}
 			}

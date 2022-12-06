@@ -45,8 +45,7 @@ public class MapHandler extends Handler {
 	}
 
 	private Type resolve(Type type) {
-		if (type instanceof TypeVariable<?>) {
-			TypeVariable<?> tv = (TypeVariable<?>) type;
+		if (type instanceof TypeVariable<?> tv) {
 			Type[] bounds = tv.getBounds();
 			return resolve(bounds[bounds.length - 1]);
 		}
@@ -58,9 +57,9 @@ public class MapHandler extends Handler {
 			return null;
 
 		for (Type t : start.getGenericInterfaces()) {
-			if (t instanceof ParameterizedType) {
-				if (((ParameterizedType) t).getRawType() == target)
-					return (ParameterizedType) t;
+			if (t instanceof ParameterizedType ptype) {
+				if (ptype.getRawType() == target)
+					return ptype;
 			}
 		}
 		for (Class<?> impls : start.getInterfaces()) {

@@ -407,8 +407,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 		URLConnection conn = u.openConnection();
 		InputStream in;
-		if (conn instanceof HttpURLConnection) {
-			HttpURLConnection http = (HttpURLConnection) conn;
+		if (conn instanceof HttpURLConnection http) {
 			http.setRequestProperty("Accept-Encoding", "deflate");
 			http.setInstanceFollowRedirects(true);
 

@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -68,10 +67,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 	private static final String			BND_AUGMENT					= "bnd.augment";
 
-	@Deprecated
-	public static final String			RUN_EFFECTIVE_INSTRUCTION	= Constants.RESOLVE_EFFECTIVE;
-	@Deprecated
-	public static final String			PROP_RESOLVE_PREFERENCES	= Constants.RESOLVE_PREFERENCES;
 	private static final String			NAMESPACE_WHITELIST			= "x-whitelist";
 
 	private Registry					registry;
@@ -80,27 +75,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	private Project						project;
 	private boolean						initialized;
 	private volatile List<ResolverHook>	resolverHooks;
-
-	/**
-	 * Constructor for a BndEditModel. The idea to use a BndEditModel was rather
-	 * bad because it couples things that should not be coupled. The other
-	 * constructor should be preferred.
-	 *
-	 * @param runModel The edit model
-	 * @param registry The bnd registry
-	 * @param log
-	 */
-	@Deprecated
-	public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
-		super(log);
-		try {
-			this.registry = registry;
-			this.properties = runModel.getProperties();
-			this.project = runModel.getProject();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 	/**
 	 * The preferred constructor
@@ -377,8 +351,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			Map<String, Repository> repoNameMap = new HashMap<>(allRepos.size());
 			for (Repository repo : allRepos) {
 				String name;
-				if (repo instanceof RepositoryPlugin) {
-					name = ((RepositoryPlugin) repo).getName();
+				if (repo instanceof RepositoryPlugin repositoryPlugin) {
+					name = repositoryPlugin.getName();
 				} else {
 					name = repo.toString();
 				}
@@ -455,9 +429,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (pathObject == null)
 			pathObject = "augments.bnd";
 
-		if (pathObject instanceof String) {
-			String path = (String) pathObject;
-
+		if (pathObject instanceof String path) {
 			HttpClient http = registry.getPlugin(HttpClient.class);
 
 			for (URI uri : locations.keySet())

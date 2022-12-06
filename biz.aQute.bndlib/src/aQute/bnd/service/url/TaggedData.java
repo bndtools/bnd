@@ -32,28 +32,13 @@ public class TaggedData implements Closeable {
 	private final File			file;
 	private final String		message;
 
-	@Deprecated
-	public TaggedData(String tag, InputStream inputStream, int responseCode, long modified, URI url) {
-		throw new RuntimeException();
-	}
-
-	@Deprecated
-	public TaggedData(String tag, InputStream inputStream, int responseCode) {
-		throw new RuntimeException();
-	}
-
-	@Deprecated
-	public TaggedData(String tag, InputStream inputStream) {
-		throw new RuntimeException();
-	}
-
 	public TaggedData(URLConnection con, InputStream in) throws Exception {
 		this(con, in, null);
 	}
 
 	public TaggedData(URLConnection con, InputStream in, File file) throws Exception {
 		this.con = requireNonNull(con);
-		this.responseCode = con instanceof HttpURLConnection ? ((HttpURLConnection) con).getResponseCode()
+		this.responseCode = con instanceof HttpURLConnection hcon ? hcon.getResponseCode()
 			: (in != null ? 200 : -1);
 		this.in = in == null && (responseCode / 100 == 2) ? con.getInputStream() : in;
 		this.file = file;
@@ -65,10 +50,9 @@ public class TaggedData implements Closeable {
 
 	private String getMessage(URLConnection con) {
 		try {
-			if (!(con instanceof HttpURLConnection))
+			if (!(con instanceof HttpURLConnection h))
 				return null;
 
-			HttpURLConnection h = (HttpURLConnection) con;
 			if (h.getResponseCode() / 100 < 4)
 				return null;
 
@@ -123,42 +107,25 @@ public class TaggedData implements Closeable {
 	}
 
 	private String entity(String name) {
-		switch (name) {
-			case "nbsp" :
-				return "\u00A0";
-			case "lt" :
-				return "<";
-			case "gt" :
-				return "<";
-			case "amp" :
-				return "&";
-			case "cent" :
-				return "¢";
-			case "pound" :
-				return "£";
-			case "euro" :
-				return "€";
-			case "copy" :
-				return "©";
-			case "reg" :
-				return "®";
-			case "quot" :
-				return "\"";
-			case "apos" :
-				return "'";
-			case "yen" :
-				return "¥";
-			case "sect" :
-				return "§";
-			case "not" :
-				return "¬";
-			case "para" :
-				return "¶";
-			case "curren" :
-				return "¤";
-			default :
-				return "&" + name + ";";
-		}
+		return switch (name) {
+			case "nbsp" -> "\u00A0";
+			case "lt" -> "<";
+			case "gt" -> "<";
+			case "amp" -> "&";
+			case "cent" -> "¢";
+			case "pound" -> "£";
+			case "euro" -> "€";
+			case "copy" -> "©";
+			case "reg" -> "®";
+			case "quot" -> "\"";
+			case "apos" -> "'";
+			case "yen" -> "¥";
+			case "sect" -> "§";
+			case "not" -> "¬";
+			case "para" -> "¶";
+			case "curren" -> "¤";
+			default -> "&" + name + ";";
+		};
 	}
 
 	public TaggedData(URI url, int responseCode, File file) throws Exception {

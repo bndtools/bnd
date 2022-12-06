@@ -46,11 +46,10 @@ public class Annotation {
 	static {
 		CONVERTER = new Converter();
 		CONVERTER.hook(null, (t, o) -> {
-			if (o instanceof Annotation && t instanceof Class<?> && ((Class<?>) t).isAnnotation()) {
-				Annotation a = (Annotation) o;
+			if (o instanceof Annotation a && t instanceof Class<?> c && c.isAnnotation()) {
 				@SuppressWarnings("unchecked")
-				Class<java.lang.annotation.Annotation> c = (Class<java.lang.annotation.Annotation>) t;
-				return a.getAnnotation(c);
+				Class<java.lang.annotation.Annotation> ac = (Class<java.lang.annotation.Annotation>) c;
+				return a.getAnnotation(ac);
 			}
 			return null;
 		});
@@ -98,8 +97,8 @@ public class Annotation {
 					sb.append(e.getKey())
 						.append('=');
 					Object v = e.getValue();
-					if (v instanceof Object[]) {
-						sb.append(Arrays.toString((Object[]) v));
+					if (v instanceof Object[] array) {
+						sb.append(Arrays.toString(array));
 					} else {
 						sb.append(v);
 					}

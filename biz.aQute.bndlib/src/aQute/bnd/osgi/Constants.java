@@ -554,7 +554,5 @@ public interface Constants {
 	/*
 	 * Deprecated Section
 	 */
-	@Deprecated
-	String		METATYPE									= "-metatype";
 
 }

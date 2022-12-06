@@ -144,10 +144,10 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 		if (o == this) {
 			return true;
 		}
-		if (!(o instanceof List)) {
+		if (!(o instanceof List<?> list)) {
 			return false;
 		}
-		Iterator<?> iter = ((List<?>) o).iterator();
+		Iterator<?> iter = list.iterator();
 		for (Object element : elements) {
 			if (!iter.hasNext() || !element.equals(iter.next())) {
 				return false;

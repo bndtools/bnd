@@ -113,7 +113,7 @@ public abstract class BndPluginExtension implements ExtensionAware {
 
 	@SuppressWarnings("unchecked")
 	private static <O> O trimmed(O value) {
-		return (value instanceof String) ? (O) ((String) value).trim() : value;
+		return (value instanceof String string) ? (O) string.trim() : value;
 	}
 
 	/**

@@ -79,8 +79,8 @@ public interface ExternalPluginNamespace {
 	static String getImplementation(Capability c) {
 		Object object = c.getAttributes()
 			.get(CAPABILITY_IMPLEMENTATION_ATTRIBUTE);
-		if (object instanceof String)
-			return (String) object;
+		if (object instanceof String string)
+			return string;
 		return null;
 	}
 

@@ -14,8 +14,7 @@ public class TypedAttribute {
 	}
 
 	public static TypedAttribute getTypedAttribute(Object value) {
-		if (value instanceof Collection) {
-			Collection<?> c = (Collection<?>) value;
+		if (value instanceof Collection<?> c) {
 			if (c.isEmpty())
 				return null;
 

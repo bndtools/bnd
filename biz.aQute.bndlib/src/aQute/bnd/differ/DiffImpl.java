@@ -210,8 +210,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof DiffImpl) {
-			DiffImpl o = (DiffImpl) other;
+		if (other instanceof DiffImpl o) {
 			return getDelta() == o.getDelta() && getType() == o.getType() && getName().equals(o.getName());
 		}
 		return false;

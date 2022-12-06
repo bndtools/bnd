@@ -30,10 +30,9 @@ public abstract class Digest {
 
 	@Override
 	public boolean equals(Object other) {
-		if (!(other instanceof Digest))
+		if (!(other instanceof Digest d))
 			return false;
 
-		Digest d = (Digest) other;
 		return Arrays.equals(d.digest, digest);
 	}
 

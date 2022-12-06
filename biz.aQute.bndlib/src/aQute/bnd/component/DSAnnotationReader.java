@@ -298,20 +298,14 @@ public class DSAnnotationReader extends ClassDataCollector {
 	}
 
 	private void handleMixedUsageError(Annotation annotation) throws Exception {
-		DeclarativeServicesAnnotationError errorDetails;
-		switch (annotation.elementType()) {
-			case METHOD :
-				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-					member.descriptor(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
-				break;
-			case FIELD :
-				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
-				break;
-			default :
-				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), null,
-					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
-		}
+		DeclarativeServicesAnnotationError errorDetails = switch (annotation.elementType()) {
+			case METHOD -> new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
+				member.descriptor(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+			case FIELD -> new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
+				ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+			default -> new DeclarativeServicesAnnotationError(className.getFQN(), null,
+				ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+		};
 		String fqn = annotation.getName()
 			.getFQN();
 		List<DeclarativeServicesAnnotationError> errors = mismatchedAnnotations.get(fqn);
@@ -413,10 +407,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 					// field type is ReferenceTypeSignature
 					FieldResolver resolver = new FieldResolver(classSig, fieldSig);
 					ReferenceTypeSignature type = resolver.resolveField();
-					if (type instanceof ClassTypeSignature) {
+					if (type instanceof ClassTypeSignature param) {
 						component.activation_fields.add(member.getName());
 						component.updateVersion(V1_4, "field type is ReferenceTypeSignature???");
-						ClassTypeSignature param = (ClassTypeSignature) type;
 						String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_FIELDFORMAT, member.getName());
 						processActivationObject(propertyDefKey, param, memberDescriptor, details, false);
 						break;
@@ -502,8 +495,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		MethodResolver resolver = new MethodResolver(classSig, methodSig);
 		for (int arg = 0; arg < methodSig.parameterTypes.length; arg++) {
 			JavaTypeSignature type = resolver.resolveParameter(arg);
-			if (type instanceof ClassTypeSignature) {
-				ClassTypeSignature param = (ClassTypeSignature) type;
+			if (type instanceof ClassTypeSignature param) {
 				String propertyDefKey = String.format(propertyDefKeyFormat, arg);
 				processActivationObject(propertyDefKey, param, memberDescriptor, details, deactivate);
 			} else if (deactivate && (type == BaseType.I)) {
@@ -520,8 +512,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		/**
 		 * Felix SCR allows Map return type.
 		 */
-		if ((resultType instanceof ClassTypeSignature)
-			&& ((ClassTypeSignature) resultType).binary.equals("java/util/Map")) {
+		if ((resultType instanceof ClassTypeSignature param) && param.binary.equals("java/util/Map")) {
 			checkMapReturnType(details);
 		} else {
 			analyzer.error("[%s] Invalid return type type %s", details.location(), resultType)
@@ -540,8 +531,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		for (int arg = constructorArg; arg < toArg; arg++) {
 			// validate activation object as methodSig.
 			JavaTypeSignature type = resolver.resolveParameter(arg);
-			if (type instanceof ClassTypeSignature) {
-				ClassTypeSignature param = (ClassTypeSignature) type;
+			if (type instanceof ClassTypeSignature param) {
 				String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_CONSTRUCTORFORMAT, arg);
 				processActivationObject(propertyDefKey, param, memberDescriptor, details, false);
 			} else {
@@ -731,8 +721,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
 				if (prefixField.isFinal() && (prefixField.getType() == analyzer.getTypeRef("java/lang/String"))
-					&& (c instanceof String)) {
-					prefix = (String) c;
+					&& (c instanceof String p)) {
+					prefix = p;
 
 					// If we have a member descriptor then this is an injected
 					// component property type and the prefix must be processed
@@ -1197,8 +1187,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		String annoService) {
 		String paramType = null;
 		String inferredService = null;
-		if (type instanceof ClassTypeSignature) {
-			ClassTypeSignature param = (ClassTypeSignature) type;
+		if (type instanceof ClassTypeSignature param) {
 			paramType = binaryToFQN(param.binary);
 			// Check for collection
 			switch (paramType) {
@@ -1224,9 +1213,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 				TypeArgument[] typeArguments = param.classType.typeArguments;
 				if (typeArguments.length != 0) {
 					ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
-					if (inferred instanceof ClassTypeSignature) {
+					if (inferred instanceof ClassTypeSignature inferredParam) {
 						def.collectionType = CollectionType.SERVICE;
-						param = (ClassTypeSignature) inferred;
+						param = inferredParam;
 						paramType = binaryToFQN(param.binary);
 					}
 				}
@@ -1242,8 +1231,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 						TypeArgument[] typeArguments = param.classType.typeArguments;
 						if (typeArguments.length != 0) {
 							ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
-							if (inferred instanceof ClassTypeSignature) {
-								inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+							if (inferred instanceof ClassTypeSignature inferredParam) {
+								inferredService = binaryToFQN(inferredParam.binary);
 							}
 						}
 					}
@@ -1256,8 +1245,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 						TypeArgument[] typeArguments = param.classType.typeArguments;
 						if (typeArguments.length != 0) {
 							ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
-							if (inferred instanceof ClassTypeSignature) {
-								inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+							if (inferred instanceof ClassTypeSignature inferredParam) {
+								inferredService = binaryToFQN(inferredParam.binary);
 							}
 						}
 					}
@@ -1277,8 +1266,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 						TypeArgument[] typeArguments = param.innerTypes[0].typeArguments;
 						if (typeArguments.length != 0) {
 							ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[1]);
-							if (inferred instanceof ClassTypeSignature) {
-								inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+							if (inferred instanceof ClassTypeSignature inferredParam) {
+								inferredService = binaryToFQN(inferredParam.binary);
 							}
 						}
 					}
@@ -1318,18 +1307,16 @@ public class DSAnnotationReader extends ClassDataCollector {
 		boolean hasMapResultType = false;
 		Result resultType = resolver.resolveResult();
 		if (!(resultType instanceof VoidDescriptor)) {
-			if ((resultType instanceof ClassTypeSignature)
-				&& ((ClassTypeSignature) resultType).binary.equals("java/util/Map")) {
+			if ((resultType instanceof ClassTypeSignature param) && param.binary.equals("java/util/Map")) {
 				hasMapResultType = true;
 			} else {
 				return null;
 			}
 		}
 		JavaTypeSignature first = resolver.resolveParameter(0);
-		if (!(first instanceof ClassTypeSignature)) {
+		if (!(first instanceof ClassTypeSignature param)) {
 			return null;
 		}
-		ClassTypeSignature param = (ClassTypeSignature) first;
 		Version minVersion = null;
 		String minReason = null;
 		switch (parameterCount) {
@@ -1341,8 +1328,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 				break;
 			case 2 :
 				JavaTypeSignature type = resolver.resolveParameter(1);
-				if ((type instanceof ClassTypeSignature)
-					&& ((ClassTypeSignature) type).binary.equals("java/util/Map")) {
+				if ((type instanceof ClassTypeSignature typeParam) && typeParam.binary.equals("java/util/Map")) {
 					minVersion = V1_1;
 					minReason = "use of map in method reference in second position";
 				} else {
@@ -1367,8 +1353,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 					TypeArgument[] typeArguments = param.classType.typeArguments;
 					if (typeArguments.length != 0) {
 						ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
-						if (inferred instanceof ClassTypeSignature) {
-							inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+						if (inferred instanceof ClassTypeSignature inferredParam) {
+							inferredService = binaryToFQN(inferredParam.binary);
 						}
 					}
 				}
@@ -1379,8 +1365,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 					TypeArgument[] typeArguments = param.classType.typeArguments;
 					if (typeArguments.length != 0) {
 						ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
-						if (inferred instanceof ClassTypeSignature) {
-							inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+						if (inferred instanceof ClassTypeSignature inferredParam) {
+							inferredService = binaryToFQN(inferredParam.binary);
 						}
 					}
 				}
@@ -1572,8 +1558,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		if (member.isStatic()) {
 			return true; // ignore static members
 		}
-		if (member instanceof MethodDef) {
-			MethodDef method = (MethodDef) member;
+		if (member instanceof MethodDef method) {
 			if (method.isAbstract() // ignore abstract methods
 				|| method.isBridge() // ignore bridge methods
 				|| method.isSynthetic() // ignore synthetic methods
@@ -1601,14 +1586,14 @@ public class DSAnnotationReader extends ClassDataCollector {
 			return analyzer.getFieldSignature(signature);
 		}
 		signature = field.descriptor();
-		switch (signature.charAt(0)) {
-			case 'L' : // ClassTypeSignature
-			case 'T' : // TypeVariableSignature
-			case '[' : // ArrayTypeSignature
-				return analyzer.getFieldSignature(signature);
-			default : // BaseType
-				return null;
-		}
+		return switch (signature.charAt(0)) {
+			case 'L', // ClassTypeSignature
+				'T', // TypeVariableSignature
+				'[' -> // ArrayTypeSignature
+				analyzer.getFieldSignature(signature);
+			default -> // BaseType
+				null;
+		};
 	}
 
 	@Override

@@ -119,8 +119,8 @@ public abstract class DTO {
 		if (value instanceof Number || value instanceof Boolean) {
 			return result.append(value.toString());
 		}
-		if (value instanceof Enum) {
-			return appendString(result, ((Enum<?>) value).name());
+		if (value instanceof Enum<?> enumValue) {
+			return appendString(result, enumValue.name());
 		}
 		if ("org.osgi.framework.Version".equals(value.getClass()
 			.getName())) {
@@ -141,11 +141,11 @@ public abstract class DTO {
 		}
 		objectRefs.put(value, refpath);
 
-		if (value instanceof DTO) {
-			return appendDTO(result, objectRefs, refpath, (DTO) value);
+		if (value instanceof DTO dtoValue) {
+			return appendDTO(result, objectRefs, refpath, dtoValue);
 		}
-		if (value instanceof Map) {
-			return appendMap(result, objectRefs, refpath, (Map<?, ?>) value);
+		if (value instanceof Map<?, ?> mapValue) {
+			return appendMap(result, objectRefs, refpath, mapValue);
 		}
 		if (value instanceof List || value instanceof Set) {
 			return appendIterable(result, objectRefs, refpath, (Iterable<?>) value);

@@ -40,16 +40,16 @@ public class ConstantValueAttribute implements Attribute {
 		out.writeShort(attribute_name_index);
 		out.writeInt(attribute_length);
 		int constantvalue_index;
-		if (value instanceof String) {
-			constantvalue_index = constant_pool.stringInfo((String) value);
-		} else if (value instanceof Integer) {
-			constantvalue_index = constant_pool.integerInfo((Integer) value);
-		} else if (value instanceof Long) {
-			constantvalue_index = constant_pool.longInfo((Long) value);
-		} else if (value instanceof Double) {
-			constantvalue_index = constant_pool.doubleInfo((Double) value);
-		} else if (value instanceof Float) {
-			constantvalue_index = constant_pool.floatInfo((Float) value);
+		if (value instanceof String string_value) {
+			constantvalue_index = constant_pool.stringInfo(string_value);
+		} else if (value instanceof Integer integer_value) {
+			constantvalue_index = constant_pool.integerInfo(integer_value);
+		} else if (value instanceof Long long_value) {
+			constantvalue_index = constant_pool.longInfo(long_value);
+		} else if (value instanceof Double double_value) {
+			constantvalue_index = constant_pool.doubleInfo(double_value);
+		} else if (value instanceof Float float_value) {
+			constantvalue_index = constant_pool.floatInfo(float_value);
 		} else {
 			throw new IOException("Unrecognized constant value type " + value);
 		}

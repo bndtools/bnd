@@ -63,9 +63,6 @@ public class Baseline {
 		public Version	suggestedVersion;
 		public boolean	mismatch;
 		public String	reason;
-
-		@Deprecated
-		public Version	version;
 	}
 
 	final Differ		differ;
@@ -239,32 +236,14 @@ public class Baseline {
 					}
 				}
 			}
-			Delta content;
-			switch (delta) {
-				case IGNORED :
-				case UNCHANGED :
-					content = UNCHANGED;
-					break;
-
-				case ADDED :
-					content = MINOR;
-					break;
-
-				case CHANGED : // cannot happen
-					content = MICRO;
-					break;
-
-				case MICRO :
-				case MINOR :
-				case MAJOR :
-					content = delta;
-					break;
-
-				case REMOVED :
-				default :
-					content = MAJOR;
-					break;
-			}
+			Delta content = switch (delta) {
+				case IGNORED, UNCHANGED -> UNCHANGED;
+				case ADDED -> MINOR;
+				case CHANGED -> MICRO; // cannot happen
+				case MICRO, MINOR, MAJOR -> delta;
+				case REMOVED -> MAJOR;
+				default -> MAJOR;
+			};
 			if (content.compareTo(highestDelta) > 0) {
 				highestDelta = content;
 			}
@@ -283,7 +262,7 @@ public class Baseline {
 
 		binfo.bsn = bsn;
 		binfo.suggestedVersion = suggestedVersion;
-		binfo.version = binfo.olderVersion = olderVersion;
+		binfo.olderVersion = olderVersion;
 		binfo.newerVersion = newerVersion;
 
 		if (newerVersion.getWithoutQualifier()
@@ -387,18 +366,13 @@ public class Baseline {
 	}
 
 	private Version bump(Delta delta, Version last, int offset, int base) {
-		switch (delta) {
-			case UNCHANGED :
-				return last;
-			case MINOR :
-				return new Version(last.getMajor(), last.getMinor() + offset, base);
-			case MAJOR :
-				return new Version(last.getMajor() + 1, base, base);
-			case ADDED :
-				return last;
-			default :
-				return new Version(last.getMajor(), last.getMinor(), last.getMicro() + offset);
-		}
+		return switch (delta) {
+			case UNCHANGED -> last;
+			case MINOR -> new Version(last.getMajor(), last.getMinor() + offset, base);
+			case MAJOR -> new Version(last.getMajor() + 1, base, base);
+			case ADDED -> last;
+			default -> new Version(last.getMajor(), last.getMinor(), last.getMicro() + offset);
+		};
 	}
 
 	private Version getVersion(Map<String, String> map) {
@@ -447,16 +421,12 @@ public class Baseline {
 	}
 
 	private Version bumpBundle(Delta delta, Version last, int offset, int base) {
-		switch (delta) {
-			case MINOR :
-				return new Version(last.getMajor(), last.getMinor() + offset, base);
-			case MAJOR :
-				return new Version(last.getMajor() + offset, base, base);
-			case ADDED :
-				return new Version(last.getMajor(), last.getMinor() + offset, base);
-			default :
-				return new Version(last.getMajor(), last.getMinor(), last.getMicro() + offset);
-		}
+		return switch (delta) {
+			case MINOR -> new Version(last.getMajor(), last.getMinor() + offset, base);
+			case MAJOR -> new Version(last.getMajor() + offset, base, base);
+			case ADDED -> new Version(last.getMajor(), last.getMinor() + offset, base);
+			default -> new Version(last.getMajor(), last.getMinor(), last.getMicro() + offset);
+		};
 	}
 
 	public BundleInfo getBundleInfo() {

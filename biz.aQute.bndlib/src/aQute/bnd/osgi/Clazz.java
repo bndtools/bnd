@@ -1112,24 +1112,13 @@ public class Clazz {
 			return; // Ignore generic signatures on synthetic elements
 		}
 		String signature = attribute.signature;
-		Signature sig;
-		switch (elementType) {
-			case ANNOTATION_TYPE :
-			case TYPE :
-			case PACKAGE :
-				sig = analyzer.getClassSignature(signature);
-				break;
-			case FIELD :
-				sig = analyzer.getFieldSignature(signature);
-				break;
-			case CONSTRUCTOR :
-			case METHOD :
-				sig = analyzer.getMethodSignature(signature);
-				break;
-			default :
-				throw new IllegalArgumentException(
-					"Signature \"" + signature + "\" found for unknown element type: " + elementType);
-		}
+		Signature sig = switch (elementType) {
+			case ANNOTATION_TYPE, TYPE, PACKAGE -> analyzer.getClassSignature(signature);
+			case FIELD -> analyzer.getFieldSignature(signature);
+			case CONSTRUCTOR, METHOD -> analyzer.getMethodSignature(signature);
+			default -> throw new IllegalArgumentException(
+				"Signature \"" + signature + "\" found for unknown element type: " + elementType);
+		};
 		Set<String> binaryRefs = sig.erasedBinaryReferences();
 		for (String binary : binaryRefs) {
 			TypeRef ref = analyzer.getTypeRef(binary);
@@ -1484,18 +1473,16 @@ public class Clazz {
 	}
 
 	private void processElementValue(Object value, ElementType elementType, RetentionPolicy policy, int access_flags) {
-		if (value instanceof EnumConst) {
+		if (value instanceof EnumConst enumConst) {
 			if (policy == RetentionPolicy.RUNTIME) {
-				EnumConst enumConst = (EnumConst) value;
 				TypeRef name = analyzer.getTypeRef(enumConst.type);
 				referTo(name, 0);
 				if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
 					api.add(name.getPackageRef());
 				}
 			}
-		} else if (value instanceof ResultConst) {
+		} else if (value instanceof ResultConst resultConst) {
 			if (policy == RetentionPolicy.RUNTIME) {
-				ResultConst resultConst = (ResultConst) value;
 				TypeRef name = analyzer.getTypeRef(resultConst.descriptor);
 				if (!name.isPrimitive()) {
 					PackageRef packageRef = name.getPackageRef();
@@ -1507,10 +1494,9 @@ public class Clazz {
 					}
 				}
 			}
-		} else if (value instanceof AnnotationInfo) {
-			processAnnotation((AnnotationInfo) value, elementType, policy, access_flags);
-		} else if (value instanceof Object[]) {
-			Object[] array = (Object[]) value;
+		} else if (value instanceof AnnotationInfo annotation_value) {
+			processAnnotation(annotation_value, elementType, policy, access_flags);
+		} else if (value instanceof Object[] array) {
 			int num_values = array.length;
 			for (int i = 0; i < num_values; i++) {
 				processElementValue(array[i], elementType, policy, access_flags);
@@ -1519,17 +1505,14 @@ public class Clazz {
 	}
 
 	private Object newElementValue(Object value, ElementType elementType, RetentionPolicy policy, int access_flags) {
-		if (value instanceof EnumConst) {
-			EnumConst enumConst = (EnumConst) value;
+		if (value instanceof EnumConst enumConst) {
 			return enumConst.name;
-		} else if (value instanceof ResultConst) {
-			ResultConst resultConst = (ResultConst) value;
+		} else if (value instanceof ResultConst resultConst) {
 			TypeRef name = analyzer.getTypeRef(resultConst.descriptor);
 			return name;
-		} else if (value instanceof AnnotationInfo) {
-			return newAnnotation((AnnotationInfo) value, elementType, policy, access_flags);
-		} else if (value instanceof Object[]) {
-			Object[] array = (Object[]) value;
+		} else if (value instanceof AnnotationInfo annotation_value) {
+			return newAnnotation(annotation_value, elementType, policy, access_flags);
+		} else if (value instanceof Object[] array) {
 			int num_values = array.length;
 			Object[] result = new Object[num_values];
 			for (int i = 0; i < num_values; i++) {
@@ -1781,105 +1764,77 @@ public class Clazz {
 	}
 
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
-		switch (query) {
-			case ANY :
-				return true;
-
-			case NAMED : {
+		return switch (query) {
+			case ANY -> true;
+			case NAMED -> {
 				requireNonNull(instr);
-				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
+				yield instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
 			}
-
-			case VERSION : {
+			case VERSION -> {
 				requireNonNull(instr);
 				String v = classFile.major_version + "." + classFile.minor_version;
-				return instr.matches(v) ^ instr.isNegated();
+				yield instr.matches(v) ^ instr.isNegated();
 			}
-
-			case IMPLEMENTS : {
+			case IMPLEMENTS -> {
 				requireNonNull(instr);
 				Set<TypeRef> visited = new HashSet<>();
-				return hierarchyStream(analyzer).flatMap(c -> c.typeStream(analyzer, Clazz::interfaces, visited))
+				yield hierarchyStream(analyzer).flatMap(c -> c.typeStream(analyzer, Clazz::interfaces, visited))
 					.map(TypeRef::getDottedOnly)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
-
-			case EXTENDS : {
+			case EXTENDS -> {
 				requireNonNull(instr);
-				return hierarchyStream(analyzer).skip(1) // skip this class
+				yield hierarchyStream(analyzer).skip(1) // skip this class
 					.map(Clazz::getClassName)
 					.map(TypeRef::getDottedOnly)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
-
-			case PUBLIC :
-				return isPublic();
-
-			case CONCRETE :
-				return !isAbstract();
-
-			case ANNOTATED : {
+			case PUBLIC -> isPublic();
+			case CONCRETE -> !isAbstract();
+			case ANNOTATED -> {
 				requireNonNull(instr);
-				return typeStream(analyzer, Clazz::annotations, null) //
+				yield typeStream(analyzer, Clazz::annotations, null) //
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
-
-			case INDIRECTLY_ANNOTATED : {
+			case INDIRECTLY_ANNOTATED -> {
 				requireNonNull(instr);
-				return typeStream(analyzer, Clazz::annotations, new HashSet<>()) //
+				yield typeStream(analyzer, Clazz::annotations, new HashSet<>()) //
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
-
-			case HIERARCHY_ANNOTATED : {
+			case HIERARCHY_ANNOTATED -> {
 				requireNonNull(instr);
-				return hierarchyStream(analyzer) //
+				yield hierarchyStream(analyzer) //
 					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, null))
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
-
-			case HIERARCHY_INDIRECTLY_ANNOTATED : {
+			case HIERARCHY_INDIRECTLY_ANNOTATED -> {
 				requireNonNull(instr);
 				Set<TypeRef> visited = new HashSet<>();
-				return hierarchyStream(analyzer) //
+				yield hierarchyStream(analyzer) //
 					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, visited))
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
-
-			case RUNTIMEANNOTATIONS :
-				return hasRuntimeAnnotations;
-
-			case CLASSANNOTATIONS :
-				return hasClassAnnotations;
-
-			case ABSTRACT :
-				return isAbstract();
-
-			case IMPORTS : {
+			case RUNTIMEANNOTATIONS -> hasRuntimeAnnotations;
+			case CLASSANNOTATIONS -> hasClassAnnotations;
+			case ABSTRACT -> isAbstract();
+			case IMPORTS -> {
 				requireNonNull(instr);
-				return hierarchyStream(analyzer) //
+				yield hierarchyStream(analyzer) //
 					.map(Clazz::getReferred)
 					.flatMap(Set::stream)
 					.distinct()
 					.map(PackageRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
-
-			case DEFAULT_CONSTRUCTOR :
-				return hasPublicNoArgsConstructor();
-
-			case STATIC :
-				return !isInnerClass();
-
-			case INNER :
-				return isInnerClass();
-
-			default :
-				return instr == null ? false : instr.isNegated();
-		}
+			case DEFAULT_CONSTRUCTOR -> hasPublicNoArgsConstructor();
+			case STATIC -> !isInnerClass();
+			case INNER -> isInnerClass();
+			default -> instr == null ? false : instr.isNegated();
+		};
 	}
 
 	@Override
@@ -1938,29 +1893,20 @@ public class Clazz {
 			return string.substring(1, string.length() - 1)
 				.replace('/', '.');
 
-		switch (string.charAt(0)) {
-			case 'V' :
-				return "void";
-			case 'B' :
-				return "byte";
-			case 'C' :
-				return "char";
-			case 'I' :
-				return "int";
-			case 'S' :
-				return "short";
-			case 'D' :
-				return "double";
-			case 'F' :
-				return "float";
-			case 'J' :
-				return "long";
-			case 'Z' :
-				return "boolean";
-			case '[' : // Array
-				return objectDescriptorToFQN(string.substring(1)) + "[]";
-		}
-		throw new IllegalArgumentException("Invalid type character in descriptor " + string);
+		return switch (string.charAt(0)) {
+			case 'V' -> "void";
+			case 'B' -> "byte";
+			case 'C' -> "char";
+			case 'I' -> "int";
+			case 'S' -> "short";
+			case 'D' -> "double";
+			case 'F' -> "float";
+			case 'J' -> "long";
+			case 'Z' -> "boolean";
+			// Array
+			case '[' -> objectDescriptorToFQN(string.substring(1)) + "[]";
+			default -> throw new IllegalArgumentException("Invalid type character in descriptor " + string);
+		};
 	}
 
 	public static String unCamel(String id) {

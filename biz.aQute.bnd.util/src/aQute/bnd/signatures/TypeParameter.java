@@ -38,10 +38,9 @@ public class TypeParameter {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof TypeParameter)) {
+		if (!(obj instanceof TypeParameter other)) {
 			return false;
 		}
-		TypeParameter other = (TypeParameter) obj;
 		return Objects.equals(identifier, other.identifier) && Objects.equals(classBound, other.classBound)
 			&& Arrays.equals(interfaceBounds, other.interfaceBounds);
 	}

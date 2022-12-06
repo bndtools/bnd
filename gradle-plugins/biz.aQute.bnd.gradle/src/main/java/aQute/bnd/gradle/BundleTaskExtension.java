@@ -471,14 +471,10 @@ public class BundleTaskExtension {
 					}
 					String compression = builder.getProperty(Constants.COMPRESSION);
 					if (Objects.isNull(compression)) {
-						switch (getTask().getEntryCompression()) {
-							case STORED :
-								builder.setProperty(Constants.COMPRESSION, Jar.Compression.STORE.name());
-								break;
-							case DEFLATED :
-								// default
-								break;
-						}
+						builder.setProperty(Constants.COMPRESSION, switch (getTask().getEntryCompression()) {
+							case STORED -> Jar.Compression.STORE.name();
+							case DEFLATED -> Jar.Compression.DEFLATE.name();
+						});
 					}
 					bundleJar.updateModified(archiveFile.lastModified(), "time of Jar task generated jar");
 					bundleJar.setManifest(new Manifest());
@@ -571,8 +567,8 @@ public class BundleTaskExtension {
 		}
 
 		private String unwrapAttributeValue(Object value) {
-			while (value instanceof Provider) {
-				value = ((Provider<?>) value).getOrNull();
+			while (value instanceof Provider<?> provider) {
+				value = provider.getOrNull();
 			}
 			if (value == null) {
 				return null;

@@ -53,10 +53,9 @@ public class ClassSignature implements Signature {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof ClassSignature)) {
+		if (!(obj instanceof ClassSignature other)) {
 			return false;
 		}
-		ClassSignature other = (ClassSignature) obj;
 		return Objects.equals(superClass, other.superClass) && Arrays.equals(typeParameters, other.typeParameters)
 			&& Arrays.equals(superInterfaces, other.superInterfaces);
 	}

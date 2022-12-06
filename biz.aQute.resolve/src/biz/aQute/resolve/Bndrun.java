@@ -120,8 +120,7 @@ public class Bndrun extends Run {
 		RunResolution resolution = RunResolution.resolve(this, this, Arrays.asList(callbacks))
 			.reportException();
 		if (!resolution.isOK()) {
-			if (resolution.exception instanceof ResolutionException) {
-				ResolutionException re = (ResolutionException) resolution.exception;
+			if (resolution.exception instanceof ResolutionException re) {
 				FilterParser filterParser = new FilterParser();
 				for (Requirement r : re.getUnresolvedRequirements()) {
 					Expression parse = filterParser.parse(r);

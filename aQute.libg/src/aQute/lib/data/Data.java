@@ -40,9 +40,9 @@ public class Data {
 					}
 
 					if (numericValidator != null) {
-						if (o instanceof String) {
+						if (o instanceof String s) {
 							try {
-								o = Double.parseDouble((String) o);
+								o = Double.parseDouble(s);
 							} catch (Exception e) {
 								formatter.format("Value for %s=%s %s%n", f.getName(), value, "Not a number");
 							}

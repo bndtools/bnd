@@ -76,19 +76,19 @@ public class BeanProperties extends Properties {
 	}
 
 	private static Object unwrap(Object value) {
-		if (value instanceof Provider) {
-			value = unwrapOptional((Provider<?>) value).orElse(null);
+		if (value instanceof Provider<?> provider) {
+			value = unwrapOptional(provider).orElse(null);
 		}
-		if (value instanceof FileSystemLocation) {
-			value = unwrapFile((FileSystemLocation) value);
+		if (value instanceof FileSystemLocation location) {
+			value = unwrapFile(location);
 		}
 		return value;
 	}
 
 	private static Object getField(Object target, String fieldName) {
 		try {
-			if (target instanceof DynamicObjectAware) {
-				DynamicObject dynamicObject = ((DynamicObjectAware) target).getAsDynamicObject();
+			if (target instanceof DynamicObjectAware dynamicObjectAware) {
+				DynamicObject dynamicObject = dynamicObjectAware.getAsDynamicObject();
 				DynamicInvokeResult result = dynamicObject.tryGetProperty(fieldName);
 				return result.isFound() ? result.getValue() : null;
 			}
@@ -118,13 +118,13 @@ public class BeanProperties extends Properties {
 		}
 		try {
 			int i = Integer.parseInt(index);
-			if (value instanceof List) {
-				return ((List<?>) value).get(i);
-			} else if (value instanceof Iterable) {
+			if (value instanceof List<?> list) {
+				return list.get(i);
+			} else if (value instanceof Iterable<?> iterable) {
 				if (i < 0) {
 					throw new IndexOutOfBoundsException("index < 0");
 				}
-				Iterator<?> iter = ((Iterable<?>) value).iterator();
+				Iterator<?> iter = iterable.iterator();
 				for (; i > 0; i--) {
 					iter.next();
 				}

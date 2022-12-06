@@ -610,19 +610,16 @@ public class CommandLine {
 	 */
 
 	private String getTypeDescriptor(Type type) {
-		if (type instanceof ParameterizedType) {
-			ParameterizedType pt = (ParameterizedType) type;
+		if (type instanceof ParameterizedType pt) {
 			Type c = pt.getRawType();
-			if (c instanceof Class) {
-				if (Collection.class.isAssignableFrom((Class<?>) c)) {
+			if (c instanceof Class<?> ct) {
+				if (Collection.class.isAssignableFrom(ct)) {
 					return getTypeDescriptor(pt.getActualTypeArguments()[0]) + "*";
 				}
 			}
 		}
-		if (!(type instanceof Class))
+		if (!(type instanceof Class<?> clazz))
 			return "<>";
-
-		Class<?> clazz = (Class<?>) type;
 
 		if (clazz == Boolean.class || clazz == boolean.class)
 			return ""; // Is a flag

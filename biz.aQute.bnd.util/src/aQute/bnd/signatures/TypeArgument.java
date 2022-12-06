@@ -27,41 +27,33 @@ public class TypeArgument {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof TypeArgument)) {
+		if (!(obj instanceof TypeArgument other)) {
 			return false;
 		}
-		TypeArgument other = (TypeArgument) obj;
 		return (wildcard == other.wildcard) && Objects.equals(type, other.type);
 	}
 
 	@Override
 	public String toString() {
-		switch (wildcard) {
-			case WILD :
-				return "*";
-			case EXACT :
-				return type.toString();
-			case SUPER :
-				return "-" + type;
-			case EXTENDS :
-				return "+" + type;
-			default :
-				return wildcard.toString() + type;
-		}
+		return switch (wildcard) {
+			case WILD -> "*";
+			case EXACT -> type.toString();
+			case SUPER -> "-" + type;
+			case EXTENDS -> "+" + type;
+			default -> wildcard.toString() + type;
+		};
 	}
 
 	static TypeArgument parseTypeArgument(StringRover signature) {
-		switch (signature.charAt(0)) {
-			case '*' :
+		return switch (signature.charAt(0)) {
+			case '*' -> {
 				signature.increment();
-				return new TypeArgument(WildcardIndicator.WILD, ClassTypeSignature.OBJECT);
-			case '+' :
-				return new TypeArgument(WildcardIndicator.EXTENDS, parseReferenceTypeSignature(signature.increment()));
-			case '-' :
-				return new TypeArgument(WildcardIndicator.SUPER, parseReferenceTypeSignature(signature.increment()));
-			default :
-				return new TypeArgument(WildcardIndicator.EXACT, parseReferenceTypeSignature(signature));
-		}
+				yield new TypeArgument(WildcardIndicator.WILD, ClassTypeSignature.OBJECT);
+			}
+			case '+' -> new TypeArgument(WildcardIndicator.EXTENDS, parseReferenceTypeSignature(signature.increment()));
+			case '-' -> new TypeArgument(WildcardIndicator.SUPER, parseReferenceTypeSignature(signature.increment()));
+			default -> new TypeArgument(WildcardIndicator.EXACT, parseReferenceTypeSignature(signature));
+		};
 	}
 
 	static void erasedBinaryReferences(TypeArgument[] typeArguments, Set<String> references) {

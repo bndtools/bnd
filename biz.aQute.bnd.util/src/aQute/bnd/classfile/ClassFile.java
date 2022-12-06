@@ -145,8 +145,7 @@ public class ClassFile extends ElementInfo {
 	}
 
 	static ByteBuffer slice(DataInput in, int length) throws IOException {
-		if (in instanceof ByteBufferDataInput) {
-			ByteBufferDataInput bbin = (ByteBufferDataInput) in;
+		if (in instanceof ByteBufferDataInput bbin) {
 			return bbin.slice(length);
 		}
 		byte[] array = new byte[length];

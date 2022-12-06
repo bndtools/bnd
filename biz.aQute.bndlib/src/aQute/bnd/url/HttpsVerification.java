@@ -89,8 +89,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	@Override
 	public void handle(URLConnection connection) throws Exception {
 
-		if (connection instanceof HttpsURLConnection && matches(connection)) {
-			HttpsURLConnection https = (HttpsURLConnection) connection;
+		if (connection instanceof HttpsURLConnection https && matches(connection)) {
 			init();
 			https.setSSLSocketFactory(factory);
 			if (!verify) {

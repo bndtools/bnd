@@ -27,7 +27,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
@@ -35,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -77,17 +75,10 @@ import aQute.service.reporter.Reporter;
  */
 public class HttpClient implements Closeable, URLConnector {
 	final static Logger						logger			= LoggerFactory.getLogger(HttpClient.class);
-	@Deprecated
-	public static final SimpleDateFormat	sdf				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z",
-		Locale.ENGLISH);
 
 	static final long						INITIAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(3);
 	static final long						FINAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(5);
 	static final long						MAX_RETRY_DELAY	= TimeUnit.MINUTES.toMillis(10);
-
-	static {
-		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-	}
 
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
@@ -174,8 +165,8 @@ public class HttpClient implements Closeable, URLConnector {
 					logFailure = failure;
 				}
 				if (retries < 1) {
-					if (failure instanceof RetryException) {
-						TaggedData tag = ((RetryException) failure).getTag();
+					if (failure instanceof RetryException retry) {
+						TaggedData tag = retry.getTag();
 						if (request.download == TaggedData.class) {
 							// recover with TaggedData object
 							@SuppressWarnings("unchecked")
@@ -410,18 +401,11 @@ public class HttpClient implements Closeable, URLConnector {
 					return (T) tag.getState();
 				}
 
-				switch (tag.getState()) {
-					case NOT_FOUND :
-						return null;
-
-					case OTHER :
-						throw new HttpRequestException(tag);
-
-					case UNMODIFIED :
-					case UPDATED :
-					default :
-						return (T) convert(request.download, tag.getInputStream());
-				}
+				return switch (tag.getState()) {
+					case NOT_FOUND -> null;
+					case OTHER -> throw new HttpRequestException(tag);
+					case UNMODIFIED, UPDATED -> (T) convert(request.download, tag.getInputStream());
+				};
 			} finally {
 				thread.setName(threadName);
 			}
@@ -458,19 +442,12 @@ public class HttpClient implements Closeable, URLConnector {
 				return (T) tag.getState();
 			}
 
-			switch (tag.getState()) {
-				case NOT_FOUND :
-					return null;
-
-				case OTHER :
-					throw new HttpRequestException(tag);
-
-				case UNMODIFIED :
-				case UPDATED :
-				default :
-					return (T) convert(request.download,
-						request.useCacheFile == null ? tag.getFile() : request.useCacheFile, tag);
-			}
+			return switch (tag.getState()) {
+				case NOT_FOUND -> null;
+				case OTHER -> throw new HttpRequestException(tag);
+				case UNMODIFIED, UPDATED -> (T) convert(request.download,
+					request.useCacheFile == null ? tag.getFile() : request.useCacheFile, tag);
+			};
 		}
 
 		private TaggedData doCached0() throws Exception {
@@ -570,7 +547,7 @@ public class HttpClient implements Closeable, URLConnector {
 			Semaphore semaphore = getConnectionBlocker(matching);
 
 			final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy, matching);
-			final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
+			final HttpURLConnection hcon = (con instanceof HttpURLConnection hc) ? hc : null;
 
 			if (request.ifNoneMatch != null) {
 				request.headers.put("If-None-Match", entitytag(request.ifNoneMatch));
@@ -763,8 +740,7 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 		private Object convert(Type ref, InputStream in) throws Exception {
-			if (ref instanceof Class) {
-				Class<?> refc = (Class<?>) ref;
+			if (ref instanceof Class<?> refc) {
 				if (refc == byte[].class) {
 					return IO.read(in);
 				} else if (InputStream.class.isAssignableFrom((refc))) {
@@ -782,18 +758,18 @@ public class HttpClient implements Closeable, URLConnector {
 		private void doOutput(Object put, URLConnection con) throws Exception {
 			con.setDoOutput(true);
 			try (OutputStream out = con.getOutputStream()) {
-				if (put instanceof InputStream) {
+				if (put instanceof InputStream in) {
 					logger.debug("out {} input stream {}", request.verb, request.url);
-					IO.copy((InputStream) put, out);
-				} else if (put instanceof String) {
+					IO.copy(in, out);
+				} else if (put instanceof String o) {
 					logger.debug("out {} string {}", request.verb, request.url);
-					IO.store(put, out);
-				} else if (put instanceof byte[]) {
+					IO.store(o, out);
+				} else if (put instanceof byte[] data) {
 					logger.debug("out {} byte[] {}", request.verb, request.url);
-					IO.copy((byte[]) put, out);
-				} else if (put instanceof File) {
+					IO.copy(data, out);
+				} else if (put instanceof File file) {
 					logger.debug("out {} file {} {}", request.verb, put, request.url);
-					IO.copy((File) put, out);
+					IO.copy(file, out);
 				} else {
 					logger.debug("out {} JSON {} {}", request.verb, put, request.url);
 					codec.enc()
@@ -922,14 +898,10 @@ public class HttpClient implements Closeable, URLConnector {
 		if (scheme == null) {
 			return "Invalid uri, no scheme: " + u;
 		}
-		switch (scheme.toLowerCase(Locale.ROOT)) {
-			case "http" :
-			case "https" :
-			case "file" :
-				return null;
-			default :
-				return "Invalid scheme " + scheme + "for uri " + u;
-		}
+		return switch (scheme.toLowerCase(Locale.ROOT)) {
+			case "http", "https", "file" -> null;
+			default -> "Invalid scheme " + scheme + "for uri " + u;
+		};
 	}
 
 }

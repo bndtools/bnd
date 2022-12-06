@@ -23,8 +23,8 @@ import org.osgi.service.repository.RequirementExpression;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 
-import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.resource.ResourceUtils;
 
 /**
  * WARNING ! Not tested
@@ -50,19 +50,18 @@ public abstract class BaseRepository implements Repository {
 	}
 
 	private void dispatch(RequirementExpression expression, Set<Resource> providers) {
-		if (expression instanceof IdentityExpression) {
+		if (expression instanceof IdentityExpression identityExpression) {
 			Map<Requirement, Collection<Capability>> capabilities = findProviders(
-				Collections.singleton(((IdentityExpression) expression).getRequirement()));
+				Collections.singleton(identityExpression.getRequirement()));
 			for (Collection<Capability> caps : capabilities.values()) {
 				for (Capability c : caps)
 					providers.add(c.getResource());
 			}
-		} else if (expression instanceof OrExpression) {
-			for (RequirementExpression re : ((OrExpression) expression).getRequirementExpressions())
+		} else if (expression instanceof OrExpression orExpression) {
+			for (RequirementExpression re : orExpression.getRequirementExpressions())
 				dispatch(re, providers);
-		} else if (expression instanceof AndExpression) {
-			List<RequirementExpression> requirementExpressions = ((AndExpression) expression)
-				.getRequirementExpressions();
+		} else if (expression instanceof AndExpression andExpression) {
+			List<RequirementExpression> requirementExpressions = andExpression.getRequirementExpressions();
 
 			if (requirementExpressions.isEmpty())
 				return;
@@ -92,10 +91,10 @@ public abstract class BaseRepository implements Repository {
 				}
 			}
 			providers.addAll(subset);
-		} else if (expression instanceof NotExpression) {
+		} else if (expression instanceof NotExpression notExpression) {
 			Set<Resource> allSet = new HashSet<>();
 			dispatch(all, allSet);
-			RequirementExpression re = ((NotExpression) expression).getRequirementExpression();
+			RequirementExpression re = notExpression.getRequirementExpression();
 			for (Iterator<Resource> it = allSet.iterator(); it.hasNext();) {
 				Resource resource = it.next();
 				if (matches(re, resource)) {
@@ -110,25 +109,25 @@ public abstract class BaseRepository implements Repository {
 	}
 
 	private boolean matches(RequirementExpression expression, Resource resource) {
-		if (expression instanceof IdentityExpression) {
-			Requirement r = ((IdentityExpression) expression).getRequirement();
+		if (expression instanceof IdentityExpression identityExpression) {
+			Requirement r = identityExpression.getRequirement();
 			return ResourceUtils.matches(r, resource);
-		} else if (expression instanceof OrExpression) {
-			List<RequirementExpression> res = ((OrExpression) expression).getRequirementExpressions();
+		} else if (expression instanceof OrExpression orExpression) {
+			List<RequirementExpression> res = orExpression.getRequirementExpressions();
 			for (RequirementExpression re : res) {
 				if (matches(re, resource))
 					return true;
 			}
 			return false;
-		} else if (expression instanceof AndExpression) {
-			List<RequirementExpression> res = ((AndExpression) expression).getRequirementExpressions();
+		} else if (expression instanceof AndExpression andExpression) {
+			List<RequirementExpression> res = andExpression.getRequirementExpressions();
 			for (RequirementExpression re : res) {
 				if (!matches(re, resource))
 					return false;
 			}
 			return true;
-		} else if (expression instanceof NotExpression) {
-			RequirementExpression re = ((NotExpression) expression).getRequirementExpression();
+		} else if (expression instanceof NotExpression notExpression) {
+			RequirementExpression re = notExpression.getRequirementExpression();
 			return !matches(re, resource);
 		} else
 			throw new UnsupportedOperationException("Unknown expression type " + expression.getClass());

@@ -90,33 +90,25 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		MANDATED(ACC_MANDATED);
 
 		public static Set<Access> parse(String input) {
-			switch (input.toLowerCase(Locale.ROOT)) {
-				case "open" :
-				case "0x0020" :
-				case "32" :
-					return EnumSet.of(OPEN);
-				case "synthetic" :
-				case "0x1000" :
-				case "4096" :
-					return EnumSet.of(SYNTHETIC);
-				case "mandated" :
-				case "0x8000" :
-				case "32768" :
-					return EnumSet.of(MANDATED);
-				default :
+			return switch (input.toLowerCase(Locale.ROOT)) {
+				case "open" ,"0x0020" , "32" -> EnumSet.of(OPEN);
+				case "synthetic" , "0x1000" , "4096" -> EnumSet.of(SYNTHETIC);
+				case "mandated" , "0x8000"  ,"32768" -> EnumSet.of(MANDATED);
+				default -> {
 					if (input.indexOf(',') > -1) {
-						return Strings.splitAsStream(input)
+						yield Strings.splitAsStream(input)
 							.map(Access::parse)
 							.flatMap(Set::stream)
 							.collect(toCollection(() -> EnumSet.noneOf(Access.class)));
 					}
 					int parsedValue = Integer.decode(input);
-					return Arrays.stream(values())
+					yield Arrays.stream(values())
 						.filter(a -> a.getValue() == parsedValue)
 						.findFirst()
 						.map(EnumSet::of)
 						.orElseThrow(() -> new IllegalArgumentException(input));
-			}
+				}
+			};
 		}
 
 		Access(int value) {

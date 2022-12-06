@@ -30,8 +30,8 @@ public class ProgressToOutput implements ProgressPlugin {
 				out = out.substring(0, 50) + ".." + out.substring(out.length() - 50);
 			}
 			appendable.append(out);
-			if (appendable instanceof Flushable)
-				((Flushable) appendable).flush();
+			if (appendable instanceof Flushable flushable)
+				flushable.flush();
 		} catch (IOException e) {
 			logger.error("sending output for progress ", e);
 		}

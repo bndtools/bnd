@@ -82,11 +82,11 @@ public class BndBuilderPlugin implements Plugin<Project> {
 			.create("baseline");
 		baseline.getDependencies()
 			.all(dep -> {
-				if (dep instanceof ExternalDependency) {
-					((ExternalDependency) dep).version(mvc -> mvc.strictly(dep.getVersion()));
+				if (dep instanceof ExternalDependency externalDependency) {
+					externalDependency.version(mvc -> mvc.strictly(dep.getVersion()));
 				}
-				if (dep instanceof ModuleDependency) {
-					((ModuleDependency) dep).setTransitive(false);
+				if (dep instanceof ModuleDependency moduleDependency) {
+					moduleDependency.setTransitive(false);
 				}
 			});
 

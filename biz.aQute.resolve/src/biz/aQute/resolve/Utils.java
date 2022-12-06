@@ -30,11 +30,11 @@ public class Utils {
 		if (versionObj == null)
 			return Version.emptyVersion;
 
-		if (versionObj instanceof Version)
-			return (Version) versionObj;
+		if (versionObj instanceof Version version)
+			return version;
 
-		if (versionObj instanceof String)
-			return Version.parseVersion((String) versionObj);
+		if (versionObj instanceof String string)
+			return Version.parseVersion(string);
 
 		throw new IllegalArgumentException("Unable to convert type for version attribute: " + versionObj.getClass());
 	}

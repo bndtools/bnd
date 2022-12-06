@@ -158,28 +158,19 @@ public final class URIUtil {
 		if (scheme == null)
 			return false;
 
-		switch (scheme.toLowerCase(Locale.ROOT)) {
-			case "file" :
-			case "jar" :
-			case "data" :
-				return false;
-
-			default :
-				return true;
-
-		}
+		return switch (scheme.toLowerCase(Locale.ROOT)) {
+			case "file", "jar", "data" -> false;
+			default -> true;
+		};
 	}
 
 	public static int getDefaultPort(String scheme) {
-		switch (scheme) {
-			case "http" :
-				return 80;
-			case "https" :
-				return 443;
-			case "ftp" :
-				return 20;
-		}
-		return -1;
+		return switch (scheme) {
+			case "http" -> 80;
+			case "https" -> 443;
+			case "ftp" -> 20;
+			default -> -1;
+		};
 	}
 
 	public static String encodePath(String path) {
@@ -206,29 +197,14 @@ public final class URIUtil {
 	}
 
 	static boolean isPathAllowed(int b) {
-		switch (b) {
-			case '/' : // path_segments
-			case ';' : // segment
-			case ':' : // pchar
-			case '@' :
-			case '&' :
-			case '=' :
-			case '+' :
-			case '$' :
-			case ',' :
-			case '-' : // mark
-			case '_' :
-			case '.' :
-			case '!' :
-			case '~' :
-			case '*' :
-			case '\'' :
-			case '(' :
-			case ')' :
-				return true;
-			default :
-				return isAlphanum(b);
-		}
+		return switch (b) {
+			case '/', // path_segments
+				';', // segment
+				':', // pchar
+				'-', // mark
+				'@', '&', '=', '+', '$', ',', '_', '.', '!', '~', '*', '\'', '(', ')' -> true;
+			default -> isAlphanum(b);
+		};
 	}
 
 	static boolean isAlphanum(int b) {

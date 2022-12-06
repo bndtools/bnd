@@ -295,9 +295,9 @@ public class BndPlugin implements Plugin<Project> {
 					extensions.getExtensionsSchema()
 						.forEach(schema -> {
 							String name = schema.getName();
-							Object sourceDirectorySet = extensions.getByName(name);
-							if (sourceDirectorySet instanceof SourceDirectorySet) {
-								sourceDirectorySets.put(name, (SourceDirectorySet) sourceDirectorySet);
+							Object sds = extensions.getByName(name);
+							if (sds instanceof SourceDirectorySet sourceDirectorySet) {
+								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
 					@SuppressWarnings("deprecation")
@@ -305,9 +305,9 @@ public class BndPlugin implements Plugin<Project> {
 					sourceSetConvention.getPlugins()
 						.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
-								Object sourceDirectorySet = getter(plugin, name);
-								if (sourceDirectorySet instanceof SourceDirectorySet) {
-									sourceDirectorySets.put(name, (SourceDirectorySet) sourceDirectorySet);
+								Object sds = getter(plugin, name);
+								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
+									sourceDirectorySets.put(name, sourceDirectorySet);
 								}
 							}
 						});
@@ -342,9 +342,9 @@ public class BndPlugin implements Plugin<Project> {
 					extensions.getExtensionsSchema()
 						.forEach(schema -> {
 							String name = schema.getName();
-							Object sourceDirectorySet = extensions.getByName(name);
-							if (sourceDirectorySet instanceof SourceDirectorySet) {
-								sourceDirectorySets.put(name, (SourceDirectorySet) sourceDirectorySet);
+							Object sds = extensions.getByName(name);
+							if (sds instanceof SourceDirectorySet sourceDirectorySet) {
+								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
 					@SuppressWarnings("deprecation")
@@ -352,9 +352,9 @@ public class BndPlugin implements Plugin<Project> {
 					sourceSetConvention.getPlugins()
 						.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
-								Object sourceDirectorySet = getter(plugin, name);
-								if (sourceDirectorySet instanceof SourceDirectorySet) {
-									sourceDirectorySets.put(name, (SourceDirectorySet) sourceDirectorySet);
+								Object sds = getter(plugin, name);
+								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
+									sourceDirectorySets.put(name, sourceDirectorySet);
 								}
 							}
 						});

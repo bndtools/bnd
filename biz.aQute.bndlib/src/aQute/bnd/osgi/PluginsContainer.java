@@ -95,10 +95,10 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		AbstractPlugin(Class<T> type, Attrs attrs) {
 			serviceClass = type;
 			this.attrs = attrs;
-			if (processor instanceof Workspace) {
-				workspace = (Workspace) processor;
-			} else if (processor instanceof Project) {
-				workspace = ((Project) processor).getWorkspace();
+			if (processor instanceof Workspace w) {
+				workspace = w;
+			} else if (processor instanceof Project project) {
+				workspace = project.getWorkspace();
 			} else {
 				workspace = null;
 			}
@@ -138,8 +138,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		public void close() throws Exception {
 			workspace = null;
 			externals.accept(list -> list.forEach(p -> {
-				if (p instanceof AutoCloseable) {
-					IO.close((AutoCloseable) p);
+				if (p instanceof AutoCloseable closeable) {
+					IO.close(closeable);
 				}
 			}));
 		}
@@ -281,8 +281,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 			}
 			while (self.tryAdvance(this)) {
 				boolean instance = type.isInstance(plugin);
-				if (plugin instanceof PluginProvider) {
-					provider = ((PluginProvider) plugin).provide(type)
+				if (plugin instanceof PluginProvider pluginProvider) {
+					provider = pluginProvider.provide(type)
 						.spliterator();
 					if (!instance && provider.tryAdvance(action)) {
 						return true;
@@ -307,8 +307,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 					T p = (T) plugin;
 					action.accept(p);
 				}
-				if (plugin instanceof PluginProvider) {
-					((PluginProvider) plugin).provide(type)
+				if (plugin instanceof PluginProvider pluginProvider) {
+					pluginProvider.provide(type)
 						.forEachOrdered(action);
 				}
 			}
@@ -591,8 +591,8 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 				processor.customize(plugin, attrs, this);
 			}
 			add(plugin);
-			if (plugin instanceof AutoCloseable) {
-				closeablePlugins.add((AutoCloseable) plugin);
+			if (plugin instanceof AutoCloseable closeable) {
+				closeablePlugins.add(closeable);
 			}
 			return plugin;
 		} catch (NoClassDefFoundError e) {

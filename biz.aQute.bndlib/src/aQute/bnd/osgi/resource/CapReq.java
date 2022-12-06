@@ -55,15 +55,13 @@ abstract class CapReq {
 		if (this == obj)
 			return true;
 		if (this instanceof Capability) {
-			if (!(obj instanceof Capability))
+			if (!(obj instanceof Capability other))
 				return false;
-			Capability other = (Capability) obj;
 			return Objects.equals(namespace, other.getNamespace()) && Objects.equals(attributes, other.getAttributes())
 				&& Objects.equals(directives, other.getDirectives()) && Objects.equals(resource, other.getResource());
 		} else {
-			if (!(obj instanceof Requirement))
+			if (!(obj instanceof Requirement other))
 				return false;
-			Requirement other = (Requirement) obj;
 			return Objects.equals(namespace, other.getNamespace()) && Objects.equals(attributes, other.getAttributes())
 				&& Objects.equals(directives, other.getDirectives()) && Objects.equals(resource, other.getResource());
 		}

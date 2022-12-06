@@ -78,13 +78,13 @@ public class BeanProperties extends Properties {
 		}
 		try {
 			int i = Integer.parseInt(index);
-			if (value instanceof List) {
-				return ((List<?>) value).get(i);
-			} else if (value instanceof Iterable) {
+			if (value instanceof List<?> list) {
+				return list.get(i);
+			} else if (value instanceof Iterable<?> iterable) {
 				if (i < 0) {
 					throw new IndexOutOfBoundsException("index < 0");
 				}
-				Iterator<?> iter = ((Iterable<?>) value).iterator();
+				Iterator<?> iter = iterable.iterator();
 				for (; i > 0; i--) {
 					iter.next();
 				}

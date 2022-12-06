@@ -115,10 +115,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 		if (o == this) {
 			return true;
 		}
-		if (!(o instanceof Map)) {
+		if (!(o instanceof Map<?, ?> other)) {
 			return false;
 		}
-		Map<?, ?> other = (Map<?, ?>) o;
 		if (size() != other.size()) {
 			return false;
 		}
@@ -319,10 +318,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 			if (o == this) {
 				return true;
 			}
-			if (!(o instanceof Set)) {
+			if (!(o instanceof Set<?> other)) {
 				return false;
 			}
-			Set<?> other = (Set<?>) o;
 			if (size() != other.size()) {
 				return false;
 			}
@@ -351,10 +349,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, S
 
 		@Override
 		public boolean contains(Object o) {
-			if (!(o instanceof Entry)) {
+			if (!(o instanceof Entry<?, ?> other)) {
 				return false;
 			}
-			Entry<?, ?> other = (Entry<?, ?>) o;
 			Object v = map.get(other.getKey());
 			if (v == null) {
 				return false;

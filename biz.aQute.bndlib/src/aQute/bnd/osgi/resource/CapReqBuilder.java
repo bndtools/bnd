@@ -126,8 +126,7 @@ public class CapReqBuilder {
 		if (versionClass.isInstance(value)) {
 			return true;
 		}
-		if (value instanceof Collection) {
-			Collection<?> v = (Collection<?>) value;
+		if (value instanceof Collection<?> v) {
 			if (v.isEmpty()) {
 				return false;
 			}
@@ -151,8 +150,7 @@ public class CapReqBuilder {
 
 	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) {
 		for (Entry<? extends String, ? extends Object> entry : attributes.entrySet()) {
-			if (entry instanceof DeferredValueEntry) {
-				DeferredValueEntry<? extends String, ? extends Object> deferred = (DeferredValueEntry<? extends String, ? extends Object>) entry;
+			if (entry instanceof DeferredValueEntry<? extends String, ? extends Object> deferred) {
 				addAttribute(deferred.getKey(), deferred.getDeferredValue());
 			} else {
 				addAttribute(entry.getKey(), entry.getValue());
@@ -293,11 +291,12 @@ public class CapReqBuilder {
 	}
 
 	private CharSequence toFilter(Object expr) {
-		if (expr instanceof CharSequence)
-			return (CharSequence) expr;
+		if (expr instanceof CharSequence charSequence) {
+			return charSequence;
+		}
 
-		if (expr instanceof VersionRange) {
-			return ((VersionRange) expr).toFilter();
+		if (expr instanceof VersionRange versionRange) {
+			return versionRange.toFilter();
 		}
 
 		return expr.toString();
@@ -631,33 +630,31 @@ public class CapReqBuilder {
 	}
 
 	private Object toBndVersions(Object value) {
-		if (value instanceof aQute.bnd.version.Version)
-			return value;
+		if (value instanceof aQute.bnd.version.Version version)
+			return version;
 
-		if (value instanceof Version) {
-			Version osgiVersion = (Version) value;
+		if (value instanceof Version osgiVersion) {
 			return new aQute.bnd.version.Version(osgiVersion.getMajor(), osgiVersion.getMinor(), osgiVersion.getMicro(),
 				osgiVersion.getQualifier());
 		}
 
-		if (value instanceof String)
-			return new aQute.bnd.version.Version((String) value);
+		if (value instanceof String versionString)
+			return new aQute.bnd.version.Version(versionString);
 
-		if (value instanceof Number)
+		if (value instanceof Number versionNumber)
 			try {
-				return new aQute.bnd.version.Version(((Number) value).intValue());
+				return new aQute.bnd.version.Version(versionNumber.intValue());
 			} catch (Exception e) {
 				return value;
 			}
 
-		if (value instanceof Collection) {
-			Collection<?> v = (Collection<?>) value;
+		if (value instanceof Collection<?> v) {
 			if (v.isEmpty())
 				return value;
 
 			if (v.iterator()
-				.next() instanceof aQute.bnd.version.Version)
-				return value;
+				.next() instanceof aQute.bnd.version.Version version)
+				return version;
 
 			List<Object> bnds = new ArrayList<>();
 			for (Object m : v) {
@@ -670,38 +667,35 @@ public class CapReqBuilder {
 	}
 
 	private Object toVersions(Object value) {
-		if (value instanceof Version)
-			return value;
+		if (value instanceof Version version)
+			return version;
 
-		if (value instanceof aQute.bnd.version.Version) {
-			aQute.bnd.version.Version bndVersion = (aQute.bnd.version.Version) value;
+		if (value instanceof aQute.bnd.version.Version bndVersion) {
 			return new Version(bndVersion.getMajor(), bndVersion.getMinor(), bndVersion.getMicro(),
 				bndVersion.getQualifier());
 		}
 
-		if (value instanceof String)
+		if (value instanceof String versionString)
 			try {
-				String versionString = (String) value;
 				return new Version(versionString.trim());
 			} catch (Exception e) {
 				return value;
 			}
 
-		if (value instanceof Number)
+		if (value instanceof Number versionNumber)
 			try {
-				return new Version(((Number) value).intValue(), 0, 0);
+				return new Version(versionNumber.intValue(), 0, 0);
 			} catch (Exception e) {
 				return value;
 			}
 
-		if (value instanceof Collection) {
-			Collection<?> v = (Collection<?>) value;
+		if (value instanceof Collection<?> v) {
 			if (v.isEmpty())
 				return value;
 
 			if (v.iterator()
-				.next() instanceof Version)
-				return value;
+				.next() instanceof Version version)
+				return version;
 
 			List<Object> osgis = new ArrayList<>();
 			for (Object m : v) {

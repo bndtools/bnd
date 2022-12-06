@@ -35,7 +35,7 @@ public class BundleId implements Comparable<BundleId> {
 
 	@Override
 	public boolean equals(Object o) {
-		return this == o || ((o instanceof BundleId) && compareTo((BundleId) o) == 0);
+		return this == o || ((o instanceof BundleId id) && compareTo(id) == 0);
 	}
 
 	@Override

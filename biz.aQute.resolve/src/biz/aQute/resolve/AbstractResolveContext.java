@@ -7,7 +7,6 @@ import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.osgi.framework.namespace.HostNamespace.HOST_NAMESPACE;
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
-import static org.osgi.namespace.contract.ContractNamespace.CONTRACT_NAMESPACE;
 import static org.osgi.service.repository.ContentNamespace.CONTENT_NAMESPACE;
 
 import java.io.File;
@@ -83,8 +82,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * The 'OSGiFramework' contract was something invented by the old indexer
 	 * which is no longer in use.
 	 */
-	@Deprecated
-	protected static final String					CONTRACT_OSGI_FRAMEWORK					= "OSGiFramework";
 	protected static final String					IDENTITY_INITIAL_RESOURCE				= Constants.IDENTITY_INITIAL_RESOURCE;
 	protected static final String					IDENTITY_SYSTEM_RESOURCE				= Constants.IDENTITY_SYSTEM_RESOURCE;
 
@@ -356,22 +353,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		return true;
 	}
 
-	/**
-	 * This method is BROKEN. The 'OSGiFramework' contract was something
-	 * invented by the old indexer which is no longer in use.
-	 */
-	@Deprecated
-	protected static Capability findFrameworkContractCapability(Resource resource) {
-		List<Capability> contractCaps = resource.getCapabilities(CONTRACT_NAMESPACE);
-		if (contractCaps != null)
-			for (Capability cap : contractCaps) {
-				if (CONTRACT_OSGI_FRAMEWORK.equals(cap.getAttributes()
-					.get(CONTRACT_NAMESPACE)))
-					return cap;
-			}
-		return null;
-	}
-
 	private static CacheKey getCacheKey(Requirement requirement) {
 		return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes(),
 			requirement.getResource());
@@ -439,10 +420,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	static Version getVersion(Capability cap, String attr) {
 		Object versionatt = cap.getAttributes()
 			.get(attr);
-		if (versionatt instanceof Version)
-			return (Version) versionatt;
-		else if (versionatt instanceof String)
-			return Version.parseVersion((String) versionatt);
+		if (versionatt instanceof Version version)
+			return version;
+		else if (versionatt instanceof String string)
+			return Version.parseVersion(string);
 		else
 			return Version.emptyVersion;
 	}
@@ -704,11 +685,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		if (object == null)
 			return null;
 
-		if (object instanceof Version)
-			return (Version) object;
+		if (object instanceof Version version)
+			return version;
 
-		if (object instanceof String)
-			return Version.parseVersion((String) object);
+		if (object instanceof String string)
+			return Version.parseVersion(string);
 
 		throw new IllegalArgumentException(MessageFormat.format("Cannot convert type {0} to Version.", object.getClass()
 			.getName()));
