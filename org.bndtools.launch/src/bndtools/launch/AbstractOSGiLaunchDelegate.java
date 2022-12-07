@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -293,6 +294,10 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		if (classpathAndModulepath == null) {
 			classpathAndModulepath = new String[2][];
 			classpathAndModulepath[1] = new String[0];
+		} else if (classpathAndModulepath[1].length > 0) {
+			classpathAndModulepath[1] = Arrays.stream(classpathAndModulepath[1])
+				.filter(mp -> !mp.endsWith("jrt-fs.jar"))
+				.toArray(String[]::new);
 		}
 		classpathAndModulepath[0] = getProjectClasspath();
 		return classpathAndModulepath;
