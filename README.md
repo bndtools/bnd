@@ -30,10 +30,10 @@ We require at least Java 17.
 
 - `./gradlew :build` - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
 - `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
-- `./mvnw --file=maven install` - Assembles and tests the Bnd Maven plugins.
+- `./mvnw install` - Assembles and tests the Bnd Maven plugins.
 - `./gradlew :publish` - Assembles and publishes the Bnd Workspace projects into `dist/bundles`.
 - `./gradlew :gradle-plugins:publish` - Assembles and publishes the Bnd Gradle plugins into `dist/bundles`.
-- `./mvnw -Pdist --file=maven deploy` - Assembles and publishes the Bnd Maven plugins into `dist/bundles`.
+- `./mvnw -Pdist deploy` - Assembles and publishes the Bnd Maven plugins into `dist/bundles`.
 
 Bnd/Bndtools is continuously built on [GitHub Actions](https://github.com/bndtools/bnd/actions/workflows/cibuild.yml).
 [![GitHub Actions CI Build Status](https://github.com/bndtools/bnd/actions/workflows/cibuild.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/cibuild.yml)

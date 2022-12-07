@@ -88,7 +88,7 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, InputStream in, boolean ignoreParentIfAbsent) throws Exception {
-		this(repo, IO.work, getDocBuilder().parse(processEntities(in)), ignoreParentIfAbsent);
+		this(repo, null, getDocBuilder().parse(processEntities(in)), ignoreParentIfAbsent);
 	}
 
 	private static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
@@ -160,7 +160,7 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, Document doc, boolean ignoreIfParentAbsent) throws Exception {
-		this(repo, IO.work, doc, ignoreIfParentAbsent);
+		this(repo, null, doc, ignoreIfParentAbsent);
 	}
 
 	private POM(MavenRepository repo, File base, Document doc, boolean ignoreIfParentAbsent) throws Exception {
@@ -183,7 +183,8 @@ public class POM implements IPom {
 				throw new IllegalArgumentException("Invalid version for parent pom " + program + ":" + v);
 
 			File fp;
-			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(base, relativePath)).isFile()) {
+			if (Objects.nonNull(base) && Strings.nonNullOrEmpty(relativePath)
+				&& (fp = IO.getFile(base, relativePath)).isFile()) {
 				this.parent = new POM(repo, fp);
 			} else {
 				Revision revision = program.version(v);

@@ -5,13 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>biz.aQute.bnd</groupId>
-	<artifactId>maven</artifactId>
+	<artifactId>maven-plugins</artifactId>
 	<version>1.0.0</version>
 	<description>Reactor to build the Bnd Maven plugins.</description>
 	<name>Bnd Maven Plugins Reactor</name>
 	<packaging>pom</packaging>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.install.skip>true</maven.install.skip>
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
