@@ -55,4 +55,4 @@ This would turn the previous example into:
 
 The usage of the `findproviders` macro as depicted above also works when used in the context of one of the [Maven plugins][maven].
 
-[maven]: https://github.com/bndtools/bnd/tree/master/maven
+[maven]: https://github.com/bndtools/bnd/tree/master/maven-plugins
