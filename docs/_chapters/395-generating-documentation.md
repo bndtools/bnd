@@ -24,7 +24,7 @@ tool (such as *Jekyll* to generate a static site for example).
 the documentation is done by executing a simple command.
 
 This feature is available for the Bnd Workspace Model and Maven projects respectivly using Bnd CLI and `bnd-reporter-maven-plugin`. We will use
-Bnd CLI as an example in the next sections, you can directly look at the documentation in the [Github repository](https://github.com/bndtools/bnd/blob/master/maven/bnd-reporter-maven-plugin/README.md) for the corresponding feature with Maven.
+Bnd CLI as an example in the next sections, you can directly look at the documentation in the [Github repository](https://github.com/bndtools/bnd/blob/master/maven-plugins/bnd-reporter-maven-plugin/README.md) for the corresponding feature with Maven.
 
 > Note: It is necessary that the workspace is completely built before generating the documentation files to take into account the latest changes.
 

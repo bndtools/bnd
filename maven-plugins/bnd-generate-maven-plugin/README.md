@@ -4,7 +4,7 @@ The `bnd-generate-maven-plugin` is a bnd based plugin to run bnd generators.
 
 ## What does the `bnd-generate-maven-plugin` do?
 
-It provides a flexible mechanism, that can run system commands or run external generator plugins. A more general description about the use of generators in bnd can be found [here](https://bnd.bndtools.org/instructions/generate.html). A few examples can be found in the [tests](https://github.com/bndtools/bnd/tree/master/maven/bnd-generate-maven-plugin/src/it) for this plugin.
+It provides a flexible mechanism, that can run system commands or run external generator plugins. A more general description about the use of generators in bnd can be found [here](https://bnd.bndtools.org/instructions/generate.html). A few examples can be found in the [tests](https://github.com/bndtools/bnd/tree/master/maven-plugins/bnd-generate-maven-plugin/src/it) for this plugin.
 
 An example that runs `dir` and pipes it to a file looks like
 
