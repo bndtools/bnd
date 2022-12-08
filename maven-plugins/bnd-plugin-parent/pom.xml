@@ -22,7 +22,7 @@
 		<osgi.annotation.version>8.1.0</osgi.annotation.version>
 		<groovy.version>3.0.13</groovy.version>
 		<!-- The following versions must match those in cnf/ext/maven-plugin.bnd -->
-		<maven.target.version>3.3.9</maven.target.version>
+		<maven.target.version>3.8.6</maven.target.version>
 		<aether.version>1.0.2.v20150114</aether.version>
 		<!-- The following versions should match those in cnf/ext/junit.bnd -->
 		<junit.jupiter.version>5.9.1</junit.jupiter.version>
