@@ -11,7 +11,7 @@ updates:
 
   # Maintain dependencies for maven
   - package-ecosystem: "maven"
-    directory: "/maven"
+    directory: "/maven-plugins"
     schedule:
       interval: "daily"
 
