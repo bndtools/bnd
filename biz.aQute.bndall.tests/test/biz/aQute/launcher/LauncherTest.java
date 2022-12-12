@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
@@ -93,6 +94,50 @@ public class LauncherTest {
 		String result = runFramework(file);
 
 		softly.assertThat(result)
+			.containsPattern("managed=all")
+			.containsPattern("Startlevel\\s+22")
+			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
+			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
+			.containsPattern("10\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
+			.containsPattern("20\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit")
+			.containsPattern("5\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin")
+			.containsPattern("startlevel: default=21, beginning=22")
+			.containsPattern("startlevel: notified reached final level 22");
+	}
+
+	@Test
+	public void testRunOrder_1_basic_manage_none() throws Exception {
+		File file = buildPackage("order-01.bndrun", run -> {
+			run.setProperty("-launcher", "manage=none");
+		});
+
+		System.setProperty("test.cmd", "quit.no.exit");
+
+		String result = runFramework(file);
+
+		softly.assertThat(result)
+			.containsPattern("Startlevel\\s+22")
+			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
+			.containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
+			.containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
+			.containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit")
+			.containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin")
+			.containsPattern("startlevel: default=0, beginning=22")
+			.containsPattern("startlevel: notified reached final level 22");
+	}
+
+	@Test
+	public void testRunOrder_1_basic_manage_narrow() throws Exception {
+		File file = buildPackage("order-01.bndrun", run -> {
+			run.setProperty("-launcher", "manage=narrow");
+		});
+
+		System.setProperty("test.cmd", "quit.no.exit");
+
+		String result = runFramework(file);
+
+		softly.assertThat(result)
+			.containsPattern("managed=narrow")
 			.containsPattern("Startlevel\\s+22")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
@@ -241,8 +286,13 @@ public class LauncherTest {
 	}
 
 	private File buildPackage(String bndrun) throws Exception {
+		return buildPackage(bndrun, x -> {});
+	}
+
+	private File buildPackage(String bndrun, Consumer<Run> decorate) throws Exception {
 		File tgt = IO.copy(new File(bndrun), new File(testDir, bndrun));
 		try (Workspace ws = new Workspace(new File("..")); Run run = Run.createRun(ws, tgt)) {
+			decorate.accept(run);
 			File file = new File(testDir, "packaged.jar");
 			try (Jar pack = run.pack(null)) {
 				assertNoErrorsOrWarnings(run, "run pre pack");

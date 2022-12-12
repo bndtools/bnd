@@ -62,8 +62,55 @@ public interface ProjectInstructions {
 		@SyntaxAnnotation(lead = "Specify a JAR version for a Main class plugin (name in generate must be a fqn class name)")
 		Optional<String> version();
 
-		@SyntaxAnnotation(lead = "Determins if the output directory needs to be cleared before the generator runs. The default is true.")
+		@SyntaxAnnotation(lead = "Determines if the output directory needs to be cleared before the generator runs. The default is true.")
 		Optional<Boolean> clear();
+	}
+
+	/**
+	 * The -launcher function is intended to hold options for the runtime
+	 * launcher.
+	 */
+
+	@SyntaxAnnotation(name = Constants.LAUNCHER, lead = "Return specific options for the launcher", example = "-launcher manage=all")
+	LauncherOptions launcher();
+
+	/**
+	 * the -launcher instruction is a set of properties, represented in this
+	 * interface
+	 */
+	interface LauncherOptions {
+
+		/**
+		 * When the framework is launched, the launcher might find bundles that
+		 * were not part of the run bundles. This is valid if one of the managed
+		 * bundles is a management agent that installs these bundles, for
+		 * example via a remote management system. In that case, the launcher
+		 * should not touch those other bundles. However, sometimes the bundles
+		 * are installed manually. In that case they should be managed.
+		 * <p>
+		 * This was added because the launcher was originally always assuming a
+		 * management agent and kept its hands off these bundles. However, a
+		 * change was introduced that made the launcher set the start level of
+		 * all bundles and this was not discovered for 3 versions. Therefore
+		 * this option was introduced with a default of
+		 * {@link LauncherManage#all}
+		 */
+		@SyntaxAnnotation(lead = "Option to set the bundles that need to be managed by the launcher. narrow means only "
+			+ "the bundles that are defined or calculated in the run bundles, all means all installed bundles, and "
+			+ "none means that no bundles should be managed. Aspects that fall under management are: startlevel", example = "-launcher manage=all")
+		LauncherManage manage();
+	}
+
+	/**
+	 * Possible values for for the `manage` option.
+	 */
+	enum LauncherManage {
+		@SyntaxAnnotation(lead = "Only manage the bundles specified in -runbundles")
+		narrow,
+		@SyntaxAnnotation(lead = "Manage all bundles")
+		all,
+		@SyntaxAnnotation(lead = "Manage no bundles")
+		none;
 	}
 
 }

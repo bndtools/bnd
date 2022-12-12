@@ -767,8 +767,21 @@ public abstract class ProjectLauncher extends Processor {
 				int defaultLevel = maxLevel + 1;
 				int beginningLevel = maxLevel + 2;
 
-				if (!properties.containsKey(LAUNCH_STARTLEVEL_DEFAULT))
-					properties.put(LAUNCH_STARTLEVEL_DEFAULT, Integer.toString(defaultLevel));
+				if (!properties.containsKey(LAUNCH_STARTLEVEL_DEFAULT)) {
+					switch (project.instructions.launcher()
+						.manage()) {
+						default :
+						case all :
+							properties.put(LAUNCH_STARTLEVEL_DEFAULT, Integer.toString(defaultLevel));
+							break;
+						case narrow :
+							properties.put(LAUNCH_STARTLEVEL_DEFAULT, Integer.toString(-defaultLevel));
+							break;
+						case none :
+							properties.put(LAUNCH_STARTLEVEL_DEFAULT, "0");
+							break;
+					}
+				}
 
 				if (beginningLevelString == null) {
 					properties.put(FRAMEWORK_BEGINNING_STARTLEVEL, Integer.toString(beginningLevel));

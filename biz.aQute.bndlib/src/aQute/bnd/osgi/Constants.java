@@ -167,6 +167,8 @@ public interface Constants {
 	String		JAVAC										= "javac";
 	String		JAVA										= "java";
 	String		JAVA_DEBUG									= "java.debug";
+	String		LAUNCHER									= "-launcher";
+
 	String		MAKE										= "-make";
 	String		METATYPE_ANNOTATIONS						= "-metatypeannotations";
 	String		METATYPE_ANNOTATIONS_OPTIONS				= "-metatypeannotations-options";
@@ -531,6 +533,16 @@ public interface Constants {
 	 * Launch constants that should be shared by launchers
 	 */
 	String		LAUNCH_TRACE								= "launch.trace";
+
+	/**
+	 * Specifies the default bundle start level but it has more meanings. If it
+	 * is 0, no start levels are handled. If is > 0, it manages the startlevels
+	 * of all installed bundles, also from previous installations are ensure to
+	 * have this start level if they do not appear in the set of runbundles. If
+	 * it less than 0, its negated value is the default start level but _only_
+	 * the bundles listed in the run bundles are managed. See -launcher
+	 * instruction.
+	 */
 	String		LAUNCH_STARTLEVEL_DEFAULT					= "launch.startlevel.default";
 	String		LAUNCH_RUNBUNDLES_ATTRS						= "launch.runbundles.attrs";
 	String		LAUNCH_ACTIVATORS							= "launch.activators";
@@ -541,7 +553,7 @@ public interface Constants {
 	 * printing.
 	 */
 	Set<String>	BND_USE_ATTRIBUTES							= Sets.of(
-		//@formatter:off
+	//@formatter:off
 		FROM_DIRECTIVE,
 		NO_IMPORT_DIRECTIVE,
 		PROVIDE_DIRECTIVE,

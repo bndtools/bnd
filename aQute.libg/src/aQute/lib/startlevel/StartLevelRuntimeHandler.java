@@ -157,16 +157,28 @@ public class StartLevelRuntimeHandler implements Closeable {
 	static public StartLevelRuntimeHandler create(Trace logger, Map<String, String> outerConfiguration) {
 
 		String defaultStartlevelString = outerConfiguration.get(LAUNCH_STARTLEVEL_DEFAULT);
-		if (defaultStartlevelString == null) {
+		if (defaultStartlevelString == null || defaultStartlevelString.equals("0")) {
 			logger.trace("startlevel: not handled");
 			return absent();
 		}
 
-		int defaultStartlevel = toInt(defaultStartlevelString, 1);
+		int defaultStartlevel;
+		boolean manageAll;
+
+		int tmp = toInt(defaultStartlevelString, 1);
+		if (tmp > 0) {
+			manageAll = true;
+			defaultStartlevel = tmp;
+		} else {
+			manageAll = false;
+			defaultStartlevel = -tmp;
+		}
+
 		int beginningStartlevel = toInt(outerConfiguration.get(Constants.FRAMEWORK_BEGINNING_STARTLEVEL), 1);
 		outerConfiguration.put(Constants.FRAMEWORK_BEGINNING_STARTLEVEL, "1");
 
-		logger.trace("startlevel: handled begin=%s default=%s", beginningStartlevel, defaultStartlevel);
+		logger.trace("startlevel: handled begin=%s default=%s managed=%s", beginningStartlevel, defaultStartlevel,
+			manageAll ? "all" : "narrow");
 
 		//
 		// We need to remove it otherwise the framework reacts to it
@@ -185,15 +197,8 @@ public class StartLevelRuntimeHandler implements Closeable {
 
 				this.systemBundle = systemBundle;
 
-				for (Bundle bundle : systemBundle.getBundleContext()
-					.getBundles()) {
-					if (bundle.getBundleId() == 0) {
-						continue;
-					}
-					if (bundle.getSymbolicName() == null) {
-						continue;
-					}
-					installed.put(bundle, new BundleIdentity(bundle));
+				if (manageAll) {
+					manageAll(systemBundle);
 				}
 
 				updateConfiguration(outerConfiguration);
@@ -220,6 +225,15 @@ public class StartLevelRuntimeHandler implements Closeable {
 					});
 				logger.trace("startlevel: default=%s, beginning=%s", defaultStartlevel, beginningStartlevel);
 
+			}
+
+			private void manageAll(Framework systemBundle) {
+				for (Bundle bundle : systemBundle.getBundleContext()
+					.getBundles()) {
+					if (bundle.getBundleId() != 0 && bundle.getSymbolicName() != null) {
+						installed.put(bundle, new BundleIdentity(bundle));
+					}
+				}
 			}
 
 			@Override
