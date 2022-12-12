@@ -42,4 +42,16 @@ public class DynamicImport implements ConfigurationAdmin {
 		return null;
 	}
 
+	@Override
+	public Configuration getFactoryConfiguration(String factoryPid, String name, String location) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Configuration getFactoryConfiguration(String factoryPid, String name) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
