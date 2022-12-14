@@ -36,7 +36,7 @@
 
 
 Import-Package: \
- org.slf4j,\
+ org.slf4j;version="${range;[==,3)}",\
  !com.google.appengine.*,\
  !com.google.apphosting.*,\
  !com.cloudius.util.*,\
