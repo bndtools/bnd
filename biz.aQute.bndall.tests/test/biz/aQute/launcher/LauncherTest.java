@@ -116,7 +116,7 @@ public class LauncherTest {
 		String result = runFramework(file);
 
 		softly.assertThat(result)
-			.containsPattern("startlevel: not handled")
+			.containsPattern("startlevel: disabled")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
