@@ -6,7 +6,7 @@ layout: default
 
 One of the primary authors of bnd has always objected to startlevels. His motivation was twofold:
 
-* A dynamic OSGi system should be ablet to startup in any order. Startlevels are often abused to hide bundles
+* A dynamic OSGi system should be able to startup in any order. Startlevels are often abused to hide bundles
   that do not handle their dynamic dependencies correctly. Hiding these bugs by controlling the start ordering
   is dangerous since it removes the symptom but the cause can still bite at a later inconvenient time.
 * Start levels are global data about a set of bundles. OSGi is quite elegant that it stores virtually all
@@ -34,13 +34,29 @@ assign the `startlevel` attributes to specific bundles. For this reason there is
 instructions. A decorator is a header with the same name but ending with a plus sign (`+`). This instruction acts like a selector
 and can be used to assign `startlevel` attributes on the `-runbundles`.
 
+For example:
+
+    -runbundles: \
+        org.apache.servicemix.bundles.junit;version='[4.13.0,5)',\
+        org.apache.felix.log, \
+        demo;version='[1.0.0,1.0.1)'
+    
+    -runbundles+: \
+        demo;startlevel=11,\
+        *;startlevel=99
+
+
 ### Launching
 
 The [launcher] is responsible for installing the bundles after starting or communicating with a framework. The
 default bnd launcher will assign each bundle a startlevel, where bundles that do not have a specified `startlevel` are
 assigned one level higher than the maximum specified levels.
 
-The default launcher will then move the framework startlevel to 2 higher than the highest specified start level.
+The launcher supports _narrow_ managed mode or _all_ via the [`-launcher`] instruction. In narrow mode, the start levels
+will only be assigned to the scope, the set of bundles listed in the run bundles. In the all mode, all bundles
+that are installed at launch time will be assigned the default start level.
+
+The default launcher will then move the framework start level to 2 higher than the highest specified start level.
 
 ### Resolving
 
@@ -72,12 +88,17 @@ is to assign bundles sequentially in selected order from an initial level steppi
 can provide the initial level and the step if desired.
 
 The launcher will by default move the framework then to a start level that includes any used start levels. This
-default behavior can be blocked by specifyig the `org.osgi.framework.startlevel.beginning` property. If this
+default behavior can be blocked by specifying the `org.osgi.framework.startlevel.beginning` property. If this
 property is set bnd will assume that there is an agent that will handle the runtime start levels.
 
+## Runtime
 
+A quick way to disable the start level handling by the launch is to set the property used to convey the default 
+start level, `launch.startlevel.default` to 0. This will disable the complete start level handling regardless
+of other settings.
 
 [1]: https://osgi.org/specification/osgi.cmpn/7.0.0/service.configurator.html 
+[-launcher]: /instructions/launcher.html
 [-runbundles]: /instructions/runbundles.html
 [-runstartlevel]: /instructions/runstartlevel.html
 [launcher]: /chapters/launching.html
