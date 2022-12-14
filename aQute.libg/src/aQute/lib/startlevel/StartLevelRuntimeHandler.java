@@ -157,15 +157,20 @@ public class StartLevelRuntimeHandler implements Closeable {
 	static public StartLevelRuntimeHandler create(Trace logger, Map<String, String> outerConfiguration) {
 
 		String defaultStartlevelString = outerConfiguration.get(LAUNCH_STARTLEVEL_DEFAULT);
-		if (defaultStartlevelString == null || defaultStartlevelString.equals("0")) {
-			logger.trace("startlevel: not handled");
+		if (defaultStartlevelString == null) {
+			logger.trace("startlevel: not handled because %s not set", LAUNCH_STARTLEVEL_DEFAULT);
+			return absent();
+		}
+
+		int tmp = toInt(defaultStartlevelString, 1);
+		if (tmp == 0) {
+			logger.trace("startlevel: disabled because property %s==%s", LAUNCH_STARTLEVEL_DEFAULT,
+				defaultStartlevelString);
 			return absent();
 		}
 
 		int defaultStartlevel;
 		boolean manageAll;
-
-		int tmp = toInt(defaultStartlevelString, 1);
 		if (tmp > 0) {
 			manageAll = true;
 			defaultStartlevel = tmp;
