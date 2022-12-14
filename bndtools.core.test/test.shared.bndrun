@@ -40,8 +40,6 @@
 	bnd.identity;id='org.eclipse.emf.importer',\
 	bnd.identity;id='org.eclipse.emf.importer.ecore',\
 	bnd.identity;id='org.eclipse.emf.importer.java',\
-	bnd.identity;id='org.eclipse.emf.workspace',\
-	bnd.identity;id='org.eclipse.emf.workspace.ui',\
 	bnd.identity;id='org.eclipse.core.databinding.beans',\
 	bnd.identity;id='org.eclipse.core.filesystem',\
 	bnd.identity;id='org.eclipse.e4.tools.services',\
@@ -51,10 +49,7 @@
 	bnd.identity;id='org.eclipse.m2e.binaryproject.ui',\
 	bnd.identity;id='org.eclipse.m2e.discovery',\
 	bnd.identity;id='org.eclipse.m2e.editor',\
-	bnd.identity;id='org.eclipse.m2e.editor.xml',\
-	bnd.identity;id='org.eclipse.m2e.importer',\
 	bnd.identity;id='org.eclipse.m2e.jdt.ui',\
-	bnd.identity;id='org.eclipse.m2e.lifecyclemapping.defaults',\
 	bnd.identity;id='org.eclipse.m2e.profiles.core',\
 	bnd.identity;id='org.eclipse.m2e.profiles.ui',\
 	bnd.identity;id='org.eclipse.m2e.refactoring',\
@@ -74,13 +69,16 @@
 	bnd.identity;id='org.eclipse.ui.console',\
 	bnd.identity;id='org.eclipse.ui.ide',\
 	bnd.identity;id='org.eclipse.ui.ide.application',\
-	bnd.identity;id='junit-jupiter-engine',\
-	bnd.identity;id='junit-platform-launcher',\
-	bnd.identity;id='junit-vintage-engine',\
-	bnd.identity;id='org.slf4j.jcl'
+	bnd.identity;id='junit-jupiter-api';version='${range;[===,==+);${junit.jupiter.eclipse.version}}',\
+	bnd.identity;id='junit-jupiter-engine';version='${range;[===,==+);${junit.jupiter.eclipse.version}}',\
+	bnd.identity;id='junit-jupiter-params';version='${range;[===,==+);${junit.jupiter.eclipse.version}}',\
+	bnd.identity;id='junit-platform-commons';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-platform-engine';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-vintage-engine';version='${range;[===,==+);${junit.jupiter.eclipse.version}}'
 
--runfw: org.eclipse.osgi;version='[3.15.300.v20200520-1959,3.15.300.v20200520-1959]'
--runee: JavaSE-1.8
+-runfw: org.eclipse.osgi;version='[3.18.100.v20220817-1601,3.18.100.v20220817-1601]'
+-runee: JavaSE-17
 
 # Useful debugging directives
 # The following directives are useful to have when you are debugging in the IDE
@@ -116,7 +114,7 @@
 -runrepos: \
 	"Workspace",\
 	"Maven Central",\
-	"Eclipse 2020-06"
+	"Eclipse 4.25 (2022-09)"
 
 -runproperties: \
 	eclipse.application=org.eclipse.ui.ide.workbench,\
@@ -151,6 +149,5 @@
 	bnd.identity;id='biz.aQute.junit',\
 	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
 	bnd.identity;id='osgi.*',\
-	bnd.identity;id='org.osgi.*.annotations',\
-	bnd.identity;id='org.junit.*'
+	bnd.identity;id='org.osgi.*.annotations'
 

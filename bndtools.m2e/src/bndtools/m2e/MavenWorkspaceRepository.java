@@ -4,7 +4,6 @@ import static aQute.bnd.exceptions.Exceptions.unchecked;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -250,18 +249,11 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 		return bsns;
 	}
 
-	/**
-	 * Needed in M2E version 2.0
-	 */
-	public void mavenProjectChanged(List<MavenProjectChangedEvent> events, IProgressMonitor monitor) {
-		mavenProjectChanged(events.toArray(new MavenProjectChangedEvent[0]), monitor);
-	}
-
 	@Override
-	public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
+	public void mavenProjectChanged(List<MavenProjectChangedEvent> events, IProgressMonitor monitor) {
 		boolean changed = false;
 
-		for (MavenProjectChangedEvent event : ((events != null) ? events : new MavenProjectChangedEvent[0])) {
+		for (MavenProjectChangedEvent event : events) {
 			Kind kind = Kind.get(event);
 			logger.debug("{}: mavenProjectChanged({}, {})", getName(), kind, event.getSource());
 			switch (kind) {
@@ -375,36 +367,12 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 	private boolean process() {
 		boolean changed = false;
 		IProgressMonitor monitor = new NullProgressMonitor();
-		for (IMavenProjectFacade projectFacade : safeGetProjects()) {
+		for (IMavenProjectFacade projectFacade : mavenProjectRegistry.getProjects()) {
 			if (process(projectFacade, monitor)) {
 				changed = true;
 			}
 		}
 		return changed;
-	}
-
-	/**
-	 * Needed to work safely with M2E 1.x and 2.x simultaneously
-	 *
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private IMavenProjectFacade[] safeGetProjects() {
-		Object projects;
-		try {
-			projects = IMavenProjectRegistry.class.getMethod("getProjects")
-				.invoke(mavenProjectRegistry);
-		} catch (InvocationTargetException e) {
-			throw Exceptions.duck(e.getTargetException());
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
-
-		if (projects instanceof List) {
-			return ((List<?>) projects).toArray(new IMavenProjectFacade[0]);
-		} else {
-			return (IMavenProjectFacade[]) projects;
-		}
 	}
 
 	private boolean process(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {

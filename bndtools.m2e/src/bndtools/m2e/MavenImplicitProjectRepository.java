@@ -88,7 +88,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 	}
 
 	@Override
-	public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
+	public void mavenProjectChanged(List<MavenProjectChangedEvent> events, IProgressMonitor monitor) {
 		if (events == null)
 			return;
 

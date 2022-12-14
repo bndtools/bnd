@@ -5,6 +5,7 @@
 	osgi.annotation,\
 	osgi.core,\
 	org.osgi.namespace.service,\
+	org.osgi.service.prefs;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg,\

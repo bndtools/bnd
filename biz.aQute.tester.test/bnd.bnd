@@ -5,10 +5,10 @@
 
 -buildpath: \
 	org.apache.servicemix.bundles.junit;version=latest,\
-	org.junit.jupiter.api;version='${junit.jupiter.eclipse.version}',\
-	org.junit.jupiter.params;version='${junit.jupiter.eclipse.version}',\
+	junit-jupiter-api;version='${junit.jupiter.eclipse.version}',\
+	junit-jupiter-params;version='${junit.jupiter.eclipse.version}',\
 	org.opentest4j,\
-	org.apiguardian,\
+	org.apiguardian.api,\
 	osgi.core
 
 # Note: we don't use the ${junit} macro because we need to use the Eclipse
@@ -21,10 +21,10 @@
 # Eclipse version too.
 
 -testpath: \
-	org.junit.platform.commons;version="${junit.platform.eclipse.version}";strategy=lowest,\
-	org.junit.platform.launcher;version="${junit.platform.eclipse.version}";strategy=lowest,\
-	org.junit.platform.engine;version="${junit.platform.eclipse.version}";strategy=lowest,\
-	org.junit.jupiter.engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
+	junit-platform-commons;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	junit-platform-launcher;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	junit-platform-engine;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	junit-jupiter-engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
 	assertj-core;version=latest,\
 	net.bytebuddy.byte-buddy;version=latest,\
 	junit-platform-testkit;version="${junit.platform.eclipse.version}";strategy=lowest,\
@@ -38,6 +38,7 @@
 	org.xmlunit:xmlunit-assertj;version=latest,\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\
+	org.osgi.service.prefs;version=latest,\
 	org.eclipse.jdt.junit.core;version=latest,\
 	org.eclipse.core.runtime;version=latest,\
 	org.eclipse.equinox.preferences;version=latest,\
