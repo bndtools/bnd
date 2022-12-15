@@ -6,9 +6,9 @@ Bundle-Description:	    Shared logic used by bnd maven plugins
 -includepackage: aQute.bnd.maven.lib.*
 
 Import-Package: \
-	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,4);${@bundleversion}}";version=!,\
-	org.eclipse.aether.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,4);${@bundleversion}}";version=!,\
-	org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,4);${@bundleversion}}";version=!,\
+	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+	org.eclipse.aether.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+	org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
 	*
 
 # Decorate maven runtime dependencies
@@ -27,16 +27,16 @@ Import-Package: \
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.resolve;version=latest,\
 	biz.aQute.repository;version=latest,\
-	org.eclipse.m2e.maven.runtime,\
+	org.eclipse.m2e.maven.runtime;maven-optional=true,\
 	org.apache.maven:maven-artifact,\
 	org.apache.maven:maven-core,\
 	org.apache.maven:maven-model,\
 	org.apache.maven:maven-plugin-api,\
 	org.apache.maven:maven-repository-metadata,\
 	org.apache.maven:maven-settings,\
-	org.codehaus.plexus:plexus-utils,\
-	org.eclipse.aether.api;version="${aether.version}",\
-	org.slf4j.api;version=latest
+	org.codehaus.plexus:plexus-utils;maven-scope=provided,\
+	org.eclipse.aether.api;version="${aether.version}";maven-scope=provided,\
+	slf4j.api;version=latest;maven-scope=provided
 
 -conditionalpackage: \
     aQute.lib.*, \

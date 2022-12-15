@@ -201,7 +201,7 @@ public class BundleEngineTest {
 				event(test("noEngines"),
 					finishedWithFailure(instanceOf(JUnitException.class),
 						message(x -> x.contains("Couldn't find any registered TestEngines")))))
-			.haveExactly(1, event(bundle(testBundle), skippedWithReason("Couldn't find any registered TestEngines")));
+			.doNotHave(event(bundle(testBundle)));
 	}
 
 	public class NonEngine {}

@@ -3,6 +3,7 @@ import aQute.bnd.osgi.Constants
 
 tasks.named("testOSGi") {
 	description = "Bndtools Core Integration tests"
+	var arch = System.getProperty("os.arch")
 	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 		enabled = !bnd.is(Constants.NOJUNITOSGI)
 		bndrun = file("test.win32.x86_64.bndrun")
@@ -10,7 +11,7 @@ tasks.named("testOSGi") {
 		// This has to come before the check for Unix as MacOS also
 		// returns true for Unix
 		enabled = !bnd.is(Constants.NOJUNITOSGI)
-		bndrun = file("test.cocoa.macosx.x86_64.bndrun")
+		bndrun = file("test.cocoa.macosx.${arch}.bndrun")
 	} else if (Os.isFamily(Os.FAMILY_UNIX)) {
 		enabled = !bnd.is(Constants.NOJUNITOSGI)
 		bndrun = file("test.gtk.linux.x86_64.bndrun")

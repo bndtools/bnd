@@ -2,18 +2,15 @@ package bndtools.m2e;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
-import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.service.repository.Repository;
 
@@ -84,8 +81,8 @@ public abstract class AbstractMavenRepository extends BaseRepository
 
 		ArtifactKey artifactKey = projectFacade.getArtifactKey();
 
-		String finalNameGuess = buildDirectoryGuess + "/" + ArtifactKeyHelper.getArtifactId(artifactKey) + "-"
-			+ ArtifactKeyHelper.getVersion(artifactKey) + ".jar";
+		String finalNameGuess = buildDirectoryGuess + "/" + artifactKey.artifactId() + "-" + artifactKey.version()
+			+ ".jar";
 
 		return new File(finalNameGuess);
 	}
@@ -93,19 +90,5 @@ public abstract class AbstractMavenRepository extends BaseRepository
 	void cleanup() {
 		mavenProjectRegistry.removeMavenProjectChangedListener(this);
 	}
-
-	/**
-	 * Needed in M2E version 2.0
-	 */
-	public void mavenProjectChanged(List<MavenProjectChangedEvent> events, IProgressMonitor monitor) {
-		mavenProjectChanged(events.toArray(new MavenProjectChangedEvent[0]), monitor);
-	}
-
-	/**
-	 * Needed in M2E version 2.0 to link to when the interface doesn't include
-	 * it
-	 */
-	@Override
-	public abstract void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor);
 
 }

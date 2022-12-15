@@ -445,7 +445,8 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 			check(() -> Assertions.fail("Expecting method:\n%s\nto have failed", methodTest));
 		} else {
 			assertThat(failure.trace).as("trace")
-				.startsWith("org.junit.platform.commons.JUnitException: Could not find factory method [unknownMethod]");
+				.startsWith(
+					"org.junit.platform.commons.PreconditionViolationException: Could not find factory method [unknownMethod]");
 		}
 	}
 

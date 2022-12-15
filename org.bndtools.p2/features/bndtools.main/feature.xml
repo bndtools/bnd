@@ -511,7 +511,7 @@ version(s), and exceptions or additional permissions here}.&quot;
    </url>
 
    <requires>
-      <import feature="org.eclipse.platform" version="4.16.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.platform" version="4.25.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin

@@ -30,7 +30,7 @@ Import-Package: \
 	bndtools.api;version=latest,\
 	bndtools.core;version=latest,\
 	slf4j.api,\
-	org.apiguardian,\
+	org.apiguardian.api,\
 	org.eclipse.core.runtime,\
 	org.eclipse.osgi,\
 	org.eclipse.debug.core,\
