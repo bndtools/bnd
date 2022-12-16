@@ -10,6 +10,7 @@ import java.util.StringJoiner;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.result.Result;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
@@ -28,7 +29,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Mojo(name = "bnd-generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.NONE, threadSafe = true)
+@Mojo(name = "bnd-generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class GenerateMojo extends AbstractMojo {
 
 	protected final Logger			logger	= LoggerFactory.getLogger(getClass());
@@ -72,6 +73,9 @@ public class GenerateMojo extends AbstractMojo {
 
 	@Component
 	private RepositorySystem									system;
+
+	@Component
+	private ArtifactHandlerManager	artifactHandlerManager;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -128,6 +132,7 @@ public class GenerateMojo extends AbstractMojo {
 		try {
 			BndContainer container = new BndContainer.Builder(project, session, repositorySession, system)
 				.setDependencies(normalizedDependencies)
+				.setArtifactHandlerManager(artifactHandlerManager)
 				.setAdditionalProperiets(additionalProperties)
 					.build();
 
