@@ -20,7 +20,6 @@
 		<jpmsOptions>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.jar=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.util.zip=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED --add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jpmsOptions>
 		<mavenOpts>${jpmsOptions}</mavenOpts>
 		<osgi.annotation.version>8.1.0</osgi.annotation.version>
-		<groovy.version>3.0.13</groovy.version>
 		<!-- The following versions must match those in cnf/ext/maven-plugin.bnd -->
 		<maven.target.version>3.3.9</maven.target.version>
 		<aether.version>1.0.2.v20150114</aether.version>
@@ -316,24 +315,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-invoker-plugin</artifactId>
-					<version>3.3.0</version>
-					<dependencies>
-						<dependency>
-							<groupId>org.codehaus.groovy</groupId>
-							<artifactId>groovy</artifactId>
-							<version>${groovy.version}</version>
-						</dependency>
-						<dependency>
-							<groupId>org.codehaus.groovy</groupId>
-							<artifactId>groovy-json</artifactId>
-							<version>${groovy.version}</version>
-						</dependency>
-						<dependency>
-							<groupId>org.codehaus.groovy</groupId>
-							<artifactId>groovy-xml</artifactId>
-							<version>${groovy.version}</version>
-						</dependency>
-					</dependencies>
+					<version>3.4.0</version>
 					<configuration>
 						<projectsDirectory>${basedir}/src/it</projectsDirectory>
 						<settingsFile>${basedir}/src/it/settings.xml</settingsFile>
