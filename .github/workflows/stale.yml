@@ -26,7 +26,7 @@ jobs:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Stale Action
-      uses: actions/stale@5ebf00ea0e4c1561e9b43a292ed34424fb1d4578
+      uses: actions/stale@6f05e4244c9a0b2ed3401882b05d701dd0a7289b
       with:
         days-before-stale: 365
         days-before-close: 21
