@@ -149,7 +149,7 @@ public class BndContainer {
 	}
 
 	public int generate(String task, File workingDir, GenerateOperation operation, Settings settings,
-		MojoExecution mojoExecution) throws Exception {
+		MojoExecution mojoExecution, boolean includeTestDependencies) throws Exception {
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
@@ -177,7 +177,7 @@ public class BndContainer {
 			properties.putAll(additionProperties);
 			bnd.setProperties(properties.replaceHere(project.getBasedir()));
 
-			handleDependencies(bnd, closeables);
+			handleDependencies(bnd, closeables, includeTestDependencies);
 
 			bnd.setProperty("project.output", workingDir.getCanonicalPath());
 			bnd.setProperty(aQute.bnd.osgi.Constants.DEFAULT_PROP_TARGET_DIR, workingDir.getCanonicalPath());
@@ -199,7 +199,8 @@ public class BndContainer {
 		}
 	}
 
-	private void handleDependencies(Project bnd, List<Jar> closeables) throws Exception {
+	private void handleDependencies(Project bnd, List<Jar> closeables, boolean includeTestDependencies)
+		throws Exception {
 		// Compute bnd build and testpath, which might be used by a
 		// generator
 		Set<org.apache.maven.artifact.Artifact> artifacts = project.getArtifacts();
@@ -220,7 +221,7 @@ public class BndContainer {
 				closeables.add(cpeJar);
 				if (scopeFilter.include(artifact)) {
 					buildpath.add(createBuildPathExpression(cpe));
-				} else {
+				} else if (includeTestDependencies) {
 					testpath.add(createBuildPathExpression(cpe));
 				}
 			} else {
@@ -241,14 +242,16 @@ public class BndContainer {
 
 				if (scopeFilter.include(artifact)) {
 					buildpath.add(createBuildPathExpression(cpe));
-				} else {
+				} else if (includeTestDependencies) {
 					testpath.add(createBuildPathExpression(cpe));
 				}
 			}
 		}
 
 		bnd.setProperty("-buildpath.bndmavengenerate", Strings.join(",", buildpath));
-		bnd.setProperty("-testpath.bndmavengenerate", Strings.join(",", testpath));
+		if (includeTestDependencies) {
+			bnd.setProperty("-testpath.bndmavengenerate", Strings.join(",", testpath));
+		}
 
 		injectImplicitRepository(bnd.getWorkspace());
 	}

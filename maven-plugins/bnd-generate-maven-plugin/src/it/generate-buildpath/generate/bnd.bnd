@@ -2,4 +2,4 @@
     template/**.txt; \
         output='gen-src' ; \
         generate='testgen';\
-        testMode=testPath
+        testMode=default

@@ -14,6 +14,7 @@
 
 	<modules>
 		<module>generator</module>
+		<module>generate</module>
 		<module>generate-test</module>
 	</modules>
 </project>

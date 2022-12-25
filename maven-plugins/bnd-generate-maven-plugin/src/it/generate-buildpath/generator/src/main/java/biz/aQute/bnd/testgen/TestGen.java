@@ -25,12 +25,28 @@ public class TestGen implements Generator<TestGenOptions> {
 
 		System.out.println("Project " + context.getProject());
 		
+		String testMode = context.get("testMode", "default");
+		
+		System.out.println("mode " + testMode);
+		
 		Collection<Container> buildpath = context.getProject().getBuildpath();
 		System.out.println("buildpath " + buildpath.size());
 		List<String> bsns = buildpath.stream().map(c -> c.getBundleSymbolicName()).collect(Collectors.toList());
-		File file = null;
-		bsns.forEach(s -> System.out.println("bsn : " + s));
+		bsns.forEach(s -> System.out.println("buildpath bsn : " + s));
 		
+		Collection<Container> testpath = context.getProject().getTestpath();
+		if("testPath".equals(testMode)) {
+			System.out.println("testpath " + testpath.size());
+			if(testpath.isEmpty()) {
+				context.error("Testpath should not have been empty");
+			}
+			List<String> testBsns = testpath.stream().map(c -> c.getBundleSymbolicName()).collect(Collectors.toList());
+			testBsns.forEach(s -> System.out.println("testpath bsn : " + s));
+		} else if(!testpath.isEmpty()) {
+			context.error("Testpath should have been empty");
+		}
+		
+		File file = null;
 		if(context.getProject().getErrors().isEmpty()) {
 			file = new File(output, "ok.txt");
 		} else {

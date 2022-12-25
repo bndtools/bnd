@@ -33,7 +33,7 @@
 					<execution>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>bnd-generate</goal>
+							<goal>generate</goal>
 						</goals>
 					</execution>
 				</executions>
