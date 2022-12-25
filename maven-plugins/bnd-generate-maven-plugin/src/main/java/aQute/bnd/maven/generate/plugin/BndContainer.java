@@ -81,7 +81,7 @@ public class BndContainer {
 		private final RepositorySystemSession	repositorySession;
 		private final RepositorySystem			system;
 		private PostProcessor					postProcessor		= new LocalPostProcessor();
-		private List<Dependency>				dependencies		= new ArrayList<Dependency>();
+		private List<Dependency>				dependencies		= new ArrayList<>();
 		private Properties						additionaProperties	= new Properties();
 		private ArtifactHandlerManager			artifactHandlerManager;
 
@@ -156,7 +156,6 @@ public class BndContainer {
 		Properties mavenProperties = new Properties(beanProperties);
 		Properties projectProperties = project.getProperties();
 		mavenProperties.putAll(projectProperties);
-		// try (Project bnd = init(task, workingDir, mavenProperties)) {
 		List<Jar> closeables = new ArrayList<>();
 		try (Project bnd = init(task, workingDir, session.getCurrentProject()
 			.getBasedir(), mavenProperties)) {
@@ -207,7 +206,7 @@ public class BndContainer {
 		List<Object> buildpath = new ArrayList<>(artifacts.size());
 		List<Object> testpath = new ArrayList<>(artifacts.size());
 		final ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter(
-			org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME);
+			org.apache.maven.artifact.Artifact.SCOPE_COMPILE);
 		for (org.apache.maven.artifact.Artifact artifact : artifacts) {
 			File cpe = artifact.getFile()
 				.getCanonicalFile();
