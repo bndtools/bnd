@@ -109,7 +109,7 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 
 		int errors = 0;
 
-		List<Dependency> normalizedDependencies = new ArrayList<Dependency>();
+		List<Dependency> normalizedDependencies = new ArrayList<>();
 		if (externalPlugins != null) {
 			for (Dependency dependency : externalPlugins) {
 				normalizedDependencies.add(normalizeDependendency(dependency));
@@ -173,7 +173,7 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 	}
 
 	private List<File> getProjectFiles() {
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 		addProject(project, files);
 		return files;
 	}
