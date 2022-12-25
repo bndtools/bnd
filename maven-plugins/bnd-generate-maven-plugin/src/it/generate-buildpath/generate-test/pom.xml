@@ -1,17 +1,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>biz.aQute.bnd-test</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.0.1</version>
+	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
-	<artifactId>generate-dependency-management-error</artifactId>
+	<artifactId>generate-test</artifactId>
 	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.geckoprojects.emf</groupId>
-			<artifactId>org.gecko.emf.osgi.api</artifactId>
-			<version>4.1.1.202202162308</version>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.core</artifactId>
+			<version>7.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.service.component</artifactId>
+			<version>1.5.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd-test</groupId>
+			<artifactId>generator</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 
@@ -24,8 +40,9 @@
 				<configuration>
 					<externalPlugins>
 						<dependency>
-							<groupId>org.geckoprojects.emf</groupId>
-							<artifactId>org.gecko.emf.osgi.codegen</artifactId>
+							<groupId>biz.aQute.bnd-test</groupId>
+							<artifactId>generator</artifactId>
+							<version>0.0.1</version>
 						</dependency>
 					</externalPlugins>
 				</configuration>
@@ -33,7 +50,7 @@
 					<execution>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>generate</goal>
+							<goal>generate-test</goal>
 						</goals>
 					</execution>
 				</executions>

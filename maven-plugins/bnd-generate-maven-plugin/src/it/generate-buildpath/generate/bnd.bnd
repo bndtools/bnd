@@ -1,0 +1,5 @@
+-generate:   \
+    template/**.txt; \
+        output='gen-src' ; \
+        generate='testgen';\
+        testMode=default

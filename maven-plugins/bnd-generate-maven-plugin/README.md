@@ -6,6 +6,8 @@ The `bnd-generate-maven-plugin` is a bnd based plugin to run bnd generators.
 
 It provides a flexible mechanism, that can run system commands or run external generator plugins. A more general description about the use of generators in bnd can be found [here](https://bnd.bndtools.org/instructions/generate.html). A few examples can be found in the [tests](https://github.com/bndtools/bnd/tree/master/maven-plugins/bnd-generate-maven-plugin/src/it) for this plugin.
 
+The Mojo comes with two goals: `generate` and `generate-test`. Both work similar except, that `generate-test` resolves test dependencies as well and will make them available as `-testbuildpath`. The `-buildpath` will be available in both cases and will represent all dependencies Maven knows about for this module.
+
 An example that runs `dir` and pipes it to a file looks like
 
 ```
@@ -29,7 +31,7 @@ An example that runs `dir` and pipes it to a file looks like
 					<execution>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>bnd-generate</goal>
+							<goal>generate</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -74,7 +76,7 @@ An example running a code generator twice located in an external artifact.
 					<execution>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>bnd-generate</goal>
+							<goal>generate</goal>
 						</goals>
 					</execution>
 				</executions>
