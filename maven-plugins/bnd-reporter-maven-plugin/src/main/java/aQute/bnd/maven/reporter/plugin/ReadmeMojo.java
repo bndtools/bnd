@@ -1,9 +1,10 @@
 package aQute.bnd.maven.reporter.plugin;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringJoiner;
 
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -39,7 +40,7 @@ public class ReadmeMojo extends AbstractMojo {
 	private boolean				skip;
 
 	@Parameter
-	private Map<String, String>	parameters	= new HashMap<>();
+	private Map<String, String>	parameters	= new LinkedHashMap<>();
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -59,7 +60,7 @@ public class ReadmeMojo extends AbstractMojo {
 				"readme.md;template=default:readme.twig" + getParameters());
 
 			// Create the generator service.
-			ReportGeneratorService generator = null;
+			ReportGeneratorService generator;
 			String scope = null;
 			if (toAnalyze.isAggregator()) {
 				generator = ReportGeneratorFactory.create()
@@ -122,33 +123,20 @@ public class ReadmeMojo extends AbstractMojo {
 	}
 
 	private String getParameters() {
-		Map<String, String> params = new HashMap<>(parameters);
+		StringJoiner joiner = new StringJoiner(",", ";parameters='", "'").setEmptyValue("");
+		parameters.forEach((key, value) -> joiner.add(key + "=" + value));
 
 		System.getProperties()
 			.stringPropertyNames()
-			.stream()
-			.filter(k -> k.startsWith("bnd.reporter."))
-			.forEach(k -> {
-				if (System.getProperty(k) != null) {
-					params.put(k, System.getProperty(k));
+			.forEach(key -> {
+				if (key.startsWith("bnd.reporter.")) {
+					String value = System.getProperty(key);
+					if (value != null) {
+						joiner.add(key + "=" + value);
+					}
 				}
 			});
 
-		StringBuilder param = new StringBuilder();
-
-		if (!params.isEmpty()) {
-			param.append(";parameters='");
-		}
-
-		params.entrySet()
-			.forEach(e -> {
-				param.append(e.getKey() + "=" + e.getValue() + ",");
-			});
-
-		if (!params.isEmpty()) {
-			param.deleteCharAt(param.length() - 1);
-			param.append("'");
-		}
-		return param.toString();
+		return joiner.toString();
 	}
 }

@@ -145,14 +145,11 @@ public class Report {
 			result.append(";parameters=");
 
 			StringBuilder parameters = new StringBuilder();
-			getParameters().entrySet()
-				.forEach(e -> {
-					parameters.append(e.getKey())
-						.append('=')
-						.append(e.getValue())
-						.append(',');
-				});
-			parameters.deleteCharAt(parameters.length() - 1);
+			getParameters().forEach((key, value) -> parameters.append(key)
+				.append('=')
+				.append(value)
+				.append(','));
+			parameters.setLength(parameters.length() - 1);
 
 			OSGiHeader.quote(result, parameters.toString());
 		}

@@ -3,7 +3,7 @@ package aQute.bnd.maven.generate.plugin;
 import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,13 +27,12 @@ import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.POM;
 import org.apache.maven.RepositoryUtils;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.execution.MavenSession;
@@ -54,40 +53,35 @@ import org.slf4j.LoggerFactory;
 @ProviderType
 public class BndContainer {
 
-	private static final Logger				logger	= LoggerFactory.getLogger(BndContainer.class);
+	private static final Logger logger = LoggerFactory.getLogger(BndContainer.class);
 
-	private final List<File>				bundles	= new ArrayList<>();
+	private final List<File> bundles = new ArrayList<>();
 
-	private final MavenProject				project;
+	private final MavenProject project;
 
-	private final RepositorySystemSession	repositorySession;
+	private final RepositorySystemSession repositorySession;
 
-	private final MavenSession				session;
+	private final MavenSession session;
 
-	private final RepositorySystem			system;
+	private final RepositorySystem system;
 
-	private final PostProcessor				postProcessor;
+	private final PostProcessor postProcessor;
 
-	private List<Dependency>				dependencies;
+	private List<Dependency> dependencies;
 
-	private Properties						additionProperties;
-
-	private ArtifactHandlerManager			artifactHandlerManager;
+	private Properties additionalProperties;
 
 	public static class Builder {
 
-		private final MavenProject				project;
-		private final MavenSession				session;
-		private final RepositorySystemSession	repositorySession;
-		private final RepositorySystem			system;
-		private PostProcessor					postProcessor		= new LocalPostProcessor();
-		private List<Dependency>				dependencies		= new ArrayList<>();
-		private Properties						additionaProperties	= new Properties();
-		private ArtifactHandlerManager			artifactHandlerManager;
+		private final MavenProject project;
+		private final MavenSession session;
+		private final RepositorySystemSession repositorySession;
+		private final RepositorySystem system;
+		private PostProcessor postProcessor = new LocalPostProcessor();
+		private List<Dependency> dependencies = new ArrayList<>();
+		private Properties additionalProperties = new Properties();
 
-		@SuppressWarnings("deprecation")
-		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession,
-			RepositorySystem system) {
+		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession, RepositorySystem system) {
 
 			this.project = Objects.requireNonNull(project);
 			this.session = Objects.requireNonNull(session);
@@ -105,21 +99,14 @@ public class BndContainer {
 			return this;
 		}
 
-		public Builder setAdditionalProperiets(Properties properties) {
-			this.additionaProperties.putAll(properties);
+		public Builder setAdditionalProperties(Properties properties) {
+			this.additionalProperties.putAll(properties);
 			return this;
 		}
 
 		public BndContainer build() {
-			return new BndContainer(project, session, repositorySession, system, dependencies, postProcessor,
-				additionaProperties, artifactHandlerManager);
+			return new BndContainer(project, session, repositorySession, system, dependencies, postProcessor, additionalProperties);
 		}
-
-		public Builder setArtifactHandlerManager(ArtifactHandlerManager artifactHandlerManager) {
-			this.artifactHandlerManager = artifactHandlerManager;
-			return this;
-		}
-
 	}
 
 	public static int report(Processor project) {
@@ -134,29 +121,23 @@ public class BndContainer {
 		return errors;
 	}
 
-	@SuppressWarnings("deprecation")
-	BndContainer(MavenProject project, MavenSession session, RepositorySystemSession repositorySession,
-		RepositorySystem system, List<Dependency> dependencies, PostProcessor postProcessor,
-		Properties additionProperties, ArtifactHandlerManager artifactHandlerManager) {
+	BndContainer(MavenProject project, MavenSession session, RepositorySystemSession repositorySession, RepositorySystem system, List<Dependency> dependencies, PostProcessor postProcessor, Properties additionalProperties) {
 		this.project = project;
 		this.session = session;
 		this.repositorySession = repositorySession;
 		this.system = system;
 		this.dependencies = dependencies;
 		this.postProcessor = postProcessor;
-		this.additionProperties = additionProperties;
-		this.artifactHandlerManager = artifactHandlerManager;
+		this.additionalProperties = additionalProperties;
 	}
 
-	public int generate(String task, File workingDir, GenerateOperation operation, Settings settings,
-		MojoExecution mojoExecution, boolean includeTestDependencies) throws Exception {
+	public int generate(String task, File workingDir, GenerateOperation operation, Settings settings, MojoExecution mojoExecution, boolean includeTestDependencies) throws Exception {
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
 		Properties mavenProperties = new Properties(beanProperties);
 		Properties projectProperties = project.getProperties();
 		mavenProperties.putAll(projectProperties);
-		List<Jar> closeables = new ArrayList<>();
 		try (Project bnd = init(task, workingDir, session.getCurrentProject()
 			.getBasedir(), mavenProperties)) {
 			if (bnd == null) {
@@ -173,10 +154,10 @@ public class BndContainer {
 			// handle our addition properties and trigger the replacement of
 			// ${.}
 			UTF8Properties properties = new UTF8Properties();
-			properties.putAll(additionProperties);
+			properties.putAll(additionalProperties);
 			bnd.setProperties(properties.replaceHere(project.getBasedir()));
 
-			handleDependencies(bnd, closeables, includeTestDependencies);
+			handleDependencies(bnd, includeTestDependencies);
 
 			bnd.setProperty("project.output", workingDir.getCanonicalPath());
 			bnd.setProperty(aQute.bnd.osgi.Constants.DEFAULT_PROP_TARGET_DIR, workingDir.getCanonicalPath());
@@ -193,20 +174,16 @@ public class BndContainer {
 			}
 
 			return operation.apply("generate", bnd);
-		} finally {
-			closeables.forEach(Jar::close);
 		}
 	}
 
-	private void handleDependencies(Project bnd, List<Jar> closeables, boolean includeTestDependencies)
-		throws Exception {
+	private void handleDependencies(Project bnd, boolean includeTestDependencies) throws Exception {
 		// Compute bnd build and testpath, which might be used by a
 		// generator
 		Set<org.apache.maven.artifact.Artifact> artifacts = project.getArtifacts();
-		List<Object> buildpath = new ArrayList<>(artifacts.size());
-		List<Object> testpath = new ArrayList<>(artifacts.size());
-		final ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter(
-			org.apache.maven.artifact.Artifact.SCOPE_COMPILE);
+		List<String> buildpath = new ArrayList<>(artifacts.size());
+		List<String> testpath = new ArrayList<>(artifacts.size());
+		final ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter(org.apache.maven.artifact.Artifact.SCOPE_COMPILE);
 		for (org.apache.maven.artifact.Artifact artifact : artifacts) {
 			File cpe = artifact.getFile()
 				.getCanonicalFile();
@@ -214,36 +191,24 @@ public class BndContainer {
 				logger.debug("dependency {} does not exist", cpe);
 				continue;
 			}
-			if (cpe.isDirectory()) {
-				Jar cpeJar = new Jar(cpe);
-				cpeJar.setSource(new File(cpe.getParentFile(), createArtifactName(artifact)));
-				closeables.add(cpeJar);
-				if (scopeFilter.include(artifact)) {
-					buildpath.add(createBuildPathExpression(cpe));
-				} else if (includeTestDependencies) {
-					testpath.add(createBuildPathExpression(cpe));
+			if (cpe.isFile() && !cpe.getName()
+				.endsWith(".jar")) {
+				/*
+				 * Check if it is a valid zip file. We don't create a Jar
+				 * object here because we want to avoid the cost of creating
+				 * the Jar object if we decide not to build.
+				 */
+				try (ZipFile zip = new ZipFile(cpe)) {
+					zip.entries();
+				} catch (ZipException e) {
+					logger.debug("dependency {} is not a zip", cpe);
+					continue;
 				}
-			} else {
-				if (!cpe.getName()
-					.endsWith(".jar")) {
-					/*
-					 * Check if it is a valid zip file. We don't create a Jar
-					 * object here because we want to avoid the cost of creating
-					 * the Jar object if we decide not to build.
-					 */
-					try (ZipFile zip = new ZipFile(cpe)) {
-						zip.entries();
-					} catch (ZipException e) {
-						logger.debug("dependency {} is not a zip", cpe);
-						continue;
-					}
-				}
-
-				if (scopeFilter.include(artifact)) {
-					buildpath.add(createBuildPathExpression(cpe));
-				} else if (includeTestDependencies) {
-					testpath.add(createBuildPathExpression(cpe));
-				}
+			}
+			if (scopeFilter.include(artifact)) {
+				buildpath.add(createBuildPathExpression(cpe));
+			} else if (includeTestDependencies) {
+				testpath.add(createBuildPathExpression(cpe));
 			}
 		}
 
@@ -256,54 +221,7 @@ public class BndContainer {
 	}
 
 	private String createBuildPathExpression(File file) {
-		try (Jar jar = new Jar(file)) {
-			Optional<Revision> revision = jar.getPomXmlResources()
-				.findFirst()
-				.map(asFunctionOrElse(pomResource -> new POM(null, pomResource.openInputStream(), true), null))
-				.map(POM::getRevision);
-
-			String name = jar.getBsn();
-			if (name == null) {
-				name = revision.map(r -> r.program.toString())
-					.orElse(null);
-				if (name == null) {
-					return null;
-				}
-			}
-
-			Version version = revision.map(r -> r.version.getOSGiVersion())
-				.orElse(null);
-			if (version == null) {
-				try {
-					version = new MavenVersion(jar.getModuleVersion()).getOSGiVersion();
-				} catch (Exception e) {
-					// no Version
-				}
-			}
-			// return name + (version != null ? ";version=" +
-			// version.toStringWithoutQualifier() : "");
-			return name + (version != null ? ";version=" + version.getWithoutQualifier() : "");
-		} catch (Exception e) {
-			return file + ";version=file";
-		}
-	}
-
-	private String getExtension(String type) {
-		ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(type);
-		if (artifactHandler != null) {
-			return artifactHandler.getExtension();
-		}
-		return type;
-	}
-
-	private String createArtifactName(org.apache.maven.artifact.Artifact artifact) {
-		String classifier = artifact.getClassifier();
-		if ((classifier == null) || classifier.isEmpty()) {
-			return String.format("%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(),
-				getExtension(artifact.getType()));
-		}
-		return String.format("%s-%s-%s.%s", artifact.getArtifactId(), artifact.getVersion(), classifier,
-			getExtension(artifact.getType()));
+		return IO.absolutePath(file) + ";version=file";
 	}
 
 	public Project init(String task, File wsDir, File workingDir, Properties mavenProperties) throws Exception {
@@ -312,10 +230,11 @@ public class BndContainer {
 			.resolve(task)
 			.toFile();
 		File cnfDir = new File(temporaryDir, "cnf");
-		cnfDir.mkdirs();
+		IO.mkdirs(cnfDir);
 		File buildBnd = new File(cnfDir, "build.bnd");
-		buildBnd.createNewFile();
-		mavenProperties.store(new FileOutputStream(buildBnd), task);
+		try (Writer writer = IO.writer(buildBnd)) {
+			mavenProperties.store(writer, task);
+		}
 		Workspace workspace = new Workspace(cnfDir.getParentFile());
 		Project project = new Project(workspace, workingDir);
 		workspace.setOffline(session.getSettings()
@@ -371,8 +290,7 @@ public class BndContainer {
 
 		for (Dependency dep : dependencies) {
 
-			ArtifactResult artifactResult = postProcessor.postProcessResult(
-				system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
+			ArtifactResult artifactResult = postProcessor.postProcessResult(system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
 
 			bundles.add(artifactResult.getArtifact()
 				.getFile());
@@ -380,8 +298,7 @@ public class BndContainer {
 		}
 		for (org.apache.maven.artifact.Artifact dep : project.getArtifacts()) {
 
-			ArtifactResult artifactResult = postProcessor.postProcessResult(
-				system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
+			ArtifactResult artifactResult = postProcessor.postProcessResult(system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
 
 			bundles.add(artifactResult.getArtifact()
 				.getFile());
@@ -391,14 +308,12 @@ public class BndContainer {
 	}
 
 	private Artifact transform(Dependency dependency) {
-		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
-			dependency.getType(), dependency.getVersion());
+		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getType(), dependency.getVersion());
 		return artifact;
 	}
 
 	private Artifact transform(org.apache.maven.artifact.Artifact dependency) {
-		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
-			dependency.getType(), dependency.getVersion());
+		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getType(), dependency.getVersion());
 		return artifact;
 	}
 }

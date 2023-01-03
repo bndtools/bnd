@@ -19,7 +19,7 @@ import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetDTO;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 
 /**
- * This plugins allows to extract code snippets from a project. The user can set
+ * This plugin allows to extract code snippets from a project. The user can set
  * the {@link CodeSnippetPlugin#PATH_PROPERTY} to specify the folder from which
  * snippets are looked up. By default, snippets are read from
  * {testClasspath}/examples directory.

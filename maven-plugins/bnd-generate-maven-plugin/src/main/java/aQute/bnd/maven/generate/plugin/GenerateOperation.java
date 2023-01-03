@@ -8,7 +8,7 @@ public interface GenerateOperation {
 	 * Performs this operation on the given arguments.
 	 *
 	 * @param taskname name of the task performing the operation
-	 * @param project the project to run the generate task on
+	 * @param project the project upon which to run the 'generate' task
 	 * @return the number of errors
 	 * @throws Exception
 	 */

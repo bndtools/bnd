@@ -35,5 +35,5 @@ public enum TestCases {
 		return filter;
 	}
 
-	private String filter;
+	private final String filter;
 }

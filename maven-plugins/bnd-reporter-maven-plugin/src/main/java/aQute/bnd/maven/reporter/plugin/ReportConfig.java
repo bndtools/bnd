@@ -67,7 +67,7 @@ public class ReportConfig {
 			result.append("clearDefaults,");
 		}
 
-		if (getVariables() != null && !getVariables().isEmpty()) {
+		if (getVariables() != null) {
 			getVariables().forEach((k, v) -> {
 				result.append(EntryNamesReference.ANY_ENTRY)
 					.append(";key=")
@@ -80,37 +80,29 @@ public class ReportConfig {
 			});
 		}
 
-		if (!getReportPlugins().isEmpty()) {
-			for (ReportPlugin plugin : getReportPlugins()) {
-				if (StringUtils.isBlank(plugin.getPluginName())) {
-					throw new MojoExecutionException("Missing report plugin name.");
-				}
-
-				result.append(plugin.getPluginName());
-
-				if (!plugin.getProperties()
-					.isEmpty()) {
-					result.append(';');
-
-					plugin.getProperties()
-						.entrySet()
-						.forEach(e -> {
-							result.append(e.getKey())
-								.append('=');
-
-							OSGiHeader.quote(result, e.getValue());
-
-							result.append(';');
-						});
-
-					result.deleteCharAt(result.length() - 1);
-				}
-				result.append(',');
+		for (ReportPlugin plugin : getReportPlugins()) {
+			String pluginName = plugin.getPluginName();
+			if (StringUtils.isBlank(pluginName)) {
+				throw new MojoExecutionException("Missing report plugin name.");
 			}
+
+			result.append(pluginName)
+				.append(';');
+
+			plugin.getProperties()
+				.forEach((key, value) -> {
+					result.append(key)
+						.append('=');
+					OSGiHeader.quote(result, value);
+					result.append(';');
+				});
+
+			result.setCharAt(result.length() - 1, ',');
 		}
 
-		if (result.length() > 0 && result.charAt(result.length() - 1) == ',') {
-			result.deleteCharAt(result.length() - 1);
+		int last = result.length() - 1;
+		if (last >= 0 && result.charAt(last) == ',') {
+			result.setLength(last);
 		}
 
 		return result.toString();

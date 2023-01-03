@@ -5,7 +5,7 @@ import java.util.Properties;
 import org.apache.maven.plugins.annotations.Parameter;
 
 /**
- * A generate instruction will be created from this configuration as described
+ * A 'generate' instruction will be created from this configuration as described
  * in the <a href="https://bnd.bndtools.org/instructions/generate.html">bnd
  * generate documentation</a>
  */
@@ -49,7 +49,7 @@ public class Step {
 	/**
 	 * The clear option in the resulting
 	 * <a href="https://bnd.bndtools.org/instructions/generate.html"> generate
-	 * instruction. It instruct the generator to not clear the ourput folder
+	 * instruction. It instruct the generator to not clear the output folder
 	 * before a run. The default is true.</a>
 	 */
 	@Parameter(required = false)
