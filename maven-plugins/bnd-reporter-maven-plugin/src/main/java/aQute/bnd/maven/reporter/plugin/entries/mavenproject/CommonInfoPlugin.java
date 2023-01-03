@@ -26,7 +26,7 @@ import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import org.apache.maven.project.MavenProject;
 
 /**
- * This plugins extract common info from a maven project pom.
+ * This plugin extracts common info from a maven project pom.
  */
 @BndPlugin(name = "entry." + EntryNamesReference.COMMON_INFO)
 public class CommonInfoPlugin implements ReportEntryPlugin<MavenProjectWrapper>, Plugin {

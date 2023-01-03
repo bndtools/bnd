@@ -156,7 +156,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	/**
 	 * Bnd instructions for this project specified directly in the pom file.
 	 * This is generally be done using a {@code <![CDATA[]]>} section. If the
-	 * projects has a {@link #bndfile}, then this configuration element
+	 * project has a {@link #bndfile}, then this configuration element
 	 * is ignored.
 	 * <p>
 	 * The bnd instructions for this project are merged with the bnd

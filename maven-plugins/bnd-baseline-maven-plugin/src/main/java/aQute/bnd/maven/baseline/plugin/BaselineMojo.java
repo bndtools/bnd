@@ -1,10 +1,8 @@
 package aQute.bnd.maven.baseline.plugin;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.Formatter;
 import java.util.List;
@@ -237,7 +235,7 @@ public class BaselineMojo extends AbstractMojo {
 		return system.resolveArtifact(session, new ArtifactRequest(toFind, aetherRepos, "baseline"));
 	}
 
-	private void baselineAction(File bundle, File baseline) throws Exception, IOException {
+	private void baselineAction(File bundle, File baseline) throws Exception {
 		IO.mkdirs(reportFile.getParentFile());
 		boolean failure = false;
 		try (Processor processor = new Processor();
@@ -251,7 +249,7 @@ public class BaselineMojo extends AbstractMojo {
 				.baseline(newer, older, new Instructions(new Parameters(Strings.join(diffpackages), processor)))
 				.stream()
 				.sorted(Comparator.comparing(info -> info.packageName))
-				.collect(toList());
+				.toList();
 			BundleInfo bundleInfo = baseliner.getBundleInfo();
 			try (Formatter f = new Formatter(reportFile, "UTF-8", Locale.US)) {
 				String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s\n";

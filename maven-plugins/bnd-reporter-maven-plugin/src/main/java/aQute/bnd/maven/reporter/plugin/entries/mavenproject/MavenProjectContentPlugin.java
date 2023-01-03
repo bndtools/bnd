@@ -25,7 +25,7 @@ import biz.aQute.bnd.reporter.generator.ReportGeneratorConstants;
 import biz.aQute.bnd.reporter.plugins.entries.bndproject.BndProjectContentsPlugin;
 
 /**
- * This plugins extracts bundle data built by a maven project. The user can set
+ * This plugin extracts bundle data built by a maven project. The user can set
  * the {@link BndProjectContentsPlugin#USE_CONFIG_PROPERTY} to the desired
  * configuration name that will be used to generate the report of the bundle.
  */

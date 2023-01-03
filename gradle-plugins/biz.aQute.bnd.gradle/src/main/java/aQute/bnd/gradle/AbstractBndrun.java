@@ -302,7 +302,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 	}
 
 	/**
-	 * Setup the Run object and call worker on it.
+	 * Set up the Run object and call worker on it.
 	 *
 	 * @throws Exception If the run action has an exception.
 	 */
@@ -321,7 +321,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 		try (biz.aQute.resolve.Bndrun run = createBndrun(workspace.orElse(null), bndrunFile)) {
 			Workspace runWorkspace = run.getWorkspace();
 			IO.mkdirs(workingDirFile);
-			if (!workspace.isPresent()) {
+			if (workspace.isEmpty()) {
 				Properties gradleProperties = new BeanProperties(runWorkspace.getProperties());
 				gradleProperties.putAll(unwrap(getProperties()));
 				gradleProperties.computeIfPresent("project", (k, v) -> "__convention__".equals(v) ? getProject() : v);
@@ -337,7 +337,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 				IO.mkdirs(cnf);
 				runWorkspace.setBuildDir(cnf);
 				runWorkspace.setOffline(unwrap(getOffline()).booleanValue());
-				if (!workspace.isPresent()) {
+				if (workspace.isEmpty()) {
 					FileSetRepository fileSetRepository = new FileSetRepository(getName(), getBundles().getFiles());
 					runWorkspace.addBasicPlugin(fileSetRepository);
 					for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
@@ -363,7 +363,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 	 * @param workspace The workspace for the RUN.
 	 * @param bndrunFile The bndrun file for the RUN.
 	 * @return The RUN object.
-	 * @throws Exception If the create action has an exception.
+	 * @throws Exception If the creation action has an exception.
 	 */
 	protected biz.aQute.resolve.Bndrun createBndrun(Workspace workspace, File bndrunFile) throws Exception {
 		return biz.aQute.resolve.Bndrun.createBndrun(workspace, bndrunFile);

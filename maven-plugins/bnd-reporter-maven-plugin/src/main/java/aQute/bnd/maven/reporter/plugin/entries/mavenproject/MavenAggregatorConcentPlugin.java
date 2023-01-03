@@ -26,7 +26,7 @@ import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsP
 import org.apache.maven.project.MavenProject;
 
 /**
- * This plugins extracts the child project data of a maven project. The user can
+ * This plugin extracts the child project data of a maven project. The user can
  * set the {@link BndWorkspaceContentsPlugin#EXCLUDES_PROPERTY} to skip some
  * projects and the {@link BndWorkspaceContentsPlugin#USE_CONFIG_PROPERTY} to
  * the desired configuration name that will be used to generate the report of

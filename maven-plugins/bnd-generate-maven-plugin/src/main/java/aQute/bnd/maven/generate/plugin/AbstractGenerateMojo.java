@@ -1,5 +1,7 @@
 package aQute.bnd.maven.generate.plugin;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +12,6 @@ import java.util.StringJoiner;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.result.Result;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
@@ -70,9 +71,6 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 	@Component
 	private RepositorySystem									system;
 
-	@Component
-	private ArtifactHandlerManager	artifactHandlerManager;
-
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
 	 * Defaults to {@code bnd.bnd}. The file path can be an absolute or relative
@@ -90,7 +88,7 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 	/**
 	 * Bnd instructions for this project specified directly in the pom file.
 	 * This is generally be done using a {@code <![CDATA[]]>} section. If the
-	 * projects has a {@link #bndfile}, then this configuration element
+	 * project has a {@link #bndfile}, then this configuration element
 	 * is ignored.
 	 * <p>
 	 * The bnd instructions for this project are merged with the bnd
@@ -107,28 +105,26 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 			return;
 		}
 
-		int errors = 0;
+		int errors;
 
 		List<Dependency> normalizedDependencies = new ArrayList<>();
 		if (externalPlugins != null) {
 			for (Dependency dependency : externalPlugins) {
-				normalizedDependencies.add(normalizeDependendency(dependency));
+				normalizedDependencies.add(normalizeDependency(dependency));
 			}
 		}
 		Properties additionalProperties = new Properties();
-		StringJoiner instruction = new StringJoiner(",");
-		steps.stream()
+		String instruction = steps.stream()
 			.map(this::mapStep)
-			.forEach(instruction::add);
-		if (instruction.length() > 0) {
-			logger.info("created instructions from steps: {}", instruction.toString());
-			additionalProperties.put("-generate.maven", instruction.toString());
+			.collect(joining(","));
+		if (!instruction.isEmpty()) {
+			logger.info("created instructions from steps: {}", instruction);
+			additionalProperties.put("-generate.maven", instruction);
 		}
 		try {
 			BndContainer container = new BndContainer.Builder(project, session, repositorySession, system)
 				.setDependencies(normalizedDependencies)
-				.setArtifactHandlerManager(artifactHandlerManager)
-				.setAdditionalProperiets(additionalProperties)
+				.setAdditionalProperties(additionalProperties)
 					.build();
 
 			GenerateOperation operation = getOperation();
@@ -163,7 +159,7 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 						set.forEach(f -> logger.info("  " + f.getPath()));
 					}
 				} else {
-					logger.info("Generated Code seems up to date, no run requried.");
+					logger.info("Generated Code seems up to date, no run required.");
 				}
 			} finally {
 				errors += BndContainer.report(project);
@@ -202,7 +198,7 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 		return joiner.toString();
 	}
 
-	private Dependency normalizeDependendency(Dependency dependency) throws MojoExecutionException {
+	private Dependency normalizeDependency(Dependency dependency) throws MojoExecutionException {
 		if(dependency.getVersion() != null) {
 			return dependency;
 		} else {
@@ -215,9 +211,9 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 					&& d.getGroupId()
 						.equals(dependency.getGroupId()))
 				.findFirst()
-				.map(d -> d.clone())
+				.map(Dependency::clone)
 				.orElseThrow(() -> new MojoExecutionException(dependency, "Version is missing",
-					"The Version of the " + dependency.toString() + " is missing"));
+					"The Version of the " + dependency + " is missing"));
 		}
 	}
 }

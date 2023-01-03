@@ -3,7 +3,6 @@ package aQute.bnd.gradle;
 import static aQute.bnd.gradle.BndUtils.builtBy;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
-import static java.util.stream.Collectors.toList;
 import static org.gradle.api.tasks.PathSensitivity.NONE;
 
 import java.io.File;
@@ -377,7 +376,7 @@ public class Baseline extends DefaultTask {
 				.baseline(newer, older, new Instructions(new Parameters(Strings.join(diffpackagesList), processor)))
 				.stream()
 				.sorted(Comparator.comparing(info -> info.packageName))
-				.collect(toList());
+				.toList();
 			BundleInfo bundleInfo = baseliner.getBundleInfo();
 			try (Formatter f = new Formatter(report, "UTF-8", Locale.US)) {
 				String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s\n";

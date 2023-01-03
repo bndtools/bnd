@@ -111,7 +111,7 @@ public class Export extends AbstractBndrun {
 	}
 
 	/**
-	 * Create a Export task.
+	 * Create an Export task.
 	 */
 	public Export() {
 		super();
