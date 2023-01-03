@@ -59,7 +59,6 @@ import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.work.NormalizeLineEndings;
 
@@ -221,13 +220,13 @@ public class BundleTaskExtension {
 			.map(version -> MavenVersion.parseMavenString(version)
 				.getOSGiVersion()
 				.toString());
-		// need to programmatically add to inputs since @InputFiles in a
+		// need to programmatically add to inputs since @InputFiles in an
 		// extension is not processed
 		task.getInputs()
 			.files(getClasspath())
 			.withNormalizer(ClasspathNormalizer.class)
 			.withPropertyName("classpath");
-		TaskInputFilePropertyBuilder bndfileInput = task.getInputs()
+		task.getInputs()
 			.file(getBndfile())
 			.optional()
 			.withPathSensitivity(RELATIVE)
@@ -597,11 +596,11 @@ public class BundleTaskExtension {
 		@Override
 		public Set<Entry<String, Object>> entrySet() {
 			Set<Entry<Object, Object>> entrySet = source.entrySet();
-			return new AbstractSet<Entry<String, Object>>() {
+			return new AbstractSet<>() {
 				@Override
 				public Iterator<Entry<String, Object>> iterator() {
 					Iterator<Entry<Object, Object>> iterator = entrySet.iterator();
-					return new Iterator<Entry<String, Object>>() {
+					return new Iterator<>() {
 						@Override
 						public boolean hasNext() {
 							return iterator.hasNext();

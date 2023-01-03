@@ -72,7 +72,6 @@ import org.gradle.api.tasks.Delete;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.compile.AbstractCompile;
@@ -202,7 +201,7 @@ public class BndPlugin implements Plugin<Project> {
 					 * Workspace and project configuration changes should
 					 * trigger task
 					 */
-					TaskInputFilePropertyBuilder bndConfigurationInput = t.getInputs()
+					t.getInputs()
 						.files(bndConfiguration())
 						.withPathSensitivity(RELATIVE)
 						.withPropertyName("bndConfiguration")
@@ -212,15 +211,14 @@ public class BndPlugin implements Plugin<Project> {
 						.dirs(bndProject.getGenerate()
 							.getOutputDirs())
 						.withPropertyName("generateOutputs");
-					t.doLast("generate", new Action<Task>() {
+					t.doLast("generate", new Action<>() {
 						@Override
 						public void execute(Task tt) {
 							try {
 								bndProject.getGenerate()
 									.generate(false);
 							} catch (Exception e) {
-								throw new GradleException(
-									String.format("Project %s failed to generate", bndProject.getName()), e);
+								throw new GradleException(String.format("Project %s failed to generate", bndProject.getName()), e);
 							}
 							checkErrors(tt.getLogger());
 						}
@@ -431,7 +429,7 @@ public class BndPlugin implements Plugin<Project> {
 									JavaVersion sourceVersion = JavaVersion.toVersion(javacSource.get());
 									JavaVersion targetVersion = JavaVersion.toVersion(javacTarget.get());
 									if (Objects.equals(sourceVersion, targetVersion) && javacBootclasspath.isEmpty()
-										&& !javacProfile.isPresent()) {
+										&& javacProfile.isEmpty()) {
 										return Integer.valueOf(sourceVersion.getMajorVersion());
 									}
 								}
@@ -459,7 +457,7 @@ public class BndPlugin implements Plugin<Project> {
 					}
 					options.getCompilerArgumentProviders()
 						.add(argProvider(javacProfile.map(profile -> Arrays.asList("-profile", profile))));
-					t.doFirst("checkErrors", new Action<Task>() {
+					t.doFirst("checkErrors", new Action<>() {
 						@Override
 						public void execute(Task tt) {
 							Logger logger = tt.getLogger();
@@ -549,7 +547,7 @@ public class BndPlugin implements Plugin<Project> {
 					 * Workspace and project configuration changes should
 					 * trigger jar task
 					 */
-					TaskInputFilePropertyBuilder bndConfigurationInput = t.getInputs()
+					t.getInputs()
 						.files(bndConfiguration())
 						.withPathSensitivity(RELATIVE)
 						.withPropertyName("bndConfiguration")
@@ -561,7 +559,7 @@ public class BndPlugin implements Plugin<Project> {
 						.file(layout.getBuildDirectory()
 							.file(Constants.BUILDFILES))
 						.withPropertyName("buildfiles");
-					t.doLast("build", new Action<Task>() {
+					t.doLast("build", new Action<>() {
 						@Override
 						public void execute(Task tt) {
 							File[] built;
@@ -614,7 +612,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.getInputs()
 					.files(jar)
 					.withPropertyName(jar.getName());
-				t.doLast("release", new Action<Task>() {
+				t.doLast("release", new Action<>() {
 					@Override
 					public void execute(Task tt) {
 						try {
@@ -646,7 +644,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.getInputs()
 					.files(getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
 					.withPropertyName("buildDependencies");
-				t.doFirst("checkErrors", new Action<Task>() {
+				t.doFirst("checkErrors", new Action<>() {
 					@Override
 					public void execute(Task tt) {
 						checkErrors(tt.getLogger(), t.getIgnoreFailures());
@@ -794,7 +792,7 @@ public class BndPlugin implements Plugin<Project> {
 				JavaCompile compileJava = unwrap(tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME, JavaCompile.class));
 				JavaCompile compileTestJava = unwrap(
 					tasks.named(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, JavaCompile.class));
-				t.doLast("echo", new Action<Task>() {
+				t.doLast("echo", new Action<>() {
 					@Override
 					public void execute(Task tt) {
 						try (Formatter f = new Formatter()) {
@@ -861,7 +859,7 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<Task> bndproperties = tasks.register("bndproperties", t -> {
 				t.setDescription("Displays the bnd properties.");
 				t.setGroup(HelpTasksPlugin.HELP_GROUP);
-				t.doLast("bndproperties", new Action<Task>() {
+				t.doLast("bndproperties", new Action<>() {
 					@Override
 					public void execute(Task tt) {
 						try (Formatter f = new Formatter()) {
@@ -957,7 +955,7 @@ public class BndPlugin implements Plugin<Project> {
 			@SuppressWarnings("unchecked")
 			@Override
 			public Iterable<String> asArguments() {
-				return provider.orElseGet(() -> (ITERABLE) Collections.<String> emptyList());
+				return provider.orElse((ITERABLE) Collections.<String> emptyList());
 			}
 		};
 	}
@@ -1001,7 +999,7 @@ public class BndPlugin implements Plugin<Project> {
 	}
 
 	private Optional<String> optional(String value) {
-		return Strings.nonNullOrEmpty(value) ? Optional.of(value) : Optional.empty();
+		return Optional.ofNullable(value).filter(Strings::notEmpty);
 	}
 
 	private static Object getter(Object target, String name) {

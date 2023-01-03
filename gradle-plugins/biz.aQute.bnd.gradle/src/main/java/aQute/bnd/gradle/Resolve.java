@@ -218,7 +218,7 @@ public class Resolve extends AbstractBndrun {
 	 * @param workspace The workspace for the Bndrun.
 	 * @param bndrunFile The bndrun file for the Bndrun.
 	 * @return The Bndrun object.
-	 * @throws Exception If the create action has an exception.
+	 * @throws Exception If the creation action has an exception.
 	 */
 	@Override
 	protected biz.aQute.resolve.Bndrun createBndrun(Workspace workspace, File bndrunFile) throws Exception {

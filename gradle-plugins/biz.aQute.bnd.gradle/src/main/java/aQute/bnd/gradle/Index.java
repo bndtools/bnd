@@ -220,11 +220,11 @@ public class Index extends DefaultTask {
 			.convention(project.getLayout()
 				.getBuildDirectory());
 		base = objects.property(URI.class)
-			.convention(destinationDirectory.map(d -> unwrapFile(d).toURI()));
+			.convention(getDestinationDirectory().map(d -> unwrapFile(d).toURI()));
 		indexUncompressed = objects.fileProperty()
-			.convention(destinationDirectory.file(indexName));
+			.convention(getDestinationDirectory().file(getIndexName()));
 		indexCompressed = objects.fileProperty()
-			.convention(destinationDirectory.file(indexName.map(n -> n.concat(".gz"))));
+			.convention(getDestinationDirectory().file(getIndexName().map(n -> n.concat(".gz"))));
 	}
 
 	/**
