@@ -356,7 +356,7 @@ public class MavenVersionTest {
 		List<MavenVersion> sorted = shuffled.stream()
 			.sorted()
 			.collect(Collectors.toList());
-		assertThat(sorted).isEqualTo(ordered);
+		assertThat(sorted).containsExactlyElementsOf(ordered);
 		for (int i = 0; i < ordered.size(); i++) {
 			MavenVersion expected = ordered.get(i);
 			MavenVersion actual = sorted.get(i);
@@ -374,8 +374,7 @@ public class MavenVersionTest {
 		Optional<MavenVersion> m = Stream.of("1.2.7", "1.2.7-SNAPSHOT")
 			.map(MavenVersion::parseMavenString)
 			.max(Comparator.naturalOrder());
-		assertTrue(m.isPresent());
-		assertEquals(new MavenVersion("1.2.7"), m.get());
+		assertThat(m).contains(MavenVersion.parseMavenString("1.2.7"));
 	}
 
 	@Test
@@ -391,39 +390,48 @@ public class MavenVersionTest {
 
 		mv1 = MavenVersion.parseMavenString("1-1.foo-bar1baz-.1");
 		mv2 = MavenVersion.parseMavenString("1-1.foo-bar-1-baz-0.1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1.0.0");
 		mv2 = MavenVersion.parseMavenString("1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1.ga");
 		mv2 = MavenVersion.parseMavenString("1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1.final");
 		mv2 = MavenVersion.parseMavenString("1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1.0");
 		mv2 = MavenVersion.parseMavenString("1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1.");
 		mv2 = MavenVersion.parseMavenString("1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1-");
 		mv2 = MavenVersion.parseMavenString("1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1.0.0-foo.0.0");
 		mv2 = MavenVersion.parseMavenString("1-foo");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1.0.0-0.0.0");
 		mv2 = MavenVersion.parseMavenString("1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString("1");
 		mv2 = MavenVersion.parseMavenString("1.1");
@@ -444,7 +452,8 @@ public class MavenVersionTest {
 		mv2 = MavenVersion.parseMavenString("1-foo");
 		mv3 = MavenVersion.parseMavenString("1-1");
 		mv4 = MavenVersion.parseMavenString("1.1");
-		assertThat(mv1).isLessThan(mv2)
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2)
 			.isLessThan(mv3)
 			.isLessThan(mv4);
 		assertThat(mv2).isLessThan(mv3)
@@ -459,42 +468,49 @@ public class MavenVersionTest {
 		mv6 = MavenVersion.parseMavenString("1.release");
 		mv7 = MavenVersion.parseMavenString("1-release");
 		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2)
 			.isEqualTo(mv3)
 			.isEqualTo(mv4)
 			.isEqualTo(mv5)
 			.isEqualTo(mv6)
 			.isEqualTo(mv7);
 		assertThat(mv2).isEqualTo(mv1)
+			.isEqualByComparingTo(mv1)
 			.isEqualTo(mv3)
 			.isEqualTo(mv4)
 			.isEqualTo(mv5)
 			.isEqualTo(mv6)
 			.isEqualTo(mv7);
 		assertThat(mv3).isEqualTo(mv1)
+			.isEqualByComparingTo(mv1)
 			.isEqualTo(mv2)
 			.isEqualTo(mv4)
 			.isEqualTo(mv5)
 			.isEqualTo(mv6)
 			.isEqualTo(mv7);
 		assertThat(mv4).isEqualTo(mv1)
+			.isEqualByComparingTo(mv1)
 			.isEqualTo(mv2)
 			.isEqualTo(mv3)
 			.isEqualTo(mv5)
 			.isEqualTo(mv6)
 			.isEqualTo(mv7);
 		assertThat(mv5).isEqualTo(mv1)
+			.isEqualByComparingTo(mv1)
 			.isEqualTo(mv2)
 			.isEqualTo(mv3)
 			.isEqualTo(mv4)
 			.isEqualTo(mv6)
 			.isEqualTo(mv7);
 		assertThat(mv6).isEqualTo(mv1)
+			.isEqualByComparingTo(mv1)
 			.isEqualTo(mv2)
 			.isEqualTo(mv3)
 			.isEqualTo(mv4)
 			.isEqualTo(mv5)
 			.isEqualTo(mv7);
 		assertThat(mv7).isEqualTo(mv1)
+			.isEqualByComparingTo(mv1)
 			.isEqualTo(mv2)
 			.isEqualTo(mv3)
 			.isEqualTo(mv4)
@@ -517,7 +533,8 @@ public class MavenVersionTest {
 
 		mv1 = MavenVersion.parseMavenString("1-a1");
 		mv2 = MavenVersion.parseMavenString("1-alpha-1");
-		assertThat(mv1).isEqualTo(mv2);
+		assertThat(mv1).isEqualTo(mv2)
+			.isEqualByComparingTo(mv2);
 
 		mv1 = MavenVersion.parseMavenString(null);
 		mv2 = MavenVersion.LOWEST;
@@ -581,5 +598,44 @@ public class MavenVersionTest {
 			.isLessThan(c);
 		assertThat(c).isGreaterThan(b)
 			.isGreaterThan(a);
+	}
+
+	/**
+	 * Test
+	 * <a href="https://issues.apache.org/jira/browse/MNG-7644">MNG-7644</a>
+	 * edge cases 1.0.0.RC1 &lt; 1.0.0-RC2 and more generally: 1.0.0.X1 &lt;
+	 * 1.0.0-X2 for any string X
+	 */
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"abc", "alpha", "a", "beta", "b", "def", "milestone", "m", "RC"
+	})
+	public void testMng7644(String qualifier) {
+		MavenVersion a, b, c;
+
+		// 1.0.0.X1 < 1.0.0-X2 for any string x
+		a = MavenVersion.parseMavenString("1.0.0." + qualifier + "1");
+		b = MavenVersion.parseMavenString("1.0.0-" + qualifier + "2");
+		assertThat(a).isLessThan(b);
+		assertThat(b).isGreaterThan(a);
+
+		// 2.0.X == 2-X == 2.0.0.X for any string x
+		a = MavenVersion.parseMavenString("2-" + qualifier);
+		b = MavenVersion.parseMavenString("2.0." + qualifier);
+		c = MavenVersion.parseMavenString("2.0.0." + qualifier);
+		assertThat(a).isEqualTo(b)
+			.isEqualByComparingTo(b)
+			.isEqualTo(c)
+			.isEqualByComparingTo(c);
+		assertThat(b).isEqualTo(a)
+			.isEqualByComparingTo(a)
+			.isEqualTo(c)
+			.isEqualByComparingTo(c);
+		assertThat(c).isEqualTo(a)
+			.isEqualByComparingTo(a)
+			.isEqualTo(b)
+			.isEqualByComparingTo(b);
+		assertThat(a).hasSameHashCodeAs(b)
+			.hasSameHashCodeAs(c);
 	}
 }
