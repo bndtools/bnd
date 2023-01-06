@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -106,11 +107,12 @@ public class XmlTester {
 		assertThat(o).isEqualTo(value);
 	}
 
+	private static final Pattern DIGITS_P = Pattern.compile("\\d+");
 	public void assertCount(int value, String expr) throws XPathExpressionException {
 		expr = "count(" + expr + ")";
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		assertThat(o).containsOnlyDigits();
+		assertThat(o).matches(DIGITS_P);
 		assertThat(Integer.parseInt(o)).isEqualTo(value);
 	}
 
