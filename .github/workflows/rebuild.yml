@@ -65,7 +65,7 @@ jobs:
       run: |
         ./.github/scripts/rebuild-build.sh
     - name: Upload dist/bundles
-      uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+      uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
       with:
         name: Dist_Bundles_JDK${{ matrix.java }}_${{ matrix.os }}
         if-no-files-found: error
@@ -111,7 +111,7 @@ jobs:
         ${{ format(matrix.runner, './.github/scripts/rebuild-test.sh') }}
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+      uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
       with:
         name: Rebuild_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
         path: |
