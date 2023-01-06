@@ -156,7 +156,7 @@ public class Command {
 									}
 								}
 							}
-						} catch (InterruptedIOException e) {
+						} catch (InterruptedIOException | InterruptedException e) {
 							// Ignore here
 						} catch (Exception e) {
 							logger.debug("stdin copy exception in thread", e);
