@@ -1,6 +1,6 @@
 package aQute.bnd.osgi;
 
-import static java.util.Collections.enumeration;
+import static aQute.lib.collections.Enumerations.enumeration;
 import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
@@ -69,7 +69,7 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 				if (resource == null) {
 					return null;
 				}
-				lastAccess = System.currentTimeMillis();
+				lastAccess = System.nanoTime();
 				return IO.read(resource.openInputStream());
 			} catch (Exception e) {
 				processor.exception(e, "while loading resource %s from %s: %s", name, file, e.getMessage());
@@ -157,23 +157,21 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 
 	@Override
 	public Enumeration<URL> findResources(String name) {
-		List<URL> resources = dataStream(name).map(data -> createURL(name, data))
-			.collect(toList());
-		return enumeration(resources);
+		return enumeration(dataStream(name).spliterator(), data -> createURL(name, data));
 	}
 
 	/**
-	 * This method will close any open files that have not been accessed since
-	 * purgeTime
+	 * This method will close any open files that have not been accessed within
+	 * the specified delta cutoff time.
 	 *
-	 * @param purgeTime the absolute cutoff time
+	 * @param purgeTime The delta cutoff time in nanoseconds.
 	 */
-
 	void purge(long purgeTime) {
+		long now = System.nanoTime();
 		wrappers.get()
 			.values()
 			.stream()
-			.filter(w -> w.lastAccess < purgeTime)
+			.filter(w -> now - w.lastAccess >= purgeTime)
 			.forEach(Wrapper::close);
 	}
 
@@ -235,11 +233,16 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 		}
 	}
 
+	/**
+	 * This method will schedule closing any open files that have not been
+	 * accessed within the specified time interval.
+	 *
+	 * @param freshPeriod The time interval in nanoseconds.
+	 */
 	void autopurge(long freshPeriod) {
 		schedule = Processor.getScheduledExecutor()
-			.scheduleWithFixedDelay(() -> {
-				purge(System.currentTimeMillis() - freshPeriod);
-			}, freshPeriod, freshPeriod, TimeUnit.MILLISECONDS);
+			.scheduleWithFixedDelay(() -> purge(freshPeriod), freshPeriod, freshPeriod,
+				TimeUnit.NANOSECONDS);
 	}
 
 }

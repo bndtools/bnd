@@ -1476,7 +1476,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return CloseableMemoize.closeableSupplier(() -> {
 			CL pluginLoader = new CL(this);
 			if (IO.isWindows() && isInteractive()) {
-				pluginLoader.autopurge(5000);
+				pluginLoader.autopurge(TimeUnit.SECONDS.toNanos(5L));
 			}
 			return pluginLoader;
 		});
