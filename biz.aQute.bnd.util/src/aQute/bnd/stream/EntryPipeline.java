@@ -11,7 +11,10 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleBiFunction;
@@ -383,36 +386,88 @@ final class EntryPipeline<K, V> implements MapStream<K, V> {
 	@Override
 	public MapStream<K, V> takeWhile(BiPredicate<? super K, ? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(TakeWhile.takeWhile(entries(), e -> predicate.test(e.getKey(), e.getValue())));
+		return new EntryPipeline<>(entries().takeWhile(e -> predicate.test(e.getKey(), e.getValue())));
 	}
 
 	@Override
 	public MapStream<K, V> takeWhileKey(Predicate<? super K> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(TakeWhile.takeWhile(entries(), e -> predicate.test(e.getKey())));
+		return new EntryPipeline<>(entries().takeWhile(e -> predicate.test(e.getKey())));
 	}
 
 	@Override
 	public MapStream<K, V> takeWhileValue(Predicate<? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(TakeWhile.takeWhile(entries(), e -> predicate.test(e.getValue())));
+		return new EntryPipeline<>(entries().takeWhile(e -> predicate.test(e.getValue())));
 	}
 
 	@Override
 	public MapStream<K, V> dropWhile(BiPredicate<? super K, ? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(DropWhile.dropWhile(entries(), e -> predicate.test(e.getKey(), e.getValue())));
+		return new EntryPipeline<>(entries().dropWhile(e -> predicate.test(e.getKey(), e.getValue())));
 	}
 
 	@Override
 	public MapStream<K, V> dropWhileKey(Predicate<? super K> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(DropWhile.dropWhile(entries(), e -> predicate.test(e.getKey())));
+		return new EntryPipeline<>(entries().dropWhile(e -> predicate.test(e.getKey())));
 	}
 
 	@Override
 	public MapStream<K, V> dropWhileValue(Predicate<? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(DropWhile.dropWhile(entries(), e -> predicate.test(e.getValue())));
+		return new EntryPipeline<>(entries().dropWhile(e -> predicate.test(e.getValue())));
 	}
+
+	@Override
+	public <R, S> MapStream<R, S> mapMulti(TriConsumer<? super K, ? super V, ? super BiConsumer<R, S>> mapper) {
+		requireNonNull(mapper);
+		return new EntryPipeline<>(entries().<Entry<R, S>> mapMulti((e, multi) -> {
+			BiConsumer<R, S> biconsumer = (r, s) -> multi.accept(MapStream.entry(r, s));
+			mapper.accept(e.getKey(), e.getValue(), biconsumer);
+		}));
+	}
+
+	@Override
+	public <R> MapStream<R, V> mapMultiKey(BiConsumer<? super K, ? super Consumer<R>> mapper) {
+		requireNonNull(mapper);
+		return new EntryPipeline<>(entries().<Entry<R, V>> mapMulti((e, multi) -> {
+			Consumer<R> consumer = (r) -> multi.accept(MapStream.entry(r, e.getValue()));
+			mapper.accept(e.getKey(), consumer);
+		}));
+	}
+
+	@Override
+	public <S> MapStream<K, S> mapMultiValue(BiConsumer<? super V, ? super Consumer<S>> mapper) {
+		requireNonNull(mapper);
+		return new EntryPipeline<>(entries().<Entry<K, S>> mapMulti((e, multi) -> {
+			Consumer<S> consumer = (s) -> multi.accept(MapStream.entry(e.getKey(), s));
+			mapper.accept(e.getValue(), consumer);
+		}));
+	}
+
+	@Override
+	public <O> Stream<O> mapMultiToObj(TriConsumer<? super K, ? super V, ? super Consumer<O>> mapper) {
+		requireNonNull(mapper);
+		return entries().<O> mapMulti((e, multi) -> mapper.accept(e.getKey(), e.getValue(), multi));
+	}
+
+	@Override
+	public IntStream mapMultiToInt(TriConsumer<? super K, ? super V, ? super IntConsumer> mapper) {
+		requireNonNull(mapper);
+		return entries().mapMultiToInt((e, multi) -> mapper.accept(e.getKey(), e.getValue(), multi));
+	}
+
+	@Override
+	public LongStream mapMultiToLong(TriConsumer<? super K, ? super V, ? super LongConsumer> mapper) {
+		requireNonNull(mapper);
+		return entries().mapMultiToLong((e, multi) -> mapper.accept(e.getKey(), e.getValue(), multi));
+	}
+
+	@Override
+	public DoubleStream mapMultiToDouble(TriConsumer<? super K, ? super V, ? super DoubleConsumer> mapper) {
+		requireNonNull(mapper);
+		return entries().mapMultiToDouble((e, multi) -> mapper.accept(e.getKey(), e.getValue(), multi));
+	}
+
 }

@@ -122,7 +122,7 @@ public class TestingMojo extends AbstractMojo {
 	@Component
 	private ToolchainManager									toolchainManager;
 
-	private Glob												glob	= new Glob("*");
+	private Glob												glob	= Glob.ALL;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -136,7 +136,9 @@ public class TestingMojo extends AbstractMojo {
 			bndruns = new Bndruns();
 			bndruns.setBndrun(testingSelect);
 		} else {
-			glob = new Glob(testing == null ? "*" : testing);
+			if (testing != null) {
+				glob = new Glob(testing);
+			}
 			logger.info("Matching glob {}", glob);
 		}
 
