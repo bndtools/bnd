@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
@@ -206,7 +207,19 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	@Override
 	public String getLocation() {
 		try {
-			return Strings.join(list(null));
+			return list(null).stream()
+				.<String> mapMulti((bsn, multi) -> {
+					SortedSet<Version> versions;
+					try {
+						versions = versions(bsn);
+					} catch (Exception e) {
+						multi.accept(bsn);
+						return;
+					}
+					String prefix = bsn.concat(";" + Constants.VERSION_ATTRIBUTE + "=");
+					versions.forEach(version -> multi.accept(prefix.concat(version.toString())));
+				})
+				.collect(Strings.joining());
 		} catch (Exception e) {
 			return Strings.join(files());
 		}
