@@ -12,7 +12,10 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleBiFunction;
@@ -214,4 +217,19 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 	MapStream<K, V> dropWhileKey(Predicate<? super K> predicate);
 
 	MapStream<K, V> dropWhileValue(Predicate<? super V> predicate);
+
+	<R, S> MapStream<R, S> mapMulti(TriConsumer<? super K, ? super V, ? super BiConsumer<R, S>> mapper);
+
+	<R> MapStream<R, V> mapMultiKey(BiConsumer<? super K, ? super Consumer<R>> mapper);
+
+	<S> MapStream<K, S> mapMultiValue(BiConsumer<? super V, ? super Consumer<S>> mapper);
+
+	<O> Stream<O> mapMultiToObj(TriConsumer<? super K, ? super V, ? super Consumer<O>> mapper);
+
+	IntStream mapMultiToInt(TriConsumer<? super K, ? super V, ? super IntConsumer> mapper);
+
+	LongStream mapMultiToLong(TriConsumer<? super K, ? super V, ? super LongConsumer> mapper);
+
+	DoubleStream mapMultiToDouble(TriConsumer<? super K, ? super V, ? super DoubleConsumer> mapper);
+
 }
