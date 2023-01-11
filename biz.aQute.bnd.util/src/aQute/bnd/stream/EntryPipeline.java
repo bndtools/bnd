@@ -383,36 +383,36 @@ final class EntryPipeline<K, V> implements MapStream<K, V> {
 	@Override
 	public MapStream<K, V> takeWhile(BiPredicate<? super K, ? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(TakeWhile.takeWhile(entries(), e -> predicate.test(e.getKey(), e.getValue())));
+		return new EntryPipeline<>(entries().takeWhile(e -> predicate.test(e.getKey(), e.getValue())));
 	}
 
 	@Override
 	public MapStream<K, V> takeWhileKey(Predicate<? super K> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(TakeWhile.takeWhile(entries(), e -> predicate.test(e.getKey())));
+		return new EntryPipeline<>(entries().takeWhile(e -> predicate.test(e.getKey())));
 	}
 
 	@Override
 	public MapStream<K, V> takeWhileValue(Predicate<? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(TakeWhile.takeWhile(entries(), e -> predicate.test(e.getValue())));
+		return new EntryPipeline<>(entries().takeWhile(e -> predicate.test(e.getValue())));
 	}
 
 	@Override
 	public MapStream<K, V> dropWhile(BiPredicate<? super K, ? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(DropWhile.dropWhile(entries(), e -> predicate.test(e.getKey(), e.getValue())));
+		return new EntryPipeline<>(entries().dropWhile(e -> predicate.test(e.getKey(), e.getValue())));
 	}
 
 	@Override
 	public MapStream<K, V> dropWhileKey(Predicate<? super K> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(DropWhile.dropWhile(entries(), e -> predicate.test(e.getKey())));
+		return new EntryPipeline<>(entries().dropWhile(e -> predicate.test(e.getKey())));
 	}
 
 	@Override
 	public MapStream<K, V> dropWhileValue(Predicate<? super V> predicate) {
 		requireNonNull(predicate);
-		return new EntryPipeline<>(DropWhile.dropWhile(entries(), e -> predicate.test(e.getValue())));
+		return new EntryPipeline<>(entries().dropWhile(e -> predicate.test(e.getValue())));
 	}
 }

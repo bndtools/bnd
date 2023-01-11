@@ -1,7 +1,5 @@
 package aQute.bnd.build;
 
-import static aQute.bnd.stream.DropWhile.dropWhile;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Arrays;
@@ -49,7 +47,8 @@ final class WorkspaceLock extends ReentrantReadWriteLock {
 
 	private void trace(String name, Lock lock) {
 		if (logger.isDebugEnabled()) {
-			String trace = dropWhile(Arrays.stream(new Exception().getStackTrace()), ste -> {
+			String trace = Arrays.stream(new Exception().getStackTrace())
+				.dropWhile(ste -> {
 				String className = ste.getClassName();
 				if (Objects.equals(className, "aQute.bnd.build.WorkspaceLock")) {
 					return true;
