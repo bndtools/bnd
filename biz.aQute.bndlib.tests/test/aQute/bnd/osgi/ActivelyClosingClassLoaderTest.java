@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
@@ -38,8 +39,8 @@ public class ActivelyClosingClassLoaderTest {
 					.get(osgi);
 				assertEquals(wrapper.file, osgi);
 
-				Thread.sleep(100);
-				ac.purge(System.currentTimeMillis());
+				Thread.sleep(100L);
+				ac.purge(0L);
 				synchronized (wrapper) {
 					assertNull(wrapper.jarFile);
 				}
@@ -120,8 +121,8 @@ public class ActivelyClosingClassLoaderTest {
 				Wrapper wrapper = cl.wrappers.get()
 					.get(IO.getFile("jar/thinlet.jar"));
 
-				cl.autopurge(10);
-				Thread.sleep(500);
+				cl.autopurge(TimeUnit.MILLISECONDS.toNanos(10L));
+				Thread.sleep(500L);
 				synchronized (wrapper) {
 					assertNull(wrapper.jarFile);
 				}
