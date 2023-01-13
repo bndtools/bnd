@@ -1448,6 +1448,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static class CL extends ActivelyClosingClassLoader {
+		static {
+			ClassLoader.registerAsParallelCapable();
+		}
 
 		public CL(Processor p) {
 			super(p, p.getClass()

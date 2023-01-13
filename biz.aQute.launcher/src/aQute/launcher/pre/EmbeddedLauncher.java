@@ -295,6 +295,10 @@ public class EmbeddedLauncher {
 	}
 
 	public static class Loader extends URLClassLoader {
+		static {
+			ClassLoader.registerAsParallelCapable();
+		}
+
 		public Loader(URL[] urls, ClassLoader parent) {
 			super(urls, parent);
 		}

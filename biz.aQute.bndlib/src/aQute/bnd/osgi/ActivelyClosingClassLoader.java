@@ -35,6 +35,10 @@ import aQute.lib.io.IO;
  * This class loader can load classes from JAR files.
  */
 class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
+	static {
+		ClassLoader.registerAsParallelCapable();
+	}
+
 	final AtomicReference<Map<File, Wrapper>>	wrappers	= new AtomicReference<>(new LinkedHashMap<>());
 	final AtomicBoolean							open		= new AtomicBoolean(true);
 	final Processor								processor;
@@ -81,7 +85,6 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 	ActivelyClosingClassLoader(Processor processor, ClassLoader parent) {
 		super(new URL[0], parent);
 		this.processor = processor;
-		registerAsParallelCapable();
 	}
 
 	void add(File file) {
