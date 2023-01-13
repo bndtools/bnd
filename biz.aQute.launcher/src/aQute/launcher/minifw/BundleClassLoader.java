@@ -9,6 +9,10 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 
 class BundleClassLoader extends URLClassLoader implements BundleReference {
+	static {
+		ClassLoader.registerAsParallelCapable();
+	}
+
 	private final Bundle bundle;
 
 	BundleClassLoader(File file, ClassLoader parent, Bundle bundle) throws IOException {

@@ -352,6 +352,10 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 	 * interface class.
 	 */
 	static class ProxyClassLoader extends ClassLoader {
+		static {
+			ClassLoader.registerAsParallelCapable();
+		}
+
 		private final Class<?>[]	classes;
 		private final ClassLoader[]	loaders;
 
