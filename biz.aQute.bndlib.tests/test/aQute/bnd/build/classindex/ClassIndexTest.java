@@ -22,8 +22,6 @@ import aQute.bnd.repository.maven.provider.MavenBndRepository;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
-import aQute.libg.map.MAP;
-import aQute.libg.map.MAP.MAPX;
 
 @ExtendWith(SoftAssertionsExtension.class)
 public class ClassIndexTest {
@@ -41,9 +39,9 @@ public class ClassIndexTest {
 		ws = Workspace.getWorkspace(testDir);
 
 		MavenBndRepository mbr = new MavenBndRepository();
-		MAPX<String, String> map = MAP.$("releaseUrl", "https://repo1.maven.org/maven2/")
-			.$("readOnly", "true")
-			.$("source", IO.collect(IO.getFile(home, "test-1.mvn")));
+		Map<String, String> map = Map.of("releaseUrl", "https://repo.maven.apache.org/maven2/", //
+			"readOnly", "true", //
+			"source", IO.collect(IO.getFile(home, "test-1.mvn")));
 
 		mbr.setProperties(map);
 		mbr.setRegistry(ws);

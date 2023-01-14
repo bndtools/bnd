@@ -1,1 +1,1 @@
--standalone: http://example.org/index.xml; name=foo
+-standalone: https://example.org/index.xml; name=foo

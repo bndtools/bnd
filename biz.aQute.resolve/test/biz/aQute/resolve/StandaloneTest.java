@@ -27,7 +27,7 @@ public class StandaloneTest {
 
 		OSGiRepository f0 = (OSGiRepository) repositories.get(0);
 		assertEquals("foo", f0.getName());
-		assertEquals("http://example.org/index.xml", f0.getLocation());
+		assertEquals("https://example.org/index.xml", f0.getLocation());
 	}
 
 	@Test
@@ -43,11 +43,11 @@ public class StandaloneTest {
 
 		OSGiRepository f0 = (OSGiRepository) repositories.get(0);
 		assertEquals("repo01", f0.getName());
-		assertEquals("http://example.org/index1.xml", f0.getLocation());
+		assertEquals("https://example.org/index1.xml", f0.getLocation());
 
 		OSGiRepository f1 = (OSGiRepository) repositories.get(1);
 		assertEquals("second", f1.getName());
-		assertEquals("http://example.org/index2.xml", f1.getLocation());
+		assertEquals("https://example.org/index2.xml", f1.getLocation());
 	}
 
 	@Test
@@ -71,7 +71,7 @@ public class StandaloneTest {
 		OSGiRepository f1 = (OSGiRepository) repositories.get(1);
 		assertEquals("repo02", f1.getName());
 
-		assertEquals("http://example.org/index2.xml", f1.getLocation());
+		assertEquals("https://example.org/index2.xml", f1.getLocation());
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class StandaloneTest {
 
 		OSGiRepository f0 = (OSGiRepository) repositories.get(0);
 		assertEquals("foo", f0.getName());
-		assertEquals("http://example.org/index.xml", f0.getLocation());
+		assertEquals("https://example.org/index.xml", f0.getLocation());
 
 		File cacheDir = IO.getFile(System.getProperty("user.home") + "/.custom_cache_dir");
 		assertEquals(cacheDir, f0.getRoot());

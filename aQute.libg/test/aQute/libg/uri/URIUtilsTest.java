@@ -21,8 +21,8 @@ public class URIUtilsTest {
 	@Test
 	public void testResolveAbsolute() throws Exception {
 		// reference is absolute, so base is irrelevant
-		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml"), "http://example.org/bar.xml");
-		assertThat(result).hasToString("http://example.org/bar.xml");
+		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml"), "https://example.org/bar.xml");
+		assertThat(result).hasToString("https://example.org/bar.xml");
 	}
 
 	@Test
