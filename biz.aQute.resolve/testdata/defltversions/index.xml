@@ -8,7 +8,7 @@
     </capability>
     <capability namespace="osgi.content">
       <attribute name="osgi.content" value="307bc7bbd89d16d6bc487c77825e89f4225b0914fc6b3d3b91772162eee3e0c0"/>
-      <attribute name="url" value="http://repository.springsource.com.s3.amazonaws.com/maven/bundles/external/org/apache/ant/com.springsource.org.apache.tools.ant.launch/1.8.1/com.springsource.org.apache.tools.ant.launch-1.8.1.jar"/>
+      <attribute name="url" value="https://repository.springsource.com/maven/bundles/external/org/apache/ant/com.springsource.org.apache.tools.ant.launch/1.8.1/com.springsource.org.apache.tools.ant.launch-1.8.1.jar"/>
       <attribute name="size" type="Long" value="1336253"/>
       <attribute name="mime" value="application/vnd.osgi.bundle"/>
     </capability>

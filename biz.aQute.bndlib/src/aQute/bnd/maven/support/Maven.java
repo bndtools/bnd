@@ -11,10 +11,6 @@ import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
-/*
-http://repository.springsource.com/maven/bundles/external/org/apache/coyote/com.springsource.org.apache.coyote/6.0.24/com.springsource.org.apache.coyote-6.0.24.pom
-http://repository.springsource.com/maven/bundles/external/org/apache/coyote/com.springsource.org.apache.coyote/6.0.24/com.springsource.org.apache.coyote-6.0.24.pom
- */
 public class Maven {
 
 	final Map<String, MavenEntry>	entries				= new ConcurrentHashMap<>();

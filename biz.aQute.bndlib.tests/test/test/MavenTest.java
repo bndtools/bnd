@@ -175,12 +175,12 @@ public class MavenTest {
 	public void testMavenx() throws Exception {
 		Maven maven = new Maven(null);
 		CachedPom pom = maven.getPom("javax.xml.bind", "com.springsource.javax.xml.bind", "2.2.0",
-			new URI("http://repository.springsource.com/maven/bundles/release"),
-			new URI("http://repository.springsource.com/maven/bundles/external"));
+			new URI("https://repository.springsource.com/maven/bundles/release"),
+			new URI("https://repository.springsource.com/maven/bundles/external"));
 		// Pom pom = maven.getPom("javax.xml.ws",
 		// "com.springsource.javax.xml.ws", "2.1.1", new
-		// URL("http://repository.springsource.com/maven/bundles/release"), new
-		// URL("http://repository.springsource.com/maven/bundles/external"));
+		// URL("https://repository.springsource.com/maven/bundles/release"), new
+		// URL("https://repository.springsource.com/maven/bundles/external"));
 		System.err.println(pom.getGroupId() + " + " + pom.getArtifactId() + "-" + pom.getVersion());
 
 		System.err.println(pom.getDependencies(Pom.Scope.compile));
@@ -229,7 +229,7 @@ public class MavenTest {
 	//
 	// graph.addRepository( new URL("https://repo.maven.apache.org/maven2/"));
 	// graph.addRepository( new
-	// URL("http://repository.springsource.com/maven/bundles/external"));
+	// URL("https://repository.springsource.com/maven/bundles/external"));
 	// // graph.root.add(
 	// IO.getFile("testresources/poms/pom-1.xml").toURI().toURL());
 	//
