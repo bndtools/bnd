@@ -117,8 +117,7 @@ public class GitCloneTemplate implements Template {
 				Git git = cloneCmd.call();
 
 				CheckoutCommand checkout = git.checkout()
-					.setCreateBranch(true)
-					.setName("_tmp");
+					.setAllPaths(true);
 
 				if (params.branch == null) {
 					checkout.setStartPoint(GitCloneTemplateParams.DEFAULT_BRANCH);
