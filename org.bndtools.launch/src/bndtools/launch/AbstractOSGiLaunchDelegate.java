@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -25,6 +26,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -33,12 +35,15 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobFunction;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.internal.core.DebugCoreMessages;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.JavaRuntime;
@@ -51,6 +56,7 @@ import org.osgi.service.component.annotations.Reference;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import bndtools.Plugin;
 import bndtools.StatusCode;
@@ -60,13 +66,16 @@ import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	@SuppressWarnings("deprecation")
-	private static final String		ATTR_LOGLEVEL	= LaunchConstants.ATTR_LOGLEVEL;
-	private static final ILogger	logger			= Logger.getLogger(AbstractOSGiLaunchDelegate.class);
+	private static final String							ATTR_LOGLEVEL	= LaunchConstants.ATTR_LOGLEVEL;
+	private static final ILogger						logger			= Logger
+		.getLogger(AbstractOSGiLaunchDelegate.class);
+
+	final BndPreferences								prefs			= new BndPreferences();
 
 	@Reference
-	protected org.eclipse.e4.core.services.log.Logger uiLog;
+	protected org.eclipse.e4.core.services.log.Logger	uiLog;
 
-	protected Run					run;
+	protected Run										run;
 
 	protected abstract ProjectLauncher getProjectLauncher() throws CoreException;
 
@@ -77,6 +86,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	@Override
 	public boolean preLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
 		throws CoreException {
+
 		// override AbstractJavaLaunchConfigurationDelegate#preLaunchCheck, to
 		// avoid loading the Java project (which is not required when we are
 		// using a bndrun file).
@@ -85,6 +95,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
 	@Override
 	protected IProject[] getBuildOrder(ILaunchConfiguration configuration, String mode) throws CoreException {
+
 		return new IProject[0];
 	}
 
@@ -171,70 +182,153 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	@Override
 	public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
 		throws CoreException {
-
 		try {
 			run = LaunchUtils.createRun(configuration, getRunMode());
+			return Central.getWorkspace()
+				.readLocked(() -> {
 
-			initialiseBndLauncher(configuration, run);
+					initialiseBndLauncher(configuration, run);
+
+					if (!checkProjectErrors(configuration, mode, monitor))
+						return false;
+
+					if (prefs.getWarnExistingLaunches() && !checkExistingLaunches(configuration))
+						return false;
+
+					IStatus launchStatus = getLauncherStatus();
+
+					IStatusHandler prompter = DebugPlugin.getDefault()
+						.getStatusHandler(launchStatus);
+					if (prompter != null)
+						return (Boolean) prompter.handleStatus(launchStatus, run);
+					return true;
+				});
 		} catch (Exception e) {
-			throw new CoreException(
-				new Status(IStatus.ERROR, PLUGIN_ID, 0, "Error initialising bnd launcher", e));
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Error initialising bnd launcher", e));
+		}
+	}
+
+	private boolean checkExistingLaunches(ILaunchConfiguration configuration) throws CoreException {
+		IResource launchResource = LaunchUtils.getTargetResource(configuration);
+		if (launchResource == null)
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0,
+				"Bnd launch target was not specified or does not exist.", null));
+
+		if (!hasRunningProcess(configuration))
+			return true;
+
+		Status status = new Status(IStatus.WARNING, PLUGIN_ID, 0,
+			"One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.",
+			null);
+
+		IStatusHandler prompter = DebugPlugin.getDefault()
+			.getStatusHandler(status);
+
+		if (prompter != null) {
+			return (boolean) prompter.handleStatus(status, launchResource);
 		}
 
-		// Check for existing launches of same resource
-		BndPreferences prefs = new BndPreferences();
-		if (prefs.getWarnExistingLaunches()) {
-			IResource launchResource = LaunchUtils.getTargetResource(configuration);
-			if (launchResource == null)
-				throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0,
-					"Bnd launch target was not specified or does not exist.", null));
+		return true;
+	}
 
-			int processCount = 0;
-			for (ILaunch l : DebugPlugin.getDefault()
-				.getLaunchManager()
-				.getLaunches()) {
-				// ... is it the same launch resource?
-				ILaunchConfiguration launchConfig = l.getLaunchConfiguration();
-				if (launchConfig == null) {
-					continue;
-				}
-				if (launchResource.equals(LaunchUtils.getTargetResource(launchConfig))) {
-					// Iterate existing processes
+	private boolean hasRunningProcess(ILaunchConfiguration configuration) throws CoreException {
+
+		IResource launchResource = LaunchUtils.getTargetResource(configuration);
+		if (launchResource == null)
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0,
+				"Bnd launch target was not specified or does not exist.", null));
+
+		for (ILaunch l : DebugPlugin.getDefault()
+			.getLaunchManager()
+			.getLaunches()) {
+
+			if (configuration.equals(l.getLaunchConfiguration())) {
+				if (launchResource.equals(LaunchUtils.getTargetResource(l.getLaunchConfiguration()))) {
 					for (IProcess process : l.getProcesses()) {
-						if (!process.isTerminated())
-							processCount++;
+						if (!process.isTerminated()) {
+							return true;
+						}
 					}
 				}
 			}
+		}
+		return false;
+	}
 
-			// Warn if existing processes running
-			if (processCount > 0) {
-				Status status = new Status(IStatus.WARNING, PLUGIN_ID, 0,
-					"One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.",
-					null);
-				IStatusHandler prompter = DebugPlugin.getDefault()
-					.getStatusHandler(status);
-				if (prompter != null) {
-					boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
-					if (!okay)
-						return okay;
-				}
-			}
+	private boolean checkProjectErrors(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
+		throws CoreException {
+		monitor.beginTask("", 1); //$NON-NLS-1$
+		try {
+			return Central.getWorkspace()
+				.readLocked(() -> {
+					IProject[] projects = getRelatedProjects();
+
+					monitor.subTask(DebugCoreMessages.LaunchConfigurationDelegate_6);
+					List<IAdaptable> errors = new ArrayList<>();
+					for (IProject project : projects) {
+						monitor.subTask(
+							MessageFormat.format(DebugCoreMessages.LaunchConfigurationDelegate_7, new Object[] {
+								project.getName()
+						}));
+						if (existsProblems(project)) {
+							errors.add(project);
+						}
+					}
+					if (!errors.isEmpty()) {
+						errors.add(0, configuration);
+						IStatusHandler prompter = DebugPlugin.getDefault()
+							.getStatusHandler(promptStatus);
+						if (prompter != null) {
+							return ((Boolean) prompter.handleStatus(complileErrorProjectPromptStatus, errors))
+								.booleanValue();
+						}
+					}
+
+					return true;
+				});
+		} catch (Exception e) {
+			throw new CoreException(Status.error("Unexpected while checking compile errors", e));
+		} finally {
+			monitor.done();
 		}
 
-		IStatus launchStatus = getLauncherStatus();
+	}
 
-		IStatusHandler prompter = DebugPlugin.getDefault()
-			.getStatusHandler(launchStatus);
-		if (prompter != null)
-			return (Boolean) prompter.handleStatus(launchStatus, run);
-		return true;
+	private IProject[] getRelatedProjects() throws CoreException {
+		ProjectLauncher projectLauncher = getProjectLauncher();
+		if (projectLauncher == null)
+			return new IProject[0];
+
+		Project p = projectLauncher.getProject();
+		if (p == null)
+			return new IProject[0];
+
+		if (p instanceof Run) {
+			return getAllIProjects(p.getWorkspace());
+		}
+		return Central.getProject(p)
+			.map(x -> new IProject[] {
+				x
+			})
+			.orElse(new IProject[0]);
+	}
+
+	private IProject[] getAllIProjects(Workspace ws) {
+		return ws.getAllProjects()
+			.stream()
+			.map(bp -> Central.getProject(bp)
+				.orElse(null))
+			.filter(Objects::nonNull)
+			.toArray(IProject[]::new);
 	}
 
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor monitor)
 		throws CoreException {
 		try {
+
+			IEclipsePreferences prefs = InstanceScope.INSTANCE.getNode("org.eclipse.debug.core");
+
 			boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES,
 				LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
 			if (dynamic)
@@ -367,15 +461,13 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		try {
 			bndbndPath = Central.toPath(project.getPropertiesFile());
 		} catch (Exception e) {
-			throw new CoreException(
-				new Status(IStatus.ERROR, PLUGIN_ID, 0, "Error querying bnd.bnd file location", e));
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Error querying bnd.bnd file location", e));
 		}
 
 		try {
 			Central.toPath(project.getTarget());
 		} catch (Exception e) {
-			throw new CoreException(
-				new Status(IStatus.ERROR, PLUGIN_ID, 0, "Error querying project output folder", e));
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Error querying project output folder", e));
 		}
 		final IResourceChangeListener resourceListener = event -> {
 			try {
