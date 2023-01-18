@@ -82,9 +82,33 @@ public class BuilderTest {
 	@Test
 	public void testIncludePackageZeroMatchesForWildcard() throws Exception {
 		try (Builder b = new Builder()) {
-			b.setProperty("-includepackage", "*;foo:=notexistent");
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("-includepackage", "*;from:=osgi");
+			Jar build = b.build();
+			assertFalse(b.check("The JAR is empty: "));
+		}
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("-includepackage", "*;from:=nonexistent");
 			Jar build = b.build();
 			assertTrue(b.check("The JAR is empty: "));
+		}
+	}
+
+	/**
+	 * Check if
+	 */
+
+	@Test
+	public void testIncludeWholeProject() throws Exception {
+		try (Builder b = new Builder()) {
+			Jar jar = new Jar(IO.getFile("jar/osgi.jar"));
+			jar.putResource(Constants.PROJECT_MARKER, new EmbeddedResource("", 0L));
+			b.addClasspath(jar);
+			b.setProperty("-includepackage", Constants.ALL_FROM_PROJECT);
+			Jar build = b.build();
+			assertThat(build.getResource("org/osgi/service/log/LogService.class")).isNotNull();
+			assertThat(build.getResource("org/osgi/service/event/EventHandler.class")).isNotNull();
 		}
 	}
 

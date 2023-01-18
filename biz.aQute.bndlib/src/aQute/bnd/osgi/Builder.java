@@ -76,6 +76,7 @@ import aQute.libg.generics.Create;
  * Import-Package: package-decl ( ',' package-decl )* @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
+
 	private final static Logger			logger						= LoggerFactory.getLogger(Builder.class);
 	private final static Pattern		IR_PATTERN					= Pattern
 		.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
@@ -695,11 +696,9 @@ public class Builder extends Analyzer {
 
 			Attrs directives = e.getValue();
 
-			// We can optionally filter on the
-			// source of the package. We assume
-			// they all match but this can be overridden
-			// on the instruction
-			Instruction from = new Instruction(directives.get(FROM_DIRECTIVE, "*"));
+			String fromDirective = directives.get(FROM_DIRECTIVE, "*");
+			Instruction from = new Instruction(fromDirective);
+			boolean project = fromDirective.equals(FROM_DIRECTIVE_PROJECT);
 
 			boolean used = false;
 
@@ -728,7 +727,7 @@ public class Builder extends Analyzer {
 				}
 
 				// Do the from: directive, filters on the JAR type
-				List<Jar> providers = filterFrom(from, p.getValue());
+				List<Jar> providers = filterFrom(from, p.getValue(), project);
 				if (providers.isEmpty())
 					continue;
 
@@ -749,10 +748,17 @@ public class Builder extends Analyzer {
 	/**
 	 * @param from
 	 */
-	private List<Jar> filterFrom(Instruction from, List<Jar> providers) {
+	private List<Jar> filterFrom(Instruction from, List<Jar> providers, boolean project) {
 		if (from.isAny())
 			return providers;
 
+		if (project) {
+			for (Jar j : providers) {
+				if (j.getResource(PROJECT_MARKER) != null) {
+					return Collections.singletonList(j);
+				}
+			}
+		}
 		List<Jar> np = new ArrayList<>();
 		for (Jar j : providers) {
 			if (from.matches(j.getName()) ^ from.isNegated()) {

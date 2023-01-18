@@ -2633,4 +2633,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void setPropertiesFile(File source) {
 		this.propertiesFile = source;
 	}
+
+	/**
+	 * Answer true if any of the headers is set as a property
+	 *
+	 * @param headers list of headers
+	 * @return true if any of the headers is set
+	 */
+	public boolean isHeaderSet(String... headers) {
+		for (String header : headers) {
+			if (getProperty(header) != null)
+				return true;
+		}
+		return false;
+	}
 }

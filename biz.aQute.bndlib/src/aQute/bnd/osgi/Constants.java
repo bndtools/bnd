@@ -379,6 +379,7 @@ public interface Constants {
 	String		BUNDLE_SYMBOLIC_NAME_ATTRIBUTE				= "bundle-symbolic-name";
 	String		BUNDLE_VERSION_ATTRIBUTE					= "bundle-version";
 	String		FROM_DIRECTIVE								= "from:";
+	String		FROM_DIRECTIVE_PROJECT						= "project";
 
 	String		KEYSTORE_LOCATION_DIRECTIVE					= "keystore:";
 	String		KEYSTORE_PROVIDER_DIRECTIVE					= "provider:";
@@ -491,7 +492,29 @@ public interface Constants {
 	 */
 	String		DEFAULT_PREPROCESSS_MATCHERS				= "!*.(ico|jpg|jpeg|jif|jfif|jp2|jpx|j2k|j2c|fpx|png|gif|swf|doc|pdf|tiff|tif|raw|bmp|ppm|pgm|pbm|pnm|pfm|webp|zip|jar|gz|tar|tgz|exe|com|bin|mp[0-9]|mpeg|mov|):i, *";
 
-	/*
+	/**
+	 * Headers that if **all** are absent will trigger the -includepackage
+	 * `*;from:=project` (include all packages from the project's output.
+	 */
+	String[]	EXPAND_HEADERS							= {
+		Constants.RESOURCEONLY, Constants.INCLUDEPACKAGE, Constants.PRIVATE_PACKAGE, Constants.PRIVATEPACKAGE,
+		Constants.EXPORT_PACKAGE,
+	};
+
+	/**
+	 * Marker resource set by the ProjectBuilder to mark a JAR as the project
+	 * output's entry in the classpath. Used for the
+	 * {@link #EXPAND_HEADERS} processing.
+	 */
+	String		PROJECT_MARKER								= "META-INF/.project";
+
+	/**
+	 * Value for a *package instruction to include everything from the bin
+	 * directory
+	 */
+	String		ALL_FROM_PROJECT							= "*;" + FROM_DIRECTIVE + "=" + FROM_DIRECTIVE_PROJECT;
+
+	/**
 	 * Default properties as listed in defaults.bnd
 	 */
 
