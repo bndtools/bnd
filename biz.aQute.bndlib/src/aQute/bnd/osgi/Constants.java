@@ -496,10 +496,10 @@ public interface Constants {
 	 * Headers that if **all** are absent will trigger the -includepackage
 	 * `*;from:=project` (include all packages from the project's output.
 	 */
-	String[]	EXPAND_HEADERS							= {
+	Set<String>	EXPAND_HEADERS							= Sets.of(
 		Constants.RESOURCEONLY, Constants.INCLUDEPACKAGE, Constants.PRIVATE_PACKAGE, Constants.PRIVATEPACKAGE,
-		Constants.EXPORT_PACKAGE,
-	};
+		Constants.EXPORT_PACKAGE
+	);
 
 	/**
 	 * Marker resource set by the ProjectBuilder to mark a JAR as the project

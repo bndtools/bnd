@@ -2635,14 +2635,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Answer true if any of the headers is set as a property
+	 * Answer true if any of the property keys is set as a property
 	 *
-	 * @param headers list of headers
-	 * @return true if any of the headers is set
+	 * @param keys list of property keys
+	 * @return true if any of the property values is set
 	 */
-	public boolean isHeaderSet(String... headers) {
-		for (String header : headers) {
-			if (getProperty(header) != null)
+	public boolean isPropertySet(Set<String> keys) {
+		for (String key : keys) {
+			if (getProperty(key) != null)
 				return true;
 		}
 		return false;

@@ -856,7 +856,7 @@ public class ProjectBuilder extends Builder {
 		if (!project.isNoBundles() && builder.getJar() == null && project.getOutput()
 			.isDirectory()) {
 
-			if (!builder.isHeaderSet(EXPAND_HEADERS)) {
+			if (!builder.isPropertySet(EXPAND_HEADERS)) {
 				builder.setProperty(Constants.INCLUDEPACKAGE, ALL_FROM_PROJECT);
 			}
 		}
