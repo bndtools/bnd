@@ -2,6 +2,8 @@ package bndtools.launch;
 
 import static aQute.bnd.build.ProjectLauncher.renderArguments;
 import static bndtools.launch.LaunchConstants.PLUGIN_ID;
+import static org.eclipse.debug.internal.core.DebugCoreMessages.LaunchConfigurationDelegate_6;
+import static org.eclipse.debug.internal.core.DebugCoreMessages.LaunchConfigurationDelegate_7;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobFunction;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -43,7 +46,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.debug.core.model.IProcess;
-import org.eclipse.debug.internal.core.DebugCoreMessages;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.JavaRuntime;
@@ -256,42 +258,41 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	}
 
 	private boolean checkProjectErrors(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
-		throws CoreException {
-		monitor.beginTask("", 1); //$NON-NLS-1$
-		try {
-			return Central.getWorkspace()
-				.readLocked(() -> {
-					IProject[] projects = getRelatedProjects();
+		throws Exception {
 
-					monitor.subTask(DebugCoreMessages.LaunchConfigurationDelegate_6);
-					List<IAdaptable> errors = new ArrayList<>();
-					for (IProject project : projects) {
-						monitor.subTask(
-							MessageFormat.format(DebugCoreMessages.LaunchConfigurationDelegate_7, new Object[] {
-								project.getName()
-						}));
-						if (existsProblems(project)) {
-							errors.add(project);
-						}
-					}
-					if (!errors.isEmpty()) {
-						errors.add(0, configuration);
-						IStatusHandler prompter = DebugPlugin.getDefault()
-							.getStatusHandler(promptStatus);
-						if (prompter != null) {
-							return ((Boolean) prompter.handleStatus(complileErrorProjectPromptStatus, errors))
-								.booleanValue();
-						}
-					}
+		IStatusHandler prompter = DebugPlugin.getDefault()
+			.getStatusHandler(promptStatus);
 
-					return true;
-				});
-		} catch (Exception e) {
-			throw new CoreException(Status.error("Unexpected while checking compile errors", e));
-		} finally {
-			monitor.done();
+		if (prompter == null)
+			return true;
+
+		SubMonitor checkProjectErrorMonitor = SubMonitor.convert(monitor, "Check Project Errors", 1);
+
+		IProject[] projects = Central.getWorkspace()
+			.readLocked(() -> {
+				return getRelatedProjects();
+			});
+
+		SubMonitor loopMonitor = checkProjectErrorMonitor.split(1)
+			.setWorkRemaining(projects.length);
+		loopMonitor.subTask(LaunchConfigurationDelegate_6);
+		List<IAdaptable> errors = new ArrayList<>();
+
+		for (IProject project : projects) {
+			SubMonitor iterationMonitor = loopMonitor.split(1);
+			String message = MessageFormat.format(LaunchConfigurationDelegate_7, project.getName());
+			iterationMonitor.subTask(message);
+			if (existsProblems(project)) {
+				errors.add(project);
+			}
 		}
 
+		if (errors.isEmpty())
+			return true;
+
+		errors.add(0, configuration);
+
+		return ((Boolean) prompter.handleStatus(complileErrorProjectPromptStatus, errors)).booleanValue();
 	}
 
 	private IProject[] getRelatedProjects() throws CoreException {
@@ -313,7 +314,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 			.orElse(new IProject[0]);
 	}
 
-	private IProject[] getAllIProjects(Workspace ws) {
+	private static IProject[] getAllIProjects(Workspace ws) {
 		return ws.getAllProjects()
 			.stream()
 			.map(bp -> Central.getProject(bp)
