@@ -37,6 +37,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
@@ -191,7 +192,9 @@ public class ProjectBuilder extends Builder {
 
 				File output = project.getOutput();
 				if (output.exists()) {
-					addClasspath(output);
+					Jar jar = new Jar(output);
+					jar.putResource(PROJECT_MARKER, new EmbeddedResource("project marker", 0L));
+					addClasspath(jar);
 				}
 
 				if (includeTestpath) {
@@ -524,8 +527,7 @@ public class ProjectBuilder extends Builder {
 			// We have a repo
 			// Baselining 0.x is uninteresting
 			// x.0.0 is a new major version so maybe there is no baseline
-			if ((version.getMajor() > 0) &&
-				((version.getMinor() > 0) || (version.getMicro() > 0))) {
+			if ((version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0))) {
 				warning(
 					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than %s which suggests that there should be a prior version.",
 					getBsn(), repo, version.getWithoutQualifier(), new Version(version.getMajor()));
@@ -840,6 +842,7 @@ public class ProjectBuilder extends Builder {
 		return super.builds();
 	}
 
+
 	/**
 	 * Called when we start to build a builder. We reset our map of bsn ->
 	 * version and set the default contents of the bundle.
@@ -850,39 +853,15 @@ public class ProjectBuilder extends Builder {
 
 		project.versionMap.remove(builder.getBsn());
 
-		/*
-		 * During discussion on bndtools/bndtools#1270, @rotty3000 raised the
-		 * issue that, in a workspace build, bnd will not include anything in a
-		 * bundle by default. One must specify Private-Package, Export-Package,
-		 * Include-Resource, -includepackage, or -includeresource to put any
-		 * content in a bundle. And new users make mistakes and end up with
-		 * empty bundles which will be unexpected. This is different than the
-		 * non-workspace modes such as the bnd gradle plugin or the
-		 * bnd-maven-plugin which always include default content (gradle: normal
-		 * jar task content, maven: target/classes folder). So we change
-		 * ProjectBuilder (not Builder which is used by non-workspace builds) to
-		 * use the source output folder (e.g. bin folder) as the default
-		 * contents if the bundle's bnd file does not specify any of the
-		 * following instructions: -resourceonly, -includepackage,
-		 * Private-Package, -privatepackage, Export-Package, Include-Resource,
-		 * or -includeresource. If the bnd file specifies any of these
-		 * instructions, then they will fully control the contents of the
-		 * bundle.
-		 */
-		if (!project.isNoBundles() && (builder.getJar() == null)
-			&& (builder.getProperty(Constants.RESOURCEONLY) == null)
-			&& (builder.getProperty(Constants.INCLUDEPACKAGE) == null)
-			&& (builder.getProperty(Constants.PRIVATE_PACKAGE) == null)
-			&& (builder.getProperty(Constants.PRIVATEPACKAGE) == null)
-			&& (builder.getProperty(Constants.EXPORT_PACKAGE) == null)
-			&& (builder.getProperty(Constants.INCLUDE_RESOURCE) == null)
-			&& (builder.getProperty(Constants.INCLUDERESOURCE) == null) && project.getOutput()
-				.isDirectory()) {
-			Jar outputDirJar = new Jar(project.getName(), project.getOutput());
-			outputDirJar.setManifest(new Manifest());
-			builder.setJar(outputDirJar);
+		if (!project.isNoBundles() && builder.getJar() == null && project.getOutput()
+			.isDirectory()) {
+
+			if (!builder.isPropertySet(EXPAND_HEADERS)) {
+				builder.setProperty(Constants.INCLUDEPACKAGE, ALL_FROM_PROJECT);
+			}
 		}
 	}
+
 
 	/**
 	 * Called when we're done with a builder. In this case we retrieve package
