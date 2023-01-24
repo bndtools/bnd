@@ -38,24 +38,28 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 	private final ProjectLocationGroup	locationGroup	= new ProjectLocationGroup("Location");
 	private Template					template;
 
+	protected void setBndPageComplete(boolean complete) {
+		super.setPageComplete(complete);
+	}
+
 	NewBndProjectWizardPageOne() {
 		setTitle("Create a Bnd OSGi Project");
 
 		nameGroup.addPropertyChangeListener(event -> {
 			IStatus status = nameGroup.getStatus();
 			if (status.isOK()) {
-				setPageComplete(true);
+				setBndPageComplete(true);
 				setErrorMessage(null);
 				locationGroup.setProjectName(nameGroup.getProjectName());
 			} else {
-				setPageComplete(false);
+				setBndPageComplete(false);
 				setErrorMessage(status.getMessage());
 			}
 		});
 
 		locationGroup.addPropertyChangeListener(event -> {
 			IStatus status = locationGroup.getStatus();
-			setPageComplete(status.isOK());
+			setBndPageComplete(status.isOK());
 			if (status.isOK()) {
 				setErrorMessage(null);
 			} else {
@@ -116,6 +120,17 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
 		Control workingSetControl = createWorkingSetControl(composite);
 		workingSetControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+		// The following is a work-around for the problem
+		// described in https://github.com/bndtools/bnd/issues/5239
+		Control moduleControl = createModuleControl(composite);
+		// Set the module control to invisible
+		moduleControl.setVisible(false);
+		GridData moduleGridData = new GridData(GridData.FILL_HORIZONTAL);
+		// setup moduleGridData to *exclude* so that it doesn't take
+		// up any space
+		moduleGridData.exclude = true;
+		moduleControl.setLayoutData(moduleGridData);
 
 		Control infoControl = createInfoControl(composite);
 		infoControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -231,4 +246,20 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		this.template = template;
 	}
 
+	// The following override is a work-around for the problem
+	// described in https://github.com/bndtools/bnd/issues/5239
+	@Override
+	public void setPageComplete(boolean complete) {
+		// This now does nothing, so that superclass
+		// verification can be made irrelevant
+		// See
+		// https://github.com/bndtools/bnd/issues/5239#issuecomment-1399331939
+	}
+
+	// This override of the NewJavaProjectWizardPageOne always returns
+	// false so that module info is never created for Bnd project
+	@Override
+	public boolean getCreateModuleInfoFile() {
+		return false;
+	}
 }
