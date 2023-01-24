@@ -39,9 +39,12 @@ public class BndtoolsDynamicReferenceProvider implements IDynamicReferenceProvid
 		Project model = ws.getProject(project.getName());
 		if (model != null) {
 			List<IProject> result = new ArrayList<>();
+			IProject cnf = eclipse.getProject(Workspace.CNFDIR);
+			if (cnf != null)
+				result.add(cnf);
 			for (Project dep : model.getBuildDependencies()) {
 				IProject idep = eclipse.getProject(dep.getName());
-				if (idep != null)
+				if (idep != null && !dep.isCnf())
 					result.add(idep);
 			}
 			return result;
