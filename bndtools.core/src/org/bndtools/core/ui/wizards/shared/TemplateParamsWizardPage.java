@@ -97,7 +97,6 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 					String attrib = ad.getID();
 					if (!fixedAttribs.contains(attrib)) {
 						Label label = new Label(panel, SWT.NONE);
-
 						String labelText = ad.getID();
 						if (requiredIds.contains(ad.getID())) {
 							label.setFont(JFaceResources.getFontRegistry()
@@ -132,18 +131,32 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 	}
 
 	private void updateValidation() {
+
 		boolean complete = true;
 
 		// Check required attribs
 		AttributeDefinition[] ads = ocd != null ? ocd.getAttributeDefinitions(ObjectClassDefinition.REQUIRED)
 			: new AttributeDefinition[0];
 		for (AttributeDefinition ad : ads) {
+			String adId = ad.getID();
 			// Skip attribs provided the wizard
-			if (fixedAttribs.contains(ad.getID()))
+			if (fixedAttribs.contains(adId))
 				continue;
-			String value = values.get(ad.getID());
+			// Get the value from values map
+			String value = values.get(adId);
+			// Also get the default value if any from attribute definition
+			String[] defaultValues = ad.getDefaultValue();
+			String defaultValue = null;
+			if (defaultValues != null && defaultValues.length > 0) {
+				defaultValue = defaultValues[0];
+			}
 			if (value == null || value.trim()
 				.isEmpty()) {
+				complete = false;
+				break;
+			}
+			boolean toBeReplaced = isToBeReplaced(defaultValue);
+			if (toBeReplaced && value.equals(defaultValue)) {
 				complete = false;
 				break;
 			}
@@ -198,6 +211,10 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 					.get(JFacePreferences.ERROR_COLOR));
 				return label;
 		}
+	}
+
+	private boolean isToBeReplaced(String defaultValue) {
+		return (defaultValue != null && defaultValue.startsWith("<") && defaultValue.endsWith(">")) ? true : false;
 	}
 
 	@Override
