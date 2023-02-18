@@ -25,6 +25,7 @@ import org.osgi.service.metatype.ObjectClassDefinition;
 
 import bndtools.Plugin;
 
+
 public class TemplateParamsWizardPage extends WizardPage implements ISkippableWizardPage {
 
 	private final Set<String>			fixedAttribs	= new HashSet<>();
