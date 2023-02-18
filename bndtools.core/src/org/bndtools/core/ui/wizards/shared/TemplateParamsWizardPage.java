@@ -150,11 +150,14 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 			if (defaultValues != null && defaultValues.length > 0) {
 				defaultValue = defaultValues[0];
 			}
+			// Incomplete if any of the required fields are empty
 			if (value == null || value.trim()
 				.isEmpty()) {
 				complete = false;
 				break;
 			}
+			// Also fail if the default value must be replaced
+			// and it's not been changed yet
 			boolean toBeReplaced = isToBeReplaced(defaultValue);
 			if (toBeReplaced && value.equals(defaultValue)) {
 				complete = false;
