@@ -51,6 +51,25 @@ public class StdAnnotationHeadersTest {
 	}
 
 	@Test
+	public void testHeaderWithMacros() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.div");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			assertThat(mainAttributes.getValue("Foo")).isEqualTo("a java.lang.String");
+		}
+	}
+
+	@Test
 	public void testResolutionDirectiveOverride() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));

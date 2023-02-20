@@ -389,6 +389,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 					break;
 				case STD_HEADER :
 				case STD_HEADERS :
+					mergeAttributesAndDirectives(a);
 					AnnotationHeaders.this.annotation(a);
 					break;
 				case STD_ATTRIBUTE :
