@@ -149,6 +149,28 @@ public class BuilderTest {
 	}
 
 	/**
+	 * Check default version if no version is set
+	 */
+
+	@Test
+	public void testExportVersionIfNoVersionIsSet() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setBundleVersion("1000");
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setProperty("Export-Package", "a");
+			Jar build = b.build();
+			assertTrue(b.check());
+			String value = build.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package");
+			Parameters ps = new Parameters(value);
+			Attrs attrs = ps.get("a");
+			String version = attrs.get(Constants.VERSION_ATTRIBUTE);
+			assertThat(version).isNull();
+		}
+	}
+
+	/**
 	 * Test the detection of usage of old components: Invalid Service-Component
 	 * header
 	 */
