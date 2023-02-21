@@ -16,58 +16,59 @@ import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {
 
-	OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", "1.0"),
+	OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", "1.0", 0),
 
-	OSGI_Minimum_1_1("OSGi/Minimum-1.1", "OSGi/Minimum", "1.1", OSGI_Minimum_1_0),
+	OSGI_Minimum_1_1("OSGi/Minimum-1.1", "OSGi/Minimum", "1.1", 1, OSGI_Minimum_1_0),
 
-	OSGI_Minimum_1_2("OSGi/Minimum-1.2", "OSGi/Minimum", "1.2", OSGI_Minimum_1_1),
+	OSGI_Minimum_1_2("OSGi/Minimum-1.2", "OSGi/Minimum", "1.2", 2, OSGI_Minimum_1_1),
 
-	JRE_1_1("JRE-1.1", "JRE", "1.1"),
+	JRE_1_1("JRE-1.1", "JRE", "1.1", 1),
 
-	J2SE_1_2("J2SE-1.2", "JavaSE", "1.2", JRE_1_1),
+	J2SE_1_2("J2SE-1.2", "JavaSE", "1.2", 2, JRE_1_1),
 
-	J2SE_1_3("J2SE-1.3", "JavaSE", "1.3", J2SE_1_2, OSGI_Minimum_1_1),
+	J2SE_1_3("J2SE-1.3", "JavaSE", "1.3", 3, J2SE_1_2, OSGI_Minimum_1_1),
 
-	J2SE_1_4("J2SE-1.4", "JavaSE", "1.4", J2SE_1_3, OSGI_Minimum_1_2),
+	J2SE_1_4("J2SE-1.4", "JavaSE", "1.4", 4, J2SE_1_3, OSGI_Minimum_1_2),
 
-	J2SE_1_5("J2SE-1.5", "JavaSE", "1.5", J2SE_1_4),
+	J2SE_1_5("J2SE-1.5", "JavaSE", "1.5", 5, J2SE_1_4),
 
-	JavaSE_1_6("JavaSE-1.6", "JavaSE", "1.6", J2SE_1_5),
+	JavaSE_1_6("JavaSE-1.6", "JavaSE", "1.6", 6, J2SE_1_5),
 
-	JavaSE_1_7("JavaSE-1.7", "JavaSE", "1.7", JavaSE_1_6),
+	JavaSE_1_7("JavaSE-1.7", "JavaSE", "1.7", 7, JavaSE_1_6),
 
-	JavaSE_compact1_1_8("JavaSE/compact1-1.8", "JavaSE/compact1", "1.8", OSGI_Minimum_1_2),
+	JavaSE_compact1_1_8("JavaSE/compact1-1.8", "JavaSE/compact1", "1.8", 8, OSGI_Minimum_1_2),
 
-	JavaSE_compact2_1_8("JavaSE/compact2-1.8", "JavaSE/compact2", "1.8", JavaSE_compact1_1_8),
+	JavaSE_compact2_1_8("JavaSE/compact2-1.8", "JavaSE/compact2", "1.8", 8, JavaSE_compact1_1_8),
 
-	JavaSE_compact3_1_8("JavaSE/compact3-1.8", "JavaSE/compact3", "1.8", JavaSE_compact2_1_8),
+	JavaSE_compact3_1_8("JavaSE/compact3-1.8", "JavaSE/compact3", "1.8", 8, JavaSE_compact2_1_8),
 
-	JavaSE_1_8("JavaSE-1.8", "JavaSE", "1.8", JavaSE_1_7, JavaSE_compact3_1_8),
+	JavaSE_1_8("JavaSE-1.8", "JavaSE", "1.8", 8, JavaSE_1_7, JavaSE_compact3_1_8),
 
-	JavaSE_9,
-	JavaSE_10,
-	JavaSE_11,
-	JavaSE_12,
-	JavaSE_13,
-	JavaSE_14,
-	JavaSE_15,
-	JavaSE_16,
-	JavaSE_17,
-	JavaSE_18,
-	JavaSE_19,
-	JavaSE_20,
-	JavaSE_21,
-	JavaSE_22,
-	JavaSE_23,
-	JavaSE_24,
+	JavaSE_9(9),
+	JavaSE_10(10),
+	JavaSE_11(11),
+	JavaSE_12(12),
+	JavaSE_13(13),
+	JavaSE_14(14),
+	JavaSE_15(15),
+	JavaSE_16(16),
+	JavaSE_17(17),
+	JavaSE_18(18),
+	JavaSE_19(19),
+	JavaSE_20(20),
+	JavaSE_21(21),
+	JavaSE_22(22),
+	JavaSE_23(23),
+	JavaSE_24(24),
 
-	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0");
+	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0", 0);
 
 	private final String			eeName;
 	private final String			capabilityName;
 	private final String			versionLabel;
 	private final Version			capabilityVersion;
 	private final EE[]				compatible;
+	private final int				release;
 	private transient EnumSet<EE>	compatibleSet;
 	private transient Parameters	packages	= null;
 	private transient Parameters	modules		= null;
@@ -75,21 +76,23 @@ public enum EE {
 	/**
 	 * For use by JavaSE_9 and later.
 	 */
-	EE() {
+	EE(int release) {
 		int version = ordinal() - 5;
 		this.versionLabel = Integer.toString(version);
 		this.eeName = "JavaSE-" + versionLabel;
 		this.capabilityName = "JavaSE";
 		this.capabilityVersion = new Version(version);
 		this.compatible = null;
+		this.release = release;
 	}
 
-	EE(String eeName, String capabilityName, String versionLabel, EE... compatible) {
+	EE(String eeName, String capabilityName, String versionLabel, int release, EE... compatible) {
 		this.eeName = eeName;
 		this.capabilityName = capabilityName;
 		this.versionLabel = versionLabel;
 		this.capabilityVersion = new Version(versionLabel);
 		this.compatible = compatible;
+		this.release = release;
 	}
 
 	public String getEEName() {
@@ -106,6 +109,7 @@ public enum EE {
 	}
 
 	private static final EE[] values = values();
+
 	private Optional<EE> previous() {
 		int ordinal = ordinal() - 1;
 		if (ordinal >= 0) {
@@ -188,7 +192,7 @@ public enum EE {
 
 	public static EE parse(String str) {
 		for (EE ee : values) {
-			if (ee.eeName.equals(str))
+			if (ee.eeName.equalsIgnoreCase(str))
 				return ee;
 		}
 		return null;
@@ -239,5 +243,12 @@ public enum EE {
 		} catch (IOException ioe) {
 			throw Exceptions.duck(ioe);
 		}
+	}
+
+	public int getRelease() {
+		return release;
+	}
+	public int getMajorVersion() {
+		return release + 44;
 	}
 }

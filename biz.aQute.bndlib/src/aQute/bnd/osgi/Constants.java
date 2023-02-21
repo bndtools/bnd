@@ -24,6 +24,8 @@ public interface Constants {
 	String		IDENTITY_INITIAL_RESOURCE					= "<<INITIAL>>";
 	String		IDENTITY_SYSTEM_RESOURCE					= "<<SYSTEM>>";
 
+	String		MULTI_RElEASE								= "Multi-Release";
+
 	/*
 	 * Defined in OSGi
 	 */
@@ -163,6 +165,7 @@ public interface Constants {
 	String		JAVAC_ENCODING								= "javac.encoding";
 	String		JAVAC_SOURCE								= "javac.source";
 	String		JAVAC_TARGET								= "javac.target";
+	String		JAVAC_RELEASE_MAX							= "javac.release.max";
 	String		JAVAC_PROFILE								= "javac.profile";
 	String		JAVAC										= "javac";
 	String		JAVA										= "java";
@@ -585,6 +588,7 @@ public interface Constants {
 	);
 
 	String		INTERNAL_PREFIX								= "-internal-";
+
 
 	/*
 	 * Deprecated Section

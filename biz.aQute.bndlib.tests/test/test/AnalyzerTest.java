@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,6 +23,8 @@ import java.util.jar.Manifest;
 
 import org.junit.jupiter.api.Test;
 
+import aQute.bnd.build.model.EE;
+import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.About;
@@ -49,12 +52,66 @@ public class AnalyzerTest {
 	static File cwd = new File(System.getProperty("user.dir"));
 
 	/**
+	 * Test the usage of a multi-release file
+	 */
+
+	@Test
+	public void testMultiRelease() throws Exception {
+		try (Builder source = new Builder()) {
+			source.addClasspath(new Jar(IO.getFile("jar/multi-released-lib-1.0-SNAPSHOT.jar")));
+			source.setProperty("-includepackage", "*");
+			Jar jar = source.build();
+			assertThat(source.check()).isTrue();
+
+			assertThat(jar.getResource("org/example/Hello11.class")).isNotNull();
+			assertThat(jar.getResource("org/example/Hello8.class")).isNotNull();
+			ClassFile helloClass = ClassFile
+				.parseClassFile(new DataInputStream(jar.getResource("org/example/Hello.class")
+				.openInputStream()));
+			assertThat(helloClass.major_version).isEqualTo(EE.JavaSE_11.getMajorVersion());
+		}
+
+		try (Builder source = new Builder()) {
+			source.addClasspath(new Jar(IO.getFile("jar/multi-released-lib-1.0-SNAPSHOT.jar")), 10);
+			source.setProperty("-includepackage", "*");
+			Jar jar = source.build();
+			assertThat(source.check()).isTrue();
+
+			assertThat(jar.getResource("org/example/Hello11.class")).isNull();
+			assertThat(jar.getResource("org/example/Hello8.class")).isNotNull();
+			ClassFile helloClass = ClassFile
+				.parseClassFile(new DataInputStream(jar.getResource("org/example/Hello.class")
+					.openInputStream()));
+			assertThat(helloClass.major_version).isEqualTo(EE.JavaSE_1_8.getMajorVersion());
+		}
+
+	}
+
+	/**
+	 * Check a single file flattening
+	 */
+
+	@Test
+	public void testMultiReleaseFlattening() throws Exception {
+		Jar outer = new Jar(IO.getFile("jar/multi-release-gson-2.9.1.jar"));
+		assertThat(outer.getModuleName()).isNull();
+		try (Builder source = new Builder()) {
+			source.addClasspath(outer);
+			Jar inner = source.getClasspath()
+				.get(0);
+			assertThat(inner.getModuleName()).isEqualTo("com.google.gson");
+			assertThat(inner.getResource("com/google/gson/Gson.class")).isNotNull();
+		}
+
+	}
+
+	/**
 	 * Verify that the manifest overrides a version in a package info
 	 */
 
 	@Test
 	public void testManifestOverridesPackageInfo() throws Exception {
-		try(Builder source = new Builder() ){
+		try (Builder source = new Builder()) {
 			source.setProperty("-exportcontents", "foo;version=1000");
 			source.setProperty("-includeresource", "foo/packageinfo;literal='version 1\n'");
 			Jar jar = source.build();
@@ -458,10 +515,8 @@ public class AnalyzerTest {
 			b.setProperty("-exportcontents", "test.refer");
 			b.build();
 			assertTrue(b.check("Bundle-ClassPath uses a directory 'jars/some.jar'"));
-			assertTrue(
-				b.getImports()
-					.getByFQN("org.osgi.service.event") != null,
-				b.getImports()
+			assertTrue(b.getImports()
+				.getByFQN("org.osgi.service.event") != null, b.getImports()
 					.toString());
 		} finally {
 			b.close();
@@ -1049,14 +1104,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(0,
-				a.getErrors()
-					.size(),
+			assertEquals(0, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(1,
-				a.getWarnings()
-					.size(),
+			assertEquals(1, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(a.check("A Bundle-Activator header was present but no activator class was defined"));
@@ -1083,14 +1136,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(2,
-				a.getErrors()
-					.size(),
+			assertEquals(2, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(0,
-				a.getWarnings()
-					.size(),
+			assertEquals(0, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(a.check("A Bundle-Activator header is present and its value is not a valid type name 123",
@@ -1118,14 +1169,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(1,
-				a.getErrors()
-					.size(),
+			assertEquals(1, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(0,
-				a.getWarnings()
-					.size(),
+			assertEquals(0, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(a.check(
@@ -1153,14 +1202,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(1,
-				a.getErrors()
-					.size(),
+			assertEquals(1, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(0,
-				a.getWarnings()
-					.size(),
+			assertEquals(0, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(

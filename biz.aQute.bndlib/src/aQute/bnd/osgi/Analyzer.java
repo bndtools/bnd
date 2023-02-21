@@ -2528,10 +2528,20 @@ public class Analyzer extends Processor {
 						warning("Cannot find entry on -classpath: %s", s);
 				}
 		}
-		return classpath;
+		return Collections.unmodifiableList(classpath);
 	}
 
 	public void addClasspath(Jar jar) {
+		addClasspath(jar, -1);
+	}
+
+	public void addClasspath(Jar jar, int release) {
+
+		if (release < 0) {
+			release = getInt(this, "addClasspath", 0, Constants.JAVAC_RELEASE_MAX);
+		}
+		jar = MultiReleaseJars.view(jar, release);
+
 		if (isPedantic() && jar.getResources()
 			.isEmpty())
 			warning("There is an empty jar or directory on the classpath: %s", jar.getName());

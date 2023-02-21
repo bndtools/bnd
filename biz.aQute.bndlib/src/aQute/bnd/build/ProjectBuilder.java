@@ -37,6 +37,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
@@ -229,7 +230,8 @@ public class ProjectBuilder extends Builder {
 			return;
 		}
 		Jar jar = new Jar(file);
-		super.addClasspath(jar);
+		int releaseMax = getInt(Domain.domain(c.getAttributes()), file.getPath(), -1, Constants.JAVAC_RELEASE_MAX);
+		addClasspath(jar, releaseMax);
 		project.unreferencedClasspathEntries.put(jar.getName(), c);
 		Map<String, String> containerAttributes = c.getAttributes();
 		if ((dependencies != null)
@@ -842,7 +844,6 @@ public class ProjectBuilder extends Builder {
 		return super.builds();
 	}
 
-
 	/**
 	 * Called when we start to build a builder. We reset our map of bsn ->
 	 * version and set the default contents of the bundle.
@@ -861,7 +862,6 @@ public class ProjectBuilder extends Builder {
 			}
 		}
 	}
-
 
 	/**
 	 * Called when we're done with a builder. In this case we retrieve package

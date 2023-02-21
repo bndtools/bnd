@@ -2647,4 +2647,37 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		return false;
 	}
+
+	/**
+	 * Search a property based on different names and return a default if not
+	 * found
+	 */
+
+	public String getProperty(Domain domain, String deflt, String... keys) {
+		for (String k : keys) {
+			String value = domain.get(k);
+			if (value != null)
+				return value;
+		}
+		return deflt;
+	}
+
+	/**
+	 * Search an int property on different names, return a default if not found
+	 * and report invalid format
+	 */
+	public int getInt(Domain domain, String reason, int deflt, String... keys) {
+		for (String k : keys) {
+			String value = domain.get(k);
+			if (value != null) {
+				try {
+					return Integer.parseInt(value);
+				} catch (NumberFormatException e) {
+					error("Expected integer. %s %s=%s in %s", reason, k, value, domain);
+				}
+			}
+		}
+		return deflt;
+	}
+
 }
