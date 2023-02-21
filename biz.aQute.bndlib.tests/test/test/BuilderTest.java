@@ -157,6 +157,7 @@ public class BuilderTest {
 		try (Builder b = new Builder()) {
 			b.setBundleVersion("1000");
 			b.addClasspath(IO.getFile("bin_test"));
+			b.setProperty("-nodefaultversion", "true");
 			b.setProperty("Export-Package", "a");
 			Jar build = b.build();
 			assertTrue(b.check());
