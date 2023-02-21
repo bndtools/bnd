@@ -70,7 +70,7 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef
+      uses: gradle/gradle-build-action@6095a76664413da4c8c134ee32e8a8ae900f0f1f
     - name: Build
       id: build
       run: |
