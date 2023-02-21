@@ -107,6 +107,7 @@ public class Bndrun extends Run {
 	public <T> T resolve(boolean failOnChanges, boolean writeOnChanges,
 		Converter<T, Collection<? extends HeaderClause>> runbundlesFormatter) throws Exception {
 
+		checkValidate();
 		RunResolution resolution = RunResolution.resolve(this, this, null);
 
 		if (!resolution.isOK()) {
@@ -117,6 +118,7 @@ public class Bndrun extends Run {
 	}
 
 	public RunResolution resolve(ResolutionCallback... callbacks) throws Exception {
+		checkValidate();
 		RunResolution resolution = RunResolution.resolve(this, this, Arrays.asList(callbacks))
 			.reportException();
 		if (!resolution.isOK()) {
@@ -304,6 +306,16 @@ public class Bndrun extends Run {
 			}
 		}
 		return true;
+	}
+
+	private void checkValidate() {
+		if (getProperty(Constants.RUNFRAMEWORK) != null && getProperty(Constants.RUNFW) == null) {
+			warning("""
+				The `-runframework` instruction is set and not the `-runfw`. This is a very unlikely
+				combination. To specify the framework for the resolution, use `-runfw`, the use of `
+				-runframework` is quite esoteric and related to testing.
+				""");
+		}
 	}
 
 }
