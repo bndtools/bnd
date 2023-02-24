@@ -187,6 +187,7 @@ public class Clazz {
 		}
 
 		private static final JAVA[] values = values();
+
 		static JAVA format(int n) {
 			int ordinal = n - 45;
 			if ((ordinal < 0) || (ordinal >= (values.length - 1))) {
@@ -2063,4 +2064,27 @@ public class Clazz {
 		return resource;
 	}
 
+	/**
+	 * Convenience method to parse a class file from a Resource
+	 */
+
+	public static ClassFile parse(Resource resource) {
+		try {
+			return parse(resource.openInputStream());
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Convenience method to parse a class file from an Input Stream
+	 */
+
+	public static ClassFile parse(InputStream in) {
+		try {
+			return ClassFile.parseClassFile(new DataInputStream(in));
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
+		}
+	}
 }
