@@ -101,7 +101,6 @@ public class Jar implements Closeable {
 	private final NavigableMap<String, Resource>				resources				= new TreeMap<>();
 	private final NavigableMap<String, Map<String, Resource>>	directories				= new TreeMap<>();
 	private Optional<Manifest>									manifest;
-	private Optional<ModuleAttribute>							moduleAttribute;
 	private boolean												manifestFirst;
 	private String												manifestName			= JarFile.MANIFEST_NAME;
 	private String												name;
@@ -365,8 +364,6 @@ public class Jar implements Closeable {
 			manifest = null;
 			if (resources.isEmpty())
 				manifestFirst = true;
-		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
-			moduleAttribute = null;
 		}
 		String dir = getParent(path);
 		Map<String, Resource> s = directories.get(dir);
@@ -466,44 +463,23 @@ public class Jar implements Closeable {
 		}
 	}
 
-	Optional<ModuleAttribute> moduleAttribute() throws Exception {
-		check();
-		Optional<ModuleAttribute> optional = moduleAttribute;
-		if (optional != null) {
-			return optional;
-		}
-		Resource module_info_resource = getResource(Constants.MODULE_INFO_CLASS);
-		if (module_info_resource == null) {
-			return moduleAttribute = Optional.empty();
-		}
-		ClassFile module_info;
-		ByteBuffer bb = module_info_resource.buffer();
-		if (bb != null) {
-			module_info = ClassFile.parseClassFile(ByteBufferDataInput.wrap(bb));
-		} else {
-			try (DataInputStream din = new DataInputStream(module_info_resource.openInputStream())) {
-				module_info = ClassFile.parseClassFile(din);
-			}
-		}
-		return moduleAttribute = Arrays.stream(module_info.attributes)
-			.filter(ModuleAttribute.class::isInstance)
-			.map(ModuleAttribute.class::cast)
-			.findFirst();
-	}
-
+	/**
+	 * This method is deprecated because the JAR file tries to be ignorant of
+	 * modules. The JPMSModule provides a facade or a Jar and understand
+	 * multirelease and other JPMS shit.
+	 */
 	public String getModuleName() throws Exception {
-		return moduleAttribute().map(a -> a.module_name)
-			.orElseGet(this::automaticModuleName);
-	}
-
-	String automaticModuleName() {
-		return manifest().map(m -> m.getMainAttributes()
-			.getValue(Constants.AUTOMATIC_MODULE_NAME))
+		return new JPMSModule(this).getModuleName()
 			.orElse(null);
 	}
 
+	/**
+	 * This method is deprecated because the JAR file tries to be ignorant of
+	 * modules. The JPMSModule provides a facade or a Jar and understand
+	 * multirelease and other JPMS shit.
+	 */
 	public String getModuleVersion() throws Exception {
-		return moduleAttribute().map(a -> a.module_version)
+		return new JPMSModule(this).getModuleVersion()
 			.orElse(null);
 	}
 

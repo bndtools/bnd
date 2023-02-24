@@ -52,6 +52,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.plugin.jpms.JPMSAnnotations;
 import aQute.bnd.plugin.jpms.JPMSModuleInfoPlugin;
+import aQute.bnd.plugin.jpms.JPMSMultReleasePlugin;
 import aQute.bnd.plugin.spi.SPIDescriptorGenerator;
 import aQute.bnd.service.SignerPlugin;
 import aQute.bnd.service.diff.Delta;
@@ -1733,6 +1734,7 @@ public class Builder extends Analyzer {
 	static JPMSAnnotations			moduleAnnotations		= new JPMSAnnotations();
 	static JPMSModuleInfoPlugin		moduleInfoPlugin		= new JPMSModuleInfoPlugin();
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
+	static JPMSMultReleasePlugin	jpmsReleasePlugin		= new JPMSMultReleasePlugin();
 
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
@@ -1745,6 +1747,7 @@ public class Builder extends Analyzer {
 		pluginsContainer.add(moduleAnnotations);
 		pluginsContainer.add(moduleInfoPlugin);
 		pluginsContainer.add(spiDescriptorGenerator);
+		pluginsContainer.add(jpmsReleasePlugin);
 		super.setTypeSpecificPlugins(pluginsContainer);
 	}
 
