@@ -117,8 +117,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		"org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
 		"org.osgi.annotation.versioning.Version");
 
-	final Analyzer						analyzer;
-	final MultiMap<String, String>		headers						= new MultiMap<>();
 
 	//
 	// Constant Strings for a fast switch statement
@@ -148,16 +146,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	static final String					STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
 	static final String					STD_DIRECTIVE				= "org.osgi.annotation.bundle.Directive";
 
-	// Class we're currently processing
-	Clazz								current;
-
-	// The annotations we could not load. used to avoid repeatedly logging the
-	// same missing annotation for the same project. Note that this should not
-	// be reset for each #classStart(Clazz).
+	final Analyzer						analyzer;
+	final MultiMap<String, String>		headers						= new MultiMap<>();
 	final Set<String>					loggedMissing				= new HashSet<>();
 	final Instructions					instructions;
 
-	// we parse the annotations separately at the end
+	Clazz								current;
+
 	boolean								finalizing;
 
 	static String convert(Object value) {
@@ -166,6 +161,15 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	AnnotationHeaders copy(Analyzer a) {
+		AnnotationHeaders jh = new AnnotationHeaders(a, instructions);
+		jh.current = current;
+		jh.loggedMissing.addAll(loggedMissing);
+		jh.finalizing = finalizing;
+		jh.headers.putAll(headers);
+		return jh;
 	}
 
 	/*

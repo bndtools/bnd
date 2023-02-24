@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.annotation.Export;
 import aQute.bnd.apiguardian.api.API;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
+import aQute.bnd.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -66,6 +68,8 @@ import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.AnalyzerPlugin;
+import aQute.bnd.service.ManifestPlugin;
+import aQute.bnd.service.OrderedPlugin;
 import aQute.bnd.service.classparser.ClassParser;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
@@ -163,6 +167,45 @@ public class Analyzer extends Processor {
 		super(parent);
 	}
 
+	/**
+	 * Copy an analyzer. This will copy the instance fields values. Changes to
+	 * the fields in this analyzer do not affect the parent. However, this not a
+	 * fully deep copy, the fields are a fresh copy, but their contents will be
+	 * shared.
+	 *
+	 * @param parent the parent to copy
+	 */
+	public static Analyzer copy(Analyzer parent) {
+		Analyzer copy = new Analyzer(parent);
+
+		copy.dot = Jar.copy(parent.dot);
+		copy.contained.putAll(parent.contained);
+		copy.ees.addAll(parent.ees);
+		copy.referred.putAll(parent.referred);
+		if (parent.exports != null)
+			copy.exports = new Packages(parent.exports);
+		if (parent.imports != null)
+			copy.imports = new Packages(parent.imports);
+		copy.activator = parent.activator;
+		copy.uses.putAll(parent.uses);
+		copy.apiUses.putAll(parent.apiUses);
+		copy.contracts.from(parent.contracts);
+		copy.descriptors.from(parent.descriptors);
+		copy.classpathExports.putAll(parent.classpathExports);
+		copy.classpath.addAll(parent.classpath);
+		copy.classspace.putAll(parent.classspace);
+		copy.importedClassesCache.putAll(parent.importedClassesCache);
+		copy.analyzed = parent.analyzed;
+		copy.diagnostics = parent.diagnostics;
+		copy.inited = parent.inited;
+		if (parent.annotationHeaders != null)
+			copy.annotationHeaders = parent.annotationHeaders.copy(copy);
+		copy.nonClassReferences.addAll(parent.nonClassReferences);
+		copy.bcpTypes.putAll(parent.bcpTypes);
+
+		return copy;
+	}
+
 	public Analyzer() {}
 
 	@Override
@@ -200,12 +243,11 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	public void analyze() throws Exception {
+
 		if (!analyzed) {
 			analyzed = true;
 			analyzeContent();
 
-			// Execute any plugins
-			// TODO handle better reanalyze
 			doPlugins();
 
 			//
@@ -217,24 +259,22 @@ public class Analyzer extends Processor {
 				.map(Clazz::getFormat)
 				.forEach(ees::add);
 
-			if (since(About._2_3)) {
-				try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
-					List<ClassParser> parsers = getPlugins(ClassParser.class);
-					for (ClassParser cp : parsers) {
-						cds.add(cp.getClassDataCollector(this));
-					}
+			try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
+				List<ClassParser> parsers = getPlugins(ClassParser.class);
+				for (ClassParser cp : parsers) {
+					cds.add(cp.getClassDataCollector(this));
+				}
 
-					//
-					// built ins
-					//
+				//
+				// built ins
+				//
 
-					Instructions instructions = new Instructions(
-						OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
-					cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
+				Instructions instructions = new Instructions(
+					OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
+				cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
 
-					for (Clazz c : classspace.values()) {
-						cds.parse(c);
-					}
+				for (Clazz c : classspace.values()) {
+					cds.parse(c);
 				}
 			}
 
@@ -329,7 +369,6 @@ public class Analyzer extends Processor {
 				boolean noimportjava = is(NOIMPORTJAVA);
 				while (!noimportjava) {
 					if (getHighestEE().compareTo(Clazz.JAVA.Java_11) >= 0) {
-						// Requires Java 11 or later.
 						break; // So we import java packages.
 					}
 					Attrs frameworkPackage = imports.get(getPackageRef("org/osgi/framework"));
@@ -979,40 +1018,49 @@ public class Analyzer extends Processor {
 		return null;
 	}
 
-	/**
+	/*
 	 * Call AnalyzerPlugins to analyze the content.
 	 */
 	private void doPlugins() {
-		List<AnalyzerPlugin> plugins = getPlugins(AnalyzerPlugin.class);
-		plugins.sort(Comparator.comparingInt(AnalyzerPlugin::ordering));
-		for (AnalyzerPlugin plugin : plugins) {
+		doPlugins(AnalyzerPlugin.class, (plugin) -> {
+			boolean reanalyze;
+			Processor previous = beginHandleErrors(plugin.toString());
 			try {
-				boolean reanalyze;
-				Processor previous = beginHandleErrors(plugin.toString());
-				try {
-					reanalyze = plugin.analyzeJar(this);
-				} finally {
-					endHandleErrors(previous);
-				}
-				if (reanalyze) {
-					// Builder adds -internal-source information
-					Map<PackageRef, String> sourceInformation = contained.stream()
-						.mapValue(attrs -> attrs.get(INTERNAL_SOURCE_DIRECTIVE))
-						.filterValue(Objects::nonNull)
-						.collect(MapStream.toMap());
-					reset();
-					analyzeContent();
-					// Restore -internal-source information
-					// if the package still exists
-					sourceInformation.forEach((pkgRef, source) -> {
-						Attrs attrs = contained.get(pkgRef);
-						if (attrs != null) {
-							attrs.put(INTERNAL_SOURCE_DIRECTIVE, source);
-						}
-					});
-				}
+				reanalyze = plugin.analyzeJar(this);
+			} finally {
+				endHandleErrors(previous);
+			}
+			if (reanalyze) {
+				// Builder adds -internal-source information
+				Map<PackageRef, String> sourceInformation = contained.stream()
+					.mapValue(attrs -> attrs.get(INTERNAL_SOURCE_DIRECTIVE))
+					.filterValue(Objects::nonNull)
+					.collect(MapStream.toMap());
+				reset();
+				analyzeContent();
+				// Restore -internal-source information
+				// if the package still exists
+				sourceInformation.forEach((pkgRef, source) -> {
+					Attrs attrs = contained.get(pkgRef);
+					if (attrs != null) {
+						attrs.put(INTERNAL_SOURCE_DIRECTIVE, source);
+					}
+				});
+			}
+		});
+	}
+
+	/*
+	 * Call plugins to analyze the content.
+	 */
+	private <T extends OrderedPlugin> void doPlugins(Class<T> type, ConsumerWithException<T> cb) {
+		List<T> plugins = getPlugins(type);
+		plugins.sort(Comparator.comparingInt(OrderedPlugin::ordering));
+		for (T plugin : plugins) {
+			try {
+				cb.accept(plugin);
 			} catch (Exception e) {
-				exception(e, "Analyzer Plugin %s failed %s", plugin, e);
+				exception(e, "Analyzer Plugin %s failed %s for %s", plugin, e, type.getSimpleName());
 			}
 		}
 	}
@@ -1149,9 +1197,6 @@ public class Analyzer extends Processor {
 			if (!capabilities.isEmpty())
 				main.putValue(PROVIDE_CAPABILITY, capabilities.toString());
 
-			// -----
-
-			doNamesection(dot, manifest);
 			for (String header : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
 				if (header.trim()
 					.length() == 0) {
@@ -1220,9 +1265,20 @@ public class Analyzer extends Processor {
 			main.keySet()
 				.removeAll(result);
 
-			// We should not set the manifest here, this is in general done
-			// by the caller.
-			// dot.setManifest(manifest);
+			// from here we do NOT change the main attributes anymore
+
+			doPlugins(ManifestPlugin.class, (mp) -> {
+				mp.mainSet(this, manifest);
+			});
+
+			// start name section
+
+			doNamesection(dot, manifest);
+
+			doPlugins(ManifestPlugin.class, (mp) -> {
+				mp.nameSet(this, manifest);
+			});
+
 			return manifest;
 		} catch (Exception e) {
 			// This should not really happen. The code should never throw
@@ -2652,6 +2708,8 @@ public class Analyzer extends Processor {
 			if (path.startsWith(prefix)) {
 
 				String relativePath = path.substring(prefix.length());
+				if (relativePath.startsWith("META-INF/"))
+					continue;
 
 				if (okToIncludeDirs) {
 					int n = relativePath.lastIndexOf('/');

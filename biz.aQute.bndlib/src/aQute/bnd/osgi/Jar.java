@@ -55,15 +55,12 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import aQute.bnd.classfile.ClassFile;
-import aQute.bnd.classfile.ModuleAttribute;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
 import aQute.lib.date.Dates;
-import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -122,6 +119,8 @@ public class Jar implements Closeable {
 	private boolean												calculateFileDigest;
 	private int													fileLength				= -1;
 	private long												zipEntryConstantTime	= ZIP_ENTRY_CONSTANT_TIME;
+	private boolean												closeResources			= true;
+
 	public static final Pattern									METAINF_SIGNING_P		= Pattern
 		.compile("META-INF/([^/]+\\.(?:DSA|RSA|EC|SF)|SIG-[^/]+)", Pattern.CASE_INSENSITIVE);
 
@@ -940,9 +939,12 @@ public class Jar implements Closeable {
 	@Override
 	public void close() {
 		this.closed = true;
-		IO.close(zipFile);
-		resources.values()
-			.forEach(IO::close);
+		if (closeResources) {
+			IO.close(zipFile);
+			resources.values()
+				.forEach(IO::close);
+		}
+		zipFile = null;
 		resources.clear();
 		directories.clear();
 		manifest = null;
@@ -1333,5 +1335,56 @@ public class Jar implements Closeable {
 	 */
 	public int getLength() {
 		return fileLength;
+	}
+
+	/**
+	 * Sometimes a Jar is derived from another Jar. In that case this jar's
+	 * close should not close the contained resources or file.
+	 */
+
+	public void setDerived() {
+		this.closeResources = false;
+	}
+
+	/**
+	 * Make a derived copy of the given JAR. The Jars will share the same
+	 * resources. It will therefore set not to close the resources when closed.
+	 * All the settings of the Jar will copied.
+	 *
+	 * @param dot a Jar or empty
+	 * @return a new Jar
+	 */
+
+	public static Jar copy(Jar dot) {
+		Jar jar = null;
+		if (dot != null) {
+			dot.check();
+			jar = new Jar(dot.getName());
+			jar.zipFile = dot.zipFile;
+			jar.source = dot.source;
+			jar.resources.putAll(dot.resources);
+			jar.directories.putAll(dot.directories);
+			jar.manifest = dot.manifest.map(Manifest::new);
+			jar.manifestFirst = dot.manifestFirst;
+			jar.manifestName = dot.manifestName;
+			jar.name = dot.name;
+			jar.manifestName = dot.manifestName;
+			jar.lastModified = dot.lastModified;
+			jar.lastModifiedReason = dot.lastModifiedReason;
+			jar.doNotTouchManifest = dot.doNotTouchManifest;
+			jar.nomanifest = dot.nomanifest;
+			jar.reproducible = dot.reproducible;
+			jar.compression = dot.compression;
+			// jar.closed
+			jar.algorithms = dot.algorithms;
+			jar.calculateFileDigest = dot.calculateFileDigest;
+			jar.fileLength = dot.fileLength;
+			jar.sha256 = dot.sha256;
+			jar.zipEntryConstantTime = dot.zipEntryConstantTime;
+			jar.closeResources = dot.closeResources;
+			jar.setDerived();
+		}
+
+		return jar;
 	}
 }
