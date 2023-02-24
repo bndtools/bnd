@@ -1,0 +1,9 @@
+javac.source=1.9
+javac.target=1.9
+
+src=src
+target=generated
+bin=generated/bin
+
+-buildpath osgi.core
+-includeresource somefile

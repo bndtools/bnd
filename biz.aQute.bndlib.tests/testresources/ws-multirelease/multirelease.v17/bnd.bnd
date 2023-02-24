@@ -1,0 +1,9 @@
+javac.source=17
+javac.target=17
+
+src=src
+target=generated
+bin=generated/bin
+
+-buildpath osgi.core, org.osgi.annotation.bundle
+-includeresource somefile

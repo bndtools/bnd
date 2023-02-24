@@ -48,13 +48,14 @@ class T3 extends T2 {}
 public class AnalyzerTest {
 	static File cwd = new File(System.getProperty("user.dir"));
 
+
 	/**
 	 * Verify that the manifest overrides a version in a package info
 	 */
 
 	@Test
 	public void testManifestOverridesPackageInfo() throws Exception {
-		try(Builder source = new Builder() ){
+		try (Builder source = new Builder()) {
 			source.setProperty("-exportcontents", "foo;version=1000");
 			source.setProperty("-includeresource", "foo/packageinfo;literal='version 1\n'");
 			Jar jar = source.build();
@@ -458,10 +459,8 @@ public class AnalyzerTest {
 			b.setProperty("-exportcontents", "test.refer");
 			b.build();
 			assertTrue(b.check("Bundle-ClassPath uses a directory 'jars/some.jar'"));
-			assertTrue(
-				b.getImports()
-					.getByFQN("org.osgi.service.event") != null,
-				b.getImports()
+			assertTrue(b.getImports()
+				.getByFQN("org.osgi.service.event") != null, b.getImports()
 					.toString());
 		} finally {
 			b.close();
@@ -1049,14 +1048,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(0,
-				a.getErrors()
-					.size(),
+			assertEquals(0, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(1,
-				a.getWarnings()
-					.size(),
+			assertEquals(1, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(a.check("A Bundle-Activator header was present but no activator class was defined"));
@@ -1083,14 +1080,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(2,
-				a.getErrors()
-					.size(),
+			assertEquals(2, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(0,
-				a.getWarnings()
-					.size(),
+			assertEquals(0, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(a.check("A Bundle-Activator header is present and its value is not a valid type name 123",
@@ -1118,14 +1113,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(1,
-				a.getErrors()
-					.size(),
+			assertEquals(1, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(0,
-				a.getWarnings()
-					.size(),
+			assertEquals(0, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(a.check(
@@ -1153,14 +1146,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(1,
-				a.getErrors()
-					.size(),
+			assertEquals(1, a.getErrors()
+				.size(),
 				a.getErrors()
 					.toString());
-			assertEquals(0,
-				a.getWarnings()
-					.size(),
+			assertEquals(0, a.getWarnings()
+				.size(),
 				a.getWarnings()
 					.toString());
 			assertTrue(
