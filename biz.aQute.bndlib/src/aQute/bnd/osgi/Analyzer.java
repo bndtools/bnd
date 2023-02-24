@@ -676,7 +676,7 @@ public class Analyzer extends Processor {
 
 		for (Jar extra; (extra = getExtra()) != null;) {
 			dot.addAll(extra);
-			analyzeJar(extra, "", true, null);
+			analyzeJar(extra, "", true, null, false);
 		}
 	}
 
@@ -1574,7 +1574,8 @@ public class Analyzer extends Processor {
 		return value.trim();
 	}
 
-	public String _bsn(@SuppressWarnings("unused") String args[]) {
+	public String _bsn(@SuppressWarnings("unused")
+	String args[]) {
 		return getBsn();
 	}
 
@@ -2584,7 +2585,7 @@ public class Analyzer extends Processor {
 						warning("Cannot find entry on -classpath: %s", s);
 				}
 		}
-		return classpath;
+		return Collections.unmodifiableList(classpath);
 	}
 
 	public void addClasspath(Jar jar) {
@@ -2637,7 +2638,7 @@ public class Analyzer extends Processor {
 		Parameters bcp = getBundleClasspath();
 
 		if (bcp.isEmpty()) {
-			analyzeJar(dot, "", true, null);
+			analyzeJar(dot, "", true, null, false);
 		} else {
 			// Cleanup entries
 			bcp = bcp.stream()
@@ -2649,7 +2650,7 @@ public class Analyzer extends Processor {
 
 			for (String path : bcp.keySet()) {
 				if (path.equals(".")) {
-					analyzeJar(dot, "", okToIncludeDirs, null);
+					analyzeJar(dot, "", okToIncludeDirs, null, false);
 					continue;
 				}
 				//
@@ -2666,7 +2667,7 @@ public class Analyzer extends Processor {
 						if (!(resource instanceof JarResource)) {
 							addClose(jar);
 						}
-						analyzeJar(jar, "", true, path);
+						analyzeJar(jar, "", true, path, false);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
@@ -2679,7 +2680,7 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, path.concat("/"), true, path);
+						analyzeJar(dot, path.concat("/"), true, path, false);
 					} else {
 						Attrs info = bcp.get(path);
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
@@ -2695,7 +2696,8 @@ public class Analyzer extends Processor {
 	 * contained and referred set and uses. This method ignores the Bundle
 	 * classpath.
 	 */
-	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry) throws Exception {
+	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry, boolean allowOverride)
+		throws Exception {
 		Map<String, Clazz> mismatched = new HashMap<>();
 
 		Parameters importPackage = Optional.ofNullable(jar.getManifest())
@@ -2734,8 +2736,9 @@ public class Analyzer extends Processor {
 						continue next;
 					}
 
-					String calculatedPath = clazz.getClassName()
-						.getPath();
+					TypeRef className = clazz.getClassName();
+					String calculatedPath = className.getPath();
+
 					if (!calculatedPath.equals(relativePath)) {
 						// If there is a mismatch we
 						// warning
@@ -2744,9 +2747,9 @@ public class Analyzer extends Processor {
 						}
 						continue next;
 					}
-					if (classspace.putIfAbsent(clazz.getClassName(), clazz) == null) {
-						PackageRef packageRef = clazz.getClassName()
-							.getPackageRef();
+					if (allowOverride || !classspace.containsKey(className)) {
+						classspace.put(className, clazz);
+						PackageRef packageRef = className.getPackageRef();
 						learnPackage(jar, prefix, packageRef, contained);
 
 						// Look at the referred packages
@@ -2764,7 +2767,7 @@ public class Analyzer extends Processor {
 						apiUses.addAll(packageRef, clazz.getAPIUses());
 
 						if (bcpEntry != null) {
-							bcpTypes.put(clazz.getClassName(), bcpEntry);
+							bcpTypes.put(className, bcpEntry);
 						}
 					}
 				}
@@ -3871,6 +3874,27 @@ public class Analyzer extends Processor {
 			}
 		}
 		return existing;
+	}
+
+	/**
+	 * Add the content of the JAR to the current JAR and reset the analyzed flag
+	 * so that a new manifest will be calculated with the files in the JAR
+	 * included.
+	 *
+	 * @param delta a set of resources added to our jar and then set to be
+	 *            reanalyzed
+	 */
+	public void addDelta(Jar delta) {
+		try {
+			if (dot == null)
+				dot = new Jar(delta.getName());
+
+			packagesVisited.clear();
+			analyzeJar(delta, "", true, null, true);
+			analyzed = false;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 }
