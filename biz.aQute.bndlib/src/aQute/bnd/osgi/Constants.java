@@ -544,6 +544,7 @@ public interface Constants {
 	String		STATIC_ATTRIBUTE							= "static";
 	String		SUBSTITUTE_ATTRIBUTE						= "substitute";
 	String		MODULE_INFO_CLASS							= "module-info.class";
+	String		JPMS_MULTI_RELEASE							= "-jpms-multi-release";
 
 	/*
 	 * Service Loader Section
