@@ -30,6 +30,7 @@ import org.w3c.dom.Element;
 
 import aQute.lib.xml.XML;
 
+@SuppressWarnings("deprecation")
 public abstract class BndTargetLocation extends AbstractBundleContainer
 	implements ITargetLocationUpdater, ITargetLocationEditor, ILabelProvider {
 	static final String		PLUGIN_ID							= "bndtools.pde";

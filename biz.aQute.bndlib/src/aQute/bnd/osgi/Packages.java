@@ -3,6 +3,7 @@ package aQute.bnd.osgi;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import aQute.bnd.header.Attrs;
@@ -200,15 +201,19 @@ public class Packages implements Map<PackageRef, Attrs> {
 	}
 
 	@Override
-	@Deprecated
 	public boolean equals(Object other) {
-		return super.equals(other);
+		if (other == this)
+			return true;
+
+		if (other instanceof Packages p) {
+			return Objects.equals(map, p.map);
+		}
+		return false;
 	}
 
 	@Override
-	@Deprecated
 	public int hashCode() {
-		return super.hashCode();
+		return map.hashCode();
 	}
 
 	public Packages dup() {

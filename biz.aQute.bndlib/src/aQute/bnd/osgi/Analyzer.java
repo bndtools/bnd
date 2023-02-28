@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.annotation.Export;
 import aQute.bnd.apiguardian.api.API;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
+import aQute.bnd.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -66,6 +68,8 @@ import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.AnalyzerPlugin;
+import aQute.bnd.service.ManifestPlugin;
+import aQute.bnd.service.OrderedPlugin;
 import aQute.bnd.service.classparser.ClassParser;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
@@ -163,6 +167,45 @@ public class Analyzer extends Processor {
 		super(parent);
 	}
 
+	/**
+	 * Copy an analyzer. This will copy the instance fields values. Changes to
+	 * the fields in this analyzer do not affect the parent. However, this not a
+	 * fully deep copy, the fields are a fresh copy, but their contents will be
+	 * shared.
+	 *
+	 * @param parent the parent to copy
+	 */
+	public static Analyzer copy(Analyzer parent) {
+		Analyzer copy = new Analyzer(parent);
+
+		copy.dot = Jar.copy(parent.dot);
+		copy.contained.putAll(parent.contained);
+		copy.ees.addAll(parent.ees);
+		copy.referred.putAll(parent.referred);
+		if (parent.exports != null)
+			copy.exports = new Packages(parent.exports);
+		if (parent.imports != null)
+			copy.imports = new Packages(parent.imports);
+		copy.activator = parent.activator;
+		copy.uses.putAll(parent.uses);
+		copy.apiUses.putAll(parent.apiUses);
+		copy.contracts.from(parent.contracts);
+		copy.descriptors.from(parent.descriptors);
+		copy.classpathExports.putAll(parent.classpathExports);
+		copy.classpath.addAll(parent.classpath);
+		copy.classspace.putAll(parent.classspace);
+		copy.importedClassesCache.putAll(parent.importedClassesCache);
+		copy.analyzed = parent.analyzed;
+		copy.diagnostics = parent.diagnostics;
+		copy.inited = parent.inited;
+		if (parent.annotationHeaders != null)
+			copy.annotationHeaders = parent.annotationHeaders.copy(copy);
+		copy.nonClassReferences.addAll(parent.nonClassReferences);
+		copy.bcpTypes.putAll(parent.bcpTypes);
+
+		return copy;
+	}
+
 	public Analyzer() {}
 
 	@Override
@@ -200,12 +243,11 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	public void analyze() throws Exception {
+
 		if (!analyzed) {
 			analyzed = true;
 			analyzeContent();
 
-			// Execute any plugins
-			// TODO handle better reanalyze
 			doPlugins();
 
 			//
@@ -217,24 +259,22 @@ public class Analyzer extends Processor {
 				.map(Clazz::getFormat)
 				.forEach(ees::add);
 
-			if (since(About._2_3)) {
-				try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
-					List<ClassParser> parsers = getPlugins(ClassParser.class);
-					for (ClassParser cp : parsers) {
-						cds.add(cp.getClassDataCollector(this));
-					}
+			try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
+				List<ClassParser> parsers = getPlugins(ClassParser.class);
+				for (ClassParser cp : parsers) {
+					cds.add(cp.getClassDataCollector(this));
+				}
 
-					//
-					// built ins
-					//
+				//
+				// built ins
+				//
 
-					Instructions instructions = new Instructions(
-						OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
-					cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
+				Instructions instructions = new Instructions(
+					OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
+				cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
 
-					for (Clazz c : classspace.values()) {
-						cds.parse(c);
-					}
+				for (Clazz c : classspace.values()) {
+					cds.parse(c);
 				}
 			}
 
@@ -329,7 +369,6 @@ public class Analyzer extends Processor {
 				boolean noimportjava = is(NOIMPORTJAVA);
 				while (!noimportjava) {
 					if (getHighestEE().compareTo(Clazz.JAVA.Java_11) >= 0) {
-						// Requires Java 11 or later.
 						break; // So we import java packages.
 					}
 					Attrs frameworkPackage = imports.get(getPackageRef("org/osgi/framework"));
@@ -637,7 +676,7 @@ public class Analyzer extends Processor {
 
 		for (Jar extra; (extra = getExtra()) != null;) {
 			dot.addAll(extra);
-			analyzeJar(extra, "", true, null);
+			analyzeJar(extra, "", true, null, false);
 		}
 	}
 
@@ -979,40 +1018,49 @@ public class Analyzer extends Processor {
 		return null;
 	}
 
-	/**
+	/*
 	 * Call AnalyzerPlugins to analyze the content.
 	 */
 	private void doPlugins() {
-		List<AnalyzerPlugin> plugins = getPlugins(AnalyzerPlugin.class);
-		plugins.sort(Comparator.comparingInt(AnalyzerPlugin::ordering));
-		for (AnalyzerPlugin plugin : plugins) {
+		doPlugins(AnalyzerPlugin.class, (plugin) -> {
+			boolean reanalyze;
+			Processor previous = beginHandleErrors(plugin.toString());
 			try {
-				boolean reanalyze;
-				Processor previous = beginHandleErrors(plugin.toString());
-				try {
-					reanalyze = plugin.analyzeJar(this);
-				} finally {
-					endHandleErrors(previous);
-				}
-				if (reanalyze) {
-					// Builder adds -internal-source information
-					Map<PackageRef, String> sourceInformation = contained.stream()
-						.mapValue(attrs -> attrs.get(INTERNAL_SOURCE_DIRECTIVE))
-						.filterValue(Objects::nonNull)
-						.collect(MapStream.toMap());
-					reset();
-					analyzeContent();
-					// Restore -internal-source information
-					// if the package still exists
-					sourceInformation.forEach((pkgRef, source) -> {
-						Attrs attrs = contained.get(pkgRef);
-						if (attrs != null) {
-							attrs.put(INTERNAL_SOURCE_DIRECTIVE, source);
-						}
-					});
-				}
+				reanalyze = plugin.analyzeJar(this);
+			} finally {
+				endHandleErrors(previous);
+			}
+			if (reanalyze) {
+				// Builder adds -internal-source information
+				Map<PackageRef, String> sourceInformation = contained.stream()
+					.mapValue(attrs -> attrs.get(INTERNAL_SOURCE_DIRECTIVE))
+					.filterValue(Objects::nonNull)
+					.collect(MapStream.toMap());
+				reset();
+				analyzeContent();
+				// Restore -internal-source information
+				// if the package still exists
+				sourceInformation.forEach((pkgRef, source) -> {
+					Attrs attrs = contained.get(pkgRef);
+					if (attrs != null) {
+						attrs.put(INTERNAL_SOURCE_DIRECTIVE, source);
+					}
+				});
+			}
+		});
+	}
+
+	/*
+	 * Call plugins to analyze the content.
+	 */
+	private <T extends OrderedPlugin> void doPlugins(Class<T> type, ConsumerWithException<T> cb) {
+		List<T> plugins = getPlugins(type);
+		plugins.sort(Comparator.comparingInt(OrderedPlugin::ordering));
+		for (T plugin : plugins) {
+			try {
+				cb.accept(plugin);
 			} catch (Exception e) {
-				exception(e, "Analyzer Plugin %s failed %s", plugin, e);
+				exception(e, "Analyzer Plugin %s failed %s for %s", plugin, e, type.getSimpleName());
 			}
 		}
 	}
@@ -1149,9 +1197,6 @@ public class Analyzer extends Processor {
 			if (!capabilities.isEmpty())
 				main.putValue(PROVIDE_CAPABILITY, capabilities.toString());
 
-			// -----
-
-			doNamesection(dot, manifest);
 			for (String header : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
 				if (header.trim()
 					.length() == 0) {
@@ -1220,9 +1265,20 @@ public class Analyzer extends Processor {
 			main.keySet()
 				.removeAll(result);
 
-			// We should not set the manifest here, this is in general done
-			// by the caller.
-			// dot.setManifest(manifest);
+			// from here we do NOT change the main attributes anymore
+
+			doPlugins(ManifestPlugin.class, (mp) -> {
+				mp.mainSet(this, manifest);
+			});
+
+			// start name section
+
+			doNamesection(dot, manifest);
+
+			doPlugins(ManifestPlugin.class, (mp) -> {
+				mp.nameSet(this, manifest);
+			});
+
 			return manifest;
 		} catch (Exception e) {
 			// This should not really happen. The code should never throw
@@ -1518,7 +1574,8 @@ public class Analyzer extends Processor {
 		return value.trim();
 	}
 
-	public String _bsn(@SuppressWarnings("unused") String args[]) {
+	public String _bsn(@SuppressWarnings("unused")
+	String args[]) {
 		return getBsn();
 	}
 
@@ -2528,7 +2585,7 @@ public class Analyzer extends Processor {
 						warning("Cannot find entry on -classpath: %s", s);
 				}
 		}
-		return classpath;
+		return Collections.unmodifiableList(classpath);
 	}
 
 	public void addClasspath(Jar jar) {
@@ -2581,7 +2638,7 @@ public class Analyzer extends Processor {
 		Parameters bcp = getBundleClasspath();
 
 		if (bcp.isEmpty()) {
-			analyzeJar(dot, "", true, null);
+			analyzeJar(dot, "", true, null, false);
 		} else {
 			// Cleanup entries
 			bcp = bcp.stream()
@@ -2593,7 +2650,7 @@ public class Analyzer extends Processor {
 
 			for (String path : bcp.keySet()) {
 				if (path.equals(".")) {
-					analyzeJar(dot, "", okToIncludeDirs, null);
+					analyzeJar(dot, "", okToIncludeDirs, null, false);
 					continue;
 				}
 				//
@@ -2610,7 +2667,7 @@ public class Analyzer extends Processor {
 						if (!(resource instanceof JarResource)) {
 							addClose(jar);
 						}
-						analyzeJar(jar, "", true, path);
+						analyzeJar(jar, "", true, path, false);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
@@ -2623,7 +2680,7 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, path.concat("/"), true, path);
+						analyzeJar(dot, path.concat("/"), true, path, false);
 					} else {
 						Attrs info = bcp.get(path);
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
@@ -2639,7 +2696,8 @@ public class Analyzer extends Processor {
 	 * contained and referred set and uses. This method ignores the Bundle
 	 * classpath.
 	 */
-	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry) throws Exception {
+	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry, boolean allowOverride)
+		throws Exception {
 		Map<String, Clazz> mismatched = new HashMap<>();
 
 		Parameters importPackage = Optional.ofNullable(jar.getManifest())
@@ -2652,6 +2710,8 @@ public class Analyzer extends Processor {
 			if (path.startsWith(prefix)) {
 
 				String relativePath = path.substring(prefix.length());
+				if (relativePath.startsWith("META-INF/"))
+					continue;
 
 				if (okToIncludeDirs) {
 					int n = relativePath.lastIndexOf('/');
@@ -2676,8 +2736,9 @@ public class Analyzer extends Processor {
 						continue next;
 					}
 
-					String calculatedPath = clazz.getClassName()
-						.getPath();
+					TypeRef className = clazz.getClassName();
+					String calculatedPath = className.getPath();
+
 					if (!calculatedPath.equals(relativePath)) {
 						// If there is a mismatch we
 						// warning
@@ -2686,9 +2747,9 @@ public class Analyzer extends Processor {
 						}
 						continue next;
 					}
-					if (classspace.putIfAbsent(clazz.getClassName(), clazz) == null) {
-						PackageRef packageRef = clazz.getClassName()
-							.getPackageRef();
+					if (allowOverride || !classspace.containsKey(className)) {
+						classspace.put(className, clazz);
+						PackageRef packageRef = className.getPackageRef();
 						learnPackage(jar, prefix, packageRef, contained);
 
 						// Look at the referred packages
@@ -2706,7 +2767,7 @@ public class Analyzer extends Processor {
 						apiUses.addAll(packageRef, clazz.getAPIUses());
 
 						if (bcpEntry != null) {
-							bcpTypes.put(clazz.getClassName(), bcpEntry);
+							bcpTypes.put(className, bcpEntry);
 						}
 					}
 				}
@@ -3813,6 +3874,27 @@ public class Analyzer extends Processor {
 			}
 		}
 		return existing;
+	}
+
+	/**
+	 * Add the content of the JAR to the current JAR and reset the analyzed flag
+	 * so that a new manifest will be calculated with the files in the JAR
+	 * included.
+	 *
+	 * @param delta a set of resources added to our jar and then set to be
+	 *            reanalyzed
+	 */
+	public void addDelta(Jar delta) {
+		try {
+			if (dot == null)
+				dot = new Jar(delta.getName());
+
+			packagesVisited.clear();
+			analyzeJar(delta, "", true, null, true);
+			analyzed = false;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 }

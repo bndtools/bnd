@@ -55,15 +55,12 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import aQute.bnd.classfile.ClassFile;
-import aQute.bnd.classfile.ModuleAttribute;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
 import aQute.lib.date.Dates;
-import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -104,7 +101,6 @@ public class Jar implements Closeable {
 	private final NavigableMap<String, Resource>				resources				= new TreeMap<>();
 	private final NavigableMap<String, Map<String, Resource>>	directories				= new TreeMap<>();
 	private Optional<Manifest>									manifest;
-	private Optional<ModuleAttribute>							moduleAttribute;
 	private boolean												manifestFirst;
 	private String												manifestName			= JarFile.MANIFEST_NAME;
 	private String												name;
@@ -122,6 +118,8 @@ public class Jar implements Closeable {
 	private boolean												calculateFileDigest;
 	private int													fileLength				= -1;
 	private long												zipEntryConstantTime	= ZIP_ENTRY_CONSTANT_TIME;
+	private boolean												closeResources			= true;
+
 	public static final Pattern									METAINF_SIGNING_P		= Pattern
 		.compile("META-INF/([^/]+\\.(?:DSA|RSA|EC|SF)|SIG-[^/]+)", Pattern.CASE_INSENSITIVE);
 
@@ -366,8 +364,6 @@ public class Jar implements Closeable {
 			manifest = null;
 			if (resources.isEmpty())
 				manifestFirst = true;
-		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
-			moduleAttribute = null;
 		}
 		String dir = getParent(path);
 		Map<String, Resource> s = directories.get(dir);
@@ -467,44 +463,23 @@ public class Jar implements Closeable {
 		}
 	}
 
-	Optional<ModuleAttribute> moduleAttribute() throws Exception {
-		check();
-		Optional<ModuleAttribute> optional = moduleAttribute;
-		if (optional != null) {
-			return optional;
-		}
-		Resource module_info_resource = getResource(Constants.MODULE_INFO_CLASS);
-		if (module_info_resource == null) {
-			return moduleAttribute = Optional.empty();
-		}
-		ClassFile module_info;
-		ByteBuffer bb = module_info_resource.buffer();
-		if (bb != null) {
-			module_info = ClassFile.parseClassFile(ByteBufferDataInput.wrap(bb));
-		} else {
-			try (DataInputStream din = new DataInputStream(module_info_resource.openInputStream())) {
-				module_info = ClassFile.parseClassFile(din);
-			}
-		}
-		return moduleAttribute = Arrays.stream(module_info.attributes)
-			.filter(ModuleAttribute.class::isInstance)
-			.map(ModuleAttribute.class::cast)
-			.findFirst();
-	}
-
+	/**
+	 * This method is deprecated because the JAR file tries to be ignorant of
+	 * modules. The JPMSModule provides a facade or a Jar and understand
+	 * multirelease and other JPMS shit.
+	 */
 	public String getModuleName() throws Exception {
-		return moduleAttribute().map(a -> a.module_name)
-			.orElseGet(this::automaticModuleName);
-	}
-
-	String automaticModuleName() {
-		return manifest().map(m -> m.getMainAttributes()
-			.getValue(Constants.AUTOMATIC_MODULE_NAME))
+		return new JPMSModule(this).getModuleName()
 			.orElse(null);
 	}
 
+	/**
+	 * This method is deprecated because the JAR file tries to be ignorant of
+	 * modules. The JPMSModule provides a facade or a Jar and understand
+	 * multirelease and other JPMS shit.
+	 */
 	public String getModuleVersion() throws Exception {
-		return moduleAttribute().map(a -> a.module_version)
+		return new JPMSModule(this).getModuleVersion()
 			.orElse(null);
 	}
 
@@ -940,9 +915,12 @@ public class Jar implements Closeable {
 	@Override
 	public void close() {
 		this.closed = true;
-		IO.close(zipFile);
-		resources.values()
-			.forEach(IO::close);
+		if (closeResources) {
+			IO.close(zipFile);
+			resources.values()
+				.forEach(IO::close);
+		}
+		zipFile = null;
 		resources.clear();
 		directories.clear();
 		manifest = null;
@@ -1333,5 +1311,56 @@ public class Jar implements Closeable {
 	 */
 	public int getLength() {
 		return fileLength;
+	}
+
+	/**
+	 * Sometimes a Jar is derived from another Jar. In that case this jar's
+	 * close should not close the contained resources or file.
+	 */
+
+	public void setDerived() {
+		this.closeResources = false;
+	}
+
+	/**
+	 * Make a derived copy of the given JAR. The Jars will share the same
+	 * resources. It will therefore set not to close the resources when closed.
+	 * All the settings of the Jar will copied.
+	 *
+	 * @param dot a Jar or empty
+	 * @return a new Jar
+	 */
+
+	public static Jar copy(Jar dot) {
+		Jar jar = null;
+		if (dot != null) {
+			dot.check();
+			jar = new Jar(dot.getName());
+			jar.zipFile = dot.zipFile;
+			jar.source = dot.source;
+			jar.resources.putAll(dot.resources);
+			jar.directories.putAll(dot.directories);
+			jar.manifest = dot.manifest.map(Manifest::new);
+			jar.manifestFirst = dot.manifestFirst;
+			jar.manifestName = dot.manifestName;
+			jar.name = dot.name;
+			jar.manifestName = dot.manifestName;
+			jar.lastModified = dot.lastModified;
+			jar.lastModifiedReason = dot.lastModifiedReason;
+			jar.doNotTouchManifest = dot.doNotTouchManifest;
+			jar.nomanifest = dot.nomanifest;
+			jar.reproducible = dot.reproducible;
+			jar.compression = dot.compression;
+			// jar.closed
+			jar.algorithms = dot.algorithms;
+			jar.calculateFileDigest = dot.calculateFileDigest;
+			jar.fileLength = dot.fileLength;
+			jar.sha256 = dot.sha256;
+			jar.zipEntryConstantTime = dot.zipEntryConstantTime;
+			jar.closeResources = dot.closeResources;
+			jar.setDerived();
+		}
+
+		return jar;
 	}
 }

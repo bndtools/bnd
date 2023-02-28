@@ -1,0 +1,15 @@
+javac.source=1.8
+javac.target=1.8
+
+src=src
+target=generated
+bin=generated/bin
+
+Main-Class hello.App
+
+-includeresource \
+    META-INF/versions/9=@${repo;multirelease.v9}, \
+    META-INF/versions/17=@${repo;multirelease.v17}
+    
+
+-buildpath osgi.core

@@ -2,7 +2,7 @@ package aQute.bnd.service;
 
 import aQute.bnd.osgi.Analyzer;
 
-public interface AnalyzerPlugin {
+public interface AnalyzerPlugin extends OrderedPlugin {
 
 	/**
 	 * This plugin is called after analysis. The plugin is free to modify the
@@ -18,14 +18,4 @@ public interface AnalyzerPlugin {
 
 	boolean analyzeJar(Analyzer analyzer) throws Exception;
 
-	/**
-	 * For sorting plugins before calling.
-	 * <p>
-	 * Lower values are called before higher values.
-	 *
-	 * @return A numerical value. The default is 0.
-	 */
-	default int ordering() {
-		return 0;
-	}
 }

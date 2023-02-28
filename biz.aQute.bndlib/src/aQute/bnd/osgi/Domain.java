@@ -93,6 +93,8 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public static Domain domain(final Manifest manifest) {
+		if (manifest == null)
+			return domain(new Attrs());
 		Attributes attrs = manifest.getMainAttributes();
 		return domain(attrs);
 	}
