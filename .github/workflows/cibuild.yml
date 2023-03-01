@@ -1,106 +1,106 @@
-name: 'CI Build'
+name: "CI Build"
 
 on:
-  push:
-    branches-ignore:
-    - 'dependabot/**'
-    paths:
-    - '**'
-    - '!docs/**'
-    - '!.github/**'
-    - '.github/**/*ci*'
-  pull_request:
-    paths:
-    - '**'
-    - '!docs/**'
-    - '!.github/**'
-    - '.github/**/*ci*'
+    push:
+        branches-ignore:
+            - "dependabot/**"
+        paths:
+            - "**"
+            - "!docs/**"
+            - "!.github/**"
+            - ".github/**/*ci*"
+    pull_request:
+        paths:
+            - "**"
+            - "!docs/**"
+            - "!.github/**"
+            - ".github/**/*ci*"
 
 env:
-  LC_ALL: en_US.UTF-8
-  GRADLE_OPTS: >-
-    -Dorg.gradle.parallel=true
-  MAVEN_OPTS: >-
-    -Dhttp.keepAlive=false
-    -Dmaven.wagon.http.pool=false
-    -Dmaven.wagon.http.retryHandler.count=3
+    LC_ALL: en_US.UTF-8
+    GRADLE_OPTS: >-
+        -Dorg.gradle.parallel=true
+    MAVEN_OPTS: >-
+        -Dhttp.keepAlive=false
+        -Dmaven.wagon.http.pool=false
+        -Dmaven.wagon.http.retryHandler.count=3
 
 defaults:
-  run:
-    shell: bash
+    run:
+        shell: bash
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  build:
-    strategy:
-      fail-fast: ${{ (github.repository != 'bndtools/bnd') || ((github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/next')) || (github.event_name == 'pull_request') }}
-      matrix:
-        os:
-        - 'ubuntu-latest'
-        java:
-        - '8'
-        - '11'
-        - '18'
-        runner:
-        - 'xvfb-run --auto-servernum {0}'
-        include:
-        - os: 'ubuntu-latest'
-          java: '17'
-          runner: 'xvfb-run --auto-servernum {0}'
-          canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
-          fetch-depth: '0'
-        - os: 'windows-latest'
-          java: '17'
-          runner: '{0}'
-    name: Build JDK${{ matrix.java }} ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Harden Runner
-      uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5
-      with:
-        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+    build:
+        strategy:
+            fail-fast: ${{ (github.repository != 'bndtools/bnd') || ((github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/next')) || (github.event_name == 'pull_request') }}
+            matrix:
+                os:
+                    - "ubuntu-latest"
+                java:
+                    - "8"
+                    - "11"
+                    - "18"
+                runner:
+                    - "xvfb-run --auto-servernum {0}"
+                include:
+                    - os: "ubuntu-latest"
+                      java: "17"
+                      runner: "xvfb-run --auto-servernum {0}"
+                      canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/classic') || (github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
+                      fetch-depth: "0"
+                    - os: "windows-latest"
+                      java: "17"
+                      runner: "{0}"
+        name: Build JDK${{ matrix.java }} ${{ matrix.os }}
+        runs-on: ${{ matrix.os }}
+        steps:
+            - name: Harden Runner
+              uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5
+              with:
+                  egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
-    - name: Git Checkout
-      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      with:
-        fetch-depth: ${{ matrix.fetch-depth }}
-    - name: Set up Java ${{ matrix.java }}
-      uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc
-      with:
-        distribution: 'temurin'
-        java-version: ${{ matrix.java }}
-    - name: Set up Gradle
-      uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef
-    - name: Build
-      id: build
-      run: |
-        ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
-    - name: Configure settings.xml for Publish
-      if: ${{ matrix.canonical }}
-      uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc
-      with:
-        distribution: 'temurin'
-        java-version: ${{ matrix.java }}
-        server-id: bndtools.jfrog.io
-        server-username: JFROG_USERNAME
-        server-password: JFROG_PASSWORD
-    - name: Publish
-      id: publish
-      if: ${{ matrix.canonical }}
-      run: |
-        ./.github/scripts/ci-publish.sh
-      env:
-        CANONICAL: ${{ matrix.canonical }}
-        JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
-        JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-    - name: Upload Test Reports
-      if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
-      with:
-        name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
-        path: |
-          */generated/test-reports/*/TEST-*.xml
-          maven/*/target/surefire-reports/TEST-*.xml
-          gradle-plugins/*/build/test-results/*/TEST-*.xml
+            - name: Git Checkout
+              uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+              with:
+                  fetch-depth: ${{ matrix.fetch-depth }}
+            - name: Set up Java ${{ matrix.java }}
+              uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc
+              with:
+                  distribution: "temurin"
+                  java-version: ${{ matrix.java }}
+            - name: Set up Gradle
+              uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef
+            - name: Build
+              id: build
+              run: |
+                  ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
+            - name: Configure settings.xml for Publish
+              if: ${{ matrix.canonical }}
+              uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc
+              with:
+                  distribution: "temurin"
+                  java-version: ${{ matrix.java }}
+                  server-id: bndtools.jfrog.io
+                  server-username: JFROG_USERNAME
+                  server-password: JFROG_PASSWORD
+            - name: Publish
+              id: publish
+              if: ${{ matrix.canonical }}
+              run: |
+                  ./.github/scripts/ci-publish.sh
+              env:
+                  CANONICAL: ${{ matrix.canonical }}
+                  JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
+                  JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+            - name: Upload Test Reports
+              if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
+              uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+              with:
+                  name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
+                  path: |
+                      */generated/test-reports/*/TEST-*.xml
+                      maven/*/target/surefire-reports/TEST-*.xml
+                      gradle-plugins/*/build/test-results/*/TEST-*.xml
