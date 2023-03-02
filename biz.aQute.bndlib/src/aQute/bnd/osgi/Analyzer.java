@@ -155,9 +155,11 @@ public class Analyzer extends Processor {
 		EXPORTS;
 	}
 
+	public Analyzer() {
+	}
+
 	public Analyzer(Jar jar) throws Exception {
-		super();
-		this.dot = Objects.requireNonNull(jar);
+		this.dot = Objects.requireNonNull(jar, "the jar must not be null");
 		Manifest manifest = dot.getManifest();
 		if (manifest != null)
 			copyFrom(Domain.domain(manifest));
@@ -206,7 +208,6 @@ public class Analyzer extends Processor {
 		return copy;
 	}
 
-	public Analyzer() {}
 
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
@@ -1810,10 +1811,9 @@ public class Analyzer extends Processor {
 		if (inited == false) {
 			inited = true;
 			super.begin();
-
 			updateModified(getBndLastModified(), "bnd last modified");
+			About.fixup(this);
 			verifyManifestHeadersCase(getProperties());
-
 		}
 	}
 

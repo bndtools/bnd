@@ -175,6 +175,35 @@ public class MultiReleaseTest {
 
 	}
 
+	@Test
+	public void testPlainBuilder() throws Exception {
+		try (Builder builder = new Builder()) {
+			builder.setProperty("-includeresource", """
+				sun_1_8/=compilerversions/src/sun_1_8/, \
+				META-INF/versions/9/jdk_9_0/=compilerversions/src/jdk_9_0/, \
+				META-INF/versions/11/jdk_11_0/=compilerversions/src/jdk_11_0/, \
+				META-INF/versions/17/jdk_17/=compilerversions/src/jdk_17/, \
+				META-INF/versions/19/jdk_19/=compilerversions/src/jdk_19/, \
+				""");
+
+			Jar jar = builder.build();
+			assertThat(builder.check()).isTrue();
+
+			assertThat(jar.getResource("META-INF/versions/9/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/9/module-info.class")).isNotNull();
+
+			assertThat(jar.getResource("META-INF/versions/11/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/11/module-info.class")).isNotNull();
+
+			assertThat(jar.getResource("META-INF/versions/17/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/17/module-info.class")).isNotNull();
+
+			assertThat(jar.getResource("META-INF/versions/19/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/19/module-info.class")).isNotNull();
+
+		}
+	}
+
 	Workspace getWorkspace() throws Exception {
 		File file = IO.getFile("testresources/ws-multirelease");
 		IO.copy(file, tmp);
