@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.memoize.Memoize;
 import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
@@ -300,4 +301,46 @@ public class About {
 	public static String getBndVersion() {
 		return getBndInfo("version", About.CURRENT::toString);
 	}
+
+	/**
+	 * bnd version specific defaults. Unfortunately the defaults ended up in the
+	 * build package instead of here.
+	 */
+	public static Properties versionDefaults = new Properties() {
+		private static final long serialVersionUID = 1L;
+		{
+			try {
+				super.load(Workspace.class.getResourceAsStream(CURRENT + ".bnd"));
+			} catch (IOException e) {
+				logger.error("could not load version defaults for version {}", CURRENT, e);
+			}
+		}
+	};
+
+	/**
+	 * Fixup a Processor to include the version defaults. If the
+	 * {@link Constants#VERSIONDEFAULTS} is set, nothing will happen. Otherwise
+	 * any property in the {@link #versionDefaults} that is not set in p will be
+	 * set with the value from the defaults.
+	 *
+	 * @param <T> the type of the Processor
+	 * @param p the processor
+	 * @return the same processor as given.
+	 */
+	public static <T extends Processor> T fixup(T p) {
+		Properties props = p.getProperties();
+
+		if (props == null || props.getProperty(Constants.VERSIONDEFAULTS) != null)
+			return p;
+
+		versionDefaults.forEach((k, v) -> {
+			String key = (String) k;
+			String value = (String) v;
+			if (props.getProperty(key) == null) {
+				props.setProperty(key, value);
+			}
+		});
+		return p;
+	}
+
 }

@@ -21,7 +21,6 @@ import aQute.bnd.service.ManifestPlugin;
  */
 public class JPMSMultReleasePlugin implements ManifestPlugin {
 
-
 	/**
 	 * We need to calculate alternative files for versioned JARS
 	 */
@@ -41,6 +40,8 @@ public class JPMSMultReleasePlugin implements ManifestPlugin {
 		Analyzer copy = Analyzer.copy(analyzer);
 
 		copy.addBasicPlugin(new JPMSModuleInfoPlugin());
+		if (copy.getProperty(Constants.JPMS_MODULE_INFO) == null)
+			copy.setProperty(Constants.JPMS_MODULE_INFO, "");
 
 		Jar baseline = copy.getJar();
 		baseline.removePrefix(JPMSModule.VERSIONS_PATH);
@@ -64,7 +65,10 @@ public class JPMSMultReleasePlugin implements ManifestPlugin {
 				older = newer;
 			}
 
-			Resource resource = baseline.getResource(MODULE_INFO_CLASS);
+			Resource resource = delta.getResource(MODULE_INFO_CLASS);
+			if (resource == null) {
+				resource = baseline.getResource(MODULE_INFO_CLASS);
+			}
 			if (resource != null) {
 				jpms.putResource(release, MODULE_INFO_CLASS, resource);
 			}
