@@ -1,9 +1,9 @@
 package aQute.bnd.plugin.jpms;
 
 import static aQute.bnd.osgi.Constants.JPMS_MULTI_RELEASE;
-import static aQute.bnd.osgi.JPMSModule.MANIFEST_PATH;
 import static aQute.bnd.osgi.JPMSModule.MODULE_INFO_CLASS;
 import static aQute.bnd.osgi.JPMSModule.MULTI_RELEASE_HEADER;
+import static aQute.bnd.osgi.JPMSModule.OSGI_VERSIONED_MANIFEST_PATH;
 
 import java.util.SortedSet;
 import java.util.jar.Manifest;
@@ -47,7 +47,7 @@ public class JPMSMultReleasePlugin implements ManifestPlugin {
 		baseline.removePrefix(JPMSModule.VERSIONS_PATH);
 
 		baseline.setManifest(manifest);
-		baseline.putResource(MANIFEST_PATH, new ManifestResource(manifest));
+		baseline.putResource("META-INF/MANIFEST.MF", new ManifestResource(manifest));
 
 		Manifest older = relevant(manifest);
 
@@ -61,7 +61,7 @@ public class JPMSMultReleasePlugin implements ManifestPlugin {
 			Manifest newer = relevant(m);
 
 			if (!newer.equals(older)) {
-				jpms.putResource(release, MANIFEST_PATH, new ManifestResource(newer));
+				jpms.putResource(release, OSGI_VERSIONED_MANIFEST_PATH, new ManifestResource(newer));
 				older = newer;
 			}
 

@@ -189,16 +189,16 @@ public class MultiReleaseTest {
 			Jar jar = builder.build();
 			assertThat(builder.check()).isTrue();
 
-			assertThat(jar.getResource("META-INF/versions/9/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/9/OSGI-INF/MANIFEST.MF")).isNotNull();
 			assertThat(jar.getResource("META-INF/versions/9/module-info.class")).isNotNull();
 
-			assertThat(jar.getResource("META-INF/versions/11/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/11/OSGI-INF/MANIFEST.MF")).isNotNull();
 			assertThat(jar.getResource("META-INF/versions/11/module-info.class")).isNotNull();
 
-			assertThat(jar.getResource("META-INF/versions/17/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/17/OSGI-INF/MANIFEST.MF")).isNotNull();
 			assertThat(jar.getResource("META-INF/versions/17/module-info.class")).isNotNull();
 
-			assertThat(jar.getResource("META-INF/versions/19/META-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/19/OSGI-INF/MANIFEST.MF")).isNotNull();
 			assertThat(jar.getResource("META-INF/versions/19/module-info.class")).isNotNull();
 
 		}

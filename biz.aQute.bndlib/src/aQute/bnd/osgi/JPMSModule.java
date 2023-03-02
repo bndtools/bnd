@@ -132,13 +132,13 @@ import aQute.bnd.exceptions.Exceptions;
  */
 
 public class JPMSModule {
-	final static Pattern		VERSIONED_P				= Pattern
+	final static Pattern		VERSIONED_P						= Pattern
 		.compile("META-INF/versions/(?<release>\\d+)/(?<path>.*)");
 
-	public static final String	MULTI_RELEASE_HEADER	= "Multi-Release";
-	public static final String	VERSIONS_PATH			= "META-INF/versions/";
-	public static final String	MODULE_INFO_CLASS		= "module-info.class";
-	public static final String	MANIFEST_PATH			= "META-INF/MANIFEST.MF";
+	public static final String	MULTI_RELEASE_HEADER			= "Multi-Release";
+	public static final String	VERSIONS_PATH					= "META-INF/versions/";
+	public static final String	MODULE_INFO_CLASS				= "module-info.class";
+	public static final String	OSGI_VERSIONED_MANIFEST_PATH	= "OSGI-INF/MANIFEST.MF";
 
 	final Jar					jar;
 	Optional<ModuleAttribute>	moduleAttribute;
@@ -345,7 +345,10 @@ public class JPMSModule {
 			if (defaultManifest == null)
 				return new Manifest();
 
-			Manifest r = findResource("META-INF/MANIFEST.MF", release).map(rr -> {
+			if (release < 9)
+				return defaultManifest;
+
+			Manifest r = findResource(OSGI_VERSIONED_MANIFEST_PATH, release).map(rr -> {
 				try {
 					return new Manifest(rr.openInputStream());
 				} catch (Exception e) {
