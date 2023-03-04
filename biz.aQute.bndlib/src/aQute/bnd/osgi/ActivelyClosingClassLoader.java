@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.exceptions.Exceptions;
@@ -212,15 +214,18 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 
 				Bundle bundle = FrameworkUtil.getBundle(ActivelyClosingClassLoader.class);
 				if (bundle == null) {
+					// not running inside OSGi...
 					throw nfe;
 				}
-				try {
-					return bundle.loadClass(name);
-				} catch (ClassNotFoundException anotherNfe) {
-					Bundle system = bundle.getBundleContext()
-						.getBundle(0);
-					return system.loadClass(name);
-				}
+				Optional<Class<?>> bundleClass = tryLoadFromBundle(name, bundle, nfe).or(() -> {
+					BundleContext bundleContext = bundle.getBundleContext();
+					if (bundleContext == null) {
+						// not an active bundle, nothing more we can do here...
+						return Optional.empty();
+					}
+					return tryLoadFromBundle(name, bundleContext.getBundle(0), nfe);
+				});
+				return bundleClass.orElseThrow(() -> nfe);
 			}
 		} catch (Throwable t) {
 
@@ -244,8 +249,29 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 	 */
 	void autopurge(long freshPeriod) {
 		schedule = Processor.getScheduledExecutor()
-			.scheduleWithFixedDelay(() -> purge(freshPeriod), freshPeriod, freshPeriod,
-				TimeUnit.NANOSECONDS);
+			.scheduleWithFixedDelay(() -> purge(freshPeriod), freshPeriod, freshPeriod, TimeUnit.NANOSECONDS);
+	}
+
+	/**
+	 * Try to load a named class from a bundle
+	 *
+	 * @param name the name of the class to load
+	 * @param bundle the bundle to query
+	 * @param original an (optional) original exception that should be used to
+	 *            report a failure loading this class from the bundle as a
+	 *            suppressed exception
+	 * @return an {@link Optional} describing the loaded class, or an empty
+	 *         {@link Optional#empty()} if the class can not be loaded.
+	 */
+	private static Optional<Class<?>> tryLoadFromBundle(String name, Bundle bundle, Throwable original) {
+		try {
+			return Optional.of(bundle.loadClass(name));
+		} catch (ClassNotFoundException e) {
+			if (original != null) {
+				original.addSuppressed(e);
+			}
+		}
+		return Optional.empty();
 	}
 
 }
