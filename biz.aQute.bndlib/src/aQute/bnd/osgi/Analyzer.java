@@ -169,46 +169,6 @@ public class Analyzer extends Processor {
 		super(parent);
 	}
 
-	/**
-	 * Copy an analyzer. This will copy the instance fields values. Changes to
-	 * the fields in this analyzer do not affect the parent. However, this not a
-	 * fully deep copy, the fields are a fresh copy, but their contents will be
-	 * shared.
-	 *
-	 * @param parent the parent to copy
-	 */
-	public static Analyzer copy(Analyzer parent) {
-		Analyzer copy = new Analyzer(parent);
-
-		copy.dot = Jar.copy(parent.dot);
-		copy.contained.putAll(parent.contained);
-		copy.ees.addAll(parent.ees);
-		copy.referred.putAll(parent.referred);
-		if (parent.exports != null)
-			copy.exports = new Packages(parent.exports);
-		if (parent.imports != null)
-			copy.imports = new Packages(parent.imports);
-		copy.activator = parent.activator;
-		copy.uses.putAll(parent.uses);
-		copy.apiUses.putAll(parent.apiUses);
-		copy.contracts.from(parent.contracts);
-		copy.descriptors.from(parent.descriptors);
-		copy.classpathExports.putAll(parent.classpathExports);
-		copy.classpath.addAll(parent.classpath);
-		copy.classspace.putAll(parent.classspace);
-		copy.importedClassesCache.putAll(parent.importedClassesCache);
-		copy.analyzed = parent.analyzed;
-		copy.diagnostics = parent.diagnostics;
-		copy.inited = parent.inited;
-		if (parent.annotationHeaders != null)
-			copy.annotationHeaders = parent.annotationHeaders.copy(copy);
-		copy.nonClassReferences.addAll(parent.nonClassReferences);
-		copy.bcpTypes.putAll(parent.bcpTypes);
-
-		return copy;
-	}
-
-
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
 		super.setTypeSpecificPlugins(pluginsContainer);
@@ -464,7 +424,7 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	private void reset() {
+	public void reset() {
 		contained.clear();
 		classspace.clear();
 		referred.clear();

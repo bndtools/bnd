@@ -316,4 +316,17 @@ public enum EE {
 			return UNKNOWN;
 		return classFileVersionsMinus44[majorVersion];
 	}
+
+	/**
+	 * Return the EE related to the release version
+	 */
+
+	public static EE getEEFromReleaseVersion(int releaseVersion) {
+		for (int i = values().length; i >= 0; i--) {
+			EE ee = values()[i];
+			if (ee.release == releaseVersion)
+				return ee;
+		}
+		return UNKNOWN;
+	}
 }

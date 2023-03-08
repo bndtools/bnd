@@ -385,4 +385,18 @@ public class JPMSModule {
 		return result;
 	}
 
+	public Jar getRelease(int release) {
+		Jar target = new Jar(jar.getName());
+		target.addAll(jar, new Instruction("!META-INF/versions/*"));
+
+		for (int r : getVersions()) {
+			if (release < r)
+				break;
+
+			Jar delta = getReleaseOnly(r);
+			target.addAll(delta);
+		}
+		return target;
+	}
+
 }
