@@ -1,15 +1,11 @@
 package aQute.bnd.plugin.jpms;
 
-import static aQute.bnd.osgi.Constants.JPMS_MULTI_RELEASE;
-import static aQute.bnd.osgi.JPMSModule.MODULE_INFO_CLASS;
-import static aQute.bnd.osgi.JPMSModule.MULTI_RELEASE_HEADER;
-import static aQute.bnd.osgi.JPMSModule.OSGI_VERSIONED_MANIFEST_PATH;
-
 import java.util.SortedSet;
 import java.util.jar.Manifest;
 
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.JPMSModule;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.ManifestResource;
@@ -17,60 +13,57 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.ManifestPlugin;
 
 /**
- * Handles multi release jars. If the manif
+ * Handles multi release jars.
  */
-public class JPMSMultReleasePlugin implements ManifestPlugin {
+public class JPMSMultiReleasePlugin implements ManifestPlugin {
 
 	/**
 	 * We need to calculate alternative files for versioned JARS
 	 */
 	@Override
 	public void mainSet(Analyzer analyzer, Manifest manifest) throws Exception {
-		if (!analyzer.is(JPMS_MULTI_RELEASE))
+		if (!analyzer.is(Constants.JPMS_MULTI_RELEASE))
 			return;
 
-		JPMSModule jpms = new JPMSModule(analyzer.getJar());
+		Jar target = analyzer.getJar();
+		JPMSModule jpms = new JPMSModule(target);
 		SortedSet<Integer> releases = jpms.getVersions();
 
 		if (releases.isEmpty())
 			return;
 
-		manifest.getMainAttributes()
-			.putValue(MULTI_RELEASE_HEADER, "true");
-		Analyzer copy = Analyzer.copy(analyzer);
+		boolean generateModuleInfo = analyzer.getProperty(Constants.JPMS_MODULE_INFO) != null;
 
-		copy.addBasicPlugin(new JPMSModuleInfoPlugin());
-		if (copy.getProperty(Constants.JPMS_MODULE_INFO) == null)
-			copy.setProperty(Constants.JPMS_MODULE_INFO, "");
-
-		Jar baseline = copy.getJar();
-		baseline.removePrefix(JPMSModule.VERSIONS_PATH);
-
-		baseline.setManifest(manifest);
-		baseline.putResource("META-INF/MANIFEST.MF", new ManifestResource(manifest));
-
-		Manifest older = relevant(manifest);
+		Domain domain = Domain.domain(manifest);
+		domain.setMultiRelease(true);
 
 		for (int release : releases) {
+			Jar releaseContent = jpms.getRelease(release);
 
-			Jar delta = jpms.getReleaseOnly(release);
+			try (Analyzer releaseAnalyzer = new Analyzer(analyzer)) {
+				releaseAnalyzer.setJar(releaseContent);
+				releaseAnalyzer.removeClose(releaseContent);
 
-			copy.addDelta(delta);
-			Manifest m = copy.calcManifest();
+				for (Jar cpEntry : analyzer.getClasspath()) {
+					releaseAnalyzer.addClasspath(cpEntry);
+					releaseAnalyzer.removeClose(cpEntry);
+				}
 
-			Manifest newer = relevant(m);
+				if (generateModuleInfo)
+					releaseAnalyzer.addBasicPlugin(new JPMSModuleInfoPlugin());
 
-			if (!newer.equals(older)) {
-				jpms.putResource(release, OSGI_VERSIONED_MANIFEST_PATH, new ManifestResource(newer));
-				older = newer;
-			}
+				Manifest releaseManifest = releaseAnalyzer.calcManifest();
 
-			Resource resource = delta.getResource(MODULE_INFO_CLASS);
-			if (resource == null) {
-				resource = baseline.getResource(MODULE_INFO_CLASS);
-			}
-			if (resource != null) {
-				jpms.putResource(release, MODULE_INFO_CLASS, resource);
+				Manifest newer = relevant(releaseManifest);
+				jpms.putResource(release, JPMSModule.OSGI_VERSIONED_MANIFEST_PATH, new ManifestResource(newer));
+
+				if (generateModuleInfo && jpms.getResource(release, Constants.MODULE_INFO_CLASS) == null) {
+					Resource resource = releaseAnalyzer.getJar()
+						.getResource(Constants.MODULE_INFO_CLASS);
+					if (resource != null) {
+						jpms.putResource(release, Constants.MODULE_INFO_CLASS, resource);
+					}
+				}
 			}
 		}
 	}

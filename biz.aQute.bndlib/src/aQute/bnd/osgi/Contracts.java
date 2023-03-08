@@ -54,19 +54,6 @@ class Contracts {
 		this.analyzer = analyzer;
 	}
 
-	/**
-	 * Copy the contracts for cloning
-	 *
-	 * @param other the other contracts
-	 */
-
-	public void from(Contracts other) {
-		this.contracted.putAll(other.contracted);
-		this.overlappingContracts.putAll(other.overlappingContracts);
-		this.instructions = other.instructions;
-		this.contracts.addAll(other.contracts);
-	}
-
 	Instructions getFilter() {
 		if (instructions == null) {
 			String contract = analyzer.getProperty(Constants.CONTRACT, "*");

@@ -574,4 +574,12 @@ public abstract class Domain implements Iterable<String> {
 		set(Constants.INCLUDEPACKAGE, value);
 	}
 
+	public void setMultiRelease(boolean b) {
+		set(JPMSModule.MULTI_RELEASE_HEADER, Boolean.toString(b));
+	}
+
+	public boolean getMultiRelease() {
+		return Processor.isTrue(get(JPMSModule.MULTI_RELEASE_HEADER));
+	}
+
 }

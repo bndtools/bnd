@@ -163,15 +163,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 	}
 
-	AnnotationHeaders copy(Analyzer a) {
-		AnnotationHeaders jh = new AnnotationHeaders(a, instructions);
-		jh.current = current;
-		jh.loggedMissing.addAll(loggedMissing);
-		jh.finalizing = finalizing;
-		jh.headers.putAll(headers);
-		return jh;
-	}
-
 	/*
 	 * Initialize
 	 */

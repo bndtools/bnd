@@ -260,6 +260,7 @@ public class Jar implements Closeable {
 		this(string, file, DEFAULT_DO_NOT_COPY);
 	}
 
+
 	private Jar buildFromDirectory(final Path baseDir, final Pattern doNotCopy) throws IOException {
 		Files.walkFileTree(baseDir, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 			new SimpleFileVisitor<Path>() {
@@ -1320,47 +1321,5 @@ public class Jar implements Closeable {
 
 	public void setDerived() {
 		this.closeResources = false;
-	}
-
-	/**
-	 * Make a derived copy of the given JAR. The Jars will share the same
-	 * resources. It will therefore set not to close the resources when closed.
-	 * All the settings of the Jar will copied.
-	 *
-	 * @param dot a Jar or empty
-	 * @return a new Jar
-	 */
-
-	public static Jar copy(Jar dot) {
-		Jar jar = null;
-		if (dot != null) {
-			dot.check();
-			jar = new Jar(dot.getName());
-			jar.zipFile = dot.zipFile;
-			jar.source = dot.source;
-			jar.resources.putAll(dot.resources);
-			jar.directories.putAll(dot.directories);
-			jar.manifest = dot.manifest.map(Manifest::new);
-			jar.manifestFirst = dot.manifestFirst;
-			jar.manifestName = dot.manifestName;
-			jar.name = dot.name;
-			jar.manifestName = dot.manifestName;
-			jar.lastModified = dot.lastModified;
-			jar.lastModifiedReason = dot.lastModifiedReason;
-			jar.doNotTouchManifest = dot.doNotTouchManifest;
-			jar.nomanifest = dot.nomanifest;
-			jar.reproducible = dot.reproducible;
-			jar.compression = dot.compression;
-			// jar.closed
-			jar.algorithms = dot.algorithms;
-			jar.calculateFileDigest = dot.calculateFileDigest;
-			jar.fileLength = dot.fileLength;
-			jar.sha256 = dot.sha256;
-			jar.zipEntryConstantTime = dot.zipEntryConstantTime;
-			jar.closeResources = dot.closeResources;
-			jar.setDerived();
-		}
-
-		return jar;
 	}
 }

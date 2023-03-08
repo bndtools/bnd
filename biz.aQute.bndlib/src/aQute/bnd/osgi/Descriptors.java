@@ -50,21 +50,6 @@ public class Descriptors {
 		packageRefCache.put(DEFAULT_PACKAGE.getBinary(), DEFAULT_PACKAGE);
 	}
 
-	/**
-	 * Copy the settings of another descriptor
-	 *
-	 * @param parent the parent to copy from
-	 */
-
-	public void from(Descriptors parent) {
-		typeRefCache.putAll(parent.typeRefCache);
-		descriptorCache.putAll(parent.descriptorCache);
-		packageRefCache.putAll(parent.packageRefCache);
-		classSignatureCache.putAll(parent.classSignatureCache);
-		methodSignatureCache.putAll(parent.methodSignatureCache);
-		fieldSignatureCache.putAll(parent.fieldSignatureCache);
-	}
-
 	@ProviderType
 	public interface TypeRef extends Comparable<TypeRef> {
 		String getBinary();

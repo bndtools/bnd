@@ -72,7 +72,8 @@ public class MultiReleaseTest {
 		assertThat(manifest9).isNotNull();
 		assertThat(manifest9.getMainAttributes()
 			.getValue(Constants.IMPORT_PACKAGE))
-				.isEqualTo("org.osgi.framework;version=\"[1.5,2)\",org.osgi.service.condpermadmin;version=\"[1.1,2)\"");
+				.isEqualTo(
+					"org.osgi.service.condpermadmin;version=\"[1.1,2)\",org.osgi.service.url;version=\"[1.0,2)\"");
 		assertThat(manifest9.getMainAttributes()
 			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo("osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=9))\"");
 
@@ -80,7 +81,7 @@ public class MultiReleaseTest {
 		assertThat(manifest17).isNotNull();
 		assertThat(manifest17.getMainAttributes()
 			.getValue(Constants.IMPORT_PACKAGE)).isEqualTo(
-				"java.io,java.lang,org.osgi.framework;version=\"[1.5,2)\",org.osgi.service.condpermadmin;version=\"[1.1,2)\",org.osgi.service.startlevel;version=\"[1.1,2)\"");
+				"java.io,java.lang,org.osgi.service.startlevel;version=\"[1.1,2)\",org.osgi.service.url;version=\"[1.0,2)\"");
 		assertThat(manifest17.getMainAttributes()
 			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo(
 				"fake;filter:=\"(&(fake=fake)(version>=1.2.3)(!(version>=2.0.0)))\",osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=17))\"");
@@ -178,6 +179,7 @@ public class MultiReleaseTest {
 	@Test
 	public void testPlainBuilder() throws Exception {
 		try (Builder builder = new Builder()) {
+			builder.setProperty(Constants.JPMS_MODULE_INFO, "");
 			builder.setProperty("-includeresource", """
 				sun_1_8/=compilerversions/src/sun_1_8/, \
 				META-INF/versions/9/jdk_9_0/=compilerversions/src/jdk_9_0/, \
