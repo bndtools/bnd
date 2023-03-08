@@ -40,6 +40,29 @@ Properties are used for headers, macros, and instructions in bndlib, they are qu
 
 When a workspace is created, it will first read in the properties in the `.bnd` files in the `cnf/ext` directory. These are called the _extension files_ since they in general setup plugins and other extensions. The order in which they are read is the lexical sorting order of their file names.
 
+## Target build directory
+
+The `target-dir` defines where the build process places the build output artifacts. By default this folder is named `generated`.
+
+### Avoiding target-dir conflicts between different build tools
+
+In the default setup of the workspace, the gradle build tool & eclipse share the same output directories. In general, this means you always have to clean in each tool and in the case of Eclipse stop the incremental builder (otherwise eclipse will start rebuilding the whole workspace when you do a `gradle clean build`).
+
+All the output directories are defined in macros. In general, the `${target-dir}` is the main output directory and the `${bin}` and `${testbin}` are placed inside this directory. So by redefining `${target-dir}` in `cnf/build.bnd` we can redirect all output.
+
+bnd has a macro `${driver}` that indicates which build tool (a.k.a. the driver) is used. We can then use this as follows, to use a separate output directory for each build tool (e.g. eclipse, gradle, maven):
+
+```
+target-dir              generated${if;${driver;eclipse};;/${driver}}
+bin                     ${target-dir}/classes
+testbin                 ${target-dir}/test-classes
+````
+
+This example configuration, placed in `cnf/build.bnd` means:
+
+- eclipse build puts the build output directly into  the `generated` folder of each project.
+- gradle build puts the build outputs in `generated/gradle`. 
+
 ### Extension Files
 
 Extension files allow you to separate configuration concerns. Its primary purpose is to allow third party extensions. These extensions can then put their properties in one place. The contents of these files should therefore not be touched so that a new version can override them. Each extension file is read as a bnd file, this means that full power of bndlib is available. The bnd command line tool has facilities to add and remove files from this directory.
