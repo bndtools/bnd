@@ -115,8 +115,7 @@ import aQute.libg.tuple.Pair;
  */
 public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
-	private final static VersionRange				frameworkPreR7			= new VersionRange(Version.LOWEST,
-		new Version(1, 9));
+	private final static Version					frameworkR7				= new Version("1.9");
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
 
 	// Bundle parameters
@@ -155,8 +154,7 @@ public class Analyzer extends Processor {
 		EXPORTS;
 	}
 
-	public Analyzer() {
-	}
+	public Analyzer() {}
 
 	public Analyzer(Jar jar) throws Exception {
 		this.dot = Objects.requireNonNull(jar, "the jar must not be null");
@@ -322,32 +320,14 @@ public class Analyzer extends Processor {
 								.getInput());
 				}
 
-				// See what information we can find to augment the
-				// imports. I.e. look in the exports
 				augmentImports(imports, exports);
 
-				// Determine if we should elide imports of java packages.
-				boolean noimportjava = is(NOIMPORTJAVA);
-				while (!noimportjava) {
-					if (getHighestEE().compareTo(Clazz.JAVA.Java_11) >= 0) {
-						break; // So we import java packages.
-					}
-					Attrs frameworkPackage = imports.get(getPackageRef("org/osgi/framework"));
-					if (frameworkPackage != null) {
-						VersionRange range = VersionRange.parseOSGiVersionRange(frameworkPackage.getVersion());
-						if (range != null) {
-							VersionRange intersection = frameworkPreR7.intersect(range);
-							if (intersection.isEmpty()) {
-								// Importing Core R7 or later framework.
-								break; // So we import java packages.
-							}
-						}
-					}
-					// We don't import Core R7 (or later) framework and we don't
-					// require Java 11 (or later). So we elide java imports.
-					noimportjava = true;
-				}
-				if (noimportjava) {
+				boolean frameworkSupportsJavaImports = getExportVersion(getPackageRef("org.osgi.framework"))
+					.map(actual -> actual.compareTo(frameworkR7) >= 0)
+					.orElse(true);
+				boolean elideImports = is(NOIMPORTJAVA) || !frameworkSupportsJavaImports;
+
+				if (elideImports) {
 					imports.keySet()
 						.removeIf(PackageRef::isJava);
 				}
@@ -422,6 +402,22 @@ public class Analyzer extends Processor {
 					"The annotation aQute.bnd.annotation.Export applied to package %s is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead",
 					fqn));
 		}
+	}
+
+	/**
+	 * Get the export version of a package
+	 *
+	 * @param packageRef the package reference
+	 * @return the version or empty
+	 */
+	private Optional<Version> getExportVersion(PackageRef packageRef) {
+		Attrs attrs = classpathExports.get(packageRef);
+		String version;
+
+		if (attrs == null || (version = attrs.getVersion()) == null || !Verifier.isVersion(version))
+			return Optional.empty();
+
+		return Optional.of(Version.parseVersion(version));
 	}
 
 	public void reset() {

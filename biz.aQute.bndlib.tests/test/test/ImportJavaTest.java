@@ -15,6 +15,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
 
 public class ImportJavaTest {
 	private Builder builder;
@@ -95,6 +96,7 @@ public class ImportJavaTest {
 		builder.setProperty("-classpath", "compilerversions/compilerversions.jar");
 		builder.setProperty("-includepackage", "sun_1_8");
 		builder.setProperty("-noimportjava", "false");
+		builder.addClasspath(IO.getFile("jar/osgi.core-4.3.0.jar"));
 		Jar jar = builder.build();
 		assertTrue(builder.check());
 		Manifest manifest = jar.getManifest();
