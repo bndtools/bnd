@@ -381,6 +381,9 @@ public class JPMSModule {
 			if (value != null)
 				result.getMainAttributes()
 					.putValue(header, value);
+			else
+				result.getMainAttributes()
+					.putValue(header, "");
 		}
 		return result;
 	}

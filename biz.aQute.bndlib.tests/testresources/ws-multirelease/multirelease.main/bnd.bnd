@@ -9,6 +9,7 @@ Main-Class hello.App
 
 -includeresource \
     META-INF/versions/9=@${repo;multirelease.v9}, \
+    META-INF/versions/12=@${repo;multirelease.v12}, \
     META-INF/versions/17=@${repo;multirelease.v17}
     
 

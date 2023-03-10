@@ -599,7 +599,7 @@ public class ProjectTest {
 
 				assertEquals(12, project.getExports()
 					.size());
-				assertEquals(18, project.getImports()
+				assertEquals(33, project.getImports()
 					.size());
 				assertEquals(12, project.getContained()
 					.size());

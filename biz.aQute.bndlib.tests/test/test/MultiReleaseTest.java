@@ -38,10 +38,13 @@ public class MultiReleaseTest {
 
 		Project main = ws.getProject("multirelease.main");
 		Project v9 = ws.getProject("multirelease.v9");
+		Project v12 = ws.getProject("multirelease.v12");
 		Project v17 = ws.getProject("multirelease.v17");
 
 		v17.compile(false);
 		v17.build();
+		v12.compile(false);
+		v12.build();
 		v9.compile(false);
 		v9.build();
 		main.setProperty(Constants.JPMS_MODULE_INFO, "");
@@ -73,15 +76,23 @@ public class MultiReleaseTest {
 		assertThat(manifest9.getMainAttributes()
 			.getValue(Constants.IMPORT_PACKAGE))
 				.isEqualTo(
-					"org.osgi.service.condpermadmin;version=\"[1.1,2)\",org.osgi.service.url;version=\"[1.0,2)\"");
+					"");
 		assertThat(manifest9.getMainAttributes()
 			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo("osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=9))\"");
+
+		Manifest manifest12 = jpms.getManifest(12);
+		assertThat(manifest12).isNotNull();
+		assertThat(manifest12.getMainAttributes()
+			.getValue(Constants.IMPORT_PACKAGE)).isEqualTo(
+				"org.osgi.service.url;version=\"[1.0,2)\"");
+		assertThat(manifest12.getMainAttributes()
+			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo("osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=12))\"");
 
 		Manifest manifest17 = jpms.getManifest(17);
 		assertThat(manifest17).isNotNull();
 		assertThat(manifest17.getMainAttributes()
 			.getValue(Constants.IMPORT_PACKAGE)).isEqualTo(
-				"java.io,java.lang,org.osgi.service.startlevel;version=\"[1.1,2)\",org.osgi.service.url;version=\"[1.0,2)\"");
+				"org.osgi.service.startlevel;version=\"[1.1,2)\",org.osgi.service.url;version=\"[1.0,2)\"");
 		assertThat(manifest17.getMainAttributes()
 			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo(
 				"fake;filter:=\"(&(fake=fake)(version>=1.2.3)(!(version>=2.0.0)))\",osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=17))\"");
@@ -100,10 +111,15 @@ public class MultiReleaseTest {
 		assertThat(IO.collect(somefile.get()
 			.openInputStream())).isEqualTo("17");
 
-		somefile = jpms.findResource("somefile", 15);
+		somefile = jpms.findResource("somefile", 11);
 		assertThat(somefile).isPresent();
 		assertThat(IO.collect(somefile.get()
 			.openInputStream())).isEqualTo("9");
+
+		somefile = jpms.findResource("somefile", 13);
+		assertThat(somefile).isPresent();
+		assertThat(IO.collect(somefile.get()
+			.openInputStream())).isEqualTo("12");
 
 		assertThat(jpms.getModuleName()).isPresent()
 			.get()

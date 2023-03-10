@@ -828,6 +828,7 @@ public class AnalyzerTest {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
+			p.put("-noimportjava", "true");
 			p.put("Import-Package", "!org.osgi.framework,*");
 			p.put("Private-Package", "org.objectweb.*");
 			p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
