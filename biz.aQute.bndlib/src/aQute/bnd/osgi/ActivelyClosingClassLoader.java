@@ -15,9 +15,11 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,7 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleWiring;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferInputStream;
@@ -38,10 +42,10 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 	static {
 		ClassLoader.registerAsParallelCapable();
 	}
-
 	final AtomicReference<Map<File, Wrapper>>	wrappers	= new AtomicReference<>(new LinkedHashMap<>());
 	final AtomicBoolean							open		= new AtomicBoolean(true);
 	final Processor								processor;
+	final Bundle								bndlib;
 	ScheduledFuture<?>							schedule;
 
 	class Wrapper {
@@ -82,9 +86,21 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 		}
 	}
 
+	/*
+	 * For testing
+	 */
+	ActivelyClosingClassLoader() {
+		this(new Processor(), ActivelyClosingClassLoader.class.getClassLoader());
+	}
+
 	ActivelyClosingClassLoader(Processor processor, ClassLoader parent) {
+		this(processor, parent, FrameworkUtil.getBundle(About.class));
+	}
+
+	ActivelyClosingClassLoader(Processor processor, ClassLoader parent, Bundle lib) {
 		super(new URL[0], parent);
 		this.processor = processor;
+		this.bndlib = lib;
 	}
 
 	void add(File file) {
@@ -200,26 +216,23 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
+		Set<Bundle> clients = null;
+
 		try {
 			try {
 				return super.loadClass(name);
-			} catch (ClassNotFoundException nfe) {
+			} catch (ClassNotFoundException notFoundInJars) {
 
-				//
-				// Best effort search in the application classpath
-				// if we're running on OSGi
-				//
-
-				Bundle bundle = FrameworkUtil.getBundle(ActivelyClosingClassLoader.class);
-				if (bundle == null) {
-					throw nfe;
-				}
 				try {
-					return bundle.loadClass(name);
-				} catch (ClassNotFoundException anotherNfe) {
-					Bundle system = bundle.getBundleContext()
-						.getBundle(0);
-					return system.loadClass(name);
+					return About.class.getClassLoader()
+						.loadClass(name);
+				} catch (ClassNotFoundException notFoundInBnd) {
+
+					clients = new LinkedHashSet<>();
+					Class<?> clazz = loadclassFromClientBundles(name, clients);
+					if (clazz != null)
+						return clazz;
+					throw notFoundInJars;
 				}
 			}
 		} catch (Throwable t) {
@@ -230,10 +243,43 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 			sb.append(getParent());
 			sb.append(" urls:");
 			sb.append(getFiles());
+			if (clients != null) {
+				sb.append("looked in ")
+					.append(clients);
+			}
 			sb.append(" exception:");
 			sb.append(Exceptions.toString(t));
 			throw new ClassNotFoundException(sb.toString(), t);
 		}
+	}
+
+	private Class<?> loadclassFromClientBundles(String name, Set<Bundle> clients) {
+
+		BundleWiring w;
+		BundleContext c;
+
+		if (bndlib == null || (w = bndlib.adapt(BundleWiring.class)) == null || (c = bndlib.getBundleContext()) == null)
+			return null;
+
+		w.getProvidedWires(null)
+			.stream()
+			.map(wire -> wire.getRequirer()
+				.getBundle())
+			.forEach(clients::add);
+
+		clients.add(c.getBundle(0));
+
+		for (Bundle b : clients) {
+			try {
+				return b.loadClass(name);
+			} catch (ClassNotFoundException notFoundInSomeBundle) {
+				// ok
+			} catch (Exception ignore) {
+				processor.warning("Unexpected exception when loading %s from %s: %s", name, b, ignore, ignore);
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -244,8 +290,7 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 	 */
 	void autopurge(long freshPeriod) {
 		schedule = Processor.getScheduledExecutor()
-			.scheduleWithFixedDelay(() -> purge(freshPeriod), freshPeriod, freshPeriod,
-				TimeUnit.NANOSECONDS);
+			.scheduleWithFixedDelay(() -> purge(freshPeriod), freshPeriod, freshPeriod, TimeUnit.NANOSECONDS);
 	}
 
 }

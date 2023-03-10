@@ -1,0 +1,23 @@
+-runrequires: \
+	osgi.identity;filter:='(osgi.identity=biz.aQute.bndlib)',\
+	osgi.identity;filter:='(osgi.identity=biz.aQute.resolve)',\
+	osgi.identity;filter:='(osgi.identity=biz.aQute.repository)'
+-runfw: org.apache.felix.framework;version='[6.0.5,6.0.5]'
+-runee: JavaSE-17
+-runpath: slf4j.api,slf4j.simple,aQute.libg
+-runbundles: \
+	org.apache.felix.log;version='[1.2.0,1.2.1)',\
+	org.osgi.service.coordinator;version='[1.0.2,1.0.3)',\
+	org.osgi.service.repository;version='[1.1.0,1.1.1)',\
+	org.osgi.util.function;version='[1.2.0,1.2.1)',\
+	org.osgi.util.promise;version='[1.2.0,1.2.1)',\
+	biz.aQute.bnd.transform;version=snapshot,\
+	biz.aQute.bnd.util;version=snapshot,\
+	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.repository;version=snapshot,\
+	biz.aQute.resolve;version=snapshot
+-resolve: manual
+-runtrace true
+-runrepos: \
+	Maven Central,\
+	Workspace
