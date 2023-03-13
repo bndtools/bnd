@@ -123,6 +123,36 @@ public class ImportJavaTest {
 	}
 
 	@Test
+	public void import_java_all_java11_defaulting() throws Exception {
+		builder.setProperty("-classpath", "compilerversions/compilerversions.jar");
+		builder.setProperty("-includepackage", "test.importjava,jdk_11_0");
+
+		Jar jar = builder.build();
+		assertTrue(builder.check());
+		Manifest manifest = jar.getManifest();
+		manifest.write(System.err);
+		Domain d = Domain.domain(manifest);
+		Parameters imports = d.getImportPackage();
+		assertThat(imports).containsOnlyKeys("java.io", "java.lang", "java.lang.invoke", "java.lang.reflect",
+			"java.util", "java.util.function", "java.util.stream", "javax.swing");
+	}
+
+	@Test
+	public void import_java_all_java9_defaulting() throws Exception {
+		builder.setProperty("-classpath", "compilerversions/compilerversions.jar");
+		builder.setProperty("-includepackage", "test.importjava,jdk_9_0");
+
+		Jar jar = builder.build();
+		assertTrue(builder.check());
+		Manifest manifest = jar.getManifest();
+		manifest.write(System.err);
+		Domain d = Domain.domain(manifest);
+		Parameters imports = d.getImportPackage();
+		assertThat(imports).containsOnlyKeys("java.io", "java.lang", "java.lang.invoke", "java.lang.reflect",
+			"java.util", "java.util.function", "java.util.stream", "javax.swing");
+	}
+
+	@Test
 	public void no_import_java_java11() throws Exception {
 		builder.setProperty("-classpath", "compilerversions/compilerversions.jar");
 		builder.setProperty("-includepackage", "test.importjava,jdk_11_0");
