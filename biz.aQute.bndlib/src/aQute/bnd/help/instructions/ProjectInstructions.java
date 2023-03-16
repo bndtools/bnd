@@ -3,7 +3,8 @@ package aQute.bnd.help.instructions;
 import java.util.Map;
 import java.util.Optional;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.help.SyntaxAnnotation;
 import aQute.bnd.osgi.Constants;

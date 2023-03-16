@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.dto.FrameworkDTO;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 
-import aQute.bnd.annotation.ProviderType;
 
 /**
  * An agent runs on remote OSGi framework and provides the means to control this

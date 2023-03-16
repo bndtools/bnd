@@ -15,12 +15,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.osgi.annotation.versioning.ConsumerType;
 import org.osgi.resource.Resource;
 
-import aQute.bnd.annotation.ConsumerType;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;

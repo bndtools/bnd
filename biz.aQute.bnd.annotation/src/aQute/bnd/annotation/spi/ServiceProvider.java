@@ -109,7 +109,7 @@ public @interface ServiceProvider {
 	 * If not specified, the {@code resolution} directive is omitted from the
 	 * requirement clause.
 	 */
-	Resolution resolution() default Resolution.DEFAULT;
+	String resolution() default Resolution.DEFAULT;
 
 	/**
 	 * The type to register as the provider.
