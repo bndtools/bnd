@@ -70,10 +70,10 @@ public class About {
 	public static final Version					_6_2		= new Version(6, 2, 0);
 	public static final Version					_6_3		= new Version(6, 3, 0);
 	public static final Version					_6_4		= new Version(6, 4, 0);
-	public static final Version					_6_4_1		= new Version(6, 4, 1);
-	public static final Version					CURRENT		= _6_4_1;
+	public static final Version					_6_5			= new Version(6, 5, 0);
+	public static final Version					CURRENT			= _6_5;
 
-	public static final String[]				CHANGES_6_4_1	= {
+	public static final String[]				CHANGES_6_5	= {
 		"classic line"
 	};
 	public static final String[]				CHANGES_6_4	= {};

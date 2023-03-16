@@ -35,7 +35,7 @@ To make the Bnd Builder Gradle Plugin available to your build, use the following
 ```groovy
 pluginManagement {
   plugins {
-    id "biz.aQute.bnd.builder" version "6.4.1"
+    id "biz.aQute.bnd.builder" version "6.5.0"
   }
 }
 ```
