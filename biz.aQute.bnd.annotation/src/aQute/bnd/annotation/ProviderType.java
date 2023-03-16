@@ -59,7 +59,9 @@ import java.lang.annotation.Target;
  * In the html javadoc, you will see "Consumers of this API must not implement
  * this interface" for @noimplement marked interfaces.
  * </p>
+ * Deprecated because replaced by OSGi annotations
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)

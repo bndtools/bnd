@@ -31,10 +31,10 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.osgi.annotation.versioning.ProviderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.maven.lib.artifact.ProjectArtifactCollector;
 import aQute.bnd.repository.fileset.FileSetRepository;
