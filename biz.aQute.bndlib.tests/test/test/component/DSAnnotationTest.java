@@ -3673,46 +3673,6 @@ public class DSAnnotationTest {
 
 	}
 
-	@Component(name = "mixed-std-bnd")
-	static class MixedStdBnd {
-
-		@aQute.bnd.annotation.component.Reference
-		@SuppressWarnings("deprecation")
-		protected void setLog(@SuppressWarnings("unused") LogService log) {}
-
-		@aQute.bnd.annotation.component.Activate
-		@SuppressWarnings("deprecation")
-		void start() {}
-
-		@aQute.bnd.annotation.component.Modified
-		@SuppressWarnings("deprecation")
-		void update(Map<String, Object> map) {}
-
-		@aQute.bnd.annotation.component.Deactivate
-		@SuppressWarnings("deprecation")
-		void stop() {}
-	}
-
-	@Test
-	public void testMixedStandardBnd() throws Exception {
-		try (Builder b = new Builder()) {
-			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
-			b.setProperty("Private-Package", "test.component");
-			b.addClasspath(new File("bin_test"));
-			Jar build = b.build();
-			System.err.println(b.getErrors());
-			System.err.println(b.getWarnings());
-			assertThat("foo");
-			assertThat(b.getErrors())
-				.anyMatch(e -> e.matches(".*MixedStdBnd\\.stop.*aQute\\.bnd\\.annotation\\.component\\.Deactivate.*"))
-				.anyMatch(e -> e.matches(".*MixedStdBnd\\.update.*aQute\\.bnd\\.annotation\\.component\\.Modified.*"))
-				.anyMatch(e -> e.matches(".*MixedStdBnd\\.start.*aQute\\.bnd\\.annotation\\.component\\.Activate.*"))
-				.anyMatch(e -> e.matches(".*MixedStdBnd\\.setLog.*aQute\\.bnd\\.annotation\\.component\\.Reference.*"))
-				.hasSize(4);
-			assertThat(b.getWarnings()).isEmpty();
-		}
-	}
-
 	@Component
 	static class VolatileField {
 		@Reference

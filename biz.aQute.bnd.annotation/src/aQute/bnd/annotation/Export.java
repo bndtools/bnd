@@ -6,6 +6,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Not deprecated because it includes functionality the OSGi Version annotation
+ * lacks, like the INCLUDE/EXCLUDE.
+ */
+
+
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.PACKAGE)
