@@ -17,7 +17,9 @@ import java.lang.annotation.Target;
  * <p>
  * For an elaborate and simple explanation, see {@link ProviderType}.
  * </p>
+ * Deprecated because being replaced by OSGi annotations
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)

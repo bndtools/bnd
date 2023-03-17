@@ -72,7 +72,7 @@ public @interface ServiceConsumer {
 	 * If not specified, the {@code cardinality} directive is omitted from the
 	 * requirement clause.
 	 */
-	Cardinality cardinality() default Cardinality.DEFAULT;
+	String cardinality() default Cardinality.DEFAULT;
 
 	/**
 	 * The resolution policy of the {@code osgi.serviceloader} and
@@ -85,6 +85,6 @@ public @interface ServiceConsumer {
 	 * If not specified, the {@code resolution} directive is omitted from the
 	 * requirement clause.
 	 */
-	Resolution resolution() default Resolution.DEFAULT;
+	String resolution() default Resolution.DEFAULT;
 
 }

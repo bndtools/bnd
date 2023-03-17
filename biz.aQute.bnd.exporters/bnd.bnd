@@ -14,7 +14,8 @@
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
-	slf4j.api;version=latest
+	slf4j.api;version=latest,\
+	biz.aQute.bnd.annotation
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\

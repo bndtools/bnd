@@ -10,15 +10,16 @@
 	org.osgi.namespace.service,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
-	org.osgi.service.resolver;version=latest, \
+	org.osgi.service.resolver;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
-	org.apache.felix.resolver;version=latest;packages=org.apache.felix.resolver.*;maven-scope=provided,\
-	slf4j.api;version=latest
+	org.apache.felix.resolver;version=latest;packages='org.apache.felix.resolver.*';maven-scope=provided,\
+	slf4j.api;version=latest,\
+	biz.aQute.bnd.annotation
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
