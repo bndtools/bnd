@@ -17,6 +17,7 @@ import org.xmlunit.assertj.XmlAssert;
 
 import aQute.junit.UnresolvedTester;
 import aQute.lib.xml.XML;
+import aQute.tester.junit.platform.test.ExitCode;
 import aQute.tester.test.assertions.CustomAssertionError;
 import aQute.tester.test.utils.TestRunData;
 import aQute.tester.testbase.AbstractActivatorCommonTest;

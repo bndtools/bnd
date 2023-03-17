@@ -28,7 +28,8 @@
     org.bndtools.templating.gitrepo,\
     org.bndtools.templating,\
     org.bndtools.versioncontrol.ignores.manager,\
-    org.bndtools.versioncontrol.ignores.plugin.git
+    org.bndtools.versioncontrol.ignores.plugin.git, \
+    org.bndtools.remoteinstall
 
 # These are bundles that are not required for building but for debugging when doing
 # code inspection.

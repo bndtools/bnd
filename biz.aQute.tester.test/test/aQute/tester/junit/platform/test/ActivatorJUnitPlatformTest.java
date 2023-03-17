@@ -372,14 +372,13 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 					.set(TESTER_TRACE, "true");
 			}
 			lp = null;
-			oldManager = System.getSecurityManager();
-			System.setSecurityManager(new ExitCheck());
+			oldManager = setExitToThrowExitCode();
 		}
 
 		@SuppressWarnings("removal")
 		@AfterEach
 		public void tearDown() {
-			System.setSecurityManager(oldManager);
+			IO.close(oldManager);
 			IO.close(lp);
 			IO.close(builder);
 		}

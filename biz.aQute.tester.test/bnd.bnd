@@ -31,7 +31,7 @@
 	aQute.libg,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
-	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\
+	biz.aQute.tester;version=snapshot;packages="aQute.junit.constants,aQute.junit.system",\
 	biz.aQute.launchpad;version=project,\
 	biz.aQute.tester.junit-platform;version=project;packages=aQute.tester.bundle.engine,\
 	org.xmlunit:xmlunit-core;version=latest,\

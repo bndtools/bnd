@@ -74,8 +74,7 @@ public class GogoShellTests extends AbstractActivatorTest {
 				.set(TESTER_TRACE, "true");
 		}
 		lp = null;
-		oldManager = System.getSecurityManager();
-		System.setSecurityManager(new ExitCheck());
+		oldManager = setExitToThrowExitCode();
 
 		controlSock = new ServerSocket(0);
 		controlSock.setSoTimeout(10000);
@@ -151,7 +150,7 @@ public class GogoShellTests extends AbstractActivatorTest {
 	void afterAll() {
 		IO.close(sock);
 		IO.close(controlSock);
-		System.setSecurityManager(oldManager);
+		IO.close(oldManager);
 		IO.close(lp);
 		IO.close(builder);
 	}

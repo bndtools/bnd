@@ -59,6 +59,7 @@ import org.osgi.framework.Constants;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 
+import aQute.junit.system.BndSystem;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
@@ -156,7 +157,7 @@ public class Activator implements BundleActivator, Runnable {
 				} catch (Exception e) {
 					System.err.println(
 						"Cannot create link Eclipse JUnit control on port " + port + " (rerunIDE: " + rerunIDE + ')');
-					System.exit(254);
+					BndSystem.exit(254);
 				}
 			}
 
@@ -352,7 +353,7 @@ public class Activator implements BundleActivator, Runnable {
 				trace("test ran");
 				if (queue.isEmpty() && !continuous) {
 					trace("queue %s", queue);
-					System.exit((int) result);
+					BndSystem.exit((int) result);
 				}
 			} catch (InterruptedException e) {
 				trace("tests bundle queue interrupted");
@@ -360,7 +361,7 @@ public class Activator implements BundleActivator, Runnable {
 				break;
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
-				System.exit(254);
+				BndSystem.exit(254);
 			}
 		}
 	}
