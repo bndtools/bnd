@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.Bundle;
 
+import aQute.junit.system.BndSystem;
 import junit.framework.AssertionFailedError;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
@@ -65,7 +66,7 @@ public class JUnitEclipseReport implements TestReporter {
 				new PrintWriter(Channels.newWriter(channel, UTF_8.newEncoder(), -1)));
 		} catch (IOException e) {
 			System.err.println("Cannot open the JUnit Port: " + port + " " + e);
-			System.exit(254);
+			BndSystem.exit(254);
 			throw new AssertionError("unreachable");
 		}
 	}

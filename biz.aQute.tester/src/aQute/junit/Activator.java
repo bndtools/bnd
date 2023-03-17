@@ -51,6 +51,7 @@ import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
 
+import aQute.junit.system.BndSystem;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -125,7 +126,7 @@ public class Activator implements BundleActivator, Runnable {
 				jUnitEclipseReport = new JUnitEclipseReport(port);
 			} catch (Exception e) {
 				System.err.println("Cannot create link Eclipse JUnit on port " + port);
-				System.exit(254);
+				BndSystem.exit(254);
 			}
 		}
 
@@ -172,7 +173,7 @@ public class Activator implements BundleActivator, Runnable {
 					// ignore
 				}
 				if (err != 0) {
-					System.exit(err);
+					BndSystem.exit(err);
 				}
 			}
 		}
@@ -196,10 +197,10 @@ public class Activator implements BundleActivator, Runnable {
 				try (Writer report = getReportWriter(reportDir, reportDir.getName())) {
 					errors = test(null, testCases(testcases), report);
 				}
-				System.exit(errors);
+				BndSystem.exit(errors);
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.exit(254);
+				BndSystem.exit(254);
 			}
 		}
 	}
@@ -268,7 +269,7 @@ public class Activator implements BundleActivator, Runnable {
 				}
 				if (queue.isEmpty() && !continuous) {
 					trace("queue %s", queue);
-					System.exit(result);
+					BndSystem.exit(result);
 				}
 			} catch (InterruptedException e) {
 				trace("tests bundle queue interrupted");
@@ -276,7 +277,7 @@ public class Activator implements BundleActivator, Runnable {
 				break;
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
-				System.exit(254);
+				BndSystem.exit(254);
 			}
 		}
 	}

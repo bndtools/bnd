@@ -20,6 +20,7 @@ import org.osgi.framework.Bundle;
 
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.io.IO;
+import aQute.tester.junit.platform.test.ExitCode;
 import aQute.tester.testclasses.JUnit3Test;
 import aQute.tester.testclasses.JUnit4Test;
 import aQute.tester.testclasses.With1Error1Failure;
@@ -203,14 +204,13 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 				.set(TESTER_TRACE, "true");
 		}
 		lp = null;
-		oldManager = System.getSecurityManager();
-		System.setSecurityManager(new ExitCheck());
+		oldManager = setExitToThrowExitCode();
 	}
 
 	@SuppressWarnings("removal")
 	@AfterEach
 	public void tearDown() {
-		System.setSecurityManager(oldManager);
+		IO.close(oldManager);
 		IO.close(lp);
 		IO.close(builder);
 	}
