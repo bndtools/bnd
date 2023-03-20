@@ -62,17 +62,13 @@ We try to have a release every 3-6 months and plan these with [milestones](https
 
 ### PRs
 
-[PRs](https://github.com/bndtools/bnd/pulls) should be submitted via another repo. We are using the following branch names:
-
-* issue/<issue #>_<description>  – For fixing a reported issues
-* feature/<description> – For new features
+[PRs](https://github.com/bndtools/bnd/pulls) should be submitted via another repo. After approval, they will be built to check for our requirements.
 
 ### Actions
 
-Actions trigger workflows depending on the branch. PR's for verification require approval when not from a known contributor. We verify the code quality with CodeQL and the [contrinition](CONTRIBUTING.md) rules are also checked.
+Actions trigger workflows depending on the branch. PR's for verification require approval when not from a known contributor. We verify the code quality with CodeQL and the [contribution](CONTRIBUTING.md) rules are also checked.
 
-
-## Where to Find
+### Using the latest development SNAPSHOT build of Bnd/Bndtools
 
 All our artifacts are in the [`biz.aQute.bnd`](https://repo.maven.apache.org/maven2/biz/aQute/bnd) group id.
 
