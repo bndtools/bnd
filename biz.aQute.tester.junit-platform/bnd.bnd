@@ -49,3 +49,4 @@ Import-Package: \
 	org.apache.felix.gogo.runtime
 
 -baseline: *
+
