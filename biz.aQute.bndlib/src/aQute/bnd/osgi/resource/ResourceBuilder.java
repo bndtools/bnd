@@ -1,5 +1,6 @@
 package aQute.bnd.osgi.resource;
 
+import static aQute.bnd.exceptions.SupplierWithException.asSupplier;
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
@@ -24,6 +25,7 @@ import java.util.TreeMap;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
@@ -43,6 +45,7 @@ import org.osgi.service.repository.ContentNamespace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.SupplierWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -51,6 +54,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.resource.CompositeResource;
 import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
@@ -60,16 +64,20 @@ import aQute.lib.hierarchy.FolderNode;
 import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
+import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
+@ProviderType
 public class ResourceBuilder {
-	private final ResourceImpl					resource		= new ResourceImpl();
-	private final Map<String, Set<Capability>>	capabilities	= new TreeMap<>(new NamespaceComparator());
-	private final Map<String, Set<Requirement>>	requirements	= new TreeMap<>(new NamespaceComparator());
-	private ReporterAdapter						reporter		= new ReporterAdapter();
+	private static final FileResourceCache		cache				= FileResourceCache.getInstance();
+	private final ResourceImpl					resource			= new ResourceImpl();
+	private final Map<String, Set<Capability>>	capabilities		= new TreeMap<>(new NamespaceComparator());
+	private final Map<String, Set<Requirement>>	requirements		= new TreeMap<>(new NamespaceComparator());
+	private final Set<Resource>					supportingResources	= new LinkedHashSet<>();
+	private ReporterAdapter						reporter			= new ReporterAdapter();
 
-	private boolean								built			= false;
+	private boolean								built				= false;
 
 	public ResourceBuilder() {}
 
@@ -79,9 +87,25 @@ public class ResourceBuilder {
 	}
 
 	public ResourceBuilder addResource(Resource source) {
+		if (source instanceof CompositeResource cr)
+			return addCompositeResource(cr);
+		else {
+			addCapabilities(source.getCapabilities(null));
+			addRequirements(source.getRequirements(null));
+			return this;
+		}
+	}
+
+	public ResourceBuilder addCompositeResource(CompositeResource source) {
 		addCapabilities(source.getCapabilities(null));
 		addRequirements(source.getRequirements(null));
+		source.getSupportingResources()
+			.forEach(this::addSupportingResource);
 		return this;
+	}
+
+	public void addSupportingResource(Resource resource) {
+		supportingResources.add(resource);
 	}
 
 	public ResourceBuilder addCapability(Capability capability) {
@@ -157,7 +181,7 @@ public class ResourceBuilder {
 		return req;
 	}
 
-	public Resource build() {
+	public CompositeResource build() {
 		if (built)
 			throw new IllegalStateException("Resource already built");
 		built = true;
@@ -725,18 +749,79 @@ public class ResourceBuilder {
 	}
 
 	public boolean addFile(File file, URI uri) throws Exception {
+
+		CompositeResource resource = cache.getResource(file, uri, () -> parse(file, uri));
+		addCompositeResource(resource);
+		return resource.hasIdentity();
+	}
+
+	public boolean addFile(File f) throws Exception {
+		return addFile(f, f.toURI());
+	}
+
+	static CompositeResource parse(File file, URI uri) {
+
+		if (file == null)
+			throw new IllegalArgumentException("no file object");
+
+		if (!file.exists())
+			throw new IllegalArgumentException("no such file " + file.getAbsolutePath());
+
+		if (file.isFile() && file.length() == 0)
+			throw new IllegalArgumentException("empty file " + file.getAbsolutePath());
+
+		if (file.isFile() && !file.canRead())
+			throw new IllegalArgumentException("no read access " + file.getAbsolutePath());
+
+		if (file.isDirectory() && !file.canRead())
+			throw new IllegalArgumentException("no read access on folder " + file.getAbsolutePath());
+
 		if (uri == null)
 			uri = file.toURI();
 
-		boolean hasIdentity = false;
-		Resource fileResource = FileResourceCache.getInstance()
-			.getResource(file, uri);
-		if (fileResource != null) {
-			addResource(fileResource);
-			hasIdentity = !fileResource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
-				.isEmpty();
+		try (Jar jar = new Jar(file)) {
+			ResourceBuilder rb = new ResourceBuilder();
+			boolean hasIdentity = rb.addJar(jar);
+
+			String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
+
+			rb.addContentCapability(uri,
+				new DeferredComparableValue<String>(String.class,
+					SupplierWithException.asSupplier(() -> SHA256.digest(file)
+						.asHex()),
+					file.hashCode()),
+				file.length(), mime);
+
+			return rb.build();
+		} catch (Exception rt) {
+			throw new IllegalArgumentException("illegal format " + file.getAbsolutePath(), rt);
 		}
-		return hasIdentity;
+	}
+
+	public boolean addJar(Jar jar) {
+		Domain manifest;
+		try {
+			manifest = Domain.domain(jar.getManifest());
+			boolean hasIdentity = false;
+			if (manifest != null) {
+				hasIdentity = addManifest(manifest);
+			}
+
+			if (hasIdentity) {
+				addHashes(jar);
+			}
+			return hasIdentity;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	public void addHashes(File file) {
+		addHashes(asSupplier(() -> new JarIndex(file)));
+	}
+
+	public void addHashes(Jar jar) {
+		addHashes(asSupplier(() -> new JarIndex(jar.getResources())));
 	}
 
 	/**
@@ -744,7 +829,8 @@ public class ResourceBuilder {
 	 * called before any package capabilities are set since we only hash class
 	 * names in exports. So no exports, no hash.
 	 */
-	public void addHashes(File file) throws IOException {
+	private void addHashes(Supplier<JarIndex> supplier) {
+
 		Set<Capability> packageCapabilities = capabilities.remove(PackageNamespace.PACKAGE_NAMESPACE);
 		if ((packageCapabilities == null) || packageCapabilities.isEmpty()) {
 			return;
@@ -756,7 +842,7 @@ public class ResourceBuilder {
 			return;
 		}
 
-		Hierarchy index = new JarIndex(file);
+		Hierarchy index = supplier.get();
 		for (Capability cap : packageCapabilities) {
 			CapReqBuilder builder = CapReqBuilder.clone(cap);
 			addHashes(index, cap, builder);
@@ -820,7 +906,7 @@ public class ResourceBuilder {
 	private class SafeResourceBuilder extends ResourceBuilder {
 
 		@Override
-		public Resource build() {
+		public CompositeResource build() {
 			return null;
 		}
 
@@ -1111,8 +1197,7 @@ public class ResourceBuilder {
 		for (String pkg : exports.keyList()) {
 			Map<String, ?> dirEntries = jar.getDirectory(Descriptors.fqnToBinary(pkg));
 			// It's possible to export a package that you don't contain
-			// locally so this
-			// can return null.
+			// locally so this can return null.
 			if (dirEntries == null) {
 				continue;
 			}

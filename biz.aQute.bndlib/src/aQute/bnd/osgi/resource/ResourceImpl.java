@@ -5,7 +5,9 @@ import static java.util.stream.Collectors.groupingBy;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,14 +20,16 @@ import org.osgi.service.repository.RepositoryContent;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
+import aQute.bnd.service.resource.CompositeResource;
 import aQute.bnd.unmodifiable.Lists;
 
-class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
+class ResourceImpl implements Resource, CompositeResource, Comparable<Resource>, RepositoryContent {
 
 	private volatile List<Capability>				allCapabilities;
 	private volatile Map<String, List<Capability>>	capabilityMap;
 	private volatile List<Requirement>				allRequirements;
 	private volatile Map<String, List<Requirement>>	requirementMap;
+	private volatile List<Resource>					supportingResources;
 
 	private volatile transient Map<URI, String>		locations;
 
@@ -145,5 +149,19 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public List<Resource> all() {
+		List<Resource> result = new ArrayList<>();
+		result.add(this);
+		result.addAll(getSupportingResources());
+		return result;
+	}
+
+	@Override
+	public List<Resource> getSupportingResources() {
+		return supportingResources == null ? Collections.emptyList()
+			: Collections.unmodifiableList(supportingResources);
 	}
 }

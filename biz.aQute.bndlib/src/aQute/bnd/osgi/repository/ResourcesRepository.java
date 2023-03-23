@@ -15,6 +15,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.service.resource.CompositeResource;
 
 public class ResourcesRepository extends BaseRepository {
 	private final Set<Resource>									resources;
@@ -58,6 +59,8 @@ public class ResourcesRepository extends BaseRepository {
 	public void add(Resource resource) {
 		if (resource != null) {
 			resources.add(resource);
+			if (resource instanceof CompositeResource cr)
+				resources.addAll(cr.getSupportingResources());
 		}
 	}
 
