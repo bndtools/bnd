@@ -1,0 +1,110 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>bnd.test</groupId>
+	<artifactId>mr</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>BND MR-JAR TestCase</name>
+	<description>The simplest form of a MR Jar Project that adds BND headers to an existing library project that produces MR-Content jar.</description>
+
+	<properties>
+		<minJDK>1.8</minJDK>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<bnd.version>${bnd.version}</bnd.version>
+	</properties>
+
+	<dependencies>
+		<!-- required for java < 9 -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<!-- compile the sources -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<source>${minJDK}</source>
+					<target>${minJDK}</target>
+					<release>8</release>
+				</configuration>
+				<executions>
+					<execution>
+						<id>java9</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<release>9</release>
+							<jdkToolchain>
+								<version>9</version>
+							</jdkToolchain>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
+							</compileSourceRoots>
+							<multiReleaseOutput>true</multiReleaseOutput>
+						</configuration>
+					</execution>
+					<execution>
+						<id>java11</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<release>11</release>
+							<jdkToolchain>
+								<version>11</version>
+							</jdkToolchain>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>
+							</compileSourceRoots>
+							<multiReleaseOutput>true</multiReleaseOutput>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- generate the header -->
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+				<version>${bnd.version}</version>
+				<executions>
+					<execution>
+						<id>bnd-process</id>
+						<goals>
+							<goal>bnd-process</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<bnd>
+						<![CDATA[
+							Export-Package: bnd.mr.example.*
+							Import-Package: *
+							Multi-Release: true
+						]]>
+					</bnd>
+				</configuration>
+			</plugin>
+			<!-- put the result into the jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-jar</id>
+						<configuration>
+							<archive>
+								<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
