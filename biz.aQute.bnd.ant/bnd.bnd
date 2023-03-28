@@ -19,7 +19,8 @@ Export-Package: \
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\
-	org.apache.ant:ant;version=latest
+	org.apache.ant:ant;version=latest,\
+	org.osgi.framework
 
 -testpath: \
 	${junit},\
