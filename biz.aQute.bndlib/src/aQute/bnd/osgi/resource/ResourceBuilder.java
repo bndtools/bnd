@@ -5,25 +5,24 @@ import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
 import static java.util.stream.Collectors.toList;
+import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
 
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Constants;
@@ -51,12 +50,14 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.JPMSModule;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
-import aQute.bnd.service.resource.CompositeResource;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
@@ -68,27 +69,46 @@ import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
+/**
+ * The ResourceBuilder class provides a fluent API for constructing resources.
+ */
 @ProviderType
 public class ResourceBuilder {
-	private static final FileResourceCache		cache				= FileResourceCache.getInstance();
-	private final ResourceImpl					resource			= new ResourceImpl();
-	private final Map<String, Set<Capability>>	capabilities		= new TreeMap<>(new NamespaceComparator());
-	private final Map<String, Set<Requirement>>	requirements		= new TreeMap<>(new NamespaceComparator());
-	private final Set<Resource>					supportingResources	= new LinkedHashSet<>();
-	private ReporterAdapter						reporter			= new ReporterAdapter();
+	private static final FileResourceCache			cache				= FileResourceCache.getInstance();
+	private final ResourceImpl						resource			= new ResourceImpl();
+	private final MultiMap<String, CapabilityImpl>	capabilities		= new MultiMap<>();
+	private final MultiMap<String, RequirementImpl>	requirements		= new MultiMap<>();
+	private final List<Resource>					supportingResources	= new ArrayList<>();
+	private ReporterAdapter							reporter			= new ReporterAdapter();
 
-	private boolean								built				= false;
+	private boolean									built				= false;
 
+	/**
+	 * Constructs a new `ResourceBuilder`.
+	 */
 	public ResourceBuilder() {}
 
+	/**
+	 * Constructs a new `ResourceBuilder` with the given source resource.
+	 *
+	 * @param source the source resource to add to this builder
+	 */
 	public ResourceBuilder(Resource source) {
 		this();
 		addResource(source);
 	}
 
+	/**
+	 * Adds a resource to this builder. If the resource is a
+	 * `SupportingResource`, it is added as a composite resource, otherwise its
+	 * capabilities and requirements are added to this builder.
+	 *
+	 * @param source the resource to add
+	 * @return this builder
+	 */
 	public ResourceBuilder addResource(Resource source) {
-		if (source instanceof CompositeResource cr)
-			return addCompositeResource(cr);
+		if (source instanceof SupportingResource cr)
+			return addResource(cr);
 		else {
 			addCapabilities(source.getCapabilities(null));
 			addRequirements(source.getRequirements(null));
@@ -96,7 +116,15 @@ public class ResourceBuilder {
 		}
 	}
 
-	public ResourceBuilder addCompositeResource(CompositeResource source) {
+	/**
+	 * Adds a composite resource to this builder. The capabilities,
+	 * requirements, and supporting resources of the composite resource are
+	 * added to this builder.
+	 *
+	 * @param source the composite resource to add
+	 * @return this builder
+	 */
+	public ResourceBuilder addResource(SupportingResource source) {
 		addCapabilities(source.getCapabilities(null));
 		addRequirements(source.getRequirements(null));
 		source.getSupportingResources()
@@ -104,14 +132,33 @@ public class ResourceBuilder {
 		return this;
 	}
 
+	/**
+	 * Adds a supporting resource to this builder.
+	 *
+	 * @param resource the supporting resource to add
+	 */
 	public void addSupportingResource(Resource resource) {
 		supportingResources.add(resource);
 	}
+
+	/**
+	 * Adds a capability to this builder.
+	 *
+	 * @param capability the capability to add
+	 * @return this builder
+	 */
 
 	public ResourceBuilder addCapability(Capability capability) {
 		CapReqBuilder builder = CapReqBuilder.clone(capability);
 		return addCapability(builder);
 	}
+
+	/**
+	 * Adds a capability to this builder using the given `CapReqBuilder`.
+	 *
+	 * @param builder the `CapReqBuilder` to use for building the capability
+	 * @return this builder
+	 */
 
 	public ResourceBuilder addCapability(CapReqBuilder builder) {
 		if (builder == null)
@@ -126,29 +173,30 @@ public class ResourceBuilder {
 	}
 
 	private Capability addCapability0(CapReqBuilder builder) {
-		Capability cap = buildCapability(builder);
-		add(capabilities, cap.getNamespace(), cap);
+		CapabilityImpl cap = buildCapability(builder);
+		capabilities.add(cap.getNamespace(), cap);
 		return cap;
 	}
 
-	private static <CR> void add(Map<String, Set<CR>> map, String namespace, CR capreq) {
-		map.computeIfAbsent(namespace, k -> new LinkedHashSet<>())
-			.add(capreq);
-	}
+	/**
+	 * Builds a capability using the given `CapReqBuilder`.
+	 *
+	 * @param builder the `CapReqBuilder` to use for building the capability
+	 * @return the built capability
+	 */
 
-	private static <CR> List<CR> flatten(Map<String, Set<CR>> map) {
-		return map.values()
-			.stream()
-			.flatMap(Set<CR>::stream)
-			.collect(toList());
-	}
-
-	protected Capability buildCapability(CapReqBuilder builder) {
-		Capability cap = builder.setResource(resource)
+	protected CapabilityImpl buildCapability(CapReqBuilder builder) {
+		CapabilityImpl cap = builder.setResource(resource)
 			.buildCapability();
 		return cap;
 	}
 
+	/**
+	 * Adds a requirement to this builder.
+	 *
+	 * @param requirement the requirement to add
+	 * @return this builder
+	 */
 	public ResourceBuilder addRequirement(Requirement requirement) {
 		if (requirement == null)
 			return this;
@@ -156,6 +204,14 @@ public class ResourceBuilder {
 		CapReqBuilder builder = CapReqBuilder.clone(requirement);
 		return addRequirement(builder);
 	}
+
+	/**
+	 * Adds a requirement to this ResourceBuilder.
+	 *
+	 * @param builder the CapReqBuilder representing the requirement to add
+	 * @return this ResourceBuilder instance
+	 * @throws IllegalStateException if the Resource has already been built
+	 */
 
 	public ResourceBuilder addRequirement(CapReqBuilder builder) {
 		if (builder == null)
@@ -169,34 +225,69 @@ public class ResourceBuilder {
 		return this;
 	}
 
+	/*
+	 * Adds a RequirementImpl object to this ResourceBuilder's requirements
+	 * list.
+	 * @param builder the CapReqBuilder representing the requirement to add
+	 * @return the newly created RequirementImpl object
+	 */
 	private Requirement addRequirement0(CapReqBuilder builder) {
-		Requirement req = buildRequirement(builder);
-		add(requirements, req.getNamespace(), req);
+		RequirementImpl req = buildRequirement(builder);
+		requirements.add(req.getNamespace(), req);
 		return req;
 	}
 
-	protected Requirement buildRequirement(CapReqBuilder builder) {
-		Requirement req = builder.setResource(resource)
+	/**
+	 * Builds a new RequirementImpl object using the provided CapReqBuilder.
+	 *
+	 * @param builder the CapReqBuilder to use to build the RequirementImpl
+	 * @return the newly created RequirementImpl object
+	 */
+	protected RequirementImpl buildRequirement(CapReqBuilder builder) {
+		RequirementImpl req = builder.setResource(resource)
 			.buildRequirement();
 		return req;
 	}
 
-	public CompositeResource build() {
+	/**
+	 * Builds and returns a new SupportingResource object using the data stored
+	 * in this ResourceBuilder.
+	 *
+	 * @return the newly created SupportingResource object
+	 * @throws IllegalStateException if the Resource has already been built
+	 */
+	public SupportingResource build() {
 		if (built)
 			throw new IllegalStateException("Resource already built");
 		built = true;
 
-		resource.setCapabilities(flatten(capabilities));
-		resource.setRequirements(flatten(requirements));
-		return resource;
+		return resource.build(capabilities, requirements, supportingResources);
 	}
 
+	/**
+	 * Returns a flattened list of all the Capability objects stored in this
+	 * ResourceBuilder.
+	 *
+	 * @return a List of Capability objects
+	 */
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
 	public List<Capability> getCapabilities() {
-		return flatten(capabilities);
+		return (List) ResourceImpl.flatten(capabilities);
 	}
 
+	/**
+	 * Returns a flattened list of all the Requirement objects stored in this
+	 * ResourceBuilder.
+	 *
+	 * @return a List of Requirement objects
+	 */
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
 	public List<Requirement> getRequirements() {
-		return flatten(requirements);
+		return (List) ResourceImpl.flatten(requirements);
 	}
 
 	/**
@@ -353,6 +444,13 @@ public class ResourceBuilder {
 		return true;
 	}
 
+	/**
+	 * Adds CapabilityBuilder objects to this Processor's capabilities list, one
+	 * for each service listed in the exportServices Parameters object.
+	 *
+	 * @param exportServices the Parameters object containing the service names
+	 *            and attributes to export
+	 */
 	public void addExportServices(Parameters exportServices) {
 		exportServices.stream()
 			.mapKey(Processor::removeDuplicateMarker)
@@ -364,6 +462,13 @@ public class ResourceBuilder {
 			});
 	}
 
+	/**
+	 * Adds RequirementBuilder objects to this Processor's requirements list,
+	 * one for each service listed in the importServices Parameters object.
+	 *
+	 * @param importServices the Parameters object containing the service names
+	 *            and attributes to import
+	 */
 	public void addImportServices(Parameters importServices) {
 		importServices.stream()
 			.mapKey(Processor::removeDuplicateMarker)
@@ -391,7 +496,7 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Caclulate the requirement from a native code header
+	 * Calculate the requirement from a native code header
 	 *
 	 * @param header the Bundle-NativeCode header or null
 	 * @return a Requirement Builder set to the requirements according tot he
@@ -522,11 +627,26 @@ public class ResourceBuilder {
 			.forEachOrdered(this::addRequireBundle);
 	}
 
+	/**
+	 * Adds a new Require-Bundle requirement to this Processor's requirements
+	 * list, specifying the bundle symbolic name and version range.
+	 *
+	 * @param bsn the bundle symbolic name to require
+	 * @param range the version range to require for the specified bundle
+	 */
 	public void addRequireBundle(String bsn, VersionRange range) {
 		Attrs attrs = new Attrs();
 		attrs.put(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, range.toString());
 		addRequireBundle(bsn, attrs);
 	}
+
+	/**
+	 * Adds a new Require-Bundle requirement to this Processor's requirements
+	 * list, specifying the bundle symbolic name and any additional attributes.
+	 *
+	 * @param bsn the bundle symbolic name to require
+	 * @param attrs the additional attributes for the requirement
+	 */
 
 	public void addRequireBundle(String bsn, Attrs attrs) {
 		RequirementBuilder require = new RequirementBuilder(BundleNamespace.BUNDLE_NAMESPACE);
@@ -538,6 +658,14 @@ public class ResourceBuilder {
 		addRequirement(require);
 	}
 
+	/**
+	 * Adds a new Fragment-Host requirement to this Processor's requirements
+	 * list, specifying the host bundle symbolic name and any additional
+	 * attributes.
+	 *
+	 * @param bsn the host bundle symbolic name to require
+	 * @param attrs the additional attributes for the requirement
+	 */
 	public void addFragmentHost(String bsn, Attrs attrs) {
 		RequirementBuilder require = new RequirementBuilder(HostNamespace.HOST_NAMESPACE);
 		require.addDirectives(attrs)
@@ -549,18 +677,65 @@ public class ResourceBuilder {
 		addRequirement(require);
 	}
 
+	/**
+	 * Adds one or more Require-Capability requirements to this Processor's
+	 * requirements list, using the specified Parameters object to define the
+	 * required capabilities.
+	 *
+	 * @param required the Parameters object containing the required
+	 *            capabilities and their attributes
+	 */
 	public void addRequireCapabilities(Parameters required) {
 		required.stream()
 			.mapKey(Processor::removeDuplicateMarker)
 			.forEachOrdered((namespace, attrs) -> addRequireCapability(namespace, namespace, attrs));
 	}
 
+	/**
+	 * Adds a new Require-Capability requirement to this Processor's
+	 * requirements list, using the specified namespace, name, and attributes.
+	 *
+	 * @param namespace the namespace of the required capability
+	 * @param name the name of the required capability, or null if not
+	 *            applicable
+	 * @param attrs the additional attributes for the requirement
+	 */
+
 	public void addRequireCapability(String namespace, String name, Attrs attrs) {
+		addRequireCapability(namespace, name, null, attrs);
+	}
+
+	/**
+	 * Adds a new Require-Capability requirement to this Processor's
+	 * requirements list, using the specified namespace, name, version range,
+	 * and attributes.
+	 *
+	 * @param namespace the namespace of the required capability
+	 * @param name the name of the required capability, or null if not
+	 *            applicable
+	 * @param versionRange the version range to require for the specified
+	 *            capability, or null if not applicable
+	 * @param attrs the additional attributes for the requirement
+	 */
+	public void addRequireCapability(String namespace, String name, String versionRange, Attrs attrs) {
 		RequirementBuilder req = new RequirementBuilder(namespace);
+		if (name != null) {
+			req.addFilter(namespace, name, versionRange, attrs);
+		}
 		req.addAttributesOrDirectives(attrs);
 		addRequirement(req);
 	}
 
+	/**
+	 * Adds one or more CapabilityBuilder objects to this Processor's
+	 * capabilities list, using the specified Parameters object to define the
+	 * provided capabilities.
+	 *
+	 * @param capabilities the Parameters object containing the provided
+	 *            capabilities and their attributes
+	 * @return a List of Capability objects that were added to the Processor's
+	 *         capabilities list
+	 */
 	public List<Capability> addProvideCapabilities(Parameters capabilities) {
 		List<Capability> added = capabilities.stream()
 			.mapKey(Processor::removeDuplicateMarker)
@@ -573,6 +748,17 @@ public class ResourceBuilder {
 		return addProvideCapabilities(new Parameters(clauses, reporter));
 	}
 
+	/**
+	 * Adds a new CapabilityBuilder object to this Processor's capabilities
+	 * list, representing a provided capability with the specified namespace and
+	 * attributes.
+	 *
+	 * @param namespace the namespace of the provided capability
+	 * @param attrs the attributes for the provided capability
+	 * @return the Capability object that was added to the Processor's
+	 *         capabilities list
+	 */
+
 	public Capability addProvideCapability(String namespace, Attrs attrs) {
 		CapabilityBuilder builder = new CapabilityBuilder(namespace);
 		builder.addAttributesOrDirectives(attrs);
@@ -581,32 +767,88 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Add Exported Packages
+	 * Adds one or more Export-Package requirements to this Processor's
+	 * requirements list, using the specified Parameters object to define the
+	 * exported packages and their attributes.
+	 *
+	 * @param exports the Parameters object containing the exported packages and
+	 *            their attributes
 	 */
 	public void addExportPackages(Parameters exports) {
 		exports.forEach((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs));
 	}
 
+	/**
+	 * Adds one or more Export-Package requirements to this Processor's
+	 * requirements list, using the specified Parameters object to define the
+	 * exported packages and their attributes, as well as the bundle symbolic
+	 * name and version for the exporting bundle.
+	 *
+	 * @param exports the Parameters object containing the exported packages and
+	 *            their attributes
+	 * @param bundle_symbolic_name the symbolic name of the exporting bundle
+	 * @param bundle_version the version of the exporting bundle
+	 */
 	public void addExportPackages(Parameters exports, String bundle_symbolic_name, Version bundle_version) {
 		exports.forEach((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs,
 			bundle_symbolic_name, bundle_version));
 	}
 
+	/**
+	 * Adds the Execution Environment information to this Processor's
+	 * capabilities list and exported packages list.
+	 *
+	 * @param ee the EE object containing the Execution Environment information
+	 */
 	public void addEE(EE ee) {
 		addExportPackages(ee.getPackages());
-		EE[] compatibles = ee.getCompatible();
-		addExecutionEnvironment(ee);
-		for (EE compatible : compatibles) {
-			addExecutionEnvironment(compatible);
-		}
+
+		MultiMap<String, aQute.bnd.version.Version> map = new MultiMap<>();
+
+		Stream.concat(Stream.of(ee), Stream.of(ee.getCompatible()))
+			.forEach(e -> {
+				map.add(e.getCapabilityName(), e.getCapabilityVersion());
+
+				// Compatibility with old version...
+
+				CapReqBuilder builder = new CapReqBuilder(
+					ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+				builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, e.getEEName());
+				addCapability(builder);
+			});
+
+		map.forEach((k, v) -> {
+			CapReqBuilder builder = new CapReqBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+			builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, k);
+			builder.addAttribute(ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, v);
+			addCapability(builder);
+		});
 	}
 
+	/**
+	 * Adds a new Export-Package requirement to this Processor's requirements
+	 * list, representing an exported package with the specified name and
+	 * attributes, and exporting by the specified bundle.
+	 *
+	 * @param name the name of the exported package
+	 * @param attrs the attributes for the exported package
+	 * @param bundle_symbolic_name the symbolic name of the exporting bundle
+	 * @param bundle_version the version of the exporting bundle
+	 */
 	public void addExportPackage(String name, Attrs attrs, String bundle_symbolic_name, Version bundle_version) {
 		CapabilityBuilder builder = CapReqBuilder.createPackageCapability(name, attrs, bundle_symbolic_name,
 			bundle_version);
 		addCapability(builder);
 	}
 
+	/**
+	 * Adds a new Export-Package requirement to this Processor's requirements
+	 * list, representing an exported package with the specified name and
+	 * attributes, and exporting by the current bundle.
+	 *
+	 * @param name the name of the exported package
+	 * @param attrs the attributes for the exported package
+	 */
 	public void addExportPackage(String name, Attrs attrs) {
 		addExportPackage(name, attrs, null, null);
 	}
@@ -624,27 +866,14 @@ public class ResourceBuilder {
 		return buildRequirement(builder);
 	}
 
-	// Correct version according to R5 specification section 3.4.1
-	// BREE J2SE-1.4 ==> osgi.ee=JavaSE, version:Version=1.4
-	// See bug 329, https://github.com/bndtools/bnd/issues/329
+	@Deprecated
 	public void addExecutionEnvironment(EE ee) {
-		CapReqBuilder builder = new CapReqBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
-		builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName());
-		builder.addAttribute(ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, ee.getCapabilityVersion());
-		addCapability(builder);
-
-		// Compatibility with old version...
-		builder = new CapReqBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
-		builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, ee.getEEName());
-		addCapability(builder);
+		addEE(ee);
 	}
 
+	@Deprecated
 	public void addAllExecutionEnvironments(EE ee) {
-		addExportPackages(ee.getPackages());
-		addExecutionEnvironment(ee);
-		for (EE compatibleEE : ee.getCompatible()) {
-			addExecutionEnvironment(compatibleEE);
-		}
+		addEE(ee);
 	}
 
 	public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) {
@@ -750,8 +979,8 @@ public class ResourceBuilder {
 
 	public boolean addFile(File file, URI uri) throws Exception {
 
-		CompositeResource resource = cache.getResource(file, uri, () -> parse(file, uri));
-		addCompositeResource(resource);
+		SupportingResource resource = cache.getResource(file, uri, () -> parse(file, uri));
+		addResource(resource);
 		return resource.hasIdentity();
 	}
 
@@ -759,7 +988,7 @@ public class ResourceBuilder {
 		return addFile(f, f.toURI());
 	}
 
-	static CompositeResource parse(File file, URI uri) {
+	public static SupportingResource parse(File file, URI uri) {
 
 		if (file == null)
 			throw new IllegalArgumentException("no file object");
@@ -799,21 +1028,102 @@ public class ResourceBuilder {
 	}
 
 	public boolean addJar(Jar jar) {
-		Domain manifest;
 		try {
-			manifest = Domain.domain(jar.getManifest());
-			boolean hasIdentity = false;
-			if (manifest != null) {
-				hasIdentity = addManifest(manifest);
-			}
+			Domain manifest = Domain.domain(jar.getManifest());
+			if (addManifest(manifest)) {
 
-			if (hasIdentity) {
+				if (manifest.getMultiRelease()) {
+					addMultiRelease(jar, manifest);
+				}
 				addHashes(jar);
+				return true;
 			}
-			return hasIdentity;
+			return false;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	private void addMultiRelease(Jar jar, Domain manifest) {
+		JPMSModule jpms = new JPMSModule(jar);
+
+		String bsn = manifest.getBundleSymbolicName()
+			.getKey();
+		Version version = Version.parseVersion(manifest.getBundleVersion());
+		VersionRange capabilityRange = new VersionRange(true, version, version, true);
+
+		SortedSet<EE> ees = Collections.emptySortedSet();
+
+		List<RequirementImpl> list = requirements.remove(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		if (list != null && list.size() > 0) {
+			RequirementImpl remove = list.remove(0);
+			ees = EE.getEEsFromRequirement(remove.toString());
+		}
+		if (ees.isEmpty()) {
+			ees = EE.all();
+		}
+
+		RequirementBuilder rqb = new RequirementBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
+		FilterBuilder fb = new FilterBuilder();
+		fb.and()
+			.eq(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE, bsn)
+			.in(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE, capabilityRange);
+		rqb.addFilter(fb);
+		addRequirement(rqb);
+
+		int base = ees.first()
+			.getRelease();
+
+		addSupportingResource(buildSupportingResource(jpms, bsn, version, base));
+
+		for (int release : jpms.getVersions()) {
+			SupportingResource build = buildSupportingResource(jpms, bsn, version, release);
+			addSupportingResource(build);
+		}
+	}
+
+	static SupportingResource buildSupportingResource(JPMSModule jpms, String bsn, Version version, int release) {
+		ResourceBuilder builder = new ResourceBuilder();
+		Domain m = Domain.domain(jpms.getManifest(release));
+
+		CapabilityBuilder cb = new CapabilityBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
+		cb.addAttribute(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE, bsn);
+		cb.addAttribute(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		builder.addCapability(cb);
+
+		CapabilityBuilder id = new CapabilityBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
+		id.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn + "__" + release);
+		id.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		builder.addCapability(id);
+
+		builder.addImportPackages(m.getImportPackage());
+		builder.addRequireCapabilities(m.getRequireCapability());
+		builder.requirements.remove(EXECUTION_ENVIRONMENT_NAMESPACE);
+
+		RequirementBuilder rqb = new RequirementBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		EE ee = EE.getEEFromReleaseVersion(release);
+		aQute.bnd.version.Version low = ee.getCapabilityVersion();
+		VersionRange eeRange;
+		int nextRelease = jpms.getNextRelease(release);
+		if (nextRelease == Integer.MAX_VALUE)
+			eeRange = new VersionRange(low);
+		else
+			eeRange = new VersionRange(low, new aQute.bnd.version.Version(nextRelease, 0, 0));
+
+		FilterBuilder fb = new FilterBuilder();
+		fb.and()
+			.eq(EXECUTION_ENVIRONMENT_NAMESPACE, EE.JavaSE_9.getCapabilityName())
+			.in(CAPABILITY_VERSION_ATTRIBUTE, eeRange)
+			.endAnd();
+		rqb.addFilter(fb);
+		builder.addRequirement(rqb);
+
+		return builder.build();
+	}
+
+	public boolean addManifest(Manifest m) {
+		return addManifest(Domain.domain(m));
+
 	}
 
 	public void addHashes(File file) {
@@ -831,7 +1141,7 @@ public class ResourceBuilder {
 	 */
 	private void addHashes(Supplier<JarIndex> supplier) {
 
-		Set<Capability> packageCapabilities = capabilities.remove(PackageNamespace.PACKAGE_NAMESPACE);
+		List<CapabilityImpl> packageCapabilities = capabilities.remove(PackageNamespace.PACKAGE_NAMESPACE);
 		if ((packageCapabilities == null) || packageCapabilities.isEmpty()) {
 			return;
 		}
@@ -846,30 +1156,6 @@ public class ResourceBuilder {
 		for (Capability cap : packageCapabilities) {
 			CapReqBuilder builder = CapReqBuilder.clone(cap);
 			addHashes(index, cap, builder);
-			addCapability(builder);
-		}
-	}
-
-	private void addHashes(Map<String, List<Long>> hashes) throws IOException {
-		Set<Capability> packageCapabilities = capabilities.remove(PackageNamespace.PACKAGE_NAMESPACE);
-		if ((packageCapabilities == null) || packageCapabilities.isEmpty()) {
-			return;
-		}
-		if (packageCapabilities.stream()
-			.anyMatch(cap -> cap.getAttributes()
-				.containsKey(ClassIndexerAnalyzer.BND_HASHES))) {
-			capabilities.put(PackageNamespace.PACKAGE_NAMESPACE, packageCapabilities);
-			return;
-		}
-
-		for (Capability cap : packageCapabilities) {
-			CapReqBuilder builder = CapReqBuilder.clone(cap);
-			final String pkg = (String) cap.getAttributes()
-				.get(cap.getNamespace());
-			List<Long> ourHashes = hashes.get(pkg);
-			if (ourHashes != null) {
-				builder.addAttribute(ClassIndexerAnalyzer.BND_HASHES, ourHashes);
-			}
 			addCapability(builder);
 		}
 	}
@@ -906,7 +1192,7 @@ public class ResourceBuilder {
 	private class SafeResourceBuilder extends ResourceBuilder {
 
 		@Override
-		public CompositeResource build() {
+		public SupportingResource build() {
 			return null;
 		}
 
@@ -1143,26 +1429,10 @@ public class ResourceBuilder {
 			.toString();
 	}
 
-	/**
-	 * We order the wiring namespaces ahead of the other namespaces. This makes
-	 * the resolver happier in some tests which otherwise fail when using simple
-	 * namespace ordering.
-	 */
-	private static class NamespaceComparator implements Comparator<String> {
-		@Override
-		public int compare(String left, String right) {
-			return map(left).compareTo(map(right));
-		}
-
-		private static String map(String namespace) {
-			return switch (namespace) {
-				case IdentityNamespace.IDENTITY_NAMESPACE -> "1";
-				case PackageNamespace.PACKAGE_NAMESPACE -> "2";
-				case BundleNamespace.BUNDLE_NAMESPACE -> "3";
-				case HostNamespace.HOST_NAMESPACE -> "4";
-				default -> namespace;
-			};
-		}
+	synchronized SupportingResource get() {
+		if (!built)
+			build();
+		return resource;
 	}
 
 	/**
@@ -1181,59 +1451,21 @@ public class ResourceBuilder {
 			.isPresent() : "jar must have sha256";
 		assert uri != null : "uri must be set";
 
-		Manifest m = jar.getManifest();
-		if (m == null)
-			return null;
-
-		Domain d = Domain.domain(m);
+		ResourceBuilder rb = new ResourceBuilder();
+		boolean hasIdentity = rb.addJar(jar);
 
 		byte[] digest = jar.getSHA256()
 			.get();
 		int length = jar.getLength();
-
-		Map<String, List<Long>> hashes = new HashMap<>();
-		Parameters exports = d.getExportPackage();
-
-		for (String pkg : exports.keyList()) {
-			Map<String, ?> dirEntries = jar.getDirectory(Descriptors.fqnToBinary(pkg));
-			// It's possible to export a package that you don't contain
-			// locally so this can return null.
-			if (dirEntries == null) {
-				continue;
-			}
-			List<Long> theseHashes = dirEntries.keySet()
-				.stream()
-				.filter(Descriptors::isBinaryClass)
-				.map(Descriptors::binaryToSimple)
-				.distinct()
-				.filter(simple -> !Verifier.isNumber(simple))
-				.map(simple -> Long.valueOf(ClassIndexerAnalyzer.hash(simple)))
-				.collect(toList());
-			if (theseHashes.isEmpty()) {
-				continue;
-			}
-			hashes.put(pkg, theseHashes);
+		String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
+		String sha256 = Hex.toHexString(digest);
+		rb.addContentCapability(uri, sha256, length, mime);
+		if (projectName != null) {
+			rb.addWorkspaceNamespace(projectName);
 		}
 
 		jar = null; // ensure jar not referenced from lambda
 
-		return () -> {
-			try {
-				ResourceBuilder rb = new ResourceBuilder();
-				boolean hasIdentity = rb.addManifest(d);
-				if (hasIdentity) {
-					String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
-					String sha256 = Hex.toHexString(digest);
-					rb.addContentCapability(uri, sha256, length, mime);
-					rb.addHashes(hashes);
-				}
-				if (projectName != null) {
-					rb.addWorkspaceNamespace(projectName);
-				}
-				return rb.build();
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-		};
+		return rb::get;
 	}
 }
