@@ -100,7 +100,6 @@ import aQute.libg.uri.URIUtil;
 public class Launcher implements ServiceListener, FrameworkListener {
 
 	private static final String				BND_LAUNCHER			= ".bnd.launcher";
-	private static final String				JRT_PROTOCOL			= "jrt";
 
 	private PrintStream						out						= System.out;
 	private LauncherConstants				parms;
@@ -904,18 +903,12 @@ public class Launcher implements ServiceListener, FrameworkListener {
 
 			URL resource = getClass().getClassLoader()
 				.getResource(path);
+			if (resource == null)
+				throw new IllegalArgumentException("bundle " + path + " not found");
 			Bundle bundle;
-			if (connect) {
-				if (parms.embedded && JRT_PROTOCOL.equals(resource.getProtocol())) {
-					path = resource.toString();
-				}
-				trace("installing %s by connect", path);
-				bundle = context.installBundle(path);
-				updateDigest(digest, bundle);
-				tobestarted.add(bundle);
-			} else if (useReferences() && resource.getProtocol()
+			if (useReferences() && resource.getProtocol()
 				.equalsIgnoreCase("file")) {
-				trace("installing %s by reference", path);
+				trace("installing %s by reference. connect=%s", path, connect);
 
 				//
 				// Install by reference
@@ -936,7 +929,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 				try (InputStream in = resource.openStream()) {
 					bundle = getBundleByLocation(path);
 					if (bundle == null) {
-						trace("installing %s", path);
+						trace("installing %s. connect=%s", path, connect);
 						bundle = context.installBundle(path, in);
 						updateDigest(digest, bundle);
 					} else {
@@ -946,7 +939,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 							bundle.update(in);
 							updateDigest(digest, bundle);
 						} else {
-							trace("not updating %s because identical digest=%s", path, digest);
+							trace("not updating %s because identical digest=%s. connect=%s", path, digest, connect);
 						}
 					}
 					tobestarted.add(bundle);
