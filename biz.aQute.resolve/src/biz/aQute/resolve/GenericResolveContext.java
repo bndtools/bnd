@@ -4,6 +4,8 @@ import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.version.VersionRange;
 
@@ -54,11 +56,17 @@ public class GenericResolveContext extends AbstractResolveContext {
 	}
 
 	public void addEE(EE ee) throws Exception {
-		system.addAllExecutionEnvironments(ee);
+		system.addEE(ee);
 	}
 
 	public void addRequireBundle(String bsn, VersionRange versionRange) throws Exception {
 		input.addRequireBundle(bsn, versionRange);
+	}
+
+	public void addCapability(String namespace, Attrs attrs) {
+		CapabilityBuilder cb = new CapabilityBuilder(namespace);
+		cb.addAttributesOrDirectives(attrs);
+		system.addCapability(cb);
 	}
 
 	public void done() {

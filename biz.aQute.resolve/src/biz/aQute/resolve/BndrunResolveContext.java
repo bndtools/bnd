@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -163,7 +162,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				EE tmp = EE.parse(properties.getProperty(Constants.RUNEE));
 				EE ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
 
-				system.addAllExecutionEnvironments(ee);
+				system.addEE(ee);
 
 				//
 				// We make the system packages as coming from the system
@@ -496,14 +495,18 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	// capability is not type=osgi.bundle or type=osgi.fragment
 	private static final ResolverHook bundleTypeResolverHook;
 	static {
-		Predicate<Map<String, Object>> filterPredicate = ResourceUtils
-			.filterPredicate("(|(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + IdentityNamespace.TYPE_BUNDLE
-				+ ")(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + IdentityNamespace.TYPE_FRAGMENT + "))");
-		Predicate<Capability> capabilityPredicate = capability -> ResourceUtils
-			.capabilityStream(capability.getResource(), IdentityNamespace.IDENTITY_NAMESPACE)
-			.map(Capability::getAttributes)
-			.noneMatch(filterPredicate);
-		bundleTypeResolverHook = (requirement, capabilities) -> capabilities.removeIf(capabilityPredicate);
+		// Predicate<Map<String, Object>> filterPredicate = ResourceUtils
+		// .filterPredicate("(|(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE
+		// + "=" + IdentityNamespace.TYPE_BUNDLE
+		// + ")(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" +
+		// IdentityNamespace.TYPE_FRAGMENT + "))");
+		// Predicate<Capability> capabilityPredicate = capability ->
+		// ResourceUtils
+		// .capabilityStream(capability.getResource(),
+		// IdentityNamespace.IDENTITY_NAMESPACE)
+		// .map(Capability::getAttributes)
+		// .noneMatch(filterPredicate);
+		bundleTypeResolverHook = (requirement, capabilities) -> {};
 	}
 
 	private List<ResolverHook> getResolverHooks() {

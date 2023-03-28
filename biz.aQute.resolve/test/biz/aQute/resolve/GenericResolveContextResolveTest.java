@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static test.lib.Utils.createRepo;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -19,7 +21,12 @@ import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.RequirementBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -27,7 +34,7 @@ import aQute.lib.io.IO;
 
 @SuppressWarnings("restriction")
 public class GenericResolveContextResolveTest {
-	ResolverLogger logger = new ResolverLogger(0, System.out);
+	ResolverLogger	logger	= new ResolverLogger(0, System.out);
 
 	@InjectTemporaryDirectory
 	File			tmp;
@@ -59,6 +66,86 @@ public class GenericResolveContextResolveTest {
 			Set<Resource> resources = resolver.resolve(grc)
 				.keySet();
 			assertNotNull(getResource(resources, "org.apache.felix.gogo.runtime", "0.10"));
+		}
+	}
+
+	@Test
+	public void testMultiReleaseJar() throws Exception {
+		ResourcesRepository repository = new ResourcesRepository();
+		SupportingResource multirelease = ResourceBuilder.parse(IO.getFile("testdata/jar/multi-release-ok.jar"), null);
+		repository.add(multirelease);
+
+		Resource v1_8 = repository
+			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__8", "0.0.0")
+				.buildSyntheticRequirement())
+			.get(0)
+			.getResource();
+
+		Resource v9 = repository
+			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__9", "0.0.0")
+				.buildSyntheticRequirement())
+			.get(0)
+			.getResource();
+		Resource v12 = repository
+			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__12", "0.0.0")
+				.buildSyntheticRequirement())
+			.get(0)
+			.getResource();
+		Resource v17 = repository
+			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__17", "0.0.0")
+				.buildSyntheticRequirement())
+			.get(0)
+			.getResource();
+
+		Repository repo3 = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp);
+
+
+		SortedSet<EE> tailSet = EE.all()
+			.tailSet(EE.JavaSE_1_8);
+		tailSet.remove(EE.UNKNOWN);
+
+		for (EE ee : tailSet) {
+			GenericResolveContext grc = new GenericResolveContext(logger);
+			grc.setLevel(2);
+			grc.addRepository(repository);
+			grc.addRepository(repo3);
+			grc.addEE(ee);
+			grc.addFramework("org.apache.felix.framework", null);
+			Attrs attrs = new Attrs();
+			attrs.put("fake", "fake");
+			attrs.putTyped("version", new Version("1.2.3"));
+			grc.addCapability("fake", attrs);
+
+			grc.addRequireBundle("multirelease.main", new VersionRange("[0,1]"));
+			grc.done();
+
+			try (ResolverLogger logger = new ResolverLogger(4)) {
+				Resolver resolver = new BndResolver(new ResolverLogger(4));
+
+				try {
+					Set<Resource> resources = resolver.resolve(grc)
+						.keySet();
+					assertThat(resources).hasSize(4);
+					assertThat(resources).contains(multirelease);
+
+					switch (ee) {
+						case JavaSE_1_8 -> assertThat(resources).contains(v1_8);
+						case JavaSE_9 -> assertThat(resources).contains(v9);
+						case JavaSE_10 -> assertThat(resources).contains(v9);
+						case JavaSE_11 -> assertThat(resources).contains(v9);
+						case JavaSE_12 -> assertThat(resources).contains(v12);
+						case JavaSE_13 -> assertThat(resources).contains(v12);
+						case JavaSE_14 -> assertThat(resources).contains(v12);
+						case JavaSE_15 -> assertThat(resources).contains(v12);
+						case JavaSE_16 -> assertThat(resources).contains(v12);
+						case JavaSE_17 -> assertThat(resources).contains(v17);
+						default -> assertThat(resources).contains(v17);
+					}
+				} catch (Exception e) {
+					System.out.println(logger.getLog());
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
