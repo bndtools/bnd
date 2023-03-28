@@ -1,6 +1,7 @@
 package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static test.lib.Utils.createRepo;
@@ -145,6 +146,7 @@ public class GenericResolveContextResolveTest {
 				} catch (Exception e) {
 					System.out.println(logger.getLog());
 					e.printStackTrace();
+					fail("exception in resolve");
 				}
 			}
 		}
