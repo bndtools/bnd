@@ -2,11 +2,22 @@ package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Capability;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -17,9 +28,16 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JPMSModule;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.osgi.resource.MultiReleaseNamespace;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 public class MultiReleaseTest {
 
@@ -35,7 +53,6 @@ public class MultiReleaseTest {
 			return;
 
 		Workspace ws = getWorkspace();
-
 		Project main = ws.getProject("multirelease.main");
 		Project v9 = ws.getProject("multirelease.v9");
 		Project v12 = ws.getProject("multirelease.v12");
@@ -74,25 +91,22 @@ public class MultiReleaseTest {
 		Manifest manifest9 = jpms.getManifest(9);
 		assertThat(manifest9).isNotNull();
 		assertThat(manifest9.getMainAttributes()
-			.getValue(Constants.IMPORT_PACKAGE))
-				.isEqualTo(
-					"");
+			.getValue(Constants.IMPORT_PACKAGE)).isEqualTo("");
 		assertThat(manifest9.getMainAttributes()
 			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo("osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=9))\"");
 
 		Manifest manifest12 = jpms.getManifest(12);
 		assertThat(manifest12).isNotNull();
 		assertThat(manifest12.getMainAttributes()
-			.getValue(Constants.IMPORT_PACKAGE)).isEqualTo(
-				"org.osgi.service.url;version=\"[1.0,2)\"");
+			.getValue(Constants.IMPORT_PACKAGE)).isEqualTo("org.osgi.service.url;version=\"[1.0,2)\"");
 		assertThat(manifest12.getMainAttributes()
 			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo("osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=12))\"");
 
 		Manifest manifest17 = jpms.getManifest(17);
 		assertThat(manifest17).isNotNull();
 		assertThat(manifest17.getMainAttributes()
-			.getValue(Constants.IMPORT_PACKAGE)).isEqualTo(
-				"org.osgi.service.startlevel;version=\"[1.1,2)\",org.osgi.service.url;version=\"[1.0,2)\"");
+			.getValue(Constants.IMPORT_PACKAGE))
+				.isEqualTo("org.osgi.service.startlevel;version=\"[1.1,2)\",org.osgi.service.url;version=\"[1.0,2)\"");
 		assertThat(manifest17.getMainAttributes()
 			.getValue(Constants.REQUIRE_CAPABILITY)).isEqualTo(
 				"fake;filter:=\"(&(fake=fake)(version>=1.2.3)(!(version>=2.0.0)))\",osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=17))\"");
@@ -190,6 +204,93 @@ public class MultiReleaseTest {
 				.getValue(JPMSModule.MULTI_RELEASE_HEADER)).isEqualTo("true");
 		}
 
+	}
+
+	@Test
+	public void testMultiReleaseIndexing() throws Exception {
+
+		File file = IO.getFile("jar/multi-release-ok.jar");
+
+		ResourceBuilder rb = new ResourceBuilder();
+		boolean identity = rb.addFile(file);
+		assertThat(identity).isTrue();
+		SupportingResource r = rb.build();
+		assertThat(r.hasIdentity()).isTrue();
+
+		testResource(r, "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))",
+			null, false);
+		assertThat(r.getSupportingResources()).hasSize(4);
+		testResource(r.getSupportingResources()
+			.get(0), "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))",
+			"(&(osgi.ee=JavaSE)(&(version>=1.8.0)(!(version>=9.0.0))))", true);
+
+		testResource(r.getSupportingResources()
+			.get(1), null, "(&(osgi.ee=JavaSE)(&(version>=9.0.0)(!(version>=12.0.0))))", true);
+		testResource(r.getSupportingResources()
+			.get(2), "(&(osgi.wiring.package=org.osgi.service.url)(version>=1.0.0)(!(version>=2.0.0)))",
+			"(&(osgi.ee=JavaSE)(&(version>=12.0.0)(!(version>=17.0.0))))", true);
+		testResource(r.getSupportingResources()
+			.get(3),
+			"(&(osgi.wiring.package=org.osgi.service.startlevel)(version>=1.1.0)(!(version>=2.0.0))),(&(osgi.wiring.package=org.osgi.service.url)(version>=1.0.0)(!(version>=2.0.0)))",
+			"(&(osgi.ee=JavaSE)(version>=17.0.0))", true);
+
+		// check the expansion of the SupportingResources
+		ResourcesRepository repo = new ResourcesRepository();
+		repo.add(r);
+		assertThat(repo.getResources()).hasSize(5);
+
+		// check the expansion of the SupportingResource & roundtrip through XML
+
+		XMLResourceGenerator xg = new XMLResourceGenerator();
+		xg.resource(r);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		xg.save(bout);
+		String s = new String(bout.toByteArray(), StandardCharsets.UTF_8);
+		System.out.println(s);
+		List<org.osgi.resource.Resource> l = XMLResourceParser
+			.getResources(new ByteArrayInputStream(bout.toByteArray()), new URI(""));
+		assertThat(l).hasSize(5);
+
+	}
+
+	final static org.osgi.framework.Version lowest = new org.osgi.framework.Version("0");
+
+	private void testResource(org.osgi.resource.Resource r, String imports, String requires, boolean isSupport) {
+		testFilters(r, PackageNamespace.PACKAGE_NAMESPACE, Strings.split(imports));
+		testFilters(r, ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, Strings.split(requires));
+		if (isSupport) {
+			Capability capability = r.getCapabilities(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE)
+				.get(0);
+			assertThat(capability.getAttributes()
+				.get(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE)).isEqualTo(lowest);
+			assertThat(capability.getAttributes()
+				.get(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE)).isEqualTo("multirelease.main");
+		} else {
+			Capability capability = r.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE)
+				.get(0);
+			assertThat(capability.getAttributes()
+				.get(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE)).isEqualTo(lowest);
+			assertThat(capability.getAttributes()
+				.get(BundleNamespace.BUNDLE_NAMESPACE)).isEqualTo("multirelease.main");
+
+		}
+
+	}
+
+	private void testFilters(org.osgi.resource.Resource r, String namespace, List<String> split) {
+		List<String> filters = r.getRequirements(namespace)
+			.stream()
+			.map(rq -> {
+				System.out.println(rq);
+				return rq;
+			})
+			.map(rq -> rq.getDirectives()
+				.get("filter"))
+			.filter(Objects::nonNull)
+			.sorted()
+			.collect(Collectors.toList());
+
+		assertThat(filters).isEqualTo(split);
 	}
 
 	@Test
