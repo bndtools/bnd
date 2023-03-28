@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -100,8 +101,8 @@ public class GenericResolveContextResolveTest {
 		Repository repo3 = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp);
 
 
-		SortedSet<EE> tailSet = EE.all()
-			.tailSet(EE.JavaSE_1_8);
+		SortedSet<EE> tailSet = new TreeSet<>(EE.all()
+			.tailSet(EE.JavaSE_1_8));
 		tailSet.remove(EE.UNKNOWN);
 
 		for (EE ee : tailSet) {

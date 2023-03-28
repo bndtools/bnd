@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.osgi.framework.VersionRange;
 
+import aQute.bnd.version.Version;
+
 public class FilterBuilder {
 
 	public enum Operator {
@@ -181,11 +183,13 @@ public class FilterBuilder {
 		else
 			gt(key, range.getLow());
 
-		if (range.includeHigh())
-			le(key, range.getHigh());
-		else
-			lt(key, range.getHigh());
-
+		if (!range.getHigh()
+			.equals(Version.HIGHEST)) {
+			if (range.includeHigh())
+				le(key, range.getHigh());
+			else
+				lt(key, range.getHigh());
+		}
 		end();
 		return this;
 	}
