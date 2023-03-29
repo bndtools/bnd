@@ -14,10 +14,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.resource.Capability;
@@ -53,21 +58,22 @@ import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.service.reporter.Reporter;
 
 /**
  * This class does the resolving for bundles. It loads the details from a
  * BndEditModel & Project
  */
 public class BndrunResolveContext extends AbstractResolveContext {
-	private static final String			ALWAYS_TRUE					= "(!(_+_foo=bar))";
+	private static final String			ALWAYS_TRUE			= "(!(_+_foo=bar))";
 
-	private final static Logger			logger						= LoggerFactory
-		.getLogger(BndrunResolveContext.class);
+	private final static Logger			logger				= LoggerFactory.getLogger(BndrunResolveContext.class);
 
-	private static final String			BND_AUGMENT					= "bnd.augment";
+	private static final String			BND_AUGMENT			= "bnd.augment";
 
-	private static final String			NAMESPACE_WHITELIST			= "x-whitelist";
+	private static final String			NAMESPACE_WHITELIST	= "x-whitelist";
 
+	private final ResolverHook			bundleTypeResolverHook;
 	private Registry					registry;
 	private Parameters					resolvePrefs;
 	private final Processor				properties;
@@ -90,6 +96,13 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			this.registry = registry;
 			this.properties = runModel;
 			this.project = project;
+			Predicate<Capability> predicate = createPredicateToFilterCapabilities(
+				runModel.mergeProperties(Constants.RESOLVE_REJECT), project).orElse(null);
+			if (predicate != null)
+				bundleTypeResolverHook = (requirement, capabilities) -> capabilities.removeIf(predicate);
+			else
+				bundleTypeResolverHook = (requirement, capabilities) -> {};
+
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -387,13 +400,14 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 	private List<Repository> getAllRepos() {
 		List<Repository> allRepos;
-		if (project != null && !project.isStandalone() ) {
-			allRepos = project.getWorkspace().getPlugins(Repository.class);
-			allRepos.removeIf( WorkspaceRepositoryMarker.class::isInstance);
+		if (project != null && !project.isStandalone()) {
+			allRepos = project.getWorkspace()
+				.getPlugins(Repository.class);
+			allRepos.removeIf(WorkspaceRepositoryMarker.class::isInstance);
 			WorkspaceResourcesRepository wr = new WorkspaceResourcesRepository(project.getWorkspace());
 			allRepos.add(wr);
 		} else {
-			 allRepos = registry.getPlugins(Repository.class);
+			allRepos = registry.getPlugins(Repository.class);
 		}
 		return allRepos;
 	}
@@ -491,24 +505,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		resolvePrefs = new Parameters(properties.getProperty(Constants.RESOLVE_PREFERENCES), project);
 	}
 
-	// Remove any capabilities that come from resources whose osgi.identity
-	// capability is not type=osgi.bundle or type=osgi.fragment
-	private static final ResolverHook bundleTypeResolverHook;
-	static {
-		// Predicate<Map<String, Object>> filterPredicate = ResourceUtils
-		// .filterPredicate("(|(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE
-		// + "=" + IdentityNamespace.TYPE_BUNDLE
-		// + ")(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" +
-		// IdentityNamespace.TYPE_FRAGMENT + "))");
-		// Predicate<Capability> capabilityPredicate = capability ->
-		// ResourceUtils
-		// .capabilityStream(capability.getResource(),
-		// IdentityNamespace.IDENTITY_NAMESPACE)
-		// .map(Capability::getAttributes)
-		// .noneMatch(filterPredicate);
-		bundleTypeResolverHook = (requirement, capabilities) -> {};
-	}
-
 	private List<ResolverHook> getResolverHooks() {
 		if (resolverHooks != null) {
 			return resolverHooks;
@@ -554,5 +550,72 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				callback.processCandidates(requirement, wired, candidates);
 			}
 		}
+	}
+
+	/*
+	 * Create a composite predicate to filter capabilities. For example:
+	 * osgi.identity;filter:="(type=osgi.bundle)",
+	 * osgi.identity;filter:="(type=osgi.fragment)",
+	 * osgi.identity;filter:="(type=bnd.synthetic)";
+	 */
+	final static int	FILTER		= 1;
+	final static int	ONRESOURCE	= 2;
+
+	static Optional<Predicate<Capability>> createPredicateToFilterCapabilities(String resolveFilter,
+		Reporter reporter) {
+		if (!Strings.nonNullOrEmpty(resolveFilter))
+			return Optional.empty();
+
+		Parameters filters = new Parameters(resolveFilter);
+		Predicate<Capability> result = null;
+		for (Entry<String, Attrs> e : filters.entrySet())
+			try {
+				int n = 0;
+
+				String ns = Processor.removeDuplicateMarker(e.getKey());
+				if (ns.startsWith("@")) {
+					n += ONRESOURCE;
+					ns = ns.substring(1);
+				}
+				String namespace = ns;
+
+				String filter = e.getValue()
+					.get("filter:");
+
+				Filter actual;
+				if (filter != null) {
+					actual = FrameworkUtil.createFilter(filter);
+					n += FILTER;
+				} else
+					actual = null;
+
+				@SuppressWarnings("null")
+				Predicate<Capability> reject = switch (n) {
+					default -> c -> false;
+
+					case 0 -> c -> namespace.equals(c.getNamespace());
+					case FILTER -> c -> namespace.equals(c.getNamespace()) && actual.matches(c.getAttributes());
+					case ONRESOURCE -> c -> !c.getResource()
+						.getCapabilities(namespace)
+						.isEmpty();
+					case ONRESOURCE + FILTER -> c -> {
+						List<Capability> l = c.getResource()
+							.getCapabilities(namespace);
+						return !l.isEmpty() && l.stream()
+							.filter(cc -> actual.matches(cc.getAttributes()))
+							.findAny()
+							.isPresent();
+					};
+				};
+
+				if (result == null)
+					result = reject;
+				else
+					result = result.or(reject);
+
+			} catch (InvalidSyntaxException ex) {
+				reporter.error("-resolve.filter %s, had a syntax error in a filter: ", e, ex);
+			}
+		return Optional.ofNullable(result);
 	}
 }

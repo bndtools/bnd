@@ -74,6 +74,7 @@ import aQute.service.reporter.Reporter;
  */
 @ProviderType
 public class ResourceBuilder {
+	public static final String						SYNTHETIC			= "bnd.synthetic";
 	private static final FileResourceCache			cache				= FileResourceCache.getInstance();
 	private final ResourceImpl						resource			= new ResourceImpl();
 	private final MultiMap<String, CapabilityImpl>	capabilities		= new MultiMap<>();
@@ -1094,6 +1095,7 @@ public class ResourceBuilder {
 		CapabilityBuilder id = new CapabilityBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 		id.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn + "__" + release);
 		id.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		id.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, SYNTHETIC);
 		builder.addCapability(id);
 
 		builder.addImportPackages(m.getImportPackage());

@@ -296,7 +296,7 @@ public class Converter {
 								if (s.equalsIgnoreCase(input2))
 									return enm;
 							}
-							return ec.getEnumConstants()[0];
+							return null;
 						}
 						return null;
 					}

@@ -19,10 +19,9 @@ public class MultiReleaseNamespace {
 	/**
 	 * The namespace name
 	 */
-	public static final String	MULTI_RELEASE_NAMESPACE			= "osgi.multirelease";
+	public static final String	MULTI_RELEASE_NAMESPACE			= "bnd.multirelease";
 	/**
 	 * The version attribute.
 	 */
 	public static final String	CAPABILITY_VERSION_ATTRIBUTE	= "version";
-
 }
