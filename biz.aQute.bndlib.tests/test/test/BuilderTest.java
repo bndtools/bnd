@@ -54,6 +54,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
@@ -74,6 +75,26 @@ import aQute.service.reporter.Report.Location;
 @SuppressWarnings("resource")
 public class BuilderTest {
 
+	/**
+	 * [builder] Access to information generated during doExpand() #5130
+	 *
+	 * @throws Exception
+	 */
+
+	@Test
+	public void testSourceInformationRecording() throws Exception {
+		try (Builder builder = new Builder()) {
+			builder.addClasspath(IO.getFile("jar/osgi.core-4.3.0.jar"));
+			builder.setProperty("Export-Package", "org.osgi.framework");
+			builder.build();
+			assertThat(builder.check());
+
+			PackageRef framework = builder.getPackageRef("org.osgi.framework");
+			Attrs attrs = builder.getContained()
+				.get(framework);
+			assertThat(attrs.get(Constants.INTERNAL_SOURCE_DIRECTIVE)).isEqualTo("osgi.core-4.3.0.201102171602");
+		}
+	}
 	/**
 	 * -includepackage: *;from:=classes will generate an error if there are no
 	 * classes.
