@@ -1,9 +1,12 @@
 package biz.aQute.resolve;
 
+import static aQute.bnd.osgi.resource.MultiReleaseNamespace.MULTI_RELEASE_VERSION_ATTRIBUTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.osgi.service.repository.ContentNamespace.CAPABILITY_URL_ATTRIBUTE;
+import static org.osgi.service.repository.ContentNamespace.CONTENT_NAMESPACE;
 import static test.lib.Utils.createRepo;
 
 import java.io.File;
@@ -106,27 +109,46 @@ public class GenericResolveContextResolveTest {
 		SupportingResource multirelease = ResourceBuilder.parse(IO.getFile("testdata/jar/multi-release-ok.jar"), null);
 		repository.add(multirelease);
 
-		Resource v1_8 = repository
-			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__8", "0.0.0")
-				.buildSyntheticRequirement())
-			.get(0)
-			.getResource();
+		List<Capability> bundles = repository
+			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main", "0.0.0")
+				.buildSyntheticRequirement());
 
-		Resource v9 = repository
-			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__9", "0.0.0")
-				.buildSyntheticRequirement())
-			.get(0)
-			.getResource();
-		Resource v12 = repository
-			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__12", "0.0.0")
-				.buildSyntheticRequirement())
-			.get(0)
-			.getResource();
-		Resource v17 = repository
-			.findProvider(RequirementBuilder.createBundleRequirement("multirelease.main__17", "0.0.0")
-				.buildSyntheticRequirement())
-			.get(0)
-			.getResource();
+		Resource v1_8 = bundles.stream()
+			.map(Capability::getResource)
+			.filter(r -> !r.getCapabilities(CONTENT_NAMESPACE)
+				.stream()
+				.anyMatch(c -> String.valueOf(c.getAttributes()
+					.get(CAPABILITY_URL_ATTRIBUTE))
+					.contains(MULTI_RELEASE_VERSION_ATTRIBUTE)))
+			.findFirst()
+			.get();
+		Resource v9 = bundles.stream()
+			.map(Capability::getResource)
+			.filter(r -> r.getCapabilities(CONTENT_NAMESPACE)
+				.stream()
+				.allMatch(c -> String.valueOf(c.getAttributes()
+					.get(CAPABILITY_URL_ATTRIBUTE))
+					.endsWith(MULTI_RELEASE_VERSION_ATTRIBUTE + "=9")))
+			.findFirst()
+			.get();
+		Resource v12 = bundles.stream()
+			.map(Capability::getResource)
+			.filter(r -> r.getCapabilities(CONTENT_NAMESPACE)
+				.stream()
+				.allMatch(c -> String.valueOf(c.getAttributes()
+					.get(CAPABILITY_URL_ATTRIBUTE))
+					.endsWith(MULTI_RELEASE_VERSION_ATTRIBUTE + "=12")))
+			.findFirst()
+			.get();
+		Resource v17 = bundles.stream()
+			.map(Capability::getResource)
+			.filter(r -> r.getCapabilities(CONTENT_NAMESPACE)
+				.stream()
+				.allMatch(c -> String.valueOf(c.getAttributes()
+					.get(CAPABILITY_URL_ATTRIBUTE))
+					.endsWith(MULTI_RELEASE_VERSION_ATTRIBUTE + "=17")))
+			.findFirst()
+			.get();
 
 		Repository repo3 = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp);
 
@@ -155,8 +177,7 @@ public class GenericResolveContextResolveTest {
 				try {
 					Set<Resource> resources = resolver.resolve(grc)
 						.keySet();
-					assertThat(resources).hasSize(4);
-					assertThat(resources).contains(multirelease);
+					assertThat(resources).hasSize(3);
 
 					switch (ee) {
 						case JavaSE_1_8 -> assertThat(resources).contains(v1_8);

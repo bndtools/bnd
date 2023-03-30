@@ -1011,9 +1011,8 @@ public class ResourceBuilder {
 
 		try (Jar jar = new Jar(file)) {
 			ResourceBuilder rb = new ResourceBuilder();
-			boolean hasIdentity = rb.addJar(jar);
 
-			String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
+			String mime = jar.getBsn() != null ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
 
 			rb.addContentCapability(uri,
 				new DeferredComparableValue<String>(String.class,
@@ -1021,6 +1020,8 @@ public class ResourceBuilder {
 						.asHex()),
 					file.hashCode()),
 				file.length(), mime);
+
+			rb.addJar(jar);
 
 			return rb.build();
 		} catch (Exception rt) {
@@ -1032,11 +1033,11 @@ public class ResourceBuilder {
 		try {
 			Domain manifest = Domain.domain(jar.getManifest());
 			if (addManifest(manifest)) {
+				addHashes(jar);
 
 				if (manifest.getMultiRelease()) {
 					addMultiRelease(jar, manifest);
 				}
-				addHashes(jar);
 				return true;
 			}
 			return false;
@@ -1048,14 +1049,9 @@ public class ResourceBuilder {
 	private void addMultiRelease(Jar jar, Domain manifest) {
 		JPMSModule jpms = new JPMSModule(jar);
 
-		String bsn = manifest.getBundleSymbolicName()
-			.getKey();
-		Version version = Version.parseVersion(manifest.getBundleVersion());
-		VersionRange capabilityRange = new VersionRange(true, version, version, true);
-
 		SortedSet<EE> ees = Collections.emptySortedSet();
 
-		List<RequirementImpl> list = requirements.remove(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		List<RequirementImpl> list = requirements.remove(EXECUTION_ENVIRONMENT_NAMESPACE);
 		if (list != null && list.size() > 0) {
 			RequirementImpl remove = list.remove(0);
 			ees = EE.getEEsFromRequirement(remove.toString());
@@ -1064,44 +1060,51 @@ public class ResourceBuilder {
 			ees = EE.all();
 		}
 
-		RequirementBuilder rqb = new RequirementBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
-		FilterBuilder fb = new FilterBuilder();
-		fb.and()
-			.eq(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE, bsn)
-			.in(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE, capabilityRange);
-		rqb.addFilter(fb);
-		addRequirement(rqb);
-
-		int base = ees.first()
-			.getRelease();
-
-		addSupportingResource(buildSupportingResource(jpms, bsn, version, base));
+		addRequirement(getEERequirement(jpms, ees.first()
+			.getRelease()));
 
 		for (int release : jpms.getVersions()) {
-			SupportingResource build = buildSupportingResource(jpms, bsn, version, release);
-			addSupportingResource(build);
+			addSupportingResource(buildSupportingResource(jpms, release));
 		}
 	}
 
-	static SupportingResource buildSupportingResource(JPMSModule jpms, String bsn, Version version, int release) {
+	private SupportingResource buildSupportingResource(JPMSModule jpms, int release) {
 		ResourceBuilder builder = new ResourceBuilder();
 		Domain m = Domain.domain(jpms.getManifest(release));
 
-		CapabilityBuilder cb = new CapabilityBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
-		cb.addAttribute(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE, bsn);
-		cb.addAttribute(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-		builder.addCapability(cb);
+		builder.addManifest(m);
 
-		CapabilityBuilder id = new CapabilityBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
-		id.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn + "__" + release);
-		id.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-		id.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, SYNTHETIC);
-		builder.addCapability(id);
+		// Copy package exports to pick up the hashes without recalculating
+		// them. This is safe as MRJ is forbidden to change exported API.
+		builder.capabilities.replace(PackageNamespace.PACKAGE_NAMESPACE,
+			capabilities.get(PackageNamespace.PACKAGE_NAMESPACE));
 
-		builder.addImportPackages(m.getImportPackage());
-		builder.addRequireCapabilities(m.getRequireCapability());
+		// Copy the content capability if it exists as we have the same
+		// content and can avoid recalculating the sha.
+		if (capabilities.containsKey(ContentNamespace.CONTENT_NAMESPACE)) {
+			String fragment = MultiReleaseNamespace.MULTI_RELEASE_VERSION_ATTRIBUTE + "=" + release;
+			for (CapabilityImpl ci : capabilities.get(ContentNamespace.CONTENT_NAMESPACE)) {
+				CapReqBuilder cb = CapReqBuilder.clone(ci);
+				String url = (String) ci.getAttributes()
+					.get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
+				if (url != null) {
+					URI uri = URI.create(url);
+					String toAppend = uri.getFragment() == null ? "#" + fragment : "&" + fragment;
+					cb.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, url + toAppend);
+				}
+				builder.addCapability(cb);
+			}
+		}
+
 		builder.requirements.remove(EXECUTION_ENVIRONMENT_NAMESPACE);
 
+		RequirementBuilder rqb = getEERequirement(jpms, release);
+		builder.addRequirement(rqb);
+
+		return builder.build();
+	}
+
+	private RequirementBuilder getEERequirement(JPMSModule jpms, int release) {
 		RequirementBuilder rqb = new RequirementBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 		EE ee = EE.getEEFromReleaseVersion(release);
 		aQute.bnd.version.Version low = ee.getCapabilityVersion();
@@ -1118,9 +1121,7 @@ public class ResourceBuilder {
 			.in(CAPABILITY_VERSION_ATTRIBUTE, eeRange)
 			.endAnd();
 		rqb.addFilter(fb);
-		builder.addRequirement(rqb);
-
-		return builder.build();
+		return rqb;
 	}
 
 	public boolean addManifest(Manifest m) {

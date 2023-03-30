@@ -461,7 +461,14 @@ public class HttpClient implements Closeable, URLConnector {
 				//
 
 				if ("file".equalsIgnoreCase(url.getProtocol())) {
-					File sourceFile = new File(uri);
+					// HTTP clients are required to strip fragments before
+					// querying so we should remove any fragment here
+					File sourceFile;
+					if (uri.getFragment() == null) {
+						sourceFile = new File(uri);
+					} else {
+						sourceFile = new File(uri.getPath());
+					}
 					if (!sourceFile.isFile()) {
 						return new TaggedData(uri, HTTP_NOT_FOUND, null);
 					}

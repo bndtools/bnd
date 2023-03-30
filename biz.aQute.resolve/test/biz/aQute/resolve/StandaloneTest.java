@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.resource.Requirement;
-import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Container;
@@ -23,9 +22,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
-import aQute.bnd.osgi.resource.MultiReleaseNamespace;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
 
@@ -61,7 +58,7 @@ public class StandaloneTest {
 			RunResolution resolve = run.resolve();
 			assertThat(resolve.isOK());
 			System.out.println(resolve.log);
-			assertThat(resolve.getOrderedResources()).hasSize(2);
+			assertThat(resolve.getOrderedResources()).hasSize(1);
 			Collection<Container> runbundles = run.getRunbundles();
 			assertThat(runbundles).hasSize(1);
 			assertThat(runbundles.iterator()
@@ -69,14 +66,8 @@ public class StandaloneTest {
 				.getFile()
 				.getName()).isEqualTo("multirelease.main-0.0.0.jar");
 
-			Resource synthetic = resolve.getOrderedResources()
-				.stream()
-				.flatMap(r -> ResourceUtils.capabilityStream(r, MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE))
-				.findFirst()
-				.get()
-				.getResource();
-
-			Requirement requirement = synthetic
+			Requirement requirement = resolve.getOrderedResources()
+				.get(0)
 				.getRequirements(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE)
 				.get(0);
 			SortedSet<EE> ees = EE.getEEsFromRequirement(requirement.toString());

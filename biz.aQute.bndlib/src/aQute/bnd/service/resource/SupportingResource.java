@@ -7,13 +7,13 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 
 /**
- * The SupportingResource interface represents a resource that requires other
- * resources that are needed to resolve the primary resource. It was introduced
+ * The SupportingResource interface represents a resource that has multiple
+ * different representations for the same underlying content. It was introduced
  * to support Multi Release Jars (MRJ). These jars contain content that varies
- * depending on the JVM release it is deployed. This could be modeled with a
- * supporting resource. The primary resource required a special capability. For
+ * depending on the JVM release it is deployed in. This could be modeled with a
+ * supporting resource. The primary resource represents the "base" content. For
  * each range of VMs as used in the MRJ, a supporting resource is created that
- * provides the special capability and requires the proper VM range.
+ * provides the same capabilities and requires the appropriate requirements.
  * <p>
  * However, this could be useful in other cases so the current specification is
  * independent of this use case.

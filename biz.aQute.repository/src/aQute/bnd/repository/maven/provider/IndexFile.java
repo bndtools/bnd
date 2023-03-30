@@ -46,6 +46,7 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.BundleCap;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
@@ -597,7 +598,8 @@ class IndexFile {
 			return null;
 
 		Archive archive = MapStream.of(archives)
-			.filterValue(v -> v == resource)
+			.filterValue(v -> v == resource || (v instanceof SupportingResource sr && sr.getSupportingResources()
+				.contains(resource)))
 			.keys()
 			.findFirst()
 			.orElse(null);
