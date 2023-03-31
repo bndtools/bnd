@@ -222,7 +222,7 @@ public class MavenBndRepoTest {
 		assertEquals("1.0.0 [" + Constants.NOT_A_BUNDLE_S + "]", title);
 
 		title = repo.title("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"));
-		assertThat(title).contains("1.4.0.SNAPSHOT [invalid jar format: ");
+		assertThat(title).contains("1.4.0.SNAPSHOT [empty file");
 
 	}
 

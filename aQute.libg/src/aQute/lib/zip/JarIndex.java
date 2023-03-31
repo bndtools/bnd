@@ -52,6 +52,16 @@ public class JarIndex extends Hierarchy {
 		super(build(in, null, null));
 	}
 
+	public <T> JarIndex(Map<String, T> map) throws IOException {
+		super(build(map));
+	}
+
+	private static <T> Map<String, Object> build(Map<String, T> map) {
+		Map<String, Object> result = new HashMap<>();
+		map.forEach((k, v) -> addFile(result, k, v));
+		return result;
+	}
+
 	public JarIndex(File in, Pattern doNotCopy) throws IOException {
 		super(build(in, doNotCopy, null));
 	}
@@ -128,6 +138,7 @@ public class JarIndex extends Hierarchy {
 			throw e;
 		}
 	}
+
 
 	private static Map<String, Object> buildFromInputStream(InputStream in, Function<NodeInfo, ?> f)
 		throws IOException {

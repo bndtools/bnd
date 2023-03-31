@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 
@@ -22,7 +24,6 @@ import aQute.bnd.version.Version;
 import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {
-
 
 	OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", "1.0", 0),
 
@@ -80,8 +81,8 @@ public enum EE {
 	private final EE[]				compatible;
 	private final int				release;
 	private transient EnumSet<EE>	compatibleSet;
-	private transient Parameters	packages	= null;
-	private transient Parameters	modules		= null;
+	private transient Parameters	packages				= null;
+	private transient Parameters	modules					= null;
 
 	/**
 	 * For use by JavaSE_9 and later.
@@ -265,37 +266,34 @@ public enum EE {
 
 	/**
 	 * From a Require-Capability header, extract the Execution Environment
-	 * capability and match against EEs. The EEs are traversed from highest
-	 * release to lowest release, first matching release is returned.
+	 * capability and match against EEs. This is generally used with one
+	 * requirement. If you add multiple, the EE's are or'ed.
 	 *
-	 * @param requireCapability the Require-Capability header
-	 * @return the highest EE in the list
+	 * @param requirement the Require-Capability header
+	 * @return A sorted set of EEs that match one of the given requirements
 	 */
-	public static Optional<EE> getEEFromRequirement(String requireCapability) {
-		Parameters reqs = new Parameters(requireCapability);
-		EE result = null;
-		nextReq: for (Map.Entry<String, Attrs> e : reqs.entrySet()) {
+	public static SortedSet<EE> getEEsFromRequirement(String requirement) {
+		Parameters reqs = new Parameters(requirement);
+		SortedSet<EE> result = new TreeSet<>();
+		FilterParser fp = new FilterParser();
+		SortedSet<EE> all = all();
+
+		for (Map.Entry<String, Attrs> e : reqs.entrySet()) {
 			Attrs attrs = reqs.get(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 			if (attrs != null) {
-				String filter = attrs.get(ExecutionEnvironmentNamespace.REQUIREMENT_FILTER_DIRECTIVE);
-				FilterParser fp = new FilterParser();
+				String filter = attrs.get("filter:");
 				Expression expr = fp.parse(filter);
-				EE[] values = EE.values();
 				Map<String, Object> map = new HashMap<>();
-				for (int i = values.length - 1; i >= 0; i--) {
-					EE v = values[i];
-					if (result != null && v.compareTo(result) <= 0)
-						continue nextReq;
-
+				for (EE v : EE.values) {
+					map.put(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, v.getCapabilityName());
 					map.put(ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, v.getCapabilityVersion());
 					if (expr.eval(map)) {
-						result = v;
-						continue nextReq;
+						result.add(v);
 					}
 				}
 			}
 		}
-		return Optional.ofNullable(result);
+		return result;
 	}
 
 	final static EE[] classFileVersionsMinus44 = {
@@ -322,11 +320,22 @@ public enum EE {
 	 */
 
 	public static EE getEEFromReleaseVersion(int releaseVersion) {
-		for (int i = values().length; i >= 0; i--) {
+		for (int i = values().length - 1; i >= 0; i--) {
 			EE ee = values()[i];
 			if (ee.release == releaseVersion)
 				return ee;
 		}
 		return UNKNOWN;
+	}
+
+	static SortedSet<EE> all;
+	static {
+		var a = new TreeSet<>(Arrays.asList(EE.values));
+		a.remove(UNKNOWN);
+		all = Collections.unmodifiableSortedSet(a);
+	}
+
+	public static SortedSet<EE> all() {
+		return all;
 	}
 }

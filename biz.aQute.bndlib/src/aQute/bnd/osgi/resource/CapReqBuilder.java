@@ -189,24 +189,24 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public Capability buildCapability() {
+	public CapabilityImpl buildCapability() {
 		if (resource == null)
 			throw new IllegalStateException("Cannot build Capability with null Resource.");
 		return new CapabilityImpl(namespace, resource, directives, attributes);
 	}
 
-	public Capability buildSyntheticCapability() {
+	public CapabilityImpl buildSyntheticCapability() {
 		return new CapabilityImpl(namespace, null, directives, attributes);
 	}
 
-	public Requirement buildRequirement() {
+	public RequirementImpl buildRequirement() {
 		if (resource == null)
 			throw new IllegalStateException(
 				"Cannot build Requirement with null Resource. use buildSyntheticRequirement");
 		return new RequirementImpl(namespace, resource, directives, attributes);
 	}
 
-	public Requirement buildSyntheticRequirement() {
+	public RequirementImpl buildSyntheticRequirement() {
 		return new RequirementImpl(namespace, null, directives, attributes);
 	}
 

@@ -280,7 +280,26 @@ public class Converter {
 					return Enum.valueOf((Class<Enum>) resultType, input);
 				} catch (Exception e) {
 					input = input.toUpperCase(Locale.ROOT);
-					return Enum.valueOf((Class<Enum>) resultType, input);
+					String input2 = input.replace('_', '.');
+
+					try {
+						return Enum.valueOf((Class<Enum>) resultType, input);
+					} catch (Exception ee) {
+						Class<? extends Enum> ec = resultType;
+
+						Enum[] enumConstants = ec.getEnumConstants();
+						if (enumConstants != null) {
+							for (Enum enm : enumConstants) {
+								String s = enm.toString();
+								if (s.equalsIgnoreCase(input))
+									return enm;
+								if (s.equalsIgnoreCase(input2))
+									return enm;
+							}
+							return null;
+						}
+						return null;
+					}
 				}
 			}
 			if (resultType == Pattern.class) {

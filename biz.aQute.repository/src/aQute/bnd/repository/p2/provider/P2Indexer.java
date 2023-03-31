@@ -39,6 +39,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.util.repository.DownloadListenerPromise;
@@ -69,7 +70,7 @@ class P2Indexer implements Closeable {
 	private final String				urlHash;
 	private final File					indexFile;
 	private volatile BridgeRepository	bridge;
-	private static final Resource		RECOVERY				= new ResourceBuilder().build();
+	private static final SupportingResource	RECOVERY				= new ResourceBuilder().build();
 	private static final String			P2_CAPABILITY_NAMESPACE	= "bnd.p2";
 	private static final String			MD5_ATTRIBUTE			= "md5";
 	private static final Requirement	MD5_REQUIREMENT			= new RequirementBuilder(P2_CAPABILITY_NAMESPACE)
@@ -199,6 +200,7 @@ class P2Indexer implements Closeable {
 						return RECOVERY;
 					});
 			})
+			.map(a -> a)
 			.filter(Objects::nonNull)
 			.collect(promiseFactory.toPromise());
 

@@ -28,7 +28,6 @@ import aQute.bnd.main.bnd.HandledProjectWorkspaceOptions;
 import aQute.bnd.main.bnd.ProjectWorkspaceOptions;
 import aQute.bnd.main.bnd.excludeOptions;
 import aQute.bnd.main.bnd.projectOptions;
-import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -160,8 +159,7 @@ public class ResolveCommand extends Processor {
 				error("Specified system file but not found: %s", f);
 				return;
 			}
-			Domain domain = Domain.domain(f);
-			system.addManifest(domain);
+			system.addFile(f);
 		}
 
 		List<String> args = options._arguments();

@@ -73,6 +73,10 @@ public class Version implements Comparable<Version> {
 		this.snapshot = isSnapshot(qualifier);
 	}
 
+	public Version(org.osgi.framework.Version v) {
+		this(v.getMajor(), v.getMinor(), v.getMicro(), v.getQualifier());
+	}
+
 	private boolean isSnapshot(String qualifier) {
 		return qualifier != null && qualifier != HIGHESTCHAR && SNAPSHOT_P.matcher(qualifier)
 			.matches();

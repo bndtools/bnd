@@ -84,6 +84,29 @@ public class VersionRange {
 		this.includeHigh = this.low.equals(this.high);
 	}
 
+	public VersionRange(Version v) {
+		includeLow = true;
+		low = v;
+		high = Version.HIGHEST;
+		includeHigh = true;
+	}
+
+	public VersionRange(org.osgi.framework.Version v) {
+		includeLow = true;
+		low = new Version(v);
+		high = Version.HIGHEST;
+		includeHigh = true;
+	}
+
+	public VersionRange(org.osgi.framework.Version low, org.osgi.framework.Version high) {
+		this(new Version(low), new Version(high));
+	}
+
+	public VersionRange(boolean includeLow, org.osgi.framework.Version low, org.osgi.framework.Version high,
+		boolean includeHigh) {
+		this(includeLow, new Version(low), new Version(high), includeHigh);
+	}
+
 	static Version unique(Version v) {
 		if (Version.HIGHEST.equals(v))
 			return Version.HIGHEST;

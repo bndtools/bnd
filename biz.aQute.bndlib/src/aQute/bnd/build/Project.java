@@ -1919,7 +1919,8 @@ public class Project extends Processor {
 							if (lastModified < jar.lastModified()) {
 								lastModified = jar.lastModified();
 							}
-							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar, file.toURI(),
+							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar,
+								file.toURI(),
 								getName());
 							if (indexer != null) {
 								resourceBuilders.add(indexer);

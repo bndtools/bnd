@@ -44,3 +44,4 @@
 	${mockito}
 
 -runtrace: true
+-buildpath: org.osgi.resource

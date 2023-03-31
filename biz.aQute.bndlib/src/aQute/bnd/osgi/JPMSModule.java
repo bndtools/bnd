@@ -153,25 +153,36 @@ public class JPMSModule {
 		this.jar = jar;
 	}
 
+	/**
+	 * Get the underlying JAR
+	 */
 	public Jar getJar() {
 		return jar;
 	}
 
-	public static String getVersionedPath(int release, String string) {
+	/**
+	 * Get the path to a resource in a version directory
+	 *
+	 * @param release the release version of the VM
+	 * @param path the path in the version directory
+	 * @return a path
+	 */
+	public static String getVersionedPath(int release, String path) {
 
 		assert release > 8 && release < 100;
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("META-INF/versions/")
 			.append(release);
-		if (string != null)
+		if (path != null)
 			sb.append('/')
-				.append(string);
+				.append(path);
 		return sb.toString();
 	}
 
 	/**
-	 * Return the available releases in this modules
+	 * Return the available releases in this modules. This does not include the
+	 * base, we do not know what version that is
 	 * <p>
 	 *
 	 * @return a map with the release number -> a JAR.
@@ -283,20 +294,48 @@ public class JPMSModule {
 		return Optional.empty();
 	}
 
+	/**
+	 * Checks if this JAR has version directories. This does not look at the
+	 * manifest header.
+	 *
+	 * @return if this is a multi release JAR (has versions)
+	 */
 	public boolean isMultiRelease() {
 		return !getVersions().isEmpty();
 	}
 
+	/**
+	 * Returns the name of the module, either from the module descriptor or
+	 * automatically generated from the JAR file manifest.
+	 *
+	 * @return An optional string containing the module name, or an empty
+	 *         optional if the module name cannot be determined.
+	 * @throws Exception If an error occurs while parsing the module descriptor
+	 *             or manifest.
+	 */
 	public Optional<String> getModuleName() throws Exception {
 		return moduleAttribute().map(a -> a.module_name)
 			.or(this::automaticModuleName);
 	}
 
+	/**
+	 * Returns the name of the module, automatically generated from the JAR file
+	 * manifest.
+	 *
+	 * @return An optional string containing the automatic module name, or an
+	 *         empty optional if the automatic module name cannot be determined.
+	 */
 	Optional<String> automaticModuleName() {
 		return manifest().map(m -> m.getMainAttributes()
 			.getValue(Constants.AUTOMATIC_MODULE_NAME));
 	}
 
+	/**
+	 * Returns the manifest for the JAR file, or an empty optional if the
+	 * manifest cannot be read.
+	 *
+	 * @return An optional manifest for the JAR file.
+	 */
 	Optional<Manifest> manifest() {
 		try {
 			return Optional.ofNullable(jar.getManifest());
@@ -305,10 +344,24 @@ public class JPMSModule {
 		}
 	}
 
+	/**
+	 * Returns the version of the module, if present in the module descriptor.
+	 *
+	 * @return An optional string containing the module version, or an empty
+	 *         optional if the module version cannot be determined.
+	 * @throws Exception If an error occurs while parsing the module descriptor.
+	 */
 	public Optional<String> getModuleVersion() throws Exception {
 		return moduleAttribute().map(a -> a.module_version);
 	}
 
+	/*
+	 * Returns the module attribute for the module descriptor, if present.
+	 * @return An optional module attribute containing the name and version of
+	 * the module, or an empty optional if the module descriptor cannot be found
+	 * or parsed.
+	 * @throws Exception If an error occurs while parsing the module descriptor.
+	 */
 	Optional<ModuleAttribute> moduleAttribute() throws Exception {
 		if (moduleAttribute != null) {
 			return moduleAttribute;
@@ -369,6 +422,16 @@ public class JPMSModule {
 		}
 	}
 
+	/**
+	 * Copies specified headers from one manifest to another.
+	 *
+	 * @param result The manifest to copy the headers to. If null, a new
+	 *            manifest will be created.
+	 * @param r The manifest to copy the headers from. If null, no headers will
+	 *            be copied.
+	 * @param headers The headers to copy.
+	 * @return The manifest with the copied headers.
+	 */
 	public static Manifest copy(Manifest result, Manifest r, String... headers) {
 		if (result == null)
 			result = new Manifest();
@@ -388,6 +451,14 @@ public class JPMSModule {
 		return result;
 	}
 
+	/**
+	 * Gets a new JAR file that includes all the files from this JAR file and
+	 * all previous versions up to and including the specified release.
+	 *
+	 * @param release The release number to include in the new JAR file.
+	 * @return A new JAR file containing all the files from this JAR file and
+	 *         all previous versions up to and including the specified release.
+	 */
 	public Jar getRelease(int release) {
 		Jar target = new Jar(jar.getName());
 		target.addAll(jar, new Instruction("!META-INF/versions/*"));
@@ -400,6 +471,23 @@ public class JPMSModule {
 			target.addAll(delta);
 		}
 		return target;
+	}
+
+	/**
+	 * Gets the release number of the next version after the specified release.
+	 *
+	 * @param release The release number.
+	 * @return The release number of the next version after the specified
+	 *         release, or Integer.MAX_VALUE if there are no more versions.
+	 */
+
+	public int getNextRelease(int release) {
+		SortedSet<Integer> versions = getVersions();
+		SortedSet<Integer> tailSet = versions.tailSet(release + 1);
+		if (tailSet.isEmpty())
+			return Integer.MAX_VALUE;
+
+		return tailSet.first();
 	}
 
 }

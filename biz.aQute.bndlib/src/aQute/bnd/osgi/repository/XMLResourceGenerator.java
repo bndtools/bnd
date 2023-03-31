@@ -43,6 +43,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.TypedAttribute;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
@@ -60,10 +61,20 @@ public class XMLResourceGenerator {
 	private boolean			compress	= false;
 	private URI				base;
 
+	/**
+	 * Creates a new instance of {@code XMLResourceGenerator} with an empty
+	 * repository.
+	 */
 	public XMLResourceGenerator() {
 		repository.addAttribute("xmlns", NS_URI);
 	}
 
+	/**
+	 * Saves the contents of this generator to the specified file.
+	 *
+	 * @param location The file to save the contents to.
+	 * @throws IOException If an I/O error occurs.
+	 */
 	public void save(File location) throws IOException {
 		if (location.getName()
 			.endsWith(".gz"))
@@ -78,6 +89,12 @@ public class XMLResourceGenerator {
 		IO.rename(tmp, location);
 	}
 
+	/**
+	 * Saves the contents of this generator to the specified output stream.
+	 *
+	 * @param out The output stream to save the contents to.
+	 * @throws IOException If an I/O error occurs.
+	 */
 	public void save(OutputStream out) throws IOException {
 		try {
 			if (compress) {
@@ -123,6 +140,14 @@ public class XMLResourceGenerator {
 		return this;
 	}
 
+	/**
+	 * Adds a referral to this generator.
+	 *
+	 * @param reference The URI of the referral.
+	 * @param depth The depth of the referral.
+	 * @return This generator.
+	 */
+
 	public XMLResourceGenerator referral(URI reference, int depth) {
 		Tag referall = new Tag(repository, TAG_REFERRAL);
 		referall.addAttribute(ATTR_REFERRAL_URL, reference);
@@ -130,6 +155,13 @@ public class XMLResourceGenerator {
 			referall.addAttribute(ATTR_REFERRAL_DEPTH, depth);
 		return this;
 	}
+
+	/**
+	 * Adds all the resources in the specified repository to this generator.
+	 *
+	 * @param repository The repository whose resources to add.
+	 * @return This generator.
+	 */
 
 	public XMLResourceGenerator repository(Repository repository) {
 		Requirement wildcard = ResourceUtils.createWildcardRequirement();
@@ -142,41 +174,62 @@ public class XMLResourceGenerator {
 		return this;
 	}
 
+	/**
+	 * Adds all the resources in the specified collection to this generator.
+	 *
+	 * @param resources The resources to add.
+	 * @return This generator.
+	 */
+
 	public XMLResourceGenerator resources(Collection<? extends Resource> resources) {
 		resources.forEach(this::resource);
 		return this;
 	}
 
+	/**
+	 * Adds the specified resource to this generator.
+	 *
+	 * @param resource The resource to add.
+	 * @return This generator.
+	 */
 	public XMLResourceGenerator resource(Resource resource) {
 		if (!visited.contains(resource)) {
 			visited.add(resource);
 
-			Tag r = new Tag(repository, TAG_RESOURCE);
-			List<Capability> caps = resource.getCapabilities(null);
-			caps.forEach(cap -> {
-				Tag cr = new Tag(r, TAG_CAPABILITY);
-				cr.addAttribute(ATTR_NAMESPACE, cap.getNamespace());
-				directives(cr, cap.getDirectives());
-				attributes(cr, cap.getAttributes());
-			});
-
-			List<Requirement> reqs = resource.getRequirements(null);
-			reqs.forEach(req -> {
-				Tag cr = new Tag(r, TAG_REQUIREMENT);
-				cr.addAttribute(ATTR_NAMESPACE, req.getNamespace());
-				directives(cr, req.getDirectives());
-				attributes(cr, req.getAttributes());
-			});
+			resource0(resource);
+			if (resource instanceof SupportingResource s) {
+				s.getSupportingResources()
+					.forEach(this::resource0);
+			}
 		}
 		return this;
 	}
 
+	void resource0(Resource resource) {
+		Tag r = new Tag(repository, TAG_RESOURCE);
+		List<Capability> caps = resource.getCapabilities(null);
+		caps.forEach(cap -> {
+			Tag cr = new Tag(r, TAG_CAPABILITY);
+			cr.addAttribute(ATTR_NAMESPACE, cap.getNamespace());
+			directives(cr, cap.getDirectives());
+			attributes(cr, cap.getAttributes());
+		});
+
+		List<Requirement> reqs = resource.getRequirements(null);
+		reqs.forEach(req -> {
+			Tag cr = new Tag(r, TAG_REQUIREMENT);
+			cr.addAttribute(ATTR_NAMESPACE, req.getNamespace());
+			directives(cr, req.getDirectives());
+			attributes(cr, req.getAttributes());
+		});
+	}
+
 	private void directives(Tag cr, Map<String, String> directives) {
 		directives.forEach((key, value) -> {
-				Tag d = new Tag(cr, TAG_DIRECTIVE);
-				d.addAttribute(ATTR_NAME, key);
-				d.addAttribute(ATTR_VALUE, value);
-			});
+			Tag d = new Tag(cr, TAG_DIRECTIVE);
+			d.addAttribute(ATTR_NAME, key);
+			d.addAttribute(ATTR_VALUE, value);
+		});
 	}
 
 	private void attributes(Tag cr, Map<String, Object> attributes) {
@@ -215,11 +268,22 @@ public class XMLResourceGenerator {
 		}
 	}
 
+	/**
+	 * Sets the indentation level for the generated XML document.
+	 *
+	 * @param n The number of spaces for each indentation level.
+	 * @return This generator.
+	 */
 	public XMLResourceGenerator indent(int n) {
 		this.indent = n;
 		return this;
 	}
 
+	/**
+	 * Enables compression for the generated XML document.
+	 *
+	 * @return This generator.
+	 */
 	public XMLResourceGenerator compress() {
 		this.compress = true;
 		return this;

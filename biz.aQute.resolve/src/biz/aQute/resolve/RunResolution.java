@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
@@ -33,6 +34,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability.Type;
 import aQute.bnd.result.Result;
 import aQute.lib.dot.DOT;
 import aQute.lib.io.IO;
@@ -260,6 +262,8 @@ public class RunResolution {
 	 */
 	public List<VersionedClause> getRunBundles() {
 		List<Resource> orderedResources = getOrderedResources();
+		Predicate<Resource> pred = this::isBundle;
+		orderedResources.removeIf(pred.negate());
 		List<VersionedClause> versionedClauses = ResourceUtils.toVersionedClauses(orderedResources);
 		int begin = runstartlevel.begin();
 		if (begin > 0) {
@@ -518,6 +522,12 @@ public class RunResolution {
 	public static void clearCache(Workspace ws) {
 		File cache = ws.getCache("resolutions");
 		IO.delete(cache);
+	}
+
+	private boolean isBundle(Resource resource) {
+		IdentityCapability id = ResourceUtils.getIdentityCapability(resource);
+		Type type = id.type();
+		return id != null && (type == Type.bundle || type == Type.fragment);
 	}
 
 }

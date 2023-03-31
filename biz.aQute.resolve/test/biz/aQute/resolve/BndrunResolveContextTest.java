@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,6 +10,7 @@ import static test.lib.Utils.createRepo;
 import static test.lib.Utils.findContentURI;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,6 +18,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 import org.osgi.resource.Capability;
@@ -32,7 +36,9 @@ import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
@@ -46,7 +52,7 @@ import test.lib.NullLogService;
 })
 public class BndrunResolveContextTest {
 
-	private final LogService log = new NullLogService();
+	private final LogService	log	= new NullLogService();
 
 	@InjectTemporaryDirectory
 	File						tmp;
@@ -193,8 +199,7 @@ public class BndrunResolveContextTest {
 	@Test
 	public void testEffective3() throws Exception {
 		BndEditModel model = new BndEditModel();
-		model.genericSet(Constants.RESOLVE_EFFECTIVE,
-			"active;skip:=\"filtered.ns,another.filtered.ns\", arbitrary");
+		model.genericSet(Constants.RESOLVE_EFFECTIVE, "active;skip:=\"filtered.ns,another.filtered.ns\", arbitrary");
 
 		BndrunResolveContext context = new BndrunResolveContext(model.getProperties(), model.getProject(),
 			new MockRegistry(), log);
@@ -230,7 +235,7 @@ public class BndrunResolveContextTest {
 		BndEditModel model = new BndEditModel();
 		assertEquals(0,
 			new BndrunResolveContext(model.getProperties(), model.getProject(), new MockRegistry(), log).getWirings()
-			.size());
+				.size());
 	}
 
 	@Test
@@ -947,4 +952,80 @@ public class BndrunResolveContextTest {
 		}
 	}
 
+	@Test
+	public void testResolveFilter() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addProvideCapabilities(new Parameters("id;id=s1;type=bundle"));
+		rb.addProvideCapabilities(new Parameters("foo;a=A"));
+		rb.addProvideCapabilities(new Parameters("bar;a=AA"));
+		Resource s1 = rb.build();
+
+		rb = new ResourceBuilder();
+		rb.addProvideCapabilities(new Parameters("id;id=s2;type=synthetic"));
+		rb.addProvideCapabilities(new Parameters("foo;a=A"));
+		rb.addProvideCapabilities(new Parameters("bar;a=B"));
+		rb.addProvideCapabilities(new Parameters("baz"));
+		Resource s2 = rb.build();
+
+		List<Capability> capabilities = new ArrayList<>(s1.getCapabilities(null));
+
+		capabilities.addAll(s2.getCapabilities(null));
+		assertThat(capabilities).hasSize(7);
+
+		Capability s1_bar = capabilities.get(0);
+		Capability s1_foo = capabilities.get(1);
+		Capability s1_id = capabilities.get(2);
+
+		Capability s2_bar = capabilities.get(3);
+		Capability s2_baz = capabilities.get(4);
+		Capability s2_foo = capabilities.get(5);
+		Capability s2_id = capabilities.get(6);
+
+		assertThat(capabilities).containsExactly(s1_bar, s1_foo, s1_id, s2_bar, s2_baz, s2_foo, s2_id);
+
+
+		assertThat(tf("foo", capabilities)).containsExactly(s1_bar, s1_id, s2_bar, s2_baz, s2_id);
+		assertThat(tf("bar", capabilities)).containsExactly(s1_foo, s1_id, s2_baz, s2_foo, s2_id);
+		assertThat(tf("xxx", capabilities)).isEqualTo(capabilities);
+
+		assertThat(tf("@foo", capabilities)).containsExactly();
+		assertThat(tf("@baz", capabilities)).containsExactly(s1_bar, s1_foo, s1_id);
+		assertThat(tf("@xxx", capabilities)).isEqualTo(capabilities);
+
+		assertThat(tf("foo;filter:='(a=A)'", capabilities)).containsExactly(s1_bar, s1_id, s2_bar, s2_baz, s2_id);
+		assertThat(tf("bar;filter:='(a=AA)'", capabilities)).containsExactly(s1_foo, s1_id, s2_bar, s2_baz, s2_foo,
+			s2_id);
+		assertThat(tf("bar;filter:='(a=IDONOTEXIST)'", capabilities)).isEqualTo(capabilities);
+		assertThat(tf("xxx;filter:='(a=IDONOTEXIST)'", capabilities)).isEqualTo(capabilities);
+
+		assertThat(tf("@foo;filter:='(a=A)'", capabilities)).containsExactly();
+		assertThat(tf("@bar;filter:='(a=B)'", capabilities)).containsExactly(s1_bar, s1_foo, s1_id);
+		assertThat(tf("@xxx", capabilities)).isEqualTo(capabilities);
+
+		assertThat(tf("foo, bar", capabilities)).containsExactly(s1_id, s2_baz, s2_id);
+		assertThat(tf("foo, bar, xxx", capabilities)).containsExactly(s1_id, s2_baz, s2_id);
+
+		assertThat(tf("@bar;filter:='(a=AA)', bar", capabilities)).containsExactly(s2_baz, s2_foo, s2_id);
+		assertThat(tf("@bar;filter:='(a=AA)', @baz", capabilities)).isEmpty();
+
+		assertThat(tf("@id;filter:='(!(|(type=bundle)(type=fragment)))'", capabilities)).containsExactly(s1_bar, s1_foo,
+			s1_id);
+	}
+
+	private List<Capability> tf(String spec, List<Capability> capabilities) throws IOException {
+		try (Processor p = new Processor()) {
+			Optional<Predicate<Capability>> predicate = BndrunResolveContext.createPredicateToFilterCapabilities(spec,
+				p);
+			assertThat(predicate).isPresent();
+			List<Capability> copy = new ArrayList<>(capabilities);
+			copy.removeIf(c -> {
+				boolean result = predicate.get()
+					.test(c);
+				System.out.println("found " + c + " " + result);
+				return result;
+			});
+			assertThat(p.check()).isTrue();
+			return copy;
+		}
+	}
 }

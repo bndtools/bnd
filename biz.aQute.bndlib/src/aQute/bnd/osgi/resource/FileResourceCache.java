@@ -1,9 +1,5 @@
 package aQute.bnd.osgi.resource;
 
-import static aQute.bnd.exceptions.SupplierWithException.asSupplierOrElse;
-import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
-import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -15,36 +11,49 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import org.osgi.resource.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.function.Supplier;
 
 import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.osgi.Domain;
-import aQute.libg.cryptography.SHA256;
+import aQute.bnd.service.resource.SupportingResource;
 
+/**
+ * A cache for {@link SupportingResource}s associated with {@link File}s. The
+ * cache is implemented as a concurrent hash map. The cache key consists of the
+ * file path, size, and last modification time. The resources are created on
+ * demand via the provided {@link Supplier}.
+ */
 class FileResourceCache {
-	private final static Logger				logger					= LoggerFactory.getLogger(FileResourceCache.class);
-	private final static long				EXPIRED_DURATION_NANOS	= TimeUnit.NANOSECONDS.convert(30L,
+	private final static long						EXPIRED_DURATION_NANOS	= TimeUnit.NANOSECONDS.convert(30L,
 		TimeUnit.MINUTES);
-	private static final FileResourceCache	INSTANCE				= new FileResourceCache();
-	private final Map<CacheKey, Resource>	cache;
-	private long							time;
+	private static final FileResourceCache			INSTANCE				= new FileResourceCache();
+	private final Map<CacheKey, SupportingResource>	cache;
+	private long									time;
 
 	private FileResourceCache() {
 		cache = new ConcurrentHashMap<>();
 		time = System.nanoTime();
 	}
 
+	/**
+	 * Get the singleton instance of the cache.
+	 *
+	 * @return The cache instance.
+	 */
 	static FileResourceCache getInstance() {
 		return INSTANCE;
 	}
 
-	Resource getResource(File file, URI uri) {
-		if (!file.isFile()) {
-			return null;
-		}
+	/**
+	 * Get a resource for a file. If a resource for the file already exists in
+	 * the cache, it is returned. Otherwise, a new resource is created using the
+	 * provided {@link Supplier} and added to the cache before being returned.
+	 *
+	 * @param file The file.
+	 * @param uri The URI associated with the file.
+	 * @param create The function to create a new resource.
+	 * @return The resource.
+	 */
+	SupportingResource getResource(File file, URI uri, Supplier<SupportingResource> create) {
 		// Make sure we don't grow infinitely
 		final long now = System.nanoTime();
 		if ((now - time) > EXPIRED_DURATION_NANOS) {
@@ -53,33 +62,14 @@ class FileResourceCache {
 				.removeIf(key -> (now - key.time) > EXPIRED_DURATION_NANOS);
 		}
 		CacheKey cacheKey = new CacheKey(file);
-		Resource resource = cache.computeIfAbsent(cacheKey, key -> {
-			logger.debug("parsing {}", file);
-			ResourceBuilder rb = new ResourceBuilder();
-			try {
-				Domain manifest = Domain.domain(file);
-				boolean hasIdentity = false;
-				if (manifest != null) {
-					hasIdentity = rb.addManifest(manifest);
-				}
-				String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
-				DeferredValue<String> sha256 = new DeferredComparableValue<>(String.class,
-					asSupplierOrElse(() -> SHA256.digest(file)
-						.asHex(), null),
-					key.hashCode());
-				rb.addContentCapability(uri, sha256, file.length(), mime);
-
-				if (hasIdentity) {
-					rb.addHashes(file);
-				}
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-			return rb.build();
-		});
+		SupportingResource resource = cache.computeIfAbsent(cacheKey, key -> create.get());
 		return resource;
 	}
 
+	/**
+	 * A key used to identify a file in the cache. The key is based on the file
+	 * path, size, and last modification time.
+	 */
 	static final class CacheKey {
 		private final Object	fileKey;
 		private final long		lastModifiedTime;

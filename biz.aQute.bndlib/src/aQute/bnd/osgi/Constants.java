@@ -217,6 +217,7 @@ public interface Constants {
 
 	String		RESOLVE										= "-resolve";
 	String		RESOLVEDEBUG								= "-resolvedebug";
+	String		RESOLVE_REJECT								= "-resolve.reject";
 
 	/**
 	 * Exclude the system resource from the resulting wiring in resolve. The
@@ -586,6 +587,7 @@ public interface Constants {
 	);
 
 	String		INTERNAL_PREFIX								= "-internal-";
+
 
 	/*
 	 * Deprecated Section

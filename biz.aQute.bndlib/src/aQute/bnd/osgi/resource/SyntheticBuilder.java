@@ -1,7 +1,5 @@
 package aQute.bnd.osgi.resource;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 public class SyntheticBuilder extends ResourceBuilder {
@@ -15,15 +13,13 @@ public class SyntheticBuilder extends ResourceBuilder {
 	}
 
 	@Override
-	protected Capability buildCapability(CapReqBuilder builder) {
-		Capability cap = builder.buildSyntheticCapability();
-		return cap;
+	protected CapabilityImpl buildCapability(CapReqBuilder builder) {
+		return builder.buildSyntheticCapability();
 	}
 
 	@Override
-	protected Requirement buildRequirement(CapReqBuilder builder) {
-		Requirement req = builder.buildSyntheticRequirement();
-		return req;
+	protected RequirementImpl buildRequirement(CapReqBuilder builder) {
+		return builder.buildSyntheticRequirement();
 	}
 
 }
