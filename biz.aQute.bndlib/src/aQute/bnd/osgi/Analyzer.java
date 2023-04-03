@@ -677,31 +677,28 @@ public class Analyzer extends Processor {
 			.isEmpty())
 			return;
 
-		//
-		// The previous bnd version forgot to parse
-		// the java-info file on the external classpath
-		// so in backward compatibility mode we should skip
-		// it.
-		//
-		if (map != classpathExports || since(About._2_3)) {
-			Resource resource = jar.getResource(packagePath.concat("/package-info.class"));
-			if (resource != null) {
-				Attrs info = parsePackageInfoClass(resource);
-				if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
-					info.put(FROM_DIRECTIVE, resource.toString());
-					info.put(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
-					map.put(packageRef, info);
-					return;
-				}
+		String jarname = map.getOrDefault(packageRef, Attrs.EMPTY_ATTRS)
+			.getOrDefault(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
+
+		Resource resource = jar.getResource(packagePath.concat("/package-info.class"));
+		if (resource != null) {
+			Attrs info = parsePackageInfoClass(resource);
+			if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
+				info.put(FROM_DIRECTIVE, resource.toString());
+				info.put(INTERNAL_SOURCE_DIRECTIVE, jarname);
+
+				map.put(packageRef, info);
+				return;
 			}
 		}
 
-		Resource resource = jar.getResource(packagePath.concat("/packageinfo"));
+		resource = jar.getResource(packagePath.concat("/packageinfo"));
 		if (resource != null) {
 			Attrs info = parsePackageinfo(packageRef, resource);
 			if (info != null) {
 				info.put(FROM_DIRECTIVE, resource.toString());
-				info.put(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
+				info.putIfAbsent(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
+				info.put(INTERNAL_SOURCE_DIRECTIVE, jarname);
 				fixupOldStyleVersions(info);
 				map.put(packageRef, info);
 				return;
@@ -713,7 +710,7 @@ public class Analyzer extends Processor {
 		// of available packages is remembered
 		//
 		map.put(packageRef)
-			.put(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
+			.put(INTERNAL_SOURCE_DIRECTIVE, jarname);
 
 		// trace("%s from %s has no package info (either manifest, packageinfo
 		// or package-info.class",
