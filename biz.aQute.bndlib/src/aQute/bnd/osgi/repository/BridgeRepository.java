@@ -21,6 +21,7 @@ import org.osgi.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
@@ -29,7 +30,6 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
 
 /**
@@ -227,6 +227,9 @@ public class BridgeRepository {
 	private void index(Resource r) {
 		String bsn;
 		Version version;
+
+		if (ResourceUtils.hasType(r, ResourceBuilder.SYNTHETIC))
+			return;
 
 		IdentityCapability bc = ResourceUtils.getIdentityCapability(r);
 		if (bc != null) {
