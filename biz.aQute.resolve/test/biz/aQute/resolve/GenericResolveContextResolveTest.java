@@ -24,7 +24,9 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -32,6 +34,7 @@ import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.fileset.FileSet;
 import aQute.lib.io.IO;
 
 @SuppressWarnings("restriction")
@@ -43,6 +46,32 @@ public class GenericResolveContextResolveTest {
 
 	private String getTestName() {
 		return tmp.getName();
+	}
+
+	@Test
+	public void testContractCase() throws Exception {
+		Processor p = new Processor();
+		SimpleIndexer indexer = new SimpleIndexer();
+		List<Resource> resources2 = indexer.reporter(p)
+			.files(new FileSet(IO.getFile("testdata/jar"), "**.jar").getFiles())
+			.getResources();
+		ResourcesRepository repository = new ResourcesRepository(resources2);
+
+		GenericResolveContext grc = new GenericResolveContext(logger);
+		grc.setLevel(2);
+		grc.addRepository(repository);
+		grc.addEE(EE.JavaSE_17);
+		grc.addFramework("org.apache.felix.framework", null);
+		grc.addRequireBundle("org.apache.felix.http.jetty", new VersionRange("0"));
+		grc.done();
+
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(new ResolverLogger(4));
+			Set<Resource> resources = resolver.resolve(grc)
+				.keySet();
+
+			assertThat(resources).hasSize(4);
+		}
 	}
 
 	/**
@@ -100,7 +129,6 @@ public class GenericResolveContextResolveTest {
 			.getResource();
 
 		Repository repo3 = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName(), tmp);
-
 
 		SortedSet<EE> tailSet = new TreeSet<>(EE.all()
 			.tailSet(EE.JavaSE_1_8));

@@ -1,7 +1,11 @@
-package test.resource;
+package aQute.bnd.osgi.resource;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.osgi.resource.Requirement;
@@ -9,8 +13,8 @@ import org.osgi.resource.Requirement;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.resource.CapReqBuilder;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.ExtList;
 
 public class CapReqBuilderTest {
 
@@ -60,6 +64,51 @@ public class CapReqBuilderTest {
 		assertEquals("osgi.identity", req.getNamespace());
 		assertEquals("(&(osgi.identity=org.example.foo)(version>=1.2.0)(!(version>=1.3.0)))", req.getDirectives()
 			.get("filter"));
+	}
+
+	@Test
+	public void testCopyingAttributeWithVersionLists() throws Exception {
+		Version b123 = new Version("1.2.3");
+		Version b234 = new Version("2.3.4");
+		Version b345 = new Version("3.4.5");
+		org.osgi.framework.Version o123 = new org.osgi.framework.Version("1.2.3");
+		org.osgi.framework.Version o234 = new org.osgi.framework.Version("2.3.4");
+		org.osgi.framework.Version o345 = new org.osgi.framework.Version("3.4.5");
+		Version[] barray = new Version[] {
+			b123, b234, b345
+		};
+		org.osgi.framework.Version[] oarray = new org.osgi.framework.Version[] {
+			o123, o234, o345
+		};
+		List<Version> blist = new ExtList<>(b123, b234, b345);
+		List<org.osgi.framework.Version> olist = new ExtList<>(o123, o234, o345);
+
+		Attrs attrs = new Attrs();
+		attrs.putTyped("b123", b123);
+		attrs.putTyped("o345", o345);
+
+		attrs.putTyped("barray", barray);
+		attrs.putTyped("oarray", oarray);
+
+		attrs.putTyped("blist", blist);
+		attrs.putTyped("olist", olist);
+
+		CapReqBuilder cr = new CapReqBuilder("test");
+		cr.addAttributes(attrs);
+		CapabilityImpl cap = cr.buildSyntheticCapability();
+
+		Map<String, Object> attributes = cap.getAttributes();
+
+		assertThat(attributes.get("b123")).isInstanceOf(org.osgi.framework.Version.class)
+			.isEqualTo(o123);
+		assertThat(attributes.get("o345")).isInstanceOf(org.osgi.framework.Version.class)
+			.isEqualTo(o345);
+
+		assertThat(attributes.get("barray")).isEqualTo(olist);
+		assertThat(attributes.get("oarray")).isEqualTo(olist);
+
+		assertThat(attributes.get("blist")).isEqualTo(olist);
+		assertThat(attributes.get("olist")).isEqualTo(olist);
 	}
 
 	@Test
