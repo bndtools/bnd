@@ -176,7 +176,7 @@ public class Attrs implements Map<String, String> {
 			return Type.DOUBLE;
 		if (member instanceof Number)
 			return Type.LONG;
-		if (member instanceof Version)
+		if (member instanceof Version || member instanceof org.osgi.framework.Version)
 			return Type.VERSION;
 
 		return Type.STRING;

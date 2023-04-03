@@ -666,7 +666,7 @@ public class CapReqBuilder {
 		throw new IllegalArgumentException("cannot convert " + value + " to a bnd Version(s) object as requested");
 	}
 
-	private Object toVersions(Object value) {
+	static Object toVersions(Object value) {
 		if (value instanceof Version version)
 			return version;
 
@@ -695,7 +695,7 @@ public class CapReqBuilder {
 
 			if (v.iterator()
 				.next() instanceof Version version)
-				return version;
+				return value;
 
 			List<Object> osgis = new ArrayList<>();
 			for (Object m : v) {
