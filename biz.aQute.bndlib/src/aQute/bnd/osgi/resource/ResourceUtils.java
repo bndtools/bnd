@@ -69,9 +69,9 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 
-public class ResourceUtils {
+public abstract class ResourceUtils {
 
-	public static final Comparator<Requirement>			REQUIREMENT_COMPARATOR		=																	//
+	public static final Comparator<Requirement>			REQUIREMENT_COMPARATOR		=								//
 
 		(Requirement o1, Requirement o2) -> {
 			if (o1 == o2)
@@ -102,7 +102,7 @@ public class ResourceUtils {
 	/**
 	 * A comparator that compares the identity versions
 	 */
-	public static final Comparator<? super Resource>		IDENTITY_VERSION_COMPARATOR	=								//
+	public static final Comparator<? super Resource>	IDENTITY_VERSION_COMPARATOR	=								//
 		(o1, o2) -> {
 			if (o1 == o2)
 				return 0;
@@ -131,7 +131,7 @@ public class ResourceUtils {
 			return new Version(v1).compareTo(new Version(v2));
 		};
 
-	private static final Comparator<? super Resource>		RESOURCE_COMPARATOR			=								//
+	private static final Comparator<? super Resource>	RESOURCE_COMPARATOR			=								//
 		(o1, o2) -> {
 			if (o1 == o2)
 				return 0;
@@ -152,10 +152,10 @@ public class ResourceUtils {
 				.compareTo(o2.toString());
 		};
 
-	public static final Resource							DUMMY_RESOURCE				= new ResourceBuilder().build();
-	public static final String								WORKSPACE_NAMESPACE			= "bnd.workspace.project";
+	public static final Resource						DUMMY_RESOURCE				= new ResourceBuilder().build();
+	public static final String							WORKSPACE_NAMESPACE			= "bnd.workspace.project";
 
-	private static final Converter							cnv							= new Converter()
+	private static final Converter						cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
 
 	public interface IdentityCapability extends Capability {
@@ -588,8 +588,8 @@ public class ResourceUtils {
 	}
 
 	public static Map<URI, String> getLocations(Resource resource) {
-		Map<URI, Object> locations = MapStream.of(
-			capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE).map(asFunction(c -> {
+		Map<URI, Object> locations = MapStream
+			.of(capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE).map(asFunction(c -> {
 				Map<String, Object> attributes = c.getAttributes();
 				Object u = attributes.get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
 				if (u == null) {
@@ -620,10 +620,11 @@ public class ResourceUtils {
 			// We can't use MapStream.toMap since we must handle null
 			// osgi_content values.
 			// .collect(MapStream.toMap());
-			.collect(Collector.of(HashMap<URI, Object>::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), (m1, m2) -> {
-				m1.putAll(m2);
-				return m1;
-			}));
+			.collect(Collector.of(HashMap<URI, Object>::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()),
+				(m1, m2) -> {
+					m1.putAll(m2);
+					return m1;
+				}));
 		@SuppressWarnings({
 			"rawtypes", "unchecked"
 		})
@@ -821,5 +822,36 @@ public class ResourceUtils {
 	public static Map<Requirement, Collection<Capability>> emptyProviders(
 		Collection<? extends Requirement> requirements) {
 		return findProviders(requirements, requirement -> new ArrayList<>());
+	}
+
+	/**
+	 * Return the type field in the Identity capability. The IdentityCapability
+	 * interface has the problem that for the type it returns an enum, which
+	 * makes it impossible to check for custom identity types.
+	 *
+	 * @param r the resource
+	 * @return the type string
+	 */
+	public static Optional<String> getType(Resource r) {
+		List<Capability> id = r.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+		if (!id.isEmpty()) {
+
+			Object object = id.get(0)
+				.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
+			if (object instanceof String s) {
+				return Optional.of(s);
+			}
+		}
+		return Optional.empty();
+	}
+
+	/**
+	 * Return if the current IdentityNamespace type of the given resource r is
+	 * in the given list of types.
+	 */
+	public static boolean hasType(Resource r, String... types) {
+		return getType(r).map(s -> Strings.in(types, s))
+			.orElse(false);
 	}
 }
