@@ -590,7 +590,7 @@ public class NexusCommand extends Processor {
 	private void parseJar(ResourcesRepository repo, URI jar, File go)
 		throws IOException, NoSuchAlgorithmException, Exception {
 		SHA256.digest(go);
-		ResourceBuilder rb = new ResourceBuilder();
+		ResourceBuilder rb = new ResourceBuilder(this);
 		rb.addFile(go, jar);
 		Resource resource = rb.build();
 		repo.add(resource);

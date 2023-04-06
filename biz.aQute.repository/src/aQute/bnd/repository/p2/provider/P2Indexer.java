@@ -187,7 +187,7 @@ class P2Indexer implements Closeable {
 				}
 				return fetch(a, 2, 1000L).map(tag -> processor.unpackAndLinkIfNeeded(tag, null))
 					.map(file -> {
-						ResourceBuilder rb = new ResourceBuilder();
+						ResourceBuilder rb = new ResourceBuilder(processor);
 						rb.addFile(file, a.uri);
 						if (a.md5 != null) {
 							rb.addCapability(

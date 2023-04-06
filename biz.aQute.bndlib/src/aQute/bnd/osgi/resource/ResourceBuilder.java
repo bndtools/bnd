@@ -4,6 +4,9 @@ import static aQute.bnd.exceptions.SupplierWithException.asSupplier;
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
+import static aQute.bnd.osgi.resource.MultiReleaseNamespace.MULTI_RELEASE_INDEXING_INSTRUCTION;
+import static aQute.bnd.osgi.resource.MultiReleaseNamespace.MULTI_RELEASE_INDEXING_MULTIPLE;
+import static aQute.bnd.osgi.resource.MultiReleaseNamespace.MULTI_RELEASE_INDEXING_SYNTHETIC;
 import static java.util.stream.Collectors.toList;
 import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
 import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE;
@@ -20,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
@@ -66,7 +70,6 @@ import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
 import aQute.libg.cryptography.SHA256;
-import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -80,14 +83,18 @@ public class ResourceBuilder {
 	private final MultiMap<String, CapabilityImpl>	capabilities		= new MultiMap<>();
 	private final MultiMap<String, RequirementImpl>	requirements		= new MultiMap<>();
 	private final List<Resource>					supportingResources	= new ArrayList<>();
-	private ReporterAdapter							reporter			= new ReporterAdapter();
+	private Reporter								reporter;
 
 	private boolean									built				= false;
+
+	private Processor								processor			= null;
 
 	/**
 	 * Constructs a new `ResourceBuilder`.
 	 */
-	public ResourceBuilder() {}
+	public ResourceBuilder() {
+		this(null, null);
+	}
 
 	/**
 	 * Constructs a new `ResourceBuilder` with the given source resource.
@@ -95,8 +102,50 @@ public class ResourceBuilder {
 	 * @param source the source resource to add to this builder
 	 */
 	public ResourceBuilder(Resource source) {
-		this();
+		this(null, null);
 		addResource(source);
+	}
+
+	/**
+	 * Constructs a new `ResourceBuilder` with the given reporter. If the
+	 * reporter is a processor then it will also be used to configure this
+	 * resource builder
+	 *
+	 * @param reporter
+	 */
+	public ResourceBuilder(Reporter reporter) {
+		this(reporter, reporter instanceof Processor ? (Processor) reporter : null);
+	}
+
+	/**
+	 * Constructs a new `ResourceBuilder` with the given processor.
+	 *
+	 * @param processor
+	 */
+	public ResourceBuilder(Processor processor) {
+		this(null, processor);
+	}
+
+	/**
+	 * Construct a ResourceBuilder that always has a reporter and processor
+	 *
+	 * @param reporter
+	 * @param processor
+	 */
+	private ResourceBuilder(Reporter reporter, Processor processor) {
+		this.processor = processor == null ? new Processor() : processor;
+		this.reporter = reporter == null ? this.processor : processor;
+	}
+
+	/**
+	 * Override the processor being used to configure this resource builder
+	 *
+	 * @param processor
+	 */
+	public void setProcessor(Processor processor) {
+		if (this.reporter == this.processor)
+			this.reporter = processor;
+		this.processor = processor;
 	}
 
 	/**
@@ -980,7 +1029,7 @@ public class ResourceBuilder {
 
 	public boolean addFile(File file, URI uri) throws Exception {
 
-		SupportingResource resource = cache.getResource(file, uri, () -> parse(file, uri));
+		SupportingResource resource = cache.getResource(file, uri, () -> parse(processor, file, uri));
 		addResource(resource);
 		return resource.hasIdentity();
 	}
@@ -990,6 +1039,10 @@ public class ResourceBuilder {
 	}
 
 	public static SupportingResource parse(File file, URI uri) {
+		return parse(null, file, uri);
+	}
+
+	public static SupportingResource parse(Processor processor, File file, URI uri) {
 
 		if (file == null)
 			throw new IllegalArgumentException("no file object");
@@ -1010,18 +1063,21 @@ public class ResourceBuilder {
 			uri = file.toURI();
 
 		try (Jar jar = new Jar(file)) {
-			ResourceBuilder rb = new ResourceBuilder();
+			ResourceBuilder rb = new ResourceBuilder(processor);
 
-			String mime = jar.getBsn() != null ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
+			final URI finalUri = uri;
+			Consumer<Boolean> contentCapGenerator = isBundle -> {
+				String mime = isBundle ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
 
-			rb.addContentCapability(uri,
-				new DeferredComparableValue<String>(String.class,
-					SupplierWithException.asSupplier(() -> SHA256.digest(file)
-						.asHex()),
-					file.hashCode()),
-				file.length(), mime);
+				rb.addContentCapability(finalUri,
+					new DeferredComparableValue<String>(String.class,
+						SupplierWithException.asSupplier(() -> SHA256.digest(file)
+							.asHex()),
+						file.hashCode()),
+					file.length(), mime);
+			};
 
-			rb.addJar(jar);
+			rb.addJar(jar, contentCapGenerator);
 
 			return rb.build();
 		} catch (Exception rt) {
@@ -1030,16 +1086,22 @@ public class ResourceBuilder {
 	}
 
 	public boolean addJar(Jar jar) {
+		return addJar(jar, x -> {});
+	}
+
+	private boolean addJar(Jar jar, Consumer<Boolean> resourcePostProcessor) {
 		try {
 			Domain manifest = Domain.domain(jar.getManifest());
 			if (addManifest(manifest)) {
 				addHashes(jar);
+				resourcePostProcessor.accept(true);
 
 				if (manifest.getMultiRelease()) {
 					addMultiRelease(jar, manifest);
 				}
 				return true;
 			}
+			resourcePostProcessor.accept(false);
 			return false;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -1047,6 +1109,20 @@ public class ResourceBuilder {
 	}
 
 	private void addMultiRelease(Jar jar, Domain manifest) {
+		switch (processor.getProperty(MULTI_RELEASE_INDEXING_INSTRUCTION, MULTI_RELEASE_INDEXING_MULTIPLE)) {
+			case MULTI_RELEASE_INDEXING_MULTIPLE -> addMultiReleaseMultiple(jar, manifest);
+			case MULTI_RELEASE_INDEXING_SYNTHETIC -> addMultiReleaseSynthetic(jar, manifest);
+			default -> {
+				reporter.error("Invalid option for %s, must be in {%s,%s}, is %s using %s",
+					MULTI_RELEASE_INDEXING_INSTRUCTION, MULTI_RELEASE_INDEXING_MULTIPLE,
+					MULTI_RELEASE_INDEXING_SYNTHETIC, processor.get(MULTI_RELEASE_INDEXING_INSTRUCTION),
+					MULTI_RELEASE_INDEXING_SYNTHETIC);
+				addMultiReleaseSynthetic(jar, manifest);
+			}
+		}
+	}
+
+	private void addMultiReleaseMultiple(Jar jar, Domain manifest) {
 		JPMSModule jpms = new JPMSModule(jar);
 
 		SortedSet<EE> ees = Collections.emptySortedSet();
@@ -1064,12 +1140,12 @@ public class ResourceBuilder {
 			.getRelease()));
 
 		for (int release : jpms.getVersions()) {
-			addSupportingResource(buildSupportingResource(jpms, release));
+			addSupportingResource(buildSupportingResourceMultiple(jpms, release));
 		}
 	}
 
-	private SupportingResource buildSupportingResource(JPMSModule jpms, int release) {
-		ResourceBuilder builder = new ResourceBuilder();
+	private SupportingResource buildSupportingResourceMultiple(JPMSModule jpms, int release) {
+		ResourceBuilder builder = new ResourceBuilder(processor);
 		Domain m = Domain.domain(jpms.getManifest(release));
 
 		builder.addManifest(m);
@@ -1122,6 +1198,84 @@ public class ResourceBuilder {
 			.endAnd();
 		rqb.addFilter(fb);
 		return rqb;
+	}
+
+	private void addMultiReleaseSynthetic(Jar jar, Domain manifest) {
+		JPMSModule jpms = new JPMSModule(jar);
+
+		String bsn = manifest.getBundleSymbolicName()
+			.getKey();
+		Version version = Version.parseVersion(manifest.getBundleVersion());
+		VersionRange capabilityRange = new VersionRange(true, version, version, true);
+
+		SortedSet<EE> ees = Collections.emptySortedSet();
+
+		List<RequirementImpl> list = requirements.remove(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		if (list != null && list.size() > 0) {
+			RequirementImpl remove = list.remove(0);
+			ees = EE.getEEsFromRequirement(remove.toString());
+		}
+		if (ees.isEmpty()) {
+			ees = EE.all();
+		}
+
+		RequirementBuilder rqb = new RequirementBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
+		FilterBuilder fb = new FilterBuilder();
+		fb.and()
+			.eq(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE, bsn)
+			.in(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE, capabilityRange);
+		rqb.addFilter(fb);
+		addRequirement(rqb);
+
+		int base = ees.first()
+			.getRelease();
+
+		addSupportingResource(buildSupportingResourceSynthetic(jpms, bsn, version, base));
+
+		for (int release : jpms.getVersions()) {
+			SupportingResource build = buildSupportingResourceSynthetic(jpms, bsn, version, release);
+			addSupportingResource(build);
+		}
+	}
+
+	SupportingResource buildSupportingResourceSynthetic(JPMSModule jpms, String bsn, Version version, int release) {
+		ResourceBuilder builder = new ResourceBuilder(processor);
+		Domain m = Domain.domain(jpms.getManifest(release));
+
+		CapabilityBuilder cb = new CapabilityBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
+		cb.addAttribute(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE, bsn);
+		cb.addAttribute(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		builder.addCapability(cb);
+
+		CapabilityBuilder id = new CapabilityBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
+		id.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn + "__" + release);
+		id.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		id.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, SYNTHETIC);
+		builder.addCapability(id);
+
+		builder.addImportPackages(m.getImportPackage());
+		builder.addRequireCapabilities(m.getRequireCapability());
+		builder.requirements.remove(EXECUTION_ENVIRONMENT_NAMESPACE);
+
+		RequirementBuilder rqb = new RequirementBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		EE ee = EE.getEEFromReleaseVersion(release);
+		aQute.bnd.version.Version low = ee.getCapabilityVersion();
+		VersionRange eeRange;
+		int nextRelease = jpms.getNextRelease(release);
+		if (nextRelease == Integer.MAX_VALUE)
+			eeRange = new VersionRange(low);
+		else
+			eeRange = new VersionRange(low, new aQute.bnd.version.Version(nextRelease, 0, 0));
+
+		FilterBuilder fb = new FilterBuilder();
+		fb.and()
+			.eq(EXECUTION_ENVIRONMENT_NAMESPACE, EE.JavaSE_9.getCapabilityName())
+			.in(CAPABILITY_VERSION_ATTRIBUTE, eeRange)
+			.endAnd();
+		rqb.addFilter(fb);
+		builder.addRequirement(rqb);
+
+		return builder.build();
 	}
 
 	public boolean addManifest(Manifest m) {
@@ -1455,17 +1609,20 @@ public class ResourceBuilder {
 		assert uri != null : "uri must be set";
 
 		ResourceBuilder rb = new ResourceBuilder();
-		boolean hasIdentity = rb.addJar(jar);
 
 		byte[] digest = jar.getSHA256()
 			.get();
 		int length = jar.getLength();
-		String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
-		String sha256 = Hex.toHexString(digest);
-		rb.addContentCapability(uri, sha256, length, mime);
-		if (projectName != null) {
-			rb.addWorkspaceNamespace(projectName);
-		}
+
+		Consumer<Boolean> contentCapGenerator = isBundle -> {
+			String mime = isBundle ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
+			String sha256 = Hex.toHexString(digest);
+			rb.addContentCapability(uri, sha256, length, mime);
+			if (projectName != null) {
+				rb.addWorkspaceNamespace(projectName);
+			}
+		};
+		boolean hasIdentity = rb.addJar(jar, contentCapGenerator);
 
 		jar = null; // ensure jar not referenced from lambda
 

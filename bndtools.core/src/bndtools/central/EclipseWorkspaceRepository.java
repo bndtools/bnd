@@ -64,6 +64,11 @@ public class EclipseWorkspaceRepository extends AbstractIndexingRepository<IProj
 	protected BiFunction<ResourceBuilder, File, ResourceBuilder> indexer(IProject project) {
 		String name = project.getName();
 		return (rb, file) -> {
+			try {
+				rb.setProcessor(Central.getProject(project));
+			} catch (Exception e) {
+				// Oh well - this is going to be removed anyway
+			}
 			rb = fileIndexer(rb, file);
 			if (rb == null) {
 				return null; // file is not a file

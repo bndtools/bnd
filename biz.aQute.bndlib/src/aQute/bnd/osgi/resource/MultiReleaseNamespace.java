@@ -26,7 +26,40 @@ public class MultiReleaseNamespace {
 
 	/**
 	 * The marker fragment attribute added to the content capability url
+	 * Deprecated for removal before releasing bnd 7.0
 	 */
+	@Deprecated
 	public static final String	MULTI_RELEASE_VERSION_ATTRIBUTE	= "mr-version";
+
+	/**
+	 * A system property for temporary use in enabling one multi-release
+	 * indexing format vs another. Deprecated for removal before releasing bnd
+	 * 7.0
+	 */
+	@Deprecated
+	public static final String	MULTI_RELEASE_INDEXING				= "bnd.multirelease.indexing";
+
+	/**
+	 * A bnd instruction for temporary use in enabling one multi-release
+	 * indexing format vs another. Deprecated for removal before releasing bnd
+	 * 7.0
+	 */
+	@Deprecated
+	public static final String	MULTI_RELEASE_INDEXING_INSTRUCTION	= "-xxxmultireleaseindexing";
+
+	/**
+	 * Multiple resource indexing. Each resource is an osgi.bundle Deprecated
+	 * for removal before releasing bnd 7.0
+	 */
+	@Deprecated
+	public static final String	MULTI_RELEASE_INDEXING_MULTIPLE		= "multiple";
+
+	/**
+	 * Synthetic resource indexing. There is one main bundle and additional
+	 * synthetic resources of type bnd.synthetic Deprecated for removal before
+	 * releasing bnd 7.0
+	 */
+	@Deprecated
+	public static final String	MULTI_RELEASE_INDEXING_SYNTHETIC	= "synthetic";
 
 }

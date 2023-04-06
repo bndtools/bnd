@@ -21,6 +21,7 @@ import org.osgi.service.repository.OrExpression;
 import org.osgi.service.repository.Repository;
 import org.osgi.util.promise.Promise;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.RemoteRepositoryPlugin;
@@ -29,7 +30,7 @@ import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.Exceptions;
+import bndtools.central.Central;
 
 abstract class VersionFinder {
 	String		versionSpec;
@@ -174,7 +175,7 @@ public abstract class RepositoryEntry implements IAdaptable, ResourceProvider {
 			File file = repositoryPlugin.get(bsn, versionFinder.findVersion(), null);
 
 			if (file != null && file.exists()) {
-				ResourceBuilder rb = new ResourceBuilder();
+				ResourceBuilder rb = new ResourceBuilder(Central.getWorkspaceIfPresent());
 				rb.addFile(file, file.toURI());
 				return rb.build();
 			}

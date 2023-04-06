@@ -52,6 +52,7 @@ public class WorkspaceResourcesRepository extends AbstractIndexingRepository<Pro
 	protected BiFunction<ResourceBuilder, File, ResourceBuilder> indexer(Project project) {
 		String name = project.getName();
 		return (rb, file) -> {
+			rb.setProcessor(project);
 			rb = fileIndexer(rb, file);
 			if (rb == null) {
 				return null; // file is not a file

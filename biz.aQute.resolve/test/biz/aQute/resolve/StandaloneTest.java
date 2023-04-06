@@ -15,30 +15,39 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.model.EE;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.resource.MultiReleaseNamespace;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
 
 public class StandaloneTest {
 
 	@Test
-	public void testMultiRelease(@TempDir
+	public void testMultiReleaseMultiple(@TempDir
 	File dir) throws Exception {
+		Processor processor = new Processor();
+		processor.set(MultiReleaseNamespace.MULTI_RELEASE_INDEXING_INSTRUCTION,
+			MultiReleaseNamespace.MULTI_RELEASE_INDEXING_MULTIPLE);
+
 		File loc = new File(dir, "repo.xml");
 		File bndrun = new File(dir, "test.bndrun");
 
 		for (EE ee : EnumSet.of(EE.JavaSE_1_8, EE.JavaSE_10, EE.JavaSE_12, EE.JavaSE_19)) {
 			System.out.println(ee);
 			ResourcesRepository repo = new ResourcesRepository();
-			repo.add(ResourceBuilder.parse(IO.getFile("testdata/jar/multi-release-ok.jar"), null));
-			repo.add(ResourceBuilder.parse(IO.getFile("testdata/org.apache.felix.framework-4.4.0.jar"), null));
+			repo.add(ResourceBuilder.parse(processor, IO.getFile("testdata/jar/multi-release-ok.jar"), null));
+			repo.add(
+				ResourceBuilder.parse(processor, IO.getFile("testdata/org.apache.felix.framework-4.4.0.jar"), null));
 			XMLResourceGenerator xml = new XMLResourceGenerator();
 			xml.repository(repo);
 			xml.save(loc);
@@ -68,6 +77,65 @@ public class StandaloneTest {
 
 			Requirement requirement = resolve.getOrderedResources()
 				.get(0)
+				.getRequirements(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE)
+				.get(0);
+			SortedSet<EE> ees = EE.getEEsFromRequirement(requirement.toString());
+			System.out.println(ees);
+			assertThat(ees).contains(ee);
+		}
+	}
+
+	@Test
+	public void testMultiReleaseSynthetic(@TempDir
+	File dir) throws Exception {
+		Processor processor = new Processor();
+		processor.set(MultiReleaseNamespace.MULTI_RELEASE_INDEXING_INSTRUCTION,
+			MultiReleaseNamespace.MULTI_RELEASE_INDEXING_SYNTHETIC);
+
+		File loc = new File(dir, "repo.xml");
+		File bndrun = new File(dir, "test.bndrun");
+
+		for (EE ee : EnumSet.of(EE.JavaSE_1_8, EE.JavaSE_10, EE.JavaSE_12, EE.JavaSE_19)) {
+			System.out.println(ee);
+			ResourcesRepository repo = new ResourcesRepository();
+			repo.add(ResourceBuilder.parse(processor, IO.getFile("testdata/jar/multi-release-ok.jar"), null));
+			repo.add(
+				ResourceBuilder.parse(processor, IO.getFile("testdata/org.apache.felix.framework-4.4.0.jar"), null));
+			XMLResourceGenerator xml = new XMLResourceGenerator();
+			xml.repository(repo);
+			xml.save(loc);
+
+			try (Formatter f = new Formatter()) {
+				f.format("-standalone repo.xml\n");
+				f.format("-runrequires bnd.identity;id='multirelease.main\n");
+				f.format("-runfw org.apache.felix.framework\n");
+				f.format("-runee %s\n", ee.getEEName());
+				f.format("-resolve cache\n");
+				f.format("-runsystemcapabilities.extra fake;fake=fake;version=1.2.3");
+				f.format("");
+				IO.store(f, bndrun);
+				System.out.println(f);
+			}
+			Bndrun run = (Bndrun) Bndrun.createRun(null, bndrun);
+			RunResolution resolve = run.resolve();
+			assertThat(resolve.isOK());
+			System.out.println(resolve.log);
+			assertThat(resolve.getOrderedResources()).hasSize(2);
+			Collection<Container> runbundles = run.getRunbundles();
+			assertThat(runbundles).hasSize(1);
+			assertThat(runbundles.iterator()
+				.next()
+				.getFile()
+				.getName()).isEqualTo("multirelease.main-0.0.0.jar");
+
+			Resource synthetic = resolve.getOrderedResources()
+				.stream()
+				.flatMap(r -> ResourceUtils.capabilityStream(r, MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE))
+				.findFirst()
+				.get()
+				.getResource();
+
+			Requirement requirement = synthetic
 				.getRequirements(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE)
 				.get(0);
 			SortedSet<EE> ees = EE.getEEsFromRequirement(requirement.toString());

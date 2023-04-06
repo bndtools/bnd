@@ -106,7 +106,7 @@ class ReleasePluginImpl {
 			try {
 				Promise<File> promise = storage.get(pom.binaryArchive());
 				File file = promise.getValue();
-				ResourceBuilder rb = new ResourceBuilder();
+				ResourceBuilder rb = new ResourceBuilder(indexProject);
 				String uri = prefix + pom.binaryArchive().remotePath;
 				rb.addFile(file, new URI(uri));
 				repo.add(rb.build());

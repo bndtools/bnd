@@ -328,7 +328,7 @@ class IndexFile {
 	}
 
 	private Map<Archive, Resource> parseSingle(Archive archive, File single) throws Exception {
-		ResourceBuilder rb = new ResourceBuilder();
+		ResourceBuilder rb = new ResourceBuilder(reporter);
 		MavenVersion version = archive.revision.version;
 		boolean hasIdentity = rb.addFile(single, single.toURI());
 		if (!hasIdentity) {

@@ -95,7 +95,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 			if (!file.isFile()) {
 				return null;
 			}
-			ResourceBuilder rb = new ResourceBuilder();
+			ResourceBuilder rb = new ResourceBuilder(reporter);
 			try {
 				boolean hasIdentity = rb.addFile(file, null);
 				if (!hasIdentity) {

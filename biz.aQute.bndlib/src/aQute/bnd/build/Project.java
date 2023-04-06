@@ -3635,7 +3635,7 @@ public class Project extends Processor {
 				return result;
 
 			for (File f : fs) {
-				ResourceBuilder rb = new ResourceBuilder();
+				ResourceBuilder rb = new ResourceBuilder(this);
 				rb.addFile(f, f.toURI());
 				rb.addWorkspaceNamespace(getName());
 				result.add(rb.build());

@@ -64,7 +64,7 @@ public class ProjectResolverTest {
 	}
 
 	private void add(ResourcesRepository fr, File file) throws Exception {
-		ResourceBuilder rb = new ResourceBuilder();
+		ResourceBuilder rb = new ResourceBuilder(ws);
 		rb.addFile(file, file.toURI());
 		Resource resource = rb.build();
 		fr.add(resource);

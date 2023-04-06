@@ -315,6 +315,7 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 		String name = project.getName();
 		return (rb, artifact) -> {
 			try {
+				rb.setProcessor(Central.getProject(project));
 				rb = fileIndexer(rb, artifact.getFile());
 				if (rb == null) {
 					return null;

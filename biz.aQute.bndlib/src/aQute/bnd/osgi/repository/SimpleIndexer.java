@@ -189,7 +189,7 @@ public class SimpleIndexer {
 
 	private Resource indexFile(File file) {
 		try {
-			ResourceBuilder resourceBuilder = new ResourceBuilder();
+			ResourceBuilder resourceBuilder = new ResourceBuilder(reporter);
 			if (resourceBuilder.addFile(file, relativize(file))) {
 				if (analyzer != null) {
 					analyzer.analyzeFile(file, resourceBuilder.safeResourceBuilder());

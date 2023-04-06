@@ -27,10 +27,12 @@ import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JPMSModule;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.osgi.resource.MultiReleaseNamespace;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
@@ -206,11 +208,17 @@ public class MultiReleaseTest {
 	}
 
 	@Test
-	public void testMultiReleaseIndexing() throws Exception {
+	public void testMultiReleaseIndexingMultiple() throws Exception {
+
+		Processor processor = new Processor();
+		processor.set(MultiReleaseNamespace.MULTI_RELEASE_INDEXING_INSTRUCTION,
+			MultiReleaseNamespace.MULTI_RELEASE_INDEXING_MULTIPLE);
 
 		File file = IO.getFile("jar/multi-release-ok.jar");
+		// Avoid caching
+		file.setLastModified(file.lastModified() + 1000);
 
-		ResourceBuilder rb = new ResourceBuilder();
+		ResourceBuilder rb = new ResourceBuilder(processor);
 		boolean identity = rb.addFile(file);
 		assertThat(identity).isTrue();
 		SupportingResource r = rb.build();
@@ -261,6 +269,81 @@ public class MultiReleaseTest {
 			.get(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE)).isEqualTo(lowest);
 		assertThat(capability.getAttributes()
 			.get(BundleNamespace.BUNDLE_NAMESPACE)).isEqualTo("multirelease.main");
+
+	}
+
+	@Test
+	public void testMultiReleaseIndexingSynthetic() throws Exception {
+
+		Processor processor = new Processor();
+		processor.set(MultiReleaseNamespace.MULTI_RELEASE_INDEXING_INSTRUCTION,
+			MultiReleaseNamespace.MULTI_RELEASE_INDEXING_SYNTHETIC);
+
+		File file = IO.getFile("jar/multi-release-ok.jar");
+		// Avoid caching
+		file.setLastModified(file.lastModified() + 1000);
+
+		ResourceBuilder rb = new ResourceBuilder(processor);
+		boolean identity = rb.addFile(file);
+		assertThat(identity).isTrue();
+		SupportingResource r = rb.build();
+		assertThat(r.hasIdentity()).isTrue();
+
+		testResource(r, "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))",
+			null, false);
+		assertThat(r.getSupportingResources()).hasSize(4);
+		testResource(r.getSupportingResources()
+			.get(0), "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))",
+			"(&(osgi.ee=JavaSE)(&(version>=1.8.0)(!(version>=9.0.0))))", true);
+
+		testResource(r.getSupportingResources()
+			.get(1), null, "(&(osgi.ee=JavaSE)(&(version>=9.0.0)(!(version>=12.0.0))))", true);
+		testResource(r.getSupportingResources()
+			.get(2), "(&(osgi.wiring.package=org.osgi.service.url)(version>=1.0.0)(!(version>=2.0.0)))",
+			"(&(osgi.ee=JavaSE)(&(version>=12.0.0)(!(version>=17.0.0))))", true);
+		testResource(r.getSupportingResources()
+			.get(3),
+			"(&(osgi.wiring.package=org.osgi.service.startlevel)(version>=1.1.0)(!(version>=2.0.0))),(&(osgi.wiring.package=org.osgi.service.url)(version>=1.0.0)(!(version>=2.0.0)))",
+			"(&(osgi.ee=JavaSE)(version>=17.0.0))", true);
+
+		// check the expansion of the SupportingResources
+		ResourcesRepository repo = new ResourcesRepository();
+		repo.add(r);
+		assertThat(repo.getResources()).hasSize(5);
+
+		// check the expansion of the SupportingResource & roundtrip through XML
+
+		XMLResourceGenerator xg = new XMLResourceGenerator();
+		xg.resource(r);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		xg.save(bout);
+		String s = new String(bout.toByteArray(), StandardCharsets.UTF_8);
+		System.out.println(s);
+		List<org.osgi.resource.Resource> l = XMLResourceParser
+			.getResources(new ByteArrayInputStream(bout.toByteArray()), new URI(""));
+		assertThat(l).hasSize(5);
+
+	}
+
+	private void testResource(org.osgi.resource.Resource r, String imports, String requires, boolean isSupport) {
+		testFilters(r, PackageNamespace.PACKAGE_NAMESPACE, Strings.split(imports));
+		testFilters(r, ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, Strings.split(requires));
+		if (isSupport) {
+			Capability capability = r.getCapabilities(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE)
+				.get(0);
+			assertThat(capability.getAttributes()
+				.get(MultiReleaseNamespace.CAPABILITY_VERSION_ATTRIBUTE)).isEqualTo(lowest);
+			assertThat(capability.getAttributes()
+				.get(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE)).isEqualTo("multirelease.main");
+		} else {
+			Capability capability = r.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE)
+				.get(0);
+			assertThat(capability.getAttributes()
+				.get(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE)).isEqualTo(lowest);
+			assertThat(capability.getAttributes()
+				.get(BundleNamespace.BUNDLE_NAMESPACE)).isEqualTo("multirelease.main");
+
+		}
 
 	}
 

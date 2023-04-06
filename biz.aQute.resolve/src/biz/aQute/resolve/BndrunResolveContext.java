@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import java.util.jar.Manifest;
 
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
@@ -40,7 +39,6 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
@@ -295,10 +293,10 @@ public class BndrunResolveContext extends AbstractResolveContext {
 					.get(NAMESPACE_WHITELIST))
 					.forEach(ignoredNamespaces::remove);
 
-				Manifest manifest = c.getManifest();
-				if (manifest != null) {
-					ResourceBuilder rb = new ResourceBuilder();
-					rb.addManifest(Domain.domain(manifest));
+				File file = c.getFile();
+				if (file != null) {
+					ResourceBuilder rb = new ResourceBuilder(properties);
+					rb.addFile(file);
 					system.copyCapabilities(ignoredNamespaces, rb.build());
 				}
 
