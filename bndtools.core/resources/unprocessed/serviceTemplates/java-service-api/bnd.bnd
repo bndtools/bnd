@@ -1,0 +1,11 @@
+$if(javaLevel)$
+javac.source=$javaLevel$
+javac.target=$javaLevel$
+javac.compliance=$javaLevel$
+$endif$
+
+-buildpath: \
+	osgi.annotation,\
+	org.osgi.annotation.bundle
+	
+Bundle-Version: 1.0.0.\${tstamp}

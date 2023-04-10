@@ -1,0 +1,12 @@
+-buildpath: \
+	osgi.annotation,\
+	org.osgi.service.component.annotations,\
+	$api_package$
+
+$if(javaLevel)$
+javac.source=$javaLevel$
+javac.target=$javaLevel$
+javac.compliance=$javaLevel$
+$endif$
+
+Bundle-Version: 1.0.0.\${tstamp}

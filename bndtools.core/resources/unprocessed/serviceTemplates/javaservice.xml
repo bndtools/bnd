@@ -1,0 +1,5 @@
+<form>
+<p>This template will create an OSGi Service consisting of three projects: <ol><li>An API project with a definition of the 
+service API with a single java interface</li><li>An implementation (impl) project with a single class implementing the service
+API</li><li>A consumer project with a single class that consumes the service</li></ol></p>
+</form>
