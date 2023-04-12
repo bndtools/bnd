@@ -35,6 +35,6 @@ jobs:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
-      uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+      uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@8d49e559aae34d3e0eb16cde532684bc9702762b
