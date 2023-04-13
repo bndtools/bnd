@@ -49,6 +49,8 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 	protected final String							projectNameSuffix;
 	protected final String							templateName;
 
+	protected final ServiceTemplateLoaderJob		templateLoadingJob;
+
 	/**
 	 * Constructor used with built-in/explicitly-provided templates
 	 */
@@ -67,11 +69,16 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 		this(null, null, templateName);
 	}
 
+	protected ServiceTemplateLoaderJob createTemplateLoadingJob() {
+		return new ServiceTemplateLoaderJob();
+	}
+
 	public NewBndServiceWizardPageOne(NewBndServiceWizardPageOne parentPageOne, String projectNameSuffix,
 		String templateName) {
 		this.parentPageOne = parentPageOne;
 		this.projectNameSuffix = projectNameSuffix;
 		this.templateName = templateName;
+		this.templateLoadingJob = createTemplateLoadingJob();
 		setTitle("Create an OSGi Service");
 		nameGroup.addPropertyChangeListener(event -> {
 			IStatus status = nameGroup.getStatus();
@@ -209,8 +216,6 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 
 		setControl(composite);
 	}
-
-	ServiceTemplateLoaderJob templateLoadingJob = new ServiceTemplateLoaderJob();
 
 	@Override
 	public void setVisible(boolean visible) {

@@ -3,9 +3,3 @@
 	org.osgi.service.component.annotations,\
 	$api_package$
 
-$if(javaLevel)$
-javac.source=$javaLevel$
-javac.target=$javaLevel$
-javac.compliance=$javaLevel$
-$endif$
-
