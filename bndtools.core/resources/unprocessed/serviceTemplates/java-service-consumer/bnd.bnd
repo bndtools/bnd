@@ -9,4 +9,3 @@ javac.target=$javaLevel$
 javac.compliance=$javaLevel$
 $endif$
 
-Bundle-Version: 1.0.0.\${tstamp}
