@@ -32,7 +32,7 @@ import bndtools.Plugin;
 
 public class ServiceTemplateLoaderJob implements IRunnableWithProgress {
 
-	protected BundleContext	bundleContext	= FrameworkUtil.getBundle(ServiceTemplateLoaderJob.class)
+	private BundleContext	bundleContext	= FrameworkUtil.getBundle(ServiceTemplateLoaderJob.class)
 		.getBundleContext();
 
 	private final String[] templateTypes;
