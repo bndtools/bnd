@@ -110,18 +110,6 @@ public class NewBndServiceWizard extends AbstractNewBndServiceMultiProjectWizard
 				params.put(ProjectTemplateParam.TEST_BIN_DIR.getString(), bin);
 				nr = 2;
 			} else {
-				// if for some crazy reason we end up with more than 2 paths, we
-				// log them in
-				// extension properties (we cannot write comments) but this
-				// should never happen
-				// anyway since the second page will not complete if there are
-				// not exactly 2 paths
-				// so this could only happen if someone adds another page (that
-				// changes them again)
-
-				// TODO
-				// model.genericSet("X-WARN-" + nr, "Ignoring source path " +
-				// src + " -> " + bin);
 				nr++;
 			}
 		}
