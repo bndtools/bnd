@@ -1,0 +1,4 @@
+-buildpath: \
+	osgi.annotation,\
+	org.osgi.annotation.bundle
+	

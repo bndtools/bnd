@@ -1,0 +1,14 @@
+-runrequires: \
+	bnd.identity;id='$basePackageName$.impl',\
+	bnd.identity;id='$basePackageName$.consumer',\
+	bnd.identity;id='org.apache.felix.gogo.command',\
+	bnd.identity;id='org.apache.felix.gogo.runtime',\
+	bnd.identity;id='org.apache.felix.gogo.shell'
+	
+-runfw: org.apache.felix.framework;version='[7.0.3,7.0.3]'
+
+$if(javaLevel)$
+-runee: JavaSE-$javaLevel$
+$endif$
+
+-resolve: beforelaunch

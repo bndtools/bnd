@@ -1,0 +1,5 @@
+-buildpath: \
+	osgi.annotation,\
+	org.osgi.service.component.annotations,\
+	$api_package$
+
