@@ -85,8 +85,8 @@ public class NewBndServiceWizard extends AbstractNewBndServiceMultiProjectWizard
 		String packageName = pageOne.getPackageName();
 		params.put(ProjectTemplateParam.BASE_PACKAGE_NAME.getString(), packageName);
 		// api_package this is the packageName of the API package, made
-		// available
-		// for impl and consumer templates so that the API package can be
+		// available for impl and consumer templates so that the API package can
+		// be
 		// imported
 		params.put(ServiceProjectTemplateParam.API_PACKAGE.getString(), packageName);
 		// Package Dir
