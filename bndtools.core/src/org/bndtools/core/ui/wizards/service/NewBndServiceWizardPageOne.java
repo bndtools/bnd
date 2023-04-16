@@ -12,7 +12,6 @@ import java.util.Set;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ProjectPaths;
 import org.bndtools.templating.Template;
-import org.bndtools.utils.jface.ProgressRunner;
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -47,7 +46,7 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 
 	protected final NewBndServiceWizardPageOne		parentPageOne;
 	protected final String							projectNameSuffix;
-	protected final String							templateName;
+	protected String								templateName;
 
 	protected final ServiceTemplateLoaderJob		templateLoadingJob;
 
@@ -71,6 +70,10 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 
 	protected ServiceTemplateLoaderJob createTemplateLoadingJob() {
 		return new ServiceTemplateLoaderJob();
+	}
+
+	void setTemplateName(String templateName) {
+		this.templateName = templateName;
 	}
 
 	public NewBndServiceWizardPageOne(NewBndServiceWizardPageOne parentPageOne, String projectNameSuffix,
@@ -219,20 +222,32 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 
 	@Override
 	public void setVisible(boolean visible) {
-		super.setVisible(visible);
-		if (visible) {
-			nameControl.setFocus();
-		}
-		if (this.templateName != null)
+		if (visible && this.templateName != null) {
 			try {
-				ProgressRunner.execute(true, templateLoadingJob, getContainer(),
-					getShell()
-						.getDisplay());
+				// load templates here
+				this.templateLoadingJob.loadTemplates(getContainer(), getShell().getDisplay());
 			} catch (InvocationTargetException e) {
 				ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
 					"Error loading templates", Exceptions.unrollCause(e, InvocationTargetException.class)));
+				getWizard().performCancel();
 			}
-		setMessage("Enter a project name and service name.");
+		}
+		// then check to make sure that service-api template type (with name
+		// templateName) was found.
+		Template apiTemplate = getServiceApiTemplate();
+		if (apiTemplate == null) {
+			this.nameControl.setEnabled(false);
+			String errorMsg = "Error loading service-api template " + this.templateName;
+			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, errorMsg));
+			getWizard().performCancel();
+		} else {
+			// Everything ok, show
+			super.setVisible(visible);
+			if (visible) {
+				nameControl.setFocus();
+			}
+			setMessage("Enter a project name and then a service name.");
+		}
 	}
 
 	protected Optional<Template> getServiceTemplateWithName(String serviceTemplateType, String templateName) {
