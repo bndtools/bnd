@@ -229,17 +229,15 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 			} catch (InvocationTargetException e) {
 				ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
 					"Error loading templates", Exceptions.unrollCause(e, InvocationTargetException.class)));
-				getWizard().performCancel();
 			}
-		}
-		// then check to make sure that service-api template type (with name
-		// templateName) was found.
-		Template apiTemplate = getServiceApiTemplate();
-		if (apiTemplate == null) {
-			this.nameControl.setEnabled(false);
-			String errorMsg = "Error loading service-api template " + this.templateName;
-			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, errorMsg));
-			getWizard().performCancel();
+			// then check to make sure that service-api template type (with name
+			// templateName) was found.
+			Template apiTemplate = getServiceApiTemplate();
+			if (apiTemplate == null) {
+				String errorMsg = "Error loading service-api template '" + this.templateName + "'";
+				ErrorDialog.openError(getShell(), "Error loading template", null,
+					new Status(IStatus.ERROR, Plugin.PLUGIN_ID, errorMsg));
+			}
 		} else {
 			// Everything ok, show
 			super.setVisible(visible);

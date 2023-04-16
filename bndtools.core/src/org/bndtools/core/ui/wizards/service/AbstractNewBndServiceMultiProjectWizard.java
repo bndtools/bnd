@@ -164,6 +164,9 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 
 	protected boolean generateProjectContent(IJavaProject javaProject, Template template,
 		Map<String, String> templateParams) {
+		if (template == null) {
+			return false;
+		}
 		boolean result = true;
 		try {
 			// Run using the progress bar from the wizard dialog
