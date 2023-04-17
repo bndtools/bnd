@@ -211,7 +211,6 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 				IType type = javaProject.findType(packageName, className);
 				if (type != null) {
 					IResource r = type.getResource();
-					// Open the bnd.bnd file in the editor
 					if (r.exists() && r instanceof IFile) {
 						return IDE.openEditor(getWorkbench().getActiveWorkbenchWindow()
 							.getActivePage(), (IFile) r);
@@ -268,7 +267,6 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 				.getConsumerClassName(templateParams.get(ServiceProjectTemplateParam.SERVICE_NAME.getString())));
 	}
 
-
 	@Override
 	public boolean performFinish() {
 		boolean result = super.performFinish();
@@ -298,6 +296,7 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 					.getActivePage()
 					.activate(serviceApiEditor);
 			}
+			// Finally refresh all projects
 			try {
 				Central.getWorkspace()
 					.refreshProjects();
