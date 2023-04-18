@@ -260,9 +260,10 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 				.getImplClassName(templateParams.get(ServiceProjectTemplateParam.SERVICE_NAME.getString())));
 	}
 
-	protected IEditorPart configureConsumerProject(IJavaProject implJavaProject, Map<String, String> templateParams) {
-		checkForMissingWorkspace(implJavaProject);
-		return openEditor(implJavaProject, templateParams.get(ProjectTemplateParam.BASE_PACKAGE_NAME.getString()),
+	protected IEditorPart configureConsumerProject(IJavaProject consumerJavaProject,
+		Map<String, String> templateParams) {
+		checkForMissingWorkspace(consumerJavaProject);
+		return openEditor(consumerJavaProject, templateParams.get(ProjectTemplateParam.BASE_PACKAGE_NAME.getString()),
 			ServiceTemplateConstants
 				.getConsumerClassName(templateParams.get(ServiceProjectTemplateParam.SERVICE_NAME.getString())));
 	}
