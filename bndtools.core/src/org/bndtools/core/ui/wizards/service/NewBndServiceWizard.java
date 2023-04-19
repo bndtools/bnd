@@ -50,6 +50,9 @@ public class NewBndServiceWizard extends AbstractNewBndServiceMultiProjectWizard
 		super(pageOne, pageTwo);
 		this.pageOne = pageOne;
 		this.templateName = templateName;
+		if (this.templateName != null) {
+			this.pageOne.setTemplateName(this.templateName);
+		}
 		// setup params page with normal bnd template project params
 		this.paramsPage = createParamsPage();
 		// setup impl page to use .impl project suffix
@@ -61,7 +64,8 @@ public class NewBndServiceWizard extends AbstractNewBndServiceMultiProjectWizard
 	@Override
 	protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
 		try {
-			SubMonitor submonitor = SubMonitor.convert(monitor, "Creating service projects", 3);
+			SubMonitor submonitor = SubMonitor.convert(monitor,
+				"Creating service-api, service-impl, and service-consumer projects", 3);
 			super.finishPage(submonitor.split(1));
 			implPage.performFinish(submonitor.split(1));
 			consumerPage.performFinish(submonitor.split(1));

@@ -13,11 +13,14 @@ import java.util.Set;
 
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateLoader;
+import org.bndtools.utils.jface.ProgressRunner;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
@@ -114,6 +117,10 @@ public class ServiceTemplateLoaderJob implements IRunnableWithProgress {
 
 	public Map<String,Set<Template>> getTemplates() {
 		return templates;
+	}
+
+	public void loadTemplates(IWizardContainer container, Display display) throws InvocationTargetException {
+		ProgressRunner.execute(true, this, container, display);
 	}
 
 	@Override
