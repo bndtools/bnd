@@ -147,7 +147,7 @@
 			category="bndtools.serviceWizardCategory"
 			class="org.bndtools.core.ui.wizards.service.java.NewBndJavaServiceWizardFactory"
 			finalPerspective="bndtools.perspective"
-			preferredPerspectives="bndtools.perspective" icon="icons/bricks.png"
+			preferredPerspectives="bndtools.perspective" icon="icons/service.png"
 			name="Java OSGi Service (api, impl, consumer)" project="false">
 		</wizard>
 	</extension>
