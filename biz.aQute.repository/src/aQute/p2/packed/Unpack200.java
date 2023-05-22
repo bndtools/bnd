@@ -32,6 +32,17 @@ public class Unpack200 extends Processor {
 
 	private void prepare() {
 		String commandStr = getJavaExecutable("unpack200");
+		if (commandStr == null)
+			return;
+		File path = IO.getFile(commandStr);
+		if (!path.isFile())
+			return;
+
+		if (!path.canExecute()) {
+			logger.debug("Path to unpack200 exists but cannot execute {}", commandStr);
+			return;
+		}
+
 		StringBuffer sb = new StringBuffer();
 		Command cmd = new Command();
 		cmd.add(commandStr);
@@ -40,13 +51,15 @@ public class Unpack200 extends Processor {
 		try {
 			logger.debug("Calling: {}", cmd.toString());
 			result = cmd.execute(sb, sb);
+			if (result == 0) {
+				unpackCommand = commandStr;
+				canUnpack = true;
+			} else {
+				logger.warn("pack200 command at {} returned a non-zero state {}", sb, result);
+			}
 		} catch (Exception e) {
-			logger.error("Error: " + sb.toString(), e);
-			result = -1;
-		}
-		if (result == 0) {
-			unpackCommand = commandStr;
-			canUnpack = true;
+			logger.warn("Cannot execute pack200 command at {} {}", sb, e.getMessage());
+			return;
 		}
 	}
 
