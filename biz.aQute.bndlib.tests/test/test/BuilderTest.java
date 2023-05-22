@@ -76,6 +76,31 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest {
 
 	/**
+	 * Test version with space
+	 *
+	 * @throws Exception
+	 */
+
+	@Test
+	public void testVersionWithSpace() throws Exception {
+		try (Builder outer = new Builder()) {
+			try (Builder inner = new Builder()) {
+				inner.addClasspath(IO.getFile("jar/osgi.core-4.3.0.jar"));
+				inner.setProperty("Export-Package", "org.osgi.framework;version=\"1.6.0 \"");
+				inner.setProperty("-includepackage", "org.osgi.framework");
+				Jar jar = inner.build();
+				assertThat(inner.check()).isTrue();
+
+				outer.addClasspath(jar);
+				outer.addClasspath(IO.getFile("jar/osgi.core-4.3.0.jar"));
+				outer.setProperty("-includepackage", "org.osgi.service.packageadmin");
+				outer.build();
+				assertThat(outer.check()).isTrue();
+			}
+		}
+	}
+
+	/**
 	 * [builder] Access to information generated during doExpand() #5130
 	 *
 	 * @throws Exception
