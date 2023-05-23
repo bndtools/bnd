@@ -2750,6 +2750,7 @@ public class Analyzer extends Processor {
 		if (version == null)
 			return "0";
 
+		version = Strings.trim(version);
 		Matcher m = Verifier.VERSIONRANGE.matcher(version);
 
 		if (m.matches()) {
