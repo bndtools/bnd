@@ -74,7 +74,7 @@ import org.apache.maven.shared.mapping.MappingUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.plexus.build.incremental.BuildContext;
+import org.codehaus.plexus.build.BuildContext;
 
 /**
  * Abstract base class for all bnd-maven-plugin mojos.
