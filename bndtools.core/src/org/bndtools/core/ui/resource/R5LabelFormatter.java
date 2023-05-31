@@ -35,6 +35,7 @@ import aQute.bnd.osgi.resource.FilterParser.Op;
 import aQute.bnd.osgi.resource.FilterParser.RangeExpression;
 import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.unmodifiable.Maps;
 import bndtools.Plugin;
 
@@ -109,6 +110,8 @@ public class R5LabelFormatter {
 			r = "icons/contract.png";
 		else if ("osgi.whiteboard".equals(ns))
 			r = "icons/whiteboard.png";
+		else if ("bnd.multirelease".equals(ns))
+			r = "icons/multijar.png";
 		else if ("osgi.unresolvable".equalsIgnoreCase(ns) || "osgi.missing".equalsIgnoreCase(ns)
 			|| "donotresolve".equalsIgnoreCase(ns) || "compile-only".equalsIgnoreCase(ns))
 			r = "icons/prohibition.png";
@@ -144,6 +147,14 @@ public class R5LabelFormatter {
 
 	public static void appendCapability(StyledString label, Capability cap, boolean shorten) {
 		String ns = cap.getNamespace();
+
+		Resource r = cap.getResource();
+		if (r instanceof SupportingResource sr) {
+			int index = sr.getSupportingIndex();
+			if (index >= 0) {
+				label.append("[" + index + "] ");
+			}
+		}
 
 		Object nsValue = cap.getAttributes()
 			.get(getMainAttributeName(ns));
@@ -233,6 +244,13 @@ public class R5LabelFormatter {
 
 		boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
+
+		Resource r = requirement.getResource();
+		if (r instanceof SupportingResource sr) {
+			int index = sr.getSupportingIndex();
+			if (index >= 0)
+				label.append("[" + index + "] ");
+		}
 
 		FilterParser fp = new FilterParser();
 		if (filter == null) {
