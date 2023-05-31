@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collector;
 
 import aQute.bnd.stream.MapStream;
+import aQute.lib.collections.MultiMap;
 import aQute.service.reporter.Reporter;
 
 public class Parameters implements Map<String, Attrs> {
@@ -267,5 +268,48 @@ public class Parameters implements Map<String, Attrs> {
 	})
 	public Map<String, Map<String, String>> toBasic() {
 		return (Map) this;
+	}
+
+	/**
+	 * Turn the Parameters in a Multimap to have unique access to the keys
+	 * without marker.
+	 *
+	 * @return a multimap
+	 */
+	public Map<String, List<Attrs>> toMultiMap() {
+		MultiMap<String, Attrs> mmap = new MultiMap<>();
+		this.forEach((k, v) -> mmap.add(removeDuplicateMarker(k), v));
+		return mmap;
+	}
+
+	/**
+	 * Returns a new Parameters that contains the clauses of this except for the
+	 * identical clauses in toBeRemoved. A clause is identical when it has the
+	 * same key (ignoring the duplicate marker) and the same Attrs.
+	 *
+	 * @param toBeRemoved the parameters to be removed or null
+	 * @return a new map that does not contain any of the exact clauses of
+	 *         toBeRemoved
+	 */
+	public Parameters removeAll(Parameters toBeRemoved) {
+
+		if (toBeRemoved == null || toBeRemoved.isEmpty())
+			return new Parameters(this);
+
+		Map<String, List<Attrs>> mmap = toBeRemoved.toMultiMap();
+		Parameters result = new Parameters();
+		for (Map.Entry<String, Attrs> e : this.entrySet()) {
+			String key = removeDuplicateMarker(e.getKey());
+			List<Attrs> list = mmap.get(key);
+
+			if (list == null || !list.isEmpty())
+				continue;
+
+			if (!list.contains(e.getValue()))
+				continue;
+
+			result.put(key, e.getValue());
+		}
+		return result;
 	}
 }
