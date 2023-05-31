@@ -76,24 +76,36 @@ import aQute.service.reporter.Reporter;
 public class ResourceBuilder {
 	public static final String						SYNTHETIC			= "bnd.synthetic";
 	private static final FileResourceCache			cache				= FileResourceCache.getInstance();
-	private final ResourceImpl						resource			= new ResourceImpl();
+	private final ResourceImpl						resource;
 	private final MultiMap<String, CapabilityImpl>	capabilities		= new MultiMap<>();
 	private final MultiMap<String, RequirementImpl>	requirements		= new MultiMap<>();
 	private final List<Resource>					supportingResources	= new ArrayList<>();
 	private ReporterAdapter							reporter			= new ReporterAdapter();
-
 	private boolean									built				= false;
+	private SupportingResource						parent				= null;
 
 	/**
 	 * Constructs a new `ResourceBuilder`.
 	 */
-	public ResourceBuilder() {}
+	public ResourceBuilder() {
+		this.resource = new ResourceImpl(null);
+	}
+
+	/**
+	 * Constructs a new `ResourceBuilder`.
+	 */
+	public ResourceBuilder(SupportingResource parent) {
+		this.resource = new ResourceImpl(parent);
+		this.parent = parent;
+
+	}
 
 	/**
 	 * Constructs a new `ResourceBuilder` with the given source resource.
 	 *
 	 * @param source the source resource to add to this builder
 	 */
+	@Deprecated
 	public ResourceBuilder(Resource source) {
 		this();
 		addResource(source);
@@ -262,7 +274,7 @@ public class ResourceBuilder {
 			throw new IllegalStateException("Resource already built");
 		built = true;
 
-		return resource.build(capabilities, requirements, supportingResources);
+		return resource.build(capabilities, requirements, supportingResources, parent);
 	}
 
 	/**
@@ -1075,16 +1087,17 @@ public class ResourceBuilder {
 		int base = ees.first()
 			.getRelease();
 
-		addSupportingResource(buildSupportingResource(jpms, bsn, version, base));
+		addSupportingResource(buildSupportingResource(jpms, bsn, version, base, manifest, resource));
 
 		for (int release : jpms.getVersions()) {
-			SupportingResource build = buildSupportingResource(jpms, bsn, version, release);
+			SupportingResource build = buildSupportingResource(jpms, bsn, version, release, manifest, resource);
 			addSupportingResource(build);
 		}
 	}
 
-	static SupportingResource buildSupportingResource(JPMSModule jpms, String bsn, Version version, int release) {
-		ResourceBuilder builder = new ResourceBuilder();
+	static SupportingResource buildSupportingResource(JPMSModule jpms, String bsn, Version version, int release,
+		Domain manifest, ResourceImpl parent) {
+		ResourceBuilder builder = new ResourceBuilder(parent);
 		Domain m = Domain.domain(jpms.getManifest(release));
 
 		CapabilityBuilder cb = new CapabilityBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
@@ -1098,8 +1111,10 @@ public class ResourceBuilder {
 		id.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, SYNTHETIC);
 		builder.addCapability(id);
 
-		builder.addImportPackages(m.getImportPackage());
-		builder.addRequireCapabilities(m.getRequireCapability());
+		builder.addImportPackages(m.getImportPackage()
+			.removeAll(manifest.getImportPackage()));
+		builder.addRequireCapabilities(m.getRequireCapability()
+			.removeAll(manifest.getRequireCapability()));
 		builder.requirements.remove(EXECUTION_ENVIRONMENT_NAMESPACE);
 
 		RequirementBuilder rqb = new RequirementBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
