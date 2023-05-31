@@ -2,6 +2,7 @@ package aQute.bnd.service.resource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
@@ -51,6 +52,25 @@ public interface SupportingResource extends Resource {
 	 */
 	default boolean hasIdentity() {
 		return !getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).isEmpty();
+	}
+
+	/**
+	 * If this resource is part of the support group of a resource, it will
+	 * return the primary resource, otherwise empty
+	 */
+
+	Optional<SupportingResource> getParent();
+
+	/**
+	 * The primary resource will be 0, the supporting resources will be indexed
+	 * from 1..n
+	 *
+	 * @return the supporting index
+	 */
+	default int getSupportingIndex() {
+		return getParent().map(p -> p.getSupportingResources()
+			.indexOf(SupportingResource.this))
+			.orElse(-1);
 	}
 
 }

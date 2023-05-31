@@ -2,6 +2,7 @@ package bndtools.tasks;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.service.resource.SupportingResource;
 import bndtools.model.resolution.RequirementWrapper;
 
 public class ResourceCapReqLoader implements CapReqLoader {
@@ -24,7 +26,13 @@ public class ResourceCapReqLoader implements CapReqLoader {
 	public ResourceCapReqLoader(Resource resource) {
 		this.resource = resource;
 		this.name = ResourceUtils.getIdentity(resource);
-		this.uri = ResourceUtils.getURI(ResourceUtils.getContentCapability(resource));
+		URI uri = null;
+		try {
+			uri = ResourceUtils.getURI(ResourceUtils.getContentCapability(resource));
+		} catch (Exception e) {
+
+		}
+		this.uri = uri;
 	}
 
 	@Override
@@ -41,7 +49,12 @@ public class ResourceCapReqLoader implements CapReqLoader {
 	public Map<String, List<Capability>> loadCapabilities() throws Exception {
 		Map<String, List<Capability>> result = new HashMap<>();
 
-		List<Capability> caps = resource.getCapabilities(null);
+		List<Capability> caps = new ArrayList<>(resource.getCapabilities(null));
+		if (resource instanceof SupportingResource sr) {
+			for (Resource r : sr.getSupportingResources()) {
+				caps.addAll(r.getCapabilities(null));
+			}
+		}
 		for (Capability cap : caps) {
 			String ns = cap.getNamespace();
 			List<Capability> listForNamespace = result.get(ns);
@@ -59,7 +72,12 @@ public class ResourceCapReqLoader implements CapReqLoader {
 	public Map<String, List<RequirementWrapper>> loadRequirements() throws Exception {
 		Map<String, List<RequirementWrapper>> result = new HashMap<>();
 
-		List<Requirement> reqs = resource.getRequirements(null);
+		List<Requirement> reqs = new ArrayList<>(resource.getRequirements(null));
+		if (resource instanceof SupportingResource sr) {
+			for (Resource r : sr.getSupportingResources()) {
+				reqs.addAll(r.getRequirements(null));
+			}
+		}
 		for (Requirement req : reqs) {
 			String ns = req.getNamespace();
 			List<RequirementWrapper> listForNamespace = result.get(ns);

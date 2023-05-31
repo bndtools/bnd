@@ -5,18 +5,19 @@ import java.util.Map.Entry;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.resource.R5LabelFormatter;
 import org.bndtools.core.ui.resource.RequirementLabelProvider;
-import org.bndtools.utils.jface.StrikeoutStyler;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.service.resource.SupportingResource;
 
 public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 
-	private final Styler strikeout = new StrikeoutStyler(StyledString.QUALIFIER_STYLER);
+	private final Styler resolved = StyledString.QUALIFIER_STYLER;
 
 	public RequirementWrapperLabelProvider(boolean shortenNamespaces) {
 		super(shortenNamespaces);
@@ -34,7 +35,7 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 
 			StyledString label = getLabel(rw.requirement);
 			if (rw.resolved)
-				label.setStyle(0, label.length(), strikeout);
+				label.setStyle(0, label.length(), resolved);
 
 			cell.setText(label.getString());
 			cell.setStyleRanges(label.getStyleRanges());
@@ -71,7 +72,20 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 			StringBuilder buf = new StringBuilder();
 			if (rw.resolved)
 				buf.append("RESOLVED:\n");
+
+			Resource r = rw.requirement.getResource();
+			if (r instanceof SupportingResource sr) {
+				int index = sr.getSupportingIndex();
+				if (index >= 0) {
+					buf.append("Requirement from a supporting resource ")
+						.append(index)
+						.append(" part of ")
+						.append(sr.getParent())
+						.append("\n");
+				}
+			}
 			buf.append(req.getNamespace());
+
 
 			for (Entry<String, Object> attr : req.getAttributes()
 				.entrySet())

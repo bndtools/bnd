@@ -5,25 +5,25 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.resource.SyntheticBuilder;
-import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.resource.SupportingResource;
 import bndtools.model.resolution.RequirementWrapper;
 
 public abstract class BndBuilderCapReqLoader implements CapReqLoader {
@@ -68,24 +68,20 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
 			return;
 		}
 
-		Manifest manifest = jar.getManifest();
-		if (manifest == null) {
-			loadCapabilities = Collections.emptyMap();
-			loadRequirements = Collections.emptyMap();
-			return;
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addJar(jar);
+		SupportingResource sr = rb.build();
+		List<Capability> capabilities = new ArrayList<>();
+		List<Requirement> requirements = new ArrayList<>();
+
+		for (Resource resource : sr.all()) {
+			capabilities.addAll(resource.getCapabilities(null));
+			requirements.addAll(resource.getRequirements(null));
 		}
-
-		SyntheticBuilder rb = new SyntheticBuilder();
-		rb.addManifest(Domain.domain(manifest));
-		Resource resource = rb.build();
-
-		List<Capability> capabilities = resource.getCapabilities(null);
-		loadCapabilities = capabilities.stream()
-			.collect(groupingBy(Capability::getNamespace, toList()));
-
-		List<Requirement> requirements = resource.getRequirements(null);
 		loadRequirements = requirements.stream()
 			.collect(groupingBy(Requirement::getNamespace, mapping(this::toRequirementWrapper, toList())));
+		loadCapabilities = capabilities.stream()
+			.collect(groupingBy(Capability::getNamespace, toList()));
 	}
 
 	@Override

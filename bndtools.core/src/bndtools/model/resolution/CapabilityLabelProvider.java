@@ -9,6 +9,9 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Resource;
+
+import aQute.bnd.service.resource.SupportingResource;
 
 public class CapabilityLabelProvider extends StyledCellLabelProvider {
 
@@ -42,7 +45,21 @@ public class CapabilityLabelProvider extends StyledCellLabelProvider {
 			Capability cap = (Capability) element;
 
 			StringBuilder buf = new StringBuilder();
+
 			buf.append(cap.getNamespace());
+
+			Resource r = cap.getResource();
+			if (r instanceof SupportingResource sr) {
+				int index = sr.getSupportingIndex();
+				if (index >= 0) {
+					buf.append("Capability from a supporting resource ")
+						.append(index)
+						.append(" part of ")
+						.append(sr.getParent())
+						.append("\n");
+				}
+			}
+
 			for (Entry<String, Object> attribute : cap.getAttributes()
 				.entrySet())
 				buf.append(";\n\t")

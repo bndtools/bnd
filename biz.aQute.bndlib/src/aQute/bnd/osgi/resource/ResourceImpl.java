@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -36,6 +37,11 @@ class ResourceImpl implements Resource, SupportingResource, Comparable<Resource>
 	List<Resource>						supportingResources;
 	Map<URI, String>					locations;
 	int									hashCode	= -1;
+	final SupportingResource			parent;
+
+	ResourceImpl(SupportingResource parent) {
+		this.parent = parent;
+	}
 
 	@SuppressWarnings({
 		"rawtypes", "unchecked"
@@ -156,7 +162,7 @@ class ResourceImpl implements Resource, SupportingResource, Comparable<Resource>
 	}
 
 	SupportingResource build(Map<String, List<CapabilityImpl>> capabilities,
-		Map<String, List<RequirementImpl>> requirements, List<Resource> support) {
+		Map<String, List<RequirementImpl>> requirements, List<Resource> support, SupportingResource parent) {
 		assert !this.built;
 		this.built = true;
 		this.allCapabilities = Collections.unmodifiableList(flatten(capabilities));
@@ -198,6 +204,11 @@ class ResourceImpl implements Resource, SupportingResource, Comparable<Resource>
 			case HostNamespace.HOST_NAMESPACE -> " 4";
 			default -> capreq.getNamespace();
 		};
+	}
+
+	@Override
+	public Optional<SupportingResource> getParent() {
+		return Optional.ofNullable(parent);
 	}
 
 }

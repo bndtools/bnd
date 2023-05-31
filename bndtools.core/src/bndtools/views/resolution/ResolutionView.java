@@ -66,8 +66,10 @@ import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -409,6 +411,18 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 					if (location != null) {
 						loader = getLoaderForFile(location.toFile());
 					}
+				} else if (element instanceof Repository repo) {
+					ResourceUtils.getAllResources(repo)
+						.stream()
+						.filter(r -> {
+							try {
+								return ResourceUtils.getContentCapabilities(r) != null;
+							} catch (Exception e) {
+								return false;
+							}
+						})
+						.map(ResourceCapReqLoader::new)
+						.forEach(result::add);
 				} else if (element instanceof RepositoryResourceElement) {
 					Resource resource = ((RepositoryResourceElement) element).getResource();
 					loader = new ResourceCapReqLoader(resource);
