@@ -298,16 +298,16 @@ public class Parameters implements Map<String, Attrs> {
 
 		Map<String, List<Attrs>> mmap = toBeRemoved.toMultiMap();
 		Parameters result = new Parameters();
-		for (Map.Entry<String, Attrs> e : this.entrySet()) {
+		nextEntry: for (Map.Entry<String, Attrs> e : this.entrySet()) {
 			String key = removeDuplicateMarker(e.getKey());
 			List<Attrs> list = mmap.get(key);
 
-			if (list == null || !list.isEmpty())
-				continue;
-
-			if (!list.contains(e.getValue()))
-				continue;
-
+			if (list != null) {
+				for (Attrs x : list) {
+					if (x.isEqual(e.getValue()))
+						continue nextEntry;
+				}
+			}
 			result.put(key, e.getValue());
 		}
 		return result;

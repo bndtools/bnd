@@ -221,7 +221,7 @@ public class MultiReleaseTest {
 			null, false);
 		assertThat(r.getSupportingResources()).hasSize(4);
 		testResource(r.getSupportingResources()
-			.get(0), "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))",
+			.get(0), null,
 			"(&(osgi.ee=JavaSE)(&(version>=1.8.0)(!(version>=9.0.0))))", true);
 
 		testResource(r.getSupportingResources()
