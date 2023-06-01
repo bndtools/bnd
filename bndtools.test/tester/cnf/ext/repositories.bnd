@@ -19,7 +19,7 @@ mavencentral:           https://repo.maven.apache.org/maven2
         cache="${workspace}/cnf/cache/stable/Eclipse-2018-12",\
     aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
         name="Eclipse m2e 1.10.0 Dependencies";\
-        revision="org.apache.maven:maven-core:3.5.3,org.apache.maven:maven-aether-provider:3.3.9,org.codehaus.plexus:plexus-build-api:1.1.0";\
+        revision="org.apache.maven:maven-core:3.5.3,org.apache.maven:maven-aether-provider:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
         releaseUrls="${mavencentral}";\
         location="${workspace}/cnf/cache/stable/Eclipse-m2e-1.10.0/index.xml"
 

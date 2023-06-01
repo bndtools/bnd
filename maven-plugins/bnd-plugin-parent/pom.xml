@@ -114,9 +114,9 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.codehaus.plexus</groupId>
+				<groupId>org.sonatype.plexus</groupId>
 				<artifactId>plexus-build-api</artifactId>
-				<version>1.1.0</version>
+				<version>0.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
