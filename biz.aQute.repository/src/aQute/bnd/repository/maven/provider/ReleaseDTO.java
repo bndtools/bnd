@@ -38,6 +38,7 @@ public class ReleaseDTO extends DTO {
 	public static class ExtraDTO extends DTO {
 		public String				path;
 		public String				clazz;
+		public boolean				preprocess;
 		public Map<String, String>	options	= new HashMap<>();
 	}
 

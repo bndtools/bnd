@@ -379,6 +379,69 @@ public class MavenBndRepoTest {
 	}
 
 	@Test
+	public void testPutMavenExtraFiles() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(map);
+		try (Processor context = new Processor()) {
+			context.setProperty("test", "123456789012345678901234567890");
+			context.setProperty("-maven-release",
+				"extra;path=testresources/extra/test.foo,extra;path={testresources/extra/test.bar};class=BAR");
+
+			File jar = IO.getFile("testresources/release-nosource.jar");
+			PutOptions options = new PutOptions();
+			options.context = context;
+			PutResult put = repo.put(new FileInputStream(jar), options);
+			assertThat(context.check()).isTrue();
+
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-class-0.foo", 16);
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-BAR.bar", 53);
+		}
+	}
+
+	@Test
+	public void testPutMavenExtraNoFile() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(map);
+		try (Processor context = new Processor()) {
+			context.setProperty("-maven-release", "extra;path=i_do_not_exist");
+
+			File jar = IO.getFile("testresources/release-nosource.jar");
+			PutOptions options = new PutOptions();
+			options.context = context;
+			PutResult put = repo.put(new FileInputStream(jar), options);
+			context.getInfo(repo.reporter);
+			assertThat(context.check("No metadata for revision", "i_do_not_exist")).isTrue();
+
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
+		}
+	}
+
+	@Test
+	public void testPutMavenExtraNoPath() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(map);
+		try (Processor context = new Processor()) {
+			context.setProperty("-maven-release", "extra");
+
+			File jar = IO.getFile("testresources/release-nosource.jar");
+			PutOptions options = new PutOptions();
+			options.context = context;
+			PutResult put = repo.put(new FileInputStream(jar), options);
+			context.getInfo(repo.reporter);
+			assertThat(context.check("No metadata for revision", "has an extra without the path attribute")).isTrue();
+
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
+		}
+	}
+
+	@Test
 	public void testPutMavenReleaseSourcesSourcepath() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
