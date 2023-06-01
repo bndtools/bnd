@@ -131,8 +131,11 @@ public final class Icons {
 
 		Key k = new Key(name);
 		synchronized (images) {
-			Image image = desc.createImage();
-			images.put(k, image);
+			Image image = images.get(k);
+			if (image == null) {
+				image = desc.createImage();
+				images.put(k, image);
+			}
 			return image;
 		}
 	}

@@ -35,7 +35,7 @@ public class CapabilityLabelProvider extends StyledCellLabelProvider {
 		cell.setStyleRanges(label.getStyleRanges());
 
 		// Get the icon from the capability namespace
-		Image icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(cap.getNamespace()), false);
+		Image icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(cap.getNamespace()));
 		cell.setImage(icon);
 	}
 

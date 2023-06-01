@@ -29,9 +29,8 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 		if (element instanceof RequirementWrapper) {
 			RequirementWrapper rw = (RequirementWrapper) element;
 
-			Image icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(rw.requirement.getNamespace()), true);
-			if (icon != null)
-				cell.setImage(icon);
+			Image icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(rw.requirement.getNamespace()));
+			cell.setImage(icon);
 
 			StyledString label = getLabel(rw.requirement);
 			if (rw.resolved)
