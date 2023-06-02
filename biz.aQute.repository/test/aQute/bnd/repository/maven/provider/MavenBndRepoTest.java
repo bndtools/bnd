@@ -385,7 +385,7 @@ public class MavenBndRepoTest {
 			.toString());
 		config(map);
 		try (Processor context = new Processor()) {
-			context.setProperty("test", "123456789012345678901234567890");
+			context.setProperty("test", "1234");
 			context.setProperty("-maven-release",
 				"extra;path=testresources/extra/test.foo,extra;path={testresources/extra/test.bar};class=BAR");
 
@@ -397,7 +397,9 @@ public class MavenBndRepoTest {
 
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-class-0.foo", 16);
-			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-BAR.bar", 53);
+			String content = IO
+				.collect(new File(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-BAR.bar"));
+			assertThat(content).contains("this is test bar with 1234 x");
 		}
 	}
 
