@@ -24,6 +24,11 @@ env:
     -Dhttp.keepAlive=false
     -Dmaven.wagon.http.pool=false
     -Dmaven.wagon.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.count=5
+    -Daether.connector.http.reuseConnections=false
+    -Daether.connector.http.connectionMaxTtl=25
+    -Daether.connector.connectTimeout=120000
+
 
 defaults:
   run:
