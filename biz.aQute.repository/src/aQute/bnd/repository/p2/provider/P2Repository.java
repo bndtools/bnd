@@ -159,7 +159,7 @@ public class P2Repository extends BaseRepository
 		if (target.length == 0) {
 			if (p2Index.indexFile.isFile()) {
 				Map<String, Runnable> menu = new LinkedHashMap<>();
-				menu.put("Refresh", () -> {
+				menu.put("Refresh from " + p2Index.url, () -> {
 					try {
 						workspace.writeLocked(() -> {
 							p2Index.reread();
