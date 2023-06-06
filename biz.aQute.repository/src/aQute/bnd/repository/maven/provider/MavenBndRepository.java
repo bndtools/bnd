@@ -16,9 +16,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +32,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.osgi.resource.Capability;
@@ -50,10 +54,12 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.PreprocessResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.repository.maven.provider.ReleaseDTO.ExtraDTO;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.JavadocPackages;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.ReleaseType;
 import aQute.bnd.service.Actionable;
@@ -91,30 +97,32 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "MavenBndRepository", parameters = Configuration.class)
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
+	final static Pattern						PREPROCESS_P		= Pattern.compile("\\{\\s*(?<core>[^}]+)\\s*\\}");
 
-	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
-	private static final int	DEFAULT_POLL_TIME	= 5;
+	private final static Logger					logger				= LoggerFactory.getLogger(MavenBndRepository.class);
+	private static final int					DEFAULT_POLL_TIME	= 5;
 
-	private static final String	NONE				= "NONE";
-	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
-	private Configuration		configuration;
-	private Registry			registry;
-	private File				localRepo;
-	private Reporter			reporter;
-	IMavenRepo					storage;
-	private boolean				inited;
-	IndexFile					index;
-	private ScheduledFuture<?>	indexPoller;
-	private RepoActions			actions				= new RepoActions(this);
-	private String				name;
-	private HttpClient			client;
-	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
-	private File				base				= IO.work;
-	private String				status				= null;
-	private boolean				remote;
+	private static final String					NONE				= "NONE";
+	private static final String					MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local",
+		"~/.m2/repository");
+	private Configuration						configuration;
+	private Registry							registry;
+	private File								localRepo;
+	Reporter									reporter;
+	IMavenRepo									storage;
+	private boolean								inited;
+	IndexFile									index;
+	private ScheduledFuture<?>					indexPoller;
+	private RepoActions							actions				= new RepoActions(this);
+	private String								name;
+	private HttpClient							client;
+	private ReleasePluginImpl					releasePlugin		= new ReleasePluginImpl(this, null);
+	private File								base				= IO.work;
+	private String								status				= null;
+	private boolean								remote;
 	private final AtomicReference<Throwable>	open				= new AtomicReference<>();
-	Optional<Workspace>			workspace;
-	private AtomicBoolean		polling				= new AtomicBoolean(false);
+	Optional<Workspace>							workspace;
+	private AtomicBoolean						polling				= new AtomicBoolean(false);
 
 	/**
 	 * Put result
@@ -241,6 +249,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							}
 						}
 					}
+
+					doExtra(options, instructions, pom, releaser);
 				}
 				if (configuration.noupdateOnRelease() == false) {
 					index.add(binaryArchive);
@@ -255,6 +265,35 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			IO.delete(pomFile);
 		}
 
+	}
+
+	private void doExtra(PutOptions options, ReleaseDTO instructions, IPom pom, Release releaser)
+		throws Exception, IOException {
+		for (ExtraDTO extra : instructions.extra) {
+			String path = extra.path;
+			String parts[] = Strings.extension(path);
+			String ext = parts == null ? ".unknown" : parts[1];
+			String clazz = extra.clazz;
+			File file = new File(path);
+			if (!file.isFile())
+				reporter.error("-release-maven.extra contains a path to a file that does not exist: %s",
+					file);
+			else {
+				try (Resource r = new FileResource(file)) {
+					Resource what;
+					if (extra.preprocess) {
+						what = new PreprocessResource(options.context, r);
+					} else
+						what = r;
+
+					Archive archive = pom.getRevision()
+						.archive(ext, clazz);
+					try (InputStream in = what.openInputStream()) {
+						releaser.add(archive, in);
+					}
+				}
+			}
+		}
 	}
 
 	private Resource getPom(PutOptions options, ReleaseDTO instructions, Jar binary) throws Exception, IOException {
@@ -441,10 +480,48 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			release.passphrase = sign.get("passphrase");
 		}
 
-		if (!p.isEmpty()) {
-			reporter.warning("The -maven-release instruction contains unrecognized options: %s", p);
-		}
 
+		int clazz = 0;
+
+		for (Iterator<Entry<String, Attrs>> it = p.entrySet()
+			.iterator(); it.hasNext();) {
+
+			Entry<String, Attrs> e = it.next();
+			String key = Processor.removeDuplicateMarker(e.getKey());
+			switch (key) {
+				case "extra" -> {
+					ExtraDTO extra = new ExtraDTO();
+					extra.clazz = e.getValue()
+						.getOrDefault("class", "class-" + clazz++);
+					String path = e.getValue()
+						.get("path");
+
+					boolean preprocess = false;
+
+					if (path != null) {
+						Matcher matcher = PREPROCESS_P.matcher(path);
+						if (matcher.matches()) {
+							preprocess = true;
+							path = matcher.group("core");
+						}
+						path = context.getFile(path)
+							.getAbsolutePath();
+					} else {
+						reporter.warning("The -maven-release instruction has an extra without the path attribute: %s",
+							e);
+						continue;
+					}
+					extra.path = path;
+					extra.preprocess = preprocess;
+					extra.options.putAll(e.getValue());
+					release.extra.add(extra);
+				}
+
+				default -> {
+					reporter.warning("Unknown option in the -maven-release instruction: %s", e);
+				}
+			}
+		}
 		return release;
 	}
 

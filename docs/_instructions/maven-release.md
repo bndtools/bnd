@@ -12,7 +12,10 @@ Though this instruction is not specific for a plugin, it was developed in conjun
 
     -maven-release ::= ( 'local'|'remote' ( ';' snapshot )? ) ( ',' option )*
     snapshot       ::= <value to be used for timestamp>
-    option         ::= sources | javadoc | pom | sign
+    option         ::= sources | javadoc | pom | sign | extra*
+    extra          ::= 'extra' 
+                       ( ';path=' ( PATH | '{' PATH '}' )?
+                       ( ';class=' maven-class )?
     sources        ::= 'sources' 
                        ( ';path=' ( 'NONE' | PATH ) )?
                        ( ';force=' ( 'true' | 'false' ) )?
@@ -42,6 +45,20 @@ The repository has the following parameters:
 
 If the Maven Bnd Repository is asked to put a file, it will look up the `-maven-release` instruction using merged properties. The property is looked up from the bnd file that built the artifact. However, it should in general be possible to define this header in the workspace using macros like `${project}` to specify relative paths.
 
+The `extra` option provides a way to add additional files to release. A Maven release always has a pom and then a number of files that are separated by a _class_. The default class is generally the jar file. Special classes are reserved for the sources and the javadoc. 
+
+The `extra` option takes the following parameters:
+
+* `path` : The path to the file that will be placed in the release directory. If the path is surrounded by curly braces, it will be pre-processed.
+* `class` : The class of the file. This is the maven class used.
+
+For example:
+
+     -maven-release \
+           extra;\
+            path=files/feature.json;
+            class=feature
+     
 # Signing
 
 If the instruction contains the sign attribute  and release build is detected the repository tries to apply [gnupg](https://gnupg.org/) via a command process to create `.asc` files for all deployed artifacts. This requires a Version of [gnupg](https://gnupg.org/) installed on your build system. By default it uses the `gpg` command. If the `passphrase` is configured, it will hand it over to the command as standard input. The command will be constructed as follows: `gpg --batch --passphrase-fd 0 --output <filetosign>.asc --detach-sign --armor <filetosign>`. Some newer gnupg versions will ignore the passphrase via standard input for the first try and ask again with password screen. This will crash the process. Have a look [here](https://stackoverflow.com/questions/19895122/how-to-use-gnupgs-passphrase-fd-argument) to teach gnupg otherwise. The command can be exchanged or amended with additional options by defining a property named `gpg` in your workspace (e.g. `build.bnd` or somewhere in the ext directory).
