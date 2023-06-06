@@ -108,8 +108,13 @@ public abstract class AbstractBndrun extends DefaultTask {
 	 * @return The sorted bundles with a Classpath normalization strategy.
 	 */
 	@Classpath
-	public ConfigurableFileCollection getBundlesSorted() {
-		return bundles;
+	public Provider<List<File>> getBundlesSorted() {
+		return bundles.getElements().map(
+			c -> c.stream()
+				.map(FileSystemLocation::getAsFile)
+				.sorted(Comparator.comparing(File::getName))
+				.collect(Collectors.toList())
+		);
 	}
 
 	/**
