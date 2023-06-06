@@ -7,11 +7,16 @@ import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.gradle.BndUtils.unwrapOptional;
-import static org.gradle.api.tasks.PathSensitivity.*;
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import aQute.bnd.build.Project;
@@ -29,12 +34,22 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.file.*;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileSystemLocation;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
-import org.gradle.api.tasks.*;
+import org.gradle.api.tasks.Classpath;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.work.DisableCachingByDefault;
 import org.gradle.work.NormalizeLineEndings;
@@ -103,13 +118,13 @@ public abstract class AbstractBndrun extends DefaultTask {
 	}
 
 	/**
-	 * Wrapper of the previous method to allow @Classpath normalization and sorting.
+	 * Wrapper of the {@link #getBundles()} method to allow <code>@Classpath</code> normalization and sorting.
 	 *
-	 * @return The sorted bundles with a Classpath normalization strategy.
+	 * @return The sorted bundles.
 	 */
 	@Classpath
 	public Provider<List<File>> getBundlesSorted() {
-		return bundles.getElements().map(
+		return getBundles().getElements().map(
 			c -> c.stream()
 				.map(FileSystemLocation::getAsFile)
 				.sorted(Comparator.comparing(File::getName))
