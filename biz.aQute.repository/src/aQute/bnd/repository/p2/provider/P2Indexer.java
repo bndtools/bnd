@@ -2,15 +2,12 @@ package aQute.bnd.repository.p2.provider;
 
 import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
 import static aQute.bnd.osgi.resource.ResourceUtils.toVersion;
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toMap;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +29,9 @@ import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
-import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
-import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.service.url.State;
@@ -58,24 +52,19 @@ import aQute.service.reporter.Reporter;
  * TargetPlatform.
  */
 class P2Indexer implements Closeable {
-	private final static Logger			logger					= LoggerFactory.getLogger(P2Indexer.class);
-	private static final long			MAX_STALE				= TimeUnit.DAYS.toMillis(100);
-	private final Reporter				reporter;
-	private final Unpack200				processor;
-	final File							location;
-	private final HttpClient			client;
-	private final PromiseFactory		promiseFactory;
-	private final URI					url;
-	private final String				name;
-	private final String				urlHash;
-	private final File					indexFile;
-	private volatile BridgeRepository	bridge;
-	private static final SupportingResource	RECOVERY				= new ResourceBuilder().build();
-	private static final String			P2_CAPABILITY_NAMESPACE	= "bnd.p2";
-	private static final String			MD5_ATTRIBUTE			= "md5";
-	private static final Requirement	MD5_REQUIREMENT			= new RequirementBuilder(P2_CAPABILITY_NAMESPACE)
-		.filter("(" + MD5_ATTRIBUTE + "=*)")
-		.buildSyntheticRequirement();
+	private final static Logger				logger		= LoggerFactory.getLogger(P2Indexer.class);
+	private static final long				MAX_STALE	= TimeUnit.DAYS.toMillis(100);
+	private final Reporter					reporter;
+	private final Unpack200					processor;
+	final File								location;
+	final URI								url;
+	final String							name;
+	final String							urlHash;
+	final File								indexFile;
+	private final HttpClient				client;
+	private final PromiseFactory			promiseFactory;
+	private volatile BridgeRepository		bridge;
+	private static final SupportingResource	RECOVERY	= new ResourceBuilder().build();
 
 	P2Indexer(Unpack200 processor, Reporter reporter, File location, HttpClient client, URI url, String name)
 		throws Exception {
@@ -91,7 +80,10 @@ class P2Indexer implements Closeable {
 		IO.mkdirs(this.location);
 
 		validate();
+		init();
+	}
 
+	private void init() throws Exception {
 		bridge = new BridgeRepository(readRepository(indexFile));
 	}
 
@@ -152,16 +144,6 @@ class P2Indexer implements Closeable {
 	}
 
 	private ResourcesRepository readRepository() throws Exception {
-		Map<ArtifactID, Resource> knownResources = (getBridge() != null) ? getBridge().getRepository()
-			.findProviders(singleton(MD5_REQUIREMENT))
-			.get(MD5_REQUIREMENT)
-			.stream()
-			.collect(toMap(capability -> {
-				IdentityCapability identity = ResourceUtils.getIdentityCapability(capability.getResource());
-				return new ArtifactID(identity.osgi_identity(), identity.version(), (String) capability.getAttributes()
-					.get(MD5_ATTRIBUTE));
-			}, Capability::getResource, (u, v) -> v)) : new HashMap<>();
-
 		ArtifactProvider p2;
 		if (this.url.getPath()
 			.endsWith(".target"))
@@ -181,24 +163,19 @@ class P2Indexer implements Closeable {
 					ArtifactID id = new ArtifactID(a.id, toVersion(a.version), a.md5);
 					if (!visitedArtifacts.add(id))
 						return null;
-					if (knownResources.containsKey(id)) {
-						return promiseFactory.resolved(knownResources.get(id));
-					}
 				}
-				return fetch(a, 2, 1000L).map(tag -> processor.unpackAndLinkIfNeeded(tag, null))
+				Promise<SupportingResource> fetched = fetch(a, 2, 1000L)
+					.map(tag -> processor.unpackAndLinkIfNeeded(tag, null))
 					.map(file -> {
 						ResourceBuilder rb = new ResourceBuilder();
 						rb.addFile(file, a.uri);
-						if (a.md5 != null) {
-							rb.addCapability(
-								new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
-						}
 						return rb.build();
 					})
 					.recover(failed -> {
 						logger.info("{}: Failed to create resource for {}", name, a.uri, failed.getFailure());
 						return RECOVERY;
 					});
+				return fetched;
 			})
 			.map(a -> a)
 			.filter(Objects::nonNull)
@@ -278,7 +255,7 @@ class P2Indexer implements Closeable {
 	}
 
 	public void refresh() throws Exception {
-		bridge = new BridgeRepository(save(readRepository()));
+		init();
 	}
 
 	@Override
@@ -286,5 +263,10 @@ class P2Indexer implements Closeable {
 
 	BridgeRepository getBridge() {
 		return bridge;
+	}
+
+	void reread() throws Exception {
+		indexFile.delete();
+		init();
 	}
 }
