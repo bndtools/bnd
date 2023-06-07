@@ -118,11 +118,13 @@ public abstract class AbstractBndrun extends DefaultTask {
 
 	/**
 	 * Wrapper of the {@link #getBundles()} method to allow <code>@Classpath</code> normalization and sorting.
+	 * <p>
+	 * This method is only relevant for Gradle task input fingerprinting and should not be used.
 	 *
 	 * @return The sorted bundles.
 	 */
 	@Classpath
-	public Provider<List<File>> getBundlesSorted() {
+	Provider<List<File>> getBundlesSorted() {
 		return getBundles().getElements().map(
 			c -> c.stream()
 				.map(FileSystemLocation::getAsFile)
