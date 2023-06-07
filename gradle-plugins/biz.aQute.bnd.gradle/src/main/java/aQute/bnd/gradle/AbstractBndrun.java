@@ -11,7 +11,6 @@ import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -127,7 +126,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 		return getBundles().getElements().map(
 			c -> c.stream()
 				.map(FileSystemLocation::getAsFile)
-				.sorted(Comparator.comparing(File::getName))
+				.sorted(IO.fileComparator(File::getAbsolutePath))
 				.collect(Collectors.toList())
 		);
 	}
