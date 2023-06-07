@@ -7,15 +7,16 @@ import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.gradle.BndUtils.unwrapOptional;
-import static org.gradle.api.tasks.PathSensitivity.NONE;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -35,14 +36,15 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
@@ -109,10 +111,26 @@ public abstract class AbstractBndrun extends DefaultTask {
 	 * @return The bundles to be added to a FileSetRepository for non-Bnd
 	 *         Workspace builds.
 	 */
-	@InputFiles
-	@PathSensitive(NONE)
+	@Internal
 	public ConfigurableFileCollection getBundles() {
 		return bundles;
+	}
+
+	/**
+	 * Wrapper of the {@link #getBundles()} method to allow <code>@Classpath</code> normalization and sorting.
+	 * <p>
+	 * This method is only relevant for Gradle task input fingerprinting and should not be used.
+	 *
+	 * @return The sorted bundles.
+	 */
+	@Classpath
+	Provider<List<File>> getBundlesSorted() {
+		return getBundles().getElements().map(
+			c -> c.stream()
+				.map(FileSystemLocation::getAsFile)
+				.sorted(IO.fileComparator(File::getAbsolutePath))
+				.collect(Collectors.toList())
+		);
 	}
 
 	/**
