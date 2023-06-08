@@ -24,7 +24,6 @@ baseline.version:       6.3.0
 # biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
 base.version:           6.4.1
 Bundle-Version:         ${base.version}.${tstamp}
-# Don't baseline Bundle-Version
 -diffignore:            Bundle-Version
 
 # Decorations
