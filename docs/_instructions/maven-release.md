@@ -13,9 +13,9 @@ Though this instruction is not specific for a plugin, it was developed in conjun
     -maven-release ::= ( 'local'|'remote' ( ';' snapshot )? ) ( ',' option )*
     snapshot       ::= <value to be used for timestamp>
     option         ::= sources | javadoc | pom | sign | extra*
-    extra          ::= 'extra' 
+    archive          ::= 'archive' 
                        ( ';path=' ( PATH | '{' PATH '}' )?
-                       ( ';class=' maven-class )?
+                       ( ';classifier=' maven-classifier )?
     sources        ::= 'sources' 
                        ( ';path=' ( 'NONE' | PATH ) )?
                        ( ';force=' ( 'true' | 'false' ) )?
@@ -45,19 +45,19 @@ The repository has the following parameters:
 
 If the Maven Bnd Repository is asked to put a file, it will look up the `-maven-release` instruction using merged properties. The property is looked up from the bnd file that built the artifact. However, it should in general be possible to define this header in the workspace using macros like `${project}` to specify relative paths.
 
-The `extra` option provides a way to add additional files to release. A Maven release always has a pom and then a number of files that are separated by a _class_. The default class is generally the jar file. Special classes are reserved for the sources and the javadoc. 
+The `archive` option provides a way to add additional files/archives to release. A Maven release always has a pom and then a number of files/archives that are separated by a _classifier_. The default classifier is generally the jar file. Special classifiers are reserved for the sources and the javadoc. 
 
-The `extra` option takes the following parameters:
+The `archive` option takes the following parameters:
 
 * `path` : The path to the file that will be placed in the release directory. If the path is surrounded by curly braces, it will be pre-processed.
-* `class` : The class of the file. This is the maven class used.
+* `classifier` : The classifier of the file. This is the maven classifier used.
 
 For example:
 
      -maven-release \
-           extra;\
+           archive;\
             path=files/feature.json;
-            class=feature
+            classifier=feature
      
 # Signing
 

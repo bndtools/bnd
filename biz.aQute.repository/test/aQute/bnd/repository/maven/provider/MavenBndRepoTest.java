@@ -387,7 +387,8 @@ public class MavenBndRepoTest {
 		try (Processor context = new Processor()) {
 			context.setProperty("test", "1234");
 			context.setProperty("-maven-release",
-				"extra;path=testresources/extra/test.foo,extra;path={testresources/extra/test.bar};class=BAR");
+				"archive;path=testresources/extra/test.foo,"
+					+ "archive;path={testresources/extra/test.bar};classifier=BAR");
 
 			File jar = IO.getFile("testresources/release-nosource.jar");
 			PutOptions options = new PutOptions();
@@ -396,7 +397,8 @@ public class MavenBndRepoTest {
 			assertThat(context.check()).isTrue();
 
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
-			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-class-0.foo", 16);
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-classifier-0.foo",
+				16);
 			String content = IO
 				.collect(new File(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-BAR.bar"));
 			assertThat(content).contains("this is test bar with 1234 x");
@@ -410,7 +412,7 @@ public class MavenBndRepoTest {
 			.toString());
 		config(map);
 		try (Processor context = new Processor()) {
-			context.setProperty("-maven-release", "extra;path=i_do_not_exist");
+			context.setProperty("-maven-release", "archive;path=i_do_not_exist");
 
 			File jar = IO.getFile("testresources/release-nosource.jar");
 			PutOptions options = new PutOptions();
@@ -430,14 +432,15 @@ public class MavenBndRepoTest {
 			.toString());
 		config(map);
 		try (Processor context = new Processor()) {
-			context.setProperty("-maven-release", "extra");
+			context.setProperty("-maven-release", "archive");
 
 			File jar = IO.getFile("testresources/release-nosource.jar");
 			PutOptions options = new PutOptions();
 			options.context = context;
 			PutResult put = repo.put(new FileInputStream(jar), options);
 			context.getInfo(repo.reporter);
-			assertThat(context.check("No metadata for revision", "has an extra without the path attribute")).isTrue();
+			assertThat(context.check("No metadata for revision", "has an 'archive' without the path attribute"))
+				.isTrue();
 
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
 		}

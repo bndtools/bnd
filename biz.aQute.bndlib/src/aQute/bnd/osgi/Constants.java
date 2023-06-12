@@ -174,6 +174,9 @@ public interface Constants {
 	String		METATYPE_ANNOTATIONS_OPTIONS				= "-metatypeannotations-options";
 	String		MANIFEST									= "-manifest";
 	String		MAVEN_RELEASE								= "-maven-release";
+	String		MAVEN_RELEASE_CLASSIFIER					= "classifier";
+	String		MAVEN_RELEASE_ARCHIVE						= "archive";
+	String		MAVEN_RELEASE_PATH							= "path";
 	String		MAVEN_DEPENDENCIES							= "-maven-dependencies";
 	String		MAVEN_SCOPE									= "-maven-scope";
 	String		PROFILE										= "-profile";

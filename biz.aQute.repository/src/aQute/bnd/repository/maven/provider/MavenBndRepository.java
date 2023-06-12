@@ -489,12 +489,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			Entry<String, Attrs> e = it.next();
 			String key = Processor.removeDuplicateMarker(e.getKey());
 			switch (key) {
-				case "extra" -> {
+				case Constants.MAVEN_RELEASE_ARCHIVE -> {
 					ExtraDTO extra = new ExtraDTO();
 					extra.clazz = e.getValue()
-						.getOrDefault("class", "class-" + clazz++);
+						.getOrDefault(Constants.MAVEN_RELEASE_CLASSIFIER, "classifier-" + clazz++);
 					String path = e.getValue()
-						.get("path");
+						.get(Constants.MAVEN_RELEASE_PATH);
 
 					boolean preprocess = false;
 
@@ -507,7 +507,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						path = context.getFile(path)
 							.getAbsolutePath();
 					} else {
-						reporter.warning("The -maven-release instruction has an extra without the path attribute: %s",
+						reporter.warning(
+							"The -maven-release instruction has an 'archive' without the path attribute: %s",
 							e);
 						continue;
 					}
