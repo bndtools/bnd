@@ -273,7 +273,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			String path = extra.path;
 			String parts[] = Strings.extension(path);
 			String ext = parts == null ? ".unknown" : parts[1];
-			String clazz = extra.clazz;
+			String clazz = extra.classifier;
 			File file = new File(path);
 			if (!file.isFile())
 				reporter.error("-release-maven.extra contains a path to a file that does not exist: %s",
@@ -440,7 +440,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
-			release.javadoc.path = javadoc.remove("path");
+			release.javadoc.path = javadoc.remove(Constants.MAVEN_RELEASE_PATH);
 			release.javadoc.force = Boolean.parseBoolean(javadoc.remove("force"));
 			if (NONE.equals(release.javadoc.path)) {
 				release.javadoc = null;
@@ -481,7 +481,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 
 
-		int clazz = 0;
+		int classifier = 0;
 
 		for (Iterator<Entry<String, Attrs>> it = p.entrySet()
 			.iterator(); it.hasNext();) {
@@ -489,12 +489,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			Entry<String, Attrs> e = it.next();
 			String key = Processor.removeDuplicateMarker(e.getKey());
 			switch (key) {
-				case "extra" -> {
+				case Constants.MAVEN_RELEASE_ARCHIVE -> {
 					ExtraDTO extra = new ExtraDTO();
-					extra.clazz = e.getValue()
-						.getOrDefault("class", "class-" + clazz++);
+					extra.classifier = e.getValue()
+						.getOrDefault(Constants.MAVEN_RELEASE_CLASSIFIER, "classifier-" + classifier++);
 					String path = e.getValue()
-						.get("path");
+						.get(Constants.MAVEN_RELEASE_PATH);
 
 					boolean preprocess = false;
 
@@ -507,7 +507,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						path = context.getFile(path)
 							.getAbsolutePath();
 					} else {
-						reporter.warning("The -maven-release instruction has an extra without the path attribute: %s",
+						reporter.warning(
+							"The -maven-release instruction has an 'archive' without the path attribute: %s",
 							e);
 						continue;
 					}
