@@ -1,0 +1,34 @@
+import aQute.bnd.gradle.BundleTaskExtension
+
+plugins {
+    id 'biz.aQute.bnd.builder' apply false
+    id 'java-library'
+}
+
+group = "com.example.main"
+version = "2.5.1"
+
+dependencies {
+    implementation project(":util")
+}
+
+// Replicate the JUnit 5 build, which lazily configures the Jar task to add the bundle extension and its action but does NOT apply any BND plugins
+tasks.withType(Jar).configureEach {
+    BundleTaskExtension bundle = extensions.create(BundleTaskExtension.NAME, BundleTaskExtension.class, it)
+    bundle.bnd('Import-Package': 'com.example.util.*')
+
+    doLast(bundle.buildAction())
+}
+
+tasks.register("jarlibraryelements") {
+    def compileClasspath = configurations.compileClasspath
+    def bundleExtensionClasspath = tasks.named("jar").map {it.extensions.findByType(BundleTaskExtension.class).classpath }
+    dependsOn compileClasspath
+
+    doLast {
+        // Compile classpath will be the main classes directory
+		println "### compileClasspath: ${compileClasspath.asPath}"
+		// The classpath used by the extension will be the jar file
+		println "### bundleExtensionClasspath: ${bundleExtensionClasspath.get().asPath}"
+    }
+}
