@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 
 import aQute.bnd.exceptions.Exceptions;
@@ -42,6 +43,9 @@ import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.ArtifactView;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
@@ -208,9 +212,13 @@ public class BundleTaskExtension {
 		classpath = objects.fileCollection();
 		allSource = objects.fileCollection();
 		outputDirectory = objects.directoryProperty();
+
 		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 		setSourceSet(mainSourceSet);
-		classpath(mainSourceSet.getCompileClasspath());
+
+		Configuration mainCompileClasspath = task.getProject().getConfigurations().getByName(mainSourceSet.getCompileClasspathConfigurationName());
+		requestJarLibrary(mainCompileClasspath, objects);
+
 		properties = objects.mapProperty(String.class, Object.class)
 			.convention(Maps.of("project", "__convention__"));
 		defaultBundleSymbolicName = task.getArchiveBaseName()
@@ -240,6 +248,25 @@ public class BundleTaskExtension {
 			.property("default Bundle-SymbolicName", getDefaultBundleSymbolicName());
 		task.getInputs()
 			.property("default Bundle-Version", getDefaultBundleVersion());
+	}
+
+	/**
+	 * Adds an {@link ArtifactView} to {@link #classpath(Object...)} that will explicitly request variants of dependencies with the
+	 * {@link LibraryElements#JAR} library element set to {@link LibraryElements#JAR}.
+	 *
+	 * This method ensures that Gradle does not perform an optimization to local project dependencies and request the
+	 * {@link LibraryElements#CLASSES} value instead.  Doing so would add the directory containing the other project's compiled classes
+	 * to the classpath instead of the jar itself.  If the jar is not present, reading information from the {@code MANIFEST.MF}
+	 * file will not be possible, so we want to avoid Gradle applying this optimization.
+	 *
+	 * @param mainCompileClasspath the main source set of the project
+	 * @param objects the object factory of the project
+	 */
+	private void requestJarLibrary(Configuration mainCompileClasspath, ObjectFactory objects) {
+		ArtifactView jarView = mainCompileClasspath.getIncoming().artifactView(viewConfiguration -> {
+			viewConfiguration.attributes(attributeContainer -> attributeContainer.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.class, LibraryElements.JAR)));
+		});
+		classpath(jarView.getFiles());
 	}
 
 	/**
@@ -335,8 +362,6 @@ public class BundleTaskExtension {
 			.getTasks()
 			.named(sourceSet.getCompileJavaTaskName(), AbstractCompile.class)
 			.flatMap(AbstractCompile::getDestinationDirectory));
-
-		jarLibraryElements(getTask(), sourceSet.getCompileClasspathConfigurationName());
 	}
 
 	ConfigurableFileCollection getAllSource() {

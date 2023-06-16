@@ -1,0 +1,44 @@
+import aQute.bnd.gradle.BundleTaskExtension
+
+plugins {
+    id 'biz.aQute.bnd.builder' apply false
+    id 'java-library'
+}
+
+group = "com.example.main"
+version = "2.5.1"
+
+dependencies {
+    implementation project(":util")
+}
+
+// Replicate the JUnit 5 build, which lazily configures the Jar task to add the bundle extension and its action but does NOT apply any BND plugins
+tasks.withType(Jar).configureEach {
+    BundleTaskExtension bundle = extensions.create(BundleTaskExtension.NAME, BundleTaskExtension.class, it)
+    bundle.bnd('Import-Package': 'com.example.util.*')
+
+    println "Configuring jar"
+    doLast(bundle.buildAction())
+}
+
+tasks.register("resolve") {
+    def version = gradle.gradleVersion
+    def conf = configurations.compileClasspath
+    def bundleConf = tasks.named("jar").map {it.extensions.findByType(BundleTaskExtension).classpath }
+    dependsOn configurations.compileClasspath
+
+    doLast {
+        logger.warn("Gradle version: " + version)
+
+        // Compile classpath will changes from the jar file to the main classes directory depending on the gradle version
+        def confFiles = conf.files
+        confFiles.each { logger.warn("Compile classpath: " + it) }
+
+        // After the change to BundleTaskExtension, the classpath used by the bundle will always be the jar file
+        def bundleFiles = bundleConf.get()
+        bundleFiles.each { logger.warn("Bundle extension classpath: " + it) }
+
+        assert confFiles[0].name == "main"
+        assert bundleFiles[0].name == "util-1.7.8.jar"
+    }
+}

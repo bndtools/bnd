@@ -409,4 +409,28 @@ class TestBundlePlugin extends Specification {
 		result.task(":jar").outcome == UP_TO_DATE
 		result.task(":testOSGi").outcome == UP_TO_DATE
 	}
+
+	def "Bundle Extension added to Jar Task with Local Project Dependency receives jar file (Gradle = #gradleVersion)"() {
+		given:
+		String testProject = "builderplugin5"
+		File testProjectDir = new File(testResources, testProject).canonicalFile
+		assert testProjectDir.isDirectory()
+
+		when:
+		def result = TestHelper.getGradleRunner()
+				.withProjectDir(testProjectDir)
+				.withArguments("--parallel", "--stacktrace", "resolve")
+				.withPluginClasspath()
+				.withDebug(true)
+				.withGradleVersion(gradleVersion)
+				.forwardOutput()
+				.build()
+
+		then:
+		result.task(":jar") == null // Jar tasks never run
+		result.task(":resolve").outcome == SUCCESS
+
+		where:
+		gradleVersion << ["8.1", "8.2-rc-2"]
+	}
 }
