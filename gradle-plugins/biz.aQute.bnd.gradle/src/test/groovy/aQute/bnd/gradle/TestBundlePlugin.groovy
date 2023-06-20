@@ -421,7 +421,6 @@ class TestBundlePlugin extends Specification {
 				.withProjectDir(testProjectDir)
 				.withArguments("--parallel", "--stacktrace", "resolve")
 				.withPluginClasspath()
-				.withDebug(true)
 				.withGradleVersion(gradleVersion)
 				.forwardOutput()
 				.build()
