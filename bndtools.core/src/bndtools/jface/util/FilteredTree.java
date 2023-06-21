@@ -35,6 +35,12 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.progress.WorkbenchJob;
 
 /**
+ * THIS WAS COPIED FROM: {@link org.eclipse.ui.dialogs.FilteredTree} The copy
+ * was made because it was impossible to filter only on category, where the
+ * category could then still be opened. Driving use case was the filtering on
+ * repo entries where the bsn should be filtered but where the versions would
+ * still be openable.
+ * <p>
  * A simple control that provides a text widget and a tree viewer. The contents
  * of the text widget are used to drive a PatternFilter that is on the viewer.
  *
