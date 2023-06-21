@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -16,29 +14,25 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
-import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
 import bndtools.editor.common.BndEditorPart;
+import bndtools.jface.util.FilteredTree;
+import bndtools.jface.util.TreeFilter;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
@@ -46,59 +40,39 @@ import bndtools.utils.SelectionDragAdapter;
 
 public class AvailableBundlesPart extends BndEditorPart implements RepositoriesViewRefresher.RefreshModel {
 
-	// Number of millis to wait for the user to stop typing in the filter box
-	private static final long					SEARCH_DELAY			= 1000;
-
-	private String								searchStr				= "";
-	private ScheduledFuture<?>					scheduledFilterUpdate	= null;
-
-	private final RepositoryTreeContentProvider	contentProvider			= new RepositoryTreeContentProvider(
+	private final RepositoryTreeContentProvider	contentProvider		= new RepositoryTreeContentProvider(
 		ResolutionPhase.runtime);
-	private Text								txtSearch;
 	private TreeViewer							viewer;
 
 	private Set<String>							includedRepos;
 
-	private final ViewerFilter					includedRepoFilter		= new ViewerFilter() {
-																			@Override
-																			public boolean select(Viewer viewer,
-																				Object parentElement, Object element) {
-																				boolean select = false;
-																				if (element instanceof RepositoryBundle) {
-																					RepositoryBundle repoBundle = (RepositoryBundle) element;
-																					RepositoryPlugin repo = repoBundle
-																						.getRepo();
+	private final ViewerFilter					includedRepoFilter	= new ViewerFilter() {
+																		@Override
+																		public boolean select(Viewer viewer,
+																			Object parentElement, Object element) {
+																			boolean select = false;
+																			if (element instanceof RepositoryBundle) {
+																				RepositoryBundle repoBundle = (RepositoryBundle) element;
+																				RepositoryPlugin repo = repoBundle
+																					.getRepo();
 
-																					if (includedRepos == null) {
-																						select = true;
-																					} else if (repo instanceof WorkspaceRepository) {
-																						select = includedRepos
-																							.contains("Workspace");
-																					} else {
-																						select = includedRepos.contains(
-																							repoBundle.getRepo()
-																								.getName());
-																					}
-																				} else {
+																				if (includedRepos == null) {
 																					select = true;
+																				} else if (repo instanceof WorkspaceRepository) {
+																					select = includedRepos
+																						.contains("Workspace");
+																				} else {
+																					select = includedRepos
+																						.contains(repoBundle.getRepo()
+																							.getName());
 																				}
-																				return select;
+																			} else {
+																				select = true;
 																			}
-																		};
-
-	private final Runnable						updateFilterTask		= () -> {
-																			Display display = viewer.getControl()
-																				.getDisplay();
-
-																			Runnable update = () -> updatedFilter(
-																				searchStr);
-
-																			if (display.getThread() == Thread
-																				.currentThread())
-																				update.run();
-																			else
-																				display.asyncExec(update);
-																		};
+																			return select;
+																		}
+																	};
+	private RepositoryTreeLabelProvider labelProvider;
 
 	public AvailableBundlesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -123,40 +97,30 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 		layout.marginHeight = 0;
 		container.setLayout(layout);
 
-		txtSearch = toolkit.createText(container, "", SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL | SWT.BORDER);
-		txtSearch.setMessage("Enter search string");
-		txtSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-		Tree tree = toolkit.createTree(container, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL);
-		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-
-		viewer = new TreeViewer(tree);
 		contentProvider.setShowRepos(false);
-		viewer.setContentProvider(contentProvider);
-		viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
-		viewer.setFilters(includedRepoFilter);
 
-		txtSearch.addModifyListener(e -> {
-			if (scheduledFilterUpdate != null)
-				scheduledFilterUpdate.cancel(true);
-
-			searchStr = txtSearch.getText();
-			scheduledFilterUpdate = Plugin.getDefault()
-				.getScheduler()
-				.schedule(updateFilterTask, SEARCH_DELAY, TimeUnit.MILLISECONDS);
-		});
-		txtSearch.addSelectionListener(new SelectionAdapter() {
+		FilteredTree ftree = new FilteredTree(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, new TreeFilter() {
 			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				if (scheduledFilterUpdate != null)
-					scheduledFilterUpdate.cancel(true);
-				scheduledFilterUpdate = null;
-
-				searchStr = txtSearch.getText();
-				updateFilterTask.run();
+			public boolean isElementSelectable(Object element) {
+				return element instanceof RepositoryBundle || element instanceof Project;
 			}
-		});
 
+			@Override
+			public boolean isElementVisible(Viewer viewer, Object element) {
+				if (element instanceof RepositoryBundle) {
+					return super.isLeafMatch(viewer, element);
+				}
+				return true;
+			}
+
+		},
+			true, true);
+		ftree.setExpand(false);
+		viewer = ftree.getViewer();
+		viewer.setContentProvider(contentProvider);
+		labelProvider = new RepositoryTreeLabelProvider(true);
+		viewer.setLabelProvider(labelProvider);
+		viewer.addFilter(includedRepoFilter);
 		viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
 			LocalSelectionTransfer.getTransfer()
 		}, new SelectionDragAdapter(viewer) {
@@ -173,11 +137,6 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 				}
 			}
 		});
-	}
-
-	private void updatedFilter(String filterString) {
-		contentProvider.setFilter(filterString);
-		viewer.refresh(true);
 	}
 
 	@Override
