@@ -4,7 +4,7 @@ localrepo?.let {
 	while (rootGradle.parent != null) {
 		rootGradle = rootGradle.parent!!
 	}
-	val maven_repo_local by extra(rootGradle.startParameter.currentDir.resolve(it).normalize().absolutePath)
+	extra.set("maven_repo_local", rootGradle.startParameter.currentDir.resolve(it).normalize().absolutePath)
 }
 
 val clean by tasks.registering {

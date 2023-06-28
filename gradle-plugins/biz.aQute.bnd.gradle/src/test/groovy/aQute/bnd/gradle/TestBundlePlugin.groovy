@@ -321,7 +321,7 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Project-Sourcepath")
 		jartask_manifest.getValue("Project-Buildpath")
 		jartask_manifest.getValue("Gradle-Project-Prop") == "prop.project"
-		jartask_manifest.getValue("Gradle-Task-Prop") == "prop.task"
+		jartask_manifest.getValue("Gradle-Task-Prop") == "jar"
 		jartask_manifest.getValue("Gradle-Task-Project-Prop") == "prop.project"
 		jartask_manifest.getValue("Gradle-Missing-Prop") == "\${task.projectprop}"
 		jartask_manifest.getValue("Here") == testProjectDir.absolutePath.replace(File.separatorChar, (char)'/')

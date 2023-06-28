@@ -158,7 +158,7 @@ class TestBndPlugin extends Specification {
 		props.getProperty("-runbundles") =~ /osgi\.enroute\.junit\.wrapper/
 
 		when:
-		bndrun = new File(testProjectDir, "test.simple/resolve2.bndrun")
+		bndrun = new File(testProjectDir, "test.simple/resolve2.bndrunx")
 		props = new UTF8Properties()
 
 		then:

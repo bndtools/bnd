@@ -25,7 +25,6 @@ dependencies {
 }
 
 def jar = tasks.named('jar') {
-	ext.taskprop = 'prop.task'
 	manifest {
 		attributes('Implementation-Title': project.archivesBaseName,
 		'Implementation-Version': project.version,

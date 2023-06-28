@@ -5,10 +5,6 @@
 import aQute.bnd.osgi.About
 import aQute.lib.io.IO
 
-plugins {
-	id "org.gradle.test-retry" apply false
-}
-
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	ext.jpmsOptions = [
 		"--add-opens=java.base/java.lang=ALL-UNNAMED",
@@ -49,9 +45,6 @@ subprojects {
 				"GuardedBy:mf:\"Guarded By:\""
 			]
 			options.noTimestamp = true
-		}
-		if (isCI) {
-			pluginManager.apply("org.gradle.test-retry")
 		}
 		tasks.named("test") {
 			useJUnitPlatform()

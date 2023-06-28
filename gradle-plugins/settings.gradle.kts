@@ -1,8 +1,8 @@
 pluginManagement {
 	plugins {
-		id("com.gradle.plugin-publish") version("1.0.0")
-		id("dev.hargrave.addmavendescriptor") version("1.0.0")
-		id("com.gradle.enterprise") version("3.11.1")
+		id("com.gradle.plugin-publish") version("1.2.0")
+		id("dev.hargrave.addmavendescriptor") version("1.1.0")
+		id("com.gradle.enterprise") version("3.13.4")
 	}
 }
 

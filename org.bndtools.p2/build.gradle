@@ -27,7 +27,7 @@ var p2Plugins = tasks.register("p2Plugins", Sync.class) {
 
 var p2FeatureProperties = tasks.register("p2FeatureProperties", WriteProperties.class) {
 	inputs.files(p2Plugins).withPropertyName("p2Plugins")
-	outputFile = layout.getBuildDirectory().file("feature.properties")
+	destinationFile = layout.getBuildDirectory().file("feature.properties")
 	encoding = "UTF-8"
 	var plugins = objects.fileTree().from(p2Plugins.map { it.destinationDir })
 	doFirst("collect") { t ->
@@ -46,10 +46,10 @@ var p2FeatureMain = tasks.register("p2FeatureMain", Zip.class) {
 	archiveFileName = "bndtools.main.feature.jar"
 	from("features/bndtools.main")
 	include("feature.xml")
-	var propertiesFile = p2FeatureProperties.map { it.outputFile }
+	var propertiesFile = p2FeatureProperties.flatMap { it.destinationFile }
 	doFirst("filter") { t ->
 		Properties properties = new Properties()
-		propertiesFile.get().withReader("UTF-8") {
+		propertiesFile.get().getAsFile().withReader("UTF-8") {
 			properties.load(it)
 			properties.put("master-version", masterVersion)
 		}
@@ -64,10 +64,10 @@ var p2FeatureM2e = tasks.register("p2FeatureM2e", Zip.class) {
 	archiveFileName = "bndtools.m2e.feature.jar"
 	from("features/bndtools.m2e")
 	include("feature.xml")
-	var propertiesFile = p2FeatureProperties.map { it.outputFile }
+	var propertiesFile = p2FeatureProperties.flatMap { it.destinationFile }
 	doFirst("filter") { t ->
 		Properties properties = new Properties()
-		propertiesFile.get().withReader("UTF-8") {
+		propertiesFile.get().getAsFile().withReader("UTF-8") {
 			properties.load(it)
 			properties.put("master-version", masterVersion)
 		}
@@ -82,10 +82,10 @@ var p2FeaturePde = tasks.register("p2FeaturePde", Zip.class) {
 	archiveFileName = "bndtools.pde.feature.jar"
 	from("features/bndtools.pde")
 	include("feature.xml")
-	var propertiesFile = p2FeatureProperties.map { it.outputFile }
+	var propertiesFile = p2FeatureProperties.flatMap { it.destinationFile }
 	doFirst("filter") { t ->
 		Properties properties = new Properties()
-		propertiesFile.get().withReader("UTF-8") {
+		propertiesFile.get().getAsFile().withReader("UTF-8") {
 			properties.load(it)
 			properties.put("master-version", masterVersion)
 		}
