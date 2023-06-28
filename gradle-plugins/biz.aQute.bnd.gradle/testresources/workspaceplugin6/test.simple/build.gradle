@@ -9,5 +9,5 @@ tasks.getByName('resolve.resolvechange') {
 
 task('resolve2', type: Resolve) {
 	dependsOn assemble
-	bndrun = file('resolve2.bndrun')
+	bndrun = file('resolve2.bndrunx')
 }
