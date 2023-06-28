@@ -28,6 +28,7 @@ env:
     -Daether.connector.http.reuseConnections=false
     -Daether.connector.http.connectionMaxTtl=25
     -Daether.connector.connectTimeout=120000
+  BNDTOOLS_CORE_TEST_NOJUNITOSGI: true # This test is very flaky on CI
 
 defaults:
   run:
@@ -84,9 +85,9 @@ jobs:
         - 'ubuntu-latest'
         java:
         - '17'
-        - '19'
+        - '20'
         runner:
-        - 'xvfb-run --auto-servernum {0}'
+        - '{0}' # 'xvfb-run --auto-servernum {0}'
     name: Rebuild JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
