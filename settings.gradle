@@ -6,8 +6,7 @@ import aQute.bnd.osgi.Constants
 
 pluginManagement {
 	plugins {
-		id "com.gradle.enterprise" version "3.11.1"
-		id "org.gradle.test-retry" version "1.4.1"
+		id "com.gradle.enterprise" version "3.13.4"
 	}
 }
 
@@ -37,7 +36,7 @@ buildscript {
 			version {
 				require bnd_version
 				// Prefer RC over SNAPSHOT for next branch
-				prefer "latest.release" 
+				prefer "latest.release"
 			}
 		}
 		components {
@@ -77,7 +76,7 @@ rootProject.name = "bnd"
 
 gradle.ext.bndWorkspaceConfigure = { workspace ->
 	/*
-	 * Compute the build time stamp. 
+	 * Compute the build time stamp.
 	 * If the git workspace is clean, the build time is the time of the head commit.
 	 * If the git workspace is dirty, the build time is the current time.
 	 */
