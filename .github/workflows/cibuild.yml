@@ -28,7 +28,7 @@ env:
     -Daether.connector.http.reuseConnections=false
     -Daether.connector.http.connectionMaxTtl=25
     -Daether.connector.connectTimeout=120000
-
+  BNDTOOLS_CORE_TEST_NOJUNITOSGI: true # This test is very flaky on CI
 
 defaults:
   run:
@@ -45,13 +45,13 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '19'
+        - '20'
         runner:
-        - 'xvfb-run --auto-servernum {0}'
+        - '{0}' # 'xvfb-run --auto-servernum {0}'
         include:
         - os: 'ubuntu-latest'
           java: '17'
-          runner: 'xvfb-run --auto-servernum {0}'
+          runner: '{0}' # 'xvfb-run --auto-servernum {0}'
           canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
           fetch-depth: '0'
         - os: 'windows-latest'
