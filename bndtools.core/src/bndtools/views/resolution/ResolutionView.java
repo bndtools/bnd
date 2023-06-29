@@ -2,6 +2,7 @@ package bndtools.views.resolution;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -30,11 +31,14 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -45,6 +49,7 @@ import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -52,12 +57,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
@@ -68,6 +76,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
+import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.unmodifiable.Sets;
@@ -90,6 +99,7 @@ import bndtools.utils.SelectionUtils;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
+	private final List<EE>		ees			= Arrays.asList(EE.values());
 	private Display				display		= null;
 
 	private Tree				reqsTree	= null;
@@ -104,6 +114,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private boolean				outOfDate	= false;
 	Set<CapReqLoader>			loaders;
 	private Job					analysisJob;
+	private int					currentEE	= 4;
 
 	private final Set<String>	filteredCapabilityNamespaces;
 
@@ -220,7 +231,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
 				if (element instanceof RequirementWrapper) {
 					RequirementWrapper rw = (RequirementWrapper) element;
-					return !rw.resolved;
+					boolean resolved = rw.resolved | rw.java;
+					return !resolved;
 				}
 				return true;
 			}
@@ -235,53 +247,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			LocalSelectionTransfer.getTransfer()
 		}, new LocalTransferDragListener(capsViewer));
 
-		reqsViewer.addOpenListener(event -> {
-			IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-			for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
-				Object item = iter.next();
-				if (item instanceof Clazz) {
-					Clazz clazz = (Clazz) item;
-					String className = clazz.getFQN();
-					IType type = null;
-					if (!loaders.isEmpty()) {
-						IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
-							.getRoot();
-						for (CapReqLoader loader : loaders) {
-							if (loader instanceof BndBuilderCapReqLoader) {
-								File loaderFile = ((BndBuilderCapReqLoader) loader).getFile();
-								IFile[] wsfiles = wsroot.findFilesForLocationURI(loaderFile.toURI());
-								for (IFile wsfile : wsfiles) {
-									IJavaProject javaProject = JavaCore.create(wsfile.getProject());
-									try {
-										type = javaProject.findType(className);
-										if (type != null)
-											break;
-									} catch (JavaModelException e1) {
-										ErrorDialog.openError(getSite().getShell(), "Error", "",
-											new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-												MessageFormat.format("Error opening Java class '{0}'.", className),
-												e1));
-									}
-								}
-							}
-
-						}
-					}
-					try {
-						if (type != null)
-							JavaUI.openInEditor(type, true, true);
-					} catch (PartInitException e2) {
-						ErrorDialog.openError(getSite().getShell(), "Error", "",
-							new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-								MessageFormat.format("Error opening Java editor for class '{0}'.", className), e2));
-					} catch (JavaModelException e3) {
-						ErrorDialog.openError(getSite().getShell(), "Error", "",
-							new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-								MessageFormat.format("Error opening Java class '{0}'.", className), e3));
-					}
-				}
-			}
-		});
+		reqsViewer.addOpenListener(this::openEditor);
 
 		fillActionBars();
 
@@ -301,7 +267,55 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		selectionChanged(activePart, activeSelection);
 	}
 
+	private void openEditor(OpenEvent event) {
+		IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+		for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
+			Object item = iter.next();
+			if (item instanceof Clazz) {
+				Clazz clazz = (Clazz) item;
+				String className = clazz.getFQN();
+				IType type = null;
+				if (!loaders.isEmpty()) {
+					IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+						.getRoot();
+					for (CapReqLoader loader : loaders) {
+						if (loader instanceof BndBuilderCapReqLoader) {
+							File loaderFile = ((BndBuilderCapReqLoader) loader).getFile();
+							IFile[] wsfiles = wsroot.findFilesForLocationURI(loaderFile.toURI());
+							for (IFile wsfile : wsfiles) {
+								IJavaProject javaProject = JavaCore.create(wsfile.getProject());
+								try {
+									type = javaProject.findType(className);
+									if (type != null)
+										break;
+								} catch (JavaModelException e1) {
+									ErrorDialog.openError(getSite().getShell(), "Error", "",
+										new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+											MessageFormat.format("Error opening Java class '{0}'.", className), e1));
+								}
+							}
+						}
+
+					}
+				}
+				try {
+					if (type != null)
+						JavaUI.openInEditor(type, true, true);
+				} catch (PartInitException e2) {
+					ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
+						0, MessageFormat.format("Error opening Java editor for class '{0}'.", className), e2));
+				} catch (JavaModelException e3) {
+					ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
+						0, MessageFormat.format("Error opening Java class '{0}'.", className), e3));
+				}
+			}
+		}
+	}
+
 	void fillActionBars() {
+		IToolBarManager toolBarManager = getViewSite().getActionBars()
+			.getToolBarManager();
+
 		IAction toggleShowSelfImports = new Action("showSelfImports", IAction.AS_CHECK_BOX) {
 			@Override
 			public void runWithEvent(Event event) {
@@ -316,6 +330,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		toggleShowSelfImports.setImageDescriptor(Icons.desc("/icons/package_folder_impexp.gif"));
 		toggleShowSelfImports.setToolTipText(
 			"Show resolved requirements.\n\nInclude requirements that are resolved within the set of selected bundles.");
+		toolBarManager.add(toggleShowSelfImports);
 
 		IAction toggleLockInput = new Action("lockInput", IAction.AS_CHECK_BOX) {
 			@Override
@@ -329,11 +344,64 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		toggleLockInput.setChecked(false);
 		toggleLockInput.setImageDescriptor(Icons.desc("lock"));
 		toggleLockInput.setToolTipText("Lock to current selection");
-
-		IToolBarManager toolBarManager = getViewSite().getActionBars()
-			.getToolBarManager();
-		toolBarManager.add(toggleShowSelfImports);
 		toolBarManager.add(toggleLockInput);
+
+		doEEActionMenu(toolBarManager);
+	}
+
+	private void doEEActionMenu(IToolBarManager toolBarManager) {
+		MenuManager menuManager = new MenuManager("Java", "resolutionview.java.menu");
+
+		Action showMenuAction = new Action("Java") {
+			@Override
+			public void runWithEvent(Event event) {
+				Menu menu = menuManager.createContextMenu(getViewSite().getShell());
+				MenuItem[] items = menu.getItems();
+				if (items != null && items.length == ees.size()) {
+					menu.setDefaultItem(items[currentEE]);
+				}
+				Point location = getViewSite().getShell()
+					.getDisplay()
+					.getCursorLocation();
+				menu.setLocation(location.x, location.y);
+				menu.setVisible(true);
+			}
+
+			@Override
+			public ImageDescriptor getImageDescriptor() {
+				return Icons.desc("java");
+			}
+		};
+		for (int n = 0; n < ees.size(); n++) {
+			int nn = n;
+			EE ee = ees.get(n);
+			if (ee.getRelease() == 9) {
+				currentEE = n;
+			}
+			String name = getEEName(ee);
+			Action action = new Action(name) {
+				int index = nn;
+
+				@Override
+				public void run() {
+					setEE(index);
+					showMenuAction.setToolTipText(getEEName(ees.get(currentEE)));
+				}
+			};
+			menuManager.add(action);
+		}
+		showMenuAction.setToolTipText(getEEName(ees.get(currentEE)));
+
+		toolBarManager.add(showMenuAction);
+	}
+
+	private String getEEName(EE ee) {
+		return ee == EE.UNKNOWN ? "unknown" : ee.getEEName();
+	}
+
+	protected void setEE(int ee) {
+		currentEE = ee;
+		executeAnalysis();
 	}
 
 	@Override
@@ -384,8 +452,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 		Set<CapReqLoader> loaders = getLoadersFromSelection((IStructuredSelection) selection);
 		if (setLoaders(loaders)) {
-			if (getSite().getPage()
-				.isPartVisible(this)) {
+			IWorkbenchPage page = getSite().getPage();
+			if (page != null && page.isPartVisible(this)) {
 				executeAnalysis();
 			} else {
 				outOfDate = true;
@@ -447,7 +515,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				oldJob.cancel();
 
 			if (!loaders.isEmpty()) {
-				final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("importExportAnalysis", loaders);
+				final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("importExportAnalysis", loaders,
+					ees.get(currentEE));
 				job.setSystem(true);
 
 				job.addJobChangeListener(new JobChangeAdapter() {
