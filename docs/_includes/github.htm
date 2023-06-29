@@ -4,7 +4,7 @@
       var regex = /https:\/\/bnd.bndtools.org\/(.*\.html)/;
       var matches = currentURL.match(regex);
       var filePath = matches[1];
-	  if (filePath.contains("/")) 
+	  if (filePath.includes("/")) 
 		  filePath = "_" + filePath;
       var markdownFileURL = 'https://github.com/bndtools/bnd/blob/master/docs/' + filePath.replace(".html", + '.md');
       var repoLink = document.getElementById('repo-link');
