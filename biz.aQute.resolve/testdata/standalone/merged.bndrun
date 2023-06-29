@@ -1,0 +1,2 @@
+-standalone: https://example.org/index1.xml
+-standalone.extra: https://example.org/index2.xml; name=second
