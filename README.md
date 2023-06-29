@@ -105,4 +105,6 @@ YourKit supports open source projects with its full-featured Java Profiler. Your
 
 [![YourKit](https://www.yourkit.com/images/yklogo.png)](https://www.yourkit.com/)
 
+[icons8](https://icons8.com/) – For some of the icons
+
 [1]: https://bnd.bndtools.org/chapters/180-baselining.html
