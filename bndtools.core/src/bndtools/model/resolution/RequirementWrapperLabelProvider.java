@@ -33,7 +33,7 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 			cell.setImage(icon);
 
 			StyledString label = getLabel(rw.requirement);
-			if (rw.resolved)
+			if (rw.resolved || rw.java)
 				label.setStyle(0, label.length(), resolved);
 
 			cell.setText(label.getString());
@@ -71,6 +71,12 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 			StringBuilder buf = new StringBuilder();
 			if (rw.resolved)
 				buf.append("RESOLVED:\n");
+			if (rw.java)
+				buf.append("JAVA:\n");
+
+			buf.append("FROM: ")
+				.append(req.getResource())
+				.append("\n");
 
 			Resource r = rw.requirement.getResource();
 			if (r instanceof SupportingResource sr) {
@@ -99,6 +105,8 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 					.append(directive.getKey())
 					.append(" := ")
 					.append(directive.getValue());
+
+			Resource resource = req.getResource();
 
 			return buf.toString();
 		}

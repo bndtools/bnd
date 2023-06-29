@@ -13,13 +13,16 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.resource.Resource;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.version.Version;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -84,6 +87,7 @@ public enum EE {
 	private transient Parameters	packages				= null;
 	private transient Parameters	modules					= null;
 
+	private Resource				resource;
 	/**
 	 * For use by JavaSE_9 and later.
 	 */
@@ -337,5 +341,23 @@ public enum EE {
 
 	public static SortedSet<EE> all() {
 		return all;
+	}
+
+	/**
+	 * Return a list of capabilities associated with this EE
+	 */
+	public Resource getResource() {
+		if (resource != null)
+			return resource;
+
+		ResourceBuilder rb = new ResourceBuilder();
+		getPackages()
+			.forEach((k, v) -> {
+				String name = Processor.removeDuplicateMarker(k);
+				rb.addExportPackage(name, v);
+			});
+
+		rb.addEE(this);
+		return resource = rb.build();
 	}
 }

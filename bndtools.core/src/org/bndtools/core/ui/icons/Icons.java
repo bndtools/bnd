@@ -148,7 +148,11 @@ public final class Icons {
 				return image;
 
 			if (decorators.length == 0) {
-				Image baseImage = desc(name).createImage();
+				ImageDescriptor desc = desc(name, false);
+				if (desc == null) {
+					desc = desc(ICONS_MISSING_GIF);
+				}
+				Image baseImage = desc.createImage();
 				images.put(k, baseImage);
 				return baseImage;
 			}

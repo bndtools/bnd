@@ -1,5 +1,7 @@
 package bndtools.tasks;
 
+import static java.util.Collections.emptyList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 
+import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.io.IO;
 import bndtools.model.resolution.RequirementWrapper;
@@ -30,10 +33,16 @@ public class AnalyseBundleResolutionJob extends Job {
 
 	private Map<String, List<RequirementWrapper>>	requirements;
 	private Map<String, List<Capability>>			capabilities;
+	private EE										ee;
 
 	public AnalyseBundleResolutionJob(String name, Set<? extends CapReqLoader> loaders) {
+		this(name, loaders, null);
+	}
+
+	public AnalyseBundleResolutionJob(String name, Set<? extends CapReqLoader> loaders, EE ee) {
 		super(name);
 		this.loaders = loaders;
+		this.ee = ee;
 	}
 
 	private static <K, V> void mergeMaps(Map<K, List<V>> from, Map<K, List<V>> into) {
@@ -53,6 +62,8 @@ public class AnalyseBundleResolutionJob extends Job {
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		try {
+
+
 			// Load all the capabilities and requirements
 			Map<String, List<Capability>> allCaps = new HashMap<>();
 			Map<String, List<RequirementWrapper>> allReqs = new HashMap<>();
@@ -72,13 +83,14 @@ public class AnalyseBundleResolutionJob extends Job {
 
 			// Check for resolved requirements
 			for (String namespace : allReqs.keySet()) {
-				List<RequirementWrapper> rws = allReqs.get(namespace);
-				List<Capability> candidates = allCaps.get(namespace);
+				List<RequirementWrapper> rws = allReqs.getOrDefault(namespace, emptyList());
+				List<Capability> candidates = allCaps.getOrDefault(namespace, emptyList());
 
-				if (candidates == null)
-					continue;
+				List<Capability> javaCandidates = ee == null ? emptyList()
+					: ee.getResource()
+						.getCapabilities(namespace);
 
-				for (RequirementWrapper rw : rws) {
+				outer: for (RequirementWrapper rw : rws) {
 					String filterDirective = rw.requirement.getDirectives()
 						.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 					if (filterDirective == null) {
@@ -88,7 +100,13 @@ public class AnalyseBundleResolutionJob extends Job {
 					for (Capability cand : candidates) {
 						if (predicate.test(cand)) {
 							rw.resolved = true;
-							break;
+							continue outer;
+						}
+					}
+					for (Capability cand : javaCandidates) {
+						if (predicate.test(cand)) {
+							rw.java = true;
+							continue outer;
 						}
 					}
 				}
