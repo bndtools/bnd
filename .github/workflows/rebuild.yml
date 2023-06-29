@@ -64,7 +64,7 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
+      uses: gradle/gradle-build-action@40b6781dcdec2762ad36556682ac74e31030cfe2
     - name: Build
       id: build
       run: |
@@ -104,7 +104,7 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
+      uses: gradle/gradle-build-action@40b6781dcdec2762ad36556682ac74e31030cfe2
     - name: Download dist/bundles
       uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
       with:
