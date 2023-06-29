@@ -1337,7 +1337,7 @@ public class Workspace extends Processor {
 		AtomicBoolean copyAll = new AtomicBoolean(false);
 		AtomicInteger counter = new AtomicInteger();
 
-		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
+		Parameters standalone = run.getMergedParameters(STANDALONE);
 		standalone.stream()
 			.filterKey(locationStr -> {
 				if ("true".equalsIgnoreCase(locationStr)) {

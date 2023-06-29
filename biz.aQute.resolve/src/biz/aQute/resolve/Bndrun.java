@@ -56,8 +56,7 @@ public class Bndrun extends Run {
 		Processor processor;
 		if (workspace != null) {
 			Bndrun run = new Bndrun(workspace, file);
-			if (run.getProperties()
-				.get(STANDALONE) == null) {
+			if (!run.isStandAlone()) {
 				return run;
 			}
 			// -standalone specified

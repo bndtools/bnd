@@ -269,12 +269,12 @@ public class Syntax implements Constants {
 
 			), version, bundle_symbolic_name, bundle_version),
 
-		new Syntax(LIBRARY, "The " + LIBRARY
-			+ " instruction includes a library. A library is included in a bundle in a repository. "
-			+ "It is identified by a capability, a bundle can contain multiple libraries. When used in a "
-			+ "workspace, it will include the `workspace.bnd` file from the library by default. For a project, "
-			+ "this is `project.bnd`. The `include` attribute can identify a file in the library. Libraries are "
-			+ "versioned independently from the bundle. The library can contain additional files, also binary.",
+		new Syntax(LIBRARY,
+			"The " + LIBRARY + " instruction includes a library. A library is included in a bundle in a repository. "
+				+ "It is identified by a capability, a bundle can contain multiple libraries. When used in a "
+				+ "workspace, it will include the `workspace.bnd` file from the library by default. For a project, "
+				+ "this is `project.bnd`. The `include` attribute can identify a file in the library. Libraries are "
+				+ "versioned independently from the bundle. The library can contain additional files, also binary.",
 			LIBRARY + ": foo;version=1.2.3", null, null),
 		new Syntax(REQUIRE_BUNDLE,
 			"The " + REQUIRE_BUNDLE + " header specifies the required exports from another bundle.",
@@ -703,7 +703,7 @@ public class Syntax implements Constants {
 			"When the bundle version’s qualifier equals 'SNAPSHOT' or ends with '-SNAPSHOT', the STRING value of the -snapshot instruction is substituted for 'SNAPSHOT'.",
 			SNAPSHOT + "=${tstamp}", null, null),
 		new Syntax(STANDALONE,
-			"Used in bndrun files. Disconnects the bndrun file from the workspace and defines its own Capabilities repositories.",
+			"Used in bndrun files. Disconnects the bndrun file from the workspace and defines its own Capabilities repositories. This is a merged instruction although be careful that the exact header must be set to treat a bndrun file as standalone.",
 			STANDALONE + "=index.html;name=..., ...", null, null),
 		new Syntax(STRICT, "If set to true, then extra verification is done.", STRICT + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
