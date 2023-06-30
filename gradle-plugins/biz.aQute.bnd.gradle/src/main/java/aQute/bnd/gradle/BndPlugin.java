@@ -255,7 +255,8 @@ public class BndPlugin implements Plugin<Project> {
 					AbstractCompile.class, t -> {
 						t.getDestinationDirectory()
 							.fileValue(destinationDir);
-						jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						FileCollection jarLibraryElements = jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						t.setClasspath(jarLibraryElements.plus(t.getClasspath()));
 					});
 				generateInputAction.ifPresent(compileTask::configure);
 				sourceSet.getOutput()
@@ -280,7 +281,8 @@ public class BndPlugin implements Plugin<Project> {
 					AbstractCompile.class, t -> {
 						t.getDestinationDirectory()
 							.fileValue(destinationDir);
-						jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						FileCollection jarLibraryElements = jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						t.setClasspath(jarLibraryElements.plus(t.getClasspath()));
 					});
 				sourceSet.getOutput()
 					.dir(Maps.of("builtBy", compileTask.getName()), destinationDir);
@@ -535,8 +537,9 @@ public class BndPlugin implements Plugin<Project> {
 						.withPropertyName("projectFolder");
 					/* bnd can include from -buildpath */
 					t.getInputs()
-						.files(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-							.getCompileClasspath())
+						.files(tasks.named(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+								.getCompileJavaTaskName(), AbstractCompile.class)
+							.map(AbstractCompile::getClasspath))
 						.withNormalizer(ClasspathNormalizer.class)
 						.withPropertyName("buildpath");
 					/* bnd can include from -dependson */

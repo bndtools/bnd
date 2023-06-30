@@ -210,7 +210,7 @@ public class BundleTaskExtension {
 		outputDirectory = objects.directoryProperty();
 		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 		setSourceSet(mainSourceSet);
-		classpath(mainSourceSet.getCompileClasspath());
+		classpath(jarLibraryElements(task, mainSourceSet.getCompileClasspathConfigurationName()));
 		properties = objects.mapProperty(String.class, Object.class)
 			.convention(Maps.of("project", "__convention__"));
 		defaultBundleSymbolicName = task.getArchiveBaseName()
@@ -335,8 +335,6 @@ public class BundleTaskExtension {
 			.getTasks()
 			.named(sourceSet.getCompileJavaTaskName(), AbstractCompile.class)
 			.flatMap(AbstractCompile::getDestinationDirectory));
-
-		jarLibraryElements(getTask(), sourceSet.getCompileClasspathConfigurationName());
 	}
 
 	ConfigurableFileCollection getAllSource() {
