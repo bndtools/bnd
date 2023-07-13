@@ -582,4 +582,17 @@ public abstract class Domain implements Iterable<String> {
 		return Processor.isTrue(get(JPMSModule.MULTI_RELEASE_HEADER));
 	}
 
+	/**
+	 * Return the bundle id, which consists of the bsn + version
+	 */
+
+	public BundleId getBundleId() {
+		Entry<String, Attrs> bsn = getBundleSymbolicName();
+		if (bsn == null) {
+			return null;
+		}
+		String featureVersion = getBundleVersion();
+		return new BundleId(bsn.getKey(), featureVersion);
+	}
+
 }
