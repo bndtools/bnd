@@ -34,6 +34,7 @@ The Exporters use a plugin mechanism and therefore the list is not closed. The f
 * `osgi.subsystem.application` – Export into an application subsystem
 * `osgi.subsystem.feature` – Export into a feature subsystem 
 * `osgi.subsystem.composite` – Export into a composite subsystem
+* `p2` – Export a P2 repository
 
 ## Example
 

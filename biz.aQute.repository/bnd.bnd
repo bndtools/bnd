@@ -18,7 +18,7 @@
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\
 	org.tukaani.xz;version=latest;maven-scope=provided
-
+	
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
 	${junit},\
@@ -29,7 +29,8 @@
 Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\
 	aQute.p2.api,\
-	aQute.bnd.deployer.obr;bnd-plugins=true,\
+	aQute.p2.export;bnd-plugins=true,\
+    aQute.bnd.deployer.obr;bnd-plugins=true,\
 	aQute.bnd.deployer.repository;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.api,\
 	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\

@@ -1,0 +1,6 @@
+-plugin: \
+	aQute.bnd.repository.osgi.OSGiRepository;\
+		locations           ='${fileuri;${workspace}/cnf/repo/index.xml}'; \
+		name                ='P2'
+
+Bundle-Version 800

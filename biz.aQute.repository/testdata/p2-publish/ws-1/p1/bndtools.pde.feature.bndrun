@@ -1,0 +1,10 @@
+Bundle-Name:            Bndtools PDE
+Bundle-Description:     PDE integration for Bndtools
+Bundle-Category         bndtools
+
+Require-Capability \
+    feature;name=org.eclipse.pde;version=3.14.1300, \
+    feature;name=bndtools.main.feature 
+    
+-runbundles \
+    bndtools.pde
