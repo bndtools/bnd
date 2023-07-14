@@ -97,7 +97,7 @@ var p2 = tasks.register("p2") {
 	description = "Publish the p2 repositories."
 	group = PublishingPlugin.PUBLISH_TASK_GROUP
 	var javaLauncher = javaToolchains.launcherFor {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(8)
 	}
 	inputs.files(p2Plugins).withPropertyName("p2Plugins")
 	inputs.files(p2FeatureMain).withPropertyName("p2FeatureMain")
