@@ -62,7 +62,9 @@ jobs:
       uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
       with:
         distribution: 'temurin'
-        java-version: ${{ matrix.java }}
+        java-version: |
+          8
+          ${{ matrix.java }}
     - name: Set up Gradle
       uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
     - name: Build
@@ -98,11 +100,13 @@ jobs:
 
     - name: Git Checkout
       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
-    - name: Set up Java
+    - name: Set up Java 8 + ${{ matrix.java }}
       uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
       with:
         distribution: 'temurin'
-        java-version: ${{ matrix.java }}
+        java-version: |
+          8
+          ${{ matrix.java }}
     - name: Set up Gradle
       uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
     - name: Download dist/bundles
