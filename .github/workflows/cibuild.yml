@@ -45,7 +45,7 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '17'
+        - '20'
         runner:
         - '{0}' # 'xvfb-run --auto-servernum {0}'
         include:

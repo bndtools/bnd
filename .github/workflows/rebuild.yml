@@ -62,15 +62,9 @@ jobs:
       uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2
       with:
         distribution: 'temurin'
-<<<<<<< HEAD
         java-version: |
           8
           ${{ matrix.java }}
-=======
-        java-version:  |
-            8
-            ${{ matrix.java }}
->>>>>>> 655ea9bc6 (1.8)
     - name: Set up Gradle
       uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc
     - name: Build
