@@ -1,5 +1,6 @@
 package aQute.bnd.gradle;
 
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible;
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
@@ -58,7 +59,6 @@ import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePluginExtension;
-import org.gradle.api.plugins.Convention;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.HelpTasksPlugin;
 import org.gradle.api.plugins.JavaBasePlugin;
@@ -300,10 +300,11 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
-					@SuppressWarnings("deprecation")
-					Convention sourceSetConvention = new DslObject(sourceSet).getConvention();
-					sourceSetConvention.getPlugins()
-						.forEach((name, plugin) -> {
+					if (!isGradleCompatible("8.0")) { // only for pre 8.0
+						@SuppressWarnings("deprecation")
+						Map<String, Object> plugins = new DslObject(sourceSet).getConvention()
+							.getPlugins();
+						plugins.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
 								Object sds = getter(plugin, name);
 								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
@@ -311,6 +312,7 @@ public class BndPlugin implements Plugin<Project> {
 								}
 							}
 						});
+					}
 					Provider<Directory> destinationDir = sourceSet.getJava()
 						.getClassesDirectory();
 					TaskProvider<Task> processResourcesTask = tasks.named(sourceSet.getProcessResourcesTaskName());
@@ -347,10 +349,11 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
-					@SuppressWarnings("deprecation")
-					Convention sourceSetConvention = new DslObject(sourceSet).getConvention();
-					sourceSetConvention.getPlugins()
-						.forEach((name, plugin) -> {
+					if (!isGradleCompatible("8.0")) { // only for pre 8.0
+						@SuppressWarnings("deprecation")
+						Map<String, Object> plugins = new DslObject(sourceSet).getConvention()
+							.getPlugins();
+						plugins.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
 								Object sds = getter(plugin, name);
 								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
@@ -358,6 +361,7 @@ public class BndPlugin implements Plugin<Project> {
 								}
 							}
 						});
+					}
 					Provider<Directory> destinationDir = sourceSet.getJava()
 						.getClassesDirectory();
 					TaskProvider<Task> processResourcesTask = tasks.named(sourceSet.getProcessResourcesTaskName());

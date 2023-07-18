@@ -26,7 +26,7 @@ dependencies {
 
 jar {
 	manifest {
-		attributes('Implementation-Title': project.archivesBaseName,
+		attributes('Implementation-Title': base.archivesName,
 		'Implementation-Version': project.version,
 		'-includeresource': '{bar.txt}',
 		'-include': 'other.bnd',
