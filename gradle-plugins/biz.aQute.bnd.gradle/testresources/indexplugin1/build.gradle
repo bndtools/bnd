@@ -26,7 +26,7 @@ dependencies {
 jar {
 	ext.taskprop = 'prop.task'
 	manifest {
-		attributes('Implementation-Title': project.archivesBaseName,
+		attributes('Implementation-Title': base.archivesName,
 		'Implementation-Version': project.version,
 		'-includeresource': '{${.}/bar.txt}',
 		'-include': '${.}/other.bnd',
@@ -38,7 +38,7 @@ jar {
 task bundle(type: Bundle) {
 	description = 'Bundle'
 	from sourceSets.test.output
-	archiveBaseName = "${project.archivesBaseName}_bundle"
+	archiveBaseName = base.archivesName.map { "${it}_bundle" }
 	bundle {
 		bnd = '''
 -exportcontents: doubler.impl
@@ -69,7 +69,7 @@ artifacts {
 task indexer(type: Index) {
 	description = 'Indexer'
 	repositoryName = project.name
-	bundles fileTree(destinationDirectory.dir(libsDirName)) {
+	bundles fileTree(destinationDirectory.dir('libs')) {
 		include '**/*.jar'
 		exclude '**/*-latest.jar'
 		exclude '**/*-sources.jar'

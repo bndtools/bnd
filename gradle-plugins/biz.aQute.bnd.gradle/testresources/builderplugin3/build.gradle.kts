@@ -25,7 +25,7 @@ dependencies {
 tasks.jar {
 	val taskprop by extra("prop.task")
 	manifest {
-		attributes(mapOf("Implementation-Title" to project.base.archivesBaseName,
+		attributes(mapOf("Implementation-Title" to base.archivesName,
 		"Implementation-Version" to project.version,
 		"-includeresource" to "{\${.}/bar.txt}",
 		"-include" to "\${.}/other.bnd",
