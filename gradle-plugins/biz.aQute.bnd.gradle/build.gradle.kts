@@ -175,6 +175,12 @@ publishing {
 	}
 }
 
+// Java compiler options
+tasks.withType<JavaCompile>() {
+	options.compilerArgs.add("-Xlint:deprecation")
+	options.compilerArgs.add("-Xlint:unchecked")
+}
+
 // Use same jvm target for kotlin code as for java code
 tasks.withType<KotlinCompilationTask<KotlinJvmCompilerOptions>>().configureEach {
 	compilerOptions {
