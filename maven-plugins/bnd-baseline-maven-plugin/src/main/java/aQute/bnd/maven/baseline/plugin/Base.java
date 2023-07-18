@@ -1,5 +1,8 @@
 package aQute.bnd.maven.baseline.plugin;
 
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+
 public class Base {
 
 	private String	groupId;
@@ -11,6 +14,15 @@ public class Base {
 	private String	classifier;
 
 	private String	extension;
+
+	public void setFromCoordinates(String coordinates) {
+		Artifact artifact = new DefaultArtifact(coordinates);
+		setGroupId(artifact.getGroupId());
+		setArtifactId(artifact.getArtifactId());
+		setVersion(artifact.getVersion());
+		setClassifier(artifact.getClassifier());
+		setExtension(artifact.getExtension());
+	}
 
 	public String getGroupId() {
 		return groupId;

@@ -216,6 +216,19 @@
 		</dependency>
 	</dependencies>
 
+	<repositories>
+		<repository>
+			<id>bnd-snapshots</id>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>https://bndtools.jfrog.io/bndtools/libs-snapshot/</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<pluginManagement>
 			<plugins>

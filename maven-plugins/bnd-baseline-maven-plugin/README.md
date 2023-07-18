@@ -87,14 +87,23 @@ version artifact which matches these rules will be used as the baseline.
 By default the `bnd-baseline-maven-plugin` will use information from the
 current project to set its search parameters, however sometimes an artifact
 will move or change name over time, or a particular version should be 
-targeted. In this case the search parameters can be overridden. If a 
+targeted. In this case the search parameters can be overridden through `baseCoordinates` (since version 7.0.0)
+or `base` (the former taking precedence). If a 
 search parameter is omitted then it will take its default value:
+
+    <configuration>
+        <baseCoordinates>${a.different.groupId}:${a.different.artifactId}:${single.version.or.version.range}</baseCoordinates>
+    </configuration>
+
+or
 
     <configuration>
         <base>
             <groupId>${a.different.groupId}</groupId>
             <artifactId>${a.different.artifactId}</artifactId>
             <version>${single.version.or.version.range}</version>
+            <classifier>${an.optional.classifier}</version>
+            <extension>${an.optional.extension}</extension>
         </base>
     </configuration>
 
@@ -187,6 +196,7 @@ Note though that this will also completely ignore package removals, as in that c
 
 |Configuration Property | Description |
 | ---                   | ---         |
+|`baseCoordinates`       | The Maven coordinates of the base artifact in the format `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}`. If set, takes precedence over `base`. Override with property `bnd.baseline.base.coordinates`. Available since version 7.0.0 |
 |`base`                 | See [Changing the baseline search parameters](#changing-the-baseline-search-parameters). _Defaults to the highest version of the project's artifact that is less than the version of the project's artifact._|
 |`failOnMissing`        | See [Fail on missing baseline](#fail-on-missing-baseline). _Defaults to `true`._ Override with property `bnd.baseline.fail.on.missing`.|
 |`includeDistributionManagement`| See [Include Distribution Management](#include-distribution-management). _Defaults to `true`._ Override with property `bnd.baseline.include.distribution.management`.|
