@@ -27,6 +27,7 @@ junit: ${junit-osgi},\
 junit-osgi: \
 	junit-platform-commons;version=latest,\
 	junit-platform-engine;version=latest,\
+	junit-platform-launcher;version=latest,\
 	assertj-core;version=latest,\
 	net.bytebuddy.byte-buddy;version=latest,\
 	org.opentest4j;version=latest,\
