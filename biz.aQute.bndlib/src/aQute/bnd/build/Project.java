@@ -1727,6 +1727,7 @@ public class Project extends Processor {
 
 	private void install(RepositoryPlugin repo, Processor context, File f, Attrs value) throws Exception {
 		try (Processor p = new Processor(context)) {
+			p.use(context);
 			p.getProperties()
 				.putAll(value);
 			PutOptions options = new PutOptions();
@@ -1736,6 +1737,7 @@ public class Project extends Processor {
 			} catch (Exception e) {
 				exception(e, "Cannot install %s into %s because %s", f, repo.getName(), e);
 			}
+			context.getInfo(p, f.getName() + ":");
 		}
 	}
 
