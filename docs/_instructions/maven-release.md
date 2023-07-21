@@ -12,7 +12,7 @@ Though this instruction is not specific for a plugin, it was developed in conjun
 
     -maven-release ::= ( 'local'|'remote' ( ';' snapshot )? ) ( ',' option )*
     snapshot       ::= <value to be used for timestamp>
-    option         ::= sources | javadoc | pom | sign | extra*
+    option         ::= sources | javadoc | pom | sign | archive*
     archive          ::= 'archive' 
                        ( ';path=' ( PATH | '{' PATH '}' )?
                        ( ';classifier=' maven-classifier )?
