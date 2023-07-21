@@ -84,13 +84,17 @@ public class RepositoryTargetLocation extends BndTargetLocation {
 
 			int i = 0;
 			for (String bsn : bsns) {
+				if (bsn.contains(":")) {
+					continue;
+				}
 				Version version = repository.versions(bsn)
 					.last();
+
 				File download = repository.get(bsn, version, new HashMap<String, String>());
 				try {
 					bundles.add(new TargetBundle(download));
 				} catch (Exception e) {
-					throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID,
+					throw new CoreException(new Status(IStatus.WARNING, PLUGIN_ID,
 						"Invalid plugin in repository: " + bsn + " @ " + getLocation(false), e));
 				}
 
