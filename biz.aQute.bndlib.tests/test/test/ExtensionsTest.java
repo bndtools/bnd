@@ -22,7 +22,8 @@ public class ExtensionsTest {
 	public void setUp() throws Exception {
 		tmp = IO.getFile("tmp");
 		ws = new Workspace(IO.getFile("testresources/ws-extensions"));
-		File cacheDir = IO.getFile(ws.getProperty(Workspace.CACHEDIR, Home.getUserHomeBnd() + "/caches/shas"));
+		File cacheDir = IO.getFile(ws.getProperty(Workspace.CACHEDIR, Home.getUserHomeBnd("caches/shas")
+			.getAbsolutePath()));
 		File dir = IO.getFile(cacheDir, "2D96DA7F7A81443130072C718CB40CE5182DA362");
 		IO.delete(dir);
 	}

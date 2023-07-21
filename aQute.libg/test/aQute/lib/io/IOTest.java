@@ -36,21 +36,19 @@ public class IOTest {
 
 		EnvironmentCalculator ec = new IO.EnvironmentCalculator(false) {
 			@Override
-			String getenv(String key) {
+			protected String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
 			}
 		};
 
-		assertEquals(new File(System.getProperty("user.home")), ec.getHome());
 		assertEquals(new File(System.getProperty("user.home")), IO.home);
 
 		File dir = IO.getFile("generated");
 		map.put("HOME", dir.getAbsolutePath());
-		assertEquals(dir, ec.getHome());
 
 		EnvironmentCalculator ec2 = new IO.EnvironmentCalculator(true) {
 			@Override
-			String getenv(String key) {
+			protected String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
 			}
 		};
@@ -60,7 +58,7 @@ public class IOTest {
 		map.put("HOME", "%userprofile%");
 
 		// cannot use file system since this might not be windows
-		assertEquals("C:\\Documents and Settings\\foobar", ec2.getSystemEnv("HOME"));
+		assertEquals("C:\\Documents and Settings\\foobar", ec2.getEnv("HOME"));
 	}
 
 	@Test
