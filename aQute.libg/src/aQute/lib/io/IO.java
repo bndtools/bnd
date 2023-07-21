@@ -56,18 +56,19 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -77,7 +78,8 @@ import aQute.libg.glob.Glob;
 
 public class IO {
 	private static final boolean						isWindows				= File.separatorChar == '\\';
-	final static EnvironmentCalculator					hc						= new EnvironmentCalculator(isWindows);
+	final static EnvironmentCalculator					hc						= new EnvironmentCalculator();
+	final static Function<String, String>				getenv;
 	private static final Pattern						WINDOWS_MACROS			= Pattern.compile("%(?<key>[^%]+)%");
 	private static final int							BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
@@ -90,10 +92,11 @@ public class IO {
 	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
 
 	static {
-		home = hc.getDirLocation(hc.getEnv("HOME"), System.getProperty("user.home"));
+		getenv = isWindows ? hc::getenv : System::getenv;
+		home = hc.getDirLocation(getenv.apply("HOME"), System.getProperty("user.home"));
 		String javaHome = System.getProperty("java.home")
 			.replaceAll("(/|\\\\)jre$", "");
-		JAVA_HOME = hc.getDirLocation(hc.getEnv("JAVA_HOME"), javaHome);
+		JAVA_HOME = hc.getDirLocation(getenv.apply("JAVA_HOME"), javaHome);
 	}
 
 	public static String getExtension(String fileName, String deflt) {
@@ -1640,12 +1643,6 @@ public class IO {
 	 * test. For this reason tests can override the #getenv method.
 	 */
 	static class EnvironmentCalculator {
-		final boolean iswindows;
-
-		EnvironmentCalculator(boolean iswindows) {
-			this.iswindows = iswindows;
-		}
-
 		File getDirLocation(String... path) {
 			for (String p : path) {
 				if (p == null)
@@ -1658,33 +1655,38 @@ public class IO {
 		}
 
 		String getEnv(String key) {
-			if (!iswindows)
-				return getenv(key);
-
-			return getSystemEnv(key, new HashSet<>());
+			return getSystemEnv(key, new TreeSet<>());
 		}
 
 		String getSystemEnv(String key, Set<String> visited) {
-			if (!visited.add(key)) {
-				return '%' + key + '%';
+			try {
+				if (!visited.add(key)) {
+					return visited.stream()
+						.collect(Collectors.joining(",", "%", "%"));
+				}
+
+				String value = getenv(key);
+				if (value == null)
+					return null;
+
+				Matcher matcher = WINDOWS_MACROS.matcher(value);
+				boolean found = matcher.find();
+				if (!found)
+					return value;
+
+				StringBuffer sb = new StringBuffer();
+				do {
+					String macroKey = matcher.group("key");
+					String macroValue = getSystemEnv(macroKey, visited);
+					if (macroValue == null)
+						macroValue = '%' + macroKey + '%';
+					matcher.appendReplacement(sb, quoteReplacement(macroValue));
+				} while (matcher.find());
+				matcher.appendTail(sb);
+				return sb.toString();
+			} finally {
+				visited.remove(key);
 			}
-
-			String value = getenv(key);
-
-			Matcher matcher = WINDOWS_MACROS.matcher(value);
-			boolean found = matcher.find();
-			if (!found)
-				return value;
-
-			StringBuffer sb = new StringBuffer();
-			do {
-				String macroKey = matcher.group("key");
-				String macroValue = getSystemEnv(macroKey, visited);
-				matcher.appendReplacement(sb, quoteReplacement(macroValue));
-			} while (matcher.find());
-			matcher.appendTail(sb);
-			visited.remove(key);
-			return sb.toString();
 		}
 
 		protected String getenv(String key) {
@@ -1703,7 +1705,7 @@ public class IO {
 	 *         null if not found
 	 */
 	public static String getenv(String key) {
-		return hc.getenv(key);
+		return getenv.apply(key);
 	}
 
 	public static String readUTF(DataInput in) throws IOException {

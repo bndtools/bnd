@@ -34,19 +34,17 @@ public class IOTest {
 	public void testEnvVarsForHome() throws Exception {
 		Map<String, String> map = new HashMap<>();
 
-		EnvironmentCalculator ec = new IO.EnvironmentCalculator(false) {
+		EnvironmentCalculator ec = new IO.EnvironmentCalculator() {
 			@Override
 			protected String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
 			}
 		};
 
+
 		assertEquals(new File(System.getProperty("user.home")), IO.home);
 
-		File dir = IO.getFile("generated");
-		map.put("HOME", dir.getAbsolutePath());
-
-		EnvironmentCalculator ec2 = new IO.EnvironmentCalculator(true) {
+		EnvironmentCalculator ec2 = new IO.EnvironmentCalculator() {
 			@Override
 			protected String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
@@ -56,9 +54,22 @@ public class IOTest {
 		map.put("username", "foobar");
 		map.put("userprofile", "%SystemDrive%\\Documents and Settings\\%username%");
 		map.put("HOME", "%userprofile%");
+		map.put("refers_null", "-%i_do_no_exist%-");
+		map.put("cycle", "-%cycle%-");
+		map.put("c1", "-%c3%-");
+		map.put("c2", "-%c1%-");
+		map.put("c3", "-%c2%-");
+		map.put("c", "C");
+		map.put("sequential_refs", "-%c%%c%%c%-");
 
 		// cannot use file system since this might not be windows
 		assertEquals("C:\\Documents and Settings\\foobar", ec2.getEnv("HOME"));
+
+		assertThat(ec2.getEnv("i_do_no_exist")).isNull();
+		assertThat(ec2.getEnv("refers_null")).isEqualTo("-%i_do_no_exist%-");
+		assertThat(ec2.getEnv("cycle")).isEqualTo("-%cycle%-");
+		assertThat(ec2.getEnv("c1")).isEqualTo("---%c1,c2,c3%---");
+		assertThat(ec2.getEnv("sequential_refs")).isEqualTo("-CCC-");
 	}
 
 	@Test
