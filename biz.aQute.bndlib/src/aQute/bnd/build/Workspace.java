@@ -118,7 +118,7 @@ import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
 	final static Logger			logger					= LoggerFactory.getLogger(Workspace.class);
-	public static final File	BND_DEFAULT_WS			= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
+	public static final File	BND_DEFAULT_WS			= Home.getUserHomeBnd("default-ws");
 	public static final String	BND_CACHE_REPONAME		= "bnd-cache";
 	public static final String	EXT						= "ext";
 	public static final String	BUILDFILE				= "build.bnd";
@@ -189,7 +189,7 @@ public class Workspace extends Processor {
 	final Maven													maven;
 	private final AtomicBoolean									offline				= new AtomicBoolean();
 	Settings													settings			= new Settings(
-		Home.getUserHomeBnd() + "/settings.json");
+		Home.getUserHomeBnd("settings.json"));
 	WorkspaceRepository											workspaceRepo		= new WorkspaceRepository(this);
 	static String												overallDriver		= "unset";
 	static Parameters											overallGestalt		= new Parameters();
@@ -783,7 +783,12 @@ public class Workspace extends Processor {
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
-			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, Home.getUserHomeBnd() + "/caches/shas")));
+			String cachedir = getProperty(CACHEDIR);
+			if (cachedir == null) {
+				resourceRepositoryImpl.setCache(Home.getUserHomeBnd("caches/shas"));
+			} else {
+				resourceRepositoryImpl.setCache(IO.getFile(cachedir));
+			}
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(getBuildDir(), "repo.json"));
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(pluginsContainer));

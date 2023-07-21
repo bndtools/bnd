@@ -86,7 +86,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private boolean								inited;
 	static final JSONCodec						codec					= new JSONCodec();
 	private URLCache							cache					= new URLCache(
-		IO.getFile(Home.getUserHomeBnd() + "/urlcache"));
+		Home.getUserHomeBnd("urlcache"));
 	private Registry							registry				= null;
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;

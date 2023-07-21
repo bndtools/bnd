@@ -47,7 +47,7 @@ import aQute.libg.command.Command;
 
 public class MavenCommand extends Processor {
 	private final static Logger	logger		= LoggerFactory.getLogger(MavenCommand.class);
-	final Settings				settings	= new Settings(Home.getUserHomeBnd() + "/settings.json");
+	final Settings				settings	= new Settings(Home.getUserHomeBnd("settings.json"));
 	File						temp;
 
 	public MavenCommand() {}

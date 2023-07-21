@@ -159,7 +159,7 @@ public class bnd extends Processor {
 	private final static Pattern				ASSIGNMENT				= Pattern.compile(							//
 		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings									settings				= new Settings(
-		Home.getUserHomeBnd() + "/settings.json");
+		Home.getUserHomeBnd("settings.json"));
 	final PrintStream							err						= System.err;
 	final public PrintStream					out						= System.out;
 	Justif										justif					= new Justif(80, 40, 42, 70);

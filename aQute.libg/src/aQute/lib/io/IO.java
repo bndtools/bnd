@@ -2,6 +2,7 @@ package aQute.lib.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.regex.Matcher.quoteReplacement;
 import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;
@@ -75,10 +76,11 @@ import aQute.lib.stringrover.StringRover;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	private static final Pattern						WINDOWS_MACROS			= Pattern.compile("%([^%]+)%");
+	private static final boolean						isWindows				= File.separatorChar == '\\';
+	final static EnvironmentCalculator					hc						= new EnvironmentCalculator(isWindows);
+	private static final Pattern						WINDOWS_MACROS			= Pattern.compile("%(?<key>[^%]+)%");
 	private static final int							BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
-	private static final boolean						isWindows				= File.separatorChar == '\\';
 	static final public File							work					= new File(
 		System.getProperty("user.dir"));
 	static final public File							home;
@@ -88,9 +90,10 @@ public class IO {
 	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
 
 	static {
-		EnvironmentCalculator hc = new EnvironmentCalculator(isWindows);
-		home = hc.getHome();
-		JAVA_HOME = hc.getJavaHome();
+		home = hc.getDirLocation(hc.getEnv("HOME"), System.getProperty("user.home"));
+		String javaHome = System.getProperty("java.home")
+			.replaceAll("(/|\\\\)jre$", "");
+		JAVA_HOME = hc.getDirLocation(hc.getEnv("JAVA_HOME"), javaHome);
 	}
 
 	public static String getExtension(String fileName, String deflt) {
@@ -1633,83 +1636,74 @@ public class IO {
 	}
 
 	/*
-	 * This class calculates the home path. This class uses environment
-	 * variables so that makes it hard to test. For this reason tests can
-	 * override the #getenv method.
+	 * This class calculates environment variables so that makes it hard to
+	 * test. For this reason tests can override the #getenv method.
 	 */
 	static class EnvironmentCalculator {
-		private boolean iswindows;
+		final boolean iswindows;
 
-		public EnvironmentCalculator(boolean iswindows) {
+		EnvironmentCalculator(boolean iswindows) {
 			this.iswindows = iswindows;
 		}
 
-		/**
-		 * Get the value of a system environment variable. Expand any macros
-		 * (%...%) if run on windows. Generally, on Linux et. al. environment
-		 * variables are already expanded.
-		 *
-		 * @param key the environment variable name
-		 * @return the value with expanded macros if on windows.
-		 */
-		String getSystemEnv(String key) {
-			return getSystemEnv(key, null);
+		File getDirLocation(String... path) {
+			for (String p : path) {
+				if (p == null)
+					continue;
+				File dir = new File(p);
+				dir.mkdirs();
+				return dir;
+			}
+			return null;
 		}
 
-		private String getSystemEnv(String key, Set<String> visited) {
-			String value = getenv(key);
-			if (value == null || !iswindows) {
-				return value;
-			}
-			if (visited == null) {
-				visited = new HashSet<>();
-			}
+		String getEnv(String key) {
+			if (!iswindows)
+				return getenv(key);
+
+			return getSystemEnv(key, new HashSet<>());
+		}
+
+		String getSystemEnv(String key, Set<String> visited) {
 			if (!visited.add(key)) {
-				return key;
+				return '%' + key + '%';
 			}
 
-			StringBuilder sb = new StringBuilder();
+			String value = getenv(key);
+
 			Matcher matcher = WINDOWS_MACROS.matcher(value);
-			int start = 0;
-			for (; matcher.find(); start = matcher.end()) {
-				String name = matcher.group(1);
-				String replacement = getSystemEnv(name, visited);
-				sb.append(value, start, matcher.start())
-					.append(replacement);
-			}
-			return (start == 0) ? value
-				: sb.append(value, start, value.length())
-					.toString();
+			boolean found = matcher.find();
+			if (!found)
+				return value;
+
+			StringBuffer sb = new StringBuffer();
+			do {
+				String macroKey = matcher.group("key");
+				String macroValue = getSystemEnv(macroKey, visited);
+				matcher.appendReplacement(sb, quoteReplacement(macroValue));
+			} while (matcher.find());
+			matcher.appendTail(sb);
+			visited.remove(key);
+			return sb.toString();
 		}
 
-		String getenv(String key) {
+		protected String getenv(String key) {
 			return System.getenv(key);
 		}
+	}
 
-		File getHome() {
-			File home = testFile(getSystemEnv("HOME"));
-			if ((home == null) || !home.isDirectory()) {
-				home = testFile(System.getProperty("user.home"));
-			}
-			assert home != null;
-			return home;
-		}
-
-		File getJavaHome() {
-			File javaHome = testFile(getSystemEnv("JAVA_HOME"));
-			if ((javaHome == null) || !javaHome.isDirectory()) {
-				javaHome = testFile(System.getProperty("java.home"));
-			}
-			assert javaHome != null;
-			return javaHome;
-		}
-
-		private File testFile(String path) {
-			if (path == null)
-				return null;
-
-			return new File(path);
-		}
+	/**
+	 * Return the environment variables. On windows, macros in these variables
+	 * will be expanded. On other OS'es, macro expansion is done by the os. If
+	 * during expansion a key cannot be found, it will be included as %key%` for
+	 * diagnostics.
+	 *
+	 * @param key the environment variable name
+	 * @return a string with the (expanded) value of the environment variable or
+	 *         null if not found
+	 */
+	public static String getenv(String key) {
+		return hc.getenv(key);
 	}
 
 	public static String readUTF(DataInput in) throws IOException {

@@ -81,7 +81,7 @@ public class Main extends ReporterAdapter {
 		int port = options.port(Agent.DEFAULT_PORT);
 		String network = options.network(options.all() ? "0.0.0.0" : "localhost");
 
-		File cache = IO.getFile(options.cache(Home.getUserHomeBnd() + "/remote/cache"));
+		File cache = IO.getFile(Home.BND_HOME, options.cache("remote/cache"));
 		File storage = IO.getFile(options.storage("storage"));
 
 		dispatcher = new EnvoyDispatcher(this, cache, storage, network, port, options._properties());
