@@ -72,7 +72,15 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false")
 	private boolean					continueOnError;
 
-	@Parameter
+	/**
+	 * The Maven coordinates of the base artifact in the format
+	 * {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}. If
+	 * set, takes precedence over {@link #base}.
+	 */
+	@Parameter(property = "bnd.baseline.base.coordinates")
+	private String					baseCoordinates;
+
+	@Parameter(required = false)
 	private Base					base;
 
 	@Parameter(required = false, property = "bnd.baseline.diffignores")
@@ -163,6 +171,9 @@ public class BaselineMojo extends AbstractMojo {
 	private void setupBase(Artifact artifact) {
 		if (base == null) {
 			base = new Base();
+		}
+		if (baseCoordinates != null && !baseCoordinates.isBlank()) {
+			base.setFromCoordinates(baseCoordinates);
 		}
 		if (base.getGroupId() == null || base.getGroupId()
 			.isEmpty()) {

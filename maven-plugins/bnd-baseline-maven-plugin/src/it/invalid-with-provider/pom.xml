@@ -28,9 +28,7 @@
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-baseline-maven-plugin</artifactId>
 				<configuration>
-					<base>
-						<artifactId>valid-no-previous</artifactId>
-					</base>
+					<!-- base configured via CLI argument -->
 					<includeDistributionManagement>true</includeDistributionManagement>
 					<continueOnError>true</continueOnError>
 					<fullReport>true</fullReport>
