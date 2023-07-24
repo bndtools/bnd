@@ -1727,7 +1727,7 @@ public class Project extends Processor {
 
 	private void install(RepositoryPlugin repo, Processor context, File f, Attrs value) throws Exception {
 		try (Processor p = new Processor(context)) {
-			p.use(context);
+			p.setBase(context.getBase());
 			p.getProperties()
 				.putAll(value);
 			PutOptions options = new PutOptions();

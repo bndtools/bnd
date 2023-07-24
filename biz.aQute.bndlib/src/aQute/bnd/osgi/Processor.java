@@ -418,7 +418,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setTrace(reporter.isTrace());
 		setExceptions(reporter.isExceptions());
 		setFailOk(reporter.isFailOk());
-		setBase(reporter.getBase());
 	}
 
 	public static File getFile(File base, String file) {
