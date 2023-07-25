@@ -42,8 +42,11 @@ import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.differ.Baseline.Info;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.properties.IRegion;
 import aQute.bnd.properties.LineType;
 import aQute.bnd.properties.PropertiesLineReader;
@@ -86,32 +89,12 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 	List<MarkerData> generatePackageInfoMarkers(Info baselineInfo, IJavaProject javaProject, String message)
 		throws JavaModelException {
 		List<MarkerData> markers = new ArrayList<>();
+
 		for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+			boolean found = false;
 			if (IClasspathEntry.CPE_SOURCE == entry.getEntryKind()) {
 				IPath entryPath = entry.getPath();
 				IPath pkgPath = entryPath.append(baselineInfo.packageName.replace('.', '/'));
-
-				// Find in packageinfo file
-				IPath pkgInfoPath = pkgPath.append(PACKAGEINFO);
-				IFile pkgInfoFile = javaProject.getProject()
-					.getWorkspace()
-					.getRoot()
-					.getFile(pkgInfoPath);
-				if (pkgInfoFile != null && pkgInfoFile.exists()) {
-					Map<String, Object> attribs = new HashMap<>();
-					attribs.put(IMarker.MESSAGE, message.trim());
-					attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
-
-					LineLocation lineLoc = findVersionLocation(pkgInfoFile.getLocation()
-						.toFile());
-					if (lineLoc != null) {
-						attribs.put(IMarker.LINE_NUMBER, lineLoc.lineNum);
-						attribs.put(IMarker.CHAR_START, lineLoc.start);
-						attribs.put(IMarker.CHAR_END, lineLoc.end);
-					}
-
-					markers.add(new MarkerData(pkgInfoFile, attribs, true));
-				}
 
 				// Find in package-info.java
 				IPackageFragment pkg = javaProject.findPackageFragment(pkgPath);
@@ -129,6 +112,66 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 							attribs.put(IMarker.CHAR_END, range.getOffset() + range.getLength());
 							markers.add(new MarkerData(pkgInfoJava.getResource(), attribs, true,
 								BndtoolsConstants.MARKER_JAVA_BASELINE));
+							found = true;
+						}
+					}
+				}
+
+				// Find in packageinfo file
+				if (!found) {
+					IPath pkgInfoPath = pkgPath.append(PACKAGEINFO);
+					IFile pkgInfoFile = javaProject.getProject()
+						.getWorkspace()
+						.getRoot()
+						.getFile(pkgInfoPath);
+					if (pkgInfoFile != null && pkgInfoFile.exists()) {
+						Map<String, Object> attribs = new HashMap<>();
+						attribs.put(IMarker.MESSAGE, message.trim());
+						attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
+
+						LineLocation lineLoc = findVersionLocation(pkgInfoFile.getLocation()
+							.toFile());
+						if (lineLoc != null) {
+							attribs.put(IMarker.LINE_NUMBER, lineLoc.lineNum);
+							attribs.put(IMarker.CHAR_START, lineLoc.start);
+							attribs.put(IMarker.CHAR_END, lineLoc.end);
+						}
+
+						markers.add(new MarkerData(pkgInfoFile, attribs, true));
+						found = true;
+					}
+
+					// find in bnd.bnd
+					if (!found) {
+						IFile bndfile = javaProject.getProject()
+							.getFile(Project.BNDFILE);
+
+						if (bndfile != null && bndfile.exists()) {
+							Map<String, Object> attribs = new HashMap<>();
+							attribs.put(IMarker.MESSAGE, message.trim());
+							attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
+							IPath location = bndfile.getLocation();
+							if (location != null) {
+								File file = bndfile.getLocation()
+									.toFile();
+								if (file != null) {
+									try (Processor p = new Processor()) {
+										p.setProperties(file);
+										FileLine line = p.getHeader(Constants.EXPORT_PACKAGE, baselineInfo.packageName);
+										if (line == null || line.line == 0)
+											line = new FileLine(file, 0, 0);
+
+										attribs.put(IMarker.LINE_NUMBER, line.line);
+										attribs.put(IMarker.CHAR_START, line.start);
+										attribs.put(IMarker.CHAR_END, line.end);
+										markers.add(new MarkerData(bndfile, attribs, true));
+										found = true;
+									} catch (Exception e) {
+										attribs.put(IMarker.MESSAGE, message.trim() + "\n" + e.getMessage());
+										markers.add(new MarkerData(bndfile, attribs, true));
+									}
+								}
+							}
 						}
 					}
 				}
