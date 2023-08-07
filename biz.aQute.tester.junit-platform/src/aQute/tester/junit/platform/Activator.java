@@ -60,6 +60,7 @@ import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.junit.system.BndSystem;
+import aQute.libg.classloaders.CompositeClassLoader;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
@@ -129,7 +130,7 @@ public class Activator implements BundleActivator, Runnable {
 		// We can be started on our own thread or from the main code
 		thread = Thread.currentThread();
 		final ClassLoader contextClassLoader = thread.getContextClassLoader();
-		thread.setContextClassLoader(getClass().getClassLoader());
+		thread.setContextClassLoader(CompositeClassLoader.of(getClass().getClassLoader(), contextClassLoader));
 		try {
 			launcher = LauncherFactory.create(LauncherConfig.builder()
 				.enableTestEngineAutoRegistration(false)
