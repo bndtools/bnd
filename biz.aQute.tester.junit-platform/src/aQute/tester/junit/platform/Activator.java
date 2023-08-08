@@ -60,7 +60,6 @@ import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.junit.system.BndSystem;
-import aQute.libg.classloaders.CompositeClassLoader;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
@@ -130,101 +129,101 @@ public class Activator implements BundleActivator, Runnable {
 		// We can be started on our own thread or from the main code
 		thread = Thread.currentThread();
 		final ClassLoader contextClassLoader = thread.getContextClassLoader();
-		thread.setContextClassLoader(CompositeClassLoader.of(getClass().getClassLoader(), contextClassLoader));
+		thread.setContextClassLoader(LauncherFactory.class.getClassLoader());
 		try {
+
 			launcher = LauncherFactory.create(LauncherConfig.builder()
 				.enableTestEngineAutoRegistration(false)
 				.addTestEngines(new BundleEngine())
 				.build());
 
-			List<TestExecutionListener> listenerList = new ArrayList<>();
-
-			setTesterNames(context.getProperty(TESTER_NAMES));
-
-			int port = -1;
-			boolean rerunIDE = false;
-			if (context.getProperty(TESTER_CONTROLPORT) != null) {
-				port = Integer.parseInt(context.getProperty(TESTER_CONTROLPORT));
-				rerunIDE = true;
-			} else if (context.getProperty(TESTER_PORT) != null) {
-				port = Integer.parseInt(context.getProperty(TESTER_PORT));
-			}
-
-			if (port > 0) {
-				try {
-					trace("using control port %s, rerun IDE?: %s", port, rerunIDE);
-					jUnitEclipseListener = new JUnitEclipseListener(port, rerunIDE);
-					listeners.add(jUnitEclipseListener);
-				} catch (Exception e) {
-					System.err.println(
-						"Cannot create link Eclipse JUnit control on port " + port + " (rerunIDE: " + rerunIDE + ')');
-					BndSystem.exit(254);
-				}
-			}
-
-			String testerDir = context.getProperty(TESTER_DIR);
-			if (testerDir == null)
-				testerDir = "testdir";
-
-			reportDir = new File(testerDir);
-
-			//
-			// Jenkins does not detect test failures unless reported
-			// by JUnit XML output. If we have an unresolved failure
-			// we timeout. The following will test if there are any
-			// unresolveds and report this as a JUnit failure. It can
-			// be disabled with -testunresolved=false
-			//
-			unresolved = context.getProperty(TESTER_UNRESOLVED);
-
-			trace("run unresolved %s", unresolved);
-
-			if (!reportDir.exists() && !reportDir.mkdirs()) {
-				error("Could not create directory %s", reportDir);
-			} else {
-				trace("using %s, path: %s", reportDir, reportDir.toPath());
-				try {
-					listeners
-						.add(new LegacyXmlReportGeneratingListener(reportDir.toPath(), new PrintWriter(System.err)));
-				} catch (Exception e) {
-					error("Error trying to create xml reporter: %s", e);
-				}
-			}
-
-			listeners.add(LoggingListener.forBiConsumer(this::trace));
-			summary = new SummaryGeneratingListener();
-			listeners.add(summary);
-			listeners.add(new TestExecutionListener() {
-				@Override
-				public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-					switch (testExecutionResult.getStatus()) {
-						case SUCCESSFUL :
-							return;
-						case FAILED :
-							message("", "TEST %s <<< ERROR: %s", testName(testIdentifier),
-								testExecutionResult.getThrowable()
-								.orElse(null));
-							return;
-						case ABORTED :
-							trace("", "TEST %s <<< ABORTED: %s", testName(testIdentifier),
-								testExecutionResult.getThrowable()
-								.orElse(null));
-					}
-				}
-
-				@Override
-				public void executionSkipped(TestIdentifier testIdentifier, String reason) {
-					trace("", "TEST %s <<< SKIPPED", testName(testIdentifier));
-				}
-			});
-			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
-			try {
-				automatic();
-			} catch (IOException e) {
-				// ignore
-			}
 		} finally {
 			thread.setContextClassLoader(contextClassLoader);
+		}
+		List<TestExecutionListener> listenerList = new ArrayList<>();
+
+		setTesterNames(context.getProperty(TESTER_NAMES));
+
+		int port = -1;
+		boolean rerunIDE = false;
+		if (context.getProperty(TESTER_CONTROLPORT) != null) {
+			port = Integer.parseInt(context.getProperty(TESTER_CONTROLPORT));
+			rerunIDE = true;
+		} else if (context.getProperty(TESTER_PORT) != null) {
+			port = Integer.parseInt(context.getProperty(TESTER_PORT));
+		}
+
+		if (port > 0) {
+			try {
+				trace("using control port %s, rerun IDE?: %s", port, rerunIDE);
+				jUnitEclipseListener = new JUnitEclipseListener(port, rerunIDE);
+				listeners.add(jUnitEclipseListener);
+			} catch (Exception e) {
+				System.err.println(
+					"Cannot create link Eclipse JUnit control on port " + port + " (rerunIDE: " + rerunIDE + ')');
+				BndSystem.exit(254);
+			}
+		}
+
+		String testerDir = context.getProperty(TESTER_DIR);
+		if (testerDir == null)
+			testerDir = "testdir";
+
+		reportDir = new File(testerDir);
+
+		//
+		// Jenkins does not detect test failures unless reported
+		// by JUnit XML output. If we have an unresolved failure
+		// we timeout. The following will test if there are any
+		// unresolveds and report this as a JUnit failure. It can
+		// be disabled with -testunresolved=false
+		//
+		unresolved = context.getProperty(TESTER_UNRESOLVED);
+
+		trace("run unresolved %s", unresolved);
+
+		if (!reportDir.exists() && !reportDir.mkdirs()) {
+			error("Could not create directory %s", reportDir);
+		} else {
+			trace("using %s, path: %s", reportDir, reportDir.toPath());
+			try {
+				listeners.add(new LegacyXmlReportGeneratingListener(reportDir.toPath(), new PrintWriter(System.err)));
+			} catch (Exception e) {
+				error("Error trying to create xml reporter: %s", e);
+			}
+		}
+
+		listeners.add(LoggingListener.forBiConsumer(this::trace));
+		summary = new SummaryGeneratingListener();
+		listeners.add(summary);
+		listeners.add(new TestExecutionListener() {
+			@Override
+			public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+				switch (testExecutionResult.getStatus()) {
+					case SUCCESSFUL :
+						return;
+					case FAILED :
+						message("", "TEST %s <<< ERROR: %s", testName(testIdentifier),
+							testExecutionResult.getThrowable()
+								.orElse(null));
+						return;
+					case ABORTED :
+						trace("", "TEST %s <<< ABORTED: %s", testName(testIdentifier),
+							testExecutionResult.getThrowable()
+								.orElse(null));
+				}
+			}
+
+			@Override
+			public void executionSkipped(TestIdentifier testIdentifier, String reason) {
+				trace("", "TEST %s <<< SKIPPED", testName(testIdentifier));
+			}
+		});
+		trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
+		try {
+			automatic();
+		} catch (IOException e) {
+			// ignore
 		}
 	}
 
