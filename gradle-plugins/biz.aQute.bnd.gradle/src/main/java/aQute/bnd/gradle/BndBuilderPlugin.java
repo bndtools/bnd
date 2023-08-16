@@ -73,7 +73,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 				.create(BundleTaskExtension.NAME, BundleTaskExtension.class, t);
 			if (unwrapFile(defaultBndfile).isFile()) {
 				extension.getBndfile()
-					.convention(defaultBndfile);
+					.set(defaultBndfile);
 			}
 			t.doLast("buildBundle", extension.buildAction());
 		});
