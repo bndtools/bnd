@@ -66,7 +66,7 @@ jobs:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
-      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
       with:
         fetch-depth: ${{ matrix.fetch-depth }}
     - name: Set up Java 8 + ${{ matrix.java }}
