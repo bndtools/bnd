@@ -36,7 +36,7 @@ jobs:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
-      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
     - name: Set up Ruby
       uses: ruby/setup-ruby@250fcd6a742febb1123a77a841497ccaa8b9e939
       with:
