@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
@@ -78,7 +79,15 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 			return; // project is not a java project
 		}
 		boolean changed = false;
-		for (IClasspathEntry cpe : javaProject.getRawClasspath()) {
+
+		IClasspathEntry[] cpes = new IClasspathEntry[0];
+		try {
+			cpes = javaProject.getRawClasspath();
+		} catch (JavaModelException jme) {
+			// project maybe a maven project with no Java nature
+		}
+
+		for (IClasspathEntry cpe : cpes) {
 			if (cpe.getEntryKind() != IClasspathEntry.CPE_SOURCE) {
 				continue;
 			}
