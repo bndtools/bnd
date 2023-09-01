@@ -16,14 +16,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.pde.core.target.ITargetDefinition;
-import org.eclipse.pde.core.target.ITargetLocation;
 import org.eclipse.pde.core.target.TargetFeature;
 import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.target.AbstractBundleContainer;
 import org.eclipse.pde.internal.core.target.TargetDefinition;
-import org.eclipse.pde.ui.target.ITargetLocationEditor;
-import org.eclipse.pde.ui.target.ITargetLocationUpdater;
+import org.eclipse.pde.ui.target.ITargetLocationHandler;
 import org.eclipse.swt.graphics.Image;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,7 +31,7 @@ import aQute.lib.xml.XML;
 
 @SuppressWarnings("deprecation")
 public abstract class BndTargetLocation extends AbstractBundleContainer
-	implements ITargetLocationUpdater, ITargetLocationEditor, ILabelProvider {
+	implements ITargetLocationHandler, ILabelProvider {
 	static final String		PLUGIN_ID							= "bndtools.pde";
 
 	static final String		MESSAGE_UNABLE_TO_LOCATE_WORKSPACE	= "Unable to locate the Bnd workspace";
@@ -52,13 +51,7 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getAdapter(Class<T> adapter) {
-		if (adapter == ITargetLocationEditor.class) {
-			return (T) this;
-
-		} else if (adapter == ITargetLocationUpdater.class) {
-			return (T) this;
-
-		} else if (adapter == ILabelProvider.class) {
+		if (adapter == ILabelProvider.class) {
 			return (T) this;
 
 		} else {
@@ -66,18 +59,19 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 		}
 	}
 
+
 	@Override
-	public boolean canEdit(ITargetDefinition target, ITargetLocation targetLocation) {
+	public boolean canEdit(ITargetDefinition targetLocation, TreePath treePath) {
 		return targetLocation == this;
 	}
 
 	@Override
-	public boolean canUpdate(ITargetDefinition target, ITargetLocation targetLocation) {
+	public boolean canUpdate(ITargetDefinition targetLocation, TreePath treePath) {
 		return targetLocation == this;
 	}
 
 	@Override
-	public IStatus update(ITargetDefinition target, ITargetLocation targetLocation, IProgressMonitor monitor) {
+	public IStatus update(ITargetDefinition target, TreePath[] treePaths, IProgressMonitor monitor) {
 		clearResolutionStatus();
 		return Status.OK_STATUS;
 	}
