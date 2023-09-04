@@ -61,7 +61,7 @@ class FileResourceCache {
 			cache.keySet()
 				.removeIf(key -> (now - key.time) > EXPIRED_DURATION_NANOS);
 		}
-		CacheKey cacheKey = new CacheKey(file);
+		CacheKey cacheKey = new CacheKey(file.toPath(), uri);
 		SupportingResource resource = cache.computeIfAbsent(cacheKey, key -> create.get());
 		return resource;
 	}
@@ -71,16 +71,14 @@ class FileResourceCache {
 	 * path, size, and last modification time.
 	 */
 	static final class CacheKey {
-		private final Object	fileKey;
-		private final long		lastModifiedTime;
-		private final long		size;
-		final long				time;
+		final Object	fileKey;
+		final URI		uri;
+		final long		lastModifiedTime;
+		final long		size;
+		final long		time;
 
-		CacheKey(File file) {
-			this(file.toPath());
-		}
-
-		CacheKey(Path path) {
+		CacheKey(Path path, URI uri) {
+			this.uri = uri;
 			BasicFileAttributes attributes;
 			try {
 				attributes = Files.getFileAttributeView(path, BasicFileAttributeView.class)
@@ -100,26 +98,31 @@ class FileResourceCache {
 			this.time = System.nanoTime();
 		}
 
+		CacheKey(Path path) {
+			this(path, null);
+		}
+
 		@Override
 		public int hashCode() {
-			return (Objects.hashCode(fileKey) * 31 + Long.hashCode(lastModifiedTime)) * 31 + Long.hashCode(size);
+			return Objects.hash(fileKey, lastModifiedTime, uri);
 		}
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj) {
+			if (this == obj)
 				return true;
-			}
-			if (!(obj instanceof CacheKey other)) {
+			if (obj == null)
 				return false;
-			}
-			return Objects.equals(fileKey, other.fileKey) && (lastModifiedTime == other.lastModifiedTime)
-				&& (size == other.size);
+			if (getClass() != obj.getClass())
+				return false;
+			CacheKey other = (CacheKey) obj;
+			return Objects.equals(fileKey, other.fileKey) && lastModifiedTime == other.lastModifiedTime
+				&& Objects.equals(uri, other.uri);
 		}
 
 		@Override
 		public String toString() {
-			return Objects.toString(fileKey);
+			return Objects.toString(fileKey) + "-" + Objects.toString(uri);
 		}
 	}
 }
