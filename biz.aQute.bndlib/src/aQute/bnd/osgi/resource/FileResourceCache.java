@@ -104,7 +104,7 @@ class FileResourceCache {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(fileKey, lastModifiedTime, uri);
+			return Objects.hash(fileKey, lastModifiedTime, size, uri);
 		}
 
 		@Override
@@ -117,7 +117,7 @@ class FileResourceCache {
 				return false;
 			CacheKey other = (CacheKey) obj;
 			return Objects.equals(fileKey, other.fileKey) && lastModifiedTime == other.lastModifiedTime
-				&& Objects.equals(uri, other.uri);
+				&& size == other.size && Objects.equals(uri, other.uri);
 		}
 
 		@Override
