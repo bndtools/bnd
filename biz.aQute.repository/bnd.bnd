@@ -9,7 +9,7 @@
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
-    org.osgi.service.metatype.annotations,\
+	org.osgi.service.metatype.annotations,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg,\
@@ -17,8 +17,9 @@
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\
-	org.tukaani.xz;version=latest;maven-scope=provided
-
+	org.tukaani.xz;version=latest;maven-scope=provided,\
+	junit-jupiter-api
+	
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
 	${junit},\
@@ -29,7 +30,8 @@
 Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\
 	aQute.p2.api,\
-	aQute.bnd.deployer.obr;bnd-plugins=true,\
+	aQute.p2.export;bnd-plugins=true,\
+    aQute.bnd.deployer.obr;bnd-plugins=true,\
 	aQute.bnd.deployer.repository;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.api,\
 	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\
