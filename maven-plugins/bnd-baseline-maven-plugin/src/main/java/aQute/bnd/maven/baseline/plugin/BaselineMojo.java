@@ -127,20 +127,21 @@ public class BaselineMojo extends AbstractMojo {
 				.isEmpty()) {
 
 				ArtifactResult artifactResult = locateBaseJar(aetherRepos);
-
-				baselineAction(artifact.getFile(), artifactResult.getArtifact()
-					.getFile());
-			} else {
-				if (failOnMissing) {
-					throw new MojoFailureException("Unable to locate a previous version of the artifact");
-				} else {
-					logger.warn("No previous version of {} could be found to baseline against", artifact);
+				if ( !artifactResult.isMissing() ) {
+					baselineAction(artifact.getFile(), artifactResult.getArtifact()
+						.getFile());
+					return;
 				}
 			}
 		} catch (RepositoryException re) {
-			throw new MojoFailureException("Unable to locate a previous version of the artifact", re);
+			// fall through
 		} catch (Exception e) {
 			throw new MojoExecutionException("An error occurred while calculating the baseline", e);
+		}
+		if (failOnMissing) {
+			throw new MojoFailureException("Unable to locate a previous version of the artifact");
+		} else {
+			logger.warn("No previous version of {} could be found to baseline against", artifact);
 		}
 	}
 
