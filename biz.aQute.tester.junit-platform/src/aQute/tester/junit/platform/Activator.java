@@ -338,19 +338,29 @@ public class Activator implements BundleActivator, Runnable {
 
 		trace("starting queue");
 		long result = 0;
+		long timeout = continuous ? Long.MAX_VALUE : 5000;
 		while (active()) {
 			try {
 				List<DiscoverySelector> selectors = new ArrayList<>();
-				for (DiscoverySelector selector = queue.takeFirst(); //
+
+				//
+				// it would be more logical to check for an empty queue here
+				// and !continuous but many tests cases assume that we
+				// will wait for at least 1 test case.
+				//
+
+				for (DiscoverySelector selector = queue.pollFirst(timeout, TimeUnit.MILLISECONDS); //
 					selector != null; //
 					selector = queue.pollFirst(100, TimeUnit.MILLISECONDS)) {
 					selectors.add(selector);
 					queue.drainTo(selectors);
 				}
-				LauncherDiscoveryRequest testRequest = buildRequest(selectors);
-				trace("test will run");
-				result += test(testRequest);
-				trace("test ran");
+				if (!selectors.isEmpty()) {
+					LauncherDiscoveryRequest testRequest = buildRequest(selectors);
+					trace("test will run");
+					result += test(testRequest);
+					trace("test ran");
+				}
 				if (queue.isEmpty() && !continuous) {
 					trace("queue %s", queue);
 					BndSystem.exit((int) result);
