@@ -663,7 +663,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	private File getArtifactFile() {
 		return new File(getOutputDir(), finalName + getClassifier().map("-"::concat)
-			.orElse("") + "." + getExtension(project.getPackaging()));
+			.orElse("") + "." + getExtension(getType().orElse(project.getPackaging())));
 	}
 
 	private String getExtension(String type) {
