@@ -646,6 +646,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 				localRepo, client);
 
+			MavenBackingRepository staging = null;
+
+			if (configuration.stagingUrl() != null) {
+				staging = MavenBackingRepository.getBackingRepository(configuration.stagingUrl(),
+					reporter, localRepo, client);
+			}
+
 			for (MavenBackingRepository mbr : release) {
 				if (mbr.isRemote()) {
 					remote = true;
@@ -660,7 +667,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					}
 				}
 
-			storage = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
+			storage = new MavenRepository(localRepo, name, release, staging, snapshot,
+				client.promiseFactory()
 				.executor(), reporter);
 
 			File indexFile = getIndexFile();
