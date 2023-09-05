@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -258,14 +259,24 @@ public class Activator implements BundleActivator, Runnable {
 
 		trace("starting queue");
 		int result = 0;
+		long timeout = continuous ? Long.MAX_VALUE : 5000;
 		while (active()) {
 			try {
-				Bundle bundle = queue.takeFirst();
-				trace("received bundle to test: %s", bundle.getLocation());
-				try (Writer report = getReportWriter(reportDir, bundleReportName(bundle))) {
-					trace("test will run");
-					result += test(bundle, testCases(bundle), report);
-					trace("test ran");
+
+				//
+				// it would be more logical to check for an empty queue here
+				// and !continuous but many tests cases assume that we
+				// will wait for at least 1 test case.
+				//
+
+				Bundle bundle = queue.pollFirst(timeout, TimeUnit.MILLISECONDS);
+				if (bundle != null) {
+					trace("received bundle to test: %s", bundle.getLocation());
+					try (Writer report = getReportWriter(reportDir, bundleReportName(bundle))) {
+						trace("test will run");
+						result += test(bundle, testCases(bundle), report);
+						trace("test ran");
+					}
 				}
 				if (queue.isEmpty() && !continuous) {
 					trace("queue %s", queue);
