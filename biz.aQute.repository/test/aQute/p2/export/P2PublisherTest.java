@@ -20,6 +20,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
 
+
 class P2PublisherTest {
 
 	@Test
