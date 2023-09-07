@@ -2,6 +2,7 @@ package aQute.bnd.repository.maven.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -73,6 +74,7 @@ public class MavenBndRepoTest {
 	File								tmp;
 	File								local;
 	File								remote;
+	File								staging;
 	File								index;
 
 	private MavenBndRepository			repo;
@@ -83,9 +85,11 @@ public class MavenBndRepoTest {
 	public void setUp() throws Exception {
 		local = IO.getFile(tmp, "local");
 		remote = IO.getFile(tmp, "remote");
+		staging = IO.getFile(tmp, "staging");
 		index = IO.getFile(tmp, "index");
 		remote.mkdirs();
 		local.mkdirs();
+		staging.mkdirs();
 
 		IO.copy(IO.getFile("testresources/mavenrepo"), remote);
 		IO.copy(IO.getFile("testresources/mavenrepo/index.maven"), index);
@@ -1237,6 +1241,47 @@ public class MavenBndRepoTest {
 		}
 		File file = repo.get("biz.aQute.bnd:demo", Version.parseVersion("1.0.0"), null);
 		assertNotNull(file);
+	}
+
+	@Test
+	public void testPutReleaseWithStaging() throws Exception {
+		Workspace ws = new Workspace(IO.getFile("testdata/releasews"));
+		Project p1 = ws.getProject("p1");
+		Project indexProject = ws.getProject("index");
+
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		map.put("stagingUrl", staging.toURI()
+			.toString());
+		p1.set("-pom", "true");
+		config(ws, map);
+
+		repo.begin(indexProject);
+		File jar = IO.getFile("testresources/mavenrepo/org/osgi/org.osgi.dto/1.0.0/org.osgi.dto-1.0.0.jar");
+		PutOptions po = new PutOptions();
+		po.context = p1;
+		PutResult put = repo.put(new FileInputStream(jar), po);
+		assertTrue(put.alreadyReleased);
+
+		File demoJar = IO.getFile("testresources/demo.jar");
+		PutOptions indexPo = new PutOptions();
+		indexPo.context = indexProject;
+		put = repo.put(new FileInputStream(demoJar), indexPo);
+		assertFalse(put.alreadyReleased);
+
+		repo.end(indexProject);
+
+		assertTrue(indexProject.check());
+		assertFalse(IO.getFile(remote, "biz/aQute/bnd/demo/1.0.0/demo-1.0.0-index.xml")
+			.isFile());
+		assertTrue(IO.getFile(staging, "biz/aQute/bnd/demo/1.0.0/demo-1.0.0-index.xml")
+			.isFile());
+
+		assertTrue(IO.getFile(remote, "org/osgi/org.osgi.dto/1.0.0/org.osgi.dto-1.0.0.jar")
+			.isFile());
+		assertFalse(IO.getFile(staging, "org/osgi/org.osgi.dto/1.0.0/org.osgi.dto-1.0.0.jar")
+			.isFile());
 	}
 
 }

@@ -11,6 +11,11 @@ public interface Configuration {
 	String releaseUrl();
 
 	/**
+	 * The url of the staging release repository.
+	 */
+	String stagingUrl();
+
+	/**
 	 * The urls to the remote snapshot repository.
 	 */
 	String snapshotUrl();

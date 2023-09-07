@@ -40,6 +40,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final File							base;
 	private final String						id;
 	private final List<MavenBackingRepository>	release		= new ArrayList<>();
+	private final MavenBackingRepository		stagingRepository;
 	private final List<MavenBackingRepository>	snapshot	= new ArrayList<>();
 	private final PromiseFactory				promiseFactory;
 	private final boolean						localOnly;
@@ -48,8 +49,15 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
+		this(base, id, release, null, snapshot, executor, reporter);
+	}
+
+	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
+		MavenBackingRepository stagingRepository, List<MavenBackingRepository> snapshot, Executor executor,
+		Reporter reporter) throws Exception {
 		this.base = base;
 		this.id = id;
+		this.stagingRepository = stagingRepository;
 		if (release != null)
 			this.release.addAll(release);
 		if (snapshot != null)
@@ -114,7 +122,13 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		if (revision.isSnapshot()) {
 			return new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0), context);
 		}
-		return new Releaser(this, revision, release.isEmpty() ? null : release.get(0), context);
+
+		MavenBackingRepository releaseRepo = stagingRepository;
+		if (releaseRepo == null) {
+			releaseRepo = release.isEmpty() ? null : release.get(0);
+		}
+
+		return new Releaser(this, revision, releaseRepo, context);
 	}
 
 	@Override
