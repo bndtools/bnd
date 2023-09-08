@@ -318,6 +318,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	private void addServiceRequirement(ReferenceDef ref, MergedRequirement requires) {
 		String objectClass = ref.service;
+		if ("org.osgi.service.component.AnyService".equals(objectClass)) {
+			return;
+		}
 		ReferenceCardinality cardinality = ref.cardinality;
 		boolean optional = cardinality == ReferenceCardinality.OPTIONAL || cardinality == ReferenceCardinality.MULTIPLE;
 		boolean multiple = cardinality == ReferenceCardinality.MULTIPLE

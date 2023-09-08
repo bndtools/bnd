@@ -4395,7 +4395,6 @@ public class DSAnnotationTest {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, AnyService.class.getName());
 
 			//
 			// Test all the defaults
@@ -4441,6 +4440,25 @@ public class DSAnnotationTest {
 			xt.assertAttribute("1", "scr:component/reference[@name='extensionsParam']/@parameter");
 			xt.assertAttribute("0..n", "scr:component/reference[@name='extensionsParam']/@cardinality");
 
+		}
+	}
+
+	@Test
+	public void anyserviceNoServiceRequirement() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUse");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+
+			jar.getManifest()
+				.write(System.out);
+
+			assertThat(a.getValue(Constants.REQUIRE_CAPABILITY)).doesNotContain(AnyService.class.getName());
 		}
 	}
 
