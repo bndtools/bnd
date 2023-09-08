@@ -72,7 +72,8 @@ public class About {
 	public static final Version					_6_3		= new Version(6, 3, 0);
 	public static final Version					_6_4		= new Version(6, 4, 0);
 	public static final Version					_7_0		= new Version(7, 0, 0);
-	public static final Version					CURRENT		= _7_0;
+	public static final Version					_7_1		= new Version(7, 1, 0);
+	public static final Version					CURRENT		= _7_1;
 
 	public static final String[]				CHANGES_7_0	= {};
 	public static final String[]				CHANGES_6_4	= {};
