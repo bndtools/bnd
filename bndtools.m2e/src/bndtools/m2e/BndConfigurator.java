@@ -304,6 +304,7 @@ public class BndConfigurator extends ServiceAwareM2EConfigurator {
 		projectRegistry.execute(projectFacade, (context1, monitor1) -> {
 			SubMonitor progress = SubMonitor.convert(monitor1);
 			MavenProject mavenProject = getMavenProject(projectFacade, progress.split(1));
+			mavenProject.getArtifact().setFile(null);
 
 			List<MojoExecution> mojoExecutions = null;
 			if (!isTest) {
