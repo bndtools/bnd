@@ -68,7 +68,7 @@ To setup an environment to test continuously, the following launcher configurati
 
 The example setup creates a bundle containing the `org.example.tests` package and sets the `Test-Cases` header to all JUnit 3 test cases in that package. If you run this setup, it runs the project bundle with the `biz.aQute.junit` bundle. This tester bundle is parameterized with the `tester.*` properties to have trace on, continuous mode on, and to put the test reports in `./testdir`.
 
-You can find a bndtools project that shows this at [Github](https://github.com/bnd/aQute/tree/master/aQute.testing).
+You can find a bndtools project that shows this at [Github](https://github.com/bndtools/aQute/tree/master/aQute.testing).
 
 ## Testing With JUnit 5 - `biz.aQute.tester.junit-platform`
 
