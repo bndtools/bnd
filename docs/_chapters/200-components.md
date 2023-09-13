@@ -248,5 +248,5 @@ If you change the message, you will see that the component is first deactivated 
 
 It is also possible to take advantage of the configuration factories. In this model 
 
-An example, that implements a simple socket server on a configurable port and returns a message when a telnet session is opened to that port can be found on [Github](https://github.com/bnd/aQute/blob/master/aQute.metatype/src/aQute/metatype/components/ServerSocketComponent.java).
+An example, that implements a simple socket server on a configurable port and returns a message when a telnet session is opened to that port can be found on [Github](https://github.com/bndtools/aQute/blob/master/aQute.metatype/src/aQute/metatype/components/ServerSocketComponent.java).
 
