@@ -101,4 +101,4 @@ of other settings.
 [-launcher]: /instructions/launcher.html
 [-runbundles]: /instructions/runbundles.html
 [-runstartlevel]: /instructions/runstartlevel.html
-[launcher]: /chapters/launching.html
+[launcher]: /chapters/300-launching.html
