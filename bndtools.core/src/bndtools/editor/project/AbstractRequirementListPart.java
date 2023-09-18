@@ -215,10 +215,15 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 
 	@Override
 	protected final void refreshFromModel() {
-		this.requires.clear();
 		List<Requirement> loadedReqs = doRefreshFromModel();
-		if (loadedReqs != null)
-			this.requires.addAll(loadedReqs);
+		if (loadedReqs == null)
+			loadedReqs = Collections.emptyList();
+
+		if (loadedReqs.equals(this.requires))
+			return;
+
+		this.requires.clear();
+		this.requires.addAll(loadedReqs);
 		viewer.setInput(this.requires);
 	}
 

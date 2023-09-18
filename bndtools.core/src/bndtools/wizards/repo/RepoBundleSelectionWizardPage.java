@@ -263,7 +263,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 	protected void refreshBundleList() throws Exception {
 		Workspace workspace = Central.getWorkspace();
-		workspace.refresh();
+		// workspace.refresh();
 		availableViewer.setInput(RepositoryUtils.listRepositories(workspace, true));
 	}
 
