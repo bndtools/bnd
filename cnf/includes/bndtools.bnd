@@ -3,10 +3,22 @@ Bundle-Copyright: Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others.
 Bundle-DocURL: https://bndtools.org/
 
 # Import-Package clauses for Eclipse packages
+#
 # We use bundle-symbolic-name and bundle-version because Eclipse is
 # terrible at managing packages and Require-Bundle is too promiscuous.
+#
+# For org.eclipse.jdt.internal.corext.refactoring we do not use
+# bundle-symbolic-name or bundle-version.  This package is not
+# considered API by the Eclipse project and therefore is free
+# to move to another bundle.
 eclipse.importpackage: \
+ org.eclipse.jdt.internal.corext.refactoring.*;version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!,\
  org.eclipse.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
  # Decorate Equinox OSGi framework dependency
 -buildpath+.equinox: "org.eclipse.osgi";maven-scope=provided
+
+# Add a fixup for the Unsued import on the refactoring package from above.
+# This package is only used by a small number of bundles (only bndtools.core)
+-fixupmessages.eclipserefactor: "Unused Import-Package instructions: \\[org.eclipse.jdt.internal.corext.refactoring.*\\]
+
