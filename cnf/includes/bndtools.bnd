@@ -12,8 +12,8 @@ Bundle-DocURL: https://bndtools.org/
 # considered API by the Eclipse project and therefore is free
 # to move to another bundle.
 eclipse.importpackage: \
- org.eclipse.jdt.internal.corext.refactoring.*;version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!,\
- org.eclipse.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+ org.eclipse.jdt.internal.corext.refactoring.*;version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!;manipulation=!,\
+ org.eclipse.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!;ui.workbench=!;common=!;registry=!;texteditor=!;text=!;manipulation=!
 
  # Decorate Equinox OSGi framework dependency
 -buildpath+.equinox: "org.eclipse.osgi";maven-scope=provided
