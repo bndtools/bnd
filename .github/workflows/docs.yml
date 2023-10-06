@@ -46,3 +46,8 @@ jobs:
     - name: Build
       run: |
         ./.github/scripts/docs.sh
+    - name: Upload docs/_site
+      uses: actions/upload-artifact@v2
+      with:
+        name: website
+        path: docs/_site/
