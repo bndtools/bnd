@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/css/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>-maven-dependencies* entry ( ‘,’ entry )* | bnd</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="-maven-dependencies* entry ( ‘,’ entry )*" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The -pom instruction can be used to generate a pom in the bundle. The value of the -maven-dependencies instruction is used to generate the &lt;dependencies&gt; section in the generated pom." />
+<meta property="og:description" content="The -pom instruction can be used to generate a pom in the bundle. The value of the -maven-dependencies instruction is used to generate the &lt;dependencies&gt; section in the generated pom." />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="-maven-dependencies* entry ( ‘,’ entry )*" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"The -pom instruction can be used to generate a pom in the bundle. The value of the -maven-dependencies instruction is used to generate the &lt;dependencies&gt; section in the generated pom.","headline":"-maven-dependencies* entry ( ‘,’ entry )*","url":"/instructions/maven-dependencies.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="/"><img
+			class=menu-logo src="/img/bnd-80x40-white.png"></a>
+			<a href="/chapters/110-introduction.html">Intro
+			</a><a href="/chapters/800-headers.html">Headers
+			</a><a href="/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/chapters/855-macros-ref.html">Macros
+			</a><a href="/chapters/400-commands.html">Commands
+			</a><div class="releases">
+			         <button class="dropbtn"><span class="fa fa-bars"></span> master</button>
+			         <div class="dropdown-content"></div>
+			   </div>
+    <li span=4>     
+        <div class="search-container">
+			<form method="get" id="search" action="https://google.com/search" target="_blank">
+			    <input type="hidden" name="as_q" value="site:bndtools.org OR site:bnd.discourse.group"/>
+			    <input type="text" name="q" placeholder="Search…" aria-label="Search https://google.com for bnd specific"/>
+			    <button type="submit" class="fa fa-search"></button>
+            </form>
+       </div>
+</ul>
+<div class=menu-link span=0><script>
+    window.onload = function() {
+      var currentURL = window.location.href;
+      var regex = /https:\/\/bnd.bndtools.org\/(.*\.html)/;
+      var matches = currentURL.match(regex);
+      var filePath = matches[1];
+	  if (filePath.includes("/")) 
+		  filePath = "_" + filePath;
+      var markdownFileURL = 'https://github.com/bndtools/bnd/blob/master/docs/' + filePath.replace(".html", ".md");
+      var repoLink = document.getElementById('repo-link');
+      repoLink.href = markdownFileURL;		
+    };
+</script>
+
+<a id="repo-link" href="https://github.com/bndtools/bnd/docs/" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</div>
+
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/chapters/790-reference.html">Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+			
+				<h1> -maven-dependencies* entry ( ',' entry )*               
+                 <div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
+                     Project
+                   </div>
+                     
+				</h1>
+				<p>The <a href="pom.html">-pom</a> instruction can be used to generate a pom in the bundle. The value of the <code class="language-plaintext highlighter-rouge">-maven-dependencies</code> instruction is used to generate the <code class="language-plaintext highlighter-rouge">&lt;dependencies&gt;</code> section in the generated pom.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-maven-dependencies ::= entry ( ',' entry ) *
+ entry     ::= key ( ';' attribute ) *
+ attribute ::= groupId-attr | artifactId-attr | version-attr
+               | classifier-attr
+ groupId-attr    ::= 'groupId' '=' groupId
+ artifactId-attr ::= 'artifactId' '=' artifactId
+ version-attr    ::= 'version' '=' version
+ classifier-attr ::= 'classifier' '=' classifier
+ gavkey    ::= groupId ':' artifactId ':' version ( ':jar:' classifier)?
+</code></pre></div></div>
+
+<h2 id="description">Description</h2>
+
+<p>For Bnd Workspace builds, the <code class="language-plaintext highlighter-rouge">-maven-dependencies</code> instruction is automatically set, if not already set, by Bnd from the <a href="buildpath.html">-buildpath</a> entries of the project. Normally, you can allow Bnd to automatically set the <code class="language-plaintext highlighter-rouge">-maven-dependencies</code> instruction. But you can override the maven dependency information by explicitly setting the <code class="language-plaintext highlighter-rouge">-maven-dependencies</code> instruction. If set to the empty string, then no <code class="language-plaintext highlighter-rouge">&lt;dependencies&gt;</code> section will be added in the generated pom. Since the <code class="language-plaintext highlighter-rouge">-maven-dependencies</code> instruction is a <a href="../chapters/820-instructions.html#merged-instructions">merged instruction</a>, you can use suffixes to override the generated information for a dependency and to add additional dependencies to the maven dependency information.</p>
+
+<p>When Bnd automatically sets the <code class="language-plaintext highlighter-rouge">-maven-dependencies</code> instruction, it will generate the <code class="language-plaintext highlighter-rouge">key</code> value using the <code class="language-plaintext highlighter-rouge">gavkey</code> production with the groupId, artifactId, version, and classifier (if set) values of the artifact. Using a well defined <code class="language-plaintext highlighter-rouge">gavkey</code> value, allows the attributes of a specific artifact to be overriden by merged property value while allowing the other automatically set values to still be used. However any unique <code class="language-plaintext highlighter-rouge">key</code> value can be used if you don’t care to override the automatically set value for a specific dependency.</p>
+
+<p>When an artifact come from a maven repository, such as <a href="../plugins/maven.html">MavenBndRepository</a> or <a href="../plugins/pomrepo.html">BndPomRepository</a>, the maven repository will supply the <code class="language-plaintext highlighter-rouge">groupId</code>, <code class="language-plaintext highlighter-rouge">artifactId</code>, <code class="language-plaintext highlighter-rouge">version</code>, and <code class="language-plaintext highlighter-rouge">classifier</code> (if the artifact has a non-empty classifier) attributes of the artifact. If the artifact does not come from a maven repository but does contain a <a href="https://maven.apache.org/shared/maven-archiver/#pom-properties-content">pom.properties</a> resource, then the <code class="language-plaintext highlighter-rouge">groupId</code>, <code class="language-plaintext highlighter-rouge">artifactId</code>, and <code class="language-plaintext highlighter-rouge">version</code> attributes are supplied by that resource.</p>
+
+<h2 id="buildpath-entries">Buildpath Entries</h2>
+
+<p>An attribute value can also be specified on a <a href="buildpath.html">-buildpath</a> entry, by prefixing the attribute name with <code class="language-plaintext highlighter-rouge">maven-</code>, which can then replace any such attribute value coming from the maven repository or a <a href="https://maven.apache.org/shared/maven-archiver/#pom-properties-content">pom.properties</a> resource.</p>
+
+<p>You can set the <code class="language-plaintext highlighter-rouge">maven-scope</code> attribute on a <a href="buildpath.html">-buildpath</a> entry to specify a different <a href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope">dependency scope</a> than the default dependency scope specified by the <a href="maven-scope.html">-maven-scope</a> instruction. The value of the <code class="language-plaintext highlighter-rouge">maven-scope</code> attribute must be a valid dependency scope.</p>
+
+<p>You can also set the <code class="language-plaintext highlighter-rouge">maven-optional</code> attribute on a <a href="buildpath.html">-buildpath</a> entry to <code class="language-plaintext highlighter-rouge">true</code> which will exclude the artifact from the generated dependencies information. The default value for <code class="language-plaintext highlighter-rouge">maven-optional</code> is <code class="language-plaintext highlighter-rouge">false</code>.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Disable generating the <code class="language-plaintext highlighter-rouge">&lt;dependencies&gt;</code> section in the generated pom.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-maven-dependencies:
+</code></pre></div></div>
+
+<p>Override the automatically set dependency information for a specific artifact. You must use the matching <code class="language-plaintext highlighter-rouge">gavkey</code> of the actual artifact and then specify the <code class="language-plaintext highlighter-rouge">groupId</code>, <code class="language-plaintext highlighter-rouge">artifactId</code>, and <code class="language-plaintext highlighter-rouge">version</code> attributes to use for the artitact. This example replaces the version of the artifact to remove <code class="language-plaintext highlighter-rouge">-SNAPSHOT</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-maven-dependencies.fix: org.osgi:osgi.annotation:8.0.0-SNAPSHOT;\
+ groupId=org.osgi;artifactId=osgi.annotation;version=8.0.0
+</code></pre></div></div>
+
+<p>This could also be done on the <a href="buildpath.html">-buildpath</a> entry for the artifact by specifying the <code class="language-plaintext highlighter-rouge">maven-version</code> attribute to override the maven version of the artifact.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-buildpath: osgi.annotation;version=8.0.0.SNAPSHOT;maven-version=8.0.0
+</code></pre></div></div>
+
+<p>Add an additional dependency. You must specify the <code class="language-plaintext highlighter-rouge">groupId</code>, <code class="language-plaintext highlighter-rouge">artifactId</code>, and <code class="language-plaintext highlighter-rouge">version</code> attributes to use for the artitact.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-maven-dependencies.log: log;groupId=org.osgi;\
+ artifactId=org.osgi.service.log;version=1.5.0
+</code></pre></div></div>
+
+<p>Don’t generate a <code class="language-plaintext highlighter-rouge">&lt;dependency&gt;</code> element for a specific artifact. This is done by specifying the proper <code class="language-plaintext highlighter-rouge">gavkey</code> value and not specifying any attributes.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-maven-dependencies.nodependency: org.osgi:osgi.annotation:8.0.0
+</code></pre></div></div>
+
+<p>This could also be done on the <a href="buildpath.html">-buildpath</a> entry for the artifact by specifying the <code class="language-plaintext highlighter-rouge">maven-optional</code> attribute with the value <code class="language-plaintext highlighter-rouge">true</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-buildpath: osgi.annotation;version=8.0.0;maven-optional=true
+</code></pre></div></div>
+
+<p>Change the dependency scope for the artifact. The default dependency scope is specified by the <a href="maven-scope.html">-maven-scope</a> instruction.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-buildpath: osgi.annotation;version=8.0.0;maven-scope=provided
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/instructions/manifest_name.html'></a> <a href='/instructions/maven-release.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
