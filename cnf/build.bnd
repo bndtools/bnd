@@ -46,7 +46,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 -groupid:               biz.aQute.bnd
 -pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
 -maven-release:         pom;path=JAR,javadoc;-classpath="${project.buildpath}"
--snapshot: RC3
+-snapshot:
 
 # -snapshot set to a value (e.g. RC1) is a release build with the value as the Maven version qualifier. (e.g. 6.0.0-RC1)
 # -snapshot set to the empty string is a release build with no Maven version qualifier. (e.g. 6.0.0)
