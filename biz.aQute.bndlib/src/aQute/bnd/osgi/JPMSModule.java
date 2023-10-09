@@ -11,6 +11,8 @@ import java.util.TreeSet;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.classfile.ModuleAttribute;
@@ -488,6 +490,23 @@ public class JPMSModule {
 			return Integer.MAX_VALUE;
 
 		return tailSet.first();
+	}
+
+	/**
+	 * Cleanup a bsn so that it matches a JPMS module name
+	 *
+	 * @param bsn a symbolic name or null
+	 * @return a name that matches the JPMS specification for a module name or
+	 *         null if the input was null
+	 */
+	public static String cleanupName(String bsn) {
+		if (bsn == null)
+			return null;
+
+		String[] split = bsn.split("[^A-Za-z0-9]+");
+		return Stream.of(split)
+			.filter(str -> !str.isEmpty())
+			.collect(Collectors.joining("."));
 	}
 
 }

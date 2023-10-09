@@ -242,12 +242,13 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 			if (logger.isDebugEnabled())
 				logger.debug("Using module name '{}' for: {}", moduleName, jar);
 		}
-		return moduleName;
+		return JPMSModule.cleanupName(moduleName);
 	}
 
 	private String name(Analyzer analyzer) {
-		return analyzer.getProperty(AUTOMATIC_MODULE_NAME, analyzer.getBsn());
+		return analyzer.getProperty(AUTOMATIC_MODULE_NAME, JPMSModule.cleanupName(analyzer.getBsn()));
 	}
+
 
 	private void packages(ModuleInfoBuilder builder, Analyzer analyzer) {
 		MapStream.ofNullable(analyzer.getJar()
