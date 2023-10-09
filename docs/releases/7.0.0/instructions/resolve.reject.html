@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/css/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>-resolve.reject ( ‘@’? namespace ( ‘;filter:=’ FILTER )? ), | bnd</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="-resolve.reject ( ‘@’? namespace ( ‘;filter:=’ FILTER )? )," />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The resolver will request capabilities from the resolve context. In bnd, the resolve hook can be used to reject some of these capabilities. The -resolve.reject instruction can control the default hook. Without this instruction, nothing is rejected and the resolver sees all capabilities. With this hook it is possible to reject" />
+<meta property="og:description" content="The resolver will request capabilities from the resolve context. In bnd, the resolve hook can be used to reject some of these capabilities. The -resolve.reject instruction can control the default hook. Without this instruction, nothing is rejected and the resolver sees all capabilities. With this hook it is possible to reject" />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="-resolve.reject ( ‘@’? namespace ( ‘;filter:=’ FILTER )? )," />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"The resolver will request capabilities from the resolve context. In bnd, the resolve hook can be used to reject some of these capabilities. The -resolve.reject instruction can control the default hook. Without this instruction, nothing is rejected and the resolver sees all capabilities. With this hook it is possible to reject","headline":"-resolve.reject ( ‘@’? namespace ( ‘;filter:=’ FILTER )? ),","url":"/instructions/resolve.reject.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="/"><img
+			class=menu-logo src="/img/bnd-80x40-white.png"></a>
+			<a href="/chapters/110-introduction.html">Intro
+			</a><a href="/chapters/800-headers.html">Headers
+			</a><a href="/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/chapters/855-macros-ref.html">Macros
+			</a><a href="/chapters/400-commands.html">Commands
+			</a><div class="releases">
+			         <button class="dropbtn"><span class="fa fa-bars"></span> master</button>
+			         <div class="dropdown-content"></div>
+			   </div>
+    <li span=4>     
+        <div class="search-container">
+			<form method="get" id="search" action="https://google.com/search" target="_blank">
+			    <input type="hidden" name="as_q" value="site:bndtools.org OR site:bnd.discourse.group"/>
+			    <input type="text" name="q" placeholder="Search…" aria-label="Search https://google.com for bnd specific"/>
+			    <button type="submit" class="fa fa-search"></button>
+            </form>
+       </div>
+</ul>
+<div class=menu-link span=0><script>
+    window.onload = function() {
+      var currentURL = window.location.href;
+      var regex = /https:\/\/bnd.bndtools.org\/(.*\.html)/;
+      var matches = currentURL.match(regex);
+      var filePath = matches[1];
+	  if (filePath.includes("/")) 
+		  filePath = "_" + filePath;
+      var markdownFileURL = 'https://github.com/bndtools/bnd/blob/master/docs/' + filePath.replace(".html", ".md");
+      var repoLink = document.getElementById('repo-link');
+      repoLink.href = markdownFileURL;		
+    };
+</script>
+
+<a id="repo-link" href="https://github.com/bndtools/bnd/docs/" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</div>
+
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/chapters/790-reference.html">Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+			
+				<h1> -resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? ),               
+                 <div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
+                     Workspace
+                   </div>
+                     
+				</h1>
+				<p>The resolver will request capabilities from the resolve context. In bnd, the resolve hook can be
+used to reject some of these capabilities. The <code class="language-plaintext highlighter-rouge">-resolve.reject</code> instruction can control the default
+hook. Without this instruction, nothing is rejected and the resolver sees all capabilities. With this
+hook it is possible to reject</p>
+
+<ul>
+  <li>A complete namespace – Just use the namespace, this will reject all capabilities in that namespace</li>
+  <li>Capabilities in a given namespace where a filter expression matches – Use the standard requirement syntax.</li>
+  <li>On the resource – Prefix the requirement with an @ and it will be applied on the capabilities of the parent resource. If at least one is found, the capability is rejected.</li>
+  <li>A combination of the above.</li>
+</ul>
+
+<p>To directly reject a namespace <code class="language-plaintext highlighter-rouge">foo</code>, the instruction is simply:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-resolve.reject foo
+</code></pre></div></div>
+
+<p>This will reject any capability in the namespace <code class="language-plaintext highlighter-rouge">foo</code>. To reject a namespace <code class="language-plaintext highlighter-rouge">foo</code> where a filter matches, the instruction is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-resolve.reject foo;filter:='(foo=3)`
+</code></pre></div></div>
+
+<p>This will reject any capability in the namespace <code class="language-plaintext highlighter-rouge">foo</code> that has an attribute <code class="language-plaintext highlighter-rouge">foo</code> that has the value 3.</p>
+
+<p>Sometimes it is necessary to reject a capability depending on its resource. For example, you want to reject
+capabilities that come from fragments. You can achieve this by prefixing the requirement with
+a <code class="language-plaintext highlighter-rouge">@</code> (commercial at sign). For example, if you want to reject any capabilities that come from a resource that has identity type <code class="language-plaintext highlighter-rouge">osgi.fragment</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-resolve.reject @osgi.identity;filter:='(type=osgi.fragment)'
+</code></pre></div></div>
+
+<p>You can add multiple requirements in the specification. These requirements will be or’ed together. The following
+ specification:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-resolve.reject @foo, baz
+</code></pre></div></div>
+
+<p>Will reject any capabiliy from a resource that has a <code class="language-plaintext highlighter-rouge">foo</code> capability and it will remove all <code class="language-plaintext highlighter-rouge">baz</code> capabilities.</p>
+
+<h2 id="example">Example</h2>
+
+<p>Before bnd release 7, the resolver always rejected resources that were neither a bundle nor a fragment. This was
+changed to allow more scenarios. The filtering was moved to the list of bundles where it is necessary that the resources
+are all bundles.</p>
+
+<p>This should normally not make a difference during resolving. However, in some cases you want to have the old 
+situation. The following example restores the pre release 7 situation.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-resolve.reject     @osgi.identity;filter:='(!(|(type=osgi.bundle)(type=osgi.fragment)))'
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/instructions/resolve.preferences.html'></a> <a href='/instructions/resolvedebug.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
