@@ -114,6 +114,13 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		Control filterControl = filterPart.createControl(explorer);
 		filterPart.setHint("Filter for projects (glob)");
 
+		model.onUpdate(() -> {
+			if (Objects.equals(model.filterText, filterPart.getFilter()))
+				return;
+			filterPart.getFilterControl()
+				.setText(model.filterText);
+			filterPart.setFilter(model.filterText);
+		});
 		super.createPartControl(explorer);
 
 		Control[] children = explorer.getChildren();
