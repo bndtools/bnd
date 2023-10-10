@@ -157,7 +157,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(3)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"));
 
 			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
@@ -212,7 +212,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(4)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -395,7 +395,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(4)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -403,7 +403,7 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
@@ -459,7 +459,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(4)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -467,7 +467,7 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
@@ -524,7 +524,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(4)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -532,7 +532,7 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
@@ -588,7 +588,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(4)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -596,7 +596,7 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
@@ -652,7 +652,7 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).hasSize(5)
 				.anyMatch(e -> e.requires.equals("java.base"))
 				.anyMatch(e -> e.requires.equals("java.management"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -660,7 +660,7 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
@@ -716,7 +716,7 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).hasSize(5)
 				.anyMatch(e -> e.requires.equals("bar"))
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -728,7 +728,7 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(0);
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
@@ -793,7 +793,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(4)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"))
 				.anyMatch(e -> e.requires.equals("java.json.bind"));
 
@@ -805,7 +805,7 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(0);
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
@@ -869,7 +869,7 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(3)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.anyMatch(e -> e.requires.equals("java.json"));
 
 			assertThat(moduleAttribute.uses).hasSize(0);
@@ -931,9 +931,9 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleAttribute.requires).hasSize(2)
 				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"));
+				.anyMatch(e -> e.requires.equals("geronimo.jcdi.2.0.spec"));
 
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo.jcdi.2.0.spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
 
