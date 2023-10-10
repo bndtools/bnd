@@ -51,7 +51,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -227,14 +226,12 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 				return null;
 			}
 
-			moduleName = jar.getName();
-			Matcher matcher = mangledModuleName.matcher(moduleName);
-			if (matcher.matches()) {
-				moduleName = matcher.group(1);
-			}
+			moduleName = JPMSModule.cleanupName(jar.getName());
 			final String name = moduleName;
 			moduleName = moduleInfoOptions.stream()
-				.filterValue(attrs -> name.equals(attrs.get(SUBSTITUTE_ATTRIBUTE)))
+				.mapValue(attrs -> attrs.get(SUBSTITUTE_ATTRIBUTE))
+				.mapValue(JPMSModule::cleanupName)
+				.filterValue(s -> name.equals(s))
 				.keys()
 				.findFirst()
 				.orElse(moduleName);

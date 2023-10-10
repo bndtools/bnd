@@ -502,6 +502,14 @@ public class JPMSModule {
 	public static String cleanupName(String bsn) {
 		if (bsn == null)
 			return null;
+		if ( bsn.endsWith(".jar"))
+			bsn= bsn.substring(0, bsn.length()-4);
+
+		Pattern STRIP_SUFFIX_P = Pattern.compile("-\\d+\\..*$");
+		Matcher m = STRIP_SUFFIX_P.matcher(bsn);
+		if (m.find()) {
+			bsn = bsn.substring(0, m.start());
+		}
 
 		String[] split = bsn.split("[^A-Za-z0-9]+");
 		return Stream.of(split)
