@@ -33,7 +33,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.Version;
-import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
@@ -56,7 +55,6 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.VersionRange;
@@ -92,7 +90,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private final Map<CacheKey, List<Capability>>	providerCache							= new HashMap<>();
 	private final Set<Resource>						optionalRoots							= new HashSet<>();
 	private final ConcurrentMap<Resource, Integer>	resourcePriorities						= new ConcurrentHashMap<>();
-	private final Comparator<Capability>			capabilityComparator;
 	private Map<String, Set<String>>				effectiveSet							= new HashMap<>();
 	private final List<ResolverHook>				resolverHooks							= new ArrayList<>();
 	private final List<ResolutionCallback>			callbacks								= new LinkedList<>();
@@ -106,7 +103,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	public AbstractResolveContext(LogService log) {
 		this.log = log;
-		this.capabilityComparator = new CapabilityComparator(log);
 	}
 
 	protected synchronized void init() {
@@ -428,117 +424,32 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			return Version.emptyVersion;
 	}
 
-	private class CapabilityComparator implements Comparator<Capability> {
+	/**
+	 * Comparator for capabilities. The order is that two capabilities, the more
+	 * preferred capability is first.
+	 * <ul>
+	 * <li>From the system resource
+	 * <li>Already wired
+	 * <li>compare standard Capability, see
+	 * {@link ResourceUtils#compareTo(Capability, Capability)}
+	 * </ul>
+	 */
+	public final Comparator<Capability> capabilityComparator = Comparator.nullsLast((a, b) -> {
 
-		private final LogService log;
+		Resource ra = a.getResource();
+		Resource rb = b.getResource();
 
-		public CapabilityComparator(LogService log) {
-			this.log = log;
-		}
+		int n = ResourceUtils.compare(isSystemResource(rb), isSystemResource(ra));
+		if (n != 0)
+			return n;
 
-		@Override
-		public int compare(Capability o1, Capability o2) {
+		Map<Resource, Wiring> wirings = getWirings();
+		n = ResourceUtils.compare(wirings.get(rb), wirings.get(ra));
+		if (n != 0)
+			return n;
 
-			Resource res1 = o1.getResource();
-			Resource res2 = o2.getResource();
-
-			// 1. Framework bundle
-			if (isSystemResource(res1))
-				return -1;
-			if (isSystemResource(res2))
-				return +1;
-
-			// 2. Wired
-			Map<Resource, Wiring> wirings = getWirings();
-			Wiring w1 = wirings.get(res1);
-			Wiring w2 = wirings.get(res2);
-
-			if (w1 != null && w2 == null)
-				return -1;
-			if (w1 == null && w2 != null)
-				return +1;
-
-			// 3. Input requirements
-			if (isInputResource(res1)) {
-				if (!isInputResource(res2))
-					return -1;
-			}
-			if (isInputResource(res2)) {
-				if (!isInputResource(res1))
-					return +1;
-			}
-
-			// 4. Higher capability version
-			String ns1 = o1.getNamespace();
-			String ns2 = o2.getNamespace();
-			if (ns1.equals(ns2)) {
-				try {
-					// We use package namespace, as that defines the general
-					// contract for versions
-					Version v1 = getVersion(o1, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-					Version v2 = getVersion(o2, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-					if (!v1.equals(v2))
-						return v2.compareTo(v1);
-				} catch (Exception e) {
-					log.log(LogService.LOG_INFO,
-						"Unable to determine the versions of the capabilities " + o1 + " and " + o2, e);
-				}
-			}
-
-			// 5. Higher resource version
-			if (BUNDLE_NAMESPACE.equals(ns1) && BUNDLE_NAMESPACE.equals(ns2)) {
-				Version v1 = getVersion(o1, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-				Version v2 = getVersion(o2, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-				if (!v1.equals(v2))
-					return v2.compareTo(v1);
-			} else if (IDENTITY_NAMESPACE.equals(ns1) && IDENTITY_NAMESPACE.equals(ns2)) {
-				Version v1 = getVersion(o1, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-				Version v2 = getVersion(o2, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-				if (!v1.equals(v2))
-					return v2.compareTo(v1);
-			}
-
-			// 6. Same package version, higher bundle version
-			if (PACKAGE_NAMESPACE.equals(ns1) && PACKAGE_NAMESPACE.equals(ns2)) {
-				String bsn1 = (String) o1.getAttributes()
-					.get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
-				String bsn2 = (String) o2.getAttributes()
-					.get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
-				if (bsn1 != null && bsn1.equals(bsn2)) {
-					Version v1 = getVersion(o1, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-					Version v2 = getVersion(o2, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-					if (!v1.equals(v2))
-						return v2.compareTo(v1);
-				}
-				// 6.5 Higher bundle version for other namespace's
-			} else if (ns1.equals(ns2)) {
-				IdentityCapability idCap1 = ResourceUtils.getIdentityCapability(res1);
-				IdentityCapability idCap2 = ResourceUtils.getIdentityCapability(res2);
-
-				if (idCap1 != null && idCap2 != null && idCap1.osgi_identity()
-					.equals(idCap2.osgi_identity())) {
-					if (!idCap1.version()
-						.equals(idCap2.version()))
-						return idCap2.version()
-							.compareTo(idCap1.version());
-				}
-			}
-
-			// 7. The resource with the fewest requirements
-			int diff = res1.getRequirements(null)
-				.size()
-				- res2.getRequirements(null)
-					.size();
-			if (diff != 0)
-				return diff;
-
-			// 8. The resource with most capabilities
-			return res2.getCapabilities(null)
-				.size()
-				- res1.getCapabilities(null)
-					.size();
-		}
-	}
+		return ResourceUtils.compareTo(b, a);
+	});
 
 	public Resource getInputResource() {
 		return inputResource;
