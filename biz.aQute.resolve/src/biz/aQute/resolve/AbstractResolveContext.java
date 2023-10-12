@@ -1,7 +1,7 @@
 package biz.aQute.resolve;
 
 import static aQute.lib.comparators.Comparators.compare;
-import static aQute.lib.comparators.Comparators.isDecided;
+import static aQute.lib.comparators.Comparators.isFinal;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 import static org.osgi.framework.Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
@@ -439,15 +439,15 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 */
 	public final Comparator<Capability> capabilityComparator = (a, b) -> {
 
-		int n = Comparators.compareNull(a, b);
-		if (isDecided(n))
+		int n = Comparators.comparePresent(a, b);
+		if (isFinal(n))
 			return n;
 
 		Resource ra = a.getResource();
 		Resource rb = b.getResource();
 
-		n = Comparators.compareNull(ra, rb);
-		if (isDecided(n))
+		n = Comparators.comparePresent(ra, rb);
+		if (isFinal(n))
 			return n;
 
 		n = compare(isSystemResource(rb), isSystemResource(ra));

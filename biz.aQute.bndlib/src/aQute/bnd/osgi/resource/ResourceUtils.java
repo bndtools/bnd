@@ -2,8 +2,9 @@ package aQute.bnd.osgi.resource;
 
 import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 import static aQute.lib.comparators.Comparators.compare;
-import static aQute.lib.comparators.Comparators.compareNull;
-import static aQute.lib.comparators.Comparators.isDecided;
+import static aQute.lib.comparators.Comparators.compareMapsByKeys;
+import static aQute.lib.comparators.Comparators.comparePresent;
+import static aQute.lib.comparators.Comparators.isFinal;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
@@ -79,8 +80,8 @@ public abstract class ResourceUtils {
 	public static final Comparator<? super Resource>	IDENTITY_VERSION_COMPARATOR	=								//
 		(o1, o2) -> {
 
-			int n = compareNull(o1, o2);
-			if (isDecided(n))
+			int n = comparePresent(o1, o2);
+			if (isFinal(n))
 				return n;
 
 			String v1 = getIdentityVersion(o1);
@@ -675,8 +676,8 @@ public abstract class ResourceUtils {
 	 *         name and higher version, -1 otherwise
 	 */
 	public static int compareTo(Resource a, Resource b) {
-		int n = compareNull(a, b);
-		if (isDecided(n))
+		int n = comparePresent(a, b);
+		if (isFinal(n))
 			return n;
 
 		IdentityCapability ia = ResourceUtils.getIdentityCapability(a);
@@ -725,31 +726,31 @@ public abstract class ResourceUtils {
 
 		Map<String, Object> aa = a.getAttributes();
 		Map<String, Object> ab = b.getAttributes();
-		compare = compareNull(aa, ab);
-		if (Comparators.isDecided(compare))
+		compare = comparePresent(aa, ab);
+		if (Comparators.isFinal(compare))
 			return compare;
 
 		assert aa != null && ab != null;
 
 		compare = switch (nsa) {
-			case BundleNamespace.BUNDLE_NAMESPACE -> compare(aa, ab, //
+			case BundleNamespace.BUNDLE_NAMESPACE -> compareMapsByKeys(aa, ab, //
 				BundleNamespace.BUNDLE_NAMESPACE, //
 				BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 
-			case HostNamespace.HOST_NAMESPACE -> compare(aa, ab, //
+			case HostNamespace.HOST_NAMESPACE -> compareMapsByKeys(aa, ab, //
 				HostNamespace.HOST_NAMESPACE, //
 				HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 
-			case ServiceNamespace.SERVICE_NAMESPACE -> compare(aa, ab,
+			case ServiceNamespace.SERVICE_NAMESPACE -> compareMapsByKeys(aa, ab,
 				ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE, "version");
 
-			case PackageNamespace.PACKAGE_NAMESPACE -> compare(aa, ab, //
+			case PackageNamespace.PACKAGE_NAMESPACE -> compareMapsByKeys(aa, ab, //
 				PackageNamespace.PACKAGE_NAMESPACE, //
 				PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, //
 				PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, //
 				PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 
-			default -> compare(aa, ab, nsa, "version");
+			default -> compareMapsByKeys(aa, ab, nsa, "version");
 		};
 		if (compare != 0)
 			return compare;
