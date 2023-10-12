@@ -1,6 +1,9 @@
 package aQute.bnd.osgi.resource;
 
 import static aQute.bnd.exceptions.FunctionWithException.asFunction;
+import static aQute.lib.comparators.Comparators.compare;
+import static aQute.lib.comparators.Comparators.compareNull;
+import static aQute.lib.comparators.Comparators.isDecided;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
@@ -9,7 +12,6 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
@@ -20,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,42 +69,23 @@ import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
+import aQute.lib.comparators.Comparators;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 
 public abstract class ResourceUtils {
 
 	public static final Comparator<Requirement>			REQUIREMENT_COMPARATOR		= ResourceUtils::compareTo;
-	/**
-	 * A comparator that compares the identity versions
-	 */
 	public static final Comparator<? super Resource>	IDENTITY_VERSION_COMPARATOR	=								//
 		(o1, o2) -> {
-			if (o1 == o2)
-				return 0;
 
-			if (o1 == null)
-				return -1;
-
-			if (o2 == null)
-				return 1;
-
-			if (o1.equals(o2))
-				return 0;
+			int n = compareNull(o1, o2);
+			if (isDecided(n))
+				return n;
 
 			String v1 = getIdentityVersion(o1);
 			String v2 = getIdentityVersion(o2);
-
-			if (v1 == v2)
-				return 0;
-
-			if (v1 == null)
-				return -1;
-
-			if (v2 == null)
-				return 1;
-
-			return new Version(v1).compareTo(new Version(v2));
+			return n = compare(v1, v2);
 		};
 
 	private static final Comparator<? super Resource>	RESOURCE_COMPARATOR			= ResourceUtils::compareTo;
@@ -693,24 +675,22 @@ public abstract class ResourceUtils {
 	 *         name and higher version, -1 otherwise
 	 */
 	public static int compareTo(Resource a, Resource b) {
-		IdentityCapability left = ResourceUtils.getIdentityCapability(a);
-		IdentityCapability right = ResourceUtils.getIdentityCapability(b);
+		int n = compareNull(a, b);
+		if (isDecided(n))
+			return n;
 
-		if (left == right)
-			return 0;
+		IdentityCapability ia = ResourceUtils.getIdentityCapability(a);
+		IdentityCapability ib = ResourceUtils.getIdentityCapability(b);
 
-		if (right == null) {
-			return 1;
-		}
-		if (left == null) {
-			return -1;
-		}
-
-		int compare = Objects.compare(left.osgi_identity(), right.osgi_identity(), nullsFirst);
-		if (compare != 0) {
+		int compare = compare(ia, ib);
+		if (compare != 0)
 			return compare;
-		}
-		return Objects.compare(left.version(), right.version(), nullsFirst);
+
+		compare = compare(ia.osgi_identity(), ib.osgi_identity());
+		if (compare != 0)
+			return compare;
+
+		return compare(ia.version(), ib.version());
 	}
 
 	/**
@@ -728,41 +708,45 @@ public abstract class ResourceUtils {
 	 * @return -1 if right is higher, 0 if equal, and 1 if left is higher
 	 */
 	public static int compareTo(Capability a, Capability b) {
-		if (a == b)
-			return 0;
+		int compare = compare(a, b);
+		if (compare != 0)
+			return compare;
 
-		if (b == null) {
-			return 1;
-		}
-		if (a == null) {
-			return -1;
-		}
-		if (a.equals(b))
-			return 0;
+		assert a != null && b != null;
 
 		String nsa = a.getNamespace();
 		String nsb = b.getNamespace();
 
-		int compare = Objects.compare(nsa, nsb, nullsFirst);
-		if (compare != 0) {
+		compare = compare(nsa, nsb);
+		if (compare != 0)
 			return compare;
-		}
 
 		assert nsa.equals(nsb);
 
 		Map<String, Object> aa = a.getAttributes();
 		Map<String, Object> ab = b.getAttributes();
+		compare = compareNull(aa, ab);
+		if (Comparators.isDecided(compare))
+			return compare;
+
+		assert aa != null && ab != null;
 
 		compare = switch (nsa) {
-			case BundleNamespace.BUNDLE_NAMESPACE -> compare(aa, ab, BundleNamespace.BUNDLE_NAMESPACE,
+			case BundleNamespace.BUNDLE_NAMESPACE -> compare(aa, ab, //
+				BundleNamespace.BUNDLE_NAMESPACE, //
 				BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-			case HostNamespace.HOST_NAMESPACE -> compare(aa, ab, HostNamespace.HOST_NAMESPACE,
+
+			case HostNamespace.HOST_NAMESPACE -> compare(aa, ab, //
+				HostNamespace.HOST_NAMESPACE, //
 				HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+
 			case ServiceNamespace.SERVICE_NAMESPACE -> compare(aa, ab,
 				ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE, "version");
-			case PackageNamespace.PACKAGE_NAMESPACE -> compare(aa, ab, PackageNamespace.PACKAGE_NAMESPACE,
-				PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE,
-				PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE,
+
+			case PackageNamespace.PACKAGE_NAMESPACE -> compare(aa, ab, //
+				PackageNamespace.PACKAGE_NAMESPACE, //
+				PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, //
+				PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, //
 				PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 
 			default -> compare(aa, ab, nsa, "version");
@@ -779,103 +763,21 @@ public abstract class ResourceUtils {
 	}
 
 	public static int compareTo(Requirement a, Requirement b) {
-		int compare = compare(a,b);
-		if(compare !=0)
+		int compare = compare(a, b);
+		if (compare != 0)
 			return compare;
-
 
 		String ns1 = a.getNamespace();
 		String ns2 = b.getNamespace();
-		compare = compare(ns1,ns2);
-		if(compare !=0)
+		compare = compare(ns1, ns2);
+		if (compare != 0)
 			return compare;
 
 		String f1 = a.getDirectives()
-		.get("filter");
+			.get("filter");
 		String f2 = b.getDirectives()
-		.get("filter");
-		return compare(f1,f2);
-	}
-
-	public static int compare(Map<String, Object> a, Map<String, Object> b, String... keys) {
-		for (String key : keys) {
-			Object va = a.get(key);
-			Object vb = b.get(key);
-			int compare = compare(va, vb);
-			if (compare != 0)
-				return compare;
-		}
-		return 0;
-	}
-
-	@SuppressWarnings({
-		"rawtypes", "unchecked"
-	})
-	public static <T> int compare(T a, T b) {
-		if (a == b)
-			return 0;
-
-		if (b == null)
-			return 1;
-
-		if (a == null)
-			return -1;
-
-		assert a != null && b != null;
-
-		Class<? extends Object> ca = a.getClass();
-		Class<? extends Object> cb = b.getClass();
-		if (ca != cb) {
-			return ca.getName()
-				.compareTo(cb.getName());
-		}
-
-		assert ca == cb;
-
-		if (Comparable.class.isAssignableFrom(ca)) {
-
-			Comparable<T> cmpa = (Comparable<T>) a;
-			return cmpa.compareTo(b);
-		}
-		if (ca.isArray()) {
-			int na = Array.getLength(a);
-			int nb = Array.getLength(b);
-			int compare = Integer.compare(na, nb);
-			if (compare != 0)
-				return compare;
-
-			for (int n = 0; n < na; n++) {
-				Object va = Array.get(a, n);
-				Object vb = Array.get(b, n);
-				compare = compare(va, vb);
-				if (compare != 0)
-					return compare;
-			}
-			return 0;
-		}
-
-		if (a instanceof Collection) {
-			Iterable la = (Iterable) a;
-			Iterable lb = (Iterable) b;
-			Iterator ia = la.iterator();
-			Iterator ib = lb.iterator();
-
-			while (true) {
-				if (ia.hasNext()) {
-					if (ib.hasNext()) {
-						int compare = compare(ia.next(), ib.next());
-						if (compare != 0)
-							return compare;
-					} else
-						return 1;
-				} else if (ib.hasNext())
-					return -1;
-				else
-					return 0;
-			}
-		}
-
-		return 0;
+			.get("filter");
+		return compare(f1, f2);
 	}
 
 	public static List<Resource> sort(Collection<Resource> resources) {

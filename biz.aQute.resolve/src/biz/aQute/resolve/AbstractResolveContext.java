@@ -1,5 +1,7 @@
 package biz.aQute.resolve;
 
+import static aQute.lib.comparators.Comparators.compare;
+import static aQute.lib.comparators.Comparators.isDecided;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 import static org.osgi.framework.Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
@@ -58,6 +60,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.comparators.Comparators;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
@@ -434,22 +437,30 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * {@link ResourceUtils#compareTo(Capability, Capability)}
 	 * </ul>
 	 */
-	public final Comparator<Capability> capabilityComparator = Comparator.nullsLast((a, b) -> {
+	public final Comparator<Capability> capabilityComparator = (a, b) -> {
+
+		int n = Comparators.compareNull(a, b);
+		if (isDecided(n))
+			return n;
 
 		Resource ra = a.getResource();
 		Resource rb = b.getResource();
 
-		int n = ResourceUtils.compare(isSystemResource(rb), isSystemResource(ra));
+		n = Comparators.compareNull(ra, rb);
+		if (isDecided(n))
+			return n;
+
+		n = compare(isSystemResource(rb), isSystemResource(ra));
 		if (n != 0)
 			return n;
 
 		Map<Resource, Wiring> wirings = getWirings();
-		n = ResourceUtils.compare(wirings.get(rb), wirings.get(ra));
+		n = compare(wirings.get(rb), wirings.get(ra));
 		if (n != 0)
 			return n;
 
 		return ResourceUtils.compareTo(b, a);
-	});
+	};
 
 	public Resource getInputResource() {
 		return inputResource;

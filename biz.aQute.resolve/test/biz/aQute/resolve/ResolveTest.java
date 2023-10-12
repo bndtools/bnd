@@ -405,12 +405,14 @@ public class ResolveTest {
 
 		ResolverTester rt = new ResolverTester(test);
 
+		assertThat(rt.sortedCapabilities("7", "8", "9", "4", "10", "11", "12")).containsExactly("12", // a
+																										// v4
+			"11", "10", "9",
+			"8", "7", "4");
+
 		assertThat(rt.sortedCapabilities("21", "22")).containsExactly("21", "22");
 		assertThat(rt.sortedCapabilities("1", "21", "20", "22")).containsExactly("1", "21", "20", "22");
 
-		assertThat(rt.sortedCapabilities("7", "8", "9", "4", "10", "11", "12")).containsExactly("12", "11", "10", "9",
-			"8", "7",
-			"4");
 		assertThat(rt.sortedCapabilities("4", "6")).containsExactly("6", "4");
 		assertThat(rt.sortedCapabilities("1", "2", "3", "4", "5", "6")).containsExactly("3", "1", "5", "6", "4", "2");
 		assertThat(rt.sortedCapabilities("2", "5")).containsExactly("5", "2");
