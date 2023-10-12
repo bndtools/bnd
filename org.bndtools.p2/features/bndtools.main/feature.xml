@@ -675,18 +675,4 @@ version(s), and exceptions or additional permissions here}.&quot;
          version="@org.osgi.service.repository-version@"
          unpack="false"/>
 
-   <plugin
-         id="org.osgi.util.function"
-         download-size="0"
-         install-size="0"
-         version="@org.osgi.util.function-version@"
-         unpack="false"/>
-
-   <plugin
-         id="org.osgi.util.promise"
-         download-size="0"
-         install-size="0"
-         version="@org.osgi.util.promise-version@"
-         unpack="false"/>
-
 </feature>
