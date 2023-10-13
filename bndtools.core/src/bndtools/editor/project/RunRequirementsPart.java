@@ -159,6 +159,7 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	private void doResolve() {
 		IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 		BndEditor editor = (BndEditor) formPage.getEditor();
+		commit(false);
 		editor.resolveRunBundles(new NullProgressMonitor(), false);
 	}
 
