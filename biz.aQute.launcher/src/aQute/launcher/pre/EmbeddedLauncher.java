@@ -8,7 +8,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -206,19 +205,20 @@ public class EmbeddedLauncher {
 			System.exit(-1);
 		}
 
-		System.err.println("Extracting to " + dir);
+		Path base = dir.toPath();
 
-		URI toFile = dir.toURI();
+		System.err.println("Extracting to " + dir);
 
 		try (JarFile jar = new JarFile(source)) {
 			jar.stream()
 				.forEach(entry -> {
 					String path = entry.getName();
+					Path target = base.resolve(path)
+						.normalize();
 
-					// Make sure we do not copy outside our 'to' path
-
-					while (path.startsWith("/") || path.startsWith("."))
-						path = path.substring(1);
+					if (!target.startsWith(base))
+						throw new IllegalArgumentException(
+							"the zip file contains paths that escape the destination directory " + path);
 
 					String method;
 					switch (entry.getMethod()) {
@@ -235,8 +235,6 @@ public class EmbeddedLauncher {
 					}
 
 					long size = entry.getSize();
-					URI resolve = toFile.resolve(path);
-					Path target = new File(resolve).toPath();
 					System.out.printf("%s %5d %s%n", method, size, target);
 					if (entry.isDirectory()) {
 						try {
