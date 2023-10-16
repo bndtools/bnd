@@ -1,6 +1,7 @@
 package test.baseline;
 
 import static aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -64,6 +65,97 @@ public class BaselineTest {
 	protected void tearDown() throws Exception {
 		IO.close(workspace);
 		workspace = null;
+	}
+
+	public static class PrivateConstructorsAndFinal {
+		public class Normal {}
+
+		public class Private {
+			private Private() {}
+		}
+
+		public class PrivateMultiple {
+			private PrivateMultiple() {}
+
+			private PrivateMultiple(int a) {}
+
+			private PrivateMultiple(int a, int b) {}
+
+			private PrivateMultiple(int a, int b, int c) {}
+		}
+
+		public class ProtectedPrivate {
+			protected ProtectedPrivate(int x) {}
+		}
+
+		public final class PrivateFinal {
+			private PrivateFinal() {}
+		}
+
+		public final class Final {}
+
+	}
+
+	@Test
+	public void testTreatingPrivateConstructorsAsFinalClass() throws Exception {
+		DiffPluginImpl diff = new DiffPluginImpl();
+		diff.setIgnore("METHOD");
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setProperty("Export-Package", "test.baseline");
+			Jar build = b.build();
+			assertThat(b.check()).isTrue();
+			Tree tree = diff.tree(b);
+			Tree pack = tree.get("<api>")
+				.get("test.baseline");
+			Tree Normal = pack.get("test.baseline.BaselineTest$PrivateConstructorsAndFinal$Normal");
+			Tree Final = pack.get("test.baseline.BaselineTest$PrivateConstructorsAndFinal$Final");
+			Tree PrivateFinal = pack.get("test.baseline.BaselineTest$PrivateConstructorsAndFinal$PrivateFinal");
+			Tree Private = pack.get("test.baseline.BaselineTest$PrivateConstructorsAndFinal$Private");
+			Tree ProtectedPrivate = pack.get("test.baseline.BaselineTest$PrivateConstructorsAndFinal$ProtectedPrivate");
+			Tree PrivateMultiple = pack.get("test.baseline.BaselineTest$PrivateConstructorsAndFinal$PrivateMultiple");
+
+			assertThat(Normal).isNotNull();
+			assertThat(Final).isNotNull();
+			assertThat(PrivateFinal).isNotNull();
+			assertThat(Private).isNotNull();
+			assertThat(ProtectedPrivate).isNotNull();
+			assertThat(PrivateMultiple).isNotNull();
+
+			assertThat(Normal.get("final")).isNull();
+			assertThat(PrivateFinal.get("final")).isNotNull();
+			assertThat(Private.get("final")).isNotNull();
+			assertThat(Final.get("final")).isNotNull();
+			assertThat(ProtectedPrivate.get("final")).isNull();
+			assertThat(PrivateMultiple.get("final")).isNotNull();
+
+			assertThat(Normal.diff(Private)
+				.getDelta()).isEqualTo(Delta.MINOR);
+			assertThat(Private.diff(Normal)
+				.getDelta()).isEqualTo(Delta.MAJOR);
+
+			assertThat(Private.diff(Final)
+				.get("final")
+				.getDelta()).isEqualTo(Delta.UNCHANGED);
+
+			assertThat(Final.diff(Private)
+				.get("final")
+				.getDelta()).isEqualTo(Delta.UNCHANGED);
+
+			assertThat(PrivateFinal.diff(Private)
+				.get("final")
+				.getDelta()).isEqualTo(Delta.UNCHANGED);
+			assertThat(Private.diff(Final)
+				.get("final")
+				.getDelta()).isEqualTo(Delta.UNCHANGED);
+
+			assertThat(ProtectedPrivate.diff(Final)
+				.get("final")
+				.getDelta()).isEqualTo(Delta.REMOVED);
+			assertThat(Final.diff(ProtectedPrivate)
+				.get("final")
+				.getDelta()).isEqualTo(Delta.ADDED);
+		}
 	}
 
 	/**
