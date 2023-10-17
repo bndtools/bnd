@@ -51,7 +51,7 @@ import aQute.libg.reporter.ReporterAdapter;
 @SuppressWarnings("resource")
 public class BaselineTest {
 
-	Workspace	workspace;
+	Workspace workspace;
 
 	private Workspace getWorkspace(File tmp) throws Exception {
 		if (workspace != null)
@@ -129,32 +129,29 @@ public class BaselineTest {
 			assertThat(ProtectedPrivate.get("final")).isNull();
 			assertThat(PrivateMultiple.get("final")).isNotNull();
 
-			assertThat(Normal.diff(Private)
-				.getDelta()).isEqualTo(Delta.MINOR);
-			assertThat(Private.diff(Normal)
-				.getDelta()).isEqualTo(Delta.MAJOR);
-
-			assertThat(Private.diff(Final)
-				.get("final")
-				.getDelta()).isEqualTo(Delta.UNCHANGED);
-
-			assertThat(Final.diff(Private)
-				.get("final")
-				.getDelta()).isEqualTo(Delta.UNCHANGED);
-
-			assertThat(PrivateFinal.diff(Private)
-				.get("final")
-				.getDelta()).isEqualTo(Delta.UNCHANGED);
-			assertThat(Private.diff(Final)
-				.get("final")
-				.getDelta()).isEqualTo(Delta.UNCHANGED);
-
-			assertThat(ProtectedPrivate.diff(Final)
-				.get("final")
-				.getDelta()).isEqualTo(Delta.REMOVED);
-			assertThat(Final.diff(ProtectedPrivate)
-				.get("final")
-				.getDelta()).isEqualTo(Delta.ADDED);
+			Tree[] ORDER = new Tree[] {
+				Normal, Final, PrivateFinal,Private
+			};
+			Delta[][] deltas = new Delta[][] {
+				{
+					Delta.UNCHANGED, Delta.MAJOR, Delta.MAJOR, Delta.MAJOR
+				}, {
+					Delta.MINOR, Delta.UNCHANGED, Delta.MAJOR, Delta.MAJOR
+				}, {
+					Delta.MINOR, Delta.MINOR, Delta.UNCHANGED, Delta.UNCHANGED
+				}, {
+					Delta.MINOR, Delta.MINOR, Delta.UNCHANGED, Delta.UNCHANGED
+				},
+			};
+			for (int y = 0; y < ORDER.length; y++) {
+				for (int x = 0; x < ORDER.length; x++) {
+					Tree older = ORDER[y];
+					Tree newer = ORDER[x];
+					System.out.println(newer.diff(older));
+					assertThat(newer.diff(older)
+						.getDelta()).isEqualTo(deltas[y][x]);
+				}
+			}
 		}
 	}
 
