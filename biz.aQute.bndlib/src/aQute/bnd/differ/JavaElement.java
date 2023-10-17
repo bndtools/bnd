@@ -271,6 +271,7 @@ class JavaElement {
 		Instructions matchers = providerMatcher.get(name.getPackageRef());
 		boolean p = matchers != null && matchers.matches(shortName);
 		final AtomicBoolean provider = new AtomicBoolean(p);
+		final AtomicBoolean isExtendable = new AtomicBoolean(false);
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			boolean			memberEnd;
@@ -286,6 +287,9 @@ class JavaElement {
 				if ((defined.isProtected() || defined.isPublic())) {
 					last = defined;
 					methods.add(defined);
+					if (defined.isConstructor()) {
+						isExtendable.set(true);
+					}
 				} else {
 					last = null;
 				}
@@ -563,6 +567,10 @@ class JavaElement {
 			remove = MAJOR;
 		}
 
+		if (clazz.isFinal()) {
+			isExtendable.set(false);
+		}
+
 		for (MethodDef m : methods) {
 			if (m.isSynthetic()) { // Ignore synthetic methods
 				continue;
@@ -594,7 +602,7 @@ class JavaElement {
 			// override a method from a super class that was not
 			// final. So we actually remove the final for methods
 			// in a final class.
-			if (clazz.isFinal())
+			if (!isExtendable.get())
 				children.remove(FINAL);
 
 			children.add(getReturn(m.getType()));
@@ -651,6 +659,9 @@ class JavaElement {
 
 		Integer inner_access_flags = innerAccess.get(clazz.getClassName());
 		int access_flags = (inner_access_flags != null) ? inner_access_flags.intValue() : clazz.getAccess();
+		if (!isExtendable.get()) {
+			access_flags |= Modifier.FINAL;
+		}
 		access(members, access_flags, clazz.isDeprecated(), provider.get());
 
 		// And make the result
