@@ -57,7 +57,7 @@ jobs:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
     - name: Set up Java ${{ matrix.java }}
       uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
       with:
@@ -99,7 +99,7 @@ jobs:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
     - name: Set up Java 8 + ${{ matrix.java }}
       uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
       with:
