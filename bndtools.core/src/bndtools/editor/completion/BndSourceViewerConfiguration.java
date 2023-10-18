@@ -24,6 +24,7 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.RGB;
 
 public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
@@ -34,6 +35,7 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 	Token					T_INSTRUCTION;
 	Token					T_OPTION;
 	Token					T_DIRECTIVE;
+	Token					T_KEY;
 
 	static final String		SINGLELINE_COMMENT_TYPE	= "___slc";
 	static Properties		syntax					= null;
@@ -45,8 +47,9 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 	public BndSourceViewerConfiguration(IBndEditor bndEditor, IColorManager colorManager) {
 		this.bndEditor = bndEditor;
 		T_DEFAULT = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_DEFAULT)));
-		T_MACRO = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.TASK_TAG), null, SWT.BOLD));
-		T_ERROR = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_KEYWORD), null, SWT.BOLD));
+		T_KEY = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVADOC_LINK), null, SWT.NONE));
+		T_ERROR = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_KEYWORD),
+			colorManager.getColor(new RGB(255, 0, 0)), SWT.BOLD));
 		T_COMMENT = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_SINGLE_LINE_COMMENT)));
 		T_INSTRUCTION = new Token(
 			new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVADOC_KEYWORD), null, SWT.BOLD));

@@ -1,105 +1,138 @@
 package bndtools.editor.completion;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.jface.text.rules.WhitespaceRule;
 
 import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Constants;
 
 public class BndScanner extends RuleBasedScanner {
-	BndSourceViewerConfiguration bsvc;
+	BndSourceViewerConfiguration	bsvc;
+	final Set<String>				instructions;
+	final Set<String>				directives	= new HashSet<>();
 
 	public BndScanner(BndSourceViewerConfiguration manager) {
 		bsvc = manager;
+		instructions = Syntax.HELP.values()
+			.stream()
+			.map(Syntax::getHeader)
+			.collect(Collectors.toSet());
+
+		directives.addAll(Constants.directives);
+		directives.addAll(Constants.COMPONENT_DIRECTIVES);
+		directives.addAll(Constants.COMPONENT_DIRECTIVES_1_1);
+		directives.addAll(Constants.COMPONENT_DIRECTIVES_1_2);
+
 		IRule[] rules = new IRule[] {
-			new WhitespaceRule(c -> (c == ' ' || c == '\t' || c == '\n' || c == '\r')), new BndWordRule(),
-			new MacroRule(bsvc.T_MACRO), new EndOfLineRule("#", bsvc.T_COMMENT),
-			new BndEndOfLineRule("\\ ", bsvc.T_ERROR), new BndEndOfLineRule("\\\t", bsvc.T_ERROR),
+			this::comment, //
+			this::keyword, //
+			this::error,
 		};
 
 		setRules(rules);
 		setDefaultReturnToken(bsvc.T_DEFAULT);
 	}
 
-	class BndWordRule implements IRule {
-
-		Map<String, IToken> keyWords = new HashMap<>();
-
-		public BndWordRule() {
-			Set<String> instructions = Syntax.HELP.values()
-				.stream()
-				.map(Syntax::getHeader)
-				.collect(Collectors.toSet());
-			addWords(instructions, bsvc.T_INSTRUCTION);
-			addWords(Constants.options, bsvc.T_OPTION);
-			addWords(Constants.directives, bsvc.T_DIRECTIVE);
-			addWords(Constants.COMPONENT_DIRECTIVES, bsvc.T_DIRECTIVE);
-			addWords(Constants.COMPONENT_DIRECTIVES_1_1, bsvc.T_DIRECTIVE);
-			addWords(Constants.COMPONENT_DIRECTIVES_1_2, bsvc.T_DIRECTIVE);
-		}
-
-		private boolean isWordStart(char c) {
-			return Character.isJavaIdentifierStart(c);
-		}
-
-		private boolean isWordPart(char c) {
-			return Character.isJavaIdentifierPart(c) || c == '-';
-		}
-
-		@Override
-		public IToken evaluate(ICharacterScanner scanner) {
-			StringBuffer sb = new StringBuffer();
-
-			int c = scanner.read();
-			if (isWordStart((char) c) || c == '-') {
-				do {
-					sb.append((char) c);
-					c = scanner.read();
-				} while (c != ICharacterScanner.EOF && isWordPart((char) c));
-				scanner.unread();
-
-				IToken token = keyWords.get(sb.toString());
-				if (token != null)
-					return token;
-				return bsvc.T_DEFAULT;
-			}
-			scanner.unread();
+	IToken comment(ICharacterScanner scanner) {
+		if (scanner.getColumn() != 0)
 			return Token.UNDEFINED;
 
-		}
+		int c;
+		int n = 0;
+		while (true) {
+			do {
+				c = scanner.read();
+				n++;
+			} while ((c == ' ' || c == '\t'));
 
-		private void addWords(Collection<String> words, IToken token) {
-			for (String word : words) {
-				keyWords.put(word, token);
+			if (c == '#' || c == '!') {
+				while (true) {
+					c = scanner.read();
+					n++;
+
+					if (c == '\n' || c == '\r' || c == ICharacterScanner.EOF)
+						return bsvc.T_COMMENT;
+				}
+			} else {
+				while (n-- > 0)
+					scanner.unread();
+				return Token.UNDEFINED;
 			}
 		}
 	}
 
-	class BndEndOfLineRule extends EndOfLineRule {
+	IToken keyword(ICharacterScanner scanner) {
+		if (scanner.getColumn() != 0)
+			return Token.UNDEFINED;
 
-		public BndEndOfLineRule(String startSequence, IToken token) {
-			super(startSequence, token);
-		}
+		int c;
+		int n = 0;
+		c = scanner.read();
+		n++;
 
-		@Override
-		protected boolean sequenceDetected(ICharacterScanner scanner, char[] sequence, boolean eofAllowed) {
+		StringBuilder sb = new StringBuilder();
+		while (!(c == ' ' || c == '\t' || c == ':' || c == '=' || c == ICharacterScanner.EOF)) {
 
-			boolean checkEof = eofAllowed;
-			if (BndScanner.this.fOffset < BndScanner.this.fDocument.getLength()) {
-				checkEof = false;
+			if (c == '\\') {
+				c = scanner.read();
+				n++;
+				if (c == ICharacterScanner.EOF) {
+					break;
+				}
 			}
-			return super.sequenceDetected(scanner, sequence, checkEof);
+
+			sb.append((char) c);
+			c = scanner.read();
+			n++;
 		}
+
+		if (sb.isEmpty()) {
+
+			while (n-- > 0)
+				scanner.unread();
+
+			return Token.UNDEFINED;
+		}
+
+		scanner.unread();
+
+		String key = sb.toString();
+
+		if (Constants.options.contains(key)) {
+			return bsvc.T_OPTION;
+		}
+
+		if (instructions.contains(key)) {
+			return bsvc.T_INSTRUCTION;
+		}
+
+		return bsvc.T_KEY;
 	}
+
+	IToken error(ICharacterScanner scanner) {
+		int c = scanner.read();
+		int n = 1;
+		if (c == '\\') {
+			c = scanner.read();
+			n++;
+			if (c == ' ' || c == '\t') {
+				while (c == ' ' || c == '\t') {
+					c = scanner.read();
+				}
+				scanner.unread();
+				return bsvc.T_ERROR;
+			}
+		}
+		while (n-- > 0)
+			scanner.unread();
+		return Token.UNDEFINED;
+	}
+
 }
