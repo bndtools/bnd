@@ -41,8 +41,10 @@ public class RepositoryBundleUtils {
 				// where only a Major.minor version should be inserted e.g.
 				// version='1.24'
 
-				String majorMinor = bundleVersion.getVersion() + "." + bundleVersion.getVersion()
-					.getMinor();
+				String majorMinor = bundleVersion.getVersion()
+					.getMajor() + "."
+					+ bundleVersion.getVersion()
+						.getMinor();
 				attribs.put(Constants.VERSION_ATTRIBUTE, majorMinor);
 
 			} else {
