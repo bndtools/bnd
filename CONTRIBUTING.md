@@ -15,6 +15,8 @@ The only thing you need to build Bnd/Bndtools is Java.
 We require at least Java 8.
 We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
 
+Some more instructions how to get started with bndtools development in Eclipse can be found [here](https://bndtools.org/development.html).
+
 - `./gradlew :build` - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
 - `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
 - `./mvnw install` - Assembles and tests the Bnd Maven plugins.
