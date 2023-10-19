@@ -35,41 +35,48 @@ public class RepositoryBundleUtils {
 			attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
 		else {
 
-			StringBuilder builder = new StringBuilder();
+			if (phase == DependencyPhase.Build) {
+				// this gets executed when dragging a repo-version to
+				// -buildpath in a bnd.bnd file
+				// where only a Major.minor version should be inserted e.g.
+				// version='1.24'
 
-			builder.append(bundleVersion.getVersion()
-				.getMajor());
-			builder.append('.')
-				.append(bundleVersion.getVersion()
-					.getMinor());
+				String majorMinor = bundleVersion.getVersion() + "." + bundleVersion.getVersion()
+					.getMinor();
+				attribs.put(Constants.VERSION_ATTRIBUTE, majorMinor);
 
-			// TODO why is this check?
-			if (phase != DependencyPhase.Build)
-				builder.append('.')
-					.append(bundleVersion.getVersion()
-						.getMicro());
+			} else {
+				// #5816
+				// this code gets executed in the .bndrun editor
+				// when adding a version (e.g by drag&drop) to the -runbundles
+				// panel
+				// create a range from the given version up to the next major
+				// as in
+				// version='[1.2.3,2.0.0)'
+				// instead of version='1.2.3' because the latter is actually an
+				// open
+				// range meaning "1.2.3 and everything above" (see
+				// https://docs.osgi.org/specification/osgi.core/7.0.0/framework.module.html#d0e2221).
+				// This could surprise developers, as version='1.2.3' looks more
+				// like a exact version match.
+				// Thus we create a more limited range from the given version
+				// 1.2.3
+				// `up to the next major version
+				// this behavior is similar to what the resolver is inserting
+				// into
+				// the run bundles list.
+				String range = toVersionRangeUpToNextMajor(bundleVersion.getVersion()).toString();
+				attribs.put(Constants.VERSION_ATTRIBUTE, range);
+			}
 
-
-			// #5816 create a range from the given version up to the next major
-			// as in
-			// version='[1.2.3,2.0.0)'
-			// instead of version='1.2.3' because the latter is actually an open
-			// range meaning "1.2.3 and everything above" (see
-			// https://docs.osgi.org/specification/osgi.core/7.0.0/framework.module.html#d0e2221).
-			// This could surprise developers, as version='1.2.3' looks more
-			// like a exact version match.
-			// Thus we create a more limited range from the given version 1.2.3
-			// `up to the next major version
-			// this behavior is similar to what the resolver is inserting into
-			// the run bundles list.
-			Version l = new Version(builder.toString());
-			Version h = l.bumpMajor();
-			VersionRange vr = new VersionRange(true, l, h, false);
-			String range = vr.toString();
-
-			attribs.put(Constants.VERSION_ATTRIBUTE, range);
 		}
 		return new VersionedClause(bundleVersion.getParentBundle()
 			.getBsn(), attribs);
 	}
+
+	private static VersionRange toVersionRangeUpToNextMajor(Version l) {
+		Version h = l.bumpMajor();
+		return new VersionRange(true, l, h, false);
+	}
+
 }
