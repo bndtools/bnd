@@ -866,6 +866,15 @@ public class BndEditModel {
 		doSetObject(Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
 	}
 
+	public List<VersionedClause> getRunBundlesDecorator() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNBUNDLES_DECORATOR, clauseListConverter);
+	}
+
+	public void setRunBundlesDecorator(List<? extends VersionedClause> paths) {
+		List<VersionedClause> oldValue = getRunBundlesDecorator();
+		doSetObject(aQute.bnd.osgi.Constants.RUNBUNDLES_DECORATOR, oldValue, paths, headerClauseListFormatter);
+	}
+
 	public boolean isIncludedPackage(String packageName) {
 		final Collection<String> privatePackages = getPrivatePackages();
 		if (privatePackages != null) {
