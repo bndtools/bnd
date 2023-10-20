@@ -1,0 +1,122 @@
+# This run file contains all the cross-platform bundle and settings to run Bndtools.
+
+# Do not run this, use the platform-specific bndrun files (which "-include" this)
+
+-runfw: org.eclipse.osgi;version='[3.18.500.v20230801-1826,3.18.500.v20230801-1826]'
+
+-runvm: \
+  -Xmx2g, \
+  -ea
+
+-runpath: \
+	ch.qos.logback.classic,\
+	ch.qos.logback.core,\
+	org.apache.felix.logback,\
+	slf4j.api
+
+-runproperties: \
+	eclipse.application=org.eclipse.ui.ide.workbench,\
+	eclipse.consoleLog=,\
+	eclipse.home.location=${fileuri;${.}/../bndtools.test/workspace},\
+	eclipse.launcher=bndtools.core,\
+	eclipse.product=org.eclipse.sdk.ide,\
+	osgi.console=,\
+	osgi.instance.area.default=../bndtools.test/workspace,\
+	org.osgi.framework.bootdelegation='javax.net,javax.management,javax.net.ssl',\
+	logback.configurationFile=${fileuri;${.}/logback.xml}
+
+# Keep sorted so that we can diff
+-runrequires: \
+	bnd.identity;id='biz.aQute.bnd.embedded-repo',\
+	bnd.identity;id='bndtools.api',\
+	bnd.identity;id='bndtools.builder',\
+	bnd.identity;id='bndtools.core',\
+	bnd.identity;id='bndtools.core.services',\
+	bnd.identity;id='bndtools.jareditor',\
+	bnd.identity;id='bndtools.m2e',\
+	bnd.identity;id='bndtools.m2e.debug.fragment',\
+	bnd.identity;id='bndtools.pde',\
+	bnd.identity;id='bndtools.release',\
+	bnd.identity;id='com.google.guava',\
+	bnd.identity;id='javax.annotation',\
+	bnd.identity;id='org.apache.ant',\
+	bnd.identity;id='org.apache.felix.gogo.command',\
+	bnd.identity;id='org.apache.felix.gogo.runtime',\
+	bnd.identity;id='org.apache.felix.gogo.shell',\
+	bnd.identity;id='org.bndtools.applaunch',\
+	bnd.identity;id='org.bndtools.headless.build.manager',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.gradle',\
+	bnd.identity;id='org.bndtools.launch',\
+	bnd.identity;id='org.bndtools.remoteinstall',\
+	bnd.identity;id='org.bndtools.templates.template',\
+	bnd.identity;id='org.bndtools.templating',\
+	bnd.identity;id='org.bndtools.templating.gitrepo',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.manager',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.plugin.git',\
+	bnd.identity;id='org.eclipse.ant.core',\
+	bnd.identity;id='org.eclipse.ant.ui',\
+	bnd.identity;id='org.eclipse.emf.ant',\
+	bnd.identity;id='org.eclipse.emf.codegen.ecore.ui',\
+	bnd.identity;id='org.eclipse.emf.codegen.ui',\
+	bnd.identity;id='org.eclipse.emf.common.ui',\
+	bnd.identity;id='org.eclipse.emf.databinding',\
+	bnd.identity;id='org.eclipse.emf.databinding.edit',\
+	bnd.identity;id='org.eclipse.emf.edit.ui',\
+	bnd.identity;id='org.eclipse.emf.exporter',\
+	bnd.identity;id='org.eclipse.emf.importer',\
+	bnd.identity;id='org.eclipse.emf.importer.ecore',\
+	bnd.identity;id='org.eclipse.emf.importer.java',\
+	bnd.identity;id='org.eclipse.core.databinding.beans',\
+	bnd.identity;id='org.eclipse.core.filesystem',\
+	bnd.identity;id='org.eclipse.e4.tools.services',\
+	bnd.identity;id='org.eclipse.egit.ui',\
+	bnd.identity;id='org.eclipse.equinox.console',\
+	bnd.identity;id='org.eclipse.equinox.event',\
+	bnd.identity;id='org.eclipse.jdt.annotation',\
+	bnd.identity;id='org.eclipse.m2e.binaryproject.ui',\
+	bnd.identity;id='org.eclipse.m2e.discovery',\
+	bnd.identity;id='org.eclipse.m2e.editor',\
+	bnd.identity;id='org.eclipse.m2e.jdt.ui',\
+	bnd.identity;id='org.eclipse.m2e.profiles.core',\
+	bnd.identity;id='org.eclipse.m2e.profiles.ui',\
+	bnd.identity;id='org.eclipse.m2e.refactoring',\
+	bnd.identity;id='org.eclipse.m2e.scm',\
+	bnd.identity;id='org.eclipse.m2e.sourcelookup.ui',\
+	bnd.identity;id='org.eclipse.osgi.compatibility.state',\
+	bnd.identity;id='org.eclipse.pde.build',\
+	bnd.identity;id='org.eclipse.pde.core',\
+	bnd.identity;id='org.eclipse.pde.genericeditor.extension',\
+	bnd.identity;id='org.eclipse.pde.launching',\
+	bnd.identity;id='org.eclipse.pde.runtime',\
+	bnd.identity;id='org.eclipse.pde.ua.core',\
+	bnd.identity;id='org.eclipse.pde.ua.ui',\
+	bnd.identity;id='org.eclipse.pde.ui',\
+	bnd.identity;id='org.eclipse.sdk',\
+	bnd.identity;id='org.eclipse.ui.browser',\
+	bnd.identity;id='org.eclipse.ui.console',\
+	bnd.identity;id='org.eclipse.ui.ide',\
+	bnd.identity;id='org.eclipse.ui.ide.application',\
+	bnd.identity;id='junit-platform-commons';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-platform-engine';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}'
+
+-runblacklist: \
+	bnd.identity;id='biz.aQute.bnd.annotation',\
+	bnd.identity;id='biz.aQute.bnd.transform',\
+	bnd.identity;id='biz.aQute.junit',\
+	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
+	bnd.identity;id='osgi.*',\
+	bnd.identity;id='org.osgi.*.annotations'
+
+-runrepos: \
+	"Workspace",\
+	"Maven Central",\
+	"Eclipse 4.29 (2023-09)"
+
+-runee: JavaSE-17
+
+# This will help us keep -runbundles sorted
+-runstartlevel: \
+    order=sortbynameversion,\
+    begin=-1
