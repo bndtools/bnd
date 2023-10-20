@@ -241,6 +241,7 @@ public interface Constants {
 	String		RUNPROVIDEDCAPABILITIES						= "-runprovidedcapabilities";
 
 	String		RUNBUNDLES									= "-runbundles";
+	String		RUNBUNDLES_DECORATOR						= RUNBUNDLES + "+";
 	String		RUNBUNDLES_STARTLEVEL_ATTRIBUTE				= "startlevel";
 
 	String		RUNSTARTLEVEL								= "-runstartlevel";
