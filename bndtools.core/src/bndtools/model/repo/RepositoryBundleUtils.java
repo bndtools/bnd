@@ -9,19 +9,32 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 
 public class RepositoryBundleUtils {
-	private static final String VERSION_LATEST = "latest";
 
+	/**
+	 * Converts a RepositoryBundle into a versionioned clause. There are 2
+	 * cases: a) If the bundle comes from a workspace repository, then
+	 * bsn;version=snapshot is returned. b) Otherwise only the bsn without a
+	 * version is returned.
+	 *
+	 * @param bundle
+	 * @return a version as described above
+	 */
 	public static VersionedClause convertRepoBundle(RepositoryBundle bundle) {
 		Attrs attribs = new Attrs();
 		if (RepoUtils.isWorkspaceRepo(bundle.getRepo())) {
-			attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
+			attribs.put(Constants.VERSION_ATTRIBUTE, Constants.VERSION_ATTR_SNAPSHOT);
 		}
 		return new VersionedClause(bundle.getBsn(), attribs);
 	}
 
 	/**
 	 * Converts a RepositoryBundleVersion into a version or version range. e.g.
-	 * version='latest' or version='[1.2.3,1.2.4)'.
+	 * version='snapshot' or version='[1.2.3,1.2.4)'. version=snapshot means the
+	 * Version build in your workspace. We use version=snapshot instead of
+	 * version=latest, because version=latest is the highest version found.
+	 * Usually the workspace holds the latest Version. It is possible though,
+	 * that you may have a newer Version of one of the projects in your
+	 * workspace in one of your repositories.
 	 *
 	 * @param bundleVersion
 	 * @param phase
@@ -32,7 +45,7 @@ public class RepositoryBundleUtils {
 		Attrs attribs = new Attrs();
 		if (RepoUtils.isWorkspaceRepo(bundleVersion.getParentBundle()
 			.getRepo()))
-			attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
+			attribs.put(Constants.VERSION_ATTRIBUTE, Constants.VERSION_ATTR_SNAPSHOT);
 		else {
 
 			if (phase == DependencyPhase.Build) {
