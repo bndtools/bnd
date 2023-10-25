@@ -21,7 +21,7 @@ public class RepositoryBundleUtils {
 
 	/**
 	 * Converts a RepositoryBundleVersion into a version or version range. e.g.
-	 * version='latest' or version='[1.2.3,2.0.0)'.
+	 * version='latest' or version='[1.2.3,1.2.4)'.
 	 *
 	 * @param bundleVersion
 	 * @param phase
@@ -52,9 +52,9 @@ public class RepositoryBundleUtils {
 				// this code gets executed in the .bndrun editor
 				// when adding a version (e.g by drag&drop) to the -runbundles
 				// panel
-				// create a range from the given version up to the next major
+				// create a range from the given version up to the next micro
 				// as in
-				// version='[1.2.3,2.0.0)'
+				// version='[1.2.3,1.2.4)'
 				// instead of version='1.2.3' because the latter is actually an
 				// open
 				// range meaning "1.2.3 and everything above" (see
@@ -63,11 +63,11 @@ public class RepositoryBundleUtils {
 				// like a exact version match.
 				// Thus we create a more limited range from the given version
 				// 1.2.3
-				// `up to the next major version
+				// `up to the next micro version
 				// this behavior is similar to what the resolver is inserting
 				// into
 				// the run bundles list.
-				String range = toVersionRangeUpToNextMajor(bundleVersion.getVersion()).toString();
+				String range = toVersionRangeUpToNextMicro(bundleVersion.getVersion()).toString();
 				attribs.put(Constants.VERSION_ATTRIBUTE, range);
 			}
 
@@ -76,9 +76,10 @@ public class RepositoryBundleUtils {
 			.getBsn(), attribs);
 	}
 
-	private static VersionRange toVersionRangeUpToNextMajor(Version l) {
-		Version h = l.bumpMajor();
-		return new VersionRange(true, l, h, false);
+	private static VersionRange toVersionRangeUpToNextMicro(Version l) {
+		// bumpMicro
+		Version h = new Version(l.getMajor(), l.getMinor(), l.getMicro() + 1);
+		return new VersionRange(true, l.getWithoutQualifier(), h, false);
 	}
 
 }
