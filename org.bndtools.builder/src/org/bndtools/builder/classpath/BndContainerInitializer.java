@@ -329,6 +329,15 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			return null;
 		}
 
+		static boolean hasAttribute(IClasspathEntry cpe, IClasspathAttribute attr) {
+			for (IClasspathAttribute current : cpe.getExtraAttributes()) {
+				if (attr.equals(current)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		private void calculateContainersClasspath(String instruction, Collection<Container> containers)
 			throws CoreException {
 			boolean testattr = instruction.equals(Constants.TESTPATH) && Arrays.stream(javaProject.getRawClasspath())

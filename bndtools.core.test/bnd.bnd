@@ -79,7 +79,8 @@
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.event,\
 	org.osgi.service.repository;version=latest,\
-	osgi.annotation
+	osgi.annotation,\
+	org.osgi.framework
 
 # Don't run testOSGi in parallel with other tasks claiming launchpad
 -noparallel: launchpad;task="testOSGi"

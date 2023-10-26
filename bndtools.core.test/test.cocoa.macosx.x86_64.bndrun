@@ -76,6 +76,8 @@
 	org.apache.sshd.sftp;version='[2.8.0,2.8.1)',\
 	org.apache.xerces;version='[2.12.2,2.12.3)',\
 	org.apache.xml.resolver;version='[1.2.0,1.2.1)',\
+	org.apache.xmlgraphics;version='[2.6.0,2.6.1)',\
+	org.bndtools.builder;version=snapshot,\
 	org.bndtools.headless.build.manager;version=snapshot,\
 	org.bndtools.headless.build.plugin.ant;version=snapshot,\
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
@@ -299,14 +301,11 @@
 	org.osgi.service.prefs;version='[1.1.2,1.1.3)',\
 	org.osgi.service.provisioning;version='[1.2.0,1.2.1)',\
 	org.osgi.service.repository;version='[1.1.0,1.1.1)',\
-<<<<<<< HEAD
 	org.osgi.service.upnp;version='[1.2.1,1.2.2)',\
 	org.osgi.service.useradmin;version='[1.1.1,1.1.2)',\
 	org.osgi.service.wireadmin;version='[1.0.2,1.0.3)',\
-=======
-	org.osgi.test.common;version='[1.0.1,1.0.2)',\
-	org.osgi.test.junit5;version='[1.0.1,1.0.2)',\
->>>>>>> [builder] Change BndtoolsBuilder to facade pattern
+	org.osgi.test.common;version='[1.2.1,1.2.2)',\
+	org.osgi.test.junit5;version='[1.2.1,1.2.2)',\
 	org.osgi.util.function;version='[1.2.0,1.2.1)',\
 	org.osgi.util.measurement;version='[1.0.2,1.0.3)',\
 	org.osgi.util.position;version='[1.0.1,1.0.2)',\
