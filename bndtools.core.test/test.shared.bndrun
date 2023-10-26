@@ -3,6 +3,8 @@
 
 -tester: biz.aQute.tester.junit-platform
 
+-runvm: --add-modules=java.xml
+
 # Any references to local bundles (e.g. version=snapshot) must include a reference to the
 # project building the bundles in the bnd.bnd -dependon instruction to ensure the necessary
 # dependencies have already been built.
@@ -96,11 +98,11 @@
 # For debugging, extra trace output by the tester.
 -runproperties.debug: \
     tester.trace=true
-#-runrequires.debug: \
-#	bnd.identity;id='org.apache.felix.gogo.command',\
-#	bnd.identity;id='org.apache.felix.gogo.runtime',\
-#	bnd.identity;id='org.apache.felix.gogo.shell',\
-#	bnd.identity;id='org.eclipse.equinox.console'
+-runrequires.debug: \
+	bnd.identity;id='org.apache.felix.gogo.command',\
+	bnd.identity;id='org.apache.felix.gogo.runtime',\
+	bnd.identity;id='org.apache.felix.gogo.shell',\
+	bnd.identity;id='org.eclipse.equinox.console'
 
 
 # This directive should be uncommented when you are running in the CI environment
@@ -132,6 +134,8 @@
 -runstartlevel: \
     order=sortbynameversion,\
     begin=-1
+
+-runsystempackages: org.xml.sax.helpers,org.xml.sax
 
 # The service bundles need to be started before you attempt to start
 # the application itself, otherwise some of the necessary services (eg,

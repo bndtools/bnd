@@ -195,7 +195,7 @@ public class TaskUtils {
 
 	public static CompilationUnit buildAST(ICompilationUnit icu, boolean recoverBindings) {
 		// First create our AST
-		ASTParser parser = ASTParser.newParser(AST.JLS14);
+		ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
 		// Map<String, String> options = JavaCore.getOptions();
 		// // Need to set 1.5 or higher for the "import static" syntax to work.
 		// // Need to set 1.8 or higher to test parameterized type usages.

@@ -54,7 +54,8 @@ Import-Package: \
 
 -testpath:\
 	${junit},\
-	${mockito}
+	${mockito},\
+	org.osgi.service.prefs
 
 -privatepackage:\
 	org.bndtools.builder.classpath,\
