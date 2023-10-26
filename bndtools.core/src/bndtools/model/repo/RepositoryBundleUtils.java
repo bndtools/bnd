@@ -8,6 +8,11 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 
+/**
+ * Contains helpers for converting Version into Version range which is needed
+ * e.g when dragging / dropping / adding repobundles to -runbundles,
+ * -runrequires in the UI e.g. .bndrun editor.
+ */
 public class RepositoryBundleUtils {
 
 	/**
@@ -60,7 +65,18 @@ public class RepositoryBundleUtils {
 						.getMinor();
 				attribs.put(Constants.VERSION_ATTRIBUTE, majorMinor);
 
-			} else {
+			} else if (phase == DependencyPhase.Req) {
+				// this gets executed when dragging a repo-version to
+				// -runrequires section of a .bndrun file
+				// where a version range up to the next major should be inserted
+				// e.g. version='[1.2.3,2.0.0)'
+
+				String range = toVersionRangeUpToNextMajor(bundleVersion.getVersion()).toString();
+				attribs.put(Constants.VERSION_ATTRIBUTE, range);
+
+			}
+
+			else {
 				// #5816
 				// this code gets executed in the .bndrun editor
 				// when adding a version (e.g by drag&drop) to the -runbundles
@@ -89,9 +105,29 @@ public class RepositoryBundleUtils {
 			.getBsn(), attribs);
 	}
 
-	private static VersionRange toVersionRangeUpToNextMicro(Version l) {
+	/**
+	 * Creates VersionRange from the given version up to the next micro-version
+	 * e.g. 1.2.3 results in [1.2.3,1.2.4).
+	 *
+	 * @param l
+	 * @return the version range.
+	 */
+	public static VersionRange toVersionRangeUpToNextMicro(Version l) {
 		// bumpMicro
 		Version h = new Version(l.getMajor(), l.getMinor(), l.getMicro() + 1);
+		return new VersionRange(true, l.getWithoutQualifier(), h, false);
+	}
+
+	/**
+	 * Creates VersionRange from the given version up to the next major version
+	 * e.g. 1.2.3 results in [1.2.3,2.0.0).
+	 *
+	 * @param l
+	 * @return the version range.
+	 */
+	public static VersionRange toVersionRangeUpToNextMajor(Version l) {
+		// bumpMicro
+		Version h = l.bumpMajor();
 		return new VersionRange(true, l.getWithoutQualifier(), h, false);
 	}
 
