@@ -22,12 +22,22 @@ public class RepositoryBundleUtils {
 	 * version is returned.
 	 *
 	 * @param bundle
+	 * @param phase
 	 * @return a version as described above
 	 */
-	public static VersionedClause convertRepoBundle(RepositoryBundle bundle) {
+	public static VersionedClause convertRepoBundle(RepositoryBundle bundle, DependencyPhase phase) {
 		Attrs attribs = new Attrs();
 		if (RepoUtils.isWorkspaceRepo(bundle.getRepo())) {
-			attribs.put(Constants.VERSION_ATTRIBUTE, Constants.VERSION_ATTR_SNAPSHOT);
+
+			if (phase == DependencyPhase.Req) {
+
+				// -runrequires: For the generic bsn name -> no version.
+				attribs.put(Constants.VERSION_ATTRIBUTE, null);
+			} else {
+				// for -runbundles and -buildpath we want 'snapshot'
+				attribs.put(Constants.VERSION_ATTRIBUTE, Constants.VERSION_ATTR_SNAPSHOT);
+			}
+
 		}
 		return new VersionedClause(bundle.getBsn(), attribs);
 	}
@@ -49,8 +59,18 @@ public class RepositoryBundleUtils {
 		DependencyPhase phase) {
 		Attrs attribs = new Attrs();
 		if (RepoUtils.isWorkspaceRepo(bundleVersion.getParentBundle()
-			.getRepo()))
-			attribs.put(Constants.VERSION_ATTRIBUTE, Constants.VERSION_ATTR_SNAPSHOT);
+			.getRepo())) {
+
+			if (phase == DependencyPhase.Req) {
+
+				// -runrequires: For the generic bsn name -> no version.
+				attribs.put(Constants.VERSION_ATTRIBUTE, null);
+			} else {
+				// for -runbundles and -buildpath we want 'snapshot'
+				attribs.put(Constants.VERSION_ATTRIBUTE, Constants.VERSION_ATTR_SNAPSHOT);
+			}
+
+		}
 		else {
 
 			if (phase == DependencyPhase.Build) {

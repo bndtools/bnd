@@ -1,11 +1,13 @@
 package bndtools.wizards.repo;
 
 import static aQute.bnd.version.VersionRange.parseVersionRange;
+import static bndtools.model.repo.DependencyPhase.Build;
+import static bndtools.model.repo.DependencyPhase.Req;
+import static bndtools.model.repo.DependencyPhase.Run;
 import static bndtools.model.repo.RepositoryBundleUtils.convertRepoBundle;
 import static bndtools.model.repo.RepositoryBundleUtils.convertRepoBundleVersion;
 import static bndtools.model.repo.RepositoryBundleUtils.toVersionRangeUpToNextMajor;
 import static bndtools.model.repo.RepositoryBundleUtils.toVersionRangeUpToNextMicro;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -14,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
-import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 
@@ -49,19 +50,21 @@ public class RepoBundleVersionToRangeTest {
 		RepositoryBundle rb = new RepositoryBundle(nonWorkspaceRepo, "foo.bundle.bar");
 		RepositoryBundleVersion rbv = new RepositoryBundleVersion(rb, Version.valueOf("1.2.3"));
 
-		assertNull(convertRepoBundle(rb)
-			.getVersionRange());
+		// test repobundle (root node in the repo browser... just the bsn,
+		// without version)
+		assertEquals("foo.bundle.bar", convertRepoBundle(rb, Req).toString());
+		assertEquals("foo.bundle.bar", convertRepoBundle(rb, Run).toString());
+		assertEquals("foo.bundle.bar", convertRepoBundle(rb, Build).toString());
+
 
 		// adding to -runrequires
-		assertEquals("[1.2.3,2.0.0)", convertRepoBundleVersion(rbv, DependencyPhase.Req)
-			.getVersionRange());
+		assertEquals("foo.bundle.bar;version='[1.2.3,2.0.0)'", convertRepoBundleVersion(rbv, Req).toString());
 
 		// adding to -runbundles
-		assertEquals("[1.2.3,1.2.4)", convertRepoBundleVersion(rbv, DependencyPhase.Run)
-			.getVersionRange());
+		assertEquals("foo.bundle.bar;version='[1.2.3,1.2.4)'", convertRepoBundleVersion(rbv, Run).toString());
 
-		assertEquals("1.2", convertRepoBundleVersion(rbv, DependencyPhase.Build)
-			.getVersionRange());
+		// adding to -buildpath
+		assertEquals("foo.bundle.bar;version='1.2'", convertRepoBundleVersion(rbv, Build).toString());
 
 	}
 
@@ -72,19 +75,18 @@ public class RepoBundleVersionToRangeTest {
 		RepositoryBundle rb = new RepositoryBundle(wsrepo, "foo.bundle.bar");
 		RepositoryBundleVersion rbv = new RepositoryBundleVersion(rb, Version.valueOf("1.2.3"));
 
-		assertEquals("snapshot", convertRepoBundle(rb)
-			.getVersionRange());
+		assertEquals("foo.bundle.bar", convertRepoBundle(rb, Req).toString());
+		assertEquals("foo.bundle.bar;version=snapshot", convertRepoBundle(rb, Run).toString());
+		assertEquals("foo.bundle.bar;version=snapshot", convertRepoBundle(rb, Build).toString());
 
 		// adding to -runrequires
-		assertEquals("snapshot", convertRepoBundleVersion(rbv, DependencyPhase.Req)
-			.getVersionRange());
+		assertEquals("foo.bundle.bar", convertRepoBundleVersion(rbv, Req).toString());
 
 		// adding to -runbundles
-		assertEquals("snapshot", convertRepoBundleVersion(rbv, DependencyPhase.Run)
-			.getVersionRange());
+		assertEquals("foo.bundle.bar;version=snapshot", convertRepoBundleVersion(rbv, Run).toString());
 
-		assertEquals("snapshot", convertRepoBundleVersion(rbv, DependencyPhase.Build)
-			.getVersionRange());
+		// adding to -buildpath
+		assertEquals("foo.bundle.bar;version=snapshot", convertRepoBundleVersion(rbv, Build).toString());
 
 	}
 

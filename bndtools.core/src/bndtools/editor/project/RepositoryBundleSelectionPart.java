@@ -279,7 +279,8 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 				while (iterator.hasNext()) {
 					Object item = iterator.next();
 					if (item instanceof RepositoryBundle) {
-						VersionedClause newClause = RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item);
+						VersionedClause newClause = RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item,
+							phase);
 						adding.add(newClause);
 					} else if (item instanceof RepositoryBundleVersion) {
 						RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
