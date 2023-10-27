@@ -22,7 +22,7 @@
 	eclipse.product=org.eclipse.sdk.ide,\
 	osgi.console=,\
 	osgi.instance.area.default=../bndtools.test/workspace,\
-	org.osgi.framework.bootdelegation='javax.net,javax.management,javax.net.ssl',\
+	org.osgi.framework.bootdelegation='javax.net,javax.management,org.xml.sax,org.xml.sax.helpers,javax.xml,javax.xml.parsers',\
 	logback.configurationFile=${fileuri;${.}/logback.xml}
 
 # Keep sorted so that we can diff

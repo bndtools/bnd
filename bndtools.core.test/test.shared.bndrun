@@ -124,7 +124,7 @@
     osgi.console.enable.builtin=false,\
     tester.separatethread=true,\
     osgi.instance.area=${.}/generated/workspace,\
-	org.osgi.framework.bootdelegation='javax.net,javax.management',\
+	org.osgi.framework.bootdelegation='javax.net,javax.management,org.xml.sax,org.xml.sax.helpers,javax.xml,javax.xml.parsers',\
 	bndtools.core.test.dir=${.},\
 	logback.configurationFile=${fileuri;${.}/logback.xml}
 
