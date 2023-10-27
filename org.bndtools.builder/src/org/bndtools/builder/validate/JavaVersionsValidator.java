@@ -5,7 +5,9 @@ import java.util.Map;
 import org.bndtools.api.IProjectValidator;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Constants;
@@ -13,6 +15,9 @@ import bndtools.central.Central;
 
 @Component
 public class JavaVersionsValidator implements IProjectValidator {
+	@Activate
+	public JavaVersionsValidator(@Reference
+	Central notused) {}
 
 	@Override
 	public void validateProject(Project model) throws Exception {

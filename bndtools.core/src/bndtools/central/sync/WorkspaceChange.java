@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -19,16 +18,18 @@ import aQute.bnd.service.RepositoryPlugin;
 
 @Component
 public class WorkspaceChange {
-	final static IWorkspace	workspace	= ResourcesPlugin.getWorkspace();
+	final IWorkspace	workspace;
+	final Workspace		ws;
 
-	@Reference
-	Workspace				ws;
-
-	boolean					first		= true;
-	volatile boolean		cancel		= false;
+	boolean				first	= true;
+	volatile boolean	cancel	= false;
 
 	@Activate
-	void activate() {
+	public WorkspaceChange(@Reference
+	IWorkspace workspace, @Reference
+	Workspace ws) {
+		this.workspace = workspace;
+		this.ws = ws;
 		ws.on("workspace-changes")
 			.initial(this::init)
 			.repositoriesReady(this::done);

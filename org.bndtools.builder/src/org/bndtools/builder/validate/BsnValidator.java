@@ -4,7 +4,9 @@ import java.io.File;
 
 import org.bndtools.api.IValidator;
 import org.eclipse.core.runtime.IStatus;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
@@ -15,6 +17,14 @@ import bndtools.central.Central;
 
 @Component
 public class BsnValidator implements IValidator {
+
+	final Central central;
+
+	@Activate
+	public BsnValidator(@Reference
+	Central central) {
+		this.central = central;
+	}
 
 	@Override
 	public IStatus validate(Builder builder) throws Exception {

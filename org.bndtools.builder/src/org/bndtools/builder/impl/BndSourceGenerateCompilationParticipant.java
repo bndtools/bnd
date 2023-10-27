@@ -7,9 +7,12 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.compiler.CompilationParticipant;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -25,6 +28,10 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 	private static final ILogger	logger				= Logger
 		.getLogger(BndSourceGenerateCompilationParticipant.class);
 	public static final String		MARKER_BND_GENERATE	= "bndtools.builder.bndgenerate";
+
+	@Activate
+	public BndSourceGenerateCompilationParticipant(@Reference
+	IWorkspace notused) {}
 
 	@Override
 	public boolean isActive(IJavaProject javaProject) {

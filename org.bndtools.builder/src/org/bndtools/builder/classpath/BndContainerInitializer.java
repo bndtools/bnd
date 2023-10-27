@@ -40,7 +40,9 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
@@ -69,7 +71,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		.getLogger(BndContainerInitializer.class);
 	private static final ClasspathContainerSerializationHelper<BndContainer>	serializationHelper	= new ClasspathContainerSerializationHelper<>();
 
-	public BndContainerInitializer() {
+	@Activate
+	public BndContainerInitializer(@Reference
+	Central central) {
 		super();
 		Central.onCnfWorkspace(workspace -> Central.getInstance()
 			.addModelListener(BndContainerInitializer.this));
@@ -277,26 +281,26 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		static void setClasspathContainer(IJavaProject javaProject, BndContainer container) throws JavaModelException {
 			BndPreferences prefs = new BndPreferences();
 			// if (prefs.getBuildLogging() == BuildLoggerConstants.LOG_FULL) {
-				StringBuilder sb = new StringBuilder();
-				sb.append(container.getDescription())
-					.append(" for ")
-					.append(javaProject.getProject()
-						.getName())
-					.append("\n\n=== Compile Classpath ===");
-				for (IClasspathEntry cpe : container.getClasspathEntries()) {
-					sb.append("\n--- ")
-						.append(cpe);
-				}
-				sb.append("\n\n=== Runtime Classpath ===");
-				for (IRuntimeClasspathEntry cpe : container.getRuntimeClasspathEntries()) {
-					sb.append("\n--- ")
-						.append(cpe);
-				}
-				String msg = sb.append("\n")
-					.toString();
-				// logger.logInfo(msg, null);
-				consoleLog.debug(msg);
-				// }
+			StringBuilder sb = new StringBuilder();
+			sb.append(container.getDescription())
+				.append(" for ")
+				.append(javaProject.getProject()
+					.getName())
+				.append("\n\n=== Compile Classpath ===");
+			for (IClasspathEntry cpe : container.getClasspathEntries()) {
+				sb.append("\n--- ")
+					.append(cpe);
+			}
+			sb.append("\n\n=== Runtime Classpath ===");
+			for (IRuntimeClasspathEntry cpe : container.getRuntimeClasspathEntries()) {
+				sb.append("\n--- ")
+					.append(cpe);
+			}
+			String msg = sb.append("\n")
+				.toString();
+			// logger.logInfo(msg, null);
+			consoleLog.debug(msg);
+			// }
 
 			JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
 				javaProject

@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
@@ -44,25 +43,28 @@ import bndtools.central.Central;
  */
 @Component(enabled = false)
 public class SynchronizeWorkspaceWithEclipse {
-	static IWorkspace			eclipse			= ResourcesPlugin.getWorkspace();
-	final static IWorkspaceRoot	root			= eclipse.getRoot();
+	final IWorkspace		eclipse;
+	final IWorkspaceRoot	root;
+	final Workspace			workspace;
 	// This restricted API warning can be ignored because the constant
 	// is resolved at compile time.
 	@SuppressWarnings("restriction")
-	final static String			BNDTOOLS_NATURE	= bndtools.Plugin.BNDTOOLS_NATURE;
-	final TriggerRepeat			lock			= new TriggerRepeat();
-	ScheduledFuture<?>			schedule;
-	long						lastModified	= -1;
-	FileWatcher					watcher;
-	File						dir;
-	boolean						macos;
-	OnWorkspace					event;
-
-	@Reference
-	Workspace					workspace;
+	final static String		BNDTOOLS_NATURE	= bndtools.Plugin.BNDTOOLS_NATURE;
+	final TriggerRepeat		lock			= new TriggerRepeat();
+	ScheduledFuture<?>		schedule;
+	long					lastModified	= -1;
+	FileWatcher				watcher;
+	File					dir;
+	boolean					macos;
+	OnWorkspace				event;
 
 	@Activate
-	void activate() throws IOException {
+	public SynchronizeWorkspaceWithEclipse(@Reference
+	IWorkspace eclipse, @Reference
+	Workspace workspace) throws IOException {
+		this.eclipse = eclipse;
+		this.workspace = workspace;
+		this.root = eclipse.getRoot();
 		schedule = Processor.getScheduledExecutor()
 			.scheduleAtFixedRate(this::check, 1000, 300, TimeUnit.MILLISECONDS);
 

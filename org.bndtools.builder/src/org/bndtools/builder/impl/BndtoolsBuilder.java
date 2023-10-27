@@ -26,6 +26,7 @@ import org.bndtools.builder.handlers.component.ComponentMarker;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -39,6 +40,7 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
@@ -95,6 +97,10 @@ public class BndtoolsBuilder extends ProjectBuilderDelegate {
 
 	@Reference
 	volatile List<IProjectValidator>	projectValidators;
+
+	@Activate
+	public BndtoolsBuilder(@Reference
+	IWorkspace notused) {}
 
 	void validate(Project model) throws Exception {
 		// Cache reference as it is volatile

@@ -18,7 +18,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Constants;
@@ -33,6 +35,10 @@ import bndtools.central.Central;
 @Component
 public class ProjectPathsValidator implements IProjectValidator {
 	final static IPath JRE_CONTAINER = new Path("org.eclipse.jdt.launching.JRE_CONTAINER");
+
+	@Activate
+	public ProjectPathsValidator(@Reference
+	Central notused) {}
 
 	/*
 	 * The parts of the test, needed to know what we missed
