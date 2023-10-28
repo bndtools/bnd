@@ -28,7 +28,6 @@ env:
     -Daether.connector.http.reuseConnections=false
     -Daether.connector.http.connectionMaxTtl=25
     -Daether.connector.connectTimeout=120000
-  BNDTOOLS_CORE_TEST_NOJUNITOSGI: true # This test is very flaky on CI
 
 defaults:
   run:
