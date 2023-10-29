@@ -2,6 +2,7 @@ package bndtools.editor.pages;
 
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -26,6 +27,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ImportPattern;
+import bndtools.editor.common.Buttons;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.contents.BundleCalculatedImportsPart;
 import bndtools.editor.contents.GeneralInfoPart;
@@ -68,6 +70,12 @@ public class BundleContentPage extends FormPage {
 
 		ScrolledForm scrolledForm = managedForm.getForm();
 		scrolledForm.setText("Bundle Content");
+
+		// buttons top of form
+		IToolBarManager toolbar = scrolledForm.getForm()
+			.getToolBarManager();
+		toolbar.add(Buttons.HELP_BTN_BND_EDITOR);
+		toolbar.update(true);
 
 		Form form = scrolledForm.getForm();
 		toolkit.decorateFormHeading(form);
