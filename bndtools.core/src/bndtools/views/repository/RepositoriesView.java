@@ -106,6 +106,7 @@ import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
 import bndtools.dnd.gav.GAVIPageListener;
+import bndtools.editor.common.Buttons;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
@@ -767,6 +768,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		});
 	}
 
+
+
 	void createContextMenu() {
 		MenuManager mgr = new MenuManager();
 		Menu menu = mgr.createContextMenu(viewer.getControl());
@@ -875,6 +878,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		toolBar.add(addBundlesAction);
 		toolBar.add(new Separator());
 		toolBar.add(offlineAction);
+		toolBar.add(new Separator());
+		toolBar.add(Buttons.HELP_BTN_REPOSITORIES);
 		toolBar.add(new Separator());
 	}
 
