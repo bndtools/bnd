@@ -5,7 +5,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.program.Program;
-import org.eclipse.ui.ISharedImages;
 
 /**
  * Helper containing help buttons for different parts / views which link to the
@@ -49,7 +48,7 @@ public final class Buttons {
 		};
 		btn.setEnabled(true);
 		btn.setToolTipText(tooltipText);
-		btn.setImageDescriptor(Icons.desc(ISharedImages.IMG_LCL_LINKTO_HELP));
+		btn.setImageDescriptor(Icons.desc("help"));
 
 		return btn;
 	}
