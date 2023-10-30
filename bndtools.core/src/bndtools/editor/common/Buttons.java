@@ -26,11 +26,15 @@ public final class Buttons {
 
 	public static final Action					HELP_BTN_BND_EDITOR			= createHelpButton(
 		"https://bndtools.org/manual/bndeditor.html",
-		"This editor allows to edit bnd.bnd files, which define OSGi bundle metadata and build instructions for Java projects, encompassing sections for builtpath, imports, exports, bundle headers, and instructions to control the generation of the resulting OSGi bundle.");
+		"This editor allows to edit bnd.bnd files, which define OSGi bundle metadata and build instructions for Java projects, encompassing sections for builtpath, imports, exports, bundle headers, and instructions to control the generation of the resulting OSGi bundle. Click to open manual in the browser.");
+
+	public static final Action					HELP_BTN_BND_EDITOR_WORKSPACE	= createHelpButton(
+		"https://bndtools.org/manual/bndeditor.html",
+		"This editor allows to edit global .bnd files such as the main cnf/build.bnd, which serves as the central configuration hub for the entire bndtools workspace, allowing users to define and manage global build settings, plugins, repository references, and other overarching workspace properties. Click to open manual in the browser.");
 
 	public static final ActionContributionItem	HELP_BTN_BND_EDITOR_RUN		= createHelpButtonWithText(
 		"https://bndtools.org/manual/bndeditor.html#run", "Help",
-		"The bnd editor for .bndrun files facilitates dependency management, automated resolution of required bundles, configuration of JVM and framework properties, direct launching of OSGi instances for testing, and the export of run configurations as executable JARs.");
+		"The bnd editor for .bndrun files facilitates dependency management, automated resolution of required bundles, configuration of JVM and framework properties, direct launching of OSGi instances for testing, and the export of run configurations as executable JARs. Click to open manual in the browser.");
 
 	/**
 	 * Creates a help button with icon and tooltip.
