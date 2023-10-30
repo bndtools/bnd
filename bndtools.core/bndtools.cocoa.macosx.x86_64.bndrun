@@ -276,6 +276,11 @@
 	org.eclipse.ui.ide;version='[3.19.100,3.19.101)',\
 	org.eclipse.ui.ide.application;version='[1.4.500,1.4.501)',\
 	org.eclipse.ui.intro;version='[3.6.600,3.6.601)',\
+	org.eclipse.ui.intro.quicklinks;version='[1.1.200,1.1.201)',\
+	org.eclipse.ui.intro.quicklinks.source;version='[1.1.200,1.1.201)',\
+	org.eclipse.ui.intro.source;version='[3.6.600,3.6.601)',\
+	org.eclipse.ui.intro.universal;version='[3.4.300,3.4.301)',\
+	org.eclipse.ui.intro.universal.source;version='[3.4.300,3.4.301)',\
 	org.eclipse.ui.navigator;version='[3.10.300,3.10.301)',\
 	org.eclipse.ui.navigator.resources;version='[3.8.400,3.8.401)',\
 	org.eclipse.ui.views;version='[3.11.200,3.11.201)',\

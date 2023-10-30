@@ -2,6 +2,28 @@
 
 <introContent>
 	<extensionContent id="bndtools.core" name="Bndtools"
+		style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="overview/@">
+		<group id="content-group" style-id="content-group">
+			<link label="Bndtools" url="https://bndtools.org" id="bndtools-overview" style-id="content-link">
+				<text>
+					Learn how to develop OSGi applications with Bndtools!
+				</text>
+			</link>
+		</group>
+	</extensionContent>
+	
+	<extensionContent id="bndtools.core" name="Bndtools"
+		style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="tutorials/@">
+		<group id="content-group" style-id="content-group">
+			<link label="Bndtools" url="https://bndtools.org/tutorial.html" id="bndtools-tutorials" style-id="content-link">
+				<text>
+					In this tutorial we will build a sample OSGi application composed of two components and an API.
+				</text>
+			</link>
+		</group>
+	</extensionContent>
+
+	<extensionContent id="bndtools.core" name="Bndtools"
 		style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="whatsnew/@">
 		<group id="content-group" style-id="content-group">
 			<link label="Bndtools" url="https://github.com/bndtools/bnd/wiki/Changes-in-${base.version}" id="bndtools-noteworthy" style-id="content-link">
