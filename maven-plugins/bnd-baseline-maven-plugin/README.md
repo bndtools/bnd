@@ -1,6 +1,6 @@
 # bnd-baseline-maven-plugin
 
-The `bnd-baseline-maven-plugin` is a bnd based plugin that verifies OSGi 
+The `bnd-baseline-maven-plugin` is a bnd based plugin that verifies OSGi
 bundles correctly obey [semantic versioning rules][1]. If the bundle does not
 correctly follow the rules then the build will fail.
 
@@ -8,18 +8,18 @@ correctly follow the rules then the build will fail.
 
 This plugin performs version metadata validation by comparing the bundle
 that has just been built against a previously released version, known as
-the *baseline*. Where differences exist the plugin scans the class 
-bytecode to determine whether the changes are backward compatible or not, 
+the *baseline*. Where differences exist the plugin scans the class
+bytecode to determine whether the changes are backward compatible or not,
 and suggests updated versions for the packages and bundle.
 
 If the newly built project has not increased the version(s) of the
-affected package(s) then the verification of the bundle will fail. In 
+affected package(s) then the verification of the bundle will fail. In
 this way the `bnd-baseline-maven-plugin` can be used to guarantee that
 semantic versioning policies are correctly followed.
 
 ## How do I use the `bnd-baseline-maven-plugin` in my project?
 
-Normally you will add the `bnd-baseline-maven-plugin` directly to the 
+Normally you will add the `bnd-baseline-maven-plugin` directly to the
 build of your OSGi bundle.
 
     <plugin>
@@ -36,22 +36,22 @@ build of your OSGi bundle.
             </execution>
         </executions>
     </plugin>
-    
+
 ### Running the `bnd-baseline-maven-plugin`
 
 The only goal of the `bnd-baseline-maven-plugin` is `baseline` which verifies the
-OSGi bundle. By default the `bnd-baseline-maven-plugin` binds to the 
+OSGi bundle. By default the `bnd-baseline-maven-plugin` binds to the
 `verify` phase of your build.
 
 The `bnd-baseline-maven-plugin` outputs any encountered versioning errors to the
-build log. 
+build log.
 
 ### What versions should I use?
 
 The [Semantic Versioning Whitepaper][1]
 defines the rules for semantic versions. In summary for a version `X.Y.Z`:
 
-1. A change which breaks backward compatibility for consumers necessitates a major version change 
+1. A change which breaks backward compatibility for consumers necessitates a major version change
 (i.e. the new version is `X+1.0.0`).
 2. A change which remains backward compatible for consumers but is breaking for providers necessitates a minor version change (i.e. the new version is `X.Y+1.0`).
 3. A change which is compatible for all, consumer and provider alike, necessitates a micro version change
@@ -67,11 +67,11 @@ WAR files are Consumers of the Servlet API. This is true even though WAR files c
 Servlets *implement* the `javax.servlet.Servlet` interface.
 
 In the case of the Servlet API adding a method to the ServletContext would be a *minor* change because it
-only requires an update to TomCat and Jetty. Adding a method to the Servlet interface, however, would 
+only requires an update to TomCat and Jetty. Adding a method to the Servlet interface, however, would
 break all WAR files and therefore be a *major* change.
 
 The distinction between interfaces designed for providers to implement (like `javax.servlet.ServletContext`)
- and those designed for consumers (like `javax.servlet.Servlet`) can be made using the 
+ and those designed for consumers (like `javax.servlet.Servlet`) can be made using the
 `org.osgi.annotation.versioning.ProviderType` and `org.osgi.annotation.versioning.ConsumerType` annotations
 
 ### Configuring the `bnd-baseline-maven-plugin`
@@ -86,9 +86,9 @@ version artifact which matches these rules will be used as the baseline.
 
 By default the `bnd-baseline-maven-plugin` will use information from the
 current project to set its search parameters, however sometimes an artifact
-will move or change name over time, or a particular version should be 
+will move or change name over time, or a particular version should be
 targeted. In this case the search parameters can be overridden through `baseCoordinates` (since version 7.0.0)
-or `base` (the former taking precedence). If a 
+or `base` (the former taking precedence). If a
 search parameter is omitted then it will take its default value:
 
     <configuration>
@@ -114,8 +114,8 @@ may also be used in the configuration.
 
 #### Fail on missing baseline
 
-By default the `bnd-baseline-maven-plugin` will fail the build if it cannot 
-locate a baseline. Sometimes (for example if a project has never been 
+By default the `bnd-baseline-maven-plugin` will fail the build if it cannot
+locate a baseline. Sometimes (for example if a project has never been
 released before) then there isn't a baseline to use. This failure can
 be disabled as follows:
 
@@ -123,16 +123,16 @@ be disabled as follows:
         <failOnMissing>false</failOnMissing>
     </configuration>
 
-#### Include Distribution Management 
+#### Include Distribution Management
 
-By default the `bnd-baseline-maven-plugin` will include repositories
-listed in the Distribution Management section of the POM when 
-searching for the baseline. This is usually the right choice as the 
-distribution repository does not normally change between releases.
-This behaviour can be disabled as follows:
+Repositories listed in the Distribution Management section of the POM
+can usually only be used to upload, not download artifacts.
+By default the `bnd-baseline-maven-plugin` will not include these
+repositories when searching for the baseline.
+Usage of these repositories can however be enabled as follows:
 
     <configuration>
-        <includeDistributionManagement>false</includeDistributionManagement>
+        <includeDistributionManagement>true</includeDistributionManagement>
     </configuration>
 
 #### Continue on Error
@@ -149,7 +149,7 @@ be configured as follows:
 #### Full Reporting
 
 By default the `bnd-baseline-maven-plugin` will only output version
-information in cases where the version has not been incremented 
+information in cases where the version has not been incremented
 sufficiently. If the user wishes to output full details of the baseline
 calculation then this can be configured as follows:
 

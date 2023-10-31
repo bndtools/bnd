@@ -63,7 +63,7 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(property = "bnd.baseline.fail.on.missing", defaultValue = "true")
 	private boolean					failOnMissing;
 
-	@Parameter(property = "bnd.baseline.include.distribution.management", defaultValue = "true")
+	@Parameter(property = "bnd.baseline.include.distribution.management", defaultValue = "false")
 	private boolean					includeDistributionManagement;
 
 	@Parameter(property = "bnd.baseline.full.report", defaultValue = "false")
