@@ -47,7 +47,7 @@ class RepoActions {
 		return map;
 	}
 
-	Map<String, Runnable> getRevisionActions(final Archive archive, String bsn, Version version, Clipboard cb)
+	Map<String, Runnable> getRevisionActions(final Archive archive, String bsn, Version version, Clipboard clipboard)
 		throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
 		map.put("Clear from Cache", () -> {
@@ -92,12 +92,13 @@ class RepoActions {
 
 		addSources(archive, map);
 
-		if (cb != null) {
+		// Some "Copy to Clipboard" actions, if clipboard is available
+		if (clipboard != null) {
 
-			map.put("Copy revision to clipboard", () -> {
+			map.put("Copy GAV to clipboard", () -> {
 				String rev = archive.getRevision()
 					.toString();
-				cb.copy(rev);
+				clipboard.copy(rev);
 			});
 
 			map.put("Copy tooltip to clipboard", () -> {
@@ -106,7 +107,7 @@ class RepoActions {
 
 						String tooltipContent = arepo.tooltip(bsn, version);
 						if (tooltipContent != null) {
-							cb.copy(tooltipContent);
+							clipboard.copy(tooltipContent);
 						}
 					} catch (Exception e) {
 						throw Exceptions.duck(e);
