@@ -202,6 +202,10 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	public void analyze() throws Exception {
+		bracketed(this::analyze0);
+	}
+
+	private void analyze0() throws Exception {
 
 		if (!analyzed) {
 			analyzed = true;
@@ -1034,6 +1038,10 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	public Manifest calcManifest() throws Exception {
+		return bracketed(this::calcManifest0);
+	}
+
+	private Manifest calcManifest0() throws Exception {
 		try {
 			analyze();
 			Manifest manifest = new Manifest();

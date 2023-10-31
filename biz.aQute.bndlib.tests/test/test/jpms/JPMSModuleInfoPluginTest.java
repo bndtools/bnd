@@ -131,7 +131,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -186,7 +186,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -247,7 +247,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -308,7 +308,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -369,7 +369,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -433,7 +433,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -498,7 +498,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -562,7 +562,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -625,7 +625,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -689,7 +689,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -767,7 +767,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -843,7 +843,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
@@ -905,7 +905,7 @@ public class JPMSModuleInfoPluginTest {
 			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
 			Jar jar = b.build();
 
-			if (!b.check())
+			if (!b.check("jpms.jarname"))
 				fail();
 
 			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);

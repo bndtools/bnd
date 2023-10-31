@@ -71,7 +71,7 @@ public class MultiReleaseTest {
 
 		assertThat(v17.check()).isTrue();
 		assertThat(v9.check()).isTrue();
-		assertThat(main.check()).isTrue();
+		assertThat(main.check("jpms.jarname")).isTrue();
 
 		assertThat(main.getFile("generated/multirelease.main.jar")).isNotNull();
 
