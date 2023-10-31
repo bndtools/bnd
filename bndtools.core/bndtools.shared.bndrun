@@ -99,7 +99,13 @@
 	bnd.identity;id='org.eclipse.ui.ide.application',\
 	bnd.identity;id='junit-platform-commons';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
 	bnd.identity;id='junit-platform-engine';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
-	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}'
+	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='org.eclipse.ui.intro',\
+	bnd.identity;id='org.eclipse.ui.intro.quicklinks',\
+	bnd.identity;id='org.eclipse.ui.intro.quicklinks.source',\
+	bnd.identity;id='org.eclipse.ui.intro.source',\
+	bnd.identity;id='org.eclipse.ui.intro.universal',\
+	bnd.identity;id='org.eclipse.ui.intro.universal.source'
 
 -runblacklist: \
 	bnd.identity;id='biz.aQute.bnd.annotation',\

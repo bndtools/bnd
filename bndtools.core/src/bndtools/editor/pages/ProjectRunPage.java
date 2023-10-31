@@ -23,6 +23,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.central.Central;
+import bndtools.editor.common.HelpButtons;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
@@ -141,6 +142,9 @@ public class ProjectRunPage extends FormPage {
 		if (exportAction.shouldEnable())
 			form.getToolBarManager()
 				.add(exportContrib);
+
+		form.getToolBarManager()
+			.add(HelpButtons.HELP_BTN_BND_EDITOR_RUN);
 
 		form.getToolBarManager()
 			.update(true);
