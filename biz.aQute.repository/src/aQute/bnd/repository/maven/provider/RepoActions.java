@@ -95,30 +95,14 @@ class RepoActions {
 		// Some "Copy to Clipboard" actions, if clipboard is available
 		if (clipboard != null) {
 
-			map.put("Copy GAV to clipboard", () -> {
-				String rev = archive.getRevision()
-					.toString();
-				clipboard.copy(rev);
-			});
-
-			map.put("Copy tooltip to clipboard", () -> {
-				if (repo instanceof Actionable arepo) {
-					try {
-
-						String tooltipContent = arepo.tooltip(bsn, version);
-						if (tooltipContent != null) {
-							clipboard.copy(tooltipContent);
-						}
-					} catch (Exception e) {
-						throw Exceptions.duck(e);
-					}
-				}
-			});
+			addCopyToClipboardActions(repo, archive, bsn, version, clipboard, map);
 
 		}
 
 		return map;
 	}
+
+
 
 	void addSources(final Archive archive, Map<String, Runnable> map) throws Exception {
 		Promise<File> pBinary = repo.storage.get(archive);
@@ -196,5 +180,51 @@ class RepoActions {
 			repo.index.add(d.program.version(d.version)
 				.archive("jar", null));
 		}
+	}
+
+	private static final void addCopyToClipboardActions(MavenBndRepository repo, final Archive archive, String bsn,
+		Version version, Clipboard clipboard, Map<String, Runnable> map) {
+
+		map.put("Copy GAV to clipboard", () -> {
+			String rev = archive.getRevision()
+				.toString();
+			clipboard.copy(rev);
+		});
+
+		map.put("Copy tooltip to clipboard", () -> {
+			if (repo instanceof Actionable arepo) {
+				try {
+
+					String tooltipContent = arepo.tooltip(bsn, version);
+					if (tooltipContent != null) {
+						clipboard.copy(tooltipContent);
+					}
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			}
+		});
+
+		map.put("Copy Compile Dependecies to clipboard", () -> {
+
+			try {
+				StringBuilder sb = new StringBuilder();
+
+				IPom pom = repo.storage.getPom(archive.revision);
+				Map<Program, Dependency> dependencies = pom.getDependencies(MavenScope.compile, false);
+				for (Dependency d : dependencies.values()) {
+
+					sb.append(d.program.version(d.version)
+						.archive("jar", null));
+					sb.append("\n");
+				}
+
+				clipboard.copy(sb.toString());
+
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+
+		});
 	}
 }
