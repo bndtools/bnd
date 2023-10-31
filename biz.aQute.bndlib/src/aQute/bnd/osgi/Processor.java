@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,13 +39,16 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -57,6 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -97,16 +102,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		log = reporterAdapter;
 	}
 
-	static final int									BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
+	static final int							BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
-	final static ThreadLocal<Processor>					current		= new ThreadLocal<>();
-
+	final static ThreadLocal<Processor>			current				= new ThreadLocal<>();
 	private static final Memoize<ExecutorGroup>	executors			= Memoize.supplier(ExecutorGroup::new);
-
 	private static final Memoize<Random>		random				= Memoize.supplier(Random::new);
-	public final static String					LIST_SPLITTER	= "\\s*,\\s*";
-	final List<String>							errors			= new ArrayList<>();
-	final List<String>							warnings		= new ArrayList<>();
+	public final static String					LIST_SPLITTER		= "\\s*,\\s*";
+
+	final ThreadLocal<Bracket>					bracket				= new ThreadLocal<>();
+	final List<String>							errors				= new ArrayList<>();
+	final List<String>							warnings			= new ArrayList<>();
 	private final Set<Object>					basicPlugins		= Collections
 		.newSetFromMap(new ConcurrentHashMap<>());
 	private final Set<AutoCloseable>			toBeClosed			= Collections
@@ -118,19 +123,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	boolean										pedantic;
 	boolean										trace;
 	boolean										exceptions;
-	boolean										fileMustExist	= true;
+	boolean										fileMustExist		= true;
 
-	private File								base			= new File("").getAbsoluteFile();
-	private URI									baseURI			= base.toURI();
+	private File								base				= new File("").getAbsoluteFile();
+	private URI									baseURI				= base.toURI();
 
 	Properties									properties;
 	String										profile;
 	private Macro								replacer;
 	private long								lastModified;
 	private File								propertiesFile;
-	private boolean								fixup			= true;
+	private boolean								fixup				= true;
 	private Processor							parent;
-	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<File>	included			= new CopyOnWriteArrayList<>();
 
 	Collection<String>							filter;
 	Boolean										strict;
@@ -397,7 +402,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.add(closeable);
 	}
 
-
 	public void removeClose(AutoCloseable closeable) {
 		assert closeable != null;
 		toBeClosed.remove(closeable);
@@ -631,7 +635,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		IO.close(outgoingPluginLoader);
 	}
 
-	public String _basedir(@SuppressWarnings("unused") String args[]) {
+	public String _basedir(@SuppressWarnings("unused")
+	String args[]) {
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
@@ -1161,8 +1166,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<?, ? extends Map<?, ?>> exports,
-		@SuppressWarnings("unused") boolean checkMultipleVersions) throws IOException {
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports, @SuppressWarnings("unused")
+	boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Entry<?, ? extends Map<?, ?>> entry : exports.entrySet()) {
@@ -1211,7 +1216,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 		}
 	}
-
 
 	/**
 	 * @param sb
@@ -1474,7 +1478,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return pluginLoader.get();
 	}
 
-
 	private CloseableMemoize<CL> newPluginLoader() {
 		return CloseableMemoize.closeableSupplier(() -> {
 			CL pluginLoader = new CL(this);
@@ -1484,6 +1487,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return pluginLoader;
 		});
 	}
+
 	/*
 	 * Check if this is a valid project.
 	 */
@@ -2648,4 +2652,107 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return false;
 	}
 
+	class Bracket {
+		final List<RunnableWithException>	atEnds	= new ArrayList<>();
+		final Map<Class<?>, Object>			data	= new HashMap<>();
+
+	}
+
+	/**
+	 * Can be called by Processors to bracket an operation. A bracketed
+	 * operation allows the called methods to register a Runnable for execution
+	 * at the end of the bracket. Brackets can be nested to any depth.
+	 *
+	 * @param call the Callable to execute inside the bracket
+	 * @throws Exception thrown by the callable
+	 */
+	protected <T> T bracketed(Callable<T> call) throws Exception {
+		Bracket old = bracket.get();
+		bracket.set(new Bracket());
+		try {
+			return call.call();
+		} finally {
+			bracket.get().atEnds.forEach(this::runit);
+			bracket.set(old);
+		}
+	}
+
+	/**
+	 * Can be called by Processors to bracket an operation. A bracketed
+	 * operation allows the called methods to register a Runnable for execution
+	 * at the end of the bracket. Brackets can be nested to any depth.
+	 *
+	 * @param runnable the runnable to execute inside the bracket
+	 * @throws Exception thrown by the runnable
+	 */
+	protected void bracketed(RunnableWithException runnable) throws Exception {
+		bracketed(() -> {
+			runnable.run();
+			return null;
+		});
+	}
+
+	/**
+	 * This method is intended to coalesce multiple values. Typical use case is
+	 * if you have an error that can happen multiple times over a bracket but
+	 * you want to report it once. To keep plugins stateless, they should not
+	 * store data in a bracket nor do they have a callback mechanism at the end
+	 * of a bracket.
+	 * <p>
+	 * This method provides a unique type for the coalescing, this is best a
+	 * class inside a method for uniqueness. The work method, takes an instance
+	 * of the type and can do some work, for example, a name that should be
+	 * reported at the end as a list instead for each occurrence. The factory is
+	 * used to create the instance when the type is used for the first time in
+	 * the bracket.
+	 *
+	 * <pre>
+	 * void dosomething(Processor p, String name) {
+	 * 	class Foo extends AutoCloseable {
+	 * 		final Set<String> names = new TreeSet<>();
+	 *
+	 * 		public void close() {
+	 * 			p.error("names too long: %s", names);
+	 * 		}
+	 * 	}
+	 * 	if (name.size() > 10) {
+	 * 		p.atEnd(Foo.class, foo -> foo.names.add(name), Foo::new);
+	 * 	}
+	 * }
+	 * </pre>
+	 *
+	 * @param <X> the type of the worker
+	 * @param type the worker type
+	 * @param work the work to do
+	 * @param factory the factory
+	 */
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	public <X extends AutoCloseable> void atEndOfBracket(Class<X> type, Consumer<X> work, Supplier<X> factory) {
+		Bracket b = bracket.get();
+
+		if (b == null) {
+			runit(() -> {
+				X x = factory.get();
+				work.accept(x);
+				x.close();
+			});
+		} else {
+			X data = (X) b.data.computeIfAbsent(type, t -> {
+				X newData = factory.get();
+				b.atEnds.add(newData::close);
+				return newData;
+			});
+			work.accept(data);
+		}
+	}
+
+	private void runit(RunnableWithException r) {
+		try {
+			r.run();
+		} catch (Exception e) {
+			exception(e, "failed to run a runnable at the end of a bracket: %s", e.getMessage());
+		}
+	}
 }
