@@ -11,9 +11,11 @@ import java.util.Optional;
 
 import org.osgi.util.promise.Promise;
 
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.version.Version;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.Actionable;
+import aQute.bnd.service.clipboard.Clipboard;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
@@ -45,7 +47,8 @@ class RepoActions {
 		return map;
 	}
 
-	Map<String, Runnable> getRevisionActions(final Archive archive) throws Exception {
+	Map<String, Runnable> getRevisionActions(final Archive archive, String bsn, Version version, Clipboard cb)
+		throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
 		map.put("Clear from Cache", () -> {
 			File dir = repo.storage.toLocalFile(archive)
@@ -88,6 +91,30 @@ class RepoActions {
 		addUpdate(archive, map);
 
 		addSources(archive, map);
+
+		if (cb != null) {
+
+			map.put("Copy revision to clipboard", () -> {
+				String rev = archive.getRevision()
+					.toString();
+				cb.copy(rev);
+			});
+
+			map.put("Copy tooltip to clipboard", () -> {
+				if (repo instanceof Actionable arepo) {
+					try {
+
+						String tooltipContent = arepo.tooltip(bsn, version);
+						if (tooltipContent != null) {
+							cb.copy(tooltipContent);
+						}
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+				}
+			});
+
+		}
 
 		return map;
 	}

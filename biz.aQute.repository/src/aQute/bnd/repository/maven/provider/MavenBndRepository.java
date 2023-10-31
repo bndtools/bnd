@@ -68,6 +68,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
@@ -831,7 +832,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				return actions.getProgramActions((String) target[0]);
 			case 2 :
 				Archive archive = getArchive(target);
-				return actions.getRevisionActions(archive);
+				String bsn = (String) target[0];
+				Version version = (Version) target[1];
+				return actions.getRevisionActions(archive, bsn, version, registry.getPlugin(Clipboard.class));
 			default :
 		}
 		return null;
