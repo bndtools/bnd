@@ -192,7 +192,8 @@ class RepoActions {
 		});
 
 		map.put("Copy tooltip to clipboard", () -> {
-			if (repo instanceof Actionable arepo) {
+			if (repo instanceof Actionable) {
+				Actionable arepo = repo;
 				try {
 
 					String tooltipContent = arepo.tooltip(bsn, version);
