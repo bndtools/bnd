@@ -19,7 +19,7 @@ The `-jpms-module-info-options` instruction provides some capabilities to help t
 They attributes are:
 
 
-- **`substitute`** - If bnd generates a module name matching the value of this attribute it should be substituted with the key of the instruction.
+- **`substitute`** - If bnd generates a module name based on the file name and it matches the value of this attribute it should be substituted with the key of the instruction.
   e.g. 
   
     -jpms-module-info-options: java.enterprise;substitute="geronimo-jcdi_2.0_spec"

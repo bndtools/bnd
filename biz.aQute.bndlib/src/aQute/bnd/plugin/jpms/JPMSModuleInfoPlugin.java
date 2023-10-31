@@ -49,9 +49,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,9 +92,9 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 
 		public static Set<Access> parse(String input) {
 			return switch (input.toLowerCase(Locale.ROOT)) {
-				case "open" ,"0x0020" , "32" -> EnumSet.of(OPEN);
-				case "synthetic" , "0x1000" , "4096" -> EnumSet.of(SYNTHETIC);
-				case "mandated" , "0x8000"  ,"32768" -> EnumSet.of(MANDATED);
+				case "open", "0x0020", "32" -> EnumSet.of(OPEN);
+				case "synthetic", "0x1000", "4096" -> EnumSet.of(SYNTHETIC);
+				case "mandated", "0x8000", "32768" -> EnumSet.of(MANDATED);
 				default -> {
 					if (input.indexOf(',') > -1) {
 						yield Strings.splitAsStream(input)
@@ -124,8 +124,6 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 	}
 
 	private static final Logger		logger						= LoggerFactory.getLogger(JPMSModuleInfoPlugin.class);
-
-	private static final Pattern	mangledModuleName			= Pattern.compile("(.*)-\\d.*");
 
 	private static final EE			DEFAULT_MODULE_EE			= EE.JavaSE_11;
 	private static final String		INTERNAL_MODULE_DIRECTIVE	= "-internal-module:";
@@ -167,7 +165,6 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 		Packages imports = analyzer.getImports();
 		Packages exports = analyzer.getExports();
 		Packages index = new Packages();
-
 
 		// Index the whole class path
 		for (Jar jar : analyzer.getClasspath()) {
@@ -226,7 +223,19 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 				return null;
 			}
 
-			moduleName = JPMSModule.cleanupName(jar.getName());
+			String jarName = jar.getName();
+
+			class CMN implements AutoCloseable {
+				final Set<String> names = new TreeSet<>();
+
+				@Override
+				public void close() throws Exception {
+					analyzer.warning("jpms.jarname calculated module names from file name: %s", names);
+				}
+			}
+			analyzer.atEndOfBracket(CMN.class, cmn -> cmn.names.add(jarName), CMN::new);
+
+			moduleName = JPMSModule.cleanupName(jarName);
 			final String name = moduleName;
 			moduleName = moduleInfoOptions.stream()
 				.mapValue(attrs -> attrs.get(SUBSTITUTE_ATTRIBUTE))
@@ -236,8 +245,7 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 				.findFirst()
 				.orElse(moduleName);
 
-			if (logger.isDebugEnabled())
-				logger.debug("Using module name '{}' for: {}", moduleName, jar);
+			logger.debug("Using module name '{}' for: {}", moduleName, jar);
 		}
 		return JPMSModule.cleanupName(moduleName);
 	}
@@ -245,7 +253,6 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 	private String name(Analyzer analyzer) {
 		return analyzer.getProperty(AUTOMATIC_MODULE_NAME, JPMSModule.cleanupName(analyzer.getBsn()));
 	}
-
 
 	private void packages(ModuleInfoBuilder builder, Analyzer analyzer) {
 		MapStream.ofNullable(analyzer.getJar()
@@ -373,8 +380,8 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 					if (eeModuleName == null) {
 						if (logger.isDebugEnabled() &&
 						// Ignore optional imports at this stage
-						MapStream.ofNullable(importAttrs)
-							.noneMatch((k, v) -> k.equals(RESOLUTION_DIRECTIVE) && v.equals(RESOLUTION_OPTIONAL))) {
+							MapStream.ofNullable(importAttrs)
+								.noneMatch((k, v) -> k.equals(RESOLUTION_DIRECTIVE) && v.equals(RESOLUTION_OPTIONAL))) {
 
 							logger.debug("Can't find a module name for imported package: {}", packageRef.getFQN());
 						}
@@ -478,8 +485,8 @@ public class JPMSModuleInfoPlugin implements ManifestPlugin {
 			// We need the `register:` directive to be present for this to work.
 			.filterValue(attrs -> attrs.containsKey(SERVICELOADER_REGISTER_DIRECTIVE))
 			.values()
-			.collect(groupingBy(attrs -> analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE)),
-				mapFactory(), toList()))
+			.collect(groupingBy(attrs -> analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE)), mapFactory(),
+				toList()))
 			.forEach((typeRef, attrsList) -> {
 
 				// We can't provide JPMS services from packages on the
