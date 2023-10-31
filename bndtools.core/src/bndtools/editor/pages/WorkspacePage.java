@@ -17,7 +17,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
-import bndtools.editor.common.Buttons;
+import bndtools.editor.common.HelpButtons;
 import bndtools.editor.workspace.PluginPathPart;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;
@@ -80,7 +80,7 @@ public class WorkspacePage extends FormPage {
 		// buttons top of form
 		IToolBarManager toolbar = form.getForm()
 			.getToolBarManager();
-		toolbar.add(Buttons.HELP_BTN_BND_EDITOR_WORKSPACE);
+		toolbar.add(HelpButtons.HELP_BTN_BND_EDITOR_WORKSPACE);
 		toolbar.update(false);
 
 		// Create controls

@@ -69,7 +69,7 @@ import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.sync.WorkspaceSynchronizer;
-import bndtools.editor.common.Buttons;
+import bndtools.editor.common.HelpButtons;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.ui.BndPreferencePage;
 
@@ -239,7 +239,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		toolBarManager.add(pin);
 		toolBarManager.update(true);
 
-		toolBarManager.add(Buttons.HELP_BTN_BNDTOOLS_EXPLORER);
+		toolBarManager.add(HelpButtons.HELP_BTN_BNDTOOLS_EXPLORER);
 		toolBarManager.update(true);
 
 		return header;

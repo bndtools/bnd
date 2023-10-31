@@ -106,7 +106,7 @@ import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
 import bndtools.dnd.gav.GAVIPageListener;
-import bndtools.editor.common.Buttons;
+import bndtools.editor.common.HelpButtons;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
@@ -879,7 +879,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		toolBar.add(new Separator());
 		toolBar.add(offlineAction);
 		toolBar.add(new Separator());
-		toolBar.add(Buttons.HELP_BTN_REPOSITORIES);
+		toolBar.add(HelpButtons.HELP_BTN_REPOSITORIES);
 		toolBar.add(new Separator());
 	}
 

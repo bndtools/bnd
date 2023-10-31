@@ -83,7 +83,7 @@ import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import bndtools.Plugin;
-import bndtools.editor.common.Buttons;
+import bndtools.editor.common.HelpButtons;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;
 import bndtools.model.resolution.CapabilityLabelProvider;
@@ -349,7 +349,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 		doEEActionMenu(toolBarManager);
 
-		toolBarManager.add(Buttons.HELP_BTN_RESOLUTION_VIEW);
+		toolBarManager.add(HelpButtons.HELP_BTN_RESOLUTION_VIEW);
 
 	}
 
