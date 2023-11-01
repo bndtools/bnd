@@ -27,7 +27,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -39,6 +38,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.e4.ui.workbench.IWorkbench;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -107,7 +107,7 @@ public class Central implements ICentral {
 
 	@Activate
 	public Central(BundleContext bc, @Reference
-	IWorkspace notused) {
+	IWorkbench notused) {
 		context = bc;
 		instance = this;
 		repoListenerTracker = new RepositoryListenerPluginTracker(bc);
@@ -384,7 +384,6 @@ public class Central implements ICentral {
 	private static File getWorkspaceDirectory() throws CoreException {
 		IWorkspaceRoot eclipseWorkspace = ResourcesPlugin.getWorkspace()
 			.getRoot();
-
 		IProject cnfProject = eclipseWorkspace.getProject(Workspace.CNFDIR);
 		if (cnfProject.exists()) {
 			if (!cnfProject.isOpen())

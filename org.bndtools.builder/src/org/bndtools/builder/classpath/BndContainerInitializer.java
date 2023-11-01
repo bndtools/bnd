@@ -21,6 +21,7 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
+import org.bndtools.api.central.ICentral;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.PseudoJar;
 import org.eclipse.core.resources.IProject;
@@ -73,7 +74,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 	@Activate
 	public BndContainerInitializer(@Reference
-	Central central) {
+	ICentral central) {
 		super();
 		Central.onCnfWorkspace(workspace -> Central.getInstance()
 			.addModelListener(BndContainerInitializer.this));
