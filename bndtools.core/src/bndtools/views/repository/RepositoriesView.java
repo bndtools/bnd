@@ -816,9 +816,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 							}
 
-							hmenu.build(manager);
 
 						}
+
+						// build the final menue
+						hmenu.build(manager);
 
 					}
 				}
