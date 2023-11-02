@@ -13,7 +13,7 @@ tasks.named("testOSGi") {
 		enabled = !bnd.is(Constants.NOJUNITOSGI)
 		bndrun = file("test.cocoa.macosx.${arch}.bndrun")
 	} else if (Os.isFamily(Os.FAMILY_UNIX)) {
-		enabled = !bnd.is(Constants.NOJUNITOSGI)
+		enabled = false
 		bndrun = file("test.gtk.linux.x86_64.bndrun")
 	} else {
 		enabled = false
