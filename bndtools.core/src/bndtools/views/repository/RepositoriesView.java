@@ -1116,7 +1116,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			hmenu.add(createContextMenueCopyInfoRepoBundle(act, rp, clipboard, rb));
 		}
 
-		if (act instanceof Repository r || act instanceof RepositoryPlugin r) {
+		if ((act instanceof Repository) || (act instanceof RepositoryPlugin)) {
 			hmenu.add(createContextMenueCopyInfoRepo(act, rp, clipboard));
 		}
 
