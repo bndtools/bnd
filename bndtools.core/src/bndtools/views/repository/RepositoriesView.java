@@ -770,8 +770,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		});
 	}
 
-
-
 	void createContextMenu() {
 		MenuManager mgr = new MenuManager();
 		Menu menu = mgr.createContextMenu(viewer.getControl());
@@ -805,9 +803,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						// add the other actions
 						Map<String, Runnable> actions = act.actions();
 
-
 						if (actions != null) {
-
 
 							for (final Entry<String, Runnable> e1 : actions.entrySet()) {
 								String label = e1.getKey();
@@ -872,7 +868,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 									a.setDescription(description);
 								a.setChecked(checked);
 
-
 								// Actions for the sub menu
 								if (label.startsWith("Copy")) {
 									// add the action to the submenu
@@ -892,7 +887,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}
 		});
 	}
-
 
 	private void fillToolBar(IToolBarManager toolBar) {
 		toolBar.add(advancedSearchAction);
@@ -1174,51 +1168,55 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 		if (act instanceof RepositoryBundleVersion rbr) {
 
-			Action copyBsnAction = createAction("Copy bsn+version", "Copy bsn;version=version to clipboard.", true,
-				false, rp, () -> {
-
-
-				if (registry != null) {
-						String rev = rbr.getBsn() + ";version=" + rbr.getVersion()
-							.toString();
-						clipboard.copy(rev);
-
-				}
-
-			});
-			copyToSubMenu.add(copyBsnAction);
-
-			Action copyInfoAction = createAction("Copy info", "Add general info about this entry to clipboard.", true,
-				false, rp, () -> {
-
-				if (registry != null) {
-						String info = rbr.toString();
-						clipboard.copy(info);
-				}
-
-			});
-			copyToSubMenu.add(copyInfoAction);
-
-			Action copyTooltipAction = createAction("Copy tooltip", "Add tooltip content to clipboard.", true,
-				false, rp, () -> {
-
-						String tooltipContent;
-						try {
-							tooltipContent = act.tooltip(rbr.getBsn(), rbr.getVersion()
-								.toString());
-
-							if (tooltipContent != null) {
-								clipboard.copy(tooltipContent);
-							}
-						} catch (Exception e) {
-							throw Exceptions.duck(e);
-						}
-
-					}
-			);
-			copyToSubMenu.add(copyTooltipAction);
+			copyToSubMenu.add(createContextMenueBsn(rp, clipboard, rbr));
+			copyToSubMenu.add(createContextMenueCopyInfo(act, rp, clipboard, rbr));
 
 		}
+	}
+
+	private Action createContextMenueCopyInfo(Actionable act, final RepositoryPlugin rp, final Clipboard clipboard,
+		RepositoryBundleVersion rbr) {
+		Action copyInfoAction = createAction("Copy info", "Add general info about this entry to clipboard.", true,
+			false, rp, () -> {
+
+				final StringBuilder info = new StringBuilder();
+
+				// append the tooltip content +
+				// RepositoryBundleVersion.toString() general info
+				try {
+					String tooltipContent = act.tooltip(rbr.getBsn(), rbr.getVersion()
+						.toString());
+
+					if (tooltipContent != null && !tooltipContent.isBlank()) {
+						info.append(tooltipContent);
+					}
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+
+				if (!info.isEmpty()) {
+					info.append('\n');
+				}
+
+				info.append(rbr.toString());
+
+				clipboard.copy(info.toString());
+
+			});
+		return copyInfoAction;
+	}
+
+	private Action createContextMenueBsn(final RepositoryPlugin rp, final Clipboard clipboard,
+		RepositoryBundleVersion rbr) {
+		Action copyBsnAction = createAction("Copy bsn+version", "Copy bsn;version=version to clipboard.", true, false,
+			rp, () -> {
+
+				String rev = rbr.getBsn() + ";version=" + rbr.getVersion()
+					.toString();
+				clipboard.copy(rev);
+
+			});
+		return copyBsnAction;
 	}
 
 }
