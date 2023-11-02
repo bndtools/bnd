@@ -2,16 +2,10 @@ package bndtools.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 
 /**
  * This class uses a list labels to internally store the different hierarchical
@@ -31,7 +25,7 @@ import org.eclipse.jface.action.MenuManager;
  * }
  * </pre>
  */
-public class HierarchicalLabel {
+public class HierarchicalLabel<T> {
 
 	private static final String					DELIMITER_FOR_HIERARCHY	= " :: ";
 
@@ -90,7 +84,7 @@ public class HierarchicalLabel {
 		.compile("(-)?(!)?([^{}]+)(?:\\{([^}]+)\\})?");
 
 	private final List<String>					labels;
-	private Function<HierarchicalLabel, Action>	leafActionCallback;
+	private Function<HierarchicalLabel<T>, T>	leafActionCallback;
 
 	boolean										enabled					= true;
 	boolean										checked					= false;
@@ -153,7 +147,7 @@ public class HierarchicalLabel {
 	 *            </p>
 	 * @param leafNodeAction a callback to create an Action from the outside
 	 */
-	public HierarchicalLabel(String compoundLabel, Function<HierarchicalLabel, Action> leafNodeAction) {
+	public HierarchicalLabel(String compoundLabel, Function<HierarchicalLabel<T>, T> leafNodeAction) {
 		this.leafActionCallback = leafNodeAction;
 		if (compoundLabel == null || compoundLabel.trim()
 			.isEmpty()) {
@@ -178,7 +172,7 @@ public class HierarchicalLabel {
 
 	}
 
-	public Action getLeafAction() {
+	public T getLeafAction() {
 		return leafActionCallback.apply(this);
 	}
 
@@ -219,80 +213,7 @@ public class HierarchicalLabel {
 
 	@Override
 	public String toString() {
-		return String.join("/", labels);
+		return String.join(DELIMITER_FOR_HIERARCHY, labels);
 	}
 
-	public MenuManager createMenuItems() {
-		return createSubMenu(0);
-	}
-
-	private MenuManager createSubMenu(int position) {
-		if (position >= labels.size()) {
-			return null;
-		}
-
-		MenuManager current = new MenuManager(labels.get(position), null);
-		if (position == labels.size() - 1) {
-			current.add(leafActionCallback.apply(this));
-		} else {
-			MenuManager childMenu = createSubMenu(position + 1);
-			if (childMenu != null) {
-				current.add(childMenu);
-			}
-		}
-		return current;
-	}
-
-	public static class HierarchicalMenu {
-
-		private final List<HierarchicalLabel> labels = new ArrayList<>();
-
-		public HierarchicalMenu() {
-
-		}
-
-		public HierarchicalMenu add(HierarchicalLabel label) {
-			labels.add(label);
-			return this;
-		}
-
-		public void build(IMenuManager root) {
-			createMenu(labels, root);
-		}
-
-	}
-
-	public static void createMenu(List<HierarchicalLabel> labels, IMenuManager rootMenu) {
-
-		Map<String, IMenuManager> menus = new LinkedHashMap<>();
-
-		for (HierarchicalLabel hl : labels) {
-			IMenuManager current = rootMenu;
-			List<String> hlLabels = hl.getLabels();
-			for (int i = 0; i < hlLabels.size(); i++) {
-				String currentLabel = hlLabels.get(i);
-				if (i == hlLabels.size() - 1) {
-					// currentMenu = getOrCreateSubMenu(menuMap, currentMenu,
-					// currentLabel);
-					current.add(hl.getLeafAction());
-				} else {
-					current = getOrCreateSubMenu(menus, current, currentLabel);
-				}
-			}
-		}
-
-	}
-
-	private static IMenuManager getOrCreateSubMenu(Map<String, IMenuManager> menus, IMenuManager parent,
-		String label) {
-		String key = parent.toString() + " -> " + label;
-
-		if (!menus.containsKey(key)) {
-			IMenuManager newMenu = new MenuManager(label, null);
-			parent.add(newMenu);
-			menus.put(key, newMenu);
-		}
-
-		return menus.get(key);
-	}
 }

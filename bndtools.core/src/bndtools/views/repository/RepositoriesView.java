@@ -115,7 +115,7 @@ import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.WorkspaceOfflineChangeAdapter;
 import bndtools.utils.HierarchicalLabel;
-import bndtools.utils.HierarchicalLabel.HierarchicalMenu;
+import bndtools.utils.HierarchicalMenu;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 import bndtools.wizards.workspace.WorkspaceSetupWizard;
@@ -794,7 +794,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						//
 						final Actionable act = (Actionable) firstElement;
 
-						// add general copyToClipboard SubMenu entries
+						// use HierarchicalMenu to build up a menue with SubMenu
+						// entries
 						HierarchicalMenu hmenu = new HierarchicalMenu();
 						addCopyToClipboardSubMenueEntries(act, rp, hmenu);
 
@@ -807,7 +808,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 								String label = e1.getKey();
 
-								hmenu.add(new HierarchicalLabel(label.replace("&", "&&"), l -> {
+								hmenu.add(new HierarchicalLabel<Action>(label.replace("&", "&&"), l -> {
 
 									Action a = new Action(l.getLast()) {
 										@Override
@@ -1165,10 +1166,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		}
 	}
 
-	private HierarchicalLabel createContextMenueCopyInfo(Actionable act, final RepositoryPlugin rp,
+	private HierarchicalLabel<Action> createContextMenueCopyInfo(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundleVersion rbr) {
 
-		return new HierarchicalLabel("Copy to clipboard :: Copy info",
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info",
 			(label) -> createAction(label.getLast(), "Add general info about this entry to clipboard.", true,
 				false, rp, () -> {
 
@@ -1198,10 +1199,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}));
 	}
 
-	private HierarchicalLabel createContextMenueBsn(final RepositoryPlugin rp, final Clipboard clipboard,
+	private HierarchicalLabel<Action> createContextMenueBsn(final RepositoryPlugin rp, final Clipboard clipboard,
 		RepositoryBundleVersion rbr) {
 
-		return new HierarchicalLabel("Copy to clipboard :: Copy bsn+version",
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy bsn+version",
 			(label) -> createAction(label.getLast(), "Copy bsn;version=version to clipboard.", true, false, rp,
 				() -> {
 
