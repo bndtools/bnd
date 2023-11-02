@@ -184,13 +184,13 @@ class RepoActions {
 	private static final void addCopyToClipboardActions(MavenBndRepository repo, final Archive archive,
 		Clipboard clipboard, Map<String, Runnable> map) {
 
-		map.put("Copy GAV to clipboard", () -> {
+		map.put("Copy to clipboard :: Copy GAV to clipboard", () -> {
 			String rev = archive.getRevision()
 				.toString();
 			clipboard.copy(rev);
 		});
 
-		map.put("Copy Compile Dependecies to clipboard", () -> {
+		map.put("Copy to clipboard :: Copy Compile Dependecies to clipboard", () -> {
 
 			try {
 				StringBuilder sb = new StringBuilder();

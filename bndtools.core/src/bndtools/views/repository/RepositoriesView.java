@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -116,13 +114,14 @@ import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.WorkspaceOfflineChangeAdapter;
+import bndtools.utils.HierarchicalLabel;
+import bndtools.utils.HierarchicalLabel.HierarchicalMenu;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 import bndtools.wizards.workspace.WorkspaceSetupWizard;
 
 public class RepositoriesView extends ViewPart implements RepositoriesViewRefresher.RefreshModel {
-	final static Pattern							LABEL_PATTERN				= Pattern
-		.compile("(-)?(!)?([^{}]+)(?:\\{([^}]+)\\})?");
+
 	private static final String						DROP_TARGET					= "dropTarget";
 
 	private static final ILogger					logger						= Logger
@@ -796,9 +795,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						final Actionable act = (Actionable) firstElement;
 
 						// add general copyToClipboard SubMenu entries
-						MenuManager copyToClipboardSubMenu = new MenuManager("Copy to clipboard", null);
-						manager.add(copyToClipboardSubMenu);
-						addCopyToClipboardSubMenueEntries(act, rp, copyToClipboardSubMenu);
+						HierarchicalMenu hmenu = new HierarchicalMenu();
+						addCopyToClipboardSubMenueEntries(act, rp, hmenu);
 
 						// add the other actions
 						Map<String, Runnable> actions = act.actions();
@@ -806,77 +804,71 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						if (actions != null) {
 
 							for (final Entry<String, Runnable> e1 : actions.entrySet()) {
+
 								String label = e1.getKey();
-								boolean enabled = true;
-								boolean checked = false;
-								String description = null;
-								Matcher m = LABEL_PATTERN.matcher(label);
-								if (m.matches()) {
-									if (m.group(1) != null)
-										enabled = false;
 
-									if (m.group(2) != null)
-										checked = true;
+								hmenu.add(new HierarchicalLabel(label.replace("&", "&&"), l -> {
 
-									label = m.group(3);
+									Action a = new Action(l.getLast()) {
+										@Override
+										public void run() {
+											Job backgroundJob = new Job("Repository Action '" + getText() + "'") {
 
-									description = m.group(4);
-								}
-								Action a = new Action(label.replace("&", "&&")) {
-									@Override
-									public void run() {
-										Job backgroundJob = new Job("Repository Action '" + getText() + "'") {
-
-											@Override
-											protected IStatus run(IProgressMonitor monitor) {
-												try {
-													e1.getValue()
-														.run();
-													if (rp != null && rp instanceof Refreshable)
-														Central.refreshPlugin((Refreshable) rp, true);
-												} catch (final Exception e) {
-													IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
-														"Error executing: " + getName(), e);
-													Plugin.getDefault()
-														.getLog()
-														.log(status);
+												@Override
+												protected IStatus run(IProgressMonitor monitor) {
+													try {
+														e1.getValue()
+															.run();
+														if (rp != null && rp instanceof Refreshable)
+															Central.refreshPlugin((Refreshable) rp, true);
+													} catch (final Exception e) {
+														IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
+															"Error executing: " + getName(), e);
+														Plugin.getDefault()
+															.getLog()
+															.log(status);
+													}
+													monitor.done();
+													return Status.OK_STATUS;
 												}
-												monitor.done();
-												return Status.OK_STATUS;
-											}
-										};
+											};
 
-										backgroundJob.addJobChangeListener(new JobChangeAdapter() {
-											@Override
-											public void done(IJobChangeEvent event) {
-												if (event.getResult()
-													.isOK()) {
-													viewer.getTree()
-														.getDisplay()
-														.asyncExec(() -> viewer.refresh());
+											backgroundJob.addJobChangeListener(new JobChangeAdapter() {
+												@Override
+												public void done(IJobChangeEvent event) {
+													if (event.getResult()
+														.isOK()) {
+														viewer.getTree()
+															.getDisplay()
+															.asyncExec(() -> viewer.refresh());
+													}
 												}
-											}
-										});
+											});
 
-										backgroundJob.setUser(true);
-										backgroundJob.setPriority(Job.SHORT);
-										backgroundJob.schedule();
-									}
-								};
-								a.setEnabled(enabled);
-								if (description != null)
-									a.setDescription(description);
-								a.setChecked(checked);
+											backgroundJob.setUser(true);
+											backgroundJob.setPriority(Job.SHORT);
+											backgroundJob.schedule();
+										}
+									};
+									a.setEnabled(l.isEnabled());
+									if (l.getDescription() != null)
+										a.setDescription(l.getDescription());
+									a.setChecked(l.isChecked());
 
-								// Actions for the sub menu
-								if (label.startsWith("Copy")) {
-									// add the action to the submenu
-									copyToClipboardSubMenu.add(a);
-								} else {
-									manager.add(a);
-								}
+									return a;
+								}));
+
+								// // Actions for the sub menu
+								// if (label.startsWith("Copy")) {
+								// // add the action to the submenu
+								// copyToClipboardSubMenu.add(a);
+								// } else {
+								// manager.add(a);
+								// }
 
 							}
+
+							hmenu.build(manager);
 
 						}
 
@@ -1152,8 +1144,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		return a;
 	}
 
-	private void addCopyToClipboardSubMenueEntries(Actionable act, final RepositoryPlugin rp,
-		MenuManager copyToSubMenu) {
+	private void addCopyToClipboardSubMenueEntries(Actionable act, final RepositoryPlugin rp, HierarchicalMenu hmenu) {
 
 		final Registry registry = Central.getWorkspaceIfPresent();
 		if (registry == null) {
@@ -1168,16 +1159,18 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 		if (act instanceof RepositoryBundleVersion rbr) {
 
-			copyToSubMenu.add(createContextMenueBsn(rp, clipboard, rbr));
-			copyToSubMenu.add(createContextMenueCopyInfo(act, rp, clipboard, rbr));
+			hmenu.add(createContextMenueBsn(rp, clipboard, rbr));
+			hmenu.add(createContextMenueCopyInfo(act, rp, clipboard, rbr));
 
 		}
 	}
 
-	private Action createContextMenueCopyInfo(Actionable act, final RepositoryPlugin rp, final Clipboard clipboard,
-		RepositoryBundleVersion rbr) {
-		Action copyInfoAction = createAction("Copy info", "Add general info about this entry to clipboard.", true,
-			false, rp, () -> {
+	private HierarchicalLabel createContextMenueCopyInfo(Actionable act, final RepositoryPlugin rp,
+		final Clipboard clipboard, RepositoryBundleVersion rbr) {
+
+		return new HierarchicalLabel("Copy to clipboard :: Copy info",
+			(label) -> createAction(label.getLast(), "Add general info about this entry to clipboard.", true,
+				false, rp, () -> {
 
 				final StringBuilder info = new StringBuilder();
 
@@ -1202,21 +1195,21 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 				clipboard.copy(info.toString());
 
-			});
-		return copyInfoAction;
+			}));
 	}
 
-	private Action createContextMenueBsn(final RepositoryPlugin rp, final Clipboard clipboard,
+	private HierarchicalLabel createContextMenueBsn(final RepositoryPlugin rp, final Clipboard clipboard,
 		RepositoryBundleVersion rbr) {
-		Action copyBsnAction = createAction("Copy bsn+version", "Copy bsn;version=version to clipboard.", true, false,
-			rp, () -> {
+
+		return new HierarchicalLabel("Copy to clipboard :: Copy bsn+version",
+			(label) -> createAction(label.getLast(), "Copy bsn;version=version to clipboard.", true, false, rp,
+				() -> {
 
 				String rev = rbr.getBsn() + ";version=" + rbr.getVersion()
 					.toString();
 				clipboard.copy(rev);
 
-			});
-		return copyBsnAction;
+			}));
 	}
 
 }
