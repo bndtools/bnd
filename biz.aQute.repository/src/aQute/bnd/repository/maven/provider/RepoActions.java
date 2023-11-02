@@ -13,7 +13,6 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.service.Actionable;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
@@ -191,21 +190,6 @@ class RepoActions {
 			clipboard.copy(rev);
 		});
 
-		map.put("Copy tooltip to clipboard", () -> {
-			if (repo instanceof Actionable) {
-				Actionable arepo = repo;
-				try {
-
-					String tooltipContent = arepo.tooltip(bsn, version);
-					if (tooltipContent != null) {
-						clipboard.copy(tooltipContent);
-					}
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			}
-		});
-
 		map.put("Copy Compile Dependecies to clipboard", () -> {
 
 			try {
@@ -220,7 +204,12 @@ class RepoActions {
 					sb.append("\n");
 				}
 
-				clipboard.copy(sb.toString());
+				String content = sb.toString();
+				if (content.isEmpty()) {
+					clipboard.copy("-- No Compile Dependencies found --");
+				} else {
+					clipboard.copy(content);
+				}
 
 			} catch (Exception e) {
 				throw Exceptions.duck(e);

@@ -97,8 +97,10 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.Registry;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.clipboard.Clipboard;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
@@ -794,8 +796,19 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						// from the view, but currently there are none
 						//
 						final Actionable act = (Actionable) firstElement;
+
+						// add general copyToClipboard SubMenu entries
+						MenuManager copyToClipboardSubMenu = new MenuManager("Copy to clipboard", null);
+						manager.add(copyToClipboardSubMenu);
+						addCopyToClipboardSubMenueEntries(act, rp, copyToClipboardSubMenu);
+
+						// add the other actions
 						Map<String, Runnable> actions = act.actions();
+
+
 						if (actions != null) {
+
+
 							for (final Entry<String, Runnable> e1 : actions.entrySet()) {
 								String label = e1.getKey();
 								boolean enabled = true;
@@ -858,9 +871,20 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 								if (description != null)
 									a.setDescription(description);
 								a.setChecked(checked);
-								manager.add(a);
+
+
+								// Actions for the sub menu
+								if (label.startsWith("Copy")) {
+									// add the action to the submenu
+									copyToClipboardSubMenu.add(a);
+								} else {
+									manager.add(a);
+								}
+
 							}
+
 						}
+
 					}
 				}
 			} catch (Exception e2) {
@@ -868,6 +892,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}
 		});
 	}
+
 
 	private void fillToolBar(IToolBarManager toolBar) {
 		toolBar.add(advancedSearchAction);
@@ -1081,4 +1106,119 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			return false;
 		}
 	}
+
+	public Action createAction(String label, String description, boolean enabled, boolean checked, RepositoryPlugin rp,
+		Runnable r) {
+
+		Action a = new Action(label) {
+			@Override
+			public void run() {
+				Job backgroundJob = new Job("Repository Action '" + getText() + "'") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						try {
+							r.run();
+							if (rp != null && rp instanceof Refreshable)
+								Central.refreshPlugin((Refreshable) rp, true);
+						} catch (final Exception e) {
+							IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
+								"Error executing: " + getName(), e);
+							Plugin.getDefault()
+								.getLog()
+								.log(status);
+						}
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+				};
+
+				backgroundJob.addJobChangeListener(new JobChangeAdapter() {
+					@Override
+					public void done(IJobChangeEvent event) {
+						if (event.getResult()
+							.isOK()) {
+							viewer.getTree()
+								.getDisplay()
+								.asyncExec(() -> viewer.refresh());
+						}
+					}
+				});
+
+				backgroundJob.setUser(true);
+				backgroundJob.setPriority(Job.SHORT);
+				backgroundJob.schedule();
+			}
+		};
+		a.setEnabled(enabled);
+		if (description != null)
+			a.setDescription(description);
+		a.setChecked(checked);
+
+		return a;
+	}
+
+	private void addCopyToClipboardSubMenueEntries(Actionable act, final RepositoryPlugin rp,
+		MenuManager copyToSubMenu) {
+
+		final Registry registry = Central.getWorkspaceIfPresent();
+		if (registry == null) {
+			return;
+		}
+
+		final Clipboard clipboard = registry.getPlugin(Clipboard.class);
+
+		if (clipboard == null) {
+			return;
+		}
+
+		if (act instanceof RepositoryBundleVersion rbr) {
+
+			Action copyBsnAction = createAction("Copy bsn+version", "Copy bsn;version=version to clipboard.", true,
+				false, rp, () -> {
+
+
+				if (registry != null) {
+						String rev = rbr.getBsn() + ";version=" + rbr.getVersion()
+							.toString();
+						clipboard.copy(rev);
+
+				}
+
+			});
+			copyToSubMenu.add(copyBsnAction);
+
+			Action copyInfoAction = createAction("Copy info", "Add general info about this entry to clipboard.", true,
+				false, rp, () -> {
+
+				if (registry != null) {
+						String info = rbr.toString();
+						clipboard.copy(info);
+				}
+
+			});
+			copyToSubMenu.add(copyInfoAction);
+
+			Action copyTooltipAction = createAction("Copy tooltip", "Add tooltip content to clipboard.", true,
+				false, rp, () -> {
+
+						String tooltipContent;
+						try {
+							tooltipContent = act.tooltip(rbr.getBsn(), rbr.getVersion()
+								.toString());
+
+							if (tooltipContent != null) {
+								clipboard.copy(tooltipContent);
+							}
+						} catch (Exception e) {
+							throw Exceptions.duck(e);
+						}
+
+					}
+			);
+			copyToSubMenu.add(copyTooltipAction);
+
+		}
+	}
+
 }
