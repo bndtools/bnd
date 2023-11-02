@@ -810,62 +810,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 								hmenu.add(new HierarchicalLabel<Action>(label.replace("&", "&&"), l -> {
 
-									Action a = new Action(l.getLast()) {
-										@Override
-										public void run() {
-											Job backgroundJob = new Job("Repository Action '" + getText() + "'") {
-
-												@Override
-												protected IStatus run(IProgressMonitor monitor) {
-													try {
-														e1.getValue()
-															.run();
-														if (rp != null && rp instanceof Refreshable)
-															Central.refreshPlugin((Refreshable) rp, true);
-													} catch (final Exception e) {
-														IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
-															"Error executing: " + getName(), e);
-														Plugin.getDefault()
-															.getLog()
-															.log(status);
-													}
-													monitor.done();
-													return Status.OK_STATUS;
-												}
-											};
-
-											backgroundJob.addJobChangeListener(new JobChangeAdapter() {
-												@Override
-												public void done(IJobChangeEvent event) {
-													if (event.getResult()
-														.isOK()) {
-														viewer.getTree()
-															.getDisplay()
-															.asyncExec(() -> viewer.refresh());
-													}
-												}
-											});
-
-											backgroundJob.setUser(true);
-											backgroundJob.setPriority(Job.SHORT);
-											backgroundJob.schedule();
-										}
-									};
-									a.setEnabled(l.isEnabled());
-									if (l.getDescription() != null)
-										a.setDescription(l.getDescription());
-									a.setChecked(l.isChecked());
-
-									return a;
+									return createAction(l.getLast(), l.getDescription(), l.isEnabled(), l.isChecked(),
+										rp, e1.getValue());
 								}));
-
-								// // Actions for the sub menu
-								// if (label.startsWith("Copy")) {
-								// // add the action to the submenu
-								// copyToClipboardSubMenu.add(a);
-								// } else {
-								// manager.add(a);
-								// }
 
 							}
 
@@ -1169,9 +1116,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	private HierarchicalLabel<Action> createContextMenueCopyInfo(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundleVersion rbr) {
 
-		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info",
-			(label) -> createAction(label.getLast(), "Add general info about this entry to clipboard.", true,
-				false, rp, () -> {
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLast(),
+			"Add general info about this entry to clipboard.", true, false, rp, () -> {
 
 				final StringBuilder info = new StringBuilder();
 
@@ -1203,8 +1149,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		RepositoryBundleVersion rbr) {
 
 		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy bsn+version",
-			(label) -> createAction(label.getLast(), "Copy bsn;version=version to clipboard.", true, false, rp,
-				() -> {
+			(label) -> createAction(label.getLast(), "Copy bsn;version=version to clipboard.", true, false, rp, () -> {
 
 				String rev = rbr.getBsn() + ";version=" + rbr.getVersion()
 					.toString();
