@@ -89,6 +89,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.resource.Requirement;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
@@ -816,7 +817,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 							}
 
-
 						}
 
 						// build the final menue
@@ -1108,14 +1108,68 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		}
 
 		if (act instanceof RepositoryBundleVersion rbr) {
-
 			hmenu.add(createContextMenueBsn(rp, clipboard, rbr));
-			hmenu.add(createContextMenueCopyInfo(act, rp, clipboard, rbr));
-
+			hmenu.add(createContextMenueCopyInfoRepoBundleVersion(act, rp, clipboard, rbr));
 		}
+
+		if (act instanceof RepositoryBundle rb) {
+			hmenu.add(createContextMenueCopyInfoRepoBundle(act, rp, clipboard, rb));
+		}
+
+		if (act instanceof Repository r || act instanceof RepositoryPlugin r) {
+			hmenu.add(createContextMenueCopyInfoRepo(act, rp, clipboard));
+		}
+
 	}
 
-	private HierarchicalLabel<Action> createContextMenueCopyInfo(Actionable act, final RepositoryPlugin rp,
+	private HierarchicalLabel<Action> createContextMenueCopyInfoRepo(Actionable act, final RepositoryPlugin rp,
+		final Clipboard clipboard) {
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLast(),
+			"Add general info about this entry to clipboard.", true, false, rp, () -> {
+
+				final StringBuilder info = new StringBuilder();
+
+				// append the tooltip content
+				try {
+
+					String tooltipContent = act.tooltip();
+
+					if (tooltipContent != null && !tooltipContent.isBlank()) {
+						info.append(tooltipContent);
+						clipboard.copy(info.toString());
+					}
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+
+			}));
+	}
+
+	private HierarchicalLabel<Action> createContextMenueCopyInfoRepoBundle(Actionable act, final RepositoryPlugin rp,
+		final Clipboard clipboard, RepositoryBundle rb) {
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLast(),
+			"Add general info about this entry to clipboard.", true, false, rp, () -> {
+
+				final StringBuilder info = new StringBuilder();
+
+				// append the tooltip content
+				try {
+
+					String tooltipContent = act.tooltip(rb.getBsn());
+
+					if (tooltipContent != null && !tooltipContent.isBlank()) {
+						info.append(tooltipContent);
+						clipboard.copy(info.toString());
+					}
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+
+			}));
+	}
+
+	private HierarchicalLabel<Action> createContextMenueCopyInfoRepoBundleVersion(Actionable act,
+		final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundleVersion rbr) {
 
 		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLast(),
