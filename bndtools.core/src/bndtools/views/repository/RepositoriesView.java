@@ -1101,7 +1101,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		}
 	}
 
-	public Action createAction(String label, String description, boolean enabled, boolean checked, RepositoryPlugin rp,
+	private Action createAction(String label, String description, boolean enabled, boolean checked, RepositoryPlugin rp,
 		Runnable r) {
 
 		Action a = new Action(label) {
