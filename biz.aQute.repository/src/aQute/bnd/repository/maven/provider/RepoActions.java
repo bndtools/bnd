@@ -46,7 +46,7 @@ class RepoActions {
 		return map;
 	}
 
-	Map<String, Runnable> getRevisionActions(final Archive archive, String bsn, Version version, Clipboard clipboard)
+	Map<String, Runnable> getRevisionActions(final Archive archive, final Clipboard clipboard)
 		throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
 		map.put("Clear from Cache", () -> {
@@ -94,7 +94,7 @@ class RepoActions {
 		// Some "Copy to Clipboard" actions, if clipboard is available
 		if (clipboard != null) {
 
-			addCopyToClipboardActions(repo, archive, bsn, version, clipboard, map);
+			addCopyToClipboardActions(repo, archive, clipboard, map);
 
 		}
 
@@ -181,8 +181,8 @@ class RepoActions {
 		}
 	}
 
-	private static final void addCopyToClipboardActions(MavenBndRepository repo, final Archive archive, String bsn,
-		Version version, Clipboard clipboard, Map<String, Runnable> map) {
+	private static final void addCopyToClipboardActions(MavenBndRepository repo, final Archive archive,
+		Clipboard clipboard, Map<String, Runnable> map) {
 
 		map.put("Copy GAV to clipboard", () -> {
 			String rev = archive.getRevision()

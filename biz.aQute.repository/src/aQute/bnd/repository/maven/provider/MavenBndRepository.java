@@ -832,9 +832,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				return actions.getProgramActions((String) target[0]);
 			case 2 :
 				Archive archive = getArchive(target);
-				String bsn = (String) target[0];
-				Version version = (Version) target[1];
-				return actions.getRevisionActions(archive, bsn, version, registry.getPlugin(Clipboard.class));
+				return actions.getRevisionActions(archive, registry.getPlugin(Clipboard.class));
 			default :
 		}
 		return null;
