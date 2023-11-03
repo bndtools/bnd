@@ -1161,6 +1161,13 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						info.append(tooltipContent);
 						clipboard.copy(info.toString());
 					}
+			else {
+						// bundle does not seem to have a tooltip
+						// let's just add general bundle info
+						info.append(rb.toString());
+						clipboard.copy(info.toString());
+					}
+
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
