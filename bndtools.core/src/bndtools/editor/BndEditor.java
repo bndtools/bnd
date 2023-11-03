@@ -386,6 +386,11 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 									return button;
 								}
 							};
+
+							// non-modal means, that we can open multi resolve
+							// result windows and e.g. compare results
+							dialog.setModal(false);
+
 							if (dialog.open() == Window.OK && !dirtyBeforeResolve) {
 								// save changes immediately if there were no
 								// unsaved changes before the resolve
