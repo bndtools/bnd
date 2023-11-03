@@ -11,9 +11,10 @@ import java.util.Optional;
 
 import org.osgi.util.promise.Promise;
 
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.version.Version;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.clipboard.Clipboard;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
@@ -45,7 +46,8 @@ class RepoActions {
 		return map;
 	}
 
-	Map<String, Runnable> getRevisionActions(final Archive archive) throws Exception {
+	Map<String, Runnable> getRevisionActions(final Archive archive, final Clipboard clipboard)
+		throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
 		map.put("Clear from Cache", () -> {
 			File dir = repo.storage.toLocalFile(archive)
@@ -89,8 +91,17 @@ class RepoActions {
 
 		addSources(archive, map);
 
+		// Some "Copy to Clipboard" actions, if clipboard is available
+		if (clipboard != null) {
+
+			addCopyToClipboardActions(repo, archive, clipboard, map);
+
+		}
+
 		return map;
 	}
+
+
 
 	void addSources(final Archive archive, Map<String, Runnable> map) throws Exception {
 		Promise<File> pBinary = repo.storage.get(archive);
@@ -168,5 +179,42 @@ class RepoActions {
 			repo.index.add(d.program.version(d.version)
 				.archive("jar", null));
 		}
+	}
+
+	private static final void addCopyToClipboardActions(MavenBndRepository repo, final Archive archive,
+		Clipboard clipboard, Map<String, Runnable> map) {
+
+		map.put("Copy to clipboard :: Copy GAV to clipboard", () -> {
+			String rev = archive.getRevision()
+				.toString();
+			clipboard.copy(rev);
+		});
+
+		map.put("Copy to clipboard :: Copy Compile Dependecies to clipboard", () -> {
+
+			try {
+				StringBuilder sb = new StringBuilder();
+
+				IPom pom = repo.storage.getPom(archive.revision);
+				Map<Program, Dependency> dependencies = pom.getDependencies(MavenScope.compile, false);
+				for (Dependency d : dependencies.values()) {
+
+					sb.append(d.program.version(d.version)
+						.archive("jar", null));
+					sb.append("\n");
+				}
+
+				String content = sb.toString();
+				if (content.isEmpty()) {
+					clipboard.copy("-- No Compile Dependencies found --");
+				} else {
+					clipboard.copy(content);
+				}
+
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+
+		});
 	}
 }
