@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.ui.IWorkbench;
+import org.eclipse.e4.ui.workbench.IWorkbench;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.osgi.test.common.service.ServiceConfiguration;
