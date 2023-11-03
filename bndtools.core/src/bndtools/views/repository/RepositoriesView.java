@@ -811,7 +811,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 								hmenu.add(new HierarchicalLabel<Action>(label.replace("&", "&&"), l -> {
 
-									return createAction(l.getLast(), l.getDescription(), l.isEnabled(), l.isChecked(),
+									return createAction(l.getLeaf(), l.getDescription(), l.isEnabled(), l.isChecked(),
 										rp, e1.getValue());
 								}));
 
@@ -1124,7 +1124,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 	private HierarchicalLabel<Action> createContextMenueCopyInfoRepo(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard) {
-		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLast(),
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLeaf(),
 			"Add general info about this entry to clipboard.", true, false, rp, () -> {
 
 				final StringBuilder info = new StringBuilder();
@@ -1147,7 +1147,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 	private HierarchicalLabel<Action> createContextMenueCopyInfoRepoBundle(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundle rb) {
-		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLast(),
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLeaf(),
 			"Add general info about this entry to clipboard.", true, false, rp, () -> {
 
 				final StringBuilder info = new StringBuilder();
@@ -1172,7 +1172,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundleVersion rbr) {
 
-		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLast(),
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLeaf(),
 			"Add general info about this entry to clipboard.", true, false, rp, () -> {
 
 				final StringBuilder info = new StringBuilder();
@@ -1205,7 +1205,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		RepositoryBundleVersion rbr) {
 
 		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy bsn+version",
-			(label) -> createAction(label.getLast(), "Copy bsn;version=version to clipboard.", true, false, rp, () -> {
+			(label) -> createAction(label.getLeaf(), "Copy bsn;version=version to clipboard.", true, false, rp, () -> {
 
 				String rev = rbr.getBsn() + ";version=" + rbr.getVersion()
 					.toString();

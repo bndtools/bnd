@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This class uses a list labels to internally store the different hierarchical
@@ -28,60 +26,6 @@ import java.util.regex.Pattern;
 public class HierarchicalLabel<T> {
 
 	private static final String					DELIMITER_FOR_HIERARCHY	= " :: ";
-
-	/**
-	 * <p>
-	 * Regex for parsing the compoundLabelExpression in the constructor:
-	 * </p>
-	 * <ol>
-	 * <li>
-	 * <p>
-	 * <strong>Group 1 <code>(-)?</code></strong>: Represents an optional minus
-	 * sign <code>-</code>.
-	 * </p>
-	 * <ul>
-	 * <li>This is used to determine if something is <code>enabled</code>. If
-	 * this group is present, then <code>enabled</code> is set to
-	 * <code>false</code>.</li>
-	 * </ul>
-	 * </li>
-	 * <li>
-	 * <p>
-	 * <strong>Group 2 <code>(!)?</code></strong>: Represents an optional
-	 * exclamation mark <code>!</code>.
-	 * </p>
-	 * <ul>
-	 * <li>This is used to determine if something is <code>checked</code>. If
-	 * this group is present, then <code>checked</code> is set to
-	 * <code>true</code>.</li>
-	 * </ul>
-	 * </li>
-	 * <li>
-	 * <p>
-	 * <strong>Group 3 <code>([^{}]+)</code></strong>: Matches one or more
-	 * characters that are not curly braces <code>{</code> or <code>}</code>.
-	 * </p>
-	 * <ul>
-	 * <li>This captures the actual <code>labeltext</code>.</li>
-	 * </ul>
-	 * </li>
-	 * <li>
-	 * <p>
-	 * <strong>Group 4 <code>(?:\\{([^}]+)\\})?</code></strong>: This is an
-	 * optional group that captures text inside curly braces.
-	 * </p>
-	 * <ul>
-	 * <li><code>(?: ... )</code> is a non-capturing group.</li>
-	 * <li><code>\\{([^}]+)\\}</code> captures characters between <code>{</code>
-	 * and <code>}</code>.</li>
-	 * <li>This captures the <code>description</code>.</li>
-	 * </ul>
-	 * </li> See Constructor for Example Strings
-	 * </ol>
-	 * </p>
-	 */
-	final static Pattern						LABEL_PATTERN			= Pattern
-		.compile("(-)?(!)?([^{}]+)(?:\\{([^}]+)\\})?");
 
 	private final List<String>					labels;
 	private Function<HierarchicalLabel<T>, T>	leafActionCallback;
@@ -154,19 +98,11 @@ public class HierarchicalLabel<T> {
 			throw new IllegalArgumentException("Label string cannot be null or empty.");
 		}
 
-		String label = compoundLabel;
-		Matcher m = LABEL_PATTERN.matcher(compoundLabel);
-		if (m.matches()) {
-			if (m.group(1) != null)
-				enabled = false;
-
-			if (m.group(2) != null)
-				checked = true;
-
-			label = m.group(3);
-
-			description = m.group(4);
-		}
+		LabelParser parsedEntry = new LabelParser(compoundLabel);
+		this.enabled = parsedEntry.isEnabled();
+		this.checked = parsedEntry.isChecked();
+		this.description = parsedEntry.getDescription();
+		String label = parsedEntry.getLabel();
 
 		this.labels = new ArrayList<>(Arrays.asList(label.split(DELIMITER_FOR_HIERARCHY)));
 
@@ -191,7 +127,10 @@ public class HierarchicalLabel<T> {
 		return labels.get(0);
 	}
 
-	public String getLast() {
+	/**
+	 * @return the last entry (most right)
+	 */
+	public String getLeaf() {
 		return labels.get(labels.size() - 1);
 	}
 
