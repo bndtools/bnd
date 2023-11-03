@@ -3,6 +3,7 @@ package org.bndtools.core.resolve.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,10 +61,12 @@ public class ResolutionSuccessPanel {
 	private Button								btnAddResolveOptional;
 	private ResolutionResult					result;
 	private Section								sectOptional;
+	private Date								lastModelChangedAtOpening;
 
 	public ResolutionSuccessPanel(BndEditModel model, ResolutionResultPresenter presenter) {
 		this.model = model;
 		this.presenter = presenter;
+		this.lastModelChangedAtOpening = model.getLastChangedAt();
 	}
 
 	public void createControl(Composite parent) {
@@ -222,6 +225,13 @@ public class ResolutionSuccessPanel {
 	}
 
 	private void doAddResolve() {
+
+		if (!model.getLastChangedAt()
+			.equals(lastModelChangedAtOpening)) {
+			throw new IllegalStateException("Model has changed on " + model.getLastChangedAt()
+				+ " since we opened it at " + lastModelChangedAtOpening);
+		}
+
 		List<Requirement> oldRequires = model.getRunRequires();
 		if (oldRequires == null)
 			oldRequires = Collections.emptyList();

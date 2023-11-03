@@ -14,6 +14,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -269,6 +270,9 @@ public class BndEditModel {
 	private Workspace															workspace;
 	private IDocument															document;
 
+	// for change detection when multiple wizards look at the same model
+	private Date																lastChangedAt;
+
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
 
@@ -453,6 +457,7 @@ public class BndEditModel {
 	}
 
 	public void saveChangesTo(IDocument document) {
+		this.lastChangedAt = new Date();
 		for (Iterator<Entry<String, String>> iter = changesToSave.entrySet()
 			.iterator(); iter.hasNext();) {
 			Entry<String, String> entry = iter.next();
@@ -1445,6 +1450,10 @@ public class BndEditModel {
 		} catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	public Date getLastChangedAt() {
+		return lastChangedAt;
 	}
 
 }
