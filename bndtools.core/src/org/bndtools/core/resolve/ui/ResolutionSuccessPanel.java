@@ -227,8 +227,13 @@ public class ResolutionSuccessPanel {
 	private void doAddResolve() {
 
 		if (model.getLastChangedAt() > lastModelChangedAtOpening) {
-			throw new IllegalStateException("Model has changed on " + new Date(model.getLastChangedAt())
-				+ " since we opened it at " + new Date(lastModelChangedAtOpening));
+			String message = "Could update. The model has changed on " + new Date(model.getLastChangedAt())
+				+ " since we opened it at " + new Date(lastModelChangedAtOpening)
+				+ ". Please close and click on 'Resolve' again.";
+
+			presenter.setMessage(message, IMessageProvider.ERROR);
+
+			throw new IllegalStateException(message);
 		}
 
 		List<Requirement> oldRequires = model.getRunRequires();

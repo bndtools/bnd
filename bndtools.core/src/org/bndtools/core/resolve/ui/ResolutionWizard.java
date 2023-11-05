@@ -39,13 +39,11 @@ public class ResolutionWizard extends Wizard {
 		if (model.getLastChangedAt() > lastModelChangedAtOpening) {
 			MessageDialog.openError(getShell(), "Error",
 				"Wizard cannot continue and will now exit: Model has changed on " + new Date(model.getLastChangedAt())
-					+ " since we opened it at " + new Date(lastModelChangedAtOpening));
+					+ " since we opened it at " + new Date(lastModelChangedAtOpening)
+					+ ". Please close and click on 'Resolve' again.");
 			getContainer().getShell()
 				.close();
 			return false;
-			// throw new IllegalStateException("Model has changed on " +
-			// model.getLastChangedAt()
-			// + " since we opened it at " + lastModelChangedAtOpening);
 		}
 
 		if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved) {
