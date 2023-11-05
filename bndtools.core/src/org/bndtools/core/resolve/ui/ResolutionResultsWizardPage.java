@@ -3,6 +3,9 @@ package org.bndtools.core.resolve.ui;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveOperation;
@@ -13,9 +16,13 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.osgi.resource.Requirement;
+import org.osgi.service.resolver.ResolutionException;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.version.VersionRange;
+import biz.aQute.resolve.ResolveProcess;
 import bndtools.Plugin;
 
 public class ResolutionResultsWizardPage extends WizardPage implements ResolutionResultPresenter {
@@ -118,7 +125,11 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 				break;
 			default :
 				resolutionFailurePanel.setInput(result);
-				setErrorMessage("Resolution failed!");
+
+				String message = createHelpfulResolutionFailedMessage(result);
+
+				setErrorMessage("Resolution failed! " + message);
+
 				stack.topControl = resolutionFailurePanel.getControl();
 				break;
 		}
@@ -126,6 +137,93 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 		((Composite) getControl()).layout(true, true);
 
 		updateButtons();
+	}
+
+	/**
+	 * Try to produce a more human readable message which provides a hint which
+	 * dependency might be missing.
+	 *
+	 * @param result2
+	 * @return
+	 */
+	private static String createHelpfulResolutionFailedMessage(ResolutionResult result) {
+		String message = "";
+		ResolutionException resolutionException = result.getResolutionException();
+		if (resolutionException != null && resolutionException.getUnresolvedRequirements() != null
+			&& !resolutionException.getUnresolvedRequirements()
+				.isEmpty()) {
+
+			// last entry contains the info which could be most useful
+			// to create an error message
+			List<Requirement> causalChain = ResolveProcess.getCausalChain(resolutionException);
+			if (!causalChain.isEmpty()) {
+				Requirement lastEntry = causalChain.get(causalChain.size() - 1);
+				String pck = (String) lastEntry.getAttributes()
+					.get("osgi.wiring.package");
+
+				if (pck != null) {
+					String resourceName = lastEntry.getResource()
+						.toString();
+
+					String filter = lastEntry.getDirectives()
+						.get("filter");
+					VersionRange versionRange = filterToVersionRange(filter);
+
+					String messagePartVersion = versionRange != null ? versionRange.toString() : "";
+
+					// best effort to come up with a useful message
+					message = "You are missing a dependency containing the package / capability: \"" + pck
+						+ "\"";
+
+					if (messagePartVersion != null) {
+						message += " (in version " + messagePartVersion + ")";
+					}
+
+					message += ". This is required by " + resourceName + ").";
+				}
+
+				// TODO handle other cases / heuristics
+
+			}
+		}
+		return message;
+	}
+
+	/**
+	 * Extracts version strings from an ldap filter expression e.g.
+	 *
+	 * <pre>
+	 * osgi.wiring.package: (&(osgi.wiring.package=some.package.foo)(version>=2.3.0)(!(version>=3.0.0)))
+	 * </pre>
+	 *
+	 * TODO maybe there is a better place for this helper
+	 *
+	 * @param text The input string containing version information.
+	 * @return An array of strings containing the extracted version conditions.
+	 */
+	public static VersionRange filterToVersionRange(String text) {
+
+		if (text == null) {
+			return null;
+		}
+
+		// Define the regex pattern with capturing groups
+		Pattern pattern = Pattern.compile("\\(!?(version>=([^)]+))\\)");
+		Matcher matcher = pattern.matcher(text);
+
+		// Array to hold the matches
+		String[] versions = new String[2];
+		int count = 0;
+
+		// Find the matches and extract the captured groups
+		while (matcher.find() && count < 2) {
+			versions[count] = matcher.group(2); // Captured group 2 contains the
+												// version number
+			count++;
+		}
+
+		// Return the extracted versions if two were found
+		return count == 2 ? new VersionRange(versions[0], versions[1]) : null;
 	}
 
 	@Override

@@ -238,17 +238,7 @@ public class ResolveProcess {
 	 * @return the report
 	 */
 	public static String format(ResolutionException re, boolean reportOptional) {
-		List<Requirement> chain = new ArrayList<>();
-
-		Throwable cause = re;
-		while (cause != null) {
-			if (cause instanceof ReasonException mre) {
-				// there will only be one entry here
-				chain.addAll(mre.getUnresolvedRequirements());
-			}
-
-			cause = cause.getCause();
-		}
+		List<Requirement> chain = getCausalChain(re);
 
 		Map<Boolean, List<Requirement>> requirements = re.getUnresolvedRequirements()
 			.stream()
@@ -284,6 +274,21 @@ public class ResolveProcess {
 
 			return f.toString();
 		}
+	}
+
+	public static List<Requirement> getCausalChain(ResolutionException re) {
+		List<Requirement> chain = new ArrayList<>();
+
+		Throwable cause = re;
+		while (cause != null) {
+			if (cause instanceof ReasonException mre) {
+				// there will only be one entry here
+				chain.addAll(mre.getUnresolvedRequirements());
+			}
+
+			cause = cause.getCause();
+		}
+		return chain;
 	}
 
 	static BiConsumer<? super Resource, ? super List<Requirement>> formatGroup(Formatter f) {
