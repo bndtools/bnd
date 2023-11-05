@@ -16,7 +16,7 @@ public class ResolutionWizard extends Wizard {
 	private final ResolutionResultsWizardPage	resultsPage;
 	private final BndEditModel					model;
 	private boolean								preserveRunBundleUnresolved;
-	private Date								lastModelChangedAtOpening;
+	private long								lastModelChangedAtOpening;
 
 	@SuppressWarnings("unused")
 	public ResolutionWizard(BndEditModel model, IFile file, ResolutionResult result) {
@@ -36,11 +36,10 @@ public class ResolutionWizard extends Wizard {
 	public boolean performFinish() {
 		ResolutionResult result = resultsPage.getResult();
 
-		if (!model.getLastChangedAt()
-			.equals(lastModelChangedAtOpening)) {
+		if (model.getLastChangedAt() > lastModelChangedAtOpening) {
 			MessageDialog.openError(getShell(), "Error",
-				"Wizard cannot continue and will now exit: Model has changed on " + model.getLastChangedAt()
-					+ " since we opened it at " + lastModelChangedAtOpening);
+				"Wizard cannot continue and will now exit: Model has changed on " + new Date(model.getLastChangedAt())
+					+ " since we opened it at " + new Date(lastModelChangedAtOpening));
 			getContainer().getShell()
 				.close();
 			return false;

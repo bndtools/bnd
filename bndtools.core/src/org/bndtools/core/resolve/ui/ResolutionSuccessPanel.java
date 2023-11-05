@@ -61,7 +61,7 @@ public class ResolutionSuccessPanel {
 	private Button								btnAddResolveOptional;
 	private ResolutionResult					result;
 	private Section								sectOptional;
-	private Date								lastModelChangedAtOpening;
+	private long								lastModelChangedAtOpening;
 
 	public ResolutionSuccessPanel(BndEditModel model, ResolutionResultPresenter presenter) {
 		this.model = model;
@@ -226,10 +226,9 @@ public class ResolutionSuccessPanel {
 
 	private void doAddResolve() {
 
-		if (!model.getLastChangedAt()
-			.equals(lastModelChangedAtOpening)) {
-			throw new IllegalStateException("Model has changed on " + model.getLastChangedAt()
-				+ " since we opened it at " + lastModelChangedAtOpening);
+		if (model.getLastChangedAt() > lastModelChangedAtOpening) {
+			throw new IllegalStateException("Model has changed on " + new Date(model.getLastChangedAt())
+				+ " since we opened it at " + new Date(lastModelChangedAtOpening));
 		}
 
 		List<Requirement> oldRequires = model.getRunRequires();
