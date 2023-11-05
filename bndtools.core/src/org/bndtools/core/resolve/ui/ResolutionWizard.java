@@ -5,7 +5,7 @@ import java.util.Date;
 
 import org.bndtools.core.resolve.ResolutionResult;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.build.model.BndEditModel;
@@ -37,12 +37,21 @@ public class ResolutionWizard extends Wizard {
 		ResolutionResult result = resultsPage.getResult();
 
 		if (model.getLastChangedAt() > lastModelChangedAtOpening) {
-			MessageDialog.openError(getShell(), "Error",
-				"Wizard cannot continue and will now exit: Model has changed on " + new Date(model.getLastChangedAt())
-					+ " since we opened it at " + new Date(lastModelChangedAtOpening)
-					+ ". Please close and click on 'Resolve' again.");
-			getContainer().getShell()
-				.close();
+
+			String message = "Could update. The model has changed on " + new Date(model.getLastChangedAt())
+				+ " since we opened it at " + new Date(lastModelChangedAtOpening)
+				+ ". Please close and click on 'Resolve' again.";
+
+			resultsPage.setMessage(message, IMessageProvider.ERROR);
+
+			// alternative:
+			// MessageDialog.openError(getShell(), "Error",
+			// "Wizard cannot continue and will now exit: Model has changed on "
+			// + new Date(model.getLastChangedAt())
+			// + " since we opened it at " + new Date(lastModelChangedAtOpening)
+			// + ". Please close and click on 'Resolve' again.");
+			// getContainer().getShell()
+			// .close();
 			return false;
 		}
 
