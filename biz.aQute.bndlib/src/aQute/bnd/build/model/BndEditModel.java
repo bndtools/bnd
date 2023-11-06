@@ -269,6 +269,9 @@ public class BndEditModel {
 	private Workspace															workspace;
 	private IDocument															document;
 
+	// for change detection when multiple wizards look at the same model
+	private long																lastChangedAt;
+
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
 
@@ -453,6 +456,7 @@ public class BndEditModel {
 	}
 
 	public void saveChangesTo(IDocument document) {
+		this.lastChangedAt = System.currentTimeMillis();
 		for (Iterator<Entry<String, String>> iter = changesToSave.entrySet()
 			.iterator(); iter.hasNext();) {
 			Entry<String, String> entry = iter.next();
@@ -1445,6 +1449,10 @@ public class BndEditModel {
 		} catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	public long getLastChangedAt() {
+		return lastChangedAt;
 	}
 
 }
