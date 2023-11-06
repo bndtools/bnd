@@ -119,11 +119,8 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 			default :
 				resolutionFailurePanel.setInput(result);
 
-				setErrorMessage(
-					"Resolution failed! The error message below is structured like a tree. "
-						+ "The trunk is the first line with the initial error,\n"
-						+ "and the most indented lines are the leaves, "
-						+ "detailing specific requirements that have not been met (usually missing dependencies (bundles, jars).");
+				setErrorMessage("Resolution failed! The tree-like error message below "
+						+ "contain details about unmet requirements and dependencies (most indended lines).");
 
 				stack.topControl = resolutionFailurePanel.getControl();
 				break;

@@ -22,8 +22,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.felix.resolver.reason.ReasonException;
@@ -42,10 +40,13 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.FilterParser;
+import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.osgi.resource.FilterParser.IdentityExpression;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.WireImpl;
 import aQute.bnd.service.Registry;
-import aQute.bnd.version.VersionRange;
 import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 import aQute.libg.tuple.Pair;
@@ -250,19 +251,21 @@ public class ResolveProcess {
 
 		try (Formatter f = new Formatter()) {
 
-			String humanReadableFailedReason = createHelpfulResolutionFailedMessage(re);
+			FilterParser p = new FilterParser();
 
-			if(!humanReadableFailedReason.isEmpty()) {
+			f.format("Resolution failed. Summary:");
 
-				// add disclaimer
-				String disclaimer = " Sometimes the resolution fails for other reasons; check the output below for additional clues.";
+			// 1. pretty print requirements chain using FilterParser which is
+			// easier to read
 
-				f.format(
-					"Resolution failed. Possible reason: %s (Disclaimer: %s)", humanReadableFailedReason, disclaimer);
-			}
-			else {
-				f.format("Resolution failed. Capabilities satisfying the following requirements could not be found:");
-			}
+			prettyPrintSummary(chain, f, p);
+
+			// 2. do the original which still has more details
+			f.format("\n\n");
+			f.format(
+				"Note: The summary above may be incomplete. Please check the full output below for more hints.\n");
+			f.format("Capabilities satisfying the following requirements could not be found:\n");
+
 			String prefix = "    ";
 			for (Requirement req : chain) {
 				f.format("%n%s[%s]", prefix, req.getResource());
@@ -292,6 +295,19 @@ public class ResolveProcess {
 		}
 	}
 
+	private static void prettyPrintSummary(List<Requirement> chain, Formatter f, FilterParser p) {
+		String prefix = "    ";
+		for (Requirement req : chain) {
+			// f.format("%n%s[%s]", prefix, req.getResource());
+			if ("    ".equals(prefix))
+				prefix = ARROW;
+			else
+				prefix = "    " + prefix;
+			formatPrettyPrinted(f, prefix, req, p);
+			prefix = "    " + prefix;
+		}
+	}
+
 	private static List<Requirement> getCausalChain(ResolutionException re) {
 		List<Requirement> chain = new ArrayList<>();
 
@@ -308,93 +324,6 @@ public class ResolveProcess {
 	}
 
 
-	/**
-	 * Try to produce a more human readable message which provides a hint which
-	 * dependency might be missing.
-	 *
-	 * @param re
-	 * @return a human readable message or empty string.
-	 */
-	private static String createHelpfulResolutionFailedMessage(ResolutionException re) {
-
-		String message = "";
-
-		if (re != null && re.getUnresolvedRequirements() != null && !re.getUnresolvedRequirements()
-				.isEmpty()) {
-
-			// last entry contains the info which could be most useful
-			// to create an error message
-			List<Requirement> causalChain = getCausalChain(re);
-			if (!causalChain.isEmpty()) {
-				Requirement lastEntry = causalChain.get(causalChain.size() - 1);
-				String pck = (String) lastEntry.getAttributes()
-					.get("osgi.wiring.package");
-
-				if (pck != null) {
-					String resourceName = lastEntry.getResource()
-						.toString();
-
-					String filter = lastEntry.getDirectives()
-						.get("filter");
-					VersionRange versionRange = filterToVersionRange(filter);
-
-					String messagePartVersion = versionRange != null ? versionRange.toString() : "";
-
-					// best effort to come up with a useful message
-					message = "You are most likely missing a dependency providing the package / capability: \"" + pck
-						+ "\"";
-
-					if (messagePartVersion != null) {
-						message += " (in version " + messagePartVersion + ")";
-					}
-
-					message += ". This is required by " + resourceName + ").";
-
-				}
-
-				// TODO handle other cases / heuristics
-
-			}
-		}
-		return message;
-	}
-
-	/**
-	 * Extracts version strings from an ldap filter expression e.g.
-	 *
-	 * <pre>
-	 * osgi.wiring.package: (&(osgi.wiring.package=some.package.foo)(version>=2.3.0)(!(version>=3.0.0)))
-	 * </pre>
-	 *
-	 * TODO maybe there is a better place for this helper
-	 *
-	 * @param text The input string containing version information.
-	 * @return An array of strings containing the extracted version conditions.
-	 */
-	private static VersionRange filterToVersionRange(String text) {
-
-		if (text == null) {
-			return null;
-		}
-
-		// Define the regex pattern with capturing groups
-		Pattern pattern = Pattern.compile("\\(!?(version>=([^)]+))\\)");
-		Matcher matcher = pattern.matcher(text);
-
-		// Array to hold the matches
-		String[] versions = new String[2];
-		int count = 0;
-
-		// Find the matches and extract the captured groups
-		while (matcher.find() && count < 2) {
-			versions[count] = matcher.group(2); // Captured group 2 contains the
-												// version number
-			count++;
-		}
-
-		// Return the extracted versions if two were found
-		return count == 2 ? new VersionRange(versions[0], versions[1]) : null;
-	}
 
 	static BiConsumer<? super Resource, ? super List<Requirement>> formatGroup(Formatter f) {
 		return (resource, list) -> {
@@ -410,6 +339,24 @@ public class ResolveProcess {
 			.get("filter");
 
 		f.format("%n%s%s: %s", prefix, req.getNamespace(), filter);
+	}
+
+	private static void formatPrettyPrinted(Formatter f, String prefix, Requirement req, FilterParser p) {
+		String filter = req.getDirectives()
+			.get("filter");
+
+		Expression prettyFilter = p.parse(req);
+
+		if (prettyFilter instanceof IdentityExpression iexp) {
+			f.format("%n%s%s: %s %s", prefix, "Bundle", prettyFilter.toString(), "cannot be resolved");
+		} else if (prettyFilter instanceof PackageExpression pck) {
+			f.format("%n%s%s: %s %s", prefix, "because package", prettyFilter.toString(),
+				"is not provided by any other bundle or dependency");
+		}
+		else {
+			String category = FilterParser.namespaceToCategory(req.getNamespace());
+			f.format("%n%s%s: %s %s", prefix, category, prettyFilter.toString(), "cannot be resolved");
+		}
 	}
 
 	public static String format(Collection<Requirement> requirements) {
