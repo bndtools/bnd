@@ -251,23 +251,16 @@ public class ResolveProcess {
 
 		try (Formatter f = new Formatter()) {
 
-			FilterParser p = new FilterParser();
-
 			f.format("Resolution failed. Summary:");
 
-			// 1. pretty print requirements chain using FilterParser which is
-			// easier to read
+			// 1. Print a shorter "human" readable summary
+			printSummary(chain, f);
 
-			prettyPrintSummary(chain, f, p);
-
-			// 2. do the original which still has more details
-			f.format("\n\n");
-			f.format(
-				"Note: The summary above may be incomplete. Please check the full output below for more hints.\n");
+			// 2. Still print the original which has more details
 
 			// this line is required by
 			// /gradle-plugins/biz.aQute.bnd.gradle/src/test/groovy/aQute/bnd/gradle/TestResolveTask.groovy
-			f.format("Resolution failed. Capabilities satisfying the following requirements could not be found:\n");
+			f.format("Resolution failed. Capabilities satisfying the following requirements could not be found:%n");
 
 			String prefix = "    ";
 			for (Requirement req : chain) {
@@ -298,10 +291,21 @@ public class ResolveProcess {
 		}
 	}
 
-	private static void prettyPrintSummary(List<Requirement> chain, Formatter f, FilterParser p) {
+	/**
+	 * Prints a summary by transforming the requirements chain using
+	 * FilterParser which removes visual noise from the output and tries to make
+	 * the output read like a sentence. It is hopefully easier to digest as a
+	 * user. We still print the full resolution output below to.
+	 *
+	 * @param chain
+	 * @param f
+	 */
+	private static void printSummary(List<Requirement> chain, Formatter f) {
+
+		FilterParser p = new FilterParser();
+
 		String prefix = "    ";
 		for (Requirement req : chain) {
-			// f.format("%n%s[%s]", prefix, req.getResource());
 			if ("    ".equals(prefix))
 				prefix = ARROW;
 			else
@@ -309,6 +313,9 @@ public class ResolveProcess {
 			formatPrettyPrinted(f, prefix, req, p);
 			prefix = "    " + prefix;
 		}
+
+		f.format("%n%n");
+		f.format("Note: The summary above may be incomplete. Please check the full output below for more hints.%n");
 	}
 
 	private static List<Requirement> getCausalChain(ResolutionException re) {
