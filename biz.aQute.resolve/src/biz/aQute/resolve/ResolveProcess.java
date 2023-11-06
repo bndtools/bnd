@@ -264,7 +264,10 @@ public class ResolveProcess {
 			f.format("\n\n");
 			f.format(
 				"Note: The summary above may be incomplete. Please check the full output below for more hints.\n");
-			f.format("Capabilities satisfying the following requirements could not be found:\n");
+
+			// this line is required by
+			// /gradle-plugins/biz.aQute.bnd.gradle/src/test/groovy/aQute/bnd/gradle/TestResolveTask.groovy
+			f.format("Resolution failed. Capabilities satisfying the following requirements could not be found:\n");
 
 			String prefix = "    ";
 			for (Requirement req : chain) {
