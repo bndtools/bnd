@@ -351,21 +351,38 @@ public class ResolveProcess {
 		f.format("%n%s%s: %s", prefix, req.getNamespace(), filter);
 	}
 
+	/**
+	 * Tries to transform a Requirement into a sentence.
+	 *
+	 * @param f
+	 * @param prefix
+	 * @param req
+	 * @param p
+	 */
 	private static void formatPrettyPrinted(Formatter f, String prefix, Requirement req, FilterParser p) {
 		String filter = req.getDirectives()
 			.get("filter");
 
-		Expression prettyFilter = p.parse(req);
+		Expression prettyExp = p.parse(req);
 
-		if (prettyFilter instanceof IdentityExpression iexp) {
-			f.format("%n%s%s: %s %s", prefix, "Bundle", prettyFilter.toString(), "cannot be resolved");
-		} else if (prettyFilter instanceof PackageExpression pck) {
-			f.format("%n%s%s: %s %s", prefix, "because package", prettyFilter.toString(),
-				"is not provided by any other bundle or dependency");
+		if (prettyExp instanceof IdentityExpression iexp) {
+			// e.g. "Bundle: biz.aQute.bnd cannot be resolved"
+			f.format("%n%s%s: %s %s", prefix, "Bundle", prettyExp.toString(), "cannot be resolved");
+		} else if (prettyExp instanceof PackageExpression pck) {
+			// e.g. "because Import-Package requirement for :
+			// org.apache.tools.ant.types could not be provided by any
+			// available bundle or dependency"
+			String category = FilterParser.namespaceToCategory(req.getNamespace());
+			f.format("%n%s%s%s%s: %s %s", prefix, "because ", category, " requirement for", prettyExp.toString(),
+				"could not be provided by any available bundle or dependency");
 		}
 		else {
+			// any other case
+			// e.g. "osgi.enroute.endpoint:
+			// &(osgi.enroute.endpoint=/sse/1)(version=[1.1.0,2.0.0)) cannot be
+			// resolved"
 			String category = FilterParser.namespaceToCategory(req.getNamespace());
-			f.format("%n%s%s: %s %s", prefix, category, prettyFilter.toString(), "cannot be resolved");
+			f.format("%n%s%s: %s %s", prefix, category, prettyExp.toString(), "cannot be resolved");
 		}
 	}
 
