@@ -40,6 +40,10 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.FilterParser;
+import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.osgi.resource.FilterParser.IdentityExpression;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.WireImpl;
 import aQute.bnd.service.Registry;
@@ -238,17 +242,7 @@ public class ResolveProcess {
 	 * @return the report
 	 */
 	public static String format(ResolutionException re, boolean reportOptional) {
-		List<Requirement> chain = new ArrayList<>();
-
-		Throwable cause = re;
-		while (cause != null) {
-			if (cause instanceof ReasonException mre) {
-				// there will only be one entry here
-				chain.addAll(mre.getUnresolvedRequirements());
-			}
-
-			cause = cause.getCause();
-		}
+		List<Requirement> chain = getCausalChain(re);
 
 		Map<Boolean, List<Requirement>> requirements = re.getUnresolvedRequirements()
 			.stream()
@@ -256,7 +250,18 @@ public class ResolveProcess {
 			.collect(Collectors.partitioningBy(ResolveProcess::isOptional));
 
 		try (Formatter f = new Formatter()) {
-			f.format("Resolution failed. Capabilities satisfying the following requirements could not be found:");
+
+			f.format("Resolution failed. Summary:");
+
+			// 1. Print a shorter "human" readable summary
+			printSummary(chain, f);
+
+			// 2. Still print the original which has more details
+
+			// this line is required by
+			// /gradle-plugins/biz.aQute.bnd.gradle/src/test/groovy/aQute/bnd/gradle/TestResolveTask.groovy
+			f.format("Resolution failed. Capabilities satisfying the following requirements could not be found:%n");
+
 			String prefix = "    ";
 			for (Requirement req : chain) {
 				f.format("%n%s[%s]", prefix, req.getResource());
@@ -286,6 +291,50 @@ public class ResolveProcess {
 		}
 	}
 
+	/**
+	 * Prints a summary by transforming the requirements chain using
+	 * FilterParser which removes visual noise from the output and tries to make
+	 * the output read like a sentence. It is hopefully easier to digest as a
+	 * user. We still print the full resolution output below to.
+	 *
+	 * @param chain
+	 * @param f
+	 */
+	private static void printSummary(List<Requirement> chain, Formatter f) {
+
+		FilterParser p = new FilterParser();
+
+		String prefix = "    ";
+		for (Requirement req : chain) {
+			if ("    ".equals(prefix))
+				prefix = ARROW;
+			else
+				prefix = "    " + prefix;
+			formatPrettyPrinted(f, prefix, req, p);
+			prefix = "    " + prefix;
+		}
+
+		f.format("%n%n");
+		f.format("Note: The summary above may be incomplete. Please check the full output below for more hints.%n");
+	}
+
+	private static List<Requirement> getCausalChain(ResolutionException re) {
+		List<Requirement> chain = new ArrayList<>();
+
+		Throwable cause = re;
+		while (cause != null) {
+			if (cause instanceof ReasonException mre) {
+				// there will only be one entry here
+				chain.addAll(mre.getUnresolvedRequirements());
+			}
+
+			cause = cause.getCause();
+		}
+		return chain;
+	}
+
+
+
 	static BiConsumer<? super Resource, ? super List<Requirement>> formatGroup(Formatter f) {
 		return (resource, list) -> {
 			f.format("%n    [%s]", resource);
@@ -300,6 +349,41 @@ public class ResolveProcess {
 			.get("filter");
 
 		f.format("%n%s%s: %s", prefix, req.getNamespace(), filter);
+	}
+
+	/**
+	 * Tries to transform a Requirement into a sentence.
+	 *
+	 * @param f
+	 * @param prefix
+	 * @param req
+	 * @param p
+	 */
+	private static void formatPrettyPrinted(Formatter f, String prefix, Requirement req, FilterParser p) {
+		String filter = req.getDirectives()
+			.get("filter");
+
+		Expression prettyExp = p.parse(req);
+
+		if (prettyExp instanceof IdentityExpression iexp) {
+			// e.g. "Bundle: biz.aQute.bnd cannot be resolved"
+			f.format("%n%s%s: %s %s", prefix, "Bundle", prettyExp.toString(), "cannot be resolved");
+		} else if (prettyExp instanceof PackageExpression pck) {
+			// e.g. "because Import-Package requirement for :
+			// org.apache.tools.ant.types could not be provided by any
+			// available bundle or dependency"
+			String category = FilterParser.namespaceToCategory(req.getNamespace());
+			f.format("%n%s%s%s%s: %s %s", prefix, "because ", category, " requirement for", prettyExp.toString(),
+				"could not be provided by any available bundle or dependency");
+		}
+		else {
+			// any other case
+			// e.g. "osgi.enroute.endpoint:
+			// &(osgi.enroute.endpoint=/sse/1)(version=[1.1.0,2.0.0)) cannot be
+			// resolved"
+			String category = FilterParser.namespaceToCategory(req.getNamespace());
+			f.format("%n%s%s: %s %s", prefix, category, prettyExp.toString(), "cannot be resolved");
+		}
 	}
 
 	public static String format(Collection<Requirement> requirements) {

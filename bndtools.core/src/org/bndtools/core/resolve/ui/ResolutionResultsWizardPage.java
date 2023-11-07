@@ -118,7 +118,10 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 				break;
 			default :
 				resolutionFailurePanel.setInput(result);
-				setErrorMessage("Resolution failed!");
+
+				setErrorMessage("Resolution failed! The tree-like error message below "
+						+ "contain details about unmet requirements and dependencies (most indended lines).");
+
 				stack.topControl = resolutionFailurePanel.getControl();
 				break;
 		}
@@ -127,6 +130,7 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
 		updateButtons();
 	}
+
 
 	@Override
 	public void updateButtons() {
