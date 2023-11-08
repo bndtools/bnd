@@ -30,8 +30,11 @@ import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.memoize.Memoize;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.CL;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.resource.MainClassNamespace;
 import aQute.bnd.result.Result;
 import aQute.bnd.service.Plugin;
@@ -110,6 +113,8 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
 		List<File> cp = new ArrayList<>();
 		try {
+			String mainClassBin = Descriptors.fqnClassToBinary(mainClass);
+			boolean mainClassPresent = false;
 
 			Parameters cpp = new Parameters(attrs.get("classpath"));
 
@@ -122,6 +127,12 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 				if (result.isErr())
 					return result.asError();
 
+				try (Jar jar = new Jar(result.unwrap())) {
+					Resource resource = jar.getResource(mainClassBin);
+					if (resource != null) {
+						mainClassPresent = true;
+					}
+				}
 				cp.add(result.unwrap());
 			}
 
@@ -131,16 +142,19 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 				.sorted(this::sort)
 				.collect(Collectors.toList());
 
-			if (caps.isEmpty())
-				return Result.err("no bundle found with main class %s", mainClass);
+			if (caps.isEmpty()) {
+				if (!mainClassPresent)
+					return Result.err("no bundle found with main class %s", mainClass);
+			} else {
 
-			Capability cap = caps.get(0);
+				Capability cap = caps.get(0);
 
-			Result<File> bundle = workspace.getBundle(cap.getResource());
-			if (bundle.isErr())
-				return bundle.asError();
+				Result<File> bundle = workspace.getBundle(cap.getResource());
+				if (bundle.isErr())
+					return bundle.asError();
 
-			cp.add(bundle.unwrap());
+				cp.add(bundle.unwrap());
+			}
 
 			Command c = new Command();
 
