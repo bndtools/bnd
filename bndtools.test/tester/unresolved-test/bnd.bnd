@@ -2,7 +2,7 @@ Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test*}
 
 -buildpath: \
 	org.apache.servicemix.bundles.junit,\
-	org.junit.jupiter.api,\
+	junit-jupiter-api,\
 	org.opentest4j,\
 	com.google.guava
 	

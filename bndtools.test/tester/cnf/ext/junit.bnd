@@ -1,3 +1,6 @@
+junit.platform.version: 1.9.2
+junit.jupiter.version: 5.9.2
+
 junit: org.apache.servicemix.bundles.junit;version="[4.11,5)",\
  org.assertj.core;version="[3,4)"
 mockito: org.mockito.mockito-core;version="[2,3)",\

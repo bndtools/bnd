@@ -1,18 +1,17 @@
--runfw: org.apache.felix.framework;version='[5.6.10,5.6.10]'
--runee: JavaSE-1.8
+-runfw: org.apache.felix.framework;version='[7.0.5,7.0.5]'
+-runee: JavaSE-17
 
 -tester: biz.aQute.tester.junit-platform	
 
 -runrequires: \
-	bnd.identity;id='org.junit.jupiter.engine';version=latest,\
-	bnd.identity;id='org.junit.vintage.engine';version=latest,\
-	bnd.identity;id='main-with-runners';version=snapshot,\
+	bnd.identity;id=main-with-runners;version=snapshot,\
 	bnd.identity;id='my.fragment.of.test4';version=snapshot,\
+	bnd.identity;id=test-fragment;version=snapshot,\
 	bnd.identity;id='biz.aQute.tester.junit-platform';version=latest,\
 	bnd.identity;id='org.apache.felix.gogo.command';version=latest,\
 	bnd.identity;id='org.apache.felix.gogo.runtime';version=latest,\
 	bnd.identity;id='org.apache.felix.gogo.shell';version=latest,\
-	bnd.identity;id='test-fragment';version=snapshot
+	bnd.identity;id=junit-vintage-engine
 	
 -runproperties: launcher.trace=true,\
 	osgi.console=,\
@@ -20,27 +19,28 @@
 	tester.continuous=true,\
 	tester.trace=true
 
-runbundles.basetests: \
-	main-with-runners;version=snapshot,\
-	my.bundle.of.test3;version=snapshot,\
-	my.fragment.of.test4;version=snapshot,\
-	org.apache.felix.gogo.command,\
-	org.apache.felix.gogo.runtime,\
-	org.apache.felix.gogo.shell,\
-	org.apache.felix.log,\
-	org.apache.servicemix.bundles.junit,\
-	org.apiguardian,\
-	org.assertj.core,\
-	org.junit.jupiter.api,\
-	org.junit.jupiter.engine,\
-	org.junit.jupiter.params,\
-	org.junit.platform.commons,\
-	org.junit.platform.engine,\
-	org.junit.platform.launcher,\
-	org.junit.vintage.engine,\
-	org.opentest4j,\
-	test;version=snapshot,\
-	test-fragment;version=snapshot
-		
-runbundles.tester: \
-	biz.aQute.tester.junit-platform
+# This will help us keep -runbundles sorted
+-runstartlevel: \
+    order=sortbynameversion,\
+    begin=-1
+
+-runbundles: \
+	biz.aQute.tester.junit-platform;version='[6.0.0,6.0.1)',\
+	junit-jupiter-api;version='[5.9.2,5.9.3)',\
+	junit-jupiter-engine;version='[5.9.2,5.9.3)',\
+	junit-jupiter-params;version='[5.9.2,5.9.3)',\
+	junit-platform-commons;version='[1.9.2,1.9.3)',\
+	junit-platform-engine;version='[1.9.2,1.9.3)',\
+	junit-platform-launcher;version='[1.9.2,1.9.3)',\
+	junit-vintage-engine;version='[5.9.2,5.9.3)',\
+	main-with-runners;version='[4.3.0,4.3.1)',\
+	my.bundle.of.test3;version='[4.3.0,4.3.1)',\
+	my.fragment.of.test4;version='[4.3.0,4.3.1)',\
+	org.apache.felix.gogo.command;version='[1.0.2,1.0.3)',\
+	org.apache.felix.gogo.runtime;version='[1.1.0,1.1.1)',\
+	org.apache.felix.gogo.shell;version='[1.1.0,1.1.1)',\
+	org.apache.servicemix.bundles.junit;version='[4.12.0,4.12.1)',\
+	org.assertj.core;version='[3.12.1,3.12.2)',\
+	org.opentest4j;version='[1.2.0,1.2.1)',\
+	test;version='[4.3.0,4.3.1)',\
+	test-fragment;version='[4.3.0,4.3.1)'
