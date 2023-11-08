@@ -62,6 +62,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.junit.system.BndSystem;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
+import aQute.tester.junit.platform.api.BeforeTestLoopCallback;
 import aQute.tester.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
 import aQute.tester.junit.platform.utils.BundleUtils;
 
@@ -81,12 +82,17 @@ public class Activator implements BundleActivator, Runnable {
 	private List<TestExecutionListener>		listeners	= new ArrayList<>();
 	final BlockingDeque<DiscoverySelector>	queue		= new LinkedBlockingDeque<>();
 
+	ServiceTracker<BeforeTestLoopCallback, BeforeTestLoopCallback>	beforeDiscovery;
+
 	public Activator() {}
 
 	@Override
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
 		active = true;
+
+		beforeDiscovery = new ServiceTracker<>(context, BeforeTestLoopCallback.class, null);
+		beforeDiscovery.open();
 
 		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
 			&& Boolean.valueOf(context.getProperty("launch.services"))) {
@@ -103,6 +109,8 @@ public class Activator implements BundleActivator, Runnable {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		beforeDiscovery.close();
+		beforeDiscovery = null;
 		active = false;
 		if (jUnitEclipseListener != null)
 			jUnitEclipseListener.close();
@@ -116,6 +124,8 @@ public class Activator implements BundleActivator, Runnable {
 	public boolean active() {
 		return active;
 	}
+
+	static final BeforeTestLoopCallback[] BEFORE_DISCOVERY = new BeforeTestLoopCallback[0];
 
 	@Override
 	public void run() {
@@ -219,6 +229,12 @@ public class Activator implements BundleActivator, Runnable {
 				trace("", "TEST %s <<< SKIPPED", testName(testIdentifier));
 			}
 		});
+
+		// Invoke the Before Discovery callbacks.
+		for (BeforeTestLoopCallback callback : beforeDiscovery.getServices(BEFORE_DISCOVERY)) {
+			callback.beforeTestLoop();
+		}
+
 		trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
 		try {
 			automatic();

@@ -50,3 +50,4 @@ Import-Package: \
 
 -baseline: *
 
+Export-Package: aQute.tester.junit.platform.api
