@@ -1,6 +1,4 @@
 -include: runtests-shared.bndrun
 
--runbundles: \
-	${runbundles.basetests},\
-	unresolved-test,\
-	${runbundles.tester}		
+-runbundles.unresolved: \
+	unresolved-test

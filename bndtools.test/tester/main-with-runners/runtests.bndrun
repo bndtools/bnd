@@ -1,5 +1,0 @@
--include: runtests-shared.bndrun
-
--runbundles: \
-	${runbundles.basetests},\
-	${runbundles.tester}

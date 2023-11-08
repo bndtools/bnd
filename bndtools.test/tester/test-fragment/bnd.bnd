@@ -3,7 +3,7 @@ Fragment-Host: test
 Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test*}
 -buildpath: \
 	test;version=snapshot,\
-	org.junit.jupiter.api,\
+	junit-jupiter-api,\
 	org.assertj.core,\
 	org.apache.servicemix.bundles.junit,\
-	org.junit.jupiter.params
+	junit-jupiter-params
