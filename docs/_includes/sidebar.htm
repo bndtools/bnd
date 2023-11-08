@@ -1,9 +1,26 @@
-<ul class="side-nav">
-	{% for chapter in site.chapters %}
-		{% if chapter.title == page.title %}
-			<li class=selected>{{chapter.title}}
-	  	{% else %}
-			<li><a href="{{ chapter.url | prepend: site.baseurl }}">{{chapter.title}}</a>
-	  	{% endif %}
-  	{% endfor %}
-</ul>
+{% for item in site.data.sidebar.nav %}
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">{{ item.title }}</span>
+		<ul class="side-nav">
+		{% for entry in item.subfolderitems %}
+			{% for chapter in site.chapters %}
+				{% if entry.url == chapter.url %}
+
+					{% if entry.url == page.url %}
+					<li class=selected>{{chapter.title}}</li>
+					{% else %}
+					<li><a href="{{ entry.url | prepend: site.baseurl }}">{{chapter.title}}</a></li>
+					{% endif %}
+
+				{% endif %}
+				
+			{% endfor %}
+			
+		{% endfor %}
+		</ul>
+	</li>
+	</ul>
+{% endfor %}
+
+

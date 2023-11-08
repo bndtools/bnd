@@ -1,7 +1,6 @@
 ---
 ---
 
-@import url("//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700");
 
 $font-family: 		Trebuchet MS, Verdana, sans;
 $font-size:			9pt;
@@ -125,6 +124,7 @@ $color-vignette:	#F0F0F0;
 	&:before { content: "\25B7\00A0"; }
 	font-weight: bolder;
 	color: $secondary-color;
+	font-size: 1.05em;
 }
 
 embed.illustration {
@@ -186,5 +186,15 @@ embed.illustration {
     font-weight: normal;
  }
  
+ul.side-nav{
+  list-style-type: none;
+}
 
- 
+ul .side-nav-section{
+  color: #720F10;
+  font-weight: bold;
+}
+
+.side-nav{
+  padding-top: 1px !important;
+}
