@@ -1,0 +1,63 @@
+nav:
+  - title: Introduction
+    subfolderitems:
+      - url: /chapters/110-introduction.html
+  - title: Installation
+    subfolderitems:
+      - url: /chapters/120-install.html
+  - title: Getting Started
+    subfolderitems:
+      - url: /chapters/123-tour-workspace.html
+      - url: /chapters/125-tour-features.html
+  - title: Concepts and Practices
+    subfolderitems:
+      - url: /chapters/130-concepts.html
+      - url: /chapters/140-best-practices.html
+  - title: Build and Development
+    subfolderitems:
+      - url: /chapters/155-project-setup.html
+      - url: /chapters/160-jars.html
+      - url: /chapters/170-versioning.html
+      - url: /chapters/180-baselining.html
+      - url: /chapters/200-components.html
+      - url: /chapters/210-metatype.html
+      - url: /chapters/220-contracts.html
+      - url: /chapters/230-manifest-annotations.html
+      - url: /chapters/235-accessor-properties.html
+      - url: /chapters/240-spi-annotations.html
+  - title: Dependency and Launching
+    subfolderitems:
+      - url: /chapters/250-resolving.html
+      - url: /chapters/300-launching.html
+      - url: /chapters/305-startlevels.html
+  - title: Testing
+    subfolderitems:
+      - url: /chapters/310-testing.html
+      - url: /chapters/315-launchpad-testing.html
+  - title: Packaging and Distribution
+    subfolderitems:
+      - url: /chapters/320-packaging.html
+      - url: /chapters/330-jpms.html
+      - url: /chapters/390-wrapping.html
+  - title: Documentation and Tools
+    subfolderitems:
+      - url: /chapters/395-generating-documentation.html
+      - url: /chapters/400-commands.html
+      - url: /chapters/600-developer.html
+      - url: /chapters/650-windows.html
+      - url: /chapters/700-tools.html
+  - title: Reference Material
+    subfolderitems:
+      - url: /chapters/800-headers.html
+      - url: /chapters/820-instructions.html
+      - url: /chapters/825-instructions-ref.html
+      - url: /chapters/850-macros.html
+      - url: /chapters/855-macros-ref.html
+      - url: /chapters/870-plugins.html
+      - url: /chapters/875-external-plugins.html
+  - title: Configuration and Troubleshooting
+    subfolderitems:
+      - url: /chapters/880-settings.html
+      - url: /chapters/900-errors.html
+      - url: /chapters/910-warnings.html
+      - url: /chapters/920-faq.html
