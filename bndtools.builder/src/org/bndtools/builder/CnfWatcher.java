@@ -74,10 +74,7 @@ public class CnfWatcher implements IResourceChangeListener {
 					@Override
 					public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
 						try {
-							workspace.clear();
 							workspace.refresh();
-							workspace.getPlugins();
-
 							BndtoolsBuilder.dirty.addAll(allProjects);
 							MarkerSupport ms = new MarkerSupport(cnfProject);
 							ms.deleteMarkers("*");
