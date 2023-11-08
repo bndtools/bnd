@@ -43,6 +43,7 @@ exclude:
   - '.gitignore'
   - '.project'
   - 'build.sh'
+  - 'run.sh'
   - '/examples'
   - '/releases/*/CNAME'
   - '/releases/*/favicon.ico'
