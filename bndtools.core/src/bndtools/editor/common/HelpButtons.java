@@ -36,5 +36,7 @@ public final class HelpButtons {
 		"https://bndtools.org/manual/bndeditor.html#run", "Help",
 		"The bnd editor for .bndrun files facilitates dependency management, automated resolution of required bundles, configuration of JVM and framework properties, direct launching of OSGi instances for testing, and the export of run configurations as executable JARs. Click to open manual in the browser.");
 
+	public static final String					HELP_URL_RESOLUTIONRESULTSWIZARDPAGE	= "https://bnd.bndtools.org/chapters/250-resolving.html#resolving-1";
+
 	private HelpButtons() {}
 }

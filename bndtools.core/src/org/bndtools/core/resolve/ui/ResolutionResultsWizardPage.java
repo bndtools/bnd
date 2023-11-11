@@ -12,11 +12,13 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
+import bndtools.editor.common.HelpButtons;
 
 public class ResolutionResultsWizardPage extends WizardPage implements ResolutionResultPresenter {
 
@@ -162,6 +164,11 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
 	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		propertySupport.removePropertyChangeListener(propertyName, listener);
+	}
+
+	@Override
+	public void performHelp() {
+		Program.launch(HelpButtons.HELP_URL_RESOLUTIONRESULTSWIZARDPAGE);
 	}
 
 	@Override
