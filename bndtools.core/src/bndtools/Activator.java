@@ -12,14 +12,18 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 
 import aQute.bnd.build.ReflectAction;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.action.Action;
+import bndtools.central.Central;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -33,6 +37,8 @@ public class Activator extends AbstractUIPlugin {
 	public static volatile Activator						instance;
 	BundleContext											context;
 	private ServiceRegistration<URLStreamHandlerService>	dataUrlHandlerReg;
+
+	private ServiceRegistration<Workspace>					workspaceRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -54,6 +60,24 @@ public class Activator extends AbstractUIPlugin {
 		dataUrlHandlerProps.put(URLConstants.URL_HANDLER_PROTOCOL, DataURLStreamHandler.PROTOCOL);
 		dataUrlHandlerReg = context.registerService(URLStreamHandlerService.class, new DataURLStreamHandler(),
 			dataUrlHandlerProps);
+		workspaceRegistration = context.registerService(Workspace.class, new ServiceFactory<Workspace>() {
+
+			@Override
+			public Workspace getService(Bundle bundle, ServiceRegistration<Workspace> registration) {
+				try {
+					return Central.getWorkspace();
+				} catch (Exception e) {
+					// can't provide the service then...
+					return null;
+				}
+			}
+
+			@Override
+			public void ungetService(Bundle bundle, ServiceRegistration<Workspace> registration, Workspace service) {
+				// nothing to actually do
+			}
+
+		}, null);
 	}
 
 	/*
@@ -64,6 +88,7 @@ public class Activator extends AbstractUIPlugin {
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		dataUrlHandlerReg.unregister();
+		workspaceRegistration.unregister();
 		instance = null;
 		super.stop(context);
 	}
