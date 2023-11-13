@@ -140,11 +140,15 @@
 # The service bundles need to be started before you attempt to start
 # the application itself, otherwise some of the necessary services (eg,
 # IEventBroker) will not be running in time.
+# Also need to start the tester last, after the test bundle, so that
+# the startup callback has a chance to register before the test run
+# starts.
 -runbundles+: *service*;startlevel=1,\
 	org.eclipse.equinox.app;startlevel=2,\
 	bndtools.core.test.launch;startlevel=2,\
 	bndtools.core.test*;startlevel=5,\
 	bndtools.*;startlevel=4,\
+	biz.aQute.tester.junit-platform;startlevel=6,\
 	*;startlevel=3
 
 # Help the resolver by removing some candidates

@@ -47,6 +47,7 @@
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
+	biz.aQute.tester.junit-platform;version=snapshot,\
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
 	bndtools.core.services;version=snapshot,\
@@ -75,7 +76,7 @@
 	org.eclipse.e4.ui.workbench,\
 	org.eclipse.e4.ui.workbench.swt,\
 	org.eclipse.jdt.core.manipulation,\
-	org.osgi.service.component.annotations;version='1.3.0',\
+	org.osgi.service.component.annotations;version='1.4.0',\
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.event,\
 	org.osgi.service.repository;version=latest,\

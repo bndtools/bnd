@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.e4.ui.workbench.IWorkbench;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.osgi.test.common.service.ServiceConfiguration;
@@ -39,11 +38,6 @@ public class WorkbenchExtension implements BeforeAllCallback {
 
 		// Wait for the Bnd Workspace service to be available before proceeding.
 		ServiceConfiguration<Workspace> sc = ServiceExtension.getServiceConfiguration(Workspace.class, "",
-			new String[] {}, 1, 10000, context);
-
-		// Wait for the Eclipse Workbench service to be available before
-		// proceeding.
-		ServiceConfiguration<IWorkbench> sc2 = ServiceExtension.getServiceConfiguration(IWorkbench.class, "",
 			new String[] {}, 1, 10000, context);
 
 		WorkbenchTest test = context.getRequiredTestClass()
