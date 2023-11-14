@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -64,7 +65,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.result.Result;
-import bndtools.central.Central;
 
 @Component
 public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
@@ -365,7 +365,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			if (java == null)
 				return null;
 
-			project = Central.getProject(java.getProject());
+			project = Adapters.adapt(java.getProject(), Project.class);
 			if (project == null)
 				return null;
 
