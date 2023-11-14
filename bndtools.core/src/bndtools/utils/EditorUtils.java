@@ -43,13 +43,13 @@ public class EditorUtils {
 	}
 
 	/**
-	 * Creates a button with icon and tooltip.
+	 * Creates a help button with icon and tool-tip.
 	 *
 	 * @param url
 	 * @param tooltipText
 	 * @return
 	 */
-	public static final Action createButton(String url, String tooltipText) {
+	public static final Action createHelpButton(String url, String tooltipText) {
 		Action btn = new Action("Help", IAction.AS_PUSH_BUTTON) {
 			@Override
 			public void run() {
@@ -64,15 +64,15 @@ public class EditorUtils {
 	}
 
 	/**
-	 * Creates a button with icon, text and tooltip.
+	 * Creates a help button with help-icon, text and tool-tip.
 	 *
 	 * @param url
 	 * @param buttonText
 	 * @param tooltipText
 	 * @return
 	 */
-	public static final ActionContributionItem createButtonWithText(String url, String buttonText, String tooltipText) {
-		Action btn = createButton(url, tooltipText);
+	public static final ActionContributionItem createHelpButtonWithText(String url, String buttonText, String tooltipText) {
+		Action btn = createHelpButton(url, tooltipText);
 		btn.setText(buttonText);
 
 		// the ActionContributionItem is required to display text below the icon

@@ -38,7 +38,7 @@ public class ResolutionWizard extends Wizard {
 
 		if (model.getLastChangedAt() > lastModelChangedAtOpening) {
 
-			String message = "Could update. The model has changed on " + new Date(model.getLastChangedAt())
+			String message = "Could not update. The model has changed on " + new Date(model.getLastChangedAt())
 				+ " since we opened it at " + new Date(lastModelChangedAtOpening)
 				+ ". Please close and click on 'Resolve' again.";
 
