@@ -4,19 +4,26 @@ import aQute.bnd.osgi.Constants
 tasks.named("testOSGi") {
 	description = "Bndtools Core Integration tests"
 	var arch = System.getProperty("os.arch")
-	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-		enabled = !bnd.is(Constants.NOJUNITOSGI)
-		bndrun = file("test.win32.x86_64.bndrun")
-	} else if (Os.isFamily(Os.FAMILY_MAC)) {
-		// This has to come before the check for Unix as MacOS also
-		// returns true for Unix
-		enabled = !bnd.is(Constants.NOJUNITOSGI)
-		bndrun = file("test.cocoa.macosx.${arch}.bndrun")
-	} else if (Os.isFamily(Os.FAMILY_UNIX)) {
-		enabled = !bnd.is(Constants.NOJUNITOSGI)
-		bndrun = file("test.gtk.linux.x86_64.bndrun")
+	// The version of Eclipse that we're building/testing against doesn't support
+	// Java > 17 so the tests don't work properly.
+	if (JavaVersion.current() == JavaVersion.VERSION_17) {
+		if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+			enabled = !bnd.is(Constants.NOJUNITOSGI)
+			bndrun = file("test.win32.x86_64.bndrun")
+		} else if (Os.isFamily(Os.FAMILY_MAC)) {
+			// This has to come before the check for Unix as MacOS also
+			// returns true for Unix
+			enabled = !bnd.is(Constants.NOJUNITOSGI)
+			bndrun = file("test.cocoa.macosx.${arch}.bndrun")
+		} else if (Os.isFamily(Os.FAMILY_UNIX)) {
+			enabled = !bnd.is(Constants.NOJUNITOSGI)
+			bndrun = file("test.gtk.linux.x86_64.bndrun")
+		} else {
+			enabled = false
+			println "Tests will not run unless on Windows, Mac or Unix"
+		}
 	} else {
 		enabled = false
-		println "Tests will not run unless on Windows, Mac or Unix"
+		println "Tests will only run on JDK 17"
 	}
 }
