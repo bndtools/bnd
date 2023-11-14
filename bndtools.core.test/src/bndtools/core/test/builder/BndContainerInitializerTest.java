@@ -886,7 +886,7 @@ public class BndContainerInitializerTest {
 			// it depends) doesn't honour the test=true attribute, which breaks
 			// a number of the tests above that are trying to test that
 			// behavior. Need the full JavaBuilder behaviour to get that.
-			TaskUtils.buildIncremental("Added ICU");
+			TaskUtils.buildClean("Added ICU");
 
 			final int problemCount = (int) Arrays.stream(imports)
 				.filter(x -> x.problem != 0)
