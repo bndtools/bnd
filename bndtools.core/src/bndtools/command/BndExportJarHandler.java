@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -24,7 +25,6 @@ import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.Bndrun;
 import bndtools.Plugin;
-import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
 
 public class BndExportJarHandler extends AbstractHandler {
@@ -47,8 +47,8 @@ public class BndExportJarHandler extends AbstractHandler {
 
 					File exportDir = bndrun.getBase();
 
-					if (Central.isBndProject(project)) {
-						Project bndProject = Central.getProject(project);
+					Project bndProject = Adapters.adapt(project, Project.class);
+					if (bndProject != null) {
 						bndrun.setBase(bndProject.getBase());
 						exportDir = IO.getBasedFile(bndProject.getTargetDir(), "export");
 						exportDir.mkdirs();
@@ -61,7 +61,7 @@ public class BndExportJarHandler extends AbstractHandler {
 							File exported = IO.getBasedFile(exportDir, export.getKey());
 							resource.write(exported);
 							exported.setLastModified(resource.lastModified());
-							if (Central.isBndProject(project)) {
+							if (bndProject != null) {
 								project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 							}
 						}
