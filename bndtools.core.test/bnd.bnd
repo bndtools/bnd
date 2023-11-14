@@ -81,7 +81,8 @@
 	org.osgi.service.event,\
 	org.osgi.service.repository;version=latest,\
 	osgi.annotation,\
-	org.osgi.framework
+	org.osgi.framework,\
+	bndtools.builder
 
 # Don't run testOSGi in parallel with other tasks claiming launchpad
 -noparallel: launchpad;task="testOSGi"

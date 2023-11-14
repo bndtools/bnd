@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.bndtools.builder.facade.ProjectBuilderDelegate;
 import org.bndtools.test.assertj.bndtools.imarker.BndPathProblemAssert;
 import org.bndtools.test.assertj.eclipse.resources.ResourcesSoftAssertions;
 import org.eclipse.core.resources.IFile;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.osgi.test.common.annotation.InjectService;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.deployer.repository.LocalIndexedRepo;
@@ -48,7 +50,10 @@ public class BndtoolsBuilderTest {
 	static Project								bndProject;
 	// Injected by SoftAssertionsExtension
 	@InjectSoftAssertions
-	protected ResourcesSoftAssertions					softly;
+	protected ResourcesSoftAssertions			softly;
+
+	@InjectService(filter = "(component.name=org.bndtools.builder.impl.BndtoolsBuilder)")
+	static ProjectBuilderDelegate				builder;
 
 	@BeforeAll
 	static void beforeAllBase() throws Exception {
