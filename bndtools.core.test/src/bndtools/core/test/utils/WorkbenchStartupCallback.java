@@ -5,12 +5,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.e4.ui.workbench.IWorkbench;
+import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.test.common.exceptions.Exceptions;
 
 import aQute.tester.junit.platform.api.BeforeTestLoopCallback;
 
@@ -45,8 +47,10 @@ public class WorkbenchStartupCallback implements BeforeTestLoopCallback {
 				throw new RuntimeException("Eclipse E4 workbench didn't arrive after 15s");
 			}
 			System.err.println("Workbench has arrived!");
-		} catch (InterruptedException ie) {
-			throw new RuntimeException("Interrupted!", ie);
+			JavaCore.initializeAfterLoad(null);
+			System.err.println("JavaCore initialized");
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
 	}
 }
