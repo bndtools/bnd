@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Condition;
@@ -886,21 +887,32 @@ public class BndContainerInitializerTest {
 			// it depends) doesn't honour the test=true attribute, which breaks
 			// a number of the tests above that are trying to test that
 			// behavior. Need the full JavaBuilder behaviour to get that.
-			TaskUtils.buildIncremental("Added ICU");
+			TaskUtils.buildIncremental("Added ICU for cfompilation");
 
 			final int problemCount = (int) Arrays.stream(imports)
 				.filter(x -> x.problem != 0)
 				.count();
+			IMarker[] workspaceProbs = icu.getJavaProject()
+				.getProject()
+				.getParent()
+				.findMarkers(null, true, IResource.DEPTH_INFINITE);
+			System.err.println("workspace problems: " + Stream.of(workspaceProbs)
+				.map(Object::toString)
+				.collect(Collectors.joining(",\n")));
 			IMarker[] problems = icu.getResource()
 				.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
 			Arrays.sort(problems, BY_LINE);
 
 			if (problems.length != problemCount) {
 				softly.fail(
-					"%nExpecting code:%n%s%n%s%n---%nto have:%n <%d>%nproblems, but it has:%n <%d>%nProblems:%n %s",
+					"%nExpecting code:%n%s%n%s%n---%nto have:%n <%d>%nproblems, but it has:%n <%d>%nThe problems:%n %s",
 					icu.getPath(), indent(source), problemCount, problems.length, Arrays.stream(problems)
 						.map(BndContainerInitializerTest::markerToString)
 						.collect(Collectors.joining(",\n ")));
+				System.err.println(Arrays.toString(icu.getJavaProject()
+					.getRawClasspath()));
+				// System.err.println(Arrays.toString(icu.getJavaProject()
+				// .getResolvedClasspath(false)));
 			} else {
 				int problem = 0;
 				AtomicBoolean hadFailures = new AtomicBoolean(false);
@@ -912,6 +924,7 @@ public class BndContainerInitializerTest {
 						continue;
 					}
 					IMarker p = problems[problem++];
+					try {
 					softly.assertThat(p)
 						.as(imp.desc + " (" + imp.pack + ")")
 						.hasType(JavaProblemMarkerAssert.JAVA_PROBLEM);
@@ -921,6 +934,11 @@ public class BndContainerInitializerTest {
 						.as(imp.desc + " (" + imp.pack + ")")
 						.hasProblemID(imp.problem)
 						.hasLineNumber(i + 2);
+				} catch (Exception e) {
+					if (e instanceof CoreException ce) {
+						System.err.println("ce status: " + ce.getStatus());
+					}
+				}
 				}
 				if (hadFailures.get()) {
 					softly.fail("\nFull list of markers: " + Arrays.stream(problems)
