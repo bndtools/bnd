@@ -58,7 +58,7 @@ public class JARTreePart extends AbstractFormPart {
 		Section section = toolkit.createSection(parent, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
 
 		section.setText("Content Tree");
-		tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE);
+		tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE | SWT.V_SCROLL);
 		tree.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
 
 		section.setClient(tree);
