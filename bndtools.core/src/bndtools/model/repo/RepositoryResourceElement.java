@@ -3,12 +3,13 @@ package bndtools.model.repo;
 import java.util.Objects;
 
 import org.bndtools.utils.resources.ResourceUtils;
+import org.eclipse.core.runtime.IAdaptable;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.service.RepositoryPlugin;
 
-public class RepositoryResourceElement implements ResourceProvider {
+public class RepositoryResourceElement implements ResourceProvider, IAdaptable {
 
 	private final Resource					resource;
 	private final String					name;
@@ -39,6 +40,20 @@ public class RepositoryResourceElement implements ResourceProvider {
 	@Override
 	public Resource getResource() {
 		return resource;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T getAdapter(Class<T> adapter) {
+
+		// this is triggered e.g. when you doubleclick on an
+		// Advanved-Search result entry in the RepositoryBrowser
+		// see
+		// bndtools.views.repository.RepositoriesView.createPartControl(Composite)
+		// and scroll down to "viewer.addDoubleClickListener(..."
+		// but since repositoryBundleVersion already implements IAdaptable
+		// we just forward to it
+		return repositoryBundleVersion.getAdapter(adapter);
 	}
 
 	@Override
