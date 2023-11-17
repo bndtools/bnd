@@ -29,6 +29,10 @@ public class AnsiHandler implements IPatternMatchListener {
 		Display.getDefault()
 			.asyncExec(() -> {
 				try {
+					if (console == null) {
+						// ignore
+						return;
+					}
 					console.getDocument()
 						.replace(0, event.getOffset() + event.getLength(), "");
 				} catch (BadLocationException e) {
