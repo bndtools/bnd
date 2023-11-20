@@ -4,6 +4,7 @@
 -nobundles: true
 
 -buildpath: \
+    org.osgi.framework;version=1.10, \
 	org.apache.servicemix.bundles.junit;version=latest,\
 	junit-jupiter-api;version='${junit.jupiter.eclipse.version}',\
 	junit-jupiter-params;version='${junit.jupiter.eclipse.version}',\

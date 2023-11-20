@@ -25,7 +25,7 @@ public class LaunchpadRunnerBasicTest {
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
 		.set("snapshot.dir", tmp.getAbsolutePath())
 		.bndrun("runsystempackages.bndrun")
-		.runfw("jar/org.apache.felix.framework-6.0.2.jar;version=file")
+		.runfw("org.apache.felix.framework;version='[7.0.5,7.0.5]'")
 		.export("*")
 		.bundles(
 			"org.osgi.util.promise, org.osgi.util.function, jar/org.apache.felix.scr-2.1.16.jar;version=file, assertj-core, net.bytebuddy.byte-buddy")
