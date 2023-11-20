@@ -47,7 +47,6 @@ public class EditorUtils {
 	 *
 	 * @param url
 	 * @param tooltipText
-	 * @return
 	 */
 	public static final Action createHelpButton(String url, String tooltipText) {
 		Action btn = new Action("Help", IAction.AS_PUSH_BUTTON) {
@@ -69,7 +68,6 @@ public class EditorUtils {
 	 * @param url
 	 * @param buttonText
 	 * @param tooltipText
-	 * @return
 	 */
 	public static final ActionContributionItem createHelpButtonWithText(String url, String buttonText, String tooltipText) {
 		Action btn = createHelpButton(url, tooltipText);
