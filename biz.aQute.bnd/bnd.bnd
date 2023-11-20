@@ -68,9 +68,9 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -maven-scope: provided
 
 -buildpath: \
+    org.osgi.framework;version='1.10',\
 	org.osgi.dto;version='1.0',\
 	org.osgi.resource;version='1.0',\
-	org.osgi.framework;version='1.8',\
 	org.osgi.util.tracker;version='1.5',\
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
@@ -97,7 +97,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	biz.aQute.bnd.test;version=project,\
 	${junit},\
 	org.osgi.namespace.extender,\
-	org.apache.felix.framework, \
+	org.apache.felix.framework;version="[6.0.5,6.0.5]", \
 	biz.aQute.bnd.embedded-repo; version=snapshot
 
 # Dependencies needed by the inclusion of biz.aQute.bnd.reporter in the jar.
@@ -111,10 +111,10 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     ${repo;org.apache.commons.lang3;[3.4,4.0)},\
     ${repo;com.google.guava;[18.0,19.0)},\
     ${repo;com.googlecode.concurrentlinkedhashmap.lru;[1.4.2,2.0.0)},\
-    ${repo;org.objectweb.asm;[5.0.3,6.0.0)},\
-    ${repo;org.objectweb.asm.analysis;[5.0.3,6.0.0)},\
-    ${repo;org.objectweb.asm.tree;[5.0.3,6.0.0)},\
-    ${repo;org.objectweb.asm.util;[5.0.3,6.0.0)},\
+    ${repo;org.objectweb.asm},\
+    ${repo;org.objectweb.asm.tree.analysis},\
+    ${repo;org.objectweb.asm.tree},\
+    ${repo;org.objectweb.asm.util},\
 	${repo;com.github.javaparser.javaparser-core;3.13}
 
 
@@ -126,10 +126,10 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     org.apache.commons.lang3;version="[3.4,4.0)",\
     com.google.guava;version="[18.0,19.0)",\
     com.googlecode.concurrentlinkedhashmap.lru;version="[1.4.2,2.0.0)",\
-    org.objectweb.asm;version="[5.0.3,6.0.0)",\
-    org.objectweb.asm.analysis;version="[5.0.3,6.0.0)",\
-    org.objectweb.asm.tree;version="[5.0.3,6.0.0)",\
-    org.objectweb.asm.util;version="[5.0.3,6.0.0)",\
+    org.objectweb.asm,\
+    org.objectweb.asm.tree.analysis,\
+    org.objectweb.asm.tree,\
+    org.objectweb.asm.util,\
 	com.github.javaparser.javaparser-core;version=3.13
 
 

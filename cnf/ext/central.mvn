@@ -56,6 +56,7 @@ org.apache.aries.spifly:org.apache.aries.spifly.dynamic.framework.extension:1.2.
 org.apache.felix:org.apache.felix.configadmin:1.9.10
 org.apache.felix:org.apache.felix.log:1.2.0
 org.apache.felix:org.apache.felix.framework:6.0.5
+org.apache.felix:org.apache.felix.framework:7.0.5
 org.apache.felix:org.apache.felix.gogo.command:1.0.2
 org.apache.felix:org.apache.felix.gogo.runtime:1.1.0
 org.apache.felix:org.apache.felix.gogo.shell:1.1.0
@@ -142,12 +143,12 @@ org.jtwig:jtwig-core:5.86.1.RELEASE
 org.jtwig:jtwig-reflection:5.86.1.RELEASE
 com.google.guava:guava:18.0
 com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2
-org.parboiled:parboiled-java:1.1.7
-org.parboiled:parboiled-core:jar:1.1.7
-org.ow2.asm:asm:jar:5.0.3
-org.ow2.asm:asm-tree:jar:5.0.3
-org.ow2.asm:asm-analysis:jar:5.0.3
-org.ow2.asm:asm-util:jar:5.0.3
+org.parboiled:parboiled-java:1.4.1
+org.parboiled:parboiled-core:jar:1.4.1
+
+org.ow2.asm:asm-analysis:jar:9.3
+org.ow2.asm:asm-util:jar:9.3
+
 com.github.javaparser:javaparser-core:3.13.10
 
 javax.json:javax.json-api:1.1.2

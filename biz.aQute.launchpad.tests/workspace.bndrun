@@ -2,7 +2,7 @@
 	osgi.identity;filter:='(osgi.identity=biz.aQute.bndlib)',\
 	osgi.identity;filter:='(osgi.identity=biz.aQute.resolve)',\
 	osgi.identity;filter:='(osgi.identity=biz.aQute.repository)'
--runfw: org.apache.felix.framework;version='[6.0.5,6.0.5]'
+-runfw: org.apache.felix.framework;version='[7.0.5,7.0.5]'
 -runee: JavaSE-17
 -runpath: slf4j.api,slf4j.simple,aQute.libg
 -runbundles: \
@@ -16,7 +16,7 @@
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
 	biz.aQute.resolve;version=snapshot
--resolve: manual
+-resolve: cache
 -runtrace true
 -runrepos: \
 	Maven Central,\
