@@ -53,7 +53,7 @@ public class Binder<D> implements Supplier<D>, Consumer<D>, AutoCloseable {
 		if (fm != null) {
 			snapshot.forEach(b -> b.register(fm));
 		} else {
-			snapshot.forEach(b -> b.release());
+			snapshot.forEach(Binder::release);
 		}
 	}
 
@@ -75,7 +75,7 @@ public class Binder<D> implements Supplier<D>, Consumer<D>, AutoCloseable {
 	/**
 	 * Create a binder and register it locally. If a Facaade Manager is set,
 	 * register there.
-	 * 
+	 *
 	 * @param facade
 	 *                        the object acting as a facade, only a weak
 	 *                        reference will be maintained
@@ -152,8 +152,6 @@ public class Binder<D> implements Supplier<D>, Consumer<D>, AutoCloseable {
 
 	/**
 	 * Check if this Binder's facade has been gc'ed.
-	 * 
-	 * @return
 	 */
 
 	public boolean hasGone() {
@@ -234,7 +232,7 @@ public class Binder<D> implements Supplier<D>, Consumer<D>, AutoCloseable {
 
 	/**
 	 * Set the timeout to wait for the backing service to be injected.
-	 * 
+	 *
 	 * @param timeout
 	 *                    timeout in milliseconds
 	 */
@@ -260,38 +258,7 @@ public class Binder<D> implements Supplier<D>, Consumer<D>, AutoCloseable {
 
 	@Override
 	public String toString() {
-		return "Binder[id=" + id + ", description=" + description + "]";
-	}
-
-	/*
-	 * This adapter is only for test purposes
-	 */
-	@SuppressWarnings({ "rawtypes" })
-	public interface TestAdapter {
-
-		default WeakReference facade(Binder binder) {
-			return binder.facade;
-		}
-
-		default AutoCloseable reg(Binder<?> binder) {
-			return binder.registration.get();
-		}
-
-		default boolean isClosed(Binder binder) {
-			return binder.closed;
-		}
-
-		default List<Binder<?>> binders() {
-			return binders;
-		}
-
-		default int cycles(Binder binder) {
-			return binder.cycles;
-		}
-
-		default FacadeManager facadeManager() {
-			return facadeManager;
-		}
+		return "Binder[id=" + id + "]";
 	}
 
 	private static void close(AutoCloseable c) {
@@ -301,6 +268,36 @@ public class Binder<D> implements Supplier<D>, Consumer<D>, AutoCloseable {
 			} catch (Exception e) {
 				// ignore
 			}
+		}
+	}
+
+	/*
+	 * This adapter is only for test purposes
+	 */
+	public interface TestAdapterNotApiWillChange {
+
+		default WeakReference<?> facade(Binder<?> binder) {
+			return binder.facade;
+		}
+
+		default AutoCloseable reg(Binder<?> binder) {
+			return binder.registration.get();
+		}
+
+		default boolean isClosed(Binder<?> binder) {
+			return binder.closed;
+		}
+
+		default List<Binder<?>> binders() {
+			return binders;
+		}
+
+		default int cycles(Binder<?> binder) {
+			return binder.cycles;
+		}
+
+		default FacadeManager facadeManager() {
+			return facadeManager;
 		}
 	}
 

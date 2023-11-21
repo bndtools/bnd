@@ -16,12 +16,12 @@ import org.osgi.service.component.annotations.ServiceScope;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
 import biz.aQute.bnd.facade.api.Binder;
-import biz.aQute.bnd.facade.api.Binder.TestAdapter;
+import biz.aQute.bnd.facade.api.Binder.TestAdapterNotApiWillChange;
 import biz.aQute.bnd.facade.api.FacadeManager;
 import biz.aQute.bnd.facade.api.Memento;
 
 class FacadeManagerProviderTest {
-	static TestAdapter	testAdapter	= new Binder.TestAdapter() {
+	static TestAdapterNotApiWillChange	testAdapter	= new Binder.TestAdapterNotApiWillChange() {
 									};
 	final static String	ID			= "biz.aQute.bnd.facade.provider.FacadeManagerProviderTest.DomainImpl";
 
@@ -89,16 +89,16 @@ class FacadeManagerProviderTest {
 	@Test
 	void testPrototypeScoped() throws Exception {
 		try (Launchpad lp = builder.create()) {
-			TestAdapter testAdapter =new Binder.TestAdapter() {
+			TestAdapterNotApiWillChange testAdapter =new Binder.TestAdapterNotApiWillChange() {
 			};
-			
+
 			DomainFacade facade_1 = new DomainFacade();
 			Binder<Domain> binder_1 = facade_1.binder;
 			assertThat(testAdapter.reg(binder_1)).isNull();
 			assertThat(testAdapter.binders()).contains(binder_1).hasSize(1);
 			assertThat(testAdapter.isClosed(binder_1)).isFalse();
 
-			
+
 			assertThat(binder_1.peek()).isNull();
 			assertThat(testAdapter.binders()).contains(binder_1).hasSize(1);
 			assertThat(testAdapter.facadeManager()).isNull();
@@ -109,7 +109,7 @@ class FacadeManagerProviderTest {
 
 			FacadeManagerProvider fm = new FacadeManagerProvider(lp.getBundleContext());
 			ServiceRegistration<FacadeManager> register = lp.register(FacadeManager.class, fm);
-			
+
 			System.out.println("check if fm was found by the facade");
 			assertThat(testAdapter.facadeManager()).isEqualTo(fm);
 			assertThat(testAdapter.reg(binder_1)).isNotNull();
@@ -128,7 +128,7 @@ class FacadeManagerProviderTest {
 			facade_1.set("s1");
 			assertThat(facade_1.get()).isEqualTo("s1");
 			component.stop();
-			
+
 			assertThat(binder_1.peek()).isNull();
 			binder_1.setTimeout(100);
 			long now = System.currentTimeMillis();
@@ -138,24 +138,24 @@ class FacadeManagerProviderTest {
 			} catch( IllegalStateException e) {
 				assertThat(System.currentTimeMillis()-now).isGreaterThanOrEqualTo(100);
 			}
-			
+
 			System.out.println("start the component again, see if state was preserved");
 			component.start();
-			
+
 			assertThat(binder_1.peek()).isNotNull().isInstanceOf(Domain.class);
 			assertThat(facade_1.get()).isEqualTo("s1");
 			assertThat(binder_1.getState()).isNull();
 
-			System.out.println("Register a second facade, check no state");	
-			
+			System.out.println("Register a second facade, check no state");
+
 			DomainFacade facade_2 = new DomainFacade();
 			Binder<Domain> binder_2 = facade_2.binder;
-			
+
 			assertThat(binder_2.peek()).isNotNull();
 			assertThat(testAdapter.reg(binder_2)).isNotNull();
 			assertThat(facade_2.get()).isNull();
 			assertThat(testAdapter.binders()).contains(binder_1).contains(binder_2).hasSize(2);
-			
+
 			System.out.println("Life cycle the FM, check no binder");
 			register.unregister();
 			fm.deactivate();
@@ -168,11 +168,11 @@ class FacadeManagerProviderTest {
 			assertThat(testAdapter.isClosed(binder_2)).isFalse();
 			assertThat(binder_1.peek()).isNull();
 			assertThat(binder_2.peek()).isNull();
-			
+
 			System.out.println("Register new FM");
 			fm = new FacadeManagerProvider(lp.getBundleContext());
 			register = lp.register(FacadeManager.class, fm);
-			
+
 			assertThat(testAdapter.facadeManager()).isEqualTo(fm);
 			assertThat(testAdapter.reg(binder_1)).isNotNull();
 			assertThat(testAdapter.reg(binder_2)).isNotNull();
@@ -186,31 +186,31 @@ class FacadeManagerProviderTest {
 			facade_1 = null;
 			System.gc();
 			Binder.purge();
-			
+
 
 			assertThat(fm.controllers.get(ID).binders.keySet()).containsExactlyInAnyOrder(binder_2);
 			assertThat(testAdapter.binders()).containsExactly(binder_2);
 			assertThat(testAdapter.isClosed(binder_1)).isTrue();
 			assertThat(testAdapter.reg(binder_1)).isNull();
-			
+
 			assertThat(testAdapter.isClosed(binder_2)).isFalse();
 			assertThat(binder_2.peek()).isNotNull();
-			
+
 			System.out.println("Test if we can close a binder");
-			assertThat(testAdapter.binders()).containsExactly(binder_2);		
+			assertThat(testAdapter.binders()).containsExactly(binder_2);
 			assertThat(testAdapter.reg(binder_2)).isNotNull();
 			assertThat(fm.controllers.get(ID).binders.keySet()).containsExactly(binder_2);
 			binder_2.close();
 			assertThat(testAdapter.isClosed(binder_2));
 			assertThat(testAdapter.reg(binder_2)).isNull();
-			assertThat(testAdapter.binders()).isEmpty();		
+			assertThat(testAdapter.binders()).isEmpty();
 			assertThat(fm.controllers.get(ID).binders).isEmpty();
 
 			System.out.println("unregister second FM");
 			register.unregister();
 			fm.deactivate();
 
-			
+
 			System.out.println("check component symmetry");
 			component.stop();
 			Awaitility.await().until(()->counter.get()==0);

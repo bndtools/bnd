@@ -12,7 +12,7 @@ import org.osgi.annotation.versioning.ConsumerType;
  * object. It is associated with a unique ID. There should be only one Delegate
  * service with the given id. A Delegate service must be registered with the
  * service property {@link FacadeManager#FACADE_ID}
- * 
+ *
  * @param <D>
  *                the domain type of the delegate
  */
@@ -28,7 +28,7 @@ public interface Delegate<D> {
 	 * released, the Facade Manager will ask for its state. The state of the
 	 * previous instance, maybe from a previous delegate or even Facade Manager,
 	 * will be past to this method.
-	 * 
+	 *
 	 * @param description
 	 *                        a description about the caller
 	 * @param state

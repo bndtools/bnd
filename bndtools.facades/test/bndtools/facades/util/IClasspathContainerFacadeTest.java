@@ -9,14 +9,14 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import biz.aQute.bnd.facade.api.Binder;
-import biz.aQute.bnd.facade.api.Binder.TestAdapter;
+import biz.aQute.bnd.facade.api.Binder.TestAdapterNotApiWillChange;
 import bndtools.facades.jdt.IClasspathContainerFacade;
 
 public class IClasspathContainerFacadeTest {
 
 	@Test
 	public void testSimple() throws CoreException {
-		TestAdapter ta = new Binder.TestAdapter() {};
+		TestAdapterNotApiWillChange ta = new Binder.TestAdapterNotApiWillChange() {};
 
 		IClasspathContainerFacade icf = new IClasspathContainerFacade();
 		EclipseBinder<IClasspathContainer> eb = icf;

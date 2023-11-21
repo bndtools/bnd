@@ -3,8 +3,9 @@ package biz.aQute.bnd.facade.api;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**
- * A backing service can have state. When a backing service is unregistered, its
- * instance.
+ * An interface that can optionally be implemented by the backing service. The
+ * Delegate can use it to get the state when the backing service goes away and
+ * restore the state when it returns.
  * <p>
  * The return object must take care not to use domain classes. It should be
  * possible to recycle the bundle of the implementation between
@@ -21,7 +22,9 @@ public interface Memento {
 
 	/**
 	 * Set the state of the implementation.
-	 * @param state the given state, retrieved from {@link #getState()} of a previous version
+	 *
+	 * @param state the given state, retrieved from {@link #getState()} of a
+	 *            previous version
 	 */
 	void setState(Object state);
 }

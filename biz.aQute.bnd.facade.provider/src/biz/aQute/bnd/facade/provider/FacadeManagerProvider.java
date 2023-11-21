@@ -1,7 +1,6 @@
 package biz.aQute.bnd.facade.provider;
 
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,9 +59,9 @@ public class FacadeManagerProvider implements FacadeManager {
 
 			Instance instance = bind(delegate, binder);
 			Instance old = binders.put(binder, instance);
-			
+
 			assert old == null : "binders may never register twice";
-			
+
 			return () -> {
 				remove(binder);
 			};
@@ -88,9 +87,7 @@ public class FacadeManagerProvider implements FacadeManager {
 
 			this.delegate = delegate;
 
-			Iterator<Map.Entry<Binder, Instance>> it = binders.entrySet().iterator();
-			while (it.hasNext()) {
-				Entry<Binder, Instance> next = it.next();
+			for (Entry<Binder, Instance> next : binders.entrySet()) {
 				Binder binder = next.getKey();
 				Instance instance = next.getValue();
 				assert instance == null : "should be bracketed";
@@ -103,9 +100,7 @@ public class FacadeManagerProvider implements FacadeManager {
 			if (delegate == this.delegate) {
 				this.delegate = null;
 
-				Iterator<Map.Entry<Binder, Instance>> it = binders.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<Binder, Instance> next = it.next();
+				for (Entry<Binder, Instance> next : binders.entrySet()) {
 					Binder binder = next.getKey();
 					Instance instance = next.getValue();
 					unbind(binder, instance);
@@ -172,7 +167,7 @@ public class FacadeManagerProvider implements FacadeManager {
 
 			public void removedService(org.osgi.framework.ServiceReference<Object> reference, Delegate delegate) {
 				getController(delegate.getId()).removeDelegate(delegate);
-			};
+			}
 		};
 		this.executor = Executors.newScheduledThreadPool(1);
 		this.executor.scheduleAtFixedRate(Binder::purge, 1, 1, TimeUnit.MINUTES);

@@ -22,8 +22,9 @@ public interface FacadeManager {
 	String FACADE_ID = "facade.id";
 
 	/**
-	 * Register a binder. For a given binder, this should happen only once per Facade Manager.
-	 *  
+	 * Register a binder. For a given binder, this should happen only once per
+	 * registered Facade Manager.
+	 *
 	 * @param binder the binder to register
 	 * @return a closeable that will unregister this binder when closed.
 	 */
