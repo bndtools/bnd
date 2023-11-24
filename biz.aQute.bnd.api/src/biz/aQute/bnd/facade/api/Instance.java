@@ -11,7 +11,7 @@ import org.osgi.annotation.versioning.ConsumerType;
  *                the type of the domain
  */
 @ConsumerType
-public interface Instance<D> {
+public interface Instance<D> extends AutoCloseable {
 
 	/**
 	 * Get the backing object. This is never null.
@@ -20,7 +20,8 @@ public interface Instance<D> {
 
 	/**
 	 * Get the current state of the backing object. This state is passed to the
-	 * {@link Delegate#create(String, Object)} when it needs to be recreated.
+	 * {@link Delegate#create(String, java.lang.ref.WeakReference, Object)} when
+	 * it needs to be recreated.
 	 */
 	@Nullable
 	Object getState();
@@ -29,5 +30,6 @@ public interface Instance<D> {
 	 * Close the instance. This will free the backing object. This method can be
 	 * called multiple times but will only work the first time.
 	 */
+	@Override
 	void close();
 }

@@ -1,58 +1,59 @@
 package bndtools.facades.jdt;
 
+import java.lang.invoke.MethodHandle;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IIncrementalProjectBuilder2;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.osgi.annotation.versioning.ConsumerType;
 
-import bndtools.facades.util.EclipseBinder;
+import bndtools.facades.util.FacadeUtil;
 
-@ConsumerType
-public class IncrementalProjectBuilderFacade extends IncrementalProjectBuilder
-	implements IIncrementalProjectBuilder2, IExecutableExtension {
+public class IncrementalProjectBuilderFacade extends FacadeUtil {
 
-	final EclipseBinder<Delegate> binder = new EclipseBinder<>(Delegate.class, this);
+	class Delegate extends IncrementalProjectBuilder implements IIncrementalProjectBuilder2 {
 
-	public interface Delegate {
-		ISchedulingRule getRule(IncrementalProjectBuilderFacade pb, int kind, Map<String, String> args);
+		final Supplier<Object> binder;
 
-		IProject[] build(IncrementalProjectBuilderFacade pb, int kind, Map<String, String> args,
-			IProgressMonitor monitor)
-			throws CoreException;
+		Delegate(Function<Object, Supplier<Object>> bind) {
+			this.binder = bind.apply(this);
+		}
 
-		void clean(IncrementalProjectBuilderFacade incrementalProjectBuilderFacade, Map<String, String> args,
-			IProgressMonitor monitor);
+		static MethodHandle m1 = lookup(Delegate.class, "setInitializationData", void.class,
+			IConfigurationElement.class, String.class, Object.class);
+		@Override
+		public void setInitializationData(IConfigurationElement arg0, String arg1, Object arg2) {
+			invokeVoid(() -> m1.invoke(binder.get(), arg0, arg1, arg2));
+		}
+
+		static MethodHandle	m2	= lookup(Delegate.class, "getRule", ISchedulingRule.class, int.class, Map.class);
+		@Override
+		public ISchedulingRule getRule(int arg0, Map<String, String> arg1) {
+			return (ISchedulingRule) invokeReturn(() -> m2.invoke(binder.get(), arg0, arg1));
+		}
+
+		static MethodHandle	m3	= lookup(Delegate.class, "build", IProject[].class, int.class, Map.class,
+			IProgressMonitor.class);
+		@Override
+		protected IProject[] build(int arg0, Map<String, String> arg1, IProgressMonitor arg2) {
+			return (IProject[]) invokeReturn(() -> m3.invoke(binder.get(), arg0, arg1, arg2));
+		}
+
+		static MethodHandle m4 = lookup(Delegate.class, "clean", void.class, Map.class, IProgressMonitor.class);
+		@Override
+		public void clean(Map<String, String> arg0, IProgressMonitor arg1) {
+			invokeVoid(() -> m4.invoke(binder.get(), arg0, arg1));
+		}
 	}
 
 	@Override
-	public void setInitializationData(IConfigurationElement config, String propertyName, Object data)
-		throws CoreException {
-		binder.setInitializationData(config, propertyName, data);
-	}
-
-	@Override
-	public ISchedulingRule getRule(int kind, Map<String, String> args) {
-		return binder.get()
-			.getRule(this, kind, args);
-	}
-
-	@Override
-	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-		return binder.get()
-			.build(this, kind, args, monitor);
-	}
-
-	@Override
-	public void clean(Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-		binder.get()
-			.clean(this, args, monitor);
+	protected Object createDelegate(Function<Object, Supplier<Object>> bind) {
+		return new Delegate(bind);
 	}
 
 }

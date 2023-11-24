@@ -1,5 +1,6 @@
 package biz.aQute.bnd.facade.provider;
 
+import java.lang.ref.WeakReference;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -125,7 +126,8 @@ public class FacadeManagerProvider implements FacadeManager {
 			assert binder.getId().equals(delegate.getId());
 
 			Object state = binder.getState();
-			Instance instance = delegate.create(binder.getDescription(), state);
+			WeakReference ref = binder.getFacade();
+			Instance instance = delegate.create(binder.getDescription(), binder.getFacade(), state);
 			binder.setState(null);
 			binder.accept(instance.get());
 			return instance;

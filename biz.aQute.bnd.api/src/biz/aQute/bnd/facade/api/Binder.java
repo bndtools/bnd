@@ -271,34 +271,8 @@ public class Binder<D> implements Supplier<D>, Consumer<D>, AutoCloseable {
 		}
 	}
 
-	/*
-	 * This adapter is only for test purposes
-	 */
-	public interface TestAdapterNotApiWillChange {
-
-		default WeakReference<?> facade(Binder<?> binder) {
-			return binder.facade;
-		}
-
-		default AutoCloseable reg(Binder<?> binder) {
-			return binder.registration.get();
-		}
-
-		default boolean isClosed(Binder<?> binder) {
-			return binder.closed;
-		}
-
-		default List<Binder<?>> binders() {
-			return binders;
-		}
-
-		default int cycles(Binder<?> binder) {
-			return binder.cycles;
-		}
-
-		default FacadeManager facadeManager() {
-			return facadeManager;
-		}
+	public WeakReference<?> getFacade() {
+		return facade;
 	}
 
 }

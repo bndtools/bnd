@@ -3,6 +3,7 @@ package biz.aQute.bnd.facade.provider;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.awaitility.Awaitility;
@@ -16,13 +17,12 @@ import org.osgi.service.component.annotations.ServiceScope;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
 import biz.aQute.bnd.facade.api.Binder;
-import biz.aQute.bnd.facade.api.Binder.TestAdapterNotApiWillChange;
 import biz.aQute.bnd.facade.api.FacadeManager;
+import biz.aQute.bnd.facade.api.JTAGBinder;
 import biz.aQute.bnd.facade.api.Memento;
 
 class FacadeManagerProviderTest {
-	static TestAdapterNotApiWillChange	testAdapter	= new Binder.TestAdapterNotApiWillChange() {
-									};
+	static JTAGBinder	testAdapter	= new JTAGBinder();
 	final static String	ID			= "biz.aQute.bnd.facade.provider.FacadeManagerProviderTest.DomainImpl";
 
 	interface Domain {
@@ -54,7 +54,7 @@ class FacadeManagerProviderTest {
 		}
 
 		@Override
-		public void setState(Object state) {
+		public void setState(Object state, WeakReference<?> facade) {
 			this.state = (String) state;
 		}
 
@@ -89,8 +89,6 @@ class FacadeManagerProviderTest {
 	@Test
 	void testPrototypeScoped() throws Exception {
 		try (Launchpad lp = builder.create()) {
-			TestAdapterNotApiWillChange testAdapter =new Binder.TestAdapterNotApiWillChange() {
-			};
 
 			DomainFacade facade_1 = new DomainFacade();
 			Binder<Domain> binder_1 = facade_1.binder;

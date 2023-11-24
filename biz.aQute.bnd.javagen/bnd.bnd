@@ -8,10 +8,13 @@
 	biz.aQute.bndlib;version=latest
 
 -testpath: \
-	${junit}
+	${junit}, \
+    slf4j.api, \
+	slf4j.simple
 
 -conditionalpackage: \
     aQute.lib.*, \
     aQute.libg.*
 
 # Tested in biz.aQute.bndall.tests/test/biz/aQute/bnd/project/ProjectGenerateTest.java
+

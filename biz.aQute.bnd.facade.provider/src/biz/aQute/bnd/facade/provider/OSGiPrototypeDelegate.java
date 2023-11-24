@@ -1,5 +1,6 @@
 package biz.aQute.bnd.facade.provider;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.framework.ServiceObjects;
@@ -17,10 +18,10 @@ class OSGiPrototypeDelegate<D> implements Delegate<D> {
 		final D				service	= factory.getService();
 		final AtomicBoolean	closed	= new AtomicBoolean(false);
 
-		InstanceImpl(String description, Object state) {
+		InstanceImpl(String description, WeakReference<?> facade, Object state) {
 			assert service != null;
 			if (service instanceof Memento m) {
-				m.setState(state);
+				m.setState(state, facade);
 			}
 		}
 
@@ -63,7 +64,7 @@ class OSGiPrototypeDelegate<D> implements Delegate<D> {
 	}
 
 	@Override
-	public Instance<D> create(String description, Object state) {
-		return new InstanceImpl(description, state);
+	public Instance<D> create(String description, WeakReference<?> facade, Object state) {
+		return new InstanceImpl(description, facade, state);
 	}
 }

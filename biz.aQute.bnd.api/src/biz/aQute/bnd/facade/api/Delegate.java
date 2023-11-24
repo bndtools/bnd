@@ -1,5 +1,7 @@
 package biz.aQute.bnd.facade.api;
 
+import java.lang.ref.WeakReference;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.annotation.versioning.ConsumerType;
 
@@ -35,5 +37,6 @@ public interface Delegate<D> {
 	 *                        the current state or null
 	 * @return an instance
 	 */
-	Instance<D> create(String description, @Nullable Object state);
+	Instance<D> create(String description, WeakReference<?> facade, @Nullable
+	Object state);
 }

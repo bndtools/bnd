@@ -1,5 +1,4 @@
-#-runfw: org.apache.felix.framework;version=5
-#-runee: JavaSE-1.8
+# Used in launchpad FacadeManagerProvider.java
 
 -runprovidedcapabilities: ${native_capability}
 
