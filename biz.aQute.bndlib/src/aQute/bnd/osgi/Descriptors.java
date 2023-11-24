@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -81,6 +82,8 @@ public class Descriptors {
 		boolean isArray();
 
 		boolean isNested();
+
+		boolean isVoid();
 
 	}
 
@@ -258,8 +261,11 @@ public class Descriptors {
 
 		@Override
 		public String getShortName() {
-			int n = binaryName.lastIndexOf('/');
+			int n = binaryName.lastIndexOf('$');
+			if (n < 0)
+				n = binaryName.lastIndexOf('/');
 			return binaryName.substring(n + 1);
+
 		}
 
 		@Override
@@ -275,6 +281,11 @@ public class Descriptors {
 		@Override
 		public boolean isJava() {
 			return packageRef.isJava();
+		}
+
+		@Override
+		public boolean isVoid() {
+			return fqn.equals("void");
 		}
 
 		/**
@@ -350,6 +361,11 @@ public class Descriptors {
 
 		@Override
 		public boolean isPrimitive() {
+			return false;
+		}
+
+		@Override
+		public boolean isVoid() {
 			return false;
 		}
 
@@ -525,7 +541,47 @@ public class Descriptors {
 		return fieldSignatureCache.computeIfAbsent(signature.replace('$', '.'), FieldSignature::of);
 	}
 
-	public class Descriptor {
+	public static class NamedDescriptor implements Comparable<NamedDescriptor> {
+		public final String		name;
+		public final Descriptor	descriptor;
+
+		public NamedDescriptor(String name, Descriptor descriptor) {
+			this.name = name;
+			this.descriptor = descriptor;
+		}
+
+		@Override
+		public int compareTo(NamedDescriptor o) {
+			int n = name.compareTo(o.name);
+			if (n != 0)
+				return n;
+
+			return descriptor.compareTo(o.descriptor);
+		}
+
+		@Override
+		public String toString() {
+			return name + ":" + descriptor;
+		}
+		@Override
+		public int hashCode() {
+			return Objects.hash(descriptor, name);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			NamedDescriptor other = (NamedDescriptor) obj;
+			return Objects.equals(descriptor, other.descriptor) && Objects.equals(name, other.name);
+		}
+	}
+
+	public class Descriptor implements Comparable<Descriptor> {
 		final TypeRef	type;
 		final TypeRef[]	prototype;
 		final String	descriptor;
@@ -592,6 +648,30 @@ public class Descriptors {
 		}
 
 		@Override
+		public int compareTo(Descriptor other) {
+			if (other == this)
+				return 0;
+
+			int n = descriptor.compareTo(other.descriptor);
+			if (n != 0)
+				return n;
+
+			n = Integer.compare(prototype.length, other.prototype.length);
+			if (n != 0)
+				return n;
+
+			for (int i = 0; i < prototype.length; i++) {
+				TypeRef a = prototype[i];
+				TypeRef b = other.prototype[i];
+				n = a.compareTo(b);
+				if (n != 0)
+					return n;
+			}
+
+			return type.compareTo(other.type);
+		}
+
+		@Override
 		public boolean equals(Object other) {
 			if (other == null || other.getClass() != getClass())
 				return false;
@@ -609,6 +689,10 @@ public class Descriptors {
 
 		@Override
 		public String toString() {
+			return descriptor;
+		}
+
+		public String getDescriptor() {
 			return descriptor;
 		}
 	}

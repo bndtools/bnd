@@ -59,6 +59,10 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 			error(token != null && !token.isEmpty(), "Parsing header: '" + parameters + "' has trailing " + qt);
 		}
 
+		private void error(boolean b, String string) {
+			ParameterMap.error(qt, b, string);
+		}
+
 		/*
 		 * clause = key ( ';' keyOrAttribute )* ( '=' attributeValue )
 		 * attributes *
@@ -121,10 +125,6 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 			attrs.put(attributeKey, attributeValue);
 		}
 
-		private void error(boolean b, String string) {
-			if (b)
-				throw new IllegalArgumentException(string + " : " + qt);
-		}
 	}
 
 	public Map<String, String> put(String key, Map<String, String> attrs) {
@@ -201,5 +201,10 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 
 		return result;
 
+	}
+
+	static void error(QuotedTokenizer qt, boolean b, String string) {
+		if (b)
+			throw new IllegalArgumentException(string + " : " + qt);
 	}
 }
