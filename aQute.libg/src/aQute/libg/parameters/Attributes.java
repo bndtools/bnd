@@ -88,24 +88,27 @@ public class Attributes implements Map<String, String> {
 	public static final DataType<List<Double>>	LIST_DOUBLE		= () -> Type.DOUBLES;
 	public static final DataType<List<String>>	LIST_VERSION	= () -> Type.VERSIONS;
 
+	public static final Attributes				EMPTY_ATTRS		= new Attributes(Collections.emptyMap(),
+		Collections.emptyMap(), ';');
+
 	/**
 	 * Pattern for List with list type
 	 */
-	private static final Pattern				TYPED			= Pattern
+	static final Pattern						TYPED			= Pattern
 		.compile("List\\s*<\\s*(String|Version|Long|Double)\\s*>");
 
-	private final Map<String, String>			map;
-	private final Map<String, Type>				types;
-	public static final Attributes				EMPTY_ATTRS		= new Attributes(Collections.emptyMap(),
-		Collections.emptyMap());
+	final Map<String, String>					map;
+	final Map<String, Type>						types;
+	final char									separator;
 
-	private Attributes(Map<String, String> map, Map<String, Type> types) {
+	Attributes(Map<String, String> map, Map<String, Type> types, char separator) {
 		this.map = map;
 		this.types = types;
+		this.separator = separator;
 	}
 
 	public Attributes() {
-		this(new LinkedHashMap<>(), new HashMap<>());
+		this(new LinkedHashMap<>(), new HashMap<>(), ';');
 	}
 
 	public Attributes(Attributes... attrs) {
@@ -127,6 +130,42 @@ public class Attributes implements Map<String, String> {
 	public Attributes(Map<String, String> v) {
 		this();
 		putAll(v);
+	}
+
+	/**
+	 * <pre>
+	 * attributes ::= keyvalye ( ',' keyvalue )*
+	 * keyvalue ::= key '=' value
+	 * </pre>
+	 *
+	 * @param s attributes or null or empty
+	 */
+	public Attributes(String s) {
+		this(new LinkedHashMap<>(), new HashMap<>(), ',');
+		if (s != null && !s.isEmpty() && !s.isBlank()) {
+
+			QuotedTokenizer qt = new QuotedTokenizer(s, "");
+
+			do {
+
+				String keyOrAttribute = qt.nextToken("=,");
+				ParameterMap.error(qt, keyOrAttribute == null, "expected a clause key or attribute key");
+
+				switch (qt.getSeparator()) {
+					case '=' :
+						String attributeValue = qt.nextToken(",");
+						ParameterMap.error(qt, attributeValue == null, "expected an attribute value");
+						put(keyOrAttribute, attributeValue);
+						break;
+
+					case ',' :
+						break;
+
+					default :
+						ParameterMap.error(qt, true, "unrecognized separator ");
+				}
+			} while (qt.getSeparator() == ',');
+		}
 	}
 
 	public void putAllTyped(Map<String, Object> attrs) {
@@ -400,8 +439,12 @@ public class Attributes implements Map<String, String> {
 	}
 
 	public void append(StringBuilder appendable) {
+		boolean first = true;
 		for (Map.Entry<String, String> e : entrySet()) {
-			appendable.append(";");
+			if (!first || separator == ';') {
+				appendable.append(separator);
+			}
+			first = false;
 			append(appendable, e);
 		}
 	}

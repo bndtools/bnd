@@ -3207,6 +3207,9 @@ public class Analyzer extends Processor {
 		return descriptors.getPackageRef(binaryName);
 	}
 
+	public TypeRef getTypeRefFrom(Class<?> clazz) {
+		return descriptors.getTypeRefFromFQN(clazz.getName());
+	}
 	public TypeRef getTypeRefFromFQN(String fqn) {
 		return descriptors.getTypeRefFromFQN(fqn);
 	}

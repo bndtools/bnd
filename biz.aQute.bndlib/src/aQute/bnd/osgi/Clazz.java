@@ -99,6 +99,7 @@ import aQute.bnd.classfile.TypeAnnotationsAttribute;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.Descriptor;
+import aQute.bnd.osgi.Descriptors.NamedDescriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.signatures.FieldSignature;
@@ -550,6 +551,11 @@ public class Clazz {
 		public abstract Object getConstant();
 
 		public abstract String getGenericReturnType();
+
+		public NamedDescriptor getNamedDescriptor() {
+			return new NamedDescriptor(getName(), getDescriptor());
+		}
+
 	}
 
 	public class FieldDef extends MemberDef {
@@ -621,6 +627,10 @@ public class Clazz {
 			return super.isFinal() || Clazz.this.isFinal();
 		}
 
+		public boolean isDefault() {
+			return Clazz.this.isInterface() && !isStatic() && !isAbstract();
+		}
+
 		public TypeRef[] getPrototype() {
 			return getDescriptor().getPrototype();
 		}
@@ -690,6 +700,17 @@ public class Clazz {
 		@Override
 		ElementType elementType() {
 			return getName().equals("<init>") ? ElementType.CONSTRUCTOR : ElementType.METHOD;
+		}
+
+		/**
+		 * Return the set of thrown types in this method. Not that if these
+		 * exceptions contain generics, you should definitely use the signature.
+		 */
+		public TypeRef[] getThrows() {
+			return attribute(ExceptionsAttribute.class).map(ea -> Stream.of(ea.exceptions)
+				.map(analyzer::getTypeRefFromFQN)
+				.toArray(TypeRef[]::new))
+				.orElse(new TypeRef[0]);
 		}
 	}
 
