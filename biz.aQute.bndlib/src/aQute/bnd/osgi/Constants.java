@@ -68,6 +68,7 @@ public interface Constants {
 
 	String		PRIVATE_PACKAGE								= "Private-Package";
 	String		IGNORE_PACKAGE								= "Ignore-Package";
+	@Deprecated
 	String		INCLUDE_RESOURCE							= "Include-Resource";
 	String		CONDITIONAL_PACKAGE							= "Conditional-Package";
 	String		BND_LASTMODIFIED							= "Bnd-LastModified";
