@@ -241,6 +241,7 @@ public class ResolveProcess {
 	 *            output
 	 * @return the report
 	 */
+	@SuppressWarnings("unlikely-arg-type")
 	public static String format(ResolutionException re, boolean reportOptional) {
 		List<Requirement> chain = getCausalChain(re);
 
@@ -285,6 +286,55 @@ public class ResolveProcess {
 				optional.stream()
 					.collect(Collectors.groupingBy(Requirement::getResource))
 					.forEach(formatGroup(f));
+			}
+
+			// 4. Check Blacklist
+
+			if (re instanceof ResolutionExceptionWithDetails detailedExc) {
+				Set<Resource> blackList = detailedExc.getBlackList();
+				Set<Capability> blacklistedCapabilities = detailedExc.getBlacklistedCapabilities();
+
+				if (!blacklistedCapabilities.isEmpty()) {
+
+					f.format(
+						"%n%nBlacklisted Capabilities: Some requirements could not be satisfied because of blacklisted capabilities in -runblacklist:%n");
+
+					for (Requirement req : chain) {
+
+						String namespace = req.getNamespace();
+						String filter = req.getDirectives()
+							.get("filter");
+
+						for (Resource blacklistedRes : blackList) {
+
+							List<Capability> findCapability = ResourceUtils.findCapability(blacklistedRes, namespace,
+								filter);
+							if (!findCapability.isEmpty()) {
+								f.format(
+									"%s is ignored because it is blacklisted although providing required capability %s%s%n",
+									blacklistedRes, namespace, filter);
+							}
+
+						}
+
+					}
+
+					f.format("%n%nAll Blacklisted Capabilities:%n");
+
+					for (Capability cap : blacklistedCapabilities) {
+						f.format("%s providing capability %s:%s ignored%n", cap.getResource(), cap.getNamespace(),
+							cap.getAttributes()
+							.get(cap.getNamespace()));
+					}
+
+					f.format("%n%nAll Blacklisted Resources%n");
+
+					for (Resource res : blackList) {
+						f.format("%s%n", res);
+					}
+				}
+
+
 			}
 
 			return f.toString();
@@ -435,6 +485,20 @@ public class ResolveProcess {
 				}
 			}
 		} catch (TimeoutException toe) {}
+
+		if (context instanceof AbstractResolveContext arctx) {
+			Set<Resource> blackList = arctx.getBlackList();
+			Set<Capability> blacklistedCapabilities = arctx.getBlacklistedCapabilities();
+
+			if (!blacklistedCapabilities.isEmpty()) {
+				return new ResolutionExceptionWithDetails(re.getMessage(), re, list, blackList,
+					blacklistedCapabilities);
+			} else {
+				return new ResolutionException(re.getMessage(), re, list);
+			}
+
+		}
+
 		return new ResolutionException(re.getMessage(), re, list);
 	}
 
