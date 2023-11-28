@@ -100,6 +100,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private Resource								systemResource;
 	private Resource								inputResource;
 	private Set<Resource>							blacklistedResources					= new HashSet<>();
+	private final Set<Capability>					blacklistedCapabilities					= new HashSet<>();
 	private int										level									= 0;
 	private Resource								framework;
 	private final AtomicBoolean						reported								= new AtomicBoolean();
@@ -285,8 +286,18 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	protected Collection<Capability> findProviders(Repository repo, Requirement requirement) {
 		Map<Requirement, Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
 		Collection<Capability> caps = map.get(requirement);
-		caps.removeIf(capability -> blacklistedResources.contains(capability.getResource()));
+		caps.removeIf(capability -> isBlacklisted(capability));
 		return caps;
+	}
+
+	private boolean isBlacklisted(Capability capability) {
+
+		boolean contains = blacklistedResources.contains(capability.getResource());
+		if (contains) {
+			blacklistedCapabilities.add(capability);
+		}
+
+		return contains;
 	}
 
 	private void setResourcePriority(int priority, Resource resource) {
@@ -693,6 +704,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	public Set<Resource> getBlackList() {
 		return blacklistedResources;
+	}
+
+	public Set<Capability> getBlacklistedCapabilities() {
+		return blacklistedCapabilities;
 	}
 
 	public void setLevel(int n) {
