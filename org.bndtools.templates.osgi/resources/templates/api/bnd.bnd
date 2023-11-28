@@ -1,5 +1,4 @@
 -buildpath: osgi.annotation; version=latest
 -baseline: *
 
-Export-Package: $basePackageName$
 

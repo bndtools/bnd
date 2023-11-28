@@ -23,7 +23,6 @@ Test-Cases: \${classes;CONCRETE;ANNOTATED;org.junit.runner.RunWith}
 	\${junit},\
 	\${mockito}
 
--privatepackage: $basePackageName$
 
 # Needed for Mockito's mocking to work
 -runsystempackages.objenesis: sun.misc,sun.reflect

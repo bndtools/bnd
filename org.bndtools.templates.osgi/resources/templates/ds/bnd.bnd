@@ -7,4 +7,3 @@
 	\${junit}
 
 
--privatepackage: $basePackageName$
