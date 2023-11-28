@@ -7,4 +7,4 @@
 	
 -runfw: org.apache.felix.framework
 
--resolve: beforelaunch
+-resolve: cache
