@@ -6,9 +6,5 @@
 -testpath: \
 	\${junit}
 
-$if(javaLevel)$
-javac.source: $javaLevel$
-javac.target: $javaLevel$
-$endif$
 
 -privatepackage: $basePackageName$

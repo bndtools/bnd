@@ -16,10 +16,6 @@ Test-Cases: \${classes;CONCRETE;ANNOTATED;org.junit.runner.RunWith}
 	osgi.core; version=latest,\
 	osgi.cmpn; version=latest
 
-$if(javaLevel)$
-javac.source: $javaLevel$
-javac.target: $javaLevel$
-$endif$
 
 # We need JUnit and Mockito to resolve the test cases at runtime. 
 # Other runtime dependencies should be added as necessary
