@@ -18,6 +18,9 @@ import aQute.bnd.osgi.Descriptors.NamedDescriptor;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import biz.aQute.bnd.javagen.util.JavaSourceBuilder;
 
+/*
+ * Generate the source code
+ */
 class Source {
 
 	final Map<NamedDescriptor, MethodDef>	methods	= new LinkedHashMap<>();
@@ -28,11 +31,10 @@ class Source {
 	final TypeRef							extends_;
 	final TypeRef							facade;
 
-
-	Source(Analyzer analyzer, TypeRef facade, TypeRef base, TypeRef... domains) throws Exception {
+	Source(Analyzer analyzer, TypeRef facadeClass, TypeRef baseClass, TypeRef... domains) throws Exception {
 
 		if (domains.length == 0)
-			throw new IllegalArgumentException("you must specify at least one type to implement or extend");
+			throw new IllegalArgumentException("you must specify at least one type to either implement or extend");
 
 		Clazz primary = analyzer.findClass(domains[0]);
 		if (primary == null)
@@ -53,56 +55,61 @@ class Source {
 		} else {
 			this.extends_ = domains[0];
 			this.implements_ = Arrays.copyOfRange(domains, 1, domains.length);
+			parse(extends_);
 		}
 
-		this.facade = facade;
+		this.facade = facadeClass;
 		this.analyzer = analyzer;
-		this.base = base;
-	}
-
-	String source() throws Exception {
-		parse(extends_);
+		this.base = baseClass;
 		for (TypeRef d : implements_) {
 			parse(d);
 		}
+	}
+
+	String source() throws Exception {
 
 		JavaSourceBuilder sb = new JavaSourceBuilder();
 		sb.package_(facade.getPackageRef());
-		sb.nl();
+		sb.nl(2);
 		sb.import_(getImported());
-		sb.nl();
+		sb.nl(2);
 
 		sb.public_()
 			.class_(facade)
 			.extends_(base)
-			.body(j -> {
+			.body(() -> {
 
-				j.public_()
+				sb.public_()
 					.interface_("Delegate")
 					.extends_(implements_)
-					.body(jj -> {
+					.body(() -> {
 
 						getOverridableMethods(extends_).forEach(m -> {
 							sb.method(m)
 								.append(";")
 								.nl();
+
 						});
 					})
 					.nl(2);
 
-				j.public_()
+				sb.public_()
+					.format("%s(){ super(Delegate.class);}", facade.getShortName())
+					.nl(2);
+
+				sb.public_()
 					.static_()
 					.class_("Facade")
 					.extends_(extends_)
 					.implements_(implements_)
-					.body(jjj -> {
+					.body(() -> {
 
 						sb.final_()
 							.format("Supplier<Delegate> bind;")
 							.nl();
 						sb.suppressWarnings("unchecked", "rawtypes");
 						sb.format(
-							"Facade(Function<Object,Supplier<Object>> binding) { this.bind = (Supplier) binding.apply(this) /* I know */; }")
+							"Facade(Function<Object,Supplier<Object>> binding) { this.bind = (Supplier) binding.apply(this) /* I know :-( */; }")
 							.nl(2);
 
 						methods.values()
@@ -111,7 +118,7 @@ class Source {
 									sb.override()
 										.public_();
 									sb.method(m)
-										.body(y -> {
+										.body(() -> {
 											if (!isVoid(m.getType())) {
 												sb.return_();
 											}
@@ -162,12 +169,14 @@ class Source {
 		result.add(base);
 		result.add(analyzer.getTypeRefFromFQN(Function.class.getName()));
 		result.add(analyzer.getTypeRefFromFQN(Supplier.class.getName()));
-		methods.keySet()
+		methods.values()
 			.stream()
-			.map(nd -> nd.descriptor)
-			.forEach(d -> {
-				result.add(d.getType());
-				for (TypeRef t : d.getPrototype()) {
+			.forEach(nd -> {
+				for (TypeRef tr : nd.getThrows()) {
+					result.add(tr);
+				}
+				result.add(nd.getDescriptor().getType());
+				for (TypeRef t : nd.getDescriptor().getPrototype()) {
 					result.add(t);
 				}
 			});

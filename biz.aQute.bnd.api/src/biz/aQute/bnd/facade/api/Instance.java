@@ -5,30 +5,28 @@ import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * Represents an instance created by a Delegate. The instance must automatically
- * be closed when the Delegate is unregistered.
+ * be closed when the Delegate is unregistered. It can also be closed manually.
  *
- * @param <D>
- *                the type of the domain
+ * @param <D> the type of the domain
  */
 @ConsumerType
 public interface Instance<D> extends AutoCloseable {
 
 	/**
-	 * Get the backing object. This is never null.
+	 * Get the delegate object. This is never null.
 	 */
 	D get();
 
 	/**
 	 * Get the current state of the backing object. This state is passed to the
-	 * {@link Delegate#create(String, java.lang.ref.WeakReference, Object)} when
-	 * it needs to be recreated.
+	 * {@link Delegate#create(Binder)} when it needs to be recreated.
 	 */
 	@Nullable
 	Object getState();
 
 	/**
 	 * Close the instance. This will free the backing object. This method can be
-	 * called multiple times but will only work the first time.
+	 * called multiple times but will only do work the first time.
 	 */
 	@Override
 	void close();

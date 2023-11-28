@@ -2,6 +2,7 @@ package biz.aQute.bnd.proxy.generator;
 
 import java.net.NetworkInterface;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -63,6 +64,12 @@ public class TestFacade extends TestBase {
 		public void foo(String arg0, NetworkInterface arg1) {
 			bind.get()
 				.foo(arg0, arg1);
+
+		}
+
+		@Override
+		public void clean(Map<String, String> args) throws Exception {
+			// TODO Auto-generated method stub
 
 		}
 

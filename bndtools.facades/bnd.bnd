@@ -59,7 +59,19 @@
 	org.objenesis
 
 src: ${^src},src-gen
-x-generate: \
+
+# 
+# generate the facade classes
+#
+
+-generate: \
         bnd.bnd; \
         output=src-gen; \
-        generate="facadegen -o src-gen -e bndtools.facades.util.FacadeUtil -p bndtools.facades IPB:org.eclipse.core.resources.IncrementalProjectBuilder >tmp 2>err" 
+        generate="facadegen \
+            -o src-gen \
+            --extend bndtools.facades.util.FacadeUtil \
+            --package_ bndtools.facades \
+            \
+            org.eclipse.core.runtime.IAdapterFactory \
+            IPB:org.eclipse.core.resources.IncrementalProjectBuilder:org.eclipse.core.resources.IIncrementalProjectBuilder2 \
+            " 

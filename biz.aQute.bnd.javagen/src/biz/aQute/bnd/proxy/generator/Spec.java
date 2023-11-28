@@ -5,6 +5,9 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
+/**
+ * Analyzes the command line and turns it in a basic set of parameters
+ */
 class Spec {
 
 	final Analyzer		analyzer;
@@ -23,7 +26,7 @@ class Spec {
 			this.domains = new TypeRef[] {
 				domain
 			};
-			this.facade = toTypeRef(analyzer, this.pack, domain.getShortName());
+			this.facade = toTypeRef(analyzer, this.pack, domain.getShortName() + "Facade");
 		} else {
 			this.facade = toTypeRef(analyzer, this.pack, parts[0]);
 			this.domains = new TypeRef[parts.length - 1];

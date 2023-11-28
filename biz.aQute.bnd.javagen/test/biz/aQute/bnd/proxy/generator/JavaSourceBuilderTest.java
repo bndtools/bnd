@@ -28,17 +28,21 @@ class JavaSourceBuilderTest {
 				.class_("Test")
 				.extends_("OtherTest")
 				.implements_("A", "B")
-				.body(j -> {
+				.body(() -> {
 					clazz.methods()
 						.filter(m -> !m.isConstructor())
 						.forEach(m -> {
-							j.public_()
+							sb.public_()
 								.method(m)
 								.body(null);
 						});
 				});
 
 			System.out.println(sb);
+
+			/**
+			 * should test the output TODO
+			 */
 		}
 	}
 

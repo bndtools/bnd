@@ -6,6 +6,7 @@ import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -18,6 +19,9 @@ import biz.aQute.bnd.proxy.generator.TestFacade.Facade;
 
 class FacadeSourceGenTest {
 
+	/*
+	 * Helper to generate a test generated class
+	 */
 	public static void main(String[] args) throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.addClasspath(IO.getFile("bin_test"));
@@ -29,7 +33,7 @@ class FacadeSourceGenTest {
 
 			TypeRef facade = a.getTypeRefFromFQN("biz.aQute.bnd.proxy.generator.TestFacade");
 
-			Source fsg = new Source(a, facade, base, domain_fc, domain_fi);
+			Source fsg = new Source(a, facade, base, /* domain_fc, */ domain_fi);
 			String source = fsg.source();
 			System.out.println(source);
 		}
@@ -75,6 +79,12 @@ class FacadeSourceGenTest {
 				return Collections.emptyList();
 			}
 
+			@Override
+			public void clean(Map<String, String> args) throws Exception {
+				// TODO Auto-generated method stub
+
+			}
+
 		}
 		TestFacade f = new TestFacade();
 		Facade d = f.createFacade((b) -> {
@@ -88,7 +98,7 @@ class FacadeSourceGenTest {
 		assertThat(events.remove(0)).isEqualTo("foo(String,NetworkInterface)");
 
 		d.bar();
-		assertThat(events.remove(0)).isEqualTo("b");
+		assertThat(events.remove(0)).isEqualTo("bar");
 		assertThat(events.isEmpty());
 	}
 

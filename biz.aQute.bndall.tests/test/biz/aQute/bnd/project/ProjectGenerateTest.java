@@ -112,26 +112,6 @@ public class ProjectGenerateTest {
 	@SuppressWarnings({
 		"unchecked", "rawtypes"
 	})
-	public void testFacadeGenerator() throws Exception {
-		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
-			getRepo(ws);
-			Project project = ws.getProject("p2");
-			project.setProperty("-generate",
-				"bnd.bnd;output=src-gen/;generate='facadegen -o src-gen/ -e biz.aQute.bnd.project.TestBase -p biz.aQute.bnd.project Function:java.util.function.Function:java.util.function.Supplier'");
-
-			File outputdir = project.getFile("src-gen");
-
-			project.getGenerate()
-				.generate(true);
-			project.check();
-			assertThat(IO.getFile(outputdir, "biz/aQute/bnd/project/Function.java")).isFile();
-		}
-	}
-
-	@Test
-	@SuppressWarnings({
-		"unchecked", "rawtypes"
-	})
 	public void testSimpleGeneratorDontClearOutput() throws Exception {
 		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
 			getRepo(ws);

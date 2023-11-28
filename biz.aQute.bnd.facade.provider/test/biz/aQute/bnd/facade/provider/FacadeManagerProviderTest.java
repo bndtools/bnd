@@ -70,7 +70,7 @@ class FacadeManagerProviderTest {
 	}
 
 	public static class DomainFacade implements Domain {
-		final Binder<Domain> binder = Binder.create(this, Domain.class, ID, "description");
+		final Binder<Domain> binder = Binder.create(this, Domain.class, ID, null);
 
 		@Override
 		public void set(String s) {
