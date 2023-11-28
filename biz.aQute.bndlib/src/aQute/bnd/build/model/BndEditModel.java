@@ -1214,24 +1214,24 @@ public class BndEditModel {
 			setEntries(resourceEntries2, Constants.INCLUDE_RESOURCE);
 		}
 
-		if (hasIncludeResourceInstruction()) {
-			resourceEntries1.addAll(addedEntries);
-			setEntries(resourceEntries1, Constants.INCLUDERESOURCE);
-		} else {
+		if (hasIncludeResourceHeaderLikeInstruction()) {
 			resourceEntries2.addAll(addedEntries);
 			setEntries(resourceEntries2, Constants.INCLUDE_RESOURCE);
+		} else {
+			resourceEntries1.addAll(addedEntries);
+			setEntries(resourceEntries1, Constants.INCLUDERESOURCE);
 		}
 	}
 
 	public void addIncludeResource(String resource) {
-		String key = hasIncludeResourceInstruction() ? Constants.INCLUDERESOURCE : Constants.INCLUDE_RESOURCE;
+		String key = hasIncludeResourceHeaderLikeInstruction() ? Constants.INCLUDE_RESOURCE : Constants.INCLUDERESOURCE;
 		List<String> entries = getEntries(key, listConverter);
 		entries.add(resource);
 		setEntries(entries, key);
 	}
 
-	private boolean hasIncludeResourceInstruction() {
-		return properties.containsKey(Constants.INCLUDERESOURCE);
+	private boolean hasIncludeResourceHeaderLikeInstruction() {
+		return properties.containsKey(Constants.INCLUDE_RESOURCE);
 	}
 
 	public void setProject(Project project) {
