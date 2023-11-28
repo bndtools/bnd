@@ -241,7 +241,6 @@ public class ResolveProcess {
 	 *            output
 	 * @return the report
 	 */
-	@SuppressWarnings("unlikely-arg-type")
 	public static String format(ResolutionException re, boolean reportOptional) {
 		List<Requirement> chain = getCausalChain(re);
 
@@ -290,11 +289,11 @@ public class ResolveProcess {
 
 			// 4. Check Blacklist
 
-			if (re instanceof ResolutionExceptionWithDetails detailedExc) {
+			if (re instanceof BndResolutionException detailedExc) {
 				Set<Resource> blackList = detailedExc.getBlackList();
 				Set<Capability> blacklistedCapabilities = detailedExc.getBlacklistedCapabilities();
 
-				if (!blacklistedCapabilities.isEmpty()) {
+				if (blacklistedCapabilities != null && !blacklistedCapabilities.isEmpty()) {
 
 					f.format(
 						"%n%nBlacklisted Capabilities: Some requirements could not be satisfied because of blacklisted capabilities in -runblacklist:%n");
@@ -491,7 +490,7 @@ public class ResolveProcess {
 			Set<Capability> blacklistedCapabilities = arctx.getBlacklistedCapabilities();
 
 			if (!blacklistedCapabilities.isEmpty()) {
-				return new ResolutionExceptionWithDetails(re.getMessage(), re, list, blackList,
+				return new BndResolutionException(re.getMessage(), re, list, blackList,
 					blacklistedCapabilities);
 			} else {
 				return new ResolutionException(re.getMessage(), re, list);

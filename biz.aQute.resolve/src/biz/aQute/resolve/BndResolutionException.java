@@ -12,14 +12,14 @@ import org.osgi.service.resolver.ResolutionException;
  * A {@link ResolutionException} providing more details about why resolution has
  * failed.
  */
-public class ResolutionExceptionWithDetails extends ResolutionException {
+public class BndResolutionException extends ResolutionException {
 
 	private static final long	serialVersionUID	= 1L;
 
 	private Set<Resource>		blackList;
 	private Set<Capability>		blacklistedCapabilities;
 
-	public ResolutionExceptionWithDetails(String message, Throwable cause,
+	public BndResolutionException(String message, Throwable cause,
 		Collection<Requirement> unresolvedRequirements, Set<Resource> blackList,
 		Set<Capability> blacklistedCapabilities) {
 		super(message, cause, unresolvedRequirements);
