@@ -1,10 +1,9 @@
--buildpath: osgi.annotation; version=6.0.1
+-buildpath: osgi.annotation; version=latest
 -baseline: *
 $if(javaLevel)$
 javac.source: $javaLevel$
 javac.target: $javaLevel$
 $endif$
 
-Bundle-Version: 1.0.0.\${tstamp}
 Export-Package: $basePackageName$
 

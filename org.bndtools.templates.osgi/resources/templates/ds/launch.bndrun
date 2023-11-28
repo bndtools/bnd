@@ -1,5 +1,5 @@
-#-runfw: org.apache.felix.framework;version=5
-#-runee: JavaSE-1.8
+#-runfw: org.apache.felix.framework
+#-runee: JavaSE-17
 
 -runprovidedcapabilities: \${native_capability}
 
