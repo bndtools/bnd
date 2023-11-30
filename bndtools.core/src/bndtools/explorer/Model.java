@@ -21,13 +21,14 @@ class Model {
 	IProject				selectedProject;
 	Object					selection;
 	String					prompt;
-	String					message	= "initializing workspace";
+	String					message		= "initializing workspace";
 	int						severity;
 	String					filterText;
 	final AtomicBoolean		filterDirty	= new AtomicBoolean(false);
-	final List<Runnable>	updates	= new ArrayList<>();
-	final AtomicBoolean		dirty	= new AtomicBoolean(false);
-	final Set<IProject>		pinned	= new HashSet<>();
+	final List<Runnable>	updates		= new ArrayList<>();
+	final AtomicBoolean		dirty		= new AtomicBoolean(false);
+	final Set<IProject>		pinned		= new HashSet<>();
+	boolean					closed;
 
 	void setSelectedProject(IProject project) {
 		if (project != selectedProject) {
@@ -116,7 +117,7 @@ class Model {
 	 * This runs async on the display thread.
 	 */
 	private void update0() {
-		if (dirty.getAndSet(false)) {
+		if (dirty.getAndSet(false) && !closed) {
 			updates.forEach(Runnable::run);
 		}
 	}
@@ -138,6 +139,19 @@ class Model {
 	void setActualSelection(Object selection) {
 		this.selection = selection;
 		update();
+	}
+
+	void close() {
+		assert isCurrent();
+		closed = true;
+	}
+
+	boolean isCurrent() {
+		Display current = Display.getCurrent();
+		if (current == null)
+			return false;
+
+		return Thread.currentThread() == current.getThread();
 	}
 
 }

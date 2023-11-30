@@ -247,6 +247,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 	@Override
 	public void dispose() {
+		model.close();
 		closeables.forEach(IO::close);
 		super.dispose();
 	}
