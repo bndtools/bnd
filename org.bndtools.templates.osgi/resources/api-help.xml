@@ -1,4 +1,4 @@
 <form>
-	<p>Creates a project for defining an API using OSGi R6 standard annotations. The following dependencies are added to the build path:</p>
-	<li>OSGi R8 Annotation</li>
+	<p>Creates a project for defining an API using OSGi standard annotations. The following dependencies are added to the build path:</p>
+	<li>OSGi Annotation</li>
 </form>

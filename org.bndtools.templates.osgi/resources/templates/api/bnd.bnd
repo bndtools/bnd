@@ -1,4 +1,4 @@
--buildpath: osgi.annotation; version=latest
+-buildpath: osgi.core
 -baseline: *
 
 

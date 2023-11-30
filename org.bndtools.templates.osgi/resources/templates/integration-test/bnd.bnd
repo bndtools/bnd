@@ -1,9 +1,9 @@
 # This is the version of JUnit that will be used at build time and run time
-junit: org.apache.servicemix.bundles.junit;version=latest
+junit: org.apache.servicemix.bundles.junit
 
 # This is the version of Mockito that will be used at build time and run time
-mockito: org.mockito.mockito-core;version=latest,\
-  org.objenesis;version=latest
+mockito: org.mockito.mockito-core,\
+  org.objenesis
 
 # Discover and run all test cases annotated with the @RunWith annotation
 Test-Cases: \${classes;CONCRETE;ANNOTATED;org.junit.runner.RunWith}
@@ -12,9 +12,7 @@ Test-Cases: \${classes;CONCRETE;ANNOTATED;org.junit.runner.RunWith}
 -buildpath: \
 	\${junit},\
 	\${mockito},\
-	osgi.annotation; version=latest,\
-	osgi.core; version=latest,\
-	osgi.cmpn; version=latest
+	osgi.core,\
 
 
 # We need JUnit and Mockito to resolve the test cases at runtime. 
@@ -27,6 +25,4 @@ Test-Cases: \${classes;CONCRETE;ANNOTATED;org.junit.runner.RunWith}
 # Needed for Mockito's mocking to work
 -runsystempackages.objenesis: sun.misc,sun.reflect
 
-# Use Felix by default
--runfw: org.apache.felix.framework
 -runvm: -ea

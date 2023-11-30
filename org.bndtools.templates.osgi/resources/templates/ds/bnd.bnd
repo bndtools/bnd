@@ -1,7 +1,5 @@
 -buildpath: \
-	osgi.annotation; version=latest,\
-	osgi.core; version=latest,\
-	osgi.cmpn; version=latest
+	osgi.core,\
 
 -testpath: \
 	\${junit}
