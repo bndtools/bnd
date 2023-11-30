@@ -1,4 +1,5 @@
--buildpath: osgi.core
+-buildpath: osgi.core,\
+			osgi.annotation
 -baseline: *
 
 
