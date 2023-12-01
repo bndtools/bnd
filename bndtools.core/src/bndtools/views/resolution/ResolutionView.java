@@ -102,6 +102,7 @@ import bndtools.tasks.ResourceCapReqLoader;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.SelectionUtils;
 import bndtools.views.ViewEventTopics;
+import bndtools.views.resolution.ResolutionView.LocalTransferDragListener;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
@@ -221,11 +222,6 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 					Requirement req = rw.requirement;
 					eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
 				}
-
-				// else if (element instanceof IAdaptable) {
-				// final URI uri = ((IAdaptable) element).getAdapter(URI.class);
-				//
-				// }
 
 			}
 		});
