@@ -78,6 +78,9 @@ import aQute.libg.generics.Create;
  */
 public class Builder extends Analyzer {
 
+	@SuppressWarnings("deprecation")
+	private static final String INCLUDERESOURCE_HEADERS = Constants.INCLUDERESOURCE + "|" + Constants.INCLUDE_RESOURCE;
+
 	private final static Logger			logger						= LoggerFactory.getLogger(Builder.class);
 	private final static Pattern		IR_PATTERN					= Pattern
 		.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
@@ -907,6 +910,7 @@ public class Builder extends Analyzer {
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
+	@SuppressWarnings("deprecation")
 	private void doIncludeResources(Jar jar) throws Exception {
 		Parameters includes = parseHeader(getProperty("Bundle-Includes"));
 		if (includes.isEmpty()) {
@@ -1004,7 +1008,8 @@ public class Builder extends Analyzer {
 
 	private void doClassAttribute(Jar jar, String name, Map<String, String> extra, Instructions preprocess,
 		boolean absentIsOk) throws Exception {
-		FileLine header = getHeader(Constants.INCLUDE_RESOURCE, Constants.CLASS_ATTRIBUTE);
+		FileLine header = getHeader(INCLUDERESOURCE_HEADERS,
+			Constants.CLASS_ATTRIBUTE);
 		String fqn = extra.get(Constants.CLASS_ATTRIBUTE);
 		TypeRef typeRef = getTypeRefFromFQN(fqn);
 		if (typeRef == null) {
@@ -1091,8 +1096,8 @@ public class Builder extends Analyzer {
 		for (String required : requires) {
 			File file = getFile(required);
 			if (!file.exists()) {
-				error(Constants.INCLUDE_RESOURCE + ".cmd for %s, requires %s, but no such file %s", source, required,
-					file.getAbsoluteFile()).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
+				error(Constants.INCLUDERESOURCE + ".cmd for %s, requires %s, but no such file %s", source, required,
+					file.getAbsoluteFile()).header(INCLUDERESOURCE_HEADERS);
 			} else
 				lastModified = findLastModifiedWhileOlder(file, lastModified());
 		}
@@ -1156,7 +1161,7 @@ public class Builder extends Analyzer {
 		if (cr != null)
 			jar.putResource(destination, cr);
 
-		updateModified(lastModified, Constants.INCLUDE_RESOURCE + ": cmd");
+		updateModified(lastModified, Constants.INCLUDERESOURCE + ": cmd");
 	}
 
 	private void traverse(List<String> paths, File item) {
@@ -1245,7 +1250,7 @@ public class Builder extends Analyzer {
 			} else {
 				String p = appendPath(path, file.getName());
 				if (files.containsKey(p))
-					warning(Constants.INCLUDE_RESOURCE + " overwrites entry %s from file %s", p, file);
+					warning(Constants.INCLUDERESOURCE + " overwrites entry %s from file %s", p, file);
 				files.put(p, file);
 			}
 		}
@@ -1257,7 +1262,7 @@ public class Builder extends Analyzer {
 
 	private void noSuchFile(Jar jar, String clause, Map<String, String> extra, String source, String destinationPath)
 		throws Exception {
-		List<Jar> src = getJarsFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
+		List<Jar> src = getJarsFromName(source, Constants.INCLUDERESOURCE + " " + source);
 		if (!src.isEmpty()) {
 			for (Jar j : src) {
 				File sourceFile = j.getSource();
@@ -1366,6 +1371,7 @@ public class Builder extends Analyzer {
 		return dupl;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void copy(Jar jar, String path, File from, Instructions preprocess, Map<String, String> extra)
 		throws Exception {
 		if (doNotCopy(from))
@@ -2014,7 +2020,7 @@ public class Builder extends Analyzer {
 		}
 
 		if (!spec.includeresource.isEmpty()) {
-			setProperty(Constants.INCLUDE_RESOURCE, new Parameters(spec.includeresource).toString());
+			setProperty(Constants.INCLUDERESOURCE, new Parameters(spec.includeresource).toString());
 		}
 
 		if (!spec.privatePackage.isEmpty()) {
