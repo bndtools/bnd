@@ -2533,7 +2533,7 @@ public class BuilderTest {
 	public void testExportContents() throws Exception {
 		Builder builder = new Builder();
 		try {
-			builder.setProperty(Constants.INCLUDE_RESOURCE, "test/activator/inherits=test/test/activator/inherits");
+			builder.setProperty(Constants.INCLUDERESOURCE, "test/activator/inherits=test/test/activator/inherits");
 			builder.setProperty("-exportcontents", "*;x=true;version=1");
 			builder.build();
 			assertTrue(builder.check());
@@ -2700,7 +2700,7 @@ public class BuilderTest {
 	public void testResourceNotFound() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.EXPORT_PACKAGE, "*;x-test:=true");
-		base.put(Constants.INCLUDE_RESOURCE, "does_not_exist");
+		base.put(Constants.INCLUDERESOURCE, "does_not_exist");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2721,7 +2721,7 @@ public class BuilderTest {
 	@Test
 	public void testFindPathInBundleClasspath() throws Exception {
 		Properties base = new Properties();
-		base.put(Constants.INCLUDE_RESOURCE, "jar=jar");
+		base.put(Constants.INCLUDERESOURCE, "jar=jar");
 		base.put(Constants.BUNDLE_CLASSPATH, "${findpath;jar/.{1,4}\\.jar}");
 		Builder analyzer = new Builder();
 		try {

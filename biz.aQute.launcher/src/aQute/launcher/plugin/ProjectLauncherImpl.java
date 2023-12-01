@@ -302,6 +302,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * launcher.embedded flag.
 	 */
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Jar executable() throws Exception {
 		Executable instrs = launcherInstrs.executable();

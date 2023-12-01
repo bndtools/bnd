@@ -326,7 +326,7 @@ public class AnalyzerTest {
 		Builder b = new Builder();
 		try {
 			b.setProperty(Constants.BUNDLE_CLASSPATH, "foo");
-			b.setProperty(Constants.INCLUDE_RESOURCE, "foo/test/refer=bin_test/test/refer");
+			b.setProperty(Constants.INCLUDERESOURCE, "foo/test/refer=bin_test/test/refer");
 			b.setProperty(Constants.EXPORT_CONTENTS, "test.refer");
 			Jar jar = b.build();
 			Manifest m = jar.getManifest();
