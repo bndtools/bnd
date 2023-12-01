@@ -12,6 +12,9 @@ Import-Package: \
  org.apache.felix.shell;resolution:=optional,\
  ${eclipse.importpackage},\
  *
+# Alas, we're forced to use this because Eclipse has split packages :-(
+Require-Bundle \
+    org.eclipse.jdt.ui
 
 Export-Package: org.osgi.service.metatype.annotations 
 
