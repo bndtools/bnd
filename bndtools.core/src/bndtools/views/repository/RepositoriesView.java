@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
@@ -89,6 +90,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.resource.Requirement;
+import org.osgi.service.event.Event;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
@@ -118,6 +120,7 @@ import bndtools.preferences.WorkspaceOfflineChangeAdapter;
 import bndtools.utils.HierarchicalLabel;
 import bndtools.utils.HierarchicalMenu;
 import bndtools.utils.SelectionDragAdapter;
+import bndtools.views.ViewEventTopics;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 import bndtools.wizards.workspace.WorkspaceSetupWizard;
 
@@ -143,6 +146,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	private Action									downloadAction;
 	private String									advancedSearchState;
 	private Action									offlineAction;
+	private final IEventBroker						eventBroker					= PlatformUI.getWorkbench()
+		.getService(IEventBroker.class);
+
 
 	private final BndPreferences					prefs						= new BndPreferences();
 
@@ -467,7 +473,29 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		IActionBars actionBars = getViewSite().getActionBars();
 		actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), refreshAction);
 
+		// Event subscription
+		eventBroker.subscribe(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(),
+			event -> handleOpenAdvancedSearch(event));
 	}
+
+	private void handleOpenAdvancedSearch(Event event) {
+
+		if (event == null) {
+			return;
+		}
+
+		// Handle the event, open the dialog
+		if (event.getProperty(IEventBroker.DATA) instanceof Requirement req) {
+
+			// fill and open advanced search
+			advancedSearchState = AdvancedSearchDialog.toNamespaceSearchPanelMemento(req)
+				.toString();
+			advancedSearchAction.setChecked(true);
+			advancedSearchAction.run();
+
+		}
+	}
+
 
 	private void configureOfflineAction() {
 		Workspace workspace = Central.getWorkspaceIfPresent();
@@ -1220,5 +1248,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 			}));
 	}
+
 
 }

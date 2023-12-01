@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
@@ -68,16 +69,19 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
@@ -97,6 +101,7 @@ import bndtools.tasks.JarFileCapReqLoader;
 import bndtools.tasks.ResourceCapReqLoader;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.SelectionUtils;
+import bndtools.views.ViewEventTopics;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
@@ -118,6 +123,9 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private int					currentEE	= 4;
 
 	private final Set<String>	filteredCapabilityNamespaces;
+
+	private final IEventBroker	eventBroker	= PlatformUI.getWorkbench()
+		.getService(IEventBroker.class);
 
 	public ResolutionView() {
 		filteredCapabilityNamespaces = Sets.of(IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE);
@@ -201,6 +209,27 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsViewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
 		reqsViewer.setContentProvider(new CapReqMapContentProvider());
 
+		reqsViewer.addDoubleClickListener(event -> {
+			if (!event.getSelection()
+				.isEmpty()) {
+				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+				final Object element = selection.getFirstElement();
+
+				if (element instanceof RequirementWrapper rw) {
+
+					// Open AdvanvedSearch of RepositoriesView
+					Requirement req = rw.requirement;
+					eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
+				}
+
+				// else if (element instanceof IAdaptable) {
+				// final URI uri = ((IAdaptable) element).getAdapter(URI.class);
+				//
+				// }
+
+			}
+		});
+
 		Composite capsPanel = new Composite(splitPanel, SWT.NONE);
 		capsPanel.setBackground(parent.getBackground());
 
@@ -223,6 +252,23 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			@Override
 			public boolean select(Viewer viewer, Object parent, Object element) {
 				return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
+			}
+		});
+
+		capsViewer.addDoubleClickListener(event -> {
+			if (!event.getSelection()
+				.isEmpty()) {
+				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+				final Object element = selection.getFirstElement();
+
+				if (element instanceof Capability cap) {
+
+					// Open AdvanvedSearch of RepositoriesView
+					Requirement req = CapReqBuilder.createRequirementFromCapability(cap)
+						.buildSyntheticRequirement();
+					eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
+				}
+
 			}
 		});
 

@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistable;
+import org.eclipse.ui.XMLMemento;
 import org.osgi.resource.Requirement;
 
 public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistable {
@@ -154,6 +155,21 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
 			if (panel != null)
 				panel.restoreState(childMemento);
 		}
+	}
+
+	/**
+	 * @param req a requirement
+	 * @return a state object for the given requirement to open advancedSearch
+	 *         prefilled in the "Other" tab.
+	 */
+	public static IMemento toNamespaceSearchPanelMemento(Requirement req) {
+		XMLMemento memento = XMLMemento.createWriteRoot("search");
+		memento.putInteger("tabIndex", 2);
+		IMemento other = memento.createChild("tab", "Other");
+		other.putString("namespace", req.getNamespace());
+		other.putString("filter", req.getDirectives()
+			.get("filter"));
+		return memento;
 	}
 
 }
