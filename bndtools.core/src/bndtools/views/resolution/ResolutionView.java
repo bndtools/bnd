@@ -102,7 +102,6 @@ import bndtools.tasks.ResourceCapReqLoader;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.SelectionUtils;
 import bndtools.views.ViewEventTopics;
-import bndtools.views.resolution.ResolutionView.LocalTransferDragListener;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
@@ -259,9 +258,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 				if (element instanceof Capability cap) {
 
-					// Open AdvanvedSearch of RepositoriesView
-					Requirement req = CapReqBuilder.createRequirementFromCapability(cap)
+					// convert the capability to a requirement (stop the
+					// bnd.hashes) for better results in the search
+					Requirement req = CapReqBuilder.createRequirementFromCapability(cap, false)
 						.buildSyntheticRequirement();
+					// Open AdvanvedSearch of RepositoriesView
 					eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
 				}
 
