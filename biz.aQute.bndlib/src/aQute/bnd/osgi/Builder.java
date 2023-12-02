@@ -44,6 +44,7 @@ import aQute.bnd.help.instructions.BuilderInstructions;
 import aQute.bnd.make.Make;
 import aQute.bnd.make.MakeBnd;
 import aQute.bnd.make.MakeCopy;
+import aQute.bnd.make.MakeJar;
 import aQute.bnd.make.component.ServiceComponent;
 import aQute.bnd.maven.PomPropertiesResource;
 import aQute.bnd.maven.PomResource;
@@ -1733,6 +1734,7 @@ public class Builder extends Analyzer {
 	 */
 
 	static MakeBnd					makeBnd					= new MakeBnd();
+	static MakeJar					makeJar					= new MakeJar();
 	static MakeCopy					makeCopy				= new MakeCopy();
 	static ServiceComponent			serviceComponent		= new ServiceComponent();
 	static CDIAnnotations			cdiAnnotations			= new CDIAnnotations();
@@ -1747,6 +1749,7 @@ public class Builder extends Analyzer {
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
 		pluginsContainer.add(makeBnd);
+		pluginsContainer.add(makeJar);
 		pluginsContainer.add(makeCopy);
 		pluginsContainer.add(serviceComponent);
 		pluginsContainer.add(cdiAnnotations);
