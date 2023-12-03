@@ -636,7 +636,13 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 				// convert the capability to a requirement (without
 				// bnd.hashes) for better results in the search
-				Requirement req = CapReqBuilder.createRequirementFromCapability(cap, false)
+				Requirement req = CapReqBuilder.createRequirementFromCapability(cap, (name) -> {
+					if (name.equals("bnd.hashes")) {
+						return false;
+					}
+
+					return true;
+				})
 					.buildSyntheticRequirement();
 				// Open AdvanvedSearch of RepositoriesView
 				eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);

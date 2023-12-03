@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -30,7 +31,6 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -710,16 +710,18 @@ public class CapReqBuilder {
 	}
 
 	public static RequirementBuilder createRequirementFromCapability(Capability capability) {
-		return createRequirementFromCapability(capability, true);
+		return createRequirementFromCapability(capability, null);
 	}
 
 	/**
 	 * @param capability the capability to convert
-	 * @param includeBndHashes if <code>true</code> the requirement contains
-	 *            'bnd.hashes', otherwise not.
+	 * @param includeAttributesFilter predicate to control from the caller which
+	 *            attributes to include. if <code>null</code> all attributes are
+	 *            included.
 	 * @return a RequirementBuilder from the capability
 	 */
-	public static RequirementBuilder createRequirementFromCapability(Capability capability, boolean includeBndHashes) {
+	public static RequirementBuilder createRequirementFromCapability(Capability capability,
+		Predicate<String> includeAttributesFilter) {
 		final String namespace = capability.getNamespace();
 		RequirementBuilder builder = new RequirementBuilder(namespace);
 		final String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
@@ -732,8 +734,8 @@ public class CapReqBuilder {
 		}
 		capAttributes.forEach((name, v) -> {
 
-			if (!includeBndHashes && name.equals(ClassIndexerAnalyzer.BND_HASHES)) {
-				// skip bnd.hashes
+			if (includeAttributesFilter != null && !includeAttributesFilter.test(name)) {
+				// skip this attribute
 				return;
 			}
 
