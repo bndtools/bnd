@@ -635,9 +635,12 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			if (element instanceof Capability cap) {
 
 				// convert the capability to a requirement (without
-				// bnd.hashes) for better results in the search
+				// bundle-attributes and bnd.hashes) for better results in the
+				// advanced search e.g.
+				// (&(osgi.wiring.package=my.package.foo)(version>=1.7.23))
 				Requirement req = CapReqBuilder.createRequirementFromCapability(cap, (name) -> {
-					if (name.equals("bnd.hashes")) {
+					if (name.equals("bundle-symbolic-name") || name.equals("bundle-version")
+						|| name.equals("bnd.hashes")) {
 						return false;
 					}
 
