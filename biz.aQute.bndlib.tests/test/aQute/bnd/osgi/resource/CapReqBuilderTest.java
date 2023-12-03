@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import org.assertj.core.api.SoftAssertions;
-import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -21,8 +19,6 @@ import aQute.lib.collections.ExtList;
 
 public class CapReqBuilderTest {
 
-	@InjectSoftAssertions
-	SoftAssertions softly;
 
 	@Test
 	public void testSimple() throws Exception {
