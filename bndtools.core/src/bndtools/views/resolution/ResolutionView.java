@@ -37,6 +37,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
@@ -208,22 +209,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		ColumnViewerToolTipSupport.enableFor(reqsViewer);
 		reqsViewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
 		reqsViewer.setContentProvider(new CapReqMapContentProvider());
-
-		reqsViewer.addDoubleClickListener(event -> {
-			if (!event.getSelection()
-				.isEmpty()) {
-				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-				final Object element = selection.getFirstElement();
-
-				if (element instanceof RequirementWrapper rw) {
-
-					// Open AdvanvedSearch of RepositoriesView
-					Requirement req = rw.requirement;
-					eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
-				}
-
-			}
-		});
+		reqsViewer.addDoubleClickListener(event -> handleReqsViewerDoubleClickEvent(event));
 
 		Composite capsPanel = new Composite(splitPanel, SWT.NONE);
 		capsPanel.setBackground(parent.getBackground());
@@ -250,24 +236,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 		});
 
-		capsViewer.addDoubleClickListener(event -> {
-			if (!event.getSelection()
-				.isEmpty()) {
-				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-				final Object element = selection.getFirstElement();
-
-				if (element instanceof Capability cap) {
-
-					// convert the capability to a requirement (stop the
-					// bnd.hashes) for better results in the search
-					Requirement req = CapReqBuilder.createRequirementFromCapability(cap, false)
-						.buildSyntheticRequirement();
-					// Open AdvanvedSearch of RepositoriesView
-					eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
-				}
-
-			}
-		});
+		capsViewer.addDoubleClickListener(event -> handleCapsViewerDoubleClickEvent(event));
 
 		hideSelfImportsFilter = new ViewerFilter() {
 
@@ -310,6 +279,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			.getSelection();
 		selectionChanged(activePart, activeSelection);
 	}
+
 
 	private void openEditor(OpenEvent event) {
 		IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -638,6 +608,41 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 		@Override
 		public void dragFinished(DragSourceEvent event) {}
+	}
+
+	private void handleReqsViewerDoubleClickEvent(DoubleClickEvent event) {
+		if (!event.getSelection()
+			.isEmpty()) {
+			IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+			final Object element = selection.getFirstElement();
+
+			if (element instanceof RequirementWrapper rw) {
+
+				// Open AdvanvedSearch of RepositoriesView
+				Requirement req = rw.requirement;
+				eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
+			}
+
+		}
+	}
+
+	private void handleCapsViewerDoubleClickEvent(DoubleClickEvent event) {
+		if (!event.getSelection()
+			.isEmpty()) {
+			IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+			final Object element = selection.getFirstElement();
+
+			if (element instanceof Capability cap) {
+
+				// convert the capability to a requirement (without
+				// bnd.hashes) for better results in the search
+				Requirement req = CapReqBuilder.createRequirementFromCapability(cap, false)
+					.buildSyntheticRequirement();
+				// Open AdvanvedSearch of RepositoriesView
+				eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
+			}
+
+		}
 	}
 
 }

@@ -478,25 +478,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			event -> handleOpenAdvancedSearch(event));
 	}
 
-	private void handleOpenAdvancedSearch(Event event) {
-
-		if (event == null) {
-			return;
-		}
-
-		// Handle the event, open the dialog
-		if (event.getProperty(IEventBroker.DATA) instanceof Requirement req) {
-
-			// fill and open advanced search
-			advancedSearchState = AdvancedSearchDialog.toNamespaceSearchPanelMemento(req)
-				.toString();
-			advancedSearchAction.setChecked(true);
-			advancedSearchAction.run();
-
-		}
-	}
-
-
 	private void configureOfflineAction() {
 		Workspace workspace = Central.getWorkspaceIfPresent();
 		if (workspace == null) {
@@ -1249,5 +1230,22 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}));
 	}
 
+	private void handleOpenAdvancedSearch(Event event) {
+
+		if (event == null) {
+			return;
+		}
+
+		// Handle the event, open the dialog
+		if (event.getProperty(IEventBroker.DATA) instanceof Requirement req) {
+
+			// fill and open advanced search
+			advancedSearchState = AdvancedSearchDialog.toNamespaceSearchPanelMemento(req)
+				.toString();
+			advancedSearchAction.setChecked(true);
+			advancedSearchAction.run();
+
+		}
+	}
 
 }
