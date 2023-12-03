@@ -7,7 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.junit.jupiter.api.Test;
+import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.header.Attrs;
@@ -17,6 +20,9 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.ExtList;
 
 public class CapReqBuilderTest {
+
+	@InjectSoftAssertions
+	SoftAssertions softly;
 
 	@Test
 	public void testSimple() throws Exception {
@@ -171,6 +177,43 @@ public class CapReqBuilderTest {
 			.get(0);
 		Requirement unaliased = CapReqBuilder.unalias(original);
 		assertTrue(original == unaliased, "unaliasing a normal requirement should return the original object");
+	}
+
+	@Test
+	public void testCapabilityToRequirementWithFilter() throws Exception {
+		CapReqBuilder cr = new CapReqBuilder("osgi.wiring.package");
+		Attrs attrs = new Attrs();
+		attrs.putTyped("bundle-symbolic-name", "org.example");
+		attrs.putTyped("bundle-version", "1.7.23");
+		attrs.putTyped("osgi.wiring.package", "org.example.foo");
+		attrs.putTyped("version", "1.7.23");
+		attrs.putTyped("bnd.hashes", "123, 456, 789");
+		cr.addAttributes(attrs);
+
+		Capability cap = cr.buildSyntheticCapability();
+
+		Requirement req = CapReqBuilder.createRequirementFromCapability(cap)
+			.buildSyntheticRequirement();
+
+		assertEquals("osgi.wiring.package", req.getNamespace());
+		assertEquals(
+			"(&(bundle-symbolic-name=org.example)(bundle-version>=1.7.23)(osgi.wiring.package=org.example.foo)(version>=1.7.23)(bnd.hashes=123, 456, 789))",
+			req.getDirectives()
+				.get("filter"));
+
+		Requirement reqFiltered = CapReqBuilder.createRequirementFromCapability(cap, (name) -> {
+			if (name.equals("bundle-symbolic-name") || name.equals("bundle-version") || name.equals("bnd.hashes")) {
+				return false;
+			}
+
+			return true;
+		})
+			.buildSyntheticRequirement();
+
+		assertEquals("osgi.wiring.package", reqFiltered.getNamespace());
+		assertEquals("(&(osgi.wiring.package=org.example.foo)(version>=1.7.23))",
+			reqFiltered.getDirectives()
+			.get("filter"));
 	}
 
 }
