@@ -1190,8 +1190,10 @@ public class BndEditModel {
 			.collect(toList());
 	}
 
+	@Deprecated
 	public void setIncludeResource(List<String> newEntries) {
-		List<String> resourceEntries1 = getEntries(Constants.INCLUDERESOURCE, listConverter);
+		List<String> resourceEntries1 = getEntries(Constants.INCLUDERESOURCE, listConverter).stream()
+			.toList();
 		List<String> resourceEntries2 = getEntries(Constants.INCLUDE_RESOURCE, listConverter);
 
 		Set<String> resourceEntries = Stream.concat(resourceEntries1.stream(), resourceEntries2.stream())
