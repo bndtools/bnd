@@ -165,6 +165,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 		}
 	};
+	private Label				reqsLabel;
 
 	private boolean setLoaders(Set<CapReqLoader> newLoaders) {
 		Set<CapReqLoader> oldLoaders = loaders;
@@ -205,7 +206,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsLayout.marginHeight = 0;
 		reqsLayout.verticalSpacing = 2;
 		reqsPanel.setLayout(reqsLayout);
-		new Label(reqsPanel, SWT.NONE).setText("Requirements:");
+		reqsLabel = new Label(reqsPanel, SWT.NONE);
+		reqsLabel.setText("Requirements:");
 		reqsTree = new Tree(reqsPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		reqsTree.setHeaderVisible(false);
 		reqsTree.setLinesVisible(false);
@@ -479,6 +481,16 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				label = "<no input>";
 			}
 			setContentDescription(label);
+
+			List<RequirementWrapper> reqs = requirements.values()
+				.stream()
+				.flatMap(List::stream)
+				.toList();
+
+			reqsLabel.setText(createReqsViewerLabel(reqs));
+			reqsLabel.getParent()
+				.layout();
+
 		}
 	}
 
@@ -496,6 +508,28 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				outOfDate = true;
 			}
 		}
+
+	}
+
+	private String createReqsViewerLabel(List list) {
+		int numReqsResolved = 0;
+		int numReqsUnresolved = 0;
+		for (Object element : list) {
+			if (element instanceof RequirementWrapper reqWrapper) {
+				if (reqWrapper.resolved) {
+					numReqsResolved++;
+				} else {
+					String resolution = reqWrapper.requirement.getDirectives()
+						.get("resolution");
+					if (resolution != null && !"optional".equals(resolution)) {
+						// unresolved are only which are not optional
+						numReqsUnresolved++;
+					}
+				}
+			}
+		}
+
+		return "Requirements: Resolved: " + numReqsResolved + " Unresolved: " + numReqsUnresolved;
 	}
 
 	private Set<CapReqLoader> getLoadersFromSelection(IStructuredSelection structSel) {
