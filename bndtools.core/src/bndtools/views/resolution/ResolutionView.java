@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
@@ -41,16 +42,21 @@ import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -211,6 +217,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsViewer.setContentProvider(new CapReqMapContentProvider());
 		reqsViewer.addDoubleClickListener(event -> handleReqsViewerDoubleClickEvent(event));
 
+		reqsViewer.getControl()
+			.addKeyListener(createCopyToClipboardAdapter(reqsViewer,
+				(IStructuredSelection selection, StringBuilder clipboardContent) -> reqsCopyToClipboard(selection,
+					(RequirementWrapperLabelProvider) reqsViewer.getLabelProvider(), clipboardContent)));
+
 		Composite capsPanel = new Composite(splitPanel, SWT.NONE);
 		capsPanel.setBackground(parent.getBackground());
 
@@ -237,6 +248,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		});
 
 		capsViewer.addDoubleClickListener(event -> handleCapsViewerDoubleClickEvent(event));
+
+		capsViewer.getTable()
+			.addKeyListener(createCopyToClipboardAdapter(capsViewer,
+			(IStructuredSelection selection1, StringBuilder clipboardContent1) -> capsCopyToClipboard(selection1,
+				(CapabilityLabelProvider) capsViewer.getLabelProvider(), clipboardContent1)));
 
 		hideSelfImportsFilter = new ViewerFilter() {
 
@@ -279,6 +295,10 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			.getSelection();
 		selectionChanged(activePart, activeSelection);
 	}
+
+
+
+
 
 
 	private void openEditor(OpenEvent event) {
@@ -654,4 +674,91 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		}
 	}
 
+	/**
+	 * Generic copy to clipboard handling via Ctrl+C or MacOS: Cmd+C
+	 *
+	 * @param viewer the viewer
+	 * @param clipboardContentExtractor handler to extract content from the
+	 *            selected items.
+	 * @return a KeyAdapter copying content of the selected items to clipboard
+	 */
+	private KeyAdapter createCopyToClipboardAdapter(StructuredViewer viewer,
+		BiConsumer<IStructuredSelection, StringBuilder> clipboardContentExtractor) {
+		return new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// Check if Ctrl+C or MacOS: Cmd+C was pressed
+				if ((e.stateMask & SWT.MOD1) == SWT.MOD1 && e.keyCode == 'c') {
+					IStructuredSelection selection = viewer.getStructuredSelection();
+					StringBuilder clipboardString = new StringBuilder();
+
+					clipboardContentExtractor.accept(selection, clipboardString);
+
+					if (clipboardString.length() > 0) {
+						Clipboard clipboard = new Clipboard(Display.getCurrent());
+						TextTransfer textTransfer = TextTransfer.getInstance();
+						clipboard.setContents(new Object[] {
+							clipboardString.toString()
+						}, new Transfer[] {
+							textTransfer
+						});
+						clipboard.dispose();
+					}
+				}
+			}
+
+		};
+	}
+
+
+	private void reqsCopyToClipboard(IStructuredSelection selection, RequirementWrapperLabelProvider lp,
+		StringBuilder clipboardContent) {
+
+		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
+			Object element = iterator.next();
+
+			if (element instanceof RequirementWrapper reqWrapper) {
+
+				clipboardContent.append(lp.getToolTipText(reqWrapper));
+
+				if (iterator.hasNext()) {
+					clipboardContent.append(System.lineSeparator());
+				}
+
+			} else {
+				clipboardContent.append(element.toString());
+
+				if (iterator.hasNext()) {
+					clipboardContent.append(System.lineSeparator());
+				}
+
+			}
+		}
+	}
+
+
+
+	private void capsCopyToClipboard(IStructuredSelection selection, CapabilityLabelProvider lp,
+		StringBuilder clipboardContent) {
+
+		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
+			Object element = iterator.next();
+
+			if (element instanceof Capability cap) {
+
+				clipboardContent.append(lp.getToolTipText(cap));
+
+				if (iterator.hasNext()) {
+					clipboardContent.append(System.lineSeparator());
+				}
+
+			} else {
+				clipboardContent.append(element.toString());
+			}
+
+			if (iterator.hasNext()) {
+				clipboardContent.append(System.lineSeparator());
+			}
+		}
+	}
 }
