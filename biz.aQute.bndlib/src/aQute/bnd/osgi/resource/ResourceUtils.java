@@ -923,7 +923,7 @@ public abstract class ResourceUtils {
 		for (List<Capability> caps : groupedByPackage.values()) {
 			if (caps.size() > 1) {
 				// Compare hashes of each capability
-				Set<List<String>> hashSet = new HashSet<>();
+				Set<List<String>> detectDifferences = new HashSet<>();
 
 				for (Capability cap : caps) {
 
@@ -931,9 +931,18 @@ public abstract class ResourceUtils {
 					List<String> hashes = (List<String>) cap.getAttributes()
 						.get("bnd.hashes");
 
-					if (hashSet.size() == 0) {
-						hashSet.add(hashes);
-					} else if (hashSet.size() > 0 && hashSet.add(hashes)) {
+					if (detectDifferences.size() == 0) {
+						detectDifferences.add(hashes);
+					} else if (detectDifferences.size() > 0 && detectDifferences.add(hashes)) {
+						// being here means we were able to add a different
+						// bnd.hashes for the same primaryAttributeName (e.g.
+						// "osgi.wiring.package").
+						// this is the problem we want to detect.
+						// mark all capabilities for this primaryAttributeName
+						// as "problematic"
+						// this means there maybe multiple exporters of a
+						// package
+						// but with different content (classes)
 						culprits.addAll(caps);
 						break;
 					}

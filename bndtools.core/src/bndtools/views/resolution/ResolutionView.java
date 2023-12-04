@@ -126,7 +126,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private Label				capsLabel;
 
 	private ViewerFilter		hideSelfImportsFilter;
-	private ViewerFilter		showCapsProblemsFilter;
+	private ViewerFilter		filterShowCapsProblems;
 
 	private boolean				inputLocked	= false;
 	private boolean				outOfDate	= false;
@@ -135,7 +135,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private int					currentEE	= 4;
 
 	private final Set<String>	filteredCapabilityNamespaces;
-	private Set<Capability>		duplicateCapabilitiesWithDifferentHashes;
+	private Set<Capability>		duplicateCapabilitiesWithDifferentHashes	= new HashSet<>();
 
 	private final IEventBroker	eventBroker	= PlatformUI.getWorkbench()
 		.getService(IEventBroker.class);
@@ -257,7 +257,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 		});
 
-		showCapsProblemsFilter = new ViewerFilter() {
+		filterShowCapsProblems = new ViewerFilter() {
 
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -482,6 +482,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		getSite().getPage()
 			.removePartListener(partAdapter);
 		setLoaders(Collections.<CapReqLoader> emptySet());
+		duplicateCapabilitiesWithDifferentHashes.clear();
 		super.dispose();
 	}
 
@@ -824,16 +825,16 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			@Override
 			public void runWithEvent(Event event) {
 				if (isChecked()) {
-					capsViewer.addFilter(showCapsProblemsFilter);
+					capsViewer.addFilter(filterShowCapsProblems);
 				} else {
-					capsViewer.removeFilter(showCapsProblemsFilter);
+					capsViewer.removeFilter(filterShowCapsProblems);
 				}
 
 				updateCapsLabel();
 			}
 		};
 		toggleShowProblemCaps.setChecked(false);
-		toggleShowProblemCaps.setImageDescriptor(Icons.desc("/icons/error_obj.gif"));
+		toggleShowProblemCaps.setImageDescriptor(Icons.desc("/icons/warning_obj.gif"));
 		toggleShowProblemCaps
 			.setToolTipText("Detect capabilities containing packages that have the same name but differ in the\n"
 				+ "contained classes.");
