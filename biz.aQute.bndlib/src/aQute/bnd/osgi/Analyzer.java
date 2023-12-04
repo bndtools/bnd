@@ -211,6 +211,10 @@ public class Analyzer extends Processor {
 			analyzed = true;
 			analyzeContent();
 
+			Instructions instructions = new Instructions(
+				OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
+			annotationHeaders = new AnnotationHeaders(this, instructions);
+
 			doPlugins();
 
 			//
@@ -232,9 +236,7 @@ public class Analyzer extends Processor {
 				// built ins
 				//
 
-				Instructions instructions = new Instructions(
-					OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
-				cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
+				cds.add(annotationHeaders);
 
 				for (Clazz c : classspace.values()) {
 					cds.parse(c);
@@ -3860,6 +3862,23 @@ public class Analyzer extends Processor {
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	/**
+	 * Useful to reuse the annotation processing. The Annotation
+	 * can be created from other sources than Java code. This
+	 * is mostly useful for the annotations that generate Manifest
+	 * headers.
+	 */
+	public void addAnnotation(Annotation ann, TypeRef c) throws Exception {
+		Clazz clazz = findClass(c);
+		if (clazz == null) {
+			error("analyzer processing annotation %s but the associated class %s is not found in the JAR", c);
+			return;
+		}
+		annotationHeaders.classStart(clazz);
+		annotationHeaders.annotation(ann);
+		annotationHeaders.classEnd();
 	}
 
 }

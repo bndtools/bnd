@@ -785,6 +785,7 @@ public class Descriptors {
 
 	public TypeRef getTypeRefFromFQN(String fqn) {
 		return switch (fqn) {
+			case "void" -> VOID;
 			case "boolean" -> BOOLEAN;
 			case "byte" -> BOOLEAN;
 			case "char" -> CHAR;

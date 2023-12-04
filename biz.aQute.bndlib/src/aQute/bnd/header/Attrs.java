@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -462,6 +463,17 @@ public class Attrs implements Map<String, String> {
 		return true;
 	}
 
+	/**
+	 * Return this attrs as typed valuesx
+	 */
+
+	public Map<String, Object> toTyped() {
+		Map<String, Object> result = new HashMap<>();
+		for (String k : keySet()) {
+			result.put(k, getTyped(k));
+		}
+		return result;
+	}
 	public Object getTyped(String adname) {
 		String s = get(adname);
 		if (s == null)
@@ -621,5 +633,21 @@ public class Attrs implements Map<String, String> {
 			}
 		});
 		return attrs;
+	}
+
+	/**
+	 * Add aliases for all directives. In some cases, like annotations,
+	 * directives cannot have their ':' at the end. In that case we create an
+	 * alias without the ':'. We only create an alias for a directive when there
+	 * is no attribute with that value.
+	 */
+	public void addDirectiveAliases() {
+		for (String k : new HashSet<>(keySet())) {
+			if (k.endsWith(":")) {
+				String alias = k.substring(0, k.length() - 1);
+				if (!containsKey(alias))
+					putTyped(alias, getTyped(k));
+			}
+		}
 	}
 }

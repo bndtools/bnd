@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -141,6 +142,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	static final String					STD_HEADER					= "org.osgi.annotation.bundle.Header";
 	static final String					STD_HEADERS					= "org.osgi.annotation.bundle.Headers";
 
+	public static Set<String>			BND_ANNOTATIONS				= Set.of(BUNDLE_LICENSE, REQUIRE_CAPABILITY,
+		PROVIDE_CAPABILITY, BUNDLE_CATEGORY, BUNDLE_DOC_URL, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS, BUNDLE_COPYRIGHT,
+		STD_REQUIREMENT, STD_CAPABILITY, STD_HEADER);
+
 	// Used to detect attributes and directives on Require-Capability and
 	// Provide-Capability
 	static final String					STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
@@ -180,23 +185,26 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		//
 		// Parse any annotated classes except annotations
 		//
+		current = c;
 		if (!c.isAnnotation() && !c.annotations()
 			.isEmpty()) {
 
 			for (Instruction instruction : instructions.keySet()) {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated()) {
-						current = null;
 						return false;
 					}
 
-					current = c;
 					return true;
 				}
 			}
 		}
-		current = null;
 		return false;
+	}
+
+	@Override
+	public void classEnd() throws Exception {
+		current = null;
 	}
 
 	/*
@@ -488,6 +496,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
+			}
+
+			if (object instanceof Collection col) {
+				object = col.toArray();
 			}
 
 			if ((object instanceof Object[] typeRefs) && (typeRefs.length > 0) && typeRefs[0] instanceof TypeRef) {
