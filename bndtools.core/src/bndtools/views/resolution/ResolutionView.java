@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
@@ -23,6 +24,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
@@ -36,19 +38,25 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -68,16 +76,19 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
@@ -97,6 +108,7 @@ import bndtools.tasks.JarFileCapReqLoader;
 import bndtools.tasks.ResourceCapReqLoader;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.SelectionUtils;
+import bndtools.views.ViewEventTopics;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
@@ -118,6 +130,9 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private int					currentEE	= 4;
 
 	private final Set<String>	filteredCapabilityNamespaces;
+
+	private final IEventBroker	eventBroker	= PlatformUI.getWorkbench()
+		.getService(IEventBroker.class);
 
 	public ResolutionView() {
 		filteredCapabilityNamespaces = Sets.of(IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE);
@@ -200,6 +215,12 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		ColumnViewerToolTipSupport.enableFor(reqsViewer);
 		reqsViewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
 		reqsViewer.setContentProvider(new CapReqMapContentProvider());
+		reqsViewer.addDoubleClickListener(event -> handleReqsViewerDoubleClickEvent(event));
+
+		reqsViewer.getControl()
+			.addKeyListener(createCopyToClipboardAdapter(reqsViewer,
+				(IStructuredSelection selection, StringBuilder clipboardContent) -> reqsCopyToClipboard(selection,
+					(RequirementWrapperLabelProvider) reqsViewer.getLabelProvider(), clipboardContent)));
 
 		Composite capsPanel = new Composite(splitPanel, SWT.NONE);
 		capsPanel.setBackground(parent.getBackground());
@@ -225,6 +246,13 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
 			}
 		});
+
+		capsViewer.addDoubleClickListener(event -> handleCapsViewerDoubleClickEvent(event));
+
+		capsViewer.getTable()
+			.addKeyListener(createCopyToClipboardAdapter(capsViewer,
+			(IStructuredSelection selection1, StringBuilder clipboardContent1) -> capsCopyToClipboard(selection1,
+				(CapabilityLabelProvider) capsViewer.getLabelProvider(), clipboardContent1)));
 
 		hideSelfImportsFilter = new ViewerFilter() {
 
@@ -267,6 +295,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			.getSelection();
 		selectionChanged(activePart, activeSelection);
 	}
+
+
+
+
+
 
 	private void openEditor(OpenEvent event) {
 		IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -597,4 +630,135 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		public void dragFinished(DragSourceEvent event) {}
 	}
 
+	private void handleReqsViewerDoubleClickEvent(DoubleClickEvent event) {
+		if (!event.getSelection()
+			.isEmpty()) {
+			IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+			final Object element = selection.getFirstElement();
+
+			if (element instanceof RequirementWrapper rw) {
+
+				// Open AdvanvedSearch of RepositoriesView
+				Requirement req = rw.requirement;
+				eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
+			}
+
+		}
+	}
+
+	private void handleCapsViewerDoubleClickEvent(DoubleClickEvent event) {
+		if (!event.getSelection()
+			.isEmpty()) {
+			IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+			final Object element = selection.getFirstElement();
+
+			if (element instanceof Capability cap) {
+
+				// convert the capability to a requirement (without
+				// bundle-attributes and bnd.hashes) for better results in the
+				// advanced search e.g.
+				// (&(osgi.wiring.package=my.package.foo)(version>=1.7.23))
+				Requirement req = CapReqBuilder.createRequirementFromCapability(cap, (name) -> {
+					if (name.equals("bundle-symbolic-name") || name.equals("bundle-version")
+						|| name.equals("bnd.hashes")) {
+						return false;
+					}
+
+					return true;
+				})
+					.buildSyntheticRequirement();
+				// Open AdvanvedSearch of RepositoriesView
+				eventBroker.post(ViewEventTopics.REPOSITORIESVIEW_OPEN_ADVANCED_SEARCH.topic(), req);
+			}
+
+		}
+	}
+
+	/**
+	 * Generic copy to clipboard handling via Ctrl+C or MacOS: Cmd+C
+	 *
+	 * @param viewer the viewer
+	 * @param clipboardContentExtractor handler to extract content from the
+	 *            selected items.
+	 * @return a KeyAdapter copying content of the selected items to clipboard
+	 */
+	private KeyAdapter createCopyToClipboardAdapter(StructuredViewer viewer,
+		BiConsumer<IStructuredSelection, StringBuilder> clipboardContentExtractor) {
+		return new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// Check if Ctrl+C or MacOS: Cmd+C was pressed
+				if ((e.stateMask & SWT.MOD1) == SWT.MOD1 && e.keyCode == 'c') {
+					IStructuredSelection selection = viewer.getStructuredSelection();
+					StringBuilder clipboardString = new StringBuilder();
+
+					clipboardContentExtractor.accept(selection, clipboardString);
+
+					if (clipboardString.length() > 0) {
+						Clipboard clipboard = new Clipboard(Display.getCurrent());
+						TextTransfer textTransfer = TextTransfer.getInstance();
+						clipboard.setContents(new Object[] {
+							clipboardString.toString()
+						}, new Transfer[] {
+							textTransfer
+						});
+						clipboard.dispose();
+					}
+				}
+			}
+
+		};
+	}
+
+
+	private void reqsCopyToClipboard(IStructuredSelection selection, RequirementWrapperLabelProvider lp,
+		StringBuilder clipboardContent) {
+
+		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
+			Object element = iterator.next();
+
+			if (element instanceof RequirementWrapper reqWrapper) {
+
+				clipboardContent.append(lp.getToolTipText(reqWrapper));
+
+				if (iterator.hasNext()) {
+					clipboardContent.append(System.lineSeparator());
+				}
+
+			} else {
+				clipboardContent.append(element.toString());
+
+				if (iterator.hasNext()) {
+					clipboardContent.append(System.lineSeparator());
+				}
+
+			}
+		}
+	}
+
+
+
+	private void capsCopyToClipboard(IStructuredSelection selection, CapabilityLabelProvider lp,
+		StringBuilder clipboardContent) {
+
+		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
+			Object element = iterator.next();
+
+			if (element instanceof Capability cap) {
+
+				clipboardContent.append(lp.getToolTipText(cap));
+
+				if (iterator.hasNext()) {
+					clipboardContent.append(System.lineSeparator());
+				}
+
+			} else {
+				clipboardContent.append(element.toString());
+			}
+
+			if (iterator.hasNext()) {
+				clipboardContent.append(System.lineSeparator());
+			}
+		}
+	}
 }

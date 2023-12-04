@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -709,6 +710,18 @@ public class CapReqBuilder {
 	}
 
 	public static RequirementBuilder createRequirementFromCapability(Capability capability) {
+		return createRequirementFromCapability(capability, null);
+	}
+
+	/**
+	 * @param capability the capability to convert
+	 * @param includeAttributesFilter predicate to control from the caller which
+	 *            attributes to include. if <code>null</code> all attributes are
+	 *            included.
+	 * @return a RequirementBuilder from the capability
+	 */
+	public static RequirementBuilder createRequirementFromCapability(Capability capability,
+		Predicate<String> includeAttributesFilter) {
 		final String namespace = capability.getNamespace();
 		RequirementBuilder builder = new RequirementBuilder(namespace);
 		final String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
@@ -720,6 +733,12 @@ public class CapReqBuilder {
 				.append('&');
 		}
 		capAttributes.forEach((name, v) -> {
+
+			if (includeAttributesFilter != null && !includeAttributesFilter.test(name)) {
+				// skip this attribute
+				return;
+			}
+
 			if (v instanceof Version || name.equals(versionAttrName)
 				|| (namespace.equals(PackageNamespace.PACKAGE_NAMESPACE)
 					&& name.equals(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE))) {
