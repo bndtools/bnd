@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -121,7 +122,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private TreeViewer			reqsViewer;
 	private TableViewer			capsViewer;
 
+	private Label				reqsLabel;
+	private Label				capsLabel;
+
 	private ViewerFilter		hideSelfImportsFilter;
+	private ViewerFilter		showCapsProblemsFilter;
 
 	private boolean				inputLocked	= false;
 	private boolean				outOfDate	= false;
@@ -130,6 +135,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private int					currentEE	= 4;
 
 	private final Set<String>	filteredCapabilityNamespaces;
+	private Set<Capability>		duplicateCapabilitiesWithDifferentHashes;
 
 	private final IEventBroker	eventBroker	= PlatformUI.getWorkbench()
 		.getService(IEventBroker.class);
@@ -165,7 +171,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 		}
 	};
-	private Label				reqsLabel;
+
+
 
 	private boolean setLoaders(Set<CapReqLoader> newLoaders) {
 		Set<CapReqLoader> oldLoaders = loaders;
@@ -232,7 +239,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsLayout.marginHeight = 0;
 		capsLayout.verticalSpacing = 2;
 		capsPanel.setLayout(capsLayout);
-		new Label(capsPanel, SWT.NONE).setText("Capabilities:");
+		capsLabel = new Label(capsPanel, SWT.NONE);
+		capsLabel.setText("Capabilities:");
 		capsTable = new Table(capsPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		capsTable.setHeaderVisible(false);
 		capsTable.setLinesVisible(false);
@@ -248,6 +256,17 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
 			}
 		});
+
+		showCapsProblemsFilter = new ViewerFilter() {
+
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				if (element instanceof Capability cap) {
+					return duplicateCapabilitiesWithDifferentHashes.contains((cap));
+				}
+				return false;
+			}
+		};
 
 		capsViewer.addDoubleClickListener(event -> handleCapsViewerDoubleClickEvent(event));
 
@@ -269,6 +288,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 		};
 		reqsViewer.setFilters(hideSelfImportsFilter);
+
+
 
 		reqsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
 			LocalSelectionTransfer.getTransfer()
@@ -360,6 +381,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				} else {
 					reqsViewer.addFilter(hideSelfImportsFilter);
 				}
+				updateReqsLabel();
 			}
 		};
 		toggleShowSelfImports.setChecked(false);
@@ -367,6 +389,9 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		toggleShowSelfImports.setToolTipText(
 			"Show resolved requirements.\n\nInclude requirements that are resolved within the set of selected bundles.");
 		toolBarManager.add(toggleShowSelfImports);
+
+		IAction toggleShowProblemCaps = createShowProblemCapsAction();
+		toolBarManager.add(toggleShowProblemCaps);
 
 		IAction toggleLockInput = new Action("lockInput", IAction.AS_CHECK_BOX) {
 			@Override
@@ -387,6 +412,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		toolBarManager.add(HelpButtons.HELP_BTN_RESOLUTION_VIEW);
 
 	}
+
+
 
 	private void doEEActionMenu(IToolBarManager toolBarManager) {
 		MenuManager menuManager = new MenuManager("Java", "resolutionview.java.menu");
@@ -482,14 +509,17 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 			setContentDescription(label);
 
-			List<RequirementWrapper> reqs = requirements.values()
+			updateReqsLabel();
+
+			List<Capability> caps = capabilities.values()
 				.stream()
 				.flatMap(List::stream)
 				.toList();
 
-			reqsLabel.setText(createReqsViewerCounterLabel(reqs));
-			reqsLabel.getParent()
-				.layout();
+			duplicateCapabilitiesWithDifferentHashes = new HashSet<Capability>(
+				ResourceUtils.detectDuplicateCapabilitiesWithDifferentHashes("osgi.wiring.package", caps));
+
+			updateCapsLabel();
 
 		}
 	}
@@ -511,29 +541,18 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 	}
 
-	private String createReqsViewerCounterLabel(List list) {
-		int numReqsResolved = 0;
-		int numOptional = 0;
-		int numReqsOther = 0;
+	private void updateReqsLabel() {
+		reqsLabel.setText("Requirements: " + reqsViewer.getTree()
+			.getItemCount());
+		reqsLabel.getParent()
+			.layout();
+	}
 
-		for (Object element : list) {
-			if (element instanceof RequirementWrapper rw) {
-				if (rw.resolved || rw.java) {
-					numReqsResolved++;
-				} else {
-					String resolution = rw.requirement.getDirectives()
-						.get("resolution");
-					if ("optional".equals(resolution)) {
-						numOptional++;
-					} else {
-						numReqsOther++;
-					}
-				}
-			}
-		}
-
-		return "Requirements: Resolved: " + numReqsResolved + " Optional: " + numOptional + " Other: "
-			+ numReqsOther;
+	private void updateCapsLabel() {
+		capsLabel.setText("Capabilities: " + capsViewer.getTable()
+			.getItemCount());
+		capsLabel.getParent()
+			.layout();
 	}
 
 	private Set<CapReqLoader> getLoadersFromSelection(IStructuredSelection structSel) {
@@ -798,5 +817,26 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				clipboardContent.append(System.lineSeparator());
 			}
 		}
+	}
+
+	private IAction createShowProblemCapsAction() {
+		IAction toggleShowProblemCaps = new Action("showProblemCaps", IAction.AS_CHECK_BOX) {
+			@Override
+			public void runWithEvent(Event event) {
+				if (isChecked()) {
+					capsViewer.addFilter(showCapsProblemsFilter);
+				} else {
+					capsViewer.removeFilter(showCapsProblemsFilter);
+				}
+
+				updateCapsLabel();
+			}
+		};
+		toggleShowProblemCaps.setChecked(false);
+		toggleShowProblemCaps.setImageDescriptor(Icons.desc("/icons/error_obj.gif"));
+		toggleShowProblemCaps
+			.setToolTipText("Detect capabilities containing packages that have the same name but differ in the\n"
+				+ "contained classes.");
+		return toggleShowProblemCaps;
 	}
 }

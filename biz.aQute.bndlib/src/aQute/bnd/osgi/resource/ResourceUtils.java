@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -894,5 +895,52 @@ public abstract class ResourceUtils {
 			.stream()
 			.filter(c -> filterPredicate.test(c.getAttributes()))
 			.toList();
+	}
+
+	/**
+	 * Detect capabilities containing packages that have the same name but
+	 * differ in the contained classes. Since the "bnd.hashes" attribute
+	 * contains the hashes of each class, we can detect differences. A problem
+	 * is when there are two bundles exporting the same package BUT with
+	 * different content (e.g. different files). This can lead to the problem
+	 * that a consumer expects a certain class in a package of bundleA but it is
+	 * not there - instead it is in bundleB.
+	 *
+	 * @param primaryAttributeName E.g. for a package it is
+	 *            "osgi.wiring.package"
+	 * @param capabilities list of capabilities to filter
+	 * @return list of problematic capabilities
+	 */
+	public static List<Capability> detectDuplicateCapabilitiesWithDifferentHashes(String primaryAttributeName,
+		List<Capability> capabilities) {
+		Map<String, List<Capability>> groupedByPackage = capabilities.stream()
+			.filter(cap -> cap.getAttributes()
+				.containsKey(primaryAttributeName))
+			.collect(groupingBy(cap -> (String) cap.getAttributes()
+				.get(primaryAttributeName), Lists.toList()));
+
+		List<Capability> culprits = new ArrayList<>();
+		for (List<Capability> caps : groupedByPackage.values()) {
+			if (caps.size() > 1) {
+				// Compare hashes of each capability
+				Set<List<String>> hashSet = new HashSet<>();
+
+				for (Capability cap : caps) {
+
+					@SuppressWarnings("unchecked")
+					List<String> hashes = (List<String>) cap.getAttributes()
+						.get("bnd.hashes");
+
+					if (hashSet.size() == 0) {
+						hashSet.add(hashes);
+					} else if (hashSet.size() > 0 && hashSet.add(hashes)) {
+						culprits.addAll(caps);
+						break;
+					}
+				}
+			}
+		}
+
+		return culprits;
 	}
 }
