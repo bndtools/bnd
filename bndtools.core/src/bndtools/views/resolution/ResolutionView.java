@@ -487,7 +487,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				.flatMap(List::stream)
 				.toList();
 
-			reqsLabel.setText(createReqsViewerLabel(reqs));
+			reqsLabel.setText(createReqsViewerCounterLabel(reqs));
 			reqsLabel.getParent()
 				.layout();
 
@@ -511,25 +511,29 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 	}
 
-	private String createReqsViewerLabel(List list) {
+	private String createReqsViewerCounterLabel(List list) {
 		int numReqsResolved = 0;
-		int numReqsUnresolved = 0;
+		int numOptional = 0;
+		int numReqsOther = 0;
+
 		for (Object element : list) {
-			if (element instanceof RequirementWrapper reqWrapper) {
-				if (reqWrapper.resolved) {
+			if (element instanceof RequirementWrapper rw) {
+				if (rw.resolved || rw.java) {
 					numReqsResolved++;
 				} else {
-					String resolution = reqWrapper.requirement.getDirectives()
+					String resolution = rw.requirement.getDirectives()
 						.get("resolution");
-					if (resolution != null && !"optional".equals(resolution)) {
-						// unresolved are only which are not optional
-						numReqsUnresolved++;
+					if ("optional".equals(resolution)) {
+						numOptional++;
+					} else {
+						numReqsOther++;
 					}
 				}
 			}
 		}
 
-		return "Requirements: Resolved: " + numReqsResolved + " Unresolved: " + numReqsUnresolved;
+		return "Requirements: Resolved: " + numReqsResolved + " Optional: " + numOptional + " Other: "
+			+ numReqsOther;
 	}
 
 	private Set<CapReqLoader> getLoadersFromSelection(IStructuredSelection structSel) {
