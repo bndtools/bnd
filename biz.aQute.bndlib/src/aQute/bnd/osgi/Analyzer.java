@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -63,13 +62,11 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.osgi.MetaInfService.Implementation;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.service.ManifestPlugin;
 import aQute.bnd.service.OrderedPlugin;
@@ -219,8 +216,6 @@ public class Analyzer extends Processor {
 			annotationHeaders = new AnnotationHeaders(this, instructions);
 
 			doPlugins();
-
-			analyzeMetaInfServices();
 
 			//
 			// calculate class versions in use
@@ -412,47 +407,6 @@ public class Analyzer extends Processor {
 				.forEach(fqn -> warning(
 					"The annotation aQute.bnd.annotation.Export applied to package %s is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead",
 					fqn));
-		}
-	}
-
-	/*
-	 * process the META-INF/services/* files. These files can contain bnd
-	 * annotations.
-	 */
-
-	private void analyzeMetaInfServices() {
-		try {
-			MetaInfService.getServiceFiles(getJar())
-				.values()
-				.stream()
-				.flatMap(mis -> mis.getImplementations()
-					.values()
-					.stream())
-				.forEach(impl -> {
-					impl.getAnnotations()
-						.forEach((annotationName, attrs) -> {
-							doAnnotationsforMetaInf(impl, Processor.removeDuplicateMarker(annotationName), attrs);
-						});
-				});
-		} catch (Exception e) {
-			exception(e, "failed to process META-INF/services due to %s", e);
-		}
-	}
-
-	/*
-	 * Process 1 annotation
-	 */
-	private void doAnnotationsforMetaInf(Implementation impl, String annotationName, Attrs attrs) {
-		try {
-			Map<String, Object> properties = attrs.toTyped();
-			properties.putIfAbsent("value", impl.getServiceName()); // default
-			TypeRef implementation = getTypeRefFromFQN(impl.getImplementationName());
-			assert implementation != null;
-			Annotation ann = new Annotation(getTypeRefFromFQN(annotationName), properties, ElementType.TYPE,
-				RetentionPolicy.CLASS);
-			addAnnotation(ann, implementation);
-		} catch (Exception e) {
-			exception(e, "failed to process %s=%v due to %s", annotationName, attrs, e);
 		}
 	}
 

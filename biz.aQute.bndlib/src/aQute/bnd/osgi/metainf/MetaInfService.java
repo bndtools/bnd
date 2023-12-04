@@ -1,4 +1,4 @@
-package aQute.bnd.osgi;
+package aQute.bnd.osgi.metainf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
@@ -44,7 +46,7 @@ public class MetaInfService {
 	static final Pattern	IMPORT_P					= Pattern
 		.compile("#import\\s+(?<fqn>" + FQN_S + ")\\s*;?\\s*$");
 	static final Pattern	ANNOTATION_P				= Pattern
-		.compile("#@(?<fqn>" + FQN_S + ")\\((?<attrs>.*)" + "\\)\\s*;?\\s*$");
+		.compile("#@(?<fqn>" + FQN_S + ")\\s*(\\((?<attrs>.*)" + "\\)\\s*)?;?\\s*$");
 
 	/**
 	 * get the META-INF service files from a JAR

@@ -76,4 +76,27 @@ public class ServiceProviderFileTest {
 		}
 	}
 
+	@Test
+	public void testBothMetaInfoAndAnnotationsNoParentheses() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerF");
+			b.setProperty("-includeresource", """
+					META-INF/services/com.example.service.Type;\
+						literal='\
+					    	#import aQute.bnd.annotation.spi.ServiceProvider;\n\
+						    #@ServiceProvider\n\
+						    java.lang.String'
+				""");
+			b.build();
+			assertTrue(b.check());
+			Domain manifest = Domain.domain(b.getJar()
+				.getManifest());
+			Parameters provideCapability = manifest.getProvideCapability();
+			Parameters requireCapability = manifest.getRequireCapability();
+			assertThat(provideCapability.size()).isEqualTo(4);
+			assertThat(requireCapability.size()).isEqualTo(2);
+		}
+	}
+
 }

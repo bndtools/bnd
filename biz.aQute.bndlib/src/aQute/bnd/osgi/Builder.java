@@ -50,6 +50,7 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.metainf.MetaInfServiceParser;
 import aQute.bnd.plugin.jpms.JPMSAnnotations;
 import aQute.bnd.plugin.jpms.JPMSModuleInfoPlugin;
 import aQute.bnd.plugin.jpms.JPMSMultiReleasePlugin;
@@ -1735,6 +1736,7 @@ public class Builder extends Analyzer {
 	static JPMSModuleInfoPlugin		moduleInfoPlugin		= new JPMSModuleInfoPlugin();
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
 	static JPMSMultiReleasePlugin	jpmsReleasePlugin		= new JPMSMultiReleasePlugin();
+	static MetaInfServiceParser		metaInfoServiceParser	= new MetaInfServiceParser();
 
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
@@ -1748,6 +1750,7 @@ public class Builder extends Analyzer {
 		pluginsContainer.add(moduleInfoPlugin);
 		pluginsContainer.add(spiDescriptorGenerator);
 		pluginsContainer.add(jpmsReleasePlugin);
+		pluginsContainer.add(metaInfoServiceParser);
 		super.setTypeSpecificPlugins(pluginsContainer);
 	}
 
