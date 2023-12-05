@@ -143,12 +143,10 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private final FilterPanelPart		reqsFilterPart								= new FilterPanelPart(
 		Plugin.getDefault()
 			.getScheduler());
-	private Control						reqsFilterPanel;
 
 	private final FilterPanelPart		capsFilterPart								= new FilterPanelPart(
 		Plugin.getDefault()
 			.getScheduler());
-	private Control						capsFilterPanel;
 
 	private CapReqMapContentProvider	reqsContentProvider;
 	private CapReqMapContentProvider	capsContentProvider;
@@ -230,7 +228,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsLayout.marginHeight = 0;
 		reqsLayout.verticalSpacing = 2;
 		reqsPanel.setLayout(reqsLayout);
-		reqsFilterPanel = reqsFilterPart.createControl(reqsPanel, 5, 5);
+		Control reqsFilterPanel = reqsFilterPart.createControl(reqsPanel, 5, 5);
 		reqsFilterPart.addPropertyChangeListener(event -> {
 			String filter = (String) event.getNewValue();
 			updateReqsFilter(filter);
@@ -265,7 +263,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsLayout.marginHeight = 0;
 		capsLayout.verticalSpacing = 2;
 		capsPanel.setLayout(capsLayout);
-		capsFilterPanel = capsFilterPart.createControl(capsPanel, 5, 5);
+		Control capsFilterPanel = capsFilterPart.createControl(capsPanel, 5, 5);
 		capsFilterPart.addPropertyChangeListener(event -> {
 			String filter = (String) event.getNewValue();
 			updateCapsFilter(filter);

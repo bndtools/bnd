@@ -30,7 +30,6 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 
 	private final Comparator<Object>	comparator	= new CapReqComparator();
 
-	private String						rawFilter;
 	private String						wildcardFilter	= null;
 
 	@Override
@@ -118,7 +117,6 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 	}
 
 	public void setFilter(String filterString) {
-		this.rawFilter = filterString;
 		if (filterString == null || filterString.length() == 0 || filterString.trim()
 			.equals("*"))
 			wildcardFilter = null;
