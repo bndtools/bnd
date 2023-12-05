@@ -222,14 +222,14 @@ public class CapReqBuilderTest {
 		// we'd see differences. The problem was that there were two
 		// exporters with different packages with the same name.
 
-		Capability cap1 = createCap("org.bundleA", "org.example.foo", "1.7.23", Arrays.asList("123", "456", "789"));
+		Capability cap1 = createCap("org.bundleA", "org.example.foo", "1.7.23", "123", "456", "789");
 
 		// same package but differences in the hashes (missing one hash) -> this
 		// is a problem
-		Capability cap2 = createCap("org.bundleB", "org.example.foo", "1.7.23", Arrays.asList("456", "789"));
+		Capability cap2 = createCap("org.bundleB", "org.example.foo", "1.7.23", "456", "789");
 
 		// some other OK cap
-		Capability cap3 = createCap("org.bundleC", "org.example.bar", "1.7.23", Arrays.asList("789,910"));
+		Capability cap3 = createCap("org.bundleC", "org.example.bar", "1.7.23", "789,910");
 
 
 		List<Capability> culprits = ResourceUtils.detectDuplicateCapabilitiesWithDifferentHashes("osgi.wiring.package",
@@ -247,7 +247,7 @@ public class CapReqBuilderTest {
 
 
 
-	private CapabilityImpl createCap(String bundleSymName, String pck, String version, List<String> hashes) {
+	private CapabilityImpl createCap(String bundleSymName, String pck, String version, String... hashes) {
 		CapReqBuilder cr = new CapReqBuilder("osgi.wiring.package");
 		Attrs attrs1 = new Attrs();
 		attrs1.putTyped("bundle-symbolic-name", bundleSymName);
