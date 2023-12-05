@@ -138,7 +138,8 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 				globs[i] = new Glob(split[i]);
 			}
 
-			outer: for (Object obj : array) {
+			// parallel search
+			Arrays.stream(array).parallel().forEach(obj -> {
 
 				if (obj instanceof RequirementWrapper rw) {
 
@@ -146,7 +147,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 						if (g.matcher(rw.requirement.toString())
 							.find()) {
 							filteredResults.add(obj);
-							continue outer;
+							return;
 						}
 					}
 				}
@@ -156,13 +157,18 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 						if (g.matcher(cap.toString())
 							.find()) {
 							filteredResults.add(obj);
-							continue outer;
+							return;
 						}
 					}
 				}
 
-			}
+			});
+
 		}
+
+		// sort because parallel search causes random ordering
+		filteredResults.sort(comparator);
+
 		return filteredResults.toArray();
 	}
 

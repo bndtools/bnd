@@ -586,7 +586,6 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		if (!duplicateCapabilitiesWithDifferentHashes.isEmpty()) {
 
 			int problemCount = 0;
-
 			TableItem[] items = capsViewer.getTable()
 				.getItems();
 			for (int i = 0; i < items.length; i++) {
