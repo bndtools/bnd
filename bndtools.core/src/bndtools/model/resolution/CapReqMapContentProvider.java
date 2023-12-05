@@ -1,5 +1,6 @@
 package bndtools.model.resolution;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -15,8 +16,10 @@ import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Capability;
 
 import aQute.bnd.unmodifiable.Sets;
+import aQute.libg.glob.Glob;
 
 public class CapReqMapContentProvider implements ITreeContentProvider {
 
@@ -26,6 +29,9 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 		IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE, PackageNamespace.PACKAGE_NAMESPACE);
 
 	private final Comparator<Object>	comparator	= new CapReqComparator();
+
+	private String						rawFilter;
+	private String						wildcardFilter	= null;
 
 	@Override
 	public void dispose() {}
@@ -63,7 +69,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 			arrays.add(array);
 		}
 
-		return flatten(arrays);
+		return filter(flatten(arrays));
 	}
 
 	private Object[] flatten(List<Object[]> arrays) {
@@ -109,6 +115,55 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 				result = requirers.toArray();
 		}
 		return result;
+	}
+
+	public void setFilter(String filterString) {
+		this.rawFilter = filterString;
+		if (filterString == null || filterString.length() == 0 || filterString.trim()
+			.equals("*"))
+			wildcardFilter = null;
+		else
+			wildcardFilter = "*" + filterString.trim() + "*";
+
+	}
+
+	private Object[] filter(Object[] array) {
+		List<Object> filteredResults = new ArrayList<>();
+		if (wildcardFilter == null || wildcardFilter.equals("*") || wildcardFilter.equals("")) {
+			return array;
+		} else {
+			String[] split = wildcardFilter.split("\\s+");
+			Glob globs[] = new Glob[split.length];
+			for (int i = 0; i < split.length; i++) {
+				globs[i] = new Glob(split[i]);
+			}
+
+			outer: for (Object obj : array) {
+
+				if (obj instanceof RequirementWrapper rw) {
+
+					for (Glob g : globs) {
+						if (g.matcher(rw.requirement.toString())
+							.find()) {
+							filteredResults.add(obj);
+							continue outer;
+						}
+					}
+				}
+				else if (obj instanceof Capability cap) {
+
+					for (Glob g : globs) {
+						if (g.matcher(cap.toString())
+							.find()) {
+							filteredResults.add(obj);
+							continue outer;
+						}
+					}
+				}
+
+			}
+		}
+		return filteredResults.toArray();
 	}
 
 }

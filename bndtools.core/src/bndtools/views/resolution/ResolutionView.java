@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 import org.bndtools.core.ui.icons.Icons;
+import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -63,12 +64,14 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -137,6 +140,19 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private final Set<String>	filteredCapabilityNamespaces;
 	private Set<Capability>		duplicateCapabilitiesWithDifferentHashes	= new HashSet<>();
 
+	private final FilterPanelPart		reqsFilterPart								= new FilterPanelPart(
+		Plugin.getDefault()
+			.getScheduler());
+	private Control						reqsFilterPanel;
+
+	private final FilterPanelPart		capsFilterPart								= new FilterPanelPart(
+		Plugin.getDefault()
+			.getScheduler());
+	private Control						capsFilterPanel;
+
+	private CapReqMapContentProvider	reqsContentProvider;
+	private CapReqMapContentProvider	capsContentProvider;
+
 	private final IEventBroker	eventBroker	= PlatformUI.getWorkbench()
 		.getService(IEventBroker.class);
 
@@ -171,6 +187,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			}
 		}
 	};
+
 
 
 
@@ -213,8 +230,16 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsLayout.marginHeight = 0;
 		reqsLayout.verticalSpacing = 2;
 		reqsPanel.setLayout(reqsLayout);
+		reqsFilterPanel = reqsFilterPart.createControl(reqsPanel, 5, 5);
+		reqsFilterPart.addPropertyChangeListener(event -> {
+			String filter = (String) event.getNewValue();
+			updateReqsFilter(filter);
+		});
+
 		reqsLabel = new Label(reqsPanel, SWT.NONE);
 		reqsLabel.setText("Requirements:");
+		setContentDescription(
+			"Click on one or multiple resources (bnd.bnd file, .jar file, repository bundle or repository) to see their requirements and capabilities.");
 		reqsTree = new Tree(reqsPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		reqsTree.setHeaderVisible(false);
 		reqsTree.setLinesVisible(false);
@@ -223,7 +248,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsViewer = new TreeViewer(reqsTree);
 		ColumnViewerToolTipSupport.enableFor(reqsViewer);
 		reqsViewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
-		reqsViewer.setContentProvider(new CapReqMapContentProvider());
+		reqsContentProvider = new CapReqMapContentProvider();
+		reqsViewer.setContentProvider(reqsContentProvider);
 		reqsViewer.addDoubleClickListener(event -> handleReqsViewerDoubleClickEvent(event));
 
 		reqsViewer.getControl()
@@ -239,6 +265,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsLayout.marginHeight = 0;
 		capsLayout.verticalSpacing = 2;
 		capsPanel.setLayout(capsLayout);
+		capsFilterPanel = capsFilterPart.createControl(capsPanel, 5, 5);
+		capsFilterPart.addPropertyChangeListener(event -> {
+			String filter = (String) event.getNewValue();
+			updateCapsFilter(filter);
+		});
 		capsLabel = new Label(capsPanel, SWT.NONE);
 		capsLabel.setText("Capabilities:");
 		capsTable = new Table(capsPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
@@ -249,7 +280,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsViewer = new TableViewer(capsTable);
 		ColumnViewerToolTipSupport.enableFor(capsViewer);
 		capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
-		capsViewer.setContentProvider(new CapReqMapContentProvider());
+		capsContentProvider = new CapReqMapContentProvider();
+		capsViewer.setContentProvider(capsContentProvider);
 		capsViewer.setFilters(new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parent, Object element) {
@@ -550,8 +582,30 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	}
 
 	private void updateCapsLabel() {
+		String problemAddition = "";
+		if (!duplicateCapabilitiesWithDifferentHashes.isEmpty()) {
+
+			int problemCount = 0;
+
+			TableItem[] items = capsViewer.getTable()
+				.getItems();
+			for (int i = 0; i < items.length; i++) {
+				TableItem tableItem = items[i];
+				Object data = tableItem.getData();
+				if (data instanceof Capability cap) {
+					if (duplicateCapabilitiesWithDifferentHashes.contains(cap)) {
+						problemCount++;
+					}
+				}
+			}
+
+			if (problemCount > 0) {
+				problemAddition = " Problems: " + problemCount;
+			}
+		}
 		capsLabel.setText("Capabilities: " + capsViewer.getTable()
-			.getItemCount());
+			.getItemCount() + problemAddition);
+
 		capsLabel.getParent()
 			.layout();
 	}
@@ -839,5 +893,19 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			.setToolTipText("Detect capabilities containing packages that have the same name but differ in the\n"
 				+ "contained classes.");
 		return toggleShowProblemCaps;
+	}
+
+	private void updateReqsFilter(String filterString) {
+		reqsContentProvider.setFilter(filterString);
+		reqsViewer.refresh();
+		updateReqsLabel();
+		if (filterString != null)
+			reqsViewer.expandToLevel(1);
+	}
+
+	private void updateCapsFilter(String filterString) {
+		capsContentProvider.setFilter(filterString);
+		capsViewer.refresh();
+		updateCapsLabel();
 	}
 }
