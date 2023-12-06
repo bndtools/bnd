@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -210,6 +211,52 @@ public class CapReqBuilderTest {
 		assertEquals("(&(osgi.wiring.package=org.example.foo)(version>=1.7.23))",
 			reqFiltered.getDirectives()
 			.get("filter"));
+	}
+
+	@Test
+	public void testDetectDuplicateExports() throws Exception {
+
+		// finding packages that have the same name but differ in their
+		// class.
+		// Sinces the "hashes" attribute contains the hashes of each class,
+		// we'd see differences. The problem was that there were two
+		// exporters with different packages with the same name.
+
+		Capability cap1 = createCap("org.bundleA", "org.example.foo", "1.7.23", "123", "456", "789");
+
+		// same package but differences in the hashes (missing one hash) -> this
+		// is a problem
+		Capability cap2 = createCap("org.bundleB", "org.example.foo", "1.7.23", "456", "789");
+
+		// some other OK cap
+		Capability cap3 = createCap("org.bundleC", "org.example.bar", "1.7.23", "789,910");
+
+
+		List<Capability> culprits = ResourceUtils.detectDuplicateCapabilitiesWithDifferentHashes("osgi.wiring.package",
+			Arrays.asList(cap1, cap2, cap3));
+
+		System.out.println(
+			"Culprits: the following capabilities provide the same package but with different package content");
+		for (Capability c : culprits) {
+			System.out.println(c);
+		}
+
+		assertEquals(2, culprits.size());
+		assertThat(culprits).containsExactly(cap1, cap2);
+	}
+
+
+
+	private CapabilityImpl createCap(String bundleSymName, String pck, String version, String... hashes) {
+		CapReqBuilder cr = new CapReqBuilder("osgi.wiring.package");
+		Attrs attrs1 = new Attrs();
+		attrs1.putTyped("bundle-symbolic-name", bundleSymName);
+		attrs1.putTyped("osgi.wiring.package", pck);
+		attrs1.putTyped("version", version);
+		attrs1.putTyped("bnd.hashes", hashes);
+		cr.addAttributes(attrs1);
+
+		return cr.buildSyntheticCapability();
 	}
 
 }
