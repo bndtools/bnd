@@ -48,6 +48,7 @@ nav:
       - url: /chapters/700-tools.html
   - title: Reference Material
     subfolderitems:
+      - url: /chapters/790-reference.html
       - url: /chapters/800-headers.html
       - url: /chapters/820-instructions.html
       - url: /chapters/825-instructions-ref.html

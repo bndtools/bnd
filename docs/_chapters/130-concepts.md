@@ -49,7 +49,7 @@ There is often a confusion of terminology, like, is a bundle a component? We are
 
 In DS, the implementation class is called the _component_ and in this document we follow this lead. Therefore, in general a bundle consists of a number of components. 
 
-# The Workspace
+## The Workspace
 
 The bndlib _workspace_ is an encapsulation of a set of cohesive _projects_, where a project exports zero or more bundles via _repositories_. A repository provides access to set of bundles exported by some means, likely from other workspaces. A repository can be on the local file system or a remote system like Maven central. 
 
@@ -60,3 +60,13 @@ Projects can depend on other projects in the workspace or import bundles from th
 A workspace is a single directory, just like a git workspace it encompasses all its sub directories. Though the name of the workspace directory is free to choose, it is highly recommended to use a naming strategy. In practice you will create many different workspaces and having a naming strategy will significantly simplify the handling of these workspaces.
 
 On the same root level in the workspace as the `cnf` directory, bndlib expects the projects. Yes, projects *must* reside in the root level. The reason is again, simplicity. We will later discuss how the bundle's symbolic name is derived from the project's directory name. Since projects can depend on each other, bndlib maintains a workspace repository of projects that it derives from the top level directories. Some people desperately want to use hierarchies of projects (often because that is how they used to work before). However, even people patching bndlib to make it hierarchical admit that the simple linear model is actually working quite well. The reason it works so well is that a workspace is not supposed to hold every single bundle that your organization produces. It is intended to be a cohesive set of between 10-20 up to a couple of hundred projects.
+
+## Configuration
+
+Bnd uses Java properties files (often with extension `.bnd`) for configuration purposes. Those usually contain [headers](800-headers.html) or [instructions](825-instructions-ref.html). The files are read with [`java.util.Properties.load(Reader)`](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Properties.html#load(java.io.Reader)) with `UTF-8` encoding and therefore support either of the following key value separators
+
+1. `=` (default separator)
+2. `:` (separator also used in MANIFEST.MF files)
+3. `<white space character>`
+
+In general any `<white space>` characters directly preceding or succeeding the separator are stripped.

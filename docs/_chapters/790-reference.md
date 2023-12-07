@@ -25,4 +25,4 @@ The following classes are used:
 * **Macro** – General macro, applicable everywhere
 * Maven, Ant, Gradle – Only applicable in the given tool
 
-
+Usually the format of both headers and instructions follows the Java properties files specification outlined in [Concepts](130-concepts.html).
