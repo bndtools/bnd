@@ -142,7 +142,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 				if (obj instanceof RequirementWrapper rw) {
 
 					for (Glob g : globs) {
-						if (g.matcher(rw.requirement.toString())
+							if (g.matcher(RequirementWrapperLabelProvider.tooltipText(rw))
 							.find()) {
 							filteredResults.add(obj);
 							return;
@@ -152,7 +152,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 				else if (obj instanceof Capability cap) {
 
 					for (Glob g : globs) {
-						if (g.matcher(cap.toString())
+							if (g.matcher(CapabilityLabelProvider.tooltipText(cap))
 							.find()) {
 							filteredResults.add(obj);
 							return;

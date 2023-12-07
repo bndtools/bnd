@@ -64,54 +64,57 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 
 	@Override
 	public String getToolTipText(Object element) {
-		if (element instanceof RequirementWrapper) {
-			RequirementWrapper rw = (RequirementWrapper) element;
-			Requirement req = rw.requirement;
-
-			StringBuilder buf = new StringBuilder();
-			if (rw.resolved)
-				buf.append("RESOLVED:\n");
-			if (rw.java)
-				buf.append("JAVA:\n");
-
-			buf.append("FROM: ")
-				.append(req.getResource())
-				.append("\n");
-
-			Resource r = rw.requirement.getResource();
-			if (r instanceof SupportingResource sr) {
-				int index = sr.getSupportingIndex();
-				if (index >= 0) {
-					buf.append("Requirement from a supporting resource ")
-						.append(index)
-						.append(" part of ")
-						.append(sr.getParent())
-						.append("\n");
-				}
-			}
-			buf.append(req.getNamespace());
-
-
-			for (Entry<String, Object> attr : req.getAttributes()
-				.entrySet())
-				buf.append(";\n\t")
-					.append(attr.getKey())
-					.append(" = ")
-					.append(attr.getValue());
-
-			for (Entry<String, String> directive : req.getDirectives()
-				.entrySet())
-				buf.append(";\n\t")
-					.append(directive.getKey())
-					.append(" := ")
-					.append(directive.getValue());
-
-			Resource resource = req.getResource();
-
-			return buf.toString();
+		if (element instanceof RequirementWrapper rw) {
+			return tooltipText(rw);
 		}
 
 		return null;
+	}
+
+
+	static String tooltipText(RequirementWrapper rw) {
+		Requirement req = rw.requirement;
+
+		StringBuilder buf = new StringBuilder();
+		if (rw.resolved)
+			buf.append("RESOLVED:\n");
+		if (rw.java)
+			buf.append("JAVA:\n");
+
+		buf.append("FROM: ")
+			.append(req.getResource())
+			.append("\n");
+
+		Resource r = req.getResource();
+		if (r instanceof SupportingResource sr) {
+			int index = sr.getSupportingIndex();
+			if (index >= 0) {
+				buf.append("Requirement from a supporting resource ")
+					.append(index)
+					.append(" part of ")
+					.append(sr.getParent())
+					.append("\n");
+			}
+		}
+		buf.append(req.getNamespace());
+
+		for (Entry<String, Object> attr : req.getAttributes()
+			.entrySet())
+			buf.append(";\n\t")
+				.append(attr.getKey())
+				.append(" = ")
+				.append(attr.getValue());
+
+		for (Entry<String, String> directive : req.getDirectives()
+			.entrySet())
+			buf.append(";\n\t")
+				.append(directive.getKey())
+				.append(" := ")
+				.append(directive.getValue());
+
+		Resource resource = req.getResource();
+
+		return buf.toString();
 	}
 
 }
