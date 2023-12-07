@@ -9,16 +9,16 @@ import aQute.bnd.osgi.Constants;
 
 public class RequirementWrapper {
 
-	public Requirement					requirement;
+	public final Requirement			requirement;
 	public boolean						resolved;
 	public boolean						java;
 	public Collection<? extends Object>	requirers;
 
-	public boolean isOptional() {
+	public RequirementWrapper(Requirement requirement) {
+		this.requirement = requirement;
+	}
 
-		if (requirement == null) {
-			return false;
-		}
+	public boolean isOptional() {
 
 		String resolution = requirement.getDirectives()
 			.get(Constants.RESOLUTION);
