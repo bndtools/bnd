@@ -36,6 +36,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.LocalSelectionTransfer;
@@ -128,7 +129,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private Label				reqsLabel;
 	private Label				capsLabel;
 
+	// hideSelfImportsFilter => show only resolved requirements (strange name)
 	private ViewerFilter		hideSelfImportsFilter;
+
+	// the oposite of the hideSelfImportsFilter filter
+	private ViewerFilter				hideOptionalRequirements;
 	private ViewerFilter		filterShowCapsProblems;
 
 	private boolean				inputLocked	= false;
@@ -147,6 +152,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private final FilterPanelPart		capsFilterPart								= new FilterPanelPart(
 		Plugin.getDefault()
 			.getScheduler());
+	private static final String			SEARCHSTRING_HINT							= "Enter search string (Space to separate terms; '*' for partial matches)";
 
 	private CapReqMapContentProvider	reqsContentProvider;
 	private CapReqMapContentProvider	capsContentProvider;
@@ -229,6 +235,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsLayout.verticalSpacing = 2;
 		reqsPanel.setLayout(reqsLayout);
 		Control reqsFilterPanel = reqsFilterPart.createControl(reqsPanel, 5, 5);
+		reqsFilterPart.setHint(SEARCHSTRING_HINT);
 		reqsFilterPart.addPropertyChangeListener(event -> {
 			String filter = (String) event.getNewValue();
 			updateReqsFilter(filter);
@@ -264,6 +271,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsLayout.verticalSpacing = 2;
 		capsPanel.setLayout(capsLayout);
 		Control capsFilterPanel = capsFilterPart.createControl(capsPanel, 5, 5);
+		capsFilterPart.setHint(SEARCHSTRING_HINT);
 		capsFilterPart.addPropertyChangeListener(event -> {
 			String filter = (String) event.getNewValue();
 			updateCapsFilter(filter);
@@ -309,8 +317,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
-				if (element instanceof RequirementWrapper) {
-					RequirementWrapper rw = (RequirementWrapper) element;
+				if (element instanceof RequirementWrapper rw) {
 					boolean resolved = rw.resolved | rw.java;
 					return !resolved;
 				}
@@ -319,6 +326,16 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		};
 		reqsViewer.setFilters(hideSelfImportsFilter);
 
+		hideOptionalRequirements = new ViewerFilter() {
+
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				if (element instanceof RequirementWrapper rw) {
+					return !rw.isOptional();
+				}
+				return true;
+			}
+		};
 
 
 		reqsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
@@ -403,45 +420,23 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		IToolBarManager toolBarManager = getViewSite().getActionBars()
 			.getToolBarManager();
 
-		IAction toggleShowSelfImports = new Action("showSelfImports", IAction.AS_CHECK_BOX) {
-			@Override
-			public void runWithEvent(Event event) {
-				if (isChecked()) {
-					reqsViewer.removeFilter(hideSelfImportsFilter);
-				} else {
-					reqsViewer.addFilter(hideSelfImportsFilter);
-				}
-				updateReqsLabel();
-			}
-		};
-		toggleShowSelfImports.setChecked(false);
-		toggleShowSelfImports.setImageDescriptor(Icons.desc("/icons/package_folder_impexp.gif"));
-		toggleShowSelfImports.setToolTipText(
-			"Show resolved requirements.\n\nInclude requirements that are resolved within the set of selected bundles.");
-		toolBarManager.add(toggleShowSelfImports);
+		// Reqs Buttons
+		toolBarManager.add(createToggleShowSelfImportsButton());
+		toolBarManager.add(createToggleHideOptionalReqsFilterButton());
+		toolBarManager.add(new Separator());
 
-		IAction toggleShowProblemCaps = createShowProblemCapsAction();
-		toolBarManager.add(toggleShowProblemCaps);
+		// Caps Buttons
+		toolBarManager.add(createShowProblemCapsAction());
+		toolBarManager.add(new Separator());
 
-		IAction toggleLockInput = new Action("lockInput", IAction.AS_CHECK_BOX) {
-			@Override
-			public void runWithEvent(Event event) {
-				inputLocked = isChecked();
-				if (!inputLocked) {
-					executeAnalysis();
-				}
-			}
-		};
-		toggleLockInput.setChecked(false);
-		toggleLockInput.setImageDescriptor(Icons.desc("lock"));
-		toggleLockInput.setToolTipText("Lock to current selection");
-		toolBarManager.add(toggleLockInput);
-
+		// Other Buttons
+		toolBarManager.add(createToggleLockInputButton());
 		doEEActionMenu(toolBarManager);
-
 		toolBarManager.add(HelpButtons.HELP_BTN_RESOLUTION_VIEW);
 
 	}
+
+
 
 
 
@@ -871,27 +866,6 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		}
 	}
 
-	private IAction createShowProblemCapsAction() {
-		IAction toggleShowProblemCaps = new Action("showProblemCaps", IAction.AS_CHECK_BOX) {
-			@Override
-			public void runWithEvent(Event event) {
-				if (isChecked()) {
-					capsViewer.addFilter(filterShowCapsProblems);
-				} else {
-					capsViewer.removeFilter(filterShowCapsProblems);
-				}
-
-				updateCapsLabel();
-			}
-		};
-		toggleShowProblemCaps.setChecked(false);
-		toggleShowProblemCaps.setImageDescriptor(Icons.desc("/icons/warning_obj.gif"));
-		toggleShowProblemCaps
-			.setToolTipText("Detect capabilities containing packages that have the same name but differ in the\n"
-				+ "contained classes.");
-		return toggleShowProblemCaps;
-	}
-
 	private void updateReqsFilter(String filterString) {
 		reqsContentProvider.setFilter(filterString);
 		reqsViewer.refresh();
@@ -904,5 +878,96 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsContentProvider.setFilter(filterString);
 		capsViewer.refresh();
 		updateCapsLabel();
+	}
+
+	private IAction createShowProblemCapsAction() {
+		String tooltipTextUnlocked = "Click to detect capabilities containing packages that have the same name but differ in the contained classes.";
+
+		IAction toggleShowProblemCaps = new Action("showProblemCaps", IAction.AS_CHECK_BOX) {
+			@Override
+			public void runWithEvent(Event event) {
+				if (isChecked()) {
+					capsViewer.addFilter(filterShowCapsProblems);
+					this.setToolTipText(
+						"Showing capabilities containing packages that have the same name but differ in the contained classes.");
+				} else {
+					capsViewer.removeFilter(filterShowCapsProblems);
+					this.setToolTipText(tooltipTextUnlocked);
+				}
+
+				updateCapsLabel();
+			}
+		};
+		toggleShowProblemCaps.setChecked(false);
+		toggleShowProblemCaps.setImageDescriptor(Icons.desc("/icons/warning_obj.gif"));
+		toggleShowProblemCaps
+			.setToolTipText(tooltipTextUnlocked);
+		return toggleShowProblemCaps;
+	}
+
+	private IAction createToggleLockInputButton() {
+		String toolTipTextUnchecked = "Lock to current selection";
+
+		IAction toggleLockInput = new Action("lockInput", IAction.AS_CHECK_BOX) {
+			@Override
+			public void runWithEvent(Event event) {
+				inputLocked = isChecked();
+				if (!inputLocked) {
+					this.setToolTipText(toolTipTextUnchecked);
+					executeAnalysis();
+				} else {
+					this.setToolTipText("Current selection is locked");
+				}
+			}
+		};
+		toggleLockInput.setChecked(false);
+		toggleLockInput.setImageDescriptor(Icons.desc("lock"));
+		toggleLockInput.setToolTipText(toolTipTextUnchecked);
+		return toggleLockInput;
+	}
+
+	private IAction createToggleShowSelfImportsButton() {
+		String toggleShowSelfImportsUnchecked = "Showing resolved requirements.\n\n"
+			+ "Includes requirements that are resolved within the set of selected bundles. Click to show all requirements.";
+
+		IAction toggleShowSelfImports = new Action("showSelfImports", IAction.AS_CHECK_BOX) {
+			@Override
+			public void runWithEvent(Event event) {
+				if (isChecked()) {
+					reqsViewer.removeFilter(hideSelfImportsFilter);
+					this.setToolTipText("Showing all requirements.");
+				} else {
+					reqsViewer.addFilter(hideSelfImportsFilter);
+					this.setToolTipText(toggleShowSelfImportsUnchecked);
+				}
+				updateReqsLabel();
+			}
+		};
+		toggleShowSelfImports.setChecked(false);
+		toggleShowSelfImports.setImageDescriptor(Icons.desc("/icons/package_folder_impexp.gif"));
+		toggleShowSelfImports.setToolTipText(toggleShowSelfImportsUnchecked);
+		return toggleShowSelfImports;
+	}
+
+	private IAction createToggleHideOptionalReqsFilterButton() {
+		String toggleShowShowUnresolvedReqsFilterUnchecked = "Optional requirements are included. Click to hide optional requirements.";
+
+		final IAction toggleShowShowUnresolvedReqsFilter = new Action("hideOptionalReqs", IAction.AS_CHECK_BOX) {
+			@Override
+			public void runWithEvent(Event event) {
+				if (isChecked()) {
+					reqsViewer.addFilter(hideOptionalRequirements);
+					this.setToolTipText("Optional requirements are now hidden");
+				} else {
+					reqsViewer.removeFilter(hideOptionalRequirements);
+					this.setToolTipText(toggleShowShowUnresolvedReqsFilterUnchecked);
+				}
+				updateReqsLabel();
+			}
+		};
+		toggleShowShowUnresolvedReqsFilter.setChecked(false);
+		toggleShowShowUnresolvedReqsFilter.setImageDescriptor(Icons.desc("/icons/prohibition.png"));
+		toggleShowShowUnresolvedReqsFilter.setToolTipText(toggleShowShowUnresolvedReqsFilterUnchecked);
+		return toggleShowShowUnresolvedReqsFilter;
 	}
 }
