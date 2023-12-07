@@ -15,6 +15,11 @@ public class RequirementWrapper {
 	public Collection<? extends Object>	requirers;
 
 	public boolean isOptional() {
+
+		if (requirement == null) {
+			return false;
+		}
+
 		String resolution = requirement.getDirectives()
 			.get(Constants.RESOLUTION);
 

@@ -75,17 +75,18 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 	static String tooltipText(RequirementWrapper rw) {
 		Requirement req = rw.requirement;
 
-		StringBuilder buf = new StringBuilder();
+		StringBuilder buf = new StringBuilder(300);
 		if (rw.resolved)
 			buf.append("RESOLVED:\n");
 		if (rw.java)
 			buf.append("JAVA:\n");
 
+		Resource r = req.getResource();
+
 		buf.append("FROM: ")
-			.append(req.getResource())
+			.append(r)
 			.append("\n");
 
-		Resource r = req.getResource();
 		if (r instanceof SupportingResource sr) {
 			int index = sr.getSupportingIndex();
 			if (index >= 0) {
@@ -111,8 +112,6 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 				.append(directive.getKey())
 				.append(" := ")
 				.append(directive.getValue());
-
-		Resource resource = req.getResource();
 
 		return buf.toString();
 	}

@@ -41,9 +41,7 @@ public class CapabilityLabelProvider extends StyledCellLabelProvider {
 
 	@Override
 	public String getToolTipText(Object element) {
-		if (element instanceof Capability) {
-			Capability cap = (Capability) element;
-
+		if (element instanceof Capability cap) {
 			return tooltipText(cap);
 		}
 
@@ -51,11 +49,17 @@ public class CapabilityLabelProvider extends StyledCellLabelProvider {
 	}
 
 	static String tooltipText(Capability cap) {
-		StringBuilder buf = new StringBuilder();
+		// caps tooltips become quite large because of the bnd.hashes and uses
+		StringBuilder buf = new StringBuilder(400);
+
+		Resource r = cap.getResource();
+
+		buf.append("FROM: ")
+			.append(r)
+			.append("\n");
 
 		buf.append(cap.getNamespace());
 
-		Resource r = cap.getResource();
 		if (r instanceof SupportingResource sr) {
 			int index = sr.getSupportingIndex();
 			if (index >= 0) {
