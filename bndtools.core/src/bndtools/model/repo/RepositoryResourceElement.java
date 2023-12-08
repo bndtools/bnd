@@ -45,14 +45,6 @@ public class RepositoryResourceElement implements ResourceProvider, IAdaptable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getAdapter(Class<T> adapter) {
-
-		// this is triggered e.g. when you doubleclick on an
-		// Advanved-Search result entry in the RepositoryBrowser
-		// see
-		// bndtools.views.repository.RepositoriesView.createPartControl(Composite)
-		// and scroll down to "viewer.addDoubleClickListener(..."
-		// but since repositoryBundleVersion already implements IAdaptable
-		// we just forward to it
 		return repositoryBundleVersion.getAdapter(adapter);
 	}
 
