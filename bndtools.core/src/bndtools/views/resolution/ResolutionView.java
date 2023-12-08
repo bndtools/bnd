@@ -129,12 +129,9 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private Label				reqsLabel;
 	private Label				capsLabel;
 
-	// hideSelfImportsFilter => show only resolved requirements (strange name)
-	private ViewerFilter		hideSelfImportsFilter;
-
-	// the oposite of the hideSelfImportsFilter filter
+	private ViewerFilter				hideSelfImportsFilter;
 	private ViewerFilter				hideOptionalRequirements;
-	private ViewerFilter		filterShowCapsProblems;
+	private ViewerFilter				filterShowCapsProblems;
 
 	private boolean				inputLocked	= false;
 	private boolean				outOfDate	= false;
