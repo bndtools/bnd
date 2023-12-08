@@ -1,6 +1,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
-     org.eclipse.lsp4j, \
-     org.eclipse.lsp4j.jsonrpc
+	org.eclipse.lsp4j,\
+	org.eclipse.lsp4j.jsonrpc,\
+	biz.aQute.bndlib
 -testpath: junit-jupiter-api
