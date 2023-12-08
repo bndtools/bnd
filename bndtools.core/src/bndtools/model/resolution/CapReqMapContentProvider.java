@@ -133,7 +133,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 			String[] split = wildcardFilter.split("\\s+");
 			Glob globs[] = new Glob[split.length];
 			for (int i = 0; i < split.length; i++) {
-				globs[i] = new Glob(split[i]);
+				globs[i] = new Glob(split[i].toLowerCase());
 			}
 
 			// parallel search
@@ -142,7 +142,8 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 				if (obj instanceof RequirementWrapper rw) {
 
 					for (Glob g : globs) {
-						if (g.matcher(rw.requirement.toString())
+							if (g.matcher(RequirementWrapperLabelProvider.tooltipText(rw)
+								.toLowerCase())
 							.find()) {
 							filteredResults.add(obj);
 							return;
@@ -152,7 +153,8 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 				else if (obj instanceof Capability cap) {
 
 					for (Glob g : globs) {
-						if (g.matcher(cap.toString())
+							if (g.matcher(CapabilityLabelProvider.tooltipText(cap)
+								.toLowerCase())
 							.find()) {
 							filteredResults.add(obj);
 							return;

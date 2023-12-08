@@ -85,8 +85,7 @@ public class ResourceCapReqLoader implements CapReqLoader {
 				listForNamespace = new LinkedList<>();
 				result.put(ns, listForNamespace);
 			}
-			RequirementWrapper wrapper = new RequirementWrapper();
-			wrapper.requirement = req;
+			RequirementWrapper wrapper = new RequirementWrapper(req);
 			listForNamespace.add(wrapper);
 		}
 

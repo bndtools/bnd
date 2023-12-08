@@ -5,12 +5,30 @@ import java.util.Objects;
 
 import org.osgi.resource.Requirement;
 
+import aQute.bnd.osgi.Constants;
+
 public class RequirementWrapper {
 
-	public Requirement					requirement;
+	public final Requirement			requirement;
 	public boolean						resolved;
 	public boolean						java;
 	public Collection<? extends Object>	requirers;
+
+	public RequirementWrapper(Requirement requirement) {
+		this.requirement = requirement;
+	}
+
+	public boolean isOptional() {
+
+		String resolution = requirement.getDirectives()
+			.get(Constants.RESOLUTION);
+
+		if (resolution == null) {
+			return false;
+		}
+
+		return Constants.OPTIONAL.equals(resolution);
+	}
 
 	@Override
 	public int hashCode() {

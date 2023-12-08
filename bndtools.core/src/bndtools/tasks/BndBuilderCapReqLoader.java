@@ -97,8 +97,7 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
 	}
 
 	private RequirementWrapper toRequirementWrapper(Requirement req) {
-		RequirementWrapper rw = new RequirementWrapper();
-		rw.requirement = req;
+		RequirementWrapper rw = new RequirementWrapper(req);
 		if (req.getNamespace()
 			.equals(PackageNamespace.PACKAGE_NAMESPACE)) {
 			String pkgName = (String) req.getAttributes()
