@@ -2,13 +2,14 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
-    osgi.annotation,\
+	osgi.annotation,\
 	slf4j.api;version=latest,\
 	org.osgi.dto;version='1.0',\
 	org.osgi.resource;version='1.0',\
 	org.osgi.framework;version='1.8',\
 	org.osgi.util.function;version=latest,\
-	org.osgi.util.promise;version=latest
+	org.osgi.util.promise;version=latest,\
+	org.eclipse.jdt.annotation
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
