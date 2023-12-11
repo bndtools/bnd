@@ -1,4 +1,10 @@
+*.bak
+/.metadata/
+/.recommenders/
+Archive
 .DS_Store
+.*.swp
 /.gradle/
+/reports/
 /generated/
-/.metadata*
+.to

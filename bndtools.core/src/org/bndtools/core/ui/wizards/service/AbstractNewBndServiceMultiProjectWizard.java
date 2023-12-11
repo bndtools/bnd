@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
@@ -35,7 +34,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizard;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
@@ -270,6 +268,11 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 	}
 
 	@Override
+	protected boolean canRunForked() {
+		return false;
+	}
+
+	@Override
 	public boolean performFinish() {
 		boolean result = super.performFinish();
 		if (result) {
@@ -298,14 +301,11 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 					.getActivePage()
 					.activate(serviceApiEditor);
 			}
-			Display.getDefault()
-				.syncExec(() -> {
-					// Then refresh workspace
-					try {
-						Central.getWorkspace()
-							.forceRefresh();
-					} catch (Exception e) {}
-				});
+			// refresh whole workspace to update the inter-project relationships
+			try {
+				Central.getWorkspace()
+					.forceRefresh();
+			} catch (Exception e) {}
 		}
 		return result;
 	}
