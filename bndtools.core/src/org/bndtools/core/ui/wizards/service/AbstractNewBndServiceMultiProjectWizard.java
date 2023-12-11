@@ -35,6 +35,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizard;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
@@ -297,11 +298,14 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 					.getActivePage()
 					.activate(serviceApiEditor);
 			}
-			// Finally refresh all projects
-			try {
-				Central.getWorkspace()
-					.refreshProjects();
-			} catch (Exception e) {}
+			Display.getDefault()
+				.syncExec(() -> {
+					// Then refresh workspace
+					try {
+						Central.getWorkspace()
+							.forceRefresh();
+					} catch (Exception e) {}
+				});
 		}
 		return result;
 	}
