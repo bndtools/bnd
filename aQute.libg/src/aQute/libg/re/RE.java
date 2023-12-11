@@ -1,5 +1,7 @@
 package aQute.libg.re;
 
+import static aQute.libg.re.Catalog.cc;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -46,6 +48,18 @@ public interface RE {
 		 * @return a new character class
 		 */
 		C or(C or);
+
+		/**
+		 * Make the union of two character classes. This concatenates the set if
+		 * possible. I.e. `[%abc@]` and `\p{Alnum}` will union to
+		 * `[%abc@\p{Alnum}]`.
+		 *
+		 * @param or the second character class
+		 * @return a new character class
+		 */
+		default C or(String or) {
+			return or(cc(or));
+		}
 
 		/**
 		 * Return just the content of the set without the square brackets.
@@ -191,7 +205,12 @@ public interface RE {
 			/**
 			 * Will match if its members do not match before
 			 */
-			NOT_BEHIND("(?<!");
+			NOT_BEHIND("(?<!"),
+
+			/**
+			 * Negated
+			 */
+			NOT("(?!");
 
 			/**
 			 * The prefix to start the grouping.Notice that the NAMED group is
@@ -246,6 +265,62 @@ public interface RE {
 		 * @param name the name of the group
 		 */
 		Optional<MatchGroup> group(String name);
+
+		/**
+		 * This Match has a rover in its the matching region. This method
+		 * requires the expected to match against the current position or it
+		 * will throw an exception. It will move the rover forward to after the
+		 * match. It will skip any whitespace before it matches.
+		 *
+		 * @param expected the expected match
+		 * @return the value of the match
+		 */
+		default String take(RE expected) {
+			skip(Catalog.setWs);
+			String result = tryMatch(expected);
+
+			if (result == null)
+				throw new IllegalArgumentException("take: no match for " + expected + " on " + this);
+
+			return result;
+		}
+
+		/**
+		 * This Match has a rover in its the matching region. This method
+		 * requires the skip to match against the current position or it will
+		 * throw an exception. It will move the rover forward to after the
+		 * match.
+		 *
+		 * @param skip the RE to skip
+		 */
+		default void skip(RE skip) {
+			if (tryMatch(skip) == null)
+				throw new IllegalArgumentException("skip: no match for " + skip + " on " + this);
+		}
+
+		/**
+		 * This Match has a rover its the matching region. This method will see
+		 * if the current position matches the RE. If it does, the rover will be
+		 * moved forward. Otherwise it stays where it is. It will skip any
+		 * whitespace before it matches.
+		 *
+		 * @param expected the expected value
+		 * @return true if there was a match and the match was consumed
+		 */
+		default boolean check(RE expected) {
+			skip(Catalog.setWs);
+			return tryMatch(expected) != null;
+		}
+
+		/**
+		 * This Match has a rover in its the matching region. This method tries
+		 * too see if the string from this rover to the end of this match,
+		 * matches the match parameter. If so, it returns the value and moves
+		 * the rover forward.
+		 *
+		 * @param match the RE to match return a string when matched or null
+		 */
+		String tryMatch(RE match);
 	}
 
 	/**
@@ -347,14 +422,14 @@ public interface RE {
 	 * @param string the source string
 	 * @return a matcher if found
 	 */
-	Optional<Match> find(String string);
+	Optional<Match> findIn(String string);
 
 	/**
 	 * Return a stream with matches in the current string
 	 *
 	 * @param string the source string
 	 */
-	Stream<Match> findAll(String string);
+	Stream<Match> findAllIn(String string);
 
 	/**
 	 * Return
@@ -414,7 +489,7 @@ public interface RE {
 	 *
 	 * @param string the source string
 	 */
-	Matcher getMatcher(String string);
+	Matcher getMatcher(CharSequence string);
 
 	/**
 	 * Matches the source string to this RE. If there is a match, it returns the
@@ -441,14 +516,11 @@ public interface RE {
 	String toString();
 
 	/**
-	 * Return the pattern compiled with the given flags.
+	 * Return the pattern compiled with the given flags. The pattern is cached
+	 * for optimization but this method can be called concurrently.
 	 *
-	 * @param type the flags
+	 * @param flags the flags
 	 */
-	Pattern pattern(Flag... type);
+	Pattern pattern(Flag... flags);
 
-	/**
-	 * Return the pattern compiled with the default flags.
-	 */
-	Pattern pattern();
 }

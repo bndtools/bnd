@@ -7,26 +7,37 @@ import static aQute.libg.re.Catalog.back;
 import static aQute.libg.re.Catalog.behind;
 import static aQute.libg.re.Catalog.capture;
 import static aQute.libg.re.Catalog.cc;
+import static aQute.libg.re.Catalog.comma;
 import static aQute.libg.re.Catalog.dotall;
 import static aQute.libg.re.Catalog.dquote;
 import static aQute.libg.re.Catalog.g;
 import static aQute.libg.re.Catalog.if_;
 import static aQute.libg.re.Catalog.list;
 import static aQute.libg.re.Catalog.lit;
+import static aQute.libg.re.Catalog.multiline;
+import static aQute.libg.re.Catalog.nl;
 import static aQute.libg.re.Catalog.or;
 import static aQute.libg.re.Catalog.reluctant;
+import static aQute.libg.re.Catalog.semicolon;
 import static aQute.libg.re.Catalog.seq;
 import static aQute.libg.re.Catalog.set;
 import static aQute.libg.re.Catalog.setAll;
 import static aQute.libg.re.Catalog.some;
+import static aQute.libg.re.Catalog.startOfLine;
+import static aQute.libg.re.Catalog.string;
 import static aQute.libg.re.Catalog.while_;
+import static aQute.libg.re.Catalog.word;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import aQute.libg.parameters.Attributes;
+import aQute.libg.parameters.ParameterMap;
 import aQute.libg.re.RE.C;
 import aQute.libg.re.RE.Match;
 
@@ -100,22 +111,13 @@ public class RETest {
 
 	@Test
 	public void testStrings() {
-		class X extends Catalog {
-			RE	innerDquoted	= or(or(dquote, backslash).not(), g(backslash, all));
-			RE	dqstring		= g(dquote, g("content", set(innerDquoted)), dquote);
-		}
-		X x = new X();
-		assertThat(x.innerDquoted.toString()).isEqualTo("(?:[^\"\\\\]|(?:\\\\.))");
-		assertThat(x.dqstring.toString()).isEqualTo("(?:\"(?<content>(?:[^\"\\\\]|(?:\\\\.))*)\")");
-		String s = """
-			prefix "Hello \\" World \\ " suffix
-			""";
-		assertThat(x.dqstring.find(s)).isPresent();
-		Match match = x.dqstring.find(s)
-			.get();
-		assertThat(match.group("content")
-			.map(g -> g.toString())).isNotNull();
-		assertThat(match.group("content")).isPresent();
+
+		RE dq = string('"');
+		RE sq = string('\'');
+		assertThat(dq.matches("\"abc\"")).as(dq.toString())
+			.isPresent();
+		assertThat(dq.matches("\"ab\\\"c\"")).as(dq.toString())
+			.isPresent();
 	}
 
 	@Test
@@ -139,7 +141,7 @@ public class RETest {
 			RE	namedMatch	= named(match);
 		}
 		X x = new X();
-		assertThat(x.namedMatch.findAll("def abc ghi abc jkl")
+		assertThat(x.namedMatch.findAllIn("def abc ghi abc jkl")
 			.count()).isEqualTo(2);
 	}
 
@@ -147,22 +149,22 @@ public class RETest {
 	public void testIf() {
 		RE cond = if_(dquote, seq(setAll, dquote), lit("nostring"));
 		assertThat(cond.toString()).isEqualTo("(?:(?=\").*\"|nostring)");
-		assertThat(cond.find("\"hello world\"")).isPresent();
-		assertThat(cond.find("nostring")).isPresent();
+		assertThat(cond.findIn("\"hello world\"")).isPresent();
+		assertThat(cond.findIn("nostring")).isPresent();
 		assertThat(cond.matches("x")).isNotPresent();
 
 		RE cond2 = dotall(if_(seq(setAll, lit("foo")), lit("bar")), setAll);
 		assertThat(cond2.toString()).isEqualTo("(?s:(?=.*foo)(?:bar).*)");
 		assertThat(cond2.matches("bar some foo")).isPresent();
-		assertThat(cond2.find("bar \n foo")).isPresent();
-		assertThat(cond2.find("bar \n fxoo")).isNotPresent();
+		assertThat(cond2.findIn("bar \n foo")).isPresent();
+		assertThat(cond2.findIn("bar \n fxoo")).isNotPresent();
 	}
 
 	@Test
 	public void testWhile() {
 		RE cond = while_(seq(setAll, lit("foo")), lit("f"));
 		assertThat(cond.toString()).isEqualTo("(?=.*foo)f*");
-		assertThat(cond.find("fffffffoo")).isPresent();
+		assertThat(cond.findIn("fffffffoo")).isPresent();
 	}
 
 	@Test
@@ -186,30 +188,30 @@ public class RETest {
 		RE ahead = g(lit("q"), ahead(lit("u")));
 
 		assertThat(ahead.toString()).isEqualTo("(?:q(?=u))");
-		assertThat(ahead.find("qu")).isPresent();
-		assertThat(ahead.find("u")).isNotPresent();
-		assertThat(ahead.find("q")).isNotPresent();
+		assertThat(ahead.findIn("qu")).isPresent();
+		assertThat(ahead.findIn("u")).isNotPresent();
+		assertThat(ahead.findIn("q")).isNotPresent();
 
 		RE behind = g(behind(lit("q")), lit("u"));
 		assertThat(behind.toString()).isEqualTo("(?:(?<=q)u)");
-		assertThat(behind.find("qu")).isPresent();
-		assertThat(behind.find("q")).isNotPresent();
-		assertThat(behind.find("u")).isNotPresent();
+		assertThat(behind.findIn("qu")).isPresent();
+		assertThat(behind.findIn("q")).isNotPresent();
+		assertThat(behind.findIn("u")).isNotPresent();
 
 		RE notAhead = g(lit("q"), ahead(lit("u")).not());
 		assertThat(notAhead.toString()).isEqualTo("(?:q(?!u))");
-		assertThat(notAhead.find("qu")).isNotPresent();
-		assertThat(notAhead.find("qx")).isPresent();
-		assertThat(notAhead.find("u")).isNotPresent();
-		assertThat(notAhead.find("q")).isPresent();
+		assertThat(notAhead.findIn("qu")).isNotPresent();
+		assertThat(notAhead.findIn("qx")).isPresent();
+		assertThat(notAhead.findIn("u")).isNotPresent();
+		assertThat(notAhead.findIn("q")).isPresent();
 
 		RE notBehind = g(behind(lit("q")).not(), lit("u"));
 
 		assertThat(notBehind.toString()).isEqualTo("(?:(?<!q)u)");
-		assertThat(notBehind.find("qu")).isNotPresent();
-		assertThat(notBehind.find("u")).isPresent();
-		assertThat(notBehind.find("xu")).isPresent();
-		assertThat(notBehind.find("u")).isPresent();
+		assertThat(notBehind.findIn("qu")).isNotPresent();
+		assertThat(notBehind.findIn("u")).isPresent();
+		assertThat(notBehind.findIn("xu")).isPresent();
+		assertThat(notBehind.findIn("u")).isPresent();
 	}
 
 	@Test
@@ -217,21 +219,20 @@ public class RETest {
 		RE greedy = seq(lit("<"), setAll, lit(">"));
 		RE reluctant = seq(lit("<"), reluctant(setAll), lit(">"));
 		RE reluctant2 = seq(lit("<"), setAll.reluctant(), lit(">"));
-		RE possesive = seq(dquote, set(dquote.not())
-			.possesive(), dquote);
+		RE possesive = seq(dquote, set(dquote.not()).possesive(), dquote);
 
 		assertThat(greedy.toString()).isEqualTo("<.*>");
-		assertThat(greedy.find("This is a <EM>first</EM> test")
+		assertThat(greedy.findIn("This is a <EM>first</EM> test")
 			.get()
 			.toString()).isEqualTo("<EM>first</EM>");
 
 		assertThat(reluctant.toString()).isEqualTo("<.*?>");
-		assertThat(reluctant.find("This is a <EM>first</EM> test")
+		assertThat(reluctant.findIn("This is a <EM>first</EM> test")
 			.get()
 			.toString()).isEqualTo("<EM>");
 
 		assertThat(possesive.toString()).isEqualTo("\"(?:[^\"])*+\"");
-		assertThat(possesive.find("abc \"hello world\" def")
+		assertThat(possesive.findIn("abc \"hello world\" def")
 			.get()
 			.toString()).isEqualTo("\"hello world\"");
 	}
@@ -251,24 +252,28 @@ public class RETest {
 	@Test
 	public void testParameters() {
 		class X extends Catalog {
-			RE	innerDquoted	= or(or(dquote, backslash).not(), g(backslash, all));
-			RE	dqstring		= g(dquote, set(innerDquoted), dquote);
-			RE	id				= g(javaJavaIdentifierStart, set(javaJavaIdentifierPart));
-			RE	eq				= lit("=");
-			RE	value			= or(set(cc(",;").not()), dqstring);
-			RE	property		= term(id, opt(eq, value));
-			RE	clause			= term(id, set(term(semicolon, property)));
-			RE	parameters		= list(clause);
+			RE	id			= g(javaJavaIdentifierStart, set(javaJavaIdentifierPart));
+			RE	eq			= lit("=");
+			RE	value		= or(string('"'), string('\''), set(cc("\'\",;").not()));
+			RE	property	= term(id, eq, value);
+			RE	clause		= term(list(id, semicolon), set(term(semicolon, property)));
+			RE	parameters	= list(clause);
 		}
 		X x = new X();
 
-		assertThat(x.dqstring.matches("\"3\"")).isPresent();
 		assertThat(x.clause.matches("foo")).describedAs(x.clause.toString())
 			.isPresent();
 		assertThat(x.clause.matches("foo;a")).describedAs(x.clause.toString())
 			.isPresent();
 		assertThat(x.value.matches("xxxxx")).describedAs(x.value.toString())
 			.isPresent();
+		assertThat(x.value.matches("'xxxxx'")).describedAs(x.value.toString())
+			.isPresent();
+		assertThat(x.value.matches("\"xxxxx\"")).describedAs(x.value.toString())
+			.isPresent();
+		assertThat(x.value.matches("\"xx\\\"xxx\"")).describedAs(x.value.toString())
+			.isPresent();
+
 		assertThat(x.value.matches("\"1;2,3\"")).describedAs(x.value.toString())
 			.isPresent();
 		assertThat(x.property.matches("x=\"1;2,3\"")).describedAs(x.value.toString())
@@ -276,13 +281,53 @@ public class RETest {
 		assertThat(x.clause.matches("foo; a = 6 9;b=\"1;2,3\"")).describedAs(x.clause.toString())
 			.isPresent();
 
-		assertThat(x.parameters.toString()).isEqualTo(
-			"(?:\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*(?:\\s*;\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*(?:=(?:(?:[^,;])*|(?:\"(?:[^\"\\\\]|(?:\\\\.))*\")))?))*)\\s*(?:\\s*,\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*(?:\\s*;\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*(?:=(?:(?:[^,;])*|(?:\"(?:[^\"\\\\]|(?:\\\\.))*\")))?))*))*)");
+		// assertThat(x.parameters.toString()).isEqualTo(
+		// "(?:\\s*(?:\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*(?:\\s*;\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*))*)\\s*(?:\\s*;\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*=\\s*(?:(?:[^,;])*|(?:\"(?:[^\"\\\\]|(?:\\\\.))*\"))))*)\\s*(?:\\s*,\\s*(?:\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*(?:\\s*;\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*))*)\\s*(?:\\s*;\\s*(?:\\s*(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\s*=\\s*(?:(?:[^,;])*|(?:\"(?:[^\"\\\\]|(?:\\\\.))*\"))))*))*)");
 		assertThat(x.parameters.matches("foo")).isPresent();
 		assertThat(x.parameters.matches("foo, bar, yuck")).isPresent();
 		assertThat(x.parameters.matches("foo;a=1, bar, yuck")).isPresent();
-		assertThat(x.parameters.matches("foo;a=1, bar;b=\"2,;\\\"\", yuck")).describedAs(x.parameters.toString())
+		assertThat(x.parameters.matches("foo;a=1, bar;b='2';c=\"3\", yuck")).describedAs(x.parameters.toString())
 			.isPresent();
+
+		assertThat(x.parameters.matches("foo;a=1, bar;b='\\'2';c=\"\\\"3\", yuck")).describedAs(x.parameters.toString())
+			.isPresent();
+
+		ParameterMap pars = x.parameters.matches("a ;b, c;foo = '\"bar\"',   d;e ; f;g=3, h;s=\";bla\\\"bla,\"")
+			.map(m -> {
+				ParameterMap ps = new ParameterMap();
+				do {
+					Set<String> aliases = new LinkedHashSet<>();
+					Attributes attrs = new Attributes();
+					do {
+						String key = m.take(x.id);
+						if (m.check(x.eq)) {
+							String value = m.take(x.value);
+							value = fixup(value);
+							attrs.put(key, value);
+						} else
+							aliases.add(key);
+					} while (m.check(semicolon));
+					aliases.forEach(k -> ps.put(k, attrs));
+				} while (m.check(comma));
+				return ps;
+			})
+			.orElse(null);
+		assertThat(pars).isNotNull();
+		assertThat(pars.get("a")).isNotNull()
+			.isEmpty();
+		assertThat(pars.get("f")).isNotNull()
+			.containsEntry("g", "3");
+		assertThat(pars.get("c")).isNotNull()
+			.containsEntry("foo", "\"bar\"");
+		assertThat(pars.get("h")).isNotNull()
+			.containsEntry("s", ";bla\"bla,");
+	}
+
+	private String fixup(String take) {
+		if (!take.startsWith("\"") && !take.startsWith("'"))
+			return take;
+		return take.substring(1, take.length() - 1)
+			.replaceAll("\\\\", "");
 	}
 
 	@Test
@@ -404,7 +449,83 @@ public class RETest {
 		assertThat(as.matches("aaaaa")).isPresent();
 		assertThat(as.matches("aabacaa")).isPresent();
 		assertThat(as.matches("aabacaax")).isNotPresent();
-		assertThat(as.find("aabacaax")).isPresent();
+		assertThat(as.findIn("aabacaax")).isPresent();
 		assertThat(as.lookingAt("aabacaax")).isPresent();
 	}
+
+	@Test
+	void testBlog() {
+		class Internet extends Catalog {
+			C	base		= cc("a-zA-Z0-9.-");
+			RE	name		= some(base.or(cc("_%+-")));
+			RE	domainPart	= some(base);
+			RE	toplevel	= or("com", "biz", "info", "net", "org", "name", "dev");
+			RE	domain		= g(some(domainPart, lit(".")), toplevel);
+			RE	email		= g(name, lit("@"), domain);
+			RE	qualifier	= some(Alnum.or("-_"));
+			RE	version		= g(number, opt(dot, number, opt(dot, number, opt(dot, qualifier))));
+
+		}
+		Internet x = new Internet();
+
+		assertThat(x.version.findIn("abc 1.2.3.qualifier")).isPresent()
+			.get()
+			.asString()
+			.isEqualTo("1.2.3.qualifier");
+
+		assertThat(x.email.matches("peter.kriens@aQute.biz")).isPresent();
+		assertThat(x.email.matches("peter.kriens@mail.aQute.biz")).isPresent();
+		assertThat(x.email.matches("peter.kriens@mail.aQute.bbla")).isNotPresent();
+		assertThat(x.email.findAllIn("bla bla x@q.biz bal la a  y.foo@bar.com and more nonsense")
+			.count()).isEqualTo(2);
+
+		assertThat(Catalog.nl.findAllIn("line 1\rline 2\nline 3\r\nline 4\n")
+			.count()).isEqualTo(4);
+		assertThat(word.findAllIn(
+			"The quick brown fox jumped over the lazy dog. However, somewhere on the horizon there was light: 'A ship came into the harbour.'")
+			.map(Object::toString)
+			.map(String::toLowerCase)
+			.distinct()
+			.sorted()
+			.toArray()).containsExactlyInAnyOrder("a", "brown", "came", "dog", "fox", "harbour", "horizon", "however",
+				"into", "jumped", "lazy", "light", "on", "over", "quick", "ship", "somewhere", "the", "there", "was");
+	}
+
+	@Test
+	public void lookbehind() {
+		String markdown = """
+			l1 #
+			l2
+			l3 ##
+			# chap 1
+			cl21 #
+			cl22
+			abc
+			## subchap
+			xya
+			anc
+			## subchap 2
+			adadad
+			# nr
+			bla
+			""";
+
+		RE h1 = g(startOfLine, lit("# "), setAll);
+		RE line = g(startOfLine, cc("#").not(), setAll);
+		RE chapter = g(h1, set(nl, line));
+
+		RE onlyInChapter = g(behind(chapter), lit("abc"));
+		System.out.println(chapter);
+		multiline(chapter).findAllIn(markdown)
+			.forEach(m -> {
+				System.out.println("----");
+				System.out.println(m);
+			});
+
+		RE unescapedQuote = g(behind(lit("\\")).not(), lit("'"));
+
+		assertThat(unescapedQuote.findAllIn("a', b\\', c', d\\', e'")
+			.count()).isEqualTo(3);
+	}
+
 }

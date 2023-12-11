@@ -835,6 +835,21 @@ public class Catalog {
 		return new Group(G.Type.CAPTURING, res);
 	}
 
+	/**
+	 * Return a string that is delimeted on both sides with the same character.
+	 * The character cannot be used directly but must be escaped with a
+	 * backslash.
+	 */
+
+	public static RE string(char delimeter) {
+		C del = cc(delimeter + "");
+		C notBackslashOrDel = del.or(backslash)
+			.not();
+		RE backslashFollowedByAll = g(backslash, all);
+		RE inner = or(notBackslashOrDel, backslashFollowedByAll);
+		return g(del, set(inner), del);
+	}
+
 	final public static C	ws						= new Special("\\s");
 	final public static Q	setWs					= set(ws);
 	final public static Q	someWs					= some(ws);
@@ -880,7 +895,7 @@ public class Catalog {
 	final public static C	comma					= new Special(",");
 	final public static C	semicolon				= new Special(";");
 	final public static C	colon					= new Special(":");
-	final public static RE	nl						= new Boundary("\\R");
+	final public static C	nl						= new Special("\\R");
 	final public static C	cr						= new Special("\r");
 	final public static C	lf						= new Special("\n");
 	final public static C	ff						= new Special("\f");
@@ -923,8 +938,7 @@ public class Catalog {
 	static class REImpl implements RE {
 		final String		literal;
 		final Set<String>	groups;
-		Pattern				pattern;
-		int					flags;
+		volatile Pattern	pattern;
 
 		REImpl(String literal) {
 			this.literal = literal;
@@ -953,27 +967,17 @@ public class Catalog {
 		}
 
 		@Override
-		public Pattern pattern() {
-			if (pattern == null || flags != 0) {
-				pattern = Pattern.compile(toString());
-			}
-			return pattern;
-		}
-
-		@Override
 		public Pattern pattern(RE.F.Flag... type) {
-			if (type == null || type.length == 0)
-				return Pattern.compile(toString());
 
 			int options = 0;
 			for (Flag flag : type) {
 				options |= flag.option;
 			}
-			if (pattern == null || flags != options) {
-				pattern = Pattern.compile(toString(), options);
-				this.flags = options;
+			Pattern p = pattern;
+			if (p == null || p.flags() != options) {
+				p = Pattern.compile(toString(), options);
 			}
-			return pattern;
+			return pattern = p;
 		}
 
 		@Override
@@ -1058,6 +1062,7 @@ public class Catalog {
 				class MatchImpl extends Base implements Match {
 					Map<String, MatchGroup>	matchGroups;
 					Map<String, String>		matchValues;
+					int						rover;
 
 					@Override
 					public String name() {
@@ -1121,6 +1126,18 @@ public class Catalog {
 						}
 						return Optional.of(new MatchGroupImpl(name, value));
 					}
+
+					@Override
+					public String tryMatch(RE expected) {
+						Matcher m = expected.getMatcher(this);
+						m.region(rover, length());
+						if (m.lookingAt()) {
+							rover = m.end();
+							return m.group();
+						} else
+							return null;
+					}
+
 				}
 				return Optional.of(new MatchImpl());
 			} else
@@ -1138,12 +1155,12 @@ public class Catalog {
 		}
 
 		@Override
-		public Optional<Match> find(String string) {
+		public Optional<Match> findIn(String string) {
 			return matches0(string, Matcher::find);
 		}
 
 		@Override
-		public Stream<Match> findAll(String string) {
+		public Stream<Match> findAllIn(String string) {
 			return stream(string);
 		}
 
@@ -1191,7 +1208,7 @@ public class Catalog {
 		}
 
 		@Override
-		public Matcher getMatcher(String string) {
+		public Matcher getMatcher(CharSequence string) {
 			return pattern().matcher(string);
 		}
 
@@ -1254,9 +1271,14 @@ public class Catalog {
 				case BEHIND -> Type.NOT_BEHIND;
 				case NOT_AHEAD -> Type.AHEAD;
 				case NOT_BEHIND -> Type.BEHIND;
+				case NOT -> Type.NONCAPTURING;
+				case NONCAPTURING -> Type.NOT;
 				default -> null;
 			};
-			if (type == null || type == this.type)
+			if (type == null)
+				return new Group(Type.NOT, this);
+
+			if (type == this.type)
 				return this;
 
 			return new Group(null, literal, type);

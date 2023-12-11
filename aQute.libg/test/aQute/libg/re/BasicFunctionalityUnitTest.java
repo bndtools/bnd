@@ -87,7 +87,7 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test.toString()).isEqualTo("(?:a$)");
-		assertThat(x.test.find("bba")).isPresent();
+		assertThat(x.test.findIn("bba")).isPresent();
 		assertThat(x.test.matches("a")).isPresent();
 		assertThat(x.test.matches("ab")).isNotPresent();
 
@@ -98,7 +98,7 @@ public class BasicFunctionalityUnitTest {
 		RE test = g(lit("a"), maybe("b"));
 
 		assertThat(test.toString()).isEqualTo("(?:a(?:.*b?))");
-		assertThat(test.find("bba")).isPresent();
+		assertThat(test.findIn("bba")).isPresent();
 		assertThat(test.matches("a")).isPresent();
 		assertThat(test.matches("ab")).isPresent();
 		assertThat(test.matches("acb")).isPresent();
@@ -113,8 +113,8 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test.toString()).isEqualTo("(?:a[xyz])");
-		assertThat(x.test.find("ay")).isPresent();
-		assertThat(x.test.find("abc")).isNotPresent();
+		assertThat(x.test.findIn("ay")).isPresent();
+		assertThat(x.test.findIn("abc")).isNotPresent();
 	}
 
 	@Test
@@ -124,10 +124,10 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test.toString()).isEqualTo("(?:^(?:abc|def))");
-		assertThat(x.test.find("abcxxx")).isPresent();
-		assertThat(x.test.find("def")).isPresent();
-		assertThat(x.test.find("defabc")).isPresent();
-		assertThat(x.test.find("xdef")).isNotPresent();
+		assertThat(x.test.findIn("abcxxx")).isPresent();
+		assertThat(x.test.findIn("def")).isPresent();
+		assertThat(x.test.findIn("defabc")).isPresent();
+		assertThat(x.test.findIn("xdef")).isNotPresent();
 	}
 
 	@Test
@@ -137,11 +137,11 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test.toString()).isEqualTo("(?:^abc\\Rdef)");
-		assertThat(x.test.find("abc\ndef")).isPresent();
-		assertThat(x.test.find("abc\r\ndef")).isPresent();
-		assertThat(x.test.find("abc\rdef")).isPresent();
-		assertThat(x.test.find("abc\r\nabc")).isNotPresent();
-		assertThat(x.test.find(" abc\ndef")).isNotPresent();
+		assertThat(x.test.findIn("abc\ndef")).isPresent();
+		assertThat(x.test.findIn("abc\r\ndef")).isPresent();
+		assertThat(x.test.findIn("abc\rdef")).isPresent();
+		assertThat(x.test.findIn("abc\r\nabc")).isNotPresent();
+		assertThat(x.test.findIn(" abc\ndef")).isNotPresent();
 	}
 
 	@Test
@@ -151,8 +151,8 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test.toString()).isEqualTo("(?:^\tabc)");
-		assertThat(x.test.find("\tabc\ndef")).isPresent();
-		assertThat(x.test.find("abc\ndef")).isNotPresent();
+		assertThat(x.test.findIn("\tabc\ndef")).isPresent();
+		assertThat(x.test.findIn("abc\ndef")).isNotPresent();
 	}
 
 	@Test
@@ -162,8 +162,8 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test.toString()).isEqualTo("\\w+");
-		assertThat(x.test.find("  word word ")).isPresent();
-		assertThat(x.test.find(" @$^& ")).isNotPresent();
+		assertThat(x.test.findIn("  word word ")).isPresent();
+		assertThat(x.test.findIn(" @$^& ")).isNotPresent();
 	}
 
 	@Test
@@ -174,9 +174,9 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test1.toString()).isEqualTo("(?:abc){2,}");
-		assertThat(x.test1.find("  abcabc ")).isPresent();
-		assertThat(x.test1.find("  abcabcabc")).isPresent();
-		assertThat(x.test1.find(" abc ")).isNotPresent();
+		assertThat(x.test1.findIn("  abcabc ")).isPresent();
+		assertThat(x.test1.findIn("  abcabcabc")).isPresent();
+		assertThat(x.test1.findIn(" abc ")).isNotPresent();
 		assertThat(x.test2.toString()).isEqualTo("(?:abc){2,3}");
 		assertThat(x.test2.matches("abc")).isNotPresent();
 		assertThat(x.test2.matches(" abcabc")).isNotPresent();
@@ -228,7 +228,7 @@ public class BasicFunctionalityUnitTest {
 		}
 		X x = new X();
 		assertThat(x.test1.toString()).isEqualTo("(?:https?://www\\.\\S*\\.com)");
-		assertThat(x.test1.find("123 https://www.google.com 456")).isPresent();
+		assertThat(x.test1.findIn("123 https://www.google.com 456")).isPresent();
 
 	}
 
