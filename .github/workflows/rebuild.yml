@@ -110,7 +110,7 @@ jobs:
     - name: Set up Gradle
       uses: gradle/gradle-build-action@8cbcb9948b5892387aed077daf6f90e1f0ba5b27
     - name: Download dist/bundles
-      uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+      uses: actions/download-artifact@7a1cd3216ca9260cd8022db641d960b1db4d1be4
       with:
         name: ${{ needs.build.outputs.dist-bundles }}
         path: dist/bundles
