@@ -269,6 +269,11 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 	}
 
 	@Override
+	protected boolean canRunForked() {
+		return false;
+	}
+
+	@Override
 	public boolean performFinish() {
 		boolean result = super.performFinish();
 		if (result) {
@@ -297,10 +302,10 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 					.getActivePage()
 					.activate(serviceApiEditor);
 			}
-			// Finally refresh all projects
+			// refresh whole workspace to update the inter-project relationships
 			try {
 				Central.getWorkspace()
-					.refreshProjects();
+					.forceRefresh();
 			} catch (Exception e) {}
 		}
 		return result;
