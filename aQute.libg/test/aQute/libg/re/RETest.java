@@ -399,6 +399,9 @@ public class RETest {
 		assertThat(test3.toString()).isEqualTo("(?:(?<foo>a)(?<bar>(?<xyz>b)))");
 		assertThat(test3.getGroupNames()).containsExactlyInAnyOrder("foo", "bar", "xyz");
 
+		RE testOption = Catalog.caseInsenstive(test, test2, test3);
+		assertThat(testOption.getGroupNames()).containsExactlyInAnyOrder("foo", "bar", "xyz");
+
 	}
 
 	@Test

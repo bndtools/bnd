@@ -54,6 +54,7 @@ import aQute.libg.re.RE.Q;
  */
 public class Catalog {
 
+
 	/**
 	 * If this class is extended, the named fields in that class can be used in
 	 * named groups. This method will lookup the name of a field and create a
@@ -908,6 +909,8 @@ public class Catalog {
 	final public static RE	empty					= new REImpl("");
 	final public static C	tab						= new Special("\t");
 	final public static RE	number					= some(digit);
+	public static C			hexdigit				= cc("0-9A-F");
+	public static RE		hexnumber				= some(hexdigit);
 	final public static C	minus					= new CharacterClass("-");
 	final public static C	dquote					= new CharacterClass("\"");
 	final public static C	squote					= new CharacterClass("'");
@@ -923,6 +926,7 @@ public class Catalog {
 	final public static C	javaJavaIdentifierStart	= new Predefined("javaJavaIdentifierStart", true);
 	final public static C	javaJavaIdentifierPart	= new Predefined("javaJavaIdentifierPart", true);
 	final public static RE	javaId					= seq(javaJavaIdentifierStart, set(javaJavaIdentifierPart));
+	final public static RE	fullyQualifiedName		= seq(javaId, set(dot, javaId));
 	final public static RE	startOfLine				= new Boundary("^");
 	final public static RE	endOfLine				= new Boundary("$");
 	final public static RE	wordBoundary			= new Boundary("\\b");
@@ -1059,6 +1063,37 @@ public class Catalog {
 						return end < 0 ? end = matcher.start(name) : end;
 					}
 				}
+				class MatchGroupImplIndex extends Base implements MatchGroup {
+					final int	name;
+					String		value;
+					int			start	= -1;
+					int			end		= -1;
+
+					MatchGroupImplIndex(int name, String value) {
+						this.name = name;
+						this.value = value;
+					}
+
+					@Override
+					public String name() {
+						return Integer.toString(name);
+					}
+
+					@Override
+					public String value() {
+						return value == null ? value : matcher.group(name);
+					}
+
+					@Override
+					public int start() {
+						return start < 0 ? start = matcher.start(name) : start;
+					}
+
+					@Override
+					public int end() {
+						return end < 0 ? end = matcher.end(name) : end;
+					}
+				}
 				class MatchImpl extends Base implements Match {
 					Map<String, MatchGroup>	matchGroups;
 					Map<String, String>		matchValues;
@@ -1089,15 +1124,17 @@ public class Catalog {
 						if (matchGroups == null) {
 							if (groups == null)
 								matchGroups = Collections.emptyMap();
-							Map<String, MatchGroup> result = new TreeMap<>();
-							for (String name : groups) {
-								String value = matcher.group(name);
-								if (value != null) {
-									MatchGroupImpl mg = new MatchGroupImpl(name, value);
-									result.put(name, mg);
+							else {
+								Map<String, MatchGroup> result = new TreeMap<>();
+								for (String name : groups) {
+									String value = matcher.group(name);
+									if (value != null) {
+										MatchGroupImpl mg = new MatchGroupImpl(name, value);
+										result.put(name, mg);
+									}
 								}
+								matchGroups = Collections.unmodifiableMap(result);
 							}
-							matchGroups = Collections.unmodifiableMap(result);
 						}
 						return matchGroups;
 					}
@@ -1136,6 +1173,19 @@ public class Catalog {
 							return m.group();
 						} else
 							return null;
+					}
+
+					@Override
+					public Optional<MatchGroup> group(int group) {
+
+						if (matcher.groupCount() < group)
+							return Optional.empty();
+
+						String value = matcher.group(group);
+						if (value == null)
+							return Optional.empty();
+
+						return Optional.of(new MatchGroupImplIndex(group, value));
 					}
 
 				}
@@ -1501,11 +1551,11 @@ public class Catalog {
 		final EnumSet<Flag>					negative;
 
 		Option(EnumSet<Flag> positive, EnumSet<Flag> negative, RE... res) {
-			this(toGroupedString(false, res), positive, negative);
+			this(toGroupedString(false, res), positive, negative, names(res));
 		}
 
-		Option(String ungrouped, EnumSet<Flag> p, EnumSet<Flag> n) {
-			super(ungrouped);
+		Option(String ungrouped, EnumSet<Flag> p, EnumSet<Flag> n, String... names) {
+			super(ungrouped, names);
 			this.positive = p == null ? NONE_OF : p;
 			this.negative = n == null ? NONE_OF : n;
 		}
@@ -1719,6 +1769,10 @@ public class Catalog {
 			case "\\s", " ", "\t", "\\s*", "\\s+", "(\\s)*", "(\\s)+", " *", " +", "( )*", "( )+" -> true;
 			default -> false;
 		};
+	}
+
+	public static RE re(String regex) {
+		return new REImpl(regex);
 	}
 
 }
