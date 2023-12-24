@@ -321,6 +321,8 @@ public interface RE {
 		 * @param match the RE to match return a string when matched or null
 		 */
 		String tryMatch(RE match);
+
+		Optional<MatchGroup> group(int group);
 	}
 
 	/**
