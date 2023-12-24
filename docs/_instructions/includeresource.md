@@ -42,7 +42,13 @@ A _source_ in the clause starting with a `-` sign will not generare an error whe
 
     `-includeresource.all = {foo=-bar}`, -foo.txt
 
-## Unrolling
+## Rolling
+
+There are two variants of the rolling _operator_ `@`. It can be used to _roll up_ a directory as a zip or jar file, or it can be used to unroll a jar file into its constituents.
+
+If the destination is a path of a `jar` or `zip` file, like `foo/bar/icons.zip` and the source points to a directory in the file system, then the directory will be wrapped up in a Jar and stored as a single entry in the receiving jar file.
+
+    -includeresource    foo/bar/icons.zip=@icons/
 
 _Unrolling_ is getting the content from another JAR. It is activated by starting the source with an at sign (`@`). The at sign signals that it is not the actual file that should be copied, but the contents of that file should be placed in the destination.
 
