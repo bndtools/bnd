@@ -120,6 +120,12 @@ public class IncludeResourceTest {
 	}
 
 	@Test
+	public void testIncludeResourceDirectoryToJar() throws Exception {
+		Set<String> jar = testResources("foo.jar=@jar", 1);
+		assertThat(jar).containsExactlyInAnyOrder("foo.jar");
+	}
+
+	@Test
 	public void testIncludeResourceFromClasspathJars() throws Exception {
 		Set<String> deflt = testResources("@osgi.jar", 528);
 		Set<String> both = testResources("'@{osgi,easymock}.jar'", 528 + 59);

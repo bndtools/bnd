@@ -1,6 +1,11 @@
 package aQute.bnd.osgi;
 
 import static aQute.bnd.exceptions.FunctionWithException.asFunction;
+import static aQute.libg.re.Catalog.caseInsenstive;
+import static aQute.libg.re.Catalog.eof;
+import static aQute.libg.re.Catalog.lit;
+import static aQute.libg.re.Catalog.or;
+import static aQute.libg.re.Catalog.setAll;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -71,6 +76,7 @@ import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.generics.Create;
+import aQute.libg.re.RE;
 
 /**
  * Include-Resource: ( [name '=' ] file )+ Private-Package: package-decl ( ','
@@ -80,7 +86,8 @@ import aQute.libg.generics.Create;
 public class Builder extends Analyzer {
 
 	@SuppressWarnings("deprecation")
-	private static final String INCLUDERESOURCE_HEADERS = Constants.INCLUDERESOURCE + "|" + Constants.INCLUDE_RESOURCE;
+	private static final String			INCLUDERESOURCE_HEADERS		= Constants.INCLUDERESOURCE + "|"
+		+ Constants.INCLUDE_RESOURCE;
 
 	private final static Logger			logger						= LoggerFactory.getLogger(Builder.class);
 	private final static Pattern		IR_PATTERN					= Pattern
@@ -376,14 +383,16 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	protected void changedFile(@SuppressWarnings("unused") File f) {}
+	protected void changedFile(@SuppressWarnings("unused")
+	File f) {}
 
 	/**
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
 	 * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
 	 */
 
-	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
+	void sign(@SuppressWarnings("unused")
+	Jar jar) throws Exception {
 		String signing = getProperty(SIGN);
 		if (signing == null)
 			return;
@@ -608,7 +617,8 @@ public class Builder extends Analyzer {
 		return sourcePath;
 	}
 
-	private void doVerify(@SuppressWarnings("unused") Jar dot) throws Exception {
+	private void doVerify(@SuppressWarnings("unused")
+	Jar dot) throws Exception {
 
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
@@ -666,11 +676,11 @@ public class Builder extends Analyzer {
 				else if (Logic.hasOverlap(includepackage.keySet(), unused))
 					header = Constants.INCLUDEPACKAGE;
 
-				warning(
-					"Unused %s instructions , no such package(s) on the class path: %s", header, unused).header(header)
-						.context(unused.iterator()
-							.next()
-							.getInput());
+				warning("Unused %s instructions , no such package(s) on the class path: %s", header, unused)
+					.header(header)
+					.context(unused.iterator()
+						.next()
+						.getInput());
 			}
 		}
 
@@ -1009,8 +1019,7 @@ public class Builder extends Analyzer {
 
 	private void doClassAttribute(Jar jar, String name, Map<String, String> extra, Instructions preprocess,
 		boolean absentIsOk) throws Exception {
-		FileLine header = getHeader(INCLUDERESOURCE_HEADERS,
-			Constants.CLASS_ATTRIBUTE);
+		FileLine header = getHeader(INCLUDERESOURCE_HEADERS, Constants.CLASS_ATTRIBUTE);
 		String fqn = extra.get(Constants.CLASS_ATTRIBUTE);
 		TypeRef typeRef = getTypeRefFromFQN(fqn);
 		if (typeRef == null) {
@@ -1292,14 +1301,15 @@ public class Builder extends Analyzer {
 		}
 	}
 
+	final static RE ZIP_P = caseInsenstive(setAll, lit("."), or("jar", "zip"), eof);
+
 	/**
 	 * Extra resources from a Jar and add them to the given jar.
 	 *
 	 * @param extra
 	 */
 	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk,
-		Map<String, String> extra)
-		throws ZipException, IOException {
+		Map<String, String> extra) throws ZipException, IOException {
 		// Inline all resources and classes from another jar
 		// optionally appended with a modified regular expression
 		// like @zip.jar!/META-INF/MANIFEST.MF
@@ -1308,6 +1318,14 @@ public class Builder extends Analyzer {
 		if (n > 0) {
 			instr = new Instruction(source.substring(n + 2));
 			source = source.substring(0, n);
+		}
+
+		File f = getFile(source);
+		if (f.isDirectory() && ZIP_P.matches(destination)
+			.isPresent()) {
+			DirectoryResource resource = new DirectoryResource(f);
+			jar.putResource(destination, resource);
+			return;
 		}
 
 		List<Jar> sub = getJarsFromName(source, "extract from jar");
@@ -1325,7 +1343,7 @@ public class Builder extends Analyzer {
 					Instruction in = instr;
 					String replacement = extra.get("rename:");
 					nameMapper = path -> in.getMatcher(path)
-							.replaceAll(replacement);
+						.replaceAll(replacement);
 				}
 			}
 
@@ -1333,7 +1351,6 @@ public class Builder extends Analyzer {
 				addAll(jar, j, instr, destination, nameMapper);
 		}
 	}
-
 
 	/**
 	 * Add all the resources in the given jar that match the given filter.
@@ -1766,7 +1783,8 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 
-	public void doDiff(@SuppressWarnings("unused") Jar dot) throws Exception {
+	public void doDiff(@SuppressWarnings("unused")
+	Jar dot) throws Exception {
 		Parameters diffs = parseHeader(getProperty("-diff"));
 		if (diffs.isEmpty())
 			return;
