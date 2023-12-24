@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -235,6 +236,9 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 			URI rootUri = storageDir.getCanonicalFile()
 				.toURI();
+			if (Files.isSymbolicLink(storageDir.toPath())) {
+				rootUri = storageDir.toURI();
+			}
 			provider.generateIndex(allFiles, out, this.getName(), rootUri, pretty, registry, logService);
 
 			byte[] data = out.toByteArray();
