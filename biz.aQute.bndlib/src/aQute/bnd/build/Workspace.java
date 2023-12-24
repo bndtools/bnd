@@ -1527,6 +1527,12 @@ public class Workspace extends Processor {
 		return workspaceLock.locked(workspaceLock.writeLock(), timeoutInMs, callable, () -> false);
 	}
 
+	public <T> void writeLocked(Runnable runnable) throws Exception {
+		writeLocked(() -> {
+			runnable.run();
+			return null;
+		});
+	}
 	public <T> T writeLocked(Callable<T> callable) throws Exception {
 		return workspaceLock.locked(workspaceLock.writeLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, () -> false);
 	}
