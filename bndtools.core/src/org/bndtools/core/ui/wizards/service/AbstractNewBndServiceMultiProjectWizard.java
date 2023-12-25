@@ -24,11 +24,13 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -40,6 +42,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -297,16 +300,25 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 					}
 				}
 			}
+
 			if (serviceApiEditor != null) {
 				getWorkbench().getActiveWorkbenchWindow()
 					.getActivePage()
 					.activate(serviceApiEditor);
 			}
-			// refresh whole workspace to update the inter-project relationships
-			try {
-				Central.getWorkspace()
-					.forceRefresh();
-			} catch (Exception e) {}
+
+			Job job = Job.create("refresh workspace", monitor -> {
+				Workspace workspace;
+				try {
+					workspace = Central.getWorkspace();
+					workspace.writeLocked(workspace::forceRefresh);
+				} catch (Exception e) {
+					throw new CoreException(Status.error("failed to refresh the workspace", e));
+				}
+			});
+			job.setRule(ResourcesPlugin.getWorkspace()
+					.getRoot());
+			job.schedule();
 		}
 		return result;
 	}
