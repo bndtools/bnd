@@ -132,7 +132,7 @@ public class JARTreePage extends FormPage {
 		update();
 	}
 
-	private IFolder getFolder(URI input, IProgressMonitor monitor) throws CoreException {
+	private synchronized IFolder getFolder(URI input, IProgressMonitor monitor) throws CoreException {
 
 		URI full = JarFileSystem.jarf(input, "/")
 			.orElseThrow(IllegalArgumentException::new);
