@@ -1,5 +1,8 @@
 # Gradle Plugins
 
+[![Maven Central](https://img.shields.io/maven-central/v/biz.aQute.bnd.builder/biz.aQute.bnd.builder.gradle.plugin)](https://central.sonatype.com/artifact/biz.aQute.bnd.builder/biz.aQute.bnd.builder.gradle.plugin)
+[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/biz.aQute.bnd.builder)](https://plugins.gradle.org/plugin/biz.aQute.bnd.builder)
+
 Bnd includes Gradle plugins for [Gradle][1] users to build Bnd projects in [Bnd Workspace builds][20] as well as in [non-Bnd Workspace builds][21].
 A typical Gradle build is a non-Bnd workspace build.
 A Bnd Workspace build uses the information specified in the Bnd Workspace's `cnf/build.bnd` file and each project's `bnd.bnd` file to configure the Gradle projects and tasks.
