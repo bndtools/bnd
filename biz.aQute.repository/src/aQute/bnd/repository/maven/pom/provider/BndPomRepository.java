@@ -302,17 +302,50 @@ public class BndPomRepository extends BaseRepository
 		}
 
 		Archive archive;
-		ResourceInfo resource = bridge.getInfo(bsn, version);
-		if (resource == null) {
-			archive = trySources(bsn, version);
-			if (archive == null)
-				return null;
+		
+
+		//
+		// First try if this is a BSN, not a GAV
+		//
+
+		if (bsn.indexOf(':') < 0) {
+
+			ResourceInfo resource = bridge.getInfo(bsn, version);
+			if (resource == null) {
+				archive = trySources(bsn, version);
+				if (archive == null)
+					return null;
+			} else {
+
+				String from = resource.getInfo()
+					.from();
+				archive = Archive.valueOf(from);
+			}
+
 		} else {
 
-			String from = resource.getInfo()
-				.from();
-			archive = Archive.valueOf(from);
+			//
+			// Handle the GAV. This "hack" is borrowed from  
+			// aQute.bnd.repository.maven.provider.IndexFile.find(String, Version)
+			// because MavenBndRepository can handle both bsn and GAV too
+			// TODO Notice that the GAV can also contain extension +
+			// classifier
+			//
+			
+			ResourceInfo resource = bridge.getInfoByGAV(bsn, version);
+			if (resource == null) {
+				archive = trySourcesByGAV(bsn, version);
+				if (archive == null)
+					return null;
+			} else {
+
+				String from = resource.getInfo()
+					.from();
+				archive = Archive.valueOf(from);
+			}
+
 		}
+
 
 		Promise<File> p = repoImpl.getMavenRepository()
 			.get(archive);
@@ -435,6 +468,24 @@ public class BndPomRepository extends BaseRepository
 
 		String rawBsn = bsn.substring(0, bsn.length() - BSN_SOURCE_SUFFIX.length());
 		ResourceInfo resource = bridge.getInfo(rawBsn, version);
+		if (resource == null)
+			return null;
+
+		String from = resource.getInfo()
+			.from();
+		return Archive.valueOf(from)
+			.getOther(Archive.JAR_EXTENSION, Archive.SOURCES_CLASSIFIER);
+	}
+
+	/*
+	 * Try to fetch sources by GAV (instead of bsn)
+	 */
+	private Archive trySourcesByGAV(String gav, Version version) throws Exception {
+		if (!gav.endsWith(BSN_SOURCE_SUFFIX))
+			return null;
+
+		String rawBsn = gav.substring(0, gav.length() - BSN_SOURCE_SUFFIX.length());
+		ResourceInfo resource = bridge.getInfoByGAV(rawBsn, version);
 		if (resource == null)
 			return null;
 

@@ -51,7 +51,8 @@ public class BridgeRepository {
 	}
 
 	private final Repository								repository;
-	private final Map<String, Map<Version, ResourceInfo>>	index	= new HashMap<>();
+	private final Map<String, Map<Version, ResourceInfo>>	bsnIndex	= new HashMap<>();
+	private final Map<String, Map<Version, ResourceInfo>>	gavIndex	= new HashMap<>();
 
 	@ProviderType
 	public interface InfoCapability extends Capability {
@@ -225,37 +226,50 @@ public class BridgeRepository {
 	}
 
 	private void index(Resource r) {
-		String bsn;
-		Version version;
+
 
 		if (ResourceUtils.hasType(r, ResourceBuilder.SYNTHETIC))
 			return;
 
+		// index both separately: bsn + gav
+
 		IdentityCapability bc = ResourceUtils.getIdentityCapability(r);
 		if (bc != null) {
+
+			String bsn;
+			Version version;
+
 			bsn = bc.osgi_identity();
 			version = bc.version();
+
+			bsnIndex.computeIfAbsent(bsn, k -> new HashMap<>())
+				.put(version, new ResourceInfo(r));
+
 		} else {
 			logger.debug("No identity for {}, trying info", r);
-			InfoCapability info = getInfo(r);
-			if (info == null) {
-				// No way to index this
-				logger.debug("Also no info, giving up indexing");
-				return;
-			}
+		}
+
+		InfoCapability info = getInfo(r);
+		if (info != null) {
+
+			String bsn;
+			Version version;
 
 			bsn = info.name();
 			version = info.version();
 			if (version == null)
 				version = Version.LOWEST;
+
+			gavIndex.computeIfAbsent(bsn, k -> new HashMap<>())
+				.put(version, new ResourceInfo(r));
+		}
+		else {
+			// No way to index this
+			logger.debug("No info, giving up indexing");
+			return;
 		}
 
-		Map<Version, ResourceInfo> map = index.get(bsn);
-		if (map == null) {
-			map = new HashMap<>();
-			index.put(bsn, map);
-		}
-		map.put(version, new ResourceInfo(r));
+
 	}
 
 	public Resource get(String bsn, Version version) throws Exception {
@@ -267,7 +281,15 @@ public class BridgeRepository {
 	}
 
 	public ResourceInfo getInfo(String bsn, Version version) throws Exception {
-		Map<Version, ResourceInfo> map = index.get(bsn);
+		Map<Version, ResourceInfo> map = bsnIndex.get(bsn);
+		if (map == null)
+			return null;
+
+		return map.get(version);
+	}
+
+	public ResourceInfo getInfoByGAV(String gav, Version version) throws Exception {
+		Map<Version, ResourceInfo> map = gavIndex.get(gav);
 		if (map == null)
 			return null;
 
@@ -277,7 +299,7 @@ public class BridgeRepository {
 	public List<String> list(String pattern) throws Exception {
 		List<String> bsns = new ArrayList<>();
 		if (pattern == null || pattern.equals("*") || pattern.equals("")) {
-			bsns.addAll(index.keySet());
+			bsns.addAll(bsnIndex.keySet());
 		} else {
 			String[] split = pattern.split("\\s+");
 			Glob globs[] = new Glob[split.length];
@@ -285,7 +307,7 @@ public class BridgeRepository {
 				globs[i] = new Glob(split[i]);
 			}
 
-			outer: for (String bsn : index.keySet()) {
+			outer: for (String bsn : bsnIndex.keySet()) {
 				for (Glob g : globs) {
 					if (g.matcher(bsn)
 						.find()) {
@@ -299,7 +321,7 @@ public class BridgeRepository {
 	}
 
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		Map<Version, ResourceInfo> map = index.get(bsn);
+		Map<Version, ResourceInfo> map = bsnIndex.get(bsn);
 		if (map == null || map.isEmpty()) {
 			return new TreeSet<>();
 		}
@@ -358,7 +380,7 @@ public class BridgeRepository {
 		}
 		if (target.length == 1) {
 			String bsn = (String) target[0];
-			Map<Version, ResourceInfo> map = index.get(bsn);
+			Map<Version, ResourceInfo> map = bsnIndex.get(bsn);
 			for (ResourceInfo ri : map.values()) {
 				if (ri.isError())
 					return bsn + " [!]";
@@ -382,7 +404,7 @@ public class BridgeRepository {
 		Pattern.CASE_INSENSITIVE);
 
 	public String getStatus() {
-		return index.entrySet()
+		return bsnIndex.entrySet()
 			.stream()
 			.flatMap(e -> e.getValue()
 				.values()
@@ -396,7 +418,7 @@ public class BridgeRepository {
 	}
 
 	public List<ResourceInfo> getResourceInfos() {
-		return index.values()
+		return bsnIndex.values()
 			.stream()
 			.flatMap(map -> map.values()
 				.stream())
