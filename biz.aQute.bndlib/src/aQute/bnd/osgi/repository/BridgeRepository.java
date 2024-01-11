@@ -262,6 +262,11 @@ public class BridgeRepository {
 
 			gavIndex.computeIfAbsent(bsn, k -> new HashMap<>())
 				.put(version, new ResourceInfo(r));
+
+			if (bc == null) {
+				bsnIndex.computeIfAbsent(bsn, k -> new HashMap<>())
+					.put(version, new ResourceInfo(r));
+			}
 		}
 		else {
 			// No way to index this
