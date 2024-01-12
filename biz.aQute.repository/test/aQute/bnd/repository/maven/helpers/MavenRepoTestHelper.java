@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
@@ -22,8 +23,12 @@ public class MavenRepoTestHelper {
 			.size());
 		System.out.println(repo.list("org.apache.commons.cli"));
 		System.out.println(repo.versions("org.apache.commons.cli"));
+
 		File f12maven = repo.get("commons-cli:commons-cli", new Version("1.2.0"), null);
 		File f12osgi = repo.get("org.apache.commons.cli", new Version("1.2.0"), null);
+
+		assertTrue(f12maven.exists());
+		assertTrue(f12osgi.exists());
 
 		assertEquals("commons-cli-1.2.jar", f12maven.getName());
 		assertEquals(f12maven, f12osgi);
@@ -32,8 +37,12 @@ public class MavenRepoTestHelper {
 		File f12maven2DigitsVer = repo.get("commons-cli:commons-cli", new Version("1.2"), null);
 		File f12osgi2DigitsVer = repo.get("org.apache.commons.cli", new Version("1.2"), null);
 
+		assertTrue(f12maven2DigitsVer.exists());
+		assertTrue(f12osgi2DigitsVer.exists());
+
 		assertEquals("commons-cli-1.2.jar", f12maven2DigitsVer.getName());
 		assertEquals(f12maven2DigitsVer, f12osgi2DigitsVer);
+
 
 	}
 
