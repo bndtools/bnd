@@ -90,21 +90,19 @@ class PomRepository extends InnerRepository {
 
 	void save(Traverser traverser) throws Exception {
 		Promise<Map<Archive, Resource>> p = traverser.getResources();
+
 		Map<Archive, Resource> map = p.getValue();
+		setArchives(map.keySet());
 
-		Set<Archive> keySet = map.keySet();
-		set(keySet);
-
-		Collection<Resource> resources = map
-			.values();
-
+		Collection<Resource> resources = map.values();
 		set(resources);
+
 		save(getMavenRepository().getName(), resources, getLocation());
 	}
 
-	private void set(Set<Archive> keySet) {
+	private void setArchives(Set<Archive> archives) {
 		this.archives.clear();
-		this.archives.addAll(keySet);
+		this.archives.addAll(archives);
 	}
 
 	void save(String name, Collection<? extends Resource> resources, File location) throws Exception, IOException {
