@@ -1,9 +1,11 @@
 package aQute.bnd.repository.maven.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.SortedSet;
 
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
@@ -42,6 +44,17 @@ public class MavenRepoTestHelper {
 
 		assertEquals("commons-cli-1.2.jar", f12maven2DigitsVer.getName());
 		assertEquals(f12maven2DigitsVer, f12osgi2DigitsVer);
+
+		// version should accept both too
+		SortedSet<Version> versionsMaven = repo.versions("commons-cli:commons-cli");
+		SortedSet<Version> versionsOsgi = repo.versions("org.apache.commons.cli");
+
+		assertNotNull(versionsMaven);
+		assertNotNull(versionsOsgi);
+		assertTrue(versionsMaven.stream()
+			.anyMatch(v -> "1.2.0".equals(v.toString())));
+		assertTrue(versionsOsgi.stream()
+			.anyMatch(v -> "1.2.0".equals(v.toString())));
 
 
 	}
