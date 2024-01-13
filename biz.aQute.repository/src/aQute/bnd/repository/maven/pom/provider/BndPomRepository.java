@@ -16,9 +16,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -352,12 +354,16 @@ public class BndPomRepository extends BaseRepository
 	}
 
 	private boolean isMavenGAV(String bsn) {
-		return bsn.indexOf(':') >= 0;
+		return bsn != null && bsn.indexOf(':') != -1;
 	}
 
 	private boolean matches(Archive archive, Archive spec) {
 		return archive.revision.program.equals(spec.revision.program) && archive.revision.version.getOSGiVersion()
 			.equals(spec.revision.version.getOSGiVersion()) && spec.classifier.equals(archive.classifier);
+	}
+
+	private boolean matchesGAV(Archive archive, String groupId, String artifactId) {
+		return archive.revision.group.equals(groupId) && archive.revision.artifact.equals(artifactId);
 	}
 
 
@@ -379,8 +385,30 @@ public class BndPomRepository extends BaseRepository
 		if (!init()) {
 			return Collections.emptySortedSet();
 		}
+
+		if (isMavenGAV(bsn)) {
+			if (repoImpl instanceof PomRepository pr) {
+
+				String[] split = bsn.split(":");
+				String groupId = split[0];
+				String artifactId = split[1];
+
+
+				SortedSet<Version> versions = pr.archives.stream()
+					.filter(a -> matchesGAV(a, groupId, artifactId))
+					.map(a -> a.revision.version.getOSGiVersion())
+					.collect(Collectors.toCollection(TreeSet::new));
+
+				return versions;
+
+			} else {
+				return Collections.emptySortedSet();
+			}
+		}
 		return bridge.versions(bsn);
 	}
+
+
 
 	@Override
 	public String getName() {
