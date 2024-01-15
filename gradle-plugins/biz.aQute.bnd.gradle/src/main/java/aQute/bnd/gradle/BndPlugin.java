@@ -30,6 +30,7 @@ import java.util.stream.StreamSupport;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
@@ -89,8 +90,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * If the bndWorkspace property is set, it will be used for the bnd Workspace.
  * <p>
- * If the bnd_defaultTask property is set, it will be used for the default
- * task.
+ * If the bnd_defaultTask property is set, it will be used for the default task.
  */
 public class BndPlugin implements Plugin<Project> {
 	private static final org.slf4j.Logger	logger		= LoggerFactory.getLogger(BndPlugin.class);
@@ -211,18 +211,10 @@ public class BndPlugin implements Plugin<Project> {
 						.dirs(bndProject.getGenerate()
 							.getOutputDirs())
 						.withPropertyName("generateOutputs");
-					t.doLast("generate", new Action<>() {
-						@Override
-						public void execute(Task tt) {
-							try {
-								bndProject.getGenerate()
-									.generate(false);
-							} catch (Exception e) {
-								throw new GradleException(String.format("Project %s failed to generate", bndProject.getName()), e);
-							}
-							checkErrors(tt.getLogger());
-						}
-					});
+					t.doLast("generate", task(tt -> {
+						bndProject.getGenerate()
+							.generate(false);
+					}));
 				}));
 			Optional<Action<Task>> generateInputAction = generate.map(generateTask -> t -> {
 				t.getInputs()
@@ -255,7 +247,8 @@ public class BndPlugin implements Plugin<Project> {
 					AbstractCompile.class, t -> {
 						t.getDestinationDirectory()
 							.fileValue(destinationDir);
-						FileCollection jarLibraryElements = jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						FileCollection jarLibraryElements = jarLibraryElements(t,
+							sourceSet.getCompileClasspathConfigurationName());
 						t.setClasspath(jarLibraryElements.plus(t.getClasspath()));
 					});
 				generateInputAction.ifPresent(compileTask::configure);
@@ -281,7 +274,8 @@ public class BndPlugin implements Plugin<Project> {
 					AbstractCompile.class, t -> {
 						t.getDestinationDirectory()
 							.fileValue(destinationDir);
-						FileCollection jarLibraryElements = jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						FileCollection jarLibraryElements = jarLibraryElements(t,
+							sourceSet.getCompileClasspathConfigurationName());
 						t.setClasspath(jarLibraryElements.plus(t.getClasspath()));
 					});
 				sourceSet.getOutput()
@@ -463,36 +457,32 @@ public class BndPlugin implements Plugin<Project> {
 					}
 					options.getCompilerArgumentProviders()
 						.add(argProvider(javacProfile.map(profile -> Arrays.asList("-profile", profile))));
-					t.doFirst("checkErrors", new Action<>() {
-						@Override
-						public void execute(Task tt) {
-							Logger logger = tt.getLogger();
-							checkErrors(logger);
-							if (logger.isInfoEnabled()) {
-								logger.info("Compile to {}", unwrapFile(t.getDestinationDirectory()));
-								if (t.getOptions()
-									.getRelease()
-									.isPresent()) {
-									logger.info("--release {} {}", unwrap(t.getOptions()
-										.getRelease()), Strings.join(" ",
-											t.getOptions()
-												.getAllCompilerArgs()));
-								} else {
-									logger.info("-source {} -target {} {}", t.getSourceCompatibility(),
-										t.getTargetCompatibility(), Strings.join(" ", t.getOptions()
+					t.doFirst("checkErrors", task(tt -> {
+						Logger logger = tt.getLogger();
+						if (logger.isInfoEnabled()) {
+							logger.info("Compile to {}", unwrapFile(t.getDestinationDirectory()));
+							if (t.getOptions()
+								.getRelease()
+								.isPresent()) {
+								logger.info("--release {} {}", unwrap(t.getOptions()
+									.getRelease()), Strings.join(" ",
+										t.getOptions()
 											.getAllCompilerArgs()));
-								}
-								logger.info("-classpath {}", t.getClasspath()
+							} else {
+								logger.info("-source {} -target {} {}", t.getSourceCompatibility(),
+									t.getTargetCompatibility(), Strings.join(" ", t.getOptions()
+										.getAllCompilerArgs()));
+							}
+							logger.info("-classpath {}", t.getClasspath()
+								.getAsPath());
+							if (Objects.nonNull(t.getOptions()
+								.getBootstrapClasspath())) {
+								logger.info("-bootclasspath {}", t.getOptions()
+									.getBootstrapClasspath()
 									.getAsPath());
-								if (Objects.nonNull(t.getOptions()
-									.getBootstrapClasspath())) {
-									logger.info("-bootclasspath {}", t.getOptions()
-										.getBootstrapClasspath()
-										.getAsPath());
-								}
 							}
 						}
-					});
+					}));
 				});
 
 			TaskProvider<AbstractArchiveTask> jar = tasks.named(JavaPlugin.JAR_TASK_NAME, AbstractArchiveTask.class,
@@ -542,7 +532,7 @@ public class BndPlugin implements Plugin<Project> {
 					/* bnd can include from -buildpath */
 					t.getInputs()
 						.files(tasks.named(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-								.getCompileJavaTaskName(), AbstractCompile.class)
+							.getCompileJavaTaskName(), AbstractCompile.class)
 							.map(AbstractCompile::getClasspath))
 						.withNormalizer(ClasspathNormalizer.class)
 						.withPropertyName("buildpath");
@@ -566,29 +556,17 @@ public class BndPlugin implements Plugin<Project> {
 						.file(layout.getBuildDirectory()
 							.file(Constants.BUILDFILES))
 						.withPropertyName("buildfiles");
-					t.doLast("build", new Action<>() {
-						@Override
-						public void execute(Task tt) {
-							File[] built;
-							try {
-								built = bndProject.build();
-								if (Objects.nonNull(built)) {
-									long now = System.currentTimeMillis();
-									for (File f : built) {
-										f.setLastModified(now);
-									}
-								}
-							} catch (Exception e) {
-								throw new GradleException(
-									String.format("Project %s failed to build", bndProject.getName()), e);
+					t.doLast("build", task(tt -> {
+						File[] built = bndProject.build();
+						if (Objects.nonNull(built)) {
+							long now = System.currentTimeMillis();
+							for (File f : built) {
+								f.setLastModified(now);
 							}
-							checkErrors(tt.getLogger());
-							if (Objects.nonNull(built)) {
-								tt.getLogger()
-									.info("Generated bundles: {}", (Object) built);
-							}
+							tt.getLogger()
+								.info("Generated bundles: {}", (Object) built);
 						}
-					});
+					}));
 				});
 
 			TaskProvider<Task> jarDependencies = tasks.register("jarDependencies", t -> {
@@ -619,18 +597,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.getInputs()
 					.files(jar)
 					.withPropertyName(jar.getName());
-				t.doLast("release", new Action<>() {
-					@Override
-					public void execute(Task tt) {
-						try {
-							bndProject.release();
-						} catch (Exception e) {
-							throw new GradleException(
-								String.format("Project %s failed to release", bndProject.getName()), e);
-						}
-						checkErrors(tt.getLogger());
-					}
-				});
+				t.doLast("release", task(tt -> bndProject.release()));
 			});
 
 			TaskProvider<Task> releaseDependencies = tasks.register("releaseDependencies", t -> {
@@ -651,12 +618,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.getInputs()
 					.files(getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
 					.withPropertyName("buildDependencies");
-				t.doFirst("checkErrors", new Action<>() {
-					@Override
-					public void execute(Task tt) {
-						checkErrors(tt.getLogger(), t.getIgnoreFailures());
-					}
-				});
+				t.doFirst("checkErrors", task(t.getIgnoreFailures(), tt -> {}));
 			});
 
 			TaskProvider<TestOSGi> testOSGi = tasks.register("testOSGi", TestOSGi.class, t -> {
@@ -799,91 +761,81 @@ public class BndPlugin implements Plugin<Project> {
 				JavaCompile compileJava = unwrap(tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME, JavaCompile.class));
 				JavaCompile compileTestJava = unwrap(
 					tasks.named(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, JavaCompile.class));
-				t.doLast("echo", new Action<>() {
-					@Override
-					public void execute(Task tt) {
-						try (Formatter f = new Formatter()) {
-							f.format("------------------------------------------------------------%n");
-							f.format("Project %s // Bnd version %s%n", project.getName(), About.getBndVersion());
-							f.format("------------------------------------------------------------%n");
-							f.format("%n");
-							f.format("project.workspace:      %s%n", workspace.getLayout()
-								.getProjectDirectory());
-							f.format("project.name:           %s%n", project.getName());
-							f.format("project.dir:            %s%n", layout.getProjectDirectory());
-							f.format("target:                 %s%n", unwrap(layout.getBuildDirectory()));
-							f.format("project.dependson:      %s%n", dependson);
-							f.format("project.sourcepath:     %s%n",
-								sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-									.getAllSource()
-									.getSourceDirectories()
-									.getAsPath());
-							f.format("project.output:         %s%n", unwrap(compileJava.getDestinationDirectory()));
-							f.format("project.buildpath:      %s%n", compileJava.getClasspath()
+				t.doLast("echo", task(true, tt -> {
+					try (Formatter f = new Formatter()) {
+						f.format("------------------------------------------------------------%n");
+						f.format("Project %s // Bnd version %s%n", project.getName(), About.getBndVersion());
+						f.format("------------------------------------------------------------%n");
+						f.format("%n");
+						f.format("project.workspace:      %s%n", workspace.getLayout()
+							.getProjectDirectory());
+						f.format("project.name:           %s%n", project.getName());
+						f.format("project.dir:            %s%n", layout.getProjectDirectory());
+						f.format("target:                 %s%n", unwrap(layout.getBuildDirectory()));
+						f.format("project.dependson:      %s%n", dependson);
+						f.format("project.sourcepath:     %s%n", sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+							.getAllSource()
+							.getSourceDirectories()
+							.getAsPath());
+						f.format("project.output:         %s%n", unwrap(compileJava.getDestinationDirectory()));
+						f.format("project.buildpath:      %s%n", compileJava.getClasspath()
+							.getAsPath());
+						f.format("project.allsourcepath:  %s%n", allSrcDirs.getAsPath());
+						f.format("project.testsrc:        %s%n", sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME)
+							.getAllSource()
+							.getSourceDirectories()
+							.getAsPath());
+						f.format("project.testoutput:     %s%n", unwrap(compileTestJava.getDestinationDirectory()));
+						f.format("project.testpath:       %s%n", compileTestJava.getClasspath()
+							.getAsPath());
+						if (Objects.nonNull(compileJava.getOptions()
+							.getBootstrapClasspath())) {
+							f.format("project.bootclasspath:  %s%n", compileJava.getOptions()
+								.getBootstrapClasspath()
 								.getAsPath());
-							f.format("project.allsourcepath:  %s%n", allSrcDirs.getAsPath());
-							f.format("project.testsrc:        %s%n",
-								sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME)
-									.getAllSource()
-									.getSourceDirectories()
-									.getAsPath());
-							f.format("project.testoutput:     %s%n", unwrap(compileTestJava.getDestinationDirectory()));
-							f.format("project.testpath:       %s%n", compileTestJava.getClasspath()
-								.getAsPath());
-							if (Objects.nonNull(compileJava.getOptions()
-								.getBootstrapClasspath())) {
-								f.format("project.bootclasspath:  %s%n", compileJava.getOptions()
-									.getBootstrapClasspath()
-									.getAsPath());
-							}
-							f.format("project.deliverables:   %s%n", deliverables.getFiles());
-							String executable = Optional.ofNullable(compileJava.getOptions()
-								.getForkOptions()
-								.getExecutable())
-								.orElseGet(() -> compileJava.getJavaCompiler()
-									.map(javaCompiler -> IO.absolutePath(unwrapFile(javaCompiler.getExecutablePath())))
-									.getOrElse("javac"));
-							f.format("javac:                  %s%n", executable);
-							if (compileJava.getOptions()
-								.getRelease()
-								.isPresent()) {
-								f.format("--release:              %s%n", unwrap(compileJava.getOptions()
-									.getRelease()));
-							} else {
-								f.format("-source:                %s%n", compileJava.getSourceCompatibility());
-								f.format("-target:                %s%n", compileJava.getTargetCompatibility());
-							}
-							if (javacProfile.isPresent()) {
-								f.format("-profile:               %s%n", javacProfile.get());
-							}
-							System.out.print(f.toString());
 						}
-						checkErrors(tt.getLogger(), true);
+						f.format("project.deliverables:   %s%n", deliverables.getFiles());
+						String executable = Optional.ofNullable(compileJava.getOptions()
+							.getForkOptions()
+							.getExecutable())
+							.orElseGet(() -> compileJava.getJavaCompiler()
+								.map(javaCompiler -> IO.absolutePath(unwrapFile(javaCompiler.getExecutablePath())))
+								.getOrElse("javac"));
+						f.format("javac:                  %s%n", executable);
+						if (compileJava.getOptions()
+							.getRelease()
+							.isPresent()) {
+							f.format("--release:              %s%n", unwrap(compileJava.getOptions()
+								.getRelease()));
+						} else {
+							f.format("-source:                %s%n", compileJava.getSourceCompatibility());
+							f.format("-target:                %s%n", compileJava.getTargetCompatibility());
+						}
+						if (javacProfile.isPresent()) {
+							f.format("-profile:               %s%n", javacProfile.get());
+						}
+						System.out.print(f.toString());
 					}
-				});
+				}));
 			});
 
 			TaskProvider<Task> bndproperties = tasks.register("bndproperties", t -> {
 				t.setDescription("Displays the bnd properties.");
 				t.setGroup(HelpTasksPlugin.HELP_GROUP);
-				t.doLast("bndproperties", new Action<>() {
-					@Override
-					public void execute(Task tt) {
-						try (Formatter f = new Formatter()) {
-							f.format("------------------------------------------------------------%n");
-							f.format("Project %s // Bnd version %s%n", project.getName(), About.getBndVersion());
-							f.format("------------------------------------------------------------%n");
-							f.format("%n");
-							bndProject.getPropertyKeys(true)
-								.stream()
-								.sorted()
-								.forEachOrdered(key -> f.format("%s: %s%n", key, bndProject.getProperty(key, "")));
-							f.format("%n");
-							System.out.print(f.toString());
-						}
-						checkErrors(tt.getLogger(), true);
+				t.doLast("bndproperties", task(true, tt -> {
+					try (Formatter f = new Formatter()) {
+						f.format("------------------------------------------------------------%n");
+						f.format("Project %s // Bnd version %s%n", project.getName(), About.getBndVersion());
+						f.format("------------------------------------------------------------%n");
+						f.format("%n");
+						bndProject.getPropertyKeys(true)
+							.stream()
+							.sorted()
+							.forEachOrdered(key -> f.format("%s: %s%n", key, bndProject.getProperty(key, "")));
+						f.format("%n");
+						System.out.print(f.toString());
 					}
-				});
+				}));
 			});
 
 			// Depend upon an output dir to avoid parallel task execution.
@@ -974,6 +926,36 @@ public class BndPlugin implements Plugin<Project> {
 				bndProject.getIncluded());
 	}
 
+	private Action<Task> task(ConsumerWithException<Task> body) {
+		return task(false, body);
+	}
+
+	private Action<Task> task(boolean ignoreFailures, ConsumerWithException<Task> body) {
+		return tt -> {
+			Workspace workspace = bndProject.getWorkspace();
+			try {
+				workspace.readLocked(() -> {
+					body.accept(tt);
+					return null;
+				});
+			} catch (RuntimeException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new GradleException(String.format("Project %s failed to %s", bndProject.getName(), tt.getName()),
+					e);
+			} finally {
+				try {
+					workspace.writeLocked(() -> {
+						checkErrors(tt.getLogger(), ignoreFailures);
+						return null;
+					});
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+		};
+	}
+
 	private void checkErrors(Logger logger) {
 		checkProjectErrors(bndProject, logger, false);
 	}
@@ -1006,7 +988,8 @@ public class BndPlugin implements Plugin<Project> {
 	}
 
 	private Optional<String> optional(String value) {
-		return Optional.ofNullable(value).filter(Strings::notEmpty);
+		return Optional.ofNullable(value)
+			.filter(Strings::notEmpty);
 	}
 
 	private static Object getter(Object target, String name) {
