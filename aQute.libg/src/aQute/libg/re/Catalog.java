@@ -125,7 +125,7 @@ public class Catalog {
 						.append(re);
 					del = "|";
 				}
-				yield new Group(Group.Type.NONCAPTURING, sb.toString());
+				yield new Group(null, sb.toString(), Group.Type.NONCAPTURING, names(res));
 			}
 		};
 	}
@@ -910,6 +910,7 @@ public class Catalog {
 	final public static C	tab						= new Special("\t");
 	final public static RE	number					= some(digit);
 	public static C			hexdigit				= cc("0-9A-F");
+	public static C			bindigit				= cc("0-1");
 	public static RE		hexnumber				= some(hexdigit);
 	final public static C	minus					= new CharacterClass("-");
 	final public static C	dquote					= new CharacterClass("\"");
