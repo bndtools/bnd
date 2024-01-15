@@ -58,7 +58,7 @@ org.apache.felix:org.apache.felix.log:1.2.0
 org.apache.felix:org.apache.felix.framework:6.0.5
 org.apache.felix:org.apache.felix.framework:7.0.5
 org.apache.felix:org.apache.felix.gogo.command:1.0.2
-org.apache.felix:org.apache.felix.gogo.runtime:1.1.0
+org.apache.felix:org.apache.felix.gogo.runtime:1.1.6
 org.apache.felix:org.apache.felix.gogo.shell:1.1.0
 org.apache.felix:org.apache.felix.resolver:2.0.0
 org.apache.felix:org.apache.felix.scr:2.1.12

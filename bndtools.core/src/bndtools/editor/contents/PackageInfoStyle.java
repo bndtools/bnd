@@ -14,8 +14,8 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.osgi.framework.Version;
 
-import aQute.lib.io.IO;
 import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.io.IO;
 
 /**
  * Models the three available styles for versioning exported packages.
@@ -37,8 +37,12 @@ public enum PackageInfoStyle {
 	/**
 	 * Annotated package-info.java, using the OSGi spec annotations from R6.
 	 */
-	SpecAnnotation("package-info.java", "@org.osgi.annotation.versioning.Version(\"%s\")%npackage %s;%n",
-		"org.osgi.annotation.versioning.Version");
+	SpecAnnotation("package-info.java", """
+		@org.osgi.annotation.bundle.Export
+		@org.osgi.annotation.versioning.Version(\"%s\")
+		package %s;
+
+		""", "org.osgi.annotation.versioning.Version");
 
 	private static final ILogger		logger				= Logger.getLogger(PackageInfoStyle.class);
 
@@ -85,6 +89,10 @@ public enum PackageInfoStyle {
 		return null;
 	}
 
+	/*
+	 * we now just use the new style so we deprecated this.
+	 */
+	@Deprecated()
 	public static PackageInfoStyle calculatePackageInfoStyle(IProject project) {
 		IJavaProject javaProject = JavaCore.create(project);
 		if (javaProject == null)

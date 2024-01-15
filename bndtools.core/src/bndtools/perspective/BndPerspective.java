@@ -75,11 +75,12 @@ public class BndPerspective implements IPerspectiveFactory {
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWPROJECT);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWWORKSPACE);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBNDRUN);
-		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWWRAPPROJECT);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBND);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBLUEPRINT_XML);
+		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWPACKAGE_INFO);
 		layout.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.NewPackageCreationWizard"); //$NON-NLS-1$
 		layout.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.NewClassCreationWizard"); //$NON-NLS-1$
+		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWDSCOMPONENT);
 		layout.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.NewInterfaceCreationWizard"); //$NON-NLS-1$
 		layout.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.NewEnumCreationWizard"); //$NON-NLS-1$
 		layout.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.NewAnnotationCreationWizard"); //$NON-NLS-1$

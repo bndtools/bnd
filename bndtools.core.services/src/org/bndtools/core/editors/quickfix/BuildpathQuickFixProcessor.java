@@ -501,6 +501,8 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					}
 					case IProblem.UndefinedMethod : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						if (node == null)
+							continue;
 						ASTNode parent = node.getParent();
 						UNDEFINED_METHOD: while (parent != null) {
 							switch (parent.getNodeType()) {
