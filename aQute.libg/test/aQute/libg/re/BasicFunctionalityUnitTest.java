@@ -5,6 +5,7 @@ import static aQute.libg.re.Catalog.caseInsenstiveOff;
 import static aQute.libg.re.Catalog.g;
 import static aQute.libg.re.Catalog.lit;
 import static aQute.libg.re.Catalog.maybe;
+import static aQute.libg.re.Catalog.or;
 import static aQute.libg.re.Catalog.someAll;
 import static aQute.libg.re.Catalog.unicodeCase;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +16,17 @@ import org.junit.Test;
 
 
 public class BasicFunctionalityUnitTest {
+
+	@Test
+	public void testGroupNames() {
+		RE a = g("A", lit("a"));
+		RE b = g("B", lit("b"));
+		RE c = g("C", lit("c"));
+		RE re = g("top", or(a, b, c));
+
+		assertThat(re.getGroupNames()).contains("A", "B", "C", "top");
+	}
+
 	@Test
 	public void testSomething() {
 		assertThat(someAll.matches(null)).isNotPresent();
