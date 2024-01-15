@@ -44,6 +44,8 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.repository.maven.helpers.MavenRepoTestHelper;
+import aQute.bnd.repository.maven.pom.provider.PomRepositoryTest;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.maven.PomOptions;
@@ -619,23 +621,17 @@ public class MavenBndRepoTest {
 		assertTrue(file.isFile());
 	}
 
-	/*
-	 * Commons CLI 1.2 is in there as GAV & as BSN
+	/**
+	 * Commons CLI 1.2 is in there as GAV & as BSN Note: This test should be
+	 * kept in sync with {@link PomRepositoryTest#testGetViaBSNAndGAV()}
 	 */
 	@Test
 	public void testGetViaBSNAndGAV() throws Exception {
 		config(null);
 
-		assertEquals(1, repo.list("org.apache.commons.cli")
-			.size());
-		System.out.println(repo.list("org.apache.commons.cli"));
-		System.out.println(repo.versions("org.apache.commons.cli"));
-		File f12maven = repo.get("commons-cli:commons-cli", new Version("1.2.0"), null);
-		File f12osgi = repo.get("org.apache.commons.cli", new Version("1.2.0"), null);
-
-		assertEquals("commons-cli-1.2.jar", f12maven.getName());
-		assertEquals(f12maven, f12osgi);
+		MavenRepoTestHelper.assertMavenReposGetViaBSNAndGAV(repo);
 	}
+
 
 	@Test
 	public void testList() throws Exception {
