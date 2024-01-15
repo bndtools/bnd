@@ -2822,6 +2822,10 @@ public class bnd extends Processor {
 					});
 				}
 				Manifest m = in.getManifest();
+				if (m == null) {
+					warning("no manifest in %s", file);
+					continue;
+				}
 				for (Object header : m.getMainAttributes()
 					.keySet()) {
 					Attributes.Name name = (Name) header;
@@ -2848,6 +2852,8 @@ public class bnd extends Processor {
 						}
 					}
 				}
+			} catch (Exception e) {
+				error("faild to load file %s : %s", file, e);
 			}
 		}
 	}
