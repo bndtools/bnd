@@ -15,5 +15,8 @@ public final class PartConstants {
 	public static final String	WIZARD_ID_NEWWRAPPROJECT	= PREFIX + "newWrapProjWiz";
 	public static final String	WIZARD_ID_NEWBLUEPRINT_XML	= PREFIX + "newBlueprintXml";
 
+	public static final String	WIZARD_ID_NEWPACKAGE_INFO	= PREFIX + "newPackageInfo";
+	public static final String	WIZARD_ID_NEWDSCOMPONENT	= PREFIX + "newDsComponentWizard";
+
 	private PartConstants() {}
 }

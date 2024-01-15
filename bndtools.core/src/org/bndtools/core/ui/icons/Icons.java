@@ -20,9 +20,29 @@ import bndtools.Plugin;
 
 public final class Icons {
 
-	private static final String		ICONS_MISSING_GIF	= "icons/missing.gif";
-	private static ISharedImages	shared				= PlatformUI.getWorkbench()
-		.getSharedImages();
+	private static final String			ICONS_MISSING_GIF	= "icons/missing.gif";
+	private static final ISharedImages	shared;
+	static {
+		ISharedImages images;
+		try {
+			images = PlatformUI.getWorkbench()
+				.getSharedImages();
+		} catch (Throwable e) {
+			images = new ISharedImages() {
+				@Override
+				public Image getImage(String symbolicName) {
+					return null;
+				}
+
+				@Override
+				public ImageDescriptor getImageDescriptor(String symbolicName) {
+					return null;
+				}
+			};
+		}
+		shared = images;
+
+	}
 
 	private static class Key {
 		final String	name;

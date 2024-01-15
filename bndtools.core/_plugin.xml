@@ -102,12 +102,21 @@
 			icon="icons/blueprint.png" name="OSGi Blueprint Descriptor"
 			project="false">
 		</wizard>
+        <wizard id="bndtools.newPackageInfo"
+            category="bndtools.wizardCategory"
+            class="org.bndtools.core.ui.wizards.packge.NewPackageInfoWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/package_folder_impexp.gif" name="package-info.java"
+            project="false">
+        </wizard>
 		<wizard id="bndtools.newIndexWizard"
 			category="bndtools.wizardCategory"
 			class="org.bndtools.core.ui.wizards.index.NewIndexWizard"
 			icon="icons/repoindex.png" name="OSGi Repository Index"
 			project="false">
 		</wizard>
+		
 		<wizard name="OSGi Declarative Services Component"
 			icon="${icons.component}" category="bndtools.wizardCategory"
 			id="bndtools.newDsComponentWizard">

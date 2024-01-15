@@ -192,8 +192,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 				if (locations != null && locations.length > 0) {
 					IContainer container = locations[0];
 
-					PackageInfoStyle packageInfoStyle = PackageInfoStyle
-						.calculatePackageInfoStyle(container.getProject());
+					PackageInfoStyle packageInfoStyle = PackageInfoStyle.SpecAnnotation;
 					IFile pkgInfoFile = container.getFile(new Path(packageInfoStyle.getFileName()));
 
 					try {
