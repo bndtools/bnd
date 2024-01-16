@@ -176,7 +176,7 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 
 			ReferenceState rs = references.get(node);
 			if (rs == null) {
-				builder.build("comp.ref+", "Add @Reference to " + identifier, "component", 10, () -> {
+				builder.build("comp.ref+", "Add @Reference to " + identifier, "component", 0, () -> {
 					assistant.ensureAnnotation(withAnnotation, assistant.newAnnotation(REFERENCE_A));
 				});
 			} else {
@@ -190,7 +190,7 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 
 			MethodState act = activate.get(node);
 			if (act == null) {
-				builder.build("comp.act+", "Add @Activate to " + identifier, "component", 10, () -> {
+				builder.build("comp.act+", "Add @Activate to " + identifier, "component", 0, () -> {
 					if (node.isConstructor()) {
 						assistant.ensureModifiers(node, JavaModifier.PUBLIC);
 					}
@@ -199,7 +199,7 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 						.forEach(MethodState::remove);
 				});
 			} else {
-				builder.build("comp.act-", "Remove @Activate from " + identifier, "component", 3, act::remove);
+				builder.build("comp.act-", "Remove @Activate from " + identifier, "component", 0, act::remove);
 			}
 		}
 
@@ -208,13 +208,13 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 			String identifier = assistant.getIdentifier(node);
 			MethodState deact = deactivate.get(node);
 			if (deact == null) {
-				builder.build("comp.deact+", "Add @Deactivate to " + identifier, "component", 5, () -> {
+				builder.build("comp.deact+", "Add @Deactivate to " + identifier, "component", 0, () -> {
 					assistant.ensureAnnotation(node, assistant.newAnnotation(DEACTIVATE_A));
 					deactivate.values()
 						.forEach(MethodState::remove);
 				});
 			} else {
-				builder.build("comp.deact-", "Remove @Deactivate from " + identifier, "component", 3, deact::remove);
+				builder.build("comp.deact-", "Remove @Deactivate from " + identifier, "component", 0, deact::remove);
 			}
 		}
 
@@ -227,6 +227,9 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 		root.isJavaSourceType(JavaSourceType.CLASS)
 			.upTo(TypeDeclaration.class)
 			.forEach((ass, typeDeclaration) -> {
+				int relevance = root.getNode()
+					.map(selected -> 2 - ass.getDistance(selected, typeDeclaration, 1000))
+					.orElse(-1);
 				if (ass.hasAnnotation(typeDeclaration, COMPONENT_A)) {
 					ComponentState cs = new ComponentState(ass.cursor(typeDeclaration), builder);
 
@@ -260,7 +263,7 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 						.forEach((x, md) -> cs.proposeDeactivate(md));
 
 				} else {
-					builder.build("comp+", "Add @Component", "component", 7,
+					builder.build("comp+", "Add @Component", "component", relevance,
 						() -> ass.ensureAnnotation(typeDeclaration, ass.newAnnotation(COMPONENT_A)));
 				}
 			});

@@ -10,13 +10,13 @@ import aQute.lib.collections.ExtList;
 
 class DiverseRefactorerTest {
 
-	public static String	none_before	= """
+	public static String	none_before				= """
 		class Foo {
 		  Foo(  int x){
 		  }
 		}
 		""";
-	public static String	one_after		= """
+	public static String	one_after				= """
 		class Foo {
 		  final int x;
 		  Foo(  int x){
@@ -25,14 +25,14 @@ class DiverseRefactorerTest {
 		}
 		""";
 
-	public static String	one_before	= """
+	public static String	one_before				= """
 		class Foo {
 		  final double d;
 		  Foo(  int x){
 		  }
 		}
 		""";
-	public static String	two_after	= """
+	public static String	two_after				= """
 		class Foo {
 		  final double d;
 		  final int x;
@@ -58,6 +58,39 @@ class DiverseRefactorerTest {
 		  }
 		}
 		""";
+	public static String	super_before			= """
+		class Foo {
+		  Foo(  int x){
+		    super(x);
+		  }
+		}
+		""";
+	public static String	super_after				= """
+		class Foo {
+		  final int x;
+		  Foo(  int x){
+		    super(x);
+		    this.x=x;
+		  }
+		}
+		""";
+
+	public static String	this_before				= """
+		class Foo {
+		  Foo(  int x){
+		    super(x);
+		  }
+		}
+		""";
+	public static String	this_after				= """
+		class Foo {
+		  final int x;
+		  Foo(  int x){
+		    super(x);
+		    this.x=x;
+		  }
+		}
+		""";
 
 	@ParameterizedTest
 	@MethodSource("scenarios")
@@ -70,9 +103,11 @@ class DiverseRefactorerTest {
 		return new ExtList<>(
 		//@formatter:off
 
-			new Scenario(duplicate_name_before, duplicate_name_after, "int ()x\\)", "div.constr.final"),
-			new Scenario(none_before, one_after, "int ()x"             	       , "div.constr.final"),
-			new Scenario(one_before, two_after, "int ()x"             	       , "div.constr.final")
+			new Scenario(duplicate_name_before, duplicate_name_after, "int ()x\\)"	, "div.constr.final"),
+			new Scenario(none_before, one_after, "int ()x"             	       		, "div.constr.final"),
+			new Scenario(one_before, two_after, "int ()x"             	       		, "div.constr.final"),
+			new Scenario(super_before, super_after, "int ()x"             	       	, "div.constr.final"),
+			new Scenario(this_before, this_after, "int ()x"             	       	, "div.constr.final")
 
     	//@formatter:on
 		);

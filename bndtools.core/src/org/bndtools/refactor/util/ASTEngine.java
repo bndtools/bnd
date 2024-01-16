@@ -221,7 +221,6 @@ public class ASTEngine {
 	public <T extends ASTNode> void insertAfter(T before, T value) {
 		assert before != null;
 		assert value != null;
-		assert before.getClass() == value.getClass();
 
 		ASTNode parent = before.getParent();
 		assert parent != null;

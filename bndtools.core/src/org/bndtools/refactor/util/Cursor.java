@@ -331,5 +331,4 @@ public interface Cursor<T extends ASTNode> {
 	 */
 	boolean isEmpty();
 
-
 }
