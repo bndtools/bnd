@@ -931,26 +931,29 @@ public class BndPlugin implements Plugin<Project> {
 	}
 
 	private Action<Task> task(boolean ignoreFailures, ConsumerWithException<Task> body) {
-		return tt -> {
-			Workspace workspace = bndProject.getWorkspace();
-			try {
-				workspace.readLocked(() -> {
-					body.accept(tt);
-					return null;
-				});
-			} catch (RuntimeException e) {
-				throw e;
-			} catch (Exception e) {
-				throw new GradleException(String.format("Project %s failed to %s", bndProject.getName(), tt.getName()),
-					e);
-			} finally {
+		return new Action<Task>() {
+			@Override
+			public void execute(Task tt) {
+				Workspace workspace = bndProject.getWorkspace();
 				try {
-					workspace.writeLocked(() -> {
-						checkErrors(tt.getLogger(), ignoreFailures);
+					workspace.readLocked(() -> {
+						body.accept(tt);
 						return null;
 					});
+				} catch (RuntimeException e) {
+					throw e;
 				} catch (Exception e) {
-					// ignore
+					throw new GradleException(
+						String.format("Project %s failed to %s", bndProject.getName(), tt.getName()), e);
+				} finally {
+					try {
+						workspace.writeLocked(() -> {
+							checkErrors(tt.getLogger(), ignoreFailures);
+							return null;
+						});
+					} catch (Exception e) {
+						// ignore
+					}
 				}
 			}
 		};
