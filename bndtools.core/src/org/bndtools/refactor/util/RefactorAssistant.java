@@ -1082,6 +1082,7 @@ public class RefactorAssistant {
 		});
 		this.source = source;
 		this.iunit = null;
+		init();
 	}
 
 	public void add(ASTNode parent, Annotation newAnnotation) {
