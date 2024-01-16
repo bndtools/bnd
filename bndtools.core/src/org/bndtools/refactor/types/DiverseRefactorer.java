@@ -1,6 +1,7 @@
 package org.bndtools.refactor.types;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.bndtools.refactor.util.BaseRefactorer;
@@ -10,11 +11,15 @@ import org.bndtools.refactor.util.ProposalBuilder;
 import org.bndtools.refactor.util.RefactorAssistant;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IQuickFixProcessor;
@@ -71,7 +76,14 @@ public class DiverseRefactorer extends BaseRefactorer implements IQuickFixProces
 			FieldDeclaration lastDeclaration = list.get(list.size() - 1);
 			ass.insertAfter(lastDeclaration, newField);
 		}
-		ass.insert(md.getBody(), ExpressionStatement.class, es);
+		Block body = md.getBody();
+		Optional<Statement> l = ass.stream(body, Statement.class)
+			.filter(node -> node instanceof SuperConstructorInvocation || node instanceof ConstructorInvocation)
+			.findAny();
+		if (l.isPresent()) {
+			ass.insertAfter(l.get(), es);
+		} else
+			ass.insert(md.getBody(), ExpressionStatement.class, es);
 	}
 
 }

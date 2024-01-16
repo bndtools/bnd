@@ -746,6 +746,7 @@ public class RefactorAssistant {
 		public <X extends ASTNode> Cursor<X> upTo(Class<X> class1, int n) {
 			return (Cursor<X>) this;
 		}
+
 	}
 
 	class TypeGatherer extends ASTVisitor {
@@ -2503,6 +2504,18 @@ public class RefactorAssistant {
 			.map(vdf -> vdf.getName()
 				.getIdentifier())
 			.collect(Collectors.toSet());
+	}
+
+	public int getDistance(ASTNode selected, ASTNode ancestor, int deflt) {
+		int count = 0;
+		ASTNode rover = selected;
+		while (rover != null) {
+			if (rover == ancestor)
+				return count;
+			count++;
+			rover = rover.getParent();
+		}
+		return deflt;
 	}
 
 }
