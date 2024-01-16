@@ -19,153 +19,171 @@ class ComponentRefactorerTest {
 
 	static List<Scenario> scenarios() {
 		String empty = """
+			import com.example.Foo;
+			import com.example.Bar;
 			class F {
-			  String ref;
+			  Foo ref;
 			  F(  String service){
 			  }
 			  void activate(){
 			  }
 			  void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String emptyPublic = """
+			import com.example.Foo;
+			import com.example.Bar;
 			class F {
-			  String ref;
+			  Foo ref;
 			  public F(  String service){
 			  }
 			  void activate(){
 			  }
 			  void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String C = """
+			import com.example.Foo;
+			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
 			@Component class F {
-			  String ref;
+			  Foo ref;
 			  F(  String service){
 			  }
 			  void activate(){
 			  }
 			  void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String Cpublic = """
+			import com.example.Foo;
+			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
 			@Component class F {
-			  String ref;
+			  Foo ref;
 			  public F(  String service){
 			  }
 			  void activate(){
 			  }
 			  void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String CAc = """
+			import com.example.Foo;
+			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
 			import org.osgi.service.component.annotations.Activate;
 			@Component class F {
-			  String ref;
+			  Foo ref;
 			  @Activate public F(  String service){
 			  }
 			  void activate(){
 			  }
 			  void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String CAcRp = """
+			import com.example.Foo;
+			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
 			import org.osgi.service.component.annotations.Activate;
 			import org.osgi.service.component.annotations.Reference;
 			@Component class F {
-			  String ref;
+			  Foo ref;
 			  @Activate public F(  @Reference String service){
 			  }
 			  void activate(){
 			  }
 			  void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String CAm = """
+			import com.example.Foo;
+			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
 			import org.osgi.service.component.annotations.Activate;
 			@Component class F {
-			  String ref;
+			  Foo ref;
 			  public F(  String service){
 			  }
 			  @Activate void activate(){
 			  }
 			  void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String CAmDm = """
+			import com.example.Foo;
+			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
 			import org.osgi.service.component.annotations.Activate;
 			import org.osgi.service.component.annotations.Deactivate;
 			@Component class F {
-			  String ref;
+			  Foo ref;
 			  public F(  String service){
 			  }
 			  @Activate void activate(){
 			  }
 			  @Deactivate void deactivate(){
 			  }
-			  void setService(  String service){
+			  void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
 		String CAmDmRm = """
+			import com.example.Foo;
+			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
 			import org.osgi.service.component.annotations.Activate;
 			import org.osgi.service.component.annotations.Deactivate;
 			import org.osgi.service.component.annotations.Reference;
 			@Component class F {
-			  String ref;
+			  Foo ref;
 			  public F(  String service){
 			  }
 			  @Activate void activate(){
 			  }
 			  @Deactivate void deactivate(){
 			  }
-			  @Reference void setService(  String service){
+			  @Reference void setService(  Bar service){
 			  }
-			  void unsetService(  String service){
+			  void unsetService(  Bar service){
 			  }
 			}
 			""";
