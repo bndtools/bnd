@@ -78,7 +78,7 @@ class DiverseRefactorerTest {
 	public static String	this_before				= """
 		class Foo {
 		  Foo(  int x){
-		    super(x);
+		    this(x);
 		  }
 		}
 		""";
@@ -86,7 +86,7 @@ class DiverseRefactorerTest {
 		class Foo {
 		  final int x;
 		  Foo(  int x){
-		    super(x);
+		    this(x);
 		    this.x=x;
 		  }
 		}

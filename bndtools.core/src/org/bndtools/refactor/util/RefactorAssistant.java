@@ -1014,6 +1014,7 @@ public class RefactorAssistant {
 		engine = Memoize.supplier(() -> new ASTEngine(unit));
 		source = iunit == null ? null : iunit.getSource();
 		this.iunit = iunit;
+		init();
 	}
 
 	/**
@@ -1039,6 +1040,7 @@ public class RefactorAssistant {
 		});
 		this.iunit = iunit;
 		this.source = iunit.getSource();
+		init();
 	}
 
 	/**

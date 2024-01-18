@@ -33,21 +33,21 @@ import aQute.libg.re.RE;
 @Component
 public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProcessor {
 
-	public final RE				BIND_METHOD_P		= g(g("prefix", or("add", "set")), g("service", setAll));
-	public final RE				UNBIND_METHOD_P		= g(g("prefix", or("remove", "unset")), g("service", setAll));
-	public final RE				ACTIVATE_METHOD_P	= g(or("activate", "start", "init", "initialize", "onActivate",
+	public static final RE			BIND_METHOD_P		= g(g("prefix", or("add", "set")), g("service", setAll));
+	public static final RE			UNBIND_METHOD_P		= g(g("prefix", or("remove", "unset")), g("service", setAll));
+	public static final RE			ACTIVATE_METHOD_P	= g(or("activate", "start", "init", "initialize", "onActivate",
 		"onStart", "begin", "doActivate", "create", "setup", "ready", "load"), setAll);
-	public final RE				DEACTIVATE_METHOD_P	= g(or("deactivate", "stop", "close", "finish", "dispose",
+	public static final RE			DEACTIVATE_METHOD_P	= g(or("deactivate", "stop", "close", "finish", "dispose",
 		"shutdown", "onDeactivate", "onStop", "end", "doDeactivate", "release", "teardown", "cleanup"), setAll);
-	public final String			COMPONENT_A			= "org.osgi.service.component.annotations.Component";
-	public final String			REFERENCE_A			= "org.osgi.service.component.annotations.Reference";
-	public final String			ACTIVATE_A			= "org.osgi.service.component.annotations.Activate";
-	public final String			DEACTIVATE_A		= "org.osgi.service.component.annotations.Deactivate";
-	public final String			BUNDLECONTEXT_T		= "org.osgi.framework.BundleContext";
-	public final String			SERVICEREFERENCE_T	= "org.osgi.framework.ServiceReference";
-	public final String			MAP_T				= "java.util.Map";
-	public final Set<String>	NOT_REFERENCE		= Set.of(BUNDLECONTEXT_T, SERVICEREFERENCE_T, MAP_T);
-	public final static int		BASE_LEVEL			= 2000;
+	public static final String		COMPONENT_A			= "org.osgi.service.component.annotations.Component";
+	public static final String		REFERENCE_A			= "org.osgi.service.component.annotations.Reference";
+	public static final String		ACTIVATE_A			= "org.osgi.service.component.annotations.Activate";
+	public static final String		DEACTIVATE_A		= "org.osgi.service.component.annotations.Deactivate";
+	public static final String		BUNDLECONTEXT_T		= "org.osgi.framework.BundleContext";
+	public static final String		SERVICEREFERENCE_T	= "org.osgi.framework.ServiceReference";
+	public static final String		MAP_T				= "java.util.Map";
+	public static final Set<String>	NOT_REFERENCE		= Set.of(BUNDLECONTEXT_T, SERVICEREFERENCE_T, MAP_T);
+	public static final int			BASE_LEVEL			= 2000;
 
 	class MethodState extends DomainBase<MethodDeclaration> {
 		final String annotation;
@@ -227,13 +227,15 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 		root.isJavaSourceType(JavaSourceType.CLASS)
 			.upTo(TypeDeclaration.class)
 			.forEach((ass, typeDeclaration) -> {
+
 				int relevance = root.getNode()
 					.map(selected -> 2 - ass.getDistance(selected, typeDeclaration, 1000))
 					.orElse(-1);
+
 				if (ass.hasAnnotation(typeDeclaration, COMPONENT_A)) {
 					ComponentState cs = new ComponentState(ass.cursor(typeDeclaration), builder);
-
-					builder.build("comp-", "Remove @Component", "component", 3, cs::remove);
+					if (relevance >= 1)
+						builder.build("comp-", "Remove @Component", "component", 3, cs::remove);
 
 					root.upTo(VariableDeclarationFragment.class)
 						.isNotPrimitive()
@@ -263,8 +265,9 @@ public class ComponentRefactorer extends BaseRefactorer implements IQuickFixProc
 						.forEach((x, md) -> cs.proposeDeactivate(md));
 
 				} else {
-					builder.build("comp+", "Add @Component", "component", relevance,
-						() -> ass.ensureAnnotation(typeDeclaration, ass.newAnnotation(COMPONENT_A)));
+					if (relevance >= 1)
+						builder.build("comp+", "Add @Component", "component", relevance,
+							() -> ass.ensureAnnotation(typeDeclaration, ass.newAnnotation(COMPONENT_A)));
 				}
 			});
 	}

@@ -191,8 +191,8 @@ class ComponentRefactorerTest {
 		//@formatter:off
 
 			new Scenario(CAc, Cpublic, "F\\(" 	            	    	, "comp.act-"),
-			new Scenario(empty, C, "ref"             	       			, "comp+"),
-			new Scenario(C, empty, "ref"             	       			, "comp-"),
+			new Scenario(empty, C, "class F"             	       			, "comp+"),
+			new Scenario(C, empty, "class F"             	       			, "comp-"),
 			new Scenario(C, CAc, "String service"             	       	, "comp.act+"),
 			new Scenario(CAc, CAm, "activate" 	            	       	, "comp.act+"),
 			new Scenario(CAc, CAcRp, "String service"             	    , "comp.ref+"),
@@ -200,7 +200,7 @@ class ComponentRefactorerTest {
 			new Scenario(CAm, CAmDm, "deactivate"             	    	, "comp.deact+"),
 			new Scenario(CAmDm, CAm, "deactivate"             	    	, "comp.deact-"),
 			new Scenario(CAmDm, CAmDmRm, "setService"             	    , "comp.ref+"),
-			new Scenario(CAmDmRm, emptyPublic, "setService"           	, "comp-")
+			new Scenario(CAmDmRm, emptyPublic, "F \\{"           	, "comp-")
 
     	//@formatter:on
 		);
