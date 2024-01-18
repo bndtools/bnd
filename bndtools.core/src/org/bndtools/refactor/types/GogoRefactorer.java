@@ -270,17 +270,21 @@ public class GogoRefactorer extends BaseRefactorer implements IQuickFixProcessor
 	public void addCompletions(ProposalBuilder builder, RefactorAssistant assistant, Cursor<?> root,
 		IInvocationContext context) {
 
+
 		root = root.isJavaSourceType(JavaSourceType.CLASS);
 
 		GogoState state = root.upTo(TypeDeclaration.class)
+			.anyOfTheseAnnotations(ComponentRefactorer.COMPONENT_A)
 			.processSingletons(GogoState::new)
 			.stream()
 			.findAny()
 			.orElse(null);
 
 		if (state != null) {
-
-			doScope(builder, state);
+			root.upTo(TypeDeclaration.class, 1)
+				.forEach((ass, n) -> {
+					doScope(builder, state);
+				});
 			if (state.isPresent()) {
 				root.upTo(SingleVariableDeclaration.class, 4)
 					.parentType(MethodDeclaration.class)
