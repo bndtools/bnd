@@ -224,6 +224,12 @@
 			icon="icons/database.png" id="bndtools.repositoriesView"
 			name="Repositories" restorable="true">
 		</view>
+        <view category="bndtools.viewCategory"
+	        name="OpenAI"
+	        icon="icons/openai.png"
+	        class="org.bndtools.refactor.ai.OpenAIView"
+	        id="bndtools.openAIView">
+ 	    </view>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
 		<command id="bndtools.core.removeRepoResource"

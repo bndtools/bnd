@@ -562,6 +562,7 @@ public class RefactorAssistant {
 			else
 				return new CursorImpl<>(result, start, length);
 		}
+
 	}
 
 	class FailedCursor<C extends ASTNode> implements Cursor<C> {
@@ -986,11 +987,11 @@ public class RefactorAssistant {
 		return Object.class;
 	}
 
-	final Memoize<ASTEngine>			engine;
-	final Map<String, String>			imports		= new LinkedHashMap<>();
-	final @Nullable ICompilationUnit	iunit;
-	final Set<String>					onDemand	= new HashSet<>();
-	final String						source;
+	final Memoize<ASTEngine>				engine;
+	final Map<String, ImportDeclaration>	imports	= new LinkedHashMap<>();
+	final Set<ImportDeclaration>			added	= new LinkedHashSet<>();
+	final @Nullable ICompilationUnit		iunit;
+	final String							source;
 
 	/**
 	 * Create an assistant when there is only a CompilationUnit
@@ -1316,12 +1317,14 @@ public class RefactorAssistant {
 	 */
 	public void fixup() {
 		Set<String> referred = getReferredTypes(unit());
-		for (ImportDeclaration import_ : getImports()) {
-			String name = import_.getName()
-				.toString();
-			if (!referred.contains(name))
-				delete(import_);
-		}
+		imports.forEach((k, v) -> {
+			if (!k.startsWith(".") && !added.contains(v)) {
+				String fqn = v.getName()
+					.getFullyQualifiedName();
+				if (!referred.contains(fqn))
+					delete(v);
+			}
+		});
 	}
 
 	/**
@@ -1748,9 +1751,12 @@ public class RefactorAssistant {
 		QualifiedName qualifiedName = ast().newQualifiedName(qualifier, simpleName);
 		simpleName = ast().newSimpleName(parts[1]);
 
-		String imported = imports.get(parts[1]);
+		ImportDeclaration imported = imports.get(parts[1]);
 		if (imported != null) {
-			if (name.equals(imported))
+			String fqn = imported.getName()
+				.getFullyQualifiedName();
+
+			if (name.equals(fqn))
 				return simpleName;
 
 			return qualifiedName;
@@ -1759,8 +1765,8 @@ public class RefactorAssistant {
 		ImportDeclaration newImportDeclaration = ast().newImportDeclaration();
 		newImportDeclaration.setName(qualifiedName);
 		engine().insertLast(unit(), ImportDeclaration.class, newImportDeclaration);
-		imports.put(parts[1], name);
-
+		added.add(newImportDeclaration);
+		imports.put(toImportKey(qualifiedName, false, false), newImportDeclaration);
 		return simpleName;
 	}
 
@@ -1941,11 +1947,12 @@ public class RefactorAssistant {
 		int aN = aName[0] == null ? 0 : 1;
 
 		Function<T, String> identity = getIdentity(type);
+
 		return left -> {
 			String b = identity.apply(left);
 			String[] bName = splitName(b);
 
-			if (!bName[1].equals(aName[1]))
+			if (!bName[1].equals(aName[1])) // simple name
 				return false;
 
 			int bN = bName[0] == null ? 0 : 2;
@@ -1959,12 +1966,12 @@ public class RefactorAssistant {
 				 * a=foo.X and b=X
 				 */
 				case 1 -> resolve(b).map(bFqn -> bFqn.equals(a))
-					.orElseGet(() -> onDemand.contains(aName[0]));
+					.orElseGet(() -> imports.containsKey(".D_" + aName[0]));
 				/*
 				 * a=X and b=foo.X
 				 */
 				case 2 -> resolve(a).map(aFqn -> aFqn.equals(b))
-					.orElseGet(() -> onDemand.contains(bName[0]));
+					.orElseGet(() -> imports.containsKey(".D_" + bName[0]));
 				/*
 				 * a=foo.X and b= bar.X
 				 */
@@ -2315,8 +2322,13 @@ public class RefactorAssistant {
 
 	public Optional<String> resolve(String t) {
 		init();
-		String resolved = imports.get(t);
-		return Optional.ofNullable(resolved);
+		ImportDeclaration resolved = imports.get(t);
+		if (resolved == null || resolved.isOnDemand() || resolved.isStatic())
+			return Optional.empty();
+
+		String fullyQualifiedName = resolved.getName()
+			.getFullyQualifiedName();
+		return Optional.ofNullable(fullyQualifiedName);
 	}
 
 	public Optional<String> resolve(Type type) {
@@ -2325,22 +2337,25 @@ public class RefactorAssistant {
 			return Optional.of(resolveBinding.getQualifiedName());
 		}
 
-		init();
 		if (type instanceof PrimitiveType pt) {
 			return Optional.of(pt.getPrimitiveTypeCode()
 				.toString());
 		}
+
 		String resolve = null;
 		if (type instanceof SimpleType st) {
 			Name name = st.getName();
 			if (name instanceof SimpleName sn) {
 				resolve = sn.getIdentifier();
-				String resolved = imports.get(resolve);
+				ImportDeclaration resolved = imports.get(resolve);
 				if (resolved == null) {
 					if (javalang.contains(resolve))
 						return Optional.of("java.lang." + resolve);
+					return Optional.empty();
+				} else {
+					return Optional.ofNullable(resolved.getName()
+						.getFullyQualifiedName());
 				}
-				return Optional.ofNullable(resolved);
 			} else if (name instanceof QualifiedName qn) {
 				return Optional.of(qn.getFullyQualifiedName());
 			}
@@ -2356,11 +2371,12 @@ public class RefactorAssistant {
 		} else if (type instanceof NameQualifiedType nt) {
 			SimpleName name = nt.getName();
 			resolve = name.getIdentifier();
-			String resolved = imports.get(resolve);
+			ImportDeclaration resolved = imports.get(resolve);
 			if (resolved == null) {
-
-			}
-			return Optional.ofNullable(resolved);
+				return Optional.empty();
+			} else
+				return Optional.of(resolved.getName()
+					.getFullyQualifiedName());
 		} else if (type instanceof WildcardType wt) {
 			return resolve(wt.getBound());
 		} else if (type instanceof IntersectionType it) {
@@ -2395,19 +2411,38 @@ public class RefactorAssistant {
 	}
 
 	private void init() {
+		int onDemand = 1000;
 		if (imports.isEmpty()) {
 			for (ImportDeclaration id : getImports()) {
-				Name name = id.getName();
-				String fqn = name.getFullyQualifiedName();
-				if (!id.isOnDemand()) {
-					String simple = toSimple(fqn);
-					String old = imports.put(simple, fqn);
-					assert old == null;
-				} else {
-					onDemand.add(fqn);
-				}
+				String importKey = toImportKey(id.getName(), id.isStatic(), id.isOnDemand());
+				imports.put(importKey, id);
 			}
 		}
+	}
+
+	/**
+	 * <ul>
+	 * <li>For a regular on-demand import, this is the name of a package.
+	 * <li>For a static on-demand import, this is the qualified name of a type.
+	 * <li>For a regular single-type import, this is the qualified name of a
+	 * type.
+	 * <li>For a static single-type import, this is the qualified name of a
+	 * static member of a type.
+	 * </ul>
+	 */
+
+	private String toImportKey(Name name, boolean static1, boolean onDemand2) {
+		int n = static1 ? 1 : 0;
+		n += onDemand2 ? 2 : 0;
+		return switch (n) {
+			case 0 -> ((QualifiedName) name).getName()
+				.getIdentifier();
+			case 1 -> ".S_" + ((QualifiedName) name).getName()
+				.getIdentifier();
+			case 2 -> ".D_" + name.getFullyQualifiedName();
+			case 3 -> ".SD_" + name.getFullyQualifiedName();
+			default -> throw new IllegalArgumentException("Unexpected value: " + n);
+		};
 	}
 
 	private Annotation newAnnotation0(String annName, Entry... entries) {
@@ -2480,11 +2515,6 @@ public class RefactorAssistant {
 				null, fqn
 			};
 		}
-	}
-
-	private String toSimple(String fqn) {
-		int n = fqn.lastIndexOf('.');
-		return fqn.substring(n + 1);
 	}
 
 	private CompilationUnit unit() {
