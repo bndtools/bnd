@@ -110,7 +110,7 @@ public class LiteralRefactorer extends BaseRefactorer implements IQuickFixProces
 		RefactorAssistant assistant = builder.getAssistant();
 		String content = textBlock.getLiteralValue();
 
-		builder.build("lit.blck.strn", "Convert to string", null, 0, () -> {
+		builder.build("lit.blck.strn", "Convert to string", "block-to-string", 0, () -> {
 			assistant.replace(textBlock, assistant.newStringLiteral(content));
 		});
 
@@ -142,7 +142,7 @@ public class LiteralRefactorer extends BaseRefactorer implements IQuickFixProces
 		RefactorAssistant assistant = builder.getAssistant();
 
 		String content = stringLiteral.getLiteralValue();
-		builder.build("lit.strn.blck", "Convert to text block", null, 0, () -> {
+		builder.build("lit.strn.blck", "Convert to text block", "string-to-block", 0, () -> {
 			assistant.replace(stringLiteral, assistant.newTextBlock(content));
 		});
 

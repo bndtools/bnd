@@ -19,6 +19,8 @@ class ComponentRefactorerTest {
 
 	static List<Scenario> scenarios() {
 		String empty = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			class F {
@@ -36,6 +38,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String emptyPublic = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			class F {
@@ -53,6 +57,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String C = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
@@ -71,6 +77,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String Cpublic = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
@@ -89,6 +97,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String CAc = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
@@ -108,6 +118,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String CAcRp = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
@@ -128,6 +140,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String CAm = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
@@ -147,6 +161,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String CAmDm = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
@@ -167,6 +183,8 @@ class ComponentRefactorerTest {
 			}
 			""";
 		String CAmDmRm = """
+			import static com.example.Static.*;
+			import static com.example.Static.abc;
 			import com.example.Foo;
 			import com.example.Bar;
 			import org.osgi.service.component.annotations.Component;
