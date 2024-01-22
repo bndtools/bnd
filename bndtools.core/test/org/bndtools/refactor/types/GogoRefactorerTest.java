@@ -10,6 +10,7 @@ import org.bndtools.refactor.util.ProposalBuilder.Proposal;
 import org.bndtools.refactor.util.RefactorAssistant;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -163,5 +164,12 @@ class GogoRefactorerTest {
 
     	//@formatter:on
 		);
+	}
+
+	@Test
+	public void testScrunch() {
+		assertThat(GogoRefactorer.scrunch("TestRefactors")).isEqualTo("tstrfctr");
+		assertThat(GogoRefactorer.scrunch("foobarffoo")).isEqualTo("foobarff");
+
 	}
 }

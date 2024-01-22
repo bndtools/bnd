@@ -188,24 +188,6 @@ public class GogoRefactorer extends BaseRefactorer implements IQuickFixProcessor
 			});
 		}
 
-		private String scrunch(String string) {
-			String s = string.toLowerCase();
-			if (s.length() < 8)
-				return s;
-
-			StringBuilder result = new StringBuilder(s);
-			for (int i = result.length() - 1; i >= 0 && result.length() > 8; i--) {
-				char c = result.charAt(i);
-				if (!Character.isAlphabetic(c) || "aeiou".indexOf(c) >= 0) {
-					result.delete(i, 1);
-				}
-			}
-			if (result.length() > 8) {
-				result.delete(8, result.length());
-			}
-			return result.toString();
-		}
-
 		String[] calculateNames(String name) {
 			if (name.length() < 1)
 				return new String[0];
@@ -371,6 +353,24 @@ public class GogoRefactorer extends BaseRefactorer implements IQuickFixProcessor
 		else
 			builder.build("gogo.cmd.desc+", "Add Gogo command", "gogo", 0,
 				() -> state.add(new Command(methodDeclaration)));
+	}
+
+	static public String scrunch(String string) {
+		String s = string.toLowerCase();
+		if (s.length() < 8)
+			return s;
+
+		StringBuilder result = new StringBuilder(s);
+		for (int i = result.length() - 1; i >= 0 && result.length() > 8; i--) {
+			char c = result.charAt(i);
+			if (!Character.isAlphabetic(c) || "aeiou".indexOf(c) >= 0) {
+				result.delete(i, i + 1);
+			}
+		}
+		if (result.length() > 8) {
+			result.delete(8, result.length());
+		}
+		return result.toString();
 	}
 
 }
