@@ -27,6 +27,7 @@ import org.eclipse.core.filesystem.provider.FileInfo;
 import org.eclipse.core.filesystem.provider.FileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
 import org.eclipse.core.internal.filesystem.NullFileStore;
+import org.eclipse.core.internal.filesystem.NullFileSystem;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -54,7 +55,8 @@ import aQute.libg.uri.URIUtil;
  */
 public class JarFileSystem extends FileSystem {
 	private static final ILogger									logger		= Logger.getLogger(JarFileSystem.class);
-
+	@SuppressWarnings("unused")
+	private static final NullFileSystem								INIT		= new NullFileSystem();
 	private static final String										SCHEME_JARF	= "jarf";
 	private final ConcurrentMap<IFileStore, Reference<JarRootNode>>	roots		= new ConcurrentHashMap<>();
 
@@ -98,6 +100,7 @@ public class JarFileSystem extends FileSystem {
 
 		@Override
 		public IFileStore getChild(String name) {
+			new NullFileSystem();
 			return new NullFileStore(new Path(getPath()).append(name));
 		}
 
