@@ -149,7 +149,6 @@ public class MessageReporter {
 			}
 		}
 
-
 	}
 
 	class Cache {
@@ -200,17 +199,25 @@ public class MessageReporter {
 			}
 			String s = Processor.formatArrays(format, args);
 			Message m = new Message(counter.getAndIncrement(), s, true);
-			messages.putIfAbsent(s, m);
+			putMessage(s, m);
 			return m;
 		} finally {
 			processor().signal();
 		}
 	}
 
+	void putMessage(String s, Message m) {
+		ConcurrentHashMap<String, Message> current;
+		do {
+			current = messages;
+			current.putIfAbsent(s, m);
+		} while (current != messages);
+	}
+
 	SetLocation warning(String format, Object... args) {
 		String s = Processor.formatArrays(format, args);
 		Message m = new Message(counter.getAndIncrement(), s, false);
-		messages.putIfAbsent(s, m);
+		putMessage(s, m);
 		return m;
 	}
 
@@ -239,7 +246,7 @@ public class MessageReporter {
 			.sorted()
 			.map(m -> new Message(counter.getAndIncrement(), m, actualPrefix))
 			.forEach(m -> {
-				messages.putIfAbsent(m.message, m);
+				putMessage(m.message, m);
 			});
 	}
 
