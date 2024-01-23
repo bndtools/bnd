@@ -1276,7 +1276,7 @@ public class MacroTest {
 	@Test
 	public void testSuper() {
 		try (Processor top = new Processor();
-		Processor middle = new Processor(top);
+			Processor middle = new Processor(top);
 			Processor bottom = new Processor(middle)) {
 
 			top.setProperty("a", "top.a");
@@ -1770,35 +1770,13 @@ public class MacroTest {
 			p.setProperty("real", "true");
 			Macro m = new Macro(p);
 
-			m.process("    ${warning;xw;1;2;3 ${three}}");
-			m.process("    ${error;xe;1;2;3 ${three}}");
+			m.process("    ${warning;xw;w1;w2;w3 w${three}}");
+			m.process("    ${error;xe;e1;e2;e3 e${three}}");
 			m.process("    ${if;1;$<a>}");
 
-			assertTrue(p.getWarnings()
-				.get(0)
-				.endsWith("xw"), "xw");
-			assertTrue(p.getWarnings()
-				.get(1)
-				.endsWith("1"), "1");
-			assertTrue(p.getWarnings()
-				.get(2)
-				.endsWith("2"), "2");
-			assertTrue(p.getWarnings()
-				.get(3)
-				.endsWith("3 333"), "3 333");
-
-			assertTrue(p.getErrors()
-				.get(0)
-				.endsWith("xe"), "xw");
-			assertTrue(p.getErrors()
-				.get(1)
-				.endsWith("1"), "1");
-			assertTrue(p.getErrors()
-				.get(2)
-				.endsWith("2"), "2");
-			assertTrue(p.getErrors()
-				.get(3)
-				.endsWith("3 333"), "3 333");
+			assertThat(p.getWarnings()).containsExactly("xw", "w1", "w2", "w3 w333",
+				"No translation found for macro: a");
+			assertThat(p.getErrors()).containsExactly("xe", "e1", "e2", "e3 e333");
 		} catch (IOException e) {
 			fail(e);
 		}
@@ -1919,7 +1897,7 @@ public class MacroTest {
 			assertEquals("aa\nbb\ncc\ndd\nee\nff", m.process("${unescape;${sjoin;\\n;aa,bb,cc;dd,ee,ff}}"));
 		} catch (IOException e) {
 			fail(e);
-	}
+		}
 	}
 
 	@Test

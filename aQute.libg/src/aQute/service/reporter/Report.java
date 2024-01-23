@@ -35,6 +35,17 @@ public interface Report {
 			l.length = length;
 			return l;
 		}
+
+		public void to(Location l) {
+			l.message = message;
+			l.line = line;
+			l.file = file;
+			l.context = context;
+			l.reference = reference;
+			l.methodName = methodName;
+			l.details = details;
+			l.length = length;
+		}
 	}
 
 	/**

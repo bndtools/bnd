@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -110,8 +109,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public final static String					LIST_SPLITTER		= "\\s*,\\s*";
 
 	final ThreadLocal<Bracket>					bracket				= new ThreadLocal<>();
-	final List<String>							errors				= new ArrayList<>();
-	final List<String>							warnings			= new ArrayList<>();
 	private final Set<Object>					basicPlugins		= Collections
 		.newSetFromMap(new ConcurrentHashMap<>());
 	private final Set<AutoCloseable>			toBeClosed			= Collections
@@ -120,9 +117,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private volatile CloseableMemoize<CL>		pluginLoader		= newPluginLoader();
 	private volatile Memoize<PluginsContainer>	pluginsContainer	= newPluginsContainer();
 
-	boolean										pedantic;
-	boolean										trace;
-	boolean										exceptions;
+	final MessageReporter						reporter			= new MessageReporter(this);
 	boolean										fileMustExist		= true;
 
 	private File								base				= new File("").getAbsoluteFile();
@@ -139,7 +134,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	Collection<String>							filter;
 	Boolean										strict;
-	boolean										fixupMessages;
+	boolean										trace;
+	boolean										pedantic;
+	boolean										exceptions;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -210,92 +207,33 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void getInfo(Reporter processor, String prefix) {
-		if (prefix == null)
-			prefix = getBase() + " :";
-		if (isFailOk())
-			addAll(warnings, processor.getErrors(), prefix, processor);
-		else
-			addAll(errors, processor.getErrors(), prefix, processor);
-		addAll(warnings, processor.getWarnings(), prefix, processor);
-
-		processor.getErrors()
-			.clear();
-		processor.getWarnings()
-			.clear();
-
+		reporter.getInfo(processor, prefix);
 	}
 
 	public void getInfo(Reporter processor) {
 		getInfo(processor, "");
 	}
 
-	private void addAll(List<String> to, List<String> from, String prefix, Reporter reporter) {
-		try {
-			for (String message : from) {
-				String newMessage = prefix.isEmpty() ? message : prefix + message;
-				to.add(newMessage);
-
-				Location location = reporter.getLocation(message);
-				if (location != null) {
-					SetLocation newer = location(newMessage);
-					for (Field f : newer.getClass()
-						.getFields()) {
-						if (!"message".equals(f.getName())) {
-							f.set(newer, f.get(location));
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
-	}
-
 	/**
 	 * A processor can mark itself current for a thread.
 	 */
-	private Processor current() {
+	Processor current() {
 		Processor p = current.get();
 		if (p == null)
 			return this;
 		return p;
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public SetLocation warning(String string, Object... args) {
-		fixupMessages = false;
-		Processor p = current();
-		String s = formatArrays(string, args);
-		if (!p.warnings.contains(s))
-			p.warnings.add(s);
-		p.signal();
-		return p.location(s);
+		return current().reporter.warning(string, args);
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public SetLocation error(String string, Object... args) {
-		fixupMessages = false;
-		Processor p = current();
-		try {
-
-			//
-			// Make Throwables into a string that shows their causes
-			//
-
-			for (int i = 0; i < args.length; i++) {
-				if (args[i] instanceof Throwable t) {
-					args[i] = Exceptions.causes(t);
-				}
-			}
-			if (p.isFailOk())
-				return p.warning(string, args);
-			String s = formatArrays(string, args);
-			if (!p.errors.contains(s))
-				p.errors.add(s);
-			return p.location(s);
-		} finally {
-			p.signal();
-		}
+		return current().reporter.error(string, args);
 	}
 
 	/**
@@ -335,15 +273,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (p.exceptions) {
 			printExceptionSummary(t, System.err);
 		}
-		// unroll InvocationTargetException
+
 		t = Exceptions.unrollCause(t, InvocationTargetException.class);
+
 		String s = formatArrays("Exception: %s", Exceptions.toString(t));
-		if (p.isFailOk()) {
-			p.warnings.add(s);
-		} else {
-			p.errors.add(s);
-		}
-		return error(format, args);
+		reporter.error(s);
+
+		return reporter.error(format, args);
 	}
 
 	public int printExceptionSummary(Throwable e, PrintStream out) {
@@ -374,14 +310,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public List<String> getWarnings() {
-		fixupMessages();
-		return warnings;
+		return reporter.getWarnings();
 	}
 
 	@Override
 	public List<String> getErrors() {
-		fixupMessages();
-		return errors;
+		return reporter.getErrors();
 	}
 
 	/**
@@ -405,16 +339,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void removeClose(AutoCloseable closeable) {
 		assert closeable != null;
 		toBeClosed.remove(closeable);
-	}
-
-	@Override
-	public boolean isPedantic() {
-		Processor p = current();
-		return p.pedantic;
-	}
-
-	public void setPedantic(boolean pedantic) {
-		this.pedantic = pedantic;
 	}
 
 	public void use(Processor reporter) {
@@ -566,10 +490,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void clear() {
-		errors.clear();
-		warnings.clear();
-		locations.clear();
-		fixupMessages = false;
+		reporter.clear();
 	}
 
 	public Logger getLogger() {
@@ -581,7 +502,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public void trace(String msg, Object... parms) {
-
 		Processor p = current();
 		if (p.trace) {
 			String s = formatArrays(msg, parms);
@@ -703,7 +623,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			fixup = false;
 			begin();
 		}
-		fixupMessages = false;
 		return getProperties0();
 	}
 
@@ -1408,14 +1327,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return join(result);
 	}
 
-	public boolean isExceptions() {
-		return exceptions;
-	}
-
-	public void setExceptions(boolean exceptions) {
-		this.exceptions = exceptions;
-	}
-
 	/**
 	 * Make the file short if it is inside our base directory, otherwise long.
 	 *
@@ -1445,10 +1356,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static boolean isDuplicate(String key) {
 		return key.indexOf(DUPLICATE_MARKER, key.length() - 1) >= 0;
-	}
-
-	public void setTrace(boolean x) {
-		trace = x;
 	}
 
 	public static class CL extends ActivelyClosingClassLoader {
@@ -1500,91 +1407,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return isFailOk() || getErrors().isEmpty();
 	}
 
-	/**
-	 * Move errors and warnings to their proper place by scanning the fixup
-	 * messages property.
-	 */
-	private void fixupMessages() {
-		if (fixupMessages)
-			return;
-		fixupMessages = true;
-		Parameters fixup = getMergedParameters(Constants.FIXUPMESSAGES);
-		if (fixup.isEmpty())
-			return;
-
-		Instructions instrs = new Instructions();
-		fixup.forEach((k, v) -> instrs.put(Instruction.legacy(k), v));
-
-		doFixup(instrs, errors, warnings, FIXUPMESSAGES_IS_ERROR);
-		doFixup(instrs, warnings, errors, FIXUPMESSAGES_IS_WARNING);
-	}
-
-	private void doFixup(Instructions instrs, List<String> messages, List<String> other, String type) {
-		for (int i = 0; i < messages.size(); i++) {
-			String message = messages.get(i);
-			Instruction matcher = instrs.finder(message);
-			if (matcher == null || matcher.isNegated())
-				continue;
-
-			Attrs attrs = instrs.get(matcher);
-
-			//
-			// Default the pattern applies to the errors and warnings
-			// but we can restrict it: e.g. restrict:=error
-			//
-
-			String restrict = attrs.get(FIXUPMESSAGES_RESTRICT_DIRECTIVE);
-			if (restrict != null && !restrict.equals(type))
-				continue;
-
-			//
-			// We can optionally replace the message with another text. E.g.
-			// replace:"hello world". This can use macro expansion, the ${@}
-			// macro is set to the old message.
-			//
-			String replace = attrs.get(FIXUPMESSAGES_REPLACE_DIRECTIVE);
-			if (replace != null) {
-				logger.debug("replacing {} with {}", message, replace);
-				setProperty("@", message);
-				message = getReplacer().process(replace);
-				messages.set(i, message);
-				unsetProperty("@");
-			}
-
-			//
-			//
-			String is = attrs.get(FIXUPMESSAGES_IS_DIRECTIVE);
-
-			if (attrs.isEmpty() || FIXUPMESSAGES_IS_IGNORE.equals(is)) {
-				messages.remove(i--);
-			} else {
-				if (is != null && !type.equals(is)) {
-					messages.remove(i--);
-					other.add(message);
-				}
-			}
-		}
-	}
-
 	public boolean check(String... pattern) throws IOException {
 		Set<String> missed = Create.set();
+		List<String> errors = getErrors();
+		List<String> warnings = getWarnings();
 
 		if (pattern != null) {
 			for (String p : pattern) {
 				boolean match = false;
 				Pattern pat = Pattern.compile(p);
 				for (Iterator<String> i = errors.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next())
+					String next = i.next();
+					if (pat.matcher(next)
 						.find()) {
 						i.remove();
 						match = true;
+						reporter.remove(next);
 					}
 				}
 				for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next())
+					String next = i.next();
+					if (pat.matcher(next)
 						.find()) {
 						i.remove();
 						match = true;
+						reporter.remove(next);
 					}
 				}
 				if (!match)
@@ -1592,7 +1439,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 			}
 		}
-		if (missed.isEmpty() && isPerfect())
+		if (missed.isEmpty() && errors.isEmpty() && warnings.isEmpty())
 			return true;
 
 		if (!missed.isEmpty())
@@ -1603,6 +1450,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	protected void report(Appendable out) throws IOException {
+		List<String> errors = getErrors();
+		List<String> warnings = getWarnings();
+
 		if (errors.size() > 0) {
 			out.append(String.format("-----------------%nErrors%n"));
 			for (int i = 0; i < errors.size(); i++) {
@@ -1758,11 +1608,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		CL cl = getLoader();
 		cl.add(jar);
 		return cl.loadClass(type);
-	}
-
-	public boolean isTrace() {
-		Processor p = current();
-		return p.trace;
 	}
 
 	private static final Pattern DURATION_P = Pattern
@@ -1984,11 +1829,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return s + newExtension;
 	}
 
-	/**
-	 * Create a location object and add it to the locations
-	 */
-	List<Location> locations = new ArrayList<>();
-
 	static class SetLocationImpl extends Location implements SetLocation {
 		public SetLocationImpl(String s) {
 			this.message = s;
@@ -2064,20 +1904,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return setLocation;
 	}
 
-	private SetLocation location(String s) {
-		SetLocationImpl loc = new SetLocationImpl(s);
-		locations.add(loc);
-		return loc;
-	}
-
 	@Override
 	public Location getLocation(String msg) {
-		assert msg != null : "Must provide message";
-		for (Location l : locations)
-			if ((l.message != null) && msg.equals(l.message))
-				return l;
-
-		return null;
+		return reporter.getLocation(msg);
 	}
 
 	/**
@@ -2232,8 +2061,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * not set, we assume the latest version.
 	 */
 
-	Version upto = null;
-
+	Version	upto	= null;
 	public boolean since(Version introduced) {
 		if (upto == null) {
 			String uptov = getProperty(UPTO);
@@ -2387,15 +2215,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		return IO.absolutePath(propertiesFile);
-	}
-
-	/**
-	 * Copy the settings of another processor
-	 */
-	public void getSettings(Processor p) {
-		this.trace = p.isTrace();
-		this.pedantic = p.isPedantic();
-		this.exceptions = p.isExceptions();
 	}
 
 	static final String _frangeHelp = "${frange;<version>[;true|false]}";
@@ -2755,4 +2574,40 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			exception(e, "failed to run a runnable at the end of a bracket: %s", e.getMessage());
 		}
 	}
+
+	/**
+	 * Copy the settings of another processor
+	 */
+	public void getSettings(Processor p) {
+		this.trace = p.isTrace();
+		this.pedantic = p.isPedantic();
+		this.exceptions = p.isExceptions();
+	}
+
+	public boolean isExceptions() {
+		return this.exceptions;
+	}
+
+	public void setExceptions(boolean exceptions) {
+		this.exceptions = exceptions;
+	}
+
+	public void setTrace(boolean x) {
+		trace = x;
+	}
+
+	public boolean isTrace() {
+		Processor p = current();
+		return p.trace;
+	}
+
+	@Override
+	public boolean isPedantic() {
+		return this.pedantic;
+	}
+
+	public void setPedantic(boolean pedantic) {
+		this.pedantic = pedantic;
+	}
+
 }
