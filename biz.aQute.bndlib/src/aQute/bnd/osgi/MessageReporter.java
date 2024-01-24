@@ -222,7 +222,7 @@ public class MessageReporter {
 	}
 
 	void getInfo(Reporter from, String prefix) {
-		String actualPrefix = prefix == null ? prefix = processor().getBase() + " :" : prefix;
+		String actualPrefix = prefix == null ? processor().getBase() + " :" : prefix;
 
 		MessageReporter other;
 		if (from instanceof Processor processor) {
@@ -231,8 +231,8 @@ public class MessageReporter {
 			other = mr;
 		} else {
 			// backward compatible reporters
-			addAll(true, prefix, from);
-			addAll(false, prefix, from);
+			addAll(true, actualPrefix, from);
+			addAll(false, actualPrefix, from);
 			from.getErrors()
 				.clear();
 			from.getWarnings()
@@ -260,6 +260,7 @@ public class MessageReporter {
 			Location location = reporter.getLocation(message);
 			if (location != null)
 				location.to(m);
+			putMessage(newMessage, m);
 		}
 	}
 

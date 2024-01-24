@@ -28,6 +28,8 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.collections.ExtList;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ProcessorTest {
@@ -41,6 +43,79 @@ public class ProcessorTest {
 		p.error("bar");
 		assertTrue(p.check());
 		p.close();
+	}
+
+	@Test
+	public void testGetInfo() throws IOException {
+		try (Processor a = new Processor(); Processor b = new Processor()) {
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+			a.getInfo(b);
+			assertThat(a.getErrors()).containsExactly("error-in-b");
+			assertThat(a.getWarnings()).containsExactly("warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor(); Processor b = new Processor()) {
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+			a.getInfo(b, "prefix ");
+			assertThat(a.getErrors()).containsExactly("prefix error-in-b");
+			assertThat(a.getWarnings()).containsExactly("prefix warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor(); Processor b = new Processor()) {
+			b.error("error-in-b");
+			b.setBase(new File("prefix"));
+			b.warning("warning-in-b");
+			a.getInfo(b, null);
+			assertThat(a.getErrors()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor()) {
+			Reporter b = new ReporterAdapter();
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+
+			a.getInfo(b, "");
+			assertThat(a.getErrors()
+				.get(0)).endsWith("error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor()) {
+			Reporter b = new ReporterAdapter();
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+
+			a.getInfo(b, "prefix ");
+			assertThat(a.getErrors()
+				.get(0)).endsWith("prefix error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("prefix warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor()) {
+			Reporter b = new ReporterAdapter();
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+
+			a.getInfo(b, null);
+			assertThat(a.getErrors()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
 	}
 
 	@Test
@@ -497,8 +572,7 @@ public class ProcessorTest {
 
 	@Test
 	public void isInternalTest() {
-		assertThat((Predicate<String>) AttributeClasses.MANIFEST)
-			.accepts("attribubte", "-foobar")
+		assertThat((Predicate<String>) AttributeClasses.MANIFEST).accepts("attribubte", "-foobar")
 			.rejects("-internal-key", Constants.SPLIT_PACKAGE_DIRECTIVE, Constants.FROM_DIRECTIVE);
 	}
 
