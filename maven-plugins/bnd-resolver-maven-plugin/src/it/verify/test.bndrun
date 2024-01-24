@@ -1,0 +1,5 @@
+-standalone: ${projectsDirectory}/index/index.xml.gz
+-runfw: org.apache.felix.framework
+-runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.eventadmin)'
+
+-runbundles: org.apache.felix.eventadmin;version="[1.4.6,1.4.7)"
