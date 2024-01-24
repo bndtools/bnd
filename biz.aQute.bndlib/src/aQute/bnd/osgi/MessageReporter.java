@@ -38,10 +38,10 @@ public class MessageReporter {
 		}
 
 		Message(int sequence, Message m, String actualPrefix) {
+			m.to(this);
 			this.sequence = sequence;
 			this.message = actualPrefix.concat(m.message);
 			this.error = m.error;
-			m.to(this);
 		}
 
 		@Override
