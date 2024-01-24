@@ -4,11 +4,9 @@ import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,8 +23,6 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.io.IO;
-import aQute.lib.utf8properties.UTF8Properties;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
 import biz.aQute.resolve.RunResolution;
@@ -99,14 +95,6 @@ public class VerifierMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.basedir}")
 	private File 												bndrunDir;
 
-	/**
-	 * The bndrun files will be written to this directory. If the
-	 * specified directory is the same as {@link #bndrunDir}, then
-	 * any changes to a bndrun file will cause the bndrun file to be overwritten.
-	 */
-	@Parameter(defaultValue = "${project.basedir}")
-	private File 												outputBndrunDir;
-
 	@Component
 	private RepositorySystem									system;
 
@@ -146,16 +134,6 @@ public class VerifierMojo extends AbstractMojo {
 
 			for (File runFile : bndrunFiles) {
 				logger.info("Verifying {}:", runFile);
-				if (!Objects.equals(outputBndrunDir, bndrunDir)) {
-					IO.mkdirs(outputBndrunDir);
-					File outputRunFile = new File(outputBndrunDir, runFile.getName());
-					try (Writer writer = IO.writer(outputRunFile)) {
-						UTF8Properties props = new UTF8Properties();
-						props.setProperty(Constants.INCLUDE, String.format("\"~%s\"", escape(IO.absolutePath(runFile))));
-						props.store(writer, null);
-					}
-					runFile = outputRunFile;
-				}
 				errors += container.execute(runFile, "resolve", targetDir, operation);
 			}
 		} catch (Exception e) {
@@ -270,18 +248,5 @@ public class VerifierMojo extends AbstractMojo {
 				}
 			}
 		}
-	}
-
-	private String escape(String input) {
-		final int length = input.length();
-		StringBuilder sb = new StringBuilder(length);
-		for (int i = 0; i < length;i++) {
-			char c = input.charAt(i);
-			if (c == '"') {
-				sb.append('\\');
-			}
-			sb.append(c);
-		}
-		return sb.length() == length ? input : sb.toString();
 	}
 }
