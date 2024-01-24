@@ -26,7 +26,6 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileInfo;
 import org.eclipse.core.filesystem.provider.FileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
-import org.eclipse.core.internal.filesystem.NullFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,11 +49,10 @@ import aQute.libg.uri.URIUtil;
  *   		jarfileuri	::= <any uri including jarf>
  * </pre>
  *
- * @author aqute
  */
 public class JarFileSystem extends FileSystem {
 	private static final ILogger									logger		= Logger.getLogger(JarFileSystem.class);
-
+	@SuppressWarnings("unused")
 	private static final String										SCHEME_JARF	= "jarf";
 	private final ConcurrentMap<IFileStore, Reference<JarRootNode>>	roots		= new ConcurrentHashMap<>();
 
@@ -98,8 +96,9 @@ public class JarFileSystem extends FileSystem {
 
 		@Override
 		public IFileStore getChild(String name) {
-			return new NullFileStore(new Path(getPath()).append(name));
+			return nullFileStore(new Path(getPath()).append(name));
 		}
+
 
 		@Override
 		public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
@@ -212,7 +211,7 @@ public class JarFileSystem extends FileSystem {
 	public IFileStore getStore(URI uri) {
 		if (!SCHEME_JARF.equals(uri.getScheme())) {
 			logger.logError("No file system for : " + uri, null);
-			return new NullFileStore(Path.EMPTY);
+			return nullFileStore(new Path(uri.getPath()));
 		}
 		return jarf(uri).map(pair -> {
 			URI fileuri = pair.getFirst();
@@ -221,14 +220,14 @@ public class JarFileSystem extends FileSystem {
 				store = EFS.getStore(fileuri);
 			} catch (CoreException e) {
 				logger.logError("Cannot locate filestore for the JAR file: " + fileuri, e);
-				return new NullFileStore(Path.EMPTY);
+				return nullFileStore(Path.EMPTY);
 			}
 
 			JarRootNode root = roots.compute(store, this::computeRootNode)
 				.get();
 			if (root == null) {
 				logger.logError("Failed to load jar for: " + fileuri, null);
-				return new NullFileStore(Path.EMPTY);
+				return nullFileStore(Path.EMPTY);
 			}
 
 			IPath path = pair.getSecond();
@@ -240,7 +239,7 @@ public class JarFileSystem extends FileSystem {
 		})
 			.recover(err -> {
 				logger.logError(err, null);
-				return new NullFileStore(Path.EMPTY);
+				return nullFileStore(Path.EMPTY);
 			})
 			.unwrap();
 	}
@@ -329,5 +328,10 @@ public class JarFileSystem extends FileSystem {
 			IO.close(jin);
 			return Result.err("Failed to open resource %s from %s : %s", path, uri, e);
 		}
+	}
+
+	static IFileStore nullFileStore(IPath path) {
+		return EFS.getNullFileSystem()
+			.getStore(path);
 	}
 }
