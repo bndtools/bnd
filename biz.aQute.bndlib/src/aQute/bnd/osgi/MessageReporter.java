@@ -30,7 +30,6 @@ public class MessageReporter {
 
 		final boolean	error;
 		final int		sequence;
-		final String	message;
 
 		Message(int sequence, String message, boolean error) {
 			this.sequence = sequence;

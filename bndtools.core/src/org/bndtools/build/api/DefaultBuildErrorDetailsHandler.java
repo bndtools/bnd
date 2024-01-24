@@ -14,6 +14,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
+import aQute.lib.strings.Strings;
 import aQute.service.reporter.Report.Location;
 import bndtools.central.Central;
 
@@ -87,7 +88,7 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
 		}
 
 		Map<String, Object> attribs = new HashMap<>();
-		attribs.put(IMarker.MESSAGE, location.message.trim() + extra);
+		attribs.put(IMarker.MESSAGE, Strings.trim(location.message) + extra);
 		attribs.put(IMarker.LINE_NUMBER, line + 1);
 		if (end != -1 && start != -1) {
 			attribs.put(IMarker.CHAR_START, start);
