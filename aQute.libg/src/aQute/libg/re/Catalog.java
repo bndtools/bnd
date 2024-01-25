@@ -1635,9 +1635,6 @@ public class Catalog {
 
 		@Override
 		public Optional<RE> merge(RE other) {
-			if (other instanceof CharacterClass cc) {
-				return Optional.of(new CharacterClass(literal + cc.literal));
-			}
 			return Optional.empty();
 		}
 
