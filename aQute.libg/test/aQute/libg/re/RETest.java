@@ -4,12 +4,14 @@ import static aQute.libg.re.Catalog.Alnum;
 import static aQute.libg.re.Catalog.ahead;
 import static aQute.libg.re.Catalog.atomic;
 import static aQute.libg.re.Catalog.back;
+import static aQute.libg.re.Catalog.backslash;
 import static aQute.libg.re.Catalog.behind;
 import static aQute.libg.re.Catalog.capture;
 import static aQute.libg.re.Catalog.cc;
 import static aQute.libg.re.Catalog.comma;
 import static aQute.libg.re.Catalog.dotall;
 import static aQute.libg.re.Catalog.dquote;
+import static aQute.libg.re.Catalog.endOfInput;
 import static aQute.libg.re.Catalog.g;
 import static aQute.libg.re.Catalog.if_;
 import static aQute.libg.re.Catalog.list;
@@ -70,6 +72,30 @@ public class RETest {
 		ids.add("λWavelength"); // Lambda symbol
 		ids.add("σStandardDeviation"); // Sigma symbol
 		ids.add("ωAngularFrequency"); // Omega symbol
+	}
+
+	@Test
+	public void testComplicatedLineDetect() {
+		RE NORMAL_LINE_P = g(behind(backslash.not()), nl, ahead(endOfInput).not());
+		RE BACKSLASHED_LINE_P = g(backslash, nl, ahead(endOfInput).not());
+
+		assertThat(NORMAL_LINE_P.findIn(WITH_NORMAL_LINES)).isPresent();
+		assertThat(NORMAL_LINE_P.findIn(WITH_ESCAPED_LINES)).isNotPresent();
+		assertThat(NORMAL_LINE_P.findIn(WITH_MIXED_LINES)).isPresent();
+
+		assertThat(BACKSLASHED_LINE_P.findIn(WITH_NORMAL_LINES)).isNotPresent();
+		assertThat(BACKSLASHED_LINE_P.findIn(WITH_ESCAPED_LINES)).isPresent();
+		assertThat(BACKSLASHED_LINE_P.findIn(WITH_MIXED_LINES)).isPresent();
+
+		assertThat(NORMAL_LINE_P.append(WITH_NORMAL_LINES, m -> "X")).isEqualTo("line 1Xline 2Xline 3Xline 4\n");
+		assertThat(NORMAL_LINE_P.append(WITH_ESCAPED_LINES, m -> "X")).isEqualTo(WITH_ESCAPED_LINES);
+		assertThat(NORMAL_LINE_P.append(WITH_MIXED_LINES, m -> "X")).isEqualTo("line 1\\\nline 2Xline 3\\\nline 3\n");
+
+		assertThat(BACKSLASHED_LINE_P.append(WITH_NORMAL_LINES, m -> "X")).isEqualTo(WITH_NORMAL_LINES);
+		assertThat(BACKSLASHED_LINE_P.append(WITH_ESCAPED_LINES, m -> "X"))
+			.isEqualTo("line 1Xline 2Xline 3Xline 3\\\n");
+		assertThat(BACKSLASHED_LINE_P.append(WITH_MIXED_LINES, m -> "X"))
+			.isEqualTo("line 1Xline 2\n" + "line 3Xline 3\n");
 	}
 
 	@Test
@@ -482,7 +508,7 @@ public class RETest {
 		assertThat(x.email.findAllIn("bla bla x@q.biz bal la a  y.foo@bar.com and more nonsense")
 			.count()).isEqualTo(2);
 
-		assertThat(Catalog.nl.findAllIn("line 1\rline 2\nline 3\r\nline 4\n")
+		assertThat(nl.findAllIn("line 1\rline 2\nline 3\r\nline 4\n")
 			.count()).isEqualTo(4);
 		assertThat(word.findAllIn(
 			"The quick brown fox jumped over the lazy dog. However, somewhere on the horizon there was light: 'A ship came into the harbour.'")
@@ -530,5 +556,25 @@ public class RETest {
 		assertThat(unescapedQuote.findAllIn("a', b\\', c', d\\', e'")
 			.count()).isEqualTo(3);
 	}
+
+	final static String	WITH_NORMAL_LINES	= """
+		line 1
+		line 2
+		line 3
+		line 4
+		""";
+
+	final static String	WITH_ESCAPED_LINES	= """
+		line 1\\
+		line 2\\
+		line 3\\
+		line 3\\
+		""";
+	final static String	WITH_MIXED_LINES	= """
+		line 1\\
+		line 2
+		line 3\\
+		line 3
+		""";
 
 }
