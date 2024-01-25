@@ -35,6 +35,22 @@ public interface Report {
 			l.length = length;
 			return l;
 		}
+
+		/**
+		 * Copies the location details to the destination. This will not include
+		 * the message.
+		 *
+		 * @param destination the other location.
+		 */
+		public void to(Location destination) {
+			destination.line = line;
+			destination.file = file;
+			destination.context = context;
+			destination.reference = reference;
+			destination.methodName = methodName;
+			destination.details = details;
+			destination.length = length;
+		}
 	}
 
 	/**
