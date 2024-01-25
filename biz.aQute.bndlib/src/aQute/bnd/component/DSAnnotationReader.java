@@ -1033,12 +1033,6 @@ public class DSAnnotationReader extends ClassDataCollector {
 									className, def.field)
 								.details(getDetails(def, ErrorType.DYNAMIC_FIELD_NOT_VOLATILE));
 						}
-						if (def.isCollectionSubClass) {
-							analyzer.error(
-								"In component '%s', field '%s' is a subclass of Collection and fieldOption is not 'update'.",
-								className, def.field)
-								.details(getDetails(def, ErrorType.COLLECTION_SUBCLASS_FIELD_WITH_REPLACE));
-						}
 					}
 				} else {
 					analyzer

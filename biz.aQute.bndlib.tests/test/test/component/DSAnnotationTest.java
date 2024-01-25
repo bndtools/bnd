@@ -3157,6 +3157,12 @@ public class DSAnnotationTest {
 		@Reference(policy = ReferencePolicy.DYNAMIC, fieldOption = FieldOption.UPDATE)
 		private CopyOnWriteArrayList<LogService>						updateField			= new CopyOnWriteArrayList<>();
 
+		@Reference(fieldOption = FieldOption.REPLACE)
+		private List<LogService>										replaceStaticField;
+
+		@Reference(fieldOption = FieldOption.REPLACE)
+		private volatile List<LogService>								replaceDynamicField;
+
 		@Override
 		public void run() {}
 	}
@@ -3209,6 +3215,20 @@ public class DSAnnotationTest {
 			xt.assertAttribute("updateField", "scr:component/reference[@name='updateField']/@field");
 			xt.assertAttribute("update", "scr:component/reference[@name='updateField']/@field-option");
 			xt.assertAttribute("service", "scr:component/reference[@name='updateField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(),
+				"scr:component/reference[@name='replaceStaticField']/@interface");
+			xt.assertAttribute("replaceStaticField", "scr:component/reference[@name='replaceStaticField']/@field");
+			xt.assertAttribute("replace", "scr:component/reference[@name='replaceStaticField']/@field-option");
+			xt.assertAttribute("service", "scr:component/reference[@name='replaceStaticField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(),
+				"scr:component/reference[@name='replaceDynamicField']/@interface");
+			xt.assertAttribute("replaceDynamicField", "scr:component/reference[@name='replaceDynamicField']/@field");
+			xt.assertAttribute("dynamic", "scr:component/reference[@name='replaceDynamicField']/@policy");
+			xt.assertAttribute("replace", "scr:component/reference[@name='replaceDynamicField']/@field-option");
+			xt.assertAttribute("service",
+				"scr:component/reference[@name='replaceDynamicField']/@field-collection-type");
 		}
 	}
 
