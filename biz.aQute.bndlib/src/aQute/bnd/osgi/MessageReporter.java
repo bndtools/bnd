@@ -1,7 +1,9 @@
 package aQute.bnd.osgi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -102,9 +104,9 @@ public class MessageReporter {
 			return Integer.compare(sequence, o.sequence);
 		}
 
-		void fixup(Instructions fixupInstrs, List<String> errors, List<String> warnings) {
+		Message fixup(Instructions fixupInstrs, boolean failok) {
 
-			boolean error = this.error;
+			boolean error = failok ? false : this.error;
 
 			Instruction matcher = fixupInstrs.finder(message);
 			String type = error ? Constants.FIXUPMESSAGES_IS_ERROR : Constants.FIXUPMESSAGES_IS_WARNING;
@@ -140,12 +142,13 @@ public class MessageReporter {
 					}
 				}
 			}
-			if (message != null) {
-				if (error)
-					errors.add(message);
-				else
-					warnings.add(message);
-			}
+			if (message == null)
+				return null;
+
+			if (error == this.error && message.equals(this.message))
+				return this;
+
+			return new Message(sequence, message, error);
 		}
 
 	}
@@ -155,16 +158,12 @@ public class MessageReporter {
 		final List<String>	warnings	= new ArrayList<>();
 
 		Cache() {
-			boolean failOk = processor().isFailOk();
-			Instructions fixupInstrs = new Instructions();
-			Parameters fixup = processor().getMergedParameters(Constants.FIXUPMESSAGES);
-			fixup.forEach((k, v) -> fixupInstrs.put(Instruction.legacy(k), v));
-
-			messages.values()
-				.stream()
-				.sorted()
+			fixup(messages.values()).stream()
 				.forEach(m -> {
-					m.fixup(fixupInstrs, failOk ? warnings : errors, warnings);
+					if (m.error)
+						errors.add(m.message);
+					else
+						warnings.add(m.message);
 				});
 		}
 	}
@@ -240,13 +239,29 @@ public class MessageReporter {
 		}
 
 		ConcurrentHashMap<String, Message> older = other.clear();
-		older.values()
+		other.fixup(older.values())
 			.stream()
-			.sorted()
 			.map(m -> new Message(counter.getAndIncrement(), m, actualPrefix))
 			.forEach(m -> {
 				putMessage(m.message, m);
 			});
+	}
+
+	/*
+	 *
+	 */
+	private List<Message> fixup(Collection<Message> older) {
+		boolean failOk = processor().isFailOk();
+		Instructions fixupInstrs = new Instructions();
+		Parameters fixup = processor().getMergedParameters(Constants.FIXUPMESSAGES);
+		fixup.forEach((k, v) -> fixupInstrs.put(Instruction.legacy(k), v));
+
+		return older.stream()
+			.sorted()
+			.map(m -> m.fixup(fixupInstrs, failOk))
+			.filter(Objects::nonNull)
+			.toList();
+
 	}
 
 	/*
