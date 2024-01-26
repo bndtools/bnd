@@ -35,14 +35,32 @@ import aQute.service.reporter.Reporter.SetLocation;
 public class ProcessorTest {
 
 	@Test
+	public void testFixup() throws IOException {
+		try (Processor p = new Processor()) {
+			p.setProperty("-fixupmessages.eclipserefactor",
+				"Unused Import-Package instructions: \\[org.eclipse.jdt.internal.corext.refactoring.*\\]");
+			p.warning(
+				"bndtools.core.test.launch: Unused Import-Package instructions: [org.eclipse.jdt.internal.corext.refactoring.*]");
+			assertThat(p.getWarnings()).isEmpty();
+
+		}
+	}
+
+	@Test
 	public void testFixupMerge() throws IOException {
-		Processor p = new Processor();
-		p.setProperty("-fixupmessages.foo", "foo");
-		p.setProperty("-fixupmessages.bar", "bar");
-		p.error("foo");
-		p.error("bar");
-		assertTrue(p.check());
-		p.close();
+		try (Processor p = new Processor()) {
+			p.setProperty("-fixupmessages.foo", "foo");
+			p.setProperty("-fixupmessages.bar", "bar");
+			p.error("foo");
+			p.error("bar");
+			assertTrue(p.check());
+
+			try (Processor p2 = new Processor()) {
+				p2.getInfo(p);
+				assertTrue(p2.check());
+			}
+
+		}
 	}
 
 	@Test
