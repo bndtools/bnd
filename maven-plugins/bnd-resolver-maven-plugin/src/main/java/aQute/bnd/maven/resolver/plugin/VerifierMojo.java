@@ -243,7 +243,7 @@ public class VerifierMojo extends AbstractMojo {
 				Capability id = ResourceUtils.getIdentityCapability(it.next()
 					.getResource());
 				if (bundleRequirements.stream()
-					.noneMatch(r -> ResourceUtils.matches(requirement, id))) {
+					.noneMatch(r -> ResourceUtils.matches(r, id))) {
 					it.remove();
 				}
 			}

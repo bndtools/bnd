@@ -1,5 +1,7 @@
--standalone: ${projectsDirectory}/index/index.xml.gz
 -runfw: org.apache.felix.framework
--runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.eventadmin)'
+-runrequires: osgi.identity;filter:='(osgi.identity=com.fasterxml.jackson.core.jackson-databind)'
 
--runbundles: org.apache.felix.eventadmin;version="[1.4.6,1.4.7)"
+-runbundles: com.fasterxml.jackson.core.jackson-databind;version='[2.11.1,2.11.2)',\
+	com.fasterxml.jackson.core.jackson-core;version='[2.11.1,2.11.2)',\
+	com.fasterxml.jackson.core.jackson-annotations;version='[2.11.1,2.11.2)'
+	
