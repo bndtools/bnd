@@ -19,6 +19,7 @@ import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.unmodifiable.Sets;
@@ -168,10 +169,7 @@ public class VerifierMojo extends AbstractMojo {
 				RunResolution result = run.resolve(new BundleFilter(runBundleReqs));
 
 				if (result.isOK()) {
-					List<BundleId> resolved = result.getContainers()
-						.stream()
-						.map(Container::getBundleId)
-						.collect(toList());
+					List<BundleId> resolved = result.getResolvedRunBundles();
 
 					List<BundleId> missing = expectedRunbundles.stream()
 						.filter(c -> !resolved.contains(c))
@@ -231,6 +229,12 @@ public class VerifierMojo extends AbstractMojo {
 
 	private static class BundleFilter implements ResolutionCallback {
 		private final List<Requirement> bundleRequirements;
+		/**
+		 * We slowly build up a repository of resources which we allow. This
+		 * includes any SupportingResources without us having to introspect
+		 * them.
+		 */
+		private final ResourcesRepository	repo	= new ResourcesRepository();
 
 		public BundleFilter(List<Requirement> bundleRequirements) {
 			this.bundleRequirements = bundleRequirements;
@@ -240,11 +244,17 @@ public class VerifierMojo extends AbstractMojo {
 		public void processCandidates(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
 			Iterator<Capability> it = candidates.iterator();
 			while (it.hasNext()) {
-				Capability id = ResourceUtils.getIdentityCapability(it.next()
-					.getResource());
-				if (bundleRequirements.stream()
-					.noneMatch(r -> ResourceUtils.matches(r, id))) {
-					it.remove();
+				Resource resource = it.next()
+					.getResource();
+				if (!repo.contains(resource)) {
+					Capability id = ResourceUtils.getIdentityCapability(resource);
+					if (bundleRequirements.stream()
+						.noneMatch(r -> ResourceUtils.matches(r, id))) {
+						// Not part of the repository and not in -runbundles
+						it.remove();
+					} else {
+						repo.add(resource);
+					}
 				}
 			}
 		}

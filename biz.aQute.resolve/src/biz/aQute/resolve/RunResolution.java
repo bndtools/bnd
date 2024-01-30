@@ -1,5 +1,7 @@
 package biz.aQute.resolve;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.help.instructions.ResolutionInstructions.RunStartLevel;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -278,6 +281,19 @@ public class RunResolution {
 			}
 		}
 		return versionedClauses;
+	}
+
+	/**
+	 * Gets the resolution result as a list of bundle ids that represent the new
+	 * -runbundles
+	 *
+	 * @return the BundleIds of the bundles in the resolution
+	 */
+	public List<BundleId> getResolvedRunBundles() {
+		return getOrderedResources().stream()
+			.filter(this::isBundle)
+			.map(ResourceUtils::getBundleId)
+			.collect(toList());
 	}
 
 	/**
