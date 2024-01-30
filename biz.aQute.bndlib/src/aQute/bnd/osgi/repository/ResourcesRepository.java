@@ -136,6 +136,16 @@ public class ResourcesRepository extends BaseRepository {
 	}
 
 	/**
+	 * Tests whether the supplied resources is contained in this repository
+	 *
+	 * @param resource the resource to test
+	 * @return true if this resource is already part of this ResourcesRepository
+	 */
+	public boolean contains(Resource resource) {
+		return resources.contains(resource);
+	}
+
+	/**
 	 * Returns a collector that accumulates capabilities into a list.
 	 *
 	 * @return A collector that accumulates capabilities into a list.

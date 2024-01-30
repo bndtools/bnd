@@ -19,9 +19,9 @@ import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.VersionRange;
 import biz.aQute.resolve.ResolutionCallback;
@@ -229,6 +229,12 @@ public class VerifierMojo extends AbstractMojo {
 
 	private static class BundleFilter implements ResolutionCallback {
 		private final List<Requirement> bundleRequirements;
+		/**
+		 * We slowly build up a repository of resources which we allow. This
+		 * includes any SupportingResources without us having to introspect
+		 * them.
+		 */
+		private final ResourcesRepository	repo	= new ResourcesRepository();
 
 		public BundleFilter(List<Requirement> bundleRequirements) {
 			this.bundleRequirements = bundleRequirements;
@@ -240,16 +246,15 @@ public class VerifierMojo extends AbstractMojo {
 			while (it.hasNext()) {
 				Resource resource = it.next()
 					.getResource();
-				// If this is a supporting resource we must check the parent
-				// against the run bundles, not the child supporting resources.
-				if (resource instanceof SupportingResource sr) {
-					resource = sr.getParent()
-						.orElse(sr);
-				}
-				Capability id = ResourceUtils.getIdentityCapability(resource);
-				if (bundleRequirements.stream()
-					.noneMatch(r -> ResourceUtils.matches(r, id))) {
-					it.remove();
+				if (!repo.contains(resource)) {
+					Capability id = ResourceUtils.getIdentityCapability(resource);
+					if (bundleRequirements.stream()
+						.noneMatch(r -> ResourceUtils.matches(r, id))) {
+						// Not part of the repository and not in -runbundles
+						it.remove();
+					} else {
+						repo.add(resource);
+					}
 				}
 			}
 		}
