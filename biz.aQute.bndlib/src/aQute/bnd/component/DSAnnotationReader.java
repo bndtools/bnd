@@ -1022,7 +1022,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 					} else { // def.fieldOption == FieldOption.REPLACE
 						if (member.isFinal()) {
 							analyzer
-								.error("In component '%s', field '%s' is final and fieldOption is not 'update'.",
+								.error(
+									"In component '%s', field '%s' has fieldOption 'replace' but the field is final.",
 									className,
 									def.field)
 								.details(getDetails(def, ErrorType.FINAL_FIELD_WITH_REPLACE));
@@ -1033,9 +1034,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 									className, def.field)
 								.details(getDetails(def, ErrorType.DYNAMIC_FIELD_NOT_VOLATILE));
 						}
-						if (def.isCollectionSubClass) {
+						if (def.isNotDirectlyListOrCollection) {
 							analyzer.error(
-								"In component '%s', field '%s' is a subclass of Collection and fieldOption is not 'update'.",
+								"In component '%s', field '%s' is a collection type with fieldOption 'replace' but the type of the field is not declared as 'List' or 'Collection'.",
 								className, def.field)
 								.details(getDetails(def, ErrorType.COLLECTION_SUBCLASS_FIELD_WITH_REPLACE));
 						}
@@ -1104,9 +1105,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 								className, def.parameter)
 								.details(getDetails(def, ErrorType.OPTIONAL_FIELD_WITH_MULTIPLE));
 						}
-						if (def.isCollectionSubClass) {
+						if (def.isNotDirectlyListOrCollection) {
 							analyzer.error(
-								"In component '%s', constructor argument %s is a subclass of Collection but this is not allowed for a constructor parameter",
+								"In component '%s', constructor argument %s is a subclass of Collection but it must be declared as either List or Collection",
 								className, def.parameter)
 								.details(getDetails(def, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR));
 						}
@@ -1199,7 +1200,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 					// check for subtype of Collection
 					if (analyzer.assignable(paramType, "java.util.Collection", false)) {
 						def.isCollection = true;
-						def.isCollectionSubClass = true;
+						def.isNotDirectlyListOrCollection = true;
 					}
 					break;
 				case "java.util.Optional" :

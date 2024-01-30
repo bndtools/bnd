@@ -44,7 +44,11 @@ class ReferenceDef extends ExtensionDef {
 	CollectionType			collectionType;
 	boolean					isCollection;			// collection OR optional
 	boolean					isOptional;
-	boolean					isCollectionSubClass;
+	boolean					isNotDirectlyListOrCollection;	// The type extends
+															// java.util.Collection
+															// but is not
+															// java.util.List or
+															// java.util.Collection
 	Integer					parameter;
 	String					reasonForVersion;
 
