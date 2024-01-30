@@ -169,20 +169,7 @@ public class VerifierMojo extends AbstractMojo {
 				RunResolution result = run.resolve(new BundleFilter(runBundleReqs));
 
 				if (result.isOK()) {
-					// We only care about the top level results and ignore
-					// child level supporting resources
-					List<BundleId> resolved = result.getOrderedResources()
-						.stream()
-						.filter(r -> {
-							if (r instanceof SupportingResource sr) {
-								return sr.getParent()
-									.isEmpty();
-							} else {
-								return true;
-							}
-						})
-						.map(ResourceUtils::getBundleId)
-						.collect(toList());
+					List<BundleId> resolved = result.getResolvedRunBundles();
 
 					List<BundleId> missing = expectedRunbundles.stream()
 						.filter(c -> !resolved.contains(c))
