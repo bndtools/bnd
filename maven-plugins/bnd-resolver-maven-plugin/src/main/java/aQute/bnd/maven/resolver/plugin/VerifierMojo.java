@@ -21,6 +21,7 @@ import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.VersionRange;
 import biz.aQute.resolve.ResolutionCallback;
@@ -168,9 +169,19 @@ public class VerifierMojo extends AbstractMojo {
 				RunResolution result = run.resolve(new BundleFilter(runBundleReqs));
 
 				if (result.isOK()) {
-					List<BundleId> resolved = result.getContainers()
+					// We only care about the top level results and ignore
+					// child level supporting resources
+					List<BundleId> resolved = result.getOrderedResources()
 						.stream()
-						.map(Container::getBundleId)
+						.filter(r -> {
+							if (r instanceof SupportingResource sr) {
+								return sr.getParent()
+									.isEmpty();
+							} else {
+								return true;
+							}
+						})
+						.map(ResourceUtils::getBundleId)
 						.collect(toList());
 
 					List<BundleId> missing = expectedRunbundles.stream()
@@ -240,8 +251,15 @@ public class VerifierMojo extends AbstractMojo {
 		public void processCandidates(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
 			Iterator<Capability> it = candidates.iterator();
 			while (it.hasNext()) {
-				Capability id = ResourceUtils.getIdentityCapability(it.next()
-					.getResource());
+				Resource resource = it.next()
+					.getResource();
+				// If this is a supporting resource we must check the parent
+				// against the run bundles, not the child supporting resources.
+				if (resource instanceof SupportingResource sr) {
+					resource = sr.getParent()
+						.orElse(sr);
+				}
+				Capability id = ResourceUtils.getIdentityCapability(resource);
 				if (bundleRequirements.stream()
 					.noneMatch(r -> ResourceUtils.matches(r, id))) {
 					it.remove();
