@@ -14,6 +14,10 @@ updates:
     directory: "/maven-plugins"
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "com.fasterxml.jackson.core:jackson-databind"
+        # This version is used in the resolver tests and should not be updated
+        versions: ["2.11.1"]
 
   # Maintain dependencies for gradle
   - package-ecosystem: "gradle"
