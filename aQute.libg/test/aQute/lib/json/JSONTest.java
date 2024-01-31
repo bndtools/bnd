@@ -1,5 +1,6 @@
 package aQute.lib.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -709,13 +710,13 @@ public class JSONTest {
 			.get(Float.class));
 		assertEquals((Character) '0', dec.from("48")
 			.get(Character.class));
-		assertEquals((Boolean) true, dec.from("48")
+		assertEquals(true, dec.from("48")
 			.get(Boolean.class));
-		assertEquals((Boolean) false, dec.from("0")
+		assertEquals(false, dec.from("0")
 			.get(Boolean.class));
-		assertEquals((Boolean) true, dec.from("48")
+		assertEquals(true, dec.from("48")
 			.get(boolean.class));
-		assertEquals((Boolean) false, dec.from("0")
+		assertEquals(false, dec.from("0")
 			.get(boolean.class));
 
 		// String based
@@ -918,7 +919,7 @@ public class JSONTest {
 		Data1A d = dec
 			.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
 			.get(Data1A.class);
-		assertEquals((Boolean) false, d.b);
+		assertEquals(false, d.b);
 		assertEquals((Byte) (byte) (-1), d.by);
 		assertEquals((Character) '1', d.ch);
 		assertEquals(3.0d, d.d);
@@ -1225,5 +1226,21 @@ public class JSONTest {
 			.put(d)
 			.toString();
 		assertEquals("{'foo':'bar'}".replace('\'', '"'), s);
+	}
+
+	@Test
+	public void testRecord() throws Exception {
+		record ARecord(int a, String b, long c) {}
+		ARecord a = new ARecord(1, "1", 1L);
+		assertThat(new JSONCodec().enc()
+			.put(a)
+			.toString()).isEqualTo("{\"a\":1,\"b\":\"1\",\"c\":1}");
+
+		ARecord x = new JSONCodec().dec()
+			.from("{\"a\":1,\"b\":\"1\",\"c\":1}")
+			.get(ARecord.class);
+		assertThat(x.a).isEqualTo(1);
+		assertThat(x.b).isEqualTo("1");
+		assertThat(x.c).isEqualTo(1L);
 	}
 }

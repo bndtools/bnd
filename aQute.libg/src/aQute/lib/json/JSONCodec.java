@@ -180,6 +180,8 @@ public class JSONCodec {
 				h = new MapHandler(clazz, Object.class, Object.class);
 			else if (Number.class.isAssignableFrom(clazz) || clazz.isPrimitive())
 				h = new NumberHandler(clazz);
+			else if (Record.class.isAssignableFrom(clazz))
+				h = new RecordHandler(this, clazz);
 			else {
 				Method valueOf = null;
 				Constructor<?> constructor = null;
