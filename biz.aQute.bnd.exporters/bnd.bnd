@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 -exportcontents: \
-	aQute.bnd.exporter.subsystem
+	aQute.bnd.exporter.subsystem;bnd-plugins=true
 
 -conditionalpackage: \
 	aQute.lib.*;-split-package:=first, \
