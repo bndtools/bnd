@@ -30,7 +30,7 @@ public class RecordHandler extends Handler {
 		public Accessor(RecordComponent component, int index) throws IllegalAccessException {
 			Method m = component.getAccessor();
 			getter = lookup.unreflect(m);
-			this.name = component.getName();
+			this.name = JSONCodec.keyword(component.getName());
 			this.type = component.getGenericType();
 			this.index = index;
 		}
@@ -55,7 +55,7 @@ public class RecordHandler extends Handler {
 		for (RecordComponent component : c.getRecordComponents()) {
 			constructorType = constructorType.appendParameterTypes(component.getType());
 			Accessor accessor = new Accessor(component, index++);
-			accessors.put(component.getName(), accessor);
+			accessors.put(accessor.name, accessor);
 		}
 		this.constructor = lookup.findConstructor(c, constructorType);
 	}

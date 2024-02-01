@@ -3,14 +3,21 @@ package aQute.lib.json;
 import static java.lang.invoke.MethodHandles.publicLookup;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.function.Supplier;
+
+import aQute.bnd.exceptions.Exceptions;
 
 public abstract class Handler {
+	static final Lookup PUBLIC_LOOKUP = MethodHandles.publicLookup();
+
 	public abstract void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception;
 
 	public Object decodeObject(Decoder isr) throws Exception {
@@ -41,13 +48,27 @@ public abstract class Handler {
 
 	static <T> T newInstance(Class<T> rawClass) throws Exception {
 		try {
-			return (T) MethodHandles.publicLookup()
-				.findConstructor(rawClass, defaultConstructor)
+			return (T) PUBLIC_LOOKUP.findConstructor(rawClass, defaultConstructor)
 				.invoke();
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {
 			throw new InvocationTargetException(e);
+		}
+	}
+
+	static <T> Supplier<T> newInstanceFunction(Class<T> rawClass) {
+		try {
+			MethodHandle constructor = PUBLIC_LOOKUP.findConstructor(rawClass, defaultConstructor);
+			return () -> {
+				try {
+					return (T) constructor.invoke();
+				} catch (Throwable e) {
+					throw Exceptions.duck(e);
+				}
+			};
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
 	}
 

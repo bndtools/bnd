@@ -10,11 +10,13 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 public class MapHandler extends Handler {
-	final Class<?>	rawClass;
-	final Type		keyType;
-	final Type		valueType;
+	final Class<?>			rawClass;
+	final Type				keyType;
+	final Type				valueType;
+	private Supplier<?>	factory;
 
 	MapHandler(Class<?> rawClass, Type keyType, Type valueType) {
 
@@ -42,6 +44,7 @@ public class MapHandler extends Handler {
 				throw new IllegalArgumentException("Unknown map interface: " + rawClass);
 		}
 		this.rawClass = rawClass;
+		this.factory = newInstanceFunction(rawClass);
 	}
 
 	private Type resolve(Type type) {
@@ -109,7 +112,7 @@ public class MapHandler extends Handler {
 		assert r.current() == '{';
 
 		@SuppressWarnings("unchecked")
-		Map<Object, Object> map = (Map<Object, Object>) newInstance(rawClass);
+		Map<Object, Object> map = (Map<Object, Object>) factory.get();
 
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {

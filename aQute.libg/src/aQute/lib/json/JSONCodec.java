@@ -17,6 +17,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,10 +52,20 @@ import java.util.regex.Pattern;
  * Will now use hex for encoding byte arrays
  */
 public class JSONCodec {
+	final static Set<String>						keywords			= Set.of("abstract", "assert", "boolean",
+		"break", "byte", "case", "catch", "char", "class", "const", "continue", "default", "do", "double", "else",
+		"enum", "exports", "extends", "final", "finally", "float", "for", "goto", "if", "implements", "import",
+		"instanceof", "int", "interface", "long", "module", "native", "new", "package", "private", "protected",
+		"public", "requires", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this",
+		"throw", "throws", "transient", "try", "var", "void", "volatile", "while", "true", "false", "null", "_",
+		"record", "sealed", "non-sealed", "permits");
+	public static final String						KEYWORD_SUFFIX		= "__";
+
 	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
 
 	// Handlers
 	private final static WeakHashMap<Type, Handler>	handlers			= new WeakHashMap<>();
+
 	private static StringHandler					sh					= new StringHandler();
 	private static BooleanHandler					bh					= new BooleanHandler();
 	private static CharacterHandler					ch					= new CharacterHandler();
@@ -540,6 +551,23 @@ public class JSONCodec {
 	public JSONCodec addHandler(Type type, Handler handler) {
 		localHandlers.put(type, handler);
 		return this;
+	}
+
+	/**
+	 * This maps a name of a Java construct, which cannot contain Java keywords,
+	 * to a keyword if it ends with a {@link #KEYWORD_SUFFIX} and the name
+	 * without the suffix maps to a Java keyword.
+	 *
+	 * @param name the name
+	 * @return either the name when it wasn't a keyword or a keyword
+	 */
+	public static String keyword(String name) {
+		if (name.endsWith(KEYWORD_SUFFIX)) {
+			String keyword = name.substring(0, name.length() - KEYWORD_SUFFIX.length());
+			if (keywords.contains(keyword))
+				return keyword;
+		}
+		return name;
 	}
 
 }

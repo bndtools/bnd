@@ -1243,4 +1243,44 @@ public class JSONTest {
 		assertThat(x.b).isEqualTo("1");
 		assertThat(x.c).isEqualTo(1L);
 	}
+
+	@Test
+	public void testRecordWithKeywordName() throws Exception {
+		record ARecord(int if__, String while__, long ___) {}
+		ARecord a = new ARecord(1, "1", 1L);
+		assertThat(new JSONCodec().enc()
+			.put(a)
+			.toString()).isEqualTo("{\"_\":1,\"if\":1,\"while\":\"1\"}");
+
+		ARecord x = new JSONCodec().dec()
+			.from("{\"_\":1,\"if\":1,\"while\":\"1\"}")
+			.get(ARecord.class);
+		assertThat(x.if__).isEqualTo(1);
+		assertThat(x.while__).isEqualTo("1");
+		assertThat(x.___).isEqualTo(1L);
+	}
+
+	public static class KeywordDTO {
+		public Integer	if__;
+		public long		___;
+		public String	while__;
+	}
+
+	@Test
+	public void testDTOWithKeywords() throws Exception {
+		KeywordDTO a = new KeywordDTO();
+		a.___ = 1L;
+		a.while__ = "1";
+		a.if__ = 1;
+		assertThat(new JSONCodec().enc()
+			.put(a)
+			.toString()).isEqualTo("{\"_\":1,\"if\":1,\"while\":\"1\"}");
+
+		KeywordDTO x = new JSONCodec().dec()
+			.from("{\"_\":1,\"if\":1,\"while\":\"1\"}")
+			.get(KeywordDTO.class);
+		assertThat(x.if__).isEqualTo(1);
+		assertThat(x.while__).isEqualTo("1");
+		assertThat(x.___).isEqualTo(1L);
+	}
 }
