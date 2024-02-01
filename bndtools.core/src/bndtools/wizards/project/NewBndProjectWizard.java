@@ -231,4 +231,9 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippi
 		return ISkippingWizard.super.getNextPage(page);
 	}
 
+	@Override
+	public boolean canFinish() {
+		return getContainer().getCurrentPage() != templatePage;
+	}
+
 }
