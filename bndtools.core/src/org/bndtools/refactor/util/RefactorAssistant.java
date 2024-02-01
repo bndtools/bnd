@@ -1316,15 +1316,17 @@ public class RefactorAssistant {
 	 * Final fixes. For example, the import clean up
 	 */
 	public void fixup() {
-		Set<String> referred = getReferredTypes(unit());
-		imports.forEach((k, v) -> {
-			if (!k.startsWith(".") && !added.contains(v)) {
-				String fqn = v.getName()
-					.getFullyQualifiedName();
-				if (!referred.contains(fqn))
-					delete(v);
-			}
-		});
+		if (engine.isPresent() && engine().hasChanged()) {
+			Set<String> referred = getReferredTypes(unit());
+			imports.forEach((k, v) -> {
+				if (!k.startsWith(".") && !added.contains(v)) {
+					String fqn = v.getName()
+						.getFullyQualifiedName();
+					if (!referred.contains(fqn))
+						delete(v);
+				}
+			});
+		}
 	}
 
 	/**
@@ -1783,19 +1785,41 @@ public class RefactorAssistant {
 	 *
 	 * @param node the node
 	 */
+
 	public Optional<String> getReferredType(ASTNode node) {
 		if (node instanceof Annotation ann) {
 			return Optional.of(ann.getTypeName()
 				.toString());
 		}
-
 		if (node instanceof SimpleType x) {
 			return Optional.of(x.getName()
 				.toString());
 		}
 
-		if (node instanceof QualifiedName x) {
-			return Optional.of(x.toString());
+		if (node instanceof Name nm) {
+			if (node instanceof QualifiedName qualifiedName) {
+				SimpleName head = qualifiedName.getName();
+				String headName = head.getIdentifier();
+
+				if (qualifiedName.getQualifier() instanceof SimpleName simple) {
+					// Collections.EMPTY_LIST
+					String simpleName = simple.getIdentifier();
+					if (imports.containsKey(simpleName))
+						return Optional.of(simpleName);
+				}
+
+				if (headName.equals(headName.toUpperCase())) {
+					return Optional.of(qualifiedName.getFullyQualifiedName());
+				}
+
+				return Optional.of(qualifiedName.toString());
+			} else {
+				SimpleName simpleName = (SimpleName) node;
+				ImportDeclaration qualified = imports.get(simpleName.getIdentifier());
+				if (qualified != null) {
+					return Optional.of(simpleName.getIdentifier());
+				}
+			}
 		}
 
 		return Optional.empty();
