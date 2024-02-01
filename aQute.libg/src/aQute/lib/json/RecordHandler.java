@@ -4,9 +4,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,10 +27,11 @@ public class RecordHandler extends Handler {
 		final Type			type;
 		final int			index;
 
-		public Accessor(Method m, int index) throws IllegalAccessException {
+		public Accessor(RecordComponent component, int index) throws IllegalAccessException {
+			Method m = component.getAccessor();
 			getter = lookup.unreflect(m);
-			this.name = m.getName();
-			this.type = m.getGenericReturnType();
+			this.name = component.getName();
+			this.type = component.getGenericType();
 			this.index = index;
 		}
 
@@ -48,29 +48,14 @@ public class RecordHandler extends Handler {
 	RecordHandler(JSONCodec codec, Class<?> c) throws Exception {
 		this.codec = codec;
 		assert c.getSuperclass() == Record.class;
+		assert c.isRecord();
+
 		MethodType constructorType = MethodType.methodType(void.class);
 		int index = 0;
-		for (Field f : c.getDeclaredFields()) {
-			int modifiers = f.getModifiers();
-			if (Modifier.isStatic(modifiers) || !Modifier.isFinal(modifiers) || !Modifier.isPrivate(modifiers))
-				continue;
-			try {
-				String name = f.getName();
-				if (name.startsWith("__") && !name.equals("__extra")) {
-					continue;
-				}
-				Method method = c.getMethod(name);
-				if (method == null || method.getReturnType() != f.getType())
-					continue;
-
-				constructorType = constructorType.appendParameterTypes(f.getType());
-
-				Accessor accessor = new Accessor(method, index++);
-				accessors.put(name, accessor);
-
-			} catch (NoSuchMethodException nsme) {
-				// ignore
-			}
+		for (RecordComponent component : c.getRecordComponents()) {
+			constructorType = constructorType.appendParameterTypes(component.getType());
+			Accessor accessor = new Accessor(component, index++);
+			accessors.put(component.getName(), accessor);
 		}
 		this.constructor = lookup.findConstructor(c, constructorType);
 	}
