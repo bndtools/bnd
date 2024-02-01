@@ -323,6 +323,10 @@ public class ASTEngine {
 		rewriter.replace(older, newer, null);
 	}
 
+	public boolean hasChanged() {
+		return added.size() + removed.size() > 0;
+	}
+
 	<T extends ASTNode> Stream<T> toStream(ASTNode node, Class<T> type, ChildListPropertyDescriptor k) {
 		List<T> list = (List) node.getStructuralProperty(k);
 		if (list == null)
