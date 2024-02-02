@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ObjectHandler extends Handler {
 	@SuppressWarnings("rawtypes")
@@ -16,10 +17,11 @@ public class ObjectHandler extends Handler {
 	final Type		types[];
 	final Object	defaults[];
 	final Field		extra;
+	final Supplier<?>	factory;
 
 	ObjectHandler(JSONCodec codec, Class<?> c) throws Exception {
 		rawClass = c;
-
+		factory = newInstanceFunction(c);
 		List<Field> fields = new ArrayList<>();
 		for (Field f : c.getFields()) {
 			if (Modifier.isStatic(f.getModifiers()))
@@ -49,7 +51,7 @@ public class ObjectHandler extends Handler {
 			extra = null;
 
 		try {
-			Object template = newInstance(c);
+			Object template = factory.get();
 
 			for (int i = 0; i < this.fields.length; i++) {
 				defaults[i] = getField(this.fields[i], template);
@@ -66,8 +68,9 @@ public class ObjectHandler extends Handler {
 		String del = "";
 		for (int i = 0; i < fields.length; i++)
 			try {
-				if (fields[i].getName()
-					.startsWith("__"))
+				Field field = fields[i];
+				String actualName = JSONCodec.keyword(field.getName());
+				if (actualName.startsWith("__"))
 					continue;
 
 				Object value = getField(fields[i], object);
@@ -83,7 +86,7 @@ public class ObjectHandler extends Handler {
 				if (!del.isEmpty()) {
 					app.linebreak();
 				}
-				StringHandler.string(app, fields[i].getName());
+				StringHandler.string(app, actualName);
 				app.append(":");
 				app.encode(value, types[i], visited);
 				del = ",";
@@ -98,7 +101,7 @@ public class ObjectHandler extends Handler {
 	public Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 		@SuppressWarnings("unchecked")
-		Object targetObject = newInstance(rawClass);
+		Object targetObject = factory.get();
 
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
@@ -165,6 +168,8 @@ public class ObjectHandler extends Handler {
 	}
 
 	private Field getField(String key) {
+		if (JSONCodec.keywords.contains(key))
+			key = key + JSONCodec.KEYWORD_SUFFIX;
 		for (Field field : fields) {
 			int n = key.compareTo(field.getName());
 			if (n == 0)

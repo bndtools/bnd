@@ -12,11 +12,14 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Supplier;
 
 public class CollectionHandler extends Handler {
-	Class<?>	rawClass;
-	Type		componentType;
+	Class<?>							rawClass;
+	Type								componentType;
+	final Supplier<Collection<Object>>	factory;
 
+	@SuppressWarnings("unchecked")
 	CollectionHandler(Class<?> rawClass, Type componentType) {
 		this.componentType = componentType;
 		if (rawClass.isInterface()) {
@@ -40,6 +43,7 @@ public class CollectionHandler extends Handler {
 				throw new IllegalArgumentException("Unknown interface type for collection: " + rawClass);
 		}
 		this.rawClass = rawClass;
+		this.factory = (Supplier<Collection<Object>>) newInstanceFunction(rawClass);
 	}
 
 	@Override
@@ -54,7 +58,7 @@ public class CollectionHandler extends Handler {
 			try {
 				app.append(del);
 				if (!del.isEmpty()) {
-				app.linebreak();
+					app.linebreak();
 				}
 
 				app.encode(o, componentType, visited);
@@ -70,7 +74,7 @@ public class CollectionHandler extends Handler {
 	@Override
 	public Object decodeArray(Decoder r) throws Exception {
 		@SuppressWarnings("unchecked")
-		Collection<Object> c = (Collection<Object>) newInstance(rawClass);
+		Collection<Object> c = factory.get();
 		r.codec.parseArray(c, componentType, r);
 		return c;
 	}
