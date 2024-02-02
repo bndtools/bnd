@@ -37,4 +37,4 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
     - name: Gradle Wrapper Validation
-      uses: gradle/wrapper-validation-action@8d49e559aae34d3e0eb16cde532684bc9702762b
+      uses: gradle/wrapper-validation-action@27152f6fa06a6b8062ef7195c795692e51fc2c81
