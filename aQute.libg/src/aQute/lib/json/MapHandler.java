@@ -13,10 +13,10 @@ import java.util.TreeMap;
 import java.util.function.Supplier;
 
 public class MapHandler extends Handler {
-	final Class<?>			rawClass;
-	final Type				keyType;
-	final Type				valueType;
-	private Supplier<?>	factory;
+	final Class<?>		rawClass;
+	final Type			keyType;
+	final Type			valueType;
+	final Supplier<?>	factory;
 
 	MapHandler(Class<?> rawClass, Type keyType, Type valueType) {
 
