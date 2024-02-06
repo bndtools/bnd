@@ -77,7 +77,7 @@ jobs:
           8
           ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa
+      uses: gradle/setup-gradle@ec92e829475ac0c2315ea8f9eced72db85bb337a
     - name: Build
       id: build
       run: |
