@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import aQute.bnd.exceptions.BiFunctionWithException;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO.EnvironmentCalculator;
 
@@ -40,7 +42,6 @@ public class IOTest {
 				return map.getOrDefault(key, System.getenv(key));
 			}
 		};
-
 
 		assertEquals(new File(System.getProperty("user.home")), IO.home);
 
@@ -551,4 +552,57 @@ public class IOTest {
 
 		assertThat(Files.getPosixFilePermissions(target.toPath())).contains(PosixFilePermission.OWNER_EXECUTE);
 	}
+
+	@Test
+	public void testGetBasedFile() throws IOException {
+		assertThat("foo/💩../bar".contains("..")).isTrue();
+		assertThat("foo/.💩./bar".contains("..")).isFalse();
+		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "/bar").getParentFile()).isEqualTo(base);
+		assertThat(IO.getBasedFile(base, "")).isEqualTo(base);
+		assertThat(IO.getBasedFile(base, "foo/../bar")).isEqualTo(new File(base, "bar"));
+		assertThat(IO.getBasedFile(base, ".💩.")).isEqualTo(new File(base, ".💩."));
+		assertThat(IO.getBasedFile(base, ".x\u0008.")).isEqualTo(new File(base, ".x\u0008."));
+		assertThat(except(() -> IO.getBasedFile(base, ".."))).contains("io.sub.up");
+		assertThat(except(() -> IO.getBasedFile(base, "bar/../../.."))).contains("io.sub.up");
+	}
+
+	@Test
+	public void testCoder() {
+		String a = "💩..";
+		"..".indexOf(a);
+	}
+
+	@Test
+	public void testWindows() throws IOException {
+		Windows os = new Windows();
+		File base = new File("base").getAbsoluteFile();
+		assertThat(except(() -> os.getBasedFile(base, "bar/LPT1"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/<bla"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/>bla/foo"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/bla\nfoo"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/bla:foo"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/COM²"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/NUL"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/nul"))).contains("io.win.sub.invalid");
+		assertThat(os.getBasedFile(base, "bar/xLPT1")
+			.getName()).contains("LPT1");
+		assertThat(os.getBasedFile(base, "bar/COM²²")
+			.getName()).contains("COM²²");
+
+		// not that a backslash cannot be tested since on Windows, the Path.of
+		// will translate them to segments. On other machines, the backslashes
+		// would not be removed. We can test with normal slashes here since
+		// windows nowadays treats them as segment separators.
+	}
+
+	private String except(RunnableWithException run) {
+		try {
+			run.run();
+			return null;
+		} catch (Exception e) {
+			return e.toString();
+		}
+	}
+
 }
