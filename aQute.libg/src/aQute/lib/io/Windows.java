@@ -19,23 +19,28 @@ class Windows implements OS {
 		Matcher matcher = WINDOWS_BAD_FILE_NAME_P.matcher(subPath);
 		if (matcher.find()) {
 
-			Path normalizedPath = Path.of(subPath)
-				.normalize();
+			try {
+				Path normalizedPath = Path.of(subPath)
+					.normalize();
 
-			if (normalizedPath.startsWith(IO.DOTDOT)) {
-				throw new IOException("io.sub.up invalid path, will escape the designated directory. path='" + subPath
-					+ "', base='" + base + "', normalized='" + normalizedPath + "'");
-			}
-			for (int i = 0; i < normalizedPath.getNameCount(); i++) {
-				String segment = normalizedPath.getName(i)
-					.toString();
-				if (matcher.reset(segment)
-					.matches()) {
-					throw new IOException("io.win.sub.invalid pathcontains reserved names on windows. path='" + subPath
-						+ "', base='" + base + "', pattern='" + WINDOWS_BAD_FILE_NAME_P + "'");
+				if (normalizedPath.startsWith(IO.DOTDOT)) {
+					throw new IOException("io.sub.up invalid path, will escape the designated directory. path='"
+						+ subPath + "', base='" + base + "', normalized='" + normalizedPath + "'");
 				}
+				for (int i = 0; i < normalizedPath.getNameCount(); i++) {
+					String segment = normalizedPath.getName(i)
+						.toString();
+					if (matcher.reset(segment)
+						.matches()) {
+						throw new IOException("io.win.sub.invalid pathcontains reserved names on windows. path='"
+							+ subPath + "', base='" + base + "', pattern='" + WINDOWS_BAD_FILE_NAME_P + "'");
+					}
+				}
+				use = normalizedPath.toString();
+			} catch (java.nio.file.InvalidPathException e) {
+				throw new IOException("io.win.sub.invalid pathcontains reserved names on windows. path='" + subPath
+					+ "', base='" + base + "': '" + e.getMessage() + "'");
 			}
-			use = normalizedPath.toString();
 		} else
 			use = subPath;
 		return new File(base, use);

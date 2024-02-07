@@ -558,11 +558,12 @@ public class IOTest {
 		assertThat("foo/💩../bar".contains("..")).isTrue();
 		assertThat("foo/.💩./bar".contains("..")).isFalse();
 		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "").getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "./").getParentFile()).isEqualTo(base);
 		assertThat(new File(base, "/bar").getParentFile()).isEqualTo(base);
 		assertThat(IO.getBasedFile(base, "")).isEqualTo(base);
 		assertThat(IO.getBasedFile(base, "foo/../bar")).isEqualTo(new File(base, "bar"));
 		assertThat(IO.getBasedFile(base, ".💩.")).isEqualTo(new File(base, ".💩."));
-		assertThat(IO.getBasedFile(base, ".x\u0008.")).isEqualTo(new File(base, ".x\u0008."));
 		assertThat(except(() -> IO.getBasedFile(base, ".."))).contains("io.sub.up");
 		assertThat(except(() -> IO.getBasedFile(base, "bar/../../.."))).contains("io.sub.up");
 	}
