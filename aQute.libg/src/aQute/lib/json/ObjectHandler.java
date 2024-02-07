@@ -168,14 +168,14 @@ public class ObjectHandler extends Handler {
 	}
 
 	private Field getField(String key) {
-		if (JSONCodec.keywords.contains(key))
-			key = key + JSONCodec.KEYWORD_SUFFIX;
 		for (Field field : fields) {
-			int n = key.compareTo(field.getName());
-			if (n == 0)
+			if (key.equals(field.getName()))
 				return field;
-			if (n < 0)
-				return null;
+		}
+		String fixup = JSONCodec.name(key);
+		for (Field field : fields) {
+			if (fixup.equals(field.getName()))
+				return field;
 		}
 		return null;
 	}
