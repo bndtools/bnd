@@ -558,7 +558,7 @@ public class IOTest {
 		assertThat("foo/💩../bar".contains("..")).isTrue();
 		assertThat("foo/.💩./bar".contains("..")).isFalse();
 		File base = new File("base").getAbsoluteFile();
-		assertThat(new File(base, "").getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "")).isEqualTo(base);
 		assertThat(new File(base, "./").getParentFile()).isEqualTo(base);
 		assertThat(new File(base, "/bar").getParentFile()).isEqualTo(base);
 		assertThat(IO.getBasedFile(base, "")).isEqualTo(base);
