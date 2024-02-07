@@ -10,7 +10,7 @@ import aQute.lib.io.IO.OS;
 
 class Windows implements OS {
 	final static Pattern WINDOWS_BAD_FILE_NAME_P = Pattern.compile(
-		"(?:(:?.*[\u0000-\u001F<>:\"|/\\\\?*].*)|..|CON|PRN|AUX|NUL|COM\\d|COM¹|COM²|COM³|LPT\\d|LPT¹|LPT²|LPT³)(?:\\.\\w+)?",
+		"(?:(:?.*[\u0000-\u001F<>:\"|/\\\\?*].*)|\\.\\.|CON|PRN|AUX|NUL|COM\\d|COM¹|COM²|COM³|LPT\\d|LPT¹|LPT²|LPT³)(?:\\.\\w+)?",
 		Pattern.CASE_INSENSITIVE);
 
 	@Override

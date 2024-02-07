@@ -561,6 +561,8 @@ public class IOTest {
 		assertThat(new File(base, "")).isEqualTo(base);
 		assertThat(new File(base, "./").getParentFile()).isEqualTo(base);
 		assertThat(new File(base, "/bar").getParentFile()).isEqualTo(base);
+		assertThat(IO.getBasedFile(base, "META-INF/versions/11/OSGI-INF/MANIFEST.MF")
+			.getName()).isEqualTo("MANIFEST.MF");
 		assertThat(IO.getBasedFile(base, "")).isEqualTo(base);
 		assertThat(IO.getBasedFile(base, "foo/../bar")).isEqualTo(new File(base, "bar"));
 		assertThat(IO.getBasedFile(base, ".💩.")).isEqualTo(new File(base, ".💩."));
@@ -578,6 +580,8 @@ public class IOTest {
 	public void testWindows() throws IOException {
 		Windows os = new Windows();
 		File base = new File("base").getAbsoluteFile();
+		assertThat(os.getBasedFile(base, "META-INF/versions/11/OSGI-INF/MANIFEST.MF")
+			.getName()).isEqualTo("MANIFEST.MF");
 		assertThat(except(() -> os.getBasedFile(base, "bar/LPT1"))).contains("io.win.sub.invalid");
 		assertThat(except(() -> os.getBasedFile(base, "bar/<bla"))).contains("io.win.sub.invalid");
 		assertThat(except(() -> os.getBasedFile(base, "bar/>bla/foo"))).contains("io.win.sub.invalid");
