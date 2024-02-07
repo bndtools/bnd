@@ -74,7 +74,7 @@ public class RecordHandler extends Handler {
 			if (!del.isEmpty())
 				enc.linebreak();
 
-			StringHandler.string(enc, a.name);
+			StringHandler.string(enc, JSONCodec.keyword(a.name));
 			enc.append(":");
 			enc.encode(value, a.type, visited);
 			del = ",";

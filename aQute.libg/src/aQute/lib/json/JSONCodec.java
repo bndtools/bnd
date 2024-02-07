@@ -570,4 +570,11 @@ public class JSONCodec {
 		return name;
 	}
 
+	public static String name(String key) {
+		if (keywords.contains(key)) {
+			return key + KEYWORD_SUFFIX;
+		}
+		return key;
+	}
+
 }
