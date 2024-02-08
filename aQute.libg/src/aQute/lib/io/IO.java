@@ -889,14 +889,19 @@ public class IO {
 	 * contain .. as long as this does not end up at the start when normalized.
 	 * It (surprisingly) can handle absolute files since `new File(base,"/foo")
 	 * resolves not to "/foo" ... I.e. except for the .., it can never escape
-	 * base
+	 * base.
+	 * <p>
+	 * If the subPath is null or empty, this will return the base
 	 *
 	 * @param base the absolute base directory
-	 * @param subPath the sub path
+	 * @param subPath the sub path or null
 	 * @return the absolute file resolved from base with relativePath
 	 * @throws IOException
 	 */
 	public static File getBasedFile(File base, String subPath) throws IOException {
+		assert base != null : "base must not be null or the result could be anywhere on the fs";
+		if (subPath == null || subPath.isEmpty())
+			return base;
 		return os.getBasedFile(base, subPath);
 	}
 

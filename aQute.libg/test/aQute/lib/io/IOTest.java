@@ -558,6 +558,8 @@ public class IOTest {
 		assertThat("foo/💩../bar".contains("..")).isTrue();
 		assertThat("foo/.💩./bar".contains("..")).isFalse();
 		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "/foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "/foo").getParentFile()).isEqualTo(base);
 		assertThat(new File(base, "")).isEqualTo(base);
 		assertThat(new File(base, "./").getParentFile()).isEqualTo(base);
 		assertThat(new File(base, "/bar").getParentFile()).isEqualTo(base);
@@ -568,12 +570,32 @@ public class IOTest {
 		assertThat(IO.getBasedFile(base, ".💩.")).isEqualTo(new File(base, ".💩."));
 		assertThat(except(() -> IO.getBasedFile(base, ".."))).contains("io.sub.up");
 		assertThat(except(() -> IO.getBasedFile(base, "bar/../../.."))).contains("io.sub.up");
+		assertThat(new File(base, "/foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "/foo").getParentFile()).isEqualTo(base);
 	}
 
+	@EnabledOnOs(WINDOWS)
 	@Test
-	public void testCoder() {
-		String a = "💩..";
-		"..".indexOf(a);
+	public void testOnWindowsOnly() {
+		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "c:\\foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "c:\\foo").getParentFile().getName()).isEqualTo("c:");
+		assertThat(new File(base, "c:\\foo").getParentFile().getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "\\\\sys\\foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "\\\\sys\\foo").getParentFile()
+			.getName()).isEqualTo("sys");
+		assertThat(new File(base, "\\\\sys\\foo").getParentFile()
+			.getParentFile()).isEqualTo(base);
+	}
+
+	@DisabledOnOs(WINDOWS)
+	@Test
+	public void testOnOtherOnly() {
+		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "c:\\foo").getName()).isEqualTo("c:\\foo");
+		assertThat(new File(base, "c:\\foo").getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "\\\\sys\\foo").getName()).isEqualTo("\\\\sys\\foo");
+		assertThat(new File(base, "\\\\sys\\foo").getParentFile()).isEqualTo(base);
 	}
 
 	@Test
@@ -594,11 +616,6 @@ public class IOTest {
 			.getName()).contains("LPT1");
 		assertThat(os.getBasedFile(base, "bar/COM²²")
 			.getName()).contains("COM²²");
-
-		// not that a backslash cannot be tested since on Windows, the Path.of
-		// will translate them to segments. On other machines, the backslashes
-		// would not be removed. We can test with normal slashes here since
-		// windows nowadays treats them as segment separators.
 	}
 
 	private String except(RunnableWithException run) {
