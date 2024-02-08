@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -398,12 +399,29 @@ public class RunResolutionTest {
 		bndrun.getModel()
 			.setRunBundles(Collections.emptyList());
 		resolution = bndrun.resolve(true, false);
-		assertThat(bndrun.check("Fail on changes set to ", "Existing runbundles   \\[\\]", "Calculated runbundles"))
-			.isTrue();
+		assertThat(bndrun.check("Fail on changes set to ", "Existing runbundles   \\[\\]", "Calculated runbundles",
+			Pattern.quote(
+				"Diff [osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)', test.simple;version=snapshot] exist in calculated runbundles but missing in existing runbundles")))
+				.isTrue();
+
 
 		// Now succeed because there are no changes
 		resolution = bndrun.resolve(false, false);
 		assertThat(bndrun.check()).isTrue();
 
 	}
+
+	@Test
+	public void testPrintHumanReadableDifference() throws Exception {
+		assertThat(Utils.printHumanReadableDifference(Set.of(1, 2, 3), Set.of(3, 4, 5), "set1", "set2"))
+			.isEqualTo("[1, 2] exist in set1 but missing in set2, [4, 5] exist in set2 but missing in set1");
+
+		assertThat(Utils.printHumanReadableDifference(Set.of(1, 2, 3), Set.of(1, 2, 3), "set1", "set2")).isNull();
+		assertThat(Utils.printHumanReadableDifference(Set.of(), Set.of(1, 2, 3), "set1", "set2"))
+			.isEqualTo("[1, 2, 3] exist in set2 but missing in set1");
+		assertThat(Utils.printHumanReadableDifference(Set.of(1, 2, 3), Set.of(), "set1", "set2"))
+			.isEqualTo("[1, 2, 3] exist in set1 but missing in set2");
+
+	}
+
 }

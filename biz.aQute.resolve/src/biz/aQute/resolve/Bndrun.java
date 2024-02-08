@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.osgi.resource.Requirement;
@@ -142,6 +143,14 @@ public class Bndrun extends Run {
 				error("Fail on changes set to true (--xchange,-x) and there are changes");
 				error("   Existing runbundles   %s", runBundlesBeforeUpdate);
 				error("   Calculated runbundles %s", resolution.getRunBundles());
+
+				String diff = Utils.printHumanReadableDifference(new LinkedHashSet<>(runBundlesBeforeUpdate),
+					new LinkedHashSet<>(resolution.getRunBundles()), "existing runbundles", "calculated runbundles");
+
+				if (diff != null) {
+					error("   Diff %s", diff);
+				}
+
 			} else {
 				if (writeOnChanges) {
 					try {
