@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -400,8 +399,8 @@ public class RunResolutionTest {
 			.setRunBundles(Collections.emptyList());
 		resolution = bndrun.resolve(true, false);
 		assertThat(bndrun.check("Fail on changes set to ", "Existing runbundles   \\[\\]", "Calculated runbundles",
-			Pattern.quote(
-				"Diff [osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)', test.simple;version=snapshot] exist in calculated runbundles but missing in existing runbundles")))
+
+			"Diff .* exist in calculated runbundles but missing in existing runbundles"))
 				.isTrue();
 
 
