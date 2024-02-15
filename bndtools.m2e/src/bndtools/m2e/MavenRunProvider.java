@@ -121,6 +121,7 @@ public class MavenRunProvider implements RunProvider {
 		switch (mode) {
 			case LAUNCH :
 			case EDIT :
+			case EXPORT :
 			case SOURCES :
 				if ((mojoExecution = getBndResolverMojoExecution(maven, projectFacade, bndrunMatchs,
 					monitor)) != null) {
