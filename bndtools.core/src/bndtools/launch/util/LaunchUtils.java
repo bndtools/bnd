@@ -68,6 +68,7 @@ public final class LaunchUtils {
 
 	public static Run createRun(IResource targetResource, RunMode mode) throws Exception {
 		Run run = null;
+		String error = null;
 		for (RunProvider runProvider : getRunProviders()) {
 			try {
 				if ((run = runProvider.create(targetResource, mode)) != null) {
@@ -76,6 +77,9 @@ public final class LaunchUtils {
 			} catch (CoreException e) {
 				StatusManager.getManager()
 					.handle(e.getStatus(), StatusManager.BLOCK);
+			} catch (IllegalStateException ise) {
+				error = ise.getMessage();
+				logger.logError("Error in run listener", ise);
 			} catch (Throwable t) {
 				logger.logError("Error in run listener", t);
 			}
@@ -86,6 +90,9 @@ public final class LaunchUtils {
 				targetResource.getLocation()));
 		}
 
+		if (error != null) {
+			run.error(error);
+		}
 		RunMode.set(run, mode);
 
 		for (RunListener runListener : getRunListeners()) {
