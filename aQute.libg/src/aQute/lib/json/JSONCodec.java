@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -52,33 +53,38 @@ import java.util.regex.Pattern;
  * Will now use hex for encoding byte arrays
  */
 public class JSONCodec {
-	final static Set<String>						keywords			= Set.of("abstract", "assert", "boolean",
+	final static Set<String>						keywords				= Set.of("abstract", "assert", "boolean",
 		"break", "byte", "case", "catch", "char", "class", "const", "continue", "default", "do", "double", "else",
 		"enum", "exports", "extends", "final", "finally", "float", "for", "goto", "if", "implements", "import",
 		"instanceof", "int", "interface", "long", "module", "native", "new", "package", "private", "protected",
 		"public", "requires", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this",
 		"throw", "throws", "transient", "try", "var", "void", "volatile", "while", "true", "false", "null", "_",
 		"record", "sealed", "non-sealed", "permits");
-	public static final String						KEYWORD_SUFFIX		= "__";
+	public static final String						KEYWORD_SUFFIX			= "__";
 
-	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
+	final static String								START_CHARACTERSX		= "[{\"-0123456789tfn";
+	final static String								START_CHARACTERS_BAD	= START_CHARACTERSX + "'TF";
 
 	// Handlers
-	private final static WeakHashMap<Type, Handler>	handlers			= new WeakHashMap<>();
+	private final static WeakHashMap<Type, Handler>	handlers				= new WeakHashMap<>();
 
-	private static StringHandler					sh					= new StringHandler();
-	private static BooleanHandler					bh					= new BooleanHandler();
-	private static CharacterHandler					ch					= new CharacterHandler();
-	private static CollectionHandler				dch					= new CollectionHandler(ArrayList.class,
+	private static StringHandler					sh						= new StringHandler();
+	private static BooleanHandler					bh						= new BooleanHandler();
+	private static CharacterHandler					ch						= new CharacterHandler();
+	private static CollectionHandler				dch						= new CollectionHandler(ArrayList.class,
 		Object.class);
-	private static SpecialHandler					sph					= new SpecialHandler(Pattern.class, null, null);
-	private static DateHandler						sdh					= new DateHandler();
-	private static FileHandler						fh					= new FileHandler();
-	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
-	private static UUIDHandler						uuidh				= new UUIDHandler();
+	private static SpecialHandler					sph						= new SpecialHandler(Pattern.class, null,
+		null);
+	private static DateHandler						sdh						= new DateHandler();
+	private static FileHandler						fh						= new FileHandler();
+	private static ByteArrayHandler					byteh					= new ByteArrayHandler();
+	private static UUIDHandler						uuidh					= new UUIDHandler();
 
+	final AtomicInteger								fishy					= new AtomicInteger();
 	boolean											ignorenull;
-	Map<Type, Handler>								localHandlers		= new ConcurrentHashMap<>();
+	Map<Type, Handler>								localHandlers			= new ConcurrentHashMap<>();
+	boolean											promiscuous;
+	String											startCharacters			= START_CHARACTERSX;
 
 	/**
 	 * Create a new Encoder with the state and appropriate API.
@@ -284,17 +290,27 @@ public class JSONCodec {
 					type = ArrayList.class;
 					break;
 
+				case '\'' :
+					isr.badJSON("Got a single quote ' when a double  quote \" should be used");
+					return parseString(isr);
+
 				case '"' :
 					return parseString(isr);
 
+				case 'N' :
+					isr.badJSON("null must not use upper case, got a N");
 				case 'n' :
 					isr.expect("ull");
 					return null;
 
+				case 'T' :
+					isr.badJSON("booleans must not use upper case, got a T");
 				case 't' :
 					isr.expect("rue");
 					return true;
 
+				case 'F' :
+					isr.badJSON("booleans must not use upper case, got a F");
 				case 'f' :
 					isr.expect("alse");
 					return false;
@@ -326,17 +342,27 @@ public class JSONCodec {
 			case '[' :
 				return h.decodeArray(isr);
 
+			case '\'' :
+				isr.badJSON("single quote is not allowed");
 			case '"' :
 				String string = parseString(isr);
 				return h.decode(isr, string);
 
+			case 'N' :
+				isr.badJSON("do not use upper case for null");
 			case 'n' :
 				isr.expect("ull");
 				return h.decode(isr);
 
+			case 'T' :
+				isr.badJSON("do not use upper case for booleans");
+				// fall through
 			case 't' :
 				isr.expect("rue");
 				return h.decode(isr, Boolean.TRUE);
+
+			case 'F' :
+				isr.badJSON("do not use upper case for booleans");
 
 			case 'f' :
 				isr.expect("alse");
@@ -360,19 +386,23 @@ public class JSONCodec {
 		}
 	}
 
-	String parseString(Decoder r) throws Exception {
-		assert r.current() == '"';
+	protected String parseString(Decoder r) throws Exception {
+		char quote = (char) r.current();
+		assert r.current() == '"' || (promiscuous && r.current == '\'');
 
 		int c = r.next(); // skip first "
 
 		StringBuilder sb = new StringBuilder();
-		while (c != '"') {
+		while (c != quote) {
 			if (c < 0 || Character.isISOControl(c))
 				throw new IllegalArgumentException("JSON strings may not contain control characters: " + r.current());
 
 			if (c == '\\') {
 				c = r.read();
 				switch (c) {
+					case '\'' :
+						r.badJSON("Do not escape single quotes");
+						// fall through
 					case '"' :
 					case '\\' :
 					case '/' :
@@ -404,6 +434,10 @@ public class JSONCodec {
 						sb.append((char) c);
 						break;
 
+					case '\n' :
+						r.badJSON("Do not escape a new line");
+						break;
+
 					default :
 						throw new IllegalArgumentException(
 							"The only characters after a backslash are \", \\, b, f, n, r, t, and u but got " + c);
@@ -413,7 +447,7 @@ public class JSONCodec {
 
 			c = r.read();
 		}
-		assert c == '"';
+		assert c == quote;
 		r.read(); // skip quote
 		return sb.toString();
 	}
@@ -491,7 +525,7 @@ public class JSONCodec {
 	void parseArray(Collection<Object> list, Type componentType, Decoder r) throws Exception {
 		assert r.current() == '[';
 		int c = r.next();
-		while (START_CHARACTERS.indexOf(c) >= 0) {
+		while (isStartCharacter(c)) {
 			Object o = decode(componentType, r);
 			list.add(o);
 
@@ -577,4 +611,13 @@ public class JSONCodec {
 		return key;
 	}
 
+	public JSONCodec promiscuous() {
+		this.startCharacters = START_CHARACTERS_BAD;
+		this.promiscuous = true;
+		return this;
+	}
+
+	public boolean isStartCharacter(int c) {
+		return startCharacters.indexOf(c) >= 0;
+	}
 }

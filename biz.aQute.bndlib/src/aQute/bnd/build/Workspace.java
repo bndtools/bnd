@@ -1437,7 +1437,7 @@ public class Workspace extends Processor {
 		return p;
 	}
 
-	void removeProject(Project p) throws Exception {
+	public void removeProject(Project p) throws Exception {
 		if (p.isCnf())
 			return;
 

@@ -87,6 +87,134 @@ public class JSONTest {
 		public Version			v				= new Version("1.2.3.foo");
 	}
 
+	@Test
+	public void testBadJsonBoolean() throws Exception {
+		JSONCodec codec = new JSONCodec();
+		try {
+			codec.dec()
+				.from("False")
+				.get(Boolean.class);
+			fail("expected failure");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		try {
+			codec.dec()
+				.from("NULL")
+				.get();
+			fail("expected failure");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		try {
+			codec.dec()
+				.from("TRUE")
+				.get();
+			fail("expected failure");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		codec.promiscuous();
+		assertThat(codec.dec()
+			.from("FALSE")
+			.get(Boolean.class)).isFalse();
+		assertThat(codec.dec()
+			.from("True")
+			.get(Boolean.class)).isTrue();
+		assertThat(codec.dec()
+			.from("tRUE")
+			.get(Boolean.class)).isTrue();
+		assertThat(codec.dec()
+			.from("NULL")
+			.get(Object.class)).isNull();
+
+	}
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	@Test
+	public void testBadJsonSingleQuotes() throws Exception {
+		JSONCodec codec = new JSONCodec().promiscuous();
+		String s = codec.dec()
+			.from(
+				"""
+				'hello world'
+				""")
+			.get(String.class);
+		assertThat(s).isEqualTo("hello world");
+		Map map = codec.dec()
+			.from("""
+				{
+					'single_key_single_value' : 'value',
+					'single_key_double_value' : "value",
+					"double_key_single_value" : 'value',
+					"double_key_double_value" : "value"
+				}
+				""")
+			.get(Map.class);
+		assertThat(map).containsEntry("single_key_single_value", "value");
+		assertThat(map).containsEntry("single_key_double_value", "value");
+		assertThat(map).containsEntry("double_key_single_value", "value");
+		assertThat(map).containsEntry("double_key_double_value", "value");
+	}
+
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	@Test
+	public void testBadJsonSingleQuotesFail() throws Exception {
+		JSONCodec codec = new JSONCodec();
+		try {
+			String s = codec.dec()
+				.from("""
+					'hello world'
+					""")
+				.get(String.class);
+			fail("expected failure");
+		} catch (IllegalArgumentException e) {
+			System.out.println(e.getMessage());
+		}
+		try {
+			Map s = codec.dec()
+				.from("""
+					{
+						'single_key_single_value':"value"
+					}
+					""")
+				.get(Map.class);
+			fail("expected failure");
+		} catch (IllegalArgumentException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	@Test
+	public void testBadJsonEscapedNewlinFail() throws Exception {
+		JSONCodec codec = new JSONCodec();
+		try {
+			String s = codec.dec()
+				.from("""
+					"hello world\\
+					"
+					""")
+				.get(String.class);
+			fail("expected failure");
+		} catch (IllegalArgumentException e) {
+			System.out.println(e.getMessage());
+		}
+		codec.promiscuous();
+		String s = codec.dec()
+			.from("""
+				"hello \\
+				world"
+				""")
+			.get(String.class);
+		assertThat(s).isEqualTo("hello world");
+	}
+
 	/**
 	 * Test hooks
 	 */

@@ -1,0 +1,5 @@
+Bundle-Description: \
+  Provides the API for bndlib. It may only contain service APIs or pure libraries \
+  (no dependencies). 
+  
+-includepackage biz.aQute.bnd.*.api

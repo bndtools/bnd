@@ -11,7 +11,7 @@ public class LoggingProgressPlugin implements ProgressPlugin {
 
 	@Override
 	public Task startTask(final String name, final int size) {
-		logger.info(name);
+		logger.debug(name);
 
 		return new Task() {
 			@Override

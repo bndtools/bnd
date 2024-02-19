@@ -137,3 +137,4 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 
 # Don't run tests in parallel with other projects claiming launchpad
 -noparallel: launchpad;task="test"
+-fixupmessages: private references

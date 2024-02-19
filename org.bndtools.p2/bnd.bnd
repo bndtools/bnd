@@ -28,7 +28,8 @@ timestamp: ${tstamp}
     biz.aQute.bnd.util, \
     biz.aQute.bndlib, \
     biz.aQute.repository, \
-    biz.aQute.resolve
+    biz.aQute.resolve, \
+    biz.aQute.bnd.api
 
 pluginnames: ${-dependson},\
 	org.slf4j.api,\

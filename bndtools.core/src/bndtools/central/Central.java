@@ -24,6 +24,7 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.IStartupParticipant;
 import org.bndtools.api.ModelListener;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -38,6 +39,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -65,13 +68,17 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.filechanges.FileChangesPlugin;
+import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.libg.ints.IntCounter;
 import aQute.service.reporter.Reporter;
 import bndtools.Plugin;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
+import bndtools.central.sync.WorkspaceSynchronizer;
 import bndtools.preferences.BndPreferences;
 
 public class Central implements IStartupParticipant {
@@ -321,10 +328,12 @@ public class Central implements IStartupParticipant {
 
 			ws.setOffline(new BndPreferences().isWorkspaceOffline());
 
+			ws.addBasicPlugin(new FileChangesPluginImpl());
 			ws.addBasicPlugin(new SWTClipboard());
 			ws.addBasicPlugin(getInstance().repoListenerTracker);
 			ws.addBasicPlugin(getEclipseWorkspaceRepository());
 			ws.addBasicPlugin(new JobProgress());
+			ws.addBasicPlugin(new EclipseLifeCyclePlugin());
 
 			// Initialize projects in synchronized block
 			ws.getBuildOrder();
@@ -700,8 +709,8 @@ public class Central implements IStartupParticipant {
 	 * @throws Exception If the callable throws an exception.
 	 */
 	public static <V> V bndCall(BiFunctionWithException<Callable<V>, BooleanSupplier, V> lockMethod,
-		FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable,
-		IProgressMonitor monitorOrNull) throws Exception {
+		FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable, IProgressMonitor monitorOrNull)
+		throws Exception {
 		IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
 		Task task = new Task() {
 			@Override
@@ -728,14 +737,14 @@ public class Central implements IStartupParticipant {
 		try {
 			Callable<V> with = () -> TaskManager.with(task, () -> callable.apply((name, runnable) -> after.add(() -> {
 				monitor.subTask(name);
-					try {
+				try {
 					runnable.run();
 				} catch (Exception e) {
 					if (!(e instanceof OperationCanceledException)) {
 						status.add(new Status(IStatus.ERROR, runnable.getClass(),
 							"Unexpected exception in bndCall after action: " + name, e));
-						}
 					}
+				}
 			})));
 			return lockMethod.apply(with, monitor::isCanceled);
 		} finally {
@@ -816,5 +825,101 @@ public class Central implements IStartupParticipant {
 			.stream()
 			.flatMap(Collection::stream)
 			.collect(Collectors.toList());
+	}
+
+	static class FileChangesPluginImpl implements FileChangesPlugin {
+
+		@Override
+		public Promise<Map<File, List<FileChangesPlugin.Marker>>> refresh(File... files) {
+			Deferred<Map<File, List<FileChangesPlugin.Marker>>> deferred = Processor.getPromiseFactory()
+				.deferred();
+
+			Job job = Job.create("refresh files", mon -> {
+				MultiMap<File, FileChangesPlugin.Marker> markersMap = new MultiMap<>();
+				SubMonitor subMonitor = SubMonitor.convert(mon, "refresh files", files.length);
+				try {
+					for (File file : files) {
+						SubMonitor perFile = subMonitor.newChild(1);
+						perFile.beginTask(file.getPath(), 1);
+						List<Marker> markers = refresh(file, perFile);
+						markersMap.addAll(file, markers);
+						perFile.done();
+					}
+				} catch (Exception e) {
+					deferred.fail(e);
+				} finally {
+					deferred.resolve(markersMap);
+				}
+			});
+			job.schedule();
+			return deferred.getPromise();
+		}
+
+		public List<Marker> refresh(File file, SubMonitor c) {
+			System.out.println("refreshing " + file);
+			List<Marker> result = new ArrayList<>();
+			IResource target = toResource(file);
+			if (target != null) {
+				int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
+				try {
+					if (!target.isSynchronized(depth)) {
+						target.refreshLocal(depth, c);
+						if (target.exists() && (target.isDerived() != false)) {
+							target.setDerived(false, c);
+						}
+					}
+					IMarker[] markers = target.findMarkers(null, false, IResource.DEPTH_INFINITE);
+					if (markers != null) {
+						for (IMarker marker : markers) {
+							Marker m = convertMarker(marker);
+							result.add(m);
+						}
+					}
+				} catch (Exception e) {
+					Marker m = new FileChangesPlugin.Marker("EXCEPTION", e.getClass()
+						.getSimpleName(), e.getMessage(), e, -1, -1, -1);
+					result.add(m);
+				}
+			}
+			return result;
+		}
+
+		public Marker convertMarker(IMarker marker) {
+			int severity = marker.getAttribute(IMarker.SEVERITY, -1);
+			String type = switch(severity) {
+				case IMarker.SEVERITY_ERROR -> "ERROR";
+				case IMarker.SEVERITY_WARNING -> "WARNING";
+				case IMarker.SEVERITY_INFO -> "INFO";
+				default -> "UNKNOWN-" + severity;
+			};
+			String message = marker.getAttribute(IMarker.MESSAGE, "");
+			String id = Long.toString(marker.getId());
+			int start = marker.getAttribute(IMarker.CHAR_START, -1);
+			int end = marker.getAttribute(IMarker.CHAR_END, -1);
+			int line = marker.getAttribute(IMarker.LINE_NUMBER, -1);
+			Marker m = new FileChangesPlugin.Marker(type, id, message, null, start, end, line);
+			return m;
+		}
+
+	}
+
+	static class EclipseLifeCyclePlugin extends LifeCyclePlugin {
+		@Override
+		public void created(Project project) throws Exception {
+			Job job = Job.create("create project " + project, mon -> {
+				WorkspaceSynchronizer.createProject(project.getBase(), project, mon);
+			});
+			job.schedule();
+		}
+
+		@Override
+		public void delete(Project project) throws Exception {
+			Central.getProject(project).ifPresent( iproject -> {
+				Job job = Job.create("remove project " + project, mon -> {
+						WorkspaceSynchronizer.removeProject(iproject, mon);
+				});
+				job.schedule();
+			});
+		}
 	}
 }

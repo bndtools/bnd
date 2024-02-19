@@ -1,6 +1,8 @@
 package bndtools.central.sync;
 
 import java.io.File;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +10,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.ICommand;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -22,10 +26,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IClasspathAttribute;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.eclipse.EclipseUtil;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Constants;
 import aQute.lib.collections.Logic;
 import aQute.lib.fileset.FileSet;
 import bndtools.Plugin;
@@ -35,8 +44,9 @@ import bndtools.central.Central;
  * A utility class to synchronize the bnd & Eclipse workspaces as well as build.
  */
 public class WorkspaceSynchronizer {
-	private static IWorkspace		eclipse	= ResourcesPlugin.getWorkspace();
-	private static IWorkspaceRoot	wsroot	= eclipse.getRoot();
+	private static final Path[]		NO_PATHS	= new Path[] {};
+	private static IWorkspace		eclipse		= ResourcesPlugin.getWorkspace();
+	private static IWorkspaceRoot	wsroot		= eclipse.getRoot();
 
 	/**
 	 * Build the whole workspace.
@@ -220,36 +230,103 @@ public class WorkspaceSynchronizer {
 	}
 
 	public static IProject createProject(File directory, Project model, IProgressMonitor monitor) throws CoreException {
-		IPath location = new Path(directory.getAbsolutePath());
+		IProject project = wsroot.getProject(model.getName());
+		IProjectDescription description = ResourcesPlugin.getWorkspace()
+			.newProjectDescription(project.getName());
 
-		SubMonitor subMonitor = SubMonitor.convert(monitor, 7);
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IProject project = workspace.getRoot()
-			.getProject(directory.getName());
+		File projectBase = model.getBase();
+		IPath location = Path.fromOSString(projectBase.getAbsolutePath());
+		description.setLocation(location);
 
-		if (!project.exists()) {
-			try {
-				if (model != null) {
-					if (!model.getFile(".project")
-						.isFile()) {
-						EclipseUtil.createProject(model);
-					}
-					if (!model.getFile(".classpath")
-						.isFile()) {
-						EclipseUtil.createClasspath(model);
-					}
-				}
-				subMonitor.setWorkRemaining(6);
-				IProjectDescription description = workspace.newProjectDescription(directory.getName());
-				description.setLocation(location);
-				project.create(description, subMonitor.split(1));
-				project.open(subMonitor.split(1));
-				project.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(4));
-			} catch (Exception e) {
-				About.logger.error("Failed to create project {} : {}", project, e, e);
-			}
-		}
+		project.create(description, monitor);
+		project.open(monitor);
 
+		IJavaProject javaProject = JavaCore.create(project);
+		synchronizeProject(model, monitor);
 		return project;
 	}
+
+	/**
+	 * Ensure that the related IProject has the settings as defined by the model
+	 * and workspace. It will set the Project builder, nature and the classpath
+	 * entries.
+	 *
+	 * @param model the model
+	 * @param monitor
+	 */
+	public static IProject synchronizeProject(Project model, IProgressMonitor monitor, boolean preserve)
+		throws CoreException {
+		try {
+			IProject project = wsroot.getProject(model.getName());
+			IJavaProject javaProject = JavaCore.create(project);
+			if (!javaProject.exists())
+				return project;
+
+			String release = model.getProperty(Constants.JAVAC_RELEASE,
+				model.getProperty(Constants.JAVAC_SOURCE, "17"));
+			javaProject.setOption(JavaCore.COMPILER_RELEASE, release);
+
+			IProjectDescription description = project.getDescription();
+
+			description.setNatureIds(new String[] {
+				"org.eclipse.jdt.core.javanature", Plugin.BNDTOOLS_NATURE
+			});
+
+			ICommand javaBuilder = description.newCommand();
+			javaBuilder.setBuilderName("org.eclipse.jdt.core.javabuilder<");
+			ICommand bndBuilder = description.newCommand();
+			bndBuilder.setBuilderName("bndtools.core.bndbuilder");
+			description.setBuildSpec(new ICommand[] {
+				javaBuilder, bndBuilder
+			});
+			project.setDescription(description, monitor);
+
+
+			List<IClasspathEntry> cpes = new ArrayList<>();
+
+			for (File f : model.getSourcePath()) {
+				IFolder src = project.getFolder(relative(model.getBase(), f));
+				IFolder bin = project.getFolder(relative(model.getBase(), model.getSrcOutput()));
+				IClasspathEntry sourceEntry = JavaCore.newSourceEntry(src.getFullPath(), NO_PATHS, bin.getFullPath());
+				cpes.add(sourceEntry);
+			}
+			File f = model.getTestSrc();
+			IFolder src = project.getFolder(relative(model.getBase(), f));
+			IFolder bin = project.getFolder(relative(model.getBase(), model.getTestOutput()));
+			IClasspathAttribute testAttr = JavaCore.newClasspathAttribute(IClasspathAttribute.TEST, "true");
+
+			IClasspathEntry testEntry = JavaCore.newSourceEntry(src.getFullPath(), NO_PATHS, NO_PATHS,
+				bin.getFullPath(), new IClasspathAttribute[] {
+					testAttr
+				});
+			assert testEntry.isTest();
+
+			return project;
+		} catch (CoreException e) {
+			throw e;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	private static String relative(File base, File f) {
+		java.nio.file.Path relative = base.toPath()
+			.relativize(f.toPath());
+		assert !relative.isAbsolute();
+		return relative.toString();
+	}
+
+	private static IFolder toIFolder(IProject project, File base, File srcOutput) {
+		return null;
+	}
+
+	private static <T> T[] concat(T[] array, T newMember) {
+		@SuppressWarnings("unchecked")
+		T[] newArray = (T[]) Array.newInstance(array.getClass()
+			.getComponentType(), array.length + 1);
+		System.arraycopy(array, 0, newArray, 0, array.length);
+		newArray[array.length] = newMember;
+		return newArray;
+	}
+
 }

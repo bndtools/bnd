@@ -28,6 +28,7 @@ public class Decoder implements Closeable {
 	MessageDigest		digest;
 	Map<String, Object>	extra;
 	Charset				encoding	= UTF_8;
+	int					line		= 0, position = 0;
 
 	boolean				strict;
 	boolean				inflate;
@@ -144,6 +145,12 @@ public class Decoder implements Closeable {
 			digest.update((byte) (current / 256));
 			digest.update((byte) (current % 256));
 		}
+		if (current == '\n') {
+			line++;
+			position = 0;
+		} else {
+			position++;
+		}
 		return current;
 	}
 
@@ -173,9 +180,22 @@ public class Decoder implements Closeable {
 	}
 
 	void expect(String s) throws Exception {
-		for (int i = 0; i < s.length(); i++)
-			if (!(s.charAt(i) == read()))
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			int r= read();
+			if ( r < 0)
+				fatal("Expected " + s + " but got something different");
+
+			if (!(c == r)) {
+				if ( codec.promiscuous) {
+					char a = Character.toLowerCase(c);
+					char b = Character.toLowerCase((char) r);
+					if (a == b)
+						continue;
+				}
 				throw new IllegalArgumentException("Expected " + s + " but got something different");
+			}
+		}
 		read();
 	}
 
@@ -200,5 +220,17 @@ public class Decoder implements Closeable {
 			throw new IllegalStateException("Reader already set, inflate must come before from()");
 		inflate = true;
 		return this;
+	}
+
+	public void badJSON(String reason) {
+		if (codec.promiscuous) {
+			codec.fishy.incrementAndGet();
+			return;
+		}
+		throw new IllegalArgumentException(line + "," + position + ": " + reason);
+	}
+
+	public void fatal(String message) {
+		throw new IllegalArgumentException(line + "," + position + ": " + message);
 	}
 }

@@ -34,6 +34,7 @@
 	biz.aQute.repository;version=snapshot,\
 	biz.aQute.resolve;version=snapshot,\
 	bndtools.api;version=snapshot,\
+    bndtools.assistant.provider;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.core;version=snapshot,\
 	bndtools.core.services;version=snapshot,\

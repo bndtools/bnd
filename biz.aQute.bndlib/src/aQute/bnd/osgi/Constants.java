@@ -164,6 +164,7 @@ public interface Constants {
 	String		JAVAAGENT									= "-javaagent";
 	String		JAVAC_ENCODING								= "javac.encoding";
 	String		JAVAC_SOURCE								= "javac.source";
+	String		JAVAC_RELEASE								= "javac.release";
 	String		JAVAC_TARGET								= "javac.target";
 	String		JAVAC_PROFILE								= "javac.profile";
 	String		JAVAC										= "javac";

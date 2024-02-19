@@ -37,6 +37,7 @@ Export-Package: \
 	aQute.bnd.util.repository;-noimport:=true,\
 	aQute.bnd.version;-noimport:=true,\
     aQute.lib.deployer;-noimport:=true,\
+    aQute.service.filechanges;-noimport:=true, \
     aQute.service.reporter;-noimport:=true
 
 -conditionalpackage: \

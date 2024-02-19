@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <extension point="org.eclipse.ui.views">
+        <category id="assistant.viewCategory" name="Assistant">
+        </category>
+        <view category="assistant.viewCategory"
+            name="Assistant"
+            icon="icons/sample.gif"
+            class="biz.aQute.ai.assistant.eclipse.ui.AIView"
+            id="bndtools.assistant.provider.AIView">
+        </view>
+   </extension>
+</plugin>
