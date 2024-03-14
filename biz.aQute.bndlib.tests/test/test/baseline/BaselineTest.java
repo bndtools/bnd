@@ -627,6 +627,32 @@ public class BaselineTest {
 		}
 	}
 
+	@Test
+	public void testMinorChangeSuppressedByThreshold() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		try (Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
+			 Jar newer = new Jar(IO.getFile("testresources/minor-change-1.0.1.jar"));) {
+
+			baseline.baseline(newer, older, null, Delta.MAJOR);
+
+			BundleInfo bundleInfo = baseline.getBundleInfo();
+
+			assertFalse(bundleInfo.mismatch);
+			assertEquals(bundleInfo.newerVersion.toString(), bundleInfo.suggestedVersion.toString());
+
+			baseline.baseline(newer, older, null, Delta.MINOR);
+
+			bundleInfo = baseline.getBundleInfo();
+
+			assertTrue(bundleInfo.mismatch);
+			assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+		}
+	}
+
 	// Adding a method to an exported class and unexporting a package produces a
 	// MINOR bump (1.0.0 -> 1.1.0)
 	@Test

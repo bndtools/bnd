@@ -1,12 +1,5 @@
 package aQute.bnd.differ;
 
-import static aQute.bnd.service.diff.Delta.ADDED;
-import static aQute.bnd.service.diff.Delta.MAJOR;
-import static aQute.bnd.service.diff.Delta.MICRO;
-import static aQute.bnd.service.diff.Delta.MINOR;
-import static aQute.bnd.service.diff.Delta.REMOVED;
-import static aQute.bnd.service.diff.Delta.UNCHANGED;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +27,8 @@ import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.libg.generics.Create;
 import aQute.service.reporter.Reporter;
+
+import static aQute.bnd.service.diff.Delta.*;
 
 /**
  * This class maintains
@@ -94,6 +89,21 @@ public class Baseline {
 	 * @throws Exception
 	 */
 	public Set<Info> baseline(Jar newer, Jar older, Instructions packageFilters) throws Exception {
+		return baseline(newer, older, packageFilters, IGNORED);
+	}
+
+	/**
+	 * This method compares a jar to a baseline jar and returns version
+	 * suggestions if the baseline does not agree with the newer jar. The
+	 * returned set contains all the exported packages.
+	 *
+	 * @param newer
+	 * @param older
+	 * @return null if ok, otherwise a set of suggested versions for all
+	 *         packages (also the ones that were ok).
+	 * @throws Exception
+	 */
+	public Set<Info> baseline(Jar newer, Jar older, Instructions packageFilters, Delta threshold) throws Exception {
 		Tree n = differ.tree(newer);
 		Parameters nExports = getExports(newer);
 		Tree o = differ.tree(older);
@@ -101,10 +111,15 @@ public class Baseline {
 		if (packageFilters == null)
 			packageFilters = new Instructions();
 
-		return baseline(n, nExports, o, oExports, packageFilters);
+		return baseline(n, nExports, o, oExports, packageFilters, threshold);
 	}
 
 	public Set<Info> baseline(Tree n, Parameters nExports, Tree o, Parameters oExports, Instructions packageFilters)
+		throws Exception {
+		return baseline(n, nExports, o, oExports, packageFilters, IGNORED);
+	}
+
+	public Set<Info> baseline(Tree n, Parameters nExports, Tree o, Parameters oExports, Instructions packageFilters, Delta threshold)
 		throws Exception {
 		diff = n.diff(o);
 		Diff apiDiff = diff.get("<api>");
@@ -170,6 +185,11 @@ public class Baseline {
 						default :
 							break;
 					}
+
+					if (diff.getDelta().compareTo(threshold) < 0) {
+						return true;
+					}
+
 					switch (diff.getType()) {
 						case PACKAGE :
 						case INTERFACE :
@@ -244,6 +264,11 @@ public class Baseline {
 				case REMOVED -> MAJOR;
 				default -> MAJOR;
 			};
+
+			if (content.compareTo(threshold) < 0) {
+				content = UNCHANGED;
+			}
+
 			if (content.compareTo(highestDelta) > 0) {
 				highestDelta = content;
 			}
@@ -367,7 +392,7 @@ public class Baseline {
 
 	private Version bump(Delta delta, Version last, int offset, int base) {
 		return switch (delta) {
-			case UNCHANGED -> last;
+			case UNCHANGED, IGNORED -> last;
 			case MINOR -> new Version(last.getMajor(), last.getMinor() + offset, base);
 			case MAJOR -> new Version(last.getMajor() + 1, base, base);
 			case ADDED -> last;
