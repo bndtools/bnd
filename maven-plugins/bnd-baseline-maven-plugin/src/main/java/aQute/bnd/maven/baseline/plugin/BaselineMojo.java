@@ -90,13 +90,6 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(required = false, defaultValue = "*", property = "bnd.baseline.diffpackages")
 	private List<String>			diffpackages;
 
-	/**
-	 * Do not fail if the semantic level of the diff is below this threshold. Valid values are MAJOR, MINOR and
-	 * MICRO with MICRO being the default.
-	 */
-	@Parameter(required = false, defaultValue = "MICRO", property = "bnd.baseline.diffthreshold")
-	private Delta 					diffthreshold;
-
 	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")
 	private boolean					skip;
 
@@ -266,7 +259,7 @@ public class BaselineMojo extends AbstractMojo {
 			differ.setIgnore(new Parameters(Strings.join(diffignores), processor));
 			Baseline baseliner = new Baseline(processor, differ);
 			List<Info> infos = baseliner
-				.baseline(newer, older, new Instructions(new Parameters(Strings.join(diffpackages), processor)), diffthreshold)
+				.baseline(newer, older, new Instructions(new Parameters(Strings.join(diffpackages), processor)))
 				.stream()
 				.sorted(Comparator.comparing(info -> info.packageName))
 				.toList();

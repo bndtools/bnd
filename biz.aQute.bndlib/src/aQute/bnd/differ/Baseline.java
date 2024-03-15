@@ -1,20 +1,25 @@
 package aQute.bnd.differ;
 
+import static aQute.bnd.service.diff.Delta.ADDED;
+import static aQute.bnd.service.diff.Delta.MAJOR;
+import static aQute.bnd.service.diff.Delta.MICRO;
+import static aQute.bnd.service.diff.Delta.MINOR;
+import static aQute.bnd.service.diff.Delta.REMOVED;
+import static aQute.bnd.service.diff.Delta.UNCHANGED;
+
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Formatter;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.Manifest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -26,9 +31,7 @@ import aQute.bnd.service.diff.Type;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.libg.generics.Create;
-import aQute.service.reporter.Reporter;
-
-import static aQute.bnd.service.diff.Delta.*;
+import aQute.service.reporter.Reporter;;
 
 /**
  * This class maintains
@@ -89,21 +92,6 @@ public class Baseline {
 	 * @throws Exception
 	 */
 	public Set<Info> baseline(Jar newer, Jar older, Instructions packageFilters) throws Exception {
-		return baseline(newer, older, packageFilters, IGNORED);
-	}
-
-	/**
-	 * This method compares a jar to a baseline jar and returns version
-	 * suggestions if the baseline does not agree with the newer jar. The
-	 * returned set contains all the exported packages.
-	 *
-	 * @param newer
-	 * @param older
-	 * @return null if ok, otherwise a set of suggested versions for all
-	 *         packages (also the ones that were ok).
-	 * @throws Exception
-	 */
-	public Set<Info> baseline(Jar newer, Jar older, Instructions packageFilters, Delta threshold) throws Exception {
 		Tree n = differ.tree(newer);
 		Parameters nExports = getExports(newer);
 		Tree o = differ.tree(older);
@@ -111,15 +99,10 @@ public class Baseline {
 		if (packageFilters == null)
 			packageFilters = new Instructions();
 
-		return baseline(n, nExports, o, oExports, packageFilters, threshold);
+		return baseline(n, nExports, o, oExports, packageFilters);
 	}
 
 	public Set<Info> baseline(Tree n, Parameters nExports, Tree o, Parameters oExports, Instructions packageFilters)
-		throws Exception {
-		return baseline(n, nExports, o, oExports, packageFilters, IGNORED);
-	}
-
-	public Set<Info> baseline(Tree n, Parameters nExports, Tree o, Parameters oExports, Instructions packageFilters, Delta threshold)
 		throws Exception {
 		diff = n.diff(o);
 		Diff apiDiff = diff.get("<api>");
@@ -150,6 +133,8 @@ public class Baseline {
 
 			if (!packageFilters.matches(pdiff.getName()))
 				continue;
+
+			var threshold = getThreshold(packageFilters, pdiff);
 
 			final Info info = new Info();
 			infos.add(info);
@@ -186,7 +171,8 @@ public class Baseline {
 							break;
 					}
 
-					if (diff.getDelta().compareTo(threshold) < 0) {
+					if (threshold.map(d -> diff.getDelta()
+						.compareTo(d) < 0).orElse(false)) {
 						return true;
 					}
 
@@ -265,7 +251,8 @@ public class Baseline {
 				default -> MAJOR;
 			};
 
-			if (content.compareTo(threshold) < 0) {
+
+			if (threshold.isPresent() && content.compareTo(threshold.get()) < 0) {
 				content = UNCHANGED;
 			}
 
@@ -308,6 +295,25 @@ public class Baseline {
 		}
 
 		return infos;
+	}
+
+	private Optional<Delta> getThreshold(Instructions packageFilters, Diff pdiff) {
+
+		var matcher = packageFilters.matcher(pdiff.getName());
+		if (matcher == null || matcher.isNegated())
+			return Optional.empty();
+
+		var attrs = packageFilters.get(matcher);
+		assert attrs != null : "guaranteed by the matcher != null";
+		var threshold = attrs.getOrDefault(Constants.DIFFPACKAGES_THRESHOLD, "MICRO")
+			.toUpperCase().trim();
+		try {
+			return Optional.of(Delta.valueOf(threshold));
+		}
+		catch (IllegalArgumentException e) {
+			bnd.error("baseline.threshold baseline threshold specified as [%s] but does not correspond to a Delta enum - ignoring", threshold);
+			return Optional.empty();
+		}
 	}
 
 	/**

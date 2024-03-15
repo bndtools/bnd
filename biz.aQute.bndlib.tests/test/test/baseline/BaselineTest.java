@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import aQute.bnd.osgi.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,12 +33,6 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
-import aQute.bnd.osgi.Analyzer;
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
@@ -637,14 +632,14 @@ public class BaselineTest {
 		try (Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
 			 Jar newer = new Jar(IO.getFile("testresources/minor-change-1.0.1.jar"));) {
 
-			baseline.baseline(newer, older, null, Delta.MAJOR);
+			baseline.baseline(newer, older, new Instructions("*;threshold=MAJOR"));
 
 			BundleInfo bundleInfo = baseline.getBundleInfo();
 
 			assertFalse(bundleInfo.mismatch);
 			assertEquals(bundleInfo.newerVersion.toString(), bundleInfo.suggestedVersion.toString());
 
-			baseline.baseline(newer, older, null, Delta.MINOR);
+			baseline.baseline(newer, older, new Instructions("*;threshold=MINOR"));
 
 			bundleInfo = baseline.getBundleInfo();
 

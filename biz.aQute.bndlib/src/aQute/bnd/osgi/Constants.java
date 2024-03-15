@@ -122,6 +122,7 @@ public interface Constants {
 	String		COMPRESSION									= "-compression";
 	String		DIFFIGNORE									= "-diffignore";
 	String		DIFFPACKAGES								= "-diffpackages";
+	String		DIFFPACKAGES_THRESHOLD						= "threshold";
 	String		DEPENDSON									= "-dependson";
 	String		DEPLOY										= "-deploy";
 	String		DEPLOYREPO									= "-deployrepo";
