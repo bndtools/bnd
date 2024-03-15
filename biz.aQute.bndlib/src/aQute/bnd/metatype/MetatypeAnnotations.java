@@ -105,6 +105,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 
 		Set<String> ocdIds = new HashSet<>();
 		Set<String> pids = new HashSet<>();
+		Set<String> factoryPids = new HashSet<>();
 
 		Instructions instructions = new Instructions(header);
 
@@ -142,8 +143,10 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				analyzer.error("Duplicate OCD id %s from class %s; known ids %s", definition.id, c.getFQN(), ocdIds);
 			}
 			for (DesignateDef dDef : definition.designates) {
-				if (dDef.pid != null && !pids.add(dDef.pid)) {
-					analyzer.error("Duplicate pid %s from class %s", dDef.pid, c.getFQN());
+				Set<String> relevantPids = dDef.factory ? factoryPids : pids;
+				if (dDef.pid != null && !relevantPids.add(dDef.pid)) {
+					analyzer.error("Duplicate %s from class %s", dDef.factory ? "factoryPid" : "pid", dDef.pid,
+						c.getFQN());
 				}
 			}
 			String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(definition.id, "Invalid resource name")
