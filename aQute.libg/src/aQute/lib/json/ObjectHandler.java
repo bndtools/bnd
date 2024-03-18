@@ -104,7 +104,7 @@ public class ObjectHandler extends Handler {
 		Object targetObject = factory.get();
 
 		int c = r.next();
-		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
+		while (r.codec.isStartCharacter(c)) {
 
 			// Get key
 			String key = r.codec.parseString(r);
@@ -157,6 +157,11 @@ public class ObjectHandler extends Handler {
 			if (c == ',') {
 				c = r.next();
 				continue;
+			}
+
+			if (r.codec.promiscuous && r.isEof()) {
+				r.codec.fishy.incrementAndGet();
+				return targetObject;
 			}
 
 			throw new IllegalArgumentException(
