@@ -8,20 +8,18 @@ import static aQute.bnd.service.diff.Delta.REMOVED;
 import static aQute.bnd.service.diff.Delta.UNCHANGED;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Formatter;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.Manifest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -33,7 +31,7 @@ import aQute.bnd.service.diff.Type;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.libg.generics.Create;
-import aQute.service.reporter.Reporter;
+import aQute.service.reporter.Reporter;;
 
 /**
  * This class maintains
@@ -133,8 +131,11 @@ public class Baseline {
 				.startsWith("java."))
 				continue;
 
-			if (!packageFilters.matches(pdiff.getName()))
+			var matcher = packageFilters.matcher(pdiff.getName());
+			if (!packageFilters.isEmpty() && (matcher == null || matcher.isNegated()))
 				continue;
+
+			var threshold = getThreshold(packageFilters, matcher);
 
 			final Info info = new Info();
 			infos.add(info);
@@ -170,6 +171,11 @@ public class Baseline {
 						default :
 							break;
 					}
+
+					if (threshold != null && diff.getDelta().compareTo(threshold) < 0) {
+						return true;
+					}
+
 					switch (diff.getType()) {
 						case PACKAGE :
 						case INTERFACE :
@@ -244,6 +250,12 @@ public class Baseline {
 				case REMOVED -> MAJOR;
 				default -> MAJOR;
 			};
+
+
+			if (threshold != null && content.compareTo(threshold) < 0) {
+				content = UNCHANGED;
+			}
+
 			if (content.compareTo(highestDelta) > 0) {
 				highestDelta = content;
 			}
@@ -283,6 +295,22 @@ public class Baseline {
 		}
 
 		return infos;
+	}
+
+	private Delta getThreshold(Instructions packageFilters, Instruction matcher) {
+		if (matcher == null)
+			return null;
+		var attrs = packageFilters.get(matcher);
+		assert attrs != null : "guaranteed by the matcher != null";
+		var threshold = attrs.getOrDefault(Constants.DIFFPACKAGES_THRESHOLD, "MICRO")
+			.toUpperCase();
+		try {
+			return Delta.valueOf(threshold);
+		}
+		catch (IllegalArgumentException e) {
+			bnd.error("baseline.threshold baseline threshold specified as [%s] but does not correspond to a Delta enum - ignoring", threshold);
+		}
+		return null;
 	}
 
 	/**
@@ -367,7 +395,7 @@ public class Baseline {
 
 	private Version bump(Delta delta, Version last, int offset, int base) {
 		return switch (delta) {
-			case UNCHANGED -> last;
+			case UNCHANGED, IGNORED -> last;
 			case MINOR -> new Version(last.getMajor(), last.getMinor() + offset, base);
 			case MAJOR -> new Version(last.getMajor() + 1, base, base);
 			case ADDED -> last;
