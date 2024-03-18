@@ -90,7 +90,7 @@ public class RecordHandler extends Handler {
 		@SuppressWarnings("unchecked")
 		Object[] args = new Object[accessors.size()];
 		int c = r.next();
-		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
+		while (r.codec.isStartCharacter(c)) {
 
 			// Get key
 			String key = r.codec.parseString(r);
@@ -129,8 +129,13 @@ public class RecordHandler extends Handler {
 				continue;
 			}
 
+			if (r.codec.promiscuous && r.isEof()) {
+				r.codec.fishy.incrementAndGet();
+				return create(args);
+			}
+
 			throw new IllegalArgumentException(
-				"Invalid character in parsing object, expected } or , but found " + (char) c);
+				"Invalid character in parsing record, expected } or , but found " + (char) c);
 		}
 		assert r.current() == '}';
 		r.read(); // skip closing
