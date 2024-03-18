@@ -131,10 +131,11 @@ public class Baseline {
 				.startsWith("java."))
 				continue;
 
-			if (!packageFilters.matches(pdiff.getName()))
+			var matcher = packageFilters.matcher(pdiff.getName());
+			if (!packageFilters.isEmpty() && (matcher == null || matcher.isNegated()))
 				continue;
 
-			var threshold = getThreshold(packageFilters, pdiff);
+			var threshold = getThreshold(packageFilters, matcher);
 
 			final Info info = new Info();
 			infos.add(info);
@@ -171,8 +172,7 @@ public class Baseline {
 							break;
 					}
 
-					if (threshold.map(d -> diff.getDelta()
-						.compareTo(d) < 0).orElse(false)) {
+					if (threshold != null && diff.getDelta().compareTo(threshold) < 0) {
 						return true;
 					}
 
@@ -252,7 +252,7 @@ public class Baseline {
 			};
 
 
-			if (threshold.isPresent() && content.compareTo(threshold.get()) < 0) {
+			if (threshold != null && content.compareTo(threshold) < 0) {
 				content = UNCHANGED;
 			}
 
@@ -297,23 +297,20 @@ public class Baseline {
 		return infos;
 	}
 
-	private Optional<Delta> getThreshold(Instructions packageFilters, Diff pdiff) {
-
-		var matcher = packageFilters.matcher(pdiff.getName());
-		if (matcher == null || matcher.isNegated())
-			return Optional.empty();
-
+	private Delta getThreshold(Instructions packageFilters, Instruction matcher) {
+		if (matcher == null)
+			return null;
 		var attrs = packageFilters.get(matcher);
 		assert attrs != null : "guaranteed by the matcher != null";
 		var threshold = attrs.getOrDefault(Constants.DIFFPACKAGES_THRESHOLD, "MICRO")
-			.toUpperCase().trim();
+			.toUpperCase();
 		try {
-			return Optional.of(Delta.valueOf(threshold));
+			return Delta.valueOf(threshold);
 		}
 		catch (IllegalArgumentException e) {
 			bnd.error("baseline.threshold baseline threshold specified as [%s] but does not correspond to a Delta enum - ignoring", threshold);
-			return Optional.empty();
 		}
+		return null;
 	}
 
 	/**
