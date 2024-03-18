@@ -498,19 +498,19 @@ public class Project extends Processor {
 	}
 
 	public File getSrcOutput() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_BIN_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_BIN_DIR);
 	}
 
 	public File getTestSrc() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_TESTSRC_DIR);
 	}
 
 	public File getTestOutput() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_TESTBIN_DIR);
 	}
 
 	public File getTargetDir() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_TARGET_DIR);
 	}
 
 	private void traverse(Set<Project> dependencies, Project dependent, Set<Project> visited) throws Exception {
@@ -522,6 +522,17 @@ public class Project extends Processor {
 		}
 
 		dependents.add(dependent);
+	}
+
+	private File getSingleFile(String key) {
+		String value = getProperty(key);
+		if (value == null)
+			return null;
+		if (value.indexOf(',') >= 0) {
+			error("project.%s expected one file path for prperty %s but got multiple: %s", key, key, value);
+			return null;
+		}
+		return getFile(value);
 	}
 
 	/**
