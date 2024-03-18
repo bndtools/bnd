@@ -147,6 +147,8 @@ public class Analyzer extends Processor {
 	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
 	private final Map<TypeRef, String>				bcpTypes				= map();
+	final TypeRef									providerType			= getTypeRef(
+		"org/osgi/annotation/versioning/ProviderType");
 
 	public enum Check {
 		ALL,
@@ -2170,18 +2172,31 @@ public class Analyzer extends Processor {
 		return providers;
 	}
 
-	private boolean isProvider(TypeRef t) {
-		Clazz c;
+
+	boolean isProvider(TypeRef t) {
+		if (t == null || t.isJava())
+			return false;
+
 		try {
-			c = findClass(t);
+
+			if (isProvider(t.getPackageRef()))
+				return true;
+
+			Clazz c = findClass(t);
+
+			return c.annotations()
+				.contains(providerType) || isProvider(c.superClass);
 		} catch (Exception e) {
 			return false;
 		}
-		if (c == null)
-			return false;
+	}
 
-		TypeRef providerType = getTypeRef("org/osgi/annotation/versioning/ProviderType");
-		return c.annotations()
+	boolean isProvider(PackageRef packageRef) throws Exception {
+		if (packageRef == null)
+			return false;
+		TypeRef packageInfo = getTypeRef(packageRef.binaryName.concat("/package-info"));
+		Clazz c = findClass(packageInfo);
+		return c != null && c.annotations()
 			.contains(providerType);
 	}
 
@@ -3212,6 +3227,7 @@ public class Analyzer extends Processor {
 	public TypeRef getTypeRefFrom(Class<?> clazz) {
 		return descriptors.getTypeRefFromFQN(clazz.getName());
 	}
+
 	public TypeRef getTypeRefFromFQN(String fqn) {
 		return descriptors.getTypeRefFromFQN(fqn);
 	}
@@ -3865,10 +3881,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Useful to reuse the annotation processing. The Annotation
-	 * can be created from other sources than Java code. This
-	 * is mostly useful for the annotations that generate Manifest
-	 * headers.
+	 * Useful to reuse the annotation processing. The Annotation can be created
+	 * from other sources than Java code. This is mostly useful for the
+	 * annotations that generate Manifest headers.
 	 */
 	public void addAnnotation(Annotation ann, TypeRef c) throws Exception {
 		Clazz clazz = findClass(c);
