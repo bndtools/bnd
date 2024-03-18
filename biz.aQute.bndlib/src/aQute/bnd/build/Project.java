@@ -526,11 +526,11 @@ public class Project extends Processor {
 
 	private File getSingleFile(String key) {
 		String value = getProperty(key);
-		if (value == null)
-			return null;
-		if (value.indexOf(',') >= 0) {
-			error("project.%s expected one file path for prperty %s but got multiple: %s", key, key, value);
-			return null;
+		if (value == null) {
+			error("project.%s expected value for property %s but got null", key, key);
+			value = key;
+		} else if (value.indexOf(',') >= 0) {
+			error("project.%s expected one file path for property %s but got multiple: %s", key, key, value);
 		}
 		return getFile(value);
 	}
@@ -1932,8 +1932,7 @@ public class Project extends Processor {
 							if (lastModified < jar.lastModified()) {
 								lastModified = jar.lastModified();
 							}
-							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar,
-								file.toURI(),
+							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar, file.toURI(),
 								getName());
 							if (indexer != null) {
 								resourceBuilders.add(indexer);
@@ -1997,7 +1996,6 @@ public class Project extends Processor {
 						}
 					}
 				}
-
 
 				boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
 				if (buildfiles != null) {
