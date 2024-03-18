@@ -1,7 +1,6 @@
 package aQute.bnd.osgi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Test;
 
@@ -10,11 +9,6 @@ import aQute.bnd.osgi.providertype.packg.TestProviderInheritancePackage;
 import aQute.lib.io.IO;
 
 class AnalyzerTest {
-
-	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
 
 	/**
 	 * Test provider type inheritance and package
