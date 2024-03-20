@@ -1,7 +1,10 @@
-![bnd](https://user-images.githubusercontent.com/200494/226292967-963bd722-96d9-4a46-9658-4699962032b0.png)
+[![bnd](https://user-images.githubusercontent.com/200494/226292967-963bd722-96d9-4a46-9658-4699962032b0.png)](https://bnd.bndtools.org/)
 
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/bndtools/bnd) [![Rebuild](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml) [![CodeQL](https://github.com/bndtools/bnd/actions/workflows/codeql.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/codeql.yml)  ![GitHub issues](https://img.shields.io/github/issues/bndtools/bnd) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bndtools/bnd) 
-
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/bndtools/bnd)](https://github.com/bndtools/bnd/wiki/Changes-in-7.0.0) 
+[![Rebuild](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml) 
+[![CodeQL](https://github.com/bndtools/bnd/actions/workflows/codeql.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/codeql.yml) 
+[![GitHub issues](https://img.shields.io/github/issues/bndtools/bnd)](https://github.com/bndtools/bnd/issues) 
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bndtools/bnd)](https://github.com/bndtools/bnd/commits/)
 
 # bnd & bndtools 
 
