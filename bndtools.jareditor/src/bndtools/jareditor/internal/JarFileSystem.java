@@ -332,6 +332,6 @@ public class JarFileSystem extends FileSystem {
 
 	static IFileStore nullFileStore(IPath path) {
 		return EFS.getNullFileSystem()
-			.getStore(path);
+			.getStore(path.makeAbsolute());
 	}
 }
