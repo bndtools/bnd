@@ -1,0 +1,9 @@
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+-buildpath: \
+	osgi.annotation,\
+	org.osgi.util.tracker,\
+	org.osgi.framework,\
+	org.eclipse.jdt.annotation
+
+-sub *.bnd

@@ -1,0 +1,77 @@
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-conditionalpackage: aQute.lib*
+
+-buildpath: \
+	osgi.annotation,\
+	org.eclipse.osgi,\
+	org.eclipse.jdt.core,\
+	org.eclipse.core.runtime,\
+	org.eclipse.core.resources,\
+	biz.aQute.bnd.api.facade,\
+	org.eclipse.core.runtime,\
+	org.eclipse.jface,\
+	org.eclipse.jface.text,\
+	org.eclipse.core.resources,\
+	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.text,\
+	org.eclipse.ui,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui.browser,\
+	org.eclipse.ui.editors,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.e4.ui.workbench,\
+	org.eclipse.core.jobs,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.jdt.core,\
+	org.eclipse.jdt.ui,\
+	org.eclipse.jdt.core.manipulation,\
+	org.eclipse.osgi,\
+	org.eclipse.core.commands,\
+	org.eclipse.team.core,\
+	org.eclipse.ui.forms,\
+	org.eclipse.ui.workbench.texteditor,\
+	org.eclipse.ui.views,\
+	org.eclipse.debug.core,\
+	org.eclipse.debug.ui,\
+	org.eclipse.jdt.launching,\
+	org.eclipse.jdt.debug,\
+	org.eclipse.jdt.debug.ui,\
+	org.eclipse.jdt.junit,\
+	org.eclipse.jdt.junit.core,\
+	org.eclipse.equinox.preferences,\
+	org.eclipse.help.base,\
+	org.eclipse.ltk.core.refactoring,\
+	org.eclipse.ltk.ui.refactoring,\
+	org.eclipse.core.filebuffers,\
+	org.eclipse.core.expressions,\
+	org.eclipse.core.filesystem,\
+	org.eclipse.core.contenttype,\
+	org.eclipse.search,\
+	aQute.libg,\
+	slf4j.api,\
+	org.eclipse.jdt.annotation
+-testpath: \
+	${junit},\
+	org.mockito.mockito-core, \
+	org.objenesis
+
+src: ${^src},src-gen
+
+# 
+# generate the facade classes
+#
+
+-generate: \
+        bnd.bnd; \
+        output=src-gen; \
+        generate="facadegen \
+            -o src-gen \
+            --extend bndtools.facades.util.FacadeUtil \
+            --package_ bndtools.facades \
+            \
+            org.eclipse.core.runtime.IAdapterFactory \
+            IPB:org.eclipse.core.resources.IncrementalProjectBuilder:org.eclipse.core.resources.IIncrementalProjectBuilder2 \
+            " 

@@ -5,13 +5,16 @@
 	osgi.annotation,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
-	biz.aQute.bndlib;version=latest
+	biz.aQute.bndlib;version=latest,\
+	org.eclipse.jdt.annotation
 
 -testpath: \
-	${junit}
+	${junit}, \
+    slf4j.api, \
+	slf4j.simple
 
 -conditionalpackage: \
-    aQute.lib.*, \
-    aQute.libg.*
+    aQute.lib*
 
 # Tested in biz.aQute.bndall.tests/test/biz/aQute/bnd/project/ProjectGenerateTest.java
+
