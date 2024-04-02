@@ -871,6 +871,23 @@
 				description="Disable verification of server's X509 certificate (insecure, for testing only!)" />
 		</plugin>
 
+		<plugin class="aQute.bnd.repository.maven.provider.MavenBndRepository"
+			icon="icons/database.png"
+			name="MavenBndRepository">
+		    <property name="name" type="string" description="The name of this repository" />
+			<property name="releaseUrl" type="string" description="The urls to the remote release repository." />
+		    <property name="stagingUrl" type="string" description="The url of the staging release repository." />
+		    <property name="snapshotUrl" type="string" description="The urls to the remote snapshot repository." />
+		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />
+		    <property name="readOnly" type="boolean" description="" default="false" />
+		    <property name="index" type="string" description="The path to the index file" />
+		    <property name="source" type="string" description="Content added to the index file. Content maybe one line without CR/LF as long as there is a comma or whitespace separating the GAVs. Further same format as the index file." />
+		    <property name="noupdateOnRelease" type="boolean" description="Do not update the index when a file is released" />
+		    <property name="poll_time" type="int" description="Sets the time in seconds when to check for changes in the pom-files" default="5 seconds" />
+		    <property name="redeploy" type="boolean" description="Allow redeploy" />
+		    <property name="ignore_metainf_maven" type="boolean" description="Ignore maven information in META-INF/maven/...." />
+		    <property name="multi" type="string" description="Extensions for files that contain multiple JARs" />
+		</plugin>
 	</extension>
 
 	<extension point="org.eclipse.ui.intro.configExtension">
