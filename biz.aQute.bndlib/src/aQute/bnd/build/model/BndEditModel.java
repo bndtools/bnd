@@ -967,7 +967,14 @@ public class BndEditModel {
 	}
 
 	public List<HeaderClause> getPlugins() {
-		return doGetObject(Constants.PLUGIN, headerClauseListConverter);
+		// return all plugins
+		// we do prefix matching to support merged properties like
+		// -plugin.1.Test, -plugin.2.Maven etc.
+		return getAllPropertyNames().stream()
+			.filter(p -> p.startsWith(Constants.PLUGIN))
+			.map(p -> doGetObject(p, headerClauseListConverter))
+			.flatMap(List::stream)
+			.toList();
 	}
 
 	public void setPlugins(List<HeaderClause> plugins) {
