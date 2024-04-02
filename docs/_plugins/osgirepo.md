@@ -23,11 +23,9 @@ The class name of the plugin is `aQute.bnd.repository.osgi.OSGiRepository`. It c
 To set up the `OSGi Repository` use:
 
 		aQute.bnd.repository.osgi.OSGiRepository;\
-			locations=https://devel.data-in-motion.biz/public/repository/gecko/release/geckoREST/index.xml;\
+			locations=https://devel.data-in-motion.biz/repository/gecko/release/geckoREST/index.xml;\
 			max.stale=-1;\
 			poll.time=86400;\
 			name=GeckoJaxRsWhiteboard;\
 			cache=${build}/cache/GeckoREST,\
 
-
-## 
