@@ -4,9 +4,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
@@ -59,6 +63,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	private final Map<String, IConfigurationElement>	configElements	= new HashMap<>();
 
 	private Map<String, List<HeaderClause>>				data;
+	private Set<String>									pluginsPropertiesToRemove	= new LinkedHashSet<>();
 
 	private Table										table;
 	private TableViewer									viewer;
@@ -67,6 +72,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	private ToolItem									removeItemTool;
 
 	private BndEditModel								model;
+
 
 	public PluginsPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -221,7 +227,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);
-		model.setPlugins(data);
+		model.setPlugins(data, pluginsPropertiesToRemove);
+		pluginsPropertiesToRemove.clear();
 	}
 
 	@Override
@@ -283,9 +290,30 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
 
 		viewer.remove(sel.toArray());
+
+		// remove by value
 		sel.toList()
-			.forEach(e -> {
-				data.remove(e);
+			.forEach(selectedPlugin -> {
+				Set<Entry<String, List<HeaderClause>>> entrySet = data.entrySet();
+				inner: for (Iterator<Entry<String, List<HeaderClause>>> iterator = entrySet.iterator(); iterator
+					.hasNext();) {
+					Entry<String, List<HeaderClause>> entry = iterator.next();
+					String key = entry.getKey();
+					List<HeaderClause> headers = entry.getValue();
+
+					boolean removed = headers.removeIf(selectedPlugin::equals);
+					if (removed) {
+
+						if (headers.isEmpty()) {
+							// remove the map entry too
+							iterator.remove();
+							this.pluginsPropertiesToRemove.add(key);
+						}
+
+						// stop when we have removed the plugin
+						break inner;
+					}
+				}
 			});
 
 		if (!sel.isEmpty())

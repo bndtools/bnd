@@ -995,8 +995,16 @@ public class BndEditModel {
 
 	}
 
-	public void setPlugins(Map<String, List<HeaderClause>> plugins) {
+	/**
+	 * Updates and removes plugins.
+	 *
+	 * @param plugins
+	 * @param pluginPropKeysToRemove the property keys to remove (not modified,
+	 *            caller needs to handle cleanup)
+	 */
+	public void setPlugins(Map<String, List<HeaderClause>> plugins, Collection<String> pluginPropKeysToRemove) {
 		Map<String, List<HeaderClause>> old = getPluginsProperties();
+
 		plugins.entrySet()
 			.forEach(p -> {
 				if (!p.getKey()
@@ -1006,6 +1014,10 @@ public class BndEditModel {
 				}
 				doSetObject(p.getKey(), old.get(p.getKey()), p.getValue(), complexHeaderClauseListFormatter);
 			});
+
+		if (pluginPropKeysToRemove != null) {
+			pluginPropKeysToRemove.forEach(key -> removeEntries(key));
+		}
 	}
 
 	public List<String> getPluginPath() {
