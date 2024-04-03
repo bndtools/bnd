@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -670,6 +671,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setProperties(getBase(), properties);
 	}
 
+	public void setProperties(InputStream properties) throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		p.load(properties);
+		setProperties(getBase(), p);
+	}
+
 	public void setProperties(File base, Properties properties) {
 		doIncludes(base, properties);
 		getProperties0().putAll(properties);
@@ -795,13 +802,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return;
 		}
 		updateModified(file.lastModified(), file.toString());
-		Properties sub;
-		if (Strings.endsWithIgnoreCase(file.getName(), ".mf")) {
-			try (InputStream in = IO.stream(file)) {
-				sub = getManifestAsProperties(in);
-			}
-		} else
-			sub = loadProperties(file);
+		Properties sub = magicBnd(file);
 
 		doIncludes(file.getParentFile(), sub);
 		// take care regarding overwriting properties
@@ -817,6 +818,27 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					target.setProperty(extensionKey, value);
 			}
 		}
+	}
+
+	/**
+	 * This method allows a sub Processor to override recognized included files.
+	 * In general we treat files as bnd files but a sub processor can override
+	 * this method to provide additional types. It is a rquirement that the file
+	 * must be able to be mapped to a Properties. These properties will be added
+	 * to this processor's properties. The default includes bnd, bndrun and
+	 * manifest files.
+	 *
+	 * @param file the file with the information
+	 * @return the Properties to include
+	 */
+
+	protected Properties magicBnd(File file) throws IOException {
+		if (Strings.endsWithIgnoreCase(file.getName(), ".mf")) {
+			try (InputStream in = IO.stream(file)) {
+				return getManifestAsProperties(in);
+			}
+		} else
+			return loadProperties(file);
 	}
 
 	public void unsetProperty(String string) {
@@ -904,6 +926,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		} catch (IOException e) {
 			error("Could not load properties %s", propertiesFile);
 		}
+	}
+
+	public void setProperties(Reader reader) throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		p.load(reader);
+		setProperties(p);
 	}
 
 	protected void begin() {
@@ -2061,7 +2089,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * not set, we assume the latest version.
 	 */
 
-	Version	upto	= null;
+	Version upto = null;
+
 	public boolean since(Version introduced) {
 		if (upto == null) {
 			String uptov = getProperty(UPTO);
