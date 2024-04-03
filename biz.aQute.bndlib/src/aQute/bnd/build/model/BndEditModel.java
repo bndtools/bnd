@@ -984,6 +984,16 @@ public class BndEditModel {
 		doSetObject(Constants.PLUGIN, old, plugins, complexHeaderClauseListFormatter);
 	}
 
+	/**
+	 * Similar to {@link #getPlugins()} but returns a map where the key is the
+	 * property key of the bnd file e.g.
+	 * <code>-plugin.1.Test, -plugin.2.Maven </code> The value is a List of
+	 * plugins, although usually it is just a 1-element list. But it is also
+	 * possible to specify multiple plugins under a single key, thus it is a
+	 * list.
+	 *
+	 * @return a map with a property keys and their plugins.
+	 */
 	public Map<String, List<HeaderClause>> getPluginsProperties() {
 		// return all plugins
 		// we do prefix matching to support merged properties like
