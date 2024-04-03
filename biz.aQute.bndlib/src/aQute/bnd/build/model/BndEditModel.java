@@ -16,12 +16,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -980,6 +982,30 @@ public class BndEditModel {
 	public void setPlugins(List<HeaderClause> plugins) {
 		List<HeaderClause> old = getPlugins();
 		doSetObject(Constants.PLUGIN, old, plugins, complexHeaderClauseListFormatter);
+	}
+
+	public Map<String, List<HeaderClause>> getPluginsProperties() {
+		// return all plugins
+		// we do prefix matching to support merged properties like
+		// -plugin.1.Test, -plugin.2.Maven etc.
+		return getAllPropertyNames().stream()
+			.filter(p -> p.startsWith(Constants.PLUGIN))
+			.collect(Collectors.toMap(key -> key, key -> doGetObject(key, headerClauseListConverter), (k, v) -> k,
+				LinkedHashMap::new));
+
+	}
+
+	public void setPlugins(Map<String, List<HeaderClause>> plugins) {
+		Map<String, List<HeaderClause>> old = getPluginsProperties();
+		plugins.entrySet()
+			.forEach(p -> {
+				if (!p.getKey()
+					.startsWith(Constants.PLUGIN)) {
+					throw new IllegalArgumentException(
+						"Plugin properties need to start with " + Constants.PLUGIN + ". Actual: " + p.getKey());
+				}
+				doSetObject(p.getKey(), old.get(p.getKey()), p.getValue(), complexHeaderClauseListFormatter);
+			});
 	}
 
 	public List<String> getPluginPath() {

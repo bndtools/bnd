@@ -2,9 +2,9 @@ package bndtools.editor.workspace;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +58,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	private final Map<String, IConfigurationElement>	configElements	= new HashMap<>();
 
-	private List<HeaderClause>							data;
+	private Map<String, List<HeaderClause>>				data;
 
 	private Table										table;
 	private TableViewer									viewer;
@@ -206,12 +206,15 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	@Override
 	public void refresh() {
-		List<HeaderClause> modelData = model.getPlugins();
+		Map<String, List<HeaderClause>> modelData = model.getPluginsProperties();
 		if (modelData != null)
-			this.data = new ArrayList<>(modelData);
+			this.data = new LinkedHashMap<>(modelData);
 		else
-			this.data = new LinkedList<>();
-		viewer.setInput(this.data);
+			this.data = new LinkedHashMap<>();
+		viewer.setInput(this.data.values()
+			.stream()
+			.flatMap(List::stream)
+			.toList());
 		super.refresh();
 	}
 
@@ -238,10 +241,20 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		if (dialog.open() == Window.OK) {
 			HeaderClause newPlugin = wizard.getHeader();
 
-			data.add(newPlugin);
+			data.put(uniqueKey(Constants.PLUGIN), Collections.singletonList(newPlugin));
 			viewer.add(newPlugin);
 			markDirty();
 		}
+	}
+
+	private String uniqueKey(String key) {
+		String newKey = key;
+		int i = 1;
+		while (data.containsKey(newKey)) {
+			newKey = key + "." + i;
+			i++;
+		}
+		return newKey;
 	}
 
 	void doEdit() {
@@ -270,7 +283,10 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
 
 		viewer.remove(sel.toArray());
-		data.removeAll(sel.toList());
+		sel.toList()
+			.forEach(e -> {
+				data.remove(e);
+			});
 
 		if (!sel.isEmpty())
 			markDirty();
