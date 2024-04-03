@@ -15,7 +15,7 @@ The class name of the plugin is `aQute.bnd.repository.osgi.OSGiRepository`. It c
 | `name`           | `NAME`|  | The name of the repository.|
 | `locations`          | `STRING`|  | A Comma separate list of URLs point to an OSGi Resource file.|
 | `cache`         | `STRING`| The workspace cache folder | The location, the downloaded bundles are stored. |
-| `max.stale` | `integer` | one year | Bnd has it's own download cache. `max.stale` configures for how many _seconds_ the downloaded index file stays in the internal download cache. |
+| `max.stale` | `integer` | one year | Bnd has it's own download cache. `max.stale` configures for how many _seconds_ the downloaded index file stays in the internal download cache. Use _-1_ to always check if there is a newer file on the server. |
 | `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for polls on the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place. |
 
 ## Example
@@ -23,11 +23,9 @@ The class name of the plugin is `aQute.bnd.repository.osgi.OSGiRepository`. It c
 To set up the `OSGi Repository` use:
 
 		aQute.bnd.repository.osgi.OSGiRepository;\
-			locations=https://devel.data-in-motion.biz/public/repository/gecko/release/geckoREST/index.xml;\
+			locations=https://devel.data-in-motion.biz/repository/gecko/release/geckoREST/index.xml;\
 			max.stale=-1;\
 			poll.time=86400;\
 			name=GeckoJaxRsWhiteboard;\
 			cache=${build}/cache/GeckoREST,\
 
-
-## 
