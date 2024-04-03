@@ -972,11 +972,23 @@ public class BndEditModel {
 		// return all plugins
 		// we do prefix matching to support merged properties like
 		// -plugin.1.Test, -plugin.2.Maven etc.
-		return getAllPropertyNames().stream()
-			.filter(p -> p.startsWith(Constants.PLUGIN))
-			.map(p -> doGetObject(p, headerClauseListConverter))
-			.flatMap(List::stream)
-			.toList();
+		try {
+			Processor proc = getProperties();
+			Properties allProps = proc.getProperties();
+			Set<String> propertyKeys = proc.getPropertyKeys(true);
+
+			List<HeaderClause> headers = propertyKeys.stream()
+				.filter(p -> p.startsWith(Constants.PLUGIN))
+				.map(p -> headerClauseListConverter.convert(allProps.getProperty(p)))
+				.flatMap(List::stream)
+				.toList();
+
+			return headers;
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
 	}
 
 	public void setPlugins(List<HeaderClause> plugins) {
@@ -994,14 +1006,37 @@ public class BndEditModel {
 	 *
 	 * @return a map with a property keys and their plugins.
 	 */
-	public Map<String, List<HeaderClause>> getPluginsProperties() {
+	public Map<String, List<MergedHeaderClause>> getPluginsProperties() {
 		// return all plugins
 		// we do prefix matching to support merged properties like
 		// -plugin.1.Test, -plugin.2.Maven etc.
-		return getAllPropertyNames().stream()
-			.filter(p -> p.startsWith(Constants.PLUGIN))
-			.collect(Collectors.toMap(key -> key, key -> doGetObject(key, headerClauseListConverter), (k, v) -> k,
-				LinkedHashMap::new));
+
+		try {
+			Processor proc = getProperties();
+			Properties allProps = proc.getProperties();
+			Set<String> propertyKeys = proc.getPropertyKeys(true);
+
+
+			Map<String, List<MergedHeaderClause>> map = new LinkedHashMap<>();
+
+			propertyKeys.stream()
+				.filter(p -> p.startsWith(Constants.PLUGIN))
+				.forEach(key -> {
+
+					boolean isLocal = doGetObject(key, headerClauseListConverter) != null;
+
+					List<HeaderClause> headers = headerClauseListConverter.convert(allProps.getProperty(key));
+					map.put(key, headers.stream()
+						.map(h -> new MergedHeaderClause(key, h, isLocal))
+						.collect(Collectors.toList()));
+
+				});
+
+			return map;
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 
 	}
 
@@ -1012,8 +1047,8 @@ public class BndEditModel {
 	 * @param pluginPropKeysToRemove the property keys to remove (not modified,
 	 *            caller needs to handle cleanup)
 	 */
-	public void setPlugins(Map<String, List<HeaderClause>> plugins, Collection<String> pluginPropKeysToRemove) {
-		Map<String, List<HeaderClause>> old = getPluginsProperties();
+	public void setPlugins(Map<String, List<MergedHeaderClause>> plugins, Collection<String> pluginPropKeysToRemove) {
+		Map<String, List<MergedHeaderClause>> old = getPluginsProperties();
 
 		plugins.entrySet()
 			.forEach(p -> {
@@ -1022,7 +1057,22 @@ public class BndEditModel {
 					throw new IllegalArgumentException(
 						"Plugin properties need to start with " + Constants.PLUGIN + ". Actual: " + p.getKey());
 				}
-				doSetObject(p.getKey(), old.get(p.getKey()), p.getValue(), complexHeaderClauseListFormatter);
+
+				List<HeaderClause> newLocalHeaders = p.getValue()
+					.stream()
+					.filter(mh -> mh.isLocal())
+					.map(mh -> mh.header())
+					.toList();
+
+				List<HeaderClause> oldLocalHeaders = old.get(p.getKey())
+					.stream()
+					.filter(mh -> mh.isLocal())
+					.map(mh -> mh.header())
+					.toList();
+
+				doSetObject(p.getKey(), oldLocalHeaders, newLocalHeaders,
+					complexHeaderClauseListFormatter);
+
 			});
 
 		if (pluginPropKeysToRemove != null) {

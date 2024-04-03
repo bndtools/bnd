@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -50,6 +51,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.MergedHeaderClause;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
@@ -62,7 +64,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	private final Map<String, IConfigurationElement>	configElements	= new HashMap<>();
 
-	private Map<String, List<HeaderClause>>				data;
+	private Map<String, List<MergedHeaderClause>>		data;
 	private Set<String>									pluginsPropertiesToRemove	= new LinkedHashSet<>();
 
 	private Table										table;
@@ -97,6 +99,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER);
 
 		viewer = new TableViewer(table);
+		ColumnViewerToolTipSupport.enableFor(viewer);
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
 		viewer.setLabelProvider(new PluginClauseLabelProvider(configElements));
 
@@ -212,7 +215,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	@Override
 	public void refresh() {
-		Map<String, List<HeaderClause>> modelData = model.getPluginsProperties();
+		Map<String, List<MergedHeaderClause>> modelData = model.getPluginsProperties();
 		if (modelData != null)
 			this.data = new LinkedHashMap<>(modelData);
 		else
@@ -248,7 +251,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		if (dialog.open() == Window.OK) {
 			HeaderClause newPlugin = wizard.getHeader();
 
-			data.put(uniqueKey(Constants.PLUGIN), Collections.singletonList(newPlugin));
+			String uniqueKey = uniqueKey(Constants.PLUGIN);
+			data.put(uniqueKey, Collections.singletonList(new MergedHeaderClause(uniqueKey, newPlugin, true)));
 			viewer.add(newPlugin);
 			markDirty();
 		}
@@ -265,7 +269,14 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	}
 
 	void doEdit() {
-		HeaderClause header = (HeaderClause) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+		MergedHeaderClause mh = (MergedHeaderClause) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+		HeaderClause header = mh.header();
+
+		if (!mh.isLocal()) {
+			// only local plugins in this file can be edited
+			return;
+		}
+
 		if (header != null) {
 			Attrs copyOfProperties = new Attrs(header.getAttribs());
 
@@ -287,19 +298,28 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	}
 
 	void doRemove() {
+
 		IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+
+		MergedHeaderClause mh = (MergedHeaderClause) sel.getFirstElement();
+		HeaderClause header = mh.header();
+
+		if (!mh.isLocal()) {
+			// only local plugins in this file can be removed
+			return;
+		}
 
 		viewer.remove(sel.toArray());
 
 		// remove by value
 		sel.toList()
 			.forEach(selectedPlugin -> {
-				Set<Entry<String, List<HeaderClause>>> entrySet = data.entrySet();
-				inner: for (Iterator<Entry<String, List<HeaderClause>>> iterator = entrySet.iterator(); iterator
+				Set<Entry<String, List<MergedHeaderClause>>> entrySet = data.entrySet();
+				inner: for (Iterator<Entry<String, List<MergedHeaderClause>>> iterator = entrySet.iterator(); iterator
 					.hasNext();) {
-					Entry<String, List<HeaderClause>> entry = iterator.next();
+					Entry<String, List<MergedHeaderClause>> entry = iterator.next();
 					String key = entry.getKey();
-					List<HeaderClause> headers = entry.getValue();
+					List<MergedHeaderClause> headers = entry.getValue();
 
 					boolean removed = headers.removeIf(selectedPlugin::equals);
 					if (removed) {

@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.MergedHeaderClause;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
 
@@ -27,10 +28,12 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 
 	@Override
 	public void update(ViewerCell cell) {
-		HeaderClause header = (HeaderClause) cell.getElement();
+		MergedHeaderClause mh = (MergedHeaderClause) cell.getElement();
+		HeaderClause header = mh.header();
 
 		String className = header.getName();
-		StyledString label = new StyledString(className);
+
+		StyledString label = new StyledString(className, mh.isLocal() ? null : StyledString.QUALIFIER_STYLER);
 
 		Map<String, String> attribs = header.getAttribs();
 		if (!attribs.isEmpty())
@@ -73,6 +76,14 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 			}
 		}
 		cell.setImage(image);
+	}
+
+	@Override
+	public String getToolTipText(Object element) {
+		if (element instanceof MergedHeaderClause mh && !mh.isLocal()) {
+			return "This inherited plugin can only be edited in the included .bnd file.";
+		}
+		return super.getToolTipText(element);
 	}
 
 	@Override
