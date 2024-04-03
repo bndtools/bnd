@@ -37,11 +37,20 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveRegistry;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.intro.IIntroManager;
+import org.eclipse.ui.intro.IIntroPart;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -72,6 +81,7 @@ import aQute.libg.ints.IntCounter;
 import aQute.service.reporter.Reporter;
 import bndtools.Plugin;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
+import bndtools.central.sync.WorkspaceSynchronizer;
 import bndtools.preferences.BndPreferences;
 
 public class Central implements IStartupParticipant {
@@ -88,6 +98,7 @@ public class Central implements IStartupParticipant {
 
 	private static final Supplier<EclipseWorkspaceRepository>	eclipseWorkspaceRepository	= Memoize
 		.supplier(EclipseWorkspaceRepository::new);
+	private final static AtomicBoolean							syncing						= new AtomicBoolean();
 
 	private static Auxiliary									auxiliary;
 
@@ -96,7 +107,6 @@ public class Central implements IStartupParticipant {
 	private final BundleContext									bundleContext;
 	private final Map<IJavaProject, Project>					javaProjectToModel			= new HashMap<>();
 	private final List<ModelListener>							listeners					= new CopyOnWriteArrayList<>();
-
 	private RepositoryListenerPluginTracker						repoListenerTracker;
 	private final InternalPluginTracker							internalPlugins;
 
@@ -135,7 +145,6 @@ public class Central implements IStartupParticipant {
 	@Override
 	public void start() {
 		instance = this;
-
 		repoListenerTracker = new RepositoryListenerPluginTracker(bundleContext);
 		repoListenerTracker.open();
 		internalPlugins.open();
@@ -416,7 +425,56 @@ public class Central implements IStartupParticipant {
 				.getParentFile();
 		}
 
+		String path = Platform.getInstanceLocation()
+			.getURL()
+			.getPath();
+
+		if (IO.isWindows() && path.startsWith("/"))
+			path = path.substring(1);
+
+		File folder = new File(path);
+		File build = IO.getFile(folder, "cnf/build.bnd");
+		if (build.isFile()) {
+			if (syncing.getAndSet(true) == false) {
+				Job job = Job.create("sync ws", mon -> {
+					WorkspaceSynchronizer wss = new WorkspaceSynchronizer();
+					wss.synchronize(false, mon, () -> {
+						syncing.set(false);
+					});
+					setBndtoolsPerspective();
+					final IIntroManager introManager = PlatformUI.getWorkbench()
+						.getIntroManager();
+					IIntroPart part = introManager.getIntro();
+					introManager.closeIntro(part);
+				});
+				job.schedule();
+			}
+			return folder;
+		}
+
 		return null;
+	}
+
+	public static void setBndtoolsPerspective() {
+		Display.getDefault()
+			.syncExec(() -> {
+				IWorkbenchWindow window = PlatformUI.getWorkbench()
+					.getActiveWorkbenchWindow();
+				if (window != null) {
+					IWorkbenchPage page = window.getActivePage();
+					IPerspectiveRegistry reg = PlatformUI.getWorkbench()
+						.getPerspectiveRegistry();
+					// Replace "your.perspective.id" with the
+					// actual ID
+					// of
+					// the perspective you want to switch to
+					IPerspectiveDescriptor bndtools = reg.findPerspectiveWithId("bndtools.perspective");
+					if (bndtools != null)
+						page.setPerspective(bndtools);
+
+					return;
+				}
+			});
 	}
 
 	/**
@@ -700,8 +758,8 @@ public class Central implements IStartupParticipant {
 	 * @throws Exception If the callable throws an exception.
 	 */
 	public static <V> V bndCall(BiFunctionWithException<Callable<V>, BooleanSupplier, V> lockMethod,
-		FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable,
-		IProgressMonitor monitorOrNull) throws Exception {
+		FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable, IProgressMonitor monitorOrNull)
+		throws Exception {
 		IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
 		Task task = new Task() {
 			@Override
@@ -728,14 +786,14 @@ public class Central implements IStartupParticipant {
 		try {
 			Callable<V> with = () -> TaskManager.with(task, () -> callable.apply((name, runnable) -> after.add(() -> {
 				monitor.subTask(name);
-					try {
+				try {
 					runnable.run();
 				} catch (Exception e) {
 					if (!(e instanceof OperationCanceledException)) {
 						status.add(new Status(IStatus.ERROR, runnable.getClass(),
 							"Unexpected exception in bndCall after action: " + name, e));
-						}
 					}
+				}
 			})));
 			return lockMethod.apply(with, monitor::isCanceled);
 		} finally {
