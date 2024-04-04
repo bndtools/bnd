@@ -323,6 +323,14 @@ public interface RE {
 		String tryMatch(RE match);
 
 		Optional<MatchGroup> group(int group);
+
+		/**
+		 * This gets the value of a group but throws an exception of the group
+		 * is not there.
+		 *
+		 * @param groupName the name of the group
+		 */
+		String presentGroup(String groupName);
 	}
 
 	/**

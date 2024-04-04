@@ -15,7 +15,14 @@ A bndlib workspace is a _valid_ workspace when it contains a `cnf` file. If this
 
 However, the advised model is to use a directory with a `cnf/build.bnd` file. The purpose of the `cnf` directory is to provide a place for shared information. Though this includes bndlib setup information, it also can be used to define for example shared licensing, copyright, and vendor headers for your organization.
 
-The `cnf` directory can have an `ext` directory, this directory contains any extensions to bnd.
+The `cnf` directory can have an `ext` directory. Files in this directory are added to the properties
+of the workspace. They can have the following extensions:
+
+* `.bnd` – Contain bnd properties
+* `.pmvn` – An index file for a [Maven Bnd Repository](plugins/maven.html). The first lines can contain properties for this plugin in the format of `# key = value`, e.g. `# name = OSGi R8`. 
+* `.pobr` – An OSGi Repository file in XML.
+
+The `ext` directory is a convenient way to add add reusable components. See [template fragments](620-template-fragments.html] how they can be used to manage workspaces. When files change in this directory the workspace will be reloaded.
 
 To cache some intermediate files, bndlib will create a `cnf/cache/` directory, this file should not be under source control. E.g. in Git it should be defined in the `.gitignore` file. 
 

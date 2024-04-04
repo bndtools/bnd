@@ -168,7 +168,7 @@ public class Workspace extends Processor {
 		}
 	}
 
-	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
+	private final static Map<File, WeakReference<Workspace>>	cache	= newHashMap();
 	private static final Memoize<Processor>						defaults;
 	static {
 		defaults = Memoize.supplier(() -> {
@@ -185,31 +185,31 @@ public class Workspace extends Processor {
 			return new Processor(props, false);
 		});
 	}
-	final Map<String, Action>									commands			= newMap();
-	final Maven													maven;
-	private final AtomicBoolean									offline				= new AtomicBoolean();
-	Settings													settings			= new Settings(
+	final Map<String, Action>		commands							= newMap();
+	final Maven						maven;
+	private final AtomicBoolean		offline								= new AtomicBoolean();
+	Settings						settings							= new Settings(
 		Home.getUserHomeBnd("settings.json"));
-	WorkspaceRepository											workspaceRepo		= new WorkspaceRepository(this);
-	static String												overallDriver		= "unset";
-	static Parameters											overallGestalt		= new Parameters();
+	WorkspaceRepository				workspaceRepo						= new WorkspaceRepository(this);
+	static String					overallDriver						= "unset";
+	static Parameters				overallGestalt						= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>									signalBusy			= new ThreadLocal<>();
-	ResourceRepositoryImpl										resourceRepositoryImpl;
-	private String												driver;
-	private final WorkspaceLayout								layout;
-	final Set<Project>											trail				= Collections
+	final ThreadLocal<Reporter>		signalBusy							= new ThreadLocal<>();
+	ResourceRepositoryImpl			resourceRepositoryImpl;
+	private String					driver;
+	private final WorkspaceLayout	layout;
+	final Set<Project>				trail								= Collections
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
-	private volatile WorkspaceData								data				= new WorkspaceData();
-	private File												buildDir;
-	private final ProjectTracker								projects			= new ProjectTracker(this);
+	private volatile WorkspaceData	data								= new WorkspaceData();
+	private File					buildDir;
+	private final ProjectTracker	projects							= new ProjectTracker(this);
 	private final WorkspaceLock		workspaceLock						= new WorkspaceLock(true);
 	private static final long		WORKSPACE_LOCK_DEFAULT_TIMEOUTMS	= 120_000L;
-	final WorkspaceNotifier										notifier			= new WorkspaceNotifier(this);
+	final WorkspaceNotifier			notifier							= new WorkspaceNotifier(this);
 
-	public static boolean										remoteWorkspaces	= false;
+	public static boolean			remoteWorkspaces					= false;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -490,21 +490,14 @@ public class Workspace extends Processor {
 		projects.forceRefresh();
 	}
 
+	final static Set<String> INCLUDE_EXTS = Set.of("bnd", "mf", "pmvn", "pobr");
+
 	@Override
 	public void propertiesChanged() {
 		try {
 			writeLocked(() -> {
 				refreshData();
-				File extDir = new File(getBuildDir(), EXT);
-				for (File extension : IO.listFiles(extDir, (dir, name) -> name.endsWith(".bnd"))) {
-					String extensionName = extension.getName();
-					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
-					try {
-						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
-					} catch (Exception e) {
-						exception(e, "PropertiesChanged: %s", e);
-					}
-				}
+				doExtDir();
 				super.propertiesChanged();
 				if (doExtend(this)) {
 					super.propertiesChanged();
@@ -512,8 +505,25 @@ public class Workspace extends Processor {
 				forceInitialization();
 				return null;
 			});
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			throw Exceptions.duck(e);
+		}
+	}
+
+	void doExtDir() {
+		File extDir = new File(getBuildDir(), EXT);
+		for (File extension : IO.listFiles(extDir)) {
+			String parts[] = Strings.extension(extension.getName());
+			if (parts == null || !INCLUDE_EXTS.contains(parts[1]))
+				continue;
+
+			try {
+				doIncludeFile(extension, false, getProperties(), "ext." + extension.getName());
+			} catch (Exception e) {
+				exception(e, "PropertiesChanged: %s", e);
+			}
 		}
 	}
 
@@ -1533,6 +1543,7 @@ public class Workspace extends Processor {
 			return null;
 		});
 	}
+
 	public <T> T writeLocked(Callable<T> callable) throws Exception {
 		return workspaceLock.locked(workspaceLock.writeLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, () -> false);
 	}
@@ -1555,13 +1566,13 @@ public class Workspace extends Processor {
 	 *             obtain the lock.
 	 * @throws Exception If the callable or function throws an exception.
 	 */
-	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead,
-		BooleanSupplier canceled, long timeoutInMs) throws Exception {
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead, BooleanSupplier canceled,
+		long timeoutInMs) throws Exception {
 		return workspaceLock.writeReadLocked(timeoutInMs, underWrite, underRead, canceled);
 	}
 
-	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead,
-		BooleanSupplier canceled) throws Exception {
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead, BooleanSupplier canceled)
+		throws Exception {
 		return workspaceLock.writeReadLocked(WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, underWrite, underRead, canceled);
 	}
 
@@ -1977,4 +1988,25 @@ public class Workspace extends Processor {
 			return Result.err("Failed to expand %s into %s: %s", file, cache, e);
 		}
 	}
+
+	/**
+	 * Add "mvn" files. They are mapped to a MavenBndRepository. The .mvn file
+	 * can in the the first lines define repositories to add with #repo=<repo
+	 * url> If no repositories are specified, maven central is used
+	 */
+	@Override
+	protected Properties magicBnd(File file) throws IOException {
+		Result<Properties> result = MagicBnd.map(this, file);
+		if (result.isOk()) {
+			if (result.unwrap() == null)
+				return super.magicBnd(file);
+			else
+				return result.unwrap();
+		} else {
+			error("failed to convert %s to properties in an include: %s", file, result.error()
+				.get());
+			return super.magicBnd(file);
+		}
+	}
+
 }

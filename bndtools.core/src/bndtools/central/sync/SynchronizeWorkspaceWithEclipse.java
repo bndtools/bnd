@@ -42,7 +42,7 @@ import bndtools.central.Central;
  * with the file system. Any deltas are processed by creating or deleting the
  * project.
  */
-@Component(enabled = false)
+@Component(enabled = true)
 public class SynchronizeWorkspaceWithEclipse {
 	static IWorkspace			eclipse			= ResourcesPlugin.getWorkspace();
 	final static IWorkspaceRoot	root			= eclipse.getRoot();
@@ -85,8 +85,6 @@ public class SynchronizeWorkspaceWithEclipse {
 			// already being handled
 			return;
 		}
-
-		// No need to turn off autobuild as the lock will take care of it
 
 		Job sync = Job.create("sync workspace", (IProgressMonitor monitor) -> {
 
