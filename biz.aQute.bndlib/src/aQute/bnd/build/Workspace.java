@@ -2011,6 +2011,7 @@ public class Workspace extends Processor {
 		}
 	}
 
+	/**
 	 * Find the Processor that has the give file as properties.
 	 *
 	 * @param file the file that should match the Project or Workspace
