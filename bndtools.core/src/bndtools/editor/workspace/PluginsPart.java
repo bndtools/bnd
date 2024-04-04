@@ -291,7 +291,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 				header.getAttribs()
 					.putAll(copyOfProperties);
 
-				viewer.update(header, null);
+				viewer.update(new MergedHeaderClause(mh.key(), header, mh.isLocal()), null);
 				markDirty();
 			}
 		}
