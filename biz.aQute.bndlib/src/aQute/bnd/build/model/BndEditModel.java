@@ -77,6 +77,8 @@ import aQute.lib.utf8properties.UTF8Properties;
 @SuppressWarnings("deprecation")
 public class BndEditModel {
 
+	private static final String													BUILDFILE							= Workspace.CNFDIR
+		+ "/" + Workspace.BUILDFILE;
 	public static final String													NEWLINE_LINE_SEPARATOR				= "\\n\\\n\t";
 	public static final String													LIST_SEPARATOR						= ",\\\n\t";
 
@@ -271,6 +273,13 @@ public class BndEditModel {
 
 	// for change detection when multiple wizards look at the same model
 	private long																lastChangedAt;
+	/**
+	 * Is either the workspace (when cnf/build.bnd) or a project (when its
+	 * bnd.bnd) or a random bndrun linked to workspace (event if it isn't a
+	 * bndrun). Primary purpose is to walk the inheritance chain implied in the
+	 * Workspace/Project/sub bnd files/bndrun files
+	 */
+	Processor																	owner;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -382,10 +391,13 @@ public class BndEditModel {
 		loadFrom(document);
 	}
 
-	public BndEditModel(Project project) throws IOException {
-		this(project.getWorkspace());
-		this.project = project;
-		File propertiesFile = project.getPropertiesFile();
+	public BndEditModel(Project bndrun) throws IOException {
+		this(bndrun.getWorkspace());
+		this.project = bndrun;
+		File propertiesFile = bndrun.getPropertiesFile();
+		this.owner = workspace.findProcessor(propertiesFile)
+			.orElse(bndrun);
+
 		if (propertiesFile.isFile())
 			this.document = new Document(IO.collect(propertiesFile));
 		else
@@ -1456,5 +1468,4 @@ public class BndEditModel {
 	public long getLastChangedAt() {
 		return lastChangedAt;
 	}
-
 }

@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -123,6 +124,7 @@ public class Workspace extends Processor {
 	public static final String	EXT						= "ext";
 	public static final String	BUILDFILE				= "build.bnd";
 	public static final String	CNFDIR					= "cnf";
+	public static final String	CNF_BUILD_BND			= CNFDIR + "/" + BUILDFILE;
 	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
 	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.repository.osgi.OSGiRepository";
 
@@ -2009,4 +2011,26 @@ public class Workspace extends Processor {
 		}
 	}
 
+	 * Find the Processor that has the give file as properties.
+	 *
+	 * @param file the file that should match the Project or Workspace
+	 * @return an optional Processor
+	 */
+	public Optional<Processor> findProcessor(File file) {
+		File cnf = getFile(CNF_BUILD_BND);
+		if (cnf.equals(file))
+			return Optional.of(this);
+
+		File projectDir = file.getParentFile();
+		if (projectDir.isDirectory()) {
+			File wsDir = projectDir.getParentFile();
+			if (wsDir.equals(getBase())) {
+				Project project = getProject(projectDir.getName());
+				if (project != null) {
+					return project.findProcessor(file);
+				}
+			}
+		}
+		return Optional.empty();
+	}
 }

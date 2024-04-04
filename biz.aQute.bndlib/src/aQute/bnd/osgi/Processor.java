@@ -1006,6 +1006,89 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return getWildcardProperty(deflt, separator, inherit, ins);
 	}
 
+	/**
+	 * A Property Key is the pair of a Processor and a key it defines. It also
+	 * defines if this is the firsts definition viewed from this Processor. The
+	 * floor indicates where the property is defined relative to its parents.
+	 * Zero is in the current processor, 1, is its parents, and so on.
+	 */
+	public record PropertyKey(Processor processor, String key, int floor)
+		implements Comparable<PropertyKey> {
+
+		/**
+		 * Check if this PropertyKey belongs to the given processor
+		 *
+		 * @param p the processor to check
+		 * @return true if our processor is the same as p
+		 */
+		public boolean isLocalTo(Processor p) {
+			return processor == p;
+		}
+
+		/**
+		 * Get the value of the property key
+		 *
+		 * @return a processed value
+		 */
+		public String getValue() {
+			return processor.getProperty(key);
+		}
+
+		/**
+		 * Get the raw value of the property key
+		 *
+		 * @return a raw value
+		 */
+		public String getRawValue() {
+			return processor.getProperties()
+				.getProperty(key);
+		}
+
+		@Override
+		public int compareTo(PropertyKey o) {
+			int n = key.compareTo(o.key);
+			if ( n != 0)
+				return n;
+			return Integer.compare(floor, o.floor);
+		}
+	}
+
+	/**
+	 * Return a list of sorted PropertyKey that match the predicate and includes
+	 * the inheritance chain. The intention is to capture the processor that
+	 * defines a key.
+	 *
+	 * @param predicate the predicate to filter the key
+	 * @return new modifiable sorted list of PropertyKey
+	 */
+	@SuppressWarnings("resource")
+	public List<PropertyKey> getPropertyKeys(Predicate<String> predicate) {
+		List<PropertyKey> keys = new ArrayList<>();
+		Processor rover = this;
+		int level = 0;
+		while( rover != null) {
+			Processor localRover = rover;
+			int localLevel = level;
+			rover.stream(false) // local only
+				.filter(predicate)
+				.map(k -> new PropertyKey(localRover, k, localLevel))
+				.forEach(keys::add);
+			rover = rover.getParent();
+			level++;
+		}
+		Collections.sort(keys);
+		return keys;
+
+	}
+
+	/**
+	 * Return the merge property keys
+	 */
+	public List<PropertyKey> getMergePropertyKeys(String stem) {
+		String prefix = stem + ".";
+		return getPropertyKeys(k -> k.equals(stem) || k.startsWith(prefix));
+	}
+
 	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
 		// Handle a wildcard key, make sure they're sorted
 		// for consistency
@@ -2144,18 +2227,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public String mergeLocalProperties(String key) {
-		if (since(About._3_3)) {
-			return getProperty(makeWildcard(key), null, ",", false);
-		} else
-			return mergeProperties(key);
+		return getProperty(makeWildcard(key), null, ",", false);
 	}
 
 	public String mergeProperties(String key, String separator) {
-		if (since(About._2_4))
-			return getProperty(makeWildcard(key), null, separator, true);
-		else
-			return getProperty(key);
-
+		return getProperty(makeWildcard(key), null, separator, true);
 	}
 
 	private String makeWildcard(String key) {
