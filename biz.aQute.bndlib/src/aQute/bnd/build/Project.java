@@ -3656,4 +3656,40 @@ public class Project extends Processor {
 		}
 		return result;
 	}
+
+	/**
+	 * Find a processor that is inheriting from a project. This is either the
+	 * bnd.bnd file or a sub bnd.
+	 *
+	 * @param file the file that contains the properties
+	 * @return a processor properly setup for the Workspace inheritance or empty
+	 */
+	public Optional<Processor> findProcessor(File file) {
+
+		if (file.equals(getPropertiesFile()))
+			return Optional.of(this);
+
+		File projectDir = file.getParentFile();
+		if (!projectDir.equals(getBase()))
+			return Optional.empty();
+
+		try {
+			if (file.getName()
+				.endsWith(".bndrun"))
+				return Optional.of(Run.createRun(getWorkspace(), file));
+
+			try (ProjectBuilder builder = getBuilder(null)) {
+				for (Builder b : builder.getSubBuilders()) {
+					if (file.equals(b.getPropertiesFile())) {
+						Processor sub = new Processor(this);
+						sub.setProperties(file);
+						return Optional.of(sub);
+					}
+				}
+			}
+			return Optional.empty();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
 }
