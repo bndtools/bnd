@@ -63,8 +63,8 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
-    org.eclipse.compare;version=latest,\
-    org.eclipse.compare.core;version=latest,\
+	org.eclipse.compare;version=latest,\
+	org.eclipse.compare.core;version=latest,\
 	org.eclipse.core.resources,\
 	org.eclipse.swt,\
 	org.eclipse.swt.cocoa.macosx.x86_64,\
@@ -116,7 +116,9 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.eclipse.e4.core.services,\
 	org.osgi.service.event,\
 	org.eclipse.jdt.annotation,\
-	org.apache.felix.gogo.runtime;version=1.1.6
+	org.apache.felix.gogo.runtime;version='1.1.6',\
+	org.eclipse.jgit,\
+	org.eclipse.egit.core
 
 -testpath: \
 	slf4j.api,\

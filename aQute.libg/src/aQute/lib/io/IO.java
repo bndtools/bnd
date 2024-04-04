@@ -123,6 +123,16 @@ public class IO {
 		 * @return a safe file name
 		 */
 		String toSafeFileName(String name);
+
+		/**
+		 * Return a file from a base. The file must use forward slash but may
+		 * start on windows with c:/... or /c:/ to indicate a drive.
+		 *
+		 * @param base the base to resolve the file from
+		 * @param file the path
+		 * @return a file
+		 */
+		File getFile(File base, String file);
 	}
 
 	final static OS os = File.separatorChar == '\\' ? new Windows() : new Other();
@@ -840,47 +850,7 @@ public class IO {
 	}
 
 	public static File getFile(File base, String file) {
-		StringRover rover = new StringRover(file);
-		if (rover.startsWith("~/")) {
-			rover.increment(2);
-			if (!rover.startsWith("~/")) {
-				return getFile(home, rover.substring(0));
-			}
-		}
-		if (rover.startsWith("~")) {
-			return getFile(home.getParentFile(), rover.substring(1));
-		}
-
-		File f = new File(rover.substring(0));
-		if (f.isAbsolute()) {
-			return f;
-		}
-
-		if (base == null) {
-			base = work;
-		}
-
-		for (f = base.getAbsoluteFile(); !rover.isEmpty();) {
-			int n = rover.indexOf('/');
-			if (n < 0) {
-				n = rover.length();
-			}
-			if ((n == 0) || ((n == 1) && (rover.charAt(0) == '.'))) {
-				// case "" or "."
-			} else if ((n == 2) && (rover.charAt(0) == '.') && (rover.charAt(1) == '.')) {
-				// case ".."
-				File parent = f.getParentFile();
-				if (parent != null) {
-					f = parent;
-				}
-			} else {
-				String segment = rover.substring(0, n);
-				f = new File(f, segment);
-			}
-			rover.increment(n + 1);
-		}
-
-		return f.getAbsoluteFile();
+		return os.getFile(base, file);
 	}
 
 	/**
@@ -1792,6 +1762,25 @@ public class IO {
 			}
 		}
 		return name;
+	}
+
+	/**
+	 * Create a new unique file name in the given folder
+	 *
+	 * @param folder the folder to create a File in
+	 * @param stem the name stem, "untitled-" if null
+	 * @return a file in the folder that does not exist
+	 */
+	public static File unique(File folder, String stem) {
+		if (stem == null)
+			stem = "untitled-";
+		int n = 0;
+		while (true) {
+			File f = new File(folder, stem + n);
+			if (!f.exists())
+				return f;
+			n++;
+		}
 	}
 
 }

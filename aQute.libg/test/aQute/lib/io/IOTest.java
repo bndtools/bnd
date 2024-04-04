@@ -90,6 +90,17 @@ public class IOTest {
 	}
 
 	@Test
+	@EnabledOnOs(WINDOWS)
+	public void testGetFileOnWindows() {
+		assertThat(IO.getFile("f:/abc")).isEqualTo(new File("f:\\abc"));
+		assertThat(IO.getFile("/f:/abc")).isEqualTo(new File("f:\\abc"));
+
+		File f = new File("f:");
+		assertThat(IO.getFile(f, "abc")).isEqualTo(new File("f:\\abc"));
+	}
+
+
+	@Test
 	public void testFilesetCopy(@InjectTemporaryDirectory
 	File destDir) throws Exception {
 		assertTrue(destDir.isDirectory());

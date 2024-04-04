@@ -312,7 +312,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			try {
 				this.cacheTimeoutSeconds = Integer.parseInt(map.get(PROP_CACHE_TIMEOUT));
 			} catch (NumberFormatException e) {
-				error("Bad timeout setting. Must be integer number of milliseconds.");
+				error("Bad timeout setting. Must be integer number of seconds.");
 			}
 		}
 

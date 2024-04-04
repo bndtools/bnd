@@ -55,6 +55,10 @@
 		<startupParticipant
 			class="bndtools.javasearch.JavaSearchStartupParticipant" />
 	</extension>
+    <extension point="org.eclipse.ui.startup">
+        <startup
+            class="bndtools.central.Starter" />
+    </extension>
 
 	<!-- EDITORS -->
 	<extension point="org.eclipse.ui.editors">
@@ -143,14 +147,29 @@
 			preferredPerspectives="bndtools.perspective" icon="icons/bricks.png"
 			name="Bnd OSGi Project" project="true">
 		</wizard>
-		<wizard id="bndtools.workspaceWizard"
+        <wizard id="bndtools.workspaceWizard"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.newworkspace.NewWorkspaceWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/bndtools-logo-16x16.png" name="New bnd workspace">
+			<description>
+			Creates a new bnd workspace. You will be able to select template fragments
+			that will define the new workspace. At finish, you can switch to the new
+			workspace.
+			</description>
+        </wizard>
+        <wizard id="bndtools.workspaceWizardDeprecated"
 			category="bndtools.wizardCategory"
 			class="bndtools.wizards.workspace.WorkspaceSetupWizard"
 			finalPerspective="bndtools.perspective"
 			preferredPerspectives="bndtools.perspective"
-			icon="icons/bndtools-logo-16x16.png" name="Bnd OSGi Workspace"
-			project="true">
+			icon="icons/bndtools-logo-16x16.png" name="Bnd OSGi Workspace (Deprecated)">
+			<description>
+			Old style workspace creation, will be deprecated in a coming release.
+			</description>
 		</wizard>
+        
 		<category id="bndtools.serviceWizardCategory" name="OSGi Services" />
 		<wizard id="bndtools.newServiceWiz"
 			category="bndtools.serviceWizardCategory"

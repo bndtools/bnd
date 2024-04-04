@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import aQute.lib.io.IO.OS;
+import aQute.lib.stringrover.StringRover;
 
 class Other implements OS {
 
@@ -46,4 +47,54 @@ class Other implements OS {
 		}
 		return sb.toString();
 	}
+
+	@Override
+	public File getFile(File base, String file) {
+		return getFile0(base, file);
+	}
+
+	static File getFile0(File base, String path) {
+		StringRover rover = new StringRover(path);
+		if (rover.startsWith("~/")) {
+			rover.increment(2);
+			if (!rover.startsWith("~/")) {
+				return getFile0(IO.home, rover.substring(0));
+			}
+		}
+		if (rover.startsWith("~")) {
+			return getFile0(IO.home.getParentFile(), rover.substring(1));
+		}
+
+		File f = new File(rover.substring(0));
+		if (f.isAbsolute()) {
+			return f;
+		}
+
+		if (base == null) {
+			base = IO.work;
+		}
+
+		for (f = base.getAbsoluteFile(); !rover.isEmpty();) {
+			int n = rover.indexOf('/');
+			if (n < 0) {
+				n = rover.length();
+			}
+			if ((n == 0) || ((n == 1) && (rover.charAt(0) == '.'))) {
+				// case "" or "."
+			} else if ((n == 2) && (rover.charAt(0) == '.') && (rover.charAt(1) == '.')) {
+				// case ".."
+				File parent = f.getParentFile();
+				if (parent != null) {
+					f = parent;
+				}
+			} else {
+				String segment = rover.substring(0, n);
+				f = new File(f, segment);
+			}
+			rover.increment(n + 1);
+		}
+
+		return f.getAbsoluteFile();
+	}
+
 }

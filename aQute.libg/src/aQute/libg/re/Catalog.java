@@ -1189,6 +1189,14 @@ public class Catalog {
 						return Optional.of(new MatchGroupImplIndex(group, value));
 					}
 
+					@Override
+					public String presentGroup(String groupName) {
+						String group = matcher.group(groupName);
+						if (group == null)
+							throw new IllegalArgumentException("no such group " + groupName);
+						return group;
+					}
+
 				}
 				return Optional.of(new MatchImpl());
 			} else
