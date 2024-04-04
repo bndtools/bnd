@@ -114,7 +114,7 @@ public class BndEditModel {
 	private Properties															properties							= new UTF8Properties();
 	private final Map<String, Object>											objectProperties					= new HashMap<>();
 	private final Map<String, String>											changesToSave						= new TreeMap<>();
-	private Project																project;
+	private Project																bndrun;
 
 	private volatile boolean													dirty;
 
@@ -384,15 +384,31 @@ public class BndEditModel {
 		loadFrom(document);
 	}
 
-	public BndEditModel(Project project) throws IOException {
-		this(project.getWorkspace());
-		this.project = project;
-		File propertiesFile = project.getPropertiesFile();
+	public BndEditModel(Project bndrun) throws IOException {
+		this(bndrun.getWorkspace());
+		this.bndrun = bndrun;
+		File propertiesFile = bndrun.getPropertiesFile();
 		if (propertiesFile.isFile())
 			this.document = new Document(IO.collect(propertiesFile));
 		else
 			this.document = new Document("");
 		loadFrom(this.document);
+	}
+
+	/**
+	 * Is either the workspace (when cnf/build.bnd) or a project (when its
+	 * bnd.bnd) or a random bndrun linked to workspace (event if it isn't a
+	 * bndrun). Primary purpose is to walk the inheritance chain implied in the
+	 * Workspace/Project/sub bnd files files
+	 */
+	Processor getOwner() {
+		File propertiesFile = bndrun.getPropertiesFile();
+		if (!propertiesFile.getName()
+			.endsWith(".bnd"))
+			return bndrun;
+
+		return workspace.findProcessor(propertiesFile)
+			.orElse(bndrun);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -1342,11 +1358,11 @@ public class BndEditModel {
 	}
 
 	public void setProject(Project project) {
-		this.project = project;
+		this.bndrun = project;
 	}
 
 	public Project getProject() {
-		return project;
+		return bndrun;
 	}
 
 	public Workspace getWorkspace() {
@@ -1379,10 +1395,10 @@ public class BndEditModel {
 		File source = getBndResource();
 		Processor parent;
 
-		if (project != null) {
-			parent = project;
+		if (bndrun != null) {
+			parent = bndrun;
 			if (source == null) {
-				source = project.getPropertiesFile();
+				source = bndrun.getPropertiesFile();
 			}
 		} else if (workspace != null && isCnf()) {
 			parent = workspace;
@@ -1455,7 +1471,7 @@ public class BndEditModel {
 	 */
 	public void saveChanges() throws IOException {
 		assert document != null
-			&& project != null : "you can only call saveChanges when you created this edit model with a project";
+			&& bndrun != null : "you can only call saveChanges when you created this edit model with a project";
 
 		saveChangesTo(document);
 		store(document, getProject().getPropertiesFile());
@@ -1472,7 +1488,7 @@ public class BndEditModel {
 			try {
 				return aQute.lib.converter.Converter.cnv(ResolutionInstructions.ResolveMode.class, resolve);
 			} catch (Exception e) {
-				project.error("Invalid value for %s: %s. Allowed values are %s", Constants.RESOLVE, resolve,
+				bndrun.error("Invalid value for %s: %s. Allowed values are %s", Constants.RESOLVE, resolve,
 					ResolutionInstructions.ResolveMode.class.getEnumConstants());
 			}
 		}
@@ -1496,7 +1512,7 @@ public class BndEditModel {
 	}
 
 	public void load() throws IOException {
-		loadFrom(project.getPropertiesFile());
+		loadFrom(bndrun.getPropertiesFile());
 	}
 
 	/**
@@ -1561,5 +1577,4 @@ public class BndEditModel {
 	public long getLastChangedAt() {
 		return lastChangedAt;
 	}
-
 }

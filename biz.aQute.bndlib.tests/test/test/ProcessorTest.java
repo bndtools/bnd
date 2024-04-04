@@ -22,6 +22,7 @@ import aQute.bnd.osgi.AttributeClasses;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.PropertyKey;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -619,6 +620,27 @@ public class ProcessorTest {
 
 			String plusplus = p.mergeProperties("foo++");
 			assertThat(plusplus).isEqualTo("d,e,f");
+		}
+
+	}
+
+	@Test
+	public void testPropertyKeys() throws IOException {
+		try (Processor top = new Processor()) {
+			top.setProperty("foo+.1", "x,y,z");
+			top.setProperty("foo+.2", "x,y,z");
+			top.setProperty("foo++", "d,e,f");
+			try (Processor bottom = new Processor(top)) {
+				bottom.setProperty("foo+", "a,b,c");
+				bottom.setProperty("foo+.2", "x,y,z");
+				List<PropertyKey> keys = bottom.getMergePropertyKeys("foo+");
+				assertThat(keys).hasSize(4);
+				assertThat(keys).containsExactly(//
+					new PropertyKey(bottom, "foo+", 0), //
+					new PropertyKey(top, "foo+.1", 1), //
+					new PropertyKey(bottom, "foo+.2", 0), //
+					new PropertyKey(top, "foo+.2", 1));
+			}
 		}
 
 	}
