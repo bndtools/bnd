@@ -1044,7 +1044,7 @@ public class BndEditModel {
 				.stream()
 				.forEach(pk -> {
 
-					boolean isLocal = doGetObject(pk.key(), headerClauseListConverter) != null;
+					boolean isLocal = isLocalPropertyKey(pk.key());
 
 					List<BndEditModelHeaderClause> headers = headerClauseListConverter.convert(pk.getValue())
 						.stream()
@@ -1071,14 +1071,17 @@ public class BndEditModel {
 	 */
 	public void setPlugins(Map<String, List<BndEditModelHeaderClause>> plugins,
 		Collection<String> pluginPropKeysToRemove) {
-		setProperties(plugins, pluginPropKeysToRemove);
+		setProperties(Constants.PLUGIN, plugins, pluginPropKeysToRemove);
 	}
 
-	private void setProperties(Map<String, List<BndEditModelHeaderClause>> map,
-		Collection<String> pluginPropKeysToRemove) {
-		Map<String, List<BndEditModelHeaderClause>> old = getProperties(Constants.PLUGIN);
+	private void setProperties(String stem, Map<String, List<BndEditModelHeaderClause>> map,
+		Collection<String> propKeysToRemove) {
+		Map<String, List<BndEditModelHeaderClause>> old = getProperties(stem);
 
 		map.entrySet()
+			.stream()
+			.filter(entry -> entry.getKey()
+				.startsWith(stem))
 			.forEach(p -> {
 
 				List<BndEditModelHeaderClause> newLocalHeaders = p.getValue()
@@ -1086,22 +1089,38 @@ public class BndEditModel {
 					.filter(mh -> mh.isLocal())
 					.toList();
 
-				List<BndEditModelHeaderClause> oldLocalHeaders = old.get(p.getKey())
+				List<BndEditModelHeaderClause> oldList = old.get(p.getKey());
+
+				List<BndEditModelHeaderClause> oldLocalHeaders = oldList == null ? null
+					: oldList
 					.stream()
 					.filter(mh -> mh.isLocal())
-					.toList();
+						.toList();
+
+				if (oldList != null && !isLocalPropertyKey(p.getKey())) {
+					return;
+				}
 
 				doSetObject(p.getKey(), oldLocalHeaders, newLocalHeaders,
 					complexHeaderClauseListFormatter);
 
 			});
 
-		if (pluginPropKeysToRemove != null) {
-			pluginPropKeysToRemove.forEach(key -> removeEntries(key));
+		if (propKeysToRemove != null) {
+			propKeysToRemove.forEach(key -> removeEntries(key));
 		}
 	}
 
 
+
+	/**
+	 * @param key
+	 * @return <code>true</code> if the given propertyKey is physically in the
+	 *         local {@link #properties}
+	 */
+	private boolean isLocalPropertyKey(String key) {
+		return doGetObject(key, headerClauseListConverter) != null;
+	}
 
 	public List<String> getPluginPath() {
 		return doGetObject(Constants.PLUGINPATH, listConverter);

@@ -37,20 +37,6 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 
 		label.append(" (" + header.key() + ": " + className + ")", StyledString.QUALIFIER_STYLER);
 
-		// Map<String, String> attribs = header.getAttribs();
-		// if (!attribs.isEmpty())
-		// label.append(" ");
-		// for (Iterator<Entry<String, String>> iter = attribs.entrySet()
-		// .iterator(); iter.hasNext();) {
-		// Entry<String, String> entry = iter.next();
-		// label.append(entry.getKey(), StyledString.QUALIFIER_STYLER);
-		// label.append("=", StyledString.QUALIFIER_STYLER);
-		// label.append(entry.getValue(), StyledString.COUNTER_STYLER);
-		//
-		// if (iter.hasNext())
-		// label.append(", ");
-		// }
-
 		cell.setText(label.toString());
 		cell.setStyleRanges(label.getStyleRanges());
 

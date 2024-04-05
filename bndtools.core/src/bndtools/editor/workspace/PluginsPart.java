@@ -52,7 +52,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.BndEditModelHeaderClause;
-import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
@@ -245,14 +244,16 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	}
 
 	void doAdd() {
-		PluginSelectionWizard wizard = new PluginSelectionWizard();
+
+		String uniqueKey = uniqueKey(Constants.PLUGIN);
+
+		PluginSelectionWizard wizard = new PluginSelectionWizard(() -> uniqueKey);
 		WizardDialog dialog = new WizardDialog(getManagedForm().getForm()
 			.getShell(), wizard);
 		if (dialog.open() == Window.OK) {
-			HeaderClause newPlugin = wizard.getHeader();
+			BndEditModelHeaderClause newPlugin = wizard.getHeader();
 
-			String uniqueKey = uniqueKey(Constants.PLUGIN);
-			data.put(uniqueKey, Collections.singletonList(new BndEditModelHeaderClause(uniqueKey, newPlugin, true)));
+			data.put(uniqueKey, Collections.singletonList(newPlugin));
 			viewer.add(newPlugin);
 			markDirty();
 		}
