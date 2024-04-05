@@ -1080,6 +1080,7 @@ public class BndEditModel {
 
 		map.entrySet()
 			.stream()
+			// safety check: filter out properties not starting with the step
 			.filter(entry -> entry.getKey()
 				.startsWith(stem))
 			.forEach(p -> {
@@ -1098,6 +1099,9 @@ public class BndEditModel {
 						.toList();
 
 				if (oldList != null && !isLocalPropertyKey(p.getKey())) {
+					// skip writing
+					// existing but non-local means an inherited property
+					// not from this properties file. so do not write it.
 					return;
 				}
 
