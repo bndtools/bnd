@@ -59,6 +59,7 @@ import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.PropertyKey;
 import aQute.bnd.properties.Document;
 import aQute.bnd.properties.IDocument;
 import aQute.bnd.properties.IRegion;
@@ -402,6 +403,9 @@ public class BndEditModel {
 	 * Workspace/Project/sub bnd files files
 	 */
 	Processor getOwner() {
+		if (bndrun == null)
+			return new Processor();
+
 		File propertiesFile = bndrun.getPropertiesFile();
 		if (!propertiesFile.getName()
 			.endsWith(".bnd"))
@@ -989,13 +993,11 @@ public class BndEditModel {
 		// we do prefix matching to support merged properties like
 		// -plugin.1.Test, -plugin.2.Maven etc.
 		try {
-			Processor proc = getProperties();
-			Properties allProps = proc.getProperties();
-			Set<String> propertyKeys = proc.getPropertyKeys(true);
+			List<PropertyKey> propertyKeys = getOwner().getMergePropertyKeys(Constants.PLUGIN);
 
-			List<HeaderClause> headers = propertyKeys.stream()
-				.filter(p -> p.startsWith(Constants.PLUGIN))
-				.map(p -> headerClauseListConverter.convert(allProps.getProperty(p)))
+			List<HeaderClause> headers = PropertyKey.findVisible(propertyKeys)
+				.stream()
+				.map(p -> headerClauseListConverter.convert(p.getValue()))
 				.flatMap(List::stream)
 				.toList();
 
@@ -1012,6 +1014,8 @@ public class BndEditModel {
 		doSetObject(Constants.PLUGIN, old, plugins, complexHeaderClauseListFormatter);
 	}
 
+
+
 	/**
 	 * Similar to {@link #getPlugins()} but returns a map where the key is the
 	 * property key of the bnd file e.g.
@@ -1022,29 +1026,31 @@ public class BndEditModel {
 	 *
 	 * @return a map with a property keys and their plugins.
 	 */
-	public Map<String, List<MergedHeaderClause>> getPluginsProperties() {
-		// return all plugins
-		// we do prefix matching to support merged properties like
+	public Map<String, List<BndEditModelHeaderClause>> getPluginsProperties() {
+		return getProperties(Constants.PLUGIN);
+	}
+
+	private Map<String, List<BndEditModelHeaderClause>> getProperties(String stem) {
+		// return all properties
+		// we do step prefix-matching to support merged properties. e.g.
+		// stem=-plugin hould return
 		// -plugin.1.Test, -plugin.2.Maven etc.
 
 		try {
-			Processor proc = getProperties();
-			Properties allProps = proc.getProperties();
-			Set<String> propertyKeys = proc.getPropertyKeys(true);
 
+			Map<String, List<BndEditModelHeaderClause>> map = new LinkedHashMap<>();
 
-			Map<String, List<MergedHeaderClause>> map = new LinkedHashMap<>();
+			PropertyKey.findVisible(getOwner().getMergePropertyKeys(stem))
+				.stream()
+				.forEach(pk -> {
 
-			propertyKeys.stream()
-				.filter(p -> p.startsWith(Constants.PLUGIN))
-				.forEach(key -> {
+					boolean isLocal = doGetObject(pk.key(), headerClauseListConverter) != null;
 
-					boolean isLocal = doGetObject(key, headerClauseListConverter) != null;
-
-					List<HeaderClause> headers = headerClauseListConverter.convert(allProps.getProperty(key));
-					map.put(key, headers.stream()
-						.map(h -> new MergedHeaderClause(key, h, isLocal))
-						.collect(Collectors.toList()));
+					List<BndEditModelHeaderClause> headers = headerClauseListConverter.convert(pk.getValue())
+						.stream()
+						.map(h -> new BndEditModelHeaderClause(pk.key(), h, isLocal))
+						.collect(Collectors.toList());
+					map.put(pk.key(), headers);
 
 				});
 
@@ -1063,27 +1069,26 @@ public class BndEditModel {
 	 * @param pluginPropKeysToRemove the property keys to remove (not modified,
 	 *            caller needs to handle cleanup)
 	 */
-	public void setPlugins(Map<String, List<MergedHeaderClause>> plugins, Collection<String> pluginPropKeysToRemove) {
-		Map<String, List<MergedHeaderClause>> old = getPluginsProperties();
+	public void setPlugins(Map<String, List<BndEditModelHeaderClause>> plugins,
+		Collection<String> pluginPropKeysToRemove) {
+		setProperties(plugins, pluginPropKeysToRemove);
+	}
 
-		plugins.entrySet()
+	private void setProperties(Map<String, List<BndEditModelHeaderClause>> map,
+		Collection<String> pluginPropKeysToRemove) {
+		Map<String, List<BndEditModelHeaderClause>> old = getProperties(Constants.PLUGIN);
+
+		map.entrySet()
 			.forEach(p -> {
-				if (!p.getKey()
-					.startsWith(Constants.PLUGIN)) {
-					throw new IllegalArgumentException(
-						"Plugin properties need to start with " + Constants.PLUGIN + ". Actual: " + p.getKey());
-				}
 
-				List<HeaderClause> newLocalHeaders = p.getValue()
+				List<BndEditModelHeaderClause> newLocalHeaders = p.getValue()
 					.stream()
 					.filter(mh -> mh.isLocal())
-					.map(mh -> mh.header())
 					.toList();
 
-				List<HeaderClause> oldLocalHeaders = old.get(p.getKey())
+				List<BndEditModelHeaderClause> oldLocalHeaders = old.get(p.getKey())
 					.stream()
 					.filter(mh -> mh.isLocal())
-					.map(mh -> mh.header())
 					.toList();
 
 				doSetObject(p.getKey(), oldLocalHeaders, newLocalHeaders,
@@ -1095,6 +1100,8 @@ public class BndEditModel {
 			pluginPropKeysToRemove.forEach(key -> removeEntries(key));
 		}
 	}
+
+
 
 	public List<String> getPluginPath() {
 		return doGetObject(Constants.PLUGINPATH, listConverter);

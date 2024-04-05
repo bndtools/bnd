@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1050,6 +1051,22 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			if ( n != 0)
 				return n;
 			return Integer.compare(floor, o.floor);
+		}
+
+		/**
+		 * Find visible property keys. "Visible" in this context means that
+		 * among the {@code PropertyKey} objects with the same key, only the one
+		 * with the lowest floor number is included in the result.
+		 *
+		 * @param keys sorted keys defined by {@link #compareTo(PropertyKey)}
+		 * @return only unique keys which are visible (lowest floor value)
+		 */
+		public static Collection<PropertyKey> findVisible(Collection<PropertyKey> keys) {
+			Map<String, PropertyKey> map = new LinkedHashMap<>();
+			for (PropertyKey pk : keys) {
+				map.putIfAbsent(pk.key(), pk);
+			}
+			return new LinkedHashSet<>(map.values());
 		}
 	}
 

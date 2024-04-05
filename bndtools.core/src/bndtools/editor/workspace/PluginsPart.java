@@ -51,7 +51,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.MergedHeaderClause;
+import aQute.bnd.build.model.BndEditModelHeaderClause;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
@@ -64,7 +64,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	private final Map<String, IConfigurationElement>	configElements	= new HashMap<>();
 
-	private Map<String, List<MergedHeaderClause>>		data;
+	private Map<String, List<BndEditModelHeaderClause>>		data;
 	private Set<String>									pluginsPropertiesToRemove	= new LinkedHashSet<>();
 
 	private Table										table;
@@ -215,7 +215,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	@Override
 	public void refresh() {
-		Map<String, List<MergedHeaderClause>> modelData = model.getPluginsProperties();
+		Map<String, List<BndEditModelHeaderClause>> modelData = model.getPluginsProperties();
 		if (modelData != null)
 			this.data = new LinkedHashMap<>(modelData);
 		else
@@ -252,7 +252,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 			HeaderClause newPlugin = wizard.getHeader();
 
 			String uniqueKey = uniqueKey(Constants.PLUGIN);
-			data.put(uniqueKey, Collections.singletonList(new MergedHeaderClause(uniqueKey, newPlugin, true)));
+			data.put(uniqueKey, Collections.singletonList(new BndEditModelHeaderClause(uniqueKey, newPlugin, true)));
 			viewer.add(newPlugin);
 			markDirty();
 		}
@@ -269,10 +269,10 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	}
 
 	void doEdit() {
-		MergedHeaderClause mh = (MergedHeaderClause) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-		HeaderClause header = mh.header();
+		BndEditModelHeaderClause header = (BndEditModelHeaderClause) ((IStructuredSelection) viewer.getSelection())
+			.getFirstElement();
 
-		if (!mh.isLocal()) {
+		if (!header.isLocal()) {
 			// only local plugins in this file can be edited
 			return;
 		}
@@ -291,7 +291,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 				header.getAttribs()
 					.putAll(copyOfProperties);
 
-				viewer.update(new MergedHeaderClause(mh.key(), header, mh.isLocal()), null);
+				viewer.update(new BndEditModelHeaderClause(header.key(), header, header.isLocal()), null);
 				markDirty();
 			}
 		}
@@ -301,10 +301,9 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 		IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
 
-		MergedHeaderClause mh = (MergedHeaderClause) sel.getFirstElement();
-		HeaderClause header = mh.header();
+		BndEditModelHeaderClause header = (BndEditModelHeaderClause) sel.getFirstElement();
 
-		if (!mh.isLocal()) {
+		if (!header.isLocal()) {
 			// only local plugins in this file can be removed
 			return;
 		}
@@ -314,12 +313,12 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		// remove by value
 		sel.toList()
 			.forEach(selectedPlugin -> {
-				Set<Entry<String, List<MergedHeaderClause>>> entrySet = data.entrySet();
-				inner: for (Iterator<Entry<String, List<MergedHeaderClause>>> iterator = entrySet.iterator(); iterator
+				Set<Entry<String, List<BndEditModelHeaderClause>>> entrySet = data.entrySet();
+				inner: for (Iterator<Entry<String, List<BndEditModelHeaderClause>>> iterator = entrySet.iterator(); iterator
 					.hasNext();) {
-					Entry<String, List<MergedHeaderClause>> entry = iterator.next();
+					Entry<String, List<BndEditModelHeaderClause>> entry = iterator.next();
 					String key = entry.getKey();
-					List<MergedHeaderClause> headers = entry.getValue();
+					List<BndEditModelHeaderClause> headers = entry.getValue();
 
 					boolean removed = headers.removeIf(selectedPlugin::equals);
 					if (removed) {
