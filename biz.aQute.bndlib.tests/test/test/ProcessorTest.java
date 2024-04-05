@@ -669,6 +669,13 @@ public class ProcessorTest {
 				assertThat(visibles).containsExactly(//
 					new PropertyKey(bottom, "-plugin.a", 0), //
 					new PropertyKey(top, "-plugin.b", 1));
+
+				assertThat(List.copyOf(visibles)
+					.get(0)
+					.getValue()).isEqualTo("a,b,c");
+				assertThat(List.copyOf(visibles)
+					.get(1)
+					.getValue()).isEqualTo("b1");
 			}
 		}
 
