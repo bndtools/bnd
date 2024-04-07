@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Text;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import bndtools.editor.common.HelpButtons;
 
 public class PluginPropertiesPage extends WizardPage {
 
@@ -227,6 +228,9 @@ public class PluginPropertiesPage extends WizardPage {
 		String helpUrl = configElement.getAttribute("helpUrl");
 		if (helpUrl != null && !helpUrl.isBlank()) {
 			Program.launch(helpUrl);
+		}
+		else {
+			Program.launch(HelpButtons.HELP_URL_PLUGINPROPERTIESPAGE);
 		}
 	}
 
