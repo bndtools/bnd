@@ -909,6 +909,15 @@
 		    <property name="multi" type="string" description="Extensions for files that contain multiple JARs" />
 		</plugin>
 
+		<plugin class="aQute.bnd.repository.p2.provider.P2Repository"
+			icon="icons/database.png"
+			name="P2Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/p2repo.html">
+		    <property name="name" type="string" description="The name of this repository" default="P2Repository" />
+			<property name="url" type="string" description="The URL to either the P2 repository (a directory) or an Eclipse target platform" />
+		    <property name="location" type="string" description="The location to store the index file. Default: 'cnf/cache/p2-index-reponame/index.xml.gz'" />
+		</plugin>
+		
 	</extension>
 
 	<extension point="org.eclipse.ui.intro.configExtension">
