@@ -892,7 +892,8 @@
 
 		<plugin class="aQute.bnd.repository.maven.provider.MavenBndRepository"
 			icon="icons/database.png"
-			name="MavenBndRepository">
+			name="MavenBndRepository"
+			helpUrl="https://bnd.bndtools.org/plugins/maven.html">
 		    <property name="name" type="string" description="The name of this repository" />
 			<property name="releaseUrl" type="string" description="The urls to the remote release repository." default="https://repo.maven.apache.org/maven2/" />
 		    <property name="stagingUrl" type="string" description="The url of the staging release repository." />
@@ -907,6 +908,7 @@
 		    <property name="ignore_metainf_maven" type="boolean" description="Ignore maven information in META-INF/maven/...." />
 		    <property name="multi" type="string" description="Extensions for files that contain multiple JARs" />
 		</plugin>
+
 	</extension>
 
 	<extension point="org.eclipse.ui.intro.configExtension">

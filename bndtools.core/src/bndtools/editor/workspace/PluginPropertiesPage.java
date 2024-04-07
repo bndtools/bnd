@@ -13,6 +13,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -219,6 +220,14 @@ public class PluginPropertiesPage extends WizardPage {
 
 	public boolean isChanged() {
 		return changed;
+	}
+
+	@Override
+	public void performHelp() {
+		String helpUrl = configElement.getAttribute("helpUrl");
+		if (helpUrl != null && !helpUrl.isBlank()) {
+			Program.launch(helpUrl);
+		}
 	}
 
 }
