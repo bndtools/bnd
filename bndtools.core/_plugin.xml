@@ -835,7 +835,8 @@
 	<!-- BND PLUGINS -->
 	<extension point="bndtools.core.bndPlugins">
 		<plugin class="aQute.lib.deployer.FileRepo" rank="10"
-			icon="icons/bundlefolder.png" name="File Repository">
+			icon="icons/bundlefolder.png" name="File Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/filerepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
 			<property name="location" type="string"
@@ -844,7 +845,8 @@
 		</plugin>
 
 		<plugin class="aQute.bnd.repository.osgi.OSGiRepository"
-			icon="icons/database.png" name="Indexed Repository (read-only)">
+			icon="icons/database.png" name="Indexed Repository (read-only)"
+			helpUrl="https://bnd.bndtools.org/plugins/osgirepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
 			<property name="locations" type="string"
@@ -855,7 +857,8 @@
 
 		<plugin class="aQute.bnd.deployer.repository.LocalIndexedRepo"
 			icon="icons/database.png"
-			name="Locally Indexed Repository (read/write)">
+			name="Locally Indexed Repository (read/write)"
+			helpUrl="https://bnd.bndtools.org/plugins/localindexrepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
 			<property name="local" type="string"
