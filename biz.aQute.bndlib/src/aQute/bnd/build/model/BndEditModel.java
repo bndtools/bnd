@@ -400,6 +400,9 @@ public class BndEditModel {
 	 * Workspace/Project/sub bnd files files
 	 */
 	Processor getOwner() {
+		if (bndrun == null)
+			return new Processor();
+
 		File propertiesFile = bndrun.getPropertiesFile();
 		if (!propertiesFile.getName()
 			.endsWith(".bnd"))
