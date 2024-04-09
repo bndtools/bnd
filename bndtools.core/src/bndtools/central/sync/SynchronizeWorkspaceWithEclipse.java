@@ -42,7 +42,7 @@ import bndtools.central.Central;
  * with the file system. Any deltas are processed by creating or deleting the
  * project.
  */
-@Component(enabled = true)
+@Component(enabled = false)
 public class SynchronizeWorkspaceWithEclipse {
 	static IWorkspace			eclipse			= ResourcesPlugin.getWorkspace();
 	final static IWorkspaceRoot	root			= eclipse.getRoot();
