@@ -834,8 +834,9 @@
 
 	<!-- BND PLUGINS -->
 	<extension point="bndtools.core.bndPlugins">
-		<plugin class="aQute.lib.deployer.FileRepo" rank="10"
-			icon="icons/bundlefolder.png" name="File Repository">
+		<plugin class="aQute.lib.deployer.FileRepo" rank="9"
+			icon="icons/bundlefolder.png" name="File Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/filerepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
 			<property name="location" type="string"
@@ -844,7 +845,8 @@
 		</plugin>
 
 		<plugin class="aQute.bnd.repository.osgi.OSGiRepository"
-			icon="icons/database.png" name="Indexed Repository (read-only)">
+			icon="icons/database.png" name="Indexed Repository (read-only)"
+			helpUrl="https://bnd.bndtools.org/plugins/osgirepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
 			<property name="locations" type="string"
@@ -855,7 +857,8 @@
 
 		<plugin class="aQute.bnd.deployer.repository.LocalIndexedRepo"
 			icon="icons/database.png"
-			name="Locally Indexed Repository (read/write)">
+			name="Locally Indexed Repository (read/write)"
+			helpUrl="https://bnd.bndtools.org/plugins/localindexrepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
 			<property name="local" type="string"
@@ -890,6 +893,53 @@
 				description="Disable verification of server's X509 certificate (insecure, for testing only!)" />
 		</plugin>
 
+		<plugin class="aQute.bnd.repository.maven.provider.MavenBndRepository"
+			icon="icons/database.png"
+			name="Maven Bnd Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/maven.html"
+			rank="10">
+		    <property name="name" type="string" description="The name of this repository" default="Maven Repository" />
+			<property name="releaseUrl" type="string" description="The urls to the remote release repository." default="https://repo.maven.apache.org/maven2/" />
+		    <property name="stagingUrl" type="string" description="The url of the staging release repository." />
+		    <property name="snapshotUrl" type="string" description="The urls to the remote snapshot repository." default="https://repository.apache.org/snapshots/" />
+		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />
+		    <property name="readOnly" type="boolean" description="" default="false" />
+		    <property name="index" type="string" description="The path to the index file" default="${.}/cnf/central.maven" />
+		    <property name="source" type="string" description="Content added to the index file. Content maybe one line without CR/LF as long as there is a comma or whitespace separating the GAVs. Further same format as the index file." />
+		    <property name="noupdateOnRelease" type="boolean" description="Do not update the index when a file is released" />
+		    <property name="poll_time" type="int" description="Sets the time in seconds when to check for changes in the pom-files" default="5" />
+		    <property name="redeploy" type="boolean" description="Allow redeploy" />
+		    <property name="ignore_metainf_maven" type="boolean" description="Ignore maven information in META-INF/maven/...." />
+		    <property name="multi" type="string" description="Extensions for files that contain multiple JARs" />
+		</plugin>
+
+		<plugin class="aQute.bnd.repository.p2.provider.P2Repository"
+			icon="icons/database.png"
+			name="P2Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/p2repo.html">
+		    <property name="name" type="string" description="The name of this repository" default="P2Repository" />
+			<property name="url" type="string" description="The URL to either the P2 repository (a directory) or an Eclipse target platform. Required." />
+		    <property name="location" type="string" description="The location to store the index file. Default: 'cnf/cache/p2-index-reponame/index.xml.gz'" />
+		</plugin>
+
+		<plugin class="aQute.bnd.repository.maven.pom.provider.BndPomRepository"
+			icon="icons/database.png"
+			name="Maven POM Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/p2repo.html">
+		    <property name="name" type="string" description="The name of the repo. Required." default="Maven POM Repository" />
+		    <property name="releaseUrl" type="string" description="The url to the remote release repository. Can be a comma separated list of urls." default="https://repo.maven.apache.org/maven2/" />
+		    <property name="snapshotUrl" type="string" description="The url to the remote snapshot repository. If this is not specified, it falls back to the release repository or just local if this is also not specified. Can be a comma separated list of urls." default="https://repository.apache.org/snapshots/" />
+		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />
+		    <property name="revision" type="string" description="Coordinates of a maven revision. I.e. group:artifactid[:c]:version. Can be a comma separated list of GAVs." />
+		    <property name="location" type="string" description="Points to a file that is used as the cache. It will be in OSGi format." />
+		    <property name="pom" type="string" description="Points to a pom.xml file. This is exclusive with revision. Can be a comma separated list of files." default="${.}/cnf/pom.xml" />
+		    <property name="query" type="string" description="The query used to search Maven Central Search." />
+		    <property name="queryUrl" type="string" description="The url of the Maven Central Search."  />
+		    <property name="transitive" type="boolean" description="Allow transitive dependencies" />
+		    <property name="poll_time" type="int" description="Sets the time in seconds when to check for changes in the pom-files" default="300" />
+		    <property name="dependencyManagement" type="boolean" description="Also considers the dependency management section of a POM. Default is false." default="false" />
+		</plugin>
+		
 	</extension>
 
 	<extension point="org.eclipse.ui.intro.configExtension">

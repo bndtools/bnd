@@ -38,5 +38,7 @@ public final class HelpButtons {
 
 	public static final String					HELP_URL_RESOLUTIONRESULTSWIZARDPAGE	= "https://bnd.bndtools.org/chapters/250-resolving.html#resolving-1";
 
+	public static final String					HELP_URL_PLUGINPROPERTIESPAGE			= "https://bnd.bndtools.org/chapters/870-plugins.html";
+
 	private HelpButtons() {}
 }

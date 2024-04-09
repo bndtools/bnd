@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -640,6 +641,41 @@ public class ProcessorTest {
 					new PropertyKey(top, "foo+.1", 1), //
 					new PropertyKey(bottom, "foo+.2", 0), //
 					new PropertyKey(top, "foo+.2", 1));
+			}
+		}
+
+	}
+
+	@Test
+	public void testPropertyKeysFindVisibles() throws IOException {
+		try (Processor top = new Processor()) {
+			top.setProperty("-plugin.a", "a1");
+			top.setProperty("-plugin.b", "b1");
+			try (Processor bottom = new Processor(top)) {
+				bottom.setProperty("-plugin.a", "a,b,c");
+				List<PropertyKey> keys = bottom.getMergePropertyKeys("-plugin");
+				assertThat(keys).hasSize(3);
+
+				assertThat(keys).containsExactly(//
+					new PropertyKey(bottom, "-plugin.a", 0), //
+					new PropertyKey(top, "-plugin.a", 1), //
+					new PropertyKey(top, "-plugin.b", 1));
+
+				Collection<PropertyKey> visibles = PropertyKey.findVisible(keys);
+				System.out.println(keys);
+				System.out.println(visibles);
+
+				assertThat(visibles).hasSize(2);
+				assertThat(visibles).containsExactly(//
+					new PropertyKey(bottom, "-plugin.a", 0), //
+					new PropertyKey(top, "-plugin.b", 1));
+
+				assertThat(List.copyOf(visibles)
+					.get(0)
+					.getValue()).isEqualTo("a,b,c");
+				assertThat(List.copyOf(visibles)
+					.get(1)
+					.getValue()).isEqualTo("b1");
 			}
 		}
 

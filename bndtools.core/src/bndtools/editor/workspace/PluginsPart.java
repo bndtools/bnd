@@ -2,11 +2,15 @@ package bndtools.editor.workspace;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
@@ -18,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -46,7 +51,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.BndEditModelHeaderClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
@@ -58,7 +63,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	private final Map<String, IConfigurationElement>	configElements	= new HashMap<>();
 
-	private List<HeaderClause>							data;
+	private Map<String, List<BndEditModelHeaderClause>>		data;
+	private Set<String>									pluginsPropertiesToRemove	= new LinkedHashSet<>();
 
 	private Table										table;
 	private TableViewer									viewer;
@@ -67,6 +73,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	private ToolItem									removeItemTool;
 
 	private BndEditModel								model;
+
 
 	public PluginsPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -91,6 +98,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER);
 
 		viewer = new TableViewer(table);
+		ColumnViewerToolTipSupport.enableFor(viewer);
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
 		viewer.setLabelProvider(new PluginClauseLabelProvider(configElements));
 
@@ -206,19 +214,23 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
 	@Override
 	public void refresh() {
-		List<HeaderClause> modelData = model.getPlugins();
+		Map<String, List<BndEditModelHeaderClause>> modelData = model.getPluginsProperties();
 		if (modelData != null)
-			this.data = new ArrayList<>(modelData);
+			this.data = new LinkedHashMap<>(modelData);
 		else
-			this.data = new LinkedList<>();
-		viewer.setInput(this.data);
+			this.data = new LinkedHashMap<>();
+		viewer.setInput(this.data.values()
+			.stream()
+			.flatMap(List::stream)
+			.toList());
 		super.refresh();
 	}
 
 	@Override
 	public void commit(boolean onSave) {
 		super.commit(onSave);
-		model.setPlugins(data);
+		model.setPlugins(data, pluginsPropertiesToRemove);
+		pluginsPropertiesToRemove.clear();
 	}
 
 	@Override
@@ -232,20 +244,40 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 	}
 
 	void doAdd() {
-		PluginSelectionWizard wizard = new PluginSelectionWizard();
+
+		String uniqueKey = uniqueKey(Constants.PLUGIN);
+
+		PluginSelectionWizard wizard = new PluginSelectionWizard(() -> uniqueKey);
 		WizardDialog dialog = new WizardDialog(getManagedForm().getForm()
 			.getShell(), wizard);
 		if (dialog.open() == Window.OK) {
-			HeaderClause newPlugin = wizard.getHeader();
+			BndEditModelHeaderClause newPlugin = wizard.getHeader();
 
-			data.add(newPlugin);
+			data.put(uniqueKey, Collections.singletonList(newPlugin));
 			viewer.add(newPlugin);
 			markDirty();
 		}
 	}
 
+	private String uniqueKey(String key) {
+		String newKey = key;
+		int i = 1;
+		while (data.containsKey(newKey)) {
+			newKey = key + "." + i;
+			i++;
+		}
+		return newKey;
+	}
+
 	void doEdit() {
-		HeaderClause header = (HeaderClause) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+		BndEditModelHeaderClause header = (BndEditModelHeaderClause) ((IStructuredSelection) viewer.getSelection())
+			.getFirstElement();
+
+		if (!header.isLocal()) {
+			// only local plugins in this file can be edited
+			return;
+		}
+
 		if (header != null) {
 			Attrs copyOfProperties = new Attrs(header.getAttribs());
 
@@ -260,17 +292,49 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 				header.getAttribs()
 					.putAll(copyOfProperties);
 
-				viewer.update(header, null);
+				viewer.update(new BndEditModelHeaderClause(header.key(), header, header.isLocal()), null);
 				markDirty();
 			}
 		}
 	}
 
 	void doRemove() {
+
 		IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
 
+		BndEditModelHeaderClause header = (BndEditModelHeaderClause) sel.getFirstElement();
+
+		if (!header.isLocal()) {
+			// only local plugins in this file can be removed
+			return;
+		}
+
 		viewer.remove(sel.toArray());
-		data.removeAll(sel.toList());
+
+		// remove by value
+		sel.toList()
+			.forEach(selectedPlugin -> {
+				Set<Entry<String, List<BndEditModelHeaderClause>>> entrySet = data.entrySet();
+				inner: for (Iterator<Entry<String, List<BndEditModelHeaderClause>>> iterator = entrySet.iterator(); iterator
+					.hasNext();) {
+					Entry<String, List<BndEditModelHeaderClause>> entry = iterator.next();
+					String key = entry.getKey();
+					List<BndEditModelHeaderClause> headers = entry.getValue();
+
+					boolean removed = headers.removeIf(selectedPlugin::equals);
+					if (removed) {
+
+						if (headers.isEmpty()) {
+							// remove the map entry too
+							iterator.remove();
+							this.pluginsPropertiesToRemove.add(key);
+						}
+
+						// stop when we have removed the plugin
+						break inner;
+					}
+				}
+			});
 
 		if (!sel.isEmpty())
 			markDirty();

@@ -16,12 +16,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -57,6 +59,7 @@ import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.PropertyKey;
 import aQute.bnd.properties.Document;
 import aQute.bnd.properties.IDocument;
 import aQute.bnd.properties.IRegion;
@@ -986,12 +989,141 @@ public class BndEditModel {
 	}
 
 	public List<HeaderClause> getPlugins() {
-		return doGetObject(Constants.PLUGIN, headerClauseListConverter);
+		// return all plugins
+		// we do prefix matching to support merged properties like
+		// -plugin.1.Test, -plugin.2.Maven etc.
+		try {
+			List<PropertyKey> propertyKeys = getOwner().getMergePropertyKeys(Constants.PLUGIN);
+
+			List<HeaderClause> headers = PropertyKey.findVisible(propertyKeys)
+				.stream()
+				.map(p -> headerClauseListConverter.convert(p.getValue()))
+				.flatMap(List::stream)
+				.toList();
+
+			return headers;
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
 	}
 
 	public void setPlugins(List<HeaderClause> plugins) {
 		List<HeaderClause> old = getPlugins();
 		doSetObject(Constants.PLUGIN, old, plugins, complexHeaderClauseListFormatter);
+	}
+
+
+
+	/**
+	 * Similar to {@link #getPlugins()} but returns a map where the key is the
+	 * property key of the bnd file e.g.
+	 * <code>-plugin.1.Test, -plugin.2.Maven </code> The value is a List of
+	 * plugins, although usually it is just a 1-element list. But it is also
+	 * possible to specify multiple plugins under a single key, thus it is a
+	 * list.
+	 *
+	 * @return a map with a property keys and their plugins.
+	 */
+	public Map<String, List<BndEditModelHeaderClause>> getPluginsProperties() {
+		return getProperties(Constants.PLUGIN);
+	}
+
+	private Map<String, List<BndEditModelHeaderClause>> getProperties(String stem) {
+		// return all properties
+		// we do step prefix-matching to support merged properties. e.g.
+		// stem=-plugin hould return
+		// -plugin.1.Test, -plugin.2.Maven etc.
+
+		try {
+
+			Map<String, List<BndEditModelHeaderClause>> map = new LinkedHashMap<>();
+
+			PropertyKey.findVisible(getOwner().getMergePropertyKeys(stem))
+				.stream()
+				.forEach(pk -> {
+
+					boolean isLocal = isLocalPropertyKey(pk.key());
+
+					List<BndEditModelHeaderClause> headers = headerClauseListConverter.convert(pk.getValue())
+						.stream()
+						.map(h -> new BndEditModelHeaderClause(pk.key(), h, isLocal))
+						.collect(Collectors.toList());
+					map.put(pk.key(), headers);
+
+				});
+
+			return map;
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
+	}
+
+	/**
+	 * Updates and removes plugins.
+	 *
+	 * @param plugins
+	 * @param pluginPropKeysToRemove the property keys to remove (not modified,
+	 *            caller needs to handle cleanup)
+	 */
+	public void setPlugins(Map<String, List<BndEditModelHeaderClause>> plugins,
+		Collection<String> pluginPropKeysToRemove) {
+		setProperties(Constants.PLUGIN, plugins, pluginPropKeysToRemove);
+	}
+
+	private void setProperties(String stem, Map<String, List<BndEditModelHeaderClause>> map,
+		Collection<String> propKeysToRemove) {
+		Map<String, List<BndEditModelHeaderClause>> old = getProperties(stem);
+
+		map.entrySet()
+			.stream()
+			// safety check: filter out properties not starting with the step
+			.filter(entry -> entry.getKey()
+				.startsWith(stem))
+			.forEach(p -> {
+
+				List<BndEditModelHeaderClause> newLocalHeaders = p.getValue()
+					.stream()
+					.filter(mh -> mh.isLocal())
+					.toList();
+
+				List<BndEditModelHeaderClause> oldList = old.get(p.getKey());
+
+				List<BndEditModelHeaderClause> oldLocalHeaders = oldList == null ? null
+					: oldList
+					.stream()
+					.filter(mh -> mh.isLocal())
+						.toList();
+
+				if (oldList != null && !isLocalPropertyKey(p.getKey())) {
+					// skip writing
+					// existing but non-local means an inherited property
+					// not from this properties file. so do not write it.
+					return;
+				}
+
+				doSetObject(p.getKey(), oldLocalHeaders, newLocalHeaders,
+					complexHeaderClauseListFormatter);
+
+			});
+
+		if (propKeysToRemove != null) {
+			propKeysToRemove.forEach(key -> removeEntries(key));
+		}
+	}
+
+
+
+	/**
+	 * @param key
+	 * @return <code>true</code> if the given propertyKey is physically in the
+	 *         local {@link #properties}
+	 */
+	private boolean isLocalPropertyKey(String key) {
+		return doGetObject(key, headerClauseListConverter) != null;
 	}
 
 	public List<String> getPluginPath() {
