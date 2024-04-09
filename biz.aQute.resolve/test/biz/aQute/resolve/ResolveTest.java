@@ -637,7 +637,6 @@ public class ResolveTest {
 		runModel.setEE(EE.JavaSE_1_7);
 		runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("org.w3c.dom.traversal", null)));
 		runModel.setGenericString("-resolve.effective", "active");
-
 		// Require the log service, GoGo shell and GoGo commands
 		List<Requirement> requirements = new ArrayList<>();
 

@@ -101,6 +101,9 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		ColumnViewerToolTipSupport.enableFor(viewer);
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
 		viewer.setLabelProvider(new PluginClauseLabelProvider(configElements));
+		viewer.addDoubleClickListener(e -> {
+			doEdit();
+		});
 
 		Button btnReload = toolkit.createButton(composite, "Reload", SWT.NONE);
 		btnReload.setImage(refreshImg);

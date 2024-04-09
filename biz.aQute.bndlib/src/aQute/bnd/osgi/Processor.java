@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -175,7 +174,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public Processor(Processor parent) {
-		this(parent, parent.getProperties0(), true);
+		this(parent, parent.getRawProperties(), true);
 	}
 
 	public Processor(Properties props, boolean wrap) {
@@ -192,8 +191,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setParent(Processor parent) {
 		this.parent = parent;
-		Properties updated = (parent != null) ? new UTF8Properties(parent.getProperties0()) : new UTF8Properties();
-		updated.putAll(getProperties0());
+		Properties updated = (parent != null) ? new UTF8Properties(parent.getRawProperties()) : new UTF8Properties();
+		updated.putAll(getRawProperties());
 		properties = updated;
 		propertiesChanged();
 	}
@@ -625,10 +624,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			fixup = false;
 			begin();
 		}
-		return getProperties0();
+		return getRawProperties();
 	}
 
-	private Properties getProperties0() {
+	/**
+	 * This is the primary place where we get the local Properties. No code in
+	 * this class should use this variable directory.
+	 *
+	 * @return the local properties
+	 */
+	protected Properties getRawProperties() {
 		return properties;
 	}
 
@@ -680,9 +685,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setProperties(File base, Properties properties) {
 		doIncludes(base, properties);
-		getProperties0().putAll(properties);
+		getRawProperties().putAll(properties);
 		mergeProperties(Constants.INIT); // execute macros in -init
-		getProperties0().remove(Constants.INIT);
+		getRawProperties().remove(Constants.INIT);
 		propertiesChanged();
 	}
 
@@ -882,7 +887,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void forceRefresh() {
 		included.clear();
 		Processor p = getParent();
-		properties = (p != null) ? new UTF8Properties(p.getProperties0()) : new UTF8Properties();
+		properties = (p != null) ? new UTF8Properties(p.getRawProperties()) : new UTF8Properties();
 
 		setProperties(propertiesFile, base);
 	}
@@ -1061,12 +1066,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		 * @param keys sorted keys defined by {@link #compareTo(PropertyKey)}
 		 * @return only unique keys which are visible (lowest floor value)
 		 */
-		public static Collection<PropertyKey> findVisible(Collection<PropertyKey> keys) {
-			Map<String, PropertyKey> map = new LinkedHashMap<>();
-			for (PropertyKey pk : keys) {
-				map.putIfAbsent(pk.key(), pk);
+		public static List<PropertyKey> findVisible(Collection<PropertyKey> keys) {
+			List<PropertyKey> l = new ArrayList<>(keys);
+			Collections.sort(l);
+			String rover = null;
+			Iterator<PropertyKey> it = l.iterator();
+			while (it.hasNext()) {
+				PropertyKey candidate = it.next();
+				if (!candidate.key.equals(rover)) {
+					rover = candidate.key;
+				} else
+					it.remove();
 			}
-			return new LinkedHashSet<>(map.values());
+			return l;
 		}
 	}
 
@@ -1318,7 +1330,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				result.removeAll(filter);
 			}
 		}
-		for (Object o : getProperties0().keySet()) {
+		for (Object o : getRawProperties().keySet()) {
 			result.add(o.toString());
 		}
 		return result;
@@ -1910,7 +1922,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private Iterable<String> iterable(boolean inherit, Predicate<String> keyFilter) {
-		Set<Object> first = getProperties0().keySet();
+		Set<Object> first = getRawProperties().keySet();
 		Iterable<? extends Object> second;
 		if (getParent() == null || !inherit) {
 			second = Collections.emptyList();
@@ -2220,7 +2232,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void report(Map<String, Object> table) throws Exception {
 		table.put("Included Files", getIncluded());
 		table.put("Base", getBase());
-		table.put("Properties", getProperties0().entrySet());
+		table.put("Properties", getRawProperties().entrySet());
 	}
 
 	/**
@@ -2731,5 +2743,4 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void setPedantic(boolean pedantic) {
 		this.pedantic = pedantic;
 	}
-
 }
