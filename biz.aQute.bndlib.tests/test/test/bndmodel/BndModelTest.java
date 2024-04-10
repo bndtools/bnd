@@ -109,11 +109,11 @@ public class BndModelTest {
 	@Test
 	public void testParent() throws Exception {
 
-		BndEditModel model = new BndEditModel();
-		model.setRunFw("${fw}"); // set changes
 		File f = IO.getFile("testresources/bndmodel/test-01.bndrun");
+		BndEditModel model = new BndEditModel();
 		model.setBndResource(f);
-
+		model.load();
+		model.setRunFw("${fw}"); // set changes
 		Processor p = model.getProperties();
 
 		assertEquals("a, b, c", p.getProperty(Constants.RUNBUNDLES), "Set in file, refers to macro");

@@ -76,9 +76,11 @@ import aQute.lib.utf8properties.UTF8Properties;
 /**
  * A model for a Bnd file.
  * <p>
- * The model is an editor on the properties file on which bnd is based on.
- * However, in bnd there is always a Processor involved. The Processor links to
- * a file and can inherit from a parent Processor.
+ * The bndedit model maintains a Properties that can be modified/added with
+ * convenient semantic methods and/or properties can be deleted. The bnd file
+ * tends to be kept in a Processor, and the processors are kept in a inheritance
+ * chain. The BndEditModel can provide a Processor that extends the original but
+ * reflects the changes made in the inheritance model.
  */
 @SuppressWarnings("deprecation")
 public class BndEditModel {
@@ -359,6 +361,7 @@ public class BndEditModel {
 		formatters.put(Constants.PLUGIN, complexHeaderClauseListFormatter);
 
 	}
+
 
 	/**
 	 * Default constructor
@@ -1360,11 +1363,6 @@ public class BndEditModel {
 		return properties.containsKey(Constants.INCLUDE_RESOURCE);
 	}
 
-	@Deprecated
-	public void setProject(Project project) {
-		setOwner(project);
-	}
-
 	public Project getProject() {
 		return null;
 	}
@@ -1542,7 +1540,7 @@ public class BndEditModel {
 	}
 
 	public void load() throws IOException {
-		loadFrom(owner.getPropertiesFile());
+		loadFrom(inputFile);
 	}
 
 	/**
@@ -1629,6 +1627,11 @@ public class BndEditModel {
 
 	public BndEditModel(Project domain) throws IOException {
 		this(domain.getWorkspace(), domain);
+	}
+
+	@Deprecated
+	public void setProject(Project project) {
+		setOwner(project);
 	}
 
 }
