@@ -101,6 +101,9 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		ColumnViewerToolTipSupport.enableFor(viewer);
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
 		viewer.setLabelProvider(new PluginClauseLabelProvider(configElements));
+		viewer.addDoubleClickListener(e -> {
+			doEdit();
+		});
 
 		Button btnReload = toolkit.createButton(composite, "Reload", SWT.NONE);
 		btnReload.setImage(refreshImg);
@@ -312,7 +315,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		viewer.remove(sel.toArray());
 
 		// remove by value
-		sel.toList()
+		List<?> list = sel.toList();
+		list
 			.forEach(selectedPlugin -> {
 				Set<Entry<String, List<BndEditModelHeaderClause>>> entrySet = data.entrySet();
 				inner: for (Iterator<Entry<String, List<BndEditModelHeaderClause>>> iterator = entrySet.iterator(); iterator

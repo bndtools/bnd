@@ -73,17 +73,17 @@ public class Bndrun extends Run {
 	}
 
 	public Bndrun(BndEditModel model) throws Exception {
-		super(model.getWorkspace(), model.getProject()
+		super(model.getWorkspace(), model.getOwner()
 			.getPropertiesFile());
 		this.model = model;
-		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
+		this.resolutionInstructions = Syntax.getInstructions(model.getOwner(), ResolutionInstructions.class);
 
 	}
 
 	public Bndrun(Workspace workspace, File propertiesFile) throws Exception {
 		super(workspace, propertiesFile);
 		this.model = new BndEditModel(this);
-		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
+		this.resolutionInstructions = Syntax.getInstructions(model.getOwner(), ResolutionInstructions.class);
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class Bndrun extends Run {
 					try {
 						model.saveChanges();
 					} catch (Exception e) {
-						error("Could not save runbundles in their properties file %s. %s", model.getProject(),
+						error("Could not save runbundles in their properties file %s. %s", model.getOwner(),
 							e.getMessage());
 					}
 				}

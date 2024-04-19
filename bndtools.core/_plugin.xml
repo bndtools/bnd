@@ -904,7 +904,7 @@
 		    <property name="snapshotUrl" type="string" description="The urls to the remote snapshot repository." default="https://repository.apache.org/snapshots/" />
 		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />
 		    <property name="readOnly" type="boolean" description="" default="false" />
-		    <property name="index" type="string" description="The path to the index file" default="${.}/cnf/central.maven" />
+		    <property name="index" type="string" description="The path to the index file" default="\${.}/central.maven" />
 		    <property name="source" type="string" description="Content added to the index file. Content maybe one line without CR/LF as long as there is a comma or whitespace separating the GAVs. Further same format as the index file." />
 		    <property name="noupdateOnRelease" type="boolean" description="Do not update the index when a file is released" />
 		    <property name="poll_time" type="int" description="Sets the time in seconds when to check for changes in the pom-files" default="5" />
@@ -932,7 +932,7 @@
 		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />
 		    <property name="revision" type="string" description="Coordinates of a maven revision. I.e. group:artifactid[:c]:version. Can be a comma separated list of GAVs." />
 		    <property name="location" type="string" description="Points to a file that is used as the cache. It will be in OSGi format." />
-		    <property name="pom" type="string" description="Points to a pom.xml file. This is exclusive with revision. Can be a comma separated list of files." default="${.}/cnf/pom.xml" />
+		    <property name="pom" type="string" description="Points to a pom.xml file. This is exclusive with revision. Can be a comma separated list of files." default="\${.}/pom.xml" />
 		    <property name="query" type="string" description="The query used to search Maven Central Search." />
 		    <property name="queryUrl" type="string" description="The url of the Maven Central Search."  />
 		    <property name="transitive" type="boolean" description="Allow transitive dependencies" />

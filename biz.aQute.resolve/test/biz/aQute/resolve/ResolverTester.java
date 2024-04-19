@@ -14,6 +14,7 @@ import org.osgi.resource.Wire;
 import org.osgi.resource.Wiring;
 import org.osgi.service.log.LogService;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
@@ -38,7 +39,9 @@ public class ResolverTester extends BndrunResolveContext {
 	}
 
 	public ResolverTester(String descriptor, BndEditModel model) throws Exception {
-		super(model.getProperties(), model.getProject(), model.getProperties(), log);
+		super(model.getProperties(), model.getOwner(Project.class)
+			.orElse(null),
+			model.getProperties(), log);
 		this.model = model;
 		this.descriptor = descriptor;
 

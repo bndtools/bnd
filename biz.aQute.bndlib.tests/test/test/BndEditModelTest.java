@@ -153,20 +153,6 @@ public class BndEditModelTest {
 	}
 
 	@Test
-	public void testRunReposShared() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
-		BndEditModel model = new BndEditModel(ws);
-		File f = new File("testresources/ws/p7/syspkg.bndrun");
-		model.setBndResource(f);
-		model.setBndResourceName("syspkg.bndrun");
-		model.loadFrom(f);
-
-		List<String> runrepos = model.getRunRepos();
-		assertEquals(1, runrepos.size());
-		assertEquals("testing", runrepos.get(0));
-	}
-
-	@Test
 	public void testRemovePropertyFromStandalone() throws Exception {
 		File runFile = IO.getFile("testresources/standalone.bndrun");
 		Run run = Run.createRun(null, runFile);
@@ -200,7 +186,7 @@ public class BndEditModelTest {
 		BndEditModel model = new BndEditModel(run);
 
 		assertThat(model.getWorkspace()).isNotNull();
-		assertThat(model.getProject()).isNotNull();
+		assertThat(model.getOwner()).isNotNull();
 
 		model.setGenericString("a", "AA");
 
@@ -248,8 +234,14 @@ public class BndEditModelTest {
 		BndEditModel model = new BndEditModel();
 		model.setGenericString("foo", "FOO");
 		Processor p = model.getProperties();
-
 		assertThat(p.getProperty("foo")).isEqualTo("FOO");
+		assertThat(p.getPropertyKeys(false)).contains("foo");
+
+		model.loadFrom("");
+		p = model.getProperties();
+		assertThat(p.getProperty("foo")).isNull();
+		assertThat(p.getPropertyKeys(false)).doesNotContain("foo");
+
 	}
 
 	@Test

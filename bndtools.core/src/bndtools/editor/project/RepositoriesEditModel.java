@@ -34,7 +34,8 @@ class RepositoriesEditModel {
 		this.standalone = model.getStandaloneLinks();
 		this.runrepos = model.getRunRepos();
 		this.ignoreStandalone = model.getIgnoreStandalone();
-		this.run = (Run) (model.getProject() instanceof Run ? model.getProject() : null);
+		this.run = model.getOwner(Run.class)
+			.orElse(null);
 
 		if (runrepos == null) {
 			actualOrder.addAll(pluginOrder);
@@ -205,7 +206,7 @@ class RepositoriesEditModel {
 		assert isStandalone();
 
 		Processor properties = model.getProperties();
-		model.setWorkspace(Workspace.createStandaloneWorkspace(properties, model.getProject()
+		model.setWorkspace(Workspace.createStandaloneWorkspace(properties, model.getOwner()
 			.getPropertiesFile()
 			.toURI()));
 	}

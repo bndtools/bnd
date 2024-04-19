@@ -1,5 +1,6 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -49,14 +50,24 @@ public class PropertiesTest {
 		p1.setProperty("dan", "bandera");
 		p1.setProperty("susan", "sarandon");
 		p1.setProperty("jon", "bostrom");
+		p1.setProperty("bj", "hargrave");
 
 		Processor p2 = new Processor(p1);
-		p2.setForceLocal(Arrays.asList("dan"));
+		p2.setForceLocal(Arrays.asList("dan", "bj"));
 		p2.setProperty("susan", "schwarze");
+		p2.setProperty("bj", "ibm");
 
 		assertNull(p2.getProperty("dan"));
+		assertEquals("sarandon", p1.getProperty("susan"));
 		assertEquals("schwarze", p2.getProperty("susan"));
+		assertEquals("bostrom", p1.getProperty("jon"));
 		assertEquals("bostrom", p2.getProperty("jon"));
+		assertEquals(null, p2.getProperty("dan"));
+		assertEquals("bandera", p1.getProperty("dan"));
+		assertEquals("ibm", p2.getProperty("bj"));
+		assertEquals("hargrave", p1.getProperty("bj"));
+
+		assertThat(p2.getPropertyKeys(true)).containsExactlyInAnyOrder("susan", "jon", "bj");
 	}
 
 	@Test

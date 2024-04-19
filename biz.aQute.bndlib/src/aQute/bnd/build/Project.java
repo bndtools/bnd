@@ -3678,13 +3678,9 @@ public class Project extends Processor {
 				.endsWith(".bndrun"))
 				return Optional.of(Run.createRun(getWorkspace(), file));
 
-			try (ProjectBuilder builder = getBuilder(null)) {
-				for (Builder b : builder.getSubBuilders()) {
-					if (file.equals(b.getPropertiesFile())) {
-						Processor sub = new Processor(this);
-						sub.setProperties(file);
-						return Optional.of(sub);
-					}
+			for (SubProject sub : getSubProjects()) {
+				if (file.equals(sub.getPropertiesFile())) {
+					return Optional.of(sub);
 				}
 			}
 			return Optional.empty();
@@ -3692,4 +3688,52 @@ public class Project extends Processor {
 			throw Exceptions.duck(e);
 		}
 	}
+
+	/**
+	 * Return a list of sub projects.
+	 */
+
+	@SuppressWarnings("resource")
+	public List<SubProject> getSubProjects() {
+
+		String sub = getProperty(SUB);
+		if (sub == null || sub.trim()
+			.length() == 0 || EMPTY_HEADER.equals(sub)) {
+			return Collections.emptyList();
+		}
+
+		if (isTrue(getProperty(NOBUNDLES)))
+			return Collections.emptyList();
+
+		Set<File> parentFiles = new HashSet<>();
+		Processor rover = this;
+		while (rover != null) {
+			parentFiles.add(rover.getPropertiesFile());
+			rover = rover.getParent();
+		}
+
+		List<SubProject> subProjects = new ArrayList<>();
+		Instructions instructions = new Instructions(sub);
+		List<File> members = IO.listFiles(getBase());
+		nextFile: while (!members.isEmpty()) {
+
+			File file = members.remove(0);
+			if (!file.isFile() || file.getName()
+				.startsWith(".") || parentFiles.contains(file))
+				continue nextFile;
+
+			for (Instruction instruction : instructions.keySet()) {
+				if (instruction.matches(file.getName())) {
+
+					if (!instruction.isNegated()) {
+						subProjects.add(new SubProject(this, file));
+					}
+					continue nextFile;
+				}
+			}
+		}
+		return subProjects;
+
+	}
+
 }
