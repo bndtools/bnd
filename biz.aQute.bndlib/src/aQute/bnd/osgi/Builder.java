@@ -1404,7 +1404,11 @@ public class Builder extends Analyzer {
 			if (from.exists()) {
 				Resource resource = new FileResource(from);
 				if (preprocess != null && preprocess.matches(path)) {
-					resource = new PreprocessResource(this, resource);
+					Processor tmp = new Processor(this);
+					addClose(tmp);
+					tmp.setProperty(".", from.getAbsolutePath()
+						.replace('\\', '/'));
+					resource = new PreprocessResource(tmp, resource);
 				}
 				addExtra(resource, extra.get("extra"));
 				if (path.endsWith("/"))
