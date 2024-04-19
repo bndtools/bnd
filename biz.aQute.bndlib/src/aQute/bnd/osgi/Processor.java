@@ -1063,7 +1063,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		 * among the {@code PropertyKey} objects with the same key, only the one
 		 * with the lowest floor number is included in the result.
 		 *
-		 * @param keys sorted keys defined by {@link #compareTo(PropertyKey)}
+		 * @param keys
 		 * @return only unique keys which are visible (lowest floor value)
 		 */
 		public static List<PropertyKey> findVisible(Collection<PropertyKey> keys) {

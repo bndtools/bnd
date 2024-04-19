@@ -88,7 +88,7 @@ public class BndEditModel {
 	public static final String													NEWLINE_LINE_SEPARATOR				= "\\n\\\n\t";
 	public static final String													LIST_SEPARATOR						= ",\\\n\t";
 
-	private static String[]														KNOWN_PROPERTIES					= new String[] {
+	static String[]																KNOWN_PROPERTIES					= new String[] {
 		Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY, Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION,
 		Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION, Constants.BUNDLE_VENDOR,
 		Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL, Constants.BUNDLE_SYMBOLICNAME,
@@ -106,8 +106,8 @@ public class BndEditModel {
 	public static final String													PROP_WORKSPACE						= "_workspace";
 	public static final String													BUNDLE_VERSION_MACRO				= "${"
 		+ Constants.BUNDLE_VERSION + "}";
-	private static final Map<String, Converter<? extends Object, String>>		converters							= new HashMap<>();
-	private static final Map<String, Converter<String, ? extends Object>>		formatters							= new HashMap<>();
+	static final Map<String, Converter<? extends Object, String>>				converters							= new HashMap<>();
+	static final Map<String, Converter<String, ? extends Object>>				formatters							= new HashMap<>();
 	private final static Converter<List<VersionedClause>, String>				buildPathConverter					= new HeaderClauseListConverter<>(
 		new Converter<VersionedClause, HeaderClause>() {
 																															@Override
@@ -132,7 +132,7 @@ public class BndEditModel {
 
 	private final static Converter<List<VersionedClause>, String>				clauseListConverter					= new HeaderClauseListConverter<>(
 		new VersionedClauseConverter());
-	private final static Converter<String, String>								stringConverter						= new NoopConverter<>();
+	final static Converter<String, String>										stringConverter						= new NoopConverter<>();
 	private final static Converter<Boolean, String>								includedSourcesConverter			= new Converter<Boolean, String>() {
 																														@Override
 																														public Boolean convert(
