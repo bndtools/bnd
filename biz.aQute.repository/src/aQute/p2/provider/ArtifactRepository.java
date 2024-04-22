@@ -141,6 +141,7 @@ class ArtifactRepository extends XMLBase {
 							} catch (NumberFormatException e) {
 								artifact.download_size = -1L;
 							}
+							artifact.setProperties(artifactProperties);
 							artifacts.add(artifact);
 							break;
 						}
