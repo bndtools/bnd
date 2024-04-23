@@ -395,9 +395,9 @@ public class BndEditModel {
 	public BndEditModel(Workspace workspace, Processor processor) throws IOException {
 		this(workspace);
 		this.owner = processor;
-		File propertiesFile = processor.getPropertiesFile();
-		if (propertiesFile.isFile())
-			this.document = new Document(IO.collect(propertiesFile));
+		this.inputFile = processor.getPropertiesFile();
+		if (inputFile != null && inputFile.isFile())
+			this.document = new Document(IO.collect(inputFile));
 		else
 			this.document = new Document("");
 		loadFrom(this.document);
