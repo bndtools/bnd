@@ -222,6 +222,11 @@ public class JarFileSystem extends FileSystem {
 				logger.logError("Cannot locate filestore for the JAR file: " + fileuri, e);
 				return nullFileStore(Path.EMPTY);
 			}
+			IFileInfo fetchInfo = store.fetchInfo();
+			if (fetchInfo == null || !fetchInfo.exists()) {
+				logger.logInfo("File no longer exists: " + uri, null);
+				return nullFileStore(Path.EMPTY);
+			}
 
 			JarRootNode root = roots.compute(store, this::computeRootNode)
 				.get();
