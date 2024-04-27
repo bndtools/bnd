@@ -13,7 +13,9 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.repository.maven.provider.Mbr.Scope;
 import aQute.bnd.service.clipboard.Clipboard;
+import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
@@ -30,6 +32,44 @@ class RepoActions {
 	RepoActions(MavenBndRepository mavenBndRepository) {
 		this.repo = mavenBndRepository;
 	}
+
+	Map<String, Runnable> getRepoActions(final Clipboard clipboard) throws Exception {
+		Map<String, Runnable> map = new LinkedHashMap<>();
+
+		map.put("Dry run update to higher MICRO revision to clipboard", () -> {
+			try {
+
+				Mbr mbr = new Mbr(repo);
+				Map<Archive, MavenVersion> content = mbr.updateRevisions(Scope.micro, true);
+
+				StringBuilder sb = new StringBuilder();
+				boolean changes = mbr.buildUpdates(sb, repo, content);
+				clipboard.copy(sb.toString());
+
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		});
+
+		map.put("Update to higher MICRO revision if available", () -> {
+			try {
+
+				Mbr mbr = new Mbr(repo);
+				Map<Archive, MavenVersion> content = mbr.updateRevisions(Scope.micro, false);
+
+				if (mbr.update(repo, content)) {
+					repo.refresh();
+				}
+
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		});
+
+		return map;
+	}
+
+
 
 	Map<String, Runnable> getProgramActions(final String bsn) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
@@ -217,4 +257,6 @@ class RepoActions {
 
 		});
 	}
+
+
 }
