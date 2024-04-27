@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,21 +29,15 @@ class Mbr {
 		this.repo = repo;
 	}
 
-	public Map<Archive, MavenVersion> updateRevisions(Scope scope, boolean onlyUpdates) throws Exception {
+	public Map<Archive, MavenVersion> calculateUpdateRevisions(Scope scope, Collection<Archive> archives) throws Exception {
 		Map<Archive, MavenVersion> content = new HashMap<>();
-
-		List<Archive> archives = repo.getArchives()
-			.stream()
-			.toList();
 
 		MultiMap<Archive, MavenVersion> updates = getUpdates(scope, repo, archives, false);
 
 		for (Archive archive : new TreeSet<>(repo.getArchives())) {
 			List<MavenVersion> list = updates.get(archive);
 			if (list == null || list.isEmpty()) {
-				if (!onlyUpdates) {
-					content.put(archive, archive.revision.version);
-				}
+				content.put(archive, archive.revision.version);
 			} else {
 				MavenVersion version = list.get(list.size() - 1);
 				// bnd.out.format(" %-70s %20s -> %s%n",
@@ -66,7 +61,8 @@ class Mbr {
 	final static Predicate<MavenVersion>	notSnapshotlikePredicate	= v -> !SNAPSHOTLIKE_P.matcher(v.toString())
 		.find();
 
-	private MultiMap<Archive, MavenVersion> getUpdates(Scope scope, MavenBndRepository repo, List<Archive> archives,
+	private MultiMap<Archive, MavenVersion> getUpdates(Scope scope, MavenBndRepository repo,
+		Collection<Archive> archives,
 		boolean snapshotlike) throws Exception {
 		MultiMap<Archive, MavenVersion> overlap = new MultiMap<>();
 
@@ -135,7 +131,7 @@ class Mbr {
 
 	public boolean update(MavenBndRepository repo, Map<Archive, MavenVersion> translations) throws IOException {
 		StringBuilder sb = new StringBuilder();
-		boolean changes = buildUpdates(sb, repo, translations);
+		boolean changes = buildMvnFileString(sb, repo, translations);
 		if (!changes)
 			return false;
 
@@ -147,7 +143,15 @@ class Mbr {
 		return changes;
 	}
 
-	public boolean buildUpdates(StringBuilder sb, MavenBndRepository repo, Map<Archive, MavenVersion> translations)
+	/**
+	 * @param sb contains a list of Maven GAVs like in a central.mvn file
+	 * @param repo
+	 * @param translations
+	 * @return <code>true</code> when there were changes / updates, otherwise
+	 *         <code>false</code>
+	 * @throws IOException
+	 */
+	public boolean buildMvnFileString(StringBuilder sb, MavenBndRepository repo, Map<Archive, MavenVersion> translations)
 		throws IOException {
 		boolean changes = false;
 		Iterator<String> lc;
