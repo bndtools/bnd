@@ -131,7 +131,7 @@ class Mbr {
 
 	public boolean update(MavenBndRepository repo, Map<Archive, MavenVersion> translations) throws IOException {
 		StringBuilder sb = new StringBuilder();
-		boolean changes = buildMvnFileString(sb, repo, translations);
+		boolean changes = buildGAVString(sb, repo, translations);
 		if (!changes)
 			return false;
 
@@ -151,7 +151,7 @@ class Mbr {
 	 *         <code>false</code>
 	 * @throws IOException
 	 */
-	public boolean buildMvnFileString(StringBuilder sb, MavenBndRepository repo, Map<Archive, MavenVersion> translations)
+	public boolean buildGAVString(StringBuilder sb, MavenBndRepository repo, Map<Archive, MavenVersion> translations)
 		throws IOException {
 		boolean changes = false;
 		Iterator<String> lc;

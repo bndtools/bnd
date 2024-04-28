@@ -1,11 +1,13 @@
 package aQute.bnd.repository.maven.provider;
 
+import static aQute.bnd.repository.maven.provider.Mbr.Scope.major;
+import static aQute.bnd.repository.maven.provider.Mbr.Scope.micro;
+import static aQute.bnd.repository.maven.provider.Mbr.Scope.minor;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.maxBy;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -37,72 +39,29 @@ class RepoActions {
 	Map<String, Runnable> getRepoActions(final Clipboard clipboard) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
 
-		map.put("Update Revisions :: To higher MICRO revision if available", () -> {
-			try {
-				upgradeRevisions(Scope.micro);
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+		map.put("Update Revisions :: To higher MICRO revision", () -> {
+			upgradeRevisions(micro);
 		});
-		map.put("Update Revisions :: To higher MINOR revision if available", () -> {
-			try {
-				upgradeRevisions(Scope.minor);
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+		map.put("Update Revisions :: To higher MINOR revision", () -> {
+			upgradeRevisions(minor);
 		});
-		map.put("Update Revisions :: To higher MAJOR revision if available", () -> {
-			try {
-				upgradeRevisions(Scope.major);
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+		map.put("Update Revisions :: To higher MAJOR revision", () -> {
+			upgradeRevisions(major);
 		});
 
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MICRO revision", () -> {
-			try {
-				clipboard.copy(buildMvnFileString(Scope.micro).toString());
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+			clipboard.copy(buildMvnFileString(micro));
 		});
-
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MINOR revision", () -> {
-			try {
-				clipboard.copy(buildMvnFileString(Scope.minor).toString());
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+			clipboard.copy(buildMvnFileString(minor));
 		});
-
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MAJOR revision", () -> {
-			try {
-				clipboard.copy(buildMvnFileString(Scope.major).toString());
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+			clipboard.copy(buildMvnFileString(major));
 		});
 
 		return map;
 	}
 
-	private StringBuilder buildMvnFileString(Scope scope) throws Exception, IOException {
-		Mbr mbr = new Mbr(repo);
-		Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(scope, repo.getArchives());
-
-		StringBuilder sb = new StringBuilder();
-		mbr.buildMvnFileString(sb, repo, content);
-		return sb;
-	}
-
-	private void upgradeRevisions(Scope scope) throws Exception, IOException {
-		Mbr mbr = new Mbr(repo);
-		Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(scope, repo.getArchives());
-
-		if (mbr.update(repo, content)) {
-			repo.refresh();
-		}
-	}
 
 	Map<String, Runnable> getProgramActions(final String bsn) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
@@ -286,6 +245,34 @@ class RepoActions {
 			}
 
 		});
+	}
+
+	private String buildMvnFileString(Scope scope) {
+		try {
+			Mbr mbr = new Mbr(repo);
+			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(scope, repo.getArchives());
+
+			StringBuilder sb = new StringBuilder();
+			mbr.buildGAVString(sb, repo, content);
+			return sb.toString();
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	private void upgradeRevisions(Scope scope) {
+		try {
+			Mbr mbr = new Mbr(repo);
+			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(scope, repo.getArchives());
+
+			if (mbr.update(repo, content)) {
+				repo.refresh();
+			}
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 }
