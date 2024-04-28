@@ -50,13 +50,13 @@ class RepoActions {
 		});
 
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MICRO revision", () -> {
-			clipboard.copy(buildMvnFileString(micro));
+			clipboard.copy(preview(micro));
 		});
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MINOR revision", () -> {
-			clipboard.copy(buildMvnFileString(minor));
+			clipboard.copy(preview(minor));
 		});
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MAJOR revision", () -> {
-			clipboard.copy(buildMvnFileString(major));
+			clipboard.copy(preview(major));
 		});
 
 		return map;
@@ -247,14 +247,10 @@ class RepoActions {
 		});
 	}
 
-	private String buildMvnFileString(Scope scope) {
+	private String preview(Scope scope) {
 		try {
 			Mbr mbr = new Mbr(repo);
-			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(scope, repo.getArchives());
-
-			StringBuilder sb = new StringBuilder();
-			mbr.buildGAVString(sb, repo, content);
-			return sb.toString();
+			return mbr.preview(scope, repo.getArchives());
 
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
