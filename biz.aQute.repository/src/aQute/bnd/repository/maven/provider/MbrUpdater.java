@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,22 +20,20 @@ import aQute.lib.justif.Justif;
 import aQute.maven.api.Archive;
 
 /**
- * Functionality copied from MbrCommand used by RepoActions. Maybe more
- * refactoring, re-use could be done.
+ * Functionality originating from MbrCommand and used by RepoActions to allow
+ * updating revisions in a MavenBndRepository.
  */
-class Mbr {
+public class MbrUpdater {
 
 	private MavenBndRepository repo;
 
-	public Mbr(MavenBndRepository repo) {
+	public MbrUpdater(MavenBndRepository repo) {
 		this.repo = repo;
 	}
 
-	public Map<Archive, MavenVersion> calculateUpdateRevisions(Scope scope, Collection<Archive> archives)
-		throws Exception {
+	public Map<Archive, MavenVersion> calculateUpdateRevisions(MultiMap<Archive, MavenVersion> updates,
+		PrintStream out) {
 		Map<Archive, MavenVersion> content = new HashMap<>();
-
-		MultiMap<Archive, MavenVersion> updates = getUpdates(scope, repo, archives, false);
 
 		for (Archive archive : new TreeSet<>(repo.getArchives())) {
 			List<MavenVersion> list = updates.get(archive);
@@ -42,16 +41,18 @@ class Mbr {
 				content.put(archive, archive.revision.version);
 			} else {
 				MavenVersion version = list.get(list.size() - 1);
-				// bnd.out.format(" %-70s %20s -> %s%n",
-				// archive.getRevision().program,
-				// archive.getRevision().version, version);
+
+				if (out != null) {
+					out.format(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
+						version);
+				}
 				content.put(archive, version);
 			}
 		}
 		return content;
 	}
 
-	enum Scope {
+	public enum Scope {
 		micro,
 		minor,
 		major,
@@ -134,7 +135,7 @@ class Mbr {
 	 * @throws Exception
 	 */
 	public String preview(Scope scope, Collection<Archive> archives) throws Exception {
-		MultiMap<Archive, MavenVersion> overlap = getUpdates(scope, repo, archives, false);
+		MultiMap<Archive, MavenVersion> overlap = getUpdates(scope, Collections.singletonList(repo), archives, false);
 
 		return format(overlap);
 	}
@@ -147,20 +148,25 @@ class Mbr {
 		return j.wrap();
 	}
 
-	private MultiMap<Archive, MavenVersion> getUpdates(Scope scope, MavenBndRepository repo,
+	public static MultiMap<Archive, MavenVersion> getUpdates(Scope scope, Collection<MavenBndRepository> repos,
 		Collection<Archive> archives, boolean snapshotlike) throws Exception {
 		MultiMap<Archive, MavenVersion> overlap = new MultiMap<>();
 
 		for (Archive archive : archives) {
-			MavenVersion version = archive.revision.version;
-			repo.getRevisions(archive.revision.program)
-				.stream()
-				.map(revision -> revision.version)
-				.filter(snapshotlike ? x -> true : notSnapshotlikePredicate)
-				.filter(v -> v.compareTo(version) > 0)
-				.forEach(v -> {
-					overlap.add(archive, v);
-				});
+			for (MavenBndRepository r : repos) {
+				if (r.getArchives()
+					.contains(archive)) {
+					MavenVersion version = archive.revision.version;
+					r.getRevisions(archive.revision.program)
+						.stream()
+						.map(revision -> revision.version)
+						.filter(snapshotlike ? x -> true : notSnapshotlikePredicate)
+						.filter(v -> v.compareTo(version) > 0)
+						.forEach(v -> {
+							overlap.add(archive, v);
+						});
+				}
+			}
 		}
 		overlap.entrySet()
 			.forEach(e -> {
@@ -170,7 +176,7 @@ class Mbr {
 		return overlap;
 	}
 
-	private List<MavenVersion> filter(List<MavenVersion> versions, Version current, Scope show) {
+	private static List<MavenVersion> filter(List<MavenVersion> versions, Version current, Scope show) {
 
 		if (versions.isEmpty())
 			return versions;

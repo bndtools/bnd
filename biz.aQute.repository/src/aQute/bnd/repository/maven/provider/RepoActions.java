@@ -1,13 +1,14 @@
 package aQute.bnd.repository.maven.provider;
 
-import static aQute.bnd.repository.maven.provider.Mbr.Scope.major;
-import static aQute.bnd.repository.maven.provider.Mbr.Scope.micro;
-import static aQute.bnd.repository.maven.provider.Mbr.Scope.minor;
+import static aQute.bnd.repository.maven.provider.MbrUpdater.Scope.major;
+import static aQute.bnd.repository.maven.provider.MbrUpdater.Scope.micro;
+import static aQute.bnd.repository.maven.provider.MbrUpdater.Scope.minor;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.maxBy;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,10 +17,11 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.repository.maven.provider.Mbr.Scope;
+import aQute.bnd.repository.maven.provider.MbrUpdater.Scope;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
@@ -61,7 +63,6 @@ class RepoActions {
 
 		return map;
 	}
-
 
 	Map<String, Runnable> getProgramActions(final String bsn) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
@@ -249,7 +250,7 @@ class RepoActions {
 
 	private String preview(Scope scope) {
 		try {
-			Mbr mbr = new Mbr(repo);
+			MbrUpdater mbr = new MbrUpdater(repo);
 			return mbr.preview(scope, repo.getArchives());
 
 		} catch (Exception e) {
@@ -259,8 +260,12 @@ class RepoActions {
 
 	private void upgradeRevisions(Scope scope) {
 		try {
-			Mbr mbr = new Mbr(repo);
-			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(scope, repo.getArchives());
+			MbrUpdater mbr = new MbrUpdater(repo);
+
+			MultiMap<Archive, MavenVersion> updates = MbrUpdater.getUpdates(scope, Collections.singleton(repo),
+				repo.getArchives(), false);
+
+			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(updates, null);
 
 			if (mbr.update(repo, content)) {
 				repo.refresh();
