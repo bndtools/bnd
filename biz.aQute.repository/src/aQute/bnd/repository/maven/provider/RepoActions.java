@@ -250,7 +250,7 @@ class RepoActions {
 
 	private String preview(Scope scope) {
 		try {
-			MbrUpdater mbr = new MbrUpdater(repo);
+			MbrUpdater mbr = new MbrUpdater(repo, null);
 			return mbr.preview(scope, repo.getArchives());
 
 		} catch (Exception e) {
@@ -260,14 +260,14 @@ class RepoActions {
 
 	private void upgradeRevisions(Scope scope) {
 		try {
-			MbrUpdater mbr = new MbrUpdater(repo);
+			MbrUpdater mbr = new MbrUpdater(repo, null);
 
 			MultiMap<Archive, MavenVersion> updates = MbrUpdater.getUpdates(scope, Collections.singleton(repo),
 				repo.getArchives(), false);
 
 			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(updates, null);
 
-			if (mbr.update(repo, content)) {
+			if (mbr.update(content)) {
 				repo.refresh();
 			}
 

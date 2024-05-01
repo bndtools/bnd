@@ -56,7 +56,7 @@ Export-Package: \
 -builderignore: testresources, testdata
 
 -fixupmessages.tag: "Export aQute.maven.provider,* private references \\[aQute.lib.tag\\]"
--fixupmessages.getopts: "Export aQute.bnd.repository.maven.provider,* private references \\[aQute.lib.getopt\\]"
+-fixupmessages.lib: "Export aQute.bnd.repository.maven.provider,* private references \\[aQute.lib.collections, aQute.lib.getopt, aQute.lib.startlevel\\]"
 -fixupmessages.configurable: "Export aQute.bnd.repository.osgi,* private references \\[aQute.configurable\\]"
 
 -baseline: *
