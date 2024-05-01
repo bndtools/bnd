@@ -32,8 +32,8 @@ public class MbrUpdater {
 		.matcher(v.toString())
 		.find();
 
-	private MavenBndRepository						repo;
-	private Trace									logger;
+	private final MavenBndRepository				repo;
+	private final Trace								logger;
 
 	public MbrUpdater(MavenBndRepository repo, Trace logger) {
 		this.repo = repo;
