@@ -43,6 +43,12 @@ public class MbrUpdater {
 		all
 	}
 
+	/**
+	 * Container for a MavenVersion which may or may not be available from maven
+	 * central.
+	 */
+	public record MavenVersionResult(MavenVersion mavenVersion, boolean mavenVersionAvailable) {}
+
 	public static MultiMap<Archive, MavenVersion> getUpdates(Scope scope, Collection<MavenBndRepository> repos,
 		Collection<Archive> archives, boolean snapshotlike) throws Exception {
 		MultiMap<Archive, MavenVersion> overlap = new MultiMap<>();
@@ -77,16 +83,16 @@ public class MbrUpdater {
 	 * @param updates
 	 * @return a map the revision for each archive.
 	 */
-	public Map<Archive, MavenVersion> calculateUpdateRevisions(MultiMap<Archive, MavenVersion> updates) {
-		Map<Archive, MavenVersion> content = new LinkedHashMap<>();
+	public Map<Archive, MavenVersionResult> calculateUpdateRevisions(MultiMap<Archive, MavenVersion> updates) {
+		Map<Archive, MavenVersionResult> content = new LinkedHashMap<>();
 
 		for (Archive archive : new TreeSet<>(repo.getArchives())) {
 			List<MavenVersion> list = updates.get(archive);
 			if (list == null || list.isEmpty()) {
-				content.put(archive, archive.revision.version);
+				content.put(archive, new MavenVersionResult(archive.revision.version, false));
 			} else {
 				MavenVersion version = list.get(list.size() - 1);
-				content.put(archive, version);
+				content.put(archive, new MavenVersionResult(version, true));
 			}
 		}
 		return content;
@@ -114,7 +120,7 @@ public class MbrUpdater {
 	 *         otherwise.
 	 * @throws IOException
 	 */
-	public boolean update(Map<Archive, MavenVersion> map) throws IOException {
+	public boolean update(Map<Archive, MavenVersionResult> map) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		boolean changes = buildGAVString(sb, map);
 		if (!changes)
@@ -136,7 +142,7 @@ public class MbrUpdater {
 	 *         <code>false</code>
 	 * @throws IOException
 	 */
-	private boolean buildGAVString(StringBuilder sb, Map<Archive, MavenVersion> translations) throws IOException {
+	private boolean buildGAVString(StringBuilder sb, Map<Archive, MavenVersionResult> translations) throws IOException {
 		boolean changes = false;
 		Iterator<String> lc;
 		if (repo.getIndexFile()
@@ -155,7 +161,8 @@ public class MbrUpdater {
 
 				Archive archive = Archive.valueOf(line);
 				if (archive != null) {
-					MavenVersion version = translations.get(archive);
+					MavenVersion version = translations.get(archive)
+						.mavenVersion();
 					if (version != null) {
 						if (!archive.revision.version.equals(version)) {
 							Archive updated = archive.update(version);

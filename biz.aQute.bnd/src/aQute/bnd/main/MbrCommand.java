@@ -16,6 +16,7 @@ import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
 import aQute.bnd.repository.maven.provider.MbrUpdater;
+import aQute.bnd.repository.maven.provider.MbrUpdater.MavenVersionResult;
 import aQute.bnd.repository.maven.provider.MbrUpdater.Scope;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.collections.MultiMap;
@@ -153,19 +154,8 @@ public class MbrCommand extends Processor {
 			bnd.trace("repo %s", repo.getName());
 
 			MbrUpdater mbr = new MbrUpdater(repo);
-			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(updates);
-			content.entrySet()
-				.forEach(e -> {
-					Archive archive = e.getKey();
-					MavenVersion version = e.getValue();
-
-					if (version.compareTo(archive.getRevision().version) > 0) {
-						// log only updates
-						bnd.trace(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
-							version);
-					}
-
-				});
+			Map<Archive, MavenVersionResult> content = mbr.calculateUpdateRevisions(updates);
+			logMavenUpdates(content);
 
 			if (!options.dry()) {
 				if (repo.getIndexFile()
@@ -240,4 +230,17 @@ public class MbrCommand extends Processor {
 	}
 
 
+	private void logMavenUpdates(Map<Archive, MavenVersionResult> content) {
+		content.entrySet()
+			.forEach(e -> {
+				Archive archive = e.getKey();
+				MavenVersionResult versionResult = e.getValue();
+
+				if (versionResult.mavenVersionAvailable()) {
+					bnd.out.format(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
+						versionResult);
+				}
+
+			});
+	}
 }

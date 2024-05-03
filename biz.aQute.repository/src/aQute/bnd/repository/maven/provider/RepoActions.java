@@ -17,6 +17,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.repository.maven.provider.MbrUpdater.MavenVersionResult;
 import aQute.bnd.repository.maven.provider.MbrUpdater.Scope;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.version.MavenVersion;
@@ -265,7 +266,7 @@ class RepoActions {
 			MultiMap<Archive, MavenVersion> updates = MbrUpdater.getUpdates(scope, Collections.singleton(repo),
 				repo.getArchives(), false);
 
-			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(updates);
+			Map<Archive, MavenVersionResult> content = mbr.calculateUpdateRevisions(updates);
 
 			if (mbr.update(content)) {
 				repo.refresh();
