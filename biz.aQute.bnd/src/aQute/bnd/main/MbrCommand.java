@@ -152,11 +152,28 @@ public class MbrCommand extends Processor {
 		for (MavenBndRepository repo : repos) {
 			bnd.trace("repo %s", repo.getName());
 
-			MbrUpdater mbr = new MbrUpdater(repo, bnd::trace);
+			MbrUpdater mbr = new MbrUpdater(repo);
 			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(updates);
+			content.entrySet()
+				.forEach(e -> {
+					Archive archive = e.getKey();
+					MavenVersion version = e.getValue();
+
+					if (version.compareTo(archive.getRevision().version) > 0) {
+						// log only updates
+						bnd.trace(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
+							version);
+					}
+
+				});
 
 			if (!options.dry()) {
+				if (repo.getIndexFile()
+					.isFile()) {
+					bnd.trace("reading %s", repo.getIndexFile());
+				}
 				if (mbr.update(content)) {
+					bnd.trace("writing %s", repo.getIndexFile());
 					repo.refresh();
 				}
 			}

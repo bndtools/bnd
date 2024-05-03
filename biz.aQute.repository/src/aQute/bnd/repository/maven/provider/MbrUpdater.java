@@ -3,8 +3,8 @@ package aQute.bnd.repository.maven.provider;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -16,7 +16,6 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
-import aQute.lib.startlevel.Trace;
 import aQute.maven.api.Archive;
 
 /**
@@ -32,11 +31,9 @@ public class MbrUpdater {
 		.find();
 
 	private final MavenBndRepository				repo;
-	private final Trace								logger;
 
-	public MbrUpdater(MavenBndRepository repo, Trace logger) {
+	public MbrUpdater(MavenBndRepository repo) {
 		this.repo = repo;
-		this.logger = logger != null ? logger : (format, args) -> {};
 	}
 
 	public enum Scope {
@@ -78,11 +75,10 @@ public class MbrUpdater {
 	 * Calculates the new revisions for each archive.
 	 *
 	 * @param updates
-	 * @param out optional logger
 	 * @return a map the revision for each archive.
 	 */
 	public Map<Archive, MavenVersion> calculateUpdateRevisions(MultiMap<Archive, MavenVersion> updates) {
-		Map<Archive, MavenVersion> content = new HashMap<>();
+		Map<Archive, MavenVersion> content = new LinkedHashMap<>();
 
 		for (Archive archive : new TreeSet<>(repo.getArchives())) {
 			List<MavenVersion> list = updates.get(archive);
@@ -90,9 +86,6 @@ public class MbrUpdater {
 				content.put(archive, archive.revision.version);
 			} else {
 				MavenVersion version = list.get(list.size() - 1);
-
-				logger.trace(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
-						version);
 				content.put(archive, version);
 			}
 		}
@@ -130,7 +123,6 @@ public class MbrUpdater {
 		repo.getIndexFile()
 			.getParentFile()
 			.mkdirs();
-		logger.trace("writing %s", repo.getIndexFile());
 		IO.store(sb.toString(), repo.getIndexFile());
 		return changes;
 	}
@@ -152,7 +144,6 @@ public class MbrUpdater {
 			lc = IO.reader(repo.getIndexFile())
 				.lines()
 				.iterator();
-			logger.trace("reading %s", repo.getIndexFile());
 		} else {
 			lc = Collections.emptyIterator();
 		}

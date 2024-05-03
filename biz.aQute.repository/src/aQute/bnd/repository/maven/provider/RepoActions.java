@@ -33,9 +33,11 @@ import aQute.maven.api.Revision;
 class RepoActions {
 
 	private MavenBndRepository repo;
+	private MbrUpdater			mbr;
 
 	RepoActions(MavenBndRepository mavenBndRepository) {
 		this.repo = mavenBndRepository;
+		this.mbr = new MbrUpdater(repo);
 	}
 
 	Map<String, Runnable> getRepoActions(final Clipboard clipboard) throws Exception {
@@ -250,7 +252,6 @@ class RepoActions {
 
 	private String preview(Scope scope) {
 		try {
-			MbrUpdater mbr = new MbrUpdater(repo, null);
 			return mbr.preview(scope, repo.getArchives());
 
 		} catch (Exception e) {
@@ -260,7 +261,6 @@ class RepoActions {
 
 	private void upgradeRevisions(Scope scope) {
 		try {
-			MbrUpdater mbr = new MbrUpdater(repo, null);
 
 			MultiMap<Archive, MavenVersion> updates = MbrUpdater.getUpdates(scope, Collections.singleton(repo),
 				repo.getArchives(), false);
