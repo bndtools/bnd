@@ -265,7 +265,7 @@ class RepoActions {
 			MultiMap<Archive, MavenVersion> updates = MbrUpdater.getUpdates(scope, Collections.singleton(repo),
 				repo.getArchives(), false);
 
-			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(updates, null);
+			Map<Archive, MavenVersion> content = mbr.calculateUpdateRevisions(updates);
 
 			if (mbr.update(content)) {
 				repo.refresh();

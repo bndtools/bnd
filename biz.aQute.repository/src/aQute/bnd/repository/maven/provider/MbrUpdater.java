@@ -1,7 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,8 +81,7 @@ public class MbrUpdater {
 	 * @param out optional logger
 	 * @return a map the revision for each archive.
 	 */
-	public Map<Archive, MavenVersion> calculateUpdateRevisions(MultiMap<Archive, MavenVersion> updates,
-		PrintStream out) {
+	public Map<Archive, MavenVersion> calculateUpdateRevisions(MultiMap<Archive, MavenVersion> updates) {
 		Map<Archive, MavenVersion> content = new HashMap<>();
 
 		for (Archive archive : new TreeSet<>(repo.getArchives())) {
@@ -93,10 +91,8 @@ public class MbrUpdater {
 			} else {
 				MavenVersion version = list.get(list.size() - 1);
 
-				if (out != null) {
-					out.format(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
+				logger.trace(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
 						version);
-				}
 				content.put(archive, version);
 			}
 		}
