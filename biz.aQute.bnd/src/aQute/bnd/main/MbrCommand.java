@@ -238,7 +238,7 @@ public class MbrCommand extends Processor {
 
 				if (versionResult.mavenVersionAvailable()) {
 					bnd.out.format(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
-						versionResult);
+						versionResult.mavenVersion());
 				}
 
 			});
