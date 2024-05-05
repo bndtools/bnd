@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.osgi.resource.Requirement;
@@ -15,6 +16,11 @@ import aQute.libg.glob.Glob;
 public class UnresolvedRequirementsContentProvider implements ITreeContentProvider {
 
 	private String wildcardFilter = null;
+	private RequirementWithResourceLabelProvider	labelProvider;
+
+	public UnresolvedRequirementsContentProvider(RequirementWithResourceLabelProvider labelProvider) {
+		this.labelProvider = labelProvider;
+	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
@@ -96,7 +102,8 @@ public class UnresolvedRequirementsContentProvider implements ITreeContentProvid
 					if (obj instanceof Requirement rw) {
 
 						for (Glob g : globs) {
-							if (g.matcher(rw.toString()
+							if (g.matcher(labelProvider.getLabel(rw)
+								.toString()
 								.toLowerCase())
 								.find()) {
 								filteredResults.add(obj);

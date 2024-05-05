@@ -58,6 +58,7 @@ public class ResolutionFailurePanel {
 	private static final String						SEARCHSTRING_HINT		= "Enter search string to filter unresolved requirements (Space to separate terms; '*' for partial matches)";
 
 	private static final boolean	failureTreeMode	= true;
+	private RequirementWithResourceLabelProvider	requirementWithResourceLabelProvider;
 
 	public void createControl(final Composite parent) {
 		FormToolkit toolkit = new FormToolkit(parent.getDisplay());
@@ -95,9 +96,11 @@ public class ResolutionFailurePanel {
 
 		unresolvedViewer = new TreeViewer(treeUnresolved);
 
-		unresolvedRequirementsContentProvider = new UnresolvedRequirementsContentProvider();
+		requirementWithResourceLabelProvider = new RequirementWithResourceLabelProvider();
+		unresolvedViewer.setLabelProvider(requirementWithResourceLabelProvider);
+		unresolvedRequirementsContentProvider = new UnresolvedRequirementsContentProvider(
+			requirementWithResourceLabelProvider);
 		unresolvedViewer.setContentProvider(unresolvedRequirementsContentProvider);
-		unresolvedViewer.setLabelProvider(new RequirementWithResourceLabelProvider());
 		setFailureViewMode();
 
 		addSearchbarForUnresolved();
