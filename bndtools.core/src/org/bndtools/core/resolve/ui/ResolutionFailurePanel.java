@@ -9,6 +9,7 @@ import java.util.Collections;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
+import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -35,6 +36,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
 
 import biz.aQute.resolve.ResolveProcess;
+import bndtools.Plugin;
 import bndtools.model.obr.SorterComparatorAdapter;
 
 public class ResolutionFailurePanel {
@@ -50,7 +52,13 @@ public class ResolutionFailurePanel {
 	private Section					sectProcessingErrors;
 	private Section					sectUnresolved;
 
+	private UnresolvedRequirementsContentProvider	unresolvedRequirementsContentProvider;
+	private final FilterPanelPart					unresolvedFilterPart	= new FilterPanelPart(Plugin.getDefault()
+		.getScheduler());
+	private static final String						SEARCHSTRING_HINT		= "Enter search string to filter unresolved requirements (Space to separate terms; '*' for partial matches)";
+
 	private static final boolean	failureTreeMode	= true;
+	private RequirementWithResourceLabelProvider	requirementWithResourceLabelProvider;
 
 	public void createControl(final Composite parent) {
 		FormToolkit toolkit = new FormToolkit(parent.getDisplay());
@@ -85,10 +93,18 @@ public class ResolutionFailurePanel {
 		gd.heightHint = 300;
 		sectUnresolved.setLayoutData(gd);
 
+
 		unresolvedViewer = new TreeViewer(treeUnresolved);
-		unresolvedViewer.setContentProvider(new UnresolvedRequirementsContentProvider());
-		unresolvedViewer.setLabelProvider(new RequirementWithResourceLabelProvider());
+
+		requirementWithResourceLabelProvider = new RequirementWithResourceLabelProvider();
+		unresolvedViewer.setLabelProvider(requirementWithResourceLabelProvider);
+		unresolvedRequirementsContentProvider = new UnresolvedRequirementsContentProvider(
+			requirementWithResourceLabelProvider);
+		unresolvedViewer.setContentProvider(unresolvedRequirementsContentProvider);
 		setFailureViewMode();
+
+		addSearchbarForUnresolved();
+
 	}
 
 	public Control getControl() {
@@ -300,5 +316,16 @@ public class ResolutionFailurePanel {
 	}
 
 	void dispose() {}
+
+	private void addSearchbarForUnresolved() {
+		Control reqsFilterPanel = unresolvedFilterPart.createControl(composite, 5, 5);
+		unresolvedFilterPart.setHint(SEARCHSTRING_HINT);
+		unresolvedFilterPart.addPropertyChangeListener(event -> {
+			String filter = (String) event.getNewValue();
+
+			unresolvedRequirementsContentProvider.setFilter(filter);
+			unresolvedViewer.refresh();
+		});
+	}
 
 }
