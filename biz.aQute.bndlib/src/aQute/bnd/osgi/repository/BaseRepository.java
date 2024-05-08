@@ -25,15 +25,19 @@ import org.osgi.util.promise.PromiseFactory;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.service.Tagged;
 
 /**
  * WARNING ! Not tested
  */
-public abstract class BaseRepository implements Repository {
+public abstract class BaseRepository implements Repository, Tagged {
 	private static final RequirementExpression[]	EMPTY			= new RequirementExpression[0];
 	static IdentityExpression						all;
 	private final PromiseFactory					promiseFactory	= new PromiseFactory(
 		PromiseFactory.inlineExecutor());
+
+	private static final String						DEFAULT_TAG		= "all";
+	private static final List<String>				DEFAULT_TAGS	= List.of(DEFAULT_TAG);
 
 	static {
 		Requirement requireAll = ResourceUtils.createWildcardRequirement();
@@ -244,4 +248,8 @@ public abstract class BaseRepository implements Repository {
 		};
 	}
 
+	@Override
+	public List<String> getTags() {
+		return DEFAULT_TAGS;
+	}
 }

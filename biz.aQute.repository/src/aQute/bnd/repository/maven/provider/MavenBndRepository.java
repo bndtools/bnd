@@ -68,6 +68,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Tagged;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
@@ -1073,5 +1074,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public boolean isRemote() {
 		return remote;
+	}
+
+	@Override
+	public List<String> getTags() {
+		return Tagged.toTags(configuration.tags());
 	}
 }

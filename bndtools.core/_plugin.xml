@@ -899,6 +899,7 @@
 			helpUrl="https://bnd.bndtools.org/plugins/maven.html"
 			rank="10">
 		    <property name="name" type="string" description="The name of this repository" default="Maven Repository" />
+			<property name="tags" type="string" description="Comma separated list of tags. (e.g. baseline,release)" />
 			<property name="releaseUrl" type="string" description="The urls to the remote release repository." default="https://repo.maven.apache.org/maven2/" />
 		    <property name="stagingUrl" type="string" description="The url of the staging release repository." />
 		    <property name="snapshotUrl" type="string" description="The urls to the remote snapshot repository." default="https://repository.apache.org/snapshots/" />
