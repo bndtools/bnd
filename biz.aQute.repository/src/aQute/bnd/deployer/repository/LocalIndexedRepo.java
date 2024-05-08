@@ -40,6 +40,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
+import aQute.bnd.service.Tagged;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.hex.Hex;
@@ -61,6 +62,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	public static final String		PROP_PRETTY		= "pretty";
 	public static final String		PROP_OVERWRITE	= "overwrite";
 	public static final String		PROP_ONLYDIRS	= "onlydirs";
+	public static final String		PROP_TAGS		= "tags";
 
 	// not actually used (yet). Just to get some parameters
 	interface Config {
@@ -81,6 +83,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	private boolean				overwrite				= true;
 	private File				storageDir;
 	private String				onlydirs				= null;
+	private String				tags					= null;
 
 	// @GuardedBy("newFilesInCoordination")
 	private final List<URI>		newFilesInCoordination	= new ArrayList<>();
@@ -132,6 +135,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 			throw new IllegalArgumentException(
 				String.format("Cannot create repository cache: '%s' already exists but is not directory.",
 					cacheDir.getAbsolutePath()));
+
+		tags = map.get(PROP_TAGS);
 	}
 
 	@Override
@@ -613,5 +618,10 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	}
 
 	public void close() {}
+
+	@Override
+	public Set<String> getTags() {
+		return Tagged.toTags(tags);
+	}
 
 }

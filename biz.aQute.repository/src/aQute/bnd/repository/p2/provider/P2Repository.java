@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.osgi.resource.Capability;
@@ -25,6 +26,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Tagged;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
@@ -191,6 +193,11 @@ public class P2Repository extends BaseRepository
 	@Override
 	public String title(Object... target) throws Exception {
 		return null;
+	}
+
+	@Override
+	public Set<String> getTags() {
+		return Tagged.toTags(config.tags());
 	}
 
 }

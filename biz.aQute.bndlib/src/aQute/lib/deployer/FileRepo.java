@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
@@ -34,6 +35,7 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Tagged;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
@@ -75,7 +77,7 @@ import aQute.service.reporter.Reporter;
  */
 
 @aQute.bnd.annotation.plugin.BndPlugin(name = "Filerepo", parameters = FileRepo.Config.class)
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable, Tagged {
 	private final static Logger logger = LoggerFactory.getLogger(FileRepo.class);
 
 	interface Config {
@@ -142,6 +144,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Set the name of this repository (optional)
 	 */
 	public final static String				NAME				= "name";
+
+	/**
+	 * A comma-separated list of tags.
+	 */
+	public final static String				TAGS				= "tags";
 
 	/**
 	 * Should this file repo have an index? Either true or false (absent)
@@ -252,6 +259,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String									name;
 	boolean									inited;
 	boolean									trace;
+	String									tags;
 	PersistentMap<ResourceDescriptor>		index;
 
 	private boolean							hasIndex;
@@ -336,6 +344,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		action = map.get(CMD_AFTER_ACTION);
 
 		trace = Boolean.parseBoolean(map.get(TRACE));
+		tags = map.get(TAGS);
 	}
 
 	/**
@@ -1047,5 +1056,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public void setIndex(boolean b) {
 		hasIndex = b;
+	}
+
+	@Override
+	public Set<String> getTags() {
+		return Tagged.toTags(tags);
 	}
 }

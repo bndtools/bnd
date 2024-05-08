@@ -12,6 +12,7 @@ import java.util.Formatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,7 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Tagged;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
@@ -65,6 +67,8 @@ public class OSGiRepository extends BaseRepository
 		String cache();
 
 		String name();
+
+		String tags();
 
 		int poll_time(int pollTimeInSecs);
 	}
@@ -409,5 +413,10 @@ public class OSGiRepository extends BaseRepository
 			status = status.concat("\n")
 				.concat(s);
 		}
+	}
+
+	@Override
+	public Set<String> getTags() {
+		return Tagged.toTags(config.tags());
 	}
 }
