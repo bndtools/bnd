@@ -1077,7 +1077,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	@Override
-	public List<String> getTags() {
+	public Set<String> getTags() {
 		return Tagged.toTags(configuration.tags());
 	}
 }

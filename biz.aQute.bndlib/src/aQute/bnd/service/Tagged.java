@@ -1,7 +1,9 @@
 package aQute.bnd.service;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Allows to add tags to implementing classes. Originally intended for tagging
@@ -12,16 +14,16 @@ public interface Tagged {
 	/**
 	 * @return a non-null list of tags.
 	 */
-	List<String> getTags();
+	Set<String> getTags();
 
-	static List<String> toTags(String csvTags) {
+	static Set<String> toTags(String csvTags) {
 		if (csvTags == null || csvTags.isBlank()) {
-			return List.of("all"); // default
+			return Set.of("all"); // default
 		}
 
 		return Arrays.stream(csvTags.split(","))
 			.map(String::trim)
-			.toList();
+			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 }
