@@ -54,7 +54,9 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
+import aQute.bnd.service.Tagged;
 import aQute.bnd.service.resolve.hook.ResolverHook;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -360,6 +362,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 			// Map the repository names...
 
+			MultiMap<String, Repository> reposTagMap = new MultiMap<>();
 			Map<String, Repository> repoNameMap = new HashMap<>(allRepos.size());
 			for (Repository repo : allRepos) {
 				String name;
@@ -369,14 +372,29 @@ public class BndrunResolveContext extends AbstractResolveContext {
 					name = repo.toString();
 				}
 				repoNameMap.put(name, repo);
+
+				// tags
+				if (repo instanceof Tagged taggedRepo) {
+					Set<String> tags = taggedRepo.getTags();
+					for (String tag : tags) {
+						reposTagMap.add(tag, repo);
+					}
+				}
 			}
 
 			// Create the result list
 			orderedRepositories = new ArrayList<>();
 			for (String repoName : repoNames.keySet()) {
-				Repository repo = repoNameMap.get(repoName);
-				if (repo != null)
-					orderedRepositories.add(repo);
+				// tags prefixed with '@' e.g. '@baseline'
+				if (repoName.startsWith("@")) {
+					List<Repository> repos = reposTagMap.get(repoName.substring(1));
+					if (repos != null)
+						orderedRepositories.addAll(repos);
+				} else {
+					Repository repo = repoNameMap.get(repoName);
+					if (repo != null)
+						orderedRepositories.add(repo);
+				}
 			}
 		}
 
