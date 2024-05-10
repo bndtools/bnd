@@ -36,8 +36,6 @@ public abstract class BaseRepository implements Repository, Tagged {
 	private final PromiseFactory					promiseFactory	= new PromiseFactory(
 		PromiseFactory.inlineExecutor());
 
-	private static final String						DEFAULT_TAG		= "all";
-	private static final Set<String>				DEFAULT_TAGS	= Set.of(DEFAULT_TAG);
 
 	static {
 		Requirement requireAll = ResourceUtils.createWildcardRequirement();
@@ -250,6 +248,6 @@ public abstract class BaseRepository implements Repository, Tagged {
 
 	@Override
 	public Set<String> getTags() {
-		return DEFAULT_TAGS;
+		return Tagged.DEFAULT_REPO_TAGS;
 	}
 }

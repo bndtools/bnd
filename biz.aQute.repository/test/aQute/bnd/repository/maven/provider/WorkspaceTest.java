@@ -1,17 +1,24 @@
 package aQute.bnd.repository.maven.provider;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.service.Tagged;
+import aQute.bnd.service.Tagged.RepoTags;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -57,6 +64,37 @@ public class WorkspaceTest {
 		assertNotNull(workspace);
 		assertNotNull(repo);
 		System.out.println(workspace.getBase());
+
+		// check repo tags
+		// repos should have the 'resolve' tag by default if no tag is specified
+		List<Repository> repos = workspace.getPlugins(Repository.class);
+		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, RepoTags.resolve.name());
+		assertEquals(repos, resolveRepos);
+
+		Repository repo = repos.get(0);
+		assertTrue(repo instanceof Tagged);
+		assertEquals(1, ((Tagged) repo).getTags()
+			.size());
+		assertEquals(RepoTags.resolve.name(), new ArrayList<>(((Tagged) repo).getTags()).get(0));
+
+	}
+
+	@Test
+	public void testRepoWithDifferentTag() throws Exception {
+		// similar as testEnv()
+		// but override the tag with a different one and repeat the tests
+		config(Map.of("tags", "foo"));
+
+		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, RepoTags.resolve.name());
+		assertTrue(resolveRepos.isEmpty());
+
+		List<Repository> repos = workspace.getPlugins(Repository.class);
+		Repository repo = repos.get(0);
+		assertTrue(repo instanceof Tagged);
+		assertEquals(1, ((Tagged) repo).getTags()
+			.size());
+		assertEquals("foo", new ArrayList<>(((Tagged) repo).getTags()).get(0));
+
 	}
 
 	void config(Map<String, String> override) throws Exception {
@@ -74,7 +112,12 @@ public class WorkspaceTest {
 			sb.format("  name=test; \\\n", MavenBndRepository.class.getName());
 			sb.format("  local=%s; \\\n", config.get("local"));
 			sb.format("  releaseUrl=%s; \\\n", config.get("releaseUrl"));
-			sb.format("  index=%s\n", config.get("index"));
+			sb.format("  index=%s; \\\n", config.get("index"));
+
+			String tags = config.get("tags");
+			if (tags != null && !tags.isBlank()) {
+				sb.format("  tags=%s\n", tags);
+			}
 
 			build.getParentFile()
 				.mkdirs();

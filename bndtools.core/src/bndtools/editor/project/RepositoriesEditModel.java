@@ -1,5 +1,7 @@
 package bndtools.editor.project;
 
+import static aQute.bnd.service.Tagged.RepoTags.resolve;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,7 +32,7 @@ class RepositoriesEditModel {
 	RepositoriesEditModel(BndEditModel model) {
 		this.model = model;
 		this.pluginOrder = model.getWorkspace()
-			.getPlugins(Repository.class);
+			.getPlugins(Repository.class, resolve.name());
 		this.standalone = model.getStandaloneLinks();
 		this.runrepos = model.getRunRepos();
 		this.ignoreStandalone = model.getIgnoreStandalone();
@@ -44,6 +46,7 @@ class RepositoriesEditModel {
 			List<Repository> remains = new ArrayList<>(pluginOrder);
 
 			for (String name : runrepos) {
+
 				Repository r = find(name);
 				if (r != null) {
 					actualOrder.add(r);
@@ -54,6 +57,7 @@ class RepositoriesEditModel {
 			actualOrder.addAll(remains);
 		}
 	}
+
 
 	private Repository find(String sought) {
 		for (Repository r : pluginOrder) {

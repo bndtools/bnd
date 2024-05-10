@@ -1060,6 +1060,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	@Override
 	public Set<String> getTags() {
-		return Tagged.toTags(tags);
+		return Tagged.toTags(tags, Tagged.DEFAULT_REPO_TAGS);
 	}
 }

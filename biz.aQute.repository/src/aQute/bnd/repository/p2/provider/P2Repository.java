@@ -197,7 +197,7 @@ public class P2Repository extends BaseRepository
 
 	@Override
 	public Set<String> getTags() {
-		return Tagged.toTags(config.tags());
+		return Tagged.toTags(config.tags(), Tagged.DEFAULT_REPO_TAGS);
 	}
 
 }

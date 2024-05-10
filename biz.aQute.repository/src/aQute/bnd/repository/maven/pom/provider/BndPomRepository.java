@@ -511,6 +511,6 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public Set<String> getTags() {
-		return Tagged.toTags(configuration.tags());
+		return Tagged.toTags(configuration.tags(), Tagged.DEFAULT_REPO_TAGS);
 	}
 }

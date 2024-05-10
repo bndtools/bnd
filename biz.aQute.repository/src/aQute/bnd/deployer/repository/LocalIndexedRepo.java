@@ -621,7 +621,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 	@Override
 	public Set<String> getTags() {
-		return Tagged.toTags(tags);
+		return Tagged.toTags(tags, Tagged.DEFAULT_REPO_TAGS);
 	}
 
 }
