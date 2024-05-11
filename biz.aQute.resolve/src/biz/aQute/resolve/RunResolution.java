@@ -98,7 +98,7 @@ public class RunResolution {
 		Collection<ResolutionCallback> callbacks, ResolverLogger resolverLogger) {
 		if (callbacks == null)
 			callbacks = Collections.emptyList();
-		ResolverLogger logger = resolverLogger == null ? new ResolverLogger() : resolverLogger;
+		ResolverLogger logger = resolverLogger == null ? ResolverLogger.newLogger(actualProperties) : resolverLogger;
 		try {
 			try {
 				ResolveProcess resolve = new ResolveProcess();

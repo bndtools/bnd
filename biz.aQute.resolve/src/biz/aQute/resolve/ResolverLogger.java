@@ -11,6 +11,10 @@ import java.io.RandomAccessFile;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
 
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 
 public class ResolverLogger implements LogService, AutoCloseable {
@@ -106,6 +110,9 @@ public class ResolverLogger implements LogService, AutoCloseable {
 				} else {
 					StringBuilder sb = new StringBuilder(10000);
 
+					sb.append("Log level:")
+						.append(getLogLevel())
+						.append(" ");
 					sb.append("Log too large. Split from ")
 						.append(file.getAbsolutePath())
 						.append("\nsize ")
@@ -161,5 +168,23 @@ public class ResolverLogger implements LogService, AutoCloseable {
 	@Override
 	public void log(ServiceReference sr, int level, String message, Throwable exception) {
 		log(level, message, exception);
+	}
+
+	public static ResolverLogger newLogger(Processor processor) {
+		if (processor == null) {
+			return new ResolverLogger();
+		}
+
+		try {
+			Integer level = Converter.cnv(Integer.class,
+				processor.getProperty(Constants.RESOLVEDEBUG, Integer.toString(DEFAULT_LEVEL)));
+			if (level != null) {
+				return new ResolverLogger(level);
+			}
+			return new ResolverLogger();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
 	}
 }
