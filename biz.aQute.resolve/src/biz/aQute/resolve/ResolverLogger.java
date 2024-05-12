@@ -147,6 +147,17 @@ public class ResolverLogger implements LogService, AutoCloseable {
 		}
 	}
 
+	/**
+	 * like {@link #close()} but it deletes the logfile regardless of
+	 * {@link #keepLogFile}
+	 */
+	public void closeAndDeleteLogfile() {
+		IO.close(printer);
+		if (file != null) {
+			IO.delete(file);
+		}
+	}
+
 	public void setKeepLogFileTillExit(boolean keep) {
 		this.keepLogFile = keep;
 	}
@@ -170,18 +181,31 @@ public class ResolverLogger implements LogService, AutoCloseable {
 		log(level, message, exception);
 	}
 
-	public static ResolverLogger newLogger(Processor processor) {
+	/**
+	 * @param processor
+	 * @param keepLogFileTillJvmExit if <code>true</code> the logfile is kept
+	 *            until JVM exit, otherwise deleted immediately after resolve
+	 *            finishes
+	 * @return a new logger
+	 */
+	public static ResolverLogger newLogger(Processor processor, boolean keepLogFileTillJvmExit) {
 		if (processor == null) {
-			return new ResolverLogger();
+			ResolverLogger logger = new ResolverLogger();
+			logger.setKeepLogFileTillExit(keepLogFileTillJvmExit);
+			return logger;
 		}
 
 		try {
 			Integer level = Converter.cnv(Integer.class,
 				processor.getProperty(Constants.RESOLVEDEBUG, Integer.toString(DEFAULT_LEVEL)));
 			if (level != null) {
-				return new ResolverLogger(level);
+				ResolverLogger logger = new ResolverLogger(level);
+				logger.setKeepLogFileTillExit(keepLogFileTillJvmExit);
+				return logger;
 			}
-			return new ResolverLogger();
+			ResolverLogger logger = new ResolverLogger();
+			logger.setKeepLogFileTillExit(keepLogFileTillJvmExit);
+			return logger;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
