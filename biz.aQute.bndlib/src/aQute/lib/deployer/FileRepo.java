@@ -1,5 +1,7 @@
 package aQute.lib.deployer;
 
+import static aQute.bnd.service.Tags.parse;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +16,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
@@ -36,6 +37,7 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Tagged;
+import aQute.bnd.service.Tags;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
@@ -259,7 +261,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String									name;
 	boolean									inited;
 	boolean									trace;
-	String									tags;
+	Tags									tags				= DEFAULT_REPO_TAGS;
 	PersistentMap<ResourceDescriptor>		index;
 
 	private boolean							hasIndex;
@@ -344,7 +346,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		action = map.get(CMD_AFTER_ACTION);
 
 		trace = Boolean.parseBoolean(map.get(TRACE));
-		tags = map.get(TAGS);
+		tags = parse(map.get(TAGS), DEFAULT_REPO_TAGS);
 	}
 
 	/**
@@ -1059,7 +1061,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	@Override
-	public Set<String> getTags() {
-		return Tagged.toTags(tags, Tagged.DEFAULT_REPO_TAGS);
+	public Tags getTags() {
+		return this.tags;
 	}
 }

@@ -9,6 +9,7 @@ import java.util.SortedSet;
 
 import org.osgi.util.promise.Promise;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 
@@ -18,7 +19,15 @@ import aQute.bnd.version.Version;
  * combination. It is also possible to put revisions in a repository if the
  * repository is not read only.
  */
-public interface RepositoryPlugin {
+public interface RepositoryPlugin extends Tagged {
+
+	/**
+	 * Each repo has by default the tag {@link Constants#REPOTAGS_RESOLVE} if no
+	 * tags are set at the repo definition in build.bnd That means it is
+	 * consider
+	 */
+	Tags DEFAULT_REPO_TAGS = Tags.of(Constants.REPOTAGS_RESOLVE);
+
 	/**
 	 * Options used to steer the put operation
 	 */
@@ -167,6 +176,8 @@ public interface RepositoryPlugin {
 		boolean progress(File file, int percentage) throws Exception;
 	}
 
+
+
 	/**
 	 * Return a URL to a matching version of the given bundle.
 	 * <p/>
@@ -275,5 +286,10 @@ public interface RepositoryPlugin {
 				get("foobar@#$%^&*", Version.emptyVersion, null);
 				return null;
 			});
+	}
+
+	@Override
+	default Tags getTags() {
+		return DEFAULT_REPO_TAGS;
 	}
 }

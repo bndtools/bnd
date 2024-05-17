@@ -1,6 +1,6 @@
 package aQute.bnd.service;
 
-import static aQute.bnd.service.Tagged.matchesTags;
+import static aQute.bnd.service.Tags.matchesTags;
 
 import java.util.List;
 import java.util.stream.Collectors;

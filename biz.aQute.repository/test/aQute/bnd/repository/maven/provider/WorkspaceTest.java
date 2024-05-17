@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.Tagged;
-import aQute.bnd.service.Tagged.RepoTags;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -68,14 +68,14 @@ public class WorkspaceTest {
 		// check repo tags
 		// repos should have the 'resolve' tag by default if no tag is specified
 		List<Repository> repos = workspace.getPlugins(Repository.class);
-		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, RepoTags.resolve.name());
+		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
 		assertEquals(repos, resolveRepos);
 
 		Repository repo = repos.get(0);
 		assertTrue(repo instanceof Tagged);
 		assertEquals(1, ((Tagged) repo).getTags()
 			.size());
-		assertEquals(RepoTags.resolve.name(), new ArrayList<>(((Tagged) repo).getTags()).get(0));
+		assertEquals(Constants.REPOTAGS_RESOLVE, new ArrayList<>(((Tagged) repo).getTags()).get(0));
 
 	}
 
@@ -85,7 +85,7 @@ public class WorkspaceTest {
 		// but override the tag with a different one and repeat the tests
 		config(Map.of("tags", "foo"));
 
-		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, RepoTags.resolve.name());
+		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
 		assertTrue(resolveRepos.isEmpty());
 
 		List<Repository> repos = workspace.getPlugins(Repository.class);

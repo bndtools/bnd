@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.bnd.service.Tags.parse;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -14,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -45,7 +45,6 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.Tagged;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
@@ -273,6 +272,7 @@ public class BndPomRepository extends BaseRepository
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		configuration = Converter.cnv(PomConfiguration.class, map);
+		super.setTags(parse(configuration.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -509,8 +509,5 @@ public class BndPomRepository extends BaseRepository
 			.getOther(Archive.JAR_EXTENSION, Archive.SOURCES_CLASSIFIER);
 	}
 
-	@Override
-	public Set<String> getTags() {
-		return Tagged.toTags(configuration.tags(), Tagged.DEFAULT_REPO_TAGS);
-	}
+
 }

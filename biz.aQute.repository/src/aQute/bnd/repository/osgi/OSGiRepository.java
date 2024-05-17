@@ -1,5 +1,7 @@
 package aQute.bnd.repository.osgi;
 
+import static aQute.bnd.service.Tags.parse;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +14,6 @@ import java.util.Formatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +40,6 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.Tagged;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
@@ -300,6 +300,8 @@ public class OSGiRepository extends BaseRepository
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		config = Converter.cnv(Config.class, map);
+
+		super.setTags(parse(config.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -415,8 +417,4 @@ public class OSGiRepository extends BaseRepository
 		}
 	}
 
-	@Override
-	public Set<String> getTags() {
-		return Tagged.toTags(config.tags(), Tagged.DEFAULT_REPO_TAGS);
-	}
 }

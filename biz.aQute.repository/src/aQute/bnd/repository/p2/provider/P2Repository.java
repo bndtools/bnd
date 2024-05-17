@@ -1,5 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
+import static aQute.bnd.service.Tags.parse;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +11,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 
 import org.osgi.resource.Capability;
@@ -26,7 +27,6 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.Tagged;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
@@ -110,6 +110,7 @@ public class P2Repository extends BaseRepository
 	public void setProperties(Map<String, String> map) throws Exception {
 		this.config = Converter.cnv(P2Config.class, map);
 		this.name = this.config.name("p2-" + config.url());
+		super.setTags(parse(config.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -195,9 +196,5 @@ public class P2Repository extends BaseRepository
 		return null;
 	}
 
-	@Override
-	public Set<String> getTags() {
-		return Tagged.toTags(config.tags(), Tagged.DEFAULT_REPO_TAGS);
-	}
 
 }

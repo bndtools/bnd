@@ -1,6 +1,5 @@
 package bndtools.editor.project;
 
-import static aQute.bnd.service.Tagged.RepoTags.resolve;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +14,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.central.Central;
@@ -32,7 +32,7 @@ class RepositoriesEditModel {
 	RepositoriesEditModel(BndEditModel model) {
 		this.model = model;
 		this.pluginOrder = model.getWorkspace()
-			.getPlugins(Repository.class, resolve.name());
+			.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
 		this.standalone = model.getStandaloneLinks();
 		this.runrepos = model.getRunRepos();
 		this.ignoreStandalone = model.getIgnoreStandalone();

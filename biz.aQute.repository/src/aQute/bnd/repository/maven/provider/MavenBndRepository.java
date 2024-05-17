@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.bnd.service.Tags.parse;
 
 import java.io.Closeable;
 import java.io.File;
@@ -68,7 +69,6 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.Tagged;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
@@ -774,6 +774,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		configuration = Converter.cnv(Configuration.class, map);
 		name = configuration.name("Maven");
 		localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
+		super.setTags(parse(configuration.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -1076,8 +1077,4 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return remote;
 	}
 
-	@Override
-	public Set<String> getTags() {
-		return Tagged.toTags(configuration.tags(), Tagged.DEFAULT_REPO_TAGS);
-	}
 }
