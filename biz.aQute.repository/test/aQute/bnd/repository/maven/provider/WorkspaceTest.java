@@ -83,7 +83,7 @@ public class WorkspaceTest {
 	public void testRepoWithDifferentTag() throws Exception {
 		// similar as testEnv()
 		// but override the tag with a different one and repeat the tests
-		config(Map.of("tags", "foo"));
+		config(Map.of("tags", " foo,bar , a "));
 
 		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
 		assertTrue(resolveRepos.isEmpty());
@@ -91,9 +91,13 @@ public class WorkspaceTest {
 		List<Repository> repos = workspace.getPlugins(Repository.class);
 		Repository repo = repos.get(0);
 		assertTrue(repo instanceof Tagged);
-		assertEquals(1, ((Tagged) repo).getTags()
+		assertEquals(3, ((Tagged) repo).getTags()
 			.size());
-		assertEquals("foo", new ArrayList<>(((Tagged) repo).getTags()).get(0));
+
+		// make sure tags are sorted consistently (alphabetically)
+		assertEquals("a", new ArrayList<>(((Tagged) repo).getTags()).get(0));
+		assertEquals("bar", new ArrayList<>(((Tagged) repo).getTags()).get(1));
+		assertEquals("foo", new ArrayList<>(((Tagged) repo).getTags()).get(2));
 
 	}
 
@@ -116,7 +120,7 @@ public class WorkspaceTest {
 
 			String tags = config.get("tags");
 			if (tags != null && !tags.isBlank()) {
-				sb.format("  tags=%s\n", tags);
+				sb.format("  tags=\"%s\"\n", tags);
 			}
 
 			build.getParentFile()
