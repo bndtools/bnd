@@ -1,6 +1,10 @@
 package bndtools.editor.workspace;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.fieldassist.ControlDecoration;
@@ -15,6 +19,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -153,6 +158,30 @@ public class PluginPropertiesPage extends WizardPage {
 							changed = true;
 						}
 					});
+				}
+
+				else if ("combo".equals(propertyType)) {
+					final Combo combobox = new Combo(fieldContainer, SWT.BORDER);
+					combobox.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+					String options = propertyElement.getAttribute("options");
+					if (options != null && !options.isBlank()) {
+						Collection<String> optionValues = parseTrimmed(options);
+						combobox.setItems(optionValues.toArray(new String[0]));
+					}
+
+					if (value != null)
+						combobox.setText(value);
+
+					combobox.addModifyListener(e -> {
+						String value1 = combobox.getText();
+						if (value1 == null || value1.length() == 0)
+							properties.remove(name);
+						else
+							properties.put(name, value1);
+						changed = true;
+					});
+
 				} else {
 					final Text text = new Text(fieldContainer, SWT.BORDER);
 					text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -234,4 +263,13 @@ public class PluginPropertiesPage extends WizardPage {
 		}
 	}
 
+	static Collection<String> parseTrimmed(String csvString) {
+		if (csvString == null || csvString.isBlank()) {
+			return List.of(); // empty
+		}
+
+		return Arrays.stream(csvString.split(","))
+			.map(String::trim)
+			.collect(Collectors.toList());
+	}
 }
