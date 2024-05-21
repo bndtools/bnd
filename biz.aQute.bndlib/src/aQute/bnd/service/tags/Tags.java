@@ -29,27 +29,6 @@ public class Tags implements Set<String> {
 		this.internalSet = unmodifiableSortedSet(new TreeSet<>(c));
 	}
 
-	public static Tags of(String... name) {
-		return new Tags(Set.of(name));
-	}
-
-	/**
-	 * Parses a comma-separated string of tags into a Tags object.
-	 *
-	 * @param csvTags
-	 * @param defaultTags a default used when csvTags is null or blank
-	 * @return populated Tags or the passed defaultTags.
-	 */
-	public static Tags parse(String csvTags, Tags defaultTags) {
-		if (csvTags == null || csvTags.isBlank()) {
-			return defaultTags; // default
-		}
-
-		return new Tags(Arrays.stream(csvTags.split(","))
-			.map(String::trim)
-			.collect(Collectors.toCollection(LinkedHashSet::new)));
-	}
-
 	@Override
 	public int size() {
 		return internalSet.size();
@@ -131,14 +110,19 @@ public class Tags implements Set<String> {
 	}
 
 	/**
-	 * @param <T>
 	 * @param tags
-	 * @return <code>true</code> if the passed object matches any of the given
-	 *         tags, otherwise returns <code>false</code>
+	 * @return <code>true</code> if any of the given tags is included in the
+	 *         current set of tags, otherwise returns <code>false</code>. Also
+	 *         if the current set of tags is empty, also <code>true</code> is
+	 *         returned.
 	 */
-	public <T> boolean isIncluded(String... tags) {
+	public boolean includesAny(String... tags) {
 
 		if (isEmpty()) {
+			// this is on purpose to maintain backwards compatibility for
+			// entities which do not handle tags yet and return an empty set. In
+			// other words: if the current set is
+			// empty that means "yes I match any of what you passed".
 			return true;
 		}
 
@@ -151,5 +135,29 @@ public class Tags implements Set<String> {
 		return false;
 	}
 
+	/**
+	 * @param name
+	 * @return a Tags instance with the given tags.
+	 */
+	public static Tags of(String... name) {
+		return new Tags(Set.of(name));
+	}
+
+	/**
+	 * Parses a comma-separated string of tags into a Tags object.
+	 *
+	 * @param csvTags
+	 * @param defaultTags a default used when csvTags is null or blank
+	 * @return populated Tags or the passed defaultTags.
+	 */
+	public static Tags parse(String csvTags, Tags defaultTags) {
+		if (csvTags == null || csvTags.isBlank()) {
+			return defaultTags; // default
+		}
+
+		return new Tags(Arrays.stream(csvTags.split(","))
+			.map(String::trim)
+			.collect(Collectors.toCollection(LinkedHashSet::new)));
+	}
 
 }
