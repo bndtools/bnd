@@ -11,6 +11,8 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.tags.Tagged;
+import aQute.bnd.service.tags.Tags;
 import aQute.bnd.version.Version;
 
 /**
@@ -288,8 +290,5 @@ public interface RepositoryPlugin extends Tagged {
 			});
 	}
 
-	@Override
-	default Tags getTags() {
-		return DEFAULT_REPO_TAGS;
-	}
+
 }

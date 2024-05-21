@@ -1,6 +1,6 @@
 package aQute.bnd.repository.p2.provider;
 
-import static aQute.bnd.service.Tags.parse;
+import static aQute.bnd.service.tags.Tags.parse;
 
 import java.io.Closeable;
 import java.io.File;

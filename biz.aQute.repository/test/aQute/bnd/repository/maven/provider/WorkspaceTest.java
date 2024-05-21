@@ -18,7 +18,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.service.Tagged;
+import aQute.bnd.service.tags.Tagged;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -66,7 +66,8 @@ public class WorkspaceTest {
 		System.out.println(workspace.getBase());
 
 		// check repo tags
-		// repos should have the 'resolve' tag by default if no tag is specified
+		// we expect all repos to be returned for the 'resolve' tag by default
+		// if a repo has no tag specified
 		List<Repository> repos = workspace.getPlugins(Repository.class);
 		List<Repository> resolveRepos = workspace.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
 		assertEquals(repos, resolveRepos);

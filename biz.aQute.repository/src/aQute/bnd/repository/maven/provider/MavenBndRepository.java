@@ -1,7 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
-import static aQute.bnd.service.Tags.parse;
+import static aQute.bnd.service.tags.Tags.parse;
 
 import java.io.Closeable;
 import java.io.File;

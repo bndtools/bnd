@@ -1,4 +1,4 @@
-package aQute.bnd.service;
+package aQute.bnd.service.tags;
 
 import static java.util.Collections.unmodifiableSortedSet;
 
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * categorization and filtering. Typically these entities then implement the
  * {@link Tagged} interface.
  */
-public final class Tags implements Set<String> {
+public class Tags implements Set<String> {
 	private final SortedSet<String>	internalSet;
 
 	public final static Tags	NO_TAGS				= of();
@@ -29,7 +29,7 @@ public final class Tags implements Set<String> {
 		this.internalSet = unmodifiableSortedSet(new TreeSet<>(c));
 	}
 
-	static Tags of(String... name) {
+	public static Tags of(String... name) {
 		return new Tags(Set.of(name));
 	}
 
@@ -130,6 +130,26 @@ public final class Tags implements Set<String> {
 		return internalSet.toString();
 	}
 
+	/**
+	 * @param <T>
+	 * @param tags
+	 * @return <code>true</code> if the passed object matches any of the given
+	 *         tags, otherwise returns <code>false</code>
+	 */
+	public <T> boolean isIncluded(String... tags) {
+
+		if (isEmpty()) {
+			return true;
+		}
+
+		for (String tag : tags) {
+			if (contains(tag)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 
 }

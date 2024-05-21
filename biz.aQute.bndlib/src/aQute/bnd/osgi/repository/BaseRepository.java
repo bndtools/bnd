@@ -26,8 +26,8 @@ import org.osgi.util.promise.PromiseFactory;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.Tagged;
-import aQute.bnd.service.Tags;
+import aQute.bnd.service.tags.Tagged;
+import aQute.bnd.service.tags.Tags;
 
 /**
  * WARNING ! Not tested

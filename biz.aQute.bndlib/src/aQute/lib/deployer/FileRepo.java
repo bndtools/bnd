@@ -1,6 +1,6 @@
 package aQute.lib.deployer;
 
-import static aQute.bnd.service.Tags.parse;
+import static aQute.bnd.service.tags.Tags.parse;
 
 import java.io.Closeable;
 import java.io.File;
@@ -36,9 +36,9 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.Tagged;
-import aQute.bnd.service.Tags;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.service.tags.Tagged;
+import aQute.bnd.service.tags.Tags;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;

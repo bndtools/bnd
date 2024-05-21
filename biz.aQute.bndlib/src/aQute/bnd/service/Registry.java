@@ -1,9 +1,9 @@
 package aQute.bnd.service;
 
-import static aQute.bnd.service.Tagged.matchesTags;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import aQute.bnd.service.tags.Tagged;
 
 /**
  * A registry for objects.
@@ -13,12 +13,13 @@ public interface Registry {
 
 	default <T> List<T> getPlugins(Class<T> c, String... tags) {
 
-		if (tags == null || tags.length == 0) {
+		if (tags.length == 0) {
 			return getPlugins(c);
 		}
 
 		return getPlugins(c).stream()
-			.filter(repo -> matchesTags(repo, tags))
+			.filter(repo -> repo instanceof Tagged taggedRepo && taggedRepo.getTags()
+				.isIncluded(tags))
 			.collect(Collectors.toList());
 	}
 
