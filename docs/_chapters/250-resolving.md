@@ -364,9 +364,9 @@ Currently, the way to do that is to create a __distro__ of the target container.
 
 ## Resolving Multi-Release JAR files
 
-Jar files can contain additional classes targeting different Java Versions (see [JAR File Specification](https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html#multi-release-jar-files)). For the resolver bnd analyses this and provides `synthetic` versions of such a bundle to the resolver. A Bundle `x.y.z`, providing code for JDK 1.8, 9 and 11 will now appear here as `x.y.z__8`, `x.y.z__9` and `x.y.z__11` with the corresponding narrow version ranges for their respective Java version.
+Jar files can contain additional classes targeting different Java Versions (see [JAR File Specification](https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html#multi-release-jar-files)). For the resolver bnd analyses this and provides `synthetic` versions of such a bundle to the resolver. A Bundle `x.y.z`, providing code for JDK 1.8, 9 and 11 will appear as `x.y.z__8`, `x.y.z__9` and `x.y.z__11` with the corresponding narrow version ranges for their respective Java version.
 
-For example the bundle `org.assertj:assertj-core:3.24.1` contains classes for Java 8 and Java 9. In the [Resolution View](https://bndtools.org/manual/resolution-view.html) of bndtools it is show with the following two capabilities.
+For example the bundle `org.assertj:assertj-core:3.24.1` contains classes for Java 8 and Java 9. In the [Resolution View](https://bndtools.org/manual/resolution-view.html) of bndtools it is shown with the following two capabilities for each Java version:
 
 ```
 FROM: assertj-core__8 version=3.24.1 type=bnd.synthetic
