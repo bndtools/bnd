@@ -362,6 +362,28 @@ With openliberty, WebSphere Liberty, Karaf, Liferay, etc. you are deploying into
 
 Currently, the way to do that is to create a __distro__ of the target container. This __distro__ is a JAR file which provides all the capabilities that the target container provides at one point in time. It includes the capabilities of all currently installed bundles. It also contains all capabilities provided by the system bundle which may have been configured by framework properties. It is an aggregate view of all the capabilities available in the framework contained in a single JAR.
 
+## Resolving Multi-Release JAR files
+
+Jar files can contain additional classes targeting different Java Versions (see [JAR File Specification](https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html#multi-release-jar-files)). For the resolver bnd analyses this and provides `synthetic` versions of such a bundle to the resolver. A Bundle `x.y.z`, providing code for JDK 1.8, 9 and 11 will now appear here as `x.y.z__8`, `x.y.z__9` and `x.y.z__11` with the corresponding narrow version ranges for their respective Java version.
+
+For example the bundle `org.assertj:assertj-core:3.24.1` contains classes for Java 8 and Java 9. In the [Resolution View](https://bndtools.org/manual/resolution-view.html) of bndtools it is show with the following two capabilities.
+
+```
+FROM: assertj-core__8 version=3.24.1 type=bnd.synthetic
+bnd.multireleaseCapability from a supporting resource 0 part of Optional[assertj-core version=3.24.1]
+;
+	bnd.multirelease = assertj-core;
+	version = 3.24.1
+```
+
+```
+FROM: assertj-core__9 version=3.24.1 type=bnd.synthetic
+bnd.multireleaseCapability from a supporting resource 1 part of Optional[assertj-core version=3.24.1]
+;
+	bnd.multirelease = assertj-core;
+	version = 3.24.1
+```
+
 ### How do you create a distro?
 
 1. Install the [bnd remote agent bundle][1] in the target container runtime. This will automatically open a local socket on a default port used by the bnd cli next.
