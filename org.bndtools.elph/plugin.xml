@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <category
+            id="org.bndtools.elph"
+            name="Elph">
+      </category>
+      <wizard
+            category="org.bndtools.elph"
+            class="org.bndtools.elph.importer.ImportLibertyProjectsWizard"
+            icon="img/OL_logomark_400.png"
+            id="org.bndtools.elph.importer.wizard"
+            name="Import Liberty Projects">
+      </wizard>
+   </extension>
+
+</plugin>
