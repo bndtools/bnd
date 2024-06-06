@@ -362,9 +362,27 @@ With openliberty, WebSphere Liberty, Karaf, Liferay, etc. you are deploying into
 
 Currently, the way to do that is to create a __distro__ of the target container. This __distro__ is a JAR file which provides all the capabilities that the target container provides at one point in time. It includes the capabilities of all currently installed bundles. It also contains all capabilities provided by the system bundle which may have been configured by framework properties. It is an aggregate view of all the capabilities available in the framework contained in a single JAR.
 
-## Resolving Multi-Release JAR files
+## Resolving Multi-Release JAR files (MRJ)
 
-Jar files can contain additional classes targeting different Java Versions (see [JAR File Specification](https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html#multi-release-jar-files)). For the resolver bnd analyses this and provides `synthetic` versions of such a bundle to the resolver. A Bundle `x.y.z`, providing code for JDK 1.8, 9 and 11 will appear as `x.y.z__8`, `x.y.z__9` and `x.y.z__11` with the corresponding narrow version ranges for their respective Java version.
+A Multi-Release JAR (MRJ) has directories in `META-INF/versions/<release>` (see [JAR File Specification](https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html#multi-release-jar-files)). When the JAR is deployed on a VM with a given release R, that VM will preferentially load file resource from its own release R and then down to the main area. This means that a JAR can have different content depending on the VM it is deployed. For OSGi, this means that a bundle resource can have different requirements based on the runtime VM. The capabilities are the same since the public API must not change.
+
+The problem is that this makes some requirements dependent on the VM. To model this, we introduced synthetic resource for each supported VM release that can only resolve on that release and when the release specific requirements of the bundle can be resolved.
+
+This is only about modeling a JAR as a resource in an OSGi repository. Nothing is changed in the original JAR.
+
+So we first treat the _multi release_ bundle as any other bundle when we turn it into a resource, the release directories are ignored. If there are none, we're actually done.
+
+Otherwise, we add a single requirement to a `bnd.multirelease` capability unique for this bundle. This namespace only has the properties `bnd.multirelease=<bsn>` and `version=<version>`. By requiring another resource, we can generate a synthetic resource for each VM release that the bundle supports. This is depicted here, where mrj is `bnd.multirelease`.
+
+<img style="width: 600px" src="{{ '/img/resolving-mrj.png' | prepend:site.baseurl }}">
+
+
+For the `osgi.identity` capability, we have to create a resource name that is unique. To keep it readable, the name is the `original-bsn + "__" + release`. The version is the original bundle's version. We introduced a new type for these synthetic resources: `bnd.synthetic`.
+
+A Bundle `x.y.z`, providing code for JDK 1.8, 9 and 11 will appear as `x.y.z__8`, `x.y.z__9` and `x.y.z__11` with the corresponding narrow version ranges for their respective Java version.
+
+We also add the requirements of the bundle if it would run on that release.
+The synthetic resources are added to the same repository of the original bundle
 
 For example the bundle `org.assertj:assertj-core:3.24.1` contains classes for Java 8 and Java 9. In the [Resolution View](https://bndtools.org/manual/resolution-view.html) of bndtools it is shown with the following two capabilities for each Java version:
 
@@ -383,6 +401,7 @@ bnd.multireleaseCapability from a supporting resource 1 part of Optional[assertj
 	bnd.multirelease = assertj-core;
 	version = 3.24.1
 ```
+
 
 ### How do you create a distro?
 
