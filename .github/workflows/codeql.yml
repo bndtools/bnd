@@ -48,7 +48,7 @@ jobs:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Checkout repository
-      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
     - name: Set up Java ${{ matrix.java }}
       uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9
       with:
