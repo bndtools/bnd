@@ -57,7 +57,7 @@ jobs:
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@db19848a5fa7950289d3668fb053140cf3028d43
     - name: Initialize CodeQL Analysis
-      uses: github/codeql-action/init@2e230e8fe0ad3a14a340ad0815ddb96d599d2aff
+      uses: github/codeql-action/init@530d4feaa9c62aaab2d250371e2061eb7a172363
       with:
         languages: 'java'
     - name: Build for CodeQL Analysis
@@ -65,4 +65,4 @@ jobs:
       run: |
         ./.github/scripts/codeql-build.sh
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@2e230e8fe0ad3a14a340ad0815ddb96d599d2aff
+      uses: github/codeql-action/analyze@530d4feaa9c62aaab2d250371e2061eb7a172363
