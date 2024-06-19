@@ -47,6 +47,7 @@ There are two possible options. The path/URL starts with a:
 	# Read several
 	-include first.bnd, second.properties
 
-	# Don't overwrite any existing properties
+	# Don't overwrite any existing properties (my.prop, will not be overwritten by my.prop in no.overwrite)
+	my.prop = don't overwrite
 	-include ~no.overwrite
 
