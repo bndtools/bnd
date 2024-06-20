@@ -8,7 +8,10 @@ import org.eclipse.ui.console.TextConsole;
 
 /**
  * Provides same extremely rudimentary support for ansi codes. So far only clear
+ *
+ * @deprecated Not used anymore Eclipse already supports ANSI now
  */
+@Deprecated
 public class AnsiHandler implements IPatternMatchListener {
 
 	private TextConsole console;
