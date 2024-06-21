@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.bnd.service.tags.Tags.parse;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -271,6 +272,7 @@ public class BndPomRepository extends BaseRepository
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		configuration = Converter.cnv(PomConfiguration.class, map);
+		super.setTags(parse(configuration.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -506,5 +508,6 @@ public class BndPomRepository extends BaseRepository
 		return Archive.valueOf(from)
 			.getOther(Archive.JAR_EXTENSION, Archive.SOURCES_CLASSIFIER);
 	}
+
 
 }

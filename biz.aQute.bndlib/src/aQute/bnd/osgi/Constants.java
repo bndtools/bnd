@@ -258,6 +258,13 @@ public interface Constants {
 
 	String		REMOTEWORKSPACE								= "-remoteworkspace";
 
+	/**
+	 * tag for repos which should be used for Resolving bundles. This is also
+	 * the default tag for all repos which not have specified tags (also for bc
+	 * reasons)
+	 */
+	String		REPOTAGS_RESOLVE							= "resolve";
+
 	String		RUNBLACKLIST								= "-runblacklist";
 	String		RUNREQUIRES									= "-runrequires";
 	String		RUNEE										= "-runee";

@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -369,6 +370,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 					name = repo.toString();
 				}
 				repoNameMap.put(name, repo);
+
 			}
 
 			// Create the result list
@@ -402,12 +404,12 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		List<Repository> allRepos;
 		if (project != null && !project.isStandalone()) {
 			allRepos = project.getWorkspace()
-				.getPlugins(Repository.class);
+				.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
 			allRepos.removeIf(WorkspaceRepositoryMarker.class::isInstance);
 			WorkspaceResourcesRepository wr = new WorkspaceResourcesRepository(project.getWorkspace());
 			allRepos.add(wr);
 		} else {
-			allRepos = registry.getPlugins(Repository.class);
+			allRepos = registry.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
 		}
 		return allRepos;
 	}

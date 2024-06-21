@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.bnd.service.tags.Tags.parse;
 
 import java.io.Closeable;
 import java.io.File;
@@ -773,6 +774,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		configuration = Converter.cnv(Configuration.class, map);
 		name = configuration.name("Maven");
 		localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
+		super.setTags(parse(configuration.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -1074,4 +1076,5 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	public boolean isRemote() {
 		return remote;
 	}
+
 }

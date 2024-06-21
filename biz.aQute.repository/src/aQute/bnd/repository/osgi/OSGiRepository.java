@@ -1,5 +1,7 @@
 package aQute.bnd.repository.osgi;
 
+import static aQute.bnd.service.tags.Tags.parse;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +67,8 @@ public class OSGiRepository extends BaseRepository
 		String cache();
 
 		String name();
+
+		String tags();
 
 		int poll_time(int pollTimeInSecs);
 	}
@@ -296,6 +300,8 @@ public class OSGiRepository extends BaseRepository
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		config = Converter.cnv(Config.class, map);
+
+		super.setTags(parse(config.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -410,4 +416,5 @@ public class OSGiRepository extends BaseRepository
 				.concat(s);
 		}
 	}
+
 }

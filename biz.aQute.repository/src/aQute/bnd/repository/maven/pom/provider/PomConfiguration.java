@@ -93,4 +93,9 @@ public interface PomConfiguration {
 	 */
 	boolean dependencyManagement(boolean deflt);
 
+	/**
+	 * @return a comma separated list of tags.
+	 */
+	String tags();
+
 }
