@@ -19,6 +19,8 @@ people that were willing to spread the gospel around OSGi/bndtools.
 Instead, we developed _fragment_ templates. A fragment models one aspect of a workspace and is maintained in Github repository, but one repository can hold many fragments. Multiple template fragments can be combined by the end-user to enrich the workspace with various aspects.
 During workspace creation there is a wizard where one can select template fragments via checkboxes.
 
+<img src="{{'img/template-fragments.png'}}" width="100%">
+
 The [workspace](/chapters/123-tour-workspace.html) is already prepared for this model of fragments. The [merged instructions][2] mean that 
 we can extend the properties and instructions from many different sources. However, the most important
 feature here is the `cnf/ext` folder. Any `bnd` or special fragment file placed in this folder will automatically
