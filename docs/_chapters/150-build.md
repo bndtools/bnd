@@ -22,7 +22,7 @@ of the workspace. They can have the following extensions:
 * `.pmvn` – An index file for a [Maven Bnd Repository](plugins/maven.html). The first lines can contain properties for this plugin in the format of `# key = value`, e.g. `# name = OSGi R8`. 
 * `.pobr` – An OSGi Repository file in XML.
 
-The `ext` directory is a convenient way to add add reusable components. See [template fragments](620-template-fragments.html] how they can be used to manage workspaces. When files change in this directory the workspace will be reloaded.
+The `ext` directory is a convenient way to add add reusable components. See [template fragments](620-template-fragments.html) how they can be used to manage workspaces. When files change in this directory the workspace will be reloaded.
 
 To cache some intermediate files, bndlib will create a `cnf/cache/` directory, this file should not be under source control. E.g. in Git it should be defined in the `.gitignore` file. 
 
