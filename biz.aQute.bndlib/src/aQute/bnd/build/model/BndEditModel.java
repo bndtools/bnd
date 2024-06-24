@@ -1003,17 +1003,26 @@ public class BndEditModel {
 	 * possible to specify multiple plugins under a single key, thus it is a
 	 * list.
 	 *
-	 * @return a map with a property keys and their plugins.
+	 * @return a map with a property keys and their plugins ( macros like (${.})
+	 *         are returned not expanded)
 	 */
 	public Map<String, List<BndEditModelHeaderClause>> getPluginsProperties() {
-		return getProperties(Constants.PLUGIN);
+		return getPropertiesMapInternal(Constants.PLUGIN, false);
 	}
 
-	private Map<String, List<BndEditModelHeaderClause>> getProperties(String stem) {
+
+	/**
+	 * @param stem
+	 * @param expandMacros controls whether or not macros like (${.}) will be
+	 *            expanded or not. In the UI when editing the model, macros
+	 *            should not be expanded usually (false).
+	 * @return
+	 */
+	private Map<String, List<BndEditModelHeaderClause>> getPropertiesMapInternal(String stem, boolean expandMacros) {
 		try {
 
 			Map<String, List<BndEditModelHeaderClause>> map = new LinkedHashMap<>();
-			Processor processor = getProperties();
+			Processor processor = getPropertiesInternal(expandMacros);
 			Set<String> localKeys = processor.getPropertyKeys(false);
 			List<PropertyKey> candidates = processor.getMergePropertyKeys(stem);
 
@@ -1040,7 +1049,7 @@ public class BndEditModel {
 	}
 
 	/**
-	 * Updates and removes plugins.
+	 * Updates and removes plugins (macros like (${.}) are not expanded).
 	 *
 	 * @param plugins
 	 * @param pluginPropKeysToRemove the property keys to remove (not modified,
@@ -1053,7 +1062,7 @@ public class BndEditModel {
 
 	private void setProperties(String stem, Map<String, List<BndEditModelHeaderClause>> map,
 		Collection<String> propKeysToRemove) {
-		Map<String, List<BndEditModelHeaderClause>> old = getProperties(stem);
+		Map<String, List<BndEditModelHeaderClause>> old = getPropertiesMapInternal(stem, false);
 
 		map.entrySet()
 			.stream()
@@ -1404,6 +1413,18 @@ public class BndEditModel {
 
 	public Processor getProperties() throws Exception {
 
+		return getPropertiesInternal(true);
+	}
+
+
+	/**
+	 * @param expandMacros set to <code>true</code> if macros e.g. '${.}' should
+	 *            be expanded. In the UI when editing the model, macros should
+	 *            not be expanded usually (false).
+	 * @return a processor that reflects the actual processors setup
+	 * @throws IOException
+	 */
+	private Processor getPropertiesInternal(boolean expandMacros) throws IOException {
 		UTF8Properties currentProperties = new UTF8Properties();
 		currentProperties.putAll(properties);
 		if (!changesToSave.isEmpty()) {
@@ -1443,13 +1464,19 @@ public class BndEditModel {
 				if (!inheritedKeysWithoutOwner.contains(key))
 					return deflt;
 
-				return super.getProperty(key, deflt, separator);
+				if (expandMacros) {
+					return super.getProperty(key, deflt, separator);
+				} else {
+					return super.getUnprocessedProperty(key, deflt);
+				}
 			}
 		};
 		dummy.setBase(owner.getBase());
 		dummy.setPropertiesFile(owner.getPropertiesFile());
 
-		currentProperties = currentProperties.replaceHere(dummy.getBase());
+		if (expandMacros) {
+			currentProperties = currentProperties.replaceHere(dummy.getBase());
+		}
 		dummy.setProperties(currentProperties);
 		return dummy;
 	}
