@@ -1,7 +1,11 @@
 package bndtools.launch.sourcelookup.containers;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,6 +24,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Run;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.SupplierWithException;
 
 public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
@@ -82,8 +87,9 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 	@Override
 	protected ISourceContainer[] createSourceContainers() {
 		Set<String> projectsAdded = new HashSet<>();
+		Set<ISourceContainer> additionalSourceContainers = new HashSet<>();
 		try {
-			return directiveGetter.get()
+			ISourceContainer[] array = directiveGetter.get()
 				.stream()
 				.map(container -> {
 					if (container.getType() == TYPE.PROJECT) {
@@ -94,6 +100,23 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 								.getRoot()
 								.getProject(targetProjName);
 							if (targetProj != null) {
+
+								try {
+									Collection<Container> buildpath = container.getProject()
+										.getBuildpath();
+									for (Container bp : buildpath) {
+										File file = bp.getFile();
+										if (file.getName()
+											.endsWith(".jar")) {
+											additionalSourceContainers
+												.add(new ExternalArchiveSourceContainer(file.toString(), false));
+										}
+
+									}
+								} catch (Exception e) {
+									throw Exceptions.duck(e);
+								}
+
 								IJavaProject targetJavaProj = JavaCore.create(targetProj);
 								return new JavaProjectSourceContainer(targetJavaProj);
 							}
@@ -110,6 +133,11 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 				})
 				.filter(Objects::nonNull)
 				.toArray(ISourceContainer[]::new);
+
+			List<ISourceContainer> asList = new ArrayList<>(Arrays.asList(array));
+			asList.addAll(additionalSourceContainers);
+			return asList.toArray(ISourceContainer[]::new);
+
 		} catch (Exception e) {
 			logger.logError("Error querying Bnd dependency source containers.", e);
 		}
