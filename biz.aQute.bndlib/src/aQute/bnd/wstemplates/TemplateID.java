@@ -26,7 +26,7 @@ public record TemplateID(String organisation, String repository, String path, St
 			g("path", set(lit("/"), SEGMENT_P)), opt(lit("/"))),
 		opt(lit("#"), g("branch", REF_P)) //
 	);
-	final static URI ROOT = URI.create("https://github.com/bndtools/workspace#master");
+	final static URI ROOT = URI.create("https://github.com/bndtools/bndtools.workspace.min#master");
 
 	@Override
 	public int compareTo(TemplateID o) {
@@ -58,8 +58,9 @@ public record TemplateID(String organisation, String repository, String path, St
 
 	/**
 	 * Parse the id into a Template ID. The default is
-	 * `bndtools/workspace#master`. The missing fields are taken from this
-	 * default. If the id does not match the pattern, it is assumed to be a URI.
+	 * `bndtools/bndtools.workspace.min#master`. The missing fields are taken
+	 * from this default. If the id does not match the pattern, it is assumed to
+	 * be a URI.
 	 *
 	 * @param id id or uri
 	 * @return a TemplateId
