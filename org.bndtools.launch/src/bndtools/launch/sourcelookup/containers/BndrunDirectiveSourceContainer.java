@@ -1,6 +1,5 @@
 package bndtools.launch.sourcelookup.containers;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -120,23 +119,11 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 										// interested in bundles added via
 										// '-includeresource:
 										// ${repo;bsn;latest}'
-										if (TYPE.REPO != bp.getType()) {
-											continue;
-										}
-
-										File file = bp.getFile();
-
-										if (file == null) {
-											// file might not have finished
-											// downloading or an error
-											continue;
-										}
-
-										if (file.getName()
-											.endsWith(".jar")) {
+										if (TYPE.REPO == bp.getType()) {
 											additionalSourceContainers
-												.add(new ExternalArchiveSourceContainer(file.toString(), false));
+												.add(new BundleSourceContainer(bp));
 										}
+
 
 									}
 								} catch (Exception e) {
