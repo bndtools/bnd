@@ -9,3 +9,7 @@ Archive
 /generated/
 /install-jdk.sh
 .to
+.idea
+.settings
+.flattened-pom.xml
+target/

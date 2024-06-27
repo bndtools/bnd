@@ -53,12 +53,12 @@ jobs:
       dist-bundles: Dist_Bundles_JDK${{ matrix.java }}_${{ matrix.os }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4
+      uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
-      uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
     - name: Set up Java ${{ matrix.java }}
       uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9
       with:
@@ -67,7 +67,7 @@ jobs:
           8
           ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@db19848a5fa7950289d3668fb053140cf3028d43
+      uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda
     - name: Build
       id: build
       run: |
@@ -95,12 +95,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4
+      uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
-      uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
     - name: Set up Java 8 + ${{ matrix.java }}
       uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9
       with:
@@ -109,7 +109,7 @@ jobs:
           8
           ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@db19848a5fa7950289d3668fb053140cf3028d43
+      uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda
     - name: Download dist/bundles
       uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85
       with:

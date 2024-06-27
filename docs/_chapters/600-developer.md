@@ -4,7 +4,6 @@ layout: default
 ---
 
 
-
 ## API
 It is quite easy to use bnd from Java, you only need to include biz.aQute.bndlib on your class path. This chapter shows you some samples of how to use bndlib.
 
@@ -66,3 +65,9 @@ If no such resource is found, bnd will look in the -make instruction. This instr
 The first name part of the clause is matched against the unfound resource. All plugins are called sequentially until one returns non-null. The arguments on the -make clause are given as parameters to the make plugin. Normally all Make Plugins should verify the type field.
 
 bnd has a bnd and a copy Make Plugin.
+
+
+## Workspace Template Fragments
+
+If, for example, you created a library for bnd and want to make it easy for the user to setup his functionality have a look at [template fragments](620-template-fragments.html).
+

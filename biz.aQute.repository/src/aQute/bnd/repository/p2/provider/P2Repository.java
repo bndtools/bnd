@@ -1,5 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
+import static aQute.bnd.service.tags.Tags.parse;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -108,6 +110,7 @@ public class P2Repository extends BaseRepository
 	public void setProperties(Map<String, String> map) throws Exception {
 		this.config = Converter.cnv(P2Config.class, map);
 		this.name = this.config.name("p2-" + config.url());
+		super.setTags(parse(config.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -192,5 +195,6 @@ public class P2Repository extends BaseRepository
 	public String title(Object... target) throws Exception {
 		return null;
 	}
+
 
 }

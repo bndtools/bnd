@@ -178,7 +178,9 @@ public abstract class AbstractGenerateMojo extends AbstractMojo {
 		if (currentProject == null) {
 			return;
 		}
-		files.add(currentProject.getFile());
+		if (currentProject.getFile() != null) {
+			files.add(currentProject.getFile());
+		}
 		addProject(currentProject.getParent(), files);
 	}
 

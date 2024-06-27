@@ -76,4 +76,9 @@ public interface Configuration {
 	 * Extensions for files that contain multiple JARs
 	 */
 	String multi();
+
+	/**
+	 * @return a comma separated list of tags.
+	 */
+	String tags();
 }

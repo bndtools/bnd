@@ -43,21 +43,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4
+      uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Checkout repository
-      uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
     - name: Set up Java ${{ matrix.java }}
       uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@db19848a5fa7950289d3668fb053140cf3028d43
+      uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda
     - name: Initialize CodeQL Analysis
-      uses: github/codeql-action/init@cdcdbb579706841c47f7063dda365e292e5cad7a
+      uses: github/codeql-action/init@23acc5c183826b7a8a97bce3cecc52db901f8251
       with:
         languages: 'java'
     - name: Build for CodeQL Analysis
@@ -65,4 +65,4 @@ jobs:
       run: |
         ./.github/scripts/codeql-build.sh
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@cdcdbb579706841c47f7063dda365e292e5cad7a
+      uses: github/codeql-action/analyze@23acc5c183826b7a8a97bce3cecc52db901f8251

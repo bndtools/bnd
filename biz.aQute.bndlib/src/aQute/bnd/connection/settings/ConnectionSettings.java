@@ -66,6 +66,7 @@ public class ConnectionSettings {
 		.getUserHomeBnd("connection-settings.xml")
 		.getAbsolutePath();
 	private static final String					CONNECTION_SETTINGS				= "-connection-settings";
+	private final static String					HELP_URL						= "https://bnd.bndtools.org/instructions/connection-settings.html";
 	private final Processor						processor;
 	private final HttpClient					client;
 	private final List<ServerDTO>				servers							= new ArrayList<>();
@@ -135,6 +136,11 @@ public class ConnectionSettings {
 			parse(file);
 			return;
 		}
+
+		logger.info("[ConnectionSettings] Read from property: {} (See {} for more information)", CONNECTION_SETTINGS,
+			HELP_URL);
+		processor.trace("[ConnectionSettings] Read from property: %s  (See %s for more information)",
+			CONNECTION_SETTINGS, HELP_URL);
 
 		List<File> tmps = new ArrayList<>();
 		try {
@@ -467,7 +473,16 @@ public class ConnectionSettings {
 		try {
 			assert file != null : "File must be set";
 			assert file.isFile() : "File must be a file and exist";
-			parsed.add(file.getAbsolutePath());
+			String absolutePath = file.getAbsolutePath();
+			parsed.add(absolutePath);
+
+			logger.info(
+				"[ConnectionSettings] Read from file: {} (See {} for more information)", absolutePath,
+				HELP_URL);
+			processor.trace(
+				"[ConnectionSettings] Read from file: %s  (See %s for more information)", absolutePath,
+				HELP_URL);
+
 			SettingsParser parser = new SettingsParser(file);
 
 			SettingsDTO settings = parser.getSettings();
