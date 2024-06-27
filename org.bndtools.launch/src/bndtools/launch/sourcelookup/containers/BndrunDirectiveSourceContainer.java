@@ -1,13 +1,13 @@
 package bndtools.launch.sourcelookup.containers;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -23,6 +23,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.SupplierWithException;
@@ -93,7 +94,8 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 				.stream()
 				.map(container -> {
 					if (container.getType() == TYPE.PROJECT) {
-						String targetProjName = container.getProject()
+						Project project = container.getProject();
+						String targetProjName = project
 							.getName();
 						if (projectsAdded.add(targetProjName)) {
 							IProject targetProj = ResourcesPlugin.getWorkspace()
@@ -101,11 +103,35 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 								.getProject(targetProjName);
 							if (targetProj != null) {
 
+								// also add all REPO dependencies of the
+								// -buildpath
+								// because they might contain dependencies via
+								// -includeresource: ${repo;bsn;latest};
+								// lib:=true
+								// which would otherwise not be considered for
+								// source lookup during debugging
 								try {
-									Collection<Container> buildpath = container.getProject()
+									Collection<Container> buildpath = project
 										.getBuildpath();
+
 									for (Container bp : buildpath) {
+
+										// only consider REPO because we are
+										// interested in bundles added via
+										// '-includeresource:
+										// ${repo;bsn;latest}'
+										if (TYPE.REPO != bp.getType()) {
+											continue;
+										}
+
 										File file = bp.getFile();
+
+										if (file == null) {
+											// file might not have finished
+											// downloading or an error
+											continue;
+										}
+
 										if (file.getName()
 											.endsWith(".jar")) {
 											additionalSourceContainers
@@ -134,9 +160,10 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 				.filter(Objects::nonNull)
 				.toArray(ISourceContainer[]::new);
 
-			List<ISourceContainer> asList = new ArrayList<>(Arrays.asList(array));
-			asList.addAll(additionalSourceContainers);
-			return asList.toArray(ISourceContainer[]::new);
+			LinkedHashSet<ISourceContainer> set = Stream.of(array)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+			set.addAll(additionalSourceContainers);
+			return set.toArray(ISourceContainer[]::new);
 
 		} catch (Exception e) {
 			logger.logError("Error querying Bnd dependency source containers.", e);
