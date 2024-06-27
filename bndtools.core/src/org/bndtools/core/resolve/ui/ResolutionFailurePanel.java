@@ -137,6 +137,7 @@ public class ResolutionFailurePanel {
 			// kind of silly
 			//
 			String diagnostic = ResolveProcess.format(resolutionException, false);
+			diagnostic += "\n\nresolvedebug log: " + resolutionResult.getLog();
 
 			processingErrorsText.setText(diagnostic);
 			sectUnresolved.setExpanded(true);

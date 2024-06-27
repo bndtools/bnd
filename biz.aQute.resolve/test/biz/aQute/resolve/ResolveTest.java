@@ -2,6 +2,7 @@ package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -762,6 +763,34 @@ public class ResolveTest {
 				n++;
 			}
 			System.out.println(dot.render());
+		}
+	}
+
+	/**
+	 * This test triggers a Uses constraint violation. And we want to check that
+	 * it gets logged via
+	 * {@link InternalResolverLogger#logUsesConstraintViolation(Resource, org.apache.felix.resolver.ResolutionError)}
+	 */
+	@Test
+	public void testResolveUsesConstraintErrorLogging() throws Exception {
+		File f = IO.getFile("testdata/repo-usesconstrainterror/run.bndrun");
+
+		try (Run run = Run.createRun(null, f)) {
+
+			RunResolution resolution = RunResolution.resolve(run, null);
+			assertFalse(resolution.isOK());
+			assertNotNull(resolution.exception);
+			System.out.println(resolution.exception);
+			assertTrue(resolution.exception.getMessage()
+				.contains(
+					"Uses constraint violation. Unable to resolve resource BundleC [BundleC version=1.0.0.SNAPSHOT] "
+						+ "because it is exposed to package 'com.example.util.internal' from resources "
+						+ "BundleA2 [BundleA2 version=1.0.0.SNAPSHOT] and "
+						+ "BundleA [BundleA version=1.0.0.SNAPSHOT] via two dependency chains."),
+				resolution.exception.getMessage());
+
+			// Log level set via -resolvedebug: 1 in run.bndrun
+			assertTrue(resolution.log.startsWith("Log level:1"));
 		}
 	}
 

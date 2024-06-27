@@ -266,7 +266,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		String version = bsn.getValue()
 			.getVersion();
 
-		log.log(LogService.LOG_INFO, "Using frameowork " + name + ";" + version);
+		log.log(LogService.LOG_INFO, "Using framework " + name + ";" + version);
 
 		if ("none".equals(name))
 			return;

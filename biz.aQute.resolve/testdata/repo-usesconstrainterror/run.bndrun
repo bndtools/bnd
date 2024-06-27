@@ -1,0 +1,7 @@
+-standalone: ${.}/index.xml
+-runfw: org.apache.felix.framework
+-runee: JavaSE-17
+-resolvedebug: 1
+-runrequires: \
+	bnd.identity;id=BundleC,\
+	bnd.identity;id=BundleB
