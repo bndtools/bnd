@@ -24,7 +24,6 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.SupplierWithException;
 
 public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
@@ -119,7 +118,7 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 										// interested in bundles added via
 										// '-includeresource:
 										// ${repo;bsn;latest}'
-										if (TYPE.REPO == bp.getType()) {
+										if (bp != null && TYPE.REPO == bp.getType()) {
 											additionalSourceContainers
 												.add(new BundleSourceContainer(bp));
 										}
@@ -127,7 +126,11 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 
 									}
 								} catch (Exception e) {
-									throw Exceptions.duck(e);
+									// just log to avoid that
+									// exceptions interrupt everything else
+									logger.logError("SourceContainers: Error adding buildpath dependencies of bundle "
+										+ targetProjName,
+										e);
 								}
 
 								IJavaProject targetJavaProj = JavaCore.create(targetProj);
