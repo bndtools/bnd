@@ -14,3 +14,4 @@ The following properties are supported:
 |`location`  | The local filesystem directory.           |   Yes. |
 |`readonly`  |Whether the repository should be read-only,|  No. Default: false |
 |            |i.e. disabled for editing from Bndtools.| |
+| `tags`           | Comma separated list of tags. (e.g. resolve, baseline, release) Use the &lt;&lt;EMPTY&gt;&gt; placeholder for no tags. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.| No
