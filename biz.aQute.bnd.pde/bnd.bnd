@@ -1,0 +1,22 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+-buildpath: \
+	aQute.libg,\
+	biz.aQute.bndlib;version=snapshot,\
+	osgi.annotation
+	
+-conditionalpackage:\
+	aQute.lib.*,\
+	aQute.libg.*
+
+-testpath: \
+	${junit},\
+	org.eclipse.osgi,\
+	biz.aQute.bnd.util,\
+	slf4j.api,\
+	slf4j.simple
+	
+-builderignore: testresources
+
+Export-Package: biz.aQute.bnd.pde.launch2bndrun
