@@ -14,6 +14,13 @@ The following directive is defined for all plugin:
 
 ||`path:` ||A path to the jar file that contains the plugin. The directory/jar at that location is placed on your classpath for that plugin.||
 
+## Tagging of repository plugins
+
+Repository plugins are usually referenced in `cnf/build.bnd` and implement the [Tagged](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/service/tags/Tagged.java) interface. 
+
+The `tags` property of repositories' configuration allows to add a comma separated list of tags to a repository. These tags will be used for filtering a list of repositories. 
+For example the [-runrepos](/instructions/runrepos.html) instruction in `.bndrun` considers only those repositories for resolution which have either the `resolve` tag or no `tags` property defined. This allows including and excluding repositories based on their tags.
+
 ## Index
 
 <div>

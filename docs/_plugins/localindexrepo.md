@@ -42,3 +42,7 @@ For example, to generate both R5 and OBR formats specify `type=R5|OBR`.
 		pretty = true; \
 		local = ${build}/release
 ```
+
+## Tagging
+
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.

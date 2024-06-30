@@ -30,5 +30,6 @@ It can take the following configuration properties:
  	name = EMF
 ```
 
+## Tagging
 
-
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.

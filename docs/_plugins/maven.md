@@ -151,6 +151,10 @@ In Maven, revisions that end in `-SNAPSHOT` are treated special in many places. 
 
 The Maven Bnd Repository uses the bnd Http Client. See the [-connection-settings] instruction for how to set the proxy and authentication information.
 
+## Tagging
+
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.
+
 ## IDEs
 
 The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.

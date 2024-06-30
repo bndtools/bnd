@@ -96,6 +96,10 @@ If you use a remote repository then you must configure the credentials. This is 
 
 Notice that the id must match the scheme, the host, and the port if not the default port for the scheme.
 
+## Tagging
+
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.
+
 ## IDEs
 
 The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.
