@@ -26,8 +26,53 @@ This includes exactly the three repositories.
 - remove / ommit the `-runrepos` instruction
 - give all repositories either no tag or the tag `resolve`
 
+e.g. a `.bndrun` file without  `-runrepos`  would include the following repos in the resolution:
+
+
+```
+aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        tags = "resolve"; \
+        name="Maven Central A";\
+        releaseUrl="${mavencentral}";\
+        snapshotUrl="${ossrh}";\
+        index="${.}/central.mvn";\
+        readOnly=true,\
+```
+
+because it has the `resolve` tag
+
+and also
+
+
+```
+aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name="Maven Central B";\
+        releaseUrl="${mavencentral}";\
+        snapshotUrl="${ossrh}";\
+        index="${.}/central.mvn";\
+        readOnly=true,\
+```
+
+because there is no tags at all.
+
 **Example 3: include all repos, except some**
 
 - remove / ommit the `-runrepos` instruction
 - give all repositories either no tag or the tag `resolve` which should be included
 - give the repo which should be excluded the tag `<<EMTPY>>` or something else than `resolve` e.g. `foobar`
+
+For example the following repository definition in `/cnf/build.bnd` would be excluded:
+
+```
+aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        tags = "<<EMPTY>>"; \
+        name="Maven Central";\
+        releaseUrl="${mavencentral}";\
+        snapshotUrl="${ossrh}";\
+        index="${.}/central.mvn";\
+        readOnly=true,\
+```
+
+because it has a `<<EMPTY>>` tag (and thus no `resolve` tag).
+
+An example use case is exclude the baseline-repository from resolution. In the case, you would not add the `resolve` tag to the baseline-repo, and then it won't be considered for resolution in a `.bndrun`.
