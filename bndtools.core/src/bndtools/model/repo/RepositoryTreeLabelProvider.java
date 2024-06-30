@@ -1,5 +1,7 @@
 package bndtools.model.repo;
 
+import java.util.stream.Collectors;
+
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.icons.Icons.IconBuilder;
 import org.bndtools.utils.jface.HyperlinkStyler;
@@ -12,6 +14,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.tags.Tags;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 	implements org.eclipse.jface.viewers.ILabelProvider {
@@ -46,6 +49,12 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 					if (name == null)
 						name = repo.getName();
 					label.append(name);
+
+					Tags tags = repo.getTags();
+					if (!tags.isEmpty()) {
+						label.append(" " + tags.stream()
+							.collect(Collectors.joining(",")), StyledString.QUALIFIER_STYLER);
+					}
 
 					IconBuilder ib = Icons.builder(repo.getIcon());
 					if (repo.canWrite()) {
