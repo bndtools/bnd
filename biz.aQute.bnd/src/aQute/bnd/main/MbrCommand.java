@@ -177,7 +177,7 @@ public class MbrCommand extends Processor {
 
 		List<MavenBndRepository> repositories = new ArrayList<>();
 		for (int n : repo) {
-			System.out.println("repo # =" + n);
+			System.out.println("repo # =§" + n);
 			repositories.add(this.repositories.get(n));
 		}
 		return repositories;

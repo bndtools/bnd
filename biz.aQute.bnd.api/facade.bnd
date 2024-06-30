@@ -1,0 +1,7 @@
+Bundle-Description: \
+  Provides the service API specification to create constant objects that get dynamically bound to a \
+  dynamic backing service when it is present. Primary purpose was to interact with Eclipse Extension \
+  Points but the idea should work in any environment that is ignorant of dynamics and is oblivious of \
+  life cycles.
+  
+-includepackage biz.aQute.bnd.facade.api

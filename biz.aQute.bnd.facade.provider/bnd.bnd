@@ -1,0 +1,17 @@
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+Bundle-Description: \
+  Provides an implementation of the Facade Manager API.
+
+-buildpath: \
+	osgi.annotation;version='6.0.1',\
+	biz.aQute.bnd.api.facade,\
+	org.osgi.service.component.annotations,\
+	org.slf4j.api,\
+	org.osgi.framework;version=1.10, \
+    org.osgi.util.tracker
+
+-testpath: \
+	${junit},\
+	biz.aQute.launchpad, \
+	biz.aQute.bnd.util
