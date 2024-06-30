@@ -10,7 +10,7 @@ The `-runrepos` instruction is used to restrict or order the available repositor
 In both cases there is an _ordered_ list of repositories. In the `-standalone` it is easy to change this order or exclude repositories. However, in the workspace case this is harder because the set of repositories is shared with many other projects. The `-runrepos` can then be used to exclude and reorder the list repositories. It simply lists the names of the repositories in the desired order. Each repository has its own name.
 
 If `-runrepos` is ommited then all repositories having either no tags or the tag `resolve` will be included for resolution.
-You can exclude certain repositories by assigning it a tag different than `resolve` (e.g. `<<EMTPY>>` or `foobar`).
+You can exclude certain repositories by assigning it a tag different than `resolve` (e.g. `<<EMTPY>>` or `foobar`). See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.
 
 
 **Note** The name of a repository is not well defined. It is either the name of the repository or the `toString()` result. In the later case the name is sometimes a bit messy.
