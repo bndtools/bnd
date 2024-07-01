@@ -69,7 +69,7 @@ The query must return a JSON response.
 | `transitive`     | `true|false` | `true` | If set to _truthy_ then dependencies are transitive.|
 | `poll.time`      | `integer`| 5 minutes | Number of seconds between checks for changes to POM files referenced by `pom` or `revision`. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
 | `dependencyManagement` | `boolean`| false | If set to `true`, dependencies in the `dependencyManagement` section will be handled as actual dependencies.|
-| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use the &lt;&lt;EMPTY&gt;&gt; The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.
+| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;NO_RESOLVE&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.
 
 
 One, and only one, of the `pom`, `revision`, or `query` configurations can be set. If multiple are set then the first in `[pom, revision, query]` is used and the remainders are ignored.
