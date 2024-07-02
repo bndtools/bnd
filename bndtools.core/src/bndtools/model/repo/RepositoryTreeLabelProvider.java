@@ -1,7 +1,5 @@
 package bndtools.model.repo;
 
-import java.util.stream.Collectors;
-
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.icons.Icons.IconBuilder;
 import org.bndtools.utils.jface.HyperlinkStyler;
@@ -52,8 +50,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 
 					Tags tags = repo.getTags();
 					if (!tags.isEmpty()) {
-						label.append(" " + tags.stream()
-							.collect(Collectors.joining(",")), StyledString.QUALIFIER_STYLER);
+						label.append(" " + Tags.print(tags), StyledString.QUALIFIER_STYLER);
 					}
 
 					IconBuilder ib = Icons.builder(repo.getIcon());

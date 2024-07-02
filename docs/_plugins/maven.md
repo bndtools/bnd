@@ -87,7 +87,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | `readOnly`       | `true|false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
 | `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.|
-| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;NO_RESOLVE&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
+| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
 | `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for changes to the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|

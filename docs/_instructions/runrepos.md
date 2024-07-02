@@ -65,7 +65,7 @@ For example the following repository definition in `/cnf/build.bnd` would be exc
 
 ```
 aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        tags = "<<NO_RESOLVE>>"; \
+        tags = "<<EMPTY>>"; \
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
         snapshotUrl="${ossrh}";\
@@ -73,6 +73,6 @@ aQute.bnd.repository.maven.provider.MavenBndRepository;\
         readOnly=true,\
 ```
 
-because it has a `<<NO_RESOLVE>>` tag (and thus no `resolve` tag).
+because it has a `<<EMPTY>>` tag (and thus no `resolve` tag).
 
 An example use case is exclude the baseline-repository from resolution. In the case, you would not add the `resolve` tag to the baseline-repo, and then it won't be considered for resolution in a `.bndrun`.

@@ -19,7 +19,7 @@ It can take the following configuration properties:
 | `name`           | `NAME`    | p2 + `url` | The name of the repository. |
 | `url`            | `URI`     |            | The URL to either the P2 repository (a directory) or an Eclipse target platform definition file. |
 | `location`       | `STRING`  |            | The location to store the _index_ file and where bundles will be downloaded to. |
-| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;NO_RESOLVE&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
+| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 
 ## Example
 

@@ -14,7 +14,7 @@ The following properties are supported:
 |`location`  | The local filesystem directory.           |   Yes. |
 |`readonly`  |Whether the repository should be read-only,|  No. Default: false |
 |            |i.e. disabled for editing from Bndtools.| |
-| `tags`           | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;NO_RESOLVE&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.| No
+| `tags`           | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.| No
 
 
 ## Tagging
