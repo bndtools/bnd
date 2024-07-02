@@ -19,6 +19,7 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.tags.Tagged;
+import aQute.bnd.service.tags.Tags;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -134,4 +135,14 @@ public class WorkspaceTest {
 		}
 	}
 
+	@Test
+	public void testTagDisplay() {
+		assertEquals("", Tags.print(Tags.of()));
+		assertEquals("", Tags.print(Tags.NO_TAGS));
+		assertEquals("foo", Tags.print(Tags.of("foo")));
+		assertEquals("bar,foo", Tags.print(Tags.of("foo", "bar")));
+		assertEquals("-", Tags.print(Tags.of(Tagged.EMPTY_TAGS)));
+		assertEquals("foo", Tags.print(Tags.of(Tagged.EMPTY_TAGS, "foo")));
+		assertEquals("bar,foo", Tags.print(Tags.of(Tagged.EMPTY_TAGS, "foo", "bar")));
+	}
 }
