@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
 
-	<!-- DEPRECATED 
-	<extension
-		point="org.eclipse.ui.console.consolePatternMatchListeners">
-		<consolePatternMatchListener
-			id="bndtools.core.console.ansi" regex="\u001B\[[^A-Za-z]*[A-Za-z]"
-			class="bndtools.core.console.AnsiHandler">
-			<enablement>
-				<or>
-					<test property="org.eclipse.debug.ui.processTypeTest"
-						value="java" />
-				</or>
-			</enablement>
-		</consolePatternMatchListener>
-	</extension>-->
-
-
 	<!-- Extension Points -->
 	<!-- DEPRECATED -->
 	<extension-point id="cnfTemplates"
