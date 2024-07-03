@@ -1,7 +1,5 @@
 package aQute.bnd.build;
-
 import static aQute.bnd.build.Container.toPaths;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -157,6 +155,7 @@ public class Project extends Processor {
 	private final Set<Project>									dependents						= new LinkedHashSet<>();
 	final Collection<Container>									classpath						= new LinkedHashSet<>();
 	final Collection<Container>									buildpath						= new LinkedHashSet<>();
+	final Collection<Container>								repoRefs						= new LinkedHashSet<>();
 	final Collection<Container>									testpath						= new LinkedHashSet<>();
 	final Collection<Container>									runpath							= new LinkedHashSet<>();
 	final Collection<Container>									runbundles						= new LinkedHashSet<>();
@@ -948,6 +947,22 @@ public class Project extends Processor {
 		return buildpath;
 	}
 
+	/**
+	 * @return repo references used in -includeresource 
+	 * @throws Exception
+	 */
+	public Collection<Container> getRepoRefs() throws Exception {
+		prepare();
+
+		// borrowed from aQute.bnd.osgi.Builder.doIncludeResources(Jar)
+		// because this causes #_repo() to be triggered which in turn
+		// populates this.repoRefs
+		Parameters includes = decorated(Constants.INCLUDERESOURCE);
+		includes.putAll(getMergedParameters(Constants.INCLUDE_RESOURCE));
+
+		return repoRefs;
+	}
+
 	public Collection<Container> getTestpath() throws Exception {
 		prepare();
 		return testpath;
@@ -1671,8 +1686,10 @@ public class Project extends Processor {
 				add(paths, sub);
 			}
 		} else {
-			if (container.getError() == null)
+			if (container.getError() == null) {
 				paths.add(IO.absolutePath(container.getFile()));
+				repoRefs.add(container);
+			}
 			else {
 				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-" + container.getVersion() + " : "
 					+ container.getError() + ">>");

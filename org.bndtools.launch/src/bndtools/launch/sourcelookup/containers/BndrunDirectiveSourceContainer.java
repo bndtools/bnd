@@ -101,36 +101,33 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 								.getProject(targetProjName);
 							if (targetProj != null) {
 
-								// also add all REPO dependencies of the
-								// -buildpath
-								// because they might contain dependencies via
-								// -includeresource: ${repo;bsn;latest};
-								// lib:=true
+								// also add all -includeresource:
+								// ${repo;bsn;latest};
+								// lib:=true dependencies which are on the
+								// buildpath
 								// which would otherwise not be considered for
 								// source lookup during debugging
 								try {
-									Collection<Container> buildpath = project
-										.getBuildpath();
+									Collection<Container> repoRefs = project.getRepoRefs();
 
-									for (Container bp : buildpath) {
 
-										// only consider REPO because we are
+									for (Container repoRef : repoRefs) {
+
+										// only consider type=REPO because we
+										// are
 										// interested in bundles added via
 										// '-includeresource:
 										// ${repo;bsn;latest}'
-										if (bp != null && TYPE.REPO == bp.getType()) {
-											additionalSourceContainers
-												.add(new BundleSourceContainer(bp));
+										if (repoRef != null && TYPE.REPO == repoRef.getType()) {
+											additionalSourceContainers.add(new BundleSourceContainer(repoRef));
 										}
-
 
 									}
 								} catch (Exception e) {
 									// just log to avoid that
 									// exceptions interrupt everything else
 									logger.logError("SourceContainers: Error adding buildpath dependencies of bundle "
-										+ targetProjName,
-										e);
+										+ targetProjName, e);
 								}
 
 								IJavaProject targetJavaProj = JavaCore.create(targetProj);
