@@ -100,36 +100,7 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 								.getRoot()
 								.getProject(targetProjName);
 							if (targetProj != null) {
-
-								// also add all -includeresource:
-								// ${repo;bsn;latest};
-								// lib:=true dependencies which are on the
-								// buildpath
-								// which would otherwise not be considered for
-								// source lookup during debugging
-								try {
-									Collection<Container> repoRefs = project.getRepoRefs();
-
-
-									for (Container repoRef : repoRefs) {
-
-										// only consider type=REPO because we
-										// are
-										// interested in bundles added via
-										// '-includeresource:
-										// ${repo;bsn;latest}'
-										if (repoRef != null && TYPE.REPO == repoRef.getType()) {
-											additionalSourceContainers.add(new BundleSourceContainer(repoRef));
-										}
-
-									}
-								} catch (Exception e) {
-									// just log to avoid that
-									// exceptions interrupt everything else
-									logger.logError("SourceContainers: Error adding buildpath dependencies of bundle "
-										+ targetProjName, e);
-								}
-
+								addRepoRefs(additionalSourceContainers, project);
 								IJavaProject targetJavaProj = JavaCore.create(targetProj);
 								return new JavaProjectSourceContainer(targetJavaProj);
 							}
@@ -157,5 +128,34 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 		}
 
 		return EMPTY_SOURCE;
+	}
+
+	private void addRepoRefs(Set<ISourceContainer> additionalSourceContainers, Project project) {
+		// also add all -includeresource:
+		// ${repo;bsn;latest};
+		// lib:=true dependencies which are on the
+		// buildpath
+		// which would otherwise not be considered for
+		// source lookup during debugging
+		try {
+			Collection<Container> repoRefs = project.getRepoRefs();
+
+			for (Container repoRef : repoRefs) {
+
+				// only consider type=REPO because we
+				// are
+				// interested in bundles added via
+				// '-includeresource:
+				// ${repo;bsn;latest}'
+				if (repoRef != null && TYPE.REPO == repoRef.getType()) {
+					additionalSourceContainers.add(new BundleSourceContainer(repoRef));
+				}
+
+			}
+		} catch (Exception e) {
+			// just log to avoid that
+			// exceptions interrupt everything else
+			logger.logError("SourceContainers: Error adding buildpath dependencies of bundle " + project.getName(), e);
+		}
 	}
 }
