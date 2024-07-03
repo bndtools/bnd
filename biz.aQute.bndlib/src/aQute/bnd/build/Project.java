@@ -951,6 +951,7 @@ public class Project extends Processor {
 	 * @return repo references used in -includeresource 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("deprecation")
 	public Collection<Container> getRepoRefs() throws Exception {
 		prepare();
 
