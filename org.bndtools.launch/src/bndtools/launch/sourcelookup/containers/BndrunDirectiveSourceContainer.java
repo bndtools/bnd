@@ -86,7 +86,7 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 	@Override
 	protected ISourceContainer[] createSourceContainers() {
 		Set<String> projectsAdded = new HashSet<>();
-		Set<ISourceContainer> additionalSourceContainers = new HashSet<>();
+		Set<ISourceContainer> additionalSourceContainers = new LinkedHashSet<>();
 		try {
 			ISourceContainer[] array = directiveGetter.get()
 				.stream()
