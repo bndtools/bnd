@@ -725,6 +725,8 @@ public class ProjectTest {
 			assertThat(s).contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8",
 				"org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar");
 
+			// we expect to see the following two repo references extracted by
+			// the RepoCollector
 			project.setProperty("-includeresource",
 				"${repo;org.apache.felix.configadmin;latest},${repo;org.apache.felix.ipojo;latest}");
 
