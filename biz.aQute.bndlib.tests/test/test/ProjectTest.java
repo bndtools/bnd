@@ -717,7 +717,10 @@ public class ProjectTest {
 
 	@Test
 	public void testRepoCollector() throws Exception {
-		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws")); Project project = ws.getProject("p2")) {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+			Project project = ws.getProject("p2");
+			RepoCollector rc = new RepoCollector(project);) {
+
 			System.err.println(project.getPlugins(FileRepo.class));
 			String s = project.getReplacer()
 				.process(("${repo;libtest}"));
@@ -731,7 +734,6 @@ public class ProjectTest {
 				"${repo;org.apache.felix.configadmin;latest},${repo;org.apache.felix.ipojo;latest}");
 
 			// test RepoCollector
-			RepoCollector rc = new RepoCollector(project);
 			Collection<Container> repoRefs = rc.getRepoRefs();
 			assertThat(repoRefs).hasSize(2);
 			Iterator<Container> iterator = repoRefs.iterator();
