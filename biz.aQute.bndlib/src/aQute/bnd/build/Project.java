@@ -155,7 +155,6 @@ public class Project extends Processor {
 	private final Set<Project>									dependents						= new LinkedHashSet<>();
 	final Collection<Container>									classpath						= new LinkedHashSet<>();
 	final Collection<Container>									buildpath						= new LinkedHashSet<>();
-	final Collection<Container>								repoRefs						= new LinkedHashSet<>();
 	final Collection<Container>									testpath						= new LinkedHashSet<>();
 	final Collection<Container>									runpath							= new LinkedHashSet<>();
 	final Collection<Container>									runbundles						= new LinkedHashSet<>();
@@ -947,23 +946,6 @@ public class Project extends Processor {
 		return buildpath;
 	}
 
-	/**
-	 * @return repo references used in -includeresource 
-	 * @throws Exception
-	 */
-	@SuppressWarnings("deprecation")
-	public Collection<Container> getRepoRefs() throws Exception {
-		prepare();
-
-		// borrowed from aQute.bnd.osgi.Builder.doIncludeResources(Jar)
-		// because this causes #_repo() to be triggered which in turn
-		// populates this.repoRefs
-		Parameters includes = decorated(Constants.INCLUDERESOURCE);
-		includes.putAll(getMergedParameters(Constants.INCLUDE_RESOURCE));
-
-		return repoRefs;
-	}
-
 	public Collection<Container> getTestpath() throws Exception {
 		prepare();
 		return testpath;
@@ -1646,54 +1628,54 @@ public class Project extends Processor {
 			return null;
 		}
 
-		String spec = args[1];
-		String version = null;
-		Strategy strategy = Strategy.HIGHEST;
+		Collection<Container> containers = repoContainers(args);
+		if(containers == null) {
+			return null;
+		}
 
-		if (args.length > 2) {
-			version = args[2];
-			if (args.length == 4) {
-				if (args[3].equalsIgnoreCase("HIGHEST"))
-					strategy = Strategy.HIGHEST;
-				else if (args[3].equalsIgnoreCase("LOWEST"))
-					strategy = Strategy.LOWEST;
-				else if (args[3].equalsIgnoreCase("EXACT"))
-					strategy = Strategy.EXACT;
-				else
-					msgs.InvalidStrategy(_repoHelp, args);
-			}
+		return repoPaths(containers);
+	}
+
+	Collection<Container> repoContainers(String[] args) throws Exception {
+		String spec = args[1];
+		String version = args.length > 2 ? args[2] : null;
+		Strategy strategy = args.length == 4 ? Strategy.parse(args[3]) : Strategy.HIGHEST;
+
+		if (strategy == null) {
+			msgs.InvalidStrategy(_repoHelp, args);
+			return null;
 		}
 
 		Parameters bsns = new Parameters(spec, this);
-		List<String> paths = new ArrayList<>();
+		Collection<Container> containers = new LinkedHashSet<>();
 
 		for (Entry<String, Attrs> entry : bsns.entrySet()) {
 			String bsn = removeDuplicateMarker(entry.getKey());
 			Map<String, String> attrs = entry.getValue();
 			Container container = getBundle(bsn, version, strategy, attrs);
 			if (container.getError() != null) {
-				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy,
+				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version,
+					strategy,
 					container.getError());
-			} else
-				add(paths, container);
+			} else {
+				add(containers, container);
+			}
 		}
-		return join(paths);
+		return containers;
 	}
 
-	private void add(List<String> paths, Container container) throws Exception {
+
+	private void add(Collection<Container> containers, Container container) throws Exception {
 		if (container.getType() == Container.TYPE.LIBRARY) {
 			List<Container> members = container.getMembers();
 			for (Container sub : members) {
-				add(paths, sub);
+				add(containers, sub);
 			}
 		} else {
 			if (container.getError() == null) {
-				paths.add(IO.absolutePath(container.getFile()));
-				repoRefs.add(container);
+				containers.add(container);
 			}
 			else {
-				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-" + container.getVersion() + " : "
-					+ container.getError() + ">>");
 
 				if (isPedantic()) {
 					warning("Could not expand repo path request: %s ", container);
@@ -1701,6 +1683,21 @@ public class Project extends Processor {
 			}
 
 		}
+	}
+
+	String repoPaths(Collection<Container> containers) {
+		List<String> paths = new ArrayList<>(containers.size());
+		for (Container container : containers) {
+
+			if (container.getError() == null) {
+				paths.add(IO.absolutePath(container.getFile()));
+			} else {
+				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-" + container.getVersion() + " : "
+					+ container.getError() + ">>");
+			}
+		}
+
+		return join(paths);
 	}
 
 	public File getTarget() throws Exception {

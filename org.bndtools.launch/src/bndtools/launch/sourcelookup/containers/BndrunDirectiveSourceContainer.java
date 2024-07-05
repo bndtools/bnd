@@ -23,6 +23,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Run;
 import aQute.bnd.exceptions.SupplierWithException;
 
@@ -137,8 +138,9 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 		// buildpath
 		// which would otherwise not be considered for
 		// source lookup during debugging
-		try {
-			Collection<Container> repoRefs = project.getRepoRefs();
+		try (RepoCollector repoCollector = new RepoCollector(project)) {
+
+			Collection<Container> repoRefs = repoCollector.getRepoRefs();
 
 			for (Container repoRef : repoRefs) {
 
