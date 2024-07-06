@@ -140,7 +140,7 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 		// source lookup during debugging
 		try (RepoCollector repoCollector = new RepoCollector(project)) {
 
-			Collection<Container> repoRefs = repoCollector.getRepoRefs();
+			Collection<Container> repoRefs = repoCollector.repoRefs();
 
 			for (Container repoRef : repoRefs) {
 

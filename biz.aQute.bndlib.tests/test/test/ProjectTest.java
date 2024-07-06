@@ -734,7 +734,7 @@ public class ProjectTest {
 				"${repo;org.apache.felix.configadmin;latest},${repo;org.apache.felix.ipojo;latest}");
 
 			// test RepoCollector
-			Collection<Container> repoRefs = rc.getRepoRefs();
+			Collection<Container> repoRefs = rc.repoRefs();
 			assertThat(repoRefs).hasSize(2);
 			Iterator<Container> iterator = repoRefs.iterator();
 			Container one = iterator.next();
