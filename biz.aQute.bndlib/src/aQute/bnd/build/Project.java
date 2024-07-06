@@ -196,6 +196,7 @@ public class Project extends Processor {
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
 		repoCollector = new RepoCollector(this);
+		addClose(repoCollector);
 	}
 
 	public Project(Workspace workspace, File buildDir) {

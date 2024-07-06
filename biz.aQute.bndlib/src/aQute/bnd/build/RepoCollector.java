@@ -1,5 +1,6 @@
 package aQute.bnd.build;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -129,4 +130,9 @@ public class RepoCollector extends Processor {
 		return join(paths);
 	}
 
+	@Override
+	public void close() throws IOException {
+		repoRefs.clear();
+		super.close();
+	}
 }
