@@ -85,7 +85,8 @@ public class RepoCollector extends Processor {
 			Map<String, String> attrs = entry.getValue();
 			Container container = project.getBundle(bsn, version, strategy, attrs);
 			if (container.getError() != null) {
-				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy,
+				project.error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version,
+					strategy,
 					container.getError());
 			} else {
 				add(containers, container);

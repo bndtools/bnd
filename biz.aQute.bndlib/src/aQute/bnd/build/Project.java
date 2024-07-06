@@ -1,4 +1,5 @@
 package aQute.bnd.build;
+
 import static aQute.bnd.build.Container.toPaths;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -160,7 +161,7 @@ public class Project extends Processor {
 	final Collection<Container>									runbundles						= new LinkedHashSet<>();
 	final Collection<Container>									runfw							= new LinkedHashSet<>();
 	File														runstorage;
-	private final RepoCollector repoCollector;
+	private final RepoCollector									repoCollector;
 	final Map<File, Attrs>										sourcepath						= new LinkedHashMap<>();
 	final Collection<File>										allsourcepath					= new LinkedHashSet<>();
 	final Collection<Container>									bootclasspath					= new LinkedHashSet<>();
@@ -1630,15 +1631,13 @@ public class Project extends Processor {
 			return null;
 		}
 
-			Collection<Container> containers = repoCollector.repoContainers(args);
-			if(containers == null) {
-				return null;
-			}
-			
-			return repoCollector.repoPaths(containers);
-	}
+		Collection<Container> containers = repoCollector.repoContainers(args);
+		if (containers == null) {
+			return null;
+		}
 
-	
+		return repoCollector.repoPaths(containers);
+	}
 
 	public File getTarget() throws Exception {
 		prepare();
