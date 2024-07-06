@@ -87,7 +87,7 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 	public void recalculate() {
 		try {
 			result.getLogger()
-				.close();
+				.closeAndDeleteLogfile();
 			ResolveOperation resolver = new ResolveOperation(model);
 			getContainer().run(true, true, resolver);
 			setResult(resolver.getResult());

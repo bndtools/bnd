@@ -852,6 +852,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						f.format("STATUS = %s", status);
 					else {
 						f.format("MavenBndRepository           : %s\n", getName());
+						f.format("Tags                         : %s\n", getTags());
 						f.format("Revisions                    : %s\n", index.getArchives()
 							.size());
 						f.format("Storage                      : %s\n", localRepo);

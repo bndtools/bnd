@@ -77,7 +77,7 @@ public class ResolutionWizard extends Wizard {
 			.getLogger() != null) {
 			resultsPage.getResult()
 				.getLogger()
-				.close();
+				.closeAndDeleteLogfile();
 		}
 		super.dispose();
 	}

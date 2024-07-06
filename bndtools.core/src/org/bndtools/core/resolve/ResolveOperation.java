@@ -50,13 +50,14 @@ public class ResolveOperation implements IRunnableWithProgress {
 
 		try {
 			coordinate(() -> {
-				logger = new ResolverLogger();
+				Project run = model.getOwner(Project.class)
+					.orElse(null);
+
+				logger = ResolverLogger.newLogger(run, true);
 				List<ResolutionCallback> operationCallbacks = new ArrayList<>(callbacks.size() + 1);
 				operationCallbacks.addAll(callbacks);
 				operationCallbacks.add(new ResolutionProgressCallback(monitor));
 
-				Project run = model.getOwner(Project.class)
-					.orElse(null);
 
 				RunResolution resolution = RunResolution.resolve(run,
 					model.getProperties(),
@@ -114,5 +115,6 @@ public class ResolveOperation implements IRunnableWithProgress {
 			}
 		}
 	}
+
 
 }

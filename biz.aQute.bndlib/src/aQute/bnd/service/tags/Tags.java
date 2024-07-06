@@ -160,4 +160,23 @@ public class Tags implements Set<String> {
 			.collect(Collectors.toCollection(LinkedHashSet::new)));
 	}
 
+	/**
+	 * Helper printing a csv-string of the tags for display purposes. The
+	 * {@link Tagged#EMPTY_TAGS} is treated specially.
+	 *
+	 * @return a comma separated string of tags. If tags contains just 1 tag
+	 *         which is {@link Tagged#EMPTY_TAGS} then "-" is returned. If there
+	 *         are more than 1 tags, then {@link Tagged#EMPTY_TAGS} is omitted.
+	 */
+	public static String print(Tags tags) {
+		if (tags.internalSet.size() == 1 && tags.internalSet.contains(Tagged.EMPTY_TAGS)) {
+			return "-";
+		}
+
+		return tags.internalSet.stream()
+			.filter(tag -> !Tagged.EMPTY_TAGS.equals(tag))
+			.collect(Collectors.joining(","));
+	}
+
+
 }

@@ -304,7 +304,7 @@ Notice that most instructions are [_merge properties_](820-instructions.html). T
 * [-runblacklist](/instructions/runblacklist.html) – Requirements that select resources that should never be part of the resolution.
 * [-runee](/instructions/runee.html) – The execution environment
 * [-runpath](/instructions/runpath.html) – The JARs that should be on the classpath. Exports and provided capabilities defined in the manifests of these JARs are added to the system capabilities.
-* [-runrepos](/instructions/runpath.html) – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.
+* [-runrepos](/instructions/runrepos.html) – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.
 * [-augment](/instructions/augment.html) – Adds virtual capabilities and requirements to resources in the repository.
 * [-distro](/instructions/distro.html) – Directly provides the system capabilities in a JAR with Manifest. Is used when the resulotion is not used to create an executable JAR but to create a Java EE WAR or Karaf KAR where the application is running in a host environment.
 * [-resolve](/instructions/resolve.html) – Controls when the resolver runs

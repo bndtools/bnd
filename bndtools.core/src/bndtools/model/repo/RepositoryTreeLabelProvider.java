@@ -12,6 +12,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.tags.Tags;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 	implements org.eclipse.jface.viewers.ILabelProvider {
@@ -46,6 +47,11 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 					if (name == null)
 						name = repo.getName();
 					label.append(name);
+
+					Tags tags = repo.getTags();
+					if (!tags.isEmpty()) {
+						label.append(" " + Tags.print(tags), StyledString.QUALIFIER_STYLER);
+					}
 
 					IconBuilder ib = Icons.builder(repo.getIcon());
 					if (repo.canWrite()) {

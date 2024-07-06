@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="BundleA2"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.0.0.SNAPSHOT" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="bundle-symbolic-name" value="BundleA2"/>
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.example.util.internal"/>
+      <attribute name="version" value="1.1.0" type="Version"/>
+      <attribute name="bnd.hashes" value="-2137064498" type="List&lt;Long&gt;"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="BundleA2"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.host" value="BundleA2"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="2910" type="Long"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="url" value="BundleA2.jar"/>
+      <attribute name="osgi.content" value="DFAB4E25280519ED3ACCDCD1888B7D20B3B4C34550CC3A27B731F43779CF15BF"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(osgi.wiring.package=java.lang)"/>
+      <attribute name="osgi.wiring.package" value="java.lang"/>
+    </requirement>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=17))"/>
+    </requirement>
+  </resource>
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="BundleC"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.0.0.SNAPSHOT" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="BundleC"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.host" value="BundleC"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="2739" type="Long"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="url" value="BundleC.jar"/>
+      <attribute name="osgi.content" value="FA8920C3FB90C52E19B41250A16FDAAE353C028A0F9FB5217D314C5225E0A286"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.example.util)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>
+      <attribute name="osgi.wiring.package" value="com.example.util"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.example.util.internal)(version&gt;=1.1.0)(!(version&gt;=2.0.0)))"/>
+      <attribute name="osgi.wiring.package" value="com.example.util.internal"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(osgi.wiring.package=java.io)"/>
+      <attribute name="osgi.wiring.package" value="java.io"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(osgi.wiring.package=java.lang)"/>
+      <attribute name="osgi.wiring.package" value="java.lang"/>
+    </requirement>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=17))"/>
+    </requirement>
+  </resource>
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="BundleA"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.0.0.SNAPSHOT" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.example.util.internal"/>
+      <attribute name="bundle-symbolic-name" value="BundleA"/>
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.example.util"/>
+      <attribute name="version" value="1.0.0" type="Version"/>
+      <attribute name="bnd.hashes" value="1549674828" type="List&lt;Long&gt;"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="bundle-symbolic-name" value="BundleA"/>
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.example.util.internal"/>
+      <attribute name="version" value="1.0.0" type="Version"/>
+      <attribute name="bnd.hashes" value="-2137064498" type="List&lt;Long&gt;"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="BundleA"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.host" value="BundleA"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="3514" type="Long"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="url" value="BundleA.jar"/>
+      <attribute name="osgi.content" value="B585003C523C4EAEFFC514B1221E42062457194CA6CE90277DD979CFB37465C2"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.example.util.internal)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>
+      <attribute name="osgi.wiring.package" value="com.example.util.internal"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(osgi.wiring.package=java.lang)"/>
+      <attribute name="osgi.wiring.package" value="java.lang"/>
+    </requirement>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=17))"/>
+    </requirement>
+  </resource>
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="BundleB"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.0.0.SNAPSHOT" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="BundleB"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.0.0.SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.host" value="BundleB"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="2591" type="Long"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="url" value="BundleB.jar"/>
+      <attribute name="osgi.content" value="EAB180226DC4FB10F9EF2E895CC57F6EEE6028660A43465B7520DCA5609E5BE2"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.example.util)(version&gt;=1.0.0)(version&lt;=1.0.0))"/>
+      <attribute name="osgi.wiring.package" value="com.example.util"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(osgi.wiring.package=java.io)"/>
+      <attribute name="osgi.wiring.package" value="java.io"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(osgi.wiring.package=java.lang)"/>
+      <attribute name="osgi.wiring.package" value="java.lang"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.example.util.internal)(version&gt;=1.0.0)(version&lt;=1.0.0))"/>
+      <attribute name="osgi.wiring.package" value="com.example.util.internal"/>
+    </requirement>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=17))"/>
+    </requirement>
+  </resource>
+</repository>

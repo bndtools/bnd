@@ -29,7 +29,7 @@ public class Model implements Runnable {
 	static final IWorkspace		ECLIPSE_WORKSPACE	= ResourcesPlugin.getWorkspace();
 	static final IWorkspaceRoot	ROOT				= ECLIPSE_WORKSPACE.getRoot();
 	static final IPath			ROOT_LOCATION		= ROOT.getLocation();
-	static final URI			TEMPLATE_HOME		= URI.create("https:://github.com/bndtools/workspace");
+	static final URI			TEMPLATE_HOME		= URI.create("https:://github.com/bndtools/bndtools.workspace.min");
 
 	final static File			current				= ROOT_LOCATION.toFile();
 
