@@ -33,7 +33,7 @@ public class RepoCollector extends Processor {
 	}
 
 	/**
-	 * Note: This method has side-effects since it does the actual collection.
+	 * Note: This method does the actual collection and is not thread-safe.
 	 * Consider storing and reusing the result for performance instead of
 	 * calling it repeatedly.
 	 *
@@ -44,6 +44,7 @@ public class RepoCollector extends Processor {
 		// borrowed from aQute.bnd.osgi.Builder.doIncludeResources(Jar)
 		// because this causes a call to the _repo() macro below
 		// in which we populate this.repoRefs in the #add() method
+		repoRefs.clear();
 		decorated(Constants.INCLUDERESOURCE);
 		return repoRefs;
 	}
