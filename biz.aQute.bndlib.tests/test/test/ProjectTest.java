@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Builder;
@@ -710,6 +712,36 @@ public class ProjectTest {
 			s = project.getReplacer()
 				.process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
 			assertThat(s).endsWith("org.apache.felix.configadmin-1.0.1.jar");
+		}
+	}
+
+	@Test
+	public void testRepoCollector() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+			Project project = ws.getProject("p2");
+			RepoCollector rc = new RepoCollector(project);) {
+
+			System.err.println(project.getPlugins(FileRepo.class));
+			String s = project.getReplacer()
+				.process(("${repo;libtest}"));
+			System.err.println(s);
+			assertThat(s).contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8",
+				"org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar");
+
+			// we expect to see the following two repo references extracted by
+			// the RepoCollector
+			project.setProperty("-includeresource",
+				"${repo;org.apache.felix.configadmin;latest},${repo;org.apache.felix.ipojo;latest}");
+
+			// test RepoCollector
+			Collection<Container> repoRefs = rc.repoRefs();
+			assertThat(repoRefs).hasSize(2);
+			Iterator<Container> iterator = repoRefs.iterator();
+			Container one = iterator.next();
+			assertThat(one.toString()).endsWith("org.apache.felix.configadmin-1.8.8.jar");
+			Container two = iterator.next();
+			assertThat(two.toString()).endsWith("org.apache.felix.ipojo-1.0.0.jar");
+
 		}
 	}
 

@@ -1,7 +1,6 @@
 package aQute.bnd.build;
 
 import static aQute.bnd.build.Container.toPaths;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -162,6 +161,7 @@ public class Project extends Processor {
 	final Collection<Container>									runbundles						= new LinkedHashSet<>();
 	final Collection<Container>									runfw							= new LinkedHashSet<>();
 	File														runstorage;
+	private final RepoCollector									repoCollector;
 	final Map<File, Attrs>										sourcepath						= new LinkedHashMap<>();
 	final Collection<File>										allsourcepath					= new LinkedHashSet<>();
 	final Collection<Container>									bootclasspath					= new LinkedHashSet<>();
@@ -195,6 +195,8 @@ public class Project extends Processor {
 
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
+		repoCollector = new RepoCollector(this);
+		addClose(repoCollector);
 	}
 
 	public Project(Workspace workspace, File buildDir) {
@@ -1630,59 +1632,12 @@ public class Project extends Processor {
 			return null;
 		}
 
-		String spec = args[1];
-		String version = null;
-		Strategy strategy = Strategy.HIGHEST;
-
-		if (args.length > 2) {
-			version = args[2];
-			if (args.length == 4) {
-				if (args[3].equalsIgnoreCase("HIGHEST"))
-					strategy = Strategy.HIGHEST;
-				else if (args[3].equalsIgnoreCase("LOWEST"))
-					strategy = Strategy.LOWEST;
-				else if (args[3].equalsIgnoreCase("EXACT"))
-					strategy = Strategy.EXACT;
-				else
-					msgs.InvalidStrategy(_repoHelp, args);
-			}
+		Collection<Container> containers = repoCollector.repoContainers(args);
+		if (containers == null) {
+			return null;
 		}
 
-		Parameters bsns = new Parameters(spec, this);
-		List<String> paths = new ArrayList<>();
-
-		for (Entry<String, Attrs> entry : bsns.entrySet()) {
-			String bsn = removeDuplicateMarker(entry.getKey());
-			Map<String, String> attrs = entry.getValue();
-			Container container = getBundle(bsn, version, strategy, attrs);
-			if (container.getError() != null) {
-				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy,
-					container.getError());
-			} else
-				add(paths, container);
-		}
-		return join(paths);
-	}
-
-	private void add(List<String> paths, Container container) throws Exception {
-		if (container.getType() == Container.TYPE.LIBRARY) {
-			List<Container> members = container.getMembers();
-			for (Container sub : members) {
-				add(paths, sub);
-			}
-		} else {
-			if (container.getError() == null)
-				paths.add(IO.absolutePath(container.getFile()));
-			else {
-				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-" + container.getVersion() + " : "
-					+ container.getError() + ">>");
-
-				if (isPedantic()) {
-					warning("Could not expand repo path request: %s ", container);
-				}
-			}
-
-		}
+		return repoCollector.repoPaths(containers);
 	}
 
 	public File getTarget() throws Exception {

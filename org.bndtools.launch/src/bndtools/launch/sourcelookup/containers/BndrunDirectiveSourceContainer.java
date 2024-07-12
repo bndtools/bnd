@@ -2,8 +2,11 @@ package bndtools.launch.sourcelookup.containers;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -19,6 +22,8 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Run;
 import aQute.bnd.exceptions.SupplierWithException;
 
@@ -82,18 +87,21 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 	@Override
 	protected ISourceContainer[] createSourceContainers() {
 		Set<String> projectsAdded = new HashSet<>();
+		Set<ISourceContainer> additionalSourceContainers = new LinkedHashSet<>();
 		try {
-			return directiveGetter.get()
+			ISourceContainer[] array = directiveGetter.get()
 				.stream()
 				.map(container -> {
 					if (container.getType() == TYPE.PROJECT) {
-						String targetProjName = container.getProject()
+						Project project = container.getProject();
+						String targetProjName = project
 							.getName();
 						if (projectsAdded.add(targetProjName)) {
 							IProject targetProj = ResourcesPlugin.getWorkspace()
 								.getRoot()
 								.getProject(targetProjName);
 							if (targetProj != null) {
+								addRepoRefs(additionalSourceContainers, project);
 								IJavaProject targetJavaProj = JavaCore.create(targetProj);
 								return new JavaProjectSourceContainer(targetJavaProj);
 							}
@@ -110,10 +118,46 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 				})
 				.filter(Objects::nonNull)
 				.toArray(ISourceContainer[]::new);
+
+			LinkedHashSet<ISourceContainer> set = Stream.of(array)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+			set.addAll(additionalSourceContainers);
+			return set.toArray(ISourceContainer[]::new);
+
 		} catch (Exception e) {
 			logger.logError("Error querying Bnd dependency source containers.", e);
 		}
 
 		return EMPTY_SOURCE;
+	}
+
+	private void addRepoRefs(Set<ISourceContainer> additionalSourceContainers, Project project) {
+		// also add all -includeresource:
+		// ${repo;bsn;latest};
+		// lib:=true dependencies which are on the
+		// buildpath
+		// which would otherwise not be considered for
+		// source lookup during debugging
+		try (RepoCollector repoCollector = new RepoCollector(project)) {
+
+			Collection<Container> repoRefs = repoCollector.repoRefs();
+
+			for (Container repoRef : repoRefs) {
+
+				// only consider type=REPO because we
+				// are
+				// interested in bundles added via
+				// '-includeresource:
+				// ${repo;bsn;latest}'
+				if (repoRef != null && TYPE.REPO == repoRef.getType()) {
+					additionalSourceContainers.add(new BundleSourceContainer(repoRef));
+				}
+
+			}
+		} catch (Exception e) {
+			// just log to avoid that
+			// exceptions interrupt everything else
+			logger.logError("SourceContainers: Error adding buildpath dependencies of bundle " + project.getName(), e);
+		}
 	}
 }
