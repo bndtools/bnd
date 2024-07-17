@@ -168,4 +168,5 @@ org.codehaus.plexus:plexus-classworlds:2.5.2
 
 ## higher SWT version required because of SWT bug with MacOS Sonoma 
 org.eclipse.platform:org.eclipse.swt.cocoa.macosx.aarch64:jar:3.126.0
+org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:jar:3.126.0
 org.eclipse.platform:org.eclipse.swt:jar:3.126.0
