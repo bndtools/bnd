@@ -259,8 +259,8 @@
 	org.eclipse.platform;version='[4.25.0,4.25.1)',\
 	org.eclipse.sdk;version='[4.25.0,4.25.1)',\
 	org.eclipse.search;version='[3.14.200,3.14.201)',\
-	org.eclipse.swt;version='[3.121.0,3.121.1)',\
-	org.eclipse.swt.cocoa.macosx.aarch64;version='[3.121.0,3.121.1)',\
+	org.eclipse.swt;version='[3.126.0,3.126.1)',\
+	org.eclipse.swt.cocoa.macosx.aarch64;version='[3.126.0,3.126.1)',\
 	org.eclipse.team.core;version='[3.9.500,3.9.501)',\
 	org.eclipse.team.ui;version='[3.9.400,3.9.401)',\
 	org.eclipse.text;version='[3.12.200,3.12.201)',\
