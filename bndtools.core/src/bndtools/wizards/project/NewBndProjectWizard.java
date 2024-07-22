@@ -34,7 +34,6 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -59,7 +58,10 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippi
 			// refresh, to not miss recently created project templates.
 			Central.refreshPlugins();
 		} catch (Exception e) {
-			throw Exceptions.duck(e);
+			Plugin.getDefault()
+				.getLog()
+				.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+					String.format("Unable to refresh Plugins in NewBndProjectWizard"), e));
 		}
 
 		BuiltInTemplate baseTemplate = new BuiltInTemplate(EMPTY_TEMPLATE_NAME, DEFAULT_TEMPLATE_ENGINE);
