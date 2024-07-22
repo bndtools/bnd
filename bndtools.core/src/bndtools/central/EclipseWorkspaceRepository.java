@@ -19,10 +19,11 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.AbstractIndexingRepository;
 import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.Refreshable;
 import aQute.lib.io.IO;
 
 public class EclipseWorkspaceRepository extends AbstractIndexingRepository<IProject, File>
-	implements WorkspaceRepositoryMarker {
+	implements WorkspaceRepositoryMarker, Refreshable {
 	EclipseWorkspaceRepository() {
 		super();
 		Central.onCnfWorkspace(this::initialize);
@@ -78,5 +79,16 @@ public class EclipseWorkspaceRepository extends AbstractIndexingRepository<IProj
 	@Override
 	public String toString() {
 		return NAME;
+	}
+
+	@Override
+	public boolean refresh() throws Exception {
+		initialize(null);
+		return true;
+	}
+
+	@Override
+	public File getRoot() throws Exception {
+		return null;
 	}
 }

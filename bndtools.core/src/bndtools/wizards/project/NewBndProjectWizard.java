@@ -34,7 +34,9 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippingWizard {
 
@@ -52,6 +54,13 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippi
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
 		super.init(workbench, currentSelection);
+
+		try {
+			// refresh, to not miss recently created project templates.
+			Central.refreshPlugins();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 
 		BuiltInTemplate baseTemplate = new BuiltInTemplate(EMPTY_TEMPLATE_NAME, DEFAULT_TEMPLATE_ENGINE);
 		baseTemplate.addInputResource(Project.BNDFILE, new StringResource("")); //$NON-NLS-1$
