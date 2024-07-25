@@ -63,7 +63,11 @@ public class DependencyResolver {
 			&& Objects.equals(a.getArtifact()
 				.getVersion(),
 				b.getArtifact()
-					.getVersion());
+					.getVersion())
+			&& Objects.equals(a.getArtifact()
+				.getExtension(),
+			b.getArtifact()
+				.getExtension());
 	private static final BiPredicate<ArtifactResult, Collection<ArtifactResult>>	containsExactVersion		= (
 		resolvedArtifact, collection) -> collection.stream()
 			.anyMatch(ra -> sameExactVersion.test(ra, resolvedArtifact));
