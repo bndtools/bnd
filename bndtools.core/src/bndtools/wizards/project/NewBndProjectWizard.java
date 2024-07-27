@@ -35,7 +35,6 @@ import org.eclipse.ui.IWorkbench;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.central.Central;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippingWizard {
 
@@ -53,16 +52,6 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippi
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
 		super.init(workbench, currentSelection);
-
-		try {
-			// refresh, to not miss recently created project templates.
-			Central.refreshPlugins();
-		} catch (Exception e) {
-			Plugin.getDefault()
-				.getLog()
-				.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-					String.format("Unable to refresh Plugins in NewBndProjectWizard"), e));
-		}
 
 		BuiltInTemplate baseTemplate = new BuiltInTemplate(EMPTY_TEMPLATE_NAME, DEFAULT_TEMPLATE_ENGINE);
 		baseTemplate.addInputResource(Project.BNDFILE, new StringResource("")); //$NON-NLS-1$
