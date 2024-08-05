@@ -1,19 +1,15 @@
 package aQute.bnd.maven.generate.plugin;
 
-import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
-
 import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
@@ -21,17 +17,12 @@ import aQute.bnd.maven.lib.configuration.BndConfiguration;
 import aQute.bnd.maven.lib.resolve.ImplicitFileSetRepository;
 import aQute.bnd.maven.lib.resolve.LocalPostProcessor;
 import aQute.bnd.maven.lib.resolve.PostProcessor;
-import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.version.MavenVersion;
-import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
-import aQute.maven.api.Revision;
-import aQute.maven.provider.POM;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -47,41 +38,43 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.osgi.annotation.versioning.ProviderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ProviderType
 public class BndContainer {
 
-	private static final Logger logger = LoggerFactory.getLogger(BndContainer.class);
+	private static final Logger				logger	= LoggerFactory.getLogger(BndContainer.class);
 
-	private final List<File> bundles = new ArrayList<>();
+	private final List<File>				bundles	= new ArrayList<>();
 
-	private final MavenProject project;
+	private final MavenProject				project;
 
-	private final RepositorySystemSession repositorySession;
+	private final RepositorySystemSession	repositorySession;
 
-	private final MavenSession session;
+	private final MavenSession				session;
 
-	private final RepositorySystem system;
+	private final RepositorySystem			system;
 
-	private final PostProcessor postProcessor;
+	private final PostProcessor				postProcessor;
 
-	private List<Dependency> dependencies;
+	private List<Dependency>				dependencies;
 
-	private Properties additionalProperties;
+	private Properties						additionalProperties;
 
 	public static class Builder {
 
-		private final MavenProject project;
-		private final MavenSession session;
-		private final RepositorySystemSession repositorySession;
-		private final RepositorySystem system;
-		private PostProcessor postProcessor = new LocalPostProcessor();
-		private List<Dependency> dependencies = new ArrayList<>();
-		private Properties additionalProperties = new Properties();
+		private final MavenProject				project;
+		private final MavenSession				session;
+		private final RepositorySystemSession	repositorySession;
+		private final RepositorySystem			system;
+		private PostProcessor					postProcessor			= new LocalPostProcessor();
+		private List<Dependency>				dependencies			= new ArrayList<>();
+		private Properties						additionalProperties	= new Properties();
 
-		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession, RepositorySystem system) {
+		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession,
+			RepositorySystem system) {
 
 			this.project = Objects.requireNonNull(project);
 			this.session = Objects.requireNonNull(session);
@@ -105,7 +98,8 @@ public class BndContainer {
 		}
 
 		public BndContainer build() {
-			return new BndContainer(project, session, repositorySession, system, dependencies, postProcessor, additionalProperties);
+			return new BndContainer(project, session, repositorySession, system, dependencies, postProcessor,
+				additionalProperties);
 		}
 	}
 
@@ -121,7 +115,9 @@ public class BndContainer {
 		return errors;
 	}
 
-	BndContainer(MavenProject project, MavenSession session, RepositorySystemSession repositorySession, RepositorySystem system, List<Dependency> dependencies, PostProcessor postProcessor, Properties additionalProperties) {
+	BndContainer(MavenProject project, MavenSession session, RepositorySystemSession repositorySession,
+		RepositorySystem system, List<Dependency> dependencies, PostProcessor postProcessor,
+		Properties additionalProperties) {
 		this.project = project;
 		this.session = session;
 		this.repositorySession = repositorySession;
@@ -131,7 +127,8 @@ public class BndContainer {
 		this.additionalProperties = additionalProperties;
 	}
 
-	public int generate(String task, File workingDir, GenerateOperation operation, Settings settings, MojoExecution mojoExecution, boolean includeTestDependencies) throws Exception {
+	public int generate(String task, File workingDir, GenerateOperation operation, Settings settings,
+		MojoExecution mojoExecution, boolean includeTestDependencies) throws Exception {
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
@@ -167,9 +164,10 @@ public class BndContainer {
 				bnd.getProperties()
 					.forEach((k, v) -> logger.debug(k + " - " + v));
 			}
-
+			bnd.prepare();
 			int errors = report(bnd);
-			if (!bnd.isOk()) {
+
+			if (!bnd.isOk() || !bnd.isValid()) {
 				return errors;
 			}
 
@@ -183,7 +181,8 @@ public class BndContainer {
 		Set<org.apache.maven.artifact.Artifact> artifacts = project.getArtifacts();
 		List<String> buildpath = new ArrayList<>(artifacts.size());
 		List<String> testpath = new ArrayList<>(artifacts.size());
-		final ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter(org.apache.maven.artifact.Artifact.SCOPE_COMPILE);
+		final ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter(
+			org.apache.maven.artifact.Artifact.SCOPE_COMPILE);
 		for (org.apache.maven.artifact.Artifact artifact : artifacts) {
 			File cpe = artifact.getFile()
 				.getCanonicalFile();
@@ -194,9 +193,9 @@ public class BndContainer {
 			if (cpe.isFile() && !cpe.getName()
 				.endsWith(".jar")) {
 				/*
-				 * Check if it is a valid zip file. We don't create a Jar
-				 * object here because we want to avoid the cost of creating
-				 * the Jar object if we decide not to build.
+				 * Check if it is a valid zip file. We don't create a Jar object
+				 * here because we want to avoid the cost of creating the Jar
+				 * object if we decide not to build.
 				 */
 				try (ZipFile zip = new ZipFile(cpe)) {
 					zip.entries();
@@ -236,9 +235,13 @@ public class BndContainer {
 			mavenProperties.store(writer, task);
 		}
 		Workspace workspace = new Workspace(cnfDir.getParentFile());
+
+		File bndFile = new File(workingDir, Project.BNDFILE);
+
 		Project project = new Project(workspace, workingDir);
 		workspace.setOffline(session.getSettings()
 			.isOffline());
+		project.setFileMustExist(bndFile.exists());
 		project.forceRefresh(); // setBase must be called after forceRefresh
 		project.getInfo(workspace);
 
@@ -290,7 +293,8 @@ public class BndContainer {
 
 		for (Dependency dep : dependencies) {
 
-			ArtifactResult artifactResult = postProcessor.postProcessResult(system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
+			ArtifactResult artifactResult = postProcessor.postProcessResult(
+				system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
 
 			bundles.add(artifactResult.getArtifact()
 				.getFile());
@@ -298,7 +302,8 @@ public class BndContainer {
 		}
 		for (org.apache.maven.artifact.Artifact dep : project.getArtifacts()) {
 
-			ArtifactResult artifactResult = postProcessor.postProcessResult(system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
+			ArtifactResult artifactResult = postProcessor.postProcessResult(
+				system.resolveArtifact(repositorySession, new ArtifactRequest(transform(dep), repositories, null)));
 
 			bundles.add(artifactResult.getArtifact()
 				.getFile());
@@ -308,12 +313,14 @@ public class BndContainer {
 	}
 
 	private Artifact transform(Dependency dependency) {
-		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getType(), dependency.getVersion());
+		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
+			dependency.getType(), dependency.getVersion());
 		return artifact;
 	}
 
 	private Artifact transform(org.apache.maven.artifact.Artifact dependency) {
-		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getType(), dependency.getVersion());
+		Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
+			dependency.getType(), dependency.getVersion());
 		return artifact;
 	}
 }
