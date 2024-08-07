@@ -14,8 +14,9 @@ The values are:
 * `beforelaunch` – Calculate the `-runbundles` on demand. This ignores the value of the `-runbundles` and runs the resolver. The results of the resolver are cached. This cache works by creating a checksum over all the properties of the project.
 * `batch` – When running in batch mode, the run bundles will be resolved. In all other modes this will only resolve when the `-runbundles` are empty.
 * `cache` – Will use a cache file in the workspace cache. If that file is stale relative to the workspace or project or it does not exist, then the bnd(run) file will be resolved and the result is stored in the cache file.
+* `never` – If anybody tries to resolve , the process will throw an `UnsupportedOperationException`. This is intended for manually curated runbundles or where a base file is resolved and other files include them an add some additional instructions. The Excepetion is meant as a clear warning to any developer accidentally resolving the `-runbundles`.
 
- 
+
 ## Example
 
     -resolve beforelaunch
