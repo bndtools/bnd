@@ -1,0 +1,2 @@
+-runfw: org.apache.felix.framework
+-runrequires: osgi.identity;filter:='(osgi.identity=org.freemarker.freemarker)'
