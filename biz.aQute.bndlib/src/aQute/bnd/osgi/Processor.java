@@ -119,7 +119,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private volatile Memoize<PluginsContainer>	pluginsContainer	= newPluginsContainer();
 
 	final MessageReporter						reporter			= new MessageReporter(this);
-	boolean										fileMustExist		= true;
+	protected boolean							fileMustExist		= true;
 
 	private File								base				= new File("").getAbsoluteFile();
 	private URI									baseURI				= base.toURI();
@@ -1381,6 +1381,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return propertiesFile;
 	}
 
+	/**
+	 * Marks if the given Properties File really must exist.
+	 */
 	public void setFileMustExist(boolean mustexist) {
 		fileMustExist = mustexist;
 	}
