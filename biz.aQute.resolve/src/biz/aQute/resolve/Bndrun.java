@@ -184,6 +184,7 @@ public class Bndrun extends Run {
 		switch (resolve) {
 			case auto :
 			case manual :
+			case never :
 			default :
 				break;
 

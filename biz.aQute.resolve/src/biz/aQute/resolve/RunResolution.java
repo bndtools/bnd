@@ -30,6 +30,7 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.help.instructions.ResolutionInstructions.RunStartLevel;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.BundleId;
@@ -96,6 +97,13 @@ public class RunResolution {
 	 */
 	public static RunResolution resolve(Project project, Processor actualProperties,
 		Collection<ResolutionCallback> callbacks, ResolverLogger resolverLogger) {
+		if (ResolveMode.never.toString()
+			.equals(project.get(Constants.RESOLVE))) {
+			return new RunResolution(project, actualProperties, new UnsupportedOperationException(String
+				.format("Resolve is forbidden here, as %s is set to %s", Constants.RESOLVE,
+					ResolveMode.never.toString())),
+				null);
+		}
 		if (callbacks == null)
 			callbacks = Collections.emptyList();
 		ResolverLogger logger = resolverLogger == null ? ResolverLogger.newLogger(actualProperties, false)
