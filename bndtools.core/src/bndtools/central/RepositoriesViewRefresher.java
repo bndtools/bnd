@@ -29,6 +29,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -115,6 +116,23 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 							});
 
 					}
+
+					if (target instanceof WorkspaceRepository) {
+						// e.g. new project / project template project was
+						// added.
+						// refresh the EclipseWorkspaceRepository so that new
+						// added project templates show up
+						// in the "New Project" wizard (see
+						// AbstractNewBndProjectWizard)
+						try {
+							monitor.subTask("Refresh EclipseWorkspaceRepository to detect new or changed projects");
+							Central.getEclipseWorkspaceRepository()
+								.refresh();
+						} catch (Exception e) {
+							// swallow to not interrupt the rest
+						}
+					}
+
 					if (state.getAndSet(State.IDLE) == State.REDO) {
 						refreshRepositories(null);
 					}
