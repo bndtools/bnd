@@ -14,6 +14,7 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PlatformUI;
@@ -24,8 +25,11 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 
 	@Override
 	public void start() {
-		NewSearchUI.addQueryListener(this);
-		createBndtoolsJavaWorkingSet();
+		Display.getCurrent()
+			.syncExec(() -> {
+				NewSearchUI.addQueryListener(this);
+				createBndtoolsJavaWorkingSet();
+			});
 	}
 
 	private void createBndtoolsJavaWorkingSet() {
