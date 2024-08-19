@@ -96,6 +96,12 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	boolean					includeClassesDir;
 
 	/**
+	 * Whether to delete an existing {@link #getManifestPath()} before execution.
+	 */
+	@Parameter(defaultValue = "false")
+	boolean					deleteExistingManifest;
+
+	/**
 	 * The directory where the webapp is built when packaging is {@code war}.
 	 */
 	@Parameter(alias = "warOutputDir", defaultValue = "${project.build.directory}/${project.build.finalName}")
@@ -252,6 +258,16 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			List<Builder> subs = builder.getSubBuilders();
 			if ((subs.size() != 1) || !builder.equals(subs.get(0))) {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
+			}
+
+			if (deleteExistingManifest) {
+				// delete existing MANIFEST.MF
+				// e.g. from previous build to avoid that this MANIFEST.MF
+				// becomes input to the bnd process (which could lead to
+				// suprising results in some cases)
+				File existingMetaInf = getManifestPath();
+				logger.info("Delete existing manifest: {}", existingMetaInf);
+				IO.delete(existingMetaInf);
 			}
 
 			// always add the outputDirectory to the classpath, but

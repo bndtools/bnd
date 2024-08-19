@@ -65,8 +65,10 @@ A plugin to generate sources and resources.
 
 # Building the Maven Plugins
 
-You must first run `./gradlew :build` to build the Bnd artifacts and install them in your local maven repo.
-You can then run `./mvnw install` to build the Bnd Maven plugins.
+You must first run `./gradlew :build` (or `./gradlew build -x test` skip tests for faster local builds) to build the Bnd artifacts and install them in your local maven repo.
+You can then run `./mvnw install` to build the Bnd Maven plugins (or `mvn install -Dinvoker.skip=true` to skip tests for faster local builds).
+
+
 
 ---
 
