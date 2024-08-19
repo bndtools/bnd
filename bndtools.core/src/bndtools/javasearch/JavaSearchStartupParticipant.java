@@ -25,13 +25,17 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 
 	@Override
 	public void start() {
-		Display.getCurrent()
+		Display current = Display.getCurrent();
+		if (current != null) {
+			current
 			.syncExec(() -> {
 				NewSearchUI.addQueryListener(this);
 				createBndtoolsJavaWorkingSet();
 			});
+		} else {
+			// do nothing, because we do not have a display (e.g. unit test)
+		}
 	}
-
 	private void createBndtoolsJavaWorkingSet() {
 		IWorkingSetManager workingSetManager = PlatformUI.getWorkbench()
 			.getWorkingSetManager();
