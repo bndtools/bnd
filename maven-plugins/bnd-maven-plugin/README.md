@@ -92,6 +92,28 @@ The `bnd-process` is not executed by default, therefore at least one explicit ex
 </plugin>
 ```
 
+**Deleting existing MANIFEST.MF of previous builds:** 
+Note that `process-classes` uses content in the `classesDir` as input which could also contain a `META-INF/MANIFEST.MF` file (e.g. from a previous build). In some cases this could lead to surprising results when `process-classes` is executed multiple times. You can set the `deleteExistingManifest` configuration to `true` to delete an existing MANIFEST.MF at `manifestPath` prior to execution to avoid that it is used as input to the bnd process.
+
+```xml
+<plugin>
+    <groupId>biz.aQute.bnd</groupId>
+    <artifactId>bnd-maven-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>bnd-process</id>
+            <goals>
+                <goal>bnd-process</goal>
+            </goals>
+            <configuration>
+            	<deleteExistingManifest>true</deleteExistingManifest>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+
 ### Configuration Parameters
 
 | Configuration Parameter | Description                                                                                                                                                                                                                                                                       |
@@ -99,6 +121,8 @@ The `bnd-process` is not executed by default, therefore at least one explicit ex
 | `bndfile`               | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.                                                                                                         |
 | `bnd`                   | Bnd instructions for this project specified directly in the pom file. This is generally be done using a `<![CDATA[  ]]>` section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
 | `manifestPath`          | Specify the path to store the generated manifest file. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._                                                                                                                                                     |
+| `deleteExistingManifest`          | Whether to delete an existing file at `manifestPath` before execution. _Defaults to `false`._
+|
 | `classesDir`            | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.outputDirectory}`._                                                                                                                                                              |
 | `includeClassesDir`     | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*.                                                                                                                                                                                                  |
 | `outputDir`             | The directory where this goal will store its output. _Defaults to `${project.build.outputDirectory}`._                                                                                                                                                                            |
@@ -429,6 +453,8 @@ The `bnd-process-tests` is not executed by default, therefore at least one expli
 | `skip`                  | Skip the goal. _Defaults to `false`._ Override with property `bnd-tests.skip` or `maven.test.skip`.                                                                                                                                                                               |
 | `skipIfEmpty`           | Skip processing if `includeClassesDir` is `true` and the `classesDir` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.                                                                                                                                  |
 | `manifestPath`          | Specify the path to store the generated manifest file. _Defaults to `${project.build.testOutputDirectory}/META-INF/MANIFEST.MF`._                                                                                                                                                 |
+| `deleteExistingManifest`          | Whether to delete an existing file at `manifestPath` before execution. _Defaults to `false`._
+|
 | `outputDir`             | The directory where this goal will store its output. _Defaults to `${project.build.testOutputDirectory}`._                                                                                                                                                                        |
 | `packagingTypes`        | The list of maven packaging types for which the plugin will execute. *Defaults to `jar,war`*. Override with property `bnd.packagingTypes`.                                                                                                                                        |
 | `outputTimestamp`       | Timestamp for [reproducible][1] output archive entries, either formatted as ISO 8601 `yyyy-MM-dd'T'HH:mm:ssXXX` or as an int representing seconds since the epoch. _Defaults to `${project.build.outputTimestamp}`_.                                                              |
