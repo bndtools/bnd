@@ -458,14 +458,58 @@ public class Builder extends Analyzer {
 	@Override
 	public void analyze() throws Exception {
 		super.analyze();
-		cleanupVersion(getImports(), null, Constants.IMPORT_PACKAGE);
-		cleanupVersion(getExports(), getVersion(), Constants.EXPORT_PACKAGE);
+		Packages exports = getExports();
+		Packages imports = getImports();
+
+		cleanupVersion(imports, null, Constants.IMPORT_PACKAGE);
+		cleanupVersion(exports, getVersion(), Constants.EXPORT_PACKAGE);
+		addExportVersionToSelfImports(imports, exports);
+
 		String version = getProperty(BUNDLE_VERSION);
 		if (version != null) {
 			version = cleanupVersion(version);
 			version = doSnapshot(version);
 			setProperty(BUNDLE_VERSION, version);
 		}
+	}
+
+	/**
+	 * Add version of the export to Selfimports in case the import does not yet
+	 * have a version. This method should be called after exports have been
+	 * processed via {@link #cleanupVersion(Packages, String, String)}
+	 *
+	 * @param imports
+	 * @param exports
+	 * @throws Exception
+	 */
+	private void addExportVersionToSelfImports(Packages imports, Packages exports) throws Exception {
+		Packages selfImports = calcSelfImports(exports, imports);
+
+		// augmentImports() does use applyVersionPolicy internally which is the
+		// main thing we want here
+		augmentImports(selfImports, exports);
+	}
+
+	/**
+	 * Calculates selfImports which are imports which are also exported by the
+	 * same jar
+	 *
+	 * @param exports
+	 * @param imports
+	 * @return
+	 */
+	private Packages calcSelfImports(Packages exports, Packages imports) {
+		Packages selfImports = new Packages();
+
+		imports.entrySet()
+			.stream()
+			.filter(e -> exports.containsKey(e.getKey()))
+			.forEach(e -> {
+				selfImports.put(e.getKey(), e.getValue());
+			});
+
+		return selfImports;
+
 	}
 
 	private String doSnapshot(String version) {
