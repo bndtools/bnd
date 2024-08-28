@@ -47,7 +47,7 @@ The manual is also on [github][5]. If you see an improvement, do not hesitate to
 
 If you're behind a firewall that requires proxies or you use repositories that require authentication see [-connection-settings][6].
 
-[1]: https://brew.sh/
+[1]: https://formulae.brew.sh/formula/bnd
 [3]: https://github.com/bndtools/bnd
 [4]: https://bndtools.jfrog.io/bndtools/libs-snapshot
 [5]: https://github.com/bndtools/bnd/tree/master/docs

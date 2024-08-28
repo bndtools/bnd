@@ -1,16 +1,13 @@
 nav:
-  - title: Introduction
-    subfolderitems:
-      - url: /chapters/110-introduction.html
-  - title: Installation
-    subfolderitems:
-      - url: /chapters/120-install.html
   - title: Getting Started
     subfolderitems:
+      - url: /chapters/120-install.html
       - url: /chapters/123-tour-workspace.html
       - url: /chapters/125-tour-features.html
+      - url: /chapters/920-faq.html
   - title: Concepts and Practices
     subfolderitems:
+      - url: /chapters/110-introduction.html
       - url: /chapters/130-concepts.html
       - url: /chapters/140-best-practices.html
   - title: Build and Development
@@ -62,4 +59,3 @@ nav:
       - url: /chapters/880-settings.html
       - url: /chapters/900-errors.html
       - url: /chapters/910-warnings.html
-      - url: /chapters/920-faq.html
