@@ -23,6 +23,7 @@ import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.JRE;
+import org.junit.jupiter.api.condition.OS;
 
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
@@ -1371,6 +1372,85 @@ public class MacroTest {
 		try (Processor p = new Processor()) {
 			Macro macro = new Macro(p);
 			assertEquals("", macro.process("${system-allow-fail;mostidioticcommandthatwillsurelyfail}"));
+		} catch (IOException e) {
+			fail(e);
+		}
+	}
+
+	@Test
+	@DisabledOnOs(WINDOWS)
+	public void testSystemInPath() throws Exception {
+		try (Processor p = new Processor()) {
+			Macro macro = new Macro(p);
+			assertEquals("/tmp", macro.process("${system-in-path;/tmp;pwd}"));
+		} catch (IOException e) {
+			fail(e);
+		}
+	}
+
+	@Test
+	@DisabledOnOs({
+		OS.MAC, OS.LINUX
+	})
+	public void testSystemInPathWindows() throws Exception {
+		try (Processor p = new Processor()) {
+			Macro macro = new Macro(p);
+			assertEquals("c:\\", macro.process("${system-in-path;c:/;echo %cd%}"));
+		} catch (IOException e) {
+			fail(e);
+		}
+	}
+
+	@Test
+	@DisabledOnOs(WINDOWS)
+	/**
+	 * Verify system-allow-fail command
+	 */
+	public void testSystemInPathAllowFailWorks() throws Exception {
+		try (Processor p = new Processor()) {
+			Macro macro = new Macro(p);
+			assertEquals("/tmp", macro.process("${system-in-path-allow-fail;/tmp;pwd}"));
+		} catch (IOException e) {
+			fail(e);
+		}
+	}
+
+	@Test
+	@DisabledOnOs({
+		OS.MAC, OS.LINUX
+	})
+	public void testSystemInPathWindowsAllowFailWorks() throws Exception {
+		try (Processor p = new Processor()) {
+			Macro macro = new Macro(p);
+			assertEquals("c:\\", macro.process("${system-in-path-allow-fail;c:/;echo %cd%}"));
+		} catch (IOException e) {
+			fail(e);
+		}
+	}
+
+	@Test
+	@DisabledOnOs(WINDOWS)
+	/**
+	 * Verify system-allow-fail command
+	 */
+	public void testSystemInPathAllowFail() throws Exception {
+		try (Processor p = new Processor()) {
+			Macro macro = new Macro(p);
+			assertEquals("", macro.process("${system-in-path-allow-fail;/tmp;mostidioticcommandthatwillsurelyfail}"));
+		} catch (IOException e) {
+			fail(e);
+		}
+	}
+
+	@Test
+	@DisabledOnOs({
+		OS.MAC, OS.LINUX
+	})
+	public void testSystemInPathWindowsAllowFail() throws Exception {
+		try (Processor p = new Processor()) {
+			Macro macro = new Macro(p);
+			assertEquals("",
+				macro.process("${system-in-path-allow-fail;c:/;mostidioticcommandthatwillsurelyfail}"));
 		} catch (IOException e) {
 			fail(e);
 		}

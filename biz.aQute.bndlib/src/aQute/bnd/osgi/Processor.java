@@ -2436,6 +2436,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public String system(boolean allowFail, String command, String input) throws IOException, InterruptedException {
+		return system(allowFail, getBase(), command, input);
+	}
+
+	public String system(boolean allowFail, String runDirectory, String command, String input)
+		throws IOException, InterruptedException, InterruptedException {
+		return system(allowFail, new File(runDirectory), command, input);
+	}
+
+	public String system(boolean allowFail, File runDirectory, String command, String input)
+		throws IOException, InterruptedException {
 		List<String> args;
 		if (IO.isWindows()) {
 			args = Lists.of("cmd", "/c", Command.windowsQuote(command));
@@ -2445,7 +2455,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				.collect(toList());
 		}
 
-		Process process = new ProcessBuilder(args).directory(getBase())
+		Process process = new ProcessBuilder(args).directory(runDirectory)
 			.start();
 
 		try (OutputStream stdin = process.getOutputStream()) {
