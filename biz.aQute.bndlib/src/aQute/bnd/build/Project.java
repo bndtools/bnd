@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import static aQute.bnd.build.Container.toPaths;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -234,7 +235,7 @@ public class Project extends Processor {
 		if (getBase() == null || !getBase().isDirectory())
 			return false;
 
-		return getPropertiesFile() == null || getPropertiesFile().isFile();
+		return getPropertiesFile() == null || (!mustFileExist() || getPropertiesFile().isFile());
 	}
 
 	/**

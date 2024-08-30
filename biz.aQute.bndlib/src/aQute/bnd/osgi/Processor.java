@@ -1381,8 +1381,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return propertiesFile;
 	}
 
+	/**
+	 * Marks if the given Properties File really must exist.
+	 */
 	public void setFileMustExist(boolean mustexist) {
 		fileMustExist = mustexist;
+	}
+
+	public boolean mustFileExist() {
+		return fileMustExist;
 	}
 
 	static public String read(InputStream in) throws Exception {
