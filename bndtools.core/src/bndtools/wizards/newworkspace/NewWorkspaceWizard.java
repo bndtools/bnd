@@ -129,7 +129,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			clean.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 8, 1));
 
 			Button switchWorkspace = new Button(container, SWT.CHECK);
-			switchWorkspace.setText("Switch to new workspace after finish");
+			switchWorkspace.setText("Show workspace select dialog to switch to new workspace after finish");
 			switchWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 8, 1));
 
 			CheckboxTableViewer selectedTemplates = CheckboxTableViewer.newCheckList(container,

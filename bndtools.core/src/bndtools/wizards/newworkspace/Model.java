@@ -14,7 +14,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
+import org.eclipse.ui.internal.ide.actions.OpenWorkspaceAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,8 +119,16 @@ public class Model implements Runnable {
 						System.setProperty("osgi.instance.area", location.getAbsolutePath());
 						System.setProperty("osgi.instance.area.default", location.getAbsolutePath());
 
-						PlatformUI.getWorkbench()
-							.restart();
+						// show Eclipse Switch Workspace dialog with the new
+						// workspace location pre-filled
+						ChooseWorkspaceData launchData = new ChooseWorkspaceData(location.getAbsolutePath());
+						launchData.workspaceSelected(location.getAbsolutePath());
+						launchData.writePersistedData();
+
+						IWorkbenchWindow window = PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow();
+						new OpenWorkspaceAction(window).run();
+
 					});
 				}
 			} catch (Exception e) {
