@@ -51,7 +51,13 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 
 	@Override
 	public void stop() {
-		NewSearchUI.removeQueryListener(this);
+		Display current = Display.getCurrent();
+		if (current != null) {
+			current.syncExec(() -> {
+				NewSearchUI.removeQueryListener(this);
+			});
+		}
+
 	}
 
 	@Override
