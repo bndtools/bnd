@@ -17,7 +17,7 @@ We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at t
 
 Some more instructions how to get started with bndtools development in Eclipse can be found [here](https://bndtools.org/development.html).
 
-- `./gradlew :build` - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
+- `./gradlew :build` (or `./gradlew build -x test` to skip tests for faster local builds) - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
 - `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
 - `./mvnw install` - Assembles and tests the Bnd Maven plugins.
 - `./gradlew :publish` - Assembles and publishes the Bnd Workspace projects into `dist/bundles`.
