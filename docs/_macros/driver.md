@@ -5,7 +5,8 @@ title: driver ( ';' NAME )?
 summary: the driver of the environment (e.g. gradle, eclipse, intellij)
 ---
 
-Added support for an environment driver of bnd. This driver should be set when bnd is started by for example gradle or ant. The driver can be overridden with the -bnd-driver property.
+Added support for an environment driver of bnd. This driver should be set when bnd is started by for example gradle or ant. The driver can be overridden with the -bnd-driver property. 
+This can be used to e.g. [avoid target-dir conflicts between different build tools](/chapters/150-build.html#avoiding-target-dir-conflicts-between-different-build-tools).
 	
 	public void testDriver() throws Exception {
 		Attrs attrs = new Attrs();
