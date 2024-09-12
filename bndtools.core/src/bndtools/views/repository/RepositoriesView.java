@@ -1165,7 +1165,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				"Add list of bundles containing packages which are imported and exported in their Manifest.", true,
 				false, rp, () -> {
 
-					final StringBuilder sb = new StringBuilder();
+					final StringBuilder sb = new StringBuilder(
+						"Shows list of bundles containing packages which are imported and exported in their Manifest. See https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3238802 for more information."
+							+ "\n\n");
 
 					for (RepositoryBundleVersion rpv : contentProvider.allRepoBundleVersions(rp)) {
 						org.osgi.resource.Resource r = rpv.getResource();
