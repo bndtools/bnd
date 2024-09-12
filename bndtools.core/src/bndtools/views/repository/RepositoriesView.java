@@ -117,7 +117,6 @@ import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
-import bndtools.model.repo.ResourceProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.WorkspaceOfflineChangeAdapter;
@@ -1166,38 +1165,37 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				"Add list of bundles containing packages which are imported and exported in their Manifest.", true,
 				false, rp, () -> {
 
-				final StringBuilder sb = new StringBuilder();
+					final StringBuilder sb = new StringBuilder();
 
-				Object[] result = contentProvider.getChildren(rp);
-				for (Object object : result) {
-					if (object instanceof ResourceProvider prov) {
-						org.osgi.resource.Resource r = prov.getResource();
-
-						Collection<PackageExpression> selfImports = ResourceUtils.getSelfImportPackages(r);
-						long numWithoutRange = selfImports.stream()
-							.filter(pckExp -> pckExp.getRangeExpression() == null)
-							.count();
+					for (RepositoryBundleVersion rpv : contentProvider.allRepoBundleVersions(rp)) {
+						org.osgi.resource.Resource r = rpv.getResource();
+						Collection<PackageExpression> selfImports = ResourceUtils
+							.getSubstitutionPackages(r);
 
 						if (!selfImports.isEmpty()) {
-								sb.append(r.toString() + " has " + selfImports.size()
-									+ " substitution packages (self-imports)");
-							if(numWithoutRange > 0) {
+							long numWithoutRange = selfImports.stream()
+								.filter(pckExp -> pckExp.getRangeExpression() == null)
+								.count();
+							sb.append(
+								r.toString() + " has " + selfImports.size() + " substitution packages (self-imports)");
+							if (numWithoutRange > 0) {
 								sb.append(" (" + numWithoutRange + " without version range)");
 							}
-
 							sb.append(" -> " + selfImports + "\n");
 						}
-					}
-				}
 
-				if (sb.isEmpty()) {
-					clipboard.copy("-Empty-");
-				} else {
-					clipboard.copy(sb.toString());
-				}
+					}
+
+					if (sb.isEmpty()) {
+						clipboard.copy("-Empty-");
+					} else {
+						clipboard.copy(sb.toString());
+					}
 
 			}));
 	}
+
+
 
 	private HierarchicalLabel<Action> createContextMenueCopyInfoRepoBundle(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundle rb) {
