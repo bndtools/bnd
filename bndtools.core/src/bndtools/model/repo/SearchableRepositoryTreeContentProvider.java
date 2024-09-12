@@ -51,6 +51,9 @@ public class SearchableRepositoryTreeContentProvider extends RepositoryTreeConte
 			if (currentChild instanceof RepositoryBundleVersion rpv) {
 				allChildren.add(rpv);
 			}
+			else if (currentChild instanceof RepositoryResourceElement rre) {
+				allChildren.add(rre.getRepositoryBundleVersion());
+			}
 
 			Object[] childrenOfChild = getChildren(currentChild);
 			if (childrenOfChild != null) {
