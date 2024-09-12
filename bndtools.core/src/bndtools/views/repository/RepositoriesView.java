@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -96,6 +97,7 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
@@ -1159,8 +1161,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 	private HierarchicalLabel<Action> createContextMenueCopyBundlesWithSelfImports(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard) {
-		return new HierarchicalLabel<Action>("Copy to clipboard :: Bundles with self-imports", (label) -> createAction(label.getLeaf(),
-			"Add list of bundles containing self-imported packages in their Manifest.", true, false, rp, () -> {
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Bundles with substitution packages (self-imports)",
+			(label) -> createAction(label.getLeaf(),
+				"Add list of bundles containing packages which are imported and exported in their Manifest.", true,
+				false, rp, () -> {
 
 				final StringBuilder sb = new StringBuilder();
 
@@ -1169,10 +1173,19 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 					if (object instanceof ResourceProvider prov) {
 						org.osgi.resource.Resource r = prov.getResource();
 
-						Set<String> selfImports = ResourceUtils.getSelfImportPackages(r);
+						Collection<PackageExpression> selfImports = ResourceUtils.getSelfImportPackages(r);
+						long numWithoutRange = selfImports.stream()
+							.filter(pckExp -> pckExp.getRangeExpression() == null)
+							.count();
+
 						if (!selfImports.isEmpty()) {
-							sb.append(r.toString() + " has " + selfImports.size() + " self-import packages: "
-								+ selfImports + "\n");
+								sb.append(r.toString() + " has " + selfImports.size()
+									+ " substitution packages (self-imports)");
+							if(numWithoutRange > 0) {
+								sb.append(" (" + numWithoutRange + " without version range)");
+							}
+
+							sb.append(" -> " + selfImports + "\n");
 						}
 					}
 				}

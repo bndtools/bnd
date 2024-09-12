@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Filter;
@@ -66,6 +68,8 @@ import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.service.library.LibraryNamespace;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.unmodifiable.Lists;
@@ -98,9 +102,7 @@ public abstract class ResourceUtils {
 	private static final Converter						cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
 
-	private static final String							PACKAGE_FILTER_PATTERN		= "osgi.wiring.package=([^)]*)";
-	private static final Pattern						pkgFilterPattern			= Pattern
-		.compile(PACKAGE_FILTER_PATTERN);
+	private static final FilterParser					fp							= new FilterParser();
 
 	public interface IdentityCapability extends Capability {
 		public enum Type {
@@ -965,7 +967,7 @@ public abstract class ResourceUtils {
 	 * @param r the resource
 	 * @return a non-null list of self-import package names.
 	 */
-	public static Set<String> getSelfImportPackages(Resource r) {
+	public static Collection<PackageExpression> getSelfImportPackages(Resource r) {
 		List<Capability> caps = r.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
 		List<Requirement> requirements = r.getRequirements(PackageNamespace.PACKAGE_NAMESPACE);
 
@@ -982,28 +984,28 @@ public abstract class ResourceUtils {
 		}
 
 		// Populate imported packages
+		Map<String, PackageExpression> pckVersionMap = new LinkedHashMap<>();
 		for (Requirement req : requirements) {
-			String requirementPackage = getRequirementPackage(req);
-			if (requirementPackage != null) {
-				importedPackages.add(requirementPackage);
+			PackageExpression pckExp = getRequirementPackage(req);
+			if (pckExp != null) {
+				importedPackages.add(pckExp.getPackageName());
+				pckVersionMap.put(pckExp.getPackageName(), pckExp);
 			}
 		}
 
 		Set<String> selfImports = new LinkedHashSet<>(exportedPackages);
 		selfImports.retainAll(importedPackages);
 
-		return selfImports;
+		return selfImports.stream()
+			.map(pck -> pckVersionMap.get(pck))
+			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
-	private static String getRequirementPackage(Requirement req) {
+	private static PackageExpression getRequirementPackage(Requirement req) {
 
-		String filter = req.getDirectives()
-			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		if (filter != null) {
-			Matcher m = pkgFilterPattern.matcher(filter);
-			if (m.find()) {
-				return m.group(1);
-			}
+		Expression exp = fp.parse(req);
+		if (exp instanceof PackageExpression pckExp) {
+			return pckExp;
 		}
 
 		return null;
