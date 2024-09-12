@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -96,6 +97,10 @@ public abstract class ResourceUtils {
 
 	private static final Converter						cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
+
+	private static final String							PACKAGE_FILTER_PATTERN		= "osgi.wiring.package=([^)]*)";
+	private static final Pattern						pkgFilterPattern			= Pattern
+		.compile(PACKAGE_FILTER_PATTERN);
 
 	public interface IdentityCapability extends Capability {
 		public enum Type {
@@ -951,5 +956,56 @@ public abstract class ResourceUtils {
 		}
 
 		return culprits;
+	}
+
+	/**
+	 * Calculates a list of package names which are exported and also imported.
+	 * This can be handy for debugging and identify unwanted self-imports.
+	 *
+	 * @param r the resource
+	 * @return a non-null list of self-import package names.
+	 */
+	public static Set<String> getSelfImportPackages(Resource r) {
+		List<Capability> caps = r.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
+		List<Requirement> requirements = r.getRequirements(PackageNamespace.PACKAGE_NAMESPACE);
+
+		Set<String> exportedPackages = new LinkedHashSet<>();
+		Set<String> importedPackages = new LinkedHashSet<>();
+
+		// Populate exported packages
+		for (Capability cap : caps) {
+			String packageName = (String) cap.getAttributes()
+				.get(PackageNamespace.PACKAGE_NAMESPACE);
+			if (packageName != null) {
+				exportedPackages.add(packageName);
+			}
+		}
+
+		// Populate imported packages
+		for (Requirement req : requirements) {
+			String requirementPackage = getRequirementPackage(req);
+			if (requirementPackage != null) {
+				importedPackages.add(requirementPackage);
+			}
+		}
+
+		Set<String> selfImports = new LinkedHashSet<>(exportedPackages);
+		selfImports.retainAll(importedPackages);
+
+		return selfImports;
+	}
+
+	private static String getRequirementPackage(Requirement req) {
+
+		String filter = req.getDirectives()
+			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+		if (filter != null) {
+			Matcher m = pkgFilterPattern.matcher(filter);
+			if (m.find()) {
+				return m.group(1);
+			}
+		}
+
+		return null;
 	}
 }

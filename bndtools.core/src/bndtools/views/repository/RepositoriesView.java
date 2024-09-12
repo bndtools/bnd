@@ -96,6 +96,7 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
@@ -114,6 +115,7 @@ import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
+import bndtools.model.repo.ResourceProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.WorkspaceOfflineChangeAdapter;
@@ -1127,6 +1129,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 		if ((act instanceof Repository) || (act instanceof RepositoryPlugin)) {
 			hmenu.add(createContextMenueCopyInfoRepo(act, rp, clipboard));
+			hmenu.add(createContextMenueCopyBundlesWithSelfImports(act, rp, clipboard));
 		}
 
 	}
@@ -1149,6 +1152,35 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 					}
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
+				}
+
+			}));
+	}
+
+	private HierarchicalLabel<Action> createContextMenueCopyBundlesWithSelfImports(Actionable act, final RepositoryPlugin rp,
+		final Clipboard clipboard) {
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Bundles with self-imports", (label) -> createAction(label.getLeaf(),
+			"Add list of bundles containing self-imported packages in their Manifest.", true, false, rp, () -> {
+
+				final StringBuilder sb = new StringBuilder();
+
+				Object[] result = contentProvider.getChildren(rp);
+				for (Object object : result) {
+					if (object instanceof ResourceProvider prov) {
+						org.osgi.resource.Resource r = prov.getResource();
+
+						Set<String> selfImports = ResourceUtils.getSelfImportPackages(r);
+						if (!selfImports.isEmpty()) {
+							sb.append(r.toString() + " has " + selfImports.size() + " self-import packages: "
+								+ selfImports + "\n");
+						}
+					}
+				}
+
+				if (sb.isEmpty()) {
+					clipboard.copy("-Empty-");
+				} else {
+					clipboard.copy(sb.toString());
 				}
 
 			}));
