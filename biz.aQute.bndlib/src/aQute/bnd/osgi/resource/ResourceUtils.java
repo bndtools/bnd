@@ -961,13 +961,14 @@ public abstract class ResourceUtils {
 	}
 
 	/**
-	 * Calculates a list of package names which are exported and also imported.
-	 * This can be handy for debugging and identify unwanted self-imports.
+	 * Calculates a list of packages which are exported and also imported. This
+	 * can be handy for debugging and identify unwanted substitution packages /
+	 * self-imports.
 	 *
 	 * @param r the resource
-	 * @return a non-null list of self-import package names.
+	 * @return a non-null list of packages.
 	 */
-	public static Collection<PackageExpression> getSelfImportPackages(Resource r) {
+	public static Collection<PackageExpression> getSubstitutionPackages(Resource r) {
 		List<Capability> caps = r.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
 		List<Requirement> requirements = r.getRequirements(PackageNamespace.PACKAGE_NAMESPACE);
 
@@ -993,10 +994,10 @@ public abstract class ResourceUtils {
 			}
 		}
 
-		Set<String> selfImports = new LinkedHashSet<>(exportedPackages);
-		selfImports.retainAll(importedPackages);
+		Set<String> substitutions = new LinkedHashSet<>(exportedPackages);
+		substitutions.retainAll(importedPackages);
 
-		return selfImports.stream()
+		return substitutions.stream()
 			.map(pck -> pckVersionMap.get(pck))
 			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}

@@ -1,5 +1,6 @@
 package test;
 
+import static aQute.bnd.osgi.resource.ResourceUtils.getSubstitutionPackages;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -38,6 +39,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -288,6 +290,50 @@ public class ResourceTest {
 		StringBuilder sb = new StringBuilder();
 		versionClause.formatTo(sb);
 		assertEquals("demo-fragment;version=snapshot", sb.toString());
+	}
+
+	@Test
+	public void testResourceSubstitutionPackages1() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Parameters exports = new Parameters("com.foo;version=1.0");
+		rb.addExportPackages(exports, "bundleA", new Version("1.2.3"));
+		Parameters imports = new Parameters("com.foo");
+		rb.addImportPackages(imports);
+		Resource r = rb.build();
+
+		Collection<PackageExpression> substitutionPackages = getSubstitutionPackages(r);
+		assertThat(substitutionPackages).hasSize(1);
+		assertEquals("[com.foo]", substitutionPackages.toString());
+
+	}
+
+	@Test
+	public void testResourceSubstitutionPackages2() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Parameters exports = new Parameters("com.foo;version=1.0");
+		rb.addExportPackages(exports, "bundleA", new Version("1.2.3"));
+		Parameters imports = new Parameters("com.foo;version='[1.0.1,1.3.2)'");
+		rb.addImportPackages(imports);
+		Resource r = rb.build();
+
+		Collection<PackageExpression> substitutionPackages = getSubstitutionPackages(r);
+		assertThat(substitutionPackages).hasSize(1);
+		assertEquals("[com.foo; version=[1.0.1,1.3.2)]", substitutionPackages.toString());
+
+	}
+
+	@Test
+	public void testResourceHasNoSubstitutionPackages() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Parameters exports = new Parameters("com.foo;version=1.0");
+		rb.addExportPackages(exports, "bundleA", new Version("1.2.3"));
+		Parameters imports = new Parameters("com.bar;version='[1.0.1,1.3.2)'");
+		rb.addImportPackages(imports);
+		Resource r = rb.build();
+
+		Collection<PackageExpression> substitutionPackages = getSubstitutionPackages(r);
+		assertThat(substitutionPackages).isEmpty();
+
 	}
 
 	private Set<Resource> getResources(String locations) throws Exception {
