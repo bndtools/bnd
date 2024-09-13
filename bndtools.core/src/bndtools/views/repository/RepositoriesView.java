@@ -1166,7 +1166,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				false, rp, () -> {
 
 					final StringBuilder sb = new StringBuilder(
-						"Shows list of bundles containing packages which are imported and exported in their Manifest. See https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3238802 for more information."
+						"Shows list of bundles in the repository '" + rp.getName()
+							+ "' containing substitution packages / self-imports (i.e. same package imported and exported) in their Manifest. \n"
+							+ "See https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3238802 "
+							+ "and https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.module-import.export.same.package "
+							+ "for more information."
 							+ "\n\n");
 
 					for (RepositoryBundleVersion rpv : contentProvider.allRepoBundleVersions(rp)) {
@@ -1178,12 +1182,34 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 							long numWithoutRange = selfImports.stream()
 								.filter(pckExp -> pckExp.getRangeExpression() == null)
 								.count();
-							sb.append(
-								r.toString() + " has " + selfImports.size() + " substitution packages (self-imports)");
+
+							// Main package information
+							sb.append(r.toString())
+								.append("\n");
+							sb.append("    Substitution packages: ")
+								.append(selfImports.size());
+
+							// Additional information about packages without
+							// version range
 							if (numWithoutRange > 0) {
-								sb.append(" (" + numWithoutRange + " without version range)");
+								sb.append("    (")
+									.append(numWithoutRange)
+									.append(" without version range)");
 							}
-							sb.append(" -> " + selfImports + "\n");
+							sb.append("\n");
+
+							// List of substitution packages
+							sb.append("    [\n");
+							for (PackageExpression pckExp : selfImports) {
+								sb.append("        ")
+									.append(pckExp.toString())
+									.append(",\n");
+							}
+							// Remove the last comma and newline
+							if (!selfImports.isEmpty()) {
+								sb.setLength(sb.length() - 2);
+							}
+							sb.append("\n    ]\n\n");
 						}
 
 					}
