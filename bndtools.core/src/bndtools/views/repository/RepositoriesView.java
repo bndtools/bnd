@@ -1168,6 +1168,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 					final StringBuilder sb = new StringBuilder(
 						"Shows list of bundles in the repository '" + rp.getName()
 							+ "' containing substitution packages / self-imports (i.e. same package imported and exported) in their Manifest. \n"
+							+ "Note: a missing version range can cause wiring / resolution problems.\n"
 							+ "See https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3238802 "
 							+ "and https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.module-import.export.same.package "
 							+ "for more information."
