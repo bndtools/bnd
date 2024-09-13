@@ -102,7 +102,6 @@ public abstract class ResourceUtils {
 	private static final Converter						cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
 
-	private static final FilterParser					fp							= new FilterParser();
 
 	public interface IdentityCapability extends Capability {
 		public enum Type {
@@ -986,8 +985,10 @@ public abstract class ResourceUtils {
 
 		// Populate imported packages
 		Map<String, PackageExpression> pckVersionMap = new LinkedHashMap<>();
+		FilterParser fp = new FilterParser(); // new instance required to avoid
+												// invorrect caching
 		for (Requirement req : requirements) {
-			PackageExpression pckExp = getRequirementPackage(req);
+			PackageExpression pckExp = getRequirementPackage(req, fp);
 			if (pckExp != null) {
 				importedPackages.add(pckExp.getPackageName());
 				pckVersionMap.put(pckExp.getPackageName(), pckExp);
@@ -1002,7 +1003,7 @@ public abstract class ResourceUtils {
 			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
-	private static PackageExpression getRequirementPackage(Requirement req) {
+	private static PackageExpression getRequirementPackage(Requirement req, FilterParser fp) {
 
 		Expression exp = fp.parse(req);
 		if (exp instanceof PackageExpression pckExp) {
