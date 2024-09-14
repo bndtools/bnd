@@ -452,9 +452,11 @@ public class BuilderTest {
 
 	@Test
 	public void testNoImportForUsedExport_971() throws Exception {
+		// exports with version should be added to imports
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
-		b.setExportPackage("test.missingimports_971.p1,test.missingimports_971.p2,test.missingimports_971.p4");
+		b.setExportPackage(
+			"test.missingimports_971.p1;version=1.1.0,test.missingimports_971.p2;version=1.1.0,test.missingimports_971.p4;version=1.1.0");
 		b.setPrivatePackage("test.missingimports_971.p3");
 		b.build();
 		assertTrue(b.check());
@@ -473,6 +475,39 @@ public class BuilderTest {
 			.getManifest()
 			.write(System.out);
 	}
+
+
+	/**
+	 * Counterpart of {@link #testNoImportForUsedExport_971()}
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testEnsureNoImportForUsedExport_971_WithMissingExportVersion() throws Exception {
+		// exports without version should not be added to imports
+		Builder b = new Builder();
+		b.addClasspath(new File("bin_test"));
+		b.setExportPackage(
+			"test.missingimports_971.p1,test.missingimports_971.p2,test.missingimports_971.p4");
+		b.setPrivatePackage("test.missingimports_971.p3");
+		b.build();
+		assertTrue(b.check());
+
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p1"));
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p2"));
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p4"));
+		assertFalse(b.getImports()
+			.containsFQN("test.missingimports_971.p1"));
+		assertFalse(b.getImports()
+			.containsFQN("test.missingimports_971.p2"));
+		b.getJar()
+			.getManifest()
+			.write(System.out);
+	}
+
 	/*
 	 * Private package header doesn't allow the use of negation (!) #840
 	 */

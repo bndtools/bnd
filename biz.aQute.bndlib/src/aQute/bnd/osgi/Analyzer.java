@@ -1922,6 +1922,22 @@ public class Analyzer extends Processor {
 				String noimport = parameters.get(NO_IMPORT_DIRECTIVE);
 				return !Boolean.parseBoolean(noimport);
 			})
+			// Remove packages without a version range
+			// because this would lead imports without a version.
+			// and this can cause to surprising resolver problems
+			// because the resolver has too many options in case multiple
+			// provideers of that package
+			.filter(p -> {
+				Attrs parameters = exports.get(p);
+				if (parameters == null) {
+					return true;
+				}
+				// check only for presence of version (not validity, because
+				// this done by #check())
+				// (see also test.VerifierTest.testStrict())
+				return parameters.getVersion() != null;
+			})
+
 			// Clean up attributes and generate result map
 			.collect(toMap(p -> p, p -> new Attrs(), (a1, a2) -> a1, Packages::new));
 		return result;

@@ -198,6 +198,27 @@ public class DSAnnotationTest {
 	// #2876
 	@Test
 	public void testExportComponentImplPackage() throws Exception {
+		// exports with version should be added to imports
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
+			b.setProperty("Export-Package", "test.component.ds14;version=1.1.0");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Domain domain = Domain.domain(jar.getManifest());
+			Parameters exportPackages = domain.getExportPackage();
+			assertThat(exportPackages).containsOnlyKeys("test.component.ds14");
+			Parameters importPackages = domain.getImportPackage();
+			assertThat(importPackages).containsKeys("test.component.ds14");
+		}
+	}
+
+	// #2876
+	@Test
+	public void testExportComponentImplPackage2() throws Exception {
+		// exports without version should not be added to imports
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
 			b.setProperty("Export-Package", "test.component.ds14");
@@ -210,7 +231,7 @@ public class DSAnnotationTest {
 			Parameters exportPackages = domain.getExportPackage();
 			assertThat(exportPackages).containsOnlyKeys("test.component.ds14");
 			Parameters importPackages = domain.getImportPackage();
-			assertThat(importPackages).containsKeys("test.component.ds14");
+			assertThat(importPackages).doesNotContainKeys("test.component.ds14");
 		}
 	}
 
