@@ -55,7 +55,7 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@16bf8bc8fe830fa669c3c9f914d3eb147c629707
+      uses: gradle/actions/setup-gradle@d156388eb19639ec20ade50009f3d199ce1e2808
     - name: Initialize CodeQL Analysis
       uses: github/codeql-action/init@8214744c546c1e5c8f03dde8fab3a7353211988d
       with:
