@@ -89,7 +89,7 @@ public class RepositoryBundleVersion extends RepositoryEntry implements Actionab
 
 	@Override
 	public Resource getResource() {
-		return bundle.getResource();
+		return super.getResource();
 	}
 
 }

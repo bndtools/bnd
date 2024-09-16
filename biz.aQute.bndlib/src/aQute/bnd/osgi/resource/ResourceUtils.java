@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +38,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Filter;
@@ -65,6 +68,8 @@ import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.service.library.LibraryNamespace;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.unmodifiable.Lists;
@@ -96,6 +101,7 @@ public abstract class ResourceUtils {
 
 	private static final Converter						cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
+
 
 	public interface IdentityCapability extends Capability {
 		public enum Type {
@@ -951,5 +957,59 @@ public abstract class ResourceUtils {
 		}
 
 		return culprits;
+	}
+
+	/**
+	 * Calculates a list of packages which are exported and also imported. This
+	 * can be handy for debugging and identify unwanted substitution packages /
+	 * self-imports.
+	 *
+	 * @param r the resource
+	 * @return a non-null list of packages.
+	 */
+	public static Collection<PackageExpression> getSubstitutionPackages(Resource r) {
+		List<Capability> caps = r.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
+		List<Requirement> requirements = r.getRequirements(PackageNamespace.PACKAGE_NAMESPACE);
+
+		Set<String> exportedPackages = new LinkedHashSet<>();
+		Set<String> importedPackages = new LinkedHashSet<>();
+
+		// Populate exported packages
+		for (Capability cap : caps) {
+			String packageName = (String) cap.getAttributes()
+				.get(PackageNamespace.PACKAGE_NAMESPACE);
+			if (packageName != null) {
+				exportedPackages.add(packageName);
+			}
+		}
+
+		// Populate imported packages
+		Map<String, PackageExpression> pckVersionMap = new LinkedHashMap<>();
+		FilterParser fp = new FilterParser(); // new instance required to avoid
+												// invorrect caching
+		for (Requirement req : requirements) {
+			PackageExpression pckExp = getRequirementPackage(req, fp);
+			if (pckExp != null) {
+				importedPackages.add(pckExp.getPackageName());
+				pckVersionMap.put(pckExp.getPackageName(), pckExp);
+			}
+		}
+
+		Set<String> substitutions = new LinkedHashSet<>(exportedPackages);
+		substitutions.retainAll(importedPackages);
+
+		return substitutions.stream()
+			.map(pck -> pckVersionMap.get(pck))
+			.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
+	private static PackageExpression getRequirementPackage(Requirement req, FilterParser fp) {
+
+		Expression exp = fp.parse(req);
+		if (exp instanceof PackageExpression pckExp) {
+			return pckExp;
+		}
+
+		return null;
 	}
 }

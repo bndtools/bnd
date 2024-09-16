@@ -1,5 +1,11 @@
 package bndtools.model.repo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository;
 
@@ -27,5 +33,33 @@ public class SearchableRepositoryTreeContentProvider extends RepositoryTreeConte
 		}
 
 		return result;
+	}
+
+	public List<RepositoryBundleVersion> allRepoBundleVersions(final RepositoryPlugin rp) {
+		Object[] result = getChildren(rp);
+
+		List<RepositoryBundleVersion> allChildren = new ArrayList<>();
+		Queue<Object> queue = new LinkedList<>();
+
+		if (result != null) {
+			queue.addAll(Arrays.asList(result));
+		}
+
+		while (!queue.isEmpty()) {
+			Object currentChild = queue.poll();
+
+			if (currentChild instanceof RepositoryBundleVersion rpv) {
+				allChildren.add(rpv);
+			}
+			else if (currentChild instanceof RepositoryResourceElement rre) {
+				allChildren.add(rre.getRepositoryBundleVersion());
+			}
+
+			Object[] childrenOfChild = getChildren(currentChild);
+			if (childrenOfChild != null) {
+				queue.addAll(Arrays.asList(childrenOfChild));
+			}
+		}
+		return allChildren;
 	}
 }

@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -96,6 +97,8 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
@@ -1127,6 +1130,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 		if ((act instanceof Repository) || (act instanceof RepositoryPlugin)) {
 			hmenu.add(createContextMenueCopyInfoRepo(act, rp, clipboard));
+			hmenu.add(createContextMenueCopyBundlesWithSelfImports(act, rp, clipboard));
 		}
 
 	}
@@ -1153,6 +1157,74 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 			}));
 	}
+
+	private HierarchicalLabel<Action> createContextMenueCopyBundlesWithSelfImports(Actionable act, final RepositoryPlugin rp,
+		final Clipboard clipboard) {
+		return new HierarchicalLabel<Action>("Copy to clipboard :: Bundles with substitution packages (self-imports)",
+			(label) -> createAction(label.getLeaf(),
+				"Add list of bundles containing packages which are imported and exported in their Manifest.", true,
+				false, rp, () -> {
+
+					final StringBuilder sb = new StringBuilder(
+						"Shows list of bundles in the repository '" + rp.getName()
+							+ "' containing substitution packages / self-imports (i.e. same package imported and exported) in their Manifest. \n"
+							+ "Note: a missing version range can cause wiring / resolution problems.\n"
+							+ "See https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3238802 "
+							+ "and https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.module-import.export.same.package "
+							+ "for more information."
+							+ "\n\n");
+
+					for (RepositoryBundleVersion rpv : contentProvider.allRepoBundleVersions(rp)) {
+						org.osgi.resource.Resource r = rpv.getResource();
+						Collection<PackageExpression> selfImports = ResourceUtils
+							.getSubstitutionPackages(r);
+
+						if (!selfImports.isEmpty()) {
+							long numWithoutRange = selfImports.stream()
+								.filter(pckExp -> pckExp.getRangeExpression() == null)
+								.count();
+
+							// Main package information
+							sb.append(r.toString())
+								.append("\n");
+							sb.append("    Substitution packages: ")
+								.append(selfImports.size());
+
+							// Additional information about packages without
+							// version range
+							if (numWithoutRange > 0) {
+								sb.append("    (")
+									.append(numWithoutRange)
+									.append(" without version range)");
+							}
+							sb.append("\n");
+
+							// List of substitution packages
+							sb.append("    [\n");
+							for (PackageExpression pckExp : selfImports) {
+								sb.append("        ")
+									.append(pckExp.toString())
+									.append(",\n");
+							}
+							// Remove the last comma and newline
+							if (!selfImports.isEmpty()) {
+								sb.setLength(sb.length() - 2);
+							}
+							sb.append("\n    ]\n\n");
+						}
+
+					}
+
+					if (sb.isEmpty()) {
+						clipboard.copy("-Empty-");
+					} else {
+						clipboard.copy(sb.toString());
+					}
+
+			}));
+	}
+
+
 
 	private HierarchicalLabel<Action> createContextMenueCopyInfoRepoBundle(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundle rb) {
