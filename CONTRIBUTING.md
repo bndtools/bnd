@@ -28,6 +28,18 @@ We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3
 
 We use [CodeQL](https://github.com/bndtools/bnd/security/code-scanning?query=tool%3ACodeQL) for continuous security analysis. Pull requests are automatically code scanned.
 
+### Gradle Wrapper
+
+bnd uses [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html).
+To update the gradle wrapper locally to a new gradle version (e.g. to test building on a higher JDK) just run the following command:
+
+`gradle wrapper --gradle-version X.XX` (replace X.XX with your gradle version)
+
+This generates new gradle wrapper files. 
+Additionally consider adding the version to `gradle-plugins/biz.aQute.bnd.gradle/src/test/groovy/aQute/bnd/gradle/TestHelper.groovy` in the method `gradleVersion()`.
+
+If you think this new gradle wrapper might be worth a contribution to bnd, feel free to open a PR.
+
 ## Workflow
 
 We use [git triangular workflow](https://github.blog/2015-07-29-git-2-5-including-multiple-worktrees-and-triangular-workflows/).
