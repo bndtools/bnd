@@ -173,7 +173,12 @@ class ResourceImpl implements Resource, SupportingResource, Comparable<Resource>
 		this.requirementMap = allRequirements.stream()
 			.collect(groupingBy(Requirement::getNamespace, Lists.toList()));
 		this.locations = ResourceUtils.getLocations(this);
-		this.hashCode = locations.hashCode();
+		this.hashCode = this.locations.keySet()
+			.stream()
+			.map(URI::toString)
+			.sorted()
+			.map(String::hashCode)
+			.reduce(0, (prev, next) -> prev * 31 + next);
 		return this;
 	}
 

@@ -10,6 +10,7 @@ import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.EXECUTI
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -1023,8 +1024,8 @@ public class ResourceBuilder {
 
 		try (Jar jar = new Jar(file)) {
 			ResourceBuilder rb = new ResourceBuilder();
-			boolean hasIdentity = rb.addJar(jar);
 
+			boolean hasIdentity = rb.addJar(jar);
 			String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
 
 			rb.addContentCapability(uri,
@@ -1135,7 +1136,22 @@ public class ResourceBuilder {
 		rqb.addFilter(fb);
 		builder.addRequirement(rqb);
 
+		builder.addSyntheticContentCapability("urn:osgi-bnd-mrj:" + bsn + ":" + version + ":" + release);
 		return builder.build();
+	}
+
+	/*
+	 * Pass a urn that is unique for this resource.
+	 */
+	private void addSyntheticContentCapability(String urn) {
+		try {
+			URI uri = URI.create(urn);
+			String sha = SHA256.digest(urn.getBytes(StandardCharsets.UTF_8))
+				.asHex();
+			addContentCapability(uri, sha, 0, "application/octetstream");
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	public boolean addManifest(Manifest m) {
