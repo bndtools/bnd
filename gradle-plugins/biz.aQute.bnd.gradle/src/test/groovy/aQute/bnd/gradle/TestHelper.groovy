@@ -41,7 +41,7 @@ class TestHelper {
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21) || 
 			JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_22) || 
 			JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_23)) {
-			return "8.10"
+			return "8.10.1"
 		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_20)) {
 			return "8.1.1"
