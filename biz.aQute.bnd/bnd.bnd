@@ -32,7 +32,8 @@
  	@${repo;biz.aQute.launchpad;latest}!/!META-INF/*, \
 	@${repo;slf4j.api;latest}!/!META-INF/*, \
 	@${repo;slf4j.simple;latest}!/!META-INF/*, \
-	@${repo;jline}!/!META-INF/*
+	@${repo;jline}!/!META-INF/*, \
+    @${repo;jline}!/META-INF/native/*, \
 
 
 Import-Package: \
@@ -91,7 +92,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.yaml.snakeyaml;version=latest,\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\
-	jline
+    jline
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
