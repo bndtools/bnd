@@ -287,6 +287,114 @@ public class DSAnnotationTest {
 	}
 
 	/**
+	 * Property test (missing properties files)
+	 */
+
+	@Component(properties = {
+		"some.missing.file.prop"
+	})
+	public static class PropertiesTestMissingFile {
+
+	}
+
+	@Test
+	public void testProperties_missingFile_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$PropertiesTestMissingFile");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("properties")
+				.contains(PropertiesTestMissingFile.class.getName())
+				.contains("not found")
+				.contains("some.missing.file.prop")
+				.doesNotMatch(".*mean.*property.*[?]");
+	}
+
+	@Component(factoryProperties = {
+		"some.missing.file.prop"
+	})
+	public static class FactoryPropertiesTestMissingFile {
+
+	}
+
+	@Test
+	public void testFactoryProperties_missingFile_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$FactoryPropertiesTestMissingFile");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("factoryProperties")
+				.contains(FactoryPropertiesTestMissingFile.class.getName())
+				.contains("not found")
+				.contains("some.missing.file.prop")
+				.doesNotMatch(".*mean.*factoryProperty.*[?]");
+	}
+
+	@Component(properties = {
+		"some=value"
+	})
+	public static class PropertiesTestMisconfiguredProperty {
+
+	}
+
+	@Test
+	public void testProperties_misconfiguredProperty_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$PropertiesTestMisconfiguredProperty");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("properties")
+				.contains(PropertiesTestMisconfiguredProperty.class.getName())
+				.contains("not found")
+				.contains("some=value")
+				.matches(".*mean.*property.*[?]");
+	}
+
+	@Component(factoryProperties = {
+		"some=value"
+	})
+	public static class FactoryPropertiesTestMisconfiguredProperty {
+
+	}
+
+	@Test
+	public void testFactoryProperties_misconfiguredProperty_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$FactoryPropertiesTestMisconfiguredProperty");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("factoryProperties")
+				.contains(FactoryPropertiesTestMisconfiguredProperty.class.getName())
+				.contains("not found")
+				.contains("some=value")
+				.matches(".*mean.*factoryProperty.*[?]");
+	}
+
+	/**
 	 * Check that a DS 1.0 compotible class with annotations ends up with the DS
 	 * 1.0 (no) namespace
 	 */
