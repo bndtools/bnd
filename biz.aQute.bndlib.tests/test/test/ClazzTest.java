@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.xml.sax.SAXException;
 
 import aQute.bnd.component.DSAnnotationReader;
@@ -48,12 +50,14 @@ public class ClazzTest {
 	 * aQute.bnd.osgi.Clazz.crawl(Clazz.java:1185)
 	 * </pre>
 	 *
-	 * This happened on the Jini platform
+	 * This happened on the Jini platform. This test stops working with Java
+	 * >=21 (https://bugs.openjdk.org/browse/JDK-8313765)
 	 *
 	 * @throws Exception
 	 */
 
 	@Test
+	@EnabledForJreRange(max = JRE.JAVA_20)
 	public void testJiniPlatformClasses() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/jsk-platform.jar"));
