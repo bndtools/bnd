@@ -57,6 +57,17 @@ public record TemplateID(String organisation, String repository, String path, St
 	}
 
 	/**
+	 * @return the url to the github repo source (without .zip extension)
+	 */
+	public String repoUrl() {
+		String uri = this.other;
+		if (uri == null) {
+			uri = "https://github.com/" + organisation + "/" + repository;
+		}
+		return uri;
+	}
+
+	/**
 	 * Parse the id into a Template ID. The default is
 	 * `bndtools/bndtools.workspace.min#master`. The missing fields are taken
 	 * from this default. If the id does not match the pattern, it is assumed to

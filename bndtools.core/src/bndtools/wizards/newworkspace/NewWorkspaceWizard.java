@@ -11,6 +11,8 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -20,6 +22,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -29,6 +32,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +58,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	final UI<Model>					ui				= new UI<>(model);
 	final NewWorkspaceWizardPage	page			= new NewWorkspaceWizardPage();
 	final FragmentTemplateEngine			templates;
+	private ScrolledFormText		txtDescription;
 
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
@@ -140,6 +146,19 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			TableLayout tableLayout = new TableLayout();
 			table.setLayout(tableLayout);
 			table.setHeaderVisible(true);
+			selectedTemplates.addDoubleClickListener(new IDoubleClickListener() {
+				@Override
+				public void doubleClick(DoubleClickEvent e) {
+					// Handle double click event
+					IStructuredSelection selection = (IStructuredSelection) e.getSelection();
+					Object el = selection.getFirstElement();
+					if (el instanceof TemplateInfo ti) {
+						// Open URL in browser
+						Program.launch(ti.id()
+							.repoUrl());
+					}
+				}
+			});
 
 			TableViewerColumn nameColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
 			nameColumn.getColumn()
@@ -168,12 +187,45 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					return super.getText(element);
 				}
 			});
+
+			TableViewerColumn authorColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
+			authorColumn.getColumn()
+				.setText("Author");
+			authorColumn.setLabelProvider(new ColumnLabelProvider() {
+
+				@Override
+				public String getText(Object element) {
+					if (element instanceof TemplateInfo ti) {
+						if (ti.id()
+							.organisation()
+							.equals("bndtools")) {
+							return "bndtools (Official)";
+
+						}
+						else {
+							return ti.id()
+								.organisation() + " (3rd Party)";
+						}
+					}
+					return super.getText(element);
+				}
+
+
+			});
+
 			tableLayout.addColumnData(new ColumnWeightData(1, 80, false));
 			tableLayout.addColumnData(new ColumnWeightData(10, 200, true));
+			tableLayout.addColumnData(new ColumnWeightData(20, 300, true));
 
 			Button addButton = new Button(container, SWT.PUSH);
 			addButton.setText("+");
 			addButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
+
+			txtDescription = new ScrolledFormText(container, SWT.V_SCROLL | SWT.H_SCROLL, false);
+			FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
+			txtDescription.setFormText(formText);
+			formText.setText("Double click for the author's Github-Repo.", false, false);
+
 
 			ui.u("location", model.location, UI.text(location)
 				.map(File::getAbsolutePath, File::new));
