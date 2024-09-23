@@ -83,12 +83,17 @@ class TemplateFragmentsTest {
 		// https://github.com/org/repo/tree/commitSHA/subfolder/workspace-template
 		// translates to the followingg templateID:
 		// org/repo/tree/commitSHA/subfolder/workspace-template/
-		TemplateID url = TemplateID
+		TemplateID commitSHAUrl = TemplateID
 			.from("org/repo/tree/commitSHA/subfolder/workspace-template");
-		assertThat(url.organisation()).isEqualTo("org");
-		assertThat(url.repository()).isEqualTo("repo");
-		assertThat(url.path()).isEqualTo("tree/commitSHA/subfolder/workspace-template");
+		assertThat(commitSHAUrl.organisation()).isEqualTo("org");
+		assertThat(commitSHAUrl.repository()).isEqualTo("repo");
+		assertThat(commitSHAUrl.path()).isEqualTo("tree/commitSHA/subfolder/workspace-template");
+		assertThat(commitSHAUrl.repoUrl())
+			.isEqualTo("https://github.com/org/repo/tree/commitSHA/subfolder/workspace-template");
 
+		TemplateID externalRepo = TemplateID.from("org/repo/subfolder/workspace-template");
+		assertThat(externalRepo.repoUrl())
+			.isEqualTo("https://github.com/org/repo/tree/master/subfolder/workspace-template");
 
 	}
 

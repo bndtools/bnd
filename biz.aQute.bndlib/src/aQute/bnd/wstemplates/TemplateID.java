@@ -62,7 +62,11 @@ public record TemplateID(String organisation, String repository, String path, St
 	public String repoUrl() {
 		String uri = this.other;
 		if (uri == null) {
-			uri = "https://github.com/" + organisation + "/" + repository;
+			if (!path.startsWith("tree")) {
+				uri = "https://github.com/" + organisation + "/" + repository + "/tree/master/" + path;
+			} else {
+				uri = "https://github.com/" + organisation + "/" + repository + "/" + path;
+			}
 		}
 		return uri;
 	}
