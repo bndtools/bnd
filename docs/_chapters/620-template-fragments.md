@@ -67,10 +67,19 @@ For example consider this `index.bnd`:
             description="Use the maven directory layout for sources and binaries", \
         bndtools/workspace-templates/osgi; \
             name=osgi; \
-            description="OSGi R8 with Felix distribution"
+            description="OSGi R8 with Felix distribution",\
+        acme-org/myrepo/tree/commitSHA/subfolder/workspace-template; \
+            name=3rdparty-template; \
+            description="A Template fragment by acme-org at a specific commit SHA \
+            (translates to \
+            https://github.com/acme-org/myrepo/tree/commitSHA/subfolder/workspace-template)."    
 
 
-The id must resolve to a folder in the repository. By default, bnd will recursively copy the
+The id must resolve to a folder in the repository. 
+External template authors (not from the `bndtools` organisation) need to point to a specific commit SHA
+(see example `3rdparty-template` template above).
+
+By default, bnd will recursively copy the
 content to the new workspace. However, if there is a file `tool.bnd` present it will use this to
 guide the copying process. This bnd file looks like:
 
