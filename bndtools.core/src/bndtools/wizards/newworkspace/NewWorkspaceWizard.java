@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -20,6 +21,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
@@ -42,6 +44,7 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.result.Result;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.SelectedTemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import bndtools.central.Central;
@@ -51,6 +54,8 @@ import bndtools.util.ui.UI;
  * Create a new Workspace Wizard.
  */
 public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWizard {
+
+
 	static final String				DEFAULT_INDEX	= "https://raw.githubusercontent.com/bndtools/workspace-templates/master/index.bnd";
 	static final Logger				log				= LoggerFactory.getLogger(NewWorkspaceWizard.class);
 
@@ -59,6 +64,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	final NewWorkspaceWizardPage	page			= new NewWorkspaceWizardPage();
 	final FragmentTemplateEngine			templates;
 	private ScrolledFormText		txtDescription;
+
+	final static Image				checked			= Icons.image("checked", false);
+	final static Image				unchecked		= Icons.image("unchecked", false);
 
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
@@ -73,7 +81,10 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					Parameters p = workspace.getMergedParameters("-workspace-template");
 					templates.read(p)
 						.forEach(templates::add);
-					ui.write(() -> model.templates = templates.getAvailableTemplates());
+					ui.write(() -> model.templates = templates.getAvailableTemplates()
+						.stream()
+						.map(ti -> new SelectedTemplateInfo(ti, false))
+						.toList());
 				} catch (Exception e) {
 					log.error("failed to read default index {}", e, e);
 				}
@@ -152,9 +163,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					// Handle double click event
 					IStructuredSelection selection = (IStructuredSelection) e.getSelection();
 					Object el = selection.getFirstElement();
-					if (el instanceof TemplateInfo ti) {
+					if (el instanceof SelectedTemplateInfo sti) {
 						// Open URL in browser
-						Program.launch(ti.id()
+						Program.launch(sti.id()
 							.repoUrl());
 					}
 				}
@@ -167,8 +178,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof TemplateInfo) {
-						return ((TemplateInfo) element).name();
+					if (element instanceof SelectedTemplateInfo sti) {
+						return sti.templateInfo()
+							.name();
 					}
 					return super.getText(element);
 				}
@@ -181,8 +193,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof TemplateInfo) {
-						return ((TemplateInfo) element).description();
+					if (element instanceof SelectedTemplateInfo sti) {
+						return sti.templateInfo()
+							.description();
 					}
 					return super.getText(element);
 				}
@@ -195,15 +208,15 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof TemplateInfo ti) {
-						if (ti.id()
+					if (element instanceof SelectedTemplateInfo sti) {
+						if (sti.id()
 							.organisation()
 							.equals("bndtools")) {
 							return "bndtools (Official)";
 
 						}
 						else {
-							return ti.id()
+							return sti.id()
 								.organisation() + " (3rd Party)";
 						}
 					}
@@ -213,9 +226,35 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			});
 
+			TableViewerColumn useSnapshotColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
+			useSnapshotColumn.getColumn()
+				.setText("Version");
+			useSnapshotColumn.setLabelProvider(new ColumnLabelProvider() {
+
+				@Override
+				public String getText(Object element) {
+					if (element instanceof SelectedTemplateInfo sti) {
+						if (sti.useSnapshot()) {
+							return "Use snapshot version";
+
+						} else {
+							return "Use default version";
+						}
+					}
+
+					return "default";
+				}
+
+
+
+			});
+
+			useSnapshotColumn.setEditingSupport(new SelectedTemplateInfoEditingSupport(selectedTemplates));
+
 			tableLayout.addColumnData(new ColumnWeightData(1, 80, false));
 			tableLayout.addColumnData(new ColumnWeightData(10, 200, true));
-			tableLayout.addColumnData(new ColumnWeightData(20, 300, true));
+			tableLayout.addColumnData(new ColumnWeightData(20, 80, true));
+			tableLayout.addColumnData(new ColumnWeightData(30, 100, true));
 
 			Button addButton = new Button(container, SWT.PUSH);
 			addButton.setText("+");
@@ -224,7 +263,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			txtDescription = new ScrolledFormText(container, SWT.V_SCROLL | SWT.H_SCROLL, false);
 			FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
 			txtDescription.setFormText(formText);
-			formText.setText("Double click for the author's Github-Repo.", false, false);
+			formText.setText("Double click to open Github-Repo at the version.", false, false);
 
 
 			ui.u("location", model.location, UI.text(location)
@@ -253,9 +292,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			ui.update();
 		}
 
-		List<TemplateInfo> toTemplates(Object[] selection) {
+		List<SelectedTemplateInfo> toTemplates(Object[] selection) {
 			return Stream.of(selection)
-				.map(o -> (TemplateInfo) o)
+				.map(o -> (SelectedTemplateInfo) o)
 				.toList();
 		}
 
@@ -283,7 +322,10 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 							} else {
 								result.unwrap()
 									.forEach(templates::add);
-								ui.write(() -> model.templates = templates.getAvailableTemplates());
+								ui.write(() -> model.templates = templates.getAvailableTemplates()
+									.stream()
+									.map(ti -> new SelectedTemplateInfo(ti, false))
+									.toList());
 							}
 						} catch (Exception e) {
 							ui.write(() -> model.error = "failed to add the index: " + e);

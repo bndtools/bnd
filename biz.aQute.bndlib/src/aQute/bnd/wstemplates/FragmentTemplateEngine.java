@@ -57,6 +57,7 @@ public class FragmentTemplateEngine {
 	private static final String	DESCRIPTION			= "description";
 	private static final String	WORKSPACE_TEMPLATES	= "-workspace-templates";
 	private static final String	NAME				= "name";
+	private static final String	SNAPSHOT			= "snapshot";
 
 	final static Logger			log					= LoggerFactory.getLogger(FragmentTemplateEngine.class);
 	final List<TemplateInfo>	templates			= new ArrayList<>();
@@ -75,12 +76,73 @@ public class FragmentTemplateEngine {
 	 * Info about a template, comes from the index files.
 	 */
 
-	public record TemplateInfo(TemplateID id, String name, String description, String[] require, String... tag)
+	public record TemplateInfo(TemplateID id, String name, String description, TemplateID snapshotId, String[] require,
+		String... tag)
 		implements Comparable<TemplateInfo> {
 
 		@Override
 		public int compareTo(TemplateInfo o) {
 			return id.compareTo(o.id);
+		}
+	}
+
+	/**
+	 * Represents a TemplateInfo with an additional flag indicating if the
+	 * default version or snapshot version should be downloaded. We cannot use
+	 * java record because we need useSnapshot to be mutable because we render
+	 * it as a checkbox in the table
+	 */
+	public static class SelectedTemplateInfo implements Comparable<SelectedTemplateInfo> {
+
+		final TemplateInfo	templateInfo;
+		private boolean		useSnapshot;
+
+		public SelectedTemplateInfo(TemplateInfo templateInfo, boolean useSnapshot) {
+			this.templateInfo = templateInfo;
+			this.useSnapshot = useSnapshot;
+		}
+
+		public TemplateID id() {
+			return useSnapshot ? templateInfo.snapshotId() : templateInfo.id();
+		}
+
+		public TemplateInfo templateInfo() {
+			return templateInfo;
+		}
+
+		public boolean useSnapshot() {
+			return useSnapshot;
+		}
+
+		public void setUseSnapshot(boolean useSnapshot) {
+			this.useSnapshot = useSnapshot;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(templateInfo, useSnapshot);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			SelectedTemplateInfo other = (SelectedTemplateInfo) obj;
+			return Objects.equals(templateInfo, other.templateInfo) && useSnapshot == other.useSnapshot;
+		}
+
+		@Override
+		public String toString() {
+			return "SelectedTemplateInfo [templateInfo=" + templateInfo + ", useSnapshot=" + useSnapshot + "]";
+		}
+
+		@Override
+		public int compareTo(SelectedTemplateInfo o) {
+			return templateInfo.compareTo(o.templateInfo);
 		}
 	}
 
@@ -176,12 +238,13 @@ public class FragmentTemplateEngine {
 			Attrs attrs = e.getValue();
 
 			TemplateID templateId = TemplateID.from(id);
+			TemplateID snapshotId = TemplateID.from(attrs.getOrDefault(SNAPSHOT, id.toString()));
 			String name = attrs.getOrDefault(NAME, id.toString());
 			String description = attrs.getOrDefault(DESCRIPTION, "");
 			String require[] = toArray(attrs.get(REQUIRE));
 			String tags[] = toArray(attrs.get(TAG));
 
-			templates.add(new TemplateInfo(templateId, name, description, require, tags));
+			templates.add(new TemplateInfo(templateId, name, description, snapshotId, require, tags));
 		}
 		return templates;
 	}
@@ -211,12 +274,12 @@ public class FragmentTemplateEngine {
 	 */
 	public class TemplateUpdater implements AutoCloseable {
 		private static final String		TOOL_BND	= "tool.bnd";
-		final List<TemplateInfo>		templates;
+		final List<SelectedTemplateInfo>	templates;
 		final File						folder;
 		final MultiMap<File, Update>	updates		= new MultiMap<>();
 		final List<AutoCloseable>		closeables	= new ArrayList<>();
 
-		TemplateUpdater(File folder, List<TemplateInfo> templates) {
+		TemplateUpdater(File folder, List<SelectedTemplateInfo> templates) {
 			this.folder = folder;
 			this.templates = templates;
 			templates.forEach(templ -> {
@@ -277,12 +340,16 @@ public class FragmentTemplateEngine {
 			return updates;
 		}
 
-		List<Update> make(TemplateInfo template) {
-			Jar jar = getFiles(template.id()
+		List<Update> make(SelectedTemplateInfo selectedTemplate) {
+
+			TemplateID id = selectedTemplate.id();
+			TemplateInfo template = selectedTemplate.templateInfo();
+
+			Jar jar = getFiles(id
 				.uri());
 			closeables.add(jar);
 
-			String prefix = fixup(template.id()
+			String prefix = fixup(id
 				.path());
 
 			List<Update> updates = new ArrayList<>();
@@ -396,7 +463,7 @@ public class FragmentTemplateEngine {
 	/**
 	 * Create a TemplateUpdater
 	 */
-	public TemplateUpdater updater(File folder, List<TemplateInfo> templates) {
+	public TemplateUpdater updater(File folder, List<SelectedTemplateInfo> templates) {
 		return new TemplateUpdater(folder, templates);
 	}
 

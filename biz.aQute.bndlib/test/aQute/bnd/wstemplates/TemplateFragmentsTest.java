@@ -14,6 +14,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.result.Result;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.SelectedTemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.Update;
@@ -31,13 +32,13 @@ class TemplateFragmentsTest {
 		assertThat(defaultId.organisation()).isEqualTo("bndtools");
 		assertThat(defaultId.repository()).isEqualTo("workspace");
 		assertThat(defaultId.path()).isEqualTo("");
-		assertThat(defaultId.ref()).isEqualTo("master");
+		assertThat(defaultId.ref()).isEqualTo("HEAD");
 
 		TemplateID withOrg = TemplateID.from("acme");
 		assertThat(withOrg.organisation()).isEqualTo("acme");
 		assertThat(withOrg.repository()).isEqualTo("workspace");
 		assertThat(withOrg.path()).isEqualTo("");
-		assertThat(withOrg.ref()).isEqualTo("master");
+		assertThat(withOrg.ref()).isEqualTo("HEAD");
 
 		TemplateID withOrgRef = TemplateID.from("acme#main");
 		assertThat(withOrgRef.organisation()).isEqualTo("acme");
@@ -49,7 +50,7 @@ class TemplateFragmentsTest {
 		assertThat(withOrgRepo.organisation()).isEqualTo("acme");
 		assertThat(withOrgRepo.repository()).isEqualTo("template");
 		assertThat(withOrgRepo.path()).isEqualTo("");
-		assertThat(withOrgRepo.ref()).isEqualTo("master");
+		assertThat(withOrgRepo.ref()).isEqualTo("HEAD");
 
 		TemplateID withOrgRepoRef = TemplateID.from("acme/template#foo/bar");
 		assertThat(withOrgRepoRef.organisation()).isEqualTo("acme");
@@ -61,7 +62,7 @@ class TemplateFragmentsTest {
 		assertThat(withOrgRepoPath.organisation()).isEqualTo("acme");
 		assertThat(withOrgRepoPath.repository()).isEqualTo("template");
 		assertThat(withOrgRepoPath.path()).isEqualTo("foo/bar");
-		assertThat(withOrgRepoPath.ref()).isEqualTo("master");
+		assertThat(withOrgRepoPath.ref()).isEqualTo("HEAD");
 
 		TemplateID withOrgRepoPathRef = TemplateID.from("acme/template/foo/bar/y#feature/bar/x");
 		assertThat(withOrgRepoPathRef.organisation()).isEqualTo("acme");
@@ -84,15 +85,19 @@ class TemplateFragmentsTest {
 		// translates to the followingg templateID:
 		// org/repo/tree/commitSHA/subfolder/workspace-template/
 		TemplateID commitSHAUrl = TemplateID
-			.from("org/repo/tree/commitSHA/subfolder/workspace-template");
+			.from("org/repo/subfolder/workspace-template#commitSHA");
 		assertThat(commitSHAUrl.organisation()).isEqualTo("org");
 		assertThat(commitSHAUrl.repository()).isEqualTo("repo");
-		assertThat(commitSHAUrl.path()).isEqualTo("tree/commitSHA/subfolder/workspace-template");
+		assertThat(commitSHAUrl.path()).isEqualTo("subfolder/workspace-template");
 		assertThat(commitSHAUrl.repoUrl())
 			.isEqualTo("https://github.com/org/repo/tree/commitSHA/subfolder/workspace-template");
 
-		TemplateID externalRepo = TemplateID.from("org/repo/subfolder/workspace-template");
-		assertThat(externalRepo.repoUrl())
+		TemplateID defaultHEADUrl = TemplateID.from("org/repo/subfolder/workspace-template");
+		assertThat(defaultHEADUrl.repoUrl())
+			.isEqualTo("https://github.com/org/repo/tree/HEAD/subfolder/workspace-template");
+
+		TemplateID defaultMasterUrl = TemplateID.from("org/repo/subfolder/workspace-template#master");
+		assertThat(defaultMasterUrl.repoUrl())
 			.isEqualTo("https://github.com/org/repo/tree/master/subfolder/workspace-template");
 
 	}
@@ -107,7 +112,7 @@ class TemplateFragmentsTest {
 
 			// use an archived repository
 			Result<List<TemplateInfo>> result = tfs.read("-workspace-templates " + a.toURI() + ";name=a;description=A,"
-				+ "bndtools/workspace-templates/gradle#567648ff425693b27b191bd38ace7c9c10539c2d;name=b;description=B");
+				+ "bndtools/workspace-templates/gradle#567648ff425693b27b191bd38ace7c9c10539c2d;name=b;description=B;snapshot=bndtools/workspace-templates/gradle");
 
 			assertThat(result.isOk()).describedAs(result.toString())
 				.isTrue();
@@ -117,7 +122,9 @@ class TemplateFragmentsTest {
 			assertThat(infos.remove(0)
 				.name()).isEqualTo("a");
 
-			TemplateUpdater updater = tfs.updater(wsDir, infos);
+			TemplateUpdater updater = tfs.updater(wsDir, infos.stream()
+				.map(ti -> new SelectedTemplateInfo(ti, false))
+				.toList());
 			updater.commit();
 
 			assertThat(IO.getFile(wsDir, "cnf/build.bnd")).isFile();
@@ -152,7 +159,9 @@ class TemplateFragmentsTest {
 			List<TemplateInfo> infos = result.unwrap();
 			assertThat(infos).hasSize(2);
 
-			TemplateUpdater updater = tfs.updater(wsDir, infos);
+			TemplateUpdater updater = tfs.updater(wsDir, infos.stream()
+				.map(ti -> new SelectedTemplateInfo(ti, false))
+				.toList());
 			updater.commit();
 
 			assertThat(IO.getFile(wsDir, "cnf/build.bnd")).isFile();

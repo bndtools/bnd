@@ -26,7 +26,7 @@ public record TemplateID(String organisation, String repository, String path, St
 			g("path", set(lit("/"), SEGMENT_P)), opt(lit("/"))),
 		opt(lit("#"), g("branch", REF_P)) //
 	);
-	final static URI ROOT = URI.create("https://github.com/bndtools/bndtools.workspace.min#master");
+	final static URI ROOT = URI.create("https://github.com/bndtools/bndtools.workspace.min#HEAD");
 
 	@Override
 	public int compareTo(TemplateID o) {
@@ -62,20 +62,16 @@ public record TemplateID(String organisation, String repository, String path, St
 	public String repoUrl() {
 		String uri = this.other;
 		if (uri == null) {
-			if (!path.startsWith("tree")) {
-				uri = "https://github.com/" + organisation + "/" + repository + "/tree/master/" + path;
-			} else {
-				uri = "https://github.com/" + organisation + "/" + repository + "/" + path;
-			}
+			uri = "https://github.com/" + organisation + "/" + repository + "/tree/" + ref + "/" + path;
 		}
 		return uri;
 	}
 
 	/**
 	 * Parse the id into a Template ID. The default is
-	 * `bndtools/bndtools.workspace.min#master`. The missing fields are taken
-	 * from this default. If the id does not match the pattern, it is assumed to
-	 * be a URI.
+	 * `bndtools/bndtools.workspace.min#HEAD`. The missing fields are taken from
+	 * this default. If the id does not match the pattern, it is assumed to be a
+	 * URI.
 	 *
 	 * @param id id or uri
 	 * @return a TemplateId
@@ -89,7 +85,11 @@ public record TemplateID(String organisation, String repository, String path, St
 				String path = vs.getOrDefault("path", "");
 				if (!path.isEmpty())
 					path = path.substring(1);
-				String branch = vs.getOrDefault("branch", "master");
+
+				// HEAD seems to be the universal name for the primary branch
+				// (regardless if named 'master', 'main' or else)
+				// see https://github.com/orgs/community/discussions/23213
+				String branch = vs.getOrDefault("branch", "HEAD");
 				return new TemplateID(org, repo, path, branch, null);
 			})
 			.orElse(new TemplateID(null, null, "", null, id));
