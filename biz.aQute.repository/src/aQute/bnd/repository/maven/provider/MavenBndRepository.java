@@ -278,7 +278,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			String clazz = extra.clazz;
 			File file = new File(path);
 			if (!file.isFile())
-				reporter.error("-release-maven.extra contains a path to a file that does not exist: %s",
+				reporter.error("-release-maven archive contains a path to a file that does not exist: %s",
 					file);
 			else {
 				try (Resource r = new FileResource(file)) {
