@@ -1,6 +1,8 @@
 package aQute.bnd.annotation.service;
 
 import static aQute.bnd.annotation.spi.Constants.ATTRIBUTE_MACRO;
+import static aQute.bnd.annotation.spi.Constants.SERVICE_MACRO;
+import static org.osgi.resource.Namespace.EFFECTIVE_ACTIVE;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -10,7 +12,7 @@ import java.lang.annotation.Target;
 
 import org.osgi.annotation.bundle.Capability;
 import org.osgi.namespace.service.ServiceNamespace;
-import org.osgi.resource.Namespace;;
+import org.osgi.resource.Namespace;
 
 /**
  * Adds a ProvideCapability for a service. This is useful to the resolver, when
@@ -25,12 +27,13 @@ import org.osgi.resource.Namespace;;
 @Repeatable(ServiceCapabilities.class)
 @Capability(namespace = ServiceNamespace.SERVICE_NAMESPACE, //
 	attribute = {
-		ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + ":List<String>=\"${uniq;${#value}}\"", //
+		SERVICE_MACRO, //
 		Namespace.CAPABILITY_USES_DIRECTIVE
 			+ ":=\"${if;${size;${#uses}};${#uses};${uniq;${replace;${#value};(.*)\\.[^.]+;$1}}}\"",
 		ATTRIBUTE_MACRO
-	})
+	}, effective = EFFECTIVE_ACTIVE)
 public @interface ServiceCapability {
+
 	/**
 	 * The service <em>type</em>.
 	 *
@@ -56,10 +59,9 @@ public @interface ServiceCapability {
 	 * <li>{@code "name:type=value"} for typed attributes.</li>
 	 * <li>{@code "name:=value"} for directives.</li>
 	 * </ul>
-	 * These are added, separated by semicolons, to the
-	 * {@code osgi.serviceloader} capability. Non-standard
-	 * {@code osgi.serviceloader} attributes will be included as service
-	 * properties to the published service.
+	 * These are added, separated by semicolons, to the {@code osgi.service}
+	 * capability. Non-standard {@code osgi.service} attributes will be included
+	 * as service properties to the published service.
 	 */
 	String[] attribute() default {};
 }

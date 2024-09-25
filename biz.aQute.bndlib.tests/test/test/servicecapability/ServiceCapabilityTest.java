@@ -32,6 +32,8 @@ public class ServiceCapabilityTest {
 		Attrs attrs = assertCapability(ServiceCapabilityTest.class);
 		Assertions.assertThat(attrs)
 			.containsEntry("uses:", "test.servicecapability");
+		Assertions.assertThat(attrs)
+			.containsEntry("effective:", "active");
 	}
 
 	@Test
