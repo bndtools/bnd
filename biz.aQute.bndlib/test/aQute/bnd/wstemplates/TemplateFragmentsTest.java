@@ -112,7 +112,7 @@ class TemplateFragmentsTest {
 
 			// use an archived repository
 			Result<List<TemplateInfo>> result = tfs.read("-workspace-templates " + a.toURI() + ";name=a;description=A,"
-				+ "bndtools/workspace-templates/gradle#567648ff425693b27b191bd38ace7c9c10539c2d;name=b;description=B;snapshot=bndtools/workspace-templates/gradle");
+				+ "bndtools/workspace-templates/gradle#567648ff425693b27b191bd38ace7c9c10539c2d;name=b;description=B");
 
 			assertThat(result.isOk()).describedAs(result.toString())
 				.isTrue();
