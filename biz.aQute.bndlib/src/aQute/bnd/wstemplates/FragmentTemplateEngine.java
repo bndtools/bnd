@@ -83,6 +83,16 @@ public class FragmentTemplateEngine {
 		public int compareTo(TemplateInfo o) {
 			return id.compareTo(o.id);
 		}
+
+		/**
+		 * @return <code>true</code> if this template is from the github
+		 *         bndtools organisation, which we consider "officially provided
+		 *         by us".
+		 */
+		public boolean isOfficial() {
+			return id.organisation()
+				.equals("bndtools");
+		}
 	}
 
 	/**

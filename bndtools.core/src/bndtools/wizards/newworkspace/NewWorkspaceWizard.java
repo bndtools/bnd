@@ -1,5 +1,7 @@
 package bndtools.wizards.newworkspace;
 
+import static org.eclipse.jface.dialogs.MessageDialog.openConfirm;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -103,6 +105,23 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 	@Override
 	public boolean performFinish() {
+
+		// show a confirmation dialog
+		// if there is at least one 3rd-party template selected
+		long num3rdParty = model.selectedTemplates.stream()
+			.filter(t -> !t.templateInfo()
+				.isOfficial())
+			.count();
+
+		boolean confirmed = num3rdParty == 0 || openConfirm(getShell(), "Install 3rd-Party templates",
+			"You have selected " + num3rdParty + " templates from 3rd-party authors. "
+				+ "Are you sure you trust the authors and want to continue fetching the content?");
+
+		if (!confirmed) {
+			// not confirmed. cancel selected
+			return false;
+		}
+
 		if (model.valid == null) {
 			ui.write(() -> {
 				TemplateUpdater updater = templates.updater(model.location, model.selectedTemplates);
@@ -111,6 +130,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			return true;
 		} else
 			return false;
+
+
 	}
 
 	class NewWorkspaceWizardPage extends WizardPage {
@@ -209,9 +230,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public String getText(Object element) {
 					if (element instanceof SelectedTemplateInfo sti) {
-						if (sti.id()
-							.organisation()
-							.equals("bndtools")) {
+						if (sti.templateInfo()
+							.isOfficial()) {
 							return "bndtools (Official)";
 
 						}
@@ -238,7 +258,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			txtDescription = new ScrolledFormText(container, SWT.V_SCROLL | SWT.H_SCROLL, false);
 			FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
 			txtDescription.setFormText(formText);
-			formText.setText("Double click to open Github-Repo at the version.", false, false);
+			formText.setText("Double click to open the Github-Repo in your browser.", false, false);
 
 
 			ui.u("location", model.location, UI.text(location)
