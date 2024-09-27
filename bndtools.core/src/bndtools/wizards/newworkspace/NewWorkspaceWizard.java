@@ -67,8 +67,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	final FragmentTemplateEngine			templates;
 	private ScrolledFormText		txtDescription;
 
-	final static Image				checked			= Icons.image("checked", false);
-	final static Image				unchecked		= Icons.image("unchecked", false);
+	final static Image				ok				= Icons.image("icons/tick.png", false);
+	final static Image				warn			= Icons.image("icons/warning_obj.gif", false);
 
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
@@ -243,6 +243,15 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					return super.getText(element);
 				}
 
+				@Override
+				public Image getImage(Object element) {
+					if (element instanceof SelectedTemplateInfo sti) {
+						return sti.templateInfo()
+							.isOfficial() ? ok : warn;
+					}
+
+					return super.getImage(element);
+				}
 
 			});
 
