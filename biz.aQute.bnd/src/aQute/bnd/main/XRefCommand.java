@@ -57,6 +57,8 @@ public class XRefCommand {
 		@Description("Output list of package/class names that have been referred to")
 		String referrredTo();
 
+		@Description("Include java.* packages")
+		boolean java();
 	}
 
 	static public class All {
@@ -109,7 +111,9 @@ public class XRefCommand {
 										while (tr.isArray())
 											tr = tr.getComponentTypeRef();
 
-										if (!destination.matches(tr.getFQN()) || tr.isJava() || tr.isPrimitive())
+										boolean skipJava = !options.java() && tr.isJava();
+
+										if (!destination.matches(tr.getFQN()) || skipJava || tr.isPrimitive())
 											t.remove();
 										else {
 											packages.add(ref.getPackageRef(), tr.getPackageRef());
