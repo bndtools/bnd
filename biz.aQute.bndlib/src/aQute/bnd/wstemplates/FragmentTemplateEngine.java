@@ -96,10 +96,9 @@ public class FragmentTemplateEngine {
 	}
 
 	/**
-	 * Represents a TemplateInfo with an additional flag indicating if the
-	 * default version or snapshot version should be downloaded. We cannot use
-	 * java record because we need useSnapshot to be mutable because we render
-	 * it as a checkbox in the table
+	 * A wrapper for UI purposes of a selected TemplateInfo. It was introduced
+	 * to add additional information in the future for a selected template
+	 * information.
 	 */
 	public static class SelectedTemplateInfo implements Comparable<SelectedTemplateInfo> {
 
