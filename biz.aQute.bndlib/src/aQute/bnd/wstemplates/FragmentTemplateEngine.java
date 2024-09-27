@@ -57,7 +57,6 @@ public class FragmentTemplateEngine {
 	private static final String	DESCRIPTION			= "description";
 	private static final String	WORKSPACE_TEMPLATES	= "-workspace-templates";
 	private static final String	NAME				= "name";
-	private static final String	SNAPSHOT			= "snapshot";
 
 	final static Logger			log					= LoggerFactory.getLogger(FragmentTemplateEngine.class);
 	final List<TemplateInfo>	templates			= new ArrayList<>();
@@ -76,7 +75,7 @@ public class FragmentTemplateEngine {
 	 * Info about a template, comes from the index files.
 	 */
 
-	public record TemplateInfo(TemplateID id, String name, String description, TemplateID snapshotId, String[] require,
+	public record TemplateInfo(TemplateID id, String name, String description, String[] require,
 		String... tag)
 		implements Comparable<TemplateInfo> {
 
@@ -95,32 +94,23 @@ public class FragmentTemplateEngine {
 	public static class SelectedTemplateInfo implements Comparable<SelectedTemplateInfo> {
 
 		final TemplateInfo	templateInfo;
-		private boolean		useSnapshot;
 
 		public SelectedTemplateInfo(TemplateInfo templateInfo, boolean useSnapshot) {
 			this.templateInfo = templateInfo;
-			this.useSnapshot = useSnapshot;
 		}
 
 		public TemplateID id() {
-			return useSnapshot ? templateInfo.snapshotId() : templateInfo.id();
+			return templateInfo.id();
 		}
 
 		public TemplateInfo templateInfo() {
 			return templateInfo;
 		}
 
-		public boolean useSnapshot() {
-			return useSnapshot;
-		}
-
-		public void setUseSnapshot(boolean useSnapshot) {
-			this.useSnapshot = useSnapshot;
-		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(templateInfo, useSnapshot);
+			return Objects.hash(templateInfo);
 		}
 
 		@Override
@@ -132,12 +122,12 @@ public class FragmentTemplateEngine {
 			if (getClass() != obj.getClass())
 				return false;
 			SelectedTemplateInfo other = (SelectedTemplateInfo) obj;
-			return Objects.equals(templateInfo, other.templateInfo) && useSnapshot == other.useSnapshot;
+			return Objects.equals(templateInfo, other.templateInfo);
 		}
 
 		@Override
 		public String toString() {
-			return "SelectedTemplateInfo [templateInfo=" + templateInfo + ", useSnapshot=" + useSnapshot + "]";
+			return "SelectedTemplateInfo [templateInfo=" + templateInfo + "]";
 		}
 
 		@Override
@@ -238,13 +228,12 @@ public class FragmentTemplateEngine {
 			Attrs attrs = e.getValue();
 
 			TemplateID templateId = TemplateID.from(id);
-			TemplateID snapshotId = TemplateID.from(attrs.getOrDefault(SNAPSHOT, id.toString()));
 			String name = attrs.getOrDefault(NAME, id.toString());
 			String description = attrs.getOrDefault(DESCRIPTION, "");
 			String require[] = toArray(attrs.get(REQUIRE));
 			String tags[] = toArray(attrs.get(TAG));
 
-			templates.add(new TemplateInfo(templateId, name, description, snapshotId, require, tags));
+			templates.add(new TemplateInfo(templateId, name, description, require, tags));
 		}
 		return templates;
 	}

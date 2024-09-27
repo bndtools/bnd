@@ -226,35 +226,10 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			});
 
-			TableViewerColumn useSnapshotColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
-			useSnapshotColumn.getColumn()
-				.setText("Version");
-			useSnapshotColumn.setLabelProvider(new ColumnLabelProvider() {
-
-				@Override
-				public String getText(Object element) {
-					if (element instanceof SelectedTemplateInfo sti) {
-						if (sti.useSnapshot()) {
-							return "Use snapshot version";
-
-						} else {
-							return "Use default version";
-						}
-					}
-
-					return "default";
-				}
-
-
-
-			});
-
-			useSnapshotColumn.setEditingSupport(new SelectedTemplateInfoEditingSupport(selectedTemplates));
 
 			tableLayout.addColumnData(new ColumnWeightData(1, 80, false));
 			tableLayout.addColumnData(new ColumnWeightData(10, 200, true));
 			tableLayout.addColumnData(new ColumnWeightData(20, 80, true));
-			tableLayout.addColumnData(new ColumnWeightData(30, 100, true));
 
 			Button addButton = new Button(container, SWT.PUSH);
 			addButton.setText("+");
