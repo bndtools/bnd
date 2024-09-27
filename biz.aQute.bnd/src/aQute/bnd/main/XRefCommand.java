@@ -57,6 +57,8 @@ public class XRefCommand {
 		@Description("Output list of package/class names that have been referred to")
 		String referrredTo();
 
+		@Description("Include java.* packages")
+		boolean java();
 	}
 
 	static public class All {
