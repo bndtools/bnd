@@ -321,7 +321,6 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				return true;
 			}
 		};
-		reqsViewer.setFilters(hideSelfImportsFilter);
 
 		hideOptionalRequirements = new ViewerFilter() {
 
@@ -418,7 +417,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			.getToolBarManager();
 
 		// Reqs Buttons
-		toolBarManager.add(createToggleShowSelfImportsButton());
+		toolBarManager.add(createToggleHideSelfImportsButton());
 		toolBarManager.add(createToggleHideOptionalReqsFilterButton());
 		toolBarManager.add(new Separator());
 
@@ -923,26 +922,27 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		return toggleLockInput;
 	}
 
-	private IAction createToggleShowSelfImportsButton() {
-		String toggleShowSelfImportsUnchecked = "Showing resolved requirements.\n\n"
-			+ "Includes requirements that are resolved within the set of selected bundles. Click to show all requirements.";
+	private IAction createToggleHideSelfImportsButton() {
+		String toolTipTextShowAll = "Showing all requirements.";
+		String toolTipTextHideSelfImports = "Hiding resolved (including self-imported) requirements.\n\n"
+			+ "Requirements that are resolved (exported and imported) within the set of selected bundles are hidden. Click to show all requirements.";
 
 		IAction toggleShowSelfImports = new Action("showSelfImports", IAction.AS_CHECK_BOX) {
 			@Override
 			public void runWithEvent(Event event) {
 				if (isChecked()) {
-					reqsViewer.removeFilter(hideSelfImportsFilter);
-					this.setToolTipText("Showing all requirements.");
-				} else {
 					reqsViewer.addFilter(hideSelfImportsFilter);
-					this.setToolTipText(toggleShowSelfImportsUnchecked);
+					this.setToolTipText(toolTipTextHideSelfImports);
+				} else {
+					reqsViewer.removeFilter(hideSelfImportsFilter);
+					this.setToolTipText(toolTipTextShowAll);
 				}
 				updateReqsLabel();
 			}
 		};
 		toggleShowSelfImports.setChecked(false);
 		toggleShowSelfImports.setImageDescriptor(Icons.desc("/icons/package_folder_impexp.gif"));
-		toggleShowSelfImports.setToolTipText(toggleShowSelfImportsUnchecked);
+		toggleShowSelfImports.setToolTipText(toolTipTextShowAll);
 		return toggleShowSelfImports;
 	}
 
