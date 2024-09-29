@@ -32,13 +32,13 @@ class TemplateFragmentsTest {
 		assertThat(defaultId.organisation()).isEqualTo("bndtools");
 		assertThat(defaultId.repository()).isEqualTo("workspace");
 		assertThat(defaultId.path()).isEqualTo("");
-		assertThat(defaultId.ref()).isEqualTo("HEAD");
+		assertThat(defaultId.ref()).isEqualTo("master");
 
 		TemplateID withOrg = TemplateID.from("acme");
 		assertThat(withOrg.organisation()).isEqualTo("acme");
 		assertThat(withOrg.repository()).isEqualTo("workspace");
 		assertThat(withOrg.path()).isEqualTo("");
-		assertThat(withOrg.ref()).isEqualTo("HEAD");
+		assertThat(withOrg.ref()).isEqualTo("master");
 
 		TemplateID withOrgRef = TemplateID.from("acme#main");
 		assertThat(withOrgRef.organisation()).isEqualTo("acme");
@@ -50,7 +50,7 @@ class TemplateFragmentsTest {
 		assertThat(withOrgRepo.organisation()).isEqualTo("acme");
 		assertThat(withOrgRepo.repository()).isEqualTo("template");
 		assertThat(withOrgRepo.path()).isEqualTo("");
-		assertThat(withOrgRepo.ref()).isEqualTo("HEAD");
+		assertThat(withOrgRepo.ref()).isEqualTo("master");
 
 		TemplateID withOrgRepoRef = TemplateID.from("acme/template#foo/bar");
 		assertThat(withOrgRepoRef.organisation()).isEqualTo("acme");
@@ -62,7 +62,7 @@ class TemplateFragmentsTest {
 		assertThat(withOrgRepoPath.organisation()).isEqualTo("acme");
 		assertThat(withOrgRepoPath.repository()).isEqualTo("template");
 		assertThat(withOrgRepoPath.path()).isEqualTo("foo/bar");
-		assertThat(withOrgRepoPath.ref()).isEqualTo("HEAD");
+		assertThat(withOrgRepoPath.ref()).isEqualTo("master");
 
 		TemplateID withOrgRepoPathRef = TemplateID.from("acme/template/foo/bar/y#feature/bar/x");
 		assertThat(withOrgRepoPathRef.organisation()).isEqualTo("acme");
@@ -92,9 +92,9 @@ class TemplateFragmentsTest {
 		assertThat(commitSHAUrl.repoUrl())
 			.isEqualTo("https://github.com/org/repo/tree/commitSHA/subfolder/workspace-template");
 
-		TemplateID defaultHEADUrl = TemplateID.from("org/repo/subfolder/workspace-template");
-		assertThat(defaultHEADUrl.repoUrl())
-			.isEqualTo("https://github.com/org/repo/tree/HEAD/subfolder/workspace-template");
+		TemplateID defaultmasterUrl = TemplateID.from("org/repo/subfolder/workspace-template");
+		assertThat(defaultmasterUrl.repoUrl())
+			.isEqualTo("https://github.com/org/repo/tree/master/subfolder/workspace-template");
 
 		TemplateID defaultMasterUrl = TemplateID.from("org/repo/subfolder/workspace-template#master");
 		assertThat(defaultMasterUrl.repoUrl())

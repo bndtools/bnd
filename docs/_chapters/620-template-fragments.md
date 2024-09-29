@@ -90,8 +90,9 @@ The id must resolve to a folder in the repository, and can be translated to gith
 
 | ID  | URL |
 | ------------- | ------------- |
-| `bndtools/workspace-templates/gradle`  | `https://github.com/bndtools/workspace-templates/tree/HEAD/gradle`  |
+| `bndtools/workspace-templates/gradle`  | `https://github.com/bndtools/workspace-templates/tree/master/gradle`  |
 | `bndtools/workspace-templates/maven#master`  | `https://github.com/bndtools/workspace-templates/tree/master/maven`  |
+| `acme-org/myrepo/subfolder/workspace-template#otherbranch`  | `https://github.com/acme-org/myrepo/tree/otherbranch/subfolder/workspace-template`  |
 | `acme-org/myrepo/subfolder/workspace-template#567648ff425693b27b191bd38ace7c9c10539c2d`  | `https://github.com/acme-org/myrepo/tree/567648ff425693b27b191bd38ace7c9c10539c2d/subfolder/workspace-template`  |
 
 
