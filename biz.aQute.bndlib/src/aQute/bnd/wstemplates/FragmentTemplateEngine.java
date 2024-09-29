@@ -252,7 +252,9 @@ public class FragmentTemplateEngine {
 	 * templates, see {@link #getAvailableTemplates()} internally maintained.
 	 */
 	public void add(TemplateInfo info) {
-		this.templates.add(info);
+		if (!templates.contains(info)) {
+			this.templates.add(info);
+		}
 	}
 
 	/**
