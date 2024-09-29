@@ -315,7 +315,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			TemplateDefinitionDialog dialog = new TemplateDefinitionDialog(getShell());
 			if (dialog.open() == Window.OK) {
 				String selectedPath = dialog.getSelectedPath();
-				if (!selectedPath.isBlank()) {
+				if (selectedPath != null && !selectedPath.isBlank()) {
 					Job job = Job.create("read " + selectedPath, mon -> {
 						try {
 							URI uri = toURI(selectedPath);
