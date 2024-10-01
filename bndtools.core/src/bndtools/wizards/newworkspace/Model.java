@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
-import aQute.bnd.wstemplates.FragmentTemplateEngine.SelectedTemplateInfo;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import aQute.lib.io.IO;
 
@@ -46,8 +46,8 @@ public class Model implements Runnable {
 	boolean				clean				= false;
 	boolean				updateWorkspace		= false;
 	boolean				switchWorkspace		= true;
-	List<SelectedTemplateInfo>	templates			= new ArrayList<>();
-	List<SelectedTemplateInfo>	selectedTemplates	= new ArrayList<>();
+	List<TemplateInfo>	templates			= new ArrayList<>();
+	List<TemplateInfo>	selectedTemplates	= new ArrayList<>();
 	Progress			validatedUrl		= Progress.init;
 	String				urlValidationError;
 	String				error;
@@ -162,7 +162,7 @@ public class Model implements Runnable {
 		clean = selection;
 	}
 
-	void selectedTemplates(List<SelectedTemplateInfo> list) {
+	void selectedTemplates(List<TemplateInfo> list) {
 		selectedTemplates = list;
 	}
 

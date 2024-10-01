@@ -14,7 +14,6 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.result.Result;
-import aQute.bnd.wstemplates.FragmentTemplateEngine.SelectedTemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.Update;
@@ -122,9 +121,7 @@ class TemplateFragmentsTest {
 			assertThat(infos.remove(0)
 				.name()).isEqualTo("a");
 
-			TemplateUpdater updater = tfs.updater(wsDir, infos.stream()
-				.map(ti -> new SelectedTemplateInfo(ti, false))
-				.toList());
+			TemplateUpdater updater = tfs.updater(wsDir, infos);
 			updater.commit();
 
 			assertThat(IO.getFile(wsDir, "cnf/build.bnd")).isFile();
@@ -159,9 +156,7 @@ class TemplateFragmentsTest {
 			List<TemplateInfo> infos = result.unwrap();
 			assertThat(infos).hasSize(2);
 
-			TemplateUpdater updater = tfs.updater(wsDir, infos.stream()
-				.map(ti -> new SelectedTemplateInfo(ti, false))
-				.toList());
+			TemplateUpdater updater = tfs.updater(wsDir, infos);
 			updater.commit();
 
 			assertThat(IO.getFile(wsDir, "cnf/build.bnd")).isFile();

@@ -46,7 +46,6 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.result.Result;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
-import aQute.bnd.wstemplates.FragmentTemplateEngine.SelectedTemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import bndtools.central.Central;
@@ -83,10 +82,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					Parameters p = workspace.getMergedParameters("-workspace-template");
 					templates.read(p)
 						.forEach(templates::add);
-					ui.write(() -> model.templates = templates.getAvailableTemplates()
-						.stream()
-						.map(ti -> new SelectedTemplateInfo(ti, false))
-						.toList());
+					ui.write(() -> model.templates = templates.getAvailableTemplates());
 				} catch (Exception e) {
 					log.error("failed to read default index {}", e, e);
 				}
@@ -109,7 +105,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		// show a confirmation dialog
 		// if there is at least one 3rd-party template selected
 		long num3rdParty = model.selectedTemplates.stream()
-			.filter(t -> !t.templateInfo()
+			.filter(t -> !t
 				.isOfficial())
 			.count();
 
@@ -184,7 +180,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					// Handle double click event
 					IStructuredSelection selection = (IStructuredSelection) e.getSelection();
 					Object el = selection.getFirstElement();
-					if (el instanceof SelectedTemplateInfo sti) {
+					if (el instanceof TemplateInfo sti) {
 						// Open URL in browser
 						Program.launch(sti.id()
 							.repoUrl());
@@ -199,9 +195,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof SelectedTemplateInfo sti) {
-						return sti.templateInfo()
-							.name();
+					if (element instanceof TemplateInfo ti) {
+						return ti.name();
 					}
 					return super.getText(element);
 				}
@@ -214,9 +209,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof SelectedTemplateInfo sti) {
-						return sti.templateInfo()
-							.description();
+					if (element instanceof TemplateInfo ti) {
+						return ti.description();
 					}
 					return super.getText(element);
 				}
@@ -229,14 +223,14 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof SelectedTemplateInfo sti) {
-						if (sti.templateInfo()
+					if (element instanceof TemplateInfo ti) {
+						if (ti
 							.isOfficial()) {
 							return "bndtools (Official)";
 
 						}
 						else {
-							return sti.id()
+							return ti.id()
 								.organisation() + " (3rd Party)";
 						}
 					}
@@ -245,8 +239,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public Image getImage(Object element) {
-					if (element instanceof SelectedTemplateInfo sti) {
-						return sti.templateInfo()
+					if (element instanceof TemplateInfo ti) {
+						return ti
 							.isOfficial() ? ok : warn;
 					}
 
@@ -296,9 +290,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			ui.update();
 		}
 
-		List<SelectedTemplateInfo> toTemplates(Object[] selection) {
+		List<TemplateInfo> toTemplates(Object[] selection) {
 			return Stream.of(selection)
-				.map(o -> (SelectedTemplateInfo) o)
+				.map(o -> (TemplateInfo) o)
 				.toList();
 		}
 
@@ -326,10 +320,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 							} else {
 								result.unwrap()
 									.forEach(templates::add);
-								ui.write(() -> model.templates = templates.getAvailableTemplates()
-									.stream()
-									.map(ti -> new SelectedTemplateInfo(ti, false))
-									.toList());
+								ui.write(() -> model.templates = templates.getAvailableTemplates());
 							}
 						} catch (Exception e) {
 							ui.write(() -> model.error = "failed to add the index: " + e);

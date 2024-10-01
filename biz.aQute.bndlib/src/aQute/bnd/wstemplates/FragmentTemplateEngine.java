@@ -95,55 +95,6 @@ public class FragmentTemplateEngine {
 		}
 	}
 
-	/**
-	 * A wrapper for UI purposes of a selected TemplateInfo. It was introduced
-	 * to add additional information in the future for a selected template
-	 * information.
-	 */
-	public static class SelectedTemplateInfo implements Comparable<SelectedTemplateInfo> {
-
-		final TemplateInfo	templateInfo;
-
-		public SelectedTemplateInfo(TemplateInfo templateInfo, boolean useSnapshot) {
-			this.templateInfo = templateInfo;
-		}
-
-		public TemplateID id() {
-			return templateInfo.id();
-		}
-
-		public TemplateInfo templateInfo() {
-			return templateInfo;
-		}
-
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(templateInfo);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			SelectedTemplateInfo other = (SelectedTemplateInfo) obj;
-			return Objects.equals(templateInfo, other.templateInfo);
-		}
-
-		@Override
-		public String toString() {
-			return "SelectedTemplateInfo [templateInfo=" + templateInfo + "]";
-		}
-
-		@Override
-		public int compareTo(SelectedTemplateInfo o) {
-			return templateInfo.compareTo(o.templateInfo);
-		}
-	}
 
 	public enum Action {
 		skip,
@@ -274,12 +225,12 @@ public class FragmentTemplateEngine {
 	 */
 	public class TemplateUpdater implements AutoCloseable {
 		private static final String		TOOL_BND	= "tool.bnd";
-		final List<SelectedTemplateInfo>	templates;
+		final List<TemplateInfo>	templates;
 		final File						folder;
 		final MultiMap<File, Update>	updates		= new MultiMap<>();
 		final List<AutoCloseable>		closeables	= new ArrayList<>();
 
-		TemplateUpdater(File folder, List<SelectedTemplateInfo> templates) {
+		TemplateUpdater(File folder, List<TemplateInfo> templates) {
 			this.folder = folder;
 			this.templates = templates;
 			templates.forEach(templ -> {
@@ -340,10 +291,9 @@ public class FragmentTemplateEngine {
 			return updates;
 		}
 
-		List<Update> make(SelectedTemplateInfo selectedTemplate) {
+		List<Update> make(TemplateInfo template) {
 
-			TemplateID id = selectedTemplate.id();
-			TemplateInfo template = selectedTemplate.templateInfo();
+			TemplateID id = template.id();
 
 			Jar jar = getFiles(id
 				.uri());
@@ -463,7 +413,7 @@ public class FragmentTemplateEngine {
 	/**
 	 * Create a TemplateUpdater
 	 */
-	public TemplateUpdater updater(File folder, List<SelectedTemplateInfo> templates) {
+	public TemplateUpdater updater(File folder, List<TemplateInfo> templates) {
 		return new TemplateUpdater(folder, templates);
 	}
 
