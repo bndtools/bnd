@@ -75,14 +75,26 @@ public class FragmentTemplateEngine {
 	 * Info about a template, comes from the index files.
 	 */
 
-	public record TemplateInfo(TemplateID id, String name, String description, String[] require, String... tag)
+	public record TemplateInfo(TemplateID id, String name, String description, String[] require,
+		String... tag)
 		implements Comparable<TemplateInfo> {
 
 		@Override
 		public int compareTo(TemplateInfo o) {
 			return id.compareTo(o.id);
 		}
+
+		/**
+		 * @return <code>true</code> if this template is from the github
+		 *         bndtools organisation, which we consider "officially provided
+		 *         by us".
+		 */
+		public boolean isOfficial() {
+			return id.organisation()
+				.equals("bndtools");
+		}
 	}
+
 
 	public enum Action {
 		skip,
@@ -191,7 +203,9 @@ public class FragmentTemplateEngine {
 	 * templates, see {@link #getAvailableTemplates()} internally maintained.
 	 */
 	public void add(TemplateInfo info) {
-		this.templates.add(info);
+		if (!templates.contains(info)) {
+			this.templates.add(info);
+		}
 	}
 
 	/**
@@ -211,7 +225,7 @@ public class FragmentTemplateEngine {
 	 */
 	public class TemplateUpdater implements AutoCloseable {
 		private static final String		TOOL_BND	= "tool.bnd";
-		final List<TemplateInfo>		templates;
+		final List<TemplateInfo>	templates;
 		final File						folder;
 		final MultiMap<File, Update>	updates		= new MultiMap<>();
 		final List<AutoCloseable>		closeables	= new ArrayList<>();
@@ -278,11 +292,14 @@ public class FragmentTemplateEngine {
 		}
 
 		List<Update> make(TemplateInfo template) {
-			Jar jar = getFiles(template.id()
+
+			TemplateID id = template.id();
+
+			Jar jar = getFiles(id
 				.uri());
 			closeables.add(jar);
 
-			String prefix = fixup(template.id()
+			String prefix = fixup(id
 				.path());
 
 			List<Update> updates = new ArrayList<>();

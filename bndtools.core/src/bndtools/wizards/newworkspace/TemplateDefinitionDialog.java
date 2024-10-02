@@ -37,10 +37,13 @@ class TemplateDefinitionDialog extends Dialog {
 		container.setLayout(layout);
 
 		Label label = new Label(container, SWT.NONE);
-		label.setText("Template definitions. You can enter a URL or a file path");
+		label.setText(
+			"Template definitions. You can enter a URL or a file path");
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 12, 1));
 
 		Text textField = new Text(container, SWT.BORDER);
+		textField.setText(
+			"https://raw.githubusercontent.com/bndtools/workspace-templates/refs/heads/master/index.bnd");
 		GridData textFieldLayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false, 11, 1);
 		textFieldLayoutData.minimumWidth = 200;
 		textField.setLayoutData(textFieldLayoutData);

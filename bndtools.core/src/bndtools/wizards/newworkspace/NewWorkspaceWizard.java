@@ -1,16 +1,21 @@
 package bndtools.wizards.newworkspace;
 
+import static org.eclipse.jface.dialogs.MessageDialog.openConfirm;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -18,8 +23,10 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -29,6 +36,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +55,8 @@ import bndtools.util.ui.UI;
  * Create a new Workspace Wizard.
  */
 public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWizard {
+
+
 	static final String				DEFAULT_INDEX	= "https://raw.githubusercontent.com/bndtools/workspace-templates/master/index.bnd";
 	static final Logger				log				= LoggerFactory.getLogger(NewWorkspaceWizard.class);
 
@@ -53,6 +64,10 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	final UI<Model>					ui				= new UI<>(model);
 	final NewWorkspaceWizardPage	page			= new NewWorkspaceWizardPage();
 	final FragmentTemplateEngine			templates;
+	private ScrolledFormText		txtDescription;
+
+	final static Image				ok				= Icons.image("icons/tick.png", false);
+	final static Image				warn			= Icons.image("icons/warning_obj.gif", false);
 
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
@@ -86,6 +101,23 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 	@Override
 	public boolean performFinish() {
+
+		// show a confirmation dialog
+		// if there is at least one 3rd-party template selected
+		long num3rdParty = model.selectedTemplates.stream()
+			.filter(t -> !t
+				.isOfficial())
+			.count();
+
+		boolean confirmed = num3rdParty == 0 || openConfirm(getShell(), "Install 3rd-Party templates",
+			"You have selected " + num3rdParty + " templates from 3rd-party authors. "
+				+ "Are you sure you trust the authors and want to continue fetching the content?");
+
+		if (!confirmed) {
+			// not confirmed. cancel selected
+			return false;
+		}
+
 		if (model.valid == null) {
 			ui.write(() -> {
 				TemplateUpdater updater = templates.updater(model.location, model.selectedTemplates);
@@ -94,6 +126,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			return true;
 		} else
 			return false;
+
+
 	}
 
 	class NewWorkspaceWizardPage extends WizardPage {
@@ -140,6 +174,19 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			TableLayout tableLayout = new TableLayout();
 			table.setLayout(tableLayout);
 			table.setHeaderVisible(true);
+			selectedTemplates.addDoubleClickListener(new IDoubleClickListener() {
+				@Override
+				public void doubleClick(DoubleClickEvent e) {
+					// Handle double click event
+					IStructuredSelection selection = (IStructuredSelection) e.getSelection();
+					Object el = selection.getFirstElement();
+					if (el instanceof TemplateInfo sti) {
+						// Open URL in browser
+						Program.launch(sti.id()
+							.repoUrl());
+					}
+				}
+			});
 
 			TableViewerColumn nameColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
 			nameColumn.getColumn()
@@ -148,8 +195,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof TemplateInfo) {
-						return ((TemplateInfo) element).name();
+					if (element instanceof TemplateInfo ti) {
+						return ti.name();
 					}
 					return super.getText(element);
 				}
@@ -162,18 +209,60 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 				@Override
 				public String getText(Object element) {
-					if (element instanceof TemplateInfo) {
-						return ((TemplateInfo) element).description();
+					if (element instanceof TemplateInfo ti) {
+						return ti.description();
 					}
 					return super.getText(element);
 				}
 			});
+
+			TableViewerColumn authorColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
+			authorColumn.getColumn()
+				.setText("Author");
+			authorColumn.setLabelProvider(new ColumnLabelProvider() {
+
+				@Override
+				public String getText(Object element) {
+					if (element instanceof TemplateInfo ti) {
+						if (ti
+							.isOfficial()) {
+							return "bndtools (Official)";
+
+						}
+						else {
+							return ti.id()
+								.organisation() + " (3rd Party)";
+						}
+					}
+					return super.getText(element);
+				}
+
+				@Override
+				public Image getImage(Object element) {
+					if (element instanceof TemplateInfo ti) {
+						return ti
+							.isOfficial() ? ok : warn;
+					}
+
+					return super.getImage(element);
+				}
+
+			});
+
+
 			tableLayout.addColumnData(new ColumnWeightData(1, 80, false));
 			tableLayout.addColumnData(new ColumnWeightData(10, 200, true));
+			tableLayout.addColumnData(new ColumnWeightData(20, 80, true));
 
 			Button addButton = new Button(container, SWT.PUSH);
 			addButton.setText("+");
 			addButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
+
+			txtDescription = new ScrolledFormText(container, SWT.V_SCROLL | SWT.H_SCROLL, false);
+			FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
+			txtDescription.setFormText(formText);
+			formText.setText("Double click to open the Github-Repo in your browser.", false, false);
+
 
 			ui.u("location", model.location, UI.text(location)
 				.map(File::getAbsolutePath, File::new));
@@ -220,7 +309,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			TemplateDefinitionDialog dialog = new TemplateDefinitionDialog(getShell());
 			if (dialog.open() == Window.OK) {
 				String selectedPath = dialog.getSelectedPath();
-				if (!selectedPath.isBlank()) {
+				if (selectedPath != null && !selectedPath.isBlank()) {
 					Job job = Job.create("read " + selectedPath, mon -> {
 						try {
 							URI uri = toURI(selectedPath);

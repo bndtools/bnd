@@ -78,6 +78,27 @@ class TemplateFragmentsTest {
 		TemplateID other = TemplateID.from("file://z.zip");
 		assertThat(other.other()).isEqualTo("file://z.zip");
 
+		// tests a template at a specific commit SHA, which we do for 3rd party
+		// templates
+		// https://github.com/org/repo/tree/commitSHA/subfolder/workspace-template
+		// translates to the followingg templateID:
+		// org/repo/tree/commitSHA/subfolder/workspace-template/
+		TemplateID commitSHAUrl = TemplateID
+			.from("org/repo/subfolder/workspace-template#commitSHA");
+		assertThat(commitSHAUrl.organisation()).isEqualTo("org");
+		assertThat(commitSHAUrl.repository()).isEqualTo("repo");
+		assertThat(commitSHAUrl.path()).isEqualTo("subfolder/workspace-template");
+		assertThat(commitSHAUrl.repoUrl())
+			.isEqualTo("https://github.com/org/repo/tree/commitSHA/subfolder/workspace-template");
+
+		TemplateID defaultmasterUrl = TemplateID.from("org/repo/subfolder/workspace-template");
+		assertThat(defaultmasterUrl.repoUrl())
+			.isEqualTo("https://github.com/org/repo/tree/master/subfolder/workspace-template");
+
+		TemplateID defaultMasterUrl = TemplateID.from("org/repo/subfolder/workspace-template#master");
+		assertThat(defaultMasterUrl.repoUrl())
+			.isEqualTo("https://github.com/org/repo/tree/master/subfolder/workspace-template");
+
 	}
 
 	@Test
