@@ -1,7 +1,7 @@
 ---
 layout: default
 title:  xref [options] <[jar path]> <[...]> 
-summary: Show a cross references for all classes in a set of jars.
+summary: Show cross references for all classes in a set of jars.
 ---
 
 ## Description
@@ -16,6 +16,8 @@ summary: Show a cross references for all classes in a set of jars.
 	[ -f, --from ]             - Show references from other classes/packages (<)
 	[ -m, --match <string>* ]  - Filter for class names, a globbing expression
 	[ -t, --to ]               - Show references to other classes/packages (>)
+    [ -j, --java ]             - Include java.* packages (or classes)
+    
 
 ## Examples
    
