@@ -99,4 +99,42 @@ public class ServiceProviderFileTest {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testAutoGenerateServiceProviderAnnotation() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setProperty("-includeresource", """
+					META-INF/services/com.example.service.Type;\
+						literal='\
+						java.lang.String'
+				""");
+			b.setProperty("-metainf-services", "auto");
+			b.build();
+			assertTrue(b.check());
+			Domain manifest = Domain.domain(b.getJar()
+				.getManifest());
+			Parameters provideCapability = manifest.getProvideCapability();
+
+			assertThat(provideCapability.get("osgi.service")).isNotNull();
+			assertThat(provideCapability.get("osgi.service")).containsEntry("objectClass", "com.example.service.Type");
+
+			assertThat(provideCapability.get("osgi.serviceloader")).isNotNull();
+			assertThat(provideCapability.get("osgi.serviceloader")
+				.get("osgi.serviceloader")).isEqualTo("com.example.service.Type");
+			assertThat(provideCapability.get("osgi.serviceloader"))
+				.containsEntry("osgi.serviceloader", "com.example.service.Type")
+				.containsEntry("register:", "java.lang.String");
+
+			Parameters requireCapability = manifest.getRequireCapability();
+
+			System.out.println(provideCapability.toString()
+				.replace(',', '\n'));
+			System.out.println(requireCapability.toString()
+				.replace(',', '\n'));
+		}
+	}
+
+
+
 }
