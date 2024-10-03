@@ -42,6 +42,8 @@ META-INF/services/com.example.ServiceType:
 ```
 The processing is identical to the normal class based annotation processing. The `#class` macro will be set to the implementation class. The `#value` will be set in all cases to the service type unless overridden.
 
+This behavior can be controlled with the [-metainf-services](/instructions/metainf-services.html) instruction. You can set `-metainf-services: auto` to also automatically create `Provide-Capability` headers for services without annotations.
+
 Clearly using the class annotation is far superior:
 
 * Help from the IDE
@@ -51,6 +53,12 @@ Clearly using the class annotation is far superior:
 The analysis of these files happens after the analyzer plugins have been run. These plugins can add files if so desired.
 
 Since the annotations & imports happen in the comments, it is not possible to diagnose any errors. If the comment does not match its regular expression, it will be silently ignored.
+
+
+**Note:** Make sure `biz.aQute.bnd.annotation` is on the classpath / buildpath which contains the `aQute.bnd.annotation.spi.ServiceProvider` annotation. Otherwise the annotation won't be processed and you might see a warning in the log like this: 
+
+`Unable to determine whether the meta annotation aQute.bnd.annotation.spi.ServiceProvider applied to type xyz provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed`
+
 
 ### @Requirement & @Capability Annotations
 
