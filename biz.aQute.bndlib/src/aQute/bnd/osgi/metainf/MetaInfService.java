@@ -228,6 +228,7 @@ public class MetaInfService {
 				// just comment
 				continue;
 			}
+
 			implementations.put(line, new Implementation(line, annotations, comments));
 			annotations.clear();
 			comments.clear();

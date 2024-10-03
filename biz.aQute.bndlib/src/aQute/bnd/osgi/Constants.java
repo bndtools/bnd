@@ -567,6 +567,14 @@ public interface Constants {
 	String		SERVICELOADER_REGISTER_DIRECTIVE			= "register:";
 	String		SERVICELOADER_NAMESPACE						= "osgi.serviceloader";
 
+	/*
+	 * processing of META-INF/services folder section.
+	 */
+	String		METAINF_SERVICES							= "-metainf-services";
+	String		METAINF_SERVICES_STRATEGY_ANNOTATION		= "annotation";
+	String		METAINF_SERVICES_STRATEGY_AUTO				= "auto";
+	String		METAINF_SERVICES_STRATEGY_NONE				= "none";
+
 	/**
 	 * Launch constants that should be shared by launchers
 	 */
@@ -600,6 +608,7 @@ public interface Constants {
 	);
 
 	String		INTERNAL_PREFIX								= "-internal-";
+
 
 
 	/*
