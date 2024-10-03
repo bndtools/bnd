@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Project
-title: -init: ${MACRO} ( ',' ${MACRO}) * 
+title: -init ${MACRO} ( ',' ${MACRO}) * 
 summary:  Executes the macros while initializing the project for building.
 ---
 
