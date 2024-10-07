@@ -10,8 +10,8 @@ See the chapter about [META-INF/services Annotations](/chapters/230-manifest-ann
 
 This instruction can have the following values:
 
-- `annotation` (default if not set): Scan files and only process annotations.
-- `auto`: process annotations and special treatment and auto-register services without annotations. That means that bnd auto-generates a `aQute.bnd.annotation.spi.ServiceProvider` annotation without attributes if an Implementation doesn't have one. This is useful if you just want to have bnd generate the `Provide-Capability` headers for `osgi.serviceloader`.
+- `auto` (default if not set): auto-register services without textual annotations. That means that bnd auto-generates a `aQute.bnd.annotation.spi.ServiceProvider` annotation without attributes 'under the hood' if an Implementation doesn't have one. This is useful if you just want to have bnd generate the `Provide-Capability` headers for `osgi.serviceloader`. Additionally 'auto' behaves like 'annotation'.
+- `annotation`: Scan files and only process textual annotations in comments of META-INF/services files.
 - `none`: disable processing of files in `META-INF/services`
 
 ## Example
@@ -22,12 +22,10 @@ We will use `-includeresource: @lib/groovy-3.0.22.jar` to [unroll the jar](/inst
 
 ```
 # bnd.bnd
--buildpath: biz.aQute.bnd.annotation;version='7.0'
 -includeresource: @lib/groovy-3.0.22.jar
--metainf-services: auto
 ```
 
-This creates a new jar with the following MANIFEST.MF headers from the `META-INF/services` folder:
+This uses the default `-metainf-services: auto` and creates a new jar with the following MANIFEST.MF headers from the `META-INF/services` folder:
 
 ```
 # MANIFEST.MF
@@ -37,11 +35,7 @@ Require-Capability                      osgi.ee;filter:="(&(osgi.ee=JavaSE)(vers
                                         osgi.extender;filter:="(&(osgi.extender=osgi.serviceloader.registrar)(version>=1.0.0)(!(version>=2.0.0)))"
 ```
 
-`-metainf-services: auto` causes bnd to process annotations and also auto-generate an annotation for services without annotations. 
-To prevent the latter (auto-generation) use the default `-metainf-services: annotation` or remove the instruction completely.
-
-**Note:** Make sure `biz.aQute.bnd.annotation` is on the classpath / buildpath which contains `aQute.bnd.annotation.spi.ServiceProvider` annotation.
-
-
+Because the default `-metainf-services: auto` is used, it instructs bnd to process textual annotations and also auto-generate a `@ServiceProvider` annotation annotation under the hood for services without annotations. 
+To prevent the latter (auto-generation) use the default `-metainf-services: annotation` or use `-metainf-services: none`.
 
 [source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/osgi/metainf/MetaInfServiceParser.java)
