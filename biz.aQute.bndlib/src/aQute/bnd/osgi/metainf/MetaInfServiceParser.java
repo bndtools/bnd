@@ -8,6 +8,7 @@ import static aQute.bnd.osgi.Constants.METAINF_SERVICES_STRATEGY_NONE;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
 
+import aQute.bnd.annotation.spi.ServiceProvider;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
@@ -33,10 +34,12 @@ public class MetaInfServiceParser implements AnalyzerPlugin {
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 
 		String strategy = strategy(analyzer);
-
-		if (METAINF_SERVICES_STRATEGY_NONE.equals(strategy)) {
-			// do not process META-INF/services files
-			return false;
+		switch (strategy) {
+			case METAINF_SERVICES_STRATEGY_NONE :
+				return false;
+			case METAINF_SERVICES_STRATEGY_AUTO : {
+				analyzer.addClasspathDefault(ServiceProvider.class);
+			}
 		}
 
 		MetaInfService.getServiceFiles(analyzer.getJar())
@@ -49,18 +52,12 @@ public class MetaInfServiceParser implements AnalyzerPlugin {
 				Parameters annotations = impl.getAnnotations();
 
 				if (annotations.isEmpty() && METAINF_SERVICES_STRATEGY_AUTO.equals(strategy)) {
-					// if there are no annotations at the impl
-					// we add one artificially to create the capabilities for
-					// Service without any attributes in the manifest e.g.
-					// Provide-Capability',
-					// "osgi.serviceloader;osgi.serviceloader=serviceName
-					annotations.add("aQute.bnd.annotation.spi.ServiceProvider", Attrs.EMPTY_ATTRS);
+					annotations.add(ServiceProvider.class.getName(), Attrs.EMPTY_ATTRS);
 				}
 
-				annotations
-					.forEach((annotationName, attrs) -> {
-						doAnnotationsforMetaInf(analyzer, impl, Processor.removeDuplicateMarker(annotationName), attrs);
-					});
+				annotations.forEach((annotationName, attrs) -> {
+					doAnnotationsforMetaInf(analyzer, impl, Processor.removeDuplicateMarker(annotationName), attrs);
+				});
 			});
 		return false;
 	}
