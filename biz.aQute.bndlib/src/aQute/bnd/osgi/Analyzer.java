@@ -117,6 +117,7 @@ public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
 	private final static Version					frameworkR7				= new Version("1.9");
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
+	private final Set<Clazz>						ignoreForEE				= new HashSet<>();
 
 	// Bundle parameters
 	private Jar										dot;
@@ -224,7 +225,7 @@ public class Analyzer extends Processor {
 			//
 			classspace.values()
 				.stream()
-				.filter(c -> !c.isModule())
+				.filter(c -> !c.isModule() && !ignoreForEE.contains(c))
 				.map(Clazz::getFormat)
 				.forEach(ees::add);
 
@@ -3911,33 +3912,37 @@ public class Analyzer extends Processor {
 		annotationHeaders.classEnd();
 	}
 
-       /**
-        * Get a class from our own class path
-        *
-        * @param type a local type on the bnd classpath
-        */
-       public void addClasspathDefault(Class<?> type) {
-               assert type != null : "type must be given";
+	/**
+	 * Get a class from our own class path
+	 *
+	 * @param type a local type on the bnd classpath
+	 */
+	public void addClasspathDefault(Class<?> type) {
+		assert type != null : "type must be given";
 
-               try {
-                       TypeRef ref = getTypeRefFrom(type);
-                       URL resource = type.getClassLoader()
-                               .getResource(ref.getPath());
-                       if (resource == null) {
-                               error("analyzer.addclasspathdefault expected class %s to be on the classpath since we have a type",
-                                       type);
-                       } else {
+		try {
+			TypeRef ref = getTypeRefFrom(type);
+			URL resource = type.getClassLoader()
+				.getResource(ref.getPath());
+			if (resource == null) {
+				error("analyzer.addclasspathdefault expected class %s to be on the classpath since we have a type",
+					type);
+			} else {
 
-                               Resource r = new URLResource(resource, null);
-                               Clazz c = new Clazz(this, ref.getFQN(), r);
-                               if (c != null) {
-                                       c.parseClassFile();
-                                       classspace.putIfAbsent(ref, c);
-                               }
-                       }
-               } catch (Exception e) {
-                       error("analyzer.findclassorlocal Failed to read a class from the bnd classpath");
-               }
-       }
+				Resource r = new URLResource(resource, null);
+				Clazz c = new Clazz(this, ref.getFQN(), r);
+				if (c != null) {
+					c.parseClassFile();
+					classspace.putIfAbsent(ref, c);
+
+					// classes we add here need to be ignored
+					// when calculating class versions to use
+					ignoreForEE.add(c);
+				}
+			}
+		} catch (Exception e) {
+			error("analyzer.findclassorlocal Failed to read a class from the bnd classpath");
+		}
+	}
 
 }

@@ -135,6 +135,33 @@ public class ServiceProviderFileTest {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testInvalidServiceImplementationNamesShouldBeIgnored() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setProperty("-includeresource", """
+					META-INF/services/com.example.service.Type;\
+						literal='\
+						key=value'
+				""");
+			b.setProperty("-metainf-services", "auto");
+			b.build();
+			assertTrue(b.check());
+			Domain manifest = Domain.domain(b.getJar()
+				.getManifest());
+			Parameters provideCapability = manifest.getProvideCapability();
+
+			assertThat(provideCapability.get("osgi.service")).isNull();
+
+			Parameters requireCapability = manifest.getRequireCapability();
+
+			System.out.println(provideCapability.toString()
+				.replace(',', '\n'));
+			System.out.println(requireCapability.toString()
+				.replace(',', '\n'));
+		}
+	}
 
 
 }

@@ -83,12 +83,12 @@ public class SPIAnnotationsTest {
 				.getMainAttributes();
 
 			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
-			assertEquals(1, req.size());
+			assertEquals(2, req.size());
 
 			assertEE(req);
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
-			assertEquals(1, cap.size());
+			assertEquals(3, cap.size());
 
 			Props p = cap.get("osgi.serviceloader");
 			assertNotNull(p);
@@ -151,7 +151,11 @@ public class SPIAnnotationsTest {
 			b.getJar()
 				.getManifest()
 				.write(System.out);
-			assertTrue(b.check());
+			assertFalse(b.check());
+			assertThat(b.getErrors()).hasSize(1);
+			assertThat(b.getErrors()
+				.get(0)).contains(
+					"analyzer processing annotation some.other.Provider but the associated class is not found in the JAR");
 
 			Attributes mainAttributes = b.getJar()
 				.getManifest()
@@ -188,7 +192,15 @@ public class SPIAnnotationsTest {
 			b.getJar()
 				.getManifest()
 				.write(System.out);
-			assertTrue(b.check());
+			assertFalse(b.check());
+
+			assertThat(b.getErrors()).hasSize(2);
+			assertThat(b.getErrors()
+				.get(0)).contains(
+					"analyzer processing annotation some.provider.Provider but the associated class is not found in the JAR");
+			assertThat(b.getErrors()
+				.get(1)).contains(
+					"analyzer processing annotation another.provider.ProviderImpl but the associated class is not found in the JAR");
 
 			Attributes mainAttributes = b.getJar()
 				.getManifest()
