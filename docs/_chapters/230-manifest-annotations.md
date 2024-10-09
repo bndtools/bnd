@@ -28,9 +28,10 @@ Export-Package: com.acme;version="1.3.4"
 
 ### META-INF/services Annotations
 
-Some developers do not want to rely on the bnd/OSGi annotations. For this reason, it is possible to also apply the annotations to the files in the `META-INF/services`. These Service Loader files have the name of a Service Loader _service_ and contain the names of the implementation classes. One fully qualified name per line.
+Some developers do not want to rely on the additional dependency of bnd/OSGi annotations. For this reason, it is possible to also apply the annotations textually in comments to the files in the `META-INF/services`.
+This trick avoids a compile time dependency. These Service Loader files have the name of a Service Loader _service_ and contain the names of the implementation classes. One fully qualified name per line.
 
-The annotations can be applied in the comments. To make them more readable, it is possible to import the fully qualified name of the annotation.
+To make these annotations in the comments more readable, it is possible to import the fully qualified name of the annotation.
 ```
 META-INF/services/com.example.ServiceType:
 
@@ -42,9 +43,11 @@ META-INF/services/com.example.ServiceType:
 ```
 The processing is identical to the normal class based annotation processing. The `#class` macro will be set to the implementation class. The `#value` will be set in all cases to the service type unless overridden.
 
-This behavior can be controlled with the [-metainf-services](/instructions/metainf-services.html) instruction. Default is `auto` which automatically create `Provide-Capability` headers for services without textual annotations.
+This behavior can be controlled with the [-metainf-services](/instructions/metainf-services.html) instruction. Default is `annotation` which processes the textual annotations above, while the other convenience strategy `auto` automatically creates `Provide-Capability` headers for services without any textual annotations.
 
-Clearly using the class annotation is far superior:
+<hr />
+
+While the above is a compromise, clearly using the real class annotation is far superior:
 
 * Help from the IDE
 * Impossible to make typos
