@@ -117,7 +117,6 @@ public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
 	private final static Version					frameworkR7				= new Version("1.9");
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
-	private final Set<Clazz>						ignoreForEE				= new HashSet<>();
 
 	// Bundle parameters
 	private Jar										dot;
@@ -137,6 +136,7 @@ public class Analyzer extends Processor {
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
 	private final Map<TypeRef, Clazz>				classspace				= map();
+	private final Map<TypeRef, Clazz>				lookAsideClasses		= map();
 	private final Map<TypeRef, Clazz>				importedClassesCache	= map();
 	private boolean									analyzed				= false;
 	private boolean									diagnostics				= false;
@@ -225,7 +225,7 @@ public class Analyzer extends Processor {
 			//
 			classspace.values()
 				.stream()
-				.filter(c -> !c.isModule() && !ignoreForEE.contains(c))
+				.filter(c -> !c.isModule())
 				.map(Clazz::getFormat)
 				.forEach(ees::add);
 
@@ -3111,6 +3111,10 @@ public class Analyzer extends Processor {
 		if (c != null)
 			return c;
 
+		c = lookAsideClasses.get(typeRef);
+		if (c != null)
+			return c;
+
 		Resource r = findResource(typeRef.getPath());
 		if (r == null) {
 			getClass().getClassLoader();
@@ -3933,11 +3937,8 @@ public class Analyzer extends Processor {
 				Clazz c = new Clazz(this, ref.getFQN(), r);
 				if (c != null) {
 					c.parseClassFile();
-					classspace.putIfAbsent(ref, c);
-
-					// classes we add here need to be ignored
-					// when calculating class versions to use
-					ignoreForEE.add(c);
+					// we don't want that class in our classspace
+					lookAsideClasses.putIfAbsent(ref, c);
 				}
 			}
 		} catch (Exception e) {
