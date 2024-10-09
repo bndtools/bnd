@@ -6,8 +6,8 @@ import static aQute.bnd.osgi.Constants.METAINF_SERVICES_STRATEGY_AUTO;
 import static aQute.bnd.osgi.Constants.METAINF_SERVICES_STRATEGY_NONE;
 
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import aQute.bnd.annotation.Resolution;
@@ -57,8 +57,8 @@ public class MetaInfServiceParser implements AnalyzerPlugin {
 
 		// "auto" applies only to services without any annotation at all. so
 		// divide them
-		Collection<MetaInfService> withAnnotations = new ArrayList<MetaInfService>();
-		Collection<MetaInfService> withoutAnnotations = new ArrayList<MetaInfService>();
+		Collection<MetaInfService> withAnnotations = new LinkedHashSet<>();
+		Collection<MetaInfService> withoutAnnotations = new LinkedHashSet<>();
 
 		allServices.forEach(mis -> {
 			mis.getImplementations()
