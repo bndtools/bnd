@@ -43,7 +43,6 @@ public class MetaInfService {
 	static final String		META_INF_SERVICES_STEM		= "META-INF/services";
 	static final String		META_INF_SERVICES_PREFIX	= META_INF_SERVICES_STEM + "/";
 	static final String		FQN_S						= "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
-	static final Pattern	FQN							= Pattern.compile(FQN_S);
 	static final Pattern	IMPORT_P					= Pattern
 		.compile("#import\\s+(?<fqn>" + FQN_S + ")\\s*;?\\s*$");
 	static final Pattern	ANNOTATION_P				= Pattern
@@ -228,15 +227,6 @@ public class MetaInfService {
 				}
 				// just comment
 				continue;
-			}
-			else {
-
-				// valid implementationName?
-				Matcher m = FQN.matcher(line);
-				if (!m.matches()) {
-					// invalid fqn: skip
-					continue;
-				}
 			}
 			implementations.put(line, new Implementation(line, annotations, comments));
 			annotations.clear();
