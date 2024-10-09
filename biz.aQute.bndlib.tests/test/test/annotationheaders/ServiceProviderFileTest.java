@@ -1,13 +1,20 @@
 package test.annotationheaders;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.osgi.resource.Requirement;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.lib.io.IO;
 
 public class ServiceProviderFileTest {
@@ -96,6 +103,16 @@ public class ServiceProviderFileTest {
 			Parameters requireCapability = manifest.getRequireCapability();
 			assertThat(provideCapability.size()).isEqualTo(4);
 			assertThat(requireCapability.size()).isEqualTo(2);
+
+			Requirement req = CapReqBuilder.getRequirementsFrom(requireCapability)
+				.get(0);
+			assertEquals("osgi.extender", req.getNamespace());
+			assertNull(req.getDirectives()
+				.get("resolution"));
+			assertEquals("(&(osgi.extender=osgi.serviceloader.registrar)(version>=1.0.0)(!(version>=2.0.0)))",
+				req.getDirectives()
+					.get("filter"));
+
 		}
 	}
 
@@ -127,6 +144,14 @@ public class ServiceProviderFileTest {
 				.containsEntry("register:", "java.lang.String");
 
 			Parameters requireCapability = manifest.getRequireCapability();
+			Requirement req = CapReqBuilder.getRequirementsFrom(requireCapability)
+				.get(0);
+			assertEquals("osgi.extender", req.getNamespace());
+			assertEquals("optional", req.getDirectives()
+				.get("resolution"));
+			assertEquals("(&(osgi.extender=osgi.serviceloader.registrar)(version>=1.0.0)(!(version>=2.0.0)))",
+				req.getDirectives()
+				.get("filter"));
 
 			System.out.println(provideCapability.toString()
 				.replace(',', '\n'));
@@ -147,7 +172,10 @@ public class ServiceProviderFileTest {
 				""");
 			b.setProperty("-metainf-services", "auto");
 			b.build();
-			assertTrue(b.check());
+			assertFalse(b.check());
+			List<String> errors = b.getErrors();
+			assertEquals("analyzer processing annotation key=value but the associated class is not found in the JAR",
+				errors.get(0));
 			Domain manifest = Domain.domain(b.getJar()
 				.getManifest());
 			Parameters provideCapability = manifest.getProvideCapability();

@@ -6,6 +6,8 @@ import static aQute.bnd.osgi.Constants.METAINF_SERVICES_STRATEGY_AUTO;
 import static aQute.bnd.osgi.Constants.METAINF_SERVICES_STRATEGY_NONE;
 
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 import aQute.bnd.annotation.Resolution;
@@ -23,7 +25,8 @@ import aQute.bnd.service.AnalyzerPlugin;
 
 /**
  * process the META-INF/services/* files. These files can contain bnd
- * annotations.
+ * annotations. Use instruction {@link Constants#METAINF_SERVICES} to control
+ * this.
  */
 
 public class MetaInfServiceParser implements AnalyzerPlugin {
@@ -49,8 +52,50 @@ public class MetaInfServiceParser implements AnalyzerPlugin {
 			}
 		}
 
-		MetaInfService.getServiceFiles(analyzer.getJar())
-			.values()
+		Collection<MetaInfService> allServices = MetaInfService.getServiceFiles(analyzer.getJar())
+			.values();
+
+		// "auto" applies only to services without any annotation at all. so
+		// divide them
+		Collection<MetaInfService> withAnnotations = new ArrayList<MetaInfService>();
+		Collection<MetaInfService> withoutAnnotations = new ArrayList<MetaInfService>();
+
+		allServices.forEach(mis -> {
+			mis.getImplementations()
+				.values()
+				.forEach(impl -> {
+					Parameters annotations = impl.getAnnotations();
+
+					if (!annotations.isEmpty()) {
+						withAnnotations.add(mis);
+					} else {
+						withoutAnnotations.add(mis);
+					}
+
+				});
+		});
+
+		if (METAINF_SERVICES_STRATEGY_AUTO.equals(strategy)) {
+			withoutAnnotations
+				.stream()
+				.flatMap(mis -> mis.getImplementations()
+					.values()
+					.stream())
+				.forEach(impl -> {
+
+					Parameters annotations = new Parameters();
+					Attrs attrs1 = new Attrs();
+					attrs1.put(Constants.RESOLUTION_DIRECTIVE, Resolution.OPTIONAL);
+					attrs1.addDirectiveAliases();
+					annotations.add(ServiceProvider.class.getName(), attrs1);
+
+					annotations.forEach((annotationName, attrs) -> {
+						doAnnotationsforMetaInf(analyzer, impl, Processor.removeDuplicateMarker(annotationName), attrs);
+					});
+				});
+		}
+
+		withAnnotations
 			.stream()
 			.flatMap(mis -> mis.getImplementations()
 				.values()
@@ -58,17 +103,11 @@ public class MetaInfServiceParser implements AnalyzerPlugin {
 			.forEach(impl -> {
 				Parameters annotations = impl.getAnnotations();
 
-				if (annotations.isEmpty() && METAINF_SERVICES_STRATEGY_AUTO.equals(strategy)) {
-					Attrs attrs = new Attrs();
-					attrs.put(Constants.RESOLUTION_DIRECTIVE, Resolution.OPTIONAL);
-					attrs.addDirectiveAliases();
-					annotations.add(ServiceProvider.class.getName(), attrs);
-				}
-
 				annotations.forEach((annotationName, attrs) -> {
 					doAnnotationsforMetaInf(analyzer, impl, Processor.removeDuplicateMarker(annotationName), attrs);
 				});
 			});
+
 		return false;
 	}
 
@@ -90,6 +129,6 @@ public class MetaInfServiceParser implements AnalyzerPlugin {
 	}
 
 	private String strategy(Analyzer analyzer) {
-		return analyzer.getProperty(METAINF_SERVICES, METAINF_SERVICES_STRATEGY_AUTO);
+		return analyzer.getProperty(METAINF_SERVICES, METAINF_SERVICES_STRATEGY_ANNOTATION);
 	}
 }
