@@ -136,6 +136,7 @@ public class Analyzer extends Processor {
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
 	private final Map<TypeRef, Clazz>				classspace				= map();
+	private final Map<TypeRef, Clazz>				lookAsideClasses		= map();
 	private final Map<TypeRef, Clazz>				importedClassesCache	= map();
 	private boolean									analyzed				= false;
 	private boolean									diagnostics				= false;
@@ -2188,7 +2189,6 @@ public class Analyzer extends Processor {
 		return providers;
 	}
 
-
 	boolean isProvider(TypeRef t) {
 		if (t == null || t.isJava())
 			return false;
@@ -3111,6 +3111,10 @@ public class Analyzer extends Processor {
 		if (c != null)
 			return c;
 
+		c = lookAsideClasses.get(typeRef);
+		if (c != null)
+			return c;
+
 		Resource r = findResource(typeRef.getPath());
 		if (r == null) {
 			getClass().getClassLoader();
@@ -3904,12 +3908,42 @@ public class Analyzer extends Processor {
 	public void addAnnotation(Annotation ann, TypeRef c) throws Exception {
 		Clazz clazz = findClass(c);
 		if (clazz == null) {
-			error("analyzer processing annotation %s but the associated class %s is not found in the JAR", c);
+                       error("analyzer processing annotation %s but the associated class is not found in the JAR", c);
 			return;
 		}
 		annotationHeaders.classStart(clazz);
 		annotationHeaders.annotation(ann);
 		annotationHeaders.classEnd();
+	}
+
+	/**
+	 * Get a class from our own class path
+	 *
+	 * @param type a local type on the bnd classpath
+	 */
+	public void addClasspathDefault(Class<?> type) {
+		assert type != null : "type must be given";
+
+		try {
+			TypeRef ref = getTypeRefFrom(type);
+			URL resource = type.getClassLoader()
+				.getResource(ref.getPath());
+			if (resource == null) {
+				error("analyzer.addclasspathdefault expected class %s to be on the classpath since we have a type",
+					type);
+			} else {
+
+				Resource r = new URLResource(resource, null);
+				Clazz c = new Clazz(this, ref.getFQN(), r);
+				if (c != null) {
+					c.parseClassFile();
+					// we don't want that class in our classspace
+					lookAsideClasses.putIfAbsent(ref, c);
+				}
+			}
+		} catch (Exception e) {
+			error("analyzer.findclassorlocal Failed to read a class from the bnd classpath");
+		}
 	}
 
 }

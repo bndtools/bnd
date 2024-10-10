@@ -63,7 +63,12 @@ public class BndHover extends DefaultTextHover {
 				if (syntax != null) {
 
 					sb.append(syntax.getLead());
-					sb.append("\nE.g. ");
+					String values = syntax.getValues();
+					if (values != null && !values.isBlank()) {
+						sb.append("\nValues: ");
+						sb.append(syntax.getValues());
+					}
+					sb.append("\nExample: ");
 					sb.append(syntax.getExample());
 				}
 				Parameters decorated = properties.decorated(key);

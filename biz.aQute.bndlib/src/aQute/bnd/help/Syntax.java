@@ -736,7 +736,11 @@ public class Syntax implements Constants {
 			WORKINGSET + "=Implementations, Drivers", null, null),
 		new Syntax("-x-overwritestrategy",
 			"On windows we sometimes cannot delete a file because someone holds a lock in our or another process. So if we set the -overwritestrategy flag we use an avoiding strategy.",
-			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null)
+			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null),
+		new Syntax(METAINF_SERVICES, "Controls how META-INF/services files are processed.", METAINF_SERVICES + ": auto",
+			"(" + METAINF_SERVICES_STRATEGY_ANNOTATION + "|" + METAINF_SERVICES_STRATEGY_AUTO + "|"
+				+ METAINF_SERVICES_STRATEGY_NONE + ")",
+			Pattern.compile("auto|annotation|none"))
 	};
 
 	final static Map<Class<?>, Pattern>		BASE_PATTERNS			= Maps.ofEntries(

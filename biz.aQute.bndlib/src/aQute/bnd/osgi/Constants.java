@@ -309,6 +309,14 @@ public interface Constants {
 	String		WORKINGSET_MEMBER							= "member";
 	String		REQUIRE_BND									= "-require-bnd";
 
+	/*
+	 * processing of META-INF/services folder section.
+	 */
+	String		METAINF_SERVICES							= "-metainf-services";
+	String		METAINF_SERVICES_STRATEGY_ANNOTATION		= "annotation";
+	String		METAINF_SERVICES_STRATEGY_AUTO				= "auto";
+	String		METAINF_SERVICES_STRATEGY_NONE				= "none";
+
 	// Deprecated
 	String		CLASSPATH									= "-classpath";
 	String		OUTPUT										= "-output";
@@ -329,7 +337,7 @@ public interface Constants {
 		CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPRODUCIBLE, INCLUDEPACKAGE,
 		CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK, MAVEN_SCOPE, RUNSTARTLEVEL,
 		RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE, RUNFRAMEWORKRESTART,
-		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY);
+		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY, METAINF_SERVICES);
 
 	// Ignore bundle specific headers. These headers do not make a lot of sense
 	// to inherit
@@ -567,6 +575,7 @@ public interface Constants {
 	String		SERVICELOADER_REGISTER_DIRECTIVE			= "register:";
 	String		SERVICELOADER_NAMESPACE						= "osgi.serviceloader";
 
+
 	/**
 	 * Launch constants that should be shared by launchers
 	 */
@@ -600,6 +609,7 @@ public interface Constants {
 	);
 
 	String		INTERNAL_PREFIX								= "-internal-";
+
 
 
 	/*
