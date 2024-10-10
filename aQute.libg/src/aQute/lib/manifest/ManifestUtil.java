@@ -5,16 +5,21 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
+
+import org.osgi.framework.Constants;
 
 /**
  * Unfortunately we have to write our own manifest :-( because of a stupid bug
@@ -49,6 +54,21 @@ public final class ManifestUtil {
 		':', ' '
 	};
 	private static final int				MAX_LENGTH		= 72 - EOL.length;
+
+	@SuppressWarnings("deprecation")
+	private static final Set<String> NICE_HEADERS = new HashSet<>(
+        Arrays.asList(
+                Constants.IMPORT_PACKAGE,
+                Constants.DYNAMICIMPORT_PACKAGE,
+                Constants.IMPORT_SERVICE,
+                Constants.REQUIRE_CAPABILITY,
+                Constants.EXPORT_PACKAGE,
+                Constants.EXPORT_SERVICE,
+                Constants.PROVIDE_CAPABILITY,
+                Constants.REQUIRE_BUNDLE,
+			Constants.BUNDLE_CLASSPATH
+        )
+);
 
 	private ManifestUtil() {}
 
@@ -89,30 +109,41 @@ public final class ManifestUtil {
 	 * Write out an entry, handling proper unicode and line length constraints
 	 */
 	private static void writeEntry(OutputStream out, Name name, String value) throws IOException {
-		int width = write(out, 0, name.toString());
-		width = write(out, width, SEPARATOR);
 
-		String[] parts = parseDelimitedString(value, ",");
-		if (parts.length > 1) {
-			write(out, 0, EOL_INDENT);
-			width = 1;
-		}
+		if(NICE_HEADERS.contains(name.toString())) {
+			int width = write(out, 0, name.toString());
+			width = write(out, width, SEPARATOR);
 
-		for (int i = 0; i < parts.length; i++) {
-			if (i < parts.length - 1) {
-				width = write(out, width, parts[i]);
-				write(out, width, ",");
-				write(out, 0, EOL_INDENT);
-			} else {
-				write(out, width, parts[i]);
+			if (value == null || value.isEmpty()) {
+				// could be a Multi-Release Jar
 				write(out, 0, EOL);
+				return;
 			}
-			width = 1;
+
+			String[] parts = parseDelimitedString(value, ",");
+			if (parts.length > 1) {
+				write(out, 0, EOL_INDENT);
+				width = 1;
+			}
+
+			for (int i = 0; i < parts.length; i++) {
+				if (i < parts.length - 1) {
+					width = write(out, width, parts[i] + ",");
+					write(out, 0, EOL_INDENT);
+				} else {
+					width = write(out, width, parts[i]);
+					write(out, 0, EOL);
+				}
+				width = 1;
+			}
+		}
+		else {
+			int width = write(out, 0, name.toString());
+			width = write(out, width, SEPARATOR);
+            write(out, width, value);
+            write(out, 0, EOL);
 		}
 
-		// width = write(out, width, SEPARATOR);
-		// write(out, width, value);
-		// out.write(EOL);
 	}
 
 	/**
@@ -144,8 +175,7 @@ public final class ManifestUtil {
 	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
 		for (int position = 0, limit = bytes.length, remaining; (remaining = limit - position) > 0;) {
 			if (width >= MAX_LENGTH) {
-				out.write(EOL);
-				out.write(' ');
+				out.write(EOL_INDENT);
 				width = 1;
 			}
 			int count = Math.min(MAX_LENGTH - width, remaining);
