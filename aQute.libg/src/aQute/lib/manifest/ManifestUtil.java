@@ -4,8 +4,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -39,6 +41,9 @@ public final class ManifestUtil {
 	private static final Name				NAME			= new Name("Name");
 	private static final byte[]				EOL				= new byte[] {
 		'\r', '\n'
+	};
+	private static final byte[]				EOL_INDENT		= new byte[] {
+		'\r', '\n', ' '
 	};
 	private static final byte[]				SEPARATOR		= new byte[] {
 		':', ' '
@@ -86,8 +91,28 @@ public final class ManifestUtil {
 	private static void writeEntry(OutputStream out, Name name, String value) throws IOException {
 		int width = write(out, 0, name.toString());
 		width = write(out, width, SEPARATOR);
-		write(out, width, value);
-		out.write(EOL);
+
+		String[] parts = parseDelimitedString(value, ",");
+		if (parts.length > 1) {
+			write(out, 0, EOL_INDENT);
+			width = 1;
+		}
+
+		for (int i = 0; i < parts.length; i++) {
+			if (i < parts.length - 1) {
+				width = write(out, width, parts[i]);
+				write(out, width, ",");
+				write(out, 0, EOL_INDENT);
+			} else {
+				write(out, width, parts[i]);
+				write(out, 0, EOL);
+			}
+			width = 1;
+		}
+
+		// width = write(out, width, SEPARATOR);
+		// write(out, width, value);
+		// out.write(EOL);
 	}
 
 	/**
@@ -169,5 +194,64 @@ public final class ManifestUtil {
 	})
 	private static Map<Name, String> coerce(Attributes attributes) {
 		return (Map) attributes;
+	}
+
+	/**
+	 * Parses delimited string and returns an array containing the tokens. This
+	 * parser obeys quotes, so the delimiter character will be ignored if it is
+	 * inside of a quote. This method assumes that the quote character is not
+	 * included in the set of delimiter characters.
+	 *
+	 * @param value the delimited string to parse.
+	 * @param delim the characters delimiting the tokens.
+	 * @return an array of string tokens or null if there were no tokens.
+	 **/
+	private static String[] parseDelimitedString(String value, String delim) {
+		if (value == null) {
+			value = "";
+		}
+
+		List<String> list = new ArrayList<>();
+
+		int CHAR = 1;
+		int DELIMITER = 2;
+		int STARTQUOTE = 4;
+		int ENDQUOTE = 8;
+
+		StringBuilder sb = new StringBuilder();
+
+		int expecting = (CHAR | DELIMITER | STARTQUOTE);
+
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+
+			boolean isDelimiter = (delim.indexOf(c) >= 0);
+			boolean isQuote = (c == '"');
+
+			if (isDelimiter && ((expecting & DELIMITER) > 0)) {
+				list.add(sb.toString()
+					.trim());
+				sb.delete(0, sb.length());
+				expecting = (CHAR | DELIMITER | STARTQUOTE);
+			} else if (isQuote && ((expecting & STARTQUOTE) > 0)) {
+				sb.append(c);
+				expecting = CHAR | ENDQUOTE;
+			} else if (isQuote && ((expecting & ENDQUOTE) > 0)) {
+				sb.append(c);
+				expecting = (CHAR | STARTQUOTE | DELIMITER);
+			} else if ((expecting & CHAR) > 0) {
+				sb.append(c);
+			} else {
+				throw new IllegalArgumentException("Invalid delimited string: " + value);
+			}
+		}
+
+		String s = sb.toString()
+			.trim();
+		if (s.length() > 0) {
+			list.add(s);
+		}
+
+		return list.toArray(new String[list.size()]);
 	}
 }
