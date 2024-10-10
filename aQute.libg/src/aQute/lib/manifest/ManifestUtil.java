@@ -66,7 +66,7 @@ public final class ManifestUtil {
                 Constants.EXPORT_SERVICE,
                 Constants.PROVIDE_CAPABILITY,
                 Constants.REQUIRE_BUNDLE,
-			Constants.BUNDLE_CLASSPATH
+			Constants.BUNDLE_CLASSPATH, "Private-Package"
         )
 );
 
