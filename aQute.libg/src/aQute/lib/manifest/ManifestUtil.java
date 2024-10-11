@@ -72,7 +72,16 @@ public final class ManifestUtil {
 
 	private ManifestUtil() {}
 
+	/**
+	 * Writes out the manifest, nicely formatted. Use
+	 * {@link #write(Manifest, OutputStream, boolean)} to control 'nice'
+	 * formatting.
+	 */
 	public static void write(Manifest manifest, OutputStream out) throws IOException {
+		write(manifest, out, true);
+	}
+
+	public static void write(Manifest manifest, OutputStream out, boolean nice) throws IOException {
 		Attributes mainAttributes = manifest.getMainAttributes();
 		Stream<Entry<Name, String>> sortedAttributes = sortedAttributes(mainAttributes);
 
@@ -83,12 +92,12 @@ public final class ManifestUtil {
 			versionValue = mainAttributes.getValue(versionName);
 		}
 		if (versionValue != null) {
-			writeEntry(out, versionName, versionValue);
+			writeEntry(out, versionName, versionValue, nice);
 			Name filterName = versionName;
 			// Name.equals is case-insensitive
 			sortedAttributes = sortedAttributes.filter(e -> !Objects.equals(e.getKey(), filterName));
 		}
-		writeAttributes(out, sortedAttributes);
+		writeAttributes(out, sortedAttributes, nice);
 		out.write(EOL);
 
 		for (Iterator<Entry<String, Attributes>> iterator = manifest.getEntries()
@@ -97,8 +106,8 @@ public final class ManifestUtil {
 			.sorted(Entry.comparingByKey())
 			.iterator(); iterator.hasNext();) {
 			Entry<String, Attributes> entry = iterator.next();
-			writeEntry(out, NAME, entry.getKey());
-			writeAttributes(out, sortedAttributes(entry.getValue()));
+			writeEntry(out, NAME, entry.getKey(), nice);
+			writeAttributes(out, sortedAttributes(entry.getValue()), nice);
 			out.write(EOL);
 		}
 
@@ -108,9 +117,9 @@ public final class ManifestUtil {
 	/**
 	 * Write out an entry, handling proper unicode and line length constraints
 	 */
-	private static void writeEntry(OutputStream out, Name name, String value) throws IOException {
+	private static void writeEntry(OutputStream out, Name name, String value, boolean nice) throws IOException {
 
-		if(NICE_HEADERS.contains(name.toString())) {
+		if (nice && NICE_HEADERS.contains(name.toString())) {
 			int width = write(out, 0, name.toString());
 			width = write(out, width, SEPARATOR);
 
@@ -189,14 +198,16 @@ public final class ManifestUtil {
 	/**
 	 * Output an Attributes map. We sort the map keys.
 	 *
-	 * @param value the attributes
 	 * @param out the output stream
+	 * @param attributes the attributes
+	 * @param nice nice formatting or not
 	 * @throws IOException when something fails
 	 */
-	private static void writeAttributes(OutputStream out, Stream<Entry<Name, String>> attributes) throws IOException {
+	private static void writeAttributes(OutputStream out, Stream<Entry<Name, String>> attributes, boolean nice)
+		throws IOException {
 		for (Iterator<Entry<Name, String>> iterator = attributes.iterator(); iterator.hasNext();) {
 			Entry<Name, String> attribute = iterator.next();
-			writeEntry(out, attribute.getKey(), attribute.getValue());
+			writeEntry(out, attribute.getKey(), attribute.getValue(), nice);
 		}
 	}
 
