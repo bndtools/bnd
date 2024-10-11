@@ -15,20 +15,38 @@ A bndlib workspace is a _valid_ workspace when it contains a `cnf` file. If this
 
 However, the advised model is to use a directory with a `cnf/build.bnd` file. The purpose of the `cnf` directory is to provide a place for shared information. Though this includes bndlib setup information, it also can be used to define for example shared licensing, copyright, and vendor headers for your organization.
 
+### The cnf/ext directory
+
 The `cnf` directory can have an `ext` directory. Files in this directory are added to the properties
 of the workspace. They can have the following extensions:
 
 * `.bnd` – Contain bnd properties
-* `.pmvn` – An index file for a [Maven Bnd Repository](plugins/maven.html). The first lines can contain properties for this plugin in the format of `# key = value`, e.g. `# name = OSGi R8`. 
+* `.pmvn` – An index file for a [Maven Bnd Repository](/plugins/maven.html). The first lines can contain properties for this plugin in the format of `# key = value`, e.g. `# name = OSGi R8`. 
 * `.pobr` – An OSGi Repository file in XML.
+
+#### Automatically registering repositories
+
+Files with `.pmvn` or `.pobr` will be automatically registered as a Repository and show up in the Repository browser (means, no Plugin configuration needed). This is a convenience shortcut to add a repository with almost no configuration.
+
+**Example /cnf/ext/central.pmvn file:**
+
+```
+# name = My Maven Central Repo
+# releaseUrl = https://repo.maven.apache.org/maven2/
+# tags = resolve
+biz.aQute.bnd:biz.aQute.bndlib:7.0.0
+biz.aQute.bnd:aQute.libg:7.0.0
+
+```
+
 
 The `ext` directory is a convenient way to add add reusable components. See [template fragments](620-template-fragments.html) how they can be used to manage workspaces. When files change in this directory the workspace will be reloaded.
 
+### The cnf/cache directory
+
 To cache some intermediate files, bndlib will create a `cnf/cache/` directory, this file should not be under source control. E.g. in Git it should be defined in the `.gitignore` file. 
 
-The root of the workspace is generally used to hold other files. For example the `.git` directory for Git, or gradle and ant files for continuous integration. However, designers that add functionality to the workspace should strive to minimize the clutter in the root. For example, the bnd gradle support adds a few files to the root but these link to a `cnf/gradle` directory for their actual content.
-
-Other directories in the workspace represent _projects_. The name of the project is the bundle symbolic name of the bundle that it produces (or the prefix of the bundle symbolic name when it produces multiple bundles).
+### Folder structure
 
 Overall, this gives us the following layout for a workspace:
 
@@ -40,6 +58,11 @@ Overall, this gives us the following layout for a workspace:
 	    plugins/                        directory for plugins
 	    cache/                          bnd cache directory, should not be saved in an scm
 	  com.acme.prime.speaker/           project directory	  
+
+The root of the workspace is generally used to hold other files. For example the `.git` directory for Git, or gradle and ant files for continuous integration. However, designers that add functionality to the workspace should strive to minimize the clutter in the root. For example, the bnd gradle support adds a few files to the root but these link to a `cnf/gradle` directory for their actual content.
+
+Other directories in the workspace represent _projects_. The name of the project is the bundle symbolic name of the bundle that it produces (or the prefix of the bundle symbolic name when it produces multiple bundles).
+
 
 ### Workspace Properties
 
