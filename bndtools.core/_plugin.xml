@@ -137,11 +137,9 @@
             class="bndtools.wizards.newworkspace.NewWorkspaceWizard"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
-            icon="icons/bndtools-logo-16x16.png" name="New bnd workspace">
+            icon="icons/bndtools-logo-16x16.png" name="New bnd workspace" project="true">
 			<description>
-			Creates a new bnd workspace. You will be able to select template fragments
-			that will define the new workspace. At finish, you can switch to the new
-			workspace.
+			Create a new bnd workspace.
 			</description>
         </wizard>
         <wizard id="bndtools.workspaceWizardDeprecated"
@@ -149,9 +147,9 @@
 			class="bndtools.wizards.workspace.WorkspaceSetupWizard"
 			finalPerspective="bndtools.perspective"
 			preferredPerspectives="bndtools.perspective"
-			icon="icons/bndtools-logo-16x16.png" name="Bnd OSGi Workspace (Deprecated)">
+			icon="icons/bndtools-logo-16x16.png" name="Bnd OSGi Workspace (Deprecated)" project="true">
 			<description>
-			Old style workspace creation, will be deprecated in a coming release.
+			Bnd OSGi Workspace (Deprecated)
 			</description>
 		</wizard>
         
