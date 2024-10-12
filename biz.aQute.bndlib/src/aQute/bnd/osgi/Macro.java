@@ -1195,21 +1195,37 @@ public class Macro {
 	 * System command. Execute a command and insert the result.
 	 */
 	public String system_internal(boolean allowFail, String[] args) throws Exception {
-		if (nosystem)
-			throw new RuntimeException("Macros in this mode cannot excute system commands");
-
-		verifyCommand(args, allowFail ? _system_allow_failHelp : _systemHelp, null, 2, 3);
-		String command = args[1];
-		String input = null;
-
-		if (args.length > 2) {
-			input = args[2];
-		}
-
-		return domain.system(allowFail, command, input);
+		return system_internal(allowFail, false, args);
 	}
 
-	static final String _systemHelp = "${system;<command>[;<in>]}, execute a system command";
+	/**
+	 * System command. Execute a command and insert the result.
+	 */
+	public String system_internal(boolean allowFail, boolean extractPath, String[] args) throws Exception {
+		if (nosystem)
+			throw new RuntimeException("Macros in this mode cannot excute system commands");
+		String command = null;
+		String path = null;
+		String input = null;
+		if (extractPath) {
+			verifyCommand(args, allowFail ? _system_in_path_allow_failHelp : _system_in_pathHelp, null, 3, 4);
+			path = args[1];
+			command = args[2];
+			if (args.length > 3) {
+				input = args[3];
+			}
+			return domain.system(allowFail, path, command, input);
+		} else {
+			verifyCommand(args, allowFail ? _system_allow_failHelp : _systemHelp, null, 2, 3);
+			command = args[1];
+			if (args.length > 2) {
+				input = args[2];
+			}
+			return domain.system(allowFail, command, input);
+		}
+	}
+
+	static final String _systemHelp = "${system;<command>[;<in>]}, execute a system command in the projects directory";
 
 	public String _system(String[] args) throws Exception {
 		return system_internal(false, args);
@@ -1221,6 +1237,25 @@ public class Macro {
 		String result = "";
 		try {
 			result = system_internal(true, args);
+			return result == null ? "" : result;
+		} catch (Throwable t) {
+			/* ignore */
+			return "";
+		}
+	}
+
+	static final String _system_in_pathHelp = "${system-in-path;<path>;<command>[;<in>]}, execute a system command in the given path";
+
+	public String _system_in_path(String[] args) throws Exception {
+		return system_internal(false, true, args);
+	}
+
+	static final String _system_in_path_allow_failHelp = "${system-in-path-allow-fail;<path>;;<command>[;<in>]}, execute a system command allowing command failure in the given path";
+
+	public String _system_in_path_allow_fail(String[] args) throws Exception {
+		String result = "";
+		try {
+			result = system_internal(true, true, args);
 			return result == null ? "" : result;
 		} catch (Throwable t) {
 			/* ignore */
