@@ -55,6 +55,7 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Jar.DupStrategy;
 import aQute.bnd.osgi.metainf.MetaInfServiceParser;
 import aQute.bnd.plugin.jpms.JPMSAnnotations;
 import aQute.bnd.plugin.jpms.JPMSModuleInfoPlugin;
@@ -67,6 +68,7 @@ import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.Logic;
 import aQute.lib.collections.MultiMap;
@@ -1348,7 +1350,7 @@ public class Builder extends Analyzer {
 			}
 
 			for (Jar j : sub)
-				addAll(jar, j, instr, destination, nameMapper);
+				addAll(jar, j, instr, destination, nameMapper, extra);
 		}
 	}
 
@@ -1369,10 +1371,14 @@ public class Builder extends Analyzer {
 	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
-		return addAll(to, sub, filter, destination, Function.identity());
+		return addAll(to, sub, filter, destination, Function.identity(), Maps.of());
 	}
 
-	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier) {
+	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier,
+		Map<String, String> extra) {
+
+		DupStrategy dupStrategy = dupStrategy(extra);
+
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
@@ -1382,9 +1388,12 @@ public class Builder extends Analyzer {
 			if (doNotCopy(Strings.getLastSegment(name, '/')))
 				continue;
 
-			if (filter == null || filter.matches(name) ^ filter.isNegated())
+			if (filter == null || filter.matches(name) ^ filter.isNegated()) {
+
 				dupl |= to.putResource(Processor.appendPath(destination, modifier.apply(name)), sub.getResource(name),
-					true);
+					dupStrategy);
+
+			}
 		}
 		return dupl;
 	}
@@ -1424,7 +1433,9 @@ public class Builder extends Analyzer {
 	}
 
 	private void copy(Jar jar, String path, Resource resource, Map<String, String> extra) {
-		jar.putResource(path, resource);
+		DupStrategy dupStrategy = dupStrategy(extra);
+
+		jar.putResource(path, resource, dupStrategy);
 		if (isTrue(extra.get(LIB_DIRECTIVE))) {
 			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
 		}
@@ -2084,4 +2095,11 @@ public class Builder extends Analyzer {
 		return cachedSystemCalls.computeIfAbsent(key, asFunction(k -> super.system(allowFail, command, input)));
 	}
 
+	private DupStrategy dupStrategy(Map<String, String> extra) {
+		String val = extra.get(":duplicates:");
+		DupStrategy dupStrategy = val != null ? DupStrategy.valueOf(val.trim()
+			.toUpperCase())
+			: DupStrategy.OVERWRITE;
+		return dupStrategy;
+	}
 }

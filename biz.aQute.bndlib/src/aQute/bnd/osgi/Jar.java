@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.file.FileVisitOption;
@@ -71,6 +72,26 @@ import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.PathSet;
 
 public class Jar implements Closeable {
+
+	/**
+	 * Controls how duplicate resources are handled which are put into a jar
+	 * file.
+	 */
+	public enum DupStrategy {
+		/**
+		 * default: overwrite existing
+		 */
+		OVERWRITE,
+		/**
+		 * append (concatenate) the new to the existing
+		 */
+		APPEND,
+		/**
+		 * skip if already exist
+		 */
+		NOTHING
+	}
+
 	private static final int	BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	/**
 	 * Note that setting the January 1st 1980 (or even worse, "0", as time)
@@ -358,6 +379,10 @@ public class Jar implements Closeable {
 	}
 
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
+		return putResource(path, resource, overwrite ? DupStrategy.OVERWRITE : DupStrategy.NOTHING);
+	}
+
+	public boolean putResource(String path, Resource resource, DupStrategy strategy) {
 		check();
 		path = ZipUtil.cleanPath(path);
 
@@ -379,11 +404,28 @@ public class Jar implements Closeable {
 				directories.put(dir, null);
 			}
 		}
-		boolean duplicate = s.containsKey(path);
-		if (!duplicate || overwrite) {
+
+		Resource existing = s.get(path);
+		boolean duplicate = existing != null;
+		if (!duplicate || DupStrategy.OVERWRITE == strategy) {
 			resources.put(path, resource);
 			s.put(path, resource);
 			updateModified(resource.lastModified(), path);
+		}
+		else if (duplicate && DupStrategy.APPEND == strategy) {
+			try (SequenceInputStream in = new SequenceInputStream(existing.openInputStream(),
+				resource.openInputStream());) {
+
+				long lastModified = Math.max(existing.lastModified(), resource.lastModified());
+				Resource r = new EmbeddedResource(ByteBuffer.wrap(in.readAllBytes()),
+					lastModified);
+				// addExtra(r, extra.get("extra"));
+				resources.put(path, r);
+				s.put(path, r);
+				updateModified(resource.lastModified(), path);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
 		}
 		return duplicate;
 	}
