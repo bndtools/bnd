@@ -381,6 +381,8 @@ public class BuilderTest {
 		B.setExportPackage("org.osgi.service.wireadmin");
 		B.setPrivatePackage("org.osgi.service.event");
 		B.setIncludeResource("org/osgi/service/event/packageinfo;literal='version 2.0.0'");
+		B.setProperty("-fixupmessages.duplicates",
+			"includeresource.duplicates");
 		B.build();
 		assertTrue(B.check());
 
