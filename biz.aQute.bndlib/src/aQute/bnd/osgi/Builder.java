@@ -14,7 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -42,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.cdi.CDIAnnotations;
 import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -55,7 +59,7 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.osgi.Jar.DupStrategy;
+import aQute.bnd.osgi.metainf.MetaInfServiceMerger;
 import aQute.bnd.osgi.metainf.MetaInfServiceParser;
 import aQute.bnd.plugin.jpms.JPMSAnnotations;
 import aQute.bnd.plugin.jpms.JPMSModuleInfoPlugin;
@@ -66,6 +70,7 @@ import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.service.merge.MergeFiles;
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.unmodifiable.Maps;
@@ -78,6 +83,7 @@ import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.generics.Create;
+import aQute.libg.glob.Glob;
 import aQute.libg.re.RE;
 
 /**
@@ -1377,8 +1383,6 @@ public class Builder extends Analyzer {
 	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier,
 		Map<String, String> extra) {
 
-		DupStrategy dupStrategy = dupStrategy(extra);
-
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
@@ -1390,8 +1394,19 @@ public class Builder extends Analyzer {
 
 			if (filter == null || filter.matches(name) ^ filter.isNegated()) {
 
-				dupl |= to.putResource(Processor.appendPath(destination, modifier.apply(name)), sub.getResource(name),
-					dupStrategy);
+				String path = Processor.appendPath(destination, modifier.apply(name));
+				Resource resource = sub.getResource(name);
+				Resource existing = to.getResource(path);
+				boolean duplicate = existing != null;
+
+				if (!duplicate) {
+					dupl |= to.putResource(path, resource, true);
+				} else {
+					Optional<Resource> maybeMerged = DupStrategy.onDuplicate(path, existing, resource, extra, this);
+					if (maybeMerged.isPresent()) {
+						dupl |= to.putResource(path, maybeMerged.get());
+					}
+				}
 
 			}
 		}
@@ -1433,9 +1448,18 @@ public class Builder extends Analyzer {
 	}
 
 	private void copy(Jar jar, String path, Resource resource, Map<String, String> extra) {
-		DupStrategy dupStrategy = dupStrategy(extra);
+		Resource existing = jar.getResource(path);
 
-		jar.putResource(path, resource, dupStrategy);
+		boolean duplicate = existing != null;
+		if (!duplicate) {
+			jar.putResource(path, resource, true);
+		} else {
+			Optional<Resource> maybeMerged = DupStrategy.onDuplicate(path, existing, resource, extra, this);
+			if (maybeMerged.isPresent()) {
+				jar.putResource(path, maybeMerged.get(), true);
+			}
+		}
+
 		if (isTrue(extra.get(LIB_DIRECTIVE))) {
 			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
 		}
@@ -1775,6 +1799,28 @@ public class Builder extends Analyzer {
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
 	static JPMSMultiReleasePlugin	jpmsReleasePlugin		= new JPMSMultiReleasePlugin();
 	static MetaInfServiceParser		metaInfoServiceParser	= new MetaInfServiceParser();
+	static MetaInfServiceMerger		metaInfoServiceMerger	= new MetaInfServiceMerger();
+	static MergeFiles				defaultResourceMerger	= new MergeFiles() {
+
+																@Override
+																public Optional<Resource> merge(String path, Resource a,
+																	Resource b) {
+
+																	try (
+																		SequenceInputStream in = new SequenceInputStream(
+																			a.openInputStream(), b.openInputStream())) {
+
+																		long lastModified = Math.max(a.lastModified(),
+																			b.lastModified());
+																		return Optional.of(new EmbeddedResource(
+																			ByteBuffer.wrap(in.readAllBytes()),
+																			lastModified));
+																	} catch (Exception e) {
+																		throw Exceptions.duck(e);
+																	}
+
+																}
+															};
 
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
@@ -1789,6 +1835,8 @@ public class Builder extends Analyzer {
 		pluginsContainer.add(spiDescriptorGenerator);
 		pluginsContainer.add(jpmsReleasePlugin);
 		pluginsContainer.add(metaInfoServiceParser);
+		pluginsContainer.add(metaInfoServiceMerger);
+		pluginsContainer.add(defaultResourceMerger);
 		super.setTypeSpecificPlugins(pluginsContainer);
 	}
 
@@ -2095,11 +2143,67 @@ public class Builder extends Analyzer {
 		return cachedSystemCalls.computeIfAbsent(key, asFunction(k -> super.system(allowFail, command, input)));
 	}
 
-	private DupStrategy dupStrategy(Map<String, String> extra) {
-		String val = extra.get(":duplicates:");
-		DupStrategy dupStrategy = val != null ? DupStrategy.valueOf(val.trim()
-			.toUpperCase())
-			: DupStrategy.OVERWRITE;
-		return dupStrategy;
+
+
+
+
+	/**
+	 * Helper for handling inluderesource duplicates.
+	 */
+	private final class DupStrategy {
+
+		private static final String DUP_MSG = "Duplicate file overwritten: %s";
+
+		private static Optional<Resource> onDuplicate(String path, Resource existing, Resource resource,
+			Map<String, String> extra,
+			Processor proc) {
+			// The value of these directives is a list of globs on the paths in
+			// the resource.
+			String dup_overwrite = extra.get("dup_overwrite:");
+			String dup_merge = extra.get("dup_merge:");
+			String dup_error = extra.get("dup_error:");
+			String dup_warning = extra.get("dup_warning:");
+			String dup_skip = extra.get("dup_skip:");
+
+
+			if (matches(path, dup_error)) {
+				proc.error(DUP_MSG, path);
+			}
+			if (matches(path, dup_warning)) {
+				proc.warning(DUP_MSG, path);
+			}
+
+			if (matches(path, dup_merge)) {
+
+				return proc.getPlugins(MergeFiles.class)
+					.stream()
+					.map(mf -> mf.merge(path, existing, resource))
+					.filter(Optional::isPresent)
+					.findFirst()
+					.orElse(Optional.of(resource));
+
+			} else if (matches(path, dup_overwrite)) {
+				return Optional.ofNullable(resource);
+			} else if (matches(path, dup_skip)) {
+				return Optional.ofNullable(null);
+			}
+
+
+			return Optional.ofNullable(resource);
+		}
+
+		private static boolean matches(String path, String globs) {
+			if(globs == null) {
+				return false;
+			}
+
+			// default is '*' if blank
+			if (globs.isBlank() || globs.trim()
+				.equals("*")) {
+				return Glob.ALL.matches(path);
+			}
+
+			return Stream.of(globs.split(",")).anyMatch(glob -> new Glob(glob).matches(path));
+		}
 	}
 }
