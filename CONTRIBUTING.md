@@ -24,6 +24,12 @@ Some more instructions how to get started with bndtools development in Eclipse c
 - `./gradlew :gradle-plugins:publish` - Assembles and publishes the Bnd Gradle plugins into `dist/bundles`.
 - `./mvnw -Pdist deploy` - Assembles and publishes the Bnd Maven plugins into `dist/bundles`.
 
+Rebuilding: bnd is built with bnd. For that reason we rebuild and retest bnd with the build we just built.
+To do a full build-rebuild cycle (like the github build), you can use the following command:
+
+`./gradlew :build ; ./gradlew :gradle-plugins:build ; ./.github/scripts/rebuild-build.sh ; ./.github/scripts/rebuild-test.sh`
+
+
 We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22) for continuous integration and the repo includes a `.github/workflows/cibuild.yml` file to build via GitHub Actions.
 
 We use [CodeQL](https://github.com/bndtools/bnd/security/code-scanning?query=tool%3ACodeQL) for continuous security analysis. Pull requests are automatically code scanned.
@@ -35,7 +41,7 @@ To update the gradle wrapper locally to a new gradle version (e.g. to test build
 
 `gradle wrapper --gradle-version X.XX` (replace X.XX with your gradle version)
 
-This generates new gradle wrapper files. 
+This generates new gradle wrapper files.
 Additionally consider adding the version to `gradle-plugins/biz.aQute.bnd.gradle/src/test/groovy/aQute/bnd/gradle/TestHelper.groovy` in the method `gradleVersion()`.
 
 If you think this new gradle wrapper might be worth a contribution to bnd, feel free to open a PR.
