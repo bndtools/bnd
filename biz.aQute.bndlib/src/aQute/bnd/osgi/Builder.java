@@ -1383,6 +1383,8 @@ public class Builder extends Analyzer {
 	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier,
 		Map<String, String> extra) {
 
+		DupStrategy dupStrategy = new DupStrategy(extra);
+
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
@@ -1402,7 +1404,7 @@ public class Builder extends Analyzer {
 				if (!duplicate) {
 					dupl |= to.putResource(path, resource, true);
 				} else {
-					Optional<Resource> maybeMerged = DupStrategy.onDuplicate(path, existing, resource, extra, this);
+					Optional<Resource> maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
 					if (maybeMerged.isPresent()) {
 						dupl |= to.putResource(path, maybeMerged.get());
 					}
@@ -1454,7 +1456,8 @@ public class Builder extends Analyzer {
 		if (!duplicate) {
 			jar.putResource(path, resource, true);
 		} else {
-			Optional<Resource> maybeMerged = DupStrategy.onDuplicate(path, existing, resource, extra, this);
+			DupStrategy dupStrategy = new DupStrategy(extra);
+			Optional<Resource> maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
 			if (maybeMerged.isPresent()) {
 				jar.putResource(path, maybeMerged.get(), true);
 			}
@@ -2153,18 +2156,22 @@ public class Builder extends Analyzer {
 	private final class DupStrategy {
 
 		private static final String DUP_MSG = "Duplicate file overwritten: %s";
+		private final List<Glob>	dup_overwrite;
+		private final List<Glob>	dup_merge;
+		private final List<Glob>	dup_error;
+		private final List<Glob>	dup_warning;
+		private final List<Glob>	dup_skip;
 
-		private static Optional<Resource> onDuplicate(String path, Resource existing, Resource resource,
-			Map<String, String> extra,
+		private DupStrategy(Map<String, String> extra) {
+			dup_overwrite = globs(extra.get("dup_overwrite:"));
+			dup_merge = globs(extra.get("dup_merge:"));
+			dup_error = globs(extra.get("dup_error:"));
+			dup_warning = globs(extra.get("dup_warning:"));
+			dup_skip = globs(extra.get("dup_skip:"));
+		}
+
+		private Optional<Resource> onDuplicate(String path, Resource existing, Resource resource,
 			Processor proc) {
-			// The value of these directives is a list of globs on the paths in
-			// the resource.
-			String dup_overwrite = extra.get("dup_overwrite:");
-			String dup_merge = extra.get("dup_merge:");
-			String dup_error = extra.get("dup_error:");
-			String dup_warning = extra.get("dup_warning:");
-			String dup_skip = extra.get("dup_skip:");
-
 
 			if (matches(path, dup_error)) {
 				proc.error(DUP_MSG, path);
@@ -2192,18 +2199,29 @@ public class Builder extends Analyzer {
 			return Optional.ofNullable(resource);
 		}
 
-		private static boolean matches(String path, String globs) {
-			if(globs == null) {
+		private static boolean matches(String path, List<Glob> globs) {
+			if (globs.isEmpty()) {
 				return false;
+			}
+
+			return globs.stream()
+				.anyMatch(glob -> glob.matches(path));
+		}
+
+		private static List<Glob> globs(String globs) {
+			if(globs == null) {
+				return List.of();
 			}
 
 			// default is '*' if blank
 			if (globs.isBlank() || globs.trim()
 				.equals("*")) {
-				return Glob.ALL.matches(path);
+				return Collections.singletonList(Glob.ALL);
 			}
 
-			return Stream.of(globs.split(",")).anyMatch(glob -> new Glob(glob).matches(path));
+			return Stream.of(globs.split(","))
+				.map(glob -> new Glob(glob))
+				.toList();
 		}
 	}
 }
