@@ -14,7 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -42,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.cdi.CDIAnnotations;
 import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -55,6 +59,7 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.metainf.MetaInfServiceMerger;
 import aQute.bnd.osgi.metainf.MetaInfServiceParser;
 import aQute.bnd.plugin.jpms.JPMSAnnotations;
 import aQute.bnd.plugin.jpms.JPMSModuleInfoPlugin;
@@ -65,8 +70,10 @@ import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.service.merge.MergeFiles;
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.Logic;
 import aQute.lib.collections.MultiMap;
@@ -76,6 +83,7 @@ import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.generics.Create;
+import aQute.libg.glob.Glob;
 import aQute.libg.re.RE;
 
 /**
@@ -1348,7 +1356,7 @@ public class Builder extends Analyzer {
 			}
 
 			for (Jar j : sub)
-				addAll(jar, j, instr, destination, nameMapper);
+				addAll(jar, j, instr, destination, nameMapper, extra);
 		}
 	}
 
@@ -1369,10 +1377,14 @@ public class Builder extends Analyzer {
 	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
-		return addAll(to, sub, filter, destination, Function.identity());
+		return addAll(to, sub, filter, destination, Function.identity(), Maps.of());
 	}
 
-	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier) {
+	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier,
+		Map<String, String> extra) {
+
+		DupStrategy dupStrategy = new DupStrategy(extra);
+
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
@@ -1382,9 +1394,23 @@ public class Builder extends Analyzer {
 			if (doNotCopy(Strings.getLastSegment(name, '/')))
 				continue;
 
-			if (filter == null || filter.matches(name) ^ filter.isNegated())
-				dupl |= to.putResource(Processor.appendPath(destination, modifier.apply(name)), sub.getResource(name),
-					true);
+			if (filter == null || filter.matches(name) ^ filter.isNegated()) {
+
+				String path = Processor.appendPath(destination, modifier.apply(name));
+				Resource resource = sub.getResource(name);
+				Resource existing = to.getResource(path);
+				boolean duplicate = existing != null;
+
+				if (!duplicate) {
+					dupl |= to.putResource(path, resource, true);
+				} else {
+					Optional<Resource> maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
+					if (maybeMerged.isPresent()) {
+						dupl |= to.putResource(path, maybeMerged.get());
+					}
+				}
+
+			}
 		}
 		return dupl;
 	}
@@ -1424,7 +1450,19 @@ public class Builder extends Analyzer {
 	}
 
 	private void copy(Jar jar, String path, Resource resource, Map<String, String> extra) {
-		jar.putResource(path, resource);
+		Resource existing = jar.getResource(path);
+
+		boolean duplicate = existing != null;
+		if (!duplicate) {
+			jar.putResource(path, resource, true);
+		} else {
+			DupStrategy dupStrategy = new DupStrategy(extra);
+			Optional<Resource> maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
+			if (maybeMerged.isPresent()) {
+				jar.putResource(path, maybeMerged.get(), true);
+			}
+		}
+
 		if (isTrue(extra.get(LIB_DIRECTIVE))) {
 			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
 		}
@@ -1764,6 +1802,28 @@ public class Builder extends Analyzer {
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
 	static JPMSMultiReleasePlugin	jpmsReleasePlugin		= new JPMSMultiReleasePlugin();
 	static MetaInfServiceParser		metaInfoServiceParser	= new MetaInfServiceParser();
+	static MetaInfServiceMerger		metaInfoServiceMerger	= new MetaInfServiceMerger();
+	static MergeFiles				defaultResourceMerger	= new MergeFiles() {
+
+																@Override
+																public Optional<Resource> merge(String path, Resource a,
+																	Resource b) {
+
+																	try (
+																		SequenceInputStream in = new SequenceInputStream(
+																			a.openInputStream(), b.openInputStream())) {
+
+																		long lastModified = Math.max(a.lastModified(),
+																			b.lastModified());
+																		return Optional.of(new EmbeddedResource(
+																			ByteBuffer.wrap(in.readAllBytes()),
+																			lastModified));
+																	} catch (Exception e) {
+																		throw Exceptions.duck(e);
+																	}
+
+																}
+															};
 
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
@@ -1778,6 +1838,8 @@ public class Builder extends Analyzer {
 		pluginsContainer.add(spiDescriptorGenerator);
 		pluginsContainer.add(jpmsReleasePlugin);
 		pluginsContainer.add(metaInfoServiceParser);
+		pluginsContainer.add(metaInfoServiceMerger);
+		pluginsContainer.add(defaultResourceMerger);
 		super.setTypeSpecificPlugins(pluginsContainer);
 	}
 
@@ -2084,4 +2146,82 @@ public class Builder extends Analyzer {
 		return cachedSystemCalls.computeIfAbsent(key, asFunction(k -> super.system(allowFail, command, input)));
 	}
 
+
+
+
+
+	/**
+	 * Helper for handling inluderesource duplicates.
+	 */
+	private final class DupStrategy {
+
+		private static final String DUP_MSG = "Duplicate file overwritten: %s";
+		private final List<Glob>	dup_overwrite;
+		private final List<Glob>	dup_merge;
+		private final List<Glob>	dup_error;
+		private final List<Glob>	dup_warning;
+		private final List<Glob>	dup_skip;
+
+		private DupStrategy(Map<String, String> extra) {
+			dup_overwrite = globs(extra.get("dup_overwrite:"));
+			dup_merge = globs(extra.get("dup_merge:"));
+			dup_error = globs(extra.get("dup_error:"));
+			dup_warning = globs(extra.get("dup_warning:"));
+			dup_skip = globs(extra.get("dup_skip:"));
+		}
+
+		private Optional<Resource> onDuplicate(String path, Resource existing, Resource resource,
+			Processor proc) {
+
+			if (matches(path, dup_error)) {
+				proc.error(DUP_MSG, path);
+			}
+			if (matches(path, dup_warning)) {
+				proc.warning(DUP_MSG, path);
+			}
+
+			if (matches(path, dup_merge)) {
+
+				return proc.getPlugins(MergeFiles.class)
+					.stream()
+					.map(mf -> mf.merge(path, existing, resource))
+					.filter(Optional::isPresent)
+					.findFirst()
+					.orElse(Optional.of(resource));
+
+			} else if (matches(path, dup_overwrite)) {
+				return Optional.ofNullable(resource);
+			} else if (matches(path, dup_skip)) {
+				return Optional.ofNullable(null);
+			}
+
+
+			return Optional.ofNullable(resource);
+		}
+
+		private static boolean matches(String path, List<Glob> globs) {
+			if (globs.isEmpty()) {
+				return false;
+			}
+
+			return globs.stream()
+				.anyMatch(glob -> glob.matches(path));
+		}
+
+		private static List<Glob> globs(String globs) {
+			if(globs == null) {
+				return List.of();
+			}
+
+			// default is '*' if blank
+			if (globs.isBlank() || globs.trim()
+				.equals("*")) {
+				return Collections.singletonList(Glob.ALL);
+			}
+
+			return Stream.of(globs.split(","))
+				.map(glob -> new Glob(glob))
+				.toList();
+		}
+	}
 }

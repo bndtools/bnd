@@ -2,8 +2,10 @@ package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashSet;
@@ -16,6 +18,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class IncludeResourceTest {
@@ -180,5 +183,80 @@ public class IncludeResourceTest {
 			return IO.collect(resource2.openInputStream());
 		}
 
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMerge() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_merge:=*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesError() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource("@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_error:=*");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals("Duplicate file overwritten: META-INF/services/foo", a.getErrors()
+				.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceLiteralDuplicatesMerge(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource("/a/a.txt;literal='a', /a/a.txt;literal='b';dup_merge:=*");
+			b.build();
+			assertTrue(b.check());
+
+			b.getJar()
+				.writeFolder(tmp);
+
+			assertEquals("ab", IO.collect(IO.getFile(tmp, "a/a.txt")));
+		}
+	}
+
+	@Test
+	public void testIncludeResourceLiteralDuplicatesError(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource("/a/a.txt;literal='a', /a/a.txt;literal='b';dup_error:=*");
+			b.build();
+			assertFalse(b.check());
+			assertEquals("Duplicate file overwritten: /a/a.txt", b.getErrors()
+				.get(0));
+
+			b.getJar()
+				.writeFolder(tmp);
+
+			assertEquals("b", IO.collect(IO.getFile(tmp, "a/a.txt")));
+		}
 	}
 }
