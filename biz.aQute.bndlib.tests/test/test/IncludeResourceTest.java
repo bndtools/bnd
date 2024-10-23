@@ -368,6 +368,26 @@ public class IncludeResourceTest {
 	}
 
 	@Test
+	public void testIncludeResourceDuplicatesSkipPrecedence() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_merge:=*;dup_skip:=*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
 	public void testIncludeResourceLiteralDuplicatesMerge(@InjectTemporaryDirectory
 	File tmp) throws Exception {
 

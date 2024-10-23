@@ -2155,7 +2155,12 @@ public class Builder extends Analyzer {
 				proc.warning(DUP_MSG, path);
 			}
 
-			if (matches(path, dup_merge)) {
+			// 1. skip has prio
+			if (matches(path, dup_skip)) {
+				return null;
+			}
+			// 2. then try merge
+			else if (matches(path, dup_merge)) {
 
 				if (path.startsWith("META-INF/services/")) {
 					return metaInfServiceMerger.merge(path, existing, resource)
@@ -2164,10 +2169,10 @@ public class Builder extends Analyzer {
 				return defaultResourceMerger.merge(path, existing, resource)
 					.orElse(resource);
 
-			} else if (matches(path, dup_overwrite)) {
+			}
+			// 3. try overwrite
+			else if (matches(path, dup_overwrite)) {
 				return resource;
-			} else if (matches(path, dup_skip)) {
-				return null;
 			}
 
 			// default if not specified is 'overwrite' as it always was
