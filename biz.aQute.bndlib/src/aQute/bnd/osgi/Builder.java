@@ -2138,11 +2138,11 @@ public class Builder extends Analyzer {
 		private final List<Glob>	dup_skip;
 
 		private DupStrategy(Map<String, String> extra) {
-			dup_overwrite = globs(extra.get("dup_overwrite:"));
-			dup_merge = globs(extra.get("dup_merge:"));
-			dup_error = globs(extra.get("dup_error:"));
-			dup_warning = globs(extra.get("dup_warning:"));
-			dup_skip = globs(extra.get("dup_skip:"));
+			dup_overwrite = globs(extra.get(DUP_OVERWRITE));
+			dup_merge = globs(extra.get(DUP_MERGE));
+			dup_error = globs(extra.get(DUP_ERROR));
+			dup_warning = globs(extra.get(DUP_WARNING));
+			dup_skip = globs(extra.get(DUP_SKIP));
 		}
 
 		private Resource onDuplicate(String path, Resource existing, Resource resource,
