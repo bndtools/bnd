@@ -186,6 +186,26 @@ public class IncludeResourceTest {
 	}
 
 	@Test
+	public void testIncludeResourceDuplicatesDefault() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource("@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			// default should be "overwrite"
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
 	public void testIncludeResourceDuplicatesMerge() throws Exception {
 
 		try (Builder a = new Builder();) {
@@ -193,6 +213,66 @@ public class IncludeResourceTest {
 			a.addClasspath(a.getFile("jar/jarB.jar"));
 			a.setIncludeResource(
 				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_merge:=*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceMixedMetaInfDuplicatesMerge() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource("@jar/jarA.jar!/META-INF/*, @jar/jarB.jar!/META-INF/*;dup_merge:=*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resourceFoo = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resourceFoo.openInputStream()));
+
+			Resource resourceManifest = jar.getResource("META-INF/bar.txt");
+			assertEquals("ab", IO.collect(resourceManifest.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMergeBlank() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			// dup_merge contains a blank value. should be ignored and use
+			// default 'overwrite' behavior
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_merge:=   ");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals("No value after '=' sign for attribute dup_merge:", a.getErrors()
+				.get(0));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMergeMultipleGlobs() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_merge:=\"*foo*,*foo*\"");
 			Jar jar = a.build();
 			assertTrue(a.check());
 
@@ -214,7 +294,7 @@ public class IncludeResourceTest {
 			a.setIncludeResource("@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_error:=*");
 			Jar jar = a.build();
 			assertFalse(a.check());
-			assertEquals("Duplicate file overwritten: META-INF/services/foo", a.getErrors()
+			assertEquals("Duplicate file: META-INF/services/foo", a.getErrors()
 				.get(0));
 
 			assertTrue(jar.getDirectories()
@@ -222,6 +302,67 @@ public class IncludeResourceTest {
 
 			Resource resource = jar.getResource("META-INF/services/foo");
 			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesWarning() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_warning:=*");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals("Duplicate file: META-INF/services/foo", a.getWarnings()
+				.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesOverwrite() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_overwrite:=*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesSkip() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource("@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;dup_skip:=*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a", IO.collect(resource.openInputStream()));
 
 		}
 	}
@@ -243,6 +384,23 @@ public class IncludeResourceTest {
 	}
 
 	@Test
+	public void testIncludeResourceLiteralMetaInfServicesDuplicatesMerge(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource(
+				"META-INF/services/a.txt;literal='a', META-INF/services/a.txt;literal='b';dup_merge:=*");
+			b.build();
+			assertTrue(b.check());
+
+			b.getJar()
+				.writeFolder(tmp);
+
+			assertEquals("a\nb", IO.collect(IO.getFile(tmp, "META-INF/services/a.txt")));
+		}
+	}
+
+	@Test
 	public void testIncludeResourceLiteralDuplicatesError(@InjectTemporaryDirectory
 	File tmp) throws Exception {
 
@@ -250,7 +408,7 @@ public class IncludeResourceTest {
 			b.setIncludeResource("/a/a.txt;literal='a', /a/a.txt;literal='b';dup_error:=*");
 			b.build();
 			assertFalse(b.check());
-			assertEquals("Duplicate file overwritten: /a/a.txt", b.getErrors()
+			assertEquals("Duplicate file: /a/a.txt", b.getErrors()
 				.get(0));
 
 			b.getJar()

@@ -1404,9 +1404,9 @@ public class Builder extends Analyzer {
 				if (!duplicate) {
 					dupl |= to.putResource(path, resource, true);
 				} else {
-					Optional<Resource> maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
-					if (maybeMerged.isPresent()) {
-						dupl |= to.putResource(path, maybeMerged.get());
+					Resource maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
+					if (maybeMerged != null) {
+						dupl |= to.putResource(path, maybeMerged);
 					}
 				}
 
@@ -1457,9 +1457,9 @@ public class Builder extends Analyzer {
 			jar.putResource(path, resource, true);
 		} else {
 			DupStrategy dupStrategy = new DupStrategy(extra);
-			Optional<Resource> maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
-			if (maybeMerged.isPresent()) {
-				jar.putResource(path, maybeMerged.get(), true);
+			Resource maybeMerged = dupStrategy.onDuplicate(path, existing, resource, this);
+			if (maybeMerged != null) {
+				jar.putResource(path, maybeMerged, true);
 			}
 		}
 
@@ -1802,28 +1802,8 @@ public class Builder extends Analyzer {
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
 	static JPMSMultiReleasePlugin	jpmsReleasePlugin		= new JPMSMultiReleasePlugin();
 	static MetaInfServiceParser		metaInfoServiceParser	= new MetaInfServiceParser();
-	static MetaInfServiceMerger		metaInfoServiceMerger	= new MetaInfServiceMerger();
-	static MergeFiles				defaultResourceMerger	= new MergeFiles() {
-
-																@Override
-																public Optional<Resource> merge(String path, Resource a,
-																	Resource b) {
-
-																	try (
-																		SequenceInputStream in = new SequenceInputStream(
-																			a.openInputStream(), b.openInputStream())) {
-
-																		long lastModified = Math.max(a.lastModified(),
-																			b.lastModified());
-																		return Optional.of(new EmbeddedResource(
-																			ByteBuffer.wrap(in.readAllBytes()),
-																			lastModified));
-																	} catch (Exception e) {
-																		throw Exceptions.duck(e);
-																	}
-
-																}
-															};
+	static MetaInfServiceMerger		metaInfServiceMerger	= new MetaInfServiceMerger();
+	static MergeFiles				defaultResourceMerger	= new DefaultFileAppendMerger();
 
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
@@ -1838,8 +1818,6 @@ public class Builder extends Analyzer {
 		pluginsContainer.add(spiDescriptorGenerator);
 		pluginsContainer.add(jpmsReleasePlugin);
 		pluginsContainer.add(metaInfoServiceParser);
-		pluginsContainer.add(metaInfoServiceMerger);
-		pluginsContainer.add(defaultResourceMerger);
 		super.setTypeSpecificPlugins(pluginsContainer);
 	}
 
@@ -2147,15 +2125,12 @@ public class Builder extends Analyzer {
 	}
 
 
-
-
-
 	/**
 	 * Helper for handling inluderesource duplicates.
 	 */
 	private final class DupStrategy {
 
-		private static final String DUP_MSG = "Duplicate file overwritten: %s";
+		private static final String	DUP_MSG	= "Duplicate file: %s";
 		private final List<Glob>	dup_overwrite;
 		private final List<Glob>	dup_merge;
 		private final List<Glob>	dup_error;
@@ -2170,7 +2145,7 @@ public class Builder extends Analyzer {
 			dup_skip = globs(extra.get("dup_skip:"));
 		}
 
-		private Optional<Resource> onDuplicate(String path, Resource existing, Resource resource,
+		private Resource onDuplicate(String path, Resource existing, Resource resource,
 			Processor proc) {
 
 			if (matches(path, dup_error)) {
@@ -2182,21 +2157,21 @@ public class Builder extends Analyzer {
 
 			if (matches(path, dup_merge)) {
 
-				return proc.getPlugins(MergeFiles.class)
-					.stream()
-					.map(mf -> mf.merge(path, existing, resource))
-					.filter(Optional::isPresent)
-					.findFirst()
-					.orElse(Optional.of(resource));
+				if (path.startsWith("META-INF/services/")) {
+					return metaInfServiceMerger.merge(path, existing, resource)
+						.orElse(resource);
+				}
+				return defaultResourceMerger.merge(path, existing, resource)
+					.orElse(resource);
 
 			} else if (matches(path, dup_overwrite)) {
-				return Optional.ofNullable(resource);
+				return resource;
 			} else if (matches(path, dup_skip)) {
-				return Optional.ofNullable(null);
+				return null;
 			}
 
-
-			return Optional.ofNullable(resource);
+			// default if not specified is 'overwrite' as it always was
+			return resource;
 		}
 
 		private static boolean matches(String path, List<Glob> globs) {
@@ -2209,12 +2184,12 @@ public class Builder extends Analyzer {
 		}
 
 		private static List<Glob> globs(String globs) {
-			if(globs == null) {
+			if (globs == null || globs.isBlank()) {
 				return List.of();
 			}
 
 			// default is '*' if blank
-			if (globs.isBlank() || globs.trim()
+			if (globs.trim()
 				.equals("*")) {
 				return Collections.singletonList(Glob.ALL);
 			}
@@ -2222,6 +2197,29 @@ public class Builder extends Analyzer {
 			return Stream.of(globs.split(","))
 				.map(glob -> new Glob(glob))
 				.toList();
+		}
+	}
+
+	/**
+	 * Concatenates files with the same path affected by include resource.
+	 */
+	private final static class DefaultFileAppendMerger implements MergeFiles {
+		@Override
+		public Optional<Resource> merge(String path, Resource a, Resource b) {
+
+			// safety check, that we don't merge META-INF/services/ files
+			if (path.startsWith("META-INF/services/")) {
+				return Optional.empty();
+			}
+
+			try (SequenceInputStream in = new SequenceInputStream(a.openInputStream(), b.openInputStream())) {
+
+				long lastModified = Math.max(a.lastModified(), b.lastModified());
+				return Optional.of(new EmbeddedResource(ByteBuffer.wrap(in.readAllBytes()), lastModified));
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+
 		}
 	}
 }

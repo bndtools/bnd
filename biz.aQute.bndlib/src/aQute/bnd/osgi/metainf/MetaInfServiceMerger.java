@@ -12,6 +12,10 @@ import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.merge.MergeFiles;
 
+/**
+ * Knows how to "merge" duplicate files in META-INF/services, by concatenating
+ * them with a linebreak in between.
+ */
 public class MetaInfServiceMerger implements MergeFiles {
 
 	@Override
