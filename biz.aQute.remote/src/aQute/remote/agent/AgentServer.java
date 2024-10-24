@@ -597,7 +597,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 	private void printStack(Exception e1) {
 		try {
-			e1.printStackTrace(redirector.getOut());
+			e1.printStackTrace();
 		} catch (Exception e) {
 			//
 		}
