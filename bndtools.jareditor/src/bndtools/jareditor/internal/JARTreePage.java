@@ -8,6 +8,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Image;
@@ -19,6 +20,8 @@ import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+
+import aQute.bnd.exceptions.Exceptions;
 
 public class JARTreePage extends FormPage {
 
@@ -101,19 +104,21 @@ public class JARTreePage extends FormPage {
 		if (loading.getAndIncrement() > 1)
 			return;
 
-		JAREditor.background("Reading zip file", monitor -> {
+		try {
 			IFolder folder;
 			do {
-				folder = getFolder(uri, monitor);
+				folder = getFolder(uri, new NullProgressMonitor());
 				loading.getAndDecrement();
 			} while (loading.getAndSet(0) > 0);
-			return folder;
-		}, folder -> {
+
 			if (closed)
 				return;
 			setFolder(folder);
 			tree.setFormInput(folder);
-		});
+		} catch (CoreException e) {
+			throw Exceptions.duck(e);
+		}
+
 	}
 
 	private void setFolder(IFolder folder) {

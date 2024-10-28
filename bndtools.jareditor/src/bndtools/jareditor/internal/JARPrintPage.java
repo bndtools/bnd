@@ -43,6 +43,7 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.print.JarPrinter;
 
@@ -393,10 +394,13 @@ public class JARPrintPage extends FormPage {
 			return;
 		}
 		loading = true;
-		JAREditor.background("Printing ZIP file", monitor -> print(uri), text -> {
+		try {
+			String text = print(uri);
 			styledText.setText(text);
 			styledText.setFocus();
-		});
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 
 	}
 

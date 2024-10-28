@@ -38,6 +38,7 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
@@ -201,13 +202,13 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 		lastModified.setText("");
 		if (resource instanceof IFile) {
 			IFile node = (IFile) resource;
-			JAREditor.background("Loading " + resource.getName(), mon -> {
-				try (InputStream in = limitRead ? new LimitedInputStream(node.getContents(), READ_LIMIT)
-					: node.getContents()) {
-					return IO.copy(in, new ByteBufferOutputStream())
-						.toByteBuffer();
-				}
-			}, this::setContent);
+			try (InputStream in = limitRead ? new LimitedInputStream(node.getContents(), READ_LIMIT)
+				: node.getContents()) {
+				setContent(IO.copy(in, new ByteBufferOutputStream())
+					.toByteBuffer());
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
 		} else {
 			setContent("");
 		}
