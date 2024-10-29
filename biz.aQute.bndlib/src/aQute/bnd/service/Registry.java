@@ -22,7 +22,8 @@ public interface Registry {
 	 * @param c
 	 * @param tags
 	 * @return all plugins matching the given class and any of the given tags.
-	 *         If no tags are given, all plugins are returned without filtering.
+	 *         If a plugin does not support tags or no tags are given, all
+	 *         plugins are returned without filtering.
 	 */
 	default <T> List<T> getPlugins(Class<T> c, String... tags) {
 
@@ -31,8 +32,8 @@ public interface Registry {
 		}
 
 		return getPlugins(c).stream()
-			.filter(repo -> repo instanceof Tagged taggedRepo && taggedRepo.getTags()
-				.includesAny(tags))
+			.filter(repo -> (repo instanceof Tagged taggedRepo) ? taggedRepo.getTags()
+				.includesAny(tags) : true)
 			.collect(Collectors.toList());
 	}
 
