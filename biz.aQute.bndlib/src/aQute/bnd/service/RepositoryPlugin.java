@@ -28,7 +28,7 @@ public interface RepositoryPlugin extends Tagged {
 	 * tags are set at the repo definition in build.bnd That means it is
 	 * consider
 	 */
-	Tags DEFAULT_REPO_TAGS = Tags.of(Constants.REPOTAGS_RESOLVE);
+	Tags DEFAULT_REPO_TAGS = Tags.NO_TAGS;
 
 	/**
 	 * Options used to steer the put operation

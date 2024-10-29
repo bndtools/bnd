@@ -75,9 +75,10 @@ public class WorkspaceTest {
 
 		Repository repo = repos.get(0);
 		assertTrue(repo instanceof Tagged);
-		assertEquals(1, ((Tagged) repo).getTags()
+		assertEquals(0, ((Tagged) repo).getTags()
 			.size());
-		assertEquals(Constants.REPOTAGS_RESOLVE, new ArrayList<>(((Tagged) repo).getTags()).get(0));
+		assertTrue(((Tagged) repo).getTags()
+			.includesAny(Constants.REPOTAGS_RESOLVE));
 
 	}
 
