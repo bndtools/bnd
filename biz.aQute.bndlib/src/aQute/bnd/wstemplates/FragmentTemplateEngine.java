@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,6 +58,7 @@ public class FragmentTemplateEngine {
 	private static final String	DESCRIPTION			= "description";
 	private static final String	WORKSPACE_TEMPLATES	= "-workspace-templates";
 	private static final String	NAME				= "name";
+	private static final Pattern	COMMIT_SHA			= Pattern.compile("[a-f0-9]{40}$");
 
 	final static Logger			log					= LoggerFactory.getLogger(FragmentTemplateEngine.class);
 	final List<TemplateInfo>	templates			= new ArrayList<>();
@@ -90,9 +92,24 @@ public class FragmentTemplateEngine {
 		 *         by us".
 		 */
 		public boolean isOfficial() {
-			return id.organisation()
-				.equals("bndtools");
+			return "bndtools".equals(id.organisation());
 		}
+
+		/**
+		 * Check if the id points to a specific commit SHA e.g.
+		 * githuborg/myrepo/subfolder/workspace-template#b96e0a8877bad1c68cdc050d5854829253ef63bb
+		 * In this case b96e0a8877bad1c68cdc050d5854829253ef63bb would be the
+		 * SHA.
+		 *
+		 * @return <code>true</code> if the repoUrl points to a specific commit
+		 *         SHA.
+		 */
+		public boolean isCommitSHA() {
+			String ref = id.ref();
+			return ref != null && COMMIT_SHA.matcher(ref)
+				.matches();
+		}
+
 	}
 
 
