@@ -11,6 +11,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import aQute.libg.glob.Glob;
+
 /**
  * A set of tags. A tag is a string-token which can be attached to an entity for
  * categorization and filtering. Typically these entities then implement the
@@ -110,7 +112,7 @@ public class Tags implements Set<String> {
 	}
 
 	/**
-	 * @param tags
+	 * @param tags (globs)
 	 * @return <code>true</code> if any of the given tags is included in the
 	 *         current set of tags, otherwise returns <code>false</code>. Also
 	 *         if the current set of tags is empty, also <code>true</code> is
@@ -126,13 +128,19 @@ public class Tags implements Set<String> {
 			return true;
 		}
 
-		for (String tag : tags) {
-			if (contains(tag)) {
+		for (String tagGlob : tags) {
+			if (matchesAny(new Glob(tagGlob))) {
 				return true;
 			}
 		}
 
 		return false;
+
+	}
+
+	private boolean matchesAny(Glob glob) {
+		return internalSet.stream()
+			.anyMatch(s -> glob.matches(s));
 	}
 
 	/**
