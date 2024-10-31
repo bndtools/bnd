@@ -25,6 +25,7 @@ public class Manual {
 	static final String	org_apache_felix_scr			= "org.apache.felix.scr;version='[2.1.12,2.1.13)'";
 	static final String	org_apache_felix_log			= "org.apache.felix.log;version='[1.2.0,1.2.1)'";
 	static final String	org_apache_felix_configadmin	= "org.apache.felix.configadmin;version='[1.9.10,1.9.11)'";
+	@SuppressWarnings("resource")
 	LaunchpadBuilder	builder						= new LaunchpadBuilder().runfw(org_apache_felix_framework);
 
 	@Service

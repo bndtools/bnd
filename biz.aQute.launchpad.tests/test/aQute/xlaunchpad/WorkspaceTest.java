@@ -16,6 +16,7 @@ import aQute.launchpad.LaunchpadBuilder;
  * consider for the plugins.
  */
 public class WorkspaceTest {
+	@SuppressWarnings("resource")
 	static LaunchpadBuilder builder = new LaunchpadBuilder().bndrun("workspace.bndrun");
 
 	/**

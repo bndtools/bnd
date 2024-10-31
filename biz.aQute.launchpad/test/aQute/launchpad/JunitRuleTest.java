@@ -9,6 +9,7 @@ import aQute.launchpad.junit.LaunchpadRule;
 
 public class JunitRuleTest {
 
+	@SuppressWarnings("resource")
 	static LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework");
 
 	@Rule

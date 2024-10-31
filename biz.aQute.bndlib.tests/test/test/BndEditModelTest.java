@@ -217,16 +217,17 @@ public class BndEditModelTest {
 
 	@Test
 	public void testGetPropertiesWithWorkspaceMacros() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
-		Project project = ws.getProject("p1");
-		BndEditModel model = new BndEditModel(project);
-		model.setGenericString("ws", "${workspace}");
-		model.setGenericString("pro", "${project}");
-		Processor p = model.getProperties();
+		try (Workspace ws = new Workspace(new File("testresources/ws"))) {
+			Project project = ws.getProject("p1");
+			BndEditModel model = new BndEditModel(project);
+			model.setGenericString("ws", "${workspace}");
+			model.setGenericString("pro", "${project}");
+			Processor p = model.getProperties();
 
-		assertThat(p.getProperty("ws")).isEqualTo(getPortablePath(ws.getBase()));
+			assertThat(p.getProperty("ws")).isEqualTo(getPortablePath(ws.getBase()));
 
-		assertThat(p.getProperty("pro")).isEqualTo(getPortablePath(project.getBase()));
+			assertThat(p.getProperty("pro")).isEqualTo(getPortablePath(project.getBase()));
+		}
 	}
 
 	@Test

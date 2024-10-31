@@ -8,6 +8,7 @@ public class LaunchpadWorkspace {
 	@SuppressWarnings("unused")
 	private static Workspace	ws;
 
+	@SuppressWarnings("resource")
 	static LaunchpadBuilder		builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework;version=@5");
 
 	static {
