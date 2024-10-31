@@ -1,7 +1,6 @@
 package bndtools.jareditor.internal;
 
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -26,7 +25,8 @@ public class JARTreePage extends FormPage {
 	private JARTreePart			tree;
 	private JARTreeEntryPart	entry;
 	private URI					uri;
-	final AtomicInteger			loading	= new AtomicInteger();
+	private int					epoch	= 1000;
+	private boolean				loading	= false;
 	private IFolder				folder;
 	private boolean				closed;
 
@@ -98,21 +98,29 @@ public class JARTreePage extends FormPage {
 		if (tree == null || !isActive())
 			return;
 
-		if (loading.getAndIncrement() > 1)
-			return;
+		if (!loading)
+			load();
+	}
 
-		JAREditor.background("Reading zip file", monitor -> {
-			IFolder folder;
-			do {
-				folder = getFolder(uri, monitor);
-				loading.getAndDecrement();
-			} while (loading.getAndSet(0) > 0);
-			return folder;
-		}, folder -> {
-			if (closed)
-				return;
-			setFolder(folder);
-			tree.setFormInput(folder);
+	private void load() {
+		assert JAREditor.isDisplayThread();
+		URI loadingUri = uri;
+		int currentEpoch = epoch;
+		loading = true;
+		JAREditor.background("Reading jar/zip file", monitor -> getFolder(loadingUri, monitor), folder -> {
+			assert JAREditor.isDisplayThread();
+			if (closed) {
+				TemporaryFile.dispose(folder);
+			} else {
+				if (epoch != currentEpoch) {
+					TemporaryFile.dispose(folder);
+					load();
+				} else {
+					loading = false;
+					setFolder(folder);
+					tree.setFormInput(folder);
+				}
+			}
 		});
 	}
 
@@ -122,13 +130,9 @@ public class JARTreePage extends FormPage {
 	}
 
 	void setInput(URI uri) {
-
 		assert JAREditor.isDisplayThread();
-
-		if (this.uri != null && this.uri.equals(uri))
-			return;
-
 		this.uri = uri;
+		this.epoch++;
 		update();
 	}
 
