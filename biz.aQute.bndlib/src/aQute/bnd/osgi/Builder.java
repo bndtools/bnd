@@ -1389,7 +1389,9 @@ public class Builder extends Analyzer {
 		return dupl;
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({
+		"deprecation", "resource"
+	})
 	private void copy(Jar jar, String path, File from, Instructions preprocess, Map<String, String> extra)
 		throws Exception {
 		if (doNotCopy(from))

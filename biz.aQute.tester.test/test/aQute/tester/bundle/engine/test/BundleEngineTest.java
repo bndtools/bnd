@@ -81,6 +81,7 @@ import aQute.tester.testclasses.bundle.engine.TestWithField;
 
 @SuppressWarnings("restriction")
 public class BundleEngineTest {
+	@SuppressWarnings("resource")
 	private LaunchpadBuilder	builder				= new LaunchpadBuilder().bndrun("bundleenginetest.bndrun")
 		.excludeExport("aQute.tester.bundle.engine")
 		.excludeExport("aQute.tester.bundle.engine.discovery")

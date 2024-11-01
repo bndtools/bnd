@@ -261,7 +261,7 @@ public class Jar implements Closeable {
 	}
 
 
-	private Jar buildFromDirectory(final Path baseDir, final Pattern doNotCopy) throws IOException {
+	private void buildFromDirectory(final Path baseDir, final Pattern doNotCopy) throws IOException {
 		Files.walkFileTree(baseDir, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 			new SimpleFileVisitor<Path>() {
 				@Override
@@ -292,7 +292,6 @@ public class Jar implements Closeable {
 					return FileVisitResult.CONTINUE;
 				}
 			});
-		return this;
 	}
 
 	private Jar buildFromZip(File file) throws IOException {

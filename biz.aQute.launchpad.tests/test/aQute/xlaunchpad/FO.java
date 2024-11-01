@@ -21,6 +21,7 @@ import aQute.launchpad.junit.LaunchpadRunner;
 public class FO {
 	static File				tmp		= new File("generated/snapshot");
 
+	@SuppressWarnings("resource")
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
 		.set("snapshot.dir", tmp.getAbsolutePath())
 		.runfw("org.apache.felix.framework;version='[7.0.5,7.0.5]'")
