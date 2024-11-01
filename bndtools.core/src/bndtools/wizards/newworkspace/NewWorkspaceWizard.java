@@ -30,6 +30,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
@@ -66,8 +67,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	final FragmentTemplateEngine			templates;
 	private ScrolledFormText		txtDescription;
 
-	final static Image				ok				= Icons.image("icons/tick.png", false);
-	final static Image				warn			= Icons.image("icons/warning_obj.gif", false);
+	final static Image				verified			= Icons.image("icons/tick.png", false);
+	final static Image				verifiedGreyedOut	= new Image(Display.getDefault(), verified, SWT.IMAGE_DISABLE);
 
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
@@ -240,8 +241,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public Image getImage(Object element) {
 					if (element instanceof TemplateInfo ti) {
-						return ti
-							.isOfficial() ? ok : warn;
+						boolean officialOrSHA = ti.isOfficial() || ti.isCommitSHA();
+						return officialOrSHA ? verified : verifiedGreyedOut;
 					}
 
 					return super.getImage(element);
