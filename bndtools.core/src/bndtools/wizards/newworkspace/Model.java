@@ -100,9 +100,9 @@ public class Model implements Runnable {
 				if (clean) {
 					getDataFiles().forEach(IO::delete);
 				}
-				if (!updateWorkspace) {
+				File b = IO.getFile(location, "cnf/build.bnd");
+				if (!updateWorkspace || !b.isFile()) {
 					location.mkdirs();
-					File b = IO.getFile(location, "cnf/build.bnd");
 					b.getParentFile()
 						.mkdirs();
 

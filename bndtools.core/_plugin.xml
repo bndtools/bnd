@@ -132,26 +132,28 @@
 			preferredPerspectives="bndtools.perspective" icon="icons/bricks.png"
 			name="Bnd OSGi Project" project="true">
 		</wizard>
-        <wizard id="bndtools.workspaceWizard"
+        <wizard id="bndtools.workspaceFragmentWizard"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.newworkspace.NewWorkspaceWizard"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
-            icon="icons/bndtools-logo-16x16.png" name="New bnd workspace">
+            icon="icons/bndtools-logo-16x16.png" 
+            name="Bnd Workspace (Fragments)"
+            project="true">
 			<description>
-			Creates a new bnd workspace. You will be able to select template fragments
-			that will define the new workspace. At finish, you can switch to the new
-			workspace.
+			Create a new bnd/eclipse workspace using template fragments
 			</description>
         </wizard>
-        <wizard id="bndtools.workspaceWizardDeprecated"
+        <wizard id="bndtools.workspaceWizard"
 			category="bndtools.wizardCategory"
 			class="bndtools.wizards.workspace.WorkspaceSetupWizard"
 			finalPerspective="bndtools.perspective"
 			preferredPerspectives="bndtools.perspective"
-			icon="icons/bndtools-logo-16x16.png" name="Bnd OSGi Workspace (Deprecated)">
+			icon="icons/bndtools-logo-16x16.png" 
+			name="Bnd OSGi Workspace"
+            project="true">
 			<description>
-			Old style workspace creation, will be deprecated in a coming release.
+			Create a new bnd workspace
 			</description>
 		</wizard>
         
