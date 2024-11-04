@@ -2137,7 +2137,7 @@ public class Builder extends Analyzer {
 	 * Handles how duplicate resources are handled in -includeresource
 	 * instruction.
 	 */
-	public record Duplication(String path, Resource existing, Resource candidate) {
+	record Duplication(String path, Resource existing, Resource candidate) {
 
 		private static final String DUP_MSG_DEFAULT_OVERWRITE = "includeresource.duplicates: Duplicate overwritten: %s (Consider using the %s directive to handle duplicates.)";
 
