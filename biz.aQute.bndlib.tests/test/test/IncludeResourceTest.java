@@ -2,8 +2,10 @@ package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashSet;
@@ -16,6 +18,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 
 public class IncludeResourceTest {
@@ -181,4 +184,365 @@ public class IncludeResourceTest {
 		}
 
 	}
+
+	@Test
+	public void testIncludeResourceDuplicatesDefaultOverwrite() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource("@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals(
+				"includeresource.duplicates: Duplicate overwritten: META-INF/services/foo (Consider using the onduplicate: directive to handle duplicates.)",
+				a.getWarnings()
+					.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			// default should be "overwrite"
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesDefaultOverwriteButNoWarningOnIdenticalFiles() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource("@jar/jarA.jar!/META-INF/services/*, @jar/jarA.jar!/META-INF/services/*");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			// default should be "overwrite"
+			assertEquals("a", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMerge() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:=MERGE");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceMixedMetaInfDuplicatesMerge() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource("@jar/jarA.jar!/META-INF/*, @jar/jarB.jar!/META-INF/*;onduplicate:=MERGE");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resourceFoo = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resourceFoo.openInputStream()));
+
+			Resource resourceManifest = jar.getResource("META-INF/bar.txt");
+			assertEquals("a", IO.collect(resourceManifest.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMergeBlank() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			// dup_merge contains a blank value. should be ignored and use
+			// default 'overwrite' behavior
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:=   ");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals("No value after '=' sign for attribute onduplicate:", a.getErrors()
+				.get(0));
+
+		}
+	}
+
+
+	@Test
+	public void testIncludeResourceDuplicatesError() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:=ERROR");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals("includeresource.duplicates: duplicate found for path META-INF/services/foo", a.getErrors()
+				.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesWarning() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:=WARN");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals("includeresource.duplicates: duplicate found for path META-INF/services/foo", a.getWarnings()
+				.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesOverwrite() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:=OVERWRITE");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("b", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesSkip() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:=SKIP");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+
+	@Test
+	public void testIncludeResourceLiteralDuplicatesMerge(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource("/a/a.txt;literal='a', /a/a.txt;literal='b';onduplicate:=MERGE");
+			b.build();
+			assertTrue(b.check());
+
+			b.getJar()
+				.writeFolder(tmp);
+
+			assertEquals("a", IO.collect(IO.getFile(tmp, "a/a.txt")));
+		}
+	}
+
+	@Test
+	public void testIncludeResourceLiteralMetaInfServicesDuplicatesMerge(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource(
+				"META-INF/services/a.txt;literal='a', META-INF/services/a.txt;literal='b';onduplicate:=MERGE");
+			b.build();
+			assertTrue(b.check());
+
+			b.getJar()
+				.writeFolder(tmp);
+
+			assertEquals("a\nb", IO.collect(IO.getFile(tmp, "META-INF/services/a.txt")));
+		}
+	}
+
+	@Test
+	public void testIncludeResourceLiteralDuplicatesError(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource("/a/a.txt;literal='a', /a/a.txt;literal='b';onduplicate:=ERROR");
+			b.build();
+			assertFalse(b.check());
+			assertEquals("includeresource.duplicates: duplicate found for path /a/a.txt", b.getErrors()
+				.get(0));
+
+			b.getJar()
+				.writeFolder(tmp);
+
+			assertEquals("b", IO.collect(IO.getFile(tmp, "a/a.txt")));
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMergeWithTag() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:='MERGE,metainfservices'");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMergeWithoutPlugin() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:='MERGE,nonexistingtag'");
+			Jar jar = a.build();
+			assertFalse(a.check());
+
+			assertEquals("includeresource.duplicates: no plugins found for tags: [nonexistingtag]", a.getErrors()
+				.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			// we expect nothing because there is no plugin with the tag
+			// 'nonexistingtag'
+			// which means we have nothing which can merge META-INF/services
+			// files.
+			// so we keep the existing file
+			assertEquals("a", IO.collect(resource.openInputStream()));
+
+		}
+
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesTagWithoutStrategyEnumButExistingTag() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:='metainfservices'");
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesTagWithoutStrategyEnumButNonExistingTag() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:='nonexistingtag'");
+			Jar jar = a.build();
+			assertFalse(a.check());
+
+			assertEquals("includeresource.duplicates: no plugins found for tags: [nonexistingtag]", a.getErrors()
+				.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			// we expect nothing because there is no plugin with the tag
+			// 'nonexistingtag'
+			// which means we have nothing which can merge META-INF/services
+			// files.
+			// so we keep the existing file
+			assertEquals("a", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
+	@Test
+	public void testIncludeResourceDuplicatesMergeWithTagAndWarn() throws Exception {
+
+		try (Builder a = new Builder();) {
+			a.addClasspath(new File("jar/jarA.jar"));
+			a.addClasspath(a.getFile("jar/jarB.jar"));
+			a.setIncludeResource(
+				"@jar/jarA.jar!/META-INF/services/*, @jar/jarB.jar!/META-INF/services/*;onduplicate:='MERGE,metainfservices,WARN'");
+			Jar jar = a.build();
+			assertFalse(a.check());
+			assertEquals("includeresource.duplicates: duplicate found for path META-INF/services/foo", a.getWarnings()
+				.get(0));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+
+			Resource resource = jar.getResource("META-INF/services/foo");
+			assertEquals("a\nb", IO.collect(resource.openInputStream()));
+
+		}
+	}
+
 }

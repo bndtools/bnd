@@ -15,19 +15,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -55,6 +59,7 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.metainf.MetaInfServiceMerger;
 import aQute.bnd.osgi.metainf.MetaInfServiceParser;
 import aQute.bnd.plugin.jpms.JPMSAnnotations;
 import aQute.bnd.plugin.jpms.JPMSModuleInfoPlugin;
@@ -65,8 +70,10 @@ import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.service.merge.MergeResources;
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.Logic;
 import aQute.lib.collections.MultiMap;
@@ -1348,7 +1355,7 @@ public class Builder extends Analyzer {
 			}
 
 			for (Jar j : sub)
-				addAll(jar, j, instr, destination, nameMapper);
+				addAll(jar, j, instr, destination, nameMapper, extra);
 		}
 	}
 
@@ -1369,10 +1376,14 @@ public class Builder extends Analyzer {
 	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
-		return addAll(to, sub, filter, destination, Function.identity());
+		return addAll(to, sub, filter, destination, Function.identity(), Maps.of());
 	}
 
-	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier) {
+	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, Function<String, String> modifier,
+		Map<String, String> extra) {
+
+		Function<Duplication, Optional<Resource>> dupStrategy = parseDupStrategy(extra);
+
 		boolean dupl = false;
 		for (String name : sub.getResources()
 			.keySet()) {
@@ -1382,9 +1393,25 @@ public class Builder extends Analyzer {
 			if (doNotCopy(Strings.getLastSegment(name, '/')))
 				continue;
 
-			if (filter == null || filter.matches(name) ^ filter.isNegated())
-				dupl |= to.putResource(Processor.appendPath(destination, modifier.apply(name)), sub.getResource(name),
-					true);
+			if (filter == null || filter.matches(name) ^ filter.isNegated()) {
+
+				String path = Processor.appendPath(destination, modifier.apply(name));
+				Resource resource = sub.getResource(name);
+				Resource existing = to.getResource(path);
+				boolean duplicate = existing != null;
+
+				if (!duplicate) {
+					dupl |= to.putResource(path, resource, true);
+				} else {
+					Optional<Resource> maybeMerged = dupStrategy.apply(new Duplication(path, existing, resource));
+					// Resource maybeMerged = dupStrategy.onDuplicate(path,
+					// existing, resource, this);
+					if (maybeMerged.isPresent()) {
+						dupl |= to.putResource(path, maybeMerged.get());
+					}
+				}
+
+			}
 		}
 		return dupl;
 	}
@@ -1426,7 +1453,19 @@ public class Builder extends Analyzer {
 	}
 
 	private void copy(Jar jar, String path, Resource resource, Map<String, String> extra) {
-		jar.putResource(path, resource);
+		Resource existing = jar.getResource(path);
+
+		boolean duplicate = existing != null;
+		if (!duplicate) {
+			jar.putResource(path, resource, true);
+		} else {
+			Function<Duplication, Optional<Resource>> dupStrategy = parseDupStrategy(extra);
+			Optional<Resource> maybeMerged = dupStrategy.apply(new Duplication(path, existing, resource));
+			if (maybeMerged.isPresent()) {
+				jar.putResource(path, maybeMerged.get(), true);
+			}
+		}
+
 		if (isTrue(extra.get(LIB_DIRECTIVE))) {
 			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
 		}
@@ -1766,6 +1805,7 @@ public class Builder extends Analyzer {
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
 	static JPMSMultiReleasePlugin	jpmsReleasePlugin		= new JPMSMultiReleasePlugin();
 	static MetaInfServiceParser		metaInfoServiceParser	= new MetaInfServiceParser();
+	static MetaInfServiceMerger		metaInfServiceMerger	= new MetaInfServiceMerger();
 
 	@Override
 	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
@@ -1780,6 +1820,7 @@ public class Builder extends Analyzer {
 		pluginsContainer.add(spiDescriptorGenerator);
 		pluginsContainer.add(jpmsReleasePlugin);
 		pluginsContainer.add(metaInfoServiceParser);
+		pluginsContainer.add(metaInfServiceMerger);
 		super.setTypeSpecificPlugins(pluginsContainer);
 	}
 
@@ -2085,5 +2126,147 @@ public class Builder extends Analyzer {
 		Integer key = Objects.hash(command, input);
 		return cachedSystemCalls.computeIfAbsent(key, asFunction(k -> super.system(allowFail, command, input)));
 	}
+
+	private Function<Duplication, Optional<Resource>> parseDupStrategy(Map<String, String> extra) {
+		String onduplicate = extra.get(DUP_STRATEGY);
+		return Duplication.doDuplicate(onduplicate, this);
+	}
+
+
+	/**
+	 * Handles how duplicate resources are handled in -includeresource
+	 * instruction.
+	 */
+	record Duplication(String path, Resource existing, Resource candidate) {
+
+		private static final String DUP_MSG_DEFAULT_OVERWRITE = "includeresource.duplicates: Duplicate overwritten: %s (Consider using the %s directive to handle duplicates.)";
+
+		enum OnDuplicateCommand {
+			OVERWRITE,
+			SKIP,
+			MERGE,
+			WARN,
+			ERROR;
+		}
+
+		public static Function<Duplication, Optional<Resource>> doDuplicate(String onduplicate, Processor processor) {
+
+			if (onduplicate == null || onduplicate.isBlank()) {
+				Consumer<Duplication> warn = dupl -> {
+					// but only warn if resources are not identical
+					if (!isIdentical(dupl.existing, dupl.candidate)) {
+						processor.warning(DUP_MSG_DEFAULT_OVERWRITE, dupl.path, Constants.DUP_STRATEGY);
+					}
+				};
+				return dupl -> {
+
+					warn.accept(dupl);
+					return Optional.of(dupl.candidate);
+				};
+			}
+
+			Set<OnDuplicateCommand> commands = new LinkedHashSet<>();
+			List<String> tags = new ArrayList<String>();
+
+			Strings.split(onduplicate)
+				.forEach(string -> {
+					try {
+						commands.add(OnDuplicateCommand.valueOf(string));
+					} catch (Exception e) {
+						tags.add(string);
+					}
+				});
+
+			Consumer<Duplication> error = commands.remove(OnDuplicateCommand.ERROR)
+				? dupl -> processor.error("includeresource.duplicates: duplicate found for path %s", dupl.path)
+				: d -> {};
+			Consumer<Duplication> warn = commands.remove(OnDuplicateCommand.WARN)
+				? dupl -> processor.warning("includeresource.duplicates: duplicate found for path %s", dupl.path)
+				: d -> {};
+
+			String[] tags2 = tags.toArray(new String[0]);
+			Function<Duplication, Optional<Resource>> result;
+
+			int what = tags.isEmpty() ? 0 : 1;
+			if (!commands.isEmpty())
+				what += 2;
+
+			result = switch (what) {
+				// OVERWRITE
+				case 0 -> dupl -> Optional.of(dupl.candidate);
+				// try MERGE
+				case 1 -> {
+					List<MergeResources> mergers = mergePlugins(tags2, processor);
+					yield dupl -> merge(dupl, mergers);
+				}
+				// commands
+				case 2, 3 -> getCommand(commands, tags2, processor);
+				default -> throw new UnsupportedOperationException();
+			};
+
+			return dupl -> {
+				error.accept(dupl);
+				warn.accept(dupl);
+				return result.apply(dupl);
+			};
+		}
+
+		private static Function<Duplication, Optional<Resource>> getCommand(Set<OnDuplicateCommand> commands,
+			String[] tags, Processor processor) {
+
+			if (commands.size() != 1) {
+				processor.error("includeresource.duplicates: specifies multiple strategies to handle duplicates: %s",
+					commands);
+				return dupl -> Optional.empty();
+			}
+
+			if (commands.contains(OnDuplicateCommand.OVERWRITE)) {
+				return dupl -> Optional.of(dupl.candidate);
+			} else if (commands.contains(OnDuplicateCommand.SKIP)) {
+				return dupl -> Optional.empty();
+			} else if (commands.contains(OnDuplicateCommand.MERGE)) {
+				return dupl -> merge(dupl, mergePlugins(tags, processor));
+			} else {
+				throw new UnsupportedOperationException("missed an enum value? " + commands);
+			}
+		}
+
+		private static List<MergeResources> mergePlugins(String[] tags, Processor processor) {
+
+			List<MergeResources> plugins = processor.getPlugins(MergeResources.class, tags);
+			if (tags.length > 0 && plugins.isEmpty()) {
+				processor.error("includeresource.duplicates: no plugins found for tags: %s", Arrays.toString(tags));
+			}
+			return plugins;
+		}
+
+		private static Optional<Resource> merge(Duplication dupl, List<MergeResources> list) {
+			for (MergeResources mr : list) {
+				Optional<Resource> merged = mr.tryMerge(dupl.path, dupl.existing, dupl.candidate);
+				if (merged.isPresent())
+					return merged;
+
+			}
+			return Optional.empty();
+		}
+
+		private static boolean isIdentical(Resource a, Resource b) {
+			try {
+				ByteBuffer buffer1 = a.buffer();
+				ByteBuffer buffer2 = b.buffer();
+
+				if (buffer1.remaining() != buffer2.remaining()) {
+					return false;
+				}
+
+				return buffer1.equals(buffer2);
+
+			} catch (Exception e) {
+				return false;
+			}
+		}
+	}
+
+
 
 }
