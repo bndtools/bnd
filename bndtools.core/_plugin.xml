@@ -959,6 +959,22 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.popupMenus">
+	  <objectContribution
+            adaptable="false"
+            id="bndtools.launchtobndrun"
+            nameFilter="*.launch"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="org.bndtools.facade.ExtensionFacade"
+               enablesFor="+"
+               id="org.bndtools.pde.launchtobndrun.LaunchToBndrunAction"
+               icon="icons/lorry.png"
+               label="Generate bndrun..."
+               menubarPath="additions"
+               tooltip="Generates a bndrun file corresponding to this launch file">
+         </action>
+      </objectContribution>
+	
 		<objectContribution adaptable="true"
 			id="bndtools.nonBndProjectContribution"
 			objectClass="org.eclipse.core.resources.IProject">

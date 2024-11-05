@@ -27,6 +27,7 @@
 -runbundles: \
 	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	biz.aQute.bnd.maven;version=snapshot,\
+	biz.aQute.bnd.pde;version=snapshot,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
