@@ -42,4 +42,5 @@ Import-Package: \
 	org.eclipse.core.commands,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.workbench,\
-	biz.aQute.bnd.pde
+	biz.aQute.bnd.pde,\
+	osgi.annotation
