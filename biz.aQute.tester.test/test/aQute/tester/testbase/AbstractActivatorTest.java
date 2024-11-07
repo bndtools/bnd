@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.RandomAccess;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.IntConsumer;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.Assert;
@@ -178,8 +177,12 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		try {
 			r.run();
 			throw new AssertionError("Expecting run() to call System.exit(), but it didn't");
-		} catch (ExitCode e) {
-			return e;
+		} catch (Throwable e) {
+			Throwable t = BndSystem.convert(e, ExitCode::new);
+			if (t instanceof ExitCode ec)
+				return ec;
+
+			throw Exceptions.duck(t);
 		}
 	}
 
@@ -206,7 +209,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		final Runnable r = oR.get();
 
 		runThread = new Thread(r, name);
-		runThread.setUncaughtExceptionHandler((t, x) -> uncaught.set(x));
+		runThread.setUncaughtExceptionHandler((t, x) -> uncaught.set(BndSystem.convert(x, ExitCode::new)));
 		runThread.start();
 	}
 
@@ -435,15 +438,6 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	protected AutoCloseable setExitToThrowExitCode() {
-		IntConsumer target = code -> {
-			throw new ExitCode(code);
-		};
-		IntConsumer prev = BndSystem.exit.getAndSet(target);
-		return () -> {
-			boolean success = BndSystem.exit.compareAndSet(prev, target);
-			if (!success)
-				throw new Error(
-					"Overrode BndSystem exit function and tried to restore it. However, someone changed it in the mean time");
-		};
+		return BndSystem.throwErrorOnExit();
 	}
 }

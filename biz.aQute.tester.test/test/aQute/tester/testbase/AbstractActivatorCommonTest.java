@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 
+import aQute.junit.system.BndSystem;
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.io.IO;
 import aQute.tester.junit.platform.test.ExitCode;
@@ -71,7 +72,7 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		final AtomicReference<Throwable> exception = new AtomicReference<>();
 		final CountDownLatch latch = new CountDownLatch(1);
 		bndThread.setUncaughtExceptionHandler((thread, e) -> {
-			exception.set(e);
+			exception.set(BndSystem.convert(e, ExitCode::new));
 			latch.countDown();
 		});
 
