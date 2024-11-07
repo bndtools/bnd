@@ -12,7 +12,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.osgi.service.component.annotations.Component;
 
 import aQute.lib.io.IO;
-import biz.aQute.bnd.pde.launch2bndrun.LaunchToBndrun;
 
 @Component
 public class LaunchToBndrunAction implements IObjectActionDelegate {
