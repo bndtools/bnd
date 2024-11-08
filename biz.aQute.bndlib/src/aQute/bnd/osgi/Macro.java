@@ -90,7 +90,7 @@ import aQute.service.reporter.Reporter.SetLocation;
  */
 public class Macro {
 	private final static String														NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
-	private final static String														LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
+	protected final static String													LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
 	private final static Pattern													NUMERIC_P		= Pattern
 		.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
 
@@ -342,7 +342,7 @@ public class Macro {
 		return replace(key, null, link, '{', '}');
 	}
 
-	private String replace(String key, List<String> args, Link link, char begin, char end) {
+	protected String replace(String key, List<String> args, Link link, char begin, char end) {
 		String value = getMacro(key, args, link, begin, end);
 		if (value != LITERALVALUE) {
 			if (value != null)
@@ -405,6 +405,26 @@ public class Macro {
 		return doCommand(this, args[0], args);
 	}
 
+	protected BiFunction<Object, String[], Object> getFunction(String method) {
+		Processor rover = domain;
+		while (rover != null) {
+			BiFunction<Object, String[], Object> function = getFunction(rover, method);
+			if (function != null)
+				return function;
+
+			rover = rover.getParent();
+		}
+
+		for (int i = 0; targets != null && i < targets.length; i++) {
+			BiFunction<Object, String[], Object> function = getFunction(targets[i], method);
+			if (function != null)
+				return function;
+		}
+
+		BiFunction<Object, String[], Object> function = getFunction(this, method);
+		return function;
+	}
+
 	private String doCommand(Object target, String method, String[] args) {
 		if (target == null)
 			; // System.err.println("Huh? Target should never be null " +
@@ -422,43 +442,7 @@ public class Macro {
 				}
 			}
 
-			Map<String, BiFunction<Object, String[], Object>> macros = macrosByClass.computeIfAbsent(target.getClass(),
-				c -> Arrays.stream(c.getMethods())
-					.filter(m -> (m.getName()
-						.charAt(0) == '_') && (m.getParameterCount() == 1)
-						&& (m.getParameterTypes()[0] == String[].class))
-					.collect(toMap(m -> m.getName()
-						.substring(1), m -> {
-							Memoize<MethodHandle> mh = Memoize.supplier(() -> {
-								try {
-									return publicLookup().unreflect(m);
-								} catch (Exception e) {
-									throw Exceptions.duck(e);
-								}
-							});
-							if (Modifier.isStatic(m.getModifiers())) {
-								return (Object t, String[] a) -> {
-									try {
-										return mh.get()
-											.invoke(a);
-									} catch (Throwable e) {
-										throw Exceptions.duck(e);
-									}
-								};
-							} else {
-								return (Object t, String[] a) -> {
-									try {
-										return mh.get()
-											.invoke(t, a);
-									} catch (Throwable e) {
-										throw Exceptions.duck(e);
-									}
-								};
-							}
-						})));
-
-			String macro = method.replace('-', '_');
-			BiFunction<Object, String[], Object> invoker = macros.get(macro);
+			BiFunction<Object, String[], Object> invoker = getFunction(target, method);
 			if (invoker == null) {
 				return null;
 			}
@@ -479,6 +463,46 @@ public class Macro {
 			}
 		}
 		return null;
+	}
+
+	BiFunction<Object, String[], Object> getFunction(Object target, String method) {
+		Map<String, BiFunction<Object, String[], Object>> macros = macrosByClass.computeIfAbsent(target.getClass(),
+			c -> Arrays.stream(c.getMethods())
+				.filter(m -> (m.getName()
+					.charAt(0) == '_') && (m.getParameterCount() == 1) && (m.getParameterTypes()[0] == String[].class))
+				.collect(toMap(m -> m.getName()
+					.substring(1), m -> {
+						Memoize<MethodHandle> mh = Memoize.supplier(() -> {
+							try {
+								return publicLookup().unreflect(m);
+							} catch (Exception e) {
+								throw Exceptions.duck(e);
+							}
+						});
+						if (Modifier.isStatic(m.getModifiers())) {
+							return (Object t, String[] a) -> {
+								try {
+									return mh.get()
+										.invoke(a);
+								} catch (Throwable e) {
+									throw Exceptions.duck(e);
+								}
+							};
+						} else {
+							return (Object t, String[] a) -> {
+								try {
+									return mh.get()
+										.invoke(t, a);
+								} catch (Throwable e) {
+									throw Exceptions.duck(e);
+								}
+							};
+						}
+					})));
+
+		String macro = method.replace('-', '_');
+		BiFunction<Object, String[], Object> invoker = macros.get(macro);
+		return invoker;
 	}
 
 	/**
@@ -1458,7 +1482,7 @@ public class Macro {
 		}
 	}
 
-	static final String			_osfileHelp	= "${osfile;<base>;<path>}, create correct OS dependent path";
+	static final String _osfileHelp = "${osfile;<base>;<path>}, create correct OS dependent path";
 
 	public String _osfile(String[] args) {
 		verifyCommand(args, _osfileHelp, null, 3, 3);

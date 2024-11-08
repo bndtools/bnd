@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +24,7 @@ import aQute.bnd.osgi.AttributeClasses;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.MacroReference;
 import aQute.bnd.osgi.Processor.PropertyKey;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -35,6 +37,86 @@ import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ProcessorTest {
+
+	@Test
+	void testMacroReferences() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.ALL, "b", "c", "now");
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.UNKNOWN, "b");
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.COMMAND, "now");
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.EXISTS, "c");
+	}
+
+	@Test
+	void testMacroReferencesWithArgs() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${foo;${bar;${baz}}}
+			""", MacroReference.UNKNOWN, "foo", "bar", "baz");
+	}
+
+	@Test
+	void testMacroReferencesCommandWithArgs() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${uniq;${bar};${baz};x}
+			""", MacroReference.UNKNOWN, "bar", "baz");
+		testMacroReference("""
+			c
+			""", """
+			a ${uniq;${bar};${baz};x,${c}}
+			""", MacroReference.EXISTS, "c");
+		testMacroReference("""
+			c
+			""", """
+			a ${uniq;${bar};${baz};x,${c}}
+			""", MacroReference.COMMAND, "uniq");
+	}
+
+	@Test
+	void testMacroReferencesDef() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${def;foo;bar}
+			""", MacroReference.UNKNOWN, "foo");
+		testMacroReference("""
+			c
+			""", """
+			a ${def;c;bar}
+			""", MacroReference.UNKNOWN);
+		testMacroReference("""
+			c
+			""", """
+			a ${template;foo;bar}
+			""", MacroReference.UNKNOWN, "foo");
+	}
+
+	private void testMacroReference(String parentSource, String childSource, Processor.MacroReference macro,
+		String... references) throws IOException {
+		try (Processor parent = new Processor(); Processor child = new Processor(parent)) {
+			parent.setProperties(new StringReader(parentSource));
+			child.setProperties(new StringReader(childSource));
+			assertThat(child.getMacroReferences(macro)).containsExactly(references);
+		}
+	}
 
 	@Test
 	public void testFixup() throws IOException {
