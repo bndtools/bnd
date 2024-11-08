@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,6 +47,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -1018,8 +1020,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * floor indicates where the property is defined relative to its parents.
 	 * Zero is in the current processor, 1, is its parents, and so on.
 	 */
-	public record PropertyKey(Processor processor, String key, int floor)
-		implements Comparable<PropertyKey> {
+	public record PropertyKey(Processor processor, String key, int floor) implements Comparable<PropertyKey> {
 
 		/**
 		 * Check if this PropertyKey belongs to the given processor
@@ -1053,7 +1054,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		@Override
 		public int compareTo(PropertyKey o) {
 			int n = key.compareTo(o.key);
-			if ( n != 0)
+			if (n != 0)
 				return n;
 			return Integer.compare(floor, o.floor);
 		}
@@ -1095,7 +1096,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		List<PropertyKey> keys = new ArrayList<>();
 		Processor rover = this;
 		int level = 0;
-		while( rover != null) {
+		while (rover != null) {
 			Processor localRover = rover;
 			int localLevel = level;
 			rover.stream(false) // local only
@@ -2749,5 +2750,108 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setPedantic(boolean pedantic) {
 		this.pedantic = pedantic;
+	}
+
+	/**
+	 * Enum used in getMacroReferences() to filter the properties by reason.
+	 */
+	public enum MacroReference {
+		/**
+		 * Property is neither a COMMAND nor EXISTS.
+		 */
+		UNKNOWN,
+		/**
+		 * Exists as a property
+		 */
+		EXISTS,
+		/**
+		 * Is a built in command
+		 */
+		COMMAND,
+
+		/**
+		 * return all property keys
+		 */
+		ALL
+	}
+
+	/**
+	 * Find all the macro references in the properties defined in this processor
+	 * or its ancestors. A reference can exist as property, be a command, or
+	 * unknown. If no {@link MacroReference}'s are given, all references are
+	 * returned.
+	 *
+	 * @param what specifies requested reference type
+	 * @return the set of property keys that match what
+	 */
+	public Set<String> getMacroReferences(MacroReference... what) {
+
+		Set<String> propertyKeys = getPropertyKeys(true);
+		Set<String> result = new LinkedHashSet<>();
+		class EMacro extends Macro {
+			boolean	exists	= false;
+			boolean	unknown	= false;
+			boolean	command	= false;
+			boolean	all		= false;
+
+			public EMacro() {
+				super(Processor.this, getMacroDomains());
+				for (MacroReference w : what) {
+					switch (w) {
+						case UNKNOWN -> unknown = true;
+						case EXISTS -> exists = true;
+						case COMMAND -> command = true;
+						default -> all = true;
+					}
+				}
+				all |= exists == unknown && unknown == command;
+			}
+
+			@Override
+			protected String replace(String invocation, List<String> args, Link link, char begin, char end) {
+				if (args != null && !args.isEmpty()) {
+					String key = args.remove(0);
+					reference(key, args);
+					for (String arg : args) {
+						process(arg, link);
+					}
+				}
+				return "";
+			}
+
+			private void reference(String key, List<String> args) {
+				if (all) {
+					result.add(key);
+				} else {
+					boolean x = propertyKeys.contains(key);
+					if (x) {
+						if (exists)
+							result.add(key);
+					} else {
+						BiFunction<Object, String[], Object> function = getFunction(key);
+						if (function == null) {
+							if (unknown)
+								result.add(key);
+						} else {
+							switch (key) {
+								case "def", "template", "foreach" -> {
+									if (args.size() > 1) {
+										reference(args.get(0), Collections.emptyList());
+									}
+								}
+							}
+							if (command)
+								result.add(key);
+						}
+					}
+				}
+			}
+		}
+		EMacro macro = new EMacro();
+		for (String key : propertyKeys) {
+			String unexpandedProperty = getUnexpandedProperty(key);
+			macro.process(unexpandedProperty);
+		}
+		return result;
 	}
 }
