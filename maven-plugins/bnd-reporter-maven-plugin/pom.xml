@@ -60,7 +60,10 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.bnd.reporter</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>biz.aQute.bnd.maven</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
