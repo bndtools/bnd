@@ -67,7 +67,7 @@ jobs:
           8
           ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@d156388eb19639ec20ade50009f3d199ce1e2808
+      uses: gradle/actions/setup-gradle@473878a77f1b98e2b5ac4af93489d1656a80a5ed
     - name: Build
       id: build
       run: |
@@ -109,7 +109,7 @@ jobs:
           8
           ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@d156388eb19639ec20ade50009f3d199ce1e2808
+      uses: gradle/actions/setup-gradle@473878a77f1b98e2b5ac4af93489d1656a80a5ed
     - name: Download dist/bundles
       uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85
       with:
