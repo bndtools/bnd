@@ -73,8 +73,10 @@ public class About {
 	public static final Version					_6_4		= new Version(6, 4, 0);
 	public static final Version					_7_0		= new Version(7, 0, 0);
 	public static final Version					_7_1		= new Version(7, 1, 0);
-	public static final Version					CURRENT		= _7_1;
+	public static final Version					_7_2		= new Version(7, 2, 0);
+	public static final Version					CURRENT		= _7_2;
 
+	public static final String[]				CHANGES_7_1	= {};
 	public static final String[]				CHANGES_7_0	= {};
 	public static final String[]				CHANGES_6_4	= {};
 	public static final String[]				CHANGES_6_3	= {};
@@ -248,6 +250,7 @@ public class About {
 
 	public static final Map<Version, String[]>	CHANGES		= Maps.ofEntries(
 		// In decreasing order
+		Maps.entry(_7_1, CHANGES_7_1),																																							//
 		Maps.entry(_7_0, CHANGES_7_0),																																							//
 		Maps.entry(_6_4, CHANGES_6_4),																																							//
 		Maps.entry(_6_3, CHANGES_6_3),																																							//
@@ -311,7 +314,8 @@ public class About {
 		private static final long serialVersionUID = 1L;
 		{
 			try {
-				super.load(Workspace.class.getResourceAsStream(CURRENT + ".bnd"));
+				String file = CURRENT + ".bnd";
+				super.load(Workspace.class.getResourceAsStream(file));
 			} catch (IOException e) {
 				logger.error("could not load version defaults for version {}", CURRENT, e);
 			}
