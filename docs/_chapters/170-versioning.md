@@ -113,7 +113,7 @@ This asymmetry creates the need for two version policies:
     -provider-policy :    ${range;[==,=+)}
     -consumer-policy :    ${range;[==,+)}
 
-The given values are the defaults. The value of the version policy will be used calculate the import based on the exported package. The `${range}` macro provides a convenient shortcut to do this using a version mask.
+The given values are the defaults. The value of the version policy will be used calculate the import based on the exported package. The [`${range}`](../macros/range.html) macro provides a convenient shortcut to do this using a version mask.
 
 For example, a bundle that implements the OSGi Event Admin service can use the following bnd file:
 
@@ -126,9 +126,13 @@ The resulting manifest would look like:
         Import-Package:  org.osgi.service.event; version="[1.1,2)", ...
         ...
 
-How does bnd know if a bundle is a provider or a consumer of a specific package? Well, the default is the consumer policy but this can be overridden with the `provide:=true` directive that works on the `Import-Package` clauses as well as on the `Export-Package` clauses. 
+How does bnd know if a bundle is a provider or a consumer of a specific package? 
+
+Well, the default is the consumer policy but this can be overridden with the `provide:=true` directive that works on the `Import-Package` clauses as well as on the `Export-Package` clauses.
 
 The `provide:` directive indicates to bnd that the given package contains API that is provided by this bundle. The (strongly) recommended way is to put the `provide:=true` directive on the `Export-Package` header, even if the package comes from another bundle. This way the bundle contains a copy of the package that is by default imported with the proper provider policy range.
+
+Also see [-consumerpolicy](../instructions/consumer_policy.html), [-providerpolicy](../instructions/provider_policy.html) and [range](../macros/range.html).
 
 For example, an implementation of the OSGi Event Admin specification could use the following bnd file:
 

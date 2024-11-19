@@ -11,7 +11,7 @@ For example:
     Import-Package: !org.apache.commons.log4j, com.acme.*,\
      com.foo.extra
 
-During processing, bnd will attempt to find the exported version of imported packages. If no version or version range is specified on the import instruction, the exported version will then be used though the micro part and the qualifier are dropped. That is, when the exporter is `1.2.3.build123`, then the import version will be 1.2. If a specific version (range) is specified, this will override any found version. This default an be overridden with the [-versionpolicy](../instructions/versionpolicy.html) instruction.
+During processing, bnd will attempt to find the exported version of imported packages. If no version or version range is specified on the import instruction, the exported version will then be used though the micro part and the qualifier are dropped. That is, when the exporter is `1.2.3.build123`, then the import version will be 1.2. If a specific version (range) is specified, this will override any found version. This default an be overridden with the [-consumerpolicy](../instructions/consumer_policy.html) or [-providerpolicy](../instructions/provider_policy.html) instruction (also see [Versioning](../chapters/170-versioning.html)).
 
 If an explicit version is given, then `${@}` can be used to substitute the found version in a range. In those cases, the [range](../macros/range.html) macro can be very useful to calculate ranges and drop specific parts of the version. For example:
 
