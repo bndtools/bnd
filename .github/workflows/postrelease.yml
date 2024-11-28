@@ -30,7 +30,7 @@ jobs:
         cd docs
         echo "releasename: ${V1}" >tmp
         echo "baseurl: /release/${V1}" >>tmp
-        echo "repository: /bndtools/bnd" >>tmp
+        echo "repository: bndtools/bnd" >>tmp
         cat _config.yml | sed '/^releasename: /d' | sed '/^baseurl: /d' | sed '/^repository: /d' >>tmp
         mv tmp _config.yml
 
