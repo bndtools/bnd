@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  doc_release:
+  doc_generate:
     runs-on: ubuntu-latest
     env:
       BUNDLE_GEMFILE: Gemfile
@@ -37,13 +37,29 @@ jobs:
         ./build.sh
         bundle exec jekyll build
 
-        rm -rf releases/${V1}
-        cp -rf _site releases/${V1}
-        rm -rf releases/${V1}/releases
-        find releases/${V1} -type f ! -name "*.html" -exec rm -f {} +
+        rm -rf _site/releases
+        find _site -type f ! -name "*.html" -exec rm -f {} +
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: releasedocs
+        path: docs/releases/${{ github.event.inputs.V1 }}
+
+  final:
+    - needs: [doc_generate]
+    - name: Git Checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        ref: master
+    - uses: actions/download-artifact@v4
+      with:
+        name: releasedocs
+        path: docs/releases/${{ github.event.inputs.V1 }}
 
     - name: create PR
       run: |
+        git config user.name github-actions
+        git config user.email github-actions@bndtools.org
         git checkout -B post-release
         git add .
         git commit -m "Post release ${{ github.event.inputs.V1 }}"
