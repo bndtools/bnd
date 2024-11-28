@@ -43,11 +43,9 @@ jobs:
         find releases/${V1} -type f ! -name "*.html" -exec rm -f {} +
 
     - name: create PR
-      uses: peter-evans/create-pull-request@v6
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Copy release docs of ${{ github.event.inputs.V1 }}"
-        title: "${{ github.event.inputs.version }} Release docs"
-        delete-branch: true
-        branch: post-release
-        base: next
+      run: |
+        git checkout -B post-release
+        git add .
+        git commit -m "Post release ${{ github.event.inputs.V1 }}"
+        git push
+        gh pr create -f -B master
