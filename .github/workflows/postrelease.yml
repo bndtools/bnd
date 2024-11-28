@@ -1,3 +1,13 @@
+name: 'post release'
+
+on:
+  workflow_dispatch:
+    inputs:
+      V1:
+        description: 'The just released version'
+        required: true
+        type: string
+        
 jobs:
   doc_release:
     runs-on: ubuntu-latest
