@@ -7,7 +7,7 @@ on:
         description: 'The just released version'
         required: true
         type: string
-        
+
 jobs:
   doc_release:
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
         find releases/${V1} -type f ! -name "*.html" -exec rm -f {} +
 
     - name: create PR
-       uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Copy release docs of ${{ github.event.inputs.V1 }}"
