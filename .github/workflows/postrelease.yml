@@ -1,0 +1,43 @@
+jobs:
+  doc_release:
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: Gemfile
+      BUNDLE_PATH: vendor/bundle
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        ref: next
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@a2bbe5b1b236842c1cb7dd11e8e3b51e0a616acc
+      with:
+        ruby-version: 2.7
+        bundler-cache: true
+        working-directory: docs
+    - name: create release docs for ${{ github.event.inputs.V1 }}
+      run: |
+        cd docs
+        echo "releasename: ${V1}" >tmp
+        echo "baseurl: /release/${V1}" >>tmp
+        echo "repository: /bndtools/bnd" >>tmp
+        cat _config.yml | sed '/^releasename: /d' | sed '/^baseurl: /d' | sed '/^repository: /d' >>tmp
+        mv tmp _config.yml
+
+        ./build.sh
+        bundle exec jekyll build
+
+        rm -rf releases/${V1}
+        cp -rf _site releases/${V1}
+        rm -rf releases/${V1}/releases
+        find releases/${V1} -type f ! -name "*.html" -exec rm -f {} +
+
+    - name: create PR
+       uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Copy release docs of ${{ github.event.inputs.V1 }}"
+        title: "${{ github.event.inputs.version }} Release docs"
+        delete-branch: true
+        branch: post-release
+        base: next
