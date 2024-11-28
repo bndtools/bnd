@@ -43,7 +43,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: releasedocs
-        path: docs/releases/${{ github.event.inputs.V1 }}
+        path: _site/${{ github.event.inputs.V1 }}
 
   final:
     needs: [doc_generate]
