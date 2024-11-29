@@ -62,7 +62,8 @@ jobs:
         ref: master
     - name: create branch for templates
       run: |
-        v = `echo ${{ github.event.inputs.V1 }} | awk -F. '{print $1"."$2}'
+        export v=`echo ${{ github.event.inputs.V1 }} | awk -F. '{print $1"."$2}'`
+        echo $v
         git config user.name github-actions
         git config user.email github-actions@bndtools.org
         git checkout -B $v
