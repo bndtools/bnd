@@ -66,13 +66,12 @@ jobs:
         ref: master
     - name: create branch for templates
       run: |
-        git remote set-url origin https://${{ secrets.PAT_WORKSPACE_REPO }}@github.com/bndtools/workspace.git
         export v=`echo ${{ github.event.inputs.V1 }} | awk -F. '{print $1"."$2}'`
         echo $v
         git config user.name github-actions
         git config user.email github-actions@bndtools.org
         git checkout -B $v
-        git push origin $v --force
+        git push https://${{ secrets.PAT_WORKSPACE_REPO }}@bndtools/bnd.git --force
 
   finalize-master:
     needs: [release-doc-generate, create-workspace-template]
