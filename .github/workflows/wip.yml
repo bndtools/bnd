@@ -21,7 +21,7 @@ jobs:
   #
   #
 
-  release-doc-generate:
+  publish-gradle-plugin:
     runs-on: ubuntu-latest
     env:
       GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET}}
