@@ -27,6 +27,13 @@ jobs:
       GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET}}
       GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY}}
     steps:
+    - name: set up java
+      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b
+      with:
+        distribution: 'temurin'
+        java-version: |
+          17
+          
     - name: Git Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
