@@ -106,11 +106,5 @@ jobs:
         git add .
         git commit -s -m "Post release ${{ github.event.inputs.V1 }}"
         git push origin post-release --force
-        if gh pr view post-release ; then
-          echo "Pull request already exists.";
-          gh pr reopen post-release || echo "was open";
-        else
-          gh pr create -f -B master;
-        fi
-        echo done
+        gh pr create -f -B master || echo "existing pr"
         
