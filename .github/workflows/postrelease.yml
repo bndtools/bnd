@@ -54,6 +54,10 @@ jobs:
 
   create-workspace-template:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PAT: ${{ secret.PAT_WORKSPACE_REPO }}
+
     steps:
     - name: Git Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -62,6 +66,7 @@ jobs:
         ref: master
     - name: create branch for templates
       run: |
+        git remote set-url origin https://$PAT@github.com/bndtools/workspace.git
         export v=`echo ${{ github.event.inputs.V1 }} | awk -F. '{print $1"."$2}'`
         echo $v
         git config user.name github-actions
