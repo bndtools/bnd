@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET}}
-      GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY}}
+      GRADLE_PUBLISH_KEY:    ${{ secrets.GRADLE_PUBLISH_KEY}}
     steps:
     - name: set up java
       uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b
@@ -41,6 +41,8 @@ jobs:
 
     - name: publish 
       run: |
+        echo "gradle.publish.key=$GRADLE_PUBLISH_KEY" >~/.gradle/gradle.properties
+        echo "gradle.publish.secret=$GRADLE_PUBLISH_SECRET" >>~/.gradle/gradle.properties
         cd gradle-plugins/biz.aQute.bnd.gradle
         ../gradlew clean
         ../gradlew build
