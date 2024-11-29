@@ -65,5 +65,5 @@ jobs:
         git checkout -B post-release
         git add .
         git commit -m "Post release ${{ github.event.inputs.V1 }}"
-        git push
+        git push --set-upstream origin post-release
         gh pr create -f -B master
