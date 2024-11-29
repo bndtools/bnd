@@ -69,6 +69,9 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@bndtools.org
         git checkout -B $v
+        echo "For release $V1" > README.md
+        git add .
+        git commit -m "Release $V1"
         git push --force $WORKSPACE_REPO $v 
 
 
