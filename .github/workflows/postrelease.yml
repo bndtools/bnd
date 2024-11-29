@@ -43,7 +43,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: releasedocs
-        path: _site/${{ github.event.inputs.V1 }}
+        path: docs/_site/
 
   final:
     needs: [doc_generate]
@@ -56,7 +56,7 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: releasedocs
-        path: docs/releases/${{ github.event.inputs.V1 }}
+        path: docs/releases/${{ github.event.inputs.V1 }}/
 
     - name: create PR
       run: |
