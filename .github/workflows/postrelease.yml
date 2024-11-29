@@ -66,7 +66,8 @@ jobs:
         echo $v
         git config user.name github-actions
         git config user.email github-actions@bndtools.org
-        git clone $WORKSPACE_REPO
+        git clone $WORKSPACE_REPO repo
+        cd repo
         git checkout -B $v
         git push --force $WORKSPACE_REPO $v 
 
