@@ -1,5 +1,11 @@
 name: 'post release'
 
+#
+# This action is intended to be run after a release 
+# is available on Maven Central
+#
+
+
 on:
   workflow_dispatch:
     inputs:
@@ -13,6 +19,11 @@ permissions:
   pull-requests: write
 
 jobs:
+
+  #
+  #   Generate the released version docs as constant html
+  #   and upload them to be merged into master
+  #
 
   release-doc-generate:
     runs-on: ubuntu-latest
@@ -51,6 +62,10 @@ jobs:
         path: docs/_site/
 
 
+  #
+  # Create a workspace template with the new version
+  # in the https://github.com/bndtools/workspace repository
+  #
 
   create-workspace-template:
     runs-on: ubuntu-latest
@@ -74,6 +89,11 @@ jobs:
         git commit -m "Release $V1"
         git push --force $WORKSPACE_REPO $v 
 
+
+
+  #
+  # Collect any updates to the master branch
+  #
 
   finalize-master:
     needs: [release-doc-generate, create-workspace-template]
