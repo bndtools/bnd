@@ -13,6 +13,11 @@ on:
         description: 'The just released version'
         required: true
         type: string
+      dryrun:
+        description: 'Run the code but do not do non-idempotent actions like publishing to gradle or so'
+        default: true
+        required: true
+        type: boolean
 
 permissions:
   contents: write
