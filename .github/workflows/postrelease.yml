@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  
+
 jobs:
   doc_generate:
     runs-on: ubuntu-latest
@@ -70,6 +70,6 @@ jobs:
         git config user.email github-actions@bndtools.org
         git checkout -B post-release
         git add .
-        git commit -m "Post release ${{ github.event.inputs.V1 }}"
+        git commit -s -m "Post release ${{ github.event.inputs.V1 }}"
         git push origin post-release --force
         gh pr create -f -B master
