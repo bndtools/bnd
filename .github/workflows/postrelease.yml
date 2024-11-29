@@ -69,7 +69,7 @@ jobs:
         git push origin $v --force
 
   finalize-master:
-    needs: [doc_generate]
+    needs: [release-doc-generate, create-workspace-template]
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
