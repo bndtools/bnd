@@ -66,7 +66,7 @@ jobs:
         ref: master
     - name: create branch for templates
       run: |
-        git remote set-url origin https://$PAT@github.com/bndtools/workspace.git
+        git remote set-url origin https://${{ secrets.PAT_WORKSPACE_REPO }}@github.com/bndtools/workspace.git
         export v=`echo ${{ github.event.inputs.V1 }} | awk -F. '{print $1"."$2}'`
         echo $v
         git config user.name github-actions
