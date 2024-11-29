@@ -13,7 +13,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  doc_generate:
+
+  release-doc-generate:
     runs-on: ubuntu-latest
     env:
       BUNDLE_GEMFILE: Gemfile
@@ -49,20 +50,46 @@ jobs:
         name: releasedocs
         path: docs/_site/
 
-  final:
+
+
+  create-workspace-template:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        repository: bndtools/workspace
+        ref: master
+    - name: create branch for templates
+      run: |
+        v = `echo ${{ github.event.inputs.V1 }} | awk -F. '{print $1"."$2}'
+        git config user.name github-actions
+        git config user.email github-actions@bndtools.org
+        git checkout -B $v
+        git push origin $v --force
+
+  finalize-master:
     needs: [doc_generate]
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-    - name: Git Checkout
+    - name: checkout master
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
         ref: master
-    - uses: actions/download-artifact@v4
+
+    - name: download docs/releases/${{ github.event.inputs.V1 }}
+      uses: actions/download-artifact@v4
       with:
         name: releasedocs
         path: docs/releases/${{ github.event.inputs.V1 }}/
+
+    - name: update baseline for the current build
+      run: |
+        sed 's/baseline.version:.*/baseline.version: ${{ github.event.inputs.V1 }}/' cnf/build.bnd >tmp
+        cat tmp
+        mv tmp cnf/build.bnd
 
     - name: create PR
       run: |
