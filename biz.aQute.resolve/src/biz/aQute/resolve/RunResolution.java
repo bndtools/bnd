@@ -97,11 +97,11 @@ public class RunResolution {
 	 */
 	public static RunResolution resolve(Project project, Processor actualProperties,
 		Collection<ResolutionCallback> callbacks, ResolverLogger resolverLogger) {
-		if (ResolveMode.never.toString()
-			.equals(project.get(Constants.RESOLVE))) {
+		if (ResolveMode.never.name()
+			.equals(actualProperties.get(Constants.RESOLVE))) {
 			return new RunResolution(project, actualProperties, new UnsupportedOperationException(String
 				.format("Resolve is forbidden here, as %s is set to %s", Constants.RESOLVE,
-					ResolveMode.never.toString())),
+					ResolveMode.never.name())),
 				null);
 		}
 		if (callbacks == null)
