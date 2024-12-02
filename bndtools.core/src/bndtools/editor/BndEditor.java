@@ -85,6 +85,7 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.BadLocationException;
+import biz.aQute.resolve.Bndrun;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.common.IPriority;
@@ -617,10 +618,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 			Processor p = workspace.readLocked(() -> workspace.findProcessor(inputFile)
 				.orElseGet(() -> {
-					Processor dummy = new Processor();
-					dummy.setBase(inputFile.getParentFile());
-					dummy.setPropertiesFile(inputFile);
-					return dummy;
+					try {
+						Bndrun bndrun = Bndrun.createBndrun(workspace, inputFile);
+						return bndrun;
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
 				}));
 			model.setWorkspace(workspace);
 			model.setOwner(p);
