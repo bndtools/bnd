@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +31,13 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.metainf.MetaInfService;
 import aQute.lib.io.IO;
 
 class T0 {}
@@ -1413,6 +1417,35 @@ public class AnalyzerTest {
 				.getByFQN("com.foo") != null);
 			assertTrue(h.getExports()
 				.getByFQN("com.bar") != null);
+		}
+	}
+
+	@Test
+	public void testEmptyMetaInfServicesFolder() throws Exception {
+
+		Resource r = new EmbeddedResource("foo", 0L);
+		try (Jar jar = new Jar("test")) {
+			jar.putResource("META-INF/services/subfolder/", r);
+
+			Map<String, Resource> map = jar.getDirectories()
+				.getOrDefault("META-INF/services", Collections.emptyMap());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services/subfolder"));
+			assertNotNull(jar.getDirectories()
+				.get("META-INF/services/subfolder"));
+			assertEquals(1, jar.getDirectories()
+				.get("META-INF/services/subfolder")
+				.size());
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/services"));
+			assertNull(jar.getDirectories()
+				.get("META-INF/services"));
+
+			Map<String, MetaInfService> serviceFiles = MetaInfService.getServiceFiles(jar);
+			assertNotNull(serviceFiles);
+			assertTrue(serviceFiles.isEmpty());
 		}
 	}
 
