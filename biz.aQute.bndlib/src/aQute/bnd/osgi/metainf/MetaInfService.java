@@ -60,6 +60,11 @@ public class MetaInfService {
 		Map<String, Resource> map = jar.getDirectories()
 			.getOrDefault(META_INF_SERVICES_STEM, Collections.emptyMap());
 
+		if (map == null) {
+			// can happen when META-INF/services is empty, but has subfolders
+			return result;
+		}
+
 		for (Map.Entry<String, Resource> e : map.entrySet()) {
 			String path = e.getKey();
 			Resource resource = e.getValue();
