@@ -79,6 +79,8 @@ public class CnfWatcher implements IResourceChangeListener {
 							MarkerSupport ms = new MarkerSupport(cnfProject);
 							ms.deleteMarkers("*");
 							ms.setMarkers(workspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
+							// clear errors/warnings, to avoid re-adding
+							workspace.clear();
 						} catch (Exception e) {
 							return new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID,
 								"error during workspace refresh",
