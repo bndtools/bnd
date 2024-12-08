@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.RunMode;
 import org.bndtools.api.editor.IBndEditor;
 import org.bndtools.api.launch.LaunchConstants;
 import org.bndtools.core.jobs.JobUtil;
@@ -619,8 +620,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 			Processor p = workspace.readLocked(() -> workspace.findProcessor(inputFile)
 				.orElseGet(() -> {
 					try {
-						Bndrun bndrun = Bndrun.createBndrun(workspace, inputFile);
-						return bndrun;
+						if (inputResource != null) {
+							return LaunchUtils.createRun(inputResource, RunMode.EDIT);
+						} else {
+							return Bndrun.createBndrun(workspace, this.inputFile);
+						}
+
 					} catch (Exception e) {
 						throw Exceptions.duck(e);
 					}
