@@ -1,0 +1,5 @@
+-resolve.effective: active
+-runfw: org.eclipse.osgi;version='3.21.0'
+-runee: JavaSE-17
+-runrequires: bnd.identity;id='org.example.bndtools.bndrun.reproducer'
+-runbundles: org.example.bndtools.bndrun.reproducer;version='[1.0.0,1.0.1)'
