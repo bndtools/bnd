@@ -490,7 +490,12 @@ public class Launcher implements ServiceListener, FrameworkListener {
 
 	@SuppressWarnings("removal")
 	private int activate(String[] args) throws Exception {
-		java.security.Policy.setPolicy(new AllPolicy());
+		try {
+			java.security.Policy.setPolicy(new AllPolicy());
+		} catch (Throwable e) {
+			// ignore. Java 24 throws an Exception: Setting a
+			// system-wide Policy object is not supported
+		}
 
 		systemBundle = createFramework();
 		if (systemBundle == null)
