@@ -406,7 +406,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	}
 
 	private Action reloadAction() {
-		Action rebuild = new Action("Reload workspace", Icons.desc("refresh")) {
+		Action rebuild = new Action("Reload workspace (Rebuilds all projects if 'Build Automatically' is enabled)",
+			Icons.desc("refresh")) {
 			WorkspaceSynchronizer s;
 
 			@Override
