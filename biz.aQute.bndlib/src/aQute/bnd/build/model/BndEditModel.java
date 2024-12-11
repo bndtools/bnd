@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -263,6 +262,7 @@ public class BndEditModel {
 	private final PropertyChangeSupport											propChangeSupport					= new PropertyChangeSupport(
 		this);
 	private Properties															properties							= new UTF8Properties();
+	private UTF8Properties														reference							= new UTF8Properties();
 	private final Map<String, Object>											objectProperties					= new HashMap<>();
 	private final Map<String, String>											changesToSave						= new TreeMap<>();
 	private Processor															owner;
@@ -379,6 +379,7 @@ public class BndEditModel {
 		this.inputFile = model.inputFile;
 		this.workspace = model.workspace;
 		this.properties.putAll(model.properties);
+		this.reference.putAll(model.properties);
 		this.changesToSave.putAll(model.changesToSave);
 		setOwner(model.getOwner());
 	}
@@ -439,7 +440,9 @@ public class BndEditModel {
 	public void loadFrom(InputStream inputStream) throws IOException {
 		try {
 			properties.clear();
+			reference.clear();
 			properties.load(inputStream);
+			reference.putAll(properties);
 			objectProperties.clear();
 			changesToSave.clear();
 
@@ -1248,6 +1251,13 @@ public class BndEditModel {
 	private <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
 		objectProperties.put(name, newValue);
 		String v = formatter.convert(newValue);
+		if (v == null) {
+			if (oldValue == null) {
+				return;
+			}
+			doRemoveObject(name, oldValue, newValue, formatter);
+			return;
+		}
 		changesToSave.put(name, v);
 		dirty = true;
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
@@ -1416,7 +1426,6 @@ public class BndEditModel {
 		return getPropertiesInternal(true);
 	}
 
-
 	/**
 	 * @param expandMacros set to <code>true</code> if macros e.g. '${.}' should
 	 *            be expanded. In the UI when editing the model, macros should
@@ -1432,7 +1441,10 @@ public class BndEditModel {
 			currentProperties.load(changes, null, null);
 		}
 
-		Set<String> ownerLocalKeys = owner.getPropertyKeys(false);
+		Set<String> ownerLocalKeys = reference.keySet()
+			.stream()
+			.map(String.class::cast)
+			.collect(Collectors.toSet());
 		Set<String> editedLocalKeys = currentProperties.keySet()
 			.stream()
 			.map(String.class::cast)
@@ -1440,35 +1452,28 @@ public class BndEditModel {
 
 		Collection<String> deleted = Logic.remove(ownerLocalKeys, editedLocalKeys);
 
-		Set<String> inheritedKeysWithoutOwner = new HashSet<>(editedLocalKeys);
-
-		Processor parent = owner.getParent();
-		if (parent != null) {
-
-			// we leave out the keys of the owner
-			inheritedKeysWithoutOwner.addAll(parent.getPropertyKeys(true));
-		}
-
 		File source = getBndResource();
 		Processor dummy = new Processor(owner) {
 			@Override
 			public Set<String> getPropertyKeys(boolean inherit) {
-				if (inherit) {
-					return Collections.unmodifiableSet(inheritedKeysWithoutOwner);
-				}
-				return super.getPropertyKeys(false);
+				Set<String> keys = super.getPropertyKeys(inherit);
+				keys.removeAll(deleted);
+				return keys;
 			}
 
 			@Override
 			public String getProperty(String key, String deflt, String separator) {
-				if (!inheritedKeysWithoutOwner.contains(key))
-					return deflt;
+				String value;
+				if (deleted.contains(key)) {
+					key = "IN_BNDEDIT_MODEL_DELETED_KEY_" + key;
+				}
 
 				if (expandMacros) {
-					return super.getProperty(key, deflt, separator);
+					value = super.getProperty(key, deflt, separator);
 				} else {
-					return super.getUnprocessedProperty(key, deflt);
+					value = super.getUnprocessedProperty(key, deflt);
 				}
+				return value;
 			}
 		};
 		dummy.setBase(owner.getBase());
@@ -1477,7 +1482,8 @@ public class BndEditModel {
 		if (expandMacros) {
 			currentProperties = currentProperties.replaceHere(dummy.getBase());
 		}
-		dummy.setProperties(currentProperties);
+		dummy.getProperties()
+			.putAll(currentProperties);
 		return dummy;
 	}
 
