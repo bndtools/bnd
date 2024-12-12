@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -253,6 +255,92 @@ public class BndEditModelTest {
 		Processor p = model.getProperties();
 
 		assertThat(p.getProperty("foo")).isEqualTo("FOO");
+	}
+
+	/**
+	 * Test the testresources/bndtools-resolve-reproducer project (m2). There
+	 * were issues with the inheritance and inclusion of properties.
+	 */
+
+	static final File					REPRODUCER		= IO.getFile("testresources/bndtools-resolve-reproducer");
+	static final File					DEBUG_BNDRUN	= IO.getFile(REPRODUCER, "debug.bndrun");
+	static final Map<String, String>	PROPERTIES		= Map.of("-runbundles",
+		"org.apache.felix.gogo.command;version='[1.1.2,1.1.3)',org.apache.felix.gogo.runtime;version='[1.1.6,1.1.7)',org.apache.felix.gogo.shell;version='[1.1.4,1.1.5)'",		//
+		"-resolve.effective", "active",																																			//
+		"-runfw", "org.eclipse.osgi;version='3.21.0'",																															//
+		"-runproperties.debug", "osgi.console=,osgi.console.enable.builtin=false",																								//
+		"-runrequires", "bnd.identity;id='org.example.bndtools.bndrun.reproducer'",																								//
+		"-runee", "JavaSE-17",																																					//
+		"-runrequires.debug",
+		"osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.runtime)',osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'"							//
+
+	);
+
+	@Test
+	public void testBasicReproducer() throws Exception {
+		assertThat(DEBUG_BNDRUN).isFile();
+		Run run = Run.createRun(null, DEBUG_BNDRUN);
+		assertThat(run.getProperties()).containsExactlyInAnyOrderEntriesOf(PROPERTIES);
+		BndEditModel model = new BndEditModel(run);
+
+		assertThat(model.getAllPropertyNames()).containsExactlyInAnyOrder("-runbundles", "-runrequires.debug",
+			"-runproperties.debug", "-include");
+
+	}
+
+	@Test
+	public void testBasicReproducerRemove() throws Exception {
+		assertThat(DEBUG_BNDRUN).isFile();
+		Run run = Run.createRun(null, DEBUG_BNDRUN);
+		BndEditModel model = new BndEditModel(run);
+
+		assertThat(model.getProperties()
+			.getProperties()).containsKey("-runbundles");
+		assertThat(model.getDocumentChanges()).isEmpty();
+		assertThat(model.getDocumentProperties()
+			.keySet()).containsExactlyInAnyOrder("-runbundles", "-runrequires.debug", "-runproperties.debug",
+				"-include");
+
+		model.setRunBundles(Collections.emptyList());
+
+		assertThat(model.getRunBundles()).isEmpty();
+		assertThat(model.getDocumentChanges()).containsKey("-runbundles");
+		assertThat(model.getProperties()
+			.getProperties()).doesNotContainKey("-runbundles");
+
+		Document d = new Document(IO.collect(DEBUG_BNDRUN));
+		assertThat(d.get()).contains("-runbundles");
+
+		model.saveChangesTo(d);
+
+		assertThat(model.getDocumentChanges()).isEmpty();
+		assertThat(d.get()).doesNotContain("-runbundles");
+		assertThat(model.getDocumentProperties()
+			.keySet()).containsExactlyInAnyOrder("-runrequires.debug", "-runproperties.debug", "-include");
+	}
+
+	@Test
+	public void testBasicReproducerAdd() throws Exception {
+		assertThat(DEBUG_BNDRUN).isFile();
+		Run run = Run.createRun(null, DEBUG_BNDRUN);
+		BndEditModel model = new BndEditModel(run);
+
+		assertThat(model.getProperties()
+			.getProperties()).doesNotContainKey("-runframework");
+
+		model.setRunFramework("none");
+
+		assertThat(model.getDocumentProperties()).doesNotContainKey("-runframework");
+
+		assertThat(model.getProperties()
+			.getProperties()).containsKey("-runframework");
+
+		assertThat(model.getRunFramework()).isEqualTo("none");
+		Document d = new Document(IO.collect(DEBUG_BNDRUN));
+		assertThat(d.get()).doesNotContain("-runframework");
+		model.saveChangesTo(d);
+		assertThat(model.getDocumentChanges()).isEmpty();
+		assertThat(d.get()).contains("-runframework");
 	}
 
 	private String getPortablePath(File base) {
