@@ -512,7 +512,9 @@ public class ReleaseHelper {
 					try {
 						Builder builder = diff.getProject()
 							.getSubBuilder(baseline.getBsn());
-						String bundleVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
+						String bundleVersion = builder.getUnexpandedProperty(Constants.BUNDLE_VERSION);
+						if (bundleVersion == null)
+							bundleVersion = "";
 						if (bundleVersion.startsWith("${")) {
 							MacroInfo info = new MacroInfo();
 							info.projectDiff = diff;

@@ -464,7 +464,7 @@ public class Verifier extends Processor {
 			}
 		} else if (getParent() != null) {
 			// If we have access to the parent we can do deeper checking
-			String raw = getParent().getUnprocessedProperty(BUNDLE_ACTIVATOR, null);
+			String raw = getParent().getUnexpandedProperty(BUNDLE_ACTIVATOR);
 			if (raw != null) {
 				// The activator was specified, but nothing showed up.
 				if (raw.isEmpty()) {

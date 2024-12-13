@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,7 +68,6 @@ import aQute.bnd.properties.LineType;
 import aQute.bnd.properties.PropertiesLineReader;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.Iterables;
-import aQute.lib.collections.Logic;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -262,7 +260,7 @@ public class BndEditModel {
 	private String																name;
 	private final PropertyChangeSupport											propChangeSupport					= new PropertyChangeSupport(
 		this);
-	private Properties															properties							= new UTF8Properties();
+	private final UTF8Properties												documentProperties					= new UTF8Properties();
 	private final Map<String, Object>											objectProperties					= new HashMap<>();
 	private final Map<String, String>											changesToSave						= new TreeMap<>();
 	private Processor															owner;
@@ -270,6 +268,7 @@ public class BndEditModel {
 	private IDocument															document;
 	private long																lastChangedAt;
 	private Workspace															workspace;
+	private final boolean														effective;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -362,12 +361,12 @@ public class BndEditModel {
 
 	}
 
-
 	/**
 	 * Default constructor
 	 */
 	public BndEditModel() {
 		setOwner(new Processor());
+		this.effective = false;
 	}
 
 	/**
@@ -376,10 +375,21 @@ public class BndEditModel {
 	 * @param model the source
 	 */
 	public BndEditModel(BndEditModel model) {
+		this(model, false);
+	}
+
+	/**
+	 * Copy constructor with an override for effective
+	 *
+	 * @param model
+	 * @param effective
+	 */
+	public BndEditModel(BndEditModel model, boolean effective) {
 		this.inputFile = model.inputFile;
 		this.workspace = model.workspace;
-		this.properties.putAll(model.properties);
+		this.documentProperties.putAll(model.documentProperties);
 		this.changesToSave.putAll(model.changesToSave);
+		this.effective = effective;
 		setOwner(model.getOwner());
 	}
 
@@ -389,6 +399,7 @@ public class BndEditModel {
 	}
 
 	public BndEditModel(IDocument document) throws IOException {
+		this.effective = false;
 		loadFrom(document);
 	}
 
@@ -438,8 +449,8 @@ public class BndEditModel {
 
 	public void loadFrom(InputStream inputStream) throws IOException {
 		try {
-			properties.clear();
-			properties.load(inputStream);
+			documentProperties.clear();
+			documentProperties.load(inputStream);
 			objectProperties.clear();
 			changesToSave.clear();
 
@@ -469,19 +480,34 @@ public class BndEditModel {
 
 			updateDocument(document, propertyName, stringValue);
 
-			//
-			// Ensure that properties keeps reflecting the current document
-			// value
-			//
-			String value = cleanup(stringValue);
-			if (value == null)
-				value = "";
-
-			if (propertyName != null)
-				properties.setProperty(propertyName, value);
+			updateProperty(propertyName, stringValue, documentProperties);
 
 			iter.remove();
 		}
+	}
+
+	private void updateProperty(String propertyName, String stringValue, UTF8Properties properties) {
+		if (propertyName == null)
+			return;
+
+		if (stringValue == null) {
+			properties.remove(propertyName);
+		} else {
+			try {
+				properties.load(propertyName + ": " + stringValue, null, null);
+			} catch (IOException e) {
+				assert false;
+			}
+		}
+	}
+
+	private UTF8Properties updatedProperties() {
+		UTF8Properties updated = new UTF8Properties();
+		updated.putAll(documentProperties);
+		for (Map.Entry<String, String> entry : changesToSave.entrySet()) {
+			updateProperty(entry.getKey(), entry.getValue(), updated);
+		}
+		return updated;
 	}
 
 	private static IRegion findEntry(IDocument document, String name) throws Exception {
@@ -540,7 +566,7 @@ public class BndEditModel {
 	}
 
 	public List<String> getAllPropertyNames() {
-		return StreamSupport.stream(Iterables.iterable(properties.propertyNames(), String.class::cast)
+		return StreamSupport.stream(Iterables.iterable(documentProperties.propertyNames(), String.class::cast)
 			.spliterator(), false)
 			.collect(toList());
 	}
@@ -561,7 +587,7 @@ public class BndEditModel {
 		Converter<? extends Object, String> converter = converters.get(propertyName);
 		if (converter == null)
 			converter = new NoopConverter<>();
-		return doGetObject(propertyName, converter);
+		return doGetObject(propertyName, converter, false);
 	}
 
 	public void genericSet(String propertyName, Object value) {
@@ -748,7 +774,7 @@ public class BndEditModel {
 	}
 
 	private boolean hasPrivatePackageInstruction() {
-		return properties.containsKey(Constants.PRIVATEPACKAGE);
+		return documentProperties.containsKey(Constants.PRIVATEPACKAGE);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -833,11 +859,11 @@ public class BndEditModel {
 	}
 
 	public List<VersionedClause> getBuildPath() {
-		return doGetObject(Constants.BUILDPATH, buildPathConverter);
+		return doGetObject(Constants.BUILDPATH, buildPathConverter, true);
 	}
 
 	public List<VersionedClause> getTestPath() {
-		return doGetObject(Constants.TESTPATH, buildPathConverter);
+		return doGetObject(Constants.TESTPATH, buildPathConverter, true);
 	}
 
 	public void setBuildPath(List<? extends VersionedClause> paths) {
@@ -865,7 +891,7 @@ public class BndEditModel {
 	}
 
 	public List<VersionedClause> getRunBundles() {
-		return doGetObject(Constants.RUNBUNDLES, clauseListConverter);
+		return doGetObject(Constants.RUNBUNDLES, clauseListConverter, true);
 	}
 
 	public void setRunBundles(List<? extends VersionedClause> paths) {
@@ -874,7 +900,7 @@ public class BndEditModel {
 	}
 
 	public List<VersionedClause> getRunBundlesDecorator() {
-		return doGetObject(aQute.bnd.osgi.Constants.RUNBUNDLES_DECORATOR, clauseListConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.RUNBUNDLES_DECORATOR, clauseListConverter, true);
 	}
 
 	public void setRunBundlesDecorator(List<? extends VersionedClause> paths) {
@@ -909,7 +935,7 @@ public class BndEditModel {
 	}
 
 	public Map<String, String> getRunProperties() {
-		return doGetObject(Constants.RUNPROPERTIES, propertiesConverter);
+		return doGetObject(Constants.RUNPROPERTIES, propertiesConverter, true);
 	}
 
 	/*
@@ -1010,7 +1036,6 @@ public class BndEditModel {
 		return getPropertiesMapInternal(Constants.PLUGIN, false);
 	}
 
-
 	/**
 	 * @param stem
 	 * @param expandMacros controls whether or not macros like (${.}) will be
@@ -1102,7 +1127,7 @@ public class BndEditModel {
 	/**
 	 * @param key
 	 * @return <code>true</code> if the given propertyKey is physically in the
-	 *         local {@link #properties}
+	 *         local {@link #documentProperties}
 	 */
 	private boolean isLocalPropertyKey(String key) {
 		return doGetObject(key, headerClauseListConverter) != null;
@@ -1165,7 +1190,7 @@ public class BndEditModel {
 	}
 
 	public List<Requirement> getRunRequires() {
-		return doGetObject(Constants.RUNREQUIRES, requirementListConverter);
+		return doGetObject(Constants.RUNREQUIRES, requirementListConverter, true);
 	}
 
 	public void setRunRequires(List<Requirement> requires) {
@@ -1174,7 +1199,7 @@ public class BndEditModel {
 	}
 
 	public List<Requirement> getRunBlacklist() {
-		return doGetObject(Constants.RUNBLACKLIST, requirementListConverter);
+		return doGetObject(Constants.RUNBLACKLIST, requirementListConverter, true);
 	}
 
 	public void setRunBlacklist(List<Requirement> requires) {
@@ -1214,6 +1239,10 @@ public class BndEditModel {
 	}
 
 	private <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
+		return doGetObject(name, converter, false);
+	}
+
+	private <R> R doGetObject(String name, Converter<? extends R, ? super String> converter, boolean merged) {
 		try {
 			R result;
 			if (objectProperties.containsKey(name)) {
@@ -1223,11 +1252,16 @@ public class BndEditModel {
 			} else if (changesToSave.containsKey(name)) {
 				result = converter.convert(changesToSave.get(name));
 				objectProperties.put(name, result);
-			} else if (properties.containsKey(name)) {
-				result = converter.convert(properties.getProperty(name));
-				objectProperties.put(name, result);
 			} else {
-				result = converter.convert(null);
+				if (effective) {
+					String value = merged ? owner.mergeProperties(name) : owner.getProperty(name);
+					if (value != null && value.isBlank())
+						value = null;
+					result = converter.convert(value);
+				} else {
+					result = converter.convert(documentProperties.getProperty(name));
+					objectProperties.put(name, result);
+				}
 			}
 
 			return result;
@@ -1238,7 +1272,7 @@ public class BndEditModel {
 
 	private <T> void doRemoveObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
 		objectProperties.remove(name);
-		properties.remove(name);
+		documentProperties.remove(name);
 		String v = formatter.convert(newValue);
 		changesToSave.put(name, v);
 		dirty = true;
@@ -1246,8 +1280,11 @@ public class BndEditModel {
 	}
 
 	private <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
-		objectProperties.put(name, newValue);
+		if (effective) {
+			throw new IllegalArgumentException("Read only because set to effective");
+		}
 		String v = formatter.convert(newValue);
+		objectProperties.put(name, newValue);
 		changesToSave.put(name, v);
 		dirty = true;
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
@@ -1369,7 +1406,7 @@ public class BndEditModel {
 	}
 
 	private boolean hasIncludeResourceHeaderLikeInstruction() {
-		return properties.containsKey(Constants.INCLUDE_RESOURCE);
+		return documentProperties.containsKey(Constants.INCLUDE_RESOURCE);
 	}
 
 	public Project getProject() {
@@ -1416,7 +1453,6 @@ public class BndEditModel {
 		return getPropertiesInternal(true);
 	}
 
-
 	/**
 	 * @param expandMacros set to <code>true</code> if macros e.g. '${.}' should
 	 *            be expanded. In the UI when editing the model, macros should
@@ -1425,78 +1461,28 @@ public class BndEditModel {
 	 * @throws IOException
 	 */
 	private Processor getPropertiesInternal(boolean expandMacros) throws IOException {
-		UTF8Properties currentProperties = new UTF8Properties();
-		currentProperties.putAll(properties);
-		if (!changesToSave.isEmpty()) {
-			String changes = changesToString();
-			currentProperties.load(changes, null, null);
-		}
-
-		Set<String> ownerLocalKeys = owner.getPropertyKeys(false);
-		Set<String> editedLocalKeys = currentProperties.keySet()
-			.stream()
-			.map(String.class::cast)
-			.collect(Collectors.toSet());
-
-		Collection<String> deleted = Logic.remove(ownerLocalKeys, editedLocalKeys);
-
-		Set<String> inheritedKeysWithoutOwner = new HashSet<>(editedLocalKeys);
-
-		Processor parent = owner.getParent();
-		if (parent != null) {
-
-			// we leave out the keys of the owner
-			inheritedKeysWithoutOwner.addAll(parent.getPropertyKeys(true));
-		}
+		UTF8Properties currentProperties = updatedProperties();
+		UTF8Properties actualProperties = expandMacros ? currentProperties.replaceHere(owner.getBase())
+			: currentProperties;
 
 		File source = getBndResource();
+		Map<String, String> changes = getDocumentChanges();
+
 		Processor dummy = new Processor(owner) {
 			@Override
-			public Set<String> getPropertyKeys(boolean inherit) {
-				if (inherit) {
-					return Collections.unmodifiableSet(inheritedKeysWithoutOwner);
+			public String getUnexpandedProperty(String key) {
+				if (changes.containsKey(key)) {
+					return actualProperties.getProperty(key);
 				}
-				return super.getPropertyKeys(false);
-			}
-
-			@Override
-			public String getProperty(String key, String deflt, String separator) {
-				if (!inheritedKeysWithoutOwner.contains(key))
-					return deflt;
-
-				if (expandMacros) {
-					return super.getProperty(key, deflt, separator);
-				} else {
-					return super.getUnprocessedProperty(key, deflt);
-				}
+				return super.getUnexpandedProperty(key);
 			}
 		};
 		dummy.setBase(owner.getBase());
 		dummy.setPropertiesFile(owner.getPropertiesFile());
 
-		if (expandMacros) {
-			currentProperties = currentProperties.replaceHere(dummy.getBase());
-		}
-		dummy.setProperties(currentProperties);
+		dummy.getProperties()
+			.putAll(actualProperties);
 		return dummy;
-	}
-
-	String changesToString() {
-		StringBuilder sb = new StringBuilder();
-		changesToSave.forEach((key, value) -> sb.append(key)
-			.append(':')
-			.append(' ')
-			.append(value)
-			.append('\n')
-			.append('\n'));
-		return sb.toString();
-	}
-
-	private String cleanup(String value) {
-		if (value == null)
-			return null;
-
-		return value.replaceAll("\\\\\n", "");
 	}
 
 	private static <E> List<E> disjunction(final Collection<E> collection, final Collection<?> remove) {
@@ -1661,4 +1647,19 @@ public class BndEditModel {
 		setOwner(project);
 	}
 
+	/**
+	 * Return the document properties
+	 */
+
+	public Properties getDocumentProperties() {
+		return documentProperties;
+	}
+
+	/**
+	 * Return if this model is handling effective properties (and this read only) or actual document properties.
+	 */
+
+	public boolean isEffective() {
+		return effective;
+	}
 }

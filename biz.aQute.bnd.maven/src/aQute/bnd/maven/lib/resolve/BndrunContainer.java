@@ -203,7 +203,9 @@ public class BndrunContainer {
 		run.setParent(getProcessor(workspace));
 		run.clear();
 		run.forceRefresh(); // setBase must be called after forceRefresh
-		run.setBase(temporaryDir);
+		// this should imho not be there, it should
+		// be the parent directory of the properties file, as it was.
+		// run.setBase(temporaryDir);
 		run.getInfo(workspace);
 		setRunrequiresFromProjectArtifact(run);
 		setEEfromBuild(run);

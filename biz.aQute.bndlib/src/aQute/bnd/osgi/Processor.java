@@ -643,14 +643,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return getProperty(key, null);
 	}
 
-	public String getUnexpandedProperty(String key) {
-		if (filter != null && filter.contains(key)) {
-			Object raw = getProperties().get(key);
-			return (raw instanceof String string) ? string : null;
-		}
-		return getProperties().getProperty(key);
-	}
-
 	public void mergeProperties(File file, boolean overwrite) {
 		if (file.isFile()) {
 			try {
@@ -975,18 +967,28 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Get a property without preprocessing it with a proper default
+	 * Get a property without preprocessing it with a proper default. This is
+	 * the ONLY place where we access the properties.
 	 *
 	 * @param key
 	 * @param deflt
 	 */
 
+	@Deprecated
 	public String getUnprocessedProperty(String key, String deflt) {
+		String v = getUnexpandedProperty(key);
+		if (v == null)
+			return deflt;
+		else
+			return v;
+	}
+
+	public String getUnexpandedProperty(String key) {
 		if (filter != null && filter.contains(key)) {
 			Object raw = getProperties().get(key);
-			return (raw instanceof String string) ? string : deflt;
+			return (raw instanceof String string) ? string : null;
 		}
-		return getProperties().getProperty(key, deflt);
+		return getProperties().getProperty(key, null);
 	}
 
 	/**

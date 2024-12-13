@@ -166,7 +166,9 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 
 	@Override
 	protected void doCommitToModel(List<Requirement> requires) {
-		model.setRunRequires(requires);
+		if (isDirty()) {
+			model.setRunRequires(requires);
+		}
 	}
 
 	@Override
