@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -21,12 +23,15 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.properties.Document;
+import aQute.lib.collections.ExtList;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
 
 public class BndEditModelTest {
 	static CapReqBuilder cp = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
@@ -275,6 +280,8 @@ public class BndEditModelTest {
 		"osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.runtime)',osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'"							//
 
 	);
+	static final Set<String>			EXISTING_KEYS	= Set.of("-runbundles", "-runrequires.debug",
+		"-runproperties.debug", "-include");
 
 	@Test
 	public void testBasicReproducer() throws Exception {
@@ -283,64 +290,58 @@ public class BndEditModelTest {
 		assertThat(run.getProperties()).containsExactlyInAnyOrderEntriesOf(PROPERTIES);
 		BndEditModel model = new BndEditModel(run);
 
-		assertThat(model.getAllPropertyNames()).containsExactlyInAnyOrder("-runbundles", "-runrequires.debug",
-			"-runproperties.debug", "-include");
+		assertThat(model.getAllPropertyNames()).containsAll(EXISTING_KEYS);
+
+		test("-runbundles", m -> m.setRunBundles(Collections.emptyList()), null);
+		test("-runfw", m -> m.setRunFw("foobar"), "foobar");
+		test("-runbundles", m -> m.setRunBundles(new ExtList<>(new VersionedClause("foobar"))), "foobar");
+		test("Bundle-Version", m -> m.setBundleVersion("1.2.3"), "1.2.3");
+		test("-runfw", m -> m.setRunFw(null), null);
 
 	}
 
-	@Test
-	public void testBasicReproducerRemove() throws Exception {
+	void test(String key, Consumer<BndEditModel> c, String value) throws Exception {
 		assertThat(DEBUG_BNDRUN).isFile();
 		Run run = Run.createRun(null, DEBUG_BNDRUN);
 		BndEditModel model = new BndEditModel(run);
+		String oldValue = PROPERTIES.get(key);
+		boolean isInFile = EXISTING_KEYS.contains(key);
 
-		assertThat(model.getProperties()
-			.getProperties()).containsKey("-runbundles");
 		assertThat(model.getDocumentChanges()).isEmpty();
-		assertThat(model.getDocumentProperties()
-			.keySet()).containsExactlyInAnyOrder("-runbundles", "-runrequires.debug", "-runproperties.debug",
-				"-include");
 
-		model.setRunBundles(Collections.emptyList());
+		c.accept(model);
 
-		assertThat(model.getRunBundles()).isEmpty();
-		assertThat(model.getDocumentChanges()).containsKey("-runbundles");
+		assertThat(model.getDocumentChanges()).containsEntry(key, value);
+		if (oldValue != null && isInFile)
+			assertThat(model.getDocumentProperties()).containsEntry(key, oldValue);
+
 		assertThat(model.getProperties()
-			.getProperties()).doesNotContainKey("-runbundles");
+			.getProperties()
+			.get(key)).isEqualTo(value);
 
 		Document d = new Document(IO.collect(DEBUG_BNDRUN));
-		assertThat(d.get()).contains("-runbundles");
+		UTF8Properties p = new UTF8Properties();
+		p.load(d.get(), null, null);
+
+		if (isInFile && oldValue != null)
+			assertThat(p.get(key)).isEqualTo(oldValue);
+		else
+			assertThat(p.get(key)).isNull();
 
 		model.saveChangesTo(d);
 
+		if (value != null) {
+			assertThat(d.get()).contains(value);
+		} else {
+			assertThat(d.get()).doesNotContain(key);
+		}
+
 		assertThat(model.getDocumentChanges()).isEmpty();
-		assertThat(d.get()).doesNotContain("-runbundles");
-		assertThat(model.getDocumentProperties()
-			.keySet()).containsExactlyInAnyOrder("-runrequires.debug", "-runproperties.debug", "-include");
-	}
+		if (value != null)
+			assertThat(model.getDocumentProperties()).containsEntry(key, value);
+		else
+			assertThat(model.getDocumentProperties()).doesNotContainKey(key);
 
-	@Test
-	public void testBasicReproducerAdd() throws Exception {
-		assertThat(DEBUG_BNDRUN).isFile();
-		Run run = Run.createRun(null, DEBUG_BNDRUN);
-		BndEditModel model = new BndEditModel(run);
-
-		assertThat(model.getProperties()
-			.getProperties()).doesNotContainKey("-runframework");
-
-		model.setRunFramework("none");
-
-		assertThat(model.getDocumentProperties()).doesNotContainKey("-runframework");
-
-		assertThat(model.getProperties()
-			.getProperties()).containsKey("-runframework");
-
-		assertThat(model.getRunFramework()).isEqualTo("none");
-		Document d = new Document(IO.collect(DEBUG_BNDRUN));
-		assertThat(d.get()).doesNotContain("-runframework");
-		model.saveChangesTo(d);
-		assertThat(model.getDocumentChanges()).isEmpty();
-		assertThat(d.get()).contains("-runframework");
 	}
 
 	private String getPortablePath(File base) {
