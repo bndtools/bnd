@@ -21,7 +21,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public abstract class ExtendedFormEditor extends FormEditor {
 
 	private ITextEditor		sourcePage;
-
 	private ImageDescriptor	baseImageDescriptor;
 	private Image			titleImage;
 
@@ -115,5 +114,6 @@ public abstract class ExtendedFormEditor extends FormEditor {
 	protected void setSourcePage(ITextEditor sourcePage) {
 		this.sourcePage = sourcePage;
 	}
+
 
 }
