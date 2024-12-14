@@ -14,6 +14,8 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Instructions;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
@@ -208,7 +210,16 @@ public class RunResolution {
 			newer = older;
 		}
 
-		model.setRunBundles(newer);
+		// Apply the -runbundles decorator on the computed RunBundles
+		Parameters bundles = HeaderClause.toParameters(newer);
+		Instructions decorator = new Instructions(project.mergeProperties(Constants.RUNBUNDLES_DECORATOR));
+		decorator.decorate(bundles);
+
+		List<VersionedClause> decorated = bundles.entrySet()
+			.stream().map(entry -> new VersionedClause(entry.getKey(), entry.getValue()))
+			.toList();
+
+		model.setRunBundles(decorated);
 
 		return true;
 	}

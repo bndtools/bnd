@@ -1,0 +1,9 @@
+-runfw: org.apache.felix.framework
+-runrequires: \
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.eventadmin)',\
+ 	osgi.identity;filter:='(osgi.identity=slf4j.api)'
+
+-runstartlevel: \
+     order = leastdependenciesfirst, \
+     begin = 1000, \
+     step  =    1
