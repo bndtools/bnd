@@ -201,3 +201,20 @@ ul .side-nav-section{
 pre.highlight {
   overflow: auto;
 }
+
+.header-link-wrapper{
+  visibility: hidden;
+  margin-left: 2px;
+  padding-left: 2px;
+}
+/* Show the icon link on hover */
+h1:hover .header-link-wrapper,
+h2:hover .header-link-wrapper,
+h3:hover .header-link-wrapper,
+h4:hover .header-link-wrapper {
+  visibility: visible;
+}
+.header-link{
+  color:#ccc !important
+}
+
