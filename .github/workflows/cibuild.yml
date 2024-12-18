@@ -70,7 +70,7 @@ jobs:
       with:
         fetch-depth: ${{ matrix.fetch-depth }}
     - name: Set up Java 8 + ${{ matrix.java }}
-      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b
+      uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b
       with:
         distribution: 'temurin'
         java-version: |
@@ -84,7 +84,7 @@ jobs:
         ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
     - name: Configure settings.xml for Publish
       if: ${{ matrix.canonical }}
-      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b
+      uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
