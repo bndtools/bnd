@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.conversions.NoopConverter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -500,6 +502,27 @@ public class RunResolutionTest {
 		assertThat(Utils.printHumanReadableDifference(set1, set2, "set1", "set2"))
 			.isEqualTo("[org.osgi.service.cm;version='[1.6.1,1.6.2)'] exist in set1 but missing in set2");
 
+	}
+
+	@Test
+	public void testStartLevelDecoration() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		bndrun.setProperty("-runstartlevel", "order=leastdependenciesfirst,begin=100,step=10");
+
+		// Decorate test.simple to get startlevel 90 (which would otherwise be 110 within the assigned runstartlevel).
+		bndrun.setProperty("-runbundles+", "test.simple;startlevel=90");
+
+		List<? extends HeaderClause> runBundles = List.copyOf(bndrun.resolve(false, false, new NoopConverter<>()));
+
+		assertThat(runBundles).hasSize(2);
+		assertThat(runBundles.get(0)
+			.getName()).isEqualTo("osgi.enroute.junit.wrapper");
+		assertThat(runBundles.get(0)
+			.getAttribs()).containsEntry(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE, "100");
+		assertThat(runBundles.get(1)
+			.getName()).isEqualTo("test.simple");
+		assertThat(runBundles.get(1)
+			.getAttribs()).containsEntry(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE, "90");
 	}
 
 }
