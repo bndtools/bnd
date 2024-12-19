@@ -15,11 +15,17 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -29,6 +35,7 @@ import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 
@@ -49,6 +56,7 @@ public class BndSourceEffectivePage extends FormPage {
 	private final BndEditor		bndEditor;
 	private BndEditModel	editModel;
 	private SourceViewer	viewer;
+	private TableViewer		tableViewer;
 	private StyledText	styledText;
 	private boolean		loading;
 
@@ -89,6 +97,29 @@ public class BndSourceEffectivePage extends FormPage {
 
 		activateFindAndReplace(viewer, getSite(), this);
 
+		// Table
+		Section section = managedForm.getToolkit()
+			.createSection(body, Section.TITLE_BAR | Section.EXPANDED);
+		section.setText("Sortable Table");
+		section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		Composite sectionClient = managedForm.getToolkit()
+			.createComposite(section, SWT.NONE);
+		sectionClient.setLayout(new org.eclipse.swt.layout.GridLayout(1, false));
+		managedForm.getToolkit()
+			.paintBordersFor(sectionClient);
+		section.setClient(sectionClient);
+
+		tableViewer = new TableViewer(sectionClient,
+			SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		Table table = tableViewer.getTable();
+		table.setHeaderVisible(true);
+		table.setLinesVisible(true);
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		createColumns();
+		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		tableViewer.setInput(getTableData());
 
 	}
 
@@ -196,5 +227,77 @@ public class BndSourceEffectivePage extends FormPage {
 		return super.getAdapter(adapter);
 	}
 
+	// Table
+	private void createColumns() {
+		String[] titles = {
+			"key", "value"
+		};
+		int[] bounds = {
+			100, 100
+		};
+
+		for (int i = 0; i < titles.length; i++) {
+			final TableViewerColumn column = new TableViewerColumn(tableViewer, SWT.NONE);
+			column.getColumn()
+				.setText(titles[i]);
+			column.getColumn()
+				.setWidth(bounds[i]);
+			column.getColumn()
+				.setResizable(true);
+			column.getColumn()
+				.setMoveable(true);
+
+			final int colNum = i;
+			column.setLabelProvider(new ColumnLabelProvider() {
+				@Override
+				public String getText(Object element) {
+					return String.valueOf(getColumnValue(element, colNum));
+				}
+			});
+
+			final int columnIndex = i;
+			column.getColumn()
+				.addListener(SWT.Selection, e -> {
+					// Comparator<Object> comparator = Comparator.comparing(obj
+					// -> getColumnValue(obj, columnIndex));
+					// tableViewer.setComparator(new
+					// ViewerComparator(comparator));
+				});
+		}
+	}
+
+	private Object getColumnValue(Object element, int columnIndex) {
+		if (element instanceof String[]) {
+			String[] row = (String[]) element;
+			return row[columnIndex];
+		}
+		return null;
+	}
+
+	private Object[] getTableData() {
+
+		try {
+
+			Processor p = new BndEditModel(editModel, true).getProperties();
+			Set<String> propertyKeys = p.getPropertyKeys(true);
+
+			Object[] result = new Object[propertyKeys.size()];
+			int index = 0;
+
+			for (String key : propertyKeys) {
+				String value = p.getProperty(key);
+				result[index] = new String[] {
+					key, value
+				};
+				index++;
+			}
+
+			return result;
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
+	}
 
 }
