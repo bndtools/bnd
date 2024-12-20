@@ -20,6 +20,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -76,6 +77,34 @@ public class BndSourceEffectivePage extends FormPage {
 		Composite body = form.getBody();
 		body.setLayout(new FillLayout());
 
+		// Create a SashForm for horizontal resizing
+		SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
+		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		createSourceViewer(managedForm, sashForm);
+		createTableViewer(managedForm, sashForm);
+
+		// Set the initial weights so each section takes half the space
+		sashForm.setWeights(new int[] {
+			1, 1
+		});
+
+	}
+
+	private void createSourceViewer(IManagedForm managedForm, Composite body) {
+
+		Section section = managedForm.getToolkit()
+			.createSection(body, Section.TITLE_BAR | Section.EXPANDED);
+		section.setText("Effective Source");
+		section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		Composite sectionClient = managedForm.getToolkit()
+			.createComposite(section, SWT.NONE);
+		sectionClient.setLayout(new org.eclipse.swt.layout.GridLayout(1, false));
+		managedForm.getToolkit()
+			.paintBordersFor(sectionClient);
+		section.setClient(sectionClient);
+
 		// ruler for line numbers
 		CompositeRuler ruler = new CompositeRuler();
 		LineNumberRulerColumn ln = new LineNumberRulerColumn();
@@ -83,13 +112,15 @@ public class BndSourceEffectivePage extends FormPage {
 			.getSystemColor(SWT.COLOR_DARK_GRAY));
 		ruler.addDecorator(0, ln);
 
-		this.viewer = new SourceViewer(body, ruler, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL) {
+		this.viewer = new SourceViewer(sectionClient, ruler, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL) {
 			@Override
 			protected boolean canPerformFind() {
 				return true;
 			}
 		};
 		viewer.setDocument(new Document());
+		viewer.getControl()
+			.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		viewer.configure(new BndSourceViewerConfiguration(bndEditor, JavaUI.getColorManager()));
 		styledText = viewer.getTextWidget();
 		styledText.setEditable(false);
@@ -97,7 +128,11 @@ public class BndSourceEffectivePage extends FormPage {
 
 		activateFindAndReplace(viewer, getSite(), this);
 
-		// Table
+		// Force layout to update
+		sectionClient.layout(true, true);
+	}
+
+	private void createTableViewer(IManagedForm managedForm, Composite body) {
 		Section section = managedForm.getToolkit()
 			.createSection(body, Section.TITLE_BAR | Section.EXPANDED);
 		section.setText("Sortable Table");
@@ -110,8 +145,9 @@ public class BndSourceEffectivePage extends FormPage {
 			.paintBordersFor(sectionClient);
 		section.setClient(sectionClient);
 
-		tableViewer = new TableViewer(sectionClient,
+		this.tableViewer = new TableViewer(sectionClient,
 			SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+
 		Table table = tableViewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
@@ -121,7 +157,10 @@ public class BndSourceEffectivePage extends FormPage {
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setInput(getTableData());
 
+		// Force layout to update
+		sectionClient.layout(true, true);
 	}
+
 
 	/**
 	 * Setup Eclipse's built in Search / Replace dialog. Also see
