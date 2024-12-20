@@ -1,5 +1,7 @@
 package bndtools.editor;
 
+import java.io.File;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -43,6 +45,7 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.PropertyKey;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 
 /**
@@ -71,6 +74,9 @@ public class BndSourceEffectivePage extends FormPage {
 	protected void createFormContent(IManagedForm managedForm) {
 		FormToolkit toolkit = managedForm.getToolkit();
 		ScrolledForm scrolledForm = managedForm.getForm();
+		scrolledForm.setExpandHorizontal(true);
+		scrolledForm.setExpandVertical(true);
+
 		Form form = scrolledForm.getForm();
 		toolkit.setBorderStyle(SWT.NULL);
 
@@ -128,8 +134,6 @@ public class BndSourceEffectivePage extends FormPage {
 
 		activateFindAndReplace(viewer, getSite(), this);
 
-		// Force layout to update
-		sectionClient.layout(true, true);
 	}
 
 	private void createTableViewer(IManagedForm managedForm, Composite body) {
@@ -157,8 +161,6 @@ public class BndSourceEffectivePage extends FormPage {
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setInput(getTableData());
 
-		// Force layout to update
-		sectionClient.layout(true, true);
 	}
 
 
@@ -269,10 +271,10 @@ public class BndSourceEffectivePage extends FormPage {
 	// Table
 	private void createColumns() {
 		String[] titles = {
-			"key", "value"
+			"key", "value", "path"
 		};
 		int[] bounds = {
-			100, 100
+			100, 200, 200
 		};
 
 		for (int i = 0; i < titles.length; i++) {
@@ -318,15 +320,26 @@ public class BndSourceEffectivePage extends FormPage {
 		try {
 
 			Processor p = new BndEditModel(editModel, true).getProperties();
-			Set<String> propertyKeys = p.getPropertyKeys(true);
+			// Set<String> propertyKeys = p.getPropertyKeys(true);
+			List<PropertyKey> propertyKeys = p.getPropertyKeys(k -> true);
 
 			Object[] result = new Object[propertyKeys.size()];
 			int index = 0;
 
-			for (String key : propertyKeys) {
+			for (PropertyKey prop : propertyKeys) {
+				String key = prop.key();
 				String value = p.getProperty(key);
+				String path = "";
+				if (!prop.isLocalTo(p)) {
+					File propertiesFile = prop.processor()
+						.getPropertiesFile();
+					if (propertiesFile != null) {
+						path = propertiesFile.getAbsolutePath();
+
+					}
+				}
 				result[index] = new String[] {
-					key, value
+					key, value, path
 				};
 				index++;
 			}
