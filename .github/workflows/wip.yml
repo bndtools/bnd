@@ -28,7 +28,7 @@ jobs:
       GRADLE_PUBLISH_KEY:    ${{ secrets.GRADLE_PUBLISH_KEY}}
     steps:
     - name: set up java
-      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b
+      uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b
       with:
         distribution: 'temurin'
         java-version: |
