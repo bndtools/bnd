@@ -9,6 +9,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
@@ -19,6 +23,9 @@ import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
@@ -30,8 +37,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
@@ -40,6 +50,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 
 import aQute.bnd.build.model.BndEditModel;
@@ -161,6 +172,42 @@ public class BndSourceEffectivePage extends FormPage {
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setInput(getTableData());
 
+		tableViewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(DoubleClickEvent event) {
+				IStructuredSelection selection = tableViewer.getStructuredSelection();
+				String[] selectedItem = (String[]) selection.getFirstElement();
+				if (selectedItem != null) {
+					String fpath = selectedItem[2];
+					if (fpath == null || fpath.isBlank()) {
+						return;
+					}
+
+					// System.out.println("Double-clicked on: " +
+					// fpath.toString());
+					IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+						.getRoot();
+
+					File file = new File(fpath);
+					org.eclipse.core.runtime.IPath path = new Path(file.getAbsolutePath());
+					IFile iFile = root.getFileForLocation(path);
+					if (iFile == null) {
+						// File is not in the workspace. You cannot directly get
+						// an IFile for it.
+					}
+					IEditorInput input = new FileEditorInput(iFile);
+					try {
+						PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow()
+							.getActivePage()
+							.openEditor(input, BndEditor.WORKSPACE_EDITOR);
+					} catch (PartInitException e) {
+						throw Exceptions.duck(e);
+					}
+				}
+			}
+		});
+
 	}
 
 
@@ -246,6 +293,7 @@ public class BndSourceEffectivePage extends FormPage {
 			String text = print(editModel);
 			viewer.setDocument(new Document(text));
 			styledText.setFocus();
+			tableViewer.setInput(getTableData());
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -274,7 +322,7 @@ public class BndSourceEffectivePage extends FormPage {
 			"key", "value", "path"
 		};
 		int[] bounds = {
-			100, 200, 200
+			200, 300, 300
 		};
 
 		for (int i = 0; i < titles.length; i++) {
@@ -330,12 +378,15 @@ public class BndSourceEffectivePage extends FormPage {
 				String key = prop.key();
 				String value = p.getProperty(key);
 				String path = "";
-				if (!prop.isLocalTo(p)) {
+				if (!prop.isLocalTo(editModel.getOwner())) {
 					File propertiesFile = prop.processor()
 						.getPropertiesFile();
 					if (propertiesFile != null) {
-						path = propertiesFile.getAbsolutePath();
-
+						path = propertiesFile.getPath();
+						// .replaceAll(prop.processor()
+						// .getBase()
+						// .getPath(), "")
+						// .substring(1);
 					}
 				}
 				result[index] = new String[] {
