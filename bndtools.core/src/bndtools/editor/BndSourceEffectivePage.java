@@ -29,10 +29,14 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
@@ -48,7 +52,6 @@ import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.FindReplaceAction;
@@ -70,9 +73,12 @@ public class BndSourceEffectivePage extends FormPage {
 
 	private final BndEditor		bndEditor;
 	private BndEditModel	editModel;
-	private SourceViewer	viewer;
+	private SourceViewer	sourceViewer;
 	private TableViewer		tableViewer;
 	private StyledText	styledText;
+	private Button			toggleButton;
+	private Composite		viewersComposite;
+	private StackLayout		stackLayout;
 	private boolean		loading;
 
 	public BndSourceEffectivePage(FormEditor formEditor, String id, String title) {
@@ -88,39 +94,59 @@ public class BndSourceEffectivePage extends FormPage {
 		scrolledForm.setExpandHorizontal(true);
 		scrolledForm.setExpandVertical(true);
 
+
 		Form form = scrolledForm.getForm();
 		toolkit.setBorderStyle(SWT.NULL);
 
-		Composite body = form.getBody();
-		body.setLayout(new FillLayout());
+		Composite body = scrolledForm.getBody();
+		body.setLayout(new GridLayout(1, false));
 
-		// Create a SashForm for horizontal resizing
-		SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
-		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		// Create toggle button
+		toggleButton = toolkit.createButton(body, "Toggle View", SWT.PUSH);
+		toggleButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
-		createSourceViewer(managedForm, sashForm);
-		createTableViewer(managedForm, sashForm);
+		// Create composite for viewers
+		viewersComposite = toolkit.createComposite(body);
+		viewersComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		stackLayout = new StackLayout() {
+			@Override
+			protected Point computeSize(Composite composite, int wHint, int hHint, boolean flushCache) {
+				Point size = super.computeSize(composite, wHint, hHint, flushCache);
+				// hack to make sure styledText never grows outside of body
+				size.y = SWT.DEFAULT;
+				return size;
+			}
+		};
+		viewersComposite.setLayout(stackLayout);
 
-		// Set the initial weights so each section takes half the space
-		sashForm.setWeights(new int[] {
-			1, 1
+		createSourceViewer(managedForm, viewersComposite);
+		createTableViewer(managedForm, viewersComposite);
+
+		// Set initial view
+		stackLayout.topControl = sourceViewer.getControl();
+
+		// Add toggle button listener
+		toggleButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (stackLayout.topControl == sourceViewer.getControl()) {
+					stackLayout.topControl = tableViewer.getControl();
+					toggleButton.setText("Show Source");
+				} else {
+					stackLayout.topControl = sourceViewer.getControl();
+					toggleButton.setText("Show Table");
+				}
+				viewersComposite.layout();
+			}
 		});
 
+		// Initial layout update
+		viewersComposite.layout();
+		scrolledForm.reflow(true);
 	}
 
 	private void createSourceViewer(IManagedForm managedForm, Composite body) {
 
-		Section section = managedForm.getToolkit()
-			.createSection(body, Section.TITLE_BAR | Section.EXPANDED);
-		section.setText("Effective Source");
-		section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-		Composite sectionClient = managedForm.getToolkit()
-			.createComposite(section, SWT.NONE);
-		sectionClient.setLayout(new org.eclipse.swt.layout.GridLayout(1, false));
-		managedForm.getToolkit()
-			.paintBordersFor(sectionClient);
-		section.setClient(sectionClient);
 
 		// ruler for line numbers
 		CompositeRuler ruler = new CompositeRuler();
@@ -129,38 +155,36 @@ public class BndSourceEffectivePage extends FormPage {
 			.getSystemColor(SWT.COLOR_DARK_GRAY));
 		ruler.addDecorator(0, ln);
 
-		this.viewer = new SourceViewer(sectionClient, ruler, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL) {
+		this.sourceViewer = new SourceViewer(body, ruler, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL) {
 			@Override
 			protected boolean canPerformFind() {
 				return true;
 			}
 		};
-		viewer.setDocument(new Document());
-		viewer.getControl()
-			.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		viewer.configure(new BndSourceViewerConfiguration(bndEditor, JavaUI.getColorManager()));
-		styledText = viewer.getTextWidget();
+
+		GridData sourceViewerLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		sourceViewerLayoutData.heightHint = 100; // Set to 100 pixels high
+
+		sourceViewer.setDocument(new Document());
+		sourceViewer.getControl()
+			.setLayoutData(sourceViewerLayoutData);
+		sourceViewer.configure(new BndSourceViewerConfiguration(bndEditor, JavaUI.getColorManager()));
+		styledText = sourceViewer.getTextWidget();
 		styledText.setEditable(false);
 		styledText.setFont(JFaceResources.getTextFont());
+		styledText.setAlwaysShowScrollBars(true);
 
-		activateFindAndReplace(viewer, getSite(), this);
+		activateFindAndReplace(sourceViewer, getSite(), this);
+
+		sourceViewer.getControl()
+			.getParent()
+			.layout(true, true);
 
 	}
 
 	private void createTableViewer(IManagedForm managedForm, Composite body) {
-		Section section = managedForm.getToolkit()
-			.createSection(body, Section.TITLE_BAR | Section.EXPANDED);
-		section.setText("Sortable Table");
-		section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Composite sectionClient = managedForm.getToolkit()
-			.createComposite(section, SWT.NONE);
-		sectionClient.setLayout(new org.eclipse.swt.layout.GridLayout(1, false));
-		managedForm.getToolkit()
-			.paintBordersFor(sectionClient);
-		section.setClient(sectionClient);
-
-		this.tableViewer = new TableViewer(sectionClient,
+		this.tableViewer = new TableViewer(body,
 			SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
 		Table table = tableViewer.getTable();
@@ -208,6 +232,9 @@ public class BndSourceEffectivePage extends FormPage {
 			}
 		});
 
+		tableViewer.getControl()
+			.getParent()
+			.layout(true, true);
 	}
 
 
@@ -291,7 +318,7 @@ public class BndSourceEffectivePage extends FormPage {
 		loading = true;
 		try {
 			String text = print(editModel);
-			viewer.setDocument(new Document(text));
+			sourceViewer.setDocument(new Document(text));
 			styledText.setFocus();
 			tableViewer.setInput(getTableData());
 		} catch (Exception e) {
@@ -311,7 +338,7 @@ public class BndSourceEffectivePage extends FormPage {
 	public <T> T getAdapter(Class<T> adapter) {
 		if (IFindReplaceTarget.class.equals(adapter)) {
 			// needed for find/replace via CMD+F / Ctrl+F
-			return (T) viewer.getFindReplaceTarget();
+			return (T) sourceViewer.getFindReplaceTarget();
 		}
 		return super.getAdapter(adapter);
 	}
