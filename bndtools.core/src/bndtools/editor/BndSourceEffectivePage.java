@@ -102,7 +102,7 @@ public class BndSourceEffectivePage extends FormPage {
 		body.setLayout(new GridLayout(1, false));
 
 		// Create toggle button
-		toggleButton = toolkit.createButton(body, "Toggle View", SWT.PUSH);
+		toggleButton = toolkit.createButton(body, "Show as Source", SWT.PUSH);
 		toggleButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
 		// Create composite for viewers
@@ -123,7 +123,7 @@ public class BndSourceEffectivePage extends FormPage {
 		createTableViewer(managedForm, viewersComposite);
 
 		// Set initial view
-		stackLayout.topControl = sourceViewer.getControl();
+		stackLayout.topControl = tableViewer.getControl();
 
 		// Add toggle button listener
 		toggleButton.addSelectionListener(new SelectionAdapter() {
@@ -131,10 +131,10 @@ public class BndSourceEffectivePage extends FormPage {
 			public void widgetSelected(SelectionEvent e) {
 				if (stackLayout.topControl == sourceViewer.getControl()) {
 					stackLayout.topControl = tableViewer.getControl();
-					toggleButton.setText("Show Source");
+					toggleButton.setText("Show as Source");
 				} else {
 					stackLayout.topControl = sourceViewer.getControl();
-					toggleButton.setText("Show Table");
+					toggleButton.setText("Show as Table");
 				}
 				viewersComposite.layout();
 			}
