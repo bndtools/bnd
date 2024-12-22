@@ -395,13 +395,17 @@ public class BndSourceEffectivePage extends FormPage {
 		try {
 
 			Processor p = new BndEditModel(editModel, true).getProperties();
-			// Set<String> propertyKeys = p.getPropertyKeys(true);
 			List<PropertyKey> propertyKeys = p.getPropertyKeys(k -> true);
 
-			Object[] result = new Object[propertyKeys.size()];
+			// avoid duplicates because Project is parent of bnd.bnd and also
+			// gets the same properties
+			// but with higher floor
+			List<PropertyKey> visible = PropertyKey.findVisible(propertyKeys);
+
+			Object[] result = new Object[visible.size()];
 			int index = 0;
 
-			for (PropertyKey prop : propertyKeys) {
+			for (PropertyKey prop : visible) {
 				String key = prop.key();
 				String value = p.getProperty(key);
 				String path = "";
