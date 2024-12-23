@@ -200,15 +200,14 @@ public class BndSourceEffectivePage extends FormPage {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				IStructuredSelection selection = tableViewer.getStructuredSelection();
-				String[] selectedItem = (String[]) selection.getFirstElement();
-				if (selectedItem != null) {
-					String fpath = selectedItem[2];
+				Object firstElement = selection.getFirstElement();
+
+				if(firstElement instanceof PropertyKey prop) {
+					String fpath = getPropertyKeyPath(prop);
 					if (fpath == null || fpath.isBlank()) {
 						return;
 					}
 
-					// System.out.println("Double-clicked on: " +
-					// fpath.toString());
 					IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
 						.getRoot();
 
@@ -367,7 +366,7 @@ public class BndSourceEffectivePage extends FormPage {
 			column.setLabelProvider(new ColumnLabelProvider() {
 				@Override
 				public String getText(Object element) {
-					return String.valueOf(getColumnValue(element, colNum));
+					return String.valueOf(getColumnContent(element, titles[colNum]));
 				}
 			});
 
@@ -382,12 +381,55 @@ public class BndSourceEffectivePage extends FormPage {
 		}
 	}
 
-	private Object getColumnValue(Object element, int columnIndex) {
-		if (element instanceof String[]) {
-			String[] row = (String[]) element;
-			return row[columnIndex];
+	private Object getColumnContent(Object element, String colName) {
+		if (element instanceof PropertyKey prop) {
+			switch (colName) {
+				case "key" : return prop.key();
+				case "value" :
+					return prop.processor()
+						.getProperty(prop.key());
+				case "path" : {
+					String path = getPropertyKeyPath(prop);
+					if (path.isBlank()) {
+						return path;
+					}
+
+					if (path.equals(prop.processor()
+						.getBase()
+						.getPath())) {
+						return "-same-";
+					}
+
+					// cut the beginning to get only e.g. /cnf/build.bnd instead
+					// of absolute path
+					return path.replaceAll(prop.processor()
+						.getBase()
+						.getPath(), "")
+						.substring(1);
+				}
+
+				default :
+					throw new IllegalArgumentException("Unknown column: " + colName);
+			}
+
 		}
 		return null;
+	}
+
+	private String getPropertyKeyPath(PropertyKey prop) {
+		String path = "";
+		if (!prop.isLocalTo(editModel.getOwner())) {
+			File propertiesFile = prop.processor()
+				.getPropertiesFile();
+			if (propertiesFile != null) {
+				path = propertiesFile.getPath();
+				// .replaceAll(prop.processor()
+				// .getBase()
+				// .getPath(), "")
+				// .substring(1);
+			}
+		}
+		return path;
 	}
 
 	private Object[] getTableData() {
@@ -406,23 +448,7 @@ public class BndSourceEffectivePage extends FormPage {
 			int index = 0;
 
 			for (PropertyKey prop : visible) {
-				String key = prop.key();
-				String value = p.getProperty(key);
-				String path = "";
-				if (!prop.isLocalTo(editModel.getOwner())) {
-					File propertiesFile = prop.processor()
-						.getPropertiesFile();
-					if (propertiesFile != null) {
-						path = propertiesFile.getPath();
-						// .replaceAll(prop.processor()
-						// .getBase()
-						// .getPath(), "")
-						// .substring(1);
-					}
-				}
-				result[index] = new String[] {
-					key, value, path
-				};
+				result[index] = prop;
 				index++;
 			}
 
