@@ -394,12 +394,6 @@ public class BndSourceEffectivePage extends FormPage {
 						return path;
 					}
 
-					if (path.equals(prop.processor()
-						.getBase()
-						.getPath())) {
-						return "-same-";
-					}
-
 					// cut the beginning to get only e.g. /cnf/build.bnd instead
 					// of absolute path
 					return path.replaceAll(prop.processor()
@@ -418,16 +412,11 @@ public class BndSourceEffectivePage extends FormPage {
 
 	private String getPropertyKeyPath(PropertyKey prop) {
 		String path = "";
-		if (!prop.isLocalTo(editModel.getOwner())) {
-			File propertiesFile = prop.processor()
-				.getPropertiesFile();
-			if (propertiesFile != null) {
-				path = propertiesFile.getPath();
-				// .replaceAll(prop.processor()
-				// .getBase()
-				// .getPath(), "")
-				// .substring(1);
-			}
+
+		File propertiesFile = prop.processor()
+			.getPropertiesFile();
+		if (propertiesFile != null) {
+			path = propertiesFile.getPath();
 		}
 		return path;
 	}
