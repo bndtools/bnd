@@ -41,7 +41,7 @@ jobs:
       with:
         ref: next
     - name: Set up Ruby
-      uses: ruby/setup-ruby@540484a3c0f308b08619664ec40bf6c371d172c3
+      uses: ruby/setup-ruby@bfefad842bb982ff05b233bcbc1571d97a87e69f
       with:
         ruby-version: 2.7
         bundler-cache: true
