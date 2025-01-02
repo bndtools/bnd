@@ -220,6 +220,10 @@ public class Analyzer extends Processor {
 
 			doPlugins();
 
+			// Conditional packages
+
+			doConditionalPackages();
+
 			//
 			// calculate class versions in use
 			//
@@ -476,9 +480,6 @@ public class Analyzer extends Processor {
 			logger.debug("activator {} {}", s, activator);
 		}
 
-		// Conditional packages
-
-		doConditionalPackages();
 	}
 
 	/**

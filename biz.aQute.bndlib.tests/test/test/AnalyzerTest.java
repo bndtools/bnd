@@ -52,7 +52,6 @@ class T3 extends T2 {}
 public class AnalyzerTest {
 	static File cwd = new File(System.getProperty("user.dir"));
 
-
 	/**
 	 * Verify that the manifest overrides a version in a package info
 	 */
@@ -318,6 +317,32 @@ public class AnalyzerTest {
 				"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 		} finally {
 			b.close();
+		}
+	}
+
+	/**
+	 * Check if bnd handles blueprint
+	 */
+
+	@Test
+	public void testBlueprintReferences() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(new File("bin_test"));
+			b.setIncludeResource(
+				"""
+					OSGI-INF/blueprint/blueprint.xml;literal='<blueprint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+						xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+						xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+						<bean id="fw" class="org.osgi.framework.Framework"/>
+						<bean id="ea" class="org.osgi.service.event.EventAdmin" factory-method="newBuilder"/>
+					</blueprint>'""");
+			b.setConditionalPackage("org.osgi.*");
+			b.setProperty("-plugin", "aQute.lib.spring.SpringXMLType");
+			Jar jar = b.build();
+			assertTrue(b.check());
+			assertThat(jar.getResources()).containsKey("org/osgi/service/event/packageinfo");
+			assertThat(jar.getResources()).containsKey("org/osgi/framework/packageinfo");
 		}
 	}
 
