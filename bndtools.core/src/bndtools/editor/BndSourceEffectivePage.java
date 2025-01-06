@@ -1,9 +1,12 @@
 package bndtools.editor;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -22,24 +25,30 @@ import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
@@ -56,10 +65,12 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.PropertyKey;
+import bndtools.central.Central;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 
 /**
@@ -70,16 +81,15 @@ import bndtools.editor.completion.BndSourceViewerConfiguration;
  */
 public class BndSourceEffectivePage extends FormPage {
 
-
-	private final BndEditor		bndEditor;
+	private final BndEditor	bndEditor;
 	private BndEditModel	editModel;
 	private SourceViewer	sourceViewer;
 	private TableViewer		tableViewer;
-	private StyledText	styledText;
+	private StyledText		styledText;
 	private Button			toggleButton;
 	private Composite		viewersComposite;
 	private StackLayout		stackLayout;
-	private boolean		loading;
+	private boolean			loading;
 
 	public BndSourceEffectivePage(FormEditor formEditor, String id, String title) {
 		super(formEditor, id, title);
@@ -93,7 +103,6 @@ public class BndSourceEffectivePage extends FormPage {
 		ScrolledForm scrolledForm = managedForm.getForm();
 		scrolledForm.setExpandHorizontal(true);
 		scrolledForm.setExpandVertical(true);
-
 
 		Form form = scrolledForm.getForm();
 		toolkit.setBorderStyle(SWT.NULL);
@@ -147,7 +156,6 @@ public class BndSourceEffectivePage extends FormPage {
 
 	private void createSourceViewer(IManagedForm managedForm, Composite body) {
 
-
 		// ruler for line numbers
 		CompositeRuler ruler = new CompositeRuler();
 		LineNumberRulerColumn ln = new LineNumberRulerColumn();
@@ -187,12 +195,13 @@ public class BndSourceEffectivePage extends FormPage {
 		this.tableViewer = new TableViewer(body,
 			SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
+
 		Table table = tableViewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		createColumns();
+		int[] widths = createColumns(tableViewer);
+
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setInput(getTableData());
 
@@ -200,42 +209,86 @@ public class BndSourceEffectivePage extends FormPage {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				IStructuredSelection selection = tableViewer.getStructuredSelection();
-				Object firstElement = selection.getFirstElement();
-
-				if(firstElement instanceof PropertyKey prop) {
-					String fpath = getPropertyKeyPath(prop);
-					if (fpath == null || fpath.isBlank()) {
-						return;
-					}
-
-					IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
-						.getRoot();
-
-					File file = new File(fpath);
-					org.eclipse.core.runtime.IPath path = new Path(file.getAbsolutePath());
-					IFile iFile = root.getFileForLocation(path);
-					if (iFile == null) {
-						// File is not in the workspace. You cannot directly get
-						// an IFile for it.
-					}
-					IEditorInput input = new FileEditorInput(iFile);
-					try {
-						PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow()
-							.getActivePage()
-							.openEditor(input, BndEditor.WORKSPACE_EDITOR);
-					} catch (PartInitException e) {
-						throw Exceptions.duck(e);
-					}
+				for (Object element : selection.toList()) {
+					open(element);
 				}
 			}
 		});
 
 		tableViewer.getControl()
+			.addControlListener(new ControlListener() {
+
+				@Override
+				public void controlResized(ControlEvent arg0) {
+					Rectangle rect = tableViewer.getTable()
+						.getClientArea();
+					if (rect.width > 0) {
+						int total = rect.width;
+						int selected = -1;
+
+						for (int i = 0; i < widths.length; i++) {
+							TableColumn column = tableViewer.getTable()
+								.getColumn(i);
+							int w = widths[i];
+							if (w > 0) {
+								total -= column.getWidth();
+								continue;
+							}
+							selected = i;
+						}
+						if (selected >= 0) {
+							TableColumn column = tableViewer.getTable()
+								.getColumn(selected);
+							int minwidth = -widths[selected];
+							if (minwidth < total) {
+								column.setWidth(total);
+							} else {
+								column.setWidth(minwidth);
+							}
+						}
+					}
+				}
+
+				@Override
+				public void controlMoved(ControlEvent arg0) {
+				}
+			});
+		tableViewer.getControl()
 			.getParent()
 			.layout(true, true);
 	}
 
+	private void open(Object element) {
+		if (element instanceof PropertyKey prop) {
+			String fpath = prop.getProvenance()
+				.orElse(null);
+			if (fpath == null || fpath.isBlank()) {
+				return;
+			}
+			IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+				.getRoot();
+
+			File file = new File(fpath);
+			if (!file.isFile()) {
+				return;
+			}
+
+			org.eclipse.core.runtime.IPath path = new Path(file.getAbsolutePath());
+			IFile iFile = root.getFileForLocation(path);
+			if (iFile == null || !iFile.exists()) {
+				return;
+			}
+			IEditorInput input = new FileEditorInput(iFile);
+			try {
+				PlatformUI.getWorkbench()
+					.getActiveWorkbenchWindow()
+					.getActivePage()
+					.openEditor(input, BndEditor.WORKSPACE_EDITOR);
+			} catch (PartInitException e) {
+				throw Exceptions.duck(e);
+			}
+		}
+	}
 
 	/**
 	 * Setup Eclipse's built in Search / Replace dialog. Also see
@@ -245,8 +298,7 @@ public class BndSourceEffectivePage extends FormPage {
 	 * @param site
 	 * @param page
 	 */
-	private static void activateFindAndReplace(TextViewer textViewer, IWorkbenchPartSite site,
-		IWorkbenchPart page) {
+	private static void activateFindAndReplace(TextViewer textViewer, IWorkbenchPartSite site, IWorkbenchPart page) {
 		FindReplaceAction findReplaceAction = new FindReplaceAction(
 			ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"), "Editor.FindReplace.",
 			page);
@@ -265,7 +317,6 @@ public class BndSourceEffectivePage extends FormPage {
 		handlerService.activateHandler("org.eclipse.ui.edit.findReplace", handler);
 	}
 
-
 	@Override
 	public boolean isEditor() {
 		return true;
@@ -279,8 +330,7 @@ public class BndSourceEffectivePage extends FormPage {
 
 		if (active) {
 			update();
-		} else {
-		}
+		} else {}
 	}
 
 	private static String print(BndEditModel model) throws Exception {
@@ -308,7 +358,6 @@ public class BndSourceEffectivePage extends FormPage {
 		}
 
 	}
-
 
 	private void update() {
 		if (loading || styledText == null || !isActive()) {
@@ -342,111 +391,114 @@ public class BndSourceEffectivePage extends FormPage {
 		return super.getAdapter(adapter);
 	}
 
-	// Table
-	private void createColumns() {
-		String[] titles = {
-			"key", "value", "path"
-		};
-		int[] bounds = {
-			200, 300, 300
-		};
+	private int[] createColumns(TableViewer tableViewer) {
+		record ColSpec(String title, int width, Function<PropertyKey, String> label,
+			Function<PropertyKey, String> tooltip) {}
 
-		for (int i = 0; i < titles.length; i++) {
+		ColSpec[] specs = {
+			new ColSpec("Key", 150, PropertyKey::key, null), //
+			new ColSpec("Value", -250, PropertyKey::getRawValue, this::getExpandedValue), //
+			new ColSpec("Provenance", 150, this::toPath, null), //
+		};
+		int[] widths = new int[specs.length];
+		ColumnViewerToolTipSupport.enableFor(tableViewer);
+		tableViewer.addDoubleClickListener(event -> {
+			System.out.println(event);
+		});
+		int colIndex = 0;
+		for (ColSpec spec : specs) {
 			final TableViewerColumn column = new TableViewerColumn(tableViewer, SWT.NONE);
-			column.getColumn()
-				.setText(titles[i]);
-			column.getColumn()
-				.setWidth(bounds[i]);
-			column.getColumn()
-				.setResizable(true);
-			column.getColumn()
-				.setMoveable(true);
+			TableColumn tc = column.getColumn();
+			tc.setText(spec.title);
+			tc.setResizable(true);
+			tc.setMoveable(true);
 
-			final int colNum = i;
-			column.setLabelProvider(new ColumnLabelProvider() {
+			column.setLabelProvider(new CellLabelProvider() {
 				@Override
-				public String getText(Object element) {
-					return String.valueOf(getColumnContent(element, titles[colNum]));
+				public void update(ViewerCell cell) {
+					Object element = cell.getElement();
+					if (element instanceof PropertyKey pkey) {
+						String text = spec.label != null ? spec.label.apply(pkey) : null;
+						cell.setText(text);
+					}
+				}
+
+				@Override
+				public String getToolTipText(Object element) {
+					if (spec.tooltip != null && element instanceof PropertyKey pkey) {
+						String s = spec.tooltip.apply(pkey);
+						if (s != null && s.length() > 30) {
+							return BndEditModel.format(pkey.key(), s);
+						} else
+							return s;
+					}
+					return null;
 				}
 			});
-
-			final int columnIndex = i;
-			column.getColumn()
-				.addListener(SWT.Selection, e -> {
-					// Comparator<Object> comparator = Comparator.comparing(obj
-					// -> getColumnValue(obj, columnIndex));
-					// tableViewer.setComparator(new
-					// ViewerComparator(comparator));
-				});
+			tc.setWidth(spec.width < 0 ? -spec.width : spec.width);
+			widths[colIndex] = spec.width;
+			colIndex++;
 		}
+		return widths;
 	}
 
-	private Object getColumnContent(Object element, String colName) {
+	private String getExpandedValue(PropertyKey k) {
+		Processor p = getProperties();
+		return p.getProperty(k.key());
+	}
+
+	private String toPath(Object element) {
 		if (element instanceof PropertyKey prop) {
-			switch (colName) {
-				case "key" : return prop.key();
-				case "value" :
-					return prop.processor()
-						.getProperty(prop.key());
-				case "path" : {
-					String path = getPropertyKeyPath(prop);
-					if (path.isBlank()) {
-						return path;
-					}
 
-					// cut the beginning to get only e.g. /cnf/build.bnd instead
-					// of absolute path
-					return path.replaceAll(prop.processor()
-						.getBase()
-						.getPath(), "")
-						.substring(1);
-				}
-
-				default :
-					throw new IllegalArgumentException("Unknown column: " + colName);
+			String path = prop.getProvenance()
+				.orElse(null);
+			if (path == null || path.isBlank()) {
+				return "";
 			}
 
+			File file = new File(path);
+			if (!file.isFile())
+				return path;
+
+			Workspace workspace = Central.getWorkspaceIfPresent();
+			if (workspace == null)
+				return path;
+
+			URI wsbase = workspace.getBase()
+				.toURI();
+			URI fbase = file.toURI();
+			URI relative = wsbase.relativize(fbase);
+			return relative.getPath();
 		}
-		return null;
+		return "";
 	}
 
-	private String getPropertyKeyPath(PropertyKey prop) {
-		String path = "";
-
-		File propertiesFile = prop.processor()
-			.getPropertiesFile();
-		if (propertiesFile != null) {
-			path = propertiesFile.getPath();
-		}
-		return path;
-	}
-
-	private Object[] getTableData() {
+	Object[] getTableData() {
 
 		try {
-
-			Processor p = new BndEditModel(editModel, true).getProperties();
+			Processor p = getProperties();
 			List<PropertyKey> propertyKeys = p.getPropertyKeys(k -> true);
-
-			// avoid duplicates because Project is parent of bnd.bnd and also
-			// gets the same properties
-			// but with higher floor
 			List<PropertyKey> visible = PropertyKey.findVisible(propertyKeys);
-
-			Object[] result = new Object[visible.size()];
-			int index = 0;
-
-			for (PropertyKey prop : visible) {
-				result[index] = prop;
-				index++;
-			}
-
-			return result;
+			return visible.toArray();
 
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 
+	}
+
+	Processor getProperties() {
+		Map<String, String> changes = editModel.getDocumentChanges();
+		Processor p = new Processor(editModel.getOwner()) {
+			@Override
+			public String getUnexpandedProperty(String key) {
+				if (changes.containsKey(key)) {
+					return changes.get(key);
+				}
+				return super.getUnexpandedProperty(key);
+			}
+		};
+		return p;
 	}
 
 }

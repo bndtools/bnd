@@ -151,8 +151,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		} else {
 			requiredPageIds.addAll(getPagesBnd(path));
 		}
-		requiredPageIds.add(SOURCE_PAGE);
 		requiredPageIds.add(SOURCE_PAGE_EFFECTIVE);
+		requiredPageIds.add(SOURCE_PAGE);
 
 		// Remove pages no longer required and remember the rest in a map
 		int i = 0;
