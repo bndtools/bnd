@@ -523,15 +523,13 @@ public interface Constants {
 	 * Headers that if **all** are absent will trigger the -includepackage
 	 * `*;from:=project` (include all packages from the project's output.
 	 */
-	Set<String>	EXPAND_HEADERS							= Sets.of(
-		Constants.RESOURCEONLY, Constants.INCLUDEPACKAGE, Constants.PRIVATE_PACKAGE, Constants.PRIVATEPACKAGE,
-		Constants.EXPORT_PACKAGE
-	);
+	Set<String>	EXPAND_HEADERS								= Sets.of(Constants.RESOURCEONLY, Constants.INCLUDEPACKAGE,
+		Constants.PRIVATE_PACKAGE, Constants.PRIVATEPACKAGE, Constants.EXPORT_PACKAGE);
 
 	/**
 	 * Marker resource set by the ProjectBuilder to mark a JAR as the project
-	 * output's entry in the classpath. Used for the
-	 * {@link #EXPAND_HEADERS} processing.
+	 * output's entry in the classpath. Used for the {@link #EXPAND_HEADERS}
+	 * processing.
 	 */
 	String		PROJECT_MARKER								= "META-INF/.project";
 
@@ -580,7 +578,6 @@ public interface Constants {
 	String		SERVICELOADER_REGISTER_DIRECTIVE			= "register:";
 	String		SERVICELOADER_NAMESPACE						= "osgi.serviceloader";
 
-
 	/**
 	 * Launch constants that should be shared by launchers
 	 */
@@ -601,6 +598,58 @@ public interface Constants {
 	String		LAUNCH_ACTIVATION_EAGER						= "launch.activation.eager";
 
 	/**
+	 * A list of headers that use merged properties
+	 */
+	Set<String>	MERGED_HEADERS								= Set.of(																																								//
+		AUGMENT,																																																					//
+		BUILDERIGNORE,																																																				//
+		BUILDREPO,																																																					//
+		BUILDPATH,																																																					//
+		CONDITIONAL_PACKAGE,																																																		//
+		CONNECTION_SETTINGS,																																																		//
+		DEFINE_CONTRACT,																																																			//
+		DEFAULT_PROP_SRC_DIR,																																																		//
+		DEPENDSON,																																																					//
+		DONOTCOPY,																																																					//
+		DSANNOTATIONS_OPTIONS,																																																		//
+		EXPORT_PACKAGE,																																																				//
+		EXTENSION,																																																					//
+		FIXUPMESSAGES,																																																				//
+		GESTALT,																																																					//
+		IMPORT_PACKAGE,																																																				//
+		INCLUDERESOURCE,																																																			//
+		MAKE,																																																						//
+		MAVEN_DEPENDENCIES,																																																			//
+		PLUGIN,																																																						//
+		PLUGINPATH,																																																					//
+		PREPROCESSMATCHERS,																																																			//
+		PRIVATE_PACKAGE,																																																			//
+		PROVIDE_CAPABILITY,																																																			//
+		RELEASEREPO,																																																				//
+		REMOVEHEADERS,																																																				//
+		REQUIRE_CAPABILITY,																																																			//
+		RESOLVE_REJECT,																																																				//
+		RUNBLACKLIST,																																																				//
+		RUNBUNDLES,																																																					//
+		RUNBUNDLES_DECORATOR,																																																		//
+		RUNPATH,																																																					//
+		RUNPROGRAMARGS,																																																				//
+		RUNPROPERTIES,																																																				//
+		RUNPROVIDEDCAPABILITIES,																																																	//
+		RUNREPOS,																																																					//
+		RUNREQUIRES,																																																				//
+		RUNSYSTEMCAPABILITIES,																																																		//
+		RUNSYSTEMPACKAGES,																																																			//
+		RUNVM,																																																						//
+		SOURCEPATH,																																																					//
+		STANDALONE,																																																					//
+		SYSTEMPROPERTIES,																																																			//
+		TESTPACKAGES,																																																				//
+		TESTPATH,																																																					//
+		WORKINGSET,																																																					//
+		"-pomaugment");
+
+	/**
 	 * Any attributes that should be removed from the attributes before
 	 * printing.
 	 */
@@ -614,8 +663,6 @@ public interface Constants {
 	);
 
 	String		INTERNAL_PREFIX								= "-internal-";
-
-
 
 	/*
 	 * Deprecated Section

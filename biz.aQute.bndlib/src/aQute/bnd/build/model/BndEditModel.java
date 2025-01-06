@@ -1580,14 +1580,33 @@ public class BndEditModel {
 
 	@SuppressWarnings("unchecked")
 	public static <T> String format(String header, String input) {
-		Converter<T, String> converter = (Converter<T, String>) converters.get(header);
+		Converter<T, String> converter = getConverter(converters, header);
 		if (converter == null)
 			return input;
 
 		T converted = converter.convert(input);
 
-		Converter<String, T> formatter = (Converter<String, T>) formatters.get(header);
+		Converter<String, T> formatter = getConverter(formatters, header);
 		return formatter.convert(converted);
+	}
+
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
+	private static Converter getConverter(Map converters, String header) {
+		String stem = getStem(header);
+		if (Constants.MERGED_HEADERS.contains(stem)) {
+			return (Converter) converters.get(stem);
+		} else
+			return (Converter) converters.get(header);
+	}
+
+	private static String getStem(String header) {
+		int n = header.indexOf('.');
+		if (n < 0)
+			return header;
+
+		return header.substring(0, n);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1656,7 +1675,8 @@ public class BndEditModel {
 	}
 
 	/**
-	 * Return if this model is handling effective properties (and this read only) or actual document properties.
+	 * Return if this model is handling effective properties (and this read
+	 * only) or actual document properties.
 	 */
 
 	public boolean isEffective() {
