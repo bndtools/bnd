@@ -405,6 +405,41 @@ public class UTF8PropertiesTest {
 		assertThat(p1).containsExactlyInAnyOrderEntriesOf(p);
 	}
 
+	@Test
+	public void testProvenance() throws IOException {
+		UTF8Properties a = new UTF8Properties();
+		a.load("""
+			a.a = 1
+			a.b = 2
+			x = 0
+			""", null, null, null, "from_a");
+		UTF8Properties b = new UTF8Properties();
+		b.load("""
+			b.a = 1
+			b.c = 3
+			x = 0
+			""", null, null, null, "from_b");
+
+		assertThat(a.getProvenance("x")).isPresent()
+			.get()
+			.isEqualTo("from_a");
+		assertThat(b.getProvenance("x")).isPresent()
+			.get()
+			.isEqualTo("from_b");
+		assertThat(a.getProvenance("y")).isNotPresent();
+
+		a.load(b, true);
+		assertThat(a.getProvenance("x")).isPresent()
+			.get()
+			.isEqualTo("from_b");
+		assertThat(a.getProvenance("a.a")).isPresent()
+			.get()
+			.isEqualTo("from_a");
+		assertThat(a.getProvenance("b.a")).isPresent()
+			.get()
+			.isEqualTo("from_b");
+	}
+
 	private void testProperty(String content, String key, String value) throws IOException {
 		testProperty(content, key, value, null);
 	}

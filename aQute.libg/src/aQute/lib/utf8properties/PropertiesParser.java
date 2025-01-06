@@ -2,7 +2,6 @@ package aQute.lib.utf8properties;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 
 import aQute.lib.hex.Hex;
 import aQute.lib.strings.Strings;
@@ -40,18 +39,20 @@ final class PropertiesParser {
 		INFO['\\'] = NOKEY;
 	}
 
-	private int			n				= 0;
-	private int			line			= 0;
-	private int			pos				= -1;
-	private int			marker			= 0;
-	private char		current;
-	private Properties	properties;
-	private boolean		validKey;
-	private boolean		continuation	= true;
+	private int							n				= 0;
+	private int							line			= 0;
+	private int							pos				= -1;
+	private int							marker			= 0;
+	private char						current;
+	private UTF8Properties				properties;
+	private boolean						validKey;
+	private boolean						continuation	= true;
 	private final Collection<String>	syntaxHeaders;
+	private final String				provenance;
 
-	PropertiesParser(String source, String file, Reporter reporter, Properties properties,
-		Collection<String> syntaxHeaders) {
+	PropertiesParser(String source, String file, Reporter reporter, UTF8Properties properties,
+		Collection<String> syntaxHeaders, String provenance) {
+		this.provenance = provenance;
 		this.source = source.toCharArray();
 		this.file = file;
 		this.reporter = reporter;
@@ -154,7 +155,7 @@ final class PropertiesParser {
 				next();
 				skipWhitespace();
 				if (current == '\n') {
-					properties.put(key, "");
+					properties.setProperty(key, "", provenance);
 					continue;
 				}
 			}
@@ -162,11 +163,10 @@ final class PropertiesParser {
 			if (current != '\n') {
 
 				String value = token(LINE, isSyntaxHeader(key));
-				properties.put(key, value);
-
+				properties.setProperty(key, value, provenance);
 			} else {
 				error("No value specified for key: %s. An empty value should be specified as '%<s:' or '%<s='", key);
-				properties.put(key, "");
+				properties.setProperty(key, "", provenance);
 				continue;
 			}
 			assert current == '\n';
