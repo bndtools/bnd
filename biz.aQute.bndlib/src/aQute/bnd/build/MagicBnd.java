@@ -25,6 +25,7 @@ import javax.xml.stream.XMLStreamReader;
 import aQute.bnd.result.Result;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.re.Catalog;
 import aQute.libg.re.RE;
 import aQute.libg.re.RE.Match;
@@ -77,8 +78,8 @@ public class MagicBnd {
 				.append("'");
 		}
 
-		Properties p = new Properties();
-		p.put("-plugin.ext." + file.getName(), sb.toString());
+		UTF8Properties p = new UTF8Properties();
+		p.setProperty("-plugin.ext." + file.getName(), sb.toString(), file.getAbsolutePath());
 		return Result.ok(p);
 	}
 
@@ -163,8 +164,8 @@ public class MagicBnd {
 				.collect(Collectors.joining()))
 			.append("'");
 
-		Properties p = new Properties();
-		p.put("-plugin.ext." + file.getName(), sb.toString());
+		UTF8Properties p = new UTF8Properties();
+		p.setProperty("-plugin.ext." + file.getName(), sb.toString(), file.getAbsolutePath());
 		return Result.ok(p);
 	}
 }

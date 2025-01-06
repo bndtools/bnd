@@ -324,7 +324,7 @@ public class Project extends Processor {
 
 				// We use a builder to construct all the properties for
 				// use.
-				setProperty("basedir", basePath);
+				setProperty("basedir", basePath, "[project]");
 
 				// If a bnd.bnd file exists, we read it.
 				// Otherwise, we just do the build properties.

@@ -178,6 +178,7 @@ public class Workspace extends Processor {
 			try (InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd")) {
 				if (propStream != null) {
 					props.load(propStream);
+					props.setProvenance("[defaults.bnd]");
 				} else {
 					System.err.println("Cannot load defaults");
 				}
@@ -393,7 +394,11 @@ public class Workspace extends Processor {
 			assert url != null : "We must have a specific defaults resource";
 		}
 		try (InputStream in = url.openStream()) {
-			props.load(in);
+			if (props instanceof UTF8Properties utf8) {
+				String source = IO.collect(in);
+				utf8.load(source, null, null, null, "[version-defaults]");
+			} else
+				props.load(in);
 		}
 	}
 
@@ -1387,7 +1392,12 @@ public class Workspace extends Processor {
 		}
 		Properties wsProperties = ws.getProperties();
 		runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
-			.forEachOrdered(wsProperties::put);
+			.forEachOrdered((k, v) -> {
+				if (wsProperties instanceof UTF8Properties utf8) {
+					utf8.setProperty(k, (String) v, "[standalone]");
+				} else
+					wsProperties.put(k, v);
+			});
 
 		ws.fixupVersionDefaults();
 		ws.open();
