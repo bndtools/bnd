@@ -171,24 +171,6 @@ public class MavenTest {
 		assertEquals("com.springsource.org.apache.commons.beanutils-1.6.1.jar", file.getName());
 	}
 
-	@Test
-	public void testMavenx() throws Exception {
-		Maven maven = new Maven(null);
-		CachedPom pom = maven.getPom("javax.xml.bind", "com.springsource.javax.xml.bind", "2.2.0",
-			new URI("https://repository.springsource.com/maven/bundles/release"),
-			new URI("https://repository.springsource.com/maven/bundles/external"));
-		// Pom pom = maven.getPom("javax.xml.ws",
-		// "com.springsource.javax.xml.ws", "2.1.1", new
-		// URL("https://repository.springsource.com/maven/bundles/release"), new
-		// URL("https://repository.springsource.com/maven/bundles/external"));
-		System.err.println(pom.getGroupId() + " + " + pom.getArtifactId() + "-" + pom.getVersion());
-
-		System.err.println(pom.getDependencies(Pom.Scope.compile));
-
-		File artifact = pom.getArtifact();
-		System.err.println(artifact);
-	}
-
 	/**
 	 * Test the pom parser which will turn the pom into a set of properties,
 	 * which will make it actually readable according to some.
