@@ -390,7 +390,7 @@ public class JSONCodec {
 		char quote = (char) r.current();
 		assert r.current() == '"' || (promiscuous && r.current == '\'');
 
-		int c = r.next(); // skip first "
+		int c = r.read(); // skip first "
 
 		StringBuilder sb = new StringBuilder();
 		while (c != quote) {
