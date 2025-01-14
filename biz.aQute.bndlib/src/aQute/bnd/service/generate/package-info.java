@@ -1,2 +1,2 @@
-@org.osgi.annotation.versioning.Version("2.2.0")
+@org.osgi.annotation.versioning.Version("2.3.0")
 package aQute.bnd.service.generate;

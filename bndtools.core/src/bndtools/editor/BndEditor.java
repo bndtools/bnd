@@ -109,6 +109,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	public static final String					WORKSPACE_EDITOR	= "bndtools.bndWorkspaceConfigEditor";
 
 	public static final String					SOURCE_PAGE			= "__source_page";
+	public static final String					SOURCE_PAGE_EFFECTIVE	= "__source_page_effective";
 
 	public static final String					CONTENT_PAGE		= "__content_page";
 	public static final String					WORKSPACE_PAGE		= "__workspace_page";
@@ -126,6 +127,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	private final static Image					buildFileImg		= Icons.image("icons/bndtools-logo-16x16.png");
 
 	private BndSourceEditorPage					sourcePage;
+	private BndSourceEffectivePage				sourcePageEffective;
 	private Promise<Workspace>					modelReady;
 
 	private IResource							inputResource;
@@ -149,6 +151,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		} else {
 			requiredPageIds.addAll(getPagesBnd(path));
 		}
+		requiredPageIds.add(SOURCE_PAGE_EFFECTIVE);
 		requiredPageIds.add(SOURCE_PAGE);
 
 		// Remove pages no longer required and remember the rest in a map
@@ -167,8 +170,13 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		// Cache new pages
 		for (String pageId : requiredPageIds) {
 			if (!pageCache.containsKey(pageId)) {
-				IFormPage page = SOURCE_PAGE.equals(pageId) ? sourcePage
-					: pageFactories.get(pageId)
+				IFormPage page;
+				if (SOURCE_PAGE.equals(pageId))
+					page = sourcePage;
+				else if (SOURCE_PAGE_EFFECTIVE.equals(pageId))
+					page = sourcePageEffective;
+				else
+					page = pageFactories.get(pageId)
 						.createPage(this, model, pageId);
 				pageCache.put(pageId, page);
 			}
@@ -184,6 +192,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 				if (existingPointer >= getPageCount()) {
 					if (SOURCE_PAGE.equals(requiredId))
 						addPage(sourcePage, getEditorInput());
+					else if (SOURCE_PAGE_EFFECTIVE.equals(requiredId))
+						addPage(sourcePageEffective, getEditorInput());
 					else
 						addPage(pageCache.get(requiredId));
 				} else {
@@ -191,6 +201,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					if (!requiredId.equals(existingPage.getId())) {
 						if (SOURCE_PAGE.equals(requiredId))
 							addPage(existingPointer, sourcePage, getEditorInput());
+						else if (SOURCE_PAGE_EFFECTIVE.equals(requiredId))
+							addPage(existingPointer, sourcePageEffective, getEditorInput());
 						else
 							addPage(existingPointer, pageCache.get(requiredId));
 					}
@@ -204,6 +216,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 		// Set the source page title
 		setPageText(sourcePage.getIndex(), "Source");
+		setPageText(sourcePageEffective.getIndex(), "Effective");
 
 	}
 
@@ -224,6 +237,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	private final AtomicBoolean	saving	= new AtomicBoolean(false);
 	private IHandlerActivation	resolveHandlerActivation;
 	private JobChangeAdapter	resolveJobListener;
+
 
 	/*
 	 * (non-Javadoc)
@@ -255,6 +269,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	public void commitDirtyPages() {
 		if (sourcePage.isActive() && sourcePage.isDirty()) {
 			sourcePage.commit(true);
+			sourcePageEffective.setInput(this.model);
 		} else {
 			commitPages(true);
 			sourcePage.refresh();
@@ -677,6 +692,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {
 		// Initialise pages
 		sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+		sourcePageEffective = new BndSourceEffectivePage(this, SOURCE_PAGE_EFFECTIVE, "Effective");
 		pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
 		pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
 		pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
@@ -700,6 +716,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 			}
 		sourcePage.init(site, input);
 		sourcePage.initialize(this);
+		sourcePageEffective.init(site, input);
+		sourcePageEffective.initialize(this);
 	}
 
 	private void setPartNameForInput(IEditorInput input) {
@@ -784,6 +802,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					SWTConcurrencyUtil.execForDisplay(display, true, () -> {
 						setPartNameForInput(newInput);
 						sourcePage.setInput(newInput);
+						sourcePageEffective.setInput(this.model);
 					});
 				}
 			} else {

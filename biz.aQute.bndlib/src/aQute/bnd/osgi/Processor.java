@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -47,6 +48,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -805,19 +807,41 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Properties sub = magicBnd(file);
 
 		doIncludes(file.getParentFile(), sub);
+
+		BiConsumer<String, String> set = getSetterWithProvenance(file, target, sub);
+
 		// take care regarding overwriting properties
 		for (Map.Entry<?, ?> entry : sub.entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
 
 			if (overwrite || !target.containsKey(key)) {
-				target.setProperty(key, value);
+				set.accept(key, value);
 			} else if (extensionName != null) {
 				String extensionKey = key + "." + extensionName;
 				if (!target.containsKey(extensionKey))
-					target.setProperty(extensionKey, value);
+					set.accept(extensionKey, value);
 			}
 		}
+	}
+
+	private BiConsumer<String, String> getSetterWithProvenance(File file, Properties target, Properties sub) {
+		int n = target instanceof UTF8Properties ? 1 : 0;
+		n += sub instanceof UTF8Properties ? 2 : 0;
+		BiConsumer<String, String> set = switch (n) {
+			case 1 -> {
+				UTF8Properties t = (UTF8Properties) target;
+				yield (k, v) -> t.setProperty(k, v, file.getAbsolutePath());
+			}
+			case 3 -> {
+				UTF8Properties t = (UTF8Properties) target;
+				UTF8Properties s = (UTF8Properties) sub;
+				yield (k, v) -> t.setProperty(k, v, s.getProvenance(k)
+					.orElse(file.getAbsolutePath()));
+			}
+			default -> (k, v) -> target.setProperty(k, v);
+		};
+		return set;
 	}
 
 	/**
@@ -835,7 +859,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	protected Properties magicBnd(File file) throws IOException {
 		if (Strings.endsWithIgnoreCase(file.getName(), ".mf")) {
 			try (InputStream in = IO.stream(file)) {
-				return getManifestAsProperties(in);
+				return getManifestAsProperties(in, file.getAbsolutePath());
 			}
 		} else
 			return loadProperties(file);
@@ -1022,7 +1046,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * floor indicates where the property is defined relative to its parents.
 	 * Zero is in the current processor, 1, is its parents, and so on.
 	 */
-	public record PropertyKey(Processor processor, String key, int floor) implements Comparable<PropertyKey> {
+	public record PropertyKey(Processor processor, String key, int floor)
+		implements Comparable<PropertyKey> {
 
 		/**
 		 * Check if this PropertyKey belongs to the given processor
@@ -1043,6 +1068,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return processor.getProperty(key);
 		}
 
+		/**
+		 * Return the provenance of this key. This is generally the absolute
+		 * path to the source file but can be a logical name as well.
+		 */
+		public Optional<String> getProvenance() {
+			Properties properties = processor.getProperties();
+			if (properties != null && properties instanceof UTF8Properties p) {
+				return p.getProvenance(key);
+			} else
+				return Optional.empty();
+		}
 		/**
 		 * Get the raw value of the property key
 		 *
@@ -1362,22 +1398,42 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
+	 * Add or overwrite a new property.
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void setProperty(String key, String value, String provenance) {
+		Properties properties2 = getProperties();
+		if (properties2 instanceof UTF8Properties utf8p) {
+			utf8p.setProperty(key, value, provenance);
+		} else
+			properties2.setProperty(key, value);
+	}
+
+	/**
 	 * Read a manifest but return a properties object.
 	 *
 	 * @param in
 	 * @throws IOException
 	 */
-	public static Properties getManifestAsProperties(InputStream in) throws IOException {
-		Properties p = new UTF8Properties();
+	public static Properties getManifestAsProperties(InputStream in, String provenance) throws IOException {
+		UTF8Properties p = new UTF8Properties();
 		Manifest manifest = new Manifest(in);
 		for (Object object : manifest.getMainAttributes()
 			.keySet()) {
 			Attributes.Name key = (Attributes.Name) object;
 			String value = manifest.getMainAttributes()
 				.getValue(key);
-			p.put(key.toString(), value);
+			p.setProperty(key.toString(), value, provenance);
 		}
 		return p;
+	}
+
+	// {@linkplain #getManifestAsProperties(InputStream, String)}
+	@Deprecated()
+	public static Properties getManifestAsProperties(InputStream in) throws IOException {
+		return getManifestAsProperties(in, null);
 	}
 
 	public File getPropertiesFile() {

@@ -32,6 +32,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.collections.ExtList;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -772,6 +773,81 @@ public class ProcessorTest {
 			p.setProperties(foo);
 			assertTrue(p.check("Cyclic or multiple include of"));
 		}
+	}
+
+	@Test
+	public void testProvenance() throws IOException {
+		File base = IO.getFile("generated/provenance");
+		try {
+			base.mkdirs();
+			File bnd = new File(base, "bnd.bnd");
+			IO.store("""
+				-include sup.bnd, ~inf.bnd
+				in_top = top
+				in_sup = top
+				#in_inf = top
+				top = true
+				""", bnd);
+			File sup = new File(base, "sup.bnd");
+			IO.store("""
+				#in_top = sup
+				in_sup = sup
+				#in_inf = sup
+				sup = true
+				""", sup);
+			File inf = new File(base, "inf.bnd");
+			IO.store("""
+				-include sup.bnd, ~inf.bnd
+				in_top = inf
+				in_sup = inf
+				in_inf = inf
+				inf = true
+				sup = false
+				top = false
+				""", inf);
+
+			try (Processor a = new Processor(); Processor b = new Processor(a)) {
+				a.setProperty("a", "true");
+				b.setProperties(bnd);
+				UTF8Properties bp = (UTF8Properties) b.getProperties();
+				assertThat(b.getProperty("a")).isEqualTo("true");
+				assertThat(b.getProperty("in_top")).isEqualTo("top");
+				assertThat(b.getProperty("in_sup")).isEqualTo("sup");
+				assertThat(b.getProperty("in_inf")).isEqualTo("inf");
+				assertThat(b.getProperty("top")).isEqualTo("true");
+				assertThat(b.getProperty("sup")).isEqualTo("true");
+				assertThat(b.getProperty("inf")).isEqualTo("true");
+
+				assertThat(bp.getProvenance("in_top")).isPresent()
+					.get()
+					.isEqualTo(bnd.getAbsolutePath());
+				assertThat(bp.getProvenance("in_sup")).isPresent()
+					.get()
+					.isEqualTo(sup.getAbsolutePath());
+				assertThat(bp.getProvenance("in_inf")).isPresent()
+					.get()
+					.isEqualTo(inf.getAbsolutePath());
+				assertThat(bp.getProvenance("top")).isPresent()
+					.get()
+					.isEqualTo(bnd.getAbsolutePath());
+				assertThat(bp.getProvenance("sup")).isPresent()
+					.get()
+					.isEqualTo(sup.getAbsolutePath());
+
+				bp.remove("in_top");
+				assertThat(bp.getProvenance("in_top")).isNotPresent();
+
+				b.setProperty("in_top", "foo");
+				assertThat(bp.getProvenance("in_top")).isNotPresent();
+				b.setProperty("in_top", "bar", "xxx");
+				assertThat(bp.getProvenance("in_top")).isPresent()
+					.get()
+					.isEqualTo("xxx");
+			}
+		} finally {
+			IO.delete(base);
+		}
+
 	}
 
 }
