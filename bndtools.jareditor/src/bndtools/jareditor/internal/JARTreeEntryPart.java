@@ -95,7 +95,7 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 		toolkit.createLabel(encodingPanel, "Size");
 		size = new Text(encodingPanel, SWT.READ_ONLY);
 
-		toolkit.createLabel(encodingPanel, "Last Modfied");
+		toolkit.createLabel(encodingPanel, "Last Modified");
 		lastModified = new Text(encodingPanel, SWT.READ_ONLY);
 
 		toolkit.createLabel(encodingPanel, "Show As:");

@@ -33,7 +33,7 @@ import aQute.maven.api.Revision;
 
 class RepoActions {
 
-	private MavenBndRepository repo;
+	private MavenBndRepository	repo;
 	private MbrUpdater			mbr;
 
 	RepoActions(MavenBndRepository mavenBndRepository) {
@@ -84,6 +84,23 @@ class RepoActions {
 
 	Map<String, Runnable> getRevisionActions(final Archive archive, final Clipboard clipboard) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
+
+		map.put("Refresh Cache (re-download)", () -> {
+
+			File dir = repo.storage.toLocalFile(archive)
+				.getParentFile();
+			IO.delete(dir);
+
+			try {
+				// try re-download
+				Promise<File> promise = repo.storage.get(archive, true);
+				promise.getValue();
+
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+
+		});
 		map.put("Clear from Cache", () -> {
 			File dir = repo.storage.toLocalFile(archive)
 				.getParentFile();

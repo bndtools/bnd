@@ -74,6 +74,7 @@ public class RepositoryBundleVersion extends RepositoryEntry implements Actionab
 				map = ((Actionable) bundle.getRepo()).actions(bundle.getBsn(), version);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			// just default
 		}
 		return map;
