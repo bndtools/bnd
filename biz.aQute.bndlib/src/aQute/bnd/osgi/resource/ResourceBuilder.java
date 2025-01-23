@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -525,7 +524,6 @@ public class ResourceBuilder {
 			return null;
 
 		boolean optional = false;
-		List<String> options = new LinkedList<>();
 
 		RequirementBuilder rb = new RequirementBuilder(NativeNamespace.NATIVE_NAMESPACE);
 		FilterBuilder sb = new FilterBuilder();
