@@ -1,5 +1,6 @@
 package org.bndtools.templating.jgit;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -33,6 +34,9 @@ public class GitHub {
 			return new JSONCodec().dec()
 				.from(detailsDtoData)
 				.get(GithubRepoDetailsDTO.class);
+		})
+			.onFailure(t -> {
+				throw new IOException("Error fetching Github repo details: " + URL_PREFIX + repository, t);
 		});
 	}
 }

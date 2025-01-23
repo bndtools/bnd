@@ -62,8 +62,8 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentConstants;
 import org.osgi.util.promise.Promise;
 
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.libg.tuple.Pair;
 import bndtools.Plugin;
@@ -294,11 +294,20 @@ public class TemplateSelectionWizardPage extends WizardPage {
 					try {
 						Throwable failure = namedPromise.getSecond()
 							.getFailure();
-						if (failure != null)
+						if (failure != null) {
+
+							shell.getDisplay()
+								.asyncExec(() -> {
+									txtDescription.setText("Failed to load from template loader (" + name
+										+ ") See Error Log for stack trace: "
+										+ failure.getMessage());
+								});
+
 							Plugin.getDefault()
 								.getLog()
 								.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
 									"Failed to load from template loader: " + name, failure));
+						}
 						else {
 							Collection<Template> loadedTemplates = namedPromise.getSecond()
 								.getValue();
