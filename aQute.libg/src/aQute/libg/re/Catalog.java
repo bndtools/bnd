@@ -1160,7 +1160,7 @@ public class Catalog {
 						}
 						String value = matcher.group(name);
 						if (value == null) {
-							Optional.empty();
+							return Optional.empty();
 						}
 						return Optional.of(new MatchGroupImpl(name, value));
 					}
