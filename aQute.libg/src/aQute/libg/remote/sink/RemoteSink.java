@@ -204,7 +204,6 @@ public class RemoteSink implements Sink {
 
 	@Override
 	public AreaImpl createArea(String areaId) throws Exception {
-		AreaImpl area = new AreaImpl();
 		if (areaId == null) {
 			int n = 1000;
 			while (!new File(areasDir, "" + n).isDirectory())

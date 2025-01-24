@@ -280,7 +280,6 @@ public enum EE {
 		Parameters reqs = new Parameters(requirement);
 		SortedSet<EE> result = new TreeSet<>();
 		FilterParser fp = new FilterParser();
-		SortedSet<EE> all = all();
 
 		for (Map.Entry<String, Attrs> e : reqs.entrySet()) {
 			Attrs attrs = reqs.get(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);

@@ -2671,7 +2671,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return false;
 	}
 
-	class Bracket {
+	static class Bracket {
 		final List<RunnableWithException>	atEnds	= new ArrayList<>();
 		final Map<Class<?>, Object>			data	= new HashMap<>();
 
