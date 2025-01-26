@@ -9,7 +9,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.bndtools.core.ui.icons.Icons;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -49,6 +52,7 @@ import aQute.bnd.result.Result;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
+import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.util.ui.UI;
 
@@ -86,6 +90,19 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					ui.write(() -> model.templates = templates.getAvailableTemplates());
 				} catch (Exception e) {
 					log.error("failed to read default index {}", e, e);
+
+					Display.getDefault()
+						.asyncExec(() -> {
+
+							IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "failed to read default index",
+								e);
+							ErrorDialog.openError(getShell(), "Error", "An error occurred", status);
+						});
+
+					Plugin.getDefault()
+						.getLog()
+						.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+							"failed to read default index " + DEFAULT_INDEX, e));
 				}
 			});
 			job.schedule();
