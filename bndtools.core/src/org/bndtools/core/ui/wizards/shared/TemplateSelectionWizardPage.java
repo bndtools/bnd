@@ -298,9 +298,9 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
 							shell.getDisplay()
 								.asyncExec(() -> {
-									txtDescription.setText("Failed to load from template loader (" + name
-										+ ") See Error Log for stack trace: "
-										+ failure.getMessage());
+									IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
+										"Error loading templates", failure);
+									ErrorDialog.openError(shell, "Error", "An error occurred", status);
 								});
 
 							Plugin.getDefault()
