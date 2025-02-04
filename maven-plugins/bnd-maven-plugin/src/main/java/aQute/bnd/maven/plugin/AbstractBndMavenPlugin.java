@@ -40,7 +40,6 @@ import java.util.zip.ZipFile;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.maven.PomPropertiesResource;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.BndConfiguration;
@@ -50,8 +49,6 @@ import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.version.MavenVersion;
-import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Report.Location;
@@ -59,8 +56,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.model.Developer;
-import org.apache.maven.model.License;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -71,7 +66,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.mapping.MappingUtils;
-import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -85,8 +79,6 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	static final String		MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
 	static final String		PACKAGING_JAR			= "jar";
 	static final String		PACKAGING_WAR			= "war";
-	static final String		TSTAMP					= "${tstamp}";
-	static final String		SNAPSHOT				= "SNAPSHOT";
 
 	/**
 	 * Whether to include the contents of the {@code classesDir} directory
@@ -245,7 +237,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			builder.setTrace(logger.isDebugEnabled());
 
 			builder.setBase(project.getBasedir());
-			propertiesFile = new BndConfiguration(project, mojoExecution).loadProperties(builder);
+			BndConfiguration configuration = new BndConfiguration(project, mojoExecution);
+			propertiesFile = configuration.loadProperties(builder);
 			builder.setProperty("project.output", getClassesDir().getCanonicalPath());
 
 			// If no bundle to be built, we have nothing to do
@@ -374,158 +367,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 			processBuilder(builder);
 
-			// https://maven.apache.org/guides/mini/guide-reproducible-builds.html
-			boolean isReproducible = Strings.nonNullOrEmpty(outputTimestamp)
-				// no timestamp configured (1 character configuration is useful
-				// to override a full value during pom inheritance)
-				&& ((outputTimestamp.length() > 1) || Character.isDigit(outputTimestamp.charAt(0)));
-			if (isReproducible) {
-				builder.setProperty(Constants.REPRODUCIBLE, outputTimestamp);
-				if (builder.getProperty(Constants.NOEXTRAHEADERS) == null) {
-					builder.setProperty(Constants.NOEXTRAHEADERS, Boolean.TRUE.toString());
-				}
-			}
-
-			// Set Bundle-SymbolicName
-			if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
-				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, project.getArtifactId());
-			}
-			// Set Bundle-Name
-			if (builder.getProperty(Constants.BUNDLE_NAME) == null) {
-				builder.setProperty(Constants.BUNDLE_NAME, project.getName());
-			}
-			// Set Bundle-Version
-			String snapshot = isReproducible ? SNAPSHOT : null;
-			if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
-				Version version = new MavenVersion(project.getVersion()).getOSGiVersion();
-				builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
-				if (snapshot == null) {
-					snapshot = TSTAMP;
-				}
-			}
-			if (snapshot != null) {
-				if (builder.getProperty(Constants.SNAPSHOT) == null) {
-					builder.setProperty(Constants.SNAPSHOT, snapshot);
-				}
-			}
-
-			// Set Bundle-Description
-			if (builder.getProperty(Constants.BUNDLE_DESCRIPTION) == null) {
-				// may be null
-				if (StringUtils.isNotBlank(project.getDescription())) {
-					builder.setProperty(Constants.BUNDLE_DESCRIPTION, project.getDescription());
-				}
-			}
-
-			// Set Bundle-Vendor
-			if (builder.getProperty(Constants.BUNDLE_VENDOR) == null) {
-				if (project.getOrganization() != null && StringUtils.isNotBlank(project.getOrganization()
-					.getName())) {
-					builder.setProperty(Constants.BUNDLE_VENDOR, project.getOrganization()
-						.getName());
-				}
-			}
-
-			// Set Bundle-License
-			if (builder.getProperty(Constants.BUNDLE_LICENSE) == null) {
-				StringBuilder licenses = new StringBuilder();
-				for (License license : project.getLicenses()) {
-					addHeaderValue(licenses, license.getName(), ',');
-					// link is optional
-					if (StringUtils.isNotBlank(license.getUrl())) {
-						addHeaderAttribute(licenses, "link", license.getUrl(), ';');
-					}
-					// comment is optional
-					if (StringUtils.isNotBlank(license.getComments())) {
-						addHeaderAttribute(licenses, "description", license.getComments(), ';');
-					}
-				}
-				if (licenses.length() > 0) {
-					builder.setProperty(Constants.BUNDLE_LICENSE, licenses.toString());
-				}
-			}
-
-			// Set Bundle-SCM
-			if (builder.getProperty(Constants.BUNDLE_SCM) == null) {
-				StringBuilder scm = new StringBuilder();
-				if (project.getScm() != null) {
-					if (StringUtils.isNotBlank(project.getScm()
-						.getUrl())) {
-						addHeaderAttribute(scm, "url", project.getScm()
-							.getUrl(), ',');
-					}
-					if (StringUtils.isNotBlank(project.getScm()
-						.getConnection())) {
-						addHeaderAttribute(scm, "connection", project.getScm()
-							.getConnection(), ',');
-					}
-					if (StringUtils.isNotBlank(project.getScm()
-						.getDeveloperConnection())) {
-						addHeaderAttribute(scm, "developer-connection", project.getScm()
-							.getDeveloperConnection(), ',');
-					}
-					if (StringUtils.isNotBlank(project.getScm()
-						.getTag())) {
-						addHeaderAttribute(scm, "tag", project.getScm()
-							.getTag(), ',');
-					}
-					if (scm.length() > 0) {
-						builder.setProperty(Constants.BUNDLE_SCM, scm.toString());
-					}
-				}
-			}
-
-			// Set Bundle-Developers
-			if (builder.getProperty(Constants.BUNDLE_DEVELOPERS) == null) {
-				StringBuilder developers = new StringBuilder();
-				// this is never null
-				for (Developer developer : project.getDevelopers()) {
-					// id is mandatory for OSGi but not enforced in the pom.xml
-					if (StringUtils.isNotBlank(developer.getId())) {
-						addHeaderValue(developers, developer.getId(), ',');
-						// all attributes are optional
-						if (StringUtils.isNotBlank(developer.getEmail())) {
-							addHeaderAttribute(developers, "email", developer.getEmail(), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getName())) {
-							addHeaderAttribute(developers, "name", developer.getName(), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getOrganization())) {
-							addHeaderAttribute(developers, "organization", developer.getOrganization(), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getOrganizationUrl())) {
-							addHeaderAttribute(developers, "organizationUrl", developer.getOrganizationUrl(), ';');
-						}
-						if (!developer.getRoles()
-							.isEmpty()) {
-							addHeaderAttribute(developers, "roles", StringUtils.join(developer.getRoles()
-								.iterator(), ","), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getTimezone())) {
-							addHeaderAttribute(developers, "timezone", developer.getTimezone(), ';');
-						}
-					} else {
-						logger.warn(
-							"Cannot consider developer in line '{}' of file '{}' for bundle header '{}' as it does not contain the mandatory id.",
-							developer.getLocation("")
-								.getLineNumber(),
-							developer.getLocation("")
-								.getSource()
-								.getLocation(),
-							Constants.BUNDLE_DEVELOPERS);
-					}
-				}
-				if (developers.length() > 0) {
-					builder.setProperty(Constants.BUNDLE_DEVELOPERS, developers.toString());
-				}
-			}
-
-			// Set Bundle-DocURL
-			if (builder.getProperty(Constants.BUNDLE_DOCURL) == null) {
-				if (StringUtils.isNotBlank(project.getUrl())) {
-					builder.setProperty(Constants.BUNDLE_DOCURL, project.getUrl());
-				}
-			}
+			configuration.inheritPropertiesDefaults(builder);
 
 			logger.debug("builder properties: {}", builder.getProperties());
 			logger.debug("builder delta: {}", delta);
@@ -601,26 +443,6 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	 *            analyzing the jar contents
 	 */
 	protected void processBuildPath(List<Object> buildpath) {}
-
-	private static StringBuilder addHeaderValue(StringBuilder builder, String value, char separator) {
-		if (builder.length() > 0) {
-			builder.append(separator);
-		}
-		// use quoted string if necessary
-		OSGiHeader.quote(builder, value);
-		return builder;
-	}
-
-	private static StringBuilder addHeaderAttribute(StringBuilder builder, String key, String value, char separator) {
-		if (builder.length() > 0) {
-			builder.append(separator);
-		}
-		builder.append(key)
-			.append("=");
-		// use quoted string if necessary
-		OSGiHeader.quote(builder, value);
-		return builder;
-	}
 
 	private void attachArtifactToProject(Jar bndJar) throws Exception {
 		File artifactFile = getArtifactFile();
