@@ -268,7 +268,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			});
 
 
-			tableLayout.addColumnData(new ColumnWeightData(1, 80, false));
+			tableLayout.addColumnData(new ColumnWeightData(1, 150, false));
 			tableLayout.addColumnData(new ColumnWeightData(10, 200, true));
 			tableLayout.addColumnData(new ColumnWeightData(20, 80, true));
 
