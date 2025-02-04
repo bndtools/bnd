@@ -85,7 +85,7 @@ public class MessageReporter {
 		@Override
 		public SetLocation details(Object details) {
 			this.details = details;
-			return null;
+			return this;
 		}
 
 		@Override
