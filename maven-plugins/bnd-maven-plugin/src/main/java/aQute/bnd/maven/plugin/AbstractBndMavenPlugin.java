@@ -544,7 +544,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			}
 			File f = location.file == null ? propertiesFile : new File(location.file);
 			markedFiles.add(f);
-			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_WARNING,
+			buildContext.addMessage(f, location.line + 1, location.length, location.message,
+				BuildContext.SEVERITY_WARNING,
 				null);
 		}
 		List<String> errors = builder.getErrors();
@@ -556,7 +557,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			}
 			File f = location.file == null ? propertiesFile : new File(location.file);
 			markedFiles.add(f);
-			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_ERROR,
+			buildContext.addMessage(f, location.line + 1, location.length, location.message,
+				BuildContext.SEVERITY_ERROR,
 				null);
 		}
 		buildContext.setValue(MARKED_FILES, markedFiles);
