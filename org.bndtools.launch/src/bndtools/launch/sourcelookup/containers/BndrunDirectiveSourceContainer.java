@@ -1,8 +1,10 @@
 package bndtools.launch.sourcelookup.containers;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +27,7 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Run;
+import aQute.bnd.build.SubProject;
 import aQute.bnd.exceptions.SupplierWithException;
 
 public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
@@ -139,25 +142,42 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 		// which would otherwise not be considered for
 		// source lookup during debugging
 		try (RepoCollector repoCollector = new RepoCollector(project)) {
-
-			Collection<Container> repoRefs = repoCollector.repoRefs();
-
-			for (Container repoRef : repoRefs) {
-
-				// only consider type=REPO because we
-				// are
-				// interested in bundles added via
-				// '-includeresource:
-				// ${repo;bsn;latest}'
-				if (repoRef != null && TYPE.REPO == repoRef.getType()) {
-					additionalSourceContainers.add(new BundleSourceContainer(repoRef));
-				}
-
-			}
+			collectRepoRefs(repoCollector, additionalSourceContainers);
 		} catch (Exception e) {
 			// just log to avoid that
 			// exceptions interrupt everything else
 			logger.logError("SourceContainers: Error adding buildpath dependencies of bundle " + project.getName(), e);
+		}
+
+		// sub projects via -sub instruction
+
+		List<SubProject> subProjects = project.getSubProjects();
+		for (SubProject sub : subProjects) {
+			try (RepoCollector subColl = new RepoCollector(sub)) {
+				collectRepoRefs(subColl, additionalSourceContainers);
+			} catch (IOException e) {
+				// just log to avoid that
+				// exceptions interrupt everything else
+				logger.logError("SourceContainers: Error adding buildpath dependencies of sub-bundle "
+					+ project.getName() + " / " + sub.getName(), e);
+			}
+		}
+	}
+
+	private void collectRepoRefs(RepoCollector repoCollector, Set<ISourceContainer> additionalSourceContainers) {
+		Collection<Container> repoRefs = repoCollector.repoRefs();
+
+		for (Container repoRef : repoRefs) {
+
+			// only consider type=REPO because we
+			// are
+			// interested in bundles added via
+			// '-includeresource:
+			// ${repo;bsn;latest}'
+			if (repoRef != null && TYPE.REPO == repoRef.getType()) {
+				additionalSourceContainers.add(new BundleSourceContainer(repoRef));
+			}
+
 		}
 	}
 }
