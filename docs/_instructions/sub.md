@@ -2,9 +2,10 @@
 layout: default
 class: Builder
 title: -sub FILE-SPEC ( ',' FILE-SPEC )*
+summary:  Enable sub-bundles to build a set of .bnd files that use bnd.bnd file as a basis. The list of bnd files can be specified with wildcards.
 ---
 
-You can enable **sub-bundles** with the `-sub` instruction, to build a set of `.bnd` files that use the `bnd.bnd` file as a basis. The list of sub-`.bnd` file can be specified with wildcards.
+You can enable **sub-bundles** with the `-sub` instruction, to build a set of `.bnd` files that use the `bnd.bnd` file as a basis. The list of sub-`.bnd` files can be specified with wildcards.
 
 ## Example 
 

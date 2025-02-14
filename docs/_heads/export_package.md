@@ -2,6 +2,7 @@
 layout: default
 class: Header
 title: Export-Package  ::= export ( ',' export)* 
+summary: The Export-Package header contains a declaration of exported packages
 ---
 
 The `Export-Package` header contains a declaration of exported packages. Also see [`-exportcontents`](/instructions/exportcontents.html).
