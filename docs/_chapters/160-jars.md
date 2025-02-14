@@ -34,9 +34,9 @@ The documentation headers are optional but very important, just spent the minute
 
 If the target project does not have a version, makeup a version and maintain it. Notice that in general the recipe will only be used once for each version, it is normally not used in continuous integration builds. However, you normally use it to convert the next version of the project. Crisp versioning is important.
 
-The `Include-Resource` statement unrolls the jars we downloaded in the root of the JAR and in `OSGI-OPT`. Since the source code is in the `src` directory in the  `WebSocket-src.zip` file, we put it in the new JAR under `OSGI-OPT/src`. This convention is supported by all IDEs to give you direct access to the bundle's source code. Since the binary and the source are kept together, you always have the correct source code available, and usually automatically. It is so convenient that once you're used to this it is hard to imagine a life without source code.
+The [`-includeresource`](/instructions/includeresource.html) statement unrolls the jars we downloaded in the root of the JAR and in `OSGI-OPT`. Since the source code is in the `src` directory in the  `WebSocket-src.zip` file, we put it in the new JAR under `OSGI-OPT/src`. This convention is supported by all IDEs to give you direct access to the bundle's source code. Since the binary and the source are kept together, you always have the correct source code available, and usually automatically. It is so convenient that once you're used to this it is hard to imagine a life without source code.
 
-The binaries and sources are not in the final jar but bnd does not yet know what needs to be exported. This can be indicated with the `-exportcontents` instruction. It has the same syntax as `Export-Package` but does not copy from the classpath, it only applies the instruction to the content of the final JAR.
+The binaries and sources are not in the final jar but bnd does not yet know what needs to be exported. This can be indicated with the [`-exportcontents`](/instructions/exportcontents.html) instruction. It has the same syntax as [`Export-Package`](/heads/export_package.html) but does not copy from the classpath, it only applies the instruction to the content of the final JAR.
 
 ## Project
 The easiest way to build these wrappers is to create a project in bndtools called wrappers and create a bnd descriptor for each one. They are then automatically build (look in generated) and you get a lot of help editing the bnd files.
@@ -72,7 +72,7 @@ Applying this recipe gives the following manifest in a JAR named `org.websocket.
     Tool: Bnd-1.51.0
 
 ## Extra entries on the Classpath
-One of the great features of bnd is to use export version from other versions to generate the import ranges. This feature requires that the other JARs are on the classpath. In bndtools you can use the -buildpath. However, you always add entries on the class path per bnd descriptor with the -classpath instruction:
+One of the great features of bnd is to use export version from other versions to generate the import ranges. This feature requires that the other JARs are on the classpath. In bndtools you can use the -buildpath. However, you always add entries on the class path per bnd descriptor with the [-classpath](/instructions/classpath.html) instruction:
 
     -classpath: dependency.jar, other.jar
 
