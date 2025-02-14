@@ -2,23 +2,32 @@
 layout: default
 class: Header
 title: Export-Package  ::= export ( ',' export)* 
-summary: The Export-Package header contains a declaration of exported packages
 ---
-The bnd definition allows the specification to be done using ''patterns'', a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. The following examples copies everything on the class path except for packages starting with `com`. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses.
 
-  Export-Package= !com.*, *
+The `Export-Package` header contains a declaration of exported packages. Also see [`-exportcontents`](/instructions/exportcontents.html).
+
+The bnd definition allows the specification to be done using ''patterns'', a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. 
+
+Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. 
+
+
+## Examples 
+
+The following examples copies everything on the class path except for packages starting with `com`. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses.
+
+	Export-Package= !com.*, *
 
 Exports are automatically imported. This features can be disabled with a special directive on the export instruction: `-noimport:=true`. For example:
   
-  Export-Package= com.acme.impl.*;-noimport:=true, *
+	Export-Package= com.acme.impl.*;-noimport:=true, *
 
 Bnd will automatically calculate the `uses:` directive. This directive is used by the OSGi framework to create a consistent class space for a bundle. The Export-Package statement allows this directive to be overridden on a package basis by specifying the directive in an Export-Package instruction. 
 
-  Export-package = com.acme.impl.*;uses="my.special.import"
+	Export-package = com.acme.impl.*;uses="my.special.import"
 
 However, in certain cases it is necessary to augment the uses clause. It is therefore possible to use the special name `<<USES>>` in the clause. Bnd will replace this special name with the calculated uses set. Bnd will remove any extraneous commas when the `<<USES>>` is empty.
 
-  Export-package = com.acme.impl.*;uses:="my.special.import,<<USES>>"
+	Export-package = com.acme.impl.*;uses:="my.special.import,<<USES>>"
 
 Directives that are not part of the OSGi specification will give a warning unless they are prefixed with a 'x-'.
 
