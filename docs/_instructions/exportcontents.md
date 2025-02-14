@@ -2,6 +2,7 @@
 layout: default
 class: Project
 title: -exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*
+summary: Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. 
 ---
 
 Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. The syntax is similar to the [`Export-Package`](/heads/export_package.html) header.
