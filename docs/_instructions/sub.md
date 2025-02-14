@@ -2,88 +2,56 @@
 layout: default
 class: Builder
 title: -sub FILE-SPEC ( ',' FILE-SPEC )*
-summary:  Build a set of bnd files that use this bnd file as a basis. The list of bnd file can be specified with wildcards.
 ---
 
-	/**
-	 * Answer a list of builders that represent this file or a list of files
-	 * specified in -sub. This list can be empty. These builders represents to
-	 * be created artifacts and are each scoped to such an artifacts. The
-	 * builders can be used to build the bundles or they can be used to find out
-	 * information about the to be generated bundles.
-	 *
-	 * @return List of 0..n builders representing artifacts.
-	 * @throws Exception
-	 */
-	public List<Builder> getSubBuilders() throws Exception {
-		String sub = getProperty(SUB);
-		if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub))
-			return Arrays.asList(this);
+You can enable **sub-bundles** with the `-sub` instruction, to build a set of `.bnd` files that use the `bnd.bnd` file as a basis. The list of sub-`.bnd` file can be specified with wildcards.
 
-		List<Builder> builders = new ArrayList<Builder>();
-		if (isTrue(getProperty(NOBUNDLES)))
-			return builders;
+## Example 
 
-		Parameters subsMap = parseHeader(sub);
-		for (Iterator<String> i = subsMap.keySet().iterator(); i.hasNext();) {
-			File file = getFile(i.next());
-			if (file.isFile() && !file.getName().startsWith(".")) {
-				builders.add(getSubBuilder(file));
-				i.remove();
-			}
-		}
+Assume a bundle `com.example` with a main `bnd.bnd` file:
 
-		Instructions instructions = new Instructions(subsMap);
+`-sub *.bnd`
 
-		List<File> members = new ArrayList<File>(Arrays.asList(getBase().listFiles()));
+And besides the following files:
 
-		nextFile: while (members.size() > 0) {
+- `sub.bundle1.bnd`
+- `sub.bundle2.bnd`
 
-			File file = members.remove(0);
+This will process every other `.bnd` file as a `sub-bundle` and will create a `.jar` file for it:
 
-			// Check if the file is one of our parents
-			@SuppressWarnings("resource")
-			Processor p = this;
-			while (p != null) {
-				if (file.equals(p.getPropertiesFile()))
-					continue nextFile;
-				p = p.getParent();
-			}
+- `generated/com.example.sub.bundle1.jar`
+- `generated/com.example.sub.bundle2.jar`
 
-			for (Iterator<Instruction> i = instructions.keySet().iterator(); i.hasNext();) {
+The `Bundle Symbolic Name` for each sub bundle will be the name of the `project` + `.` + `file name prefix of the sub bundle`. 
 
-				Instruction instruction = i.next();
-				if (instruction.matches(file.getName())) {
+Sub bundles are mostly treated as independent projects. They are part of the repositories and release process.
 
-					if (!instruction.isNegated()) {
-						builders.add(getSubBuilder(file));
-					}
+The content of the sub `.bnd` files is as usual (see also [Generating JARs](/chapters/160-jars.html)).
 
-					// Because we matched (even though we could be negated)
-					// we skip any remaining searches
-					continue nextFile;
-				}
-			}
-		}
-		return builders;
-	}
 
-	public Builder getSubBuilder(File file) throws Exception {
-		Builder builder = getSubBuilder();
-		if (builder != null) {
-			builder.setProperties(file);
-			addClose(builder);
-		}
-		return builder;
-	}
+## -buildpath and -classpath with sub-bundles
 
-	public Builder getSubBuilder() throws Exception {
-		Builder builder = new Builder(this);
-		builder.setBase(getBase());
+The [`-buildpath`](/instructions/buildpath.html) is a project instruction. This means that it must be placed in the main `bnd.bnd` file, not in the sub-`.bnd` file. A project can only have a single `-buildpath`.
 
-		for (Jar file : getClasspath()) {
-			builder.addClasspath(file);
-		}
+Thus, in the sub bundle `.bnd`-files you have to use [`-classpath`](https://bnd.bndtools.org/instructions/classpath.html) instead. 
 
-		return builder;
-	}
+**Example:**
+
+```
+-classpath: \
+	${repo;org.apache.poi:poi;latest},\
+```
+
+## Use cases
+
+### Gogo Commands
+
+A case where this approach is useful is, when you provide an implementation and want to separate the Gogo commands from the main code. In that case you create a **main provider** bundle and a **Gogo bundle**.
+
+In most cases it is best to have one project generate one bundle. However, sometimes it creates a lot of overhead and you’d like to be able to provide multiple bundles in a project since they share so much information.
+
+### Wrapping JAR files
+
+Another use case is when you need to [wrap `.jar` files](/chapters/390-wrapping.html), e.g. to convert non-OSGi bundles into OSGi-Bundles by adding meta-data to the Manifest. 
+A practise to do so could be to have a single Wrapper-bundle where you do all your wrapping of external dependencies. The advantage is, that you don't clutter up your workspace with lots of tiny Bundle-wrapping projects. With sub-bundles you can keep all your wrapped jars in one single project. 
+
