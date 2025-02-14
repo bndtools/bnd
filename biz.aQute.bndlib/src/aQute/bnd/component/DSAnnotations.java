@@ -236,11 +236,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 		if (definition.version.compareTo(settings.maxVersion) > 0) {
 			DeclarativeServicesAnnotationError dse = new DeclarativeServicesAnnotationError(
 				definition.implementation.getFQN(), null, ErrorType.VERSION_MISMATCH);
-			analyzer
-				.error(
-					"[%s] component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
-					dse.location(), definition.name, definition.version, settings.maxVersion, definition.versionReason)
-				.details(dse);
+			dse.addError(analyzer,
+				"[%s] component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
+				dse.location(), definition.name, definition.version, settings.maxVersion, definition.versionReason);
 		}
 
 	}
