@@ -32,6 +32,11 @@ defaults:
       path: ""
     values:
       layout: default
+  # exclude all the files from `/releases/` in the sitemap
+  - scope:
+      path:            releases/**
+    values:
+      sitemap:         false
 
 exclude:
   - 'ADDING_RELEASE_DOCS.md'
