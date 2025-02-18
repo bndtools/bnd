@@ -56,3 +56,4 @@ exclude:
   - '/releases/*/sitemap.xml'
   - '/vendor'
   - '/.settings'
+  - 'pagefind'

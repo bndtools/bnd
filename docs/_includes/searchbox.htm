@@ -1,0 +1,117 @@
+<div class="modal" id="searchmodal" aria-hidden="true">
+    <div class="modal_overlay" tabindex="-1">
+        <div class="modal_container" role="dialog" aria-modal="true">
+            <header class="modal_header" style="margin-bottom: 10px;">
+                <b>
+                    Search
+                    <button class="modal_btn modal_btn-primary" data-modal-close=""
+                        aria-label="Close this dialog window" style="float:right;">Close</button>
+                </b>
+            </header>
+            <main class="modal_content" id="modalcontent">
+                <div id="pagefindsearch"></div>
+            </main>
+            <footer class="modal_footer">
+
+            </footer>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Basic styling to hide/show the modal */
+    .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Container for modal content */
+    .modal_container {
+        background: #fff;
+        margin: 5% auto;
+        /* Position the box somewhat centered */
+        padding: 1rem;
+        max-width: 600px;
+        border-radius: 4px;
+        position: relative;
+
+        /* Height and overflow for scrolling */
+        max-height: 80vh;
+        /* Use 80% of the viewport height */
+        overflow-y: auto;
+        /* Enable scrolling within the modal */
+    }
+
+    /* When modal is open, display it */
+    .modal.is-open {
+        display: block;
+    }
+</style>
+
+<script type="text/javascript">
+    // Function to open the modal
+    function openModal() {
+        const modal = document.getElementById('searchmodal');
+        // Change aria-hidden to false
+        modal.setAttribute('aria-hidden', 'false');
+        // Add a class to make it visible (assuming CSS uses .is-open to show)
+        modal.classList.add('is-open');
+
+        const searchFieldInput = document.querySelector('#modalcontent input');
+        searchFieldInput.focus();
+
+        // Define an event listener for the ESC key
+        escapeKeyListener = function (event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                closeModal(modal);
+            }
+        };
+
+        // Attach the ESC key event listener
+        document.addEventListener('keydown', escapeKeyListener);
+
+        // Attach click event listeners to close triggers
+        attachCloseEvents(modal);
+    }
+
+    function attachCloseEvents(modal) {
+        // Get all elements that can close the modal (overlay and close button)
+        const closeElements = modal.querySelectorAll('[modal-close]');
+
+        closeElements.forEach(el => {
+            el.addEventListener('click', function handleClose() {
+                closeModal(modal);
+                // Remove this event listener once closed (cleanup)
+                el.removeEventListener('click', handleClose);
+            });
+        });
+    }
+
+    // Function to close the modal
+    function closeModal(modal) {
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('is-open');
+    }
+</script>
+
+
+
+<link href="/pagefindindex/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefindindex/pagefind-ui.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        new PagefindUI({
+            element: "#pagefindsearch",
+            showSubResults: true,
+            translations: {
+                placeholder: "Search the bnd manual",
+            }
+        });
+    });
+</script>
