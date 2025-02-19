@@ -232,13 +232,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	@SuppressWarnings("resource")
 	@Override
 	public SetLocation warning(String string, Object... args) {
-		return current().reporter.warning(string, args);
+		SetLocation warning = current().reporter.warning(string, args);
+		File propertiesFile = getPropertiesFile();
+		if (propertiesFile != null) {
+			warning.file(propertiesFile.getAbsolutePath());
+		}
+		return warning;
 	}
 
 	@SuppressWarnings("resource")
 	@Override
 	public SetLocation error(String string, Object... args) {
-		return current().reporter.error(string, args);
+		SetLocation error = current().reporter.error(string, args);
+		File propertiesFile = getPropertiesFile();
+		if (propertiesFile != null) {
+			error.file(propertiesFile.getAbsolutePath());
+		}
+		return error;
 	}
 
 	/**
