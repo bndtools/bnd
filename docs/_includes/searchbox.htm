@@ -82,7 +82,7 @@
 
     function attachCloseEvents(modal) {
         // Get all elements that can close the modal (overlay and close button)
-        const closeElements = modal.querySelectorAll('[modal-close]');
+        const closeElements = modal.querySelectorAll('[data-modal-close]');
 
         closeElements.forEach(el => {
             el.addEventListener('click', function handleClose() {
