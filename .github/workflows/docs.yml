@@ -21,6 +21,8 @@ defaults:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   docs:
@@ -43,6 +45,37 @@ jobs:
         ruby-version: 2.7
         bundler-cache: true
         working-directory: docs
+
+    # Download and install the Pagefind binary
+    # see releases: https://github.com/CloudCannon/pagefind/releases
+    - name: Install Pagefind for Search
+      run: |
+        cd docs
+        curl -L https://github.com/CloudCannon/pagefind/releases/download/v1.3.0/pagefind-v1.3.0-x86_64-unknown-linux-musl.tar.gz \
+          -o pagefind.tar.gz
+        tar xzf pagefind.tar.gz
+        chmod +x pagefind
+
     - name: Build
       run: |
         ./.github/scripts/docs.sh
+
+    - name: Upload artifact
+      id: deployment
+      #  uploads an artifact from the './docs/_site' directory
+      uses: actions/upload-pages-artifact@v3
+      with:
+          path: docs/_site
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: docs
+    if: github.ref == 'refs/heads/master'  # <= Restrict deploy to master
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

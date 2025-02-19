@@ -13,11 +13,7 @@
 			   </div>
     <li span=4>     
         <div class="search-container">
-			<form method="get" id="search" action="https://google.com/search" target="_blank">
-			    <input type="hidden" name="as_q" value="site:bndtools.org OR site:bnd.discourse.group"/>
-			    <input type="text" name="q" placeholder="Search…" aria-label="Search https://google.com for bnd specific"/>
-			    <button type="submit" class="fa fa-search"></button>
-            </form>
+			<button type="button" class="fa fa-search" onclick="openModal()"></button>
        </div>
 </ul>
 <div class=menu-link span=0>{% include github.htm %}</div>

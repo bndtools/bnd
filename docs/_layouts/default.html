@@ -4,7 +4,6 @@
 	{% include head.htm %}
 
 <body>
-
 	{% include nav.htm %}
 
 					
@@ -17,17 +16,22 @@
 			
 		<li span=9>
 			<div class=notes-margin>
-			
+				
+				<main data-pagefind-body>
 				<h1>{{h1}} {{page.title}}               {% if page.class %}
                  <div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
                      {{page.class}}
                    </div>
                 {% endif %}     
 				</h1>
+				
 				{{content}}
+				</main>
 			</div>
 	</ul>
 
+
+	
 	{% include footer.htm %}
 </body>
 </html>
