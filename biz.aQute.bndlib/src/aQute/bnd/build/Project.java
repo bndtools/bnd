@@ -1246,7 +1246,7 @@ public class Project extends Processor {
 	 * @param bsn The bundle symbolic name
 	 * @param range The version range
 	 * @param strategy set to LOWEST or HIGHEST
-	 * @return the file object that points to the bundle or null if not found
+	 * @return the Container that points to the bundle what might be {code}Container.TYPE.ERROR{code} in case it can not be found.
 	 * @throws Exception when something goes wrong
 	 */
 
