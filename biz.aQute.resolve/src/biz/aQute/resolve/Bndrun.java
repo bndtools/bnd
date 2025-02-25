@@ -32,8 +32,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.repository.Prepare;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
@@ -327,32 +325,6 @@ public class Bndrun extends Run {
 				-runframework` is quite esoteric and related to testing.
 				""");
 		}
-	}
-
-	@Override
-	protected List<RepositoryPlugin> getRepositories() {
-		// we override getRepositories() because we want consider repo plugins
-		// added for this specific BndRun instance and not just the
-		// workspace repositories
-		return initRepositories();
-	}
-
-	/**
-	 * This method is borrowed from aQute.bnd.build.Workspace.initRepositories()
-	 * We may put it in a more central place.
-	 */
-	private List<RepositoryPlugin> initRepositories() {
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-		for (RepositoryPlugin repo : plugins) {
-			if (repo instanceof Prepare prepare) {
-				try {
-					prepare.prepare();
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			}
-		}
-		return plugins;
 	}
 
 }
