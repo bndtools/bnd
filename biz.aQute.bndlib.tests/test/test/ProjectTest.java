@@ -21,7 +21,10 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -44,6 +47,7 @@ import aQute.lib.io.IO;
 @SuppressWarnings({
 	"resource", "restriction"
 })
+@ExtendWith(SoftAssertionsExtension.class)
 public class ProjectTest {
 	@InjectTemporaryDirectory
 	File tmp;
@@ -1197,5 +1201,41 @@ public class ProjectTest {
 		project.copy(repo, (String) null, release);
 		assertTrue(project.check());
 		assertTrue(ws.check());
+	}
+
+
+	@Test
+	public void testWarnOnDuplicateProperties(SoftAssertions softly) throws Exception {
+		File base = tmp;
+		File bnd = new File(base, "bnd.bnd");
+		IO.store("""
+			Header-1: a\n
+			Header-1: b
+			""", bnd);
+
+		// pedantic=true tests
+		try (Processor a = new Processor()) {
+			a.setPedantic(true);
+			a.loadProperties(bnd);
+
+			softly.assertThat(a.getWarnings())
+				.as("pedantic warnings")
+				.containsExactly("Duplicate property key: `Header-1`: <<Header-1: b>>");
+			softly.assertThat(a.getErrors()).as("pedantic errors").isEmpty();
+
+		}
+
+		// now test the opposite, with pedantic=false
+		try (Processor a = new Processor()) {
+			a.setPedantic(false);
+			a.loadProperties(bnd);
+
+			softly.assertThat(a.getWarnings())
+				.as("non-pedantic warnings")
+				.isEmpty();
+			softly.assertThat(a.getErrors())
+				.as("non-pedantic errors")
+				.isEmpty();
+		}
 	}
 }
