@@ -1198,4 +1198,17 @@ public class ProjectTest {
 		assertTrue(project.check());
 		assertTrue(ws.check());
 	}
+
+	@Test
+	public void testWarnOnDuplicateProperties() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/dup-props"));
+		Project project = ws.getProject("p-dup-props");
+		assertFalse(project.check("Duplicate property keys"));
+		assertEquals(1, project.getWarnings()
+			.size());
+		assertEquals(0, project.getErrors()
+			.size());
+		assertEquals("Duplicate property key: `Header-1`: <<Header-1: 2>>", project.getWarnings()
+			.get(0));
+	}
 }
