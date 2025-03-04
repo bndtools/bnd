@@ -1,2 +1,6 @@
 Bundle-Version:	1.260.0.${build}
 Header-1: 1
+Header-1: 2
+
+Header2: a
+Header2.a: b

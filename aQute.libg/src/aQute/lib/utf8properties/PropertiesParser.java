@@ -149,6 +149,10 @@ final class PropertiesParser {
 				error("Invalid property key: `%s`", key);
 			}
 
+			if (isDuplicateKey(key)) {
+				error("Duplicate property key: `%s`", key);
+			}
+
 			skipWhitespace();
 
 			if (current == ':' || current == '=') {
@@ -174,6 +178,10 @@ final class PropertiesParser {
 
 		int start = n;
 
+	}
+
+	private boolean isDuplicateKey(String key) {
+		return this.properties.containsKey(key);
 	}
 
 	private boolean isSyntaxHeader(String key) {
