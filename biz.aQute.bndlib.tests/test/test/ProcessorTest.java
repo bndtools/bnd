@@ -16,7 +16,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.resource.Capability;
 
 import aQute.bnd.header.Attrs;
@@ -29,6 +32,7 @@ import aQute.bnd.osgi.Processor.PropertyKey;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.collections.ExtList;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -37,6 +41,7 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class ProcessorTest {
 
 	@Test
@@ -846,6 +851,70 @@ public class ProcessorTest {
 			}
 		} finally {
 			IO.delete(base);
+		}
+
+	}
+
+	@Test
+	public void testWarningOnCounterIntuitiveInclude(@InjectTemporaryDirectory
+	File base, SoftAssertions softly) throws IOException {
+		final File bnd = new File(base, "bnd.bnd");
+		IO.store("""
+			-include a.bnd
+			Header1: i will lose
+			""", bnd);
+		File sup = new File(base, "a.bnd");
+		IO.store("""
+			Header1: i will win
+			""", sup);
+
+		try (Processor a = new Processor()) {
+			a.setProperties(bnd);
+
+			softly.assertThat(a.getProperty("Header1"))
+				.isEqualTo("i will win");
+			softly.assertThat(a.getWarnings())
+				.containsExactly(
+					"[Include Override]: `Header1` declaration is overridden by -include: a.bnd and thus ignored (consider using -include: ~a.bnd).");
+
+
+		}
+
+		// now prevent the overwrite by doing what the warning says, and use
+		// the '~' (tilde)
+
+		IO.store("""
+			-include: ~a.bnd
+			Header1: now i will win, and a.bnd will not overwrite
+			""", bnd);
+
+		try (Processor a = new Processor()) {
+			a.setProperties(bnd);
+
+			softly.assertThat(a.getProperty("Header1"))
+				.isEqualTo("now i will win, and a.bnd will not overwrite");
+			softly.assertThat(a.getWarnings())
+				.isEmpty();
+
+		}
+
+		// now test a case where an overwrite will happen,
+		// but no warning is logged, because the overwrite will overwrite
+		// with the same value
+
+		IO.store("""
+			-include: a.bnd
+			Header1: i will win
+			""", bnd);
+
+		try (Processor a = new Processor()) {
+			a.setProperties(bnd);
+
+			softly.assertThat(a.getProperty("Header1"))
+				.isEqualTo("i will win");
+			softly.assertThat(a.getWarnings())
+				.isEmpty();
+
 		}
 
 	}
