@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -333,20 +332,22 @@ public class BndSourceEffectivePage extends FormPage {
 		} else {}
 	}
 
-	private static String print(BndEditModel model) throws Exception {
-		if (model == null) {
+	private String print() throws Exception {
+		if (editModel == null) {
 			return "...";
 		}
 
 		try {
 			StringBuilder sb = new StringBuilder();
 
-			Processor p = new BndEditModel(model, true).getProperties();
-			Set<String> propertyKeys = p.getPropertyKeys(true);
-			for (String k : propertyKeys) {
+			Processor properties = getProperties();
+			List<PropertyKey> propertyKeys = properties.getPropertyKeys(k -> true);
+			List<PropertyKey> visible = PropertyKey.findVisible(propertyKeys);
 
-				String value = p.getProperty(k);
-				sb.append(k)
+			for (PropertyKey k : visible) {
+
+				String value = k.getRawValue();
+				sb.append(k.key())
 					.append(": ")
 					.append(value)
 					.append("\n");
@@ -365,7 +366,7 @@ public class BndSourceEffectivePage extends FormPage {
 		}
 		loading = true;
 		try {
-			String text = print(editModel);
+			String text = print();
 			sourceViewer.setDocument(new Document(text));
 			styledText.setFocus();
 			tableViewer.setInput(getTableData());
