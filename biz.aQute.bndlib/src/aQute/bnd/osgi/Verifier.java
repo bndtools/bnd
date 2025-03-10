@@ -880,10 +880,12 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyRequirements() throws IllegalArgumentException, Exception {
-		Parameters map = parseHeader(manifest.getMainAttributes()
-			.getValue(Constants.REQUIRE_CAPABILITY));
-		for (String key : map.keySet()) {
-			Attrs attrs = map.get(key);
+
+		Parameters requireCapabilities = new Parameters(manifest.getMainAttributes()
+			.getValue(Constants.REQUIRE_CAPABILITY), this, true);
+
+		for (String key : requireCapabilities.keySet()) {
+			Attrs attrs = requireCapabilities.get(key);
 			key = Processor.removeDuplicateMarker(key);
 			verifyNamespace(key, "Require");
 
@@ -946,10 +948,11 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyCapabilities() {
-		Parameters map = parseHeader(manifest.getMainAttributes()
-			.getValue(Constants.PROVIDE_CAPABILITY));
-		for (String key : map.keySet()) {
-			Attrs attrs = map.get(key);
+		Parameters provideCapabilities = new Parameters(manifest.getMainAttributes()
+			.getValue(Constants.PROVIDE_CAPABILITY), this, true);
+
+		for (String key : provideCapabilities.keySet()) {
+			Attrs attrs = provideCapabilities.get(key);
 			key = Processor.removeDuplicateMarker(key);
 			verifyNamespace(key, "Provide");
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Capability %s cardinality not correct", key);
