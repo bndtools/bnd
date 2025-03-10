@@ -190,6 +190,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		this.parent = parent;
 		if (parent != null) {
 			updateModified(parent.lastModified(), "parent");
+			this.pedantic = parent.isPedantic();
 		}
 	}
 

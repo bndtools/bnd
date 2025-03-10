@@ -174,7 +174,7 @@ public class BuilderTest {
 			b.setProperty("Require-Capability", "ns;filter:='(foo=1)',ns;filter:='(foo=2)',ns;filter:='(foo=1)'");
 			b.setProperty("Provide-Capability", "ns;foo=1,ns;foo=2");
 			Jar build = b.build();
-			b.check();
+			assertTrue(b.check());
 		}
 	}
 
