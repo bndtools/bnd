@@ -111,6 +111,8 @@ This will help prioritize the most common problems and requests.
 
 ### Conventions
 
+See [Bndtools Development: Tips and Tricks](DEV_README.md) for more detailed information, but the following are the basics.
+
 Fork the repo and make changes on your fork in a feature branch:
 
 - If it's a bugfix branch, name it XXX-something where XXX is the number of the issue

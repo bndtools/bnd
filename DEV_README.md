@@ -1,6 +1,160 @@
 Bndtools Development: Tips and Tricks
 =====================================
 
+Here are some tips for developing in bnd / bndtools.
+
+## Unit Tests
+
+
+### Soft Assertions
+
+We often use `org.assertj.core.api.SoftAssertions` (in combination with the JUnit `SoftAssertionsExtension`) in contrast to "hard" assertions (as in org.`assertj.core.api.Assertions.assertThat()`). 
+
+> With soft assertions AssertJ collects all assertion errors instead of stopping at the first one.
+> 	This is especially useful for long tests like end to end tests as we can fix all reported errors at once and avoid multiple failing runs.
+
+See https://assertj.github.io/doc/#assertj-core-soft-assertions for more details.
+
+You can use them on class level or method level.
+
+#### Class level
+
+```java
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(SoftAssertionsExtension.class)
+public class MyTest {
+
+	@InjectSoftAssertions
+	SoftAssertions softly;
+
+	@Test
+	public void test1() {
+		softly.assertThat("foo bar")
+			.contains("bar")
+			.doesNotContain("baz");
+	}
+}
+```
+
+#### Method level
+
+```java
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(SoftAssertionsExtension.class)
+public class MyTest {
+
+	@Test
+	public void test1(SoftAssertions softly) {
+		softly.assertThat("foo bar")
+			.contains("bar")
+			.doesNotContain("baz");
+	}
+}
+```
+
+Note that the method parameter does not need the annotation.
+Use that, if you just have very few test methods need SoftAssertions.
+
+#### Assertions on collections
+
+You get getter diagnostics from AssertJ if you assert directly on the collection, rather than retrieving the property (e.g. `size()`) or element and asserting on the property/element. This is because when it is operating directly on the collection AssertJ has more information about what you're expecting and can provide more debugging information about what was actually there.
+
+**Example:**
+
+For example, suppose that you want to check a list of warnings containing three warnings: `"blah", "foo", "snee"`.
+And let's say, you are expecting `bar`.
+
+```java
+List<String> warnings = List.of("blah", "foo", "snee");
+List<String> errors = List.of();
+
+// ...some setup of the processor, which produces some warnings, but no errors
+softly.assertThat(warnings).as("i expect warnings").containsExactly("bar"); 
+softly.assertThat(errors).as("errors").isEmpty();
+```
+
+You would get an error like this if `bar` is not contained:
+
+```
+Multiple Failures (1 failure)
+-- failure 1 --
+[i expect warnings] 
+Expecting actual:
+  ["blah", "foo", "snee"]
+to contain exactly (and in same order):
+  ["bar"]
+but some elements were not found:
+  ["bar"]
+and others were not expected:
+  ["blah", "foo", "snee"]
+```
+
+Also, when using soft assertions, it's good to use `as()` (gives the assertion a descriptive name), because this will be included in the diagnostic and when there are multiple failures it's easier to see at a glace which failures apply.
+
+Note: Similar methods also exist for `Iterable`, `Map` and `Properties`.
+
+#### Limits of soft assertions
+
+There are limits on the applicability of soft assertions. They work well when each assertion does not depend on prior assertions to be successful. Such as making a variety of checks on the contents of a collection. But when later assertions will not work when a previous assertion fails, then the previous assertion should not be soft. So sometimes a test method will need to use a mixture of "hard" assertions and then soft assertions.
+
+But sometimes also that mix of "hard" and "soft" assertions needs care:
+The problem with mixing hard assertions is that, if it fails, none of the soft assertion results are reported.
+
+Another way around this is to use `softly.wasSuccess()`, which returns `false` if the previous soft assertion failed. You can use this to conditionally execute the dependent assertions.
+
+## Temporary folders
+
+In tests you often need a temporary folder to put files for your testcases. To make working with temp folders easier (so you do not forget to delete the folder after your test), we have a `@InjectTemporaryDirectory` annotation which helps with that.
+
+You can put it on class level or in a parameter in a method. Each test method automatically has a distinct folder given by this annotation.
+
+### Class level
+
+```java
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
+import org.junit.jupiter.api.Test;
+
+public class MyTest {
+
+	@InjectTemporaryDirectory
+	File tmp;
+
+	@Test
+	public void test1() {}
+
+}
+```
+
+
+## Method level:
+
+```java
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
+import org.junit.jupiter.api.Test;
+
+public class MyTest {
+
+	@Test
+	public void test1(@InjectTemporaryDirectory
+	File tmp) {}
+}
+
+```
+
+Use that, if you just have very few test methods needing temp folders.
+
+
+
 Adding Error/Warning Markers
 ----------------------------
 
