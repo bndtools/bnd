@@ -48,7 +48,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -818,7 +817,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		doIncludes(file.getParentFile(), sub);
 
-		BiConsumer<String, String> set = getSetterWithProvenance(file, target, sub);
+		BiFunction<String, String, SetterResult> set = getSetterWithProvenance(file, target, sub);
 
 		// take care regarding overwriting properties
 		for (Map.Entry<?, ?> entry : sub.entrySet()) {
@@ -826,32 +825,98 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String value = (String) entry.getValue();
 
 			if (overwrite || !target.containsKey(key)) {
-				set.accept(key, value);
+				SetterResult res = set.apply(key, value);
+				if (overwrite && res.provenance() != null && res.prevValue() != null && !res.prevValue()
+					.equals(value)) {
+					// log warning if overwrite=true and value different than
+					// current value
+					warnOverwriteByInclude(key, res.provenance());
+				}
 			} else if (extensionName != null) {
 				String extensionKey = key + "." + extensionName;
 				if (!target.containsKey(extensionKey))
-					set.accept(extensionKey, value);
+					set.apply(extensionKey, value);
 			}
 		}
 	}
 
-	private BiConsumer<String, String> getSetterWithProvenance(File file, Properties target, Properties sub) {
+	private record SetterResult(Object prevValue, String provenance) {}
+
+	private BiFunction<String, String, SetterResult> getSetterWithProvenance(File file, Properties target,
+		Properties sub) {
 		int n = target instanceof UTF8Properties ? 1 : 0;
 		n += sub instanceof UTF8Properties ? 2 : 0;
-		BiConsumer<String, String> set = switch (n) {
+		return switch (n) {
 			case 1 -> {
 				UTF8Properties t = (UTF8Properties) target;
-				yield (k, v) -> t.setProperty(k, v, file.getAbsolutePath());
+				yield (k, v) -> {
+					String provenance = file.getAbsolutePath();
+					return new SetterResult(t.setProperty(k, v, provenance), provenance);
+
+				};
 			}
 			case 3 -> {
 				UTF8Properties t = (UTF8Properties) target;
 				UTF8Properties s = (UTF8Properties) sub;
-				yield (k, v) -> t.setProperty(k, v, s.getProvenance(k)
-					.orElse(file.getAbsolutePath()));
+				yield (k, v) -> {
+					String provenance = s.getProvenance(k)
+					.orElse(file.getAbsolutePath());
+					return new SetterResult(t.setProperty(k, v, provenance), provenance);
+				};
 			}
-			default -> (k, v) -> target.setProperty(k, v);
+			default -> (k, v) -> {
+				return new SetterResult(target.setProperty(k, v), null);
+			};
 		};
-		return set;
+	}
+
+	/**
+	 * Logs a warning for rather "counter-intuitive" overwrite-behavior of the
+	 * -include instruction, which can overwrite a value although the -include
+	 * instruction is before the instruction in the current file.
+	 * <p>
+	 * e.g. <code>
+	 *  <br />
+	 *  -include: a.bnd<br />
+	 *  SomeHeader: willBeOverridden
+	 *  </code>
+	 * </p>
+	 * This is due to how -include works, but it was leading to confusion and
+	 * hard to trace bugs, because users did not expect that behavior. Thus we
+	 * now warn when this happens.
+	 *
+	 * @param key they overridden key
+	 * @param provenance from where it was overridden (must not be
+	 *            <code>null</code>)
+	 */
+	private void warnOverwriteByInclude(String key, String provenance) {
+		String normalizeProvenance = normalizeProvenance(provenance);
+		SetLocation loc = warning(
+			"[Include Override]: `%s` declaration is overridden by -include: %s and thus ignored (consider using -include: ~%s).",
+			key,
+			normalizeProvenance,
+			normalizeProvenance);
+		try {
+			// try putting the warning on the "first loser" key
+			// whose value gets overridden by the include
+			FileLine header = getHeader(key);
+			header.set(loc);
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
+	private String normalizeProvenance(String provenance) {
+		String path = provenance;
+		if (path == null || path.isBlank()) {
+			return "";
+		}
+
+		File file = new File(path);
+		if (!file.isFile())
+			return path;
+
+		return normalize(file);
 	}
 
 	/**
