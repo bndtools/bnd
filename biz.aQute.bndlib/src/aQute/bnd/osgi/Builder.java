@@ -632,6 +632,7 @@ public class Builder extends Analyzer {
 
 		try (Verifier verifier = new Verifier(this)) {
 			verifier.setFrombuilder(true);
+			verifier.setPedantic(isPedantic());
 
 			verifier.verify();
 			getInfo(verifier);
