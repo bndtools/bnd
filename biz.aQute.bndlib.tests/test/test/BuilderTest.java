@@ -40,8 +40,11 @@ import java.util.zip.ZipOutputStream;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -72,8 +75,12 @@ import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 import aQute.service.reporter.Report.Location;
 
+@ExtendWith(SoftAssertionsExtension.class)
 @SuppressWarnings("resource")
 public class BuilderTest {
+
+	@InjectSoftAssertions
+	SoftAssertions softly;
 
 	/**
 	 * Test version with space
@@ -174,7 +181,28 @@ public class BuilderTest {
 			b.setProperty("Require-Capability", "ns;filter:='(foo=1)',ns;filter:='(foo=2)',ns;filter:='(foo=1)'");
 			b.setProperty("Provide-Capability", "ns;foo=1,ns;foo=2");
 			Jar build = b.build();
-			b.check();
+			assertTrue(b.check());
+		}
+	}
+
+	/**
+	 * the opposite of
+	 * {@link #testNoDuplicateWarningForHeadersThatAllowDuplicates()} where we
+	 * want the duplicate warning.
+	 */
+	@Test
+	public void testDuplicateWarningForHeadersThatDoNotAllowDuplicates() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setProperty("Import-Package", "a;version=1,a;version=2");
+			Jar build = b.build();
+			softly.assertThat(b.check())
+				.isFalse();
+			softly.assertThat(b.getWarnings())
+				.contains(
+					"Duplicate name a used in header: 'a;version=1,a;version=2'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).");
+
 		}
 	}
 

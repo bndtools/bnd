@@ -612,16 +612,16 @@ public class Verifier extends Processor {
 	public void verify() throws Exception {
 		verifyHeaders();
 		verifyDirectives(Constants.EXPORT_PACKAGE, "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE,
-			PACKAGEPATTERN, "package");
-		verifyDirectives(Constants.IMPORT_PACKAGE, "resolution:", PACKAGEPATTERN, "package");
-		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn");
-		verifyDirectives(Constants.FRAGMENT_HOST, "extension:", SYMBOLICNAME, "bsn");
+			PACKAGEPATTERN, "package", true);
+		verifyDirectives(Constants.IMPORT_PACKAGE, "resolution:", PACKAGEPATTERN, "package", false);
+		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn", false);
+		verifyDirectives(Constants.FRAGMENT_HOST, "extension:", SYMBOLICNAME, "bsn", false);
 		verifyDirectives(Constants.PROVIDE_CAPABILITY,
 			namespace -> "osgi.serviceloader".equals(namespace) ? "effective:|uses:|register:" : "effective:|uses:",
-			null, null);
-		verifyDirectives(Constants.REQUIRE_CAPABILITY, "effective:|resolution:|filter:|cardinality:", null, null);
+			null, null, true);
+		verifyDirectives(Constants.REQUIRE_CAPABILITY, "effective:|resolution:|filter:|cardinality:", null, null, true);
 		verifyDirectives(Constants.BUNDLE_SYMBOLICNAME, "singleton:|fragment-attachment:|mandatory:", SYMBOLICNAME,
-			"bsn");
+			"bsn", false);
 
 		verifyManifestFirst();
 		verifyActivator();
@@ -880,10 +880,12 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyRequirements() throws IllegalArgumentException, Exception {
-		Parameters map = parseHeader(manifest.getMainAttributes()
-			.getValue(Constants.REQUIRE_CAPABILITY));
-		for (String key : map.keySet()) {
-			Attrs attrs = map.get(key);
+
+		Parameters requireCapabilities = new Parameters(manifest.getMainAttributes()
+			.getValue(Constants.REQUIRE_CAPABILITY), this, true);
+
+		for (String key : requireCapabilities.keySet()) {
+			Attrs attrs = requireCapabilities.get(key);
 			key = Processor.removeDuplicateMarker(key);
 			verifyNamespace(key, "Require");
 
@@ -946,10 +948,11 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyCapabilities() {
-		Parameters map = parseHeader(manifest.getMainAttributes()
-			.getValue(Constants.PROVIDE_CAPABILITY));
-		for (String key : map.keySet()) {
-			Attrs attrs = map.get(key);
+		Parameters provideCapabilities = new Parameters(manifest.getMainAttributes()
+			.getValue(Constants.PROVIDE_CAPABILITY), this, true);
+
+		for (String key : provideCapabilities.keySet()) {
+			Attrs attrs = provideCapabilities.get(key);
 			key = Processor.removeDuplicateMarker(key);
 			verifyNamespace(key, "Provide");
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Capability %s cardinality not correct", key);
@@ -1015,8 +1018,9 @@ public class Verifier extends Processor {
 	 * @param type
 	 * @throws Exception
 	 */
-	private void verifyDirectives(String header, String directives, Pattern namePattern, String type) throws Exception {
-		verifyDirectives(header, namespace -> directives, namePattern, type);
+	private void verifyDirectives(String header, String directives, Pattern namePattern, String type,
+		boolean allowDuplicates) throws Exception {
+		verifyDirectives(header, namespace -> directives, namePattern, type, allowDuplicates);
 	}
 
 	/**
@@ -1028,10 +1032,12 @@ public class Verifier extends Processor {
 	 * @param type
 	 * @throws Exception
 	 */
-	private void verifyDirectives(String header, Function<String, String> directives, Pattern namePattern, String type)
+	private void verifyDirectives(String header, Function<String, String> directives, Pattern namePattern, String type,
+		boolean allowDuplicates)
 		throws Exception {
-		Parameters map = parseHeader(manifest.getMainAttributes()
-			.getValue(header));
+		Parameters map = new Parameters(manifest.getMainAttributes()
+			.getValue(header), this, allowDuplicates);
+
 		for (Entry<String, Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
 
