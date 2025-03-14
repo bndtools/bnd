@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import aQute.bnd.osgi.resource.MainClassNamespace;
 import aQute.bnd.result.Result;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.Strategy;
 import aQute.bnd.service.externalplugin.ExternalPluginNamespace;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
@@ -111,31 +113,25 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 
 	public Result<Integer> call(String mainClass, VersionRange range, Processor context, Map<String, String> attrs,
 		List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
-		List<File> cp = new ArrayList<>();
 		try {
 			String mainClassBin = Descriptors.fqnClassToBinary(mainClass);
+
+			String classpath = attrs.get("classpath");
+			Result<List<File>> cpResult = getClasspath(classpath, context);
+			if (cpResult.isErr())
+				return cpResult.asError();
+
+			List<File> cp = cpResult.unwrap();
+
 			boolean mainClassPresent = false;
-
-			Parameters cpp = new Parameters(attrs.get("classpath"));
-
-			for (Map.Entry<String, Attrs> e : cpp.entrySet()) {
-				String v = e.getValue()
-					.getVersion();
-				MavenVersion mv = MavenVersion.parseMavenString(v);
-
-				Result<File> result = workspace.getBundle(e.getKey(), mv.getOSGiVersion(), null);
-				if (result.isErr())
-					return result.asError();
-
-				try (Jar jar = new Jar(result.unwrap())) {
+			for (File file : cp) {
+				try (Jar jar = new Jar(file)) {
 					Resource resource = jar.getResource(mainClassBin);
 					if (resource != null) {
 						mainClassPresent = true;
 					}
 				}
-				cp.add(result.unwrap());
 			}
-
 			String filter = MainClassNamespace.filter(mainClass, range);
 
 			List<Capability> caps = workspace.findProviders(MainClassNamespace.MAINCLASS_NAMESPACE, filter)
@@ -175,8 +171,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			c.add(context.getProperty("java", IO.getJavaExecutablePath("java")));
 			c.add("-cp");
 
-			String classpath = Strings.join(File.pathSeparator, cp);
-			c.add(classpath);
+			c.add(Strings.join(File.pathSeparator, cp));
 
 			c.add(mainClass);
 
@@ -201,6 +196,46 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		} catch (Exception e) {
 			return Result.err("Failed with: %s", Exceptions.causes(e));
 		}
+	}
+
+	private Result<List<File>> getClasspath(String classpath, Processor context) throws Exception {
+		List<File> cp = new ArrayList<>();
+
+		if (context instanceof Project project) {
+			try {
+				if (classpath != null && !classpath.isBlank()) {
+					Collection<Container> bundles = project.getBundles(Strategy.HIGHEST, classpath);
+					for (Container c : bundles) {
+						if (c.getError() != null) {
+							return Result.err("dependency has error %s", c);
+						} else if (!c.getFile()
+							.isFile()) {
+							return Result.err("dependency is not an existing file %s", c);
+						} else {
+							cp.add(c.getFile());
+						}
+					}
+				}
+				return Result.ok(cp);
+			} catch (Exception e) {
+				logger.debug("loading classpath via project, if it fails we try old way: {}", e, e);
+			}
+		}
+
+		Parameters cpp = new Parameters(classpath);
+
+		for (Map.Entry<String, Attrs> e : cpp.entrySet()) {
+			String v = e.getValue()
+				.getVersion();
+			MavenVersion mv = MavenVersion.parseMavenString(v);
+
+			Result<File> result = workspace.getBundle(e.getKey(), mv.getOSGiVersion(), null);
+			if (result.isErr())
+				return result.asError();
+
+			cp.add(result.unwrap());
+		}
+		return Result.ok(cp);
 	}
 
 	private Task getTask(Command c) {
