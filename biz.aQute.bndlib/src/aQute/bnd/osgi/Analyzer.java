@@ -2114,8 +2114,10 @@ public class Analyzer extends Processor {
 				removeAttributes(importAttributes);
 
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
-				if (result == null || !Verifier.isVersionRange(result))
+				if ((result == null || !Verifier.isVersionRange(result))
+					&& complainAboutMissingVersionRange(packageRef)) {
 					noimports.add(packageRef);
+				}
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 				unsetProperty(CURRENT_BUNDLESYMBOLICNAME);
@@ -2126,6 +2128,26 @@ public class Analyzer extends Processor {
 		if (isPedantic() && noimports.size() != 0) {
 			warning("Imports that lack version ranges: %s", noimports);
 		}
+	}
+
+	/**
+	 * If <code>false</code> then this means this package probably does not
+	 * provide a version and we are fine and do not complain about it (e.g. JDK
+	 * packages). <code>true</code> means, we will complain about a missing or
+	 * invalid version-range.
+	 *
+	 * @param pck
+	 * @return <code>true</code> if should complain about missing version
+	 *         <code>false</code> otherwise.
+	 */
+	private boolean complainAboutMissingVersionRange(PackageRef pck) {
+		if (pck.isJava() || pck.fqn.startsWith("javax.net") || pck.fqn.startsWith("javax.security")
+			|| pck.fqn.startsWith("javax.crypto")) {
+			// there might be more, but also be careful, as not all javax. are
+			// from JDK. So this is all a best-guess
+			return false;
+		}
+		return true;
 	}
 
 	Pair<Packages, Parameters> divideRegularAndDynamicImports() {
