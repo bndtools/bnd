@@ -576,7 +576,9 @@ public class Syntax implements Constants {
 			"If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + \".jar\".",
 			OUTPUTMASK + "=my_file.zip", null, null),
 		new Syntax(PACKAGEINFOTYPE, "Sets the different types of package info.", PACKAGEINFOTYPE + "=osgi", null, null),
-		new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right.", PEDANTIC + "=true",
+		new Syntax(PEDANTIC,
+			"Warn about things that are not really wrong but still not right. Note: Currently a change to this instruction requires a restart of Eclipse.",
+			PEDANTIC + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(PLUGIN, "Define the plugins.",
