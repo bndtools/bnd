@@ -38,6 +38,7 @@
             bndtools.jareditor, \
             bndtools.m2e, \
             bndtools.pde, \
+            bndtools.ecf, \
             bndtools.release, \
             org.bndtools.applaunch, \
             org.bndtools.headless.build.manager, \
