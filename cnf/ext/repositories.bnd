@@ -37,12 +37,6 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
         index="${.}/baseline.mvn";\
         readOnly=true
 
--plugin.4.ECFRSSDK: \
- 	aQute.bnd.repository.p2.provider.P2Repository; \
- 	url = https://download.eclipse.org/rt/ecf/latest/site.p2; \
- 	name = ECF Remote Services SDK
-
-
 -buildrepo: Local
 -releaserepo: Release
 -releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
