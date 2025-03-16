@@ -93,6 +93,24 @@ var p2FeaturePde = tasks.register("p2FeaturePde", Zip.class) {
 	}
 }
 
+var p2FeatureEcf = tasks.register("p2FeatureEcf", Zip.class) {
+	inputs.files(p2FeatureProperties).withPropertyName("p2FeatureProperties")
+	inputs.property("p2.version", p2Version)
+	destinationDirectory = layout.getBuildDirectory().dir("features")
+	archiveFileName = "bndtools.ecf.feature.jar"
+	from("features/bndtools.ecf")
+	include("feature.xml")
+	var propertiesFile = p2FeatureProperties.flatMap { it.destinationFile }
+	doFirst("filter") { t ->
+		Properties properties = new Properties()
+		propertiesFile.get().getAsFile().withReader("UTF-8") {
+			properties.load(it)
+			properties.put("master-version", masterVersion)
+		}
+		t.filter(ReplaceTokens.class, "tokens": properties)
+	}
+}
+
 var p2 = tasks.register("p2") {
 	description = "Publish the p2 repositories."
 	group = PublishingPlugin.PUBLISH_TASK_GROUP
@@ -103,6 +121,7 @@ var p2 = tasks.register("p2") {
 	inputs.files(p2FeatureMain).withPropertyName("p2FeatureMain")
 	inputs.files(p2FeatureM2e).withPropertyName("p2FeatureM2e")
 	inputs.files(p2FeaturePde).withPropertyName("p2FeaturePde")
+	inputs.files(p2FeaturePde).withPropertyName("p2FeatureEcf")
 	inputs.file("p2.xml").withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("p2.xml")
 	inputs.file("features/category.xml").withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("category.xml")
 	var buildDirectoryProperty = layout.getBuildDirectory()
