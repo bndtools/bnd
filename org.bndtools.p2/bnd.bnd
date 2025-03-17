@@ -13,6 +13,7 @@ timestamp: ${tstamp}
     bndtools.jareditor, \
     bndtools.m2e, \
     bndtools.pde, \
+    bndtools.ecf, \
     bndtools.release, \
     org.bndtools.headless.build.manager, \
     org.bndtools.headless.build.plugin.ant, \
