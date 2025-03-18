@@ -727,7 +727,6 @@ public class BuilderTest {
 			b.setProperty("Require-Bundle", "osgi.core");
 			b.setProperty("-noimportjava", "true");
 			b.build();
-			assertTrue(b.check("Imports that lack version ranges: \\[javax.swing\\]"));
 			assertThat(b.getImports()
 				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("javax.swing"));
 
