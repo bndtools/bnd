@@ -1,5 +1,4 @@
-Bndtools Development: Tips and Tricks
-=====================================
+# Bndtools Development: Tips and Tricks
 
 Here are some tips for developing in bnd / bndtools.
 
@@ -136,7 +135,7 @@ public class MyTest {
 ```
 
 
-## Method level:
+### Method level:
 
 ```java
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
@@ -155,8 +154,7 @@ Use that, if you just have very few test methods needing temp folders.
 
 
 
-Adding Error/Warning Markers
-----------------------------
+## Adding Error/Warning Markers
 
 Bndtools aims to be a thin wrapper over bnd. This means that it is comparatively rare that bndtools 
 should be creating errors or warnings. In most cases bnd is responsible for generating errors at
@@ -242,10 +240,9 @@ Error markers will now appear in the right places. More work can be done to add 
 it's much harder than adding the markers.
 
 
-# Using the `ExtensionFacade`
--------------------------------
+## Using the `ExtensionFacade`
 
-## What is the `ExtensionFacade`?
+### What is the `ExtensionFacade`?
 
 `org.bndtools.facade.ExtensionFacade` was developed by the core Bndtools
 team as part of the `bndtools.core` project. It acts as a bridge between the
@@ -253,7 +250,7 @@ Eclipse extension registry and OSGi Declarative Services components. Thus it
 allows you to deploy Eclipse extensions in your plugins that are implemented as
 OSGi Declarative Services components.
 
-## Why use the `ExtensionFacade`?
+### Why use the `ExtensionFacade`?
 
 Eclipse extensions tend to be quite static. Although in theory the ExtensionRegistry
 was meant to allow dynamic extensions, in practice the assumption that the extension
@@ -274,9 +271,9 @@ as their plugin development platform, as it enables you to make use of Bndtools'
 live coding/testing feature. This significantly improves the rate at which you can
 develop/deploy/test changes to your plugin.
 
-## How to use the `ExtensionFacade`
+### How to use the `ExtensionFacade`
 
-### Modes of operation
+#### Modes of operation
 There are two ways to use the `ExtensionFacade`:
 
 1. Factory mode - in this case, the `ExtensionFacade` simply acts as a
@@ -290,7 +287,7 @@ exception any time one of its methods is invoked.
 
 A comparison of the advantages of each mode follows.
 
-#### Full proxy mode
+##### Full proxy mode
 
 The full proxy mode presents the same extension object to the rest of the system
 for the life of the Workbench. This makes it more suitable when you have
@@ -316,7 +313,7 @@ Eclipse (eg, builders) have a class or an abstract class as their base class.
 The full proxy mode also involves a theoretical performance overhead for
 requests (though this is not likely to be of practical significance).
 
-#### Factory mode
+##### Factory mode
 
 The factory mode directly returns a reference to the backing component service
 every time `create()` is called. This means that the returned object it will
@@ -332,7 +329,7 @@ references to stale components when their implementation bundle is stopped or be
 able to instantiate the new implementation after the freshly-installed bundle is
 started.
 
-### When to use each mode
+#### When to use each mode
 
 Generally speaking, you will most likely get smoother results using the proxy
 mode when you can, and use the factory mode as a fallback if you run into one of
@@ -343,7 +340,7 @@ properly - eg, a client of an extension that has a class as its base type, but
 the client also hangs on to references in a static variable. Unfortunately in 
 this case you'll have to abandon the use of the `ExtensionFacade` altogether.
 
-### How to use
+#### How to use
 
 1. Register your extension in the `plugin.xml` of a bundle that won't be
 restarted. For Bndtools, the best choice is probably `bndtools.core`.
@@ -381,7 +378,7 @@ will not be able to restart it.
 That's all that is needed. With this setup, you can restart your implementation
 bundle dynamically without breaking your running Eclipse workbench.
 
-#### Programmatic instantiation of extensions
+##### Programmatic instantiation of extensions
 
 Sometimes in your Eclipse plugin code you will want to directly instantiate a
 component implementation programmatically. However, this creates a hard dependency
@@ -399,7 +396,7 @@ a new backing component arrives or is closed. `RunAction` uses this feature
 to enable/disable itself depending on whether or not the backing component is
 present.
 
-## Overriding the `component.name`
+### Overriding the `component.name`
 
 By default, the `ExtensionFacade` will use the extension element's `id` attribute to
 look for a DS component with a `component.name` that matches. However, sometimes you
@@ -411,7 +408,7 @@ of the class.
 If you need to combine the factory mode with this feature, leave the name of the class
 blank (eg, `class="org.bndtools.facade.ExtensionFacade::my.component.name"`).
 
-## Examples of the `ExtensionFacade` in action
+### Examples of the `ExtensionFacade` in action
 
 The prototype example of how to use the `ExtensionFacade` is in the 
 `org.bndtools.launch` bundle, which contains the launch-related code
@@ -419,3 +416,139 @@ for Bndtools. This bundle was used as a proving ground for the
 `ExtensionFacade`'s initial development. The extensions are registered in
 `bndtools.core` and `bndtools.m2e`'s `plugin.xml` files, using the
 `ExtensionFacade` configured as described above.
+
+
+## Generating JDK properties files
+
+The files like `JavaSE_17.properties` (read by `EE.init()` (see [EE.java](EE.java))) 
+contain all java packages provided by a given JDK and are generated using a CLI tool https://github.com/bjhargrave/java-platform-packages
+
+To make it a bit easier to run the tool to generate the files for new JDKs the following section will give some options.
+
+### Helper Scripts
+
+The scripts below are also available under https://github.com/chrisrueger/jdk-packages
+
+Let's say there is a new JDK 21 and you want to create a `JavaSE_21.properties` for it.
+Checkout this repo and run the following commands inside the repo:
+
+```
+./download_jdk.sh 21 mac aarch64
+
+./list_jdk_packages_for_bnd.sh 21 mac aarch64 > "JavaSE_21.properties"
+```
+
+This will create a `JavaSE_21.properties`, which you can then copy to this folder here ([biz.aQute.bndlib/src/aQute/bnd/build/model/](.)).
+
+In case this repository above is not available anymore you can also create the following scripts yourself.
+
+
+#### Script for generating the properties
+
+This script generates the .properties file for a specific JDK.
+It requires that the other script for downloading the JDK has run before (see below).
+
+- *filename:* `list_jdk_packages_for_bnd.sh`
+- *Example:* `./list_jdk_packages_for_bnd.sh 21 mac aarch64 > "JavaSE_21.properties"`
+
+```shell
+
+#!/bin/bash
+
+# This script is specific for [bnd / bndtools](https://github.com/bndtools/bnd). 
+# It is basically a CLI wrapper around https://github.com/bjhargrave/java-platform-packages
+
+# Check if all required parameters are provided
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <JDK_VERSION> <OS> <ARCH>"
+    echo "Example: $0 17 linux x64"
+    echo "         $0 17 mac aarch64"
+    echo "         $0 17 windows x64"
+    exit 1
+fi
+
+# Mandatory parameters
+version="$1"   # JDK Version (e.g., 17 for JDK 17)
+OS="$2"        # OS Type (e.g., "linux", "mac", "windows")
+ARCH="$3"      # Architecture (e.g., "x64", "aarch64" for Mac M1)
+
+# Directory where JDKs are stored
+JDK_DIR="./jdks-$OS-$ARCH/jdk-$version"
+
+JAVA_SRC_DIR="javasrc_temp/io/hargrave/java/packages"
+mkdir -p "$JAVA_SRC_DIR"
+curl -L "https://raw.githubusercontent.com/bjhargrave/java-platform-packages/refs/heads/master/src/main/java/io/hargrave/java/packages/CalculateJavaPlatformPackages.java" -o "$JAVA_SRC_DIR/CalculateJavaPlatformPackages.java"
+
+if [ -d "$JDK_DIR" ]; then
+    if [ -x "$JDK_DIR/bin/java" ]; then
+        JAVA_CMD="$JDK_DIR/bin/java"  # Linux JDK path
+        JAVAC_CMD="$JDK_DIR/bin/javac"  
+    elif [ -x "$JDK_DIR/Contents/Home/bin/java" ]; then
+        JAVA_CMD="$JDK_DIR/Contents/Home/bin/java"  # macOS JDK path
+        JAVAC_CMD="$JDK_DIR/Contents/Home/bin/javac"  
+    else
+        echo "Error: No Java executable found in $JDK_DIR"
+        exit 1
+    fi
+
+    # Ensure the Java executable exists
+    if [ -x "$JAVA_CMD" ]; then
+        # Run the module listing command directly with this JDK
+        $JAVAC_CMD $JAVA_SRC_DIR/CalculateJavaPlatformPackages.java
+        $JAVA_CMD -cp javasrc_temp io.hargrave.java.packages.CalculateJavaPlatformPackages
+    else
+        echo "Error: No Java executable found in $JDK_DIR"
+    fi
+
+    echo
+fi
+```
+
+#### Script for downloading the JDK
+
+- *filename:* `download_jdk.sh`
+- *Example:* `./download_jdk.sh 21 mac aarch64`
+
+```shell
+
+#!/bin/bash
+
+# Check if all required parameters are provided
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <JDK_VERSION> <OS> <ARCH>"
+    echo "Example: $0 17 linux x64"
+    echo "         $0 17 mac aarch64"
+    echo "         $0 17 windows x64"
+    exit 1
+fi
+
+# Mandatory parameters
+version="$1"   # JDK Version (e.g., 17 for JDK 17)
+OS="$2"        # OS Type (e.g., "linux", "mac", "windows")
+ARCH="$3"      # Architecture (e.g., "x64", "aarch64" for Mac M1)
+
+# Directory to store JDKs
+JDK_DIR="./jdks-$OS-$ARCH"
+mkdir -p "$JDK_DIR"
+
+# Adoptium base URL (update this if needed)
+ADOPTIUM_URL="https://api.adoptium.net/v3/binary/latest"
+
+
+# Download and extract each JDK
+echo "Downloading JDK $version..."
+
+# Construct the download URL
+JDK_FILE="$JDK_DIR/jdk-$version.tar.gz"
+JDK_EXTRACT_DIR="$JDK_DIR/jdk-$version"
+
+curl -L "$ADOPTIUM_URL/$version/ga/$OS/$ARCH/jdk/hotspot/normal/eclipse?project=jdk" -o "$JDK_FILE"
+
+echo "Extracting JDK $version..."
+mkdir -p "$JDK_EXTRACT_DIR"
+tar -xzf "$JDK_FILE" --strip-components=1 -C "$JDK_EXTRACT_DIR"
+
+rm "$JDK_FILE"  # Clean up downloaded archive
+
+echo "All JDKs downloaded and extracted!"
+```
