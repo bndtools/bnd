@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.Export;
 import aQute.bnd.apiguardian.api.API;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.exceptions.Exceptions;
@@ -2011,6 +2012,7 @@ public class Analyzer extends Processor {
 	void augmentImports(Packages imports, Packages exports) throws Exception {
 		List<PackageRef> noimports = Create.list();
 		Set<PackageRef> provided = findProvidedPackages();
+		EE ee = EE.parse(getHighestEE().getEE());
 
 		for (PackageRef packageRef : imports.keySet()) {
 			String packageName = packageRef.getFQN();
@@ -2115,7 +2117,7 @@ public class Analyzer extends Processor {
 
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
 				if ((result == null || !Verifier.isVersionRange(result))
-					&& complainAboutMissingVersionRange(packageRef)) {
+					&& complainAboutMissingVersionRange(packageRef, ee)) {
 					noimports.add(packageRef);
 				}
 			} finally {
@@ -2140,9 +2142,9 @@ public class Analyzer extends Processor {
 	 * @return <code>true</code> if should complain about missing version
 	 *         <code>false</code> otherwise.
 	 */
-	private boolean complainAboutMissingVersionRange(PackageRef pck) {
-		if (pck.isJava() || pck.fqn.startsWith("javax.net") || pck.fqn.startsWith("javax.security")
-			|| pck.fqn.startsWith("javax.crypto")) {
+	private boolean complainAboutMissingVersionRange(PackageRef pck, EE ee) {
+
+		if (pck.isJava() || pck.isJDK(ee)) {
 			// there might be more, but also be careful, as not all javax. are
 			// from JDK. So this is all a best-guess
 			return false;
