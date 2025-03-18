@@ -507,38 +507,58 @@ version(s), and exceptions or additional permissions here}.&quot;
       <update label="Bndtools Update Site" url="https://bndtools.jfrog.io/bndtools/update-latest"/>
    </url>
 
-   <includes
-         id="org.eclipse.ecf.core.feature"
+   <plugin
+         id="org.eclipse.ecf"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.ecf.discovery.feature"
+   <plugin
+         id="org.eclipse.ecf.identity"
+         version="0.0.0"/>
+   
+   <plugin
+         id="org.eclipse.ecf.sharedobject"
+         version="0.0.0"/>
+         
+   <plugin
+         id="org.eclipse.ecf.provider"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.ecf.discovery.jmdns.feature"
+   <plugin
+         id="org.eclipse.ecf.console"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.ecf.osgi.services.feature"
+   <plugin
+         id="org.eclipse.ecf.discovery"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.ecf.provider.generic.feature"
+   <plugin
+         id="org.eclipse.ecf.provider.jmdns"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.ecf.provider.generic.remoteservice.feature"
+   <plugin
+         id="org.eclipse.ecf.osgi.services.distribution"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.ecf.remoteservice.feature"
+   <plugin
+         id="org.eclipse.ecf.osgi.services.remoteserviceadmin.console"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.ecf.sharedobject.feature"
+   <plugin
+         id="org.eclipse.ecf.osgi.services.remoteserviceadmin"
          version="0.0.0"/>
 
+   <plugin
+         id="org.eclipse.osgi.services.remoteserviceadmin"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.osgi.services.remoteserviceadmin.proxy"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.provider.remoteservice"
+         version="0.0.0"/>
+         
    <plugin
          id="org.eclipse.ecf.discovery.ui"
          version="0.0.0"/>
