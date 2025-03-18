@@ -536,19 +536,31 @@ version(s), and exceptions or additional permissions here}.&quot;
          version="0.0.0"/>
 
    <includes
-         id="org.eclipse.ecf.remoteservice.sdk.bndtools.feature"
-         version="0.0.0"/>
-
-   <includes
-         id="org.eclipse.ecf.remoteservice.servlet.feature"
-         version="0.0.0"/>
-
-   <includes
-         id="org.eclipse.ecf.server.generic.feature"
-         version="0.0.0"/>
-
-   <includes
          id="org.eclipse.ecf.sharedobject.feature"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.discovery.ui"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.discovery.ui.edit"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.discovery.ui.model"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.discovery.ui.properties"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.remoteservice.ui"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ecf.remoteservices.tooling.bndtools"
          version="0.0.0"/>
 
    <requires>
