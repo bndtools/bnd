@@ -75,8 +75,8 @@ import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 import aQute.service.reporter.Report.Location;
 
-@ExtendWith(SoftAssertionsExtension.class)
 @SuppressWarnings("resource")
+@ExtendWith(SoftAssertionsExtension.class)
 public class BuilderTest {
 
 	@InjectSoftAssertions
@@ -3717,4 +3717,22 @@ public class BuilderTest {
 		}
 	}
 
+	/**
+	 * Tests that an Import-Package without a version-range creates a warning in
+	 * pedantic mode.
+	 */
+	@Test
+	public void testWarningImportsThatLackVersionRanges() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+			b.setProperty("Import-Package", "foo.bar");
+			b.build();
+			softly.assertThat(b.check("Imports that lack version ranges: \\[foo.bar\\]",
+				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
+				.isTrue();
+			softly.assertThat(b.getImports()
+				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("foo.bar"));
+
+		}
+	}
 }

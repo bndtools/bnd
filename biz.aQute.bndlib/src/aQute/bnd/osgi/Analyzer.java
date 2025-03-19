@@ -2145,8 +2145,6 @@ public class Analyzer extends Processor {
 	private boolean complainAboutMissingVersionRange(PackageRef pck, EE ee) {
 
 		if (pck.isJava() || pck.isJDK(ee)) {
-			// there might be more, but also be careful, as not all javax. are
-			// from JDK. So this is all a best-guess
 			return false;
 		}
 		return true;
