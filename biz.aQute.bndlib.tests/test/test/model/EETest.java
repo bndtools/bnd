@@ -150,10 +150,13 @@ public class EETest {
 		// this package appeared in JDK 1.6+
 		// see .properties in aQute.bnd.build.model
 		PackageRef pck = new Descriptors().getPackageRef("javax.xml.transform.stax");
-		assertThat(pck.isJDK(EE.J2SE_1_2)).isFalse();
-		assertThat(pck.isJDK(EE.J2SE_1_5)).isFalse();
-		assertThat(pck.isJDK(EE.JavaSE_1_6)).isTrue();
-		assertThat(pck.isJDK(EE.JavaSE_17)).isTrue();
+		assertThat(EE.J2SE_1_2.getPackages().containsKey(pck.getFQN())).isFalse();
+		assertThat(EE.J2SE_1_5.getPackages()
+			.containsKey(pck.getFQN())).isFalse();
+		assertThat(EE.JavaSE_1_6.getPackages()
+			.containsKey(pck.getFQN())).isTrue();
+		assertThat(EE.JavaSE_17.getPackages()
+			.containsKey(pck.getFQN())).isTrue();
 	}
 
 	static class EEsArgumentsProvider implements ArgumentsProvider {

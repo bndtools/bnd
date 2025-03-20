@@ -10,7 +10,6 @@ import java.util.Objects;
 
 import org.osgi.annotation.versioning.ProviderType;
 
-import aQute.bnd.build.model.EE;
 import aQute.bnd.result.Result;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
@@ -126,19 +125,6 @@ public class Descriptors {
 		 */
 		public boolean isJava() {
 			return java;
-		}
-
-		/**
-		 * @return <code>true</code> if this package is part of the JDK for the
-		 *         given ee.
-		 */
-		public boolean isJDK(EE ee) {
-			if (ee == null) {
-				return false;
-			}
-
-			return ee.getPackages()
-				.containsKey(fqn);
 		}
 
 		@Override

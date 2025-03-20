@@ -2012,7 +2012,7 @@ public class Analyzer extends Processor {
 	void augmentImports(Packages imports, Packages exports) throws Exception {
 		List<PackageRef> noimports = Create.list();
 		Set<PackageRef> provided = findProvidedPackages();
-		EE ee = EE.parse(getHighestEE().getEE());
+		EE ee = getEEFromReqsOrHighest();
 
 		for (PackageRef packageRef : imports.keySet()) {
 			String packageName = packageRef.getFQN();
@@ -2132,6 +2132,15 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	private EE getEEFromReqsOrHighest() {
+		SortedSet<EE> eesFromRequirement = EE.getEEsFromRequirement(get(Constants.REQUIRE_CAPABILITY));
+		if (!eesFromRequirement.isEmpty()) {
+			// return lowest (minimum required EE)
+			return eesFromRequirement.first();
+		}
+		return EE.parse(getHighestEE().getEE());
+	}
+
 	/**
 	 * If <code>false</code> then this means this package probably does not
 	 * provide a version and we are fine and do not complain about it (e.g. JDK
@@ -2144,10 +2153,23 @@ public class Analyzer extends Processor {
 	 */
 	private boolean complainAboutMissingVersionRange(PackageRef pck, EE ee) {
 
-		if (pck.isJava() || pck.isJDK(ee)) {
+		if (pck.isJava() || isJDK(pck, ee)) {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * @return <code>true</code> if this package is part of the JDK for the
+	 *         given ee.
+	 */
+	private boolean isJDK(PackageRef pck, EE ee) {
+		if (ee == null) {
+			return false;
+		}
+
+		return ee.getPackages()
+			.containsKey(pck.fqn);
 	}
 
 	Pair<Packages, Parameters> divideRegularAndDynamicImports() {
