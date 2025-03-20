@@ -773,7 +773,7 @@ public class Project extends Processor {
 
 		SortedMap<String, Pair<Version, RepositoryPlugin>> providerMap = new TreeMap<>();
 
-		List<RepositoryPlugin> plugins = workspace.getRepositories();
+		List<RepositoryPlugin> plugins = getRepositories();
 		for (RepositoryPlugin plugin : plugins) {
 
 			if (repoFilter != null && !repoFilter.match(plugin))
@@ -1278,7 +1278,7 @@ public class Project extends Processor {
 		useStrategy = overrideStrategy(attrs, useStrategy);
 		RepoFilter repoFilter = parseRepoFilter(attrs);
 
-		List<RepositoryPlugin> plugins = workspace.getRepositories();
+		List<RepositoryPlugin> plugins = getRepositories();
 
 		if (useStrategy == Strategy.EXACT) {
 			if (!Verifier.isVersion(range))
@@ -1384,6 +1384,18 @@ public class Project extends Processor {
 		return new Container(this, bsn, range, Container.TYPE.ERROR, null,
 			bsn + ";version=" + range + " Not found in " + plugins, attrs, null);
 
+	}
+
+	/**
+	 * Provides relevant repositories used by some other methods. By default it
+	 * returns all Repositories of the Workspace. Subclasses can override it to
+	 * provide different or additional repositories. Subclasses should make sure
+	 * this method is efficient, as it might be called at high frequency.
+	 *
+	 * @return a list of relevant repositories used by various methods.
+	 */
+	public List<RepositoryPlugin> getRepositories() {
+		return workspace.getRepositories();
 	}
 
 	/**
@@ -1502,7 +1514,7 @@ public class Project extends Processor {
 			hash = (colonIndex < hashStr.length()) ? hashStr.substring(afterColon) : "";
 		}
 
-		for (RepositoryPlugin plugin : workspace.getRepositories()) {
+		for (RepositoryPlugin plugin : getRepositories()) {
 			// The plugin *may* understand version=hash directly
 			DownloadBlocker blocker = new DownloadBlocker(this);
 			File result = plugin.get(bsn, Version.LOWEST, Collections.unmodifiableMap(attrs), blocker);
