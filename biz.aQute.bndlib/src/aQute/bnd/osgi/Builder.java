@@ -1521,20 +1521,21 @@ public class Builder extends Analyzer {
 
 		builders = getSubBuilders();
 
-		for (Builder builder : builders) {
-			try {
-				startBuild(builder);
-				Jar jar = builder.build();
-				jar.setName(builder.getBsn());
+		builders.parallelStream()
+			.forEach(builder -> {
+				try {
+					startBuild(builder);
+					Jar jar = builder.build();
+					jar.setName(builder.getBsn());
+					result.add(jar);
+					doneBuild(builder);
+				} catch (Exception e) {
+					builder.exception(e, "Exception Building %s", builder.getBsn());
+				}
+				if (builder != this)
+					getInfo(builder, builder.getBsn() + ": ");
+			});
 
-				result.add(jar);
-				doneBuild(builder);
-			} catch (Exception e) {
-				builder.exception(e, "Exception Building %s", builder.getBsn());
-			}
-			if (builder != this)
-				getInfo(builder, builder.getBsn() + ": ");
-		}
 		return result.toArray(new Jar[0]);
 	}
 
