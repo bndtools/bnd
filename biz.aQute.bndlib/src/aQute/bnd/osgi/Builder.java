@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarFile;
@@ -1516,25 +1517,34 @@ public class Builder extends Analyzer {
 			return result;
 		}
 
-		List<Jar> result = new ArrayList<>();
-		List<Builder> builders;
+		List<Builder> builders = getSubBuilders();
 
-		builders = getSubBuilders();
+		for (Builder builder : builders) {
+			startBuild(builder);
+		}
+
+		Collection<Jar> result = new ConcurrentLinkedQueue<>();
+		Collection<Builder> doneBuilders = new ConcurrentLinkedQueue<>();
 
 		builders.parallelStream()
 			.forEach(builder -> {
 				try {
-					startBuild(builder);
+
 					Jar jar = builder.build();
 					jar.setName(builder.getBsn());
 					result.add(jar);
-					doneBuild(builder);
+					doneBuilders.add(builder);
+
 				} catch (Exception e) {
 					builder.exception(e, "Exception Building %s", builder.getBsn());
 				}
 				if (builder != this)
 					getInfo(builder, builder.getBsn() + ": ");
 			});
+
+		for (Builder builder : doneBuilders) {
+			doneBuild(builder);
+		}
 
 		return result.toArray(new Jar[0]);
 	}
