@@ -1520,7 +1520,11 @@ public class Builder extends Analyzer {
 		List<Builder> builders = getSubBuilders();
 
 		for (Builder builder : builders) {
-			startBuild(builder);
+			try {
+				startBuild(builder);
+			} catch (Exception e) {
+				builder.exception(e, "Exception Start Building %s", builder.getBsn());
+			}
 		}
 
 		Collection<Jar> result = new ConcurrentLinkedQueue<>();
@@ -1538,12 +1542,17 @@ public class Builder extends Analyzer {
 				} catch (Exception e) {
 					builder.exception(e, "Exception Building %s", builder.getBsn());
 				}
-				if (builder != this)
-					getInfo(builder, builder.getBsn() + ": ");
 			});
 
 		for (Builder builder : doneBuilders) {
-			doneBuild(builder);
+			try {
+				doneBuild(builder);
+			} catch (Exception e) {
+				builder.exception(e, "Exception Done Building %s", builder.getBsn());
+			}
+
+			if (builder != this)
+				getInfo(builder, builder.getBsn() + ": ");
 		}
 
 		return result.toArray(new Jar[0]);
