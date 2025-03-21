@@ -309,6 +309,8 @@ public class MultiReleaseTest {
 				META-INF/versions/11/jdk_11_0/=compilerversions/src/jdk_11_0/, \
 				META-INF/versions/17/jdk_17/=compilerversions/src/jdk_17/, \
 				META-INF/versions/19/jdk_19/=compilerversions/src/jdk_19/, \
+				META-INF/versions/21/jdk_21/=compilerversions/src/jdk_21/, \
+				META-INF/versions/24/jdk_24/=compilerversions/src/jdk_24/, \
 				""");
 
 			Jar jar = builder.build();
@@ -325,6 +327,12 @@ public class MultiReleaseTest {
 
 			assertThat(jar.getResource("META-INF/versions/19/OSGI-INF/MANIFEST.MF")).isNotNull();
 			assertThat(jar.getResource("META-INF/versions/19/module-info.class")).isNotNull();
+
+			assertThat(jar.getResource("META-INF/versions/21/OSGI-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/21/module-info.class")).isNotNull();
+
+			assertThat(jar.getResource("META-INF/versions/24/OSGI-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/24/module-info.class")).isNotNull();
 
 		}
 	}
