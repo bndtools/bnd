@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarFile;
@@ -1516,25 +1517,44 @@ public class Builder extends Analyzer {
 			return result;
 		}
 
-		List<Jar> result = new ArrayList<>();
-		List<Builder> builders;
-
-		builders = getSubBuilders();
+		List<Builder> builders = getSubBuilders();
 
 		for (Builder builder : builders) {
 			try {
 				startBuild(builder);
-				Jar jar = builder.build();
-				jar.setName(builder.getBsn());
+			} catch (Exception e) {
+				builder.exception(e, "Exception Start Building %s", builder.getBsn());
+			}
+		}
 
-				result.add(jar);
+		Collection<Jar> result = new ConcurrentLinkedQueue<>();
+		Collection<Builder> doneBuilders = new ConcurrentLinkedQueue<>();
+
+		builders.parallelStream()
+			.forEach(builder -> {
+				try {
+
+					Jar jar = builder.build();
+					jar.setName(builder.getBsn());
+					result.add(jar);
+					doneBuilders.add(builder);
+
+				} catch (Exception e) {
+					builder.exception(e, "Exception Building %s", builder.getBsn());
+				}
+			});
+
+		for (Builder builder : doneBuilders) {
+			try {
 				doneBuild(builder);
 			} catch (Exception e) {
-				builder.exception(e, "Exception Building %s", builder.getBsn());
+				builder.exception(e, "Exception Done Building %s", builder.getBsn());
 			}
+
 			if (builder != this)
 				getInfo(builder, builder.getBsn() + ": ");
 		}
+
 		return result.toArray(new Jar[0]);
 	}
 
