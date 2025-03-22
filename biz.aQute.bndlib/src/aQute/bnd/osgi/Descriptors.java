@@ -120,6 +120,9 @@ public class Descriptors {
 			return binaryName;
 		}
 
+		/**
+		 * @return <code>true</code> if this is a "java." package.
+		 */
 		public boolean isJava() {
 			return java;
 		}
