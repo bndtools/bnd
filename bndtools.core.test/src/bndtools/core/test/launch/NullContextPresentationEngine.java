@@ -1,7 +1,5 @@
 package bndtools.core.test.launch;
 
-import javax.inject.Inject;
-
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.internal.workbench.swt.IEventLoopAdvisor;
@@ -13,6 +11,8 @@ import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.swt.widgets.Display;
+
+import jakarta.inject.Inject;
 
 /**
  * IPresentationEngine implementation that doesn't render anything or store any

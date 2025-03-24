@@ -38,7 +38,6 @@
 	bnd.identity;id='bndtools.pde',\
 	bnd.identity;id='bndtools.release',\
 	bnd.identity;id='com.google.guava',\
-	bnd.identity;id='javax.annotation',\
 	bnd.identity;id='org.apache.ant',\
 	bnd.identity;id='org.apache.felix.gogo.command',\
 	bnd.identity;id='org.apache.felix.gogo.runtime',\
@@ -78,6 +77,7 @@
 	bnd.identity;id='org.eclipse.m2e.discovery',\
 	bnd.identity;id='org.eclipse.m2e.editor',\
 	bnd.identity;id='org.eclipse.m2e.jdt.ui',\
+	bnd.identity;id='org.eclipse.m2e.maven.runtime',\
 	bnd.identity;id='org.eclipse.m2e.profiles.core',\
 	bnd.identity;id='org.eclipse.m2e.profiles.ui',\
 	bnd.identity;id='org.eclipse.m2e.refactoring',\
@@ -97,23 +97,25 @@
 	bnd.identity;id='org.eclipse.ui.console',\
 	bnd.identity;id='org.eclipse.ui.ide',\
 	bnd.identity;id='org.eclipse.ui.ide.application',\
-	bnd.identity;id='junit-platform-commons';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
-	bnd.identity;id='junit-platform-engine';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
-	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id=junit-platform-commons;version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id=junit-platform-engine;version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id=junit-platform-launcher;version='${range;[===,==+);${junit.platform.eclipse.version}}',\
 	bnd.identity;id='org.eclipse.ui.intro',\
 	bnd.identity;id='org.eclipse.ui.intro.quicklinks',\
 	bnd.identity;id='org.eclipse.ui.intro.quicklinks.source',\
 	bnd.identity;id='org.eclipse.ui.intro.source',\
 	bnd.identity;id='org.eclipse.ui.intro.universal',\
-	bnd.identity;id='org.eclipse.ui.intro.universal.source'
-
+	bnd.identity;id='org.eclipse.ui.intro.universal.source',\
+	bnd.identity;id='jakarta.inject.jakarta.inject-api'
+	
 -runblacklist: \
 	bnd.identity;id='biz.aQute.bnd.annotation',\
 	bnd.identity;id='biz.aQute.bnd.transform',\
 	bnd.identity;id='biz.aQute.junit',\
 	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
 	bnd.identity;id='osgi.*',\
-	bnd.identity;id='org.osgi.*.annotations'
+	bnd.identity;id='org.osgi.*.annotations',\
+	bnd.identity;id='biz.aQute.bndlib';version='[7.0.0,7.0.1)'
 
 
 -runee: JavaSE-17

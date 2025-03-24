@@ -50,7 +50,7 @@
 	bndtools.core.services;version=snapshot,\
 	assertj-core,\
 	net.bytebuddy.byte-buddy,\
-	javax.inject,\
+	jakarta.inject.jakarta.inject-api;version=latest,\
 	org.apiguardian:apiguardian-api,\
 	org.opentest4j,\
 	org.apache.servicemix.bundles.junit,\
@@ -85,7 +85,8 @@
 	org.osgi.service.event,\
 	org.osgi.service.repository;version=latest,\
 	osgi.annotation,\
-	org.eclipse.jdt.core.manipulation
+	org.eclipse.jdt.core.manipulation,\
+	org.eclipse.jdt.core.compiler.batch
 
 # Don't run testOSGi in parallel with other tasks claiming launchpad
 -noparallel: launchpad;task="testOSGi"
