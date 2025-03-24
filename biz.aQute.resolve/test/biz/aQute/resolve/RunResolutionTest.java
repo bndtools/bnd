@@ -34,6 +34,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.build.model.conversions.NoopConverter;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.result.Result;
@@ -517,8 +518,8 @@ public class RunResolutionTest {
 	}
 
 	@Test
-	public void testStartLevelDecoration() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+	public void testStartLevelDecoration(SoftAssertions softly) throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolveduplicates.bndrun"));
 		bndrun.setProperty("-runstartlevel", "order=leastdependenciesfirst,begin=100,step=10");
 
 		// Decorate test.simple to get startlevel 90 (which would otherwise be 110 within the assigned runstartlevel).
@@ -526,15 +527,25 @@ public class RunResolutionTest {
 
 		List<? extends HeaderClause> runBundles = List.copyOf(bndrun.resolve(false, false, new NoopConverter<>()));
 
-		assertThat(runBundles).hasSize(2);
-		assertThat(runBundles.get(0)
-			.getName()).isEqualTo("osgi.enroute.junit.wrapper");
-		assertThat(runBundles.get(0)
-			.getAttribs()).containsEntry(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE, "100");
-		assertThat(runBundles.get(1)
-			.getName()).isEqualTo("test.simple");
-		assertThat(runBundles.get(1)
-			.getAttribs()).containsEntry(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE, "90");
+		softly.assertThat(runBundles).hasSize(4);
+		softly.assertThat(runBundles.stream()
+			.map(rb -> rb.toString())
+			.toList())
+			.containsExactlyInAnyOrder("org.apache.felix.gogo.runtime;version='[0.12.0,0.12.1)';startlevel=100",
+				"org.apache.felix.gogo.runtime;version='[0.10.0,0.10.1)';startlevel=110",
+				"osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)';startlevel=120",
+				"test.simple;version=snapshot;startlevel=90");
+
+		// check that HeaderClause.toParameters does not remove duplicates
+		// this kind of happens inside bndrun.resolve() let's test explicitly
+		// again
+		Parameters params = HeaderClause.toParameters(runBundles);
+		softly.assertThat(params)
+			.hasSize(4);
+		softly.assertThat(params.toString())
+			.isEqualTo(
+				"org.apache.felix.gogo.runtime;version=\"[0.12.0,0.12.1)\";startlevel=100,org.apache.felix.gogo.runtime;version=\"[0.10.0,0.10.1)\";startlevel=110,osgi.enroute.junit.wrapper;version=\"[4.12.0,4.12.1)\";startlevel=120,test.simple;version=snapshot;startlevel=90");
+
 	}
 
 	@SuppressWarnings("resource")
