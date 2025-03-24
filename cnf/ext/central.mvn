@@ -146,8 +146,10 @@ com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2
 org.parboiled:parboiled-java:1.4.1
 org.parboiled:parboiled-core:jar:1.4.1
 
+org.ow2.asm:asm:jar:9.2
 org.ow2.asm:asm-analysis:jar:9.3
 org.ow2.asm:asm-util:jar:9.3
+org.ow2.asm:asm-tree:jar:9.3
 
 com.github.javaparser:javaparser-core:3.13.10
 
