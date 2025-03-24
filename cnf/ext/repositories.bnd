@@ -25,8 +25,8 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
 -plugin.1.Eclipse:\
 	aQute.bnd.repository.p2.provider.P2Repository; \
-	 	url = https://download.eclipse.org/releases/2022-09/; \
-	 	name = "Eclipse 4.25 (2022-09)"
+	 	url = https://download.eclipse.org/releases/2024-12/; \
+	 	name = "Eclipse 4.34 (2024-12)"
 
 -plugin.9.Baseline:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
