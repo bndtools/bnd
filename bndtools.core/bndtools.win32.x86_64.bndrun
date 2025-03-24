@@ -27,7 +27,6 @@
 -runbundles: \
 	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	biz.aQute.bnd.maven;version=snapshot,\
-	biz.aQute.bnd.pde;version=snapshot,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
@@ -42,7 +41,8 @@
 	bndtools.pde;version=snapshot,\
 	bndtools.release;version=snapshot,\
 	com.google.gson;version='[2.9.1,2.9.2)',\
-	com.google.guava;version='[30.1.0,30.1.1)',\
+	com.google.guava;version='[31.1.0,31.1.1)',\
+	com.google.guava.failureaccess;version='[1.0.1,1.0.2)',\
 	com.ibm.icu;version='[67.1.0,67.1.1)',\
 	com.sun.jna;version='[5.8.0,5.8.1)',\
 	com.sun.jna.platform;version='[5.8.0,5.8.1)',\
@@ -66,6 +66,7 @@
 	org.apache.felix.gogo.runtime;version='[1.1.6,1.1.7)',\
 	org.apache.felix.gogo.shell;version='[1.1.4,1.1.5)',\
 	org.apache.felix.scr;version='[2.2.2,2.2.3)',\
+	org.apache.geronimo.specs.geronimo-atinject_1.0_spec;version='[1.1.0,1.1.1)',\
 	org.apache.httpcomponents.httpclient;version='[4.5.13,4.5.14)',\
 	org.apache.httpcomponents.httpcore;version='[4.4.15,4.4.16)',\
 	org.apache.lucene.analyzers-common;version='[8.4.1,8.4.2)',\
@@ -141,10 +142,10 @@
 	org.eclipse.e4.ui.workbench.renderers.swt;version='[0.15.600,0.15.601)',\
 	org.eclipse.e4.ui.workbench.swt;version='[0.16.600,0.16.601)',\
 	org.eclipse.e4.ui.workbench3;version='[0.16.0,0.16.1)',\
-	org.eclipse.ecf;version='[3.10.0,3.10.1)',\
-	org.eclipse.ecf.filetransfer;version='[5.1.102,5.1.103)',\
-	org.eclipse.ecf.identity;version='[3.9.402,3.9.403)',\
-	org.eclipse.ecf.provider.filetransfer;version='[3.2.800,3.2.801)',\
+	org.eclipse.ecf;version='[3.13.0,3.13.1)',\
+	org.eclipse.ecf.filetransfer;version='[5.1.103,5.1.104)',\
+	org.eclipse.ecf.identity;version='[3.10.0,3.10.1)',\
+	org.eclipse.ecf.provider.filetransfer;version='[3.3.100,3.3.101)',\
 	org.eclipse.egit.core;version='[6.3.0,6.3.1)',\
 	org.eclipse.egit.ui;version='[6.3.0,6.3.1)',\
 	org.eclipse.emf.ant;version='[2.11.0,2.11.1)',\
@@ -230,7 +231,7 @@
 	org.eclipse.m2e.binaryproject;version='[2.0.0,2.0.1)',\
 	org.eclipse.m2e.binaryproject.ui;version='[2.0.0,2.0.1)',\
 	org.eclipse.m2e.core;version='[2.0.3,2.0.4)',\
-	org.eclipse.m2e.core.ui;version='[2.0.1,2.0.2)',\
+	org.eclipse.m2e.core.ui;version='[2.0.0,2.0.1)',\
 	org.eclipse.m2e.discovery;version='[2.0.0,2.0.1)',\
 	org.eclipse.m2e.editor;version='[2.0.1,2.0.2)',\
 	org.eclipse.m2e.jdt;version='[2.0.1,2.0.2)',\
@@ -259,7 +260,7 @@
 	org.eclipse.platform;version='[4.25.0,4.25.1)',\
 	org.eclipse.sdk;version='[4.25.0,4.25.1)',\
 	org.eclipse.search;version='[3.14.200,3.14.201)',\
-	org.eclipse.swt;version='[3.121.0,3.121.1)',\
+	org.eclipse.swt;version='[3.126.0,3.126.1)',\
 	org.eclipse.swt.win32.win32.x86_64;version='[3.121.0,3.121.1)',\
 	org.eclipse.team.core;version='[3.9.500,3.9.501)',\
 	org.eclipse.team.ui;version='[3.9.400,3.9.401)',\
