@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -14,8 +15,6 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Instructions;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
@@ -30,6 +29,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
@@ -37,6 +37,7 @@ import aQute.bnd.help.instructions.ResolutionInstructions.RunStartLevel;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -201,8 +202,10 @@ public class RunResolution {
 		Instructions decorator = new Instructions(project.mergeProperties(Constants.RUNBUNDLES_DECORATOR));
 		decorator.decorate(bundles);
 
+
 		newer = bundles.entrySet()
-			.stream().map(entry -> new VersionedClause(entry.getKey(), entry.getValue()))
+			.stream()
+			.map(entry -> new VersionedClause(removeDuplicateMarker(entry.getKey()), entry.getValue()))
 			.collect(Collectors.toList());
 
 		if (newer.equals(older))

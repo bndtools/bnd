@@ -184,7 +184,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	public static Parameters toParameters(List<? extends HeaderClause> l) {
 		Parameters parameters = new Parameters();
 
-		l.forEach(hc -> parameters.put(hc.name, hc.attribs));
+		l.forEach(hc -> parameters.add(hc.name, hc.attribs));
 
 		return parameters;
 	}
