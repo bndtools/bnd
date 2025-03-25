@@ -118,7 +118,7 @@
 -runrepos: \
 	"Workspace",\
 	"Maven Central",\
-	"Eclipse 4.25 (2022-09)"
+	"Eclipse-4_25-2022-09"
 
 -runee: JavaSE-17
 
