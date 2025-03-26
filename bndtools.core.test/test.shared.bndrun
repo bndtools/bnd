@@ -111,10 +111,6 @@
 -runpath: \
 	slf4j.api
 
--runrepos: \
-	"Workspace",\
-	"Maven Central",\
-	"Eclipse 4.25 (2022-09)"
 
 -runproperties: \
 	eclipse.application=org.eclipse.ui.ide.workbench,\
