@@ -115,10 +115,6 @@
 	bnd.identity;id='osgi.*',\
 	bnd.identity;id='org.osgi.*.annotations'
 
--runrepos: \
-	"Workspace",\
-	"Maven Central",\
-	"Eclipse-4_25-2022-09"
 
 -runee: JavaSE-17
 
