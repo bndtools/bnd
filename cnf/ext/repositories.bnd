@@ -4,41 +4,90 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
 -plugin.0.Main:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = 'resolve'; \
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
         snapshotUrl="${ossrh}";\
         index="${.}/central.mvn";\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        tags  = '-'; \
         name="Local";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = '-'; \
         name="Release";\
         releaseUrl="${fileuri;${releaserepo}}";\
         snapshotUrl="${fileuri;${releaserepo}}";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = '-'; \
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
         noupdateOnRelease=true
 
--plugin.1.Eclipse:\
-	aQute.bnd.repository.p2.provider.P2Repository; \
-	 	url = https://download.eclipse.org/releases/2022-09/; \
-	 	name = "Eclipse-4_25-2022-09"
+# Eclipse Platform 4.35 / 2025-03 Release repository
+#eclipse.platform.version = 4.35
+#eclipse.platform.reltag  = R-4.35-202502280140
+
+# Eclipse Platform 4.25 / 2022-09 Release repository
+eclipse.platform.version = 4.25
+eclipse.platform.reltag  = R-4.25-202208311800/
+
+eclipse.platform.baseurl = http://download.eclipse.org/eclipse/updates
+eclipse.platform.name    = "Eclipse-${eclipse.platform.version}"
+eclipse.platform.url     = "${eclipse.platform.baseurl}/${eclipse.platform.version}/${eclipse.platform.reltag}"
+
+-plugin.1.Eclipse: \
+    aQute.bnd.repository.p2.provider.P2Repository; \
+       tags  = 'resolve'; \
+       name  = ${eclipse.platform.name}; \
+       url   = ${eclipse.platform.url}
+       
+#-plugin.1.EclipseFullRelease:\
+#	aQute.bnd.repository.p2.provider.P2Repository; \
+#	 	url = https://download.eclipse.org/releases/2022-09/; \
+#	 	name = "Eclipse-4_25-2022-09 FullRelease"       
+
+-plugin.1.Eclipse_m2e: \
+    aQute.bnd.repository.p2.provider.P2Repository; \
+       tags  = 'resolve'; \
+       name  = Eclipse_m2e; \
+       url   = https://archive.eclipse.org/technology/m2e/releases/2.0.2/
+
+-plugin.1.Eclipse_jgit: \
+    aQute.bnd.repository.p2.provider.P2Repository; \
+       tags  = 'resolve'; \
+       name  = Eclipse_jgit; \
+       url   = https://archive.eclipse.org/egit/updates-6.3/
+
+-plugin.1.Eclipse_emf: \
+    aQute.bnd.repository.p2.provider.P2Repository; \
+       tags  = 'resolve'; \
+       name  = Eclipse_emf; \
+       url   = https://download.eclipse.org/modeling/emf/emf/builds/release/2.26
+
+-plugin.1.Eclipse_wst: \
+    aQute.bnd.repository.p2.provider.P2Repository; \
+       tags  = 'resolve'; \
+       name  = Eclipse_wst; \
+       url   = https://download.eclipse.org/webtools/repository/2022-09/
+       
 
 -plugin.9.Baseline:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name="Baseline";\
-        releaseUrl="${mavencentral}";\
-        index="${.}/baseline.mvn";\
-        readOnly=true
+       tags  = '-'; \
+       name="Baseline";\
+       releaseUrl="${mavencentral}";\
+       index="${.}/baseline.mvn";\
+       readOnly=true
 
 -plugin.4.ECFRSSDK: \
  	aQute.bnd.repository.p2.provider.P2Repository; \
- 	url = https://download.eclipse.org/rt/ecf/latest/site.p2; \
- 	name = ECF Remote Services SDK
+	 	tags  = 'resolve'; \
+	 	url = https://download.eclipse.org/rt/ecf/latest/site.p2; \
+	 	name = ECF Remote Services SDK
 
 
 -buildrepo: Local
