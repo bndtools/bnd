@@ -231,7 +231,7 @@
 	org.eclipse.m2e.binaryproject;version='[2.0.0,2.0.1)',\
 	org.eclipse.m2e.binaryproject.ui;version='[2.0.0,2.0.1)',\
 	org.eclipse.m2e.core;version='[2.0.3,2.0.4)',\
-	org.eclipse.m2e.core.ui;version='[2.0.1,2.0.2)',\
+	org.eclipse.m2e.core.ui;version='[2.0.0,2.0.2)',\
 	org.eclipse.m2e.discovery;version='[2.0.0,2.0.1)',\
 	org.eclipse.m2e.editor;version='[2.0.1,2.0.2)',\
 	org.eclipse.m2e.jdt;version='[2.0.1,2.0.2)',\
