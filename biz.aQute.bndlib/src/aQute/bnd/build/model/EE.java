@@ -72,6 +72,8 @@ public enum EE {
 	JavaSE_22(22),
 	JavaSE_23(23),
 	JavaSE_24(24),
+	JavaSE_25(25),
+	JavaSE_26(26),
 
 	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0", 0);
 
@@ -302,7 +304,7 @@ public enum EE {
 	final static EE[] classFileVersionsMinus44 = {
 		UNKNOWN, JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, JavaSE_1_8, JavaSE_9,
 		JavaSE_10, JavaSE_11, JavaSE_12, JavaSE_13, JavaSE_14, JavaSE_15, JavaSE_16, JavaSE_17, JavaSE_18, JavaSE_19,
-		JavaSE_20, JavaSE_21, JavaSE_22, JavaSE_23, JavaSE_24
+		JavaSE_20, JavaSE_21, JavaSE_22, JavaSE_23, JavaSE_24, JavaSE_25, JavaSE_26
 	};
 
 	/**
