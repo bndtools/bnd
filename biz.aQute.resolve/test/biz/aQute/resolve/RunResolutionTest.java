@@ -527,10 +527,8 @@ public class RunResolutionTest {
 
 		List<? extends HeaderClause> runBundles = List.copyOf(bndrun.resolve(false, false, new NoopConverter<>()));
 
-		softly.assertThat(runBundles).hasSize(4);
 		softly.assertThat(runBundles.stream()
-			.map(rb -> rb.toString())
-			.toList())
+			.map(rb -> rb.toString()))
 			.containsExactlyInAnyOrder("org.apache.felix.gogo.runtime;version='[0.12.0,0.12.1)';startlevel=100",
 				"org.apache.felix.gogo.runtime;version='[0.10.0,0.10.1)';startlevel=110",
 				"osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)';startlevel=120",
@@ -540,8 +538,6 @@ public class RunResolutionTest {
 		// this kind of happens inside bndrun.resolve() let's test explicitly
 		// again
 		Parameters params = HeaderClause.toParameters(runBundles);
-		softly.assertThat(params)
-			.hasSize(4);
 		softly.assertThat(params.toString())
 			.isEqualTo(
 				"org.apache.felix.gogo.runtime;version=\"[0.12.0,0.12.1)\";startlevel=100,org.apache.felix.gogo.runtime;version=\"[0.10.0,0.10.1)\";startlevel=110,osgi.enroute.junit.wrapper;version=\"[4.12.0,4.12.1)\";startlevel=120,test.simple;version=snapshot;startlevel=90");
