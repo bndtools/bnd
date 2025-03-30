@@ -17,6 +17,8 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 
@@ -141,6 +143,20 @@ public class EETest {
 	@DisplayName("Validate Modules exist for each EE beyond Java 8")
 	public void checkEEHasModules(EE ee) throws Exception {
 		assertThat(ee.getModules()).isNotEmpty();
+	}
+
+	@Test
+	public void testEEIsJDKPackage() {
+		// this package appeared in JDK 1.6+
+		// see .properties in aQute.bnd.build.model
+		PackageRef pck = new Descriptors().getPackageRef("javax.xml.transform.stax");
+		assertThat(EE.J2SE_1_2.getPackages().containsKey(pck.getFQN())).isFalse();
+		assertThat(EE.J2SE_1_5.getPackages()
+			.containsKey(pck.getFQN())).isFalse();
+		assertThat(EE.JavaSE_1_6.getPackages()
+			.containsKey(pck.getFQN())).isTrue();
+		assertThat(EE.JavaSE_17.getPackages()
+			.containsKey(pck.getFQN())).isTrue();
 	}
 
 	static class EEsArgumentsProvider implements ArgumentsProvider {

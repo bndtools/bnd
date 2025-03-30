@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,6 +53,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -65,8 +68,11 @@ import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.osgi.resource.FilterBuilder;
+import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.FileTree;
@@ -75,8 +81,8 @@ import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 import aQute.service.reporter.Report.Location;
 
-@ExtendWith(SoftAssertionsExtension.class)
 @SuppressWarnings("resource")
+@ExtendWith(SoftAssertionsExtension.class)
 public class BuilderTest {
 
 	@InjectSoftAssertions
@@ -727,7 +733,6 @@ public class BuilderTest {
 			b.setProperty("Require-Bundle", "osgi.core");
 			b.setProperty("-noimportjava", "true");
 			b.build();
-			assertTrue(b.check("Imports that lack version ranges: \\[javax.swing\\]"));
 			assertThat(b.getImports()
 				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("javax.swing"));
 
@@ -3718,4 +3723,100 @@ public class BuilderTest {
 		}
 	}
 
+	/**
+	 * Tests that an Import-Package without a version-range creates a warning in
+	 * pedantic mode.
+	 */
+	@Test
+	public void testWarningImportsThatLackVersionRanges() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+			b.setProperty("Import-Package", "foo.bar");
+			b.build();
+			softly.assertThat(b.check("Imports that lack version ranges: \\[foo.bar\\]",
+				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
+				.isTrue();
+			softly.assertThat(b.getImports()
+				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("foo.bar"));
+
+		}
+	}
+
+	/**
+	 * Tests that an Import-Package without a version-range for a JDK package
+	 * creates NO warning in pedantic mode. This test requires Java 1.6 which
+	 * contains a package, so we expect NO warning
+	 */
+	@Test
+	public void testNoWarningImportsThatLackVersionRangesJDKPackages() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+
+			RequirementBuilder rqb = new RequirementBuilder(EXECUTION_ENVIRONMENT_NAMESPACE);
+
+			FilterBuilder fb = new FilterBuilder();
+			EE ee = EE.JavaSE_1_6;
+			fb.and()
+				.eq(EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName())
+				.in(CAPABILITY_VERSION_ATTRIBUTE, new VersionRange(ee.getCapabilityVersion()))
+				.endAnd();
+			rqb.addFilter(fb);
+
+			// Require-Capability:
+			// osgi.ee;filter:='(&(osgi.ee=JavaSE)(version>=1.6.0))'
+			b.setProperty(Constants.REQUIRE_CAPABILITY, rqb.buildSyntheticRequirement()
+				.toString());
+			b.setProperty("Import-Package", "javax.xml.transform.stax");
+			b.build();
+			// there should be NO warning: Imports that lack version ranges:
+			// [javax.xml.transform.stax]
+			softly.assertThat(b.check(
+				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
+				.isTrue();
+			softly.assertThat(b.getImports()
+				.keySet())
+				.containsExactlyInAnyOrder(b.getPackageRef("javax.xml.transform.stax"));
+
+		}
+	}
+
+	/**
+	 * Tests that an Import-Package without a version-range for a JDK package
+	 * creates 1 warning in pedantic mode. This test requires Java 1.5 which
+	 * does NOT contains a package, so we expect 1 warning
+	 */
+	@Test
+	public void testWarningImportsThatLackVersionRangesNotInJDK() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+
+			RequirementBuilder rqb = new RequirementBuilder(EXECUTION_ENVIRONMENT_NAMESPACE);
+
+			FilterBuilder fb = new FilterBuilder();
+			EE ee = EE.J2SE_1_5;
+			fb.and()
+				.eq(EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName())
+				.in(CAPABILITY_VERSION_ATTRIBUTE, new VersionRange(ee.getCapabilityVersion()))
+				.endAnd();
+			rqb.addFilter(fb);
+
+			// Require-Capability:
+			// osgi.ee;filter:='(&(osgi.ee=JavaSE)(version>=1.5.0))'
+			// NOTE: Java 1.5. does not contain 'javax.xml.transform.stax' so we
+			// expect a warning
+			b.setProperty(Constants.REQUIRE_CAPABILITY, rqb.buildSyntheticRequirement()
+				.toString());
+			b.setProperty("Import-Package", "javax.xml.transform.stax");
+			b.build();
+			// there should be NO warning: Imports that lack version ranges:
+			// [javax.xml.transform.stax]
+			softly.assertThat(b.check("Imports that lack version ranges: \\[javax.xml.transform.stax\\]",
+				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
+				.isTrue();
+			softly.assertThat(b.getImports()
+				.keySet())
+				.containsExactlyInAnyOrder(b.getPackageRef("javax.xml.transform.stax"));
+
+		}
+	}
 }
