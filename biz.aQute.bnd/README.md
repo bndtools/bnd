@@ -132,12 +132,12 @@ The tool is extremely useful in many cases but it is not very polished.
 
 For Mac users, it can be installed with [brew](https://formulae.brew.sh/formula/bnd). 
 
-The current URL is https://repo1.maven.org/maven2/biz/aQute/bnd/biz.aQute.bnd/6.4.0/biz.aQute.bnd-6.4.0.jar
+The current URL is https://repo1.maven.org/maven2/biz/aQute/bnd/biz.aQute.bnd/7.1.0/biz.aQute.bnd-7.1.0.jar
 
 It can also be installed with [jpm](https://github.com/bndtools/jpmcli) or you can download it and run it from
 the command line when you have a suitable Java VM installed:
 
-    curl https://repo1.maven.org/maven2/biz/aQute/bnd/biz.aQute.bnd/6.4.0/biz.aQute.bnd-6.4.0.jar -o bnd.jar
+    curl https://repo1.maven.org/maven2/biz/aQute/bnd/biz.aQute.bnd/7.1.0/biz.aQute.bnd-7.1.0.jar -o bnd.jar
     jar -jar bnd.jar
 
 
