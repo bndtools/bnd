@@ -14,7 +14,7 @@ The contract specification is exactly the same syntax used in the `Provide-Capab
   osgi.contract;\
     osgi.contract=JavaServlet;\
     uses:="javax.servlet,javax.servlet.annotation,javax.servlet.descriptor,javax.servlet.http";\
-    version="3.0"
+    version:Version="3.0"
 ```
 
 Now if the current bundle imports packages declared in the `uses` directive of the defined contract above, they will be imported without a package version, and a contract requirement will be added exactly as if there had been a contract on the build path.
@@ -23,6 +23,7 @@ Now if the current bundle imports packages declared in the `uses` directive of t
 
 ### Further Reading
 
-See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
+- See [-contract](/instructions/contract.html) and [-define-contract](/instructions/define-contract.html) instruction for defining contracts in bnd.
+- See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
 
 

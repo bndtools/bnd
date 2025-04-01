@@ -33,7 +33,8 @@ Bundle R:
 
 Experienced OSGi users should have cringed at these versionless packages, cringing becomes a gut-reaction at the sight of versionless packages. However, in this case it actually cannot harm. The previous example will ensure that Bundle P will be the class loader for the Bundle R for packages javax.servlet, javax.servlet.http. The magic is in the uses: directive, if the Require-Capability in bundle R is resolved to the Provide-Capability in bundle P then bundle R must import these packages from bundle P.
  
-Obviously bnd has support for this (well, since today, i.e. version osgi:biz.aQute.bndlib@2.2.0.20130806-071947 or later). First bnd can make it easier to create the Provide Capability header since the involved packages are in the Export-Package as well as in the Provide-Capability headers. The do-no-repeat-yourself mantra dictated am ${exports} macro. The ${exports} macro is replaced by the exported packages of the bundle, for example: 
+bnd has support for this. First bnd can make it easier to create the `Provide Capability` header since the involved packages are in the `Export-Package` as well as in the `Provide-Capability` headers. The do-no-repeat-yourself mantra dictated an `${exports}` macro. The `${exports}` macro is replaced by the exported packages of the bundle, for example: 
+
 Bundle P:
 
 	  Provide-Capability: \
@@ -43,20 +44,27 @@ Bundle P:
 	      version:Version="3.0"
 	  Export-Package: javax.servlet, javax.servlet.http
 
-That said, the most extensive help you get from bnd is for requiring contracts. Providing a contract is not so cumbersome, after all you're the provider so you have all the knowledge and the interest in providing metadata. Consuming a contract is less interesting and it is much harder to get the metadata right. In a similar vein, bnd analyzes your classes to find out the dependencies to create the Import-Package statement, doing this by hand is really hard (as other OSGi developing environments can testify!). 
+Furthermore there is the [-define-contract](/instructions/define-contract.html) instruction which can be applied in order to define a contract which is not available on the build path.
 
-So to activate the use of contracts, add the -contract instruction: 
+That said, the most extensive help you get from bnd is for requiring contracts. Providing a contract is not so cumbersome, after all you're the provider so you have all the knowledge and the interest in providing metadata. Consuming a contract is less interesting and it is much harder to get the metadata right. In a similar vein, bnd analyzes your classes to find out the dependencies to create the `Import-Package` statement, doing this by hand is really hard (as other OSGi developing environments can testify!). 
+
+So to activate the use of contracts, add the `-contract` instruction: 
 
 	bnd.bnd:
 	  -contract: *
 
 This instruction will give bnd permission to scan the build path for contracts, i.e. Provide-Capability clauses in the osgi.contract namespace. These declared contracts cause a corresponding requirement in the bundle when the bundle imports packages listed in the uses clause. In the example with Bundle R, bnd will automatically insert the Require-Capability header and remove any versions on the imported packages. 
-Sometimes the wildcard for the -contract instruction can be used to limit the contracts that are considered. Sometimes you want a specific contract but not others. Other times you want to skip a specific contract. The following example skips the 'JavaServlet' contract: 
+
+Sometimes the wildcard for the `-contract` instruction can be used to limit the contracts that are considered. Sometimes you want a specific contract but not others. Other times you want to skip a specific contract. The following example skips the 'JavaServlet' contract: 
 bnd.bnd:
 
 	  -contract: !JavaServlet,*
 
-The tests provide some examples for people that want to have a deeper understanding: https://github.com/bndtools/bnd/blob/next/biz.aQute.bndlib.tests/src/test/ContractTest.java Contracts will be part of the bnd(tools) 2.2 release (hopefully) at the end of this summer, until then they are experimental. Enjoy. Peter Kriens @pkriens Update: Last example to skip the 'JavaServlet' contract was reversed, updated the text to show a reverse example (anything BUT JavaServlet).
+## Further reading
+
+- See [-contract](/instructions/contract.html) and [-define-contract](/instructions/define-contract.html) instruction for defining contracts in bnd.
+
+- The [ContractTest.java](https://github.com/bndtools/bnd/blob/next/biz.aQute.bndlib.tests/test/test/ContractTest.java) provides some examples for people that want to have a deeper understanding. 
 
 [1]: https://docs.osgi.org/reference/portable-java-contracts.html
 [2]: https://blog.osgi.org/2014/09/portable-java-contracts-for-javax.html

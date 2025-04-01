@@ -22,7 +22,7 @@ Provide-Capability:\
   osgi.contract;\
     osgi.contract=Servlet;\
     uses:="javax.servlet,javax.servlet.http";\
-    version="3.0"
+    version:Version="3.0"
 Export-Package: javax.servlet, javax.servlet.http
 ```
 
@@ -38,7 +38,7 @@ Import-Package: javax.servlet, javax.servlet.http
 
 Experienced OSGi users should have cringed at these versionless packages, cringing becomes a gut-reaction at the sight of versionless packages. However, in this case it actually cannot harm. The previous example will ensure that Bundle P will be the class loader for the Bundle R for packages javax.servlet, javax.servlet.http. The magic is in the `uses:` directive, if the `Require-Capability` in bundle R is resolved to the `Provide-Capability` in bundle P then bundle R must import these packages from bundle P.
 
-Obviously bnd has support for this (well, since today, i.e. version `osgi:biz.aQute.bndlib@2.2.0.20130806-071947` or later). First bnd can make it easier to create the `Provide-Capability` header since the involved packages are in the `Export-Package` as well as in the `Provide-Capability` headers. The do-no-repeat-yourself mantra dictated am `${exports}` macro. The `${exports}` macro is replaced by the exported packages of the bundle, for example:
+bnd has support for this. First bnd can make it easier to create the `Provide-Capability` header since the involved packages are in the `Export-Package` as well as in the `Provide-Capability` headers. The do-no-repeat-yourself mantra dictated am `${exports}` macro. The `${exports}` macro is replaced by the exported packages of the bundle, for example:
 
 ```properties
 # Bundle P:
@@ -46,9 +46,11 @@ Provide-Capability:\
   osgi.contract;\
     osgi.contract=Servlet;\
     uses:="${exports}";\
-    version="3.0"
+    version:Version="3.0"
 Export-Package: javax.servlet, javax.servlet.http
 ```
+
+Furthermore there is the [-define-contract](/instructions/define-contract.html) instruction which can be applied in order to define a contract which is not available on the build path.
 
 That said, the most extensive help you get from bnd is for requiring contracts. Providing a contract is not so cumbersome, after all you're the provider so you have all the knowledge and the interest in providing metadata. Consuming a contract is less interesting and it is much harder to get the metadata right. In a similar vein, bnd analyzes your classes to find out the dependencies to create the `Import-Package` statement, doing this by hand is really hard (as other OSGi developing environments can testify!)
 
@@ -70,10 +72,11 @@ bnd.bnd:\
 
 **Note**: As of bnd 4.1.0 the default value for the `-contract` instruction will be `*` which result in the automatic application of any contracts found at build time.
 
-The tests provide some examples for people that want to have a deeper understanding: https://github.com/bndtools/bnd/blob/next/biz.aQute.bndlib.tests/src/test/ContractTest.java 
+The [ContractTest.java](https://github.com/bndtools/bnd/blob/next/biz.aQute.bndlib.tests/test/test/ContractTest.java) provides some examples for people that want to have a deeper understanding. 
 
 ## Further Reading
 
-See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
+- See chapter about [Contracts](/chapters/220-contracts.html) and [-define-contract](/instructions/define-contract.html) instruction.
+- See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
 
 
