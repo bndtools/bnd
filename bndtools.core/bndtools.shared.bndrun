@@ -118,7 +118,7 @@
 	bnd.identity;id='biz.aQute.bndlib';version='[7.0.0,7.0.1)'
 
 
--runee: JavaSE-17
+-runee: JavaSE-21
 
 # This will help us keep -runbundles sorted
 -runstartlevel: \
