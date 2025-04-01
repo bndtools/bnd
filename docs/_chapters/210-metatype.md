@@ -5,27 +5,34 @@ layout: default
 ---
 
 
-The OSGi Metatype specification provides a language to describe configuration information in an XML file. However, XML is cumbersome to use and eXtreMeLy error prone, and refactoring often finds it hard to change references in XML text files. Especially with DS components managing the relations can be complex, see [[Components]]
+The [OSGi Metatype specification][2] provides a language to describe configuration information in an XML file. However, XML is cumbersome to use and eXtreMeLy error prone, and refactoring often finds it hard to change references in XML text files. Especially with DS components managing the relations can be complex, see [Components][1]
 
 For this reason, bnd provides annotations to define the XML based on a ''configuration'' interface. For example, the following interface defines a simple metatype:
 
+```
   package com.acme;
   import aQute.bnd.annotation.metatype.*;
 
   @Meta.OCD interface Config {
     int port();
   }
+```
 
 To turn this into an XML file, the bnd file must contain:
 
+```
   -metatype: *
+```
 
 The wild card will search through the whole bundle but it is possible to limit this to a restricted set of packages to speed up the processing. For example:
 
+```
   -metatype: *Metatype*, com.libs.metatypes
+```
 
 If the previous `Config` interface is present in the output, the output will also contain an XML file at `OSGI-INF/metatype/com.acme.Config.xml`. This file will look as follows:
 
+```xml
   <metatype:MetaData 
     xmlns:metatype='http://www.osgi.org/xmlns/metatype/v1.1.0'>
     <OCD 
@@ -43,19 +50,24 @@ If the previous `Config` interface is present in the output, the output will als
       <Object ocdref='aQute.metatype.samples.Config'/>
     </Designate>
   </metatype:MetaData>
+```
 
 bnd leverages the rich type information the Java class files contain. It inspects the returns types and from this it automatically calculates the AD type as well as the cardinality. For example, a method like:
 
+```java
    List<Integer> ints()
+```
 
 Provides an AD of:
 
+```xml
     <AD 
       name='Ints' 
       id='ints' 
       cardinality='-2147483648' 
       required='true' 
       type='Integer'/>
+```
 
 ## Naming
 bnd attempts to make the names of the OCD and AD human readable by un-camel-casing the id. This means that it uses the upper cases in the id to decide where to use spaces. It also attempts to replace '_' characters with spaces and removes '$'. If the result is not what is wanted, the name can always be explicitly set with the AD.name() field.
@@ -67,11 +79,13 @@ The id of the properties is by default derived from the method name. The name sp
 
 For example:
 
+```java
   @OCD
   interface Config {
     String _password(); // .password - will not be registered as a service
     String $new();      // new - keyword
   }
+```
 
 ## @Meta.OCD
 The OCD annotation is necessary to know that an interface is a Metatype interface. It should be used preferably without any parameters (they all have good defaults). However, each default is possible to override. The following table discusses the fields:
@@ -99,10 +113,13 @@ The `AD` is an optional annotation on methods of a OCD interface. The annotation
 
 
 ## Runtime conversions
-The type support the OSGi Metatype specification is limited to the primitives and strings. So what happens when you use another type? During the build phase, bnd will revert to a 'String' Metatype type. This means that those special types are going to be strings in the dictionary. However, the aQute.bnd.annotation.metatype package contains a helper class that simplifies the usage of properties in runtime. It has a @createConfigurable(Class<T> c, Map<?,?> props)`. This method returns an object that implements the given configuration interface. The implementation of these methods uses the properties to provide a value. That is, calling the method abc() on this interface will attempt to find the property "abc". It will then use the actual return type of the method to do conversion from the type in the properties to the return type. This takes generic information into account when present.
+The type support the OSGi Metatype specification is limited to the primitives and strings. So what happens when you use another type? During the build phase, bnd will revert to a 'String' Metatype type. This means that those special types are going to be strings in the dictionary. However, the aQute.bnd.annotation.metatype package contains a helper class that simplifies the usage of properties in runtime. 
+
+It has a `@createConfigurable(Class<T> c, Map<?,?> props)`. This method returns an object that implements the given configuration interface. The implementation of these methods uses the properties to provide a value. That is, calling the method `abc()` on this interface will attempt to find the property `"abc"`. It will then use the actual return type of the method to do conversion from the type in the properties to the return type. This takes generic information into account when present.
 
 For example:
 
+```java
   @Meta.OCD
   interface Config {
     URI[] uris();
@@ -115,18 +132,22 @@ For example:
     }
   }
 
+```
+
 The Metatype specification does not support URIs, so how does this work? Lets first look at the AD:
 
+```xml
     <AD 
      name='uris' 
      id='uris' 
      cardinality='2147483647' 
      required='true' 
      type='String'/>
+```
 
-Any editor will therefore put an array of strings (String[]) in the properties. When the proxy gets the string, it will therefore have to convert from the String[] -> URI[]. In this case, the URI has a String constructor and is used to do the conversion from String to URI. The converter can handle general array to collection, collection to array, and as indicated, any conversion to an object that has a String constructor.
+Any editor will therefore put an array of strings (`String[]`) in the properties. When the proxy gets the string, it will therefore have to convert from the `String[]` -> `URI[]`. In this case, the URI has a String constructor and is used to do the conversion from String to URI. The converter can handle general array to collection, collection to array, and as indicated, any conversion to an object that has a String constructor.
 
-For convenience there are a number of built int conversions provided that cannot leverage the String constructor:
+For convenience there are a number of built int conversions provided that cannot leverage the `String` constructor:
 
 * Pattern - Allows regular expression to be set
 * Class<?> - Tries to load a class through the class loader of the configuration interface
@@ -137,19 +158,24 @@ For convenience there are a number of built int conversions provided that cannot
 ## Example
 The following example shows a very simple metatype configuration interface:
 
+```java
   package aQute.metatype.samples;
   import aQute.bnd.annotation.metatype.Meta.*;
   @OCD
   public interface Config {
     int port();
   }
+```
 
 If the bnd.bnd file contains:
 
+```
   -metatype: *
+```
 
 Then bnd will detect this class as a Metatype and it generates the following XML in `OSGi-INF/metatype/aQute.metatype.samples.Config.xml
 
+```xml
   <?xml version='1.0'?>
   <metatype:MetaData 
      xmlns:metatype='http://www.osgi.org/xmlns/metatype/v1.1.0'>
@@ -168,13 +194,13 @@ Then bnd will detect this class as a Metatype and it generates the following XML
       <Object ocdref='aQute.metatype.samples.Config'/>
     </Designate>
   </metatype:MetaData>
+```
 
-As usual, XML does an outstanding job in obfuscating the interesting parts. If you're using the Apache Felix Webconsole (and if not, why not?) then you can edit this metatype on the web:
-
-%width=500px% https://www.aqute.biz/uploads/Bnd/webconsole.png
+As usual, XML does an outstanding job in obfuscating the interesting parts. If you're using the [Apache Felix Webconsole](https://felix.apache.org/documentation/subprojects/apache-felix-web-console.html) (and if not, why not?) then you can edit this metatype on the web.
 
 This metatype can now be used in a simple example that prints the port number:
 
+```java
   package aQute.metatype.samples;
   import java.util.*;
   import org.osgi.service.cm.*;
@@ -193,13 +219,13 @@ This metatype can now be used in a simple example that prints the port number:
       }
     }
   }
+```
 
-The editor can get quite rich with the metatype information. For example:
-
-https://www.aqute.biz/uploads/Bnd/complex.png
+The editor can get quite rich with the [metatype information][3]. 
 
 This information came from the following Meta interface:
 
+```java
   interface SampleConfig {
     String _secret();
     String $new();
@@ -212,10 +238,11 @@ This information came from the following Meta interface:
     Collection<URI> curis();
     Collection<Integer> ints(); // fails on webconsole
   } 
-
+```
 
 Though this is a big savings over normal fudging with properties, it gets better. The metatyping is fully integrated with DS. In this example, we're using DS to register the Managed Service but this is not necessary because DS will automatically use the name of a component as the PID. So with a component life can be as easy as:
 
+```java
   @Component(designate=Config.class)
   public class Echo2 {	
     @Activate
@@ -225,5 +252,14 @@ Though this is a big savings over normal fudging with properties, it gets better
       System.out.println(config.port());
     }
   }
+```
 
-No more strings. Components and metatypes are extensively explained in [[Components]].
+No more strings. Components and metatypes are extensively explained in [Components][1].
+
+Also see the articles on [Service Components][4] and [Debugging][5].
+
+[1]: /chapters/200-components.html
+[2]: https://docs.osgi.org/specification/osgi.cmpn/8.0.0/service.metatype.html
+[3]: https://bndtools.org/services/org.osgi.service.metatype.html
+[4]: https://bndtools.org/doc/217-ds.html
+[5]: https://bndtools.org/tutorial_base/450-debug.html
