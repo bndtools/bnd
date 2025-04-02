@@ -16,7 +16,6 @@
 	bnd.identity;id='bndtools.core.test.launch',\
 	bnd.identity;id='bndtools.core.test.tests',\
 	bnd.identity;id='com.google.guava',\
-	bnd.identity;id='javax.annotation',\
 	bnd.identity;id='org.apache.ant',\
 	bnd.identity;id='org.bndtools.headless.build.manager',\
 	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
@@ -77,8 +76,8 @@
 	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
 	bnd.identity;id='junit-vintage-engine';version='${range;[===,==+);${junit.jupiter.eclipse.version}}'
 
--runfw: org.eclipse.osgi;version='[3.18.100.v20220817-1601,3.18.100.v20220817-1601]'
--runee: JavaSE-17
+-runfw: org.eclipse.osgi;version='[3.22.0.v20241030-2121,3.22.0.v20241030-2121]'
+-runee: JavaSE-21
 
 # Useful debugging directives
 # The following directives are useful to have when you are debugging in the IDE
@@ -145,5 +144,6 @@
 	bnd.identity;id='biz.aQute.junit',\
 	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
 	bnd.identity;id='osgi.*',\
-	bnd.identity;id='org.osgi.*.annotations'
+	bnd.identity;id='org.osgi.*.annotations',\
+	bnd.identity;id='biz.aQute.bndlib';version='[7.0.0,7.0.1)'
 

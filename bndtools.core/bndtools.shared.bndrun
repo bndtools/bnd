@@ -2,7 +2,7 @@
 
 # Do not run this, use the platform-specific bndrun files (which "-include" this)
 
--runfw: org.eclipse.osgi;repo='Eclipse*'
+-runfw: org.eclipse.osgi
 
 -runvm: \
   -Xmx2g, \

@@ -106,6 +106,7 @@ org.osgi:org.osgi.test.common:${osgi-test.version}
 org.osgi:org.osgi.test.junit5:${osgi-test.version}
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
+org.eclipse.platform:org.eclipse.osgi:3.22.0
 
 args4j:args4j:2.0.26
 
@@ -137,6 +138,8 @@ com.google.guava:guava:16.0.1
 org.antlr:ST4:jar:complete:4.0.8
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.kxml2:2.3.0_3
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.xmlpull:1.1.3.4a_1
+jakarta.inject:jakarta.inject-api:1.0.5
+jakarta.annotation:jakarta.annotation-api:1.3.5
 
 #
 # Used by biz.aQute.bnd.reporter (Jtwig transformer)
