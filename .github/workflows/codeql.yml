@@ -38,7 +38,7 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '17'
+        - '21'
     name: CodeQL JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
