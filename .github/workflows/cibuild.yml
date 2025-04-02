@@ -51,12 +51,12 @@ jobs:
         - '{0}' # 'xvfb-run --auto-servernum {0}'
         include:
         - os: 'ubuntu-latest'
-          java: '17'
+          java: '21'
           runner: '{0}' # 'xvfb-run --auto-servernum {0}'
           canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
           fetch-depth: '0'
         - os: 'windows-latest'
-          java: '17'
+          java: '21'
           runner: '{0}'
     name: Build JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
