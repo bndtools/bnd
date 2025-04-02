@@ -45,7 +45,6 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
@@ -1421,12 +1420,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		IJavaProject project = root.getJavaProject();
 
 		if ((fTypeKind == ANNOTATION_TYPE || fTypeKind == ENUM_TYPE) && !status.matches(IStatus.ERROR)) {
-			if (!JavaModelUtil.is50OrHigher(project)) {
-				// error as createType will fail otherwise (bug 96928)
-				return new StatusInfo(IStatus.ERROR,
-					Messages.format(NewWizardMessages.NewTypeWizardPage_warning_NotJDKCompliant,
-						BasicElementLabels.getJavaElementName(project.getElementName())));
-			}
 			if (fTypeKind == ENUM_TYPE) {
 				try {
 					// if findType(...) == null then Enum is unavailable
@@ -1716,10 +1709,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		}
 
 		if (!typeNameWithParameters.equals(typeName) && project != null) {
-			if (!JavaModelUtil.is50OrHigher(project)) {
-				status.setError(NewWizardMessages.NewTypeWizardPage_error_TypeParameters);
-				return status;
-			}
 			String typeDeclaration = "class " + typeNameWithParameters + " {}"; //$NON-NLS-1$//$NON-NLS-2$
 			ASTParser parser = ASTParser.newParser(IASTSharedValues.SHARED_AST_LEVEL);
 			parser.setSource(typeDeclaration.toCharArray());
@@ -1762,10 +1751,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 			Type type = TypeContextChecker.parseSuperClass(sclassName);
 			if (type == null) {
 				status.setError(NewWizardMessages.NewTypeWizardPage_error_InvalidSuperClassName);
-				return status;
-			}
-			if (type instanceof ParameterizedType && !JavaModelUtil.is50OrHigher(root.getJavaProject())) {
-				status.setError(NewWizardMessages.NewTypeWizardPage_error_SuperClassNotParameterized);
 				return status;
 			}
 		} else {
@@ -1813,12 +1798,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 				if (type == null) {
 					status.setError(Messages.format(NewWizardMessages.NewTypeWizardPage_error_InvalidSuperInterfaceName,
 						BasicElementLabels.getJavaElementName(intfname)));
-					return status;
-				}
-				if (type instanceof ParameterizedType && !JavaModelUtil.is50OrHigher(root.getJavaProject())) {
-					status.setError(
-						Messages.format(NewWizardMessages.NewTypeWizardPage_error_SuperInterfaceNotParameterized,
-							BasicElementLabels.getJavaElementName(intfname)));
 					return status;
 				}
 			}

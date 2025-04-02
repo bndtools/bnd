@@ -14,7 +14,6 @@ import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.TypeNameMatch;
 import org.eclipse.jdt.internal.core.manipulation.util.BasicElementLabels;
-import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -229,9 +228,6 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
 
 	public static String getNameWithTypeParameters(IType type) {
 		String superName = type.getFullyQualifiedName('.');
-		if (!JavaModelUtil.is50OrHigher(type.getJavaProject())) {
-			return superName;
-		}
 		try {
 			ITypeParameter[] typeParameters = type.getTypeParameters();
 			if (typeParameters.length > 0) {

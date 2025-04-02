@@ -46,7 +46,7 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '17'
+        - '21'
     name: Build JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     outputs:
@@ -87,7 +87,6 @@ jobs:
         os:
         - 'ubuntu-latest'
         java:
-        - '17'
         - '21'
         - '23'
         runner:

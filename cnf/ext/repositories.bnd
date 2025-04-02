@@ -4,43 +4,47 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
 -plugin.0.Main:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = 'resolve'; \
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
         snapshotUrl="${ossrh}";\
         index="${.}/central.mvn";\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        tags  = '-'; \
         name="Local";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = '-'; \
         name="Release";\
         releaseUrl="${fileuri;${releaserepo}}";\
         snapshotUrl="${fileuri;${releaserepo}}";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = '-'; \
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
         noupdateOnRelease=true
 
 -plugin.1.Eclipse:\
-    aQute.bnd.repository.osgi.OSGiRepository;\
-        name="Eclipse 4.25 (2022-09)";\
-        locations="https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.25/index.xml.gz";\
-        poll.time=-1;\
-        cache="${workspace}/cnf/cache/stable/Eclipse-4.25"
+	aQute.bnd.repository.p2.provider.P2Repository; \
+	 	url = https://download.eclipse.org/releases/2025-03/; \
+	 	name = "Eclipse 4.35 (2025-03)"
 
 -plugin.9.Baseline:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name="Baseline";\
-        releaseUrl="${mavencentral}";\
-        index="${.}/baseline.mvn";\
-        readOnly=true
+       tags  = '-'; \
+       name="Baseline";\
+       releaseUrl="${mavencentral}";\
+       index="${.}/baseline.mvn";\
+       readOnly=true
 
 -plugin.4.ECFRSSDK: \
  	aQute.bnd.repository.p2.provider.P2Repository; \
- 	url = https://download.eclipse.org/rt/ecf/latest/site.p2; \
- 	name = ECF Remote Services SDK
+	 	tags  = 'resolve'; \
+	 	url = https://download.eclipse.org/rt/ecf/latest/site.p2; \
+	 	name = ECF Remote Services SDK
 
 
 -buildrepo: Local
