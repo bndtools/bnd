@@ -655,10 +655,10 @@ version(s), and exceptions or additional permissions here}.&quot;
          unpack="false"/>
 
    <plugin
-         id="org.slf4j.api"
+         id="slf4j.api"
          download-size="0"
          install-size="0"
-         version="@org.slf4j.api-version@"
+         version="@slf4j.api-version@"
          unpack="false"/>
 
    <plugin
