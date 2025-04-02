@@ -30,8 +30,6 @@
 	bcpg;version='[1.79.0,1.79.1)',\
 	bcpkix;version='[1.79.0,1.79.1)',\
 	bcprov;version='[1.79.0,1.79.1)',\
-	bcprov;version='[1.79.0,1.79.1)',\
-	bcutil;version='[1.79.0,1.79.1)',\
 	bcutil;version='[1.79.0,1.79.1)',\
 	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	biz.aQute.bnd.maven;version=snapshot,\

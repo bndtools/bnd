@@ -53,13 +53,13 @@
 	jakarta.inject.jakarta.inject-api;version='[2.0.1,2.0.2)';startlevel=3,\
 	jakarta.xml.bind-api;version='[4.0.2,4.0.3)';startlevel=3,\
 	jaxen;version='[2.0.0,2.0.1)';startlevel=3,\
-	junit-jupiter-api;version='[5.12.1,5.12.2)';startlevel=3,\
-	junit-jupiter-engine;version='[5.12.1,5.12.2)';startlevel=3,\
-	junit-jupiter-params;version='[5.12.1,5.12.2)';startlevel=3,\
-	junit-platform-commons;version='[1.12.1,1.12.2)';startlevel=3,\
-	junit-platform-engine;version='[1.12.1,1.12.2)';startlevel=3,\
-	junit-platform-launcher;version='[1.12.1,1.12.2)';startlevel=3,\
-	junit-vintage-engine;version='[5.12.1,5.12.2)';startlevel=3,\
+	junit-jupiter-api;version='[5.9.0,5.9.1)';startlevel=3,\
+	junit-jupiter-engine;version='[5.9.0,5.9.1)';startlevel=3,\
+	junit-jupiter-params;version='[5.9.0,5.9.1)';startlevel=3,\
+	junit-platform-commons;version='[1.9.2,1.9.3)';startlevel=3,\
+	junit-platform-engine;version='[1.9.2,1.9.3)';startlevel=3,\
+	junit-platform-launcher;version='[1.9.2,1.9.3)';startlevel=3,\
+	junit-vintage-engine;version='[5.9.0,5.9.1)';startlevel=3,\
 	net.bytebuddy.byte-buddy;version='[1.15.10,1.15.11)';startlevel=3,\
 	net.i2p.crypto.eddsa;version='[0.3.0,0.3.1)';startlevel=3,\
 	org.apache.ant;version='[1.10.15,1.10.16)';startlevel=3,\
