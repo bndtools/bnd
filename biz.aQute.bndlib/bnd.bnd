@@ -69,7 +69,7 @@ Import-Package: \
 	aQute.libg,\
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bnd.util;version=latest,\
-	slf4j.api;version=latest,\
+	slf4j.api;version='[1.7.25,2)',\
 	org.osgi.service.serviceloader,\
 	org.eclipse.jdt.annotation
 

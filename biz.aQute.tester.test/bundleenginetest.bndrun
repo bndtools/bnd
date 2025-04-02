@@ -1,5 +1,5 @@
 -include: bundleenginetest-noengines.bndrun
 
 -runbundles.engines: \
-	junit-jupiter-engine;version='[5.9.0,5.9.1)',\
-	junit-vintage-engine;version='[5.9.0,5.9.1)'
+	junit-jupiter-engine;version='[5.9.2,5.9.3)',\
+	junit-vintage-engine;version='[5.9.2,5.9.3)'

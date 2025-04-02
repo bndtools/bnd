@@ -7,8 +7,8 @@ opentest4j.tester.version=1.1.0
 junit3.version=3.8.3
 junit4.version=4.13.2
 junit4.eclipse.version=4.13.2
-junit.jupiter.eclipse.version=5.9.0
-junit.platform.eclipse.version=1.9.0
+junit.jupiter.eclipse.version=5.11.3
+junit.platform.eclipse.version=1.9.2
 junit.jupiter.version=5.9.2
 junit.platform.version=1.9.2
 assertj.version=3.24.2
@@ -35,7 +35,7 @@ junit-osgi: \
 	junit-jupiter-api;version=latest,\
 	junit-jupiter-engine;version=latest,\
 	junit-jupiter-params;version=latest,\
-	org.hamcrest;version=latest,\
+	org.hamcrest;version='${range;[===,==+);${hamcrest.version}}',\
 	org.awaitility;version=latest,\
 	org.apache.servicemix.bundles.junit;version=latest,\
 	junit-vintage-engine;version=latest,\
