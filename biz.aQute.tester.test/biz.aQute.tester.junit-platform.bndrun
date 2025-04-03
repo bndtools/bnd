@@ -1,5 +1,5 @@
 -include: base.bndrun
 
 -runbundles.engines: \
-	junit-jupiter-engine;version='[5.9.2,5.9.3)',\
-	junit-vintage-engine;version='[5.9.2,5.9.3)'
+	junit-jupiter-engine;version='[5.11.3,5.11.4)',\
+	junit-vintage-engine;version='[5.11.3,5.11.4)'

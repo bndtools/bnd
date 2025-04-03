@@ -98,6 +98,7 @@ org.apiguardian:apiguardian-api:1.1.2
 org.assertj:assertj-core:${assertj.version}
 org.awaitility:awaitility:${awaitility.version}
 org.hamcrest:hamcrest:${hamcrest.version}
+org.hamcrest:hamcrest:2.2
 org.mockito:mockito-core:${mockito.version}
 net.bytebuddy:byte-buddy:${bytebuddy.version}
 net.bytebuddy:byte-buddy-agent:${bytebuddy.version}
