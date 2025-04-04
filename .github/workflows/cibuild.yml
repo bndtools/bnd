@@ -89,7 +89,7 @@ jobs:
         path: |
           "${{ github.workspace }}/cnf/cache"
           ~/.bnd/urlcache/
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/cnf/**/*.bnd', '**/cnf/**/*.mvn', '**/cnf/**/*.maven') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/cnf/**/*.bnd', '**/cnf/**/*.mvn', '**/cnf/**/*.maven', '**/cnf/ext/*.*') }}
 
     - name: Build
       id: build
