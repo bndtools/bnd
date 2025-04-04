@@ -18,7 +18,7 @@
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
 	org.apache.felix.resolver;version=latest;packages=org.apache.felix.resolver.*;maven-scope=provided,\
-	slf4j.api;version=latest
+	slf4j.api;version='[1.7.25,2)'
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\

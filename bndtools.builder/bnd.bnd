@@ -36,7 +36,8 @@
 	org.eclipse.equinox.common,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.equinox.preferences,\
-	slf4j.api
+	slf4j.api,\
+	org.eclipse.jdt.core.compiler.batch
 
 -testpath: \
     ${junit},\

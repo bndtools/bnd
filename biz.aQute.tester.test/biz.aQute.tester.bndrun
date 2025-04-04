@@ -1,6 +1,9 @@
 -runfw: org.apache.felix.framework;version='[7.0.5,7.0.5]'
 -runrequires: \
 	bnd.identity;id='biz.aQute.tester'
--runee: JavaSE-1.8
+-runee: JavaSE-17
 -runsystempackages: aQute.tester.test
--runbundles: org.apache.servicemix.bundles.junit
+-runbundles: \
+	biz.aQute.tester;version=snapshot,\
+	org.hamcrest;version='[3.0.0,3.0.1)',\
+	org.junit;version='[4.13.2,4.13.3)'
