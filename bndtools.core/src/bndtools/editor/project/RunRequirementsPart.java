@@ -160,10 +160,11 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		IFormPage formPage = (IFormPage) getManagedForm().getContainer();
 		BndEditor editor = (BndEditor) formPage.getEditor();
 
-		// editor.doSave() is important
-		// to get changes of included .bndrun files before resolving
+		// get changes of included .bndrun files before resolving
 		// (e.g. -include: shared.bndrun)
-		editor.doSave(null);
+		editor.commitDirtyPages();
+		editor.reallySave(null);
+
 		refreshFromModel();
 		commit(false);
 		editor.resolveRunBundles(new NullProgressMonitor(), false);

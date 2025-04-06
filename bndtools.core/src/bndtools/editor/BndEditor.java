@@ -276,7 +276,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		}
 	}
 
-	private void reallySave(IProgressMonitor monitor) {
+	public void reallySave(IProgressMonitor monitor) {
 		// Actually save, via the source editor
 		try {
 			boolean saveLocked = this.saving.compareAndSet(false, true);
