@@ -46,6 +46,6 @@ Import-Package: \
 	${junit},\
 	${mockito},\
 	org.codehaus.plexus.classworlds,\
-	slf4j.simple;version=latest
+	slf4j.simple;version='[1.7.25,2)'
 
 -baseline: *

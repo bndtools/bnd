@@ -16,7 +16,7 @@
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
-	slf4j.api;version=latest,\
+	slf4j.api;version='[1.7.25,2)',\
 	org.tukaani.xz;version=latest;maven-scope=provided,\
 	junit-jupiter-api
 	

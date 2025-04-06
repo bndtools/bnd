@@ -137,7 +137,7 @@ public class Launchpad implements AutoCloseable {
 			this.injector = new Injector<>(makeConverter(), this::getService, Service.class);
 			this.frameworkExports = getExports(framework).keySet();
 
-			report("Initialized framework %s", this.framework);
+			report("Initialized framework %s v%s", this.framework, this.framework.getVersion());
 			report("Classpath %s", System.getProperty("java.class.path")
 				.replace(File.pathSeparatorChar, '\n'));
 
