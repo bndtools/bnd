@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.StyledText;
@@ -46,6 +47,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IActionBars;
@@ -86,6 +88,7 @@ public class BndSourceEffectivePage extends FormPage {
 	private TableViewer		tableViewer;
 	private StyledText		styledText;
 	private Button			toggleButton;
+	private Button			showExpandedValuesButton;
 	private Composite		viewersComposite;
 	private StackLayout		stackLayout;
 	private boolean			loading;
@@ -112,6 +115,10 @@ public class BndSourceEffectivePage extends FormPage {
 		// Create toggle button
 		toggleButton = toolkit.createButton(body, "Show as Source", SWT.PUSH);
 		toggleButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+		this.showExpandedValuesButton = toolkit.createButton(body, "Show expanded values", SWT.CHECK);
+		// If you want to set the initial state of the checkbox:
+		showExpandedValuesButton.setSelection(false); // check it by default
 
 		// Create composite for viewers
 		viewersComposite = toolkit.createComposite(body);
@@ -144,6 +151,15 @@ public class BndSourceEffectivePage extends FormPage {
 					stackLayout.topControl = sourceViewer.getControl();
 					toggleButton.setText("Show as Table");
 				}
+				viewersComposite.layout();
+			}
+		});
+		showExpandedValuesButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				loading = false;
+				update();
+				tableViewer.refresh();
 				viewersComposite.layout();
 			}
 		});
@@ -344,9 +360,11 @@ public class BndSourceEffectivePage extends FormPage {
 			List<PropertyKey> propertyKeys = properties.getPropertyKeys(k -> true);
 			List<PropertyKey> visible = PropertyKey.findVisible(propertyKeys);
 
+			boolean showExpandedValues = showExpandedValuesButton.getSelection();
+
 			for (PropertyKey k : visible) {
 
-				String value = k.getRawValue();
+				String value = showExpandedValues ? getExpandedValue(k) : k.getRawValue();
 				sb.append(k.key())
 					.append(": ")
 					.append(value)
@@ -398,11 +416,13 @@ public class BndSourceEffectivePage extends FormPage {
 
 		ColSpec[] specs = {
 			new ColSpec("Key", 150, PropertyKey::key, null), //
-			new ColSpec("Value", -250, PropertyKey::getRawValue, this::getExpandedValue), //
+			new ColSpec("Value", -250, this::expandedOrRawValue,
+				this::getExpandedValue), //
 			new ColSpec("Provenance", 150, this::toPath, null), //
 		};
 		int[] widths = new int[specs.length];
-		ColumnViewerToolTipSupport.enableFor(tableViewer);
+
+		createCustomToolTipSupport(tableViewer);
 		tableViewer.addDoubleClickListener(event -> {
 			System.out.println(event);
 		});
@@ -441,6 +461,49 @@ public class BndSourceEffectivePage extends FormPage {
 			colIndex++;
 		}
 		return widths;
+	}
+
+	private void createCustomToolTipSupport(TableViewer tableViewer) {
+		// 3) Subclass ColumnViewerToolTipSupport to create a selectable Text
+		// control with scrollbars
+		ColumnViewerToolTipSupport tooltipSupport = new ColumnViewerToolTipSupport(tableViewer, ToolTip.NO_RECREATE,
+			false) {
+			@Override
+			protected Composite createToolTipContentArea(Event event, Composite parent) {
+				Composite container = new Composite(parent, SWT.NONE);
+				container.setLayout(new GridLayout(1, false));
+
+				String tooltipText = getText(event);
+
+				if (tooltipText == null) {
+					tooltipText = "";
+				}
+
+				StyledText text = new StyledText(container,
+					SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+
+				GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+				gd.widthHint = 300;
+				gd.heightHint = 200;
+				text.setLayoutData(gd);
+				text.setText(tooltipText);
+
+				Display display = parent.getDisplay();
+				text.setFocus();
+
+				return container;
+			}
+
+			@Override
+			public boolean isHideOnMouseDown() {
+				return false;
+			}
+		};
+	}
+
+	private String expandedOrRawValue(PropertyKey k) {
+		boolean showExpandedValues = showExpandedValuesButton.getSelection();
+		return showExpandedValues ? getExpandedValue(k) : k.getRawValue();
 	}
 
 	private String getExpandedValue(PropertyKey k) {
