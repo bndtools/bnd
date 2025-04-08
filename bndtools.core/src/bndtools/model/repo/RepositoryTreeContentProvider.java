@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,11 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 	private String												rawFilter				= null;
 	private String												wildcardFilter			= null;
+	/**
+	 * Number of filter results to keep per repo. This is to avoid memory leaks
+	 * if you search with lots of different filter strings.
+	 */
+	private static final int									MAX_CACHED_FILTER_RESULTS	= 10;
 	private boolean												showRepos				= true;
 
 	private Requirement											requirementFilter		= null;
@@ -287,7 +293,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		 * this node and the next time this method gets called the 'results'
 		 * will be available in the cache
 		 */
-		Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin, p -> new HashMap<>());
+		Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin,
+			p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
 
 		result = listResults.get(wildcardFilter);
 
@@ -316,7 +323,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 						}
 
 						Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin,
-							p -> new HashMap<>());
+							p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
 						listResults.put(wildcardFilter, jobresult);
 
 						Display.getDefault()
@@ -342,7 +349,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 			if (status != null && status.isOK()) {
 				Map<String, Object[]> fastResults = repoPluginListResults.computeIfAbsent(repoPlugin,
-					p -> new HashMap<>());
+					p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
 				result = fastResults.get(wildcardFilter);
 			} else {
 				Object[] loading = new Object[] {
@@ -370,5 +377,20 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 		result = resultSet.toArray();
 		return result;
+	}
+
+
+	// Define a LRU-like inner map (max n entries)
+	private static Map<String, Object[]> createLRUMap(int n) {
+		return new LinkedHashMap<String, Object[]>(n + 1, 1.0f, true) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+	        protected boolean removeEldestEntry(Map.Entry<String, Object[]> eldest) {
+				// Auto-remove oldest when size > n
+				// but always keep the 'null' key which is '*'
+				return size() > n && eldest.getKey() != null;
+	        }
+	    };
 	}
 }
