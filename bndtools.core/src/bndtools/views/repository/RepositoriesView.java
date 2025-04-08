@@ -53,6 +53,7 @@ import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
@@ -188,6 +189,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 																						}
 																					}
 																				};
+
+	private Object[]								lastExpandedElements;
+	private TreePath[]								lastExpandedPaths;
 
 	@Override
 	public void createPartControl(final Composite parent) {
@@ -572,10 +576,28 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	}
 
 	private void updatedFilter(String filterString) {
-		contentProvider.setFilter(filterString);
-		viewer.refresh();
-		if (filterString != null)
-			viewer.expandToLevel(2);
+		viewer.getTree()
+			.setRedraw(false);
+
+		try {
+			if (filterString == null || filterString.isEmpty()) {
+				// Restore previous state when clearing filter
+				contentProvider.setFilter(null);
+				viewer.refresh(); // Required to clear filter
+				restoreExpansionState();
+				viewer.refresh();
+			} else {
+				// Save state before applying new filter
+				saveExpansionState();
+				contentProvider.setFilter(filterString);
+				viewer.refresh();
+				viewer.expandToLevel(2);
+			}
+
+		} finally {
+			viewer.getTree()
+				.setRedraw(true);
+		}
 	}
 
 	void createActions() {
@@ -1317,6 +1339,20 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			advancedSearchAction.setChecked(true);
 			advancedSearchAction.run();
 
+		}
+	}
+
+	private void saveExpansionState() {
+		lastExpandedElements = viewer.getExpandedElements();
+		lastExpandedPaths = viewer.getExpandedTreePaths();
+	}
+
+	private void restoreExpansionState() {
+		if (lastExpandedElements != null) {
+			viewer.setExpandedElements(lastExpandedElements);
+		}
+		if (lastExpandedPaths != null) {
+			viewer.setExpandedTreePaths(lastExpandedPaths);
 		}
 	}
 
