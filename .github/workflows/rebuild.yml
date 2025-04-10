@@ -60,7 +60,7 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Set up Java ${{ matrix.java }}
-      uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
       with:
         distribution: 'temurin'
         java-version: |
@@ -103,7 +103,7 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Set up Java 8 + ${{ matrix.java }}
-      uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
       with:
         distribution: 'temurin'
         java-version: |
