@@ -2128,7 +2128,10 @@ public class Analyzer extends Processor {
 		}
 
 		if (isPedantic() && noimports.size() != 0) {
-			warning("Imports that lack version ranges: %s", noimports);
+			warning(
+				"Imports that lack version ranges due to not being found in any bundle on the -buildpath: %s (These could stem from transitive dependencies of non-OSGi jars in your classpath (e.g. from -includeresource). "
+					+ "Adding this dependency to your -buildpath could help bnd adding version information.)",
+				noimports);
 		}
 	}
 
