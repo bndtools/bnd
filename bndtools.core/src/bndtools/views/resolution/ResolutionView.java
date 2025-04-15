@@ -172,16 +172,22 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			} else if (part instanceof IEditorPart) {
 				IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
 				IFile file = ResourceUtil.getFile(editorInput);
+
 				if (file != null) {
-					CapReqLoader loader = getLoaderForFile(file.getLocation()
-						.toFile());
-					if (loader != null) {
-						setLoaders(Collections.singleton(loader));
-						if (getSite().getPage()
-							.isPartVisible(ResolutionView.this)) {
-							executeAnalysis();
-						} else {
-							outOfDate = true;
+					IPath location = file.getLocation();
+
+					if (location != null) {
+						CapReqLoader loader = getLoaderForFile(location.toFile());
+
+						if (loader != null) {
+							setLoaders(Collections.singleton(loader));
+
+							if (getSite().getPage()
+								.isPartVisible(ResolutionView.this)) {
+								executeAnalysis();
+							} else {
+								outOfDate = true;
+							}
 						}
 					}
 				}
