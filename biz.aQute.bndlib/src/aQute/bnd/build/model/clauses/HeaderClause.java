@@ -119,7 +119,13 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 			.forEachOrdered((name, value) -> {
 				buffer.append(separator);
 				int n = buffer.length();
-				quote(buffer, name, '\'');
+				boolean directive = Attrs.isDirective(name);
+
+				if (directive) {
+					buffer.append(name);
+				} else {
+					quote(buffer, name, '\'');
+				}
 				n = buffer.length() - n;
 
 				while (newlinesBetweenAttributes && n++ < 20) {
