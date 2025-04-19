@@ -143,6 +143,9 @@ public final class Icons {
 		}
 	}
 
+	/**
+	 * @return a shared / managed Image. Callers must NOT call .dispose()
+	 */
 	public static Image image(String name, boolean nullIfAbsent) {
 
 		ImageDescriptor desc = desc(name, nullIfAbsent);
@@ -160,6 +163,9 @@ public final class Icons {
 		}
 	}
 
+	/**
+	 * @return a shared / managed Image. Callers must NOT call .dispose()
+	 */
 	public static Image image(String name, String... decorators) {
 		synchronized (images) {
 			Key k = new Key(name, decorators);
