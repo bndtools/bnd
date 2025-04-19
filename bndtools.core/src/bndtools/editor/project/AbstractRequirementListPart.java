@@ -49,6 +49,7 @@ import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.preferences.BndPreferences;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
@@ -276,6 +277,11 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 			VersionedClause clause = (VersionedClause) elem;
 			bsn = clause.getName();
 			versionRange = clause.getVersionRange();
+		} else if (elem instanceof RepositoryResourceElement rre) {
+			RepositoryBundleVersion repositoryBundleVersion = rre.getRepositoryBundleVersion();
+			bsn = repositoryBundleVersion.getBsn();
+			versionRange = RepositoryBundleUtils.toVersionRangeUpToNextMajor(repositoryBundleVersion.getVersion())
+				.toString();
 		} else {
 			throw new IllegalArgumentException("Unable to derive identity from an object of type " + elem.getClass()
 				.getSimpleName());
