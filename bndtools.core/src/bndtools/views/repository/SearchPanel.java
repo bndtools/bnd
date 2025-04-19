@@ -3,6 +3,7 @@ package bndtools.views.repository;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -61,6 +62,11 @@ public abstract class SearchPanel implements IPersistable {
 		propSupport.firePropertyChange(PROP_VALUE, oldRequiremenmt, requirement);
 	}
 
+	/**
+	 * Returns a managed / cached instance of an Image (via
+	 * {@link Icons#image(String, String...)}. Callers must not call
+	 * image.dispose().
+	 */
 	public Image createImage(@SuppressWarnings("unused") Device device) {
 		return null;
 	}

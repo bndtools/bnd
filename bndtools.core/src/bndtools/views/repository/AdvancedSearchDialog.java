@@ -2,8 +2,6 @@ package bndtools.views.repository;
 
 import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -55,7 +53,6 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
 
 		PropertyChangeListener changeListener = evt -> updateFromPanel();
 
-		final List<Image> images = new LinkedList<>();
 
 		for (Entry<String, SearchPanel> panelEntry : panelMap.entrySet()) {
 			String title = panelEntry.getKey();
@@ -76,19 +73,11 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
 
 			Image image = panel.createImage(tabFolder.getDisplay());
 			if (image != null) {
-				images.add(image);
 				item.setImage(image);
 			}
 
 			panel.addPropertyChangeListener(changeListener);
 		}
-
-		tabFolder.addDisposeListener(e -> {
-			for (Image image : images) {
-				if (!image.isDisposed())
-					image.dispose();
-			}
-		});
 
 		tabFolder.setSelection(activeTabIndex);
 		SearchPanel currentPanel = (SearchPanel) tabFolder.getItem(activeTabIndex)
