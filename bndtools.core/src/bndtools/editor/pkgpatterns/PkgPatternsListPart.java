@@ -360,6 +360,8 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 	public void refresh() {
 		super.refresh();
 
+		List<String> previouslySelected = getSelectedClauseNames();
+
 		// Deep-copy the model
 		Collection<C> tmp = loadFromModel(model);
 		if (tmp != null) {
@@ -374,6 +376,31 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 		}
 		viewer.setInput(clauses);
 		validate();
+		viewer.refresh();
+
+		IFormPage page = (IFormPage) managedForm.getContainer();
+
+		if (page.isActive()) {
+			// only restore the previous selection if we are on the Bundle
+			// Content Page
+			restoreSelectionByName(previouslySelected);
+		}
+	}
+
+	private List<String> getSelectedClauseNames() {
+		return selection != null ? selection.stream()
+			.map(HeaderClause::getName)
+			.toList() : List.of();
+	}
+
+	private void restoreSelectionByName(List<String> namesToSelect) {
+		List<C> matches = clauses.stream()
+			.filter(c -> namesToSelect.contains(c.getName()))
+			.toList();
+
+		if (!matches.isEmpty()) {
+			viewer.setSelection(new StructuredSelection(matches), true);
+		}
 	}
 
 	public void validate() {
