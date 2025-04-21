@@ -52,38 +52,7 @@ public class BndHover extends DefaultTextHover {
 						.collect(Collectors.joining());
 				}
 
-				Syntax syntax = Syntax.HELP.get(key);
-				StringBuilder sb = new StringBuilder();
-				if (syntax == null) {
-					if (!key.startsWith("-"))
-						key = "-" + key;
-					syntax = Syntax.HELP.get("-" + key);
-				}
-
-				if (syntax != null) {
-
-					sb.append(syntax.getLead());
-					String values = syntax.getValues();
-					if (values != null && !values.isBlank()) {
-						sb.append("\nValues: ");
-						sb.append(syntax.getValues());
-					}
-					sb.append("\nExample: ");
-					sb.append(syntax.getExample());
-				}
-				Parameters decorated = properties.decorated(key);
-				if (!decorated.isEmpty()) {
-					sb.append("\n")
-						.append(key)
-						.append("=")
-						.append(decorated);
-				}
-
-				String text = sb.toString();
-
-				if (text.length() > 30) {
-					text = wrap(text, 30);
-				}
+				String text = syntaxHoverText(key, properties);
 				if (!text.isEmpty())
 					return text;
 
@@ -159,4 +128,39 @@ public class BndHover extends DefaultTextHover {
 		return sb.toString();
 	}
 
+	public static String syntaxHoverText(String key, Processor properties) {
+		Syntax syntax = Syntax.HELP.get(key);
+		StringBuilder sb = new StringBuilder();
+		if (syntax == null) {
+			if (!key.startsWith("-"))
+				key = "-" + key;
+			syntax = Syntax.HELP.get("-" + key);
+		}
+
+		if (syntax != null) {
+
+			sb.append(syntax.getLead());
+			String values = syntax.getValues();
+			if (values != null && !values.isBlank()) {
+				sb.append("\nValues: ");
+				sb.append(syntax.getValues());
+			}
+			sb.append("\nExample: ");
+			sb.append(syntax.getExample());
+		}
+		Parameters decorated = properties.decorated(key);
+		if (!decorated.isEmpty()) {
+			sb.append("\n")
+				.append(key)
+				.append("=")
+				.append(decorated);
+		}
+
+		String text = sb.toString();
+
+		if (text.length() > 30) {
+			text = wrap(text, 30);
+		}
+		return text;
+	}
 }

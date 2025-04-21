@@ -2,10 +2,13 @@ package bndtools.editor;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -69,9 +72,11 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.PropertyKey;
 import bndtools.central.Central;
+import bndtools.editor.completion.BndHover;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 
 /**
@@ -89,6 +94,7 @@ public class BndSourceEffectivePage extends FormPage {
 	private StyledText		styledText;
 	private Button			toggleButton;
 	private Button			showExpandedValuesButton;
+	private Button			showMergedPropertiesButton;
 	private Composite		viewersComposite;
 	private StackLayout		stackLayout;
 	private boolean			loading;
@@ -117,8 +123,11 @@ public class BndSourceEffectivePage extends FormPage {
 		toggleButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
 		this.showExpandedValuesButton = toolkit.createButton(body, "Show expanded values", SWT.CHECK);
-		// If you want to set the initial state of the checkbox:
-		showExpandedValuesButton.setSelection(false); // check it by default
+		showExpandedValuesButton.setSelection(false);
+
+		this.showMergedPropertiesButton = toolkit.createButton(body, "Show as merged properties", SWT.CHECK);
+		showMergedPropertiesButton.setSelection(false);
+		showMergedPropertiesButton.setVisible(false);
 
 		// Create composite for viewers
 		viewersComposite = toolkit.createComposite(body);
@@ -155,6 +164,24 @@ public class BndSourceEffectivePage extends FormPage {
 			}
 		});
 		showExpandedValuesButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (showExpandedValuesButton.getSelection()) {
+					showMergedPropertiesButton.setVisible(true);
+				} else {
+					showMergedPropertiesButton.setVisible(false);
+					showMergedPropertiesButton.setSelection(false);
+				}
+
+				loading = false;
+				update();
+				tableViewer.refresh();
+				viewersComposite.layout();
+
+			}
+		});
+
+		showMergedPropertiesButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				loading = false;
@@ -348,28 +375,54 @@ public class BndSourceEffectivePage extends FormPage {
 		} else {}
 	}
 
-	private String print() throws Exception {
+	private String printSourceViewerContent() throws Exception {
 		if (editModel == null) {
 			return "...";
 		}
 
 		try {
-			StringBuilder sb = new StringBuilder();
+			boolean showExpandedValues = showExpandedValuesButton.getSelection();
+			boolean showMerged = showMergedPropertiesButton.getSelection();
 
+			StringBuilder sb = new StringBuilder();
 			Processor properties = getProperties();
 			List<PropertyKey> propertyKeys = properties.getPropertyKeys(k -> true);
 			List<PropertyKey> visible = PropertyKey.findVisible(propertyKeys);
 
-			boolean showExpandedValues = showExpandedValuesButton.getSelection();
+			if (showMerged) {
 
-			for (PropertyKey k : visible) {
+				Collection<String> stems = visible.stream()
+					.map(k -> {
+						String stem = BndEditModel.getStem(k.key());
+						if (Constants.MERGED_HEADERS.contains(stem)) {
+							return stem;
+						}
+						return k.key();
+					})
+					.collect(Collectors.toCollection(LinkedHashSet::new));
 
-				String value = showExpandedValues ? getExpandedValue(k) : k.getRawValue();
-				sb.append(k.key())
+				for (String stem : stems) {
+
+					String value = properties.mergeProperties(stem);
+
+					sb.append(stem)
+						.append(": ")
+						.append(BndEditModel.format(stem, value))
+						.append("\n");
+				}
+
+			} else {
+
+				for (PropertyKey k : visible) {
+
+					String value = showExpandedValues ? getExpandedValue(k) : k.getRawValue();
+					sb.append(k.key())
 					.append(": ")
-					.append(value)
+						.append(BndEditModel.format(k.key(), value))
 					.append("\n");
+				}
 			}
+
 
 			return sb.toString();
 		} catch (Exception e) {
@@ -378,14 +431,15 @@ public class BndSourceEffectivePage extends FormPage {
 
 	}
 
+
 	private void update() {
 		if (loading || styledText == null || !isActive()) {
 			return;
 		}
 		loading = true;
 		try {
-			String text = print();
-			sourceViewer.setDocument(new Document(text));
+			String sourceViewerContent = printSourceViewerContent();
+			sourceViewer.setDocument(new Document(sourceViewerContent));
 			styledText.setFocus();
 			tableViewer.setInput(getTableData());
 		} catch (Exception e) {
@@ -411,15 +465,17 @@ public class BndSourceEffectivePage extends FormPage {
 	}
 
 	private int[] createColumns(TableViewer tableViewer) {
-		record ColSpec(String title, int width, Function<PropertyKey, String> label,
-			Function<PropertyKey, String> tooltip) {}
+		record ColSpec(String title, int width, Function<PropertyRow, String> label,
+			Function<PropertyRow, String> tooltip) {}
 
-		ColSpec[] specs = {
-			new ColSpec("Key", 150, PropertyKey::key, null), //
-			new ColSpec("Value", -250, this::expandedOrRawValue,
-				this::getExpandedValue), //
-			new ColSpec("Provenance", 150, this::toPath, null), //
+		boolean showMerged = showMergedPropertiesButton.getSelection();
+
+		ColSpec[] specs = new ColSpec[] {
+			new ColSpec("Key", 150, PropertyRow::title, (pr -> BndHover.syntaxHoverText(pr.title, getProperties()))), //
+			new ColSpec("Value", -250, PropertyRow::value, PropertyRow::tooltip), //
+			new ColSpec("Provenance", 150, PropertyRow::provenance, null), //
 		};
+
 		int[] widths = new int[specs.length];
 
 		createCustomToolTipSupport(tableViewer);
@@ -438,7 +494,7 @@ public class BndSourceEffectivePage extends FormPage {
 				@Override
 				public void update(ViewerCell cell) {
 					Object element = cell.getElement();
-					if (element instanceof PropertyKey pkey) {
+					if (element instanceof PropertyRow pkey) {
 						String text = spec.label != null ? spec.label.apply(pkey) : null;
 						cell.setText(text);
 					}
@@ -446,10 +502,10 @@ public class BndSourceEffectivePage extends FormPage {
 
 				@Override
 				public String getToolTipText(Object element) {
-					if (spec.tooltip != null && element instanceof PropertyKey pkey) {
+					if (spec.tooltip != null && element instanceof PropertyRow pkey) {
 						String s = spec.tooltip.apply(pkey);
 						if (s != null && s.length() > 30) {
-							return BndEditModel.format(pkey.key(), s);
+							return BndEditModel.format(pkey.title, s);
 						} else
 							return s;
 					}
@@ -539,11 +595,42 @@ public class BndSourceEffectivePage extends FormPage {
 
 	Object[] getTableData() {
 
+
 		try {
+
 			Processor p = getProperties();
 			List<PropertyKey> propertyKeys = p.getPropertyKeys(k -> true);
 			List<PropertyKey> visible = PropertyKey.findVisible(propertyKeys);
-			return visible.toArray();
+
+			boolean showMerged = showMergedPropertiesButton.getSelection();
+
+			if (showMerged) {
+
+				Collection<String> stems = visible.stream()
+					.map(k -> {
+						String stem = BndEditModel.getStem(k.key());
+						if (Constants.MERGED_HEADERS.contains(stem)) {
+							return stem;
+						}
+						return k.key();
+					})
+					.collect(Collectors.toCollection(LinkedHashSet::new));
+
+				return stems.stream()
+					.map(stem -> {
+					return new PropertyRow(stem, p.mergeProperties(stem), "-",
+							p.mergeProperties(stem));
+					})
+					.toArray();
+
+			} else {
+
+				return visible.stream()
+					.map(k -> {
+						return new PropertyRow(k.key(), expandedOrRawValue(k), toPath(k), getExpandedValue(k));
+					})
+					.toArray();
+			}
 
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -565,4 +652,8 @@ public class BndSourceEffectivePage extends FormPage {
 		return p;
 	}
 
+	/**
+	 * represents a row in the Effective view table.
+	 */
+	record PropertyRow(String title, String value, String provenance, String tooltip) {}
 }
