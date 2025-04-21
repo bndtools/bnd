@@ -1601,7 +1601,7 @@ public class BndEditModel {
 			return (Converter) converters.get(header);
 	}
 
-	private static String getStem(String header) {
+	public static String getStem(String header) {
 		int n = header.indexOf('.');
 		if (n < 0)
 			return header;
