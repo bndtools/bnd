@@ -237,7 +237,6 @@ public class BndSourceEffectivePage extends FormPage {
 		this.tableViewer = new TableViewer(body,
 			SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
-
 		Table table = tableViewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
@@ -292,8 +291,7 @@ public class BndSourceEffectivePage extends FormPage {
 				}
 
 				@Override
-				public void controlMoved(ControlEvent arg0) {
-				}
+				public void controlMoved(ControlEvent arg0) {}
 			});
 		tableViewer.getControl()
 			.getParent()
@@ -301,9 +299,8 @@ public class BndSourceEffectivePage extends FormPage {
 	}
 
 	private void open(Object element) {
-		if (element instanceof PropertyKey prop) {
-			String fpath = prop.getProvenance()
-				.orElse(null);
+		if (element instanceof PropertyRow prop) {
+			String fpath = prop.provenance();
 			if (fpath == null || fpath.isBlank()) {
 				return;
 			}
@@ -417,12 +414,11 @@ public class BndSourceEffectivePage extends FormPage {
 
 					String value = showExpandedValues ? getExpandedValue(k) : k.getRawValue();
 					sb.append(k.key())
-					.append(": ")
+						.append(": ")
 						.append(BndEditModel.format(k.key(), value))
-					.append("\n");
+						.append("\n");
 				}
 			}
-
 
 			return sb.toString();
 		} catch (Exception e) {
@@ -430,7 +426,6 @@ public class BndSourceEffectivePage extends FormPage {
 		}
 
 	}
-
 
 	private void update() {
 		if (loading || styledText == null || !isActive()) {
@@ -473,15 +468,13 @@ public class BndSourceEffectivePage extends FormPage {
 		ColSpec[] specs = new ColSpec[] {
 			new ColSpec("Key", 150, PropertyRow::title, (pr -> BndHover.syntaxHoverText(pr.title, getProperties()))), //
 			new ColSpec("Value", -250, PropertyRow::value, PropertyRow::tooltip), //
-			new ColSpec("Provenance", 150, PropertyRow::provenance, null), //
+			new ColSpec("Provenance", 150, (pr -> relativizeProvenancePath(pr.provenance())), null), //
 		};
 
 		int[] widths = new int[specs.length];
 
 		createCustomToolTipSupport(tableViewer);
-		tableViewer.addDoubleClickListener(event -> {
-			System.out.println(event);
-		});
+
 		int colIndex = 0;
 		for (ColSpec spec : specs) {
 			final TableViewerColumn column = new TableViewerColumn(tableViewer, SWT.NONE);
@@ -567,34 +560,28 @@ public class BndSourceEffectivePage extends FormPage {
 		return p.getProperty(k.key());
 	}
 
-	private String toPath(Object element) {
-		if (element instanceof PropertyKey prop) {
+	private String relativizeProvenancePath(String path) {
 
-			String path = prop.getProvenance()
-				.orElse(null);
-			if (path == null || path.isBlank()) {
-				return "";
-			}
-
-			File file = new File(path);
-			if (!file.isFile())
-				return path;
-
-			Workspace workspace = Central.getWorkspaceIfPresent();
-			if (workspace == null)
-				return path;
-
-			URI wsbase = workspace.getBase()
-				.toURI();
-			URI fbase = file.toURI();
-			URI relative = wsbase.relativize(fbase);
-			return relative.getPath();
+		if (path == null || path.isBlank()) {
+			return "";
 		}
-		return "";
+
+		File file = new File(path);
+		if (!file.isFile())
+			return path;
+
+		Workspace workspace = Central.getWorkspaceIfPresent();
+		if (workspace == null)
+			return path;
+
+		URI wsbase = workspace.getBase()
+			.toURI();
+		URI fbase = file.toURI();
+		URI relative = wsbase.relativize(fbase);
+		return relative.getPath();
 	}
 
 	Object[] getTableData() {
-
 
 		try {
 
@@ -618,8 +605,7 @@ public class BndSourceEffectivePage extends FormPage {
 
 				return stems.stream()
 					.map(stem -> {
-					return new PropertyRow(stem, p.mergeProperties(stem), "-",
-							p.mergeProperties(stem));
+						return new PropertyRow(stem, p.mergeProperties(stem), null, p.mergeProperties(stem));
 					})
 					.toArray();
 
@@ -627,7 +613,9 @@ public class BndSourceEffectivePage extends FormPage {
 
 				return visible.stream()
 					.map(k -> {
-						return new PropertyRow(k.key(), expandedOrRawValue(k), toPath(k), getExpandedValue(k));
+						String provenance = k.getProvenance()
+							.orElse(null);
+						return new PropertyRow(k.key(), expandedOrRawValue(k), provenance, getExpandedValue(k));
 					})
 					.toArray();
 			}
