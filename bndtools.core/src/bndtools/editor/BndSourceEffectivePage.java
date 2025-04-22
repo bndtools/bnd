@@ -124,10 +124,13 @@ public class BndSourceEffectivePage extends FormPage {
 
 		this.showExpandedValuesButton = toolkit.createButton(body, "Show expanded values", SWT.CHECK);
 		showExpandedValuesButton.setSelection(false);
+		showExpandedValuesButton.setToolTipText("Shows the actual values instead of placeholders.");
 
 		this.showMergedPropertiesButton = toolkit.createButton(body, "Show as merged properties", SWT.CHECK);
+		showMergedPropertiesButton.setToolTipText(
+			"Groups all instructions by the stem of the property, which previews how bnd sees the instructions under the hood.");
 		showMergedPropertiesButton.setSelection(false);
-		showMergedPropertiesButton.setVisible(false);
+		showMergedPropertiesButton.setEnabled(false);
 
 		// Create composite for viewers
 		viewersComposite = toolkit.createComposite(body);
@@ -167,9 +170,9 @@ public class BndSourceEffectivePage extends FormPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (showExpandedValuesButton.getSelection()) {
-					showMergedPropertiesButton.setVisible(true);
+					showMergedPropertiesButton.setEnabled(true);
 				} else {
-					showMergedPropertiesButton.setVisible(false);
+					showMergedPropertiesButton.setEnabled(false);
 					showMergedPropertiesButton.setSelection(false);
 				}
 
