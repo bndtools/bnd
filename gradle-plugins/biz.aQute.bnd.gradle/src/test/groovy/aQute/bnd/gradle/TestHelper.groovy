@@ -38,6 +38,9 @@ class TestHelper {
 	}
 
 	private static String gradleVersion() {
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_24)) {
+			return "8.14"
+		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21) || 
 			JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_22) || 
 			JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_23)) {
