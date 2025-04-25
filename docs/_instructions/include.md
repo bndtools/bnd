@@ -36,7 +36,7 @@ There are two possible options. The path/URL starts with a:
 ## Examples
 
 	# Read an optional file in the user's home directory
-	-include ${user.home}/.xyz/base.bnd
+	-include -${user.home}/.xyz/base.bnd
 
 	# Read a manifest
 	-include META-INF/MANIFEST.MF
