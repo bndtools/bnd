@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -101,6 +102,20 @@ public class ASTEngine {
 		optionsx.put(JavaCore.COMPILER_SOURCE, sourceLevel);
 		parser.setCompilerOptions(optionsx);
 		parser.setUnitName(unit);
+
+		this.unit = (CompilationUnit) parser.createAST(null);
+		this.ast = this.unit.getAST();
+		this.rewriter = ASTRewrite.create(ast);
+	}
+
+	public ASTEngine(IJavaProject javaProject, String source, int jls, int kind, String unit) {
+		this.source = source;
+		ASTParser parser = ASTParser.newParser(jls);
+		parser.setResolveBindings(true);
+		parser.setSource(source.toCharArray());
+		parser.setKind(kind);
+		parser.setUnitName(unit);
+		parser.setProject(javaProject);
 
 		this.unit = (CompilationUnit) parser.createAST(null);
 		this.ast = this.unit.getAST();

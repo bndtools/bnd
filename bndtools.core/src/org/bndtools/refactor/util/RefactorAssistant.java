@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -1033,8 +1034,10 @@ public class RefactorAssistant {
 					unit = underlyingResource.getFullPath()
 						.lastSegment();
 				}
-				return new ASTEngine(iunit.getSource(), AST.getJLSLatest(), ASTParser.K_COMPILATION_UNIT, unit,
-					iunit.getOptions(true));
+
+				IJavaProject javaProject = iunit.getJavaProject();
+				return new ASTEngine(javaProject, iunit.getSource(), AST.getJLSLatest(), ASTParser.K_COMPILATION_UNIT,
+					unit);
 			} catch (JavaModelException e) {
 				throw Exceptions.duck(e);
 			}
