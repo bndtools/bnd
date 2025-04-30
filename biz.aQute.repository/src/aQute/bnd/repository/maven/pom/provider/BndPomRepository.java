@@ -38,6 +38,7 @@ import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.repository.maven.util.RepoActionsUtil;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
@@ -305,6 +306,26 @@ public class BndPomRepository extends BaseRepository
 			return null;
 		}
 
+		Archive archive = getArchiveByBsnVersion(bsn, version);
+
+		if (archive == null) {
+			return null;
+		}
+
+		Promise<File> p = repoImpl.getMavenRepository()
+			.get(archive);
+
+		if (listeners.length == 0)
+			return p.getValue();
+
+		Map<String, String> attrs = archive.attributes();
+		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version, p, attrs, listeners);
+		return repoImpl.getMavenRepository()
+			.toLocalFile(archive);
+	}
+
+	private Archive getArchiveByBsnVersion(String bsn, Version version) throws Exception {
+
 		Archive archive;
 
 		if (isMavenGAV(bsn)) {
@@ -343,16 +364,7 @@ public class BndPomRepository extends BaseRepository
 			}
 		}
 
-		Promise<File> p = repoImpl.getMavenRepository()
-			.get(archive);
-
-		if (listeners.length == 0)
-			return p.getValue();
-
-		Map<String, String> attrs = archive.attributes();
-		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version, p, attrs, listeners);
-		return repoImpl.getMavenRepository()
-			.toLocalFile(archive);
+		return archive;
 	}
 
 	private boolean isMavenGAV(String bsn) {
@@ -466,8 +478,24 @@ public class BndPomRepository extends BaseRepository
 				.collect(joining("\n"));
 			cb.copy(gavs);
 		});
+
+		String bsn = (String) target[0];
+		Version version = (Version) target[1];
+		Archive archive = getArchiveByBsnVersion(bsn, version);
+
+		RepoActionsUtil.addSources(archive, (a) -> {
+
+			try {
+				return repoImpl.getMavenRepository()
+					.get(archive);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		}, menu);
+
 		return menu;
 	}
+
 
 	@Override
 	public String tooltip(Object... target) throws Exception {

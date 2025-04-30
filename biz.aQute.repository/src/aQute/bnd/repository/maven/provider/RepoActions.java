@@ -16,9 +16,9 @@ import java.util.Optional;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.osgi.Jar;
 import aQute.bnd.repository.maven.provider.MbrUpdater.MavenVersionResult;
 import aQute.bnd.repository.maven.provider.MbrUpdater.Scope;
+import aQute.bnd.repository.maven.util.RepoActionsUtil;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
@@ -141,7 +141,14 @@ class RepoActions {
 
 		addUpdate(archive, map);
 
-		addSources(archive, map);
+		RepoActionsUtil.addSources(archive, (a) -> {
+
+			try {
+				return repo.storage.get(archive);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		}, map);
 
 		// Some "Copy to Clipboard" actions, if clipboard is available
 		if (clipboard != null) {
@@ -153,41 +160,6 @@ class RepoActions {
 		return map;
 	}
 
-	void addSources(final Archive archive, Map<String, Runnable> map) throws Exception {
-		Promise<File> pBinary = repo.storage.get(archive);
-		if (pBinary.getFailure() == null) {
-			final File binary = pBinary.getValue();
-			final File out = new File(binary.getParentFile(), "+" + binary.getName());
-			if (!out.isFile()) {
-				Archive a = archive.revision.archive("jar", "sources");
-				Promise<File> pSources = repo.storage.get(a);
-				if (pSources.getFailure() == null) {
-					final File sources = pSources.getValue();
-					if (sources.isFile() && sources.length() > 1000) {
-						map.put("Add Sources", () -> {
-							try {
-								try (Jar src = new Jar(sources)) {
-									try (Jar bin = new Jar(binary)) {
-										bin.setDoNotTouchManifest();
-										for (String path : src.getResources()
-											.keySet())
-											bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
-										bin.write(out);
-									}
-									out.setLastModified(System.currentTimeMillis());
-								}
-							} catch (Exception e) {
-								throw Exceptions.duck(e);
-							}
-						});
-						return;
-					}
-				}
-			}
-		}
-
-		map.put("-Add Sources", null);
-	}
 
 	void addUpdate(final Archive archive, Map<String, Runnable> map) throws Exception {
 		try {
