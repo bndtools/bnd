@@ -26,6 +26,7 @@ import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import aQute.lib.io.IO;
+import bndtools.central.sync.WorkspaceSynchronizer;
 
 public class Model implements Runnable {
 	static final Logger			log					= LoggerFactory.getLogger(Model.class);
@@ -53,12 +54,17 @@ public class Model implements Runnable {
 	String				error;
 	String				valid;
 	NewWorkspaceType	choice				= NewWorkspaceType.newbnd;
+	private Workspace	workspace;
 
 	enum Progress {
 		init,
 		start,
 		finished,
 		error
+	}
+
+	public Model(Workspace workspace) {
+		this.workspace = workspace;
 	}
 
 	boolean isValid() {
@@ -114,6 +120,8 @@ public class Model implements Runnable {
 					IResource workspaceRoot = ResourcesPlugin.getWorkspace()
 						.getRoot();
 					workspaceRoot.refreshLocal(IResource.DEPTH_INFINITE, null);
+					syncWorkspace();
+
 				} else if (switchWorkspace) {
 					display.asyncExec(() -> {
 						System.setProperty("osgi.instance.area", location.getAbsolutePath());
@@ -139,11 +147,26 @@ public class Model implements Runnable {
 		return true;
 	}
 
+	private void syncWorkspace() {
+		WorkspaceSynchronizer s = new WorkspaceSynchronizer();
+
+		Job syncjob = Job.create("Sync bnd workspace", monitor -> {
+			s.synchronize(true, monitor, () -> {});
+		});
+		syncjob.setRule(ResourcesPlugin.getWorkspace()
+			.getRoot());
+		syncjob.schedule();
+	}
+
 	void updateWorkspace(boolean useEclipse) {
 		if (useEclipse != updateWorkspace) {
 			updateWorkspace = useEclipse;
 			if (useEclipse) {
-				location = current;
+				if (workspace.isDefaultWorkspace()) {
+					location = current;
+				} else {
+					location = workspace.getBase();
+				}
 			} else {
 				location = getUniqueWorkspaceName();
 			}
