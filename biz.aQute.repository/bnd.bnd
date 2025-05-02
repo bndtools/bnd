@@ -61,3 +61,4 @@ Export-Package: \
 
 -baseline: *
 -metatypeannotations: *
+Private-Package: aQute.bnd.repository.maven.util
