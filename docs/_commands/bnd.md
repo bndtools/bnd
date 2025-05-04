@@ -4,9 +4,7 @@ title: bnd
 summary: The swiss army tool for OSGi
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

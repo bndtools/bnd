@@ -4,9 +4,7 @@ title: action [options] ...
 summary: Equivalent jar command c[v0mf] command (supports the jar tool's syntax). Will wrap the bundle unless --wrapnot is specified
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

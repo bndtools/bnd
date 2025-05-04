@@ -4,9 +4,7 @@ title:   bash
 summary:  Generate autocompletion file for bash
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

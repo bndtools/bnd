@@ -4,9 +4,7 @@ title:   test [options] <testclass[:method]...>
 summary: Test a project according to an OSGi test 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

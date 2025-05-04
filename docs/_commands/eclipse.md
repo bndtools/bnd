@@ -4,9 +4,7 @@ title:      eclipse [options]
 summary: Show info about the current directory's eclipse project
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

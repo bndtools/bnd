@@ -4,9 +4,7 @@ title:   syntax [options] <header|instruction> ...
 summary: Access the internal bnd database of keywords and options 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

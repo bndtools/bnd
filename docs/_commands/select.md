@@ -4,9 +4,7 @@ title:     select [options] <[jar-path]> <[...]>
 summary: Helps finding information in a set of JARs by filtering on manifest data and printing out selected information. 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

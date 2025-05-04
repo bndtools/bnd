@@ -4,9 +4,7 @@ title: defaults
 summary: 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

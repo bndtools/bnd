@@ -4,9 +4,7 @@ title:    convert [options] <[from]> <[to]>
 summary: Converter to different formats                                 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

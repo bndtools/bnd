@@ -4,9 +4,7 @@ title:  info [options]
 summary: Show key project variables
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

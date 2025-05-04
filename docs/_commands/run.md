@@ -4,9 +4,7 @@ title:   run [options] <[bndrun]>
 summary: Run a project in the OSGi launcher. If not bndrun is specified, the current project is used for the run specification 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

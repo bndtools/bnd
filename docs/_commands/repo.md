@@ -4,9 +4,7 @@ title:   repo [options] <[sub-cmd]> ...
 summary: Access to the repositories. Provides a number of sub commands to manipulate the repository (see repo help) that provide access to the installed repos for the current project.
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

@@ -4,9 +4,7 @@ title:    release [options]
 summary: Release this project 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

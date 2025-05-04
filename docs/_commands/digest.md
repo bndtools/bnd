@@ -4,9 +4,7 @@ title:   digest [options] <[file...]>
 summary: Digest a number of files 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

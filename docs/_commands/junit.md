@@ -6,9 +6,7 @@ summary:  Test a project according to an OSGi test
 
 TODO Does not work yet
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

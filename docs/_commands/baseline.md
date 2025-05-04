@@ -4,9 +4,7 @@ title: baseline [options] <[newer jar]> <[older jar]>
 summary: Compare a newer bundle to a baselined bundle and provide versioning advice.                                
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

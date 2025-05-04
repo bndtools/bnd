@@ -4,9 +4,7 @@ title:   version [options]
 summary: Show version information about bnd
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

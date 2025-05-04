@@ -4,9 +4,7 @@ title: settings [options] <[key][=<[value]>]...>
 summary: Set bnd global variables. The key can be wildcarded. 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

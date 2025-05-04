@@ -4,9 +4,7 @@ title:  print [options] <[jar-file]...>
 summary: Provides detailed view of the bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest. 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

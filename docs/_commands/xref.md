@@ -4,9 +4,7 @@ title:  xref [options] <[jar path]> <[...]>
 summary: Show cross references for all classes in a set of jars.
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

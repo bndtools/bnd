@@ -4,9 +4,7 @@ title: create
 summary: Create a JAR                                 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

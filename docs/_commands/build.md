@@ -4,9 +4,7 @@ title: build [options]
 summary: Build a project. This will create the jars defined in the bnd.bnd and sub-builders.                                 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

@@ -4,9 +4,7 @@ title: identity
 summary: 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

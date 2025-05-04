@@ -4,9 +4,7 @@ title:   find [options] <[file]...>
 summary:  Go through the exports and/or imports and match the given exports/imports globs. If they match, print the file, package and version.
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

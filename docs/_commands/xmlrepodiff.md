@@ -5,9 +5,7 @@ summary: Compares two XML resource repositories
 ---
 
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 
