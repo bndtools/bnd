@@ -4,9 +4,7 @@ title:     maven ( 'settings' | 'bundle'
 summary:  Special maven commands
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

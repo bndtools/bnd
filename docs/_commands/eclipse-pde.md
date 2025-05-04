@@ -7,9 +7,7 @@ bnd: 4
 
 _THIS IS WORK IN PROGRESS_
 
-## Description
 
-{{page.summary}}
 
 The control file (-i) has the following properties: 
 

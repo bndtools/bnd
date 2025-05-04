@@ -4,9 +4,7 @@ title: bootstrap
 summary: Interactive gogo shell                                 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

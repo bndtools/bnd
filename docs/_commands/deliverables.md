@@ -4,9 +4,7 @@ title:    deliverables [options]
 summary:  Show all deliverables from this workspace. with their current version and path.
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

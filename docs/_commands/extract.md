@@ -4,9 +4,7 @@ title:   extract [options] ...
 summary:  Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

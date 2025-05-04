@@ -5,9 +5,7 @@ summary:  Compares two jars. Without specifying the JARs (and when there is a cu
 ---
 
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

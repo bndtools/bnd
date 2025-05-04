@@ -4,9 +4,7 @@ title: clean [options] ...
 summary: Clean a project                                 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

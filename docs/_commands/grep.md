@@ -4,9 +4,7 @@ title:     grep [options] <[pattern]> <[file]...>
 summary:  Grep the manifest of bundles/jar files.
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

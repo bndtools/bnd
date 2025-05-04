@@ -24,7 +24,15 @@
                    </div>
                 {% endif %}     
 				</h1>
-				
+{% if page.summary %}
+
+{% if page.collection == "commands" %}
+<h2>Description</h2>
+{% endif %}
+
+{{page.summary}}
+<br /><br />
+{% endif %}
 				{{content}}
 				</main>
 			</div>

@@ -4,9 +4,7 @@ title:   runtests [options] ...
 summary: Run OSGi tests and create report 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

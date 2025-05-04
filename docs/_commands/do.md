@@ -4,9 +4,7 @@ title:      do [options] ...
 summary: Execute a file based on its extension. Supported extensions are bnd (build), bndrun (run), and jar (print) 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

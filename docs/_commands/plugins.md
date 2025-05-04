@@ -4,9 +4,7 @@ title: plugins [options]
 summary: Execute a Project action, or if no parms given, show information about the project 
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 

@@ -4,9 +4,7 @@ title:    debug [options] ...
 summary: Show a lot of info about the project you're in
 ---
 
-## Description
 
-{{page.summary}}
 
 ## Synopsis
 
