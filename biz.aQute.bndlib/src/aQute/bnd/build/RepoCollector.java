@@ -46,6 +46,9 @@ public class RepoCollector extends Processor {
 		// in which we populate this.repoRefs in the #add() method
 		repoRefs.clear();
 		decorated(Constants.INCLUDERESOURCE);
+		decorated(Constants.BUILDPATH);
+		decorated(Constants.TESTPATH);
+		decorated(Constants.CLASSPATH);
 		return repoRefs;
 	}
 

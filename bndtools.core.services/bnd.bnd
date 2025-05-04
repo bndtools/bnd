@@ -13,6 +13,7 @@ Import-Package: \
 
 -includepackage: \
 	org.bndtools.core.editors.quickfix,\
+	org.bndtools.core.editors.actions,\
 	org.bndtools.pde.launchtobndrun
 
 -conditionalpackage: \
@@ -43,4 +44,8 @@ Import-Package: \
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.workbench,\
 	biz.aQute.bnd.pde,\
-	osgi.annotation
+	osgi.annotation,\
+	biz.aQute.resolve,\
+	org.osgi.service.repository,\
+	org.osgi.resource,\
+	osgi.core
