@@ -2115,11 +2115,15 @@ public class Analyzer extends Processor {
 				fixupAttributes(packageRef, importAttributes);
 				removeAttributes(importAttributes);
 
-				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
-				if ((result == null || !Verifier.isVersionRange(result))
-					&& complainAboutMissingVersionRange(packageRef, ee)) {
-					noimports.add(packageRef);
+				if(isPedantic()) {
+					String version = importAttributes.get(Constants.VERSION_ATTRIBUTE);
+
+					if ((version == null || !Verifier.isVersionRange(version))
+						&& complainAboutMissingVersionRange(packageRef, ee, importAttributes)) {
+						noimports.add(packageRef);
+					}
 				}
+
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 				unsetProperty(CURRENT_BUNDLESYMBOLICNAME);
@@ -2148,14 +2152,31 @@ public class Analyzer extends Processor {
 	 * invalid version-range.
 	 *
 	 * @param pck
+	 * @param importAttributes
 	 * @return <code>true</code> if should complain about missing version
 	 *         <code>false</code> otherwise.
 	 */
-	private boolean complainAboutMissingVersionRange(PackageRef pck, EE ee) {
+	private boolean complainAboutMissingVersionRange(PackageRef pck, EE ee, Attrs importAttributes) {
 
 		if (pck.isJava() || isJDK(pck, ee)) {
 			return false;
 		}
+
+		if (Constants.OPTIONAL.equals(importAttributes.get(RESOLUTION_DIRECTIVE))) {
+			// this package is marked as resolution:=optional in bnd.bnd
+			// and was most likely imported by a class
+			// of a .jar in the bundle-classpath (e.g. via -include resource /
+			// wrapping jars) but carries no version information.
+			// So, we silently ignore this warning, because there will be too
+			// many
+			// for wrapped jars. Because we assume that if it is marked as
+			// resolution:=optional
+			// then the developer has already made a manual effort to write that
+			// into bnd.bnd
+			// to basically say: "i don't care, no more warnings"
+			return false;
+		}
+
 		return true;
 	}
 
