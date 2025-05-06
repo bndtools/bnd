@@ -974,6 +974,22 @@
                tooltip="Generates a bndrun file corresponding to this launch file">
          </action>
       </objectContribution>
+
+	  <objectContribution
+            adaptable="false"
+            id="bndtools.bndrunanalyze"
+            nameFilter="*.bndrun"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="org.bndtools.facade.ExtensionFacade"
+               enablesFor="+"
+               id="org.bndtools.core.editors.actions.BndRunAnalyzerAction"
+               icon="icons/lorry.png"
+               label="Analyze bndrun..."
+               menubarPath="additions"
+               tooltip="Analyzes a .bndrun file e.g. for unused bundles in repositories and other aspects.">
+         </action>
+      </objectContribution>
 	
 		<objectContribution adaptable="true"
 			id="bndtools.nonBndProjectContribution"
