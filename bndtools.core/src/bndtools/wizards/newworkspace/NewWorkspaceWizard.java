@@ -65,8 +65,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	static final String				DEFAULT_INDEX	= "https://raw.githubusercontent.com/bndtools/workspace-templates/master/index.bnd";
 	static final Logger				log				= LoggerFactory.getLogger(NewWorkspaceWizard.class);
 
-	final Model						model			= new Model();
-	final UI<Model>					ui				= new UI<>(model);
+	final Model						model;
+	final UI<Model>					ui;
 	final NewWorkspaceWizardPage	page			= new NewWorkspaceWizardPage();
 	final FragmentTemplateEngine			templates;
 	private ScrolledFormText		txtDescription;
@@ -77,6 +77,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
 		Workspace workspace = Central.getWorkspace();
+		this.model = new Model(workspace);
+		this.ui = new UI<>(model);
 		templates = new FragmentTemplateEngine(workspace);
 		try {
 			Job job = Job.create("load index", mon -> {
