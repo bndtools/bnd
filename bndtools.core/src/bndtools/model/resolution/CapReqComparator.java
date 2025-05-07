@@ -1,5 +1,6 @@
 package bndtools.model.resolution;
 
+import java.util.Collection;
 import java.util.Comparator;
 
 import org.bndtools.core.ui.resource.R5LabelFormatter;
@@ -70,15 +71,33 @@ public class CapReqComparator implements Comparator<Object> {
 		String versionAttribName = R5LabelFormatter.getVersionAttributeName(ns1);
 		if (versionAttribName == null)
 			return 0;
-		Version v1 = (Version) c1.getAttributes()
-			.get(versionAttribName);
-		if (v1 == null)
-			v1 = Version.emptyVersion;
-		Version v2 = (Version) c2.getAttributes()
-			.get(versionAttribName);
-		if (v2 == null)
-			v2 = Version.emptyVersion;
+
+		Version v1 = highestVersion(c1.getAttributes()
+			.get(versionAttribName));
+		Version v2 = highestVersion(c2.getAttributes()
+			.get(versionAttribName));
+
 		return v1.compareTo(v2);
+	}
+
+	private static Version highestVersion(Object attr) {
+
+		if (attr instanceof Version v) {
+			return v;
+		}
+
+		if (attr instanceof Collection<?> col) {
+			// e.g. namespace 'osgi.ee' can contain List<Version>
+			// see
+			// https://osgi.github.io/osgi/core/framework.namespaces.html#framework.namespaces-ee.namespace
+			// so we compare the highest versions
+			return col.stream()
+				.filter(Version.class::isInstance)
+				.map(Version.class::cast)
+				.max(Version::compareTo)
+				.orElse(Version.emptyVersion);
+		}
+		return Version.emptyVersion; // null or wrong type
 	}
 
 	private int compareReqToReq(Requirement r1, Requirement r2) {
