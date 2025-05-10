@@ -1,13 +1,14 @@
 package aQute.bnd.repository.maven.util;
 
+import static aQute.maven.api.Archive.JAR_EXTENSION;
+import static aQute.maven.api.Archive.SOURCES_CLASSIFIER;
+
 import java.io.File;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.osgi.util.promise.Promise;
 
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.osgi.Jar;
 import aQute.maven.api.Archive;
 
 /**
@@ -21,42 +22,17 @@ public class RepoActionsUtil {
 
 		if (pBinary.getFailure() == null) {
 			final File binary = pBinary.getValue();
-			final File out = new File(binary.getParentFile(), "+" + binary.getName());
 
-			if (!out.isFile()) {
-				Archive a = archive.revision.archive("jar", "sources");
-				Promise<File> pSources = lookup.apply(a);
+			map.put("Add Sources", () -> {
 
-				if (pSources.getFailure() == null) {
-					final File sources = pSources.getValue();
+				Archive a = archive.getOther(JAR_EXTENSION, SOURCES_CLASSIFIER);
+				lookup.apply(a);
 
-					if (sources.isFile() && sources.length() > 1000) {
-						map.put("Add Sources", () -> {
-
-							try {
-
-								try (Jar src = new Jar(sources)) {
-
-									try (Jar bin = new Jar(binary)) {
-										bin.setDoNotTouchManifest();
-										for (String path : src.getResources()
-											.keySet())
-											bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
-										bin.write(out);
-									}
-									out.setLastModified(System.currentTimeMillis());
-								}
-							} catch (Exception e) {
-								throw Exceptions.duck(e);
-							}
-						});
-						return;
-					}
-				}
-			}
+			});
+			return;
 		}
 
-		map.put("-Add Sources", null);
+		// map.put("-Add Sources", null);
 	}
 
 }
