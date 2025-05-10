@@ -488,7 +488,42 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 		private IPath calculateSourceAttachmentPath(IPath path, File file) {
 			JarInfo info = getJarInfo(file);
-			return info.hasSource ? path : null;
+			IPath sourcePath = info.hasSource ? path : null;
+
+			if (sourcePath == null) {
+				sourcePath = trySourcesJar(file);
+			}
+
+			return sourcePath;
+		}
+
+		/**
+		 * try to see if there is file bsn-sources.jar e.g. as downloaded by the
+		 * Maven repos
+		 *
+		 * @param file
+		 * @return the bsn-sources.jar file if found, otherwise
+		 *         <code>null</code>
+		 */
+		private IPath trySourcesJar(File file) {
+
+			if (file.getName()
+				.endsWith(".jar")) {
+
+				try {
+					File withSources = new File(file.getParentFile(), file.getName()
+						.substring(0, file.getName()
+							.indexOf(".jar"))
+						+ "-sources.jar");
+
+					if (withSources.isFile()) {
+						return fileToPath(withSources);
+					}
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+			return null;
 		}
 
 		private JarInfo getJarInfo(File file) {
