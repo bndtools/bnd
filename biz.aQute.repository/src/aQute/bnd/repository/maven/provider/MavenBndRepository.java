@@ -582,9 +582,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 
 		File f = storage.toLocalFile(archive);
-		File withSources = new File(f.getParentFile(), "+" + f.getName());
-		if (withSources.isFile() && withSources.lastModified() > f.lastModified())
-			f = withSources;
 
 		if (listeners.length == 0) {
 			return f;
