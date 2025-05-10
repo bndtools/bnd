@@ -555,7 +555,65 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 		private IPath calculateSourceAttachmentPath(IPath path, File file) {
 			JarInfo info = getJarInfo(file);
-			return info.hasSource ? path : null;
+			IPath sourcePath = info.hasSource ? path : null;
+
+			if (sourcePath == null) {
+				sourcePath = trySourcesJar(file);
+			}
+
+			return sourcePath;
+		}
+
+		/**
+		 * try to see if there is file bsn-sources.jar e.g. as downloaded by the
+		 * Maven repos This method does the following assumptions: - the
+		 * extension of the file can be case-insensitive .jar or .JAR - the
+		 * -sources file is expected to have the same extension so e.g. for
+		 * foo.jar we look for a foo-sources.jar for foo.JAR we look for
+		 * foo-sources.JAR
+		 *
+		 * @param file
+		 * @return the bsn-sources.jar file if found, otherwise
+		 *         <code>null</code>
+		 */
+		private IPath trySourcesJar(File file) {
+
+			String ext = getFileExtensionIfExist(file, ".jar");
+
+			if (ext != null) {
+
+				try {
+					String fileWithoutExtension = file.getName()
+						.substring(0, file.getName()
+							.lastIndexOf(ext));
+					String sourceFilename = fileWithoutExtension + "-sources" + ext;
+					File withSources = new File(file.getParentFile(), sourceFilename);
+
+					if (withSources.isFile()) {
+						return fileToPath(withSources);
+					}
+				} catch (Exception e) {
+					logger.logWarning("Error to get -sources.jar", e);
+				}
+			}
+			return null;
+		}
+
+		private static String getFileExtensionIfExist(File file, String ext) {
+			String filename = file.getName();
+
+			if (filename == null) {
+				return null;
+			}
+			int extPos = filename.toLowerCase()
+				.lastIndexOf(ext);
+
+			if (extPos > 0) {
+				return file.getName()
+					.substring(extPos, file.getName()
+						.length());
+			}
+			return null;
 		}
 
 		private JarInfo getJarInfo(File file) {
