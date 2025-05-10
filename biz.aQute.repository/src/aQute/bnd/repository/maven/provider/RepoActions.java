@@ -144,7 +144,7 @@ class RepoActions {
 		RepoActionsUtil.addSources(archive, (a) -> {
 
 			try {
-				return repo.storage.get(archive);
+				return repo.storage.get(a);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}

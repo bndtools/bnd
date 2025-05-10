@@ -487,7 +487,7 @@ public class BndPomRepository extends BaseRepository
 
 			try {
 				return repoImpl.getMavenRepository()
-					.get(archive);
+					.get(a);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
