@@ -5,7 +5,9 @@ import static org.bndtools.builder.classpath.BndContainer.TEST;
 import static org.bndtools.builder.classpath.BndContainer.hasAttribute;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,7 +25,6 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
-import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.builder.BuildLogger;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.PseudoJar;
@@ -42,6 +43,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.eclipse.jdt.internal.core.index.DiskIndex;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 
@@ -68,6 +70,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	private static final ILogger												logger				= Logger
 		.getLogger(BndContainerInitializer.class);
 	private static final ClasspathContainerSerializationHelper<BndContainer>	serializationHelper	= new ClasspathContainerSerializationHelper<>();
+	private static final File													empty_index_file	= IO
+		.getFile(BuilderPlugin.getInstance()
+			.getStateLocation()
+			.toFile(), "empty.index");
 
 	public BndContainerInitializer() {
 		super();
@@ -75,6 +81,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			.addModelListener(BndContainerInitializer.this));
 		JavaRuntime.addContainerResolver(new BndContainerRuntimeClasspathEntryResolver(),
 			BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
+		writeDummyEmptyIndexFile();
 	}
 
 	@Override
@@ -200,12 +207,55 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			.toFile(), p.getName() + ".container");
 	}
 
+	/**
+	 * This is a hack to prevent duplicate results in the Open Type dialog in
+	 * Eclipse.
+	 * <p>
+	 * </p>
+	 * This creates am empty.index file at
+	 * /eclipseworkspace/.metadata/.plugins/bndtools.builder/empty.index and
+	 * writes the version of your current running Eclipse into it. See
+	 * {@link DiskIndex#SIGNATURE} The reason for this "hack" is that this
+	 * version can change with newer Eclipse versions.
+	 * <p>
+	 * See the comment in this file where {@link Updater#EMPTY_INDEX} is added
+	 * to
+	 *
+	 * <pre>
+	 * extraAttrs.add(EMPTY_INDEX)
+	 * </pre>
+	 *
+	 * .
+	 */
+	private void writeDummyEmptyIndexFile() {
+		// see the file 'example-empty.index' in this package for why we are
+		// writing what we write here.
+
+		byte[] prefix = {
+			0x00, 0x13
+		}; // ^@ ^S
+		byte[] text = DiskIndex.SIGNATURE.getBytes(StandardCharsets.US_ASCII);
+		byte[] suffix = {
+			(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF
+		};
+
+		try (FileOutputStream out = new FileOutputStream(empty_index_file)) {
+			out.write(prefix);
+			out.write(text);
+			out.write(suffix);
+			out.flush();
+		} catch (Exception e) {
+			logger.logError("Error writing empty.index", e);
+		}
+	}
+
 	private static class Updater {
 		private static final IAccessRule			DISCOURAGED			= JavaCore.newAccessRule(new Path("**"),
 			IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
 		private static final IClasspathAttribute	EMPTY_INDEX			= JavaCore.newClasspathAttribute(
 			IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
-			"platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
+			"file://" + empty_index_file.getAbsolutePath());
+
 		private static final IClasspathAttribute	WITHOUT_TEST_CODE	= JavaCore
 			.newClasspathAttribute("without_test_code", Boolean.TRUE.toString());
 		private static final Pattern				packagePattern		= Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
@@ -410,7 +460,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 							 * Supply an empty index for the generated JAR of a
 							 * workspace project dependency. This prevents the
 							 * non-editable source files in the generated jar
-							 * from appearing in the Open Type dialog.
+							 * from appearing in the Open Type dialog. Also see
+							 * method writeDummyEmptyIndexFile()
 							 */
 							extraAttrs.add(EMPTY_INDEX);
 							/*
