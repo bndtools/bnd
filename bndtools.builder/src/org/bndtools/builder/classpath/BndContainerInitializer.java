@@ -234,14 +234,25 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		byte[] prefix = {
 			0x00, 0x13
 		}; // ^@ ^S
-		byte[] text = DiskIndex.SIGNATURE.getBytes(StandardCharsets.US_ASCII);
 		byte[] suffix = {
 			(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF
 		};
 
 		try (FileOutputStream out = new FileOutputStream(empty_index_file)) {
+
+			// get the SIGNATURE constant via reflection, because we need to
+			// avoid that it is baked in at compile time: we need the version
+			// from the runtime eclipse instance
+			String version = (String) DiskIndex.class.getField("SIGNATURE")
+				.get(null);
+
+			if (version == null) {
+				return;
+			}
+			byte[] versionBytes = version.getBytes(StandardCharsets.US_ASCII);
+
 			out.write(prefix);
-			out.write(text);
+			out.write(versionBytes);
 			out.write(suffix);
 			out.flush();
 		} catch (Exception e) {
