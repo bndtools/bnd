@@ -70,10 +70,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	private static final ILogger												logger				= Logger
 		.getLogger(BndContainerInitializer.class);
 	private static final ClasspathContainerSerializationHelper<BndContainer>	serializationHelper	= new ClasspathContainerSerializationHelper<>();
-	private static final File													empty_index_file	= IO
-		.getFile(BuilderPlugin.getInstance()
-			.getStateLocation()
-			.toFile(), "empty.index");
 
 	public BndContainerInitializer() {
 		super();
@@ -81,7 +77,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			.addModelListener(BndContainerInitializer.this));
 		JavaRuntime.addContainerResolver(new BndContainerRuntimeClasspathEntryResolver(),
 			BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
-		writeDummyEmptyIndexFile();
 	}
 
 	@Override
@@ -212,11 +207,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	 * Eclipse.
 	 * <p>
 	 * </p>
-	 * This creates am empty.index file at
+	 * This creates a (per project) projectname-empty.index file at
 	 * /eclipseworkspace/.metadata/.plugins/bndtools.builder/empty.index and
 	 * writes the version of your current running Eclipse into it. See
 	 * {@link DiskIndex#SIGNATURE} The reason for this "hack" is that this
-	 * version can change with newer Eclipse versions.
+	 * version can change with newer Eclipse versions. The reason we need to
+	 * create this file per project is, that the Eclipse indexer is heavily
+	 * parallelized and keeps track which index is in use. Thus every project
+	 * needs to have its own empty.index, even though this is kinda redundant.
 	 * <p>
 	 * See the comment in this file where {@link Updater#EMPTY_INDEX} is added
 	 * to
@@ -225,9 +223,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	 * extraAttrs.add(EMPTY_INDEX)
 	 * </pre>
 	 *
-	 * .
+	 * @param empty_index_file
 	 */
-	private void writeDummyEmptyIndexFile() {
+	private static void writeDummyEmptyIndexFile(File empty_index_file) {
 		// see the file 'example-empty.index' in this package for why we are
 		// writing what we write here.
 
@@ -263,9 +261,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 	private static class Updater {
 		private static final IAccessRule			DISCOURAGED			= JavaCore.newAccessRule(new Path("**"),
 			IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
-		private static final IClasspathAttribute	EMPTY_INDEX			= JavaCore.newClasspathAttribute(
-			IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
-			"file://" + empty_index_file.getAbsolutePath());
 
 		private static final IClasspathAttribute	WITHOUT_TEST_CODE	= JavaCore
 			.newClasspathAttribute("without_test_code", Boolean.TRUE.toString());
@@ -278,6 +273,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		private final IWorkspaceRoot				root;
 		private final Project						model;
 		private final BndContainer.Builder			builder;
+
+		private final File							empty_index_file;
+		private final IClasspathAttribute			EMPTY_INDEX;
 
 		Updater(IProject project, IJavaProject javaProject) {
 			assert project != null;
@@ -296,6 +294,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 				logger.logInfo("Unable to get bnd project for project " + project.getName(), e);
 			}
 			this.model = p;
+
+			empty_index_file = IO.getFile(BuilderPlugin.getInstance()
+				.getStateLocation()
+				.toFile(), "empty-" + project.getName() + ".index");
+			EMPTY_INDEX = JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
+				"file://" + empty_index_file.getAbsolutePath());
+			writeDummyEmptyIndexFile(empty_index_file);
 		}
 
 		void updateClasspathContainer(boolean init) throws CoreException {
