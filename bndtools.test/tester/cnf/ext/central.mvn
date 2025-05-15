@@ -42,7 +42,7 @@ org.apache.felix:org.apache.felix.inventory:1.0.6
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
 org.assertj:assertj-core:3.12.1
 
-com.google.guava:guava:19.0
+com.google.guava:guava:33.4.8-jre
 
 org.opentest4j:opentest4j:1.2.0
 org.apiguardian:apiguardian-api:1.1.2

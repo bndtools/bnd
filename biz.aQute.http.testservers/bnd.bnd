@@ -28,7 +28,7 @@ Bundle-Description: \
 	${junit}, \
 	slf4j.api;version=latest, \
 	slf4j.simple;version=latest, \
-	com.google.guava;version='[19.0,20)', \
+	com.google.guava;version='[33.4.8,34.0.0)', \
 	org.apache.commons.lang3;version=latest, \
 	org.apache.commons.codec;version=latest
 

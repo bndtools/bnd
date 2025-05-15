@@ -110,7 +110,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     ${repo;org.parboiled:parboiled-java;latest},\
     ${repo;org.parboiled:parboiled-core;latest},\
     ${repo;org.apache.commons.lang3;[3.4,4.0)},\
-    ${repo;com.google.guava;[18.0,19.0)},\
+    ${repo;com.google.guava;[33.4.8,34.0.0)},\
     ${repo;com.googlecode.concurrentlinkedhashmap.lru;[1.4.2,2.0.0)},\
     ${repo;org.objectweb.asm},\
     ${repo;org.objectweb.asm.tree.analysis},\
@@ -125,13 +125,14 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     org.parboiled:parboiled-java;version=latest,\
     org.parboiled:parboiled-core;version=latest,\
     org.apache.commons.lang3;version="[3.4,4.0)",\
-    com.google.guava;version="[18.0,19.0)",\
+    com.google.guava;version="[33.4.8,34.0.0)",\
+	com.google.guava.failureaccess,\
     com.googlecode.concurrentlinkedhashmap.lru;version="[1.4.2,2.0.0)",\
     org.objectweb.asm,\
     org.objectweb.asm.tree.analysis,\
     org.objectweb.asm.tree,\
     org.objectweb.asm.util,\
-	com.github.javaparser.javaparser-core;version=3.13
+	com.github.javaparser.javaparser-core;version=3.13,\
 
 
 -builderignore: testdata, installers
