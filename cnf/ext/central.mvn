@@ -166,8 +166,8 @@ org.apache.maven:maven-plugin-api:${maven.target.version}
 org.apache.maven:maven-repository-metadata:${maven.target.version}
 org.apache.maven:maven-settings:${maven.target.version}
 org.eclipse.aether:aether-api:${aether.version}
-org.sonatype.plexus:plexus-build-api:0.0.7
-org.codehaus.plexus:plexus-utils:3.0.22
+org.codehaus.plexus:plexus-build-api:1.2.0
+org.codehaus.plexus:plexus-utils:3.0.24
 org.codehaus.plexus:plexus-classworlds:2.5.2
 
 ## higher SWT version required because of SWT bug with MacOS Sonoma 
