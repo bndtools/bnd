@@ -32,3 +32,6 @@
 -builderignore: testresources
 
 -baseline: *
+
+# Do not include source code in OSGI-OPT  
+-sources: false
