@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -34,8 +36,6 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Processor;
@@ -43,7 +43,7 @@ import aQute.bnd.unmodifiable.Maps;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDetailsHandler {
-	final static Logger						logger						= LoggerFactory
+	final static ILogger					logger						= Logger
 		.getLogger(AbstractBuildErrorDetailsHandler.class);
 	private static final Map<Code, String> PRIMITIVES_TO_SIGNATURES = Maps.of(PrimitiveType.VOID, "V",
 		PrimitiveType.BOOLEAN, "Z", PrimitiveType.BYTE, "B", PrimitiveType.SHORT, "S", PrimitiveType.CHAR, "C",
@@ -382,12 +382,13 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 	@Override
 	public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
 		if (model instanceof Project) {
-			logger.warn(
-				"error details handler implements a deprecated method, please replace with generateMarkerData(...Processor...)");
+			logger.logWarning(
+				"error details handler implements a deprecated method, please replace with generateMarkerData(...Processor...)",
+				null);
 			return generateMarkerData(project, (Project) model, location);
 		}
 
-		logger.info("generateMarkerData: why not overridden?");
+		logger.logInfo("generateMarkerData: why not overridden?", null);
 		return Collections.emptyList();
 	}
 

@@ -8,8 +8,6 @@ import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
-import bndtools.Plugin;
-
 public final class BuildErrorDetailsHandlers {
 
 	private static ILogger											logger		= Logger
@@ -31,7 +29,7 @@ public final class BuildErrorDetailsHandlers {
 
 		handler = DefaultBuildErrorDetailsHandler.INSTANCE;
 		IConfigurationElement[] elements = Platform.getExtensionRegistry()
-			.getConfigurationElementsFor(Plugin.PLUGIN_ID, "buildErrorDetailsHandlers");
+			.getConfigurationElementsFor("bndtools.core", "buildErrorDetailsHandlers");
 		if (elements != null) {
 			for (IConfigurationElement element : elements) {
 				if (type.equals(element.getAttribute("typeMatch"))) {

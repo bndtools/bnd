@@ -5,10 +5,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -16,7 +22,6 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Report.Location;
-import bndtools.central.Central;
 
 public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDetailsHandler {
 	static String										HEADER_S	= "\\s*(\\s|:|=)[^\\\\\n]*(\\\\\n[^\\\\\n]*)*";
@@ -72,7 +77,7 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
 			}
 		}
 
-		IResource resource = Central.toResource(file);
+		IResource resource = toResource(file);
 		String extra = "";
 
 		if (resource == null)
@@ -96,6 +101,25 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
 		}
 
 		return new MarkerData(resource, attribs, false);
+	}
+
+	public static IResource toResource(File file) {
+		if (file == null)
+			return null;
+
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		return toFullPath(file).map(p -> file.isDirectory() ? root.getFolder(p) : root.getFile(p))
+			.orElse(null);
+	}
+
+	private static Optional<IPath> toFullPath(File file) {
+		IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		IFile[] candidates = wsroot.findFilesForLocationURI(file.toURI());
+		return Stream.of(candidates)
+			.map(IFile::getFullPath)
+			.min((a, b) -> Integer.compare(a.segmentCount(), b.segmentCount()));
 	}
 
 }
