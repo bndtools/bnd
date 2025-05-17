@@ -37,7 +37,8 @@
 	bnd.identity;id='bndtools.m2e.debug.fragment',\
 	bnd.identity;id='bndtools.pde',\
 	bnd.identity;id='bndtools.release',\
-	bnd.identity;id='com.google.guava',\
+	bnd.identity;id='com.google.guava';version='[33.4.8,34.0.0)',\
+	bnd.identity;id='com.google.guava.failureaccess',\
 	bnd.identity;id='javax.annotation',\
 	bnd.identity;id='org.apache.ant',\
 	bnd.identity;id='org.apache.felix.gogo.command',\
