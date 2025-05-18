@@ -9,13 +9,80 @@ Also, please provide the `Git-SHA` and `Git-Descriptor` headers from the Bnd/Bnd
 Please include the steps required to reproduce the problem if possible and applicable.
 This information will help us review and fix your issue faster.
 
+
+## Development Setups
+
+We provide pre-configured setups using Eclipse oomph installer, which help you getting started quickly. 
+This way you get a dedicated Eclipse instance with pre-installed bndtools source code with a simple one-click installer.
+
+**Find our different setups and P2 Repositories at:**
+<https://bndtools.org/bndtools.p2.repo/>
+
+## Launching Bndtools from Eclipse
+
+To launch bndtools from Eclipse (e.g. to try out a change to debug), use one of the `.bndrun` files from the `bndtools.core` project. There are three launchers, one per architecture, i.e.:
+
+* `bndtools.cocoa.macosx.x86_64.bndrun` for running on MacOS (64-bit Intel x86)
+* `bndtools.cocoa.macosx.aarch64.bndrun` for running on MacOS (64-bit Apple Silicon / AArch64)
+* `bndtools.gtk.linux.x86_64.bndrun` for running on Linux (64-bit Intel x86).
+* `bndtools.gtk.linux.x86.bndrun` for running on Linux (32-bit Intel x86).
+* `bndtools.win32.x86.bndrun` for running on Win32 (XP, Vista etc).
+
+Right click on the file that matches your computer's architecture and select "Run As" > "Bnd OSGi Run Launcher". If none of these files matches the architecture you want to run on, then please create a new one and submit it back as a patch.
+
+## Manually Building Bndtools
+
+In addition to the way with the pre-configured development environments there is also the more manual way.
+
+Note: Bndtools is built with Bndtools! If you want to work on the bndtools source code, you have three options:
+
+* Install the a release of bndtools from the [Installation page](https://bndtools.org/installation.html) and start working straight away.
+* Build Bndtools from the command line, then install the build results into your Eclipse IDE.
+
+### Checking Out from GitHub
+
+First check out the source code from GitHub as follows:
+
+	git clone git://github.com/bndtools/bnd.git
+
+If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketplace) then skip to **Importing Into Eclipse** below. Otherwise read on...
+
+### Building from the command-line
+
+Assuming you have Gradle (version 1.11 or better) installed, you can build bndtools from the command line by changing to the root of your checkout and typing:
+
+`./gradlew :build` (or `./gradlew build -x test` to skip tests for faster local builds)
+
+After a a short while, two directories - `build/generated/p2` and `build/generated/extras/p2` will appear. These contains an Eclipse Update Sites that you can use to install bndtools from the code you have just built.
+
+
+To install from the generated Update Sites, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `build/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK". Do the same for the `build/generated/extras/p2` directory.
+
+Back in the update dialog, Bndtools will appear in the category list. Place a check next to it and click Next. Drive the rest of the wizard to completion... congratulations, you have just built and installed bndtools!
+
+We recommend the section [Build Environment](#build-environment) below to learn more about how the build works.
+
+
+### Importing Into Eclipse
+
+Now you have Bndtools installed in your Eclipse IDE, you can import the bndtools projects into Eclipse to begin working on the source code.
+
+Open the File menu and select "Import" and then "Existing Projects into Workspace" (under the General category). Click "Next". Click the "Browse" button (top right) and select the root directory of the bndtools projects.
+
+Ensure that all projects (sub-directories) are checked.
+
+NB: These projects must all be in the same directory!
+
+Click "Finish"... Eclipse will start to import and build the projects. **If you see a dialog during the import prompting you to "Create a Bnd Configuration Project" click CANCEL.**
+
+You should now have all the bndtools projects in your workspace, ready to begin hacking!
+
+
 ## Build Environment
 
 The only thing you need to build Bnd/Bndtools is Java.
-We require at least Java 8.
-We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
-
-Some more instructions how to get started with bndtools development in Eclipse can be found [here](https://bndtools.org/development.html).
+- We require at least Java 17.
+- We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
 
 - `./gradlew :build` (or `./gradlew build -x test` to skip tests for faster local builds) - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
 - `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
@@ -45,6 +112,13 @@ This generates new gradle wrapper files.
 Additionally consider adding the version to `gradle-plugins/biz.aQute.bnd.gradle/src/test/groovy/aQute/bnd/gradle/TestHelper.groovy` in the method `gradleVersion()`.
 
 If you think this new gradle wrapper might be worth a contribution to bnd, feel free to open a PR.
+
+## Running JUnit Tests
+
+
+The project `biz.aQute.tester.test` contains the unit tests for `biz.aQute.tester` and `biz.aQute.tester.junit-platform`.
+See this project's [README](https://github.com/bndtools/bnd/blob/master/biz.aQute.tester.test/readme.md) for instructions of how to execute tests in Eclipse.
+
 
 ## Workflow
 
@@ -225,3 +299,4 @@ If your pull request was originally a work-in-progress, don't forget to remove W
 Don't forget: being a maintainer is a time investment.
 Make sure you will have time to make yourself available.
 You don't have to be a maintainer to make a difference on the project!
+
