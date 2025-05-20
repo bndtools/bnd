@@ -105,6 +105,7 @@ import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
+import aQute.bnd.service.tags.Tags;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -822,11 +823,13 @@ public class Project extends Processor {
 
 			DownloadBlocker downloadBlocker = new DownloadBlocker(this);
 			File bundle = repo.get(bsn, version, attrs, downloadBlocker);
+
 			if (bundle != null && !bundle.getName()
 				.endsWith(".lib")) {
 				containers
 					.add(new Container(this, bsn, range, Container.TYPE.REPO, bundle, null, attrs, downloadBlocker));
 			}
+
 		}
 
 		return containers;
@@ -1395,7 +1398,19 @@ public class Project extends Processor {
 	 * @return a list of relevant repositories used by various methods.
 	 */
 	public List<RepositoryPlugin> getRepositories() {
-		return workspace.getRepositories();
+		// if (tags == null || tags.includesAny(Constants.REPOTAGS_RESOLVE)) {
+
+		return workspace.getRepositories()
+			.stream()
+			.filter(repo -> {
+				Tags tags = repo.getTags();
+
+				if (tags == null || tags.includesAny(Constants.REPOTAGS_RESOLVE)) {
+					return true;
+				}
+				return false;
+			})
+			.toList();
 	}
 
 	/**
