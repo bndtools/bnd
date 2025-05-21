@@ -1405,7 +1405,7 @@ public class Project extends Processor {
 			.filter(repo -> {
 				Tags tags = repo.getTags();
 
-				if (tags == null || tags.includesAny(Constants.REPOTAGS_RESOLVE)) {
+				if (tags == null || tags.includesAny(Constants.REPOTAGS_COMPILE)) {
 					return true;
 				}
 				return false;
