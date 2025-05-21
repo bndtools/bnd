@@ -1398,14 +1398,13 @@ public class Project extends Processor {
 	 * @return a list of relevant repositories used by various methods.
 	 */
 	public List<RepositoryPlugin> getRepositories() {
-		// if (tags == null || tags.includesAny(Constants.REPOTAGS_RESOLVE)) {
 
 		return workspace.getRepositories()
 			.stream()
 			.filter(repo -> {
 				Tags tags = repo.getTags();
 
-				if (tags == null || tags.includesAny(Constants.REPOTAGS_COMPILE)) {
+				if (tags == null || !tags.includesAny(Constants.REPOTAGS_NOCOMPILE)) {
 					return true;
 				}
 				return false;
