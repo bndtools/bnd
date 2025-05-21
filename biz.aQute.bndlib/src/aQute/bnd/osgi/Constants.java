@@ -265,6 +265,13 @@ public interface Constants {
 	 */
 	String		REPOTAGS_RESOLVE							= "resolve";
 
+	/**
+	 * tag for repos which should be used for project compilation (-buildpath,
+	 * -testpath). This is also the default tag for all repos which not have
+	 * specified tags (also for bc reasons)
+	 */
+	String		REPOTAGS_COMPILE							= "compile";
+
 	String		RUNBLACKLIST								= "-runblacklist";
 	String		RUNREQUIRES									= "-runrequires";
 	String		RUNEE										= "-runee";
