@@ -80,6 +80,10 @@ public class WorkspaceTest {
 		assertTrue(((Tagged) repo).getTags()
 			.includesAny(Constants.REPOTAGS_RESOLVE));
 
+		// same for 'compile' tag
+		List<Repository> compileRepos = workspace.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
+		assertEquals(repos, compileRepos);
+
 	}
 
 	@Test

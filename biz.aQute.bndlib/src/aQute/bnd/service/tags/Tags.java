@@ -111,6 +111,22 @@ public class Tags implements Set<String> {
 		return internalSet.toString();
 	}
 
+	/** Set to {@code false} and delete the whole block in 7.3.0 */
+	private static final boolean									TRANSITION_COMPILE_IMPLIES_RESOLVE	= true;
+	/** Only emit the warning once to avoid log spam. */
+	private static final java.util.concurrent.atomic.AtomicBoolean	WARNED								= new java.util.concurrent.atomic.AtomicBoolean(
+		false);
+
+	private static void warnOnceCompileResolveBridge() {
+
+		if (WARNED.compareAndSet(false, true)) {
+			org.slf4j.LoggerFactory.getLogger(Tags.class)
+				.warn("Tags contain tag \"resolve\" only – "
+					+ "this still satisfies a request for \"compile\" in 7.2.x "
+					+ "but will NOT in 7.3. Add the tag \"compile\".");
+		}
+	}
+
 	/**
 	 * @param tags (globs)
 	 * @return <code>true</code> if any of the given tags is included in the
@@ -128,10 +144,25 @@ public class Tags implements Set<String> {
 			return true;
 		}
 
+
 		for (String tagGlob : tags) {
+
 			if (matchesAny(new Glob(tagGlob))) {
 				return true;
 			}
+
+			// ──────────────────────────────────────────────────────────
+			// ↓↓↓ Transitional bridge 7.2 → 7.3 (compile ⇒ resolve)
+			// ──────────────────────────────────────────────────────────
+			if (TRANSITION_COMPILE_IMPLIES_RESOLVE && "compile".equalsIgnoreCase(tagGlob) // request
+																							// is
+																							// 'compile'
+				&& matchesAny(new Glob("resolve"))) { // entity has 'resolve'
+
+				warnOnceCompileResolveBridge(); // log only once
+				return true;
+			}
+			// ↑↑↑ remove in 7.3
 		}
 
 		return false;
