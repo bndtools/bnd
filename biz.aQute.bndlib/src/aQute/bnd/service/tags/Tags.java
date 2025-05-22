@@ -128,6 +128,26 @@ public class Tags implements Set<String> {
 	}
 
 	/**
+	 * Returns {@code true} if this entity should take part in <i>any</i> of the
+	 * caller-requested tags.
+	 *
+	 * // @formatter:off
+	 * Semantics – in precedence order
+	 * --------------------------------
+	 * 1. **Legacy wildcard** – if this entity has no tags at all, it matches
+	 *    every tag (backwards compatibility).
+	 * 2. **Negative tag overrides** – if the entity contains a literal tag
+	 *    {@code "no" + tag} it is <b>excluded</b> from that phase, regardless
+	 *    of all other rules (example 'nocompile'.
+	 * 3. **Positive tag match** – if the entity contains a tag that matches a
+	 *    requested glob, it is included.
+	 * 4. **7.2 bridge** – while {@link #TRANSITION_COMPILE_IMPLIES_RESOLVE} is
+	 *    {@code true}, a request for {@code "compile"} also accepts entities that
+	 *    have {@code "resolve"} (and <i>no</i> {@code "noCompile"}).
+	 *    The first use logs a deprecation warning; this block will be removed
+	 *    in 7.3.
+	 * // @formatter:on
+	 *
 	 * @param tags (globs)
 	 * @return <code>true</code> if any of the given tags is included in the
 	 *         current set of tags, otherwise returns <code>false</code>. Also
@@ -147,19 +167,26 @@ public class Tags implements Set<String> {
 
 		for (String tagGlob : tags) {
 
-			if (matchesAny(new Glob(tagGlob))) {
-				return true;
+			String phase = tagGlob; // e.g. "compile"
+			String negativePhase = "no" + phase; // "noCompile"
+
+			/* 1. Explicit negative tag blocks this phase --------------- */
+			if (matchesAny(new Glob(negativePhase))) {
+				continue; // try next requested tag
 			}
 
-			// ──────────────────────────────────────────────────────────
-			// ↓↓↓ Transitional bridge 7.2 → 7.3 (compile ⇒ resolve)
-			// ──────────────────────────────────────────────────────────
-			if (TRANSITION_COMPILE_IMPLIES_RESOLVE && "compile".equalsIgnoreCase(tagGlob) // request
-																							// is
-																							// 'compile'
-				&& matchesAny(new Glob("resolve"))) { // entity has 'resolve'
+			/* 2. Positive tag match ------------------------------------ */
+			if (matchesAny(new Glob(tagGlob))) {
+				return true; // success
+			}
 
-				warnOnceCompileResolveBridge(); // log only once
+			/* 3. Transitional bridge (compile ⇒ resolve) -------------- */
+			if (TRANSITION_COMPILE_IMPLIES_RESOLVE && "compile".equalsIgnoreCase(phase)
+				&& matchesAny(new Glob("resolve")) && !matchesAny(new Glob("noCompile"))) { // negative
+																							// still
+																							// wins
+
+				warnOnceCompileResolveBridge(); // log only first time
 				return true;
 			}
 			// ↑↑↑ remove in 7.3
@@ -169,10 +196,12 @@ public class Tags implements Set<String> {
 
 	}
 
+
 	private boolean matchesAny(Glob glob) {
 		return internalSet.stream()
 			.anyMatch(s -> glob.matches(s));
 	}
+
 
 	/**
 	 * @param name
