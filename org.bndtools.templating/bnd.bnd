@@ -16,7 +16,8 @@
 	org.eclipse.equinox.common,\
 	org.antlr:ST4:jar:complete;maven-scope=provided,\
 	com.github.spullara.mustache.java:compiler;maven-scope=provided,\
-	com.google.guava;version="[33.4.8,33.4.9)";maven-scope=provided
+	com.google.guava;version="[33.4.8,33.4.9)";maven-scope=provided,\
+	org.jspecify.jspecify;version='[1.0.0,2.0.0)';maven-scope=provided
 
 -testpath: \
 	slf4j.api,\
@@ -30,7 +31,8 @@
 	aQute.lib.*,\
 	aQute.libg.*,\
 	com.github.mustachejava.*,\
-	com.google.common.*
+	com.google.common.*,\
+	org.jspecify.*
 	
 Bundle-ActivationPolicy: lazy
 
