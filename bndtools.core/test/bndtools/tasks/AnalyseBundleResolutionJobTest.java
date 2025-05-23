@@ -5,18 +5,29 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Attrs.Type;
+import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.CapabilityImpl;
+import bndtools.model.resolution.CapReqComparator;
 import bndtools.model.resolution.RequirementWrapper;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class AnalyseBundleResolutionJobTest {
 
 	@Test
@@ -126,6 +137,53 @@ public class AnalyseBundleResolutionJobTest {
 		assertEquals("com.acme", caps.get(0)
 			.getDirectives()
 			.get("uses"));
+	}
+
+	@Test
+	public void testCapReqComparatorVersionList(SoftAssertions softly) {
+
+		// test an aspect of ResolutionView which uses CapReqComparator
+
+		// the following Provide-Capability header threw a
+		// ClassCastException: class java.util.ArrayList cannot be cast to class
+		// org.osgi.framework.Version
+		// in a CapReqComparator
+		// This test ensures that this exception does not occur
+		// Provide-Capability: osgi.ee;osgi.ee="OSGi/Minimum";
+		// version:List<Version>="1.0,1.1,1.2",osgi.ee;osgi.ee="JRE";
+		// version:List<Version>="1.0,1.1,1.2,1.3"
+
+		Comparator<Object> comparator = new CapReqComparator();
+
+		Attrs attrs = new Attrs();
+		attrs.put("version", Type.VERSIONS, "1.0,1.1,1.2,1.3");
+		CapabilityImpl c1 = new CapabilityBuilder("osgi.ee").addAttributes(attrs)
+			.buildSyntheticCapability();
+
+		Attrs attrs2 = new Attrs();
+		attrs2.put("version", Type.VERSIONS, "1.0,1.1,1.2");
+		CapabilityImpl c2 = new CapabilityBuilder("osgi.ee").addAttributes(attrs2)
+			.buildSyntheticCapability();
+
+		// expect sorting by highest version
+
+		softly.assertThat(comparator.compare(c1, c2))
+			.isEqualTo(1);
+
+		CapabilityImpl[] array = {
+			c1, c2
+		};
+
+		softly.assertThat(Arrays.toString(array))
+			.as("before sorting, highest version first")
+			.isEqualTo(
+				"[osgi.ee;version:List<Version>='1.0.0,1.1.0,1.2.0,1.3.0', osgi.ee;version:List<Version>='1.0.0,1.1.0,1.2.0']");
+		Arrays.sort(array, comparator);
+		softly.assertThat(Arrays.toString(array))
+			.as("after sorting, highest version last")
+			.isEqualTo(
+				"[osgi.ee;version:List<Version>='1.0.0,1.1.0,1.2.0', osgi.ee;version:List<Version>='1.0.0,1.1.0,1.2.0,1.3.0']");
+
 	}
 
 }
