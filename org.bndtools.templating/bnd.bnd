@@ -16,7 +16,7 @@
 	org.eclipse.equinox.common,\
 	org.antlr:ST4:jar:complete;maven-scope=provided,\
 	com.github.spullara.mustache.java:compiler;maven-scope=provided,\
-	com.google.guava;version="[16.0.1,17)";maven-scope=provided
+	com.google.guava;version="[33.4.8,33.4.9)";maven-scope=provided
 
 -testpath: \
 	slf4j.api,\
@@ -38,6 +38,7 @@ Import-Package: \
  sun.misc;resolution:=optional,\
  com.google.appengine.*;resolution:=optional,\
  com.google.apphosting.*;resolution:=optional,\
+ android.os.*;resolution:=optional,\
  ${eclipse.importpackage},\
  *
 
