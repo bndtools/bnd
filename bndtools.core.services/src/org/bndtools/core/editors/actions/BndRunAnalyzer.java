@@ -39,7 +39,7 @@ class BndRunAnalyzer {
 	public record Result(Map<String, Collection<String>> bsnsPerRepo) {
 
 		public String print() {
-			String output = "Showing unreferenced Bundles. That means, 'Bundle Symbolic Names' (BSN) over all repositories, which are not referenced in -runfw, -runbundles, -buildpath, -testpath, -includeresource with ${repo;...}): \n"
+			String output = "Showing unreferenced Bundles. That means, 'Bundle Symbolic Names' (BSN) over all repositories, which are not referenced in -runfw, -runbundles, -buildpath, -testpath, -runpath, -includeresource with ${repo;...}): \n"
 				+ "You can use that to cleanup your repositories and remove unused bundles.\n\n";
 
 			for (String repoName : bsnsPerRepo.keySet()) {
@@ -177,6 +177,7 @@ class BndRunAnalyzer {
 					result.addAll(project.getBuildpath());
 					result.addAll(project.getTestpath());
 					result.addAll(project.getClasspath());
+					result.addAll(project.getRunpath());
 					result.addAll(collectRepoReferences(project));
 					result.addAll(project.getSubProjects()
 						.stream()
@@ -225,12 +226,11 @@ class BndRunAnalyzer {
 
 				try {
 					Bndrun run = Bndrun.createBndrun(ws, file);
-					Collection<Container> runbundles = run.getRunbundles();
-					Collection<Container> runFw = run.getRunFw();
 
 					ArrayList<Container> combined = new ArrayList<>();
-					combined.addAll(runbundles);
-					combined.addAll(runFw);
+					combined.addAll(run.getRunbundles());
+					combined.addAll(run.getRunFw());
+					combined.addAll(run.getRunpath());
 					return combined;
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
