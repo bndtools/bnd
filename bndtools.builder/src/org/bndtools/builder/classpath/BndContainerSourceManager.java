@@ -1,5 +1,10 @@
 package org.bndtools.builder.classpath;
 
+import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.bnd.osgi.Constants.VERSION_ATTR_LATEST;
+import static aQute.bnd.service.Strategy.EXACT;
+import static aQute.bnd.service.Strategy.HIGHEST;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.SortedSet;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
@@ -34,6 +40,7 @@ import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
@@ -160,28 +167,74 @@ public class BndContainerSourceManager {
 				return null;
 			}
 
+			String bsn = null;
+			String version = null;
+
 			Domain domain = Domain.domain(manifest);
 			Entry<String, Attrs> bsnAttrs = domain.getBundleSymbolicName();
-			if (bsnAttrs == null) {
+
+			if (bsnAttrs != null) {
+				bsn = bsnAttrs.getKey();
+				version = domain.getBundleVersion();
+			}
+
+			if (bsn == null) {
+				bsn = props.get("bsn");
+			}
+
+			if (bsn == null) {
 				return null;
 			}
-			String bsn = bsnAttrs.getKey();
-			String version = domain.getBundleVersion();
 
 			if (version == null) {
 				version = props.get("version");
 			}
 
+			if ("file".equals(version)) {
+				// this is a jar in the project folder and we cannot look that
+				// up in a repo
+				// we could only hope that this jar contains sources
+				// under OSGI-OPT/src and will be picked up by
+				// org.bndtools.builder.classpath.BndContainerInitializer.Updater.calculateSourceAttachmentPath(IPath,
+				// File)
+				return null;
+			}
+
+			String bsnSource = bsn + BSN_SOURCE_SUFFIX;
+			Strategy strategy = (version == null || VERSION_ATTR_LATEST.equals(version)) ? HIGHEST : EXACT;
+			Version v = null;
+
 			for (RepositoryPlugin repo : repositories) {
+
 				if (repo == null) {
 					continue;
 				}
+
 				if (repo instanceof WorkspaceRepository) {
 					continue;
 				}
-				File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
-				if (sourceBundle != null) {
-					return sourceBundle;
+
+				if (HIGHEST == strategy) {
+					SortedSet<Version> vs = repo.versions(bsn);
+
+					if (vs != null && !vs.isEmpty()) {
+						Version latest = vs.last();
+						File sourceBundle = repo.get(bsnSource, latest, props);
+
+						if (sourceBundle != null) {
+							return sourceBundle;
+						}
+					}
+				} else {
+
+					if (v == null) {
+						v = new Version(version); // just parse once
+					}
+					File sourceBundle = repo.get(bsnSource, v, props);
+
+					if (sourceBundle != null) {
+						return sourceBundle;
+					}
 				}
 			}
 		} catch (final Exception e) {
