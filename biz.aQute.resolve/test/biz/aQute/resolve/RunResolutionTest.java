@@ -591,7 +591,7 @@ public class RunResolutionTest {
 		}
 
 		@Override
-		public List<RepositoryPlugin> getRepositories() {
+		public List<RepositoryPlugin> getRepositories(String... tags) {
 			return getPlugins(RepositoryPlugin.class);
 		}
 
