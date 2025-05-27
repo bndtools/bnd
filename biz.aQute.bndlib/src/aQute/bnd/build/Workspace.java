@@ -731,14 +731,17 @@ public class Workspace extends Processor {
 			return data.repositories.get();
 		}
 
+		Tags activeTags = Tags.parse(getProperty(Constants.ACTIVETAGS), Tags.of(Constants.REPOTAGS_RESOLVE));
+
 		return data.repositories.get()
 			.stream()
 			.filter(repo -> {
 				Tags repotags = repo.getTags();
 
-				if (repotags == null || repotags.includesAny(tags)) {
+				if (repotags == null || !activeTags.includesAny(tags) || repotags.includesAny(tags)) {
 					return true;
 				}
+
 				return false;
 			})
 			.toList();

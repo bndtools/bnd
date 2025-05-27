@@ -111,21 +111,7 @@ public class Tags implements Set<String> {
 		return internalSet.toString();
 	}
 
-	/** Set to {@code false} and delete the whole block in 7.3.0 */
-	private static final boolean									TRANSITION_COMPILE_IMPLIES_RESOLVE	= true;
-	/** Only emit the warning once to avoid log spam. */
-	private static final java.util.concurrent.atomic.AtomicBoolean	WARNED								= new java.util.concurrent.atomic.AtomicBoolean(
-		false);
 
-	private static void warnOnceCompileResolveBridge() {
-
-		if (WARNED.compareAndSet(false, true)) {
-			org.slf4j.LoggerFactory.getLogger(Tags.class)
-				.warn("Tags contain tag \"resolve\" only – "
-					+ "this still satisfies a request for \"compile\" in 7.2.x "
-					+ "but will NOT in 7.3. Add the tag \"compile\".");
-		}
-	}
 
 	/**
 	 * Returns {@code true} if this entity should take part in <i>any</i> of the
@@ -141,11 +127,6 @@ public class Tags implements Set<String> {
 	 *    of all other rules (example 'nocompile'.
 	 * 3. **Positive tag match** – if the entity contains a tag that matches a
 	 *    requested glob, it is included.
-	 * 4. **7.2 bridge** – while {@link #TRANSITION_COMPILE_IMPLIES_RESOLVE} is
-	 *    {@code true}, a request for {@code "compile"} also accepts entities that
-	 *    have {@code "resolve"} (and <i>no</i> {@code "noCompile"}).
-	 *    The first use logs a deprecation warning; this block will be removed
-	 *    in 7.3.
 	 * // @formatter:on
 	 *
 	 * @param tags (globs)
@@ -167,29 +148,9 @@ public class Tags implements Set<String> {
 
 		for (String tagGlob : tags) {
 
-			String phase = tagGlob; // e.g. "compile"
-			String negativePhase = "no" + phase; // "noCompile"
-
-			/* 1. Explicit negative tag blocks this phase --------------- */
-			if (matchesAny(new Glob(negativePhase))) {
-				continue; // try next requested tag
-			}
-
-			/* 2. Positive tag match ------------------------------------ */
 			if (matchesAny(new Glob(tagGlob))) {
 				return true; // success
 			}
-
-			/* 3. Transitional bridge (compile ⇒ resolve) -------------- */
-			if (TRANSITION_COMPILE_IMPLIES_RESOLVE && "compile".equalsIgnoreCase(phase)
-				&& matchesAny(new Glob("resolve")) && !matchesAny(new Glob("noCompile"))) { // negative
-																							// still
-																							// wins
-
-				warnOnceCompileResolveBridge(); // log only first time
-				return true;
-			}
-			// ↑↑↑ remove in 7.3
 		}
 
 		return false;

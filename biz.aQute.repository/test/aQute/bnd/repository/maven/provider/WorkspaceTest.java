@@ -169,10 +169,7 @@ public class WorkspaceTest {
 		softly.assertThat(Tags.of("resolve")
 			.includesAny("resolve"))
 			.isTrue();
-		// only in 7.2.0, will be stop working in 7.3.0
-		softly.assertThat(Tags.of("resolve")
-			.includesAny("compile"))
-			.isTrue();
+
 
 		softly.assertThat(Tags.of("resolve", "compile")
 			.includesAny("resolve"))

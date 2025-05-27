@@ -258,6 +258,7 @@ public interface Constants {
 
 	String		REMOTEWORKSPACE								= "-remoteworkspace";
 
+	String		ACTIVETAGS									= "-activetags";
 	/**
 	 * tags for repos which should be used for Resolving bundles. This is also
 	 * the default tag for all repos which not have specified tags (also for bc
