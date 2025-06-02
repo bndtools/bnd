@@ -50,6 +50,8 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.RepoCollector;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -381,6 +383,26 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 				containers = model.getBootclasspath();
 				calculateContainersClasspath(Constants.BUILDPATH, containers);
+
+				// handle ${repo} reference. This is especially needed for
+				// sub-bundles (bundles which wrap other (non-osgi) jars
+				// and were we want to have source attachments for Eclipse
+				containers = RepoCollector.collectRepoReferences(model);
+				calculateContainersClasspath(Constants.BUILDPATH, containers);
+				containers = model.getSubProjects()
+					.stream()
+					.map(sp -> {
+
+						try {
+							return RepoCollector.collectRepoReferences(sp);
+						} catch (IOException e) {
+							throw Exceptions.duck(e);
+						}
+					})
+					.flatMap(Collection::stream)
+					.toList();
+				calculateContainersClasspath(Constants.BUILDPATH, containers);
+
 			} catch (CircularDependencyException e) {
 				error("Circular dependency during classpath calculation: %s", e, e.getMessage());
 				builder.entries(Collections.emptyList());
@@ -614,6 +636,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			if (version != null) {
 				attrs.add(JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE, version));
 			}
+			else {
+				version = c.getVersion();
+
+				if (version != null) {
+					attrs.add(JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE, version));
+				}
+			}
 
 			String packages = c.getAttributes()
 				.get("packages");
@@ -794,6 +823,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 					.getAbsolutePath());
 		}
 	}
+
+
 
 	private static class JarInfo {
 		boolean		hasSource;

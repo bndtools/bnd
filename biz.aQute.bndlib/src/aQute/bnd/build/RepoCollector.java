@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -132,6 +133,27 @@ public class RepoCollector extends Processor {
 		}
 
 		return join(paths);
+	}
+
+	/**
+	 * Shortcut to get repo-references for a processor.
+	 *
+	 * @return list of containers of ${repo} references.
+	 * @throws IOException
+	 */
+	public static List<Container> collectRepoReferences(Processor p) throws IOException {
+
+		try (RepoCollector repoCollector = new RepoCollector(p)) {
+
+			// only consider type=REPO because we are
+			// interested in bundles added e.g. via
+			// '-includeresource:
+			// ${repo;bsn;latest}'
+			return repoCollector.repoRefs()
+				.stream()
+				.filter(repoRef -> repoRef != null && TYPE.REPO == repoRef.getType())
+				.toList();
+		}
 	}
 
 	@Override
