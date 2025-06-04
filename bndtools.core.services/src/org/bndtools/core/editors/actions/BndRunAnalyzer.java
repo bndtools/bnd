@@ -22,13 +22,11 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Container;
-import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.MultiReleaseNamespace;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.RepositoryPlugin;
@@ -178,13 +176,13 @@ class BndRunAnalyzer {
 					result.addAll(project.getTestpath());
 					result.addAll(project.getClasspath());
 					result.addAll(project.getRunpath());
-					result.addAll(collectRepoReferences(project));
+					result.addAll(RepoCollector.collectRepoReferences(project));
 					result.addAll(project.getSubProjects()
 						.stream()
 						.map(sp -> {
 
 							try {
-								return collectRepoReferences(sp);
+								return RepoCollector.collectRepoReferences(sp);
 							} catch (IOException e) {
 								throw Exceptions.duck(e);
 							}
@@ -200,22 +198,7 @@ class BndRunAnalyzer {
 		return result;
 	}
 
-	private static List<Container> collectRepoReferences(Processor project) throws IOException {
 
-		try (RepoCollector repoCollector = new RepoCollector(project)) {
-
-			Collection<Container> repoRefs = repoCollector.repoRefs();
-			// only consider type=REPO because we
-			// are
-			// interested in bundles added via
-			// '-includeresource:
-			// ${repo;bsn;latest}'
-			List<Container> filtered = repoRefs.stream()
-				.filter(repoRef -> repoRef != null && TYPE.REPO == repoRef.getType())
-				.toList();
-			return filtered;
-		}
-	}
 
 	/**
 	 * @return containers for -runbundles, -runfw
