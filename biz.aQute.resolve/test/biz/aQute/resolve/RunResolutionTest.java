@@ -520,7 +520,7 @@ public class RunResolutionTest {
 	@Test
 	public void testStartLevelDecoration(SoftAssertions softly) throws Exception {
 		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolveduplicates.bndrun"));
-		bndrun.setProperty("-runstartlevel", "order=leastdependenciesfirst,begin=100,step=10");
+		bndrun.setProperty("-runstartlevel", "order=sortbynameversion,begin=100,step=10");
 
 		// Decorate test.simple to get startlevel 90 (which would otherwise be 110 within the assigned runstartlevel).
 		bndrun.setProperty("-runbundles+", "test.simple;startlevel=90");
@@ -529,8 +529,8 @@ public class RunResolutionTest {
 
 		softly.assertThat(runBundles.stream()
 			.map(rb -> rb.toString()))
-			.containsExactlyInAnyOrder("org.apache.felix.gogo.runtime;version='[0.12.0,0.12.1)';startlevel=100",
-				"org.apache.felix.gogo.runtime;version='[0.10.0,0.10.1)';startlevel=110",
+			.containsExactlyInAnyOrder("org.apache.felix.gogo.runtime;version='[0.10.0,0.10.1)';startlevel=100",
+				"org.apache.felix.gogo.runtime;version='[0.12.0,0.12.1)';startlevel=110",
 				"osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)';startlevel=120",
 				"test.simple;version=snapshot;startlevel=90");
 
@@ -540,7 +540,7 @@ public class RunResolutionTest {
 		Parameters params = HeaderClause.toParameters(runBundles);
 		softly.assertThat(params.toString())
 			.isEqualTo(
-				"org.apache.felix.gogo.runtime;version=\"[0.12.0,0.12.1)\";startlevel=100,org.apache.felix.gogo.runtime;version=\"[0.10.0,0.10.1)\";startlevel=110,osgi.enroute.junit.wrapper;version=\"[4.12.0,4.12.1)\";startlevel=120,test.simple;version=snapshot;startlevel=90");
+				"org.apache.felix.gogo.runtime;version=\"[0.10.0,0.10.1)\";startlevel=100,org.apache.felix.gogo.runtime;version=\"[0.12.0,0.12.1)\";startlevel=110,osgi.enroute.junit.wrapper;version=\"[4.12.0,4.12.1)\";startlevel=120,test.simple;version=snapshot;startlevel=90");
 
 	}
 
