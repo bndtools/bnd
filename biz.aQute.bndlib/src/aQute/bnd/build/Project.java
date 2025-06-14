@@ -886,6 +886,9 @@ public class Project extends Processor {
 			for (Pom sub : dependencies) {
 				File artifact = sub.getArtifact();
 				Container container = new Container(artifact, null);
+				container.putAttribute("maven-groupId", sub.getGroupId());
+				container.putAttribute("maven-artifactId", sub.getArtifactId());
+				container.putAttribute("maven-version", sub.getVersion());
 				result.add(container);
 			}
 		}
