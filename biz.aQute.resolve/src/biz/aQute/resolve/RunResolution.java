@@ -8,7 +8,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -267,7 +267,7 @@ public class RunResolution {
 	 * @return a map where the vertices are connected to other vertices.
 	 */
 	public Map<Resource, List<Resource>> getGraph(Map<Resource, List<Wire>> resolution) {
-		Map<Resource, List<Resource>> dependencies = new HashMap<>();
+		Map<Resource, List<Resource>> dependencies = new LinkedHashMap<>();
 		for (Resource r : resolution.keySet()) {
 			dependencies.put(r, new ArrayList<>());
 		}

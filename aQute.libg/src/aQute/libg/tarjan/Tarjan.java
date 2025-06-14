@@ -4,7 +4,7 @@ import static java.lang.Math.min;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +58,7 @@ public class Tarjan<T> {
 	}
 
 	List<List<T>> getResult(Map<T, ? extends Collection<T>> graph) {
-		Map<T, Node> index = new HashMap<>();
+		Map<T, Node> index = new LinkedHashMap<>();
 
 		for (Map.Entry<T, ? extends Collection<T>> entry : graph.entrySet()) {
 			Node node = getNode(index, entry.getKey());
