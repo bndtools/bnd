@@ -98,15 +98,17 @@
 	bnd.identity;id='org.eclipse.ui.console',\
 	bnd.identity;id='org.eclipse.ui.ide',\
 	bnd.identity;id='org.eclipse.ui.ide.application',\
-	bnd.identity;id='junit-platform-commons';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
-	bnd.identity;id='junit-platform-engine';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
-	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id=junit-platform-commons;version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id=junit-platform-engine;version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id=junit-platform-launcher;version='${range;[===,==+);${junit.platform.eclipse.version}}',\
 	bnd.identity;id='org.eclipse.ui.intro',\
 	bnd.identity;id='org.eclipse.ui.intro.quicklinks',\
 	bnd.identity;id='org.eclipse.ui.intro.quicklinks.source',\
 	bnd.identity;id='org.eclipse.ui.intro.source',\
 	bnd.identity;id='org.eclipse.ui.intro.universal',\
-	bnd.identity;id='org.eclipse.ui.intro.universal.source'
+	bnd.identity;id='org.eclipse.ui.intro.universal.source',\
+	bnd.identity;id='org.eclipse.pde.bnd.ui',\
+	bnd.identity;id='org.eclipse.swt.svg'
 
 -runblacklist: \
 	bnd.identity;id='biz.aQute.bnd.annotation',\
@@ -117,7 +119,7 @@
 	bnd.identity;id='org.osgi.*.annotations'
 
 
--runee: JavaSE-17
+-runee: JavaSE-21
 
 # This will help us keep -runbundles sorted
 -runstartlevel: \

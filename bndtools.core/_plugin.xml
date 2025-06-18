@@ -222,13 +222,13 @@
 		</view>
 		<view category="bndtools.viewCategory"
 			class="bndtools.views.resolution.ResolutionView"
-			icon="${icons.capreq}" id="bndtools.impExpView" name="Resolution"
+			icon="${icons.capreq}" id="bndtools.impExpView" name="Resolution (EOL)"
 			restorable="true">
 		</view>
 		<view category="bndtools.viewCategory"
 			class="bndtools.views.repository.RepositoriesView"
 			icon="icons/database.png" id="bndtools.repositoriesView"
-			name="Repositories" restorable="true">
+			name="Repositories (EOL)" restorable="true">
 		</view>
         <view category="bndtools.viewCategory"
 	        name="OpenAI"

@@ -40,7 +40,7 @@ org.osgi:org.osgi.service.wireadmin:1.0.2
 org.osgi:org.osgi.util.function:1.2.0
 org.osgi:org.osgi.util.measurement:1.0.2
 org.osgi:org.osgi.util.position:1.0.1
-org.osgi:org.osgi.util.promise:1.2.0
+org.osgi:org.osgi.util.promise:1.3.0
 org.osgi:org.osgi.util.pushstream:1.0.2
 org.osgi:org.osgi.util.xml:1.0.2
 org.osgi:org.osgi.util.tracker:1.5.4
@@ -170,7 +170,14 @@ org.codehaus.plexus:plexus-build-api:1.2.0
 org.codehaus.plexus:plexus-utils:3.0.24
 org.codehaus.plexus:plexus-classworlds:2.5.2
 
-## higher SWT version required because of SWT bug with MacOS Sonoma 
-org.eclipse.platform:org.eclipse.swt.cocoa.macosx.aarch64:jar:3.126.0
-org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:jar:3.126.0
-org.eclipse.platform:org.eclipse.swt:jar:3.126.0
+## higher SWT version required because of SWT bug with MacOS Sonoma
+## and because of required .svg support for org.eclipse.pde:org.eclipse.pde.bnd.ui below
+org.eclipse.platform:org.eclipse.swt.cocoa.macosx.aarch64:jar:3.130.0
+org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:jar:3.130.0
+org.eclipse.platform:org.eclipse.swt:jar:3.130.0
+org.eclipse.platform:org.eclipse.swt.svg:3.130.0
+com.github.weisj:jsvg:1.7.2
+
+org.eclipse.pde:org.eclipse.pde.bnd.ui:1.2.200
+jakarta.xml.bind:jakarta.xml.bind-api:4.0.2
+jakarta.activation:jakarta.activation-api:2.1.3
