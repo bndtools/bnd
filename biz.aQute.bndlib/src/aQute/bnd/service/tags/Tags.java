@@ -111,7 +111,24 @@ public class Tags implements Set<String> {
 		return internalSet.toString();
 	}
 
+
+
 	/**
+	 * Returns {@code true} if this entity should take part in <i>any</i> of the
+	 * caller-requested tags.
+	 *
+	 * // @formatter:off
+	 * Semantics – in precedence order
+	 * --------------------------------
+	 * 1. **Legacy wildcard** – if this entity has no tags at all, it matches
+	 *    every tag (backwards compatibility).
+	 * 2. **Negative tag overrides** – if the entity contains a literal tag
+	 *    {@code "no" + tag} it is <b>excluded</b> from that phase, regardless
+	 *    of all other rules (example 'nocompile'.
+	 * 3. **Positive tag match** – if the entity contains a tag that matches a
+	 *    requested glob, it is included.
+	 * // @formatter:on
+	 *
 	 * @param tags (globs)
 	 * @return <code>true</code> if any of the given tags is included in the
 	 *         current set of tags, otherwise returns <code>false</code>. Also
@@ -128,9 +145,11 @@ public class Tags implements Set<String> {
 			return true;
 		}
 
+
 		for (String tagGlob : tags) {
+
 			if (matchesAny(new Glob(tagGlob))) {
-				return true;
+				return true; // success
 			}
 		}
 
@@ -138,10 +157,12 @@ public class Tags implements Set<String> {
 
 	}
 
+
 	private boolean matchesAny(Glob glob) {
 		return internalSet.stream()
 			.anyMatch(s -> glob.matches(s));
 	}
+
 
 	/**
 	 * @param name
