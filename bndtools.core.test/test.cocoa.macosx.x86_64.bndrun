@@ -69,6 +69,7 @@
 	org.apache.commons.jxpath;version='[1.3.0,1.3.1)';startlevel=3,\
 	org.apache.commons.logging;version='[1.2.0,1.2.1)';startlevel=3,\
 	org.apache.felix.scr;version='[2.2.2,2.2.3)';startlevel=3,\
+	org.apache.geronimo.specs.geronimo-atinject_1.0_spec;version='[1.1.0,1.1.1)';startlevel=3,\
 	org.apache.httpcomponents.httpclient;version='[4.5.13,4.5.14)';startlevel=3,\
 	org.apache.httpcomponents.httpcore;version='[4.4.15,4.4.16)';startlevel=3,\
 	org.apache.lucene.analyzers-common;version='[8.4.1,8.4.2)';startlevel=3,\
@@ -258,8 +259,8 @@
 	org.eclipse.platform;version='[4.25.0,4.25.1)';startlevel=3,\
 	org.eclipse.sdk;version='[4.25.0,4.25.1)';startlevel=3,\
 	org.eclipse.search;version='[3.14.200,3.14.201)';startlevel=3,\
-	org.eclipse.swt;version='[3.126.0,3.126.1)';startlevel=3,\
-	org.eclipse.swt.cocoa.macosx.x86_64;version='[3.126.0,3.126.1)';startlevel=3,\
+	org.eclipse.swt;version='[3.130.0,3.130.1)';startlevel=3,\
+	org.eclipse.swt.cocoa.macosx.x86_64;version='[3.130.0,3.130.1)';startlevel=3,\
 	org.eclipse.team.core;version='[3.9.500,3.9.501)';startlevel=3,\
 	org.eclipse.team.ui;version='[3.9.400,3.9.401)';startlevel=3,\
 	org.eclipse.text;version='[3.12.200,3.12.201)';startlevel=3,\
@@ -291,7 +292,6 @@
 	org.eclipse.wst.sse.core;version='[1.2.800,1.2.801)';startlevel=3,\
 	org.eclipse.wst.xml.core;version='[1.2.600,1.2.601)';startlevel=3,\
 	org.hamcrest.core;version='[1.3.0,1.3.1)';startlevel=3,\
-	org.jspecify.jspecify;version='[1.0.0,1.0.1)';startlevel=3,\
 	org.junit;version='[4.13.2,4.13.3)';startlevel=3,\
 	org.opentest4j;version='[1.2.0,1.2.1)';startlevel=3,\
 	org.osgi.service.cm;version='[1.6.1,1.6.2)';startlevel=1,\
@@ -310,6 +310,7 @@
 	org.osgi.util.measurement;version='[1.0.2,1.0.3)';startlevel=3,\
 	org.osgi.util.position;version='[1.0.1,1.0.2)';startlevel=3,\
 	org.osgi.util.promise;version='[1.2.0,1.2.1)';startlevel=3,\
+	org.osgi.util.promise;version='[1.3.0,1.3.1)';startlevel=3,\
 	org.osgi.util.xml;version='[1.0.2,1.0.3)';startlevel=3,\
 	org.sat4j.core;version='[2.3.6,2.3.7)';startlevel=3,\
 	org.sat4j.pb;version='[2.3.6,2.3.7)';startlevel=3,\
