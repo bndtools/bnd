@@ -22,6 +22,7 @@ Bundle-Description: \
 	org.nanohttpd:nanohttpd;version=latest,\
 	bcpkix;version=latest,\
 	bcprov;version=latest, \
+	bcutil;version=latest,\
 	org.littleshoot:littleproxy;version=latest
 
 -testpath: \
