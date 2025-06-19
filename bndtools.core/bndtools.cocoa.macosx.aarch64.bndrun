@@ -27,6 +27,7 @@
 	osgi.identity;filter:='(osgi.identity=*win32*)',\
 
 -runbundles: \
+	aQute.libg;version=snapshot,\
 	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	biz.aQute.bnd.maven;version=snapshot,\
 	biz.aQute.bnd.util;version=snapshot,\
@@ -42,6 +43,7 @@
 	bndtools.m2e.debug.fragment;version=snapshot,\
 	bndtools.pde;version=snapshot,\
 	bndtools.release;version=snapshot,\
+	com.github.weisj.jsvg;version='[1.7.2,1.7.3)',\
 	com.google.errorprone.annotations;version='[2.38.0,2.38.1)',\
 	com.google.gson;version='[2.9.1,2.9.2)',\
 	com.google.guava;version='[33.4.8,33.4.9)',\
@@ -49,6 +51,8 @@
 	com.ibm.icu;version='[67.1.0,67.1.1)',\
 	com.sun.jna;version='[5.8.0,5.8.1)',\
 	com.sun.jna.platform;version='[5.8.0,5.8.1)',\
+	jakarta.activation-api;version='[2.1.3,2.1.4)',\
+	jakarta.xml.bind-api;version='[4.0.2,4.0.3)',\
 	javaewah;version='[1.1.13,1.1.14)',\
 	javax.annotation;version='[1.3.5,1.3.6)',\
 	javax.inject;version='[1.0.0,1.0.1)',\
@@ -250,6 +254,7 @@
 	org.eclipse.osgi.compatibility.state;version='[1.2.700,1.2.701)',\
 	org.eclipse.osgi.services;version='[3.11.0,3.11.1)',\
 	org.eclipse.osgi.util;version='[3.7.100,3.7.101)',\
+	org.eclipse.pde.bnd.ui;version='[1.2.200,1.2.201)',\
 	org.eclipse.pde.build;version='[3.11.300,3.11.301)',\
 	org.eclipse.pde.core;version='[3.15.300,3.15.301)',\
 	org.eclipse.pde.genericeditor.extension;version='[1.1.300,1.1.301)',\
@@ -261,8 +266,9 @@
 	org.eclipse.platform;version='[4.25.0,4.25.1)',\
 	org.eclipse.sdk;version='[4.25.0,4.25.1)',\
 	org.eclipse.search;version='[3.14.200,3.14.201)',\
-	org.eclipse.swt;version='[3.126.0,3.126.1)',\
-	org.eclipse.swt.cocoa.macosx.aarch64;version='[3.126.0,3.126.1)',\
+	org.eclipse.swt;version='[3.130.0,3.130.1)',\
+	org.eclipse.swt.cocoa.macosx.aarch64;version='[3.130.0,3.130.1)',\
+	org.eclipse.swt.svg;version='[3.130.0,3.130.1)',\
 	org.eclipse.team.core;version='[3.9.500,3.9.501)',\
 	org.eclipse.team.ui;version='[3.9.400,3.9.401)',\
 	org.eclipse.text;version='[3.12.200,3.12.201)',\
@@ -299,9 +305,11 @@
 	org.eclipse.wst.sse.core;version='[1.2.800,1.2.801)',\
 	org.eclipse.wst.xml.core;version='[1.2.600,1.2.601)',\
 	org.hamcrest.core;version='[1.3.0,1.3.1)',\
-	org.jspecify.jspecify;version='[1.0.0,1.0.1)',\
 	org.junit;version='[4.13.2,4.13.3)',\
 	org.opentest4j;version='[1.2.0,1.2.1)',\
+	org.osgi.namespace.contract;version='[1.0.0,1.0.1)',\
+	org.osgi.namespace.extender;version='[1.0.1,1.0.2)',\
+	org.osgi.namespace.service;version='[1.0.0,1.0.1)',\
 	org.osgi.service.cm;version='[1.6.1,1.6.2)',\
 	org.osgi.service.component;version='[1.5.0,1.5.1)',\
 	org.osgi.service.coordinator;version='[1.0.2,1.0.3)',\
@@ -318,6 +326,7 @@
 	org.osgi.util.measurement;version='[1.0.2,1.0.3)',\
 	org.osgi.util.position;version='[1.0.1,1.0.2)',\
 	org.osgi.util.promise;version='[1.2.0,1.2.1)',\
+	org.osgi.util.promise;version='[1.3.0,1.3.1)',\
 	org.osgi.util.xml;version='[1.0.2,1.0.3)',\
 	org.sat4j.core;version='[2.3.6,2.3.7)',\
 	org.sat4j.pb;version='[2.3.6,2.3.7)',\

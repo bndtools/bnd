@@ -3,9 +3,10 @@ package bndtools;
 public final class PartConstants {
 
 	private static final String	PREFIX						= "bndtools.";
+	private static final String	PREFIX_PDE							= "pde.bnd.ui.";
 
-	public static final String	VIEW_ID_IMPORTSEXPORTS		= PREFIX + "impExpView";
-	public static final String	VIEW_ID_REPOSITORIES		= PREFIX + "repositoriesView";
+	public static final String	VIEW_ID_IMPORTSEXPORTS				= PREFIX_PDE + "impExpView";
+	public static final String	VIEW_ID_REPOSITORIES				= PREFIX_PDE + "repositoriesView";
 	public static final String	VIEW_ID_JPM					= "org.bndtools.core.views.jpm.JPMBrowserView";
 
 	public static final String	WIZARD_ID_NEWBND			= PREFIX + "newBndFile";
