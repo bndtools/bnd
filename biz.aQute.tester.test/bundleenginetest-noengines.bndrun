@@ -1,6 +1,6 @@
 -runbundles: \
-	junit-jupiter-api;version='[5.9.0,5.9.1)',\
-	junit-jupiter-params;version='[5.9.0,5.9.1)',\
+	junit-jupiter-api;version='[5.9.1,5.9.2)',\
+	junit-jupiter-params;version='[5.9.1,5.9.2)',\
 	org.apiguardian.api;version='[1.1.2,1.1.3)',\
 	org.opentest4j;version='[1.2.0,1.2.1)',\
 	org.junit;version='[4.13.2,4.13.3)',\
@@ -10,18 +10,18 @@
 -runee: JavaSE-1.8
 
 -runsystempackages: \
-	org.junit.platform.commons;version=1.9.0,\
-	org.junit.platform.commons.annotation;version=1.9.0,\
-	org.junit.platform.commons.function;version=1.9.0,\
-	org.junit.platform.commons.logging;version=1.9.0,\
-	org.junit.platform.commons.support;version=1.9.0,\
-	org.junit.platform.commons.util;version=1.9.0,\
-	org.junit.platform.engine;version=1.9.0,\
-	org.junit.platform.engine.discovery;version=1.9.0,\
-	org.junit.platform.engine.reporting;version=1.9.0,\
-	org.junit.platform.engine.support.config;version=1.9.0,\
-	org.junit.platform.engine.support.descriptor;version=1.9.0,\
-	org.junit.platform.engine.support.discovery;version=1.9.0,\
-	org.junit.platform.engine.support.filter;version=1.9.0,\
-	org.junit.platform.engine.support.hierarchical;version=1.9.0,\
+	org.junit.platform.commons;version=1.9.1,\
+	org.junit.platform.commons.annotation;version=1.9.1,\
+	org.junit.platform.commons.function;version=1.9.1,\
+	org.junit.platform.commons.logging;version=1.9.1,\
+	org.junit.platform.commons.support;version=1.9.1,\
+	org.junit.platform.commons.util;version=1.9.1,\
+	org.junit.platform.engine;version=1.9.1,\
+	org.junit.platform.engine.discovery;version=1.9.1,\
+	org.junit.platform.engine.reporting;version=1.9.1,\
+	org.junit.platform.engine.support.config;version=1.9.1,\
+	org.junit.platform.engine.support.descriptor;version=1.9.1,\
+	org.junit.platform.engine.support.discovery;version=1.9.1,\
+	org.junit.platform.engine.support.filter;version=1.9.1,\
+	org.junit.platform.engine.support.hierarchical;version=1.9.1,\
 	aQute.tester.testbase

@@ -45,8 +45,9 @@ org.osgi:org.osgi.util.pushstream:1.0.2
 org.osgi:org.osgi.util.xml:1.0.2
 org.osgi:org.osgi.util.tracker:1.5.4
 
-org.bouncycastle:bcpkix-jdk15on:1.54
-org.bouncycastle:bcprov-jdk15on:1.54
+org.bouncycastle:bcpkix-jdk18on:1.72
+org.bouncycastle:bcprov-jdk18on:1.72
+org.bouncycastle:bcutil-jdk18on:1.72
 
 org.apache.commons:commons-lang3:3.4
 commons-codec:commons-codec:1.10
@@ -106,6 +107,7 @@ org.osgi:org.osgi.test.common:${osgi-test.version}
 org.osgi:org.osgi.test.junit5:${osgi-test.version}
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
+
 
 args4j:args4j:2.0.26
 

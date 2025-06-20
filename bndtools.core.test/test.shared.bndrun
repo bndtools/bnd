@@ -17,7 +17,6 @@
 	bnd.identity;id='bndtools.core.test.tests',\
 	bnd.identity;id='com.google.guava';version='[33.4.8,34.0.0)',\
 	bnd.identity;id='com.google.guava.failureaccess',\
-	bnd.identity;id='javax.annotation',\
 	bnd.identity;id='org.apache.ant',\
 	bnd.identity;id='org.bndtools.headless.build.manager',\
 	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
@@ -78,7 +77,7 @@
 	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
 	bnd.identity;id='junit-vintage-engine';version='${range;[===,==+);${junit.jupiter.eclipse.version}}'
 
--runfw: org.eclipse.osgi;version='[3.18.100.v20220817-1601,3.18.100.v20220817-1601]'
+-runfw: org.eclipse.osgi;version='[3.18.200.v20221116-1324,3.18.200.v20221116-1324]'
 -runee: JavaSE-17
 
 # Useful debugging directives
