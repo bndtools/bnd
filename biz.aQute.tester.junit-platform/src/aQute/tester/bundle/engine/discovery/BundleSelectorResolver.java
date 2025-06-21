@@ -31,6 +31,7 @@ import org.junit.platform.commons.support.ReflectionSupport;
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.DiscoveryFilter;
 import org.junit.platform.engine.DiscoverySelector;
+import org.junit.platform.engine.EngineDiscoveryListener;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
@@ -38,6 +39,7 @@ import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.discovery.MethodSelector;
+import org.junit.platform.engine.reporting.OutputDirectoryProvider;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -570,6 +572,16 @@ public class BundleSelectorResolver {
 		@Override
 		public ConfigurationParameters getConfigurationParameters() {
 			return request.getConfigurationParameters();
+		}
+
+		@Override
+		public EngineDiscoveryListener getDiscoveryListener() {
+			return request.getDiscoveryListener();
+		}
+
+		@Override
+		public OutputDirectoryProvider getOutputDirectoryProvider() {
+			return request.getOutputDirectoryProvider();
 		}
 	}
 
