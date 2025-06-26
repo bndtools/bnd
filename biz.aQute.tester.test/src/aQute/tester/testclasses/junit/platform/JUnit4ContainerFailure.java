@@ -6,17 +6,17 @@ import org.junit.Test;
 public class JUnit4ContainerFailure {
 
 	@BeforeClass
-	void beforeAll() {
+	static void beforeAll() {
 		throw new AssertionError();
 	}
 
 	@Test
-	void myTest() {
+	public void myTest() {
 		throw new AssertionError();
 	}
 
 	@Test
-	void my2ndTest() {
+	public void my2ndTest() {
 		throw new AssertionError();
 	}
 }

@@ -12,23 +12,23 @@
 	org.apiguardian.api,\
 	osgi.core
 
-# Note: we don't use the ${junit} macro because we need to use the Eclipse
-# version of the JUnit 5 bundles in the test where possible for maximum
-# compatibility. But we must use the latest version of the launcher
-# and its dependency (junit-platform-commons) as this is required when
-# tests are launched from within the IDE for later versions of
-# Eclipse. BundleEngineTest requires that we share org.junit.platform.engine
-# between the test and the framework-under-test so that needs to be the
-# Eclipse version too.
+# Note: we don't use the ${junit} macro because we need to use a version
+# compatible with the build version of the tester bundle, which is lower
+# than the versions we are using in the ${junit} macro.
+# Note also that we need to be mindful that the version we are using
+# is not too old that it is incompatible with the driver's (Eclipse/Gradle)
+# version of junit-platform. At the moment this is not a problem but in the
+# past we've had to have a third version of junit-platform that is
+# junit.platform.tester.version but less than junit.tester.version.
 
 -testpath: \
-	junit-platform-commons;version="${junit.platform.eclipse.version}";strategy=lowest,\
-	junit-platform-launcher;version="${junit.platform.eclipse.version}";strategy=lowest,\
-	junit-platform-engine;version="${junit.platform.eclipse.version}";strategy=lowest,\
-	junit-jupiter-engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
+	junit-platform-commons;version="${junit.platform.tester.version}";strategy=lowest,\
+	junit-platform-launcher;version="${junit.platform.tester.version}";strategy=lowest,\
+	junit-platform-engine;version="${junit.platform.tester.version}";strategy=lowest,\
+	junit-jupiter-engine;version="${junit.jupiter.tester.version}";strategy=lowest,\
+	junit-platform-testkit;version="${junit.platform.tester.version}";strategy=lowest,\
 	assertj-core;version=latest,\
 	net.bytebuddy.byte-buddy;version=latest,\
-	junit-platform-testkit;version="${junit.platform.eclipse.version}";strategy=lowest,\
 	aQute.libg,\
 	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\

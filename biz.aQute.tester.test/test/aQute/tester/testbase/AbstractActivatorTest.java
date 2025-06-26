@@ -49,6 +49,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	static final String					BND_TEST_THREAD		= "bnd Runtime Test Bundle";
 	protected final String				activatorClass;
 	protected final String				tester;
+	protected final String				bndrun;
 	protected TestBundler				testBundler;
 	protected boolean					DEBUG				= true;
 	protected LaunchpadBuilder			builder;
@@ -357,8 +358,13 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	public AbstractActivatorTest(String activatorClass, String tester) {
+		this(activatorClass, tester, tester);
+	}
+
+	public AbstractActivatorTest(String activatorClass, String tester, String bndrun) {
 		this.activatorClass = activatorClass;
 		this.tester = tester;
+		this.bndrun = bndrun + ".bndrun";
 	}
 
 	protected void createLP() {

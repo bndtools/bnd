@@ -36,6 +36,10 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		super(activatorClass, tester);
 	}
 
+	protected AbstractActivatorCommonTest(String activatorClass, String tester, String bndrun) {
+		super(activatorClass, tester, bndrun);
+	}
+
 	@Test
 	public void start_withNoSeparateThreadProp_runsInMainThread() {
 		runTests(0, JUnit3Test.class);
@@ -195,7 +199,7 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		name = getClass().getName() + "/" + testMethod.getName();
 
 		builder = new LaunchpadBuilder();
-		builder.bndrun(tester + ".bndrun")
+		builder.bndrun(bndrun)
 			.excludeExport("aQute.tester.bundle.*")
 			.excludeExport("org.junit*")
 			.excludeExport("junit.*");

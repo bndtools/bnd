@@ -88,9 +88,9 @@ import aQute.tester.testclasses.junit.platform.Mixed35Test;
 import aQute.tester.testclasses.junit.platform.Mixed45Test;
 import aQute.tester.testclasses.junit.platform.ParameterizedTesterNamesTest;
 
-public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
-	public ActivatorJUnitPlatformTest() {
-		super("aQute.tester.junit.platform.Activator", "biz.aQute.tester.junit-platform");
+abstract class AbstractActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
+	protected AbstractActivatorJUnitPlatformTest(String bndrun) {
+		super("aQute.tester.junit.platform.Activator", "biz.aQute.tester.junit-platform", bndrun);
 	}
 
 	@Override
@@ -362,7 +362,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 		public void setUp(TestInfo info) throws Exception {
 			this.info = info;
 			builder = new LaunchpadBuilder();
-			builder.bndrun(tester + ".bndrun")
+			builder.bndrun(bndrun)
 				.excludeExport("aQute.tester.bundle.*")
 				.excludeExport("org.junit*")
 				.excludeExport("junit.*");

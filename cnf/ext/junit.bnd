@@ -1,16 +1,28 @@
-# Compile versions for testers
+# Compile Versions of JUnit bundles for compiling biz.aQute.tester and biz.aQute.tester.junit-platform
+# Because we want the tester bundles to work with older versions of JUnit and not
+# require people to be on the bleeding edge, these versions will typically be behind the
+# latest versions and also behind the version that we use in the bndtools workspace's own tests.
 junit4.tester.version=4.10
-junit.platform.tester.version=1.3.1
-opentest4j.tester.version=1.1.0
+junit.platform.tester.version=1.9.1
+# The following is also used as junit.vintage.tester.version
+junit.jupiter.tester.version=5.9.1
+# This is the minimum version of JUnit 4 supported by junit-vintage-engine;
+# can be higher than minimum junit4 supported by biz.aQute.tester
+junit.vintage.tester.junit4.version=4.12
+opentest4j.tester.version=1.2.0
 
-# Runtime versions
+# Runtime versions/versions used in Bnd's own tests
 junit3.version=3.8.3
 junit4.version=4.13.2
 junit4.eclipse.version=4.13.2
+# The Eclipse versions are currently not used but are sometimes
+# necessary depending on the compatiblity with Eclipse's version
+# of junit-platform and the version we're building against.
 junit.jupiter.eclipse.version=5.9.1
 junit.platform.eclipse.version=1.9.1
-junit.jupiter.version=5.9.2
-junit.platform.version=1.9.2
+junit.jupiter.version=5.11.4
+junit.platform.version=1.11.4
+opentest4j.version=1.3.0
 assertj.version=3.24.2
 awaitility.version=4.2.0
 hamcrest.version=2.2

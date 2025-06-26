@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
@@ -148,15 +147,6 @@ public class BundleEngineTest {
 	public void tearDown() {
 		IO.close(launchpad);
 		IO.close(builder);
-	}
-
-	public static class EngineStarter implements Supplier<TestEngine> {
-
-		@Override
-		public TestEngine get() {
-			return new BundleEngine();
-		}
-
 	}
 
 	static String descriptionOf(Bundle b) {

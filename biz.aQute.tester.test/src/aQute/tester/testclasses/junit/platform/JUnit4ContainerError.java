@@ -6,17 +6,17 @@ import org.junit.Test;
 public class JUnit4ContainerError {
 
 	@BeforeClass
-	void beforeAll() {
+	static void beforeAll() {
 		throw new IllegalStateException();
 	}
 
 	@Test
-	void myTest() {
+	public void myTest() {
 		throw new AssertionError();
 	}
 
 	@Test
-	void my2ndTest() {
+	public void my2ndTest() {
 		throw new AssertionError();
 	}
 }

@@ -1,13 +1,17 @@
+junit4.version: ${range;[===,==+);${junit.vintage.tester.junit4.version}}
+jupiter.version: ${range;[===,==+);${junit.jupiter.tester.version}}
+platform.version: ${range;[===,==+);${junit.platform.tester.version}}
+opentest4j.version: ${range;[===,==+);${opentest4j.tester.version}}
 
 -runbundles: \
-	junit-platform-launcher;version='[1.9.1,1.9.2)',\
-	junit-platform-commons;version='[1.9.1,1.9.2)',\
-	junit-platform-engine;version='[1.9.1,1.9.2)',\
-	junit-jupiter-api;version='[5.9.1,5.9.2)',\
-	junit-jupiter-params;version='[5.9.1,5.9.2)',\
+	junit-platform-launcher;version='${platform.version}',\
+	junit-platform-commons;version='${platform.version}',\
+	junit-platform-engine;version='${platform.version}',\
+	junit-jupiter-api;version='${jupiter.version}',\
+	junit-jupiter-params;version='${jupiter.version}',\
 	org.apiguardian.api;version='[1.1.2,1.1.3)',\
-	org.opentest4j;version='[1.2.0,1.2.1)',\
-	org.junit;version='[4.13.2,4.13.3)',\
+	org.opentest4j;version='${opentest4j.version}',\
+	org.apache.servicemix.bundles.junit;version='${junit4.version}',\
 	org.hamcrest.core;version='[1.3.0,1.3.1)'
 
 -runfw: org.apache.felix.framework;version='[7.0.5,7.0.5]'
