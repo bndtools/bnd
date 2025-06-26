@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.wiring.BundleWiring;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -175,7 +176,10 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 			}
 		}
 
+		final ClassLoader cl = Thread.currentThread()
+			.getContextClassLoader();
 		try {
+			setTesterClassLoader();
 			r.run();
 			throw new AssertionError("Expecting run() to call System.exit(), but it didn't");
 		} catch (Throwable e) {
@@ -184,7 +188,27 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 				return ec;
 
 			throw Exceptions.duck(t);
+		} finally {
+			Thread.currentThread()
+				.setContextClassLoader(cl);
 		}
+	}
+
+	protected void setTesterClassLoader() {
+		setTesterClassLoader(Thread.currentThread());
+	}
+
+	protected void setTesterClassLoader(Thread thread) {
+		// It is necessary to set the context class loader because
+		// JUnit Platform Launcher uses the TCCL passed to the
+		// ServiceLoader to load implementation classes. If we don't
+		// set it to the tester bundle, then it will be the system
+		// classloader (which has visibility to the version of
+		// junit-platform-launcher that launched the test and may
+		// be incompatible with the version installed in the system-
+		// under-test. Refer Bndtools issue #6640
+		thread.setContextClassLoader(testerBundle.adapt(BundleWiring.class)
+			.getClassLoader());
 	}
 
 	public void runTesterAndWait() {
@@ -211,6 +235,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 
 		runThread = new Thread(r, name);
 		runThread.setUncaughtExceptionHandler((t, x) -> uncaught.set(BndSystem.convert(x, ExitCode::new)));
+		setTesterClassLoader(runThread);
 		runThread.start();
 	}
 
@@ -224,13 +249,17 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	public void waitForTesterToWait() {
+		waitForThreadToWait(runThread);
+	}
+
+	public void waitForThreadToWait(Thread thread) {
 		final long waitTime = 10000;
 		final long endTime = System.currentTimeMillis() + waitTime;
 		int waitCount = 0;
 		try {
 			OUTER: while (true) {
 				Thread.sleep(100);
-				final Thread.State state = runThread.getState();
+				final Thread.State state = thread.getState();
 				switch (state) {
 					case TERMINATED :
 					case TIMED_WAITING :
@@ -251,7 +280,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 			throw Exceptions.duck(e);
 		}
 		// Check that it hasn't terminated.
-		assertThat(runThread.getState()).as("runThread")
+		assertThat(thread.getState()).as(thread.getName())
 			.isIn(Thread.State.WAITING, Thread.State.TIMED_WAITING);
 	}
 

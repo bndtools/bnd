@@ -63,6 +63,14 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 
 		final Thread bndThread = getBndTestThread();
 
+		// As in other tests, we need to set the TCCL before the Activator
+		// runs the test discovery, otherwise the ServiceLoader calls in
+		// JUnit Platform Launcher will find bundles on the classpath, which
+		// have a different and incompatible version of interfaces it is testing
+		// against.
+		waitForThreadToWait(bndThread);
+		setTesterClassLoader(bndThread);
+
 		// Don't assert softly, since if we can't find this thread we can't do
 		// the other tests.
 		Assertions.assertThat(bndThread)
