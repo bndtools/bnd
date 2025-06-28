@@ -36,6 +36,10 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		super(activatorClass, tester);
 	}
 
+	protected AbstractActivatorCommonTest(String activatorClass, String tester, String bndrun) {
+		super(activatorClass, tester, bndrun);
+	}
+
 	@Test
 	public void start_withNoSeparateThreadProp_runsInMainThread() {
 		runTests(0, JUnit3Test.class);
@@ -58,6 +62,14 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		addTesterBundle();
 
 		final Thread bndThread = getBndTestThread();
+
+		// As in other tests, we need to set the TCCL before the Activator
+		// runs the test discovery, otherwise the ServiceLoader calls in
+		// JUnit Platform Launcher will find bundles on the classpath, which
+		// have a different and incompatible version of interfaces it is testing
+		// against.
+		waitForThreadToWait(bndThread);
+		setTesterClassLoader(bndThread);
 
 		// Don't assert softly, since if we can't find this thread we can't do
 		// the other tests.
@@ -195,7 +207,7 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		name = getClass().getName() + "/" + testMethod.getName();
 
 		builder = new LaunchpadBuilder();
-		builder.bndrun(tester + ".bndrun")
+		builder.bndrun(bndrun)
 			.excludeExport("aQute.tester.bundle.*")
 			.excludeExport("org.junit*")
 			.excludeExport("junit.*");

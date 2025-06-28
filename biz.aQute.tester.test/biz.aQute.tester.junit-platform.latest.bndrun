@@ -1,0 +1,21 @@
+# Framework with the latest JUnit versions.
+# We test against the lowest version of JUnit and the 
+# highest version - hopefully if they both work it
+# means we support all versions in-between.
+-runbundles: \
+	junit-platform-launcher,\
+	junit-platform-commons,\
+	junit-platform-engine,\
+	junit-jupiter-api,\
+	junit-jupiter-params,\
+	org.apiguardian.api,\
+	org.opentest4j,\
+	org.junit,\
+	org.hamcrest.core,\
+	junit-jupiter-engine,\
+	junit-vintage-engine
+
+-runfw: org.apache.felix.framework;version='[7.0.5,7.0.5]'
+-runee: JavaSE-1.8
+
+-runsystempackages: aQute.tester.testbase
