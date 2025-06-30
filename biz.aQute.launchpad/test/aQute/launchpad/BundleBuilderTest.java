@@ -282,10 +282,17 @@ public class BundleBuilderTest {
 		public Bundle get() {
 			return FrameworkUtil.getBundle(TestClass.class);
 		}
+
+		public class NestedClass implements Supplier<Bundle> {
+			@Override
+			public Bundle get() {
+				return FrameworkUtil.getBundle(TestClass.class);
+			}
+		}
 	}
 
 	@Test
-	public void addResourceWithCopy_createsCopyOfClass() throws Exception {
+	public void addResourceWithCopy_createsCopyOfClass_butNotNested() throws Exception {
 		try (Launchpad lp = builder.create()) {
 			Bundle b = lp.bundle()
 				.addResourceWithCopy(TestClass.class)
@@ -310,6 +317,49 @@ public class BundleBuilderTest {
 			Bundle suppliedBundle = s.get();
 			assertThat(suppliedBundle).as("suppliedBundle")
 				.isSameAs(b);
+			final Class<?>[] nested = inside.getDeclaredClasses();
+			assertThat(nested).as("nested classes")
+				.hasSize(1);
+
+			assertThat(nested[0].getClassLoader()).as("nested")
+				.isSameAs(getClass().getClassLoader())
+				.isNotSameAs(inside.getClassLoader());
+		}
+	}
+
+	@Test
+	public void addResourceWithRecursiveCopy_createsCopyOfClass_andNestedClasses() throws Exception {
+		try (Launchpad lp = builder.create()) {
+			Bundle b = lp.bundle()
+				.addResourceWithRecursiveCopy(TestClass.class)
+				.start();
+			Class<?> inside = b.loadClass(TestClass.class.getName());
+			assertThat(inside.getName()).as("className")
+				.isEqualTo(TestClass.class.getName());
+			// Should be unequal as they have been loaded by different class
+			// loaders.
+			assertThat(inside).as("class")
+				.isNotEqualTo(TestClass.class);
+			assertThat(inside.getClassLoader()).as("classLoader")
+				.isInstanceOf(BundleReference.class);
+
+			BundleReference br = (BundleReference) inside.getClassLoader();
+
+			assertThat(br.getBundle()).as("bundle")
+				.isSameAs(b);
+			@SuppressWarnings("unchecked")
+			Supplier<Bundle> s = (Supplier<Bundle>) inside.getConstructor()
+				.newInstance();
+			Bundle suppliedBundle = s.get();
+			assertThat(suppliedBundle).as("suppliedBundle")
+				.isSameAs(b);
+
+			final Class<?>[] nested = inside.getDeclaredClasses();
+			assertThat(nested).as("nested constructors")
+				.hasSize(1);
+
+			assertThat(nested[0].getClassLoader()).as("nested")
+				.isSameAs(inside.getClassLoader());
 		}
 	}
 
