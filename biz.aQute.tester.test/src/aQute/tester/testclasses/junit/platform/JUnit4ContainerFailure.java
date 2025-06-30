@@ -6,7 +6,7 @@ import org.junit.Test;
 public class JUnit4ContainerFailure {
 
 	@BeforeClass
-	static void beforeAll() {
+	static public void beforeAll() {
 		throw new AssertionError();
 	}
 

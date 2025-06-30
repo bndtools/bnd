@@ -365,6 +365,7 @@ abstract class AbstractActivatorJUnitPlatformTest extends AbstractActivatorCommo
 			builder.bndrun(bndrun)
 				.excludeExport("aQute.tester.bundle.*")
 				.excludeExport("org.junit*")
+				.excludeExport("org.opentest4j*")
 				.excludeExport("junit.*");
 			setResultsDir();
 			if (DEBUG) {
