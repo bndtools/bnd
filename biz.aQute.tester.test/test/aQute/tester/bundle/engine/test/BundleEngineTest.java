@@ -292,6 +292,46 @@ public class BundleEngineTest {
 			.haveExactly(1, event(test("customTest"), finishedWithFailure()));
 	}
 
+	public static class FailingEngine implements TestEngine {
+
+		@Override
+		public String getId() {
+			return "failing-engine";
+		}
+
+		@Override
+		public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+			throw new RuntimeException("Something went wrong with discovery");
+		}
+
+		@Override
+		public void execute(ExecutionRequest request) {
+			throw new RuntimeException("Something went wrong with execution");
+		}
+
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void withEngineThatFails_reportsEngineFailure() throws Exception {
+		startLaunchpadNoEngines();
+		Bundle engineBundle = testBundler.bundleWithEE()
+			.includeResource("META-INF/services/" + TestEngine.class.getName())
+			.literal("# Include a comment\n \t " + FailingEngine.class.getName()
+				+ " # another comment\n\n#The above was a blank line")
+			.addResourceWithCopy(FailingEngine.class)
+			.start();
+		Bundle testBundle = startTestBundle(JUnit4Test.class);
+
+		engineInFramework().execute()
+			.allEvents()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(test("misconfiguredEngines"), test("sub-engine", "failing-engine"),
+				finishedWithFailure(instanceOf(RuntimeException.class),
+					message("Something went wrong with discovery"))));
+	}
+
 	public static boolean lastSegmentMatches(UniqueId uId, String type, String contains) {
 		final List<UniqueId.Segment> segments = uId.getSegments();
 		UniqueId.Segment last = segments.get(segments.size() - 1);

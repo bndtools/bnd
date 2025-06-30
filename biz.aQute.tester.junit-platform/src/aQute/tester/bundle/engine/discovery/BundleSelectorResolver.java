@@ -599,6 +599,11 @@ public class BundleSelectorResolver {
 			} catch (Exception e) {
 				info(() -> "Error processing tests for engine: " + engine.getId() + " for bundle " + bundle + ": "
 					+ e.getMessage(), e);
+				StaticFailureDescriptor failedEngine = new StaticFailureDescriptor(
+					misconfiguredEnginesDescriptor.getUniqueId()
+						.append("sub-engine", engine.getId()),
+					engine.getId(), e);
+				misconfiguredEnginesDescriptor.addChild(failedEngine);
 			}
 		});
 		return true;
