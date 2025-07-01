@@ -91,6 +91,6 @@ public interface ResolutionInstructions {
 		never
 	}
 
-	@SyntaxAnnotation(lead = "Resolve mode defines when resolving takes place. The default, manual, requires a manual step in bndtools. Auto will resolve on save, and beforelaunch runs the resolver before being launched, batchlaunch is like beforelaunch but only in batch mode", example = "'-resolve manual", pattern = "(manual|auto|beforelaunch|batch)")
+	@SyntaxAnnotation(lead = "Resolve mode defines when resolving takes place. The default, manual, requires a manual step in bndtools. Auto will resolve on save, and beforelaunch runs the resolver before being launched, batchlaunch is like beforelaunch but only in batch mode", example = "'-resolve manual", pattern = "(manual|auto|beforelaunch|batch)", helpurl = "https://bnd.bndtools.org/instructions/resolve.html")
 	ResolveMode resolve();
 }

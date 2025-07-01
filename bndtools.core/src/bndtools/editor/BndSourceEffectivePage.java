@@ -1,7 +1,11 @@
 package bndtools.editor;
 
+import static bndtools.editor.completion.BndHover.lookupSyntax;
+import static bndtools.editor.completion.BndHover.syntaxHoverText;
+
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,6 +23,8 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -49,10 +55,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
@@ -72,12 +81,14 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.PropertyKey;
 import bndtools.central.Central;
-import bndtools.editor.completion.BndHover;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
+import bndtools.editor.completion.TooltipInput;
+import bndtools.utils.EditorUtils;
 
 /**
  * The 'Effective source' tab in a Bnd Editor which renders an effective
@@ -462,21 +473,29 @@ public class BndSourceEffectivePage extends FormPage {
 		return super.getAdapter(adapter);
 	}
 
+	private record ColSpec(String title, int width, Function<PropertyRow, String> label,
+		Function<PropertyRow, String> tooltip,
+		Function<PropertyRow, String> tooltipHelpUrl) {}
+
 	private int[] createColumns(TableViewer tableViewer) {
-		record ColSpec(String title, int width, Function<PropertyRow, String> label,
-			Function<PropertyRow, String> tooltip) {}
+
 
 		boolean showMerged = showMergedPropertiesButton.getSelection();
 
 		ColSpec[] specs = new ColSpec[] {
-			new ColSpec("Key", 150, PropertyRow::title, (pr -> BndHover.syntaxHoverText(pr.title, getProperties()))), //
-			new ColSpec("Value", -250, PropertyRow::value, PropertyRow::tooltip), //
-			new ColSpec("Provenance", 150, (pr -> relativizeProvenancePath(pr.provenance())), null), //
+			new ColSpec("Key", 150, PropertyRow::title, (pr -> syntaxHoverText(pr.title, getProperties())),
+				pr -> {
+					Syntax syntax = lookupSyntax(pr.title);
+					return syntax != null ? syntax.autoHelpUrl() : null;
+				}), //
+			new ColSpec("Value", -250, PropertyRow::value, PropertyRow::tooltip, null), //
+			new ColSpec("Provenance", 150, (pr -> relativizeProvenancePath(pr.provenance())), null, null), //
 		};
 
 		int[] widths = new int[specs.length];
 
-		createCustomToolTipSupport(tableViewer);
+		List<CellLabelProvider> columnLabelProviders = new ArrayList<>();
+
 
 		int colIndex = 0;
 		for (ColSpec spec : specs) {
@@ -486,36 +505,23 @@ public class BndSourceEffectivePage extends FormPage {
 			tc.setResizable(true);
 			tc.setMoveable(true);
 
-			column.setLabelProvider(new CellLabelProvider() {
-				@Override
-				public void update(ViewerCell cell) {
-					Object element = cell.getElement();
-					if (element instanceof PropertyRow pkey) {
-						String text = spec.label != null ? spec.label.apply(pkey) : null;
-						cell.setText(text);
-					}
-				}
+			CellLabelProvider labelProvider = new CustomTooltipCellLabelProvider(spec);
+			column.setLabelProvider(labelProvider);
 
-				@Override
-				public String getToolTipText(Object element) {
-					if (spec.tooltip != null && element instanceof PropertyRow pkey) {
-						String s = spec.tooltip.apply(pkey);
-						if (s != null && s.length() > 30) {
-							return BndEditModel.format(pkey.title, s);
-						} else
-							return s;
-					}
-					return null;
-				}
-			});
+			// mapping needed for tooltip later
+			columnLabelProviders.add(labelProvider);
+
 			tc.setWidth(spec.width < 0 ? -spec.width : spec.width);
 			widths[colIndex] = spec.width;
 			colIndex++;
 		}
+
+		createCustomToolTipSupport(tableViewer, columnLabelProviders);
+
 		return widths;
 	}
 
-	private void createCustomToolTipSupport(TableViewer tableViewer) {
+	private void createCustomToolTipSupport(TableViewer tableViewer, List<CellLabelProvider> columnLabelProviders) {
 		// 3) Subclass ColumnViewerToolTipSupport to create a selectable Text
 		// control with scrollbars
 		ColumnViewerToolTipSupport tooltipSupport = new ColumnViewerToolTipSupport(tableViewer, ToolTip.NO_RECREATE,
@@ -525,6 +531,33 @@ public class BndSourceEffectivePage extends FormPage {
 				Composite container = new Composite(parent, SWT.NONE);
 				container.setLayout(new GridLayout(1, false));
 
+				// unfortunatelly lots of ceremony to
+				Table table = tableViewer.getTable();
+				Point pt = new Point(event.x, event.y);
+				TableItem item = table.getItem(pt);
+				Object element = item != null ? item.getData() : null;
+
+				if (item == null)
+					return container;
+
+				int columnIndex = -1;
+				for (int i = 0; i < table.getColumnCount(); i++) {
+					if (item.getBounds(i)
+						.contains(pt)) {
+						columnIndex = i;
+						break;
+					}
+				}
+
+				//
+				TooltipInput tooltipInfo = null;
+				if (columnIndex >= 0 && columnIndex < columnLabelProviders.size()) {
+					CellLabelProvider provider = columnLabelProviders.get(columnIndex);
+					if (provider instanceof CustomTooltipCellLabelProvider myProvider) {
+						tooltipInfo = myProvider.getTooltipInfo(element);
+					}
+				}
+
 				String tooltipText = getText(event);
 
 				if (tooltipText == null) {
@@ -532,13 +565,27 @@ public class BndSourceEffectivePage extends FormPage {
 				}
 
 				StyledText text = new StyledText(container,
-					SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+					SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+				text.setMargins(5, 5, 5, 5); // left, top, right, bottom
 
 				GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-				gd.widthHint = 300;
+				gd.widthHint = 350;
 				gd.heightHint = 200;
 				text.setLayoutData(gd);
 				text.setText(tooltipText);
+
+				if (tooltipInfo != null && tooltipInfo.url != null) {
+					ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
+					ToolBar toolBar = toolBarManager.createControl(container);
+					toolBar.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+
+					// Create the Action using your utility
+					Action helpButton = EditorUtils.createHelpButton(tooltipInfo.url, "Open help for more information");
+
+					// Add it to the manager
+					toolBarManager.add(helpButton);
+					toolBarManager.update(true);
+				}
 
 				Display display = parent.getDisplay();
 				text.setFocus();
@@ -546,10 +593,28 @@ public class BndSourceEffectivePage extends FormPage {
 				return container;
 			}
 
+
 			@Override
 			public boolean isHideOnMouseDown() {
 				return false;
 			}
+
+			@Override
+			public Point getLocation(Point tipSize, Event event) {
+				Display display = Display.getCurrent();
+				Control control = (Control) event.widget;
+				Point cursor = display.map(control, null, new Point(event.x, event.y));
+
+				// move the tooltip a little bit more left.
+				// makes it easier to move the mouse into the tooltip
+				// without accidentally closing the tooltip
+				int offsetX = -10;
+				int offsetY = 0;
+
+				return new Point(cursor.x + offsetX, cursor.y + offsetY);
+			}
+
+
 		};
 	}
 
@@ -641,6 +706,52 @@ public class BndSourceEffectivePage extends FormPage {
 			}
 		};
 		return p;
+	}
+
+	private final class CustomTooltipCellLabelProvider extends CellLabelProvider {
+		private final ColSpec spec;
+
+		private CustomTooltipCellLabelProvider(ColSpec spec) {
+			this.spec = spec;
+		}
+
+		@Override
+		public void update(ViewerCell cell) {
+			Object element = cell.getElement();
+			if (element instanceof PropertyRow pkey) {
+				String text = spec.label != null ? spec.label.apply(pkey) : null;
+				cell.setText(text);
+			}
+		}
+
+		@Override
+		public boolean useNativeToolTip(Object object) {
+			if (object instanceof PropertyRow) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public String getToolTipText(Object element) {
+			if (spec.tooltip != null && element instanceof PropertyRow pkey) {
+				String s = spec.tooltip.apply(pkey);
+				if (s != null && s.length() > 30) {
+					return BndEditModel.format(pkey.title, s);
+				} else
+					return s;
+			}
+			return null;
+		}
+
+		public TooltipInput getTooltipInfo(Object element) {
+			if (spec.tooltip != null && element instanceof PropertyRow pkey) {
+				String text = getToolTipText(element);
+				String url = spec.tooltipHelpUrl != null ? spec.tooltipHelpUrl.apply(pkey) : null;
+				return new TooltipInput(text, url);
+			}
+			return null;
+		}
 	}
 
 	/**

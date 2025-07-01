@@ -1,6 +1,7 @@
 package bndtools.utils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Supplier;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.action.Action;
@@ -49,18 +50,37 @@ public class EditorUtils {
 	 * @param tooltipText
 	 */
 	public static final Action createHelpButton(String url, String tooltipText) {
+		return createHelpButton(() -> url, () -> tooltipText);
+	}
+
+	/**
+	 * Alternative to {@link #createHelpButton(String, String)} but if you need
+	 * to pass parameters lazy.
+	 *
+	 * @param urlSupplier
+	 * @param tooltipTextSupplier
+	 */
+	public static final Action createHelpButton(Supplier<String> urlSupplier, Supplier<String> tooltipTextSupplier) {
 		Action btn = new Action("Help", IAction.AS_PUSH_BUTTON) {
 			@Override
 			public void run() {
-				Program.launch(url);
+				String url = urlSupplier.get();
+				if (url != null) {
+					Program.launch(url);
+				}
+			}
+
+			@Override
+			public String getToolTipText() {
+				return tooltipTextSupplier.get();
 			}
 		};
 		btn.setEnabled(true);
-		btn.setToolTipText(tooltipText);
 		btn.setImageDescriptor(Icons.desc("help"));
 
 		return btn;
 	}
+
 
 	/**
 	 * Creates a help button with help-icon, text and tool-tip.

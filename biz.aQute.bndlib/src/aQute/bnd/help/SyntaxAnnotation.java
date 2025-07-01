@@ -51,4 +51,9 @@ public @interface SyntaxAnnotation {
 	 */
 	String pattern() default "";
 
+	/**
+	 * A optional URL e.g. to the manual.
+	 */
+	String helpurl() default "";
+
 }
