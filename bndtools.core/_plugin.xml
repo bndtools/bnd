@@ -47,22 +47,22 @@
 
 	<!-- EDITORS -->
 	<extension point="org.eclipse.ui.editors">
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			extensions="bnd" icon="${icons.bundle}" id="bndtools.bndEditor"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			name="Bnd Bundle Editor">
 		</editor>
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			filenames="bnd.bnd" icon="icons/bricks.png"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			id="bndtools.bndProjectEditor" name="Bnd Project Editor">
 		</editor>
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			extensions="bndrun" icon="${icons.bndrun}" id="bndtools.bndRunEditor"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			name="Bnd Run File Editor">
 		</editor>
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			filenames="build.bnd,ext/*.bnd" icon="icons/bndtools-logo-16x16.png"
 			id="bndtools.bndWorkspaceConfigEditor"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
