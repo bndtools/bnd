@@ -17,8 +17,7 @@
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\
-	org.tukaani.xz;version=latest;maven-scope=provided,\
-	junit-jupiter-api
+	org.tukaani.xz;version=latest;maven-scope=provided
 	
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
