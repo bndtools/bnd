@@ -386,7 +386,8 @@ public class Syntax implements Constants {
 				"noservicecapabilities=true", "true, false", Pattern.compile("true|false"))),
 
 		new Syntax(CONNECTION_SETTINGS, "Setting up the communications for bnd.",
-			CONNECTION_SETTINGS + "= ~/.bnd/connection-settings.xml", null, null),
+			CONNECTION_SETTINGS + "= ~/.bnd/connection-settings.xml", null, null,
+			"https://bnd.bndtools.org/instructions/connection-settings.html"),
 
 		new Syntax(CONDUIT, "Allows a bnd file to point to files which will be returned when the bnd file is build.",
 			CONDUIT + "= jar/osgi.jar", null, null),
@@ -442,7 +443,8 @@ public class Syntax implements Constants {
 			"The " + DSANNOTATIONS_OPTIONS
 				+ " instruction configures how DS component annotations are processed and what metadata is generated.",
 			DSANNOTATIONS_OPTIONS + ": version;minimum=1.2.0",
-			"(inherit|felixExtensions|extender|nocapabilities|norequirements|version)", null),
+			"(inherit|felixExtensions|extender|nocapabilities|norequirements|version)", null,
+			"https://bnd.bndtools.org/instructions/dsannotations-options.html"),
 
 		new Syntax(EXPORT, "The " + EXPORT + " instruction turns a bndrun file into its deployable format.",
 			EXPORT + ": launcher.jar", "FILE ( ';' PARAMETER )* ( ',' FILE ( ';' PARAMETER )* )*", null),
