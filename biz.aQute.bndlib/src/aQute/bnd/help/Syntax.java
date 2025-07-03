@@ -1015,7 +1015,9 @@ public class Syntax implements Constants {
 			// auto-detect / heuristig
 			if (header.startsWith("-")) {
 				// instruction
-				return "https://bnd.bndtools.org/instructions/" + header.substring(1) + ".html";
+				return "https://bnd.bndtools.org/instructions/" + header.substring(1)
+					.toLowerCase()
+					.replace("-", "_") + ".html";
 			} else {
 				// assume header
 				return "https://bnd.bndtools.org/heads/" + header.toLowerCase()
