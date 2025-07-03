@@ -33,6 +33,7 @@ public class Syntax implements Constants {
 	final Pattern							pattern;
 	final String							values;
 	final Syntax[]							children;
+	final String							helpurl;
 
 	static Syntax							version					= new Syntax(VERSION_ATTRIBUTE,
 		"A version range to select the version of an export definition. The default value is 0.0.0.",
@@ -345,7 +346,8 @@ public class Syntax implements Constants {
 				null, null, null)),
 		new Syntax(BUILDPATH,
 			"Provides the class path for building the jar. The entries are references to the repository.",
-			BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME, path_version),
+			BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME,
+			"https://bnd.bndtools.org/instructions/buildpath.html", path_version),
 		new Syntax(BUILDREPO, "After building a JAR, release the JAR to the given repositories.", BUILDREPO + "=Local",
 			null, null),
 		new Syntax(BUILDERIGNORE,
@@ -793,6 +795,7 @@ public class Syntax implements Constants {
 			String example = null;
 			Pattern pattern = null;
 			String values = null;
+			String helpurl = null;
 
 			if (ann != null) {
 				if (!ann.lead()
@@ -810,6 +813,11 @@ public class Syntax implements Constants {
 				if (!ann.pattern()
 					.isEmpty())
 					pattern = Pattern.compile(ann.pattern());
+
+				if (!ann.helpurl()
+					.isBlank()) {
+					helpurl = ann.helpurl();
+				}
 			}
 
 			Class<?> rtype = m.getReturnType();
@@ -837,14 +845,14 @@ public class Syntax implements Constants {
 				assert valueType instanceof Class : "The type of the value of a parameters must be a class, not a generic type";
 
 				Syntax[] clauses = create((Class<?>) valueType, Syntax::toProperty, false);
-				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl, clauses));
 			} else if (Iterable.class.isAssignableFrom(rtype)) {
 				// list
-				syntaxes.add(new Syntax(name, lead, example, values, pattern));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl));
 			} else if (rtype.isInterface()) {
 				// properties
 				Syntax[] clauses = create(rtype, Syntax::toProperty, false);
-				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl, clauses));
 			}
 			if (rtype.isEnum()) {
 				Field[] enumConstants = rtype.getFields();
@@ -854,11 +862,11 @@ public class Syntax implements Constants {
 					Field e = enumConstants[i];
 					fields[i] = createEnumField(e);
 				}
-				Syntax syntax = new Syntax(name, lead, example, values, pattern, fields);
+				Syntax syntax = new Syntax(name, lead, example, values, pattern, helpurl, fields);
 				syntaxes.add(syntax);
 			} else {
 				// simple value
-				syntaxes.add(new Syntax(name, lead, example, values, pattern));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl));
 			}
 
 		}
@@ -921,6 +929,18 @@ public class Syntax implements Constants {
 		this.example = example;
 		this.values = values;
 		this.pattern = pattern;
+		this.helpurl = null;
+	}
+
+	public Syntax(String header, String lead, String example, String values, Pattern pattern, String helpUrl,
+		Syntax... children) {
+		this.header = header;
+		this.children = children;
+		this.lead = lead;
+		this.example = example;
+		this.values = values;
+		this.pattern = pattern;
+		this.helpurl = helpUrl;
 	}
 
 	public String getLead() {
@@ -950,6 +970,10 @@ public class Syntax implements Constants {
 		return header;
 	}
 
+	public String getHelpUrl() {
+		return this.helpurl;
+	}
+
 	@Override
 	public String toString() {
 		return header;
@@ -976,6 +1000,30 @@ public class Syntax implements Constants {
 			return example;
 		}
 		return header + ":";
+	}
+
+	/**
+	 * helper to automatically construct a helpurl based on a heuristic. It
+	 * might now work in all cases. We then need to set the helpUrl explicitly
+	 * in Syntax class for cases where this heuristic does not work. But that
+	 * way we get at least lots some more bnd manual links which makes it
+	 * useful.
+	 */
+	public String autoHelpUrl() {
+
+		if (helpurl == null) {
+			// auto-detect / heuristig
+			if (header.startsWith("-")) {
+				// instruction
+				return "https://bnd.bndtools.org/instructions/" + header.substring(1) + ".html";
+			} else {
+				// assume header
+				return "https://bnd.bndtools.org/heads/" + header.toLowerCase()
+					.replace("-", "_") + ".html";
+			}
+		}
+
+		return helpurl;
 	}
 
 }
