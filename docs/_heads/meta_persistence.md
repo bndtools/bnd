@@ -1,9 +1,17 @@
 ---
 layout: default
+title: Meta-Persistence ::= ( RESOURCE ( ',' RESOURCE )* )?
 class: Header
-title: Meta-Persistence ::= ( RESOURCE ( ',' RESOURCE )* )? 
-summary: A Persistence Bundle is a bundle that contains the Meta-Persistence header. If this header is not present, then this specification does not apply and a JPA Provider should ignore the corresponding bundle. 
+summary: |
+   A Persistence Bundle is a bundle that contains the Meta-Persistence header. If this header is not present, then this specification does not apply and a JPA Provider should ignore the corresponding bundle.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Meta-Persistence: persistence/myPu.xml`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/meta_persistence.md --><br /><br />
 	
 	/**
 	 * Verify the Meta-Persistence header

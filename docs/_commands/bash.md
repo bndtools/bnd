@@ -1,14 +1,16 @@
 ---
 layout: default
-title:   bash 
-summary:  Generate autocompletion file for bash
+title: bash
+summary: |
+   Generate autocompletion file for bash
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   bash  ...
 
 
-## Synopsis
-
-## Options
+<!-- Manual content from: ext/bash.md --><br /><br />
 
 ## Examples
 

@@ -1,12 +1,16 @@
 ---
 layout: default
-title:     maven ( 'settings' | 'bundle'
-summary:  Special maven commands
+title: maven ( 'settings' | 'bundle'
+summary: |
+   Special maven commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   maven  ...
 
 
-## Synopsis
+<!-- Manual content from: ext/maven.md --><br /><br />
 
 	maven 
 	[-temp <dir>]            use as temp directory

@@ -1,9 +1,52 @@
 ---
 layout: default
-class: Header
 title: Import-Package ::= import ( ',' import )*
-summary: The Import-Package header declares the imported packages for this bundle.
+class: Header
+summary: |
+   The Import-Package header declares the imported packages for this bundle.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Import-Package: !com.exotic.*, com.acme.foo;vendor=ACME, *`
+
+- Values: `${exported_packages}`
+
+- Pattern: `.*`
+
+### Options ###
+
+- `-remove-attribute:`
+  - Example: `-remove-attribute:=foo.*`
+
+  - Pattern: `.*`
+
+
+- `resolution:`
+  - Example: `resolution:=optional`
+
+  - Values: `mandatory,optional`
+
+  - Pattern: `mandatory|optional`
+
+
+- `version`
+  - Example: `version="[1.2,3.0)"`
+
+  - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+
+- `bundle-symbolic-name`
+  - Example: `bundle-symbolic-name=com.acme.foo.daffy`
+
+  - Pattern: `[-\w]+(:?\.[-\w]+)*`
+
+
+- `bundle-version`
+  - Example: `bundle-version=1.3`
+
+  - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+<!-- Manual content from: ext/import_package.md --><br /><br />
 The `Import-Package` header lists the packages that are required by the contained packages. The default for this header is `*`, resulting in importing all referred packages. This header therefore rarely has to be specified. However, in certain cases there is an unwanted import. The import is caused by code that the author knows can never be reached. This import can be removed by using a negating pattern. A pattern is inserted in the import as an extra import when it contains no wildcards and there is no referral to that package. This can be used to add an import statement for a package that is not referred to by your code but is still needed, for example, because the class is loaded by name.
 
 For example:

@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *
 class: Builder
-title: -namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *   
-summary:  Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages. 
+summary: |
+   Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-namesection=*;baz=true, abc/def/bar/X.class;bar=3`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/namesection.md --><br /><br />
 
 Create a name section (second part of manifest) with optional property expansion and addition of custom attributes.
 
@@ -61,4 +69,3 @@ Specification-Title: Jakarta Annotations
 Specification-Vendor: Eclipse Foundation
 Specification-Version: 2.0
 ```
-

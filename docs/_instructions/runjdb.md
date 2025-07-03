@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -runjdb  ADDRESS
-summary: Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later. 
+class: Project
+summary: |
+   Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runjdb: localhost:10001`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runjdb.md --><br /><br />
 
 This instruction launches the VM with the
 

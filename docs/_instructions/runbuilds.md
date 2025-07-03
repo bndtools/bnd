@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Project
 title: -runbuilds BOOLEAN
-summary:  Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true.
+class: Project
+summary: |
+   Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runbuilds=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/runbuilds.md --><br /><br />
 
 	public boolean getRunBuilds() {
 		boolean result;

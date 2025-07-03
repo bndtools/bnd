@@ -1,9 +1,19 @@
 ---
 layout: default
+title: -deployrepo
 class: Project
-title: -deployrepo 
-summary: Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work
+summary: |
+   Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-deployrepo=cnf`
+
+- Values: `${repos}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/deployrepo.md --><br /><br />
 
 
 	/**

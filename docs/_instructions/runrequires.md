@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -runrequires REQUIREMENT ( ',' REQUIREMENT )*
 class: Resolve
-title: -runrequires REQUIREMENT ( ',' REQUIREMENT )* 
-summary: The root requirements for a resolve intended to create a constellation for the -runbundles.
+summary: |
+   The root requirements for a resolve intended to create a constellation for the -runbundles.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runrequires=osgi.identity;filter:='(osgi.identity=<bsn>)', ...`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runrequires.md --><br /><br />
 
 The `-runrequires` instruction specifies root requirements for a resolve operation. These requirements are input into the resolver
 which generates a list of bundles (the `-runbundles` list) that can satisfy the requirements.

@@ -1,9 +1,48 @@
 ---
 layout: default
+title: Bundle-Contributors ...
 class: Header
-title: Bundle-Contributors ... 
-summary: Lists the bundle contributors according to the Maven bundle-contributors pom entry
+summary: |
+   Lists the bundle contributors according to the Maven bundle-contributors pom entry
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bundle-Contributors: Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1`
+
+- Pattern: `.*`
+
+### Options ###
+
+- `name`
+  - Example: `name='Peter Kriens'`
+
+  - Pattern: `.*`
+
+
+- `organization`
+  - Example: `organization='aQute'`
+
+  - Pattern: `.*`
+
+
+- `roles`
+  - Example: `roles=ceo`
+
+  - Pattern: `.*`
+
+
+- `timezone`
+  - Example: `timezone+2`
+
+  - Pattern: `.*`
+
+
+- `organizationUrl`
+  - Example: `organizationURL='http://www.aQute.biz'`
+
+  - Pattern: `.*`
+
+<!-- Manual content from: ext/bundle_contributors.md --><br /><br />
 	
 	/*
 	 * Bundle-Contributors header

@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -savemanifest FILE
 class: Builder
-title: -savemanifest FILE   
-summary:  Write out the manifest to a separate file after it has been calculated. 
+summary: |
+   Write out the manifest to a separate file after it has been calculated.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-savemanifest=file.txt`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/savemanifest.md --><br /><br />
 
 	/**
 	 * Get the manifest and write it out separately if -savemanifest is set

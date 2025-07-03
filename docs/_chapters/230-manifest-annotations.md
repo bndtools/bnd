@@ -43,7 +43,7 @@ META-INF/services/com.example.ServiceType:
 ```
 The processing is identical to the normal class based annotation processing. The `#class` macro will be set to the implementation class. The `#value` will be set in all cases to the service type unless overridden.
 
-This behavior can be controlled with the [-metainf-services](/instructions/metainf-services.html) instruction. Default is `annotation` which processes the textual annotations above, while the other convenience strategy `auto` automatically creates `Provide-Capability` headers for services without any textual annotations.
+This behavior can be controlled with the [-metainf-services](/instructions/metainf_services.html) instruction. Default is `annotation` which processes the textual annotations above, while the other convenience strategy `auto` automatically creates `Provide-Capability` headers for services without any textual annotations.
 
 <hr />
 

@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.help.instructions.BuilderInstructions;
 import aQute.bnd.help.instructions.LauncherInstructions;
 import aQute.bnd.help.instructions.ResolutionInstructions;
@@ -1014,16 +1015,24 @@ public class Syntax implements Constants {
 		if (helpurl == null) {
 			// auto-detect / heuristig
 			if (header.startsWith("-")) {
-				// instruction
-				return "https://bnd.bndtools.org/instructions/" + header.substring(1) + ".html";
+				// instruction most use dash (-) instead of underscore in
+				// filenames)
+				return "https://bnd.bndtools.org/instructions/" + normalizeFilename(header.substring(1)) + ".html";
+			}
+			else if (Attrs.isDirective(header)) {
+				// directive - have no url
+				return null;
 			} else {
-				// assume header
-				return "https://bnd.bndtools.org/heads/" + header.toLowerCase()
-					.replace("-", "_") + ".html";
+				// assume header (headers use underscore in filenames)
+				return "https://bnd.bndtools.org/heads/" + normalizeFilename(header) + ".html";
 			}
 		}
 
 		return helpurl;
 	}
 
+	public static String normalizeFilename(String filename) {
+		return filename.toLowerCase()
+			.replace("-", "_");
+	}
 }

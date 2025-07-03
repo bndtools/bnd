@@ -1,9 +1,17 @@
 ---
 layout: default
+title: Bundle-Developers ...
 class: Header
-title: Bundle-Developers ... 
-summary: Lists the bundle developers according to the Maven bundle-developers pom entry
+summary: |
+   Lists the bundle developers according to the Maven bundle-developers pom entry
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bundle-Developers: Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/bundle_developers.md --><br /><br />
 	
 	/*
 	 * Bundle-Developers header

@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -runrepos REPO-NAME ( ',' REPO-NAME )*
 class: Resolve
-title: -runrepos REPO-NAME ( ',' REPO-NAME )* 
-summary:  Order and select the repository for resolving against. The default order is all repositories in their plugin creation order.
+summary: |
+   Order and select the repository for resolving against. The default order is all repositories in their plugin creation order.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runrepos=Maven Central, Main, Distro, ...`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runrepos.md --><br /><br />
 
 The `-runrepos` instruction is used to restrict or order the available repositories. A `bndrun` file (see [Resolving](/chapters/250-resolving.html#resolving-in-bndtools)) can be based on a workspace or can be standalone. In the workspace case the, the repositories are defined in `build.bnd` or in a `*.bnd` file in the `cnf/ext` directory as bnd plugins. In the standalone case the repositories are either OSGi XML repositories listed in the `-standalone` instruction or they are also defined as plugins but now in the `bndrun` file.
 

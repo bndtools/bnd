@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Header
 title: Test-Cases CLASS ( ',' CLASS ) *
-summary: Header to automatically execute tests in the bnd JUnit tester 
+class: Header
+summary: |
+   Header to automatically execute tests in the bnd JUnit tester
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Test-Cases: com.foo.bar.MyTest`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/test_cases.md --><br /><br />
 
 
 	private void checkForTesting(Project project, Properties properties) throws Exception {

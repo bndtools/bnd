@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -plugin.* plugin-def ( ',' plugin-def )*
 class: Processor
-title: -plugin.* plugin-def ( ',' plugin-def )* 
-summary: Load plugins and their parameters. 
+summary: |
+   Load plugins and their parameters.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-plugin=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/plugin.md --><br /><br />
 A plugin is a parameterized piece of code that runs inside bndlib. The `-plugin` instruction defines a plugin by specifying its class name and a given set of parameters; a specific class can be instantiated multiple times.
 
 The `-plugin` instruction actually aggregates all properties that start with `-plugin*`. This makes it possible to set plugins in different places, for example include files or with the bndlib workspace extensions. The following sets the Git plugin:
@@ -63,7 +71,3 @@ The following example installs an embedded FileRepo and will load all exporters 
 ## Caveats
 
 * Use OSGi as the plugin system, it is kind of embarrassing that we have a poor mans plugin system when doing OSGi things. The reason is that bnd was started in 1999 and at that time OSGi was too slow and big to start/stop as often as it is done in bndlib user's environment. Alas ...
-
-
-
-

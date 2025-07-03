@@ -1,9 +1,19 @@
 ---
 layout: default
+title: -testcontinuous BOOLEAN
 class: Test
-title: -testcontinuous BOOLEAN 
-summary: Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated.
+summary: |
+   Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-testcontinuous=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/testcontinuous.md --><br /><br />
 
 	public void test(List<String> tests) throws Exception {
 

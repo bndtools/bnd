@@ -1,9 +1,15 @@
 ---
 layout: default
+title: -extension
 class: Project
-title: -extension 
-summary: A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin. 
+summary: |
+   A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/extension.md --><br /><br />
 	
 	/**
 	 * Add any extensions listed

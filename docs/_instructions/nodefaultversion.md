@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Builder
 title: -nodefaultversion  BOOLEAN
-summary:  Do not add a default version to exported packages when no version is present. 
+class: Builder
+summary: |
+   Do not add a default version to exported packages when no version is present.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-nodefaultversion=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/nodefaultversion.md --><br /><br />
 
 	public void cleanupVersion(Packages packages, String defaultVersion) {
 		if (defaultVersion != null) {

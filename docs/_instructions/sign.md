@@ -1,9 +1,19 @@
 ---
 layout: default
+title: -sign PARAMETERS
 class: Project
-title: -sign PARAMETERS 
-summary: Report any entries that were added to the build since the last JAR was made.
+summary: |
+   Report any entries that were added to the build since the last JAR was made.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-sign=alias`
+
+- Values: `<alias> [ ';' 'password:=' <password> ] [ ';'* 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/sign.md --><br /><br />
 
 
 	void sign(@SuppressWarnings("unused")

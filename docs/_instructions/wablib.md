@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Builder
 title: -wablib FILE ( ',' FILE )*
-summary: Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.
+class: Builder
+summary: |
+   Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-wablib=lib/a.jar, lib/b.jar`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/wablib.md --><br /><br />
 
 	/**
 	 * Turn this normal bundle in a web and add any resources.

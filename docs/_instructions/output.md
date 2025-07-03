@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Analyzer
 title: -output  FILE
-summary: Specify the output directory or file.
+class: Analyzer
+summary: |
+   Specify the output directory or file.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-output=my_directory`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/output.md --><br /><br />
 
 TODO how does this relate to -outputmask?
 

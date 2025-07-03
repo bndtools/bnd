@@ -71,7 +71,7 @@ public class Cache {
 
 	private void throwNoResponseError(TaggedData td) throws IOException {
 		throw new IOException("Error (HTTP " + td.getResponseCode() + ") - no response: " + td
-			+ " (Check https://bnd.bndtools.org/instructions/connection-settings.html in case of connection or authentication errors.)");
+			+ " (Check https://bnd.bndtools.org/instructions/connection_settings.html in case of connection or authentication errors.)");
 	}
 
 }

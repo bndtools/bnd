@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Workspace or Project
 title: -library library ( ',' library )*
-summary: Apply a bnd library to the workspace, project, or bndrun file
+class: Workspace or Project
+summary: |
+   Apply a bnd library to the workspace, project, or bndrun file
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-library: foo;version=1.2.3`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/library.md --><br /><br />
 
 The main reason for the `-library` instruction is to let you package and share *bnd-related configuration* in a self-contained way so it can be reused across workspaces, projects, or run descriptions.
 
@@ -117,4 +125,3 @@ in a library will then become available.
 Projects and bndrun files can include libraries but they cannot define any new repositories. 
 
 NOTE: what about standalone bndruns? 
-

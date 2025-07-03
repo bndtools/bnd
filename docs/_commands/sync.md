@@ -1,15 +1,15 @@
 ---
 layout: default
-title:   sync [options]
-summary: Execute a Project action, or if no parms given, show information about the project 
+title: sync
+summary: |
+   Force a cache update of the workspace
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   sync [options]  ...
 
 
-## Synopsis
+#### Options: #
+- `[ -p --project <string> ]` Identify another project
 
-## Options
-
-    [ -p, --project <string> ] - Identify another project
-
-## Examples

@@ -1,16 +1,29 @@
 ---
 layout: default
-title:      eclipse [options]  
-summary: Show info about the current directory's eclipse project
+title: eclipse
+summary: |
+   Show info about the current directory's eclipse project
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   eclipse [options]  ...
 
 
-## Synopsis
+#### Options: #
+- `[ -d --dir <string> ]` Path to the project
+- `[ -w --workspace <string> ]` Use the following workspace
 
-## Options
+## Available sub-commands #
+-  `sync` - Synchronized the ./cnf/.settings directory to all the projects 
 
-	[ -d, --dir <string> ]     - Path to the project
+### sync #
+Synchronized the ./cnf/.settings directory to all the projects
+
+#### Synopsis: #
+	   sync 
+
+<!-- Manual content from: ext/eclipse.md --><br /><br />
 
 ## Examples
 
@@ -19,4 +32,3 @@ summary: Show info about the current directory's eclipse project
 	Dependents   []
 	Sourcepath   [/Ws/bnd/biz.aQute.bnd/src, /Ws/bnd/biz.aQute.bnd/test]
 	Output       /Ws/bnd/biz.aQute.bnd/bin
-

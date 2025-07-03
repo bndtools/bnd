@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*
-summary: Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. 
+class: Project
+summary: |
+   Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-exportcontents=!*impl*,*;version=3.0`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/exportcontents.md --><br /><br />
 
 Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. The syntax is similar to the [`Export-Package`](/heads/export_package.html) header.
 

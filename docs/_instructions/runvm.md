@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -runvm KEYS
 class: Project
-title: -runvm KEYS 
-summary:  Additional arguments for the VM invocation. Arguments are added as-is.
+summary: |
+   Additional arguments for the VM invocation. Arguments are added as-is.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runvm=-Xmax=30, -DsecondOption=secondValue`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runvm.md --><br /><br />
 
 
 	public Collection<String> getRunVM() {

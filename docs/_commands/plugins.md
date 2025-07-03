@@ -1,16 +1,19 @@
 ---
 layout: default
-title: plugins [options] 
-summary: Execute a Project action, or if no parms given, show information about the project 
+title: plugins
+summary: |
+   Show the loaded workspace plugins
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   plugins [options]  ...
 
 
-## Synopsis
+#### Options: #
+- `[ -p --project <string> ]` Identify another project
 
-## Options
-
-	[ -p, --project <string> ] - Identify another project
+<!-- Manual content from: ext/plugins.md --><br /><br />
 
 ## Examples
 
@@ -27,4 +30,3 @@ summary: Execute a Project action, or if no parms given, show information about 
 	008 /Ws/bnd/cnf/repo                         r/w=true
 	009 /Ws/bnd/dist/bundles                     r/w=true
 	010 aQute.bnd.signing.JartoolSigner@2dac2cb7
-

@@ -47,6 +47,36 @@ Open http://127.0.0.1:4000 in your browser to see the result while developing.
 The server does support hot-reload so you should see changes to `.md` files immediately without restart (there are a few exceptions). Checkout the [jekyll-docs](https://jekyllrb.com/docs/pages/) to get more into the details and features.
 
 
+## Generating some pages for headers and instructions
+
+The folders `_heads` and `_instructions` are special. They are populated by a bnd command `generatemanual` which generates .md files from the `Syntax.java` class.
+
+As a developer the process is like this:
+
+```
+# build bnd (e.g. via cd..; ./gradlew :build -x test) get a recent iz.aQute.bnd.jar
+# then generate the documentation by running the generatemanual CLI command (see bnd.java)
+# go into the /docs folder of the bnd repo
+cd bndrepo/docs
+./generate.sh
+```
+
+This `generate.sh` under the hood calls the bnd CLI command `generatemanual` via: `java -jar ../biz.aQute.bnd/generated/biz.aQute.bnd.jar generatemanual .`
+
+This creates or updates files in `/docs/_heads` and `/docs/_instructions`.
+
+If new files were added or existing files updated, then commit them to git in a PR.
+We need to do this from time to time to update the docs when new headers or instructions get added to `Syntax.java`.
+
+### Adding content to generated files
+
+There is a extension mechanism to add manual content and also override the frontmatter block of the markdown files.
+Each folder (`/docs/_heads` and `/docs/instructions`) contains an `_ext` subfolder (ext as extension).
+Please add file with the same name in that `_ext` sub-folder and then this content will be added to the bottom of the generated file. Frontmatter attributes will be overwritten too if specified.
+
+
+
+
 ## Local development with Pagefind search
 
 We use https://pagefind.app/ for our search field full text search. 

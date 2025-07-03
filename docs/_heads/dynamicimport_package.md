@@ -1,9 +1,38 @@
 ---
 layout: default
+title: DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*
 class: Header
-title: DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )* 
-summary: The DynamicImport-Package header contains a comma-separated list of package names that should be dynamically imported when needed.
+summary: |
+   The DynamicImport-Package header contains a comma-separated list of package names that should be dynamically imported when needed.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `DynamicImport-Package: com.acme.plugin.*`
+
+- Values: ``
+
+- Pattern: `.*`
+
+### Options ###
+
+- `version`
+  - Example: `version="[1.2,3.0)"`
+
+  - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+
+- `bundle-symbolic-name`
+  - Example: `bundle-symbolic-name=com.acme.foo.daffy`
+
+  - Pattern: `[-\w]+(:?\.[-\w]+)*`
+
+
+- `bundle-version`
+  - Example: `bundle-version=1.3`
+
+  - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+<!-- Manual content from: ext/dynamicimport_package.md --><br /><br />
 	
 	/**
 	 * <pre>

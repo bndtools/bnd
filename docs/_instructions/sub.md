@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Builder
 title: -sub FILE-SPEC ( ',' FILE-SPEC )*
-summary:  Enable sub-bundles to build a set of .bnd files that use bnd.bnd file as a basis. The list of bnd files can be specified with wildcards.
+class: Builder
+summary: |
+   Enable sub-bundles to build a set of .bnd files that use bnd.bnd file as a basis. The list of bnd files can be specified with wildcards.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-sub=com.acme.*.bnd`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/sub.md --><br /><br />
 
 You can enable **sub-bundles** with the `-sub` instruction, to build a set of `.bnd` files that use the `bnd.bnd` file as a basis. The list of sub-`.bnd` files can be specified with wildcards.
 
@@ -55,4 +63,3 @@ In most cases it is best to have one project generate one bundle. However, somet
 
 Another use case is when you need to [wrap `.jar` files](/chapters/390-wrapping.html), e.g. to convert non-OSGi bundles into OSGi-Bundles by adding meta-data to the Manifest. 
 A practise to do so could be to have a single Wrapper-bundle where you do all your wrapping of external dependencies. The advantage is, that you don't clutter up your workspace with lots of tiny Bundle-wrapping projects. With sub-bundles you can keep all your wrapped jars in one single project. 
-

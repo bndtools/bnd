@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -runproperties PROPERTIES
 class: Launcher
-title: -runproperties PROPERTIES 
-summary:  Define system properties for the remote VM.
+summary: |
+   Define system properties for the remote VM.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runproperties= foo=3, bar=4`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runproperties.md --><br /><br />
 
 	public Map<String,String> getRunProperties() {
 		return OSGiHeader.parseProperties(getProperty(RUNPROPERTIES));

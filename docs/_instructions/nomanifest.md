@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Ant
 title: -nomanifest  BOOLEAN
-summary:  Do not safe the manifest in the JAR.
+class: Ant
+summary: |
+   Do not safe the manifest in the JAR.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-nomanifest=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/nomanifest.md --><br /><br />
 
 	public boolean isNoBundle() {
 		return isTrue(getProperty(RESOURCEONLY)) || isTrue(getProperty(NOMANIFEST));

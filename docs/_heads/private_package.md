@@ -1,9 +1,19 @@
 ---
 layout: default
+title: Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )*
 class: Header
-title: Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )* 
-summary: Specifies what packages to include
+summary: |
+   Specifies what packages to include
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Private-Package: com.*`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/private_package.md --><br /><br />
 ## Private Package
 The method of inclusion is identical to the Export-Package header, the only difference is, is that these packages are not exported. This header will be copied to the manifest. If a package is selected by the export and private package headers, then the export takes precedence.
 

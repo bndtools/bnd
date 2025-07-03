@@ -1,9 +1,58 @@
 ---
 layout: default
+title: Export-Package  ::= export ( ',' export)*
 class: Header
-title: Export-Package  ::= export ( ',' export)* 
-summary: The Export-Package header contains a declaration of exported packages
+summary: |
+   The Export-Package header contains a declaration of exported packages
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Export-Package: org.osgi.util.tracker;version=1.3`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+### Options ###
+
+- `-noimport:`
+  - Example: `-noimport:=true`
+
+  - Values: `true,false`
+
+  - Pattern: `true|false|TRUE|FALSE`
+
+
+- `uses:`
+  - Example: `Is calculated by bnd`
+
+  - Pattern: `.*`
+
+
+- `mandatory:`
+  - Example: `mandatory:="bar,foo"`
+
+  - Pattern: `.*`
+
+
+- `include:`
+  - Example: `include:="Qux*"`
+
+  - Pattern: `.*`
+
+
+- `exclude:`
+  - Example: `exclude:="QuxImpl*,BarImpl"`
+
+  - Pattern: `.*`
+
+
+- `-import:`
+  - Example: ``
+
+  - Pattern: `.*`
+
+<!-- Manual content from: ext/export_package.md --><br /><br />
 
 The `Export-Package` header contains a declaration of exported packages. Also see [`-exportcontents`](/instructions/exportcontents.html).
 

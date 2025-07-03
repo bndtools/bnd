@@ -1,10 +1,17 @@
 ---
 layout: default
+title: -standalone repo-spec (, repo-spec )
 class: Run
-title: -standalone repo-spec (, repo-spec ) 
-summary: Disconnects the bndrun file from the workspace and defines its on repositories
-from: 3.0.1
+summary: |
+   Disconnects the bndrun file from the workspace and defines its on repositories
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-standalone=index.html;name=..., ...`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/standalone.md --><br /><br />
 
 The `-standalone` instruction in bnd allows you to transform a bndrun file into a standalone file that doesn't require a workspace. It is a merged property, meaning you can specify additional `repo-specs` using `-standalone.extra`. However, the presence of the exact `-standalone` flag is what determines if the bndrun file is standalone. Without the `-standalone` flag, even if `-standalone.extra` is specified, a workspace will still be required.
 

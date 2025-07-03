@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Workspace
 title: -distro REPO (',' REPO)
-summary: Resolve against pre-defined system capabilities 
+class: Workspace
+summary: |
+   Resolve against pre-defined system capabilities
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-distro: karaf-4.1.jar;version=file`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/distro.md --><br /><br />
 
 The `-distro` instruction is used in the case that your application must run in a host environment, for example Karaf. In such cases it is not possible to calculate the system capabilities from the framework and the run path. Each of these host environments has a specific set of capabilities that should be used as input to the resolver. 
 

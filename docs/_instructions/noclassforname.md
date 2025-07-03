@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Builder
 title: -noclassforname BOOLEAN
-summary: Do not add package reference to classes loaded with Class.forName(String).
+class: Builder
+summary: |
+   Do not add package reference to classes loaded with Class.forName(String).
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-noclassforname=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/noclassforname.md --><br /><br />
 
 Normally Bnd will examine the method bodies of classes looking for the instruction sequence:
 

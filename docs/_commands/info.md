@@ -1,22 +1,24 @@
 ---
 layout: default
-title:  info [options] 
-summary: Show key project variables
+title: info
+summary: |
+   Show key project variables
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   info [options] 
 
+#### Options: #
+- `[ -b --buildpath ]` 
+- `[ -c --classpath ]` 
+- `[ -d --dependsOn ]` 
+- `[ -p --project <string> ]` 
+- `[ -r --runbundles ]` 
+- `[ -s --sourcepath ]` 
+- `[ -v --vmpath ]` 
 
-## Synopsis
-
-## Options
-
-	[ -b, --buildpath ]        - 
-	[ -c, --classpath ]        - 
-	[ -d, --dependsOn ]        - 
-	[ -p, --project <string> ] - 
-	[ -r, --runbundles ]       - 
-	[ -s, --sourcepath ]       - 
-	[ -v, --vmpath ]           - 
+<!-- Manual content from: ext/info.md --><br /><br />
 
 ## Examples
 

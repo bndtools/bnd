@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Header
 title: Conditional-Package  PACKAGE-SPEC (',' PACKAGE-SPEC) *
-summary: Recursively add packages from the class path when referred and when they match one of the package specifications.
+class: Header
+summary: |
+   Recursively add packages from the class path when referred and when they match one of the package specifications.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Conditional-Package: com.*`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/conditional_package.md --><br /><br />
 
 	/**
 	 * Answer extra packages. In this case we implement conditional package. Any

@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -runtimeout DURATION
-summary:  
+class: Project
+summary: |
+   
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runsystemcapabilities=some.namespace; some.namespace=foo`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runtimeout.md --><br /><br />
 
 	public void prepare() throws Exception {
 		Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, "(.*).java"));

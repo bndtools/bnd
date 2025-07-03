@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -include PATH-SPEC ( ',' PATH-SPEC ) *
 class: Project
-title: -include PATH-SPEC ( ',' PATH-SPEC ) * 
-summary:  Include a number of files from the file system
+summary: |
+   Include a number of files from the file system
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-include: -${java.user}/.bnd`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/include.md --><br /><br />
 
 You can use `-include` as follows:
 
@@ -50,4 +58,3 @@ There are two possible options. The path/URL starts with a:
 	# Don't overwrite any existing properties (my.prop, will not be overwritten by my.prop in no.overwrite)
 	my.prop = don't overwrite
 	-include ~no.overwrite
-

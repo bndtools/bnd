@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Builder
 title: -dsannotations SELECTORS
-summary: Selects the packages that need processing for standard OSGi DS annotations.
+class: Builder
+summary: |
+   Selects the packages that need processing for standard OSGi DS annotations.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-dsannotations: *`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/dsannotations.md --><br /><br />
 
 The `-dsannotations` instruction tells **bnd** which bundle classes, if any, to search for [Declarative Services (DS)](https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html) annotations. **bnd** will then process those classes into DS XML descriptors.
 

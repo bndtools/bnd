@@ -1,9 +1,19 @@
 ---
 layout: default
+title: -runtrace BOOLEAN
 class: Launcher
-title: -runtrace BOOLEAN 
-summary: Trace the launched process in detail
+summary: |
+   Trace the launched process in detail
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runtrace: true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/runtrace.md --><br /><br />
 
 	public void run() throws Exception {
 		ProjectLauncher pl = getProjectLauncher();
