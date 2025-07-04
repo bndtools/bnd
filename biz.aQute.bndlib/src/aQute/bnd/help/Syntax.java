@@ -370,10 +370,12 @@ public class Syntax implements Constants {
 			CONTRACT + "!Servlet,*", null, Verifier.WILDCARDNAMEPATTERN),
 		new Syntax(CONSUMER_POLICY,
 			"Specify the default version bump policy for a consumer when a binary incompatible change is detected.",
-			CONSUMER_POLICY + "${range;[==,+)}", null, null),
+			CONSUMER_POLICY + "${range;[==,+)}", null, null,
+			"https://bnd.bndtools.org/instructions/consumer_policy.html"),
 		new Syntax(PROVIDER_POLICY,
 			"Specify the default version bump policy for a provider when a binary incompatible change is detected.",
-			PROVIDER_POLICY + "${range;[==,=+)}", null, null),
+			PROVIDER_POLICY + "${range;[==,=+)}", null, null,
+			"https://bnd.bndtools.org/instructions/provider_policy.html"),
 
 		new Syntax(CDIANNOTATIONS, "The " + CDIANNOTATIONS
 			+ " instruction tells bnd which bundle classes, if any, to search for OSGI CDI Integration (or plain CDI) annotation.",
@@ -386,7 +388,8 @@ public class Syntax implements Constants {
 				"noservicecapabilities=true", "true, false", Pattern.compile("true|false"))),
 
 		new Syntax(CONNECTION_SETTINGS, "Setting up the communications for bnd.",
-			CONNECTION_SETTINGS + "= ~/.bnd/connection-settings.xml", null, null),
+			CONNECTION_SETTINGS + "= ~/.bnd/connection-settings.xml", null, null,
+			"https://bnd.bndtools.org/instructions/connection-settings.html"),
 
 		new Syntax(CONDUIT, "Allows a bnd file to point to files which will be returned when the bnd file is build.",
 			CONDUIT + "= jar/osgi.jar", null, null),
@@ -442,7 +445,8 @@ public class Syntax implements Constants {
 			"The " + DSANNOTATIONS_OPTIONS
 				+ " instruction configures how DS component annotations are processed and what metadata is generated.",
 			DSANNOTATIONS_OPTIONS + ": version;minimum=1.2.0",
-			"(inherit|felixExtensions|extender|nocapabilities|norequirements|version)", null),
+			"(inherit|felixExtensions|extender|nocapabilities|norequirements|version)", null,
+			"https://bnd.bndtools.org/instructions/dsannotations-options.html"),
 
 		new Syntax(EXPORT, "The " + EXPORT + " instruction turns a bndrun file into its deployable format.",
 			EXPORT + ": launcher.jar", "FILE ( ';' PARAMETER )* ( ',' FILE ( ';' PARAMETER )* )*", null),
@@ -1014,10 +1018,12 @@ public class Syntax implements Constants {
 		if (helpurl == null) {
 			// auto-detect / heuristig
 			if (header.startsWith("-")) {
-				// instruction
-				return "https://bnd.bndtools.org/instructions/" + header.substring(1) + ".html";
+				// instruction most use dash (-) instead of underscore in
+				// filenames)
+				return "https://bnd.bndtools.org/instructions/" + header.substring(1)
+					.toLowerCase() + ".html";
 			} else {
-				// assume header
+				// assume header (headers use underscore in filenames)
 				return "https://bnd.bndtools.org/heads/" + header.toLowerCase()
 					.replace("-", "_") + ".html";
 			}
