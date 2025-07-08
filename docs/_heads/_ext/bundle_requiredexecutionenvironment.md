@@ -4,6 +4,18 @@ class: Header
 title: Bundle-RequiredExecutionEnvironment ::= ee-name ( ',' ee-name )*
 summary: The Bundle-RequiredExecutionEnvironment contains a comma-separated list of execution environ- ments that must be present on the OSGi framework. See Execution Environment on page 44. This header is deprecated. 
 ---
+
+# Bundle-RequiredExecutionEnvironment
+
+The `Bundle-RequiredExecutionEnvironment` header lists the execution environments required by the bundle, separated by commas. These environments must be present on the OSGi framework for the bundle to resolve. This header is deprecated in recent OSGi specifications.
+
+Example:
+
+```
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8, OSGi/Minimum-1.2
+```
+
+This header is optional and mainly used for legacy compatibility.
 	
 		verifyListHeader(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, EENAME, false);
 	
@@ -31,4 +43,3 @@ summary: The Bundle-RequiredExecutionEnvironment contains a comma-separated list
 			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
 			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
 																};
-	

@@ -5,6 +5,18 @@ title: Bundle-Version ::= version
 summary: The Bundle-SymbolicName header specifies a non-localizable name for this bundle. The bundle symbolic name together with a version must identify a unique bundle though it can be installed multiple times in a framework. The bundle symbolic name should be based on the reverse domain name convention.
 ---
 
+# Bundle-Version
+
+The `Bundle-Version` header specifies the version of the bundle. If this header is not provided, a default version of `0` will be set. The version must follow the OSGi versioning scheme: `major.minor.micro.qualifier`.
+
+Example:
+
+```
+Bundle-Version: 1.2.3
+```
+
+This header is important for managing updates and dependencies between bundles.
+
 The version of the bundle. If no such header is provided, a version of 0 will be set.	
 	
 	
@@ -37,4 +49,3 @@ The version of the bundle. If no such header is provided, a version of 0 will be
 		
 					if (main.getValue(BUNDLE_VERSION) == null)
 				main.putValue(BUNDLE_VERSION, "0");
-		

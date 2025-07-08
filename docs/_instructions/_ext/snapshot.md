@@ -5,6 +5,18 @@ title: -snapshot STRING
 summary: String to substitute for "SNAPSHOT" in the bundle version's qualifier
 ---
 
+# -snapshot
+
+The `-snapshot` instruction specifies a string to substitute for "SNAPSHOT" in the bundle version's qualifier. This is useful for customizing versioning schemes during the build process.
+
+Example:
+
+```
+-snapshot: 20250708
+```
+
+If the bundle version's qualifier is "SNAPSHOT" or ends with "-SNAPSHOT", the specified string will be used instead.
+
 When the bundle version's qualifier equals "SNAPSHOT" or ends with "-SNAPSHOT", the STRING
 value of the `-snapshot` instruction is substituted for "SNAPSHOT". The STRING value of
 the empty string will remove the qualifier if it equals "SNAPSHOT" or

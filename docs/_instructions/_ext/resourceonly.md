@@ -5,14 +5,15 @@ title: -resourceonly  BOOLEAN
 summary: Ignores warning if the bundle only contains resources and no classes. 
 ---
 
-	public boolean isNoBundle() {
-		return isTrue(getProperty(RESOURCEONLY)) || isTrue(getProperty(NOMANIFEST));
-	}
+# -resourceonly
 
-	/**
-	 * @return
-	 */
-	boolean isResourceOnly() {
-		return isTrue(getProperty(RESOURCEONLY));
-	}
+The `-resourceonly` instruction tells bnd to ignore warnings if the bundle contains only resources and no classes. This is useful for bundles that are intended to provide configuration files, images, or other non-code assets.
+
+Example:
+
+```
+-resourceonly: true
+```
+
+When set, bnd will not warn about the absence of classes in the bundle.
 

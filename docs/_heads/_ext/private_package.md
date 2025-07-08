@@ -4,6 +4,19 @@ class: Header
 title: Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )* 
 summary: Specifies what packages to include
 ---
+
+# Private-Package
+
+The `Private-Package` header specifies which packages should be included in the bundle but not exported. The syntax and behavior are similar to the `Export-Package` header, but these packages are private to the bundle and not visible to other bundles.
+
+Example:
+
+```
+Private-Package: com.example.internal.*
+```
+
+If a package is selected by both the export and private package headers, the export takes precedence. bnd will merge split packages by default, but you can control this with the `-split-package:` directive.
+
 ## Private Package
 The method of inclusion is identical to the Export-Package header, the only difference is, is that these packages are not exported. This header will be copied to the manifest. If a package is selected by the export and private package headers, then the export takes precedence.
 
@@ -138,4 +151,3 @@ For example:
 		}
 		return false;
 	}
-	

@@ -5,6 +5,18 @@ title: -runjdb  ADDRESS
 summary: Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later. 
 ---
 
+# -runjdb
+
+The `-runjdb` instruction specifies a JDB (Java Debugger) socket transport address to use when launching the application outside a debugger. This allows the debugger to attach to the running process for debugging purposes.
+
+Example:
+
+```
+-runjdb: localhost:10001
+```
+
+The address can include a host name or IP address and a port. This is useful for remote debugging scenarios.
+
 This instruction launches the VM with the
 
     -agentlib:jdwp=transport=dt_socket,server=y,address=<address>,suspend=y

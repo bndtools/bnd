@@ -1,12 +1,18 @@
 ---
 layout: default
-class: Builder
+class: Project
 title: -nobundles  BOOLEAN
 summary:  Do not build the project.
 ---
 
-Bnd will skip building the project with this instruction.
+# -nobundles
 
-For example:
+The `-nobundles` instruction tells bnd to skip building the project. This can be useful for projects that only provide resources or configuration, or for disabling builds in certain environments.
 
-	-nobundles: true
+Example:
+
+```
+-nobundles: true
+```
+
+When this instruction is set to `true`, bnd will not produce any output JARs for the project.
