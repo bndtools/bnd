@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -consumer-policy VERSION-MASK
-summary: Specify the default version bump policy for a consumer when a binary incompatible change is detected. 
+class: Project
+summary: |
+   Specify the default version bump policy for a consumer when a binary incompatible change is detected.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-consumer-policy${range;[==,+)}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/consumer_policy.md --><br /><br />
 
 The `-consumer-policy` instruction defines the semantic versioning policy to be used when a type is a _consumer_. A consumer is in general a type that is implemented by classes that are just users of the package. In contrast, a _provider_ is the party that is basically responsible for the contract defined in the package. For example, when you implement Event Admin, the org.osgi.service.event package is your responsibility so the types you need to implement like `EventAdmin` are _provider types_. (These types are annotated with a `@ProviderType` annotation.) A casual user of the Event Admin service will be a consumer, the `EventHandler` type is therefore annotated with a`@ConsumerType`.
 

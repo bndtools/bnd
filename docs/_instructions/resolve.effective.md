@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Workspace
 title: -resolve.effective qname (',' qname )
-summary: Set the use effectives for the resolver
+class: Workspace
+summary: |
+   Set the use effectives for the resolver
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-resolve.effective=resolve,active`
+
+- Values: `qname (',' qname )`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/resolve.effective.md --><br /><br />
 
 Each requirement and capability has an `effective` or is `effective=resolve`. An effective of `resolve` is always processed by the resolver.However, in (very) special cases it is necessary to provide more rules.
 

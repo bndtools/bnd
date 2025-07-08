@@ -1,9 +1,17 @@
 ---
 layout: default
+title: Bundle-Version ::= version
 class: Header
-title: Bundle-Version ::= version 
-summary: The Bundle-SymbolicName header specifies a non-localizable name for this bundle. The bundle symbolic name together with a version must identify a unique bundle though it can be installed multiple times in a framework. The bundle symbolic name should be based on the reverse domain name convention.
+summary: |
+   The Bundle-SymbolicName header specifies a non-localizable name for this bundle. The bundle symbolic name together with a version must identify a unique bundle though it can be installed multiple times in a framework. The bundle symbolic name should be based on the reverse domain name convention.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bundle-Version: 1.23.4.build200903221000`
+
+- Pattern: `\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+<!-- Manual content from: ext/bundle_version.md --><br /><br />
 
 The version of the bundle. If no such header is provided, a version of 0 will be set.	
 	

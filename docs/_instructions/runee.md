@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -runee EE
 class: Builder
-title: -runee EE   
-summary:  Define the  runtime Execution Environment capabilities, default Java 6.
+summary: |
+   Define the  runtime Execution Environment capabilities, default Java 6.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runee=JavaSE-1.8`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runee.md --><br /><br />
 The `-runee` instruction adds the capabilities of an _execution environment_ to the system capabilities. Every Java edition has a set of standard packages and OSGi has also defined a number of execution environments that define which packages can be found. The `-runee` allows these capabilities to be defined by using the name of the execution environment. Additionally, this instruction also adds an `osgi.ee` requirement with the given name and version. You can use the following execution environment names:
 
 	OSGi/Minimum-1.0
@@ -25,4 +33,3 @@ The `-runee` instruction adds the capabilities of an _execution environment_ to 
 An example:
 
 	-runee: JavaSE-1.8
-

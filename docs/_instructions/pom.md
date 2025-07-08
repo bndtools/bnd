@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Processor
 title: -pom BOOLEAN | PROPERTIES
-summary: Generate a maven pom in the JAR
+class: Processor
+summary: |
+   Generate a maven pom in the JAR
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-pom=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/pom.md --><br /><br />
 
 The `-pom` instruction can generate a pom derived from the manifest and store it in the
 bundle. The groupId can be specified by the `groupid` key which defaults to the value of
@@ -121,4 +131,3 @@ Generates the following pom in `META-INF/maven/pom.xml`:
                     </developer>
                 </developers>
     </project>
-

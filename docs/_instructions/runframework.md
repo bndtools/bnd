@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Launcher
 title: -runframework ( 'none' | 'services' | ANY )?
-summary: Sets the type of framework to run. If 'none', an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name.
+class: Launcher
+summary: |
+   Sets the type of framework to run. If 'none', an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runfw: none`
+
+- Values: `(none | services | ANY)`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runframework.md --><br /><br />
 
 Note: confusing name due to history, -runfw specifies the framework
 

@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Project
 title: -eeprofile 'auto' | PROFILE +
-summary: Provides control over what Java 8 profile to use.
+class: Project
+summary: |
+   Provides control over what Java 8 profile to use.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-eeprofile: name="a,b,c"`
+
+- Values: `name="a,b,c", auto`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/eeprofile.md --><br /><br />
 	
 	
 		/**

@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -buildrepo  repo ( ',' repo ) *
-summary:  After building a JAR, release the JAR to the given repositories.  
+class: Project
+summary: |
+   After building a JAR, release the JAR to the given repositories.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-buildrepo=Local`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/buildrepo.md --><br /><br />
 
 After bnd has build a project it creates 0 or more JARs. If the `-buildrepo` is set, the JARs are `put` into the given repositories. The syntax is as follows:
 
@@ -23,4 +31,3 @@ For example:
 	-buildrepo: Local
 
 The install process is taking place in-line with the build process. It is therefore recommended to only use this for local (i.e. file system based) installs.
-

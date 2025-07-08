@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -preprocessmatchers SELECTOR
 class: Builder
-title: -preprocessmatchers SELECTOR 
-summary: Specify which files can be preprocessed 
+summary: |
+   Specify which files can be preprocessed
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-preprocessmatchers=!OSGI-INF/*,* `
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/preprocessmatchers.md --><br /><br />
 
 During the [-includeresource](includeresource.html) processing it is possible to pre-process the files that are copied into the JAR by enclosing the clause in curly braces (`{}`). Since this can create havoc when applied to text files bnd will attempt to skip _binary_ files. To skip binary files, bnd uses a pre-process matchers list. This list is a standard _selector_. The default is:
  
@@ -14,4 +22,3 @@ When bnd copies a file from a source to a directory it will match that name agai
 The default can be overridden with the `-preprocessmatchers` instruction.
 
     -preprocessmatchers:    !OSGI-INF/*,* 
-

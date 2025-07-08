@@ -1,9 +1,34 @@
 ---
 layout: default
+title: -make
 class: Project
-title: -make   
-summary:  If a resource is not found, specify a recipe to make it.
+summary: |
+   If a resource is not found, specify a recipe to make it.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-make: (*).jar;type=bnd; recipe="bnd/$1.bnd"`
+
+- Pattern: `.*`
+
+### Directives ###
+
+- `type`
+  - Example: `type=bnd`
+
+  - Values: `bnd`
+
+  - Pattern: `.*`
+
+
+- `recipe`
+  - Example: `recipe="bnd/$1.bnd"`
+
+  - Values: `bnd`
+
+  - Pattern: `.*`
+
+<!-- Manual content from: ext/make.md --><br /><br />
 
 		package aQute.bnd.make;
 		

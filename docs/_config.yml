@@ -47,8 +47,7 @@ exclude:
   - 'LICENSE'
   - '.gitignore'
   - '.project'
-  - 'build.sh'
-  - 'run.sh'
+  - '*.sh'
   - '/examples'
   - '/releases/*/CNAME'
   - '/releases/*/favicon.ico'
@@ -57,3 +56,4 @@ exclude:
   - '/vendor'
   - '/.settings'
   - 'pagefind'
+

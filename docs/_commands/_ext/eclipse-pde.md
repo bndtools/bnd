@@ -1,9 +1,4 @@
----
-layout: default
-title:  eclipse pde [options] <[repo-dir]> <[...]> 
-summary: Import PDE projects into a bnd workspace 
-bnd: 4
----
+
 
 _THIS IS WORK IN PROGRESS_
 
@@ -48,15 +43,6 @@ Although it is a very decent start, this analysis is not perfect
 * The workspace/repository can have multiple resources with different version. In that case the latest version is selected. (Otherwise no version is specified which defaults to the lowest available version for the build and highest for the test.)
 * Dependencies not imported in the Java file are not detected. This happens when you get an object of a non imported type but directly call a method on it.
 
-## Synopsis
-
-## Options
-
-	-w, --workspace <dir>           - The bnd workspace directory
-	-c, --clean                     - Clean the project directory before converting
-	-s, --set                       - Set Eclipse workingset
-	-i, --instructions <file.bnd>*  - Control file what to convert and augment
-	-r, --recurse                   - Show references to other classes/packages (>)
 
 ## Example
 

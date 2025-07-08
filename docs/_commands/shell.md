@@ -1,8 +1,19 @@
 ---
 layout: default
-title:  shell [options]
-summary: Open a shell on a project, workspace, or plain bnd defaults and exercise commands and macros 
+title: shell [options]
+summary: |
+   Open a shell on a project, workspace, or plain bnd defaults and exercise commands and macros
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
+
+### Synopsis: #
+	   shell [options]  ...
+
+
+#### Options: #
+- `[ -p --project <string> ]` Identify another project
+
+<!-- Manual content from: ext/shell.md --><br /><br />
 
 ## Description
 
@@ -33,11 +44,3 @@ This raises the question: What properties are there? The shell also supports bnd
     javac.source                             1.8
     javac.target                             1.8
     >
-
-## Synopsis
-
-## Options
-
-    -p, --project  path-to-project
-
-## Examples

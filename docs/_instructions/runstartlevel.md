@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -runstartlevel ( order | begin | step )*
-summary:  Assign a start level to each run-bundle after resolving 
+class: Project
+summary: |
+   Assign a start level to each run-bundle after resolving
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runstartlevel: '-runstartlevel order=leastdependenciesfirst, begin=1, step=1`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runstartlevel.md --><br /><br />
 
 After a [resolve][1] the resolver calculates a number of resources that are mapped to bundles. This mapping can
 include ordering and assigned startlevels. The basic instruction that parameterizes this is `-runstartlevel`. 

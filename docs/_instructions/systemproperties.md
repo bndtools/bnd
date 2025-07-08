@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -systemproperties PROPERTIES
 class: Workspace
-title: -systemproperties PROPERTIES 
-summary: These system properties are set in the local JVM when a workspace is started. This was mainly added to allow one to set JVM options via system properties.  
+summary: |
+   These system properties are set in the local JVM when a workspace is started. This was mainly added to allow one to set JVM options via system properties.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-systemproperties= foo=3, bar=4`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/systemproperties.md --><br /><br />
 
 	public Workspace(File dir, String bndDir) throws Exception {
 		super(getDefaults());

@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -upto VERSION
 class: Project
-title: -upto VERSION 
-summary: Specify the highest compatibility version, will disable any incompatible features added after this version. 
+summary: |
+   Specify the highest compatibility version, will disable any incompatible features added after this version.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-upto: 2.3.1`
+
+- Pattern: `(\d{1,10})(\.(\d{1,10})(\.(\d{1,10})(\.([-\w]+))?)?)?`
+
+<!-- Manual content from: ext/upto.md --><br /><br />
 
 /**
 	 * This method is about compatibility. New behavior can be conditionally

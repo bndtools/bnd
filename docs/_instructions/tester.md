@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -tester REPO-SPEC
 class: Project
-title: -tester REPO-SPEC 
-summary: Species the tester (bundle) that is supposed to test the code. The default is biz.aQute.tester  
+summary: |
+   Species the tester (bundle) that is supposed to test the code. The default is biz.aQute.tester
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-tester=biz.aQute.tester;version=latest`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/tester.md --><br /><br />
 
 The `-tester` instruction defines what bundle is used to setup testing. This bundle must have a Tester-Plugin that will setup the test environment.
 

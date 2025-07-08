@@ -1,10 +1,19 @@
 ---
 layout: default
-class: Ant
 title: -noee  BOOLEAN
-since: 2.3
-summary:  Donot add an automatic requirement on an EE capability based on the class format.
+class: Ant
+summary: |
+   Donot add an automatic requirement on an EE capability based on the class format.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-noee=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/noee.md --><br /><br />
 
 			//
 			// We want to add the minimum EE as a requirement

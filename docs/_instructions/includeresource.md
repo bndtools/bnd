@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Builder & Executable
 title: -includeresource iclause
-summary:  Include resources from the file system
+class: Builder & Executable
+summary: |
+   Include resources from the file system
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-includeresource: lib/=jar/, {preprocess.txt}, 'literal';literal;=true,`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/includeresource.md --><br /><br />
 
 The purpose of `-includeresource` is to fill the JAR with non-class resources. In general these come from the file system. For example, today it is very common to have these type of resources in `src/main/resources`. This pattern can easily be simulated by bnd with the `-includeresource` instruction. However, since in OSGi the packaging is so important the `-includeresource` contains a number of options to minimize files on disk and speed up things.
 

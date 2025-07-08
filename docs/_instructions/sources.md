@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Builder
 title: -sources  BOOLEAN
-summary: Include the source code (if available on the -sourcepath) in the bundle at OSGI-OPT/src 
+class: Builder
+summary: |
+   Include the source code (if available on the -sourcepath) in the bundle at OSGI-OPT/src
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-sources=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/sources.md --><br /><br />
 
 	public Resource make(Builder builder, String destination, Map<String,String> argumentsOnMake) throws Exception {
 		String type = argumentsOnMake.get("type");

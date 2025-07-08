@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -runstorage FILE
-summary:  Define the directory to use for the framework's work area.
+class: Project
+summary: |
+   Define the directory to use for the framework's work area.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runstorage= foo`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/runstorage.md --><br /><br />
 
 		storageDir = project.getRunStorage();
 		if (storageDir == null) {

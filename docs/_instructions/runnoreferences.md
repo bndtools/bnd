@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Launcher
 title: -runnoreferences  BOOLEAN
-summary: Do not use the `reference:` URL scheme for installing a bundle in the installer.
+class: Launcher
+summary: |
+   Do not use the `reference:` URL scheme for installing a bundle in the installer.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-runnoreferences: true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/runnoreferences.md --><br /><br />
 
 On non-Windows machines, the more efficient `reference:` URLs are used by default - use `-runnoreferences: true` to override this. On Windows this instruction is ignored - `reference:` URLs are never used due to Windows being more obstinate about open files.
 

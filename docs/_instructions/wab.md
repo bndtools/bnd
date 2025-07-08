@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Builder
 title: -wab FILE ( ',' FILE )*
-summary: Create a Web Archive Bundle (WAB) or a WAR
+class: Builder
+summary: |
+   Create a Web Archive Bundle (WAB) or a WAR
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-wab=static-pages/`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/wab.md --><br /><br />
 In OSGi Enterprise 4.2 the concept of Web Archive Bundles were introduced. Web Archive Bundles are 100% normal bundles following all the rules of OSGi. Their speciality is that they can be mapped to a web server following several of the rules of Java Enterprise Edition's Servlet model. The big difference is that the WARs of the servlet model have a rather strict layout of their archive because the servlet container also handles class loading. In OSGi, the class loading is very well specified and it would therefore be wrong to create special rules.
 
 However, the OSGi supports the Bundle-Classpath header. This header allows the organization of the internal layout. It turns out that it is possible to create a valid Web Application Bundle (WAB) that is also a valid Web ARchive (WAR). Being deploy an archive both to OSGi and an application server obviously has advantages. bnd therefore supports a number of instructions that make it easy to create these dual mode archives.

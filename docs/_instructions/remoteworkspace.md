@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Project
 title: -remoteworkspace (true|false)
-summary: Enable the workspace to server remote requests from the local system, needed for Launchpad
+class: Project
+summary: |
+   Enable the workspace to server remote requests from the local system, needed for Launchpad
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-remoteworkspace: true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/remoteworkspace.md --><br /><br />
 
 Launchpad is a library that enables testing in local JUnit settings. Launchpad needs access to the enclosing 
 bnd workspace. However, this workspace runs in another process then the test code. Launchpad will therefore

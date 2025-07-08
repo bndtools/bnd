@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Workspace
 title: -resolve.preferences qname ( ',' qname )
-summary: Override the default order and selection of repositories
+class: Workspace
+summary: |
+   Override the default order and selection of repositories
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-resolve.preferences=com.example.bundle.most.priority`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/resolve.preferences.md --><br /><br />
 
 The resolver normally finds a lost of capabilities that match a given requirement. This list has an order defined by the context. However, in certain occasions this order is not the desired order. The `-resolve.preferences` allows you to override this context order. It is an ordered list of Bundle Symbolic Names. The list of capabilities will always be adjusted to have the bundles in the `-resolver.preferences` always first when they are present.
 

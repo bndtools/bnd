@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -testpackages PACKAGE-SPEC ( ',' PACKAGE-SPEC )
 class: Project
-title: -testpackages PACKAGE-SPEC ( ',' PACKAGE-SPEC ) 
-summary:  
+summary: |
+   
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-testpackages=test;presence:=optional`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/testpackages.md --><br /><br />
 
 	private void doExpand(Jar dot) {
 

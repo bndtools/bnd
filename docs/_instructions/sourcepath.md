@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -sourcepath
 class: Builder
-title: -sourcepath 
-summary: List of directory names that used to find sources. 
+summary: |
+   List of directory names that used to find sources.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-sourcepath:= src, test`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/sourcepath.md --><br /><br />
 
 
 	public Collection<File> getSourcePath() {

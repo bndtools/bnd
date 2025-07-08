@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...
 class: Project
-title: -fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ... 
-summary: Fixup errors and warnings. 
+summary: |
+   Fixup errors and warnings.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-fixupmessages='Version mismatch';replace:='************* ${@}';restrict:=error`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/fixupmessages.md --><br /><br />
 
 The `-fixupmessages` instruction is intended to _fixup_ the errors and warnings. It allows you to remove errors and/or warnings, turn errors into warnings, and turn warnings into errors. With this instruction you can fail a build based on a warning or succeed a build that runs into errors.
 

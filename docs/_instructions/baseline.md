@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -baseline selector
-summary: Control what bundles are enabled for baselining and optionally specify the baseline version or file.
+class: Project
+summary: |
+   Control what bundles are enabled for baselining and optionally specify the baseline version or file.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-baseline: com.example.*`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/baseline.md --><br /><br />
 _Baselining_ uses the previous revision of a project with a _baseline_ bundle to detect any changes in semantic versioning using the rules of binary compatibility. The `-baseline` instruction enables baselining for one or more symbolic names, the instruction takes a _selector_ as input. Each bundle that is being build is held against this selector and if it matches then it is baselined. The following example will baseline any bundle whose name starts with `com.example.`. 
 
 	-baseline: com.example.*

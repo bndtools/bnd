@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Builder
 title: -includepackage PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*
-summary:  Include a number of packages from the class path
+class: Builder
+summary: |
+   Include a number of packages from the class path
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-includepackage: -includepackage com.example.foo.*`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/includepackage.md --><br /><br />
 
 The `-includepackage` instruction falls in the family of instructions to pull in packages from the current class path. The
 instructions lists one of more package specifications that can contain wildcards. Any attributes or directives are 

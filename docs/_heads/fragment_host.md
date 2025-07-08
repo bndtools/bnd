@@ -1,9 +1,32 @@
 ---
 layout: default
+title: Fragment-Host       ::= bundle-description
 class: Header
-title: Fragment-Host       ::= bundle-description 
-summary: The Fragment-Host header defines the host bundles for this fragment.
+summary: |
+   The Fragment-Host header defines the host bundles for this fragment.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Fragment-Host: org.eclipse.swt; bundle-version="[3.0.0,4.0.0)"`
+
+- Pattern: `.*`
+
+### Options ###
+
+- `extension:`
+  - Example: `extension:=framework`
+
+  - Values: `framework,bootclasspath`
+
+  - Pattern: `framework|bootclasspath`
+
+
+- `bundle-version`
+  - Example: `bundle-version=1.3`
+
+  - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+<!-- Manual content from: ext/fragment_host.md --><br /><br />
 
 The Fragment-Host manifest header links the fragment to its potential _hosts_. A fragment bundle is loaded in the 
 same class loader as the _host_ that it will be attached to in runtime. When a fragment is attached to its host,

@@ -1,9 +1,19 @@
 ---
 layout: default
+title: -privatepackage PACKAGE-SPEC
 class: Builder
-title: -privatepackage PACKAGE-SPEC 
-summary: Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest.
+summary: |
+   Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-privatepackage: com.example.*, foo.bar`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/privatepackage.md --><br /><br />
 
 
 	/**

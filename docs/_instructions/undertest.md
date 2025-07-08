@@ -1,9 +1,15 @@
 ---
 layout: default
+title: -undertest true
 class: Project
-title: -undertest true 
-summary:  Will be set by the project when it builds a JAR in test mode, intended to be used by plugins.
+summary: |
+   Will be set by the project when it builds a JAR in test mode, intended to be used by plugins.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Pattern: `true|false`
+
+<!-- Manual content from: ext/undertest.md --><br /><br />
 
 /**
 	 * Build without doing any dependency checking. Make sure any dependent

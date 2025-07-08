@@ -168,8 +168,8 @@ You can add new entries by:
 
 [Nexus]: https://www.sonatype.com/products/repository-pro
 [Artifactory]: https://www.jfrog.com/open-source/
-[-maven-release]: /instructions/maven-release.html
+[-maven-release]: /instructions/maven_release.html
 [-snapshot]: /instructions/snapshot.html
 [-pom]: /instructions/pom.html
-[-connection-settings]: /instructions/connection-settings.html
+[-connection-settings]: /instructions/connection_settings.html
 [-buildrepo]: /instructions/buildrepo.html

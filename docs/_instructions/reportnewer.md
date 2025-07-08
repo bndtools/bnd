@@ -1,9 +1,19 @@
 ---
 layout: default
+title: -reportnewer BOOLEAN
 class: Project
-title: -reportnewer BOOLEAN 
-summary: Report any entries that were added to the build since the last JAR was made.
+summary: |
+   Report any entries that were added to the build since the last JAR was made.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-reportnewer=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/reportnewer.md --><br /><br />
 
 
 
@@ -22,4 +32,3 @@ summary: Report any entries that were added to the build since the last JAR was 
 				warning(sb.toString());
 		}
 	}
-

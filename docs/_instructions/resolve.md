@@ -1,9 +1,56 @@
 ---
 layout: default
-class: Workspace
 title: -resolve (manual|auto|beforelaunch|batch|cache)
-summary: Defines when/how resolving is done to calculate the -runbundles
+class: Workspace
+summary: |
+   Defines when/how resolving is done to calculate the -runbundles
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-resolve: '-resolve manual`
+
+- Values: `manual,auto,beforelaunch,batch,cache,never`
+
+- Pattern: `(manual|auto|beforelaunch|batch)`
+
+### Directives ###
+
+- `manual`
+  - Values: `manual`
+
+  - Pattern: `\Qmanual\E`
+
+
+- `auto`
+  - Values: `auto`
+
+  - Pattern: `\Qauto\E`
+
+
+- `beforelaunch`
+  - Values: `beforelaunch`
+
+  - Pattern: `\Qbeforelaunch\E`
+
+
+- `batch`
+  - Values: `batch`
+
+  - Pattern: `\Qbatch\E`
+
+
+- `cache`
+  - Values: `cache`
+
+  - Pattern: `\Qcache\E`
+
+
+- `never`
+  - Values: `never`
+
+  - Pattern: `\Qnever\E`
+
+<!-- Manual content from: ext/resolve.md --><br /><br />
 
 The bnd workspace can use a _resolver_ to calculate the content of the `-runbundles` instruction based on a set of _initial requirements_. The bndtools GUI can manually resolve the initial requirements but through the `-resolve` instruction it is possible to calculate the `-runbundles` when the file is saved or just before the `-runbundles` are used in the launch.
 

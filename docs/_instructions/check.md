@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Analyzer
 title: -check 'ALL' | ( 'IMPORTS' | 'EXPORTS' ) *
-summary: Enable additional checking
+class: Analyzer
+summary: |
+   Enable additional checking
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-check=EXPORTS`
+
+- Values: `(ALL|EXPORTS|IMPORTS)`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/check.md --><br /><br />
 
 Adding extra checks to bnd will break existing builds and some people get a tad upset about that. However, some checks are actually really valuable. So this instruction is a contract. New checks that can break build will add additional enums to this list. So in theory builds should not be broken. Currently we have the following values defined
 
@@ -12,4 +22,3 @@ Adding extra checks to bnd will break existing builds and some people get a tad 
 * `IMPORTS` – Enable checking of imports. If an import is not exported by any bundle on the `-buildpath` then we have a bit of a problem. Trying to resolve the current bundle on a framework will almost certainly fail. If you really need an import but have no export then you can get rid of the warning by explicitly importing it in Import-Package. For example:
 
 	Import-Package: i.do.no.exist;version=@1.0.0, *
-

@@ -1,34 +1,30 @@
 ---
 layout: default
-title:  print [options] <[jar-file]...>
-summary: Provides detailed view of the bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest. 
+title: print
+summary: |
+   Provides detailed view of the JAR / bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   print [options]  <jar-file...>
 
+#### Options: #
+- `[ -a --api ]` Print the api usage. This shows the usage constraints on exported packages when only public API is used.
+- `[ -b --by ]` Transposed uses. Will show for each known package who it is used by.
+- `[ -c --capabilities ]` Show the capabilities
+- `[ -C --component ]` Show components in detail
+- `[ -f --full ]` Print all except list
+- `[ -i --impexp ]` List the imports exports, versions and ranges
+- `[ -j --java ]` Keep references to java in --api, --uses, and --usedby.
+- `[ -l --list ]` List the resources
+- `[ -m --manifest ]` Print the manifest.
+- `[ -t --typemeta ]` Show any metatype data
+- `[ -u --uses ]` Show for each contained package, what other package it uses. Is either an private, exported, or imported package
+- `[ -v --verify ]` Before printing, verify that the bundle is correct.
+- `[ -x --xport ]` Show all packages, not just exported, in the API view
 
-## Synopsis
-
-## Options
-    [ -all ]                   - Do all (this is the default)
-    [ -a, --api ]              - Print the api usage. This shows the usage
-                                  constraints on exported packages when only
-                                  public API is used.
-    [ -b, --by ]               - Transposed uses. Will show for each known
-                                  package who it is used by.
-    [ -c, --component ]        - Show components in detail
-    [ -i, --impexp ]           - List the imports exports, versions and ranges
-    [ -j, --java ]             - Keep references to java in --api, --uses, and
-                                  --usedby.
-    [ -l, --list ]             - List the resources
-    [ -m, --manifest ]         - Print the manifest.
-    [ -t, --typemeta ]         - Show any metatype data
-    [ -u, --uses ]             - Show for each contained package, what other
-                                  package it uses. Is either an private, exported,
-                                  or imported package
-    [ -v, --verify ]           - Before printing, verify that the bundle is
-                                  correct.
-    [ -x, --xport ]            - Show all packages, not just exported, in the API
-                                  view
+<!-- Manual content from: ext/print.md --><br /><br />
 
 ## Examples
 

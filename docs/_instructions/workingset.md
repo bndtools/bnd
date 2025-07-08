@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Workspace
 title: -workingset PARAMETER ( ',' PARAMETER ) *
-summary: Group the workspace into different working sets
+class: Workspace
+summary: |
+   Group the workspace into different working sets
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-workingset=Implementations, Drivers`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/workingset.md --><br /><br />
 
 A _workingset_ is a name for a group of projects that have something in common. You can _tag_ a project for one or more workingsets using the `-workingset` instruction in the `bnd.bnd` file. For example, to make a project member of the `Implementations` and `Drivers` working sets you can enter the following in a bnd file:
 
@@ -42,4 +50,3 @@ In some cases it is necessary to maintain a working set manual. Such a workingse
 create a manual working set, use a name that is outside the specified NAME pattern. For example, use a name that starts with a 
 dot (`.`) like `.Private`. Since you cannot use these names in the `-workingset` instruction (they generate an error)
 bnd will never look at workingsets with such a name.
-

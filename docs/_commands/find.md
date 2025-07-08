@@ -1,18 +1,19 @@
 ---
 layout: default
-title:   find [options] <[file]...> 
-summary:  Go through the exports and/or imports and match the given exports/imports globs. If they match, print the file, package and version.
+title: find
+summary: |
+   Go through the exports and/or imports and match the given exports/imports globs. If thet match print the file, package and version.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   find [options]  <[file]...>
 
+#### Options: #
+- `[ -e --exports <glob;> ]` Glob expression on the exports.
+- `[ -i --imports <glob;> ]` Glob expression on the imports.
 
-## Synopsis
-
-## Options
-
-    [ -e, --exports <glob;> ]  - Glob expression on the exports.
-    [ -i, --imports <glob;> ]  - Glob expression on the imports.
-
+<!-- Manual content from: ext/find.md --><br /><br />
 ## Examples
 
     biz.aQute.bnd (master)$ bnd find -e *service* generated/*.jar

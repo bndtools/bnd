@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -removeheaders KEY-SELECTOR ( '.' KEY-SELECTOR ) *
-summary: Remove matching headers from the manifest. 
+class: Project
+summary: |
+   Remove matching headers from the manifest.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-removeheaders=FOO_.*,Proprietary`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/removeheaders.md --><br /><br />
 
 		// Remove all the headers mentioned in -removeheaders
 			Instructions instructions = new Instructions(getProperty(REMOVEHEADERS));

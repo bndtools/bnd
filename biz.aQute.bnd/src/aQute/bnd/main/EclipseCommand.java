@@ -6,6 +6,7 @@ import java.util.List;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.main.bnd.workspaceOptions;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
@@ -13,6 +14,12 @@ import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 
 public class EclipseCommand extends Processor {
+
+	@Description("Show info about the current directory's eclipse project")
+	interface eclipseOptions extends workspaceOptions {
+		@Description("Path to the project")
+		String dir();
+	}
 
 	private final bnd bnd;
 

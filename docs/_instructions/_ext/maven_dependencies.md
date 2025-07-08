@@ -69,7 +69,7 @@ Change the dependency scope for the artifact. The default dependency scope is sp
 
 [-pom]: pom.html
 [-buildpath]: buildpath.html
-[-maven-scope]: maven-scope.html
+[-maven-scope]: maven_scope.html
 [MavenBndRepository]: ../plugins/maven.html
 [BndPomRepository]: ../plugins/pomrepo.html
 [merged instruction]: ../chapters/820-instructions.html#merged-instructions

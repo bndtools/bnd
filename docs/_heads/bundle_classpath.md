@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Header
 title: Bundle-ClassPath ::= entry ( ',' entry )*
-summary: The Bundle-ClassPath header defines a comma-separated list of JAR file path names or directories (inside the bundle) containing classes and resources. The full stop ('.' \u002E) specifies the root di- rectory of the bundle's JAR. The full stop is also the default
+class: Header
+summary: |
+   The Bundle-ClassPath header defines a comma-separated list of JAR file path names or directories (inside the bundle) containing classes and resources. The full stop ('.' \u002E) specifies the root di- rectory of the bundle's JAR. The full stop is also the default
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bundle-ClassPath: /lib/libnewgen.so, .`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/bundle_classpath.md --><br /><br />
 	
 Defines the internal bundle class path, is taken into accont by bnd. That is, classes will be analyzed according to this path. The files/directories on the Bundle-ClassPath must be present in the bundle. Use Include-Resource to include these jars/directories in your bundle. In general you should not use Bundle-ClassPath since it makes things more complicated than necessary. Use the @ option in the Include-Resource to unroll the jars into the JAR.
 

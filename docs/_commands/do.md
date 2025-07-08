@@ -1,18 +1,20 @@
 ---
 layout: default
-title:      do [options] ... 
-summary: Execute a file based on its extension. Supported extensions are bnd (build), bndrun (run), and jar (print) 
+title: do
+summary: |
+   Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: #
+	   do [options]  ...
 
 
-## Synopsis
+#### Options: #
+- `[ -f --force ]` Force even when there are errors
+- `[ -o --output <string> ]` The output file
 
-## Options
-
-	[ -f, --force ]            - Force even when there are errors
-	[ -o, --output <string> ]  - The output file
-
+<!-- Manual content from: ext/do.md --><br /><br />
 
 ## Examples
 

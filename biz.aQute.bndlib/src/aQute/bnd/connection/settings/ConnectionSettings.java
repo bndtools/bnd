@@ -66,7 +66,7 @@ public class ConnectionSettings {
 		.getUserHomeBnd("connection-settings.xml")
 		.getAbsolutePath();
 	private static final String					CONNECTION_SETTINGS				= "-connection-settings";
-	private final static String					HELP_URL						= "https://bnd.bndtools.org/instructions/connection-settings.html";
+	private final static String					HELP_URL						= "https://bnd.bndtools.org/instructions/connection_settings.html";
 	private final Processor						processor;
 	private final HttpClient					client;
 	private final List<ServerDTO>				servers							= new ArrayList<>();

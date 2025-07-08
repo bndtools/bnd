@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -invalidfilenames
 class: Project
-title: -invalidfilenames  
-summary:  Specify file/directory names that should not be used because they are not portable.
+summary: |
+   Specify file/directory names that should not be used because they are not portable.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-invalidfilenames:CON(\..+)?|PRN(\..+)?|AUX(\..+)?|CLOCK\$|NUL(\..+)?|COM[1-9](\..+)?|LPT[1-9](\..+)?|\$Mft|\$MftMirr|\$LogFile|\$Volume|\$AttrDef|\$Bitmap|\$Boot|\$BadClus|\$Secure|\$Upcase|\$Extend|\$Quota|\$ObjId|\$Reparse`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/invalidfilenames.md --><br /><br />
 
 	/**
 	 * Verify of the path names in the JAR are valid on all OS's (mainly

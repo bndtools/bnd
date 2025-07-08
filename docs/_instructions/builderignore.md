@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -builderignore PATH-SPEC ( ',' PATH-SPEC ) *
-summary: List of project-relative directories to be ignored by the builder.
+class: Project
+summary: |
+   List of project-relative directories to be ignored by the builder.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-builderignore=${if;${driver;gradle};bin,bin_test,generated;build}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/builderignore.md --><br /><br />
 
 Specified paths must be relative to the project. Each path represents a directory in a project to be ignored by the builder when deciding if the bundles of the project need to be built. This is processed for workspace model builds by the Bndtools builder in Eclipse and the Bnd Gradle plugin.
 
@@ -16,4 +24,3 @@ This can be useful when the workspace is configured to use different output fold
 When configuring the workspace to use different output folders for Bndtools in Eclipse and for Gradle, you should also use `-builderignore` to instruct the builder to ignore the other builder's output folders.
 
     -builderignore: ${if;${driver;gradle};bin,bin_test,generated;build}
-

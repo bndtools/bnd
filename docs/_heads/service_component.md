@@ -1,9 +1,17 @@
 ---
 layout: default
+title: Service-Component ::= RESOURCE ( ',' RESOURCE )
 class: Header
-title: Service-Component ::= RESOURCE ( ',' RESOURCE ) 
-summary: XML documents containing component descriptions must be specified by the Service-Component header in the manifest.  
+summary: |
+   XML documents containing component descriptions must be specified by the Service-Component header in the manifest.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Service-Component=com.acme.Foo?;activate='start'`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/service_component.md --><br /><br />
 
 	/**
 	 * Analyze the class space for any classes that have an OSGi annotation for DS.

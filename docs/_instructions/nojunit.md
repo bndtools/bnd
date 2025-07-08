@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Ant
 title: -nojunit  BOOLEAN
-summary:  Indicate that this project does not have JUnit tests
+class: Ant
+summary: |
+   Indicate that this project does not have JUnit tests
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-nojunit=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/nojunit.md --><br /><br />
 
 	private void checkForTesting(Project project, Properties properties) throws Exception {
 

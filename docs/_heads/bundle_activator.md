@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Header
 title: Bundle-Activator CLASS
-summary: The Bundle-Activator header specifies the name of the class used to start and stop the bundle
+class: Header
+summary: |
+   The Bundle-Activator header specifies the name of the class used to start and stop the bundle
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bundle-Activator: com.acme.foo.Activator`
+
+- Values: `${classes;implementing;org.osgi.framework.BundleActivator}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/bundle_activator.md --><br /><br />
 	
 	private void verifyActivator() throws Exception {
 		String bactivator = main.get(Constants.BUNDLE_ACTIVATOR);

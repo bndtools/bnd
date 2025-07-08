@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -testpath REPO-SPEC ( ',' REPO-SPEC )
 class: Project
-title: -testpath REPO-SPEC ( ',' REPO-SPEC ) 
-summary: The specified JARs from a repository are added to the remote JVM's classpath if the JVM is started in test mode in addition to the -runpath JARs.  
+summary: |
+   The specified JARs from a repository are added to the remote JVM's classpath if the JVM is started in test mode in addition to the -runpath JARs.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-testpath=som.bundle.symbolicname;version=latest`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/testpath.md --><br /><br />
 
 	public Collection<Container> getTestpath() throws Exception {
 		prepare();

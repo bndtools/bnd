@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -manifest FILE
 class: Builder
-title: -manifest FILE   
-summary:  Override manifest calculation and set fixed manifest
+summary: |
+   Override manifest calculation and set fixed manifest
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-manifest=META-INF/MANIFEST.MF`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/manifest.md --><br /><br />
 
 		// Check if we override the calculation of the
 		// manifest. We still need to calculated it because

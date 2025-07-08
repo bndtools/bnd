@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -contract
 class: Project
-title: -contract 
-summary: Establishes a link to a contract and handles the low level details. 
+summary: |
+   Establishes a link to a contract and handles the low level details.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-contract!Servlet,*`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/contract.md --><br /><br />
 
 Though the OSGi has a very elegant package version model there are still many that think this is too much work. They do not want to be bothered by the niceties of semantic versions and just want to use, let's say, Servlet 3.0. For those people (seemingly not interested in minimizing dependencies) the OSGi Alliance came up with contracts in OSGi Core, Release 5.0.0. A contract allows you to: 
 
@@ -78,5 +86,3 @@ The [ContractTest.java](https://github.com/bndtools/bnd/blob/next/biz.aQute.bndl
 
 - See chapter about [Contracts](/chapters/220-contracts.html) and [-define-contract](/instructions/define-contract.html) instruction.
 - See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
-
-

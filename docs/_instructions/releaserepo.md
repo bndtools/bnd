@@ -1,9 +1,19 @@
 ---
 layout: default
-class: Project
 title: -releaserepo* NAME ( ',' NAME ) *
-summary: Define the names of the repositories to use for a release
+class: Project
+summary: |
+   Define the names of the repositories to use for a release
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-releaserepo=cnf`
+
+- Values: `${repos}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/releaserepo.md --><br /><br />
 
 You can specify zero or more repository names to use when releasing a project.
 

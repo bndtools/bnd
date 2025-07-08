@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Macro
 title: Bnd-AddXmlToTest RESOURCE ( ',' RESOURCE )
-summary: Add XML resources from the tested bundle to the output of a test report.
+class: Macro
+summary: |
+   Add XML resources from the tested bundle to the output of a test report.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bnd-AddXMLToTest: a.xml`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/bnd_addxmltotest.md --><br /><br />
 
 	public void setup(Bundle fw, Bundle targetBundle) {
 		startTime = System.currentTimeMillis();

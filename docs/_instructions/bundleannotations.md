@@ -1,9 +1,17 @@
 ---
 layout: default
-class: Project
 title: -bundleannotations SELECTORS
-summary: Selects the classes that need processing for standard OSGi Bundle annotations.
+class: Project
+summary: |
+   Selects the classes that need processing for standard OSGi Bundle annotations.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-bundleannotations: com.foo.bar.MyClazz`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/bundleannotations.md --><br /><br />
 
 The `-bundleannotations` instruction tells **bnd** which bundle classes, if any, to search for [OSGi Bundle annotations](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle). **bnd** will then process those annotations into manifest headers.
 

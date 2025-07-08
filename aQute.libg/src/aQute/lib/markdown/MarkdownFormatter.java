@@ -30,6 +30,15 @@ public class MarkdownFormatter {
 		return this;
 	}
 
+	/**
+	 * print a headline but by specifying the level. alternative to
+	 * {@link #h1(String, Object...)}, {@link #h2(String, Object...)} etc.
+	 */
+	public MarkdownFormatter h(int level, String format, Object... args) {
+		f = f.format("#".repeat(level) + " " + format + " #%n", args);
+		return this;
+	}
+
 	public MarkdownFormatter list(String format, Object... args) {
 		f = f.format("+ " + format + "%n", args);
 		return this;

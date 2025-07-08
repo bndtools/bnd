@@ -1,9 +1,17 @@
 ---
 layout: default
+title: -digests DIGEST ( ',' DIGEST ) *
 class: Project
-title: -digests DIGEST ( ',' DIGEST ) * 
-summary: Set the digest algorithms to use
+summary: |
+   Set the digest algorithms to use
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-digests: SHA-1 `
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/digests.md --><br /><br />
 
 	/**
 	 * Check if we need to calculate any checksums.
