@@ -4,6 +4,21 @@ class: Header
 title: Import-Package ::= import ( ',' import )*
 summary: The Import-Package header declares the imported packages for this bundle.
 ---
+
+# Import-Package
+
+The `Import-Package` header lists the Java packages that the bundle requires from other bundles. By default, bnd will import all referred packages, but you can use patterns and negations to control which packages are imported.
+
+Example:
+
+```
+Import-Package: !com.example.internal.*, *
+```
+
+This example imports all referred packages except those starting with `com.example.internal`. You can also add explicit imports for packages not directly referred to by your code.
+
+bnd will attempt to find the exported version of imported packages and will use the exported version unless a specific version or range is specified. This header is important for managing dependencies between bundles.
+
 The `Import-Package` header lists the packages that are required by the contained packages. The default for this header is `*`, resulting in importing all referred packages. This header therefore rarely has to be specified. However, in certain cases there is an unwanted import. The import is caused by code that the author knows can never be reached. This import can be removed by using a negating pattern. A pattern is inserted in the import as an extra import when it contains no wildcards and there is no referral to that package. This can be used to add an import statement for a package that is not referred to by your code but is still needed, for example, because the class is loaded by name.
 
 For example:
