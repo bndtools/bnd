@@ -236,7 +236,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippi
 		IWizardPage currentPage = getContainer().getCurrentPage();
 		// https://github.com/bndtools/bnd/issues/6664
 		// comparing next page to paramsPage prevents the first page
-		// i.e. the Project Creation page to disable Next
+		// i.e. the Project Creation page to disable Finish
 		return currentPage != templatePage && getNextPage(currentPage) != paramsPage;
 	}
 
