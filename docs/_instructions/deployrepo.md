@@ -3,7 +3,7 @@ layout: default
 title: -deployrepo
 class: Project
 summary: |
-   Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work
+   Specifies to which repo the project should be deployed.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

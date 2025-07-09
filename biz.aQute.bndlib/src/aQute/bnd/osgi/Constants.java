@@ -108,6 +108,7 @@ public interface Constants {
 
 	String		BUILDERIGNORE								= "-builderignore";
 	String		BUILDPATH									= "-buildpath";
+	String		BUILDTOOL									= "-buildtool";
 	String		BUMPPOLICY									= "-bumppolicy";
 	String		BUNDLEANNOTATIONS							= "-bundleannotations";
 	String		CDIANNOTATIONS								= "-cdiannotations";
@@ -140,6 +141,7 @@ public interface Constants {
 	String		EXPORT_TYPE									= "type";
 	String		EXPORT_BSN									= "bsn";
 	String		EXPORT_NAME									= "name";
+	String		EXPORTREPORT								= "-exportreport";
 	String		EXPORT_VERSION								= "version";
 
 	String		EXPORTTYPE									= "-exporttype";
@@ -207,9 +209,11 @@ public interface Constants {
 	String		PLUGINPATH_URL_ATTR							= "url";
 	String		PLUGINPATH_SHA1_ATTR						= "sha1";
 	String		POM											= "-pom";
+	String		PREPARE										= "-prepare";
 	String		PREPROCESSMATCHERS							= "-preprocessmatchers";
 	String		PRIVATEPACKAGE								= "-privatepackage";
 	String		RELEASEREPO									= "-releaserepo";
+	String		REPORTCONFIG								= "-reportconfig";
 	String		DISTRO										= "-distro";
 	String		REMOVEHEADERS								= "-removeheaders";
 	String		RESOURCEONLY								= "-resourceonly";
@@ -307,6 +311,8 @@ public interface Constants {
 	String		WABLIB										= "-wablib";
 	String		WORKINGSET									= "-workingset";
 	String		WORKINGSET_MEMBER							= "member";
+	String		WORKSPACE_TEMPLATES							= "-workspace-templates";
+
 	String		REQUIRE_BND									= "-require-bnd";
 
 	/*

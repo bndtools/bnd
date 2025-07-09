@@ -44,7 +44,7 @@ Bundle P:
 	      version:Version="3.0"
 	  Export-Package: javax.servlet, javax.servlet.http
 
-Furthermore there is the [-define-contract](/instructions/define-contract.html) instruction which can be applied in order to define a contract which is not available on the build path.
+Furthermore there is the [-define-contract](/instructions/define_contract.html) instruction which can be applied in order to define a contract which is not available on the build path.
 
 That said, the most extensive help you get from bnd is for requiring contracts. Providing a contract is not so cumbersome, after all you're the provider so you have all the knowledge and the interest in providing metadata. Consuming a contract is less interesting and it is much harder to get the metadata right. In a similar vein, bnd analyzes your classes to find out the dependencies to create the `Import-Package` statement, doing this by hand is really hard (as other OSGi developing environments can testify!). 
 
@@ -62,7 +62,7 @@ bnd.bnd:
 
 ## Further reading
 
-- See [-contract](/instructions/contract.html) and [-define-contract](/instructions/define-contract.html) instruction for defining contracts in bnd.
+- See [-contract](/instructions/contract.html) and [-define-contract](/instructions/define_contract.html) instruction for defining contracts in bnd.
 
 - The [ContractTest.java](https://github.com/bndtools/bnd/blob/next/biz.aQute.bndlib.tests/test/test/ContractTest.java) provides some examples for people that want to have a deeper understanding. 
 
