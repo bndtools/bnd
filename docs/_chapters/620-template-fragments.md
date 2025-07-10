@@ -125,4 +125,4 @@ For example you can directly point to a Github URL like:
 
 [2]: /chapters/820-instructions.html#merged-instructions
 [3]: /instructions/library.html
-[4]: /instructions/workspace-templates.html
+[4]: /instructions/workspace_templates.html

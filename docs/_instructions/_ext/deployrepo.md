@@ -2,7 +2,6 @@
 layout: default
 class: Project
 title: -deployrepo 
-summary: Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work
 ---
 
 

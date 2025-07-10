@@ -1,8 +1,19 @@
 ---
 layout: default
+title: -deploy
 class: Project
-title: -deploy   
+summary: |
+   Deploy the current project to a repository through Deploy plugins (e.g. MavenDeploy plugin)
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-deploy=mavenrepo`
+
+- Values: `${repos}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/deploy.md --><br /><br />
 
 NEEDS WORK?
 

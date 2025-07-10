@@ -58,7 +58,7 @@ Provide-Capability:\
 Export-Package: javax.servlet, javax.servlet.http
 ```
 
-Furthermore there is the [-define-contract](/instructions/define-contract.html) instruction which can be applied in order to define a contract which is not available on the build path.
+Furthermore there is the [-define-contract](/instructions/define_contract.html) instruction which can be applied in order to define a contract which is not available on the build path.
 
 That said, the most extensive help you get from bnd is for requiring contracts. Providing a contract is not so cumbersome, after all you're the provider so you have all the knowledge and the interest in providing metadata. Consuming a contract is less interesting and it is much harder to get the metadata right. In a similar vein, bnd analyzes your classes to find out the dependencies to create the `Import-Package` statement, doing this by hand is really hard (as other OSGi developing environments can testify!)
 
@@ -84,5 +84,5 @@ The [ContractTest.java](https://github.com/bndtools/bnd/blob/next/biz.aQute.bndl
 
 ## Further Reading
 
-- See chapter about [Contracts](/chapters/220-contracts.html) and [-define-contract](/instructions/define-contract.html) instruction.
+- See chapter about [Contracts](/chapters/220-contracts.html) and [-define-contract](/instructions/define_contract.html) instruction.
 - See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
