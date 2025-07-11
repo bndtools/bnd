@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   xmlrepodiff [options]  <newer XML resource repository> <older XML resource repository>
 
-#### Options: #
+#### Options: 
 - `[ -e --expandfilter ]` Expand 'filter' directives
 - `[ -i --ignore <string> ]` Ignore elements from the comparison result (Format: type=name,..) e.g. RESOURCE_ID=org.apache.felix.scr#com.company.runtime.*,CAPABILITY=bnd.workspace.project#osgi.wiring.package:javax.xml.*,ATTRIBUTE=bundle-symbolic-name:system.bundle,REQUIREMENT=osgi.wiring.package:org.xml.*
 - `[ -s --showall ]` Display all (changed and unchanged both)

@@ -6,9 +6,9 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   _merge [options]  <jarfile...>
 
-#### Options: #
+#### Options: 
 - `[ -o --output <string> ]` Specify the output file path. The default is output.jar in the current directory
 

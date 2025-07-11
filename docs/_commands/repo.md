@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   repo [options]  <sub-cmd> ...
 
-#### Options: #
+#### Options: 
 - `[ -c --cache ]` Include the cache repository
 - `[ -f --filerepo <string>* ]` Add a File Repository
 - `[ -m --maven ]` Include the maven repository
@@ -17,7 +17,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -r --release <glob> ]` Override the name of the release repository (-releaserepo)
 - `[ -w --workspace <string> ]` Workspace (a standalone bndrun file or a sbdirectory of a workspace (default is the cwd)
 
-## Available sub-commands #
+## Available sub-commands 
 -  `copy` -   
 -  `diff` - Diff jars (or show tree) 
 -  `get` - Get an artifact from a repository. 
@@ -30,11 +30,11 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 -  `topom` -   
 -  `versions` - Displays a list of versions for a given bsn that can be found in the current repositories. 
 
-### copy #
-#### Synopsis: #
+### copy 
+#### Synopsis: 
 	   copy [options]  <source> <dest> <bsn[:version]...>
 
-##### Options: #
+##### Options: 
 - `[ -d --dry ]` Do not really copy but trace the steps
 - `[ -f --filter <string;> ]` 
 - `[ -F --force ]` 
@@ -42,13 +42,13 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -q --quiet ]` 
 - `[ -s --standalone <string> ]` A stanalone bndrun file
 
-### diff #
+### diff 
 Diff jars (or show tree)
 
-#### Synopsis: #
+#### Synopsis: 
 	   diff [options]  <newer repo> <[older repo]>
 
-##### Options: #
+##### Options: 
 - `[ -a --added ]` Just additions (no removes)
 - `[ -A --all ]` Both add and removes
 - `[ -d --diff ]` Formatted like diff
@@ -56,87 +56,87 @@ Diff jars (or show tree)
 - `[ -j --json ]` Serialize to JSON
 - `[ -r --remove ]` Just removes (no additions)
 
-### get #
+### get 
 Get an artifact from a repository.
 
-#### Synopsis: #
+#### Synopsis: 
 	   get [options]  <bsn> <[range]>
 
-##### Options: #
+##### Options: 
 - `[ -f --from <instruction> ]` 
 - `[ -l --lowest ]` 
 - `[ -o --output <string> ]` Where to store the artifact
 
-### index #
-#### Synopsis: #
+### index 
+#### Synopsis: 
 	   index [options]  ...
 
 
-##### Options: #
+##### Options: 
 - `[ -f --from <instruction> ]` A glob expression on the source repo, default is all repos
 - `[ -n --name <string> ]` The name of the output file. If not set will show on the console
 - `[ -o --output <string> ]` Output file (will be compressed)
 - `[ -q --query <string> ]` Optional search term for the list of bsns (given to the repo)
 - `[ -Q --quiet ]` No output
 
-### list #
+### list 
 List all artifacts from the current repositories with their versions
 
-#### Synopsis: #
+#### Synopsis: 
 	   list [options] 
 
-##### Options: #
+##### Options: 
 - `[ -f --from <instruction> ]` A glob expression on the source repo, default is all repos
 - `[ -n --noversions ]` Do not list the versions, just the bsns
 - `[ -q --query <string> ]` Optional search term for the list of bsns (given to the repo)
 
-### put #
+### put 
 Put an artifact into the repository after it has been verified.
 
-#### Synopsis: #
+#### Synopsis: 
 	   put [options]  <<jar>...>
 
-##### Options: #
+##### Options: 
 - `[ -f --force ]` Put in repository even if verification fails (actually, no verification is done).
 
-### refresh #
+### refresh 
 Refresh refreshable repositories
 
-#### Synopsis: #
+#### Synopsis: 
 	   refresh [options] 
 
-##### Options: #
+##### Options: 
 - `[ -q --quiet ]` 
 
-### repos #
+### repos 
 List the current repositories
 
-#### Synopsis: #
+#### Synopsis: 
 	   repos 
 
-### sync #
-#### Synopsis: #
+### sync 
+#### Synopsis: 
 	   sync [options]  ...
 
 
-##### Options: #
+##### Options: 
 - `[ -d --dest <string> ]` 
 - `[ -g --gavs <string;> ]` 
 - `[ -s --source <string;> ]` 
 - `[ -w --workspace <string> ]` 
 
-### topom #
-#### Synopsis: #
+### topom 
+#### Synopsis: 
 	   topom [options]  <repo> <name>
 
-##### Options: #
+##### Options: 
 - `[ -d --dependencyManagement ]` Use the dependency management section
 - `[ -o --output <string> ]` Output file
 - `[ -p --parent <string> ]` The parent of the pom (default none.xml)
 
-### versions #
+### versions 
 Displays a list of versions for a given bsn that can be found in the current repositories.
 
-#### Synopsis: #
+#### Synopsis: 
 	   versions  <bsn>
 

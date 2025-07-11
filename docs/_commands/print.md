@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   print [options]  <jar-file...>
 
-#### Options: #
+#### Options: 
 - `[ -a --api ]` Print the api usage. This shows the usage constraints on exported packages when only public API is used.
 - `[ -b --by ]` Transposed uses. Will show for each known package who it is used by.
 - `[ -c --capabilities ]` Show the capabilities

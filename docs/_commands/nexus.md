@@ -6,15 +6,15 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   nexus [options]  <sub-cmd> ...
 
-#### Options: #
+#### Options: 
 - `[ -c --compatible <compatible> ]` 
 - `[ -s --settings <string> ]` Specify the connection-settings for the HttpClient. Default looks for the normal settings files.
 - `[ -u --url <uri> ]` Specify the URL of the Nexus repository.
 
-## Available sub-commands #
+## Available sub-commands 
 -  `createstaging` - Create a staging repository. The profileId specifies a particular profile. If you go to nexus, select the staging profiles, and then select the profile you want to use. The profile id is then in the url. 
 -  `delete` - Delete a file in a staging repository by id 
 -  `fetch` - Fetch a file to staging repository by id 
@@ -23,59 +23,59 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 -  `sign` -   
 -  `upload` - Upload a file to staging repository by id 
 
-### createstaging #
+### createstaging 
 Create a staging repository. The profileId specifies a particular profile. If you go to nexus, select the staging profiles, and then select the profile you want to use. The profile id is then in the url.
 
-#### Synopsis: #
+#### Synopsis: 
 	   createstaging [options]  <profileId>
 
-##### Options: #
+##### Options: 
 - `[ -d --description <string> ]` 
 
-### delete #
+### delete 
 Delete a file in a staging repository by id
 
-#### Synopsis: #
+#### Synopsis: 
 	   delete [options]  <repositoryId> <remotepath_or_gav>
 
-##### Options: #
+##### Options: 
 - `[ -f --force ]` 
 
-### fetch #
+### fetch 
 Fetch a file to staging repository by id
 
-#### Synopsis: #
+#### Synopsis: 
 	   fetch [options]  <repositoryId> <remotepath_or_gav>
 
-##### Options: #
+##### Options: 
 - `[ -f --force ]` 
 - `[ -o --output <file> ]` 
 
-### files #
-#### Synopsis: #
+### files 
+#### Synopsis: 
 	   files [options]  <files...>
 
-##### Options: #
+##### Options: 
 - `[ -e --exclude <string> ]` A resource URI is only include if the include pattern appears in the path and the exclude does not appear
 - `[ -i --include <string> ]` A resource URI is only include if the include pattern appears in the path and the exclude does not appear
 - `[ -r --relative ]` 
 
-### index #
-#### Synopsis: #
+### index 
+#### Synopsis: 
 	   index [options]  ...
 
 
-##### Options: #
+##### Options: 
 - `[ -d --depth <int> ]` 
 - `[ -n --name <string> ]` 
 - `[ -o --output <string> ]` 
 - `[ -r --referal <uri> ]` 
 
-### sign #
-#### Synopsis: #
+### sign 
+#### Synopsis: 
 	   sign [options]  <path...>
 
-##### Options: #
+##### Options: 
 - `[ -c --command <string> ]` Specify the path to the gpg command. The gpg path can also be specified using the 'gpg' system property or the 'GPG' environment variable. Defaults to 'gpg'.
 - `[ -f --from <uri> ]` Specify the URL to a Nexus repository from which to obtain the artifacts to sign. Defaults to signing the specified paths to the sign subcommand.
 - `[ -i --include <string> ]` Specify the include pattern for artifacts from the '--from' option. Defaults to '**'.
@@ -85,12 +85,12 @@ Fetch a file to staging repository by id
 - `[ -t --threads <int> ]` Specify the number of threads to use when downloading, signing, and uploading artifacts. Defaults to one thread.
 - `[ -x --xclude <string> ]` Specify the exclude pattern for artifacts from the '--from' option. Defaults to no exclude pattern.
 
-### upload #
+### upload 
 Upload a file to staging repository by id
 
-#### Synopsis: #
+#### Synopsis: 
 	   upload [options]  <repositoryId> <remotepath_or_gav> <file>
 
-##### Options: #
+##### Options: 
 - `[ -f --force ]` 
 

@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   diff [options]  <[newer file]> <[older file]>
 
-#### Options: #
+#### Options: 
 - `[ -a --api ]` Print the API
 - `[ -f --full ]` Show full tree
 - `[ -i --ignore <string>* ]` Ignore headers

@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   macro [options]  <<macro>> <[...]>
 
-#### Options: #
+#### Options: 
 - `[ -p --project <string> ]` Path to project, default current directory
 
 <!-- Manual content from: ext/macro.md --><br /><br />

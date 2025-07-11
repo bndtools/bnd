@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   find [options]  <[file]...>
 
-#### Options: #
+#### Options: 
 - `[ -e --exports <glob;> ]` Glob expression on the exports.
 - `[ -i --imports <glob;> ]` Glob expression on the imports.
 

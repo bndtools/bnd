@@ -6,16 +6,16 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   graph  ...
 
 
-## Available sub-commands #
+## Available sub-commands 
 -  `roots` - Find the roots in a set of bundles. A root is a resource that is present but not dependent on by any other resource in the set 
 
-### roots #
+### roots 
 Find the roots in a set of bundles. A root is a resource that is present but not dependent on by any other resource in the set
 
-#### Synopsis: #
+#### Synopsis: 
 	   roots  <filespec...>
 

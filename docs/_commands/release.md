@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   release [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -p --project <string> ]` Path to project, default is current project
 - `[ -r --repo <string> ]` Set the release repository
 - `[ -t --test ]` Release with test build

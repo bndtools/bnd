@@ -13,15 +13,15 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `-remove-attribute:`
+- `-remove-attribute:` Remove the given attributes from matching imported packages.
   - Example: `-remove-attribute:=foo.*`
 
   - Pattern: `.*`
 
 
-- `resolution:`
+- `resolution:` Indicates that the packages must be resolved if the value is mandatory, which is the default. If mandatory packages cannot be resolved, then the bundle must fail to resolve. A value of optional indicates that the packages are optional.
   - Example: `resolution:=optional`
 
   - Values: `mandatory,optional`
@@ -29,19 +29,19 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `mandatory|optional`
 
 
-- `version`
+- `version` A version range to select the version of an export definition. The default value is 0.0.0.
   - Example: `version="[1.2,3.0)"`
 
   - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
 
 
-- `bundle-symbolic-name`
+- `bundle-symbolic-name` The bundle symbolic name of the exporting bundle.
   - Example: `bundle-symbolic-name=com.acme.foo.daffy`
 
   - Pattern: `[-\w]+(:?\.[-\w]+)*`
 
 
-- `bundle-version`
+- `bundle-version` A version range to select the bundle version of the exporting bundle. The default value is 0.0.0.
   - Example: `bundle-version=1.3`
 
   - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`

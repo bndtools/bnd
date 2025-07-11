@@ -863,7 +863,10 @@ public class Syntax implements Constants {
 
 	private static Syntax[] create(Class<?> class1, Function<Method, String> naming, boolean instruction) {
 		List<Syntax> syntaxes = new ArrayList<>();
-		for (Method m : class1.getMethods()) {
+		// getDeclaredMethods() is important, to suppress inherited Object
+		// methods like
+		// toString, equals, hashCode
+		for (Method m : class1.getDeclaredMethods()) {
 
 			if (Modifier.isStatic(m.getModifiers()))
 				continue;
@@ -937,7 +940,7 @@ public class Syntax implements Constants {
 				Syntax[] clauses = create(rtype, Syntax::toProperty, false);
 				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl, clauses));
 			}
-			if (rtype.isEnum()) {
+			else if (rtype.isEnum()) {
 				Field[] enumConstants = rtype.getFields();
 				Syntax[] fields = new Syntax[enumConstants.length];
 
@@ -1114,7 +1117,12 @@ public class Syntax implements Constants {
 	}
 
 	public static String normalizeFilename(String filename) {
-		return filename.toLowerCase()
+		String ret = filename;
+		if (filename.startsWith(".")) {
+			ret = filename.substring(1);
+		}
+
+		return ret.toLowerCase()
 			.replace("-", "_");
 	}
 }

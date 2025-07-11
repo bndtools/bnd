@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   _par [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -e --exclude <string;> ]` Exclude files by pattern
 - `[ -f --force ]` Force non-incremental
 - `[ -p --project <string> ]` Identify another project

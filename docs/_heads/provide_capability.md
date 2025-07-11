@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `effective:`
+- `effective:` (resolve) Specifies the time a capabiltity is available, either resolve (default) or another name. The OSGi framework resolver only considers Capabilities without an effective directive or effective:=resolve. Capabilties with other values for the effective directive can be considered by an external agent.
   - Example: `effective:=resolve`
 
   - Values: `resolve or another word`
@@ -21,7 +21,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 
-- `uses:`
+- `uses:` The uses directive lists package names that are used by this Capability. This information is intended to be used for uses constraints.
   - Example: `uses:='foo,bar,baz'`
 
   - Pattern: `.*`

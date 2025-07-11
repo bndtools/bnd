@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Directives ###
+### Directives 
 
-- `url`
+- `url` Specify a URL to download this file from if it does not exist
   - Example: `url=http://example.com/download/plugins-2.2.0.jar`
 
   - Pattern: `.*`

@@ -6,9 +6,9 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   bump [options]  <<major|minor|micro>>
 
-#### Options: #
+#### Options: 
 - `[ -p --project <string> ]` Path to another project than the current project
 

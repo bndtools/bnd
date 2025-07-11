@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   digest [options]  <file...>
 
-#### Options: #
+#### Options: 
 - `[ -a --algorithm <alg>* ]` Specify the algorithms
 - `[ -b --b64 ]` Show base64 output
 - `[ -h --hex ]` Show hex output (default)

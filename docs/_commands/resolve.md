@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   resolve [options]  <<path>...>
 
-#### Options: #
+#### Options: 
 - `[ -b --bundles ]` Print out the bundles
 - `[ -d --dot ]` Create a dependency file
 - `[ -e --exclude <string;> ]` Exclude files by pattern
@@ -24,38 +24,38 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -W --write ]` Write -runbundles instruction back to the file
 - `[ -x --xchange ]` Fail on changes
 
-## Available sub-commands #
+## Available sub-commands 
 -  `dot` - Create a dot file 
 -  `repos` -   
 -  `resolve` - Resolve a bndrun file 
 -  `validate` - Resolve a repository index against a base to determine if the index is 'complete' 
 
-### dot #
+### dot 
 Create a dot file
 
-#### Synopsis: #
+#### Synopsis: 
 	   dot [options]  <bndrun-file>
 
-##### Options: #
+##### Options: 
 - `[ -o --output <string> ]` Send to file
 - `[ -q --quiet ]` Quiet
 - `[ -r --runorder <runorder> ]` Override the -runorder
 
-### repos #
-#### Synopsis: #
+### repos 
+#### Synopsis: 
 	   repos [options]  ...
 
 
-##### Options: #
+##### Options: 
 - `[ -w --workspace <string> ]` 
 
-### resolve #
+### resolve 
 Resolve a bndrun file
 
-#### Synopsis: #
+#### Synopsis: 
 	   resolve [options]  <<path>...>
 
-##### Options: #
+##### Options: 
 - `[ -b --bundles ]` Print out the bundles
 - `[ -d --dot ]` Create a dependency file
 - `[ -e --exclude <string;> ]` Exclude files by pattern
@@ -70,13 +70,13 @@ Resolve a bndrun file
 - `[ -W --write ]` Write -runbundles instruction back to the file
 - `[ -x --xchange ]` Fail on changes
 
-### validate #
+### validate 
 Resolve a repository index against a base to determine if the index is 'complete'
 
-#### Synopsis: #
+#### Synopsis: 
 	   validate [options]  <[index-path]>
 
-##### Options: #
+##### Options: 
 - `[ -a --all ]` Include all output details
 - `[ -c --capabilities <parameters> ]` Specify a set of capabilities provided by the base
 - `[ -C --core <osgi_core> ]` Specify the framework version used as part of the base, [R4_0_1 R4_2_1 R4_3_0 R4_3_1 R5_0_0 R6_0_0 R7_0_0 R8_0_0]

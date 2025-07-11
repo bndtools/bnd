@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   wrap [options]  <<jar-file>> <[...]>
 
-#### Options: #
+#### Options: 
 - `[ -b --bsn <string> ]` Set the bundle symbolic name to use
 - `[ -c --classpath <string>* ]` A classpath specification
 - `[ -f --force ]` Allow override of an existing file

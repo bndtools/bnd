@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   debug [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -f --flattened ]` Show the flattened properties
 - `[ -p --project <string> ]` Path to a project, default is current directory
 

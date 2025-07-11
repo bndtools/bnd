@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   runtests [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -d --dir <string> ]` Path to work directory
 - `[ -e --exclude <string;> ]` Exclude files by pattern
 - `[ -r --reportdir <string> ]` Report directory

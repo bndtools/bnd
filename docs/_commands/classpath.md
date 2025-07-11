@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   classpath [options] 
 
-#### Options: #
+#### Options: 
 - `[ -l --list ]` As list
 - `[ -p --project <string> ]` Identify another project
 - `[ -s --separator <string> ]` Define the separator, default is platform dependent path separator

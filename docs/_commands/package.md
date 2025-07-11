@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   package [options]  <<bnd|bndrun>> <[...]>
 
-#### Options: #
+#### Options: 
 - `[ -o --output <string> ]` Where to store the resulting file. Default the name of the bnd file with a .jar extension.
 - `[ -p --profile <string> ]` Profile name. Default no profile
 

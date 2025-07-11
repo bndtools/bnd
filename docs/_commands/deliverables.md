@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   deliverables [options] 
 
-#### Options: #
+#### Options: 
 - `[ -l --limit ]` Only provide deliverables of this project
 - `[ -p --project <string> ]` Path to project, default current directory
 

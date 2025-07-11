@@ -6,9 +6,9 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   view [options]  <<jar-file>> <<resource>> <[...]>
 
-#### Options: #
+#### Options: 
 - `[ -c --charset <string> ]` Character set to use for viewing
 

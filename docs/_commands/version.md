@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   version [options] 
 
-#### Options: #
+#### Options: 
 - `[ -x --xtra ]` Show licensing, copyright, sha, scm, etc
 
 <!-- Manual content from: ext/version.md --><br /><br />

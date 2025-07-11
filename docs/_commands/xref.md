@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   xref [options]  <<jar path>> <[...]>
 
-#### Options: #
+#### Options: 
 - `[ -c --classes ]` Show classes instead of packages
 - `[ -d --destination <string>* ]` Match destination types
 - `[ -f --from ]` Show references from other classes/packages (<)

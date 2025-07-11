@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `osname`
+- `osname` The name of the operating system.
   - Example: `osname=MacOS`
 
   - Values: `AIX,DigitalUnix,Embos,Epoc32,FreeBSD,HPUX,IRIX,Linux,MacOS,NetBSD,Netware,OpenBSD,OS2,QNX,Solaris,SunOS,VxWorks,Windows95,Win32,Windows98,WindowsNT,WindowsCE,Windows2000,Windows2003,WindowsXP,WindowsVista`
@@ -21,19 +21,19 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 
-- `osversion`
+- `osversion` Operating System Version.
   - Example: `osversion=3.1`
 
   - Pattern: `.*`
 
 
-- `language`
+- `language` Language ISO 639 code.
   - Example: `language=nl`
 
   - Pattern: `\p{Upper}{2}`
 
 
-- `processor`
+- `processor` Processor name.
   - Example: `processor=x86`
 
   - Values: `68k,ARM_LE,arm_le,arm_be,Alpha,ia64n,ia64w,Ignite,Mips,PArisc,PowerPC,Sh4,Sparc,Sparcv9,S390,S390x,V850E,x86,i486,x86-64`
@@ -41,7 +41,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 
-- `selection-filter`
+- `selection-filter` The value of this attribute must be a filter expression that indicates if the native code clause should be selected or not.
   - Example: `selection-filter="(com.acme.windowing=win32)"`
 
   - Pattern: `.*`

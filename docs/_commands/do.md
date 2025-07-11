@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   do [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -f --force ]` Force even when there are errors
 - `[ -o --output <string> ]` The output file
 

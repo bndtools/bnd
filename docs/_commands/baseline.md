@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   baseline [options]  <[newer jar]> <[older jar]>
 
-#### Options: #
+#### Options: 
 - `[ -a --all ]` Show all, also unchanged
 - `[ -d --diff ]` Show any differences
 - `[ -f --fixup <string> ]` Output file with fixup info

@@ -13,39 +13,39 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `(manual|auto|beforelaunch|batch)`
 
-### Directives ###
+### Directives 
 
-- `manual`
+- `manual` Resolve is manually with the Resolve button
   - Values: `manual`
 
   - Pattern: `\Qmanual\E`
 
 
-- `auto`
+- `auto` A resolve will take place before saving
   - Values: `auto`
 
   - Pattern: `\Qauto\E`
 
 
-- `beforelaunch`
+- `beforelaunch` A resolve will take place before launching
   - Values: `beforelaunch`
 
   - Pattern: `\Qbeforelaunch\E`
 
 
-- `batch`
+- `batch` A resolve will take place before launching when in batch mode (e.g. Gradle) but not in IDE mode (e.g. Eclipse)
   - Values: `batch`
 
   - Pattern: `\Qbatch\E`
 
 
-- `cache`
+- `cache` Resolve when the runbundles are needed unless there is a cache file that is newer than the bndrun/project & workspace. The cache file has the same name as the project/bndrun file but starts with a '.'
   - Values: `cache`
 
   - Pattern: `\Qcache\E`
 
 
-- `never`
+- `never` A Resolve will never take place. Manually resolve will result in error.
   - Values: `never`
 
   - Pattern: `\Qnever\E`

@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   syntax [options]  <header|instruction> ...
 
-#### Options: #
+#### Options: 
 - `[ -w --width <int> ]` The width of the printout
 
 <!-- Manual content from: ext/syntax.md --><br /><br />
