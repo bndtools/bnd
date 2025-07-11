@@ -1,12 +1,21 @@
 ---
-title: Guided Tour Workspace & Projects
+title: bnd / bndlib Features and JAR Wrapping Techniques
 layout: default
 ---
 
+This guide is about the first part of bnd mentioned in the introduction:
 
-Since bnd is by design headless, the best way to get start is to use one of the IDEs like [bndtools][1]. They have tutorials and an IDE is a more pleasant place than a command line. So if you just want to learn OSGi, please go away, this chapter is not for you! bndlib relates to OSGi like the ASM byte code manipulation library relates to Java. Sometimes incredibly useful but in general something you do not want to touch, and obviously not the way to learn Java.
+>  Its primary function is generating OSGi meta data by analyzing Java classes.
 
-Assuming we're now only left with the blue collar workers of our industry: people that need to maintain builds or that must do JAR engineering. First a word of warning, the fact that bndlib provides a function is in no way an advertisement to use that function. bndlib grew up together with the OSGi specifications and has been used to build the Reference Implementations (RI) and Test Compatibility Kits (TCK). Though this has a lot of benefits for you, the disadvantage is that it also has to support all the bad parts of the specifications, and even sometimes must be able to create erroneous situations so we could create test cases. And we also had to handle the situations caused by the mess of non-modular bundles out there.  
+While most developers interact with OSGi through user-friendly tools like [bndtools][1] or Gradle plugins, the real power of bnd lies in its underlying library: bndlib. This library is the engine that automates the generation of OSGi metadata, wraps third-party JARs, and provides powerful build-time analysis and transformation of bundles.
+
+This guide is intended for build engineers and advanced users who need precise control over bundle construction—especially when dealing with legacy or non-OSGi JARs. If you’re new to OSGi or just getting started, we recommend beginning with a higher-level tutorial or IDE-based tooling. bndlib relates to OSGi like the ASM byte code manipulation library relates to Java. Sometimes incredibly useful but in general something you do not want to touch, and obviously not the way to learn Java.
+
+Here, we’ll explore core bndlib features using the command-line bnd tool to manipulate and inspect JARs, understand manifests, control import/export behavior, manage versions, and use macros to keep your builds clean and DRY. While bnd can be a sharp instrument, it becomes invaluable when conventional tools fall short.
+
+## Warning: Low-Level API Ahead
+
+First a word of warning: the fact that bndlib provides a function is in no way an advertisement to use that function. bndlib grew up together with the OSGi specifications and has been used to build the Reference Implementations (RI) and Test Compatibility Kits (TCK). Though this has a lot of benefits for you, the disadvantage is that it also has to support all the bad parts of the specifications, and even sometimes must be able to create erroneous situations so we could create test cases. And we also had to handle the situations caused by the mess of non-modular bundles out there.  
 
 So to make it crystal clear: the fact that a function is in bndlib does not mean it is intended to be used. This section contains a whole bunch of things you wish you never had to touch, and if you do OSGi properly, you will only see a tiny fraction of bndlib. That said, when the unprepared JARs hit the OSGi framework, it is nice to have bndlib as backup. 
 
@@ -431,67 +440,6 @@ This instruction combines the two JARs into one.
 
 ## System Commands
 
-## Upto
-
-
-
-
-
-
-
-
-bnd is the Swiss army knife of OSGi, it is used for creating and working with OSGi bundles. Its primary goal is take the pain out of developing bundles. With OSGi you are forced to provide additional metadata in the JAR's manifest to verify the consistency of your "class path". This metadata must be closely aligned with the class files in the bundle and the policies that a company has about versioning. Maintaining this metdata is an error prone chore because many aspects are redundant.
-
-bnd's raison d'etre is therefore to remove the chores and use the redundancy to create the manifest from the class files instead of maintaining it by hand. The core task is therefore to analyze the class files and find any dependencies. These dependencies are then merged with ''instructions'' supplied by the user. For example, adding a version to all imported packages from a specific library can be specified as:
-
-    Import-Package: com.library.*; version = 1.21
-
-The OSGi manifest must explicitly mention a package, bnd allows the use of wildcards. bnd contains many more such conveniences. bnd roots are about 10 years old and bnd has therefore a large number of functions that remove such chores. These range from simplifying the use of OSGi Declarative Services, working with Spring and Blueprint, WAR and WAB files, version analysis, project dependencies, and much more.
-
-Over time bnd started to appear in many different incarnations. It is an an ant task, a command line utility, and a bundle for Eclipse. Other projects have used bndlib to create a maven plugin, bndtools and Sigil both Eclipse IDEs, and others. By keeping the core library small and uncoupled (bnd has no external connections except Java 5), it is easy to embed the functionality in other projects.
-
-## Workflow
-Traditionally, JAR files were made with the JDK jar tool, the jar ant task, or the Maven packager. All these tools share the same concept. The developer creates a directory image of the jar by copying files to a directory; this directory is then jarred. This model can be called the ''push'' model. Obviously this method works well.
-
-bnd works differently, it uses the ''pull'' model. Instructions in the bnd file describe the contents of the desired JAR file without writing this structure to disk. The contents from the output can come from the class path or from anywhere in the file system. For example, the following instruction includes the designated packages in the JAR:
-
-  Private-Package: com.example.*
- 
-bnd can create a JAR from packages the sources, directories or other JAR files. You never have to copy files around, the instructions that Bnd receives are sufficient to retrieve the files from their original location, preprocessing or filtering when required.
-
-The Jar is constructed from 3 different arguments:
-
-    Export-Package
-    Private-Package
-    Include-Resource
-
-Private-Package and Export-Package contain ''instructions''. Instructions are patterns + attributes and directives, looking like normal OSGi attributes and directives. For example:
-
-    Export-Package: com.acme.*;version=1.2
-
-Each instruction is applied to each package on the classpath in the definition order. That is, if an earlier instruction matches, the later instruction never gets a chance to do its work. If an instruction matches its attributes and properties are applied to the packages. The difference between the Private-Package argument and the Export-Package arguments is that the export version selects the packages for export. If the packages overlap between the two, the export wins.
-
-An instruction can also be negative when it starts with a '!'. In that case the package is excluded from the selection. For example:
-
-    Export-Package: !com.acme.impl, com.acme.*;version=1.2
-
-Note that the instructions are applied in order. If the ! instruction was at the end in the previous example, it would not have done its work because the com.acme.* would already have matched.
-
-The Include-Resource argument can be used to copy resources from the file system in the JAR. This is useful for licenses, images, etc. The instructions in the argument can be a directory, a file, or an inline JAR. The default JAR path is the the root for a directory or the filename for a file. The path can be overridden. Instructions that are enclosed in curly braces, like {license.txt}, are pre-processed, expanding any macros in the file.
-
-Once the JAR is created, the bnd program analyzes the classes and creates an import list with all the packages that are not contained in the jar but which are referred to. This import list is matched against the Import-Package instructions. Normally, the Import-Package argument is *; all referred packages will be imported. However, sometimes it is necessary to ignore an import or provide attributes on the import statement. For example, make the import optional or discard the import:
-
-    Import-Package: !com.acme.*, *;resolution:=optional
-
-The arguments to bnd are normal given as a set of properties. Properties that begin with an upper case are copied to the manifest (possibly after processing). Lower case properties are used for macro variables but are not set as headers in the manifest.
-
-After the JAR is created, the bnd program will verify the result. This will check the resulting manifest in painstaking detail.
-
-The bnd program works on a higher level than the traditional jarring; this might take some getting used to. However, it is much more elegant to think in packages than that it is to think in files. The fact that the bnd understands the semantics of a bundle, allows it to detect many errors and also allows bundles to be created with almost no special information. 
-
-bnd will not create an output file if none of the resources is newer than an existing output file.
-
-The program is available in several forms: command line, ant task, maven plugin, and an Eclipse plugin.
 
 ## Tips
 There are some common pitfalls that can be prevented by following the tips:

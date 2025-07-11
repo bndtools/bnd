@@ -1,18 +1,19 @@
 nav:
   - title: Getting Started
     subfolderitems:
+      - url: /chapters/110-introduction.html
       - url: /chapters/120-install.html
       - url: /chapters/123-tour-workspace.html
       - url: /chapters/125-tour-features.html
       - url: /chapters/920-faq.html
   - title: Concepts and Practices
     subfolderitems:
-      - url: /chapters/110-introduction.html
       - url: /chapters/130-concepts.html
+      - url: /chapters/135-history.html
       - url: /chapters/140-best-practices.html
   - title: Build and Development
     subfolderitems:
-      - url: /chapters/155-project-setup.html
+      - url: /chapters/150-build.html
       - url: /chapters/160-jars.html
       - url: /chapters/170-versioning.html
       - url: /chapters/180-baselining.html

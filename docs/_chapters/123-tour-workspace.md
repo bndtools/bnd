@@ -1,13 +1,21 @@
 ---
-title: Guided Tour
+title: Guided Tour Workspace & Projects
 layout: default
 ---
 
-The purpose of this com.acme.prime is to show build administrators how to setup _workspaces_ and what features bndlib provides to automate common tasks. This section is not intended to be used by people wanting to learn OSGi, please use a bndtools tutorial for this. 
 
-This section will go through the process of creating a workspace and a few projects while explaining what functions are useful in each phase. It will remain at a rather high level to keep the text flowing, details can be found in the different reference sections.
+The bnd workspace is a foundational concept in bnd, providing the structure and context in which OSGi projects are developed and built.
 
-Since this section provides a tool independent view of bndlib, we use the [bnd command line application](120-install.html) to demonstrate the features. Though this is an excellent way to show the low level functionality (the porcelain in git terms), it is not the normal way bndlib is used. In general, a build tool like gradle, ant, make, or maven drives this process from the command line an IDE like bndtools handles the user interaction. So please, please, do not take this com.acme.prime as a guide how to create a build. However handy bnd is, it falls far short of a real build tool like for example gradle.
+In the introduction we mentioned this as the second part of bnd:
+> The other part is a IDE/build tool independent model of a workspace with projects.
+
+This guide provides a high-level overview of how to set up and use bndlib **workspaces** and **projects**. It is aimed at build engineers or developers responsible for configuring OSGi builds using bnd, and it focuses on the underlying concepts and mechanics that bndlib offers for automating build tasks.
+
+Rather than teaching OSGi itself or prescribing a full build system, this guide demonstrates how bndlib operates under the hood—tool-agnostic and from the command line—using a sample workspace named com.acme.prime. While the bnd command-line interface is used for illustration, this is not the typical way bndlib is consumed in practice. Most real-world builds are orchestrated through tools like Gradle or IDEs like Bndtools.
+
+Think of this guide as a conceptual tour that will help you understand how workspaces, properties, plugins, and projects come together in bndlib. The goal is to clarify the structure and extensibility of a bndlib-powered build environment, not to provide production-ready build instructions.
+
+Since this section provides a tool independent view of bndlib, we use the [bnd command line application](120-install.html) to demonstrate the features. Though this is an excellent way to show the low level functionality (the porcelain in git terms), it is not the normal way bndlib is used. In general, a build tool like gradle, ant, make, or maven drives this process from the command line an IDE like bndtools handles the user interaction. So please, please, do not take this `com.acme.prime` as a guide how to create a build. However handy bnd is, it falls far short of a real build tool like for example gradle.
 
 ## Workspace
 
