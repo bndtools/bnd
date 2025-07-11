@@ -53,10 +53,10 @@ Assuming you have Gradle (version 1.11 or better) installed, you can build bndto
 
 `./gradlew :build` (or `./gradlew build -x test` to skip tests for faster local builds)
 
-After a a short while, two directories - `build/generated/p2` and `build/generated/extras/p2` will appear. These contains an Eclipse Update Sites that you can use to install bndtools from the code you have just built.
+After a a short while the directory - `org.bndtools.p2/generated/p2` appears. It contains an Eclipse P2 Update Site that you can use to install bndtools from the code you have just built.
 
 
-To install from the generated Update Sites, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `build/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK". Do the same for the `build/generated/extras/p2` directory.
+To install from the generated Update Sites, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `org.bndtools.p2/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK".
 
 Back in the update dialog, Bndtools will appear in the category list. Place a check next to it and click Next. Drive the rest of the wizard to completion... congratulations, you have just built and installed bndtools!
 
