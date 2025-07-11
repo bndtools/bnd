@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Directives ###
+### Directives 
 
-- `type`
+- `type` Type name for plugin.
   - Example: `type=bnd`
 
   - Values: `bnd`
@@ -21,7 +21,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 
-- `recipe`
+- `recipe` Recipe for the plugin, can use back references.
   - Example: `recipe="bnd/$1.bnd"`
 
   - Values: `bnd`

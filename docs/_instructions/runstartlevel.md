@@ -11,6 +11,57 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
+### Directives 
+
+- `begin` Beginning automatic startlevel calculation,  -1 indicates no automatic calculation. When bdn calculates the startlevel, this will be the first assigned startlevel
+  - Example: `begin='begin=10`
+
+  - Pattern: `\d+`
+
+
+- `step` Start level step for each next bundle. Startlevel is 0 when < 1
+  - Example: `step='begin=1`
+
+  - Pattern: `\d+`
+
+
+- `order` Ordering of -runbundles of the resolved bundles
+  - Example: `order='order=leastdependencieslast`
+
+  - Values: `LEASTDEPENDENCIESFIRST,LEASTDEPENDENCIESLAST,RANDOM,SORTBYNAMEVERSION,MERGESORTBYNAMEVERSION`
+
+  - Pattern: `.*`
+
+  - Options: 
+    - `LEASTDEPENDENCIESFIRST` Order the -runbundles by having the least dependent first.
+      - Values: `LEASTDEPENDENCIESFIRST`
+
+      - Pattern: `\QLEASTDEPENDENCIESFIRST\E`
+
+
+    - `LEASTDEPENDENCIESLAST` Order the -runbundles by having the least dependent last.
+      - Values: `LEASTDEPENDENCIESLAST`
+
+      - Pattern: `\QLEASTDEPENDENCIESLAST\E`
+
+
+    - `RANDOM` Order the -runbundles randomly using the Collections#shuffle.
+      - Values: `RANDOM`
+
+      - Pattern: `\QRANDOM\E`
+
+
+    - `SORTBYNAMEVERSION` Order the -runbundles sorted by name.
+      - Values: `SORTBYNAMEVERSION`
+
+      - Pattern: `\QSORTBYNAMEVERSION\E`
+
+
+    - `MERGESORTBYNAMEVERSION` Order the -runbundles sorted by name and merged with the existing value if it exists. This is the default since it was the classic behavior.
+      - Values: `MERGESORTBYNAMEVERSION`
+
+      - Pattern: `\QMERGESORTBYNAMEVERSION\E`
+
 <!-- Manual content from: ext/runstartlevel.md --><br /><br />
 
 After a [resolve][1] the resolver calculates a number of resources that are mapped to bundles. This mapping can

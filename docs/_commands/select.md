@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   select [options]  <<jar-path>> <[...]>
 
-#### Options: #
+#### Options: 
 - `[ -h --header <string>* ]` A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. 
 - `[ -k --key ]` Print the key before the value
 - `[ -n --name ]` Print the file name before the value

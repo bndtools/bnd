@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `[-\w]+(:?\.[-\w]+)*`
 
-### Directives ###
+### Directives 
 
-- `version`
+- `version` Specifies the range in the repository, project or file.
   - Example: `version=project`
 
   - Values: `project,type`

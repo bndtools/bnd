@@ -13,9 +13,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `size`
+- `size` Icons size in pixels, e.g. 64.
   - Example: `size=64`
 
   - Values: `16,32,48,64,128`

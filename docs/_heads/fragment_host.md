@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `extension:`
+- `extension:` Indicates this extension is a system or boot class path extension. It is only applicable when the Fragment-Host is the System Bundle.
   - Example: `extension:=framework`
 
   - Values: `framework,bootclasspath`
@@ -21,7 +21,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `framework|bootclasspath`
 
 
-- `bundle-version`
+- `bundle-version` A version range to select the bundle version of the exporting bundle. The default value is 0.0.0.
   - Example: `bundle-version=1.3`
 
   - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`

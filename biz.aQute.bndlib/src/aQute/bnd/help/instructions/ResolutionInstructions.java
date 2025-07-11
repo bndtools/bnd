@@ -19,24 +19,29 @@ public interface ResolutionInstructions {
 		/**
 		 * Order the -runbundles by having the least dependent first.
 		 */
+		@SyntaxAnnotation(lead = "Order the -runbundles by having the least dependent first.")
 		LEASTDEPENDENCIESFIRST,
 		/**
 		 * Order the -runbundles by having the least dependent last.
 		 */
+		@SyntaxAnnotation(lead = "Order the -runbundles by having the least dependent last.")
 		LEASTDEPENDENCIESLAST,
 		/**
 		 * Order the -runbundles randomly using the Collections#shuffle.
 		 */
+		@SyntaxAnnotation(lead = "Order the -runbundles randomly using the Collections#shuffle.")
 		RANDOM,
 		/**
 		 * Order the -runbundles sorted by name.
 		 */
+		@SyntaxAnnotation(lead = "Order the -runbundles sorted by name.")
 		SORTBYNAMEVERSION,
 		/**
 		 * Order the -runbundles sorted by name and merged with the existing
 		 * value if it exists. This is the default since it was the classic
 		 * behavior.
 		 */
+		@SyntaxAnnotation(lead = "Order the -runbundles sorted by name and merged with the existing value if it exists. This is the default since it was the classic behavior.")
 		MERGESORTBYNAMEVERSION;
 	}
 

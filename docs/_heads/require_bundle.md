@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `visibility:`
+- `visibility:` If the value is private (Default), then all visible packages from the required bundles are not re-exported. If the value is reexport then bundles that require this bundle will transitively have access to these required bundle’s exported packages.
   - Example: `visibility:=private`
 
   - Values: `private,reexport`
@@ -21,7 +21,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `private|reexport`
 
 
-- `resolution:`
+- `resolution:` If the value is mandatory (default) then the required bundle must exist for this bundle to resolve. If the value is optional, the bundle will resolve even if the required bundle does not exist.
   - Example: `resolution:=optional`
 
   - Values: `mandatory,optional`
@@ -29,7 +29,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `mandatory|optional`
 
 
-- `-split-package:`
+- `-split-package:` Indicates how an imported package should be merged when it is split between different exporters. The default is merge-first with warning.
   - Example: `-split-package:=merge-first`
 
   - Values: `merge-first,merge-last,error,first`
@@ -37,7 +37,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `merge-first|merge-last|error|first`
 
 
-- `bundle-version`
+- `bundle-version` A version range to select the bundle version of the exporting bundle. The default value is 0.0.0.
   - Example: `bundle-version=1.3`
 
   - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`

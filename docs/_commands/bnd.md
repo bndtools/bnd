@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   bnd [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -b --base <string> ]` Use as base directory
 - `[ -d --debug ]` Show log debug output
 - `[ -e --exceptions ]` Print out stack traces when there is an unexpected exception

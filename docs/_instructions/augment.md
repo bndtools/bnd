@@ -11,21 +11,21 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Directives ###
+### Directives 
 
-- `capability:`
+- `capability:` This directive specifies a Provide-Capability instruction, this will therefore likely have to be quoted. Any number of clauses can be specified.
   - Example: `capability:=osgi.extender; osgi.extender=osgi.component; version:Version=1.2`
 
   - Pattern: `.*`
 
 
-- `requirement:`
+- `requirement:` The directive specifies a Require-Capability instruction
   - Example: `requirement:=osgi.identity;filter:="(osgi.identity=a.b.c)"`
 
   - Pattern: `.*`
 
 
-- `version:`
+- `version:`  A version range. If a single version is given it will be used as [<version>,∞). The version range can be prefixed with an ‘@’ for a consumer range (to the next major) or a provider range (to the next minor) when the ‘@’ is a suffix of the version. The range can restrict the augmentation to a limited set of bundles.
   - Pattern: `.*`
 
 <!-- Manual content from: ext/augment.md --><br /><br />

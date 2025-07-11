@@ -13,9 +13,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `-noimport:`
+- `-noimport:` By default, bnd makes all exports also imports. Adding a -noimport: to an exported package will make it export only.
   - Example: `-noimport:=true`
 
   - Values: `true,false`
@@ -23,31 +23,31 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `true|false|TRUE|FALSE`
 
 
-- `uses:`
+- `uses:` Calculated by bnd: It is a comma-separated list of package names that are used by the exported package.
   - Example: `Is calculated by bnd`
 
   - Pattern: `.*`
 
 
-- `mandatory:`
+- `mandatory:` A comma-separated list of attribute names. Note that the use of a comma in the value requires it to be enclosed in double quotes. A bundle importing the package must specify the mandatory attributes, with a value that matches, to resolve to the exported package.
   - Example: `mandatory:="bar,foo"`
 
   - Pattern: `.*`
 
 
-- `include:`
+- `include:` A comma-separated list of class names that must be visible to an importer.
   - Example: `include:="Qux*"`
 
   - Pattern: `.*`
 
 
-- `exclude:`
+- `exclude:` A comma-separated list of class names that must not be visible to an importer.
   - Example: `exclude:="QuxImpl*,BarImpl"`
 
   - Pattern: `.*`
 
 
-- `-import:`
+- `-import:` Experimental.
   - Example: ``
 
   - Pattern: `.*`

@@ -6,21 +6,21 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   eclipse [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -d --dir <string> ]` Path to the project
 - `[ -w --workspace <string> ]` Use the following workspace
 
-## Available sub-commands #
+## Available sub-commands 
 -  `sync` - Synchronized the ./cnf/.settings directory to all the projects 
 
-### sync #
+### sync 
 Synchronized the ./cnf/.settings directory to all the projects
 
-#### Synopsis: #
+#### Synopsis: 
 	   sync 
 
 <!-- Manual content from: ext/eclipse.md --><br /><br />

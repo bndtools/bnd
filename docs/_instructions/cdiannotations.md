@@ -11,9 +11,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Directives ###
+### Directives 
 
-- `discover`
+- `discover` Bean Discovery Mode.
   - Example: `discover=all`
 
   - Values: `(all|annotated|annotated_by_bean|none)`
@@ -21,7 +21,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 
-- `noservicecapabilities`
+- `noservicecapabilities` indicates that no service capabilities will be added for matches.
   - Example: `noservicecapabilities=true`
 
   - Values: `true, false`

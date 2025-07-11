@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   export [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -e --exclude <string;> ]` Exclude files by pattern
 - `[ -E --exporter <string>* ]` 
 - `[ -o --output <string> ]` 

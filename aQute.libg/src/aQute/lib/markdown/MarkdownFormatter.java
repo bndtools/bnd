@@ -35,7 +35,7 @@ public class MarkdownFormatter {
 	 * {@link #h1(String, Object...)}, {@link #h2(String, Object...)} etc.
 	 */
 	public MarkdownFormatter h(int level, String format, Object... args) {
-		f = f.format("#".repeat(level) + " " + format + " #%n", args);
+		f = f.format("#".repeat(level) + " " + format + " %n", args);
 		return this;
 	}
 

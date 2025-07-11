@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   junit [options]  <testclass[:method]...>
 
-#### Options: #
+#### Options: 
 - `[ -c --continuous ]` Set the -testcontinuous flag
 - `[ -e --exclude <string;> ]` Exclude files by pattern
 - `[ -f --force ]` Launch the test even if this bundle does not contain Test-Cases

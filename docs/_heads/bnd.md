@@ -9,7 +9,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
 - `build-deps` Stores build dependencies of bnd from gradle, ant, etc. In general, bnd will be among this. The files in this directory must be fully versioned
   - Example: `~/.bnd/biz.aQute.bnd-2.2.0.jar`
@@ -22,18 +22,17 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
   - Pattern: `.*`
 
-### Options ###
-
-- `email` The user's email address
-    - Pattern: `.*`
-
-
-- `id` The public key for this machine
-    - Pattern: `.*`
+  - Options: 
+    - `email` The user's email address
+      - Pattern: `.*`
 
 
-- `secret` The private key for this machine
-    - Pattern: `.*`
+    - `id` The public key for this machine
+      - Pattern: `.*`
+
+
+    - `secret` The private key for this machine
+      - Pattern: `.*`
 
 
 - `caches/shas` Directory with sha artifacts. The sha is the name of the directory, it contains the artifact with a normal bsn-version.jar name

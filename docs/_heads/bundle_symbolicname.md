@@ -13,9 +13,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `[-\w]+(:?\.[-\w]+)*`
 
-### Options ###
+### Options 
 
-- `singleton:`
+- `singleton:` Indicates that the bundle can only have a single version resolved. A value of true indicates that the bundle is a singleton bundle. The default value is false. The Framework must resolve at most one bundle when multiple versions of a singleton bundle with the same symbolic name are installed. Singleton bundles do not affect the resolution of non-singleton bundles with the same symbolic name.
   - Example: `singleton:=false`
 
   - Values: `true,false`
@@ -23,7 +23,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `true|false|TRUE|FALSE`
 
 
-- `fragment-attachment:`
+- `fragment-attachment:` Defines how fragments are allowed to be attached, see the fragments in Fragment Bundles on page 73. The following values are valid for this directive:
   - Example: ``
 
   - Values: `always|never|resolve-time`
@@ -31,7 +31,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `always|never|resolve-time`
 
 
-- `blueprint.wait-for-dependencies`
+- `blueprint.wait-for-dependencies` 
   - Example: ``
 
   - Values: `true,false`
@@ -39,7 +39,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `true|false|TRUE|FALSE`
 
 
-- `blueprint.timeout`
+- `blueprint.timeout` 
   - Example: ``
 
   - Values: `30000,60000,300000`

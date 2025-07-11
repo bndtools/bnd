@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   properties [options] 
 
-#### Options: #
+#### Options: 
 - `[ -k --key <glob> ]` Filter on key
 - `[ -l --local ]` Get the inherited properties
 - `[ -p --project <string> ]` Identify another project

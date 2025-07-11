@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   settings [options]  <<key>[=<value>]...>
 
-#### Options: #
+#### Options: 
 - `[ -b --base64 ]` Show key in base64
 - `[ -c --clear ]` Clear all the settings, including the public and private key
 - `[ -g --generate ]` Generate a new private/public key pair

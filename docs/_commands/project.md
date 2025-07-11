@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   project [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -p --project <string> ]` Identify another project
 
 <!-- Manual content from: ext/project.md --><br /><br />

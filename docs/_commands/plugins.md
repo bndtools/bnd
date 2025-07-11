@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   plugins [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -p --project <string> ]` Identify another project
 
 <!-- Manual content from: ext/plugins.md --><br /><br />

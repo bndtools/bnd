@@ -13,7 +13,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Directives ###
+### Directives 
 
 - `DEFLATE`
   - Values: `DEFLATE`

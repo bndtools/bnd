@@ -137,7 +137,7 @@ class ManualGenerator {
 			f.format("\n---\n\n");
 
 
-			printMarkdown(f, sx, "");
+			printMarkdown(f, sx, "", 0);
 
 			if (overideContent != null) {
 				f.format("<!-- Manual content from: ext/%s --><br /><br />%n", overrideFile.getName());
@@ -201,7 +201,7 @@ class ManualGenerator {
 		return content.toString();
 	}
 
-	private void printMarkdown(MarkdownFormatter f, Syntax sx, String indent) {
+	private void printMarkdown(MarkdownFormatter f, Syntax sx, String indent, int level) {
 		if (sx == null)
 			return;
 
@@ -222,16 +222,26 @@ class ManualGenerator {
 			f.endP();
 		}
 		if (sx.getChildren() != null && sx.getChildren().length > 0) {
-			if (sx.getHeader()
-				.startsWith("-")) {
-				f.h3("Directives");
-			} else {
-				f.h3("Options");
+			if(level == 0) {
+
+				if (sx.getHeader()
+					.startsWith("-")) {
+					f.h(3 + level, "Directives");
+				} else {
+					f.h(3 + level, "Options");
+				}
+			}
+			else {
+				f.format("%s- Options: ", indent);
 			}
 
 			for (Syntax child : sx.getChildren()) {
-				f.format("\n- `%s`\n", child.getHeader());
-				printMarkdown(f, child, indent + "  ");
+				f.format("\n%s- `%s`", indent + "  ".repeat(level), child.getHeader());
+				if(child.getLead() != null) {
+					f.format(" %s", child.getLead());
+				}
+				f.format("\n");
+				printMarkdown(f, child, indent + "  ".repeat(level + 1), level + 1);
 			}
 		}
 

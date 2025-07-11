@@ -11,33 +11,33 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
-### Options ###
+### Options 
 
-- `name`
+- `name` The display name of the developer
   - Example: `name='Peter Kriens'`
 
   - Pattern: `.*`
 
 
-- `organization`
+- `organization` The display name of organization that employs the developer
   - Example: `organization='aQute'`
 
   - Pattern: `.*`
 
 
-- `roles`
+- `roles` Roles played by the developer in this bundle's project (see Maven)
   - Example: `roles=ceo`
 
   - Pattern: `.*`
 
 
-- `timezone`
+- `timezone` Timezone in offset of UTC this developer usually resides in
   - Example: `timezone+2`
 
   - Pattern: `.*`
 
 
-- `organizationUrl`
+- `organizationUrl` The URL of the developer's organization
   - Example: `organizationURL='http://www.aQute.biz'`
 
   - Pattern: `.*`

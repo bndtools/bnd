@@ -6,11 +6,11 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   schema [options]  ...
 
 
-#### Options: #
+#### Options: 
 - `[ -o --output <string> ]` Output file
 - `[ -x --xsl <string> ]` Specify an XSL file for pretty printing
 

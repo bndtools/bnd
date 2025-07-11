@@ -6,10 +6,10 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-### Synopsis: #
+### Synopsis: 
 	   index [options]  <bundles...>
 
-#### Options: #
+#### Options: 
 - `[ -b --base <uri> ]` URI from which to make paths in the index file relative (default: relative to the output file directory). The specified value must be a prefix of the absolute output file directory in order to have any effect
 - `[ -d --directory <file> ]` The directory to write the repository index file (default: the current directory)
 - `[ -n --name <string> ]` The name of the index (default: name of the output file directory)
