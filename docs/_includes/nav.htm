@@ -2,15 +2,30 @@
 <ul class="container12 menu-bar" style="display:flex;align-items:center">
 	<li span=8><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
 			class=menu-logo src="{{ '/img/bnd-80x40-white.png' | prepend:site.baseurl }}"></a>
-			<a href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro
-			</a><a href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers
-			</a><a href="{{ '/chapters/825-instructions-ref.html' | prepend:site.baseurl }}">Instructions
-			</a><a href="{{ '/chapters/855-macros-ref.html' | prepend:site.baseurl }}">Macros
-			</a><a href="{{ '/chapters/400-commands.html' | prepend:site.baseurl }}">Commands
-			</a><div class="releases">
-			         <button class="dropbtn"><span class="fa fa-bars"></span> {{ site.releasename }}</button>
-			         <div class="dropdown-content"></div>
-			   </div>
+			<a 
+				class="{% if page.url == '/chapters/110-introduction.html' %}selected{% endif %}" 
+				href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro
+			</a>
+			<a 
+				class="{% if page.url == '/chapters/800-headers.html' or page.url contains '/heads/' %}selected{% endif %}"
+				href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers
+			</a>
+			<a 
+				class="{% if page.url == '/chapters/825-instructions-ref.html' or page.url contains '/instructions/' %}selected{% endif %}"
+				href="{{ '/chapters/825-instructions-ref.html' | prepend:site.baseurl }}">Instructions
+			</a>
+			<a 
+				class="{% if page.url == '/chapters/855-macros-ref.html' or page.url contains '/macros/' %}selected{% endif %}"
+				href="{{ '/chapters/855-macros-ref.html' | prepend:site.baseurl }}">Macros
+			</a>
+			<a 
+				class="{% if page.url == '/chapters/400-commands.html' or page.url contains '/commands/' %}selected{% endif %}"
+				href="{{ '/chapters/400-commands.html' | prepend:site.baseurl }}">Commands
+			</a>
+			<div class="releases">
+				<button class="dropbtn"><span class="fa fa-bars"></span> {{ site.releasename }}</button>
+				<div class="dropdown-content"></div>
+			</div>
     <li span=4>     
         <div class="search-container">
 			<button type="button" class="fa fa-search" onclick="openModal()"></button>
