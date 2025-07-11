@@ -1,0 +1,8 @@
+<nav class=next-prev>
+    {% if page.previous.url %} 
+    <a href='{{ page.previous.url | prepend: site.baseurl }}' title="{{ page.previous.title }}">Prev</a> 
+    {% endif %} 
+    {% if page.next.url %}
+    <a href='{{ page.next.url | prepend: site.baseurl }}' title="{{ page.next.title }}">Next</a>
+    {% endif %} 
+</nav>

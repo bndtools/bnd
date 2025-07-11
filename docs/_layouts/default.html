@@ -16,13 +16,20 @@
 			
 		<li span=9>
 			<div class=notes-margin>
-				
-				<main data-pagefind-body>
-				<h1>{{h1}} {{page.title}}               {% if page.class %}
-                 <div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
-                     {{page.class}}
-                   </div>
-                {% endif %}     
+
+<main data-pagefind-body>
+
+				<div class="container-right">
+					{% include pagination.htm %}
+					
+					{% if page.class %}
+						<div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
+							{{page.class}}
+						</div>
+					{% endif %}
+				</div>
+
+				<h1>{{h1}} {{page.title}}               
 				</h1>
 {% if page.summary %}
 
@@ -39,7 +46,8 @@
 	</ul>
 
 
-	
+
+
 	{% include footer.htm %}
 </body>
 </html>
