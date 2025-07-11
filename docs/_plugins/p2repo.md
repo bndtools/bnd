@@ -4,7 +4,7 @@ layout: default
 summary: A plugin to use P2 repositories 
 ---
 
-This is a read only Repository, that enables bnd to get dependencies from a P2 Repository. As bnd does not know the concept of Eclipse Features or Directory shaped bundles, it will not recognize such artifacts.
+This is a read only Repository, that enables bnd to get dependencies from a P2 Repository / P2Repository. As bnd does not know the concept of Eclipse Features or Directory shaped bundles, it will not recognize such artifacts.
 
 As P2 does not support all the necessary OSGi metadata, bnd will download the whole content of the repository, so it can analyze it and build its own index. So be cautious, when referencing large repositories. 
 

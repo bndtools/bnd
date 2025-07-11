@@ -4,7 +4,7 @@ layout: default
 summary: A plugin to use a Maven POM as a repository
 ---
 
-A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.
+A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository / BndPomRepository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.
 
 The pom can be a file on the local file system, a URL, a group, artifact, version (GAV) coordinate, or a query expression on maven central.
 
