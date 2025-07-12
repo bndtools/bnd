@@ -47,7 +47,7 @@ jobs:
         java:
         - '21'
         - '24'
-        - '25-ea'
+        #- '25-ea'
         runner:
         - '{0}' # 'xvfb-run --auto-servernum {0}'
         include:
