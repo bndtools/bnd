@@ -199,6 +199,7 @@ public interface Constants {
 	String		NOCLASSFORNAME								= "-noclassforname";
 	String		NOIMPORTJAVA								= "-noimportjava";
 	String		NOBUNDLES									= "-nobundles";
+	String		NOPARALLEL									= "-noparallel";
 	String		OUTPUTMASK									= "-outputmask";																																						// default
 																																																									// ${@bsn}.jar
 

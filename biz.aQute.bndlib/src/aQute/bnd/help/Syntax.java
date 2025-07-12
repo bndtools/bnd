@@ -623,6 +623,8 @@ public class Syntax implements Constants {
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
 			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOPARALLEL, "Prevent Gradle tasks in the same category from executing in parallel.",
+			NOPARALLEL + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NAMESECTION,
 			"Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages.",
 			NAMESECTION + "=*;baz=true, abc/def/bar/X.class;bar=3", null, null),
@@ -652,6 +654,9 @@ public class Syntax implements Constants {
 			SERVICE_COMPONENT + "=com.acme.Foo?;activate='start'", null, null),
 
 		new Syntax(POM, "Generate a maven pom.", POM + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(PROFILE,
+			"Sets a prefix that is used when a variable is not found, it is then re-searched under \"[<[profile]>]<[key]>",
+			"-profile: \"[<[profile]>]<[key]>", null, null),
 
 		new Syntax(RELEASEREPO, "Specifies to which repo the project should be released.", RELEASEREPO + "=cnf",
 			"${repos}", null),
