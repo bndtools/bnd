@@ -90,6 +90,7 @@ jobs:
         - '17'
         - '21'
         - '24'
+        - '25-ea'
         runner:
         - '{0}' # 'xvfb-run --auto-servernum {0}'
     name: Rebuild JDK${{ matrix.java }} ${{ matrix.os }}
