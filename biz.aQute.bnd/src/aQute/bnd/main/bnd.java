@@ -38,6 +38,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -69,6 +71,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
+import aQute.bnd.build.BuildWatcher;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
@@ -923,26 +926,31 @@ public class bnd extends Processor {
 		final Set<Project> projectsWellDone = new HashSet<>();
 
 		for (Project p : projects) {
-			if (manageDeps) {
-				final Collection<Project> projectDeps = p.getDependson(); // ordered
-				if (opts.verbose()) {
-					out.println("Project dependencies for: " + p.getName());
-					projectDeps.forEach(pr -> out.println(
-						" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
-				}
+			perProject(p, opts, run, manageDeps, projectsWellDone);
+		}
+	}
 
-				projectDeps.removeAll(projectsWellDone);
-
-				for (Project dep : projectDeps) {
-					run.doit(dep);
-					projectsWellDone.add(dep);
-				}
+	private void perProject(Project p, ProjectWorkspaceOptions opts, PerProject run, boolean manageDeps,
+		final Set<Project> projectsWellDone) throws Exception {
+		if (manageDeps) {
+			final Collection<Project> projectDeps = p.getDependson(); // ordered
+			if (opts.verbose()) {
+				out.println("Project dependencies for: " + p.getName());
+				projectDeps.forEach(pr -> out.println(
+					" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
 			}
 
-			run.doit(p);
+			projectDeps.removeAll(projectsWellDone);
 
-			getInfo(p, p + ": ");
+			for (Project dep : projectDeps) {
+				run.doit(dep);
+				projectsWellDone.add(dep);
+			}
 		}
+
+		run.doit(p);
+
+		getInfo(p, p + ": ");
 	}
 
 	private List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
@@ -979,9 +987,12 @@ public class bnd extends Processor {
 
 		@Description("Force non-incremental")
 		boolean force();
+
+		@Description("Continuous incremental build")
+		boolean watch();
 	}
 
-	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
+	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.")
 	public void _build(final buildoptions opts) throws Exception {
 
 		perProject(opts, p -> {
@@ -990,6 +1001,32 @@ public class bnd extends Processor {
 			p.compile(opts.test());
 			p.build(opts.test());
 		});
+
+		if (opts.watch()) {
+			Executor executor = Executors.newCachedThreadPool();
+			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+			List<Project> projects = getFilteredProjects(opts);
+			try (BuildWatcher bw = new BuildWatcher(projects, (p) -> {
+				try {
+					perProject(p, opts, (p2) -> {
+						p2.compile(false);
+						p2.build();
+					}, true, new HashSet<Project>());
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			}, executor, scheduler)) {
+				logger.info("Watching {} project(s) for changes. Press Ctrl+C to stop.", projects.size());
+				out.format("Watching %s project(s) for changes. Press Ctrl+C to stop.", projects.size());
+				new CountDownLatch(1).await();
+				return;
+
+			}
+
+		}
+
+
 	}
 
 	@Description("Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.")
