@@ -652,18 +652,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				sonatypeDir = Files.createTempDirectory("sonatype_");
 				File releaseDir = getSonatypeDir().resolve("release")
 					.toFile();
-				// releaseDir.deleteOnExit();
-				File snapshotDir = getSonatypeDir().resolve("snapshots")
-					.toFile();
-				// snapshotDir.deleteOnExit();
+				releaseDir.deleteOnExit();
 				release = MavenBackingRepository.create(releaseDir.toURI()
-					.toString(), reporter, localRepo, getClient());
-				snapshot = MavenBackingRepository.create(snapshotDir.toURI()
 					.toString(), reporter, localRepo, getClient());
 			} else {
 				release = MavenBackingRepository.create(configuration.releaseUrl(),
-					reporter, localRepo, getClient());
-				snapshot = MavenBackingRepository.create(configuration.snapshotUrl(),
 					reporter, localRepo, getClient());
 			}
 
@@ -727,6 +720,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	private boolean isSonatypeCentralPortal(String releaseUrl) {
+		if (releaseUrl == null)
+			return false;
 		return releaseUrl.contains("central.sonatype.com/api/v1/publisher/upload/");
 	}
 
