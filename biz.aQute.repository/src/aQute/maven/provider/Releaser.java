@@ -4,11 +4,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringJoiner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
@@ -21,10 +32,10 @@ import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.maven.provider.MetadataParser.SnapshotVersion;
 
 class Releaser implements Release {
-	final List<Archive>					upload			= new ArrayList<>();
+	final List<Archive>					upload					= new ArrayList<>();
 	final MavenRepository				home;
 	final Revision						revision;
-	final RevisionMetadata				programMetadata	= new RevisionMetadata();
+	final RevisionMetadata				programMetadata			= new RevisionMetadata();
 	boolean								force;
 	boolean								aborted;
 	private File						dir;
@@ -32,6 +43,14 @@ class Releaser implements Release {
 	protected MavenBackingRepository	repo;
 	private Properties					context;
 	private String						passphrase;
+	private HttpClient					client;
+	private String						deploymentId;
+	private final static Logger			logger					= LoggerFactory.getLogger(Releaser.class);
+
+	private static final String			CENTRAL_PORTAL_API_BASE	= "https://central.sonatype.com/api/v1/publisher";
+	private static final String			UPLOAD_ENDPOINT			= "/upload";
+	private static final String			DEPLOYMENT_ENDPOINT		= "/deployments";
+	private static final String			STATUS_ENDPOINT			= "/status";
 
 	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo, Properties context)
 		throws Exception {
@@ -40,6 +59,11 @@ class Releaser implements Release {
 		this.repo = repo;
 		this.context = context;
 		this.dir = home.toLocalFile(revision.path);
+
+		// Get HttpClient from the repo if it's a remote repository
+		if (repo instanceof MavenRemoteRepository) {
+			this.client = ((MavenRemoteRepository) repo).client;
+		}
 
 		IO.delete(this.dir);
 		check();
@@ -60,6 +84,18 @@ class Releaser implements Release {
 				if (!localOnly) {
 					uploadAll(upload.iterator());
 					updateMetadata();
+					if (home.getName()
+						.contains("Sonatype")) {
+						logger.info("Creating and uploading deployment bundle for Sonatype Central Portal");
+						MavenBackingRepository mbr = home.getReleaseRepositories()
+							.get(0);
+						if (mbr instanceof MavenFileRepository) {
+							MavenFileRepository mfr = (MavenFileRepository) mbr;
+							client = mfr.getClient();
+							File deploymentBundle = mfr.createZipArchive();
+							uploadToPortal(deploymentBundle);
+						}
+					}
 				}
 				home.clear(revision);
 			}
@@ -166,8 +202,7 @@ class Releaser implements Release {
 			MavenRepository.logger.error("something went wrong during upload", e);
 			try {
 				repo.delete(archive.remotePath);
-			} catch (Exception ee) {
-			}
+			} catch (Exception ee) {}
 			throw e;
 		}
 	}
@@ -248,6 +283,111 @@ class Releaser implements Release {
 	@Override
 	public void setPassphrase(String passphrase) {
 		this.passphrase = passphrase;
+	}
+
+	private void uploadToPortal(File deploymentBundle) throws Exception {
+		logger.info("Uploading deployment bundle to Sonatype Central Portal...");
+		String uploadUrl = CENTRAL_PORTAL_API_BASE + UPLOAD_ENDPOINT;
+
+		try {
+			String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+			File multipartForm = createMultipartForm(deploymentBundle, boundary);
+
+			logger.debug("Upload details: URL={}, Bundle size={} bytes, Multipart size={} bytes", uploadUrl,
+				deploymentBundle.length(), multipartForm.length());
+
+			StringJoiner urlQueryParamJoiner = new StringJoiner("&", "?", "");
+
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss.SSS");
+			String msg = String.format("uploaded from bnd on %s", LocalDateTime.now()
+				.format(dtf));
+			String encodedMsg = URLEncoder.encode(msg, StandardCharsets.UTF_8)
+				.replace("+", "%20");
+			String paramName = !encodedMsg.isEmpty() ? "name=" + encodedMsg : "";
+			urlQueryParamJoiner.add(paramName);
+
+			String publishType = home.isAutoPublish() ? "publishingType=AUTOMATIC" : "publishingType=USER_MANAGED";
+			urlQueryParamJoiner.add(publishType);
+
+			var taggedData = client.build()
+				.headers("Content-Type", "multipart/form-data; boundary=" + boundary)
+				.upload(multipartForm)
+				.post()
+				.asTag()
+				.go(new URI(uploadUrl + urlQueryParamJoiner.toString()).toURL());
+
+			if (taggedData.isOk()) {
+				deploymentId = IO.collect(taggedData.getInputStream());
+				logger.info("Successfully uploaded deployment bundle. Deployment ID: {}", deploymentId);
+
+				checkDeploymentStatus(deploymentId);
+			} else {
+				// Get error response details
+				String errorBody = "";
+				try {
+					errorBody = IO.collect(taggedData.getInputStream());
+				} catch (Exception e) {
+					logger.warn("Could not read error response body", e);
+				}
+
+				logger.error("Upload failed with HTTP {}: {}", taggedData.getResponseCode(), errorBody);
+				throw new IOException(
+					"Failed to upload deployment bundle. HTTP " + taggedData.getResponseCode() + ": " + errorBody);
+			}
+		} catch (Exception e) {
+			logger.error("Failed to upload to Sonatype Central Portal", e);
+			throw e;
+		}
+	}
+
+	/**
+	 * /** Create a multipart form data file for upload
+	 */
+	private File createMultipartForm(File deploymentBundle, String boundary) throws IOException {
+		File multipartFile = File.createTempFile("multipart-", ".form");
+
+		try (var out = Files.newOutputStream(multipartFile.toPath())) {
+			// Start boundary
+			out.write(("--" + boundary + "\r\n").getBytes());
+			out.write("Content-Disposition: form-data; name=\"bundle\"; filename=\"".getBytes());
+			out.write(deploymentBundle.getName()
+				.getBytes());
+			out.write("\"\r\n".getBytes());
+			out.write("Content-Type: application/zip\r\n\r\n".getBytes());
+
+			// File content
+			Files.copy(deploymentBundle.toPath(), out);
+
+			// End boundary
+			out.write(("\r\n--" + boundary + "--\r\n").getBytes());
+		}
+
+		return multipartFile;
+	}
+
+	private void checkDeploymentStatus(String deploymentId) throws Exception {
+		if (deploymentId == null || "unknown".equals(deploymentId)) {
+			logger.warn("Cannot check deployment status - deployment ID not available");
+			return;
+		}
+
+		String statusUrl = CENTRAL_PORTAL_API_BASE + STATUS_ENDPOINT + "?id=" + deploymentId;
+
+		try {
+			var taggedData = client.build()
+				.post()
+				.asTag()
+				.go(new URI(statusUrl).toURL());
+
+			if (taggedData.isOk()) {
+				String responseBody = IO.collect(taggedData.getInputStream());
+				logger.info("Deployment status check successful. Response: {}", responseBody);
+			} else {
+				logger.warn("Failed to check deployment status. HTTP {}", taggedData.getResponseCode());
+			}
+		} catch (Exception e) {
+			logger.warn("Failed to check deployment status", e);
+		}
 	}
 
 }

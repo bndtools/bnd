@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -125,6 +127,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private final AtomicReference<Throwable>	open				= new AtomicReference<>();
 	Optional<Workspace>							workspace;
 	private AtomicBoolean						polling				= new AtomicBoolean(false);
+	private Path								sonatypeDir;
 
 	/**
 	 * Put result
@@ -538,6 +541,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private static final Predicate<String> pomPropertiesFilter = new PathSet("META-INF/maven/*/*/pom.properties")
 		.matches();
 
+
 	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context) throws Exception {
 		return jar.getResources(pomPropertiesFilter)
 			.findFirst()
@@ -639,17 +643,35 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		inited = true;
 
+		List<MavenBackingRepository> release = null;
+		List<MavenBackingRepository> snapshot = null;
 		try {
-			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
-				localRepo, client);
-			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
-				localRepo, client);
+			String releaseUrl = configuration.releaseUrl();
+			if (isSonatypeCentralPortal(releaseUrl)) {
+				logger.debug("deployment to Sonatype Central Portal configured");
+				sonatypeDir = Files.createTempDirectory("sonatype_");
+				File releaseDir = getSonatypeDir().resolve("release")
+					.toFile();
+				// releaseDir.deleteOnExit();
+				File snapshotDir = getSonatypeDir().resolve("snapshots")
+					.toFile();
+				// snapshotDir.deleteOnExit();
+				release = MavenBackingRepository.create(releaseDir.toURI()
+					.toString(), reporter, localRepo, getClient());
+				snapshot = MavenBackingRepository.create(snapshotDir.toURI()
+					.toString(), reporter, localRepo, getClient());
+			} else {
+				release = MavenBackingRepository.create(configuration.releaseUrl(),
+					reporter, localRepo, getClient());
+				snapshot = MavenBackingRepository.create(configuration.snapshotUrl(),
+					reporter, localRepo, getClient());
+			}
 
 			MavenBackingRepository staging = null;
 
 			if (configuration.stagingUrl() != null) {
 				staging = MavenBackingRepository.getBackingRepository(configuration.stagingUrl(),
-					reporter, localRepo, client);
+					reporter, localRepo, getClient());
 			}
 
 			for (MavenBackingRepository mbr : release) {
@@ -667,8 +689,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				}
 
 			storage = new MavenRepository(localRepo, name, release, staging, snapshot,
-				client.promiseFactory()
+				getClient().promiseFactory()
 				.executor(), reporter);
+			((MavenRepository) storage).setAutoPublish(configuration.autopublish());
 
 			File indexFile = getIndexFile();
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
@@ -678,7 +701,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 			Set<String> multi = Strings.splitAsStream(configuration.multi())
 				.collect(Sets.toSet());
-			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
+			this.index = new IndexFile(domain, reporter, indexFile, source, storage, getClient().promiseFactory(), multi);
 			this.index.open();
 
 			try (Formatter f = new Formatter()) {
@@ -703,6 +726,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 	}
 
+	private boolean isSonatypeCentralPortal(String releaseUrl) {
+		return releaseUrl.contains("central.sonatype.com/api/v1/publisher/upload/");
+	}
+
 	private void validateUris(List<MavenBackingRepository> release, Formatter f) {
 		release.stream()
 			.map(mb -> {
@@ -715,7 +742,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			})
 			.filter(Objects::nonNull)
 			.forEach(u -> {
-				String validateURI = client.validateURI(u);
+				String validateURI = getClient().validateURI(u);
 				if (validateURI != null)
 					f.format("%s : %s\n", u, validateURI);
 			});
@@ -922,7 +949,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private boolean addPom(URI uri) throws Exception {
 		try {
 			// http://search.maven.org/remotecontent?filepath=com/netflix/governator/governator-commons-cli/1.12.10/governator-commons-cli-1.12.10.pom
-			IPom pom = storage.getPom(client.connect(uri.toURL()));
+			IPom pom = storage.getPom(getClient().connect(uri.toURL()));
 			Archive binaryArchive = pom.binaryArchive();
 			index.add(binaryArchive);
 			return true;
@@ -1073,6 +1100,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public boolean isRemote() {
 		return remote;
+	}
+
+	public Path getSonatypeDir() {
+		return sonatypeDir;
+	}
+
+	public HttpClient getClient() {
+		return client;
 	}
 
 }
