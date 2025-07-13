@@ -727,6 +727,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	private boolean isSonatypeCentralPortal(String releaseUrl) {
+		if (releaseUrl == null)
+			return false;
 		return releaseUrl.contains("central.sonatype.com/api/v1/publisher/upload/");
 	}
 
