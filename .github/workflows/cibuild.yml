@@ -79,7 +79,7 @@ jobs:
           ${{ matrix.java }}
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96
-    
+
     #- name: Cache cnf cache and ~/.bnd/urlcache/
     #  id: cache-cnf-cache
     #  uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
@@ -95,7 +95,7 @@ jobs:
       id: build
       run: |
         ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
-    
+
     - name: Configure settings.xml for Publish
       if: ${{ matrix.canonical }}
       uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
@@ -123,3 +123,19 @@ jobs:
           */generated/test-reports/*/TEST-*.xml
           maven/*/target/surefire-reports/TEST-*.xml
           gradle-plugins/*/build/test-results/*/TEST-*.xml
+    - name: Publish PR p2 repo
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        PR=${{ github.event.pull_request.number }}
+        ARTIFACT_PATH="org.bndtools.p2/generated/org.bndtools.p2.jar"
+        if [ -f "$ARTIFACT_PATH" ]; then
+          curl -u "${{ secrets.JFROG_USERNAME }}:${{ secrets.JFROG_PASSWORD }}" \
+            -H "X-Explode-Archive: true" \
+            -T "$ARTIFACT_PATH" \
+            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}/org.bndtools.p2.zip"
+        else
+          echo "Artifact $ARTIFACT_PATH not found, skipping upload."
+        fi
+      env:
+        JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
+        JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}

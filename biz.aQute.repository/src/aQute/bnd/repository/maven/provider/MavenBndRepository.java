@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -281,8 +282,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			String clazz = extra.clazz;
 			File file = new File(path);
 			if (!file.isFile())
-				reporter.error("-release-maven archive contains a path to a file that does not exist: %s",
-					file);
+				reporter.error("-release-maven archive contains a path to a file that does not exist: %s", file);
 			else {
 				try (Resource r = new FileResource(file)) {
 					Resource what;
@@ -485,7 +485,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			release.passphrase = sign.get("passphrase");
 		}
 
-
 		int clazz = 0;
 
 		for (Iterator<Entry<String, Attrs>> it = p.entrySet()
@@ -513,8 +512,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							.getAbsolutePath();
 					} else {
 						reporter.warning(
-							"The -maven-release instruction has an 'archive' without the path attribute: %s",
-							e);
+							"The -maven-release instruction has an 'archive' without the path attribute: %s", e);
 						continue;
 					}
 					extra.path = path;
@@ -540,7 +538,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private static final Predicate<String> pomPropertiesFilter = new PathSet("META-INF/maven/*/*/pom.properties")
 		.matches();
-
 
 	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context) throws Exception {
 		return jar.getResources(pomPropertiesFilter)
@@ -643,9 +640,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		inited = true;
 
-		List<MavenBackingRepository> release = null;
-		List<MavenBackingRepository> snapshot = null;
 		try {
+			List<MavenBackingRepository> release = new ArrayList<MavenBackingRepository>();
 			String releaseUrl = configuration.releaseUrl();
 			if (isSonatypeCentralPortal(releaseUrl)) {
 				logger.debug("deployment to Sonatype Central Portal configured");
@@ -653,18 +649,23 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				File releaseDir = getSonatypeDir().resolve("release")
 					.toFile();
 				releaseDir.deleteOnExit();
-				release = MavenBackingRepository.create(releaseDir.toURI()
+				List<MavenBackingRepository> releaseLocal = MavenBackingRepository.create(releaseDir.toURI()
 					.toString(), reporter, localRepo, getClient());
+				release.addAll(releaseLocal);
+				List<MavenBackingRepository> releaseRemote = MavenBackingRepository.create(releaseUrl, reporter,
+					localRepo, client);
+				release.addAll(releaseRemote);
 			} else {
-				release = MavenBackingRepository.create(configuration.releaseUrl(),
-					reporter, localRepo, getClient());
+				release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, getClient());
 			}
 
+			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
+				localRepo, client);
 			MavenBackingRepository staging = null;
 
 			if (configuration.stagingUrl() != null) {
-				staging = MavenBackingRepository.getBackingRepository(configuration.stagingUrl(),
-					reporter, localRepo, getClient());
+				staging = MavenBackingRepository.getBackingRepository(configuration.stagingUrl(), reporter, localRepo,
+					getClient());
 			}
 
 			for (MavenBackingRepository mbr : release) {
@@ -681,8 +682,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					}
 				}
 
-			storage = new MavenRepository(localRepo, name, release, staging, snapshot,
-				getClient().promiseFactory()
+			storage = new MavenRepository(localRepo, name, release, staging, snapshot, getClient().promiseFactory()
 				.executor(), reporter);
 			((MavenRepository) storage).setAutoPublish(configuration.autopublish());
 
@@ -694,7 +694,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 			Set<String> multi = Strings.splitAsStream(configuration.multi())
 				.collect(Sets.toSet());
-			this.index = new IndexFile(domain, reporter, indexFile, source, storage, getClient().promiseFactory(), multi);
+			this.index = new IndexFile(domain, reporter, indexFile, source, storage, getClient().promiseFactory(),
+				multi);
 			this.index.open();
 
 			try (Formatter f = new Formatter()) {

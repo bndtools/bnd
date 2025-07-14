@@ -84,13 +84,13 @@ class Releaser implements Release {
 				if (!localOnly) {
 					uploadAll(upload.iterator());
 					updateMetadata();
-					if (home.getName()
-						.contains("Sonatype")) {
-						logger.info("Creating and uploading deployment bundle for Sonatype Central Portal");
-						MavenBackingRepository mbr = home.getReleaseRepositories()
-							.get(0);
-						if (mbr instanceof MavenFileRepository) {
-							MavenFileRepository mfr = (MavenFileRepository) mbr;
+					List<MavenBackingRepository> releaseRepositories = home.getReleaseRepositories();
+					if (!releaseRepositories.isEmpty()) {
+						MavenBackingRepository mavenBackingRepository = releaseRepositories.get(0);
+						if (mavenBackingRepository.toString()
+							.contains("/sonatype-")) {
+							logger.info("Creating and uploading deployment bundle for Sonatype Central Portal");
+							MavenFileRepository mfr = (MavenFileRepository) mavenBackingRepository;
 							client = mfr.getClient();
 							File deploymentBundle = mfr.createZipArchive();
 							uploadToPortal(deploymentBundle);
