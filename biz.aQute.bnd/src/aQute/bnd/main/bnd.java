@@ -1003,16 +1003,18 @@ public class bnd extends Processor {
 		});
 
 		if (opts.watch()) {
+			// continous build (for Live Coding)
 			Executor executor = Executors.newCachedThreadPool();
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 			List<Project> projects = getFilteredProjects(opts);
 			try (BuildWatcher bw = new BuildWatcher(projects, (p) -> {
 				try {
+					boolean manageDeps = false; // only this bundle
 					perProject(p, opts, (p2) -> {
-						p2.compile(false);
-						p2.build();
-					}, true, new HashSet<Project>());
+						p2.compile(opts.test());
+						p2.build(opts.test());
+					}, manageDeps, new HashSet<Project>());
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -1026,6 +1028,11 @@ public class bnd extends Processor {
 
 		}
 
+		// default build
+		perProject(opts, p -> {
+			p.compile(opts.test());
+			p.build(opts.test());
+		});
 
 	}
 
