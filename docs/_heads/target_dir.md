@@ -11,3 +11,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 - Pattern: `.*`
 
+<!-- Manual content from: ext/target_dir.md --><br /><br />
+
+The `target-dir` header is also useful to [avoid conflicts between different build tools](/chapters/150-build.html#avoiding-target-dir-conflicts-between-different-build-tools).

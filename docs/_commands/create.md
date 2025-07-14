@@ -15,9 +15,10 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -c --cdir <string> ]` directory
 - `[ -f --file <string> ]` Jar file (f option)
 - `[ -F --force ]` Force write event if there are errors
-- `[ -m --manifest ]` No manifest (M option)
+- `[ -m --manifest <string> ]` Use manifest (m option)
 - `[ -n --nocompression ]` No compression (0 option)
 - `[ -p --properties <string> ]` Properties for wrapping
+- `[ -s --skipmanifest ]` No manifest.
 - `[ -v --verbose ]` Verbose (v option)
 - `[ -V --version <version> ]` Bundle Version for wrap
 - `[ -w --wrap ]` Wrap
