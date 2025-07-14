@@ -2,9 +2,12 @@ package aQute.bnd.build;
 
 import java.io.Closeable;
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -17,6 +20,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.watcher.FileWatcher;
 import aQute.lib.watcher.FileWatcher.Builder;
@@ -63,21 +67,13 @@ public class BuildWatcher implements Closeable {
 				fileToProject.put(inc, project);
 			}
 
-			// Watch all .java source files
-			Collection<File> sources = project.getSourcePath();
-			if (sources != null) {
-				Collection<File> javasources = collectSourceFolders(sources);
-				builder.files(javasources);
-				for (File f : javasources) {
+			List<File> watchFolders = Arrays.asList(project.getBase());
+			Collection<File> watchedFiles = collectSourceFolders(project, watchFolders);
+				builder.files(watchedFiles);
+				for (File f : watchedFiles) {
 					fileToProject.put(f, project);
 				}
-			}
 
-			//
-			// Set<File> resources = project.getResourcePaths();
-			// if (resources != null) {
-			// builder.files(resources);
-			// }
 		}
 
 
@@ -91,16 +87,30 @@ public class BuildWatcher implements Closeable {
 		System.out.println(String.format("[BuildWatcher] Watching projects: %s", projects));
 	}
 
-	private static Collection<File> collectSourceFolders(Collection<File> sourceRoots) {
-		Set<File> files = new HashSet<>();
-		for (File root : sourceRoots) {
-			if (root.isDirectory()) {
-				IO.tree(root, "*")
+	private static Collection<File> collectSourceFolders(Project project, Collection<File> sourceRoots) {
+		try {
+			Path targetDir = project.getTarget()
+				.toPath()
+				.normalize()
+				.toAbsolutePath();
+
+			Set<File> files = new LinkedHashSet<>();
+			for (File root : sourceRoots) {
+				if (root.isDirectory()) {
+					IO.tree(root)
 					.stream()
+						// exclude target-dir, .class files etc.
+						.filter(f -> !f.getName()
+							.endsWith(".class")
+							&& !f.toPath()
+							.startsWith(targetDir))
 					.forEach(files::add);
+				}
 			}
+			return files;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
-		return files;
 	}
 
 	private void onFileChanged(File file, String kind) {
@@ -116,11 +126,6 @@ public class BuildWatcher implements Closeable {
 			scheduledExecutor.schedule(() -> {
 				try {
 					logger.info("[BuildWatcher] Rebuilding project: {}", project.getName());
-					// project.updateModified(System.currentTimeMillis(),
-					// "Testing");
-					// project.clear(); // Optional: clears internal caches
-					// project.clean();
-					// project.setChanged();
 					perProject.accept(project);
 					logger.info("[BuildWatcher] Build successful for {}", project.getName());
 				} catch (Exception e) {

@@ -995,19 +995,20 @@ public class bnd extends Processor {
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.")
 	public void _build(final buildoptions opts) throws Exception {
 
-		perProject(opts, p -> p.build(opts.test()));
 
 		if (opts.watch()) {
+			// continous build (for Live Coding)
 			Executor executor = Executors.newCachedThreadPool();
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 			List<Project> projects = getFilteredProjects(opts);
 			try (BuildWatcher bw = new BuildWatcher(projects, (p) -> {
 				try {
+					boolean manageDeps = false; // only this bundle
 					perProject(p, opts, (p2) -> {
-						p2.compile(false);
-						p2.build();
-					}, true, new HashSet<Project>());
+						p2.compile(opts.test());
+						p2.build(opts.test());
+					}, manageDeps, new HashSet<Project>());
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -1021,6 +1022,11 @@ public class bnd extends Processor {
 
 		}
 
+		// default build
+		perProject(opts, p -> {
+			p.compile(opts.test());
+			p.build(opts.test());
+		});
 
 	}
 
