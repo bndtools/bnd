@@ -2,6 +2,7 @@ package aQute.bnd.build;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,14 +40,15 @@ public class BuildWatcher implements Closeable {
 	private final AtomicBoolean propertiesChanged = new AtomicBoolean(false);
 	private volatile FileWatcher fw;
 	private final Consumer<Project>			perProject;
+	private final PrintStream				out;
 
 	public BuildWatcher(Collection<Project> projects, Consumer<Project> perProject, Executor executor,
-		ScheduledExecutorService scheduledExecutor) throws Exception {
+		ScheduledExecutorService scheduledExecutor, PrintStream out) throws Exception {
 		this.projects = projects;
 		this.perProject = perProject;
 		this.executor = executor;
 		this.scheduledExecutor = scheduledExecutor;
-		logger.info("[BuildWatcher] Initialized for projects: {}", projects);
+		this.out = out;
 		watch();
 	}
 
@@ -83,8 +85,7 @@ public class BuildWatcher implements Closeable {
 			old.close();
 		}
 
-		logger.info("[BuildWatcher] Watching projects: {}", projects);
-		System.out.println(String.format("[BuildWatcher] Watching projects: %s", projects));
+		out.println(String.format("[BuildWatcher] Watching projects: %s", projects));
 	}
 
 	private static Collection<File> collectSourceFolders(Project project, Collection<File> sourceRoots) {
@@ -114,7 +115,6 @@ public class BuildWatcher implements Closeable {
 	}
 
 	private void onFileChanged(File file, String kind) {
-		logger.info("[BuildWatcher] Detected change to {} ({})", file.getName(), kind);
 		System.out.println(String.format("[BuildWatcher] Detected change to %s (%s)", file.getName(), kind));
 		Project project = fileToProject.get(file);
 
@@ -125,16 +125,16 @@ public class BuildWatcher implements Closeable {
 		if (semaphore.tryAcquire()) {
 			scheduledExecutor.schedule(() -> {
 				try {
-					logger.info("[BuildWatcher] Rebuilding project: {}", project.getName());
+					logger.debug("[BuildWatcher] Rebuilding project: {}", project.getName());
 					perProject.accept(project);
-					logger.info("[BuildWatcher] Build successful for {}", project.getName());
+					logger.debug("[BuildWatcher] Build successful for {}", project.getName());
 				} catch (Exception e) {
 					logger.error("[BuildWatcher] Build failed for {}", project.getName(), e);
 				} finally {
 					semaphore.release();
 
 					if (propertiesChanged.compareAndSet(true, false)) {
-						logger.info("[BuildWatcher] Detected bnd file change — resetting file watcher.");
+						logger.debug("[BuildWatcher] Detected bnd file change — resetting file watcher.");
 						try {
 							watch();
 						} catch (Exception e) {
