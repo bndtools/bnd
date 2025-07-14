@@ -927,15 +927,15 @@ public class bnd extends Processor {
 		final Set<Project> projectsWellDone = new HashSet<>();
 
 		for (Project p : projects) {
-			perProject(p, opts, run, manageDeps, projectsWellDone);
+			perProject(p, opts.verbose(), run, manageDeps, projectsWellDone);
 		}
 	}
 
-	private void perProject(Project p, ProjectWorkspaceOptions opts, PerProject run, boolean manageDeps,
+	private void perProject(Project p, boolean verbose, PerProject run, boolean manageDeps,
 		final Set<Project> projectsWellDone) throws Exception {
 		if (manageDeps) {
 			final Collection<Project> projectDeps = p.getDependson(); // ordered
-			if (opts.verbose()) {
+			if (verbose) {
 				out.println("Project dependencies for: " + p.getName());
 				projectDeps.forEach(pr -> out.println(
 					" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
@@ -1009,7 +1009,7 @@ public class bnd extends Processor {
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 			List<Project> projects = getFilteredProjects(opts);
-			buildAndWatch(opts, executor, scheduler, projects);
+			buildAndWatch(opts.test(), opts.verbose(), executor, scheduler, projects);
 		}
 
 		// default build
@@ -1020,18 +1020,18 @@ public class bnd extends Processor {
 
 	}
 
-	private void buildAndWatch(buildoptions opts, Executor executor,
+	private void buildAndWatch(boolean undertest, boolean verbose, Executor executor,
 		ScheduledExecutorService scheduler,
 		Collection<Project> projects) throws InterruptedException, Exception {
 
-		HashSet<Project> projectsWellDone = new HashSet<Project>();
 
+		Set<Project> projectsWellDone = new HashSet<Project>();
 		try (BuildWatcher bw = new BuildWatcher(projects, (p) -> {
 			try {
 				boolean manageDeps = false; // only this bundle
-				perProject(p, opts, (p2) -> {
-					p2.compile(opts.test());
-					p2.build(opts.test());
+				perProject(p, verbose, (p2) -> {
+					p2.compile(undertest);
+					p2.build(undertest);
 				}, manageDeps, projectsWellDone);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
@@ -1148,17 +1148,15 @@ public class bnd extends Processor {
 
 	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	@Arguments(arg = "[bndrun]")
-	interface devOptions extends buildoptions, runOptions {
+	interface devOptions extends runOptions, verboseOptions {
 
-		@Override
-		@Description("Has no effect for 'bnd dev' command, because it watches automatically (see 'bnd build --watch').")
-		boolean watch();
+		@Description("Build for test")
+		boolean test();
 
 	}
 
 	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	public void _dev(devOptions opts) throws Exception {
-
 		ExecutorService executor = Executors.newFixedThreadPool(2);
 		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
@@ -1173,18 +1171,16 @@ public class bnd extends Processor {
 
 		executor.submit(() -> {
 			try {
-				buildAndWatch(opts, executor, scheduler, projects);
+				buildAndWatch(opts.test(), opts.verbose(), executor, scheduler, projects);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw Exceptions.duck(e);
 			}
 		});
 		executor.submit(() -> {
 			try {
 				doRun(run, opts.verify());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw Exceptions.duck(e);
 			}
 		});
 

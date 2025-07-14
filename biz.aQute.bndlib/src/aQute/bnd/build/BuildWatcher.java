@@ -4,8 +4,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.PrintStream;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,34 +58,22 @@ public class BuildWatcher implements Closeable {
 			.changed(this::onFileChanged);
 
 		for (Project project : projects) {
-			// Watch bnd file
-			File bndFile = project.getPropertiesFile();
-			builder.file(bndFile);
-			fileToProject.put(bndFile, project);
 
-			// Watch included files
-			for (File inc : project.getIncluded()) {
-				builder.file(inc);
-				fileToProject.put(inc, project);
-			}
-
-			List<File> watchFolders = Arrays.asList(project.getBase());
+			List<File> watchFolders = Collections.singletonList(project.getBase());
 			Collection<File> watchedFiles = collectSourceFolders(project, watchFolders);
-				builder.files(watchedFiles);
-				for (File f : watchedFiles) {
-					fileToProject.put(f, project);
-				}
-
+			builder.files(watchedFiles);
+			for (File f : watchedFiles) {
+				fileToProject.put(f, project);
+			}
 		}
-
 
 		FileWatcher old = fw;
 		fw = builder.build();
 		if (old != null) {
 			old.close();
 		}
-
-		out.println(String.format("[BuildWatcher] Watching projects: %s", projects));
+		out.println(String.format("[BuildWatcher] Watching projects (%s files and folders): %s ",
+			fileToProject.size(), projects));
 	}
 
 	private static Collection<File> collectSourceFolders(Project project, Collection<File> sourceRoots) {
