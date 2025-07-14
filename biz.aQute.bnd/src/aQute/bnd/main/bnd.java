@@ -515,8 +515,8 @@ public class bnd extends Processor {
 		@Description("No compression (0 option)")
 		boolean nocompression();
 
-		@Description("No manifest (M option)")
-		boolean Manifest();
+		@Description("No manifest.")
+		boolean skipmanifest();
 
 		@Description("Use manifest (m option)")
 		String manifest();
@@ -582,7 +582,7 @@ public class bnd extends Processor {
 			jar.setManifest(getFile(manifest));
 		}
 
-		if (options.Manifest()) {
+		if (options.skipmanifest()) {
 			jar.setManifest((Manifest) null);
 		} else {
 			if (options.wrap()) {
