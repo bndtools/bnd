@@ -17,5 +17,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -s --synctime <long> ]` 
 - `[ -t --test ]` Build for test
 - `[ -v --verbose ]` prints more processing information
-- `[ -w --workspace <string> ]` Use the following workspace
+- `[ -w --watch ]` Continuous incremental build
+- `[ -W --workspace <string> ]` Use the following workspace
 
