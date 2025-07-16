@@ -57,7 +57,7 @@ public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 				break;
 			case "runfw" :
 				directiveGetter = run::getRunFw;
-				containsBundles = false;
+				containsBundles = true;
 				break;
 			default :
 				throw new IllegalArgumentException("Invalid bndrun directive: " + directive);
