@@ -59,8 +59,8 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
 -plugin.4.ECFRSSDK: \
  	aQute.bnd.repository.p2.provider.P2Repository; \
-	 	tags  = 'resolve'; \
-	 	url = https://download.eclipse.org/rt/ecf/latest/site.p2; \
+	 	tags  = '-'; \
+	 	url = https://download.eclipse.org/rt/ecf/3.16.3/site.p2; \
 	 	name = ECF Remote Services SDK
 
 
