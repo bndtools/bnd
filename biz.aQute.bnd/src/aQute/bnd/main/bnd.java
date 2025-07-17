@@ -3837,15 +3837,18 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Add a project, workspace, or plugin
+	 * Add a project, workspace, plugin or templates
 	 */
 
-
+	@Arguments(arg = {
+		"what", "..."
+	})
+	@Description("Add a project, workspace, plugin or template fragment to the workspace")
 	interface AddOptions extends Options {
 
 	}
 
-	@Description("Add a workspace, or a project or a plugin to the workspace")
+	@Description("Add a project, workspace, plugin or template fragment to the workspace")
 	@SubCommands(AddCommands.class)
 	public void _add(AddOptions opts) throws Exception {
 
@@ -3858,10 +3861,12 @@ public class bnd extends Processor {
 			out.println(help);
 		return;
 
+
+
 	}
 
 	@Arguments(arg = {
-		"what", "name..."
+		"what", "[name]..."
 	})
 	interface RemoveOptions extends Options {}
 

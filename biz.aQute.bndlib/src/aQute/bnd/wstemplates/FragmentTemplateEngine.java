@@ -53,6 +53,9 @@ import aQute.lib.strings.Strings;
  * concatenated during {@link TemplateUpdater#commit()}
  */
 public class FragmentTemplateEngine {
+
+	public static final String		DEFAULT_INDEX		= "https://raw.githubusercontent.com/bndtools/workspace-templates/master/index.bnd";
+
 	private static final String	TAG					= "tag";
 	private static final String	REQUIRE				= "require";
 	private static final String	DESCRIPTION			= "description";
