@@ -1,5 +1,6 @@
 package bndtools.wizards.newworkspace;
 
+import static aQute.bnd.osgi.Constants.WORKSPACE_TEMPLATES;
 import static org.eclipse.jface.dialogs.MessageDialog.openConfirm;
 
 import java.io.File;
@@ -86,7 +87,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					templates.read(new URL(DEFAULT_INDEX))
 						.unwrap()
 						.forEach(templates::add);
-					Parameters p = workspace.getMergedParameters("-workspace-template");
+					Parameters p = workspace.getMergedParameters(WORKSPACE_TEMPLATES);
 					templates.read(p)
 						.forEach(templates::add);
 					ui.write(() -> model.templates = templates.getAvailableTemplates());
