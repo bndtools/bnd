@@ -51,7 +51,7 @@ If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketpla
 
 Assuming you have Gradle (version 1.11 or better) installed, you can build bndtools from the command line by changing to the root of your checkout and typing:
 
-`./gradlew :build` (or `./gradlew build -x test` to skip tests for faster local builds)
+`./gradlew :build` (or `./gradlew build -x test -x testOSGi` to skip tests for faster local builds)
 
 After a a short while the directory - `org.bndtools.p2/generated/p2` appears. It contains an Eclipse P2 Update Site that you can use to install bndtools from the code you have just built.
 
@@ -84,7 +84,7 @@ The only thing you need to build Bnd/Bndtools is Java.
 - We require at least Java 17.
 - We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
 
-- `./gradlew :build` (or `./gradlew build -x test` to skip tests for faster local builds) - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
+- `./gradlew :build` (or `./gradlew build -x test -x testOSGi` to skip tests for faster local builds) - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
 - `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
 - `./mvnw install` - Assembles and tests the Bnd Maven plugins.
 - `./gradlew :publish` - Assembles and publishes the Bnd Workspace projects into `dist/bundles`.
@@ -94,7 +94,7 @@ The only thing you need to build Bnd/Bndtools is Java.
 Rebuilding: bnd is built with bnd. For that reason we rebuild and retest bnd with the build we just built.
 To do a full build-rebuild cycle (like the github build), you can use the following command:
 
-`./gradlew :build ; ./gradlew :gradle-plugins:build ; ./.github/scripts/rebuild-build.sh ; ./.github/scripts/rebuild-test.sh`
+`.cd /gradlew :build ; ./gradlew :gradle-plugins:build ; ./.github/scripts/rebuild-build.sh ; ./.github/scripts/rebuild-test.sh`
 
 
 We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22) for continuous integration and the repo includes a `.github/workflows/cibuild.yml` file to build via GitHub Actions.
