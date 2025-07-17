@@ -3832,60 +3832,23 @@ public class bnd extends Processor {
 	 * Add a project, workspace, or plugin
 	 */
 
-	@Arguments(arg = {
-		"what", "name..."
-	})
+
 	interface AddOptions extends Options {
 
 	}
 
 	@Description("Add a workspace, or a project or a plugin to the workspace")
+	@SubCommands(AddCommands.class)
 	public void _add(AddOptions opts) throws Exception {
-		List<String> args = opts._arguments();
 
+		CommandLine cl = new CommandLine(this);
+		List<String> args = opts._arguments();
 		String what = args.remove(0);
 
-		if ("project".equals(what)) {
-			Workspace ws = Workspace.findWorkspace(getBase());
-			if (ws == null) {
-				error("No workspace found from %s", getBase());
-				return;
-			}
-
-			for (String pname : args) {
-				ws.createProject(pname);
-			}
-
-			getInfo(ws);
-			return;
-		}
-
-		if ("workspace".equals(what)) {
-			for (String pname : args) {
-				File wsdir = getFile(pname);
-				ws = Workspace.createWorkspace(wsdir);
-				if (ws == null) {
-					error("Could not create workspace");
-				}
-			}
-			getInfo(ws);
-			return;
-		}
-
-		if ("plugin".equals(what)) {
-			Workspace ws = getWorkspace(getBase());
-			if (ws == null) {
-				error("No workspace found from %s", getBase());
-				return;
-			}
-
-			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this, ws), "add", new ExtList<>(args));
-			if (help != null)
-				out.println(help);
-			getInfo(ws);
-			return;
-		}
+		String help = cl.execute(new AddCommands(this), what, new ExtList<>(args));
+		if (help != null)
+			out.println(help);
+		return;
 
 	}
 
@@ -3895,10 +3858,8 @@ public class bnd extends Processor {
 	interface RemoveOptions extends Options {}
 
 	@Description("Remove a project or a plugin from the workspace")
+	@SubCommands(RemoveCommands.class)
 	public void _remove(RemoveOptions opts) throws Exception {
-		List<String> args = opts._arguments();
-
-		String what = args.remove(0);
 
 		Workspace ws = Workspace.findWorkspace(getBase());
 		if (ws == null) {
@@ -3906,31 +3867,17 @@ public class bnd extends Processor {
 			return;
 		}
 
-		if ("project".equals(what)) {
-			for (String pname : args) {
-				Project project = ws.getProject(pname);
-				if (project == null) {
-					error("No such project %s", pname);
-				} else
-					project.remove();
-			}
+		CommandLine cl = new CommandLine(this);
+		List<String> args = opts._arguments();
+		String what = args.remove(0);
 
-			getInfo(ws);
-			return;
-		}
+		String help = cl.execute(new RemoveCommands(this), what, new ExtList<>(args));
+		if (help != null)
+			out.println(help);
 
-		if ("workspace".equals(what)) {
-			error("To delete a workspace, delete the directory");
-			return;
-		}
+		getInfo(ws);
+		return;
 
-		if ("plugin".equals(what)) {
-			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this, ws), "remove", new ExtList<>(args));
-			if (help != null)
-				out.println(help);
-			return;
-		}
 	}
 
 	/**

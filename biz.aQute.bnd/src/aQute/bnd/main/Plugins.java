@@ -16,8 +16,9 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
-import aQute.lib.getopt.Arguments;
-import aQute.lib.getopt.Options;
+import aQute.bnd.main.AddCommands.PluginAddOptions;
+import aQute.bnd.main.RemoveCommands.PluginRemoveOptions;
+import aQute.lib.getopt.Description;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -35,16 +36,7 @@ public class Plugins {
 		this.ws = ws;
 	}
 
-	interface PluginAddOptions extends Options {
-		String alias();
-
-		boolean force();
-
-		// boolean interactive();
-
-		// String jar();
-	}
-
+	@Description("Add a plugin")
 	public void _add(PluginAddOptions opts) throws Exception {
 		List<String> args = opts._arguments();
 		Map<String, Class<?>> plugins = getAnnotatedPlugins();
@@ -87,8 +79,6 @@ public class Plugins {
 		}
 	}
 
-	@Arguments(arg = "alias...")
-	interface PluginRemoveOptions extends Options {}
 
 	public void _remove(PluginRemoveOptions opts) {
 		List<String> args = opts._arguments();
