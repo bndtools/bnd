@@ -34,8 +34,8 @@ public class BuildWatcher implements Closeable {
 
 	private Collection<Project>				projects;
 	private final Map<File, Project>		fileToProject		= new HashMap<>();
-	private final Executor executor;
-	private final ScheduledExecutorService scheduledExecutor;
+	private final Executor					watchExecutor;
+	private final ScheduledExecutorService	buildScheduler;
 	private final Semaphore semaphore = new Semaphore(1);
 	private final AtomicBoolean propertiesChanged = new AtomicBoolean(false);
 	private volatile FileWatcher fw;
@@ -46,15 +46,15 @@ public class BuildWatcher implements Closeable {
 		ScheduledExecutorService scheduledExecutor, PrintStream out) throws Exception {
 		this.projects = projects;
 		this.perProject = perProject;
-		this.executor = executor;
-		this.scheduledExecutor = scheduledExecutor;
+		this.watchExecutor = executor;
+		this.buildScheduler = scheduledExecutor;
 		this.out = out;
 		watch();
 	}
 
 	private void watch() throws Exception {
 		Builder builder = new FileWatcher.Builder()
-			.executor(executor)
+			.executor(watchExecutor)
 			.changed(this::onFileChanged);
 
 		for (Project project : projects) {
@@ -103,7 +103,7 @@ public class BuildWatcher implements Closeable {
 	}
 
 	private void onFileChanged(File file, String kind) {
-		System.out.println(String.format("[BuildWatcher] Detected change to %s (%s)", file.getName(), kind));
+		out.println(String.format("[BuildWatcher] Detected change to %s (%s)", file.getName(), kind));
 		Project project = fileToProject.get(file);
 
 		propertiesChanged.compareAndSet(false,
@@ -111,7 +111,7 @@ public class BuildWatcher implements Closeable {
 			project.getIncluded().contains(file));
 
 		if (semaphore.tryAcquire()) {
-			scheduledExecutor.schedule(() -> {
+			buildScheduler.schedule(() -> {
 				try {
 					logger.debug("[BuildWatcher] Rebuilding project: {}", project.getName());
 					perProject.accept(project);

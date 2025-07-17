@@ -1020,8 +1020,8 @@ public class bnd extends Processor {
 
 	}
 
-	private void buildAndWatch(boolean undertest, boolean verbose, Executor executor,
-		ScheduledExecutorService scheduler,
+	private void buildAndWatch(boolean undertest, boolean verbose, Executor watchExecutor,
+		ScheduledExecutorService buildScheduler,
 		Collection<Project> projects) throws InterruptedException, Exception {
 
 
@@ -1036,7 +1036,7 @@ public class bnd extends Processor {
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
-		}, executor, scheduler, out)) {
+		}, watchExecutor, buildScheduler, out)) {
 			out.format("Watching %s project(s) for changes. Press Ctrl+C to stop.", projects.size());
 			new CountDownLatch(1).await();
 			return;
@@ -1157,8 +1157,9 @@ public class bnd extends Processor {
 
 	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	public void _dev(devOptions opts) throws Exception {
-		ExecutorService executor = Executors.newFixedThreadPool(2);
-		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+		ExecutorService outer = Executors.newFixedThreadPool(2);
+		ExecutorService watchExecutor = Executors.newFixedThreadPool(2);
+		ScheduledExecutorService buildScheduler = Executors.newSingleThreadScheduledExecutor();
 
 		Project run = getRun(opts._arguments(), opts.project());
 		if (run == null) {
@@ -1169,14 +1170,14 @@ public class bnd extends Processor {
 		Collection<Project> projects = run.getWorkspace()
 			.getAllProjects();
 
-		executor.submit(() -> {
+		outer.submit(() -> {
 			try {
-				buildAndWatch(opts.test(), opts.verbose(), executor, scheduler, projects);
+				buildAndWatch(opts.test(), opts.verbose(), watchExecutor, buildScheduler, projects);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
 		});
-		executor.submit(() -> {
+		outer.submit(() -> {
 			try {
 				doRun(run, opts.verify());
 			} catch (Exception e) {
@@ -1186,7 +1187,7 @@ public class bnd extends Processor {
 
 		// Wait for tasks to complete (never in this case unless you handle it
 		// differently)
-		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		outer.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 
 	}
 
