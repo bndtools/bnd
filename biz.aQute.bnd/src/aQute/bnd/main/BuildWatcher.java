@@ -1,4 +1,4 @@
-package aQute.bnd.build;
+package aQute.bnd.main;
 
 import java.io.Closeable;
 import java.io.File;
@@ -21,15 +21,18 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.watcher.FileWatcher;
 import aQute.lib.watcher.FileWatcher.Builder;
 
 /**
- * Watches a bnd Project for changes and triggers a build automatically.
+ * Watches a bnd Project for changes and triggers a build automatically. TODO We
+ * could move it to same package as aQute.bnd.build.ProjectLauncher.LiveCoding
+ * since it was based on that.
  */
-public class BuildWatcher implements Closeable {
+class BuildWatcher implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(BuildWatcher.class);
 
 	private Collection<Project>				projects;
