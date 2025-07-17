@@ -1169,6 +1169,38 @@ public class bnd extends Processor {
 		Collection<Project> projects = run.getWorkspace()
 			.getAllProjects();
 
+		boolean needsInitialFullbuild = false;
+		Set<Project> projectsNeedRebuild = new LinkedHashSet<>();
+		for (Project project : projects) {
+			// TODO there is project.isStale() but it seems true too often.
+			// so we just check if there are built files which reduces the
+			// number of rebuilts
+			File[] files = project.getBuildFiles(false);
+			if (files == null) {
+				needsInitialFullbuild = true;
+				projectsNeedRebuild.add(project);
+			}
+		}
+
+		if (needsInitialFullbuild) {
+
+			out.format("Stale projects detected (%s of %s). Full Build needed [%s]%n", projectsNeedRebuild.size(),
+				projects.size(),
+				projectsNeedRebuild);
+
+			Set<Project> projectsDone = new HashSet<>(projects.size());
+			for (Project proj : projects) {
+				perProject(proj, opts.verbose(), p -> {
+					out.format("Build Project %s%n", p.getName());
+					p.compile(opts.test());
+					p.build(opts.test());
+				}, true, projectsDone);
+
+			}
+
+			out.format("Full build finished%n");
+		}
+
 		outer.submit(() -> {
 			try {
 				buildAndWatch(opts.test(), opts.verbose(), watchExecutor, buildScheduler, projects);
