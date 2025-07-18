@@ -13,18 +13,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 ### Directives 
 
-- `strip` Strips files from embedded JARs. The syntax JARPATHMATCH ':' RESOURCEPATHMATCH, both globs.
-  - Example: `strip=*:OSGI-OPT/*`
-
-  - Pattern: `.*`
-
-
-- `location` A pattern to form the location for the bundle. This pattern is processed by the macro processor. @bsn is the bsn, and @version is the version, and @name is the file name. If no pattern is given, the file name is used to make a unique name in the /jar directory. If multiple bundles end up with the same name then the last one wins.The expansion may not contain file separators like /.If the storage area is not cleaned, use the example pattern
-  - Example: `location=location='${@bsn}-${version;=;${@version}}.jar'`
-
-  - Pattern: `.*`
-
-
 - `rejar` Re-jar the -runpath and -runbundles to the given compression. If not set, bundles are not touched. This should not change the signatures
   - Example: `rejar=rejar=STORE`
 
@@ -43,6 +31,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
       - Values: `STORE`
 
       - Pattern: `\QSTORE\E`
+
+
+- `strip` Strips files from embedded JARs. The syntax JARPATHMATCH ':' RESOURCEPATHMATCH, both globs.
+  - Example: `strip=*:OSGI-OPT/*`
+
+  - Pattern: `.*`
+
+
+- `location` A pattern to form the location for the bundle. This pattern is processed by the macro processor. @bsn is the bsn, and @version is the version, and @name is the file name. If no pattern is given, the file name is used to make a unique name in the /jar directory. If multiple bundles end up with the same name then the last one wins.The expansion may not contain file separators like /.If the storage area is not cleaned, use the example pattern
+  - Example: `location=location='${@bsn}-${version;=;${@version}}.jar'`
+
+  - Pattern: `.*`
 
 <!-- Manual content from: ext/executable.md --><br /><br />
 

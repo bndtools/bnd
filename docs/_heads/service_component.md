@@ -13,6 +13,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/service_component.md --><br /><br />
 
+# Service-Component
+
+The `Service-Component` header lists XML files that describe Declarative Services (DS) components in the bundle. These XML documents must be present in the bundle and are used by the OSGi framework to register and manage components at runtime.
+
+Example:
+
+```
+Service-Component: OSGI-INF/components.xml
+```
+
+This header is required for bundles that use OSGi Declarative Services.
+
 	/**
 	 * Analyze the class space for any classes that have an OSGi annotation for DS.
 	 */
@@ -367,4 +379,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 		}
 	}
 
-				
+
+
+TODO Needs review - AI Generated content

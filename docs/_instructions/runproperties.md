@@ -13,25 +13,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/runproperties.md --><br /><br />
 
-	public Map<String,String> getRunProperties() {
-		return OSGiHeader.parseProperties(getProperty(RUNPROPERTIES));
-	}
+The `-runproperties` instruction allows you to define system properties that will be set for the remote Java Virtual Machine (JVM) when your application is launched. These properties are passed as `-Dkey=value` arguments and can be used to configure the runtime environment, control application behavior, or provide configuration values.
 
-	public Launcher(Properties properties, final File propertiesFile) throws Exception {
-		this.properties = properties;
-
-		// Allow the system to override any properties with -Dkey=value
-
-		for (Object key : properties.keySet()) {
-			String s = (String) key;
-			String v = System.getProperty(s);
-			if (v != null)
-				properties.put(key, v);
-		}
+This is useful for setting environment-specific options or overriding default values without modifying your application's code.
 
 
-		System.getProperties().putAll(properties);
-		
-		
-		this.parms = new LauncherConstants(properties);
-		out = System.err;
+TODO Needs review - AI Generated content

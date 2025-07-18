@@ -1,31 +1,24 @@
+## Bash Command Autocompletion
 
-## Examples
+The `bash` command in bnd can generate an autocompletion script for the Bash shell, making it easier to use bnd commands interactively.
 
-	@Description("Generate autocompletion file for bash")
-	public void _bash(Options options) throws Exception {
-		File tmp = File.createTempFile("bnd-completion", ".tmp");
-		tmp.deleteOnExit();
+When you run the bash autocompletion generator, bnd will create a temporary file containing the autocompletion script, populate it with the list of available commands, and output the result. This script can then be sourced in your shell to enable tab-completion for bnd commands.
 
-		try {
-			IO.copy(getClass().getResource("bnd-completion.bash"), tmp);
+**Example:**
 
-			Sed sed = new Sed(tmp);
-			sed.setBackup(false);
+To generate and use the autocompletion script for bash:
 
-			Reporter r = new ReporterAdapter();
-			CommandLine c = new CommandLine(r);
-			Map<String,Method> commands = c.getCommands(this);
-			StringBuilder sb = new StringBuilder();
-			for (String commandName : commands.keySet()) {
-				sb.append(" " + commandName);
-			}
-			sb.append(" help");
+1. Run the following command to generate the script:
+   ```
+   bnd bash > bnd-completion.bash
+   ```
+2. Source the script in your shell:
+   ```
+   source bnd-completion.bash
+   ```
 
-			sed.replace("%listCommands%", sb.toString().substring(1));
-			sed.doIt();
-			IO.copy(tmp, out);
-		}
-		finally {
-			tmp.delete();
-		}
-	}
+This will enable tab-completion for all available bnd commands in your current shell session.
+
+
+---
+TODO Needs review - AI Generated content

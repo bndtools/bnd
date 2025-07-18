@@ -14,6 +14,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - Pattern: `.*`
 
 <!-- Manual content from: ext/bundle_requiredexecutionenvironment.md --><br /><br />
+
+# Bundle-RequiredExecutionEnvironment
+
+The `Bundle-RequiredExecutionEnvironment` header lists the execution environments required by the bundle, separated by commas. These environments must be present on the OSGi framework for the bundle to resolve. This header is deprecated in recent OSGi specifications.
+
+Example:
+
+```
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8, OSGi/Minimum-1.2
+```
+
+This header is optional and mainly used for legacy compatibility.
 	
 		verifyListHeader(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, EENAME, false);
 	
@@ -41,4 +53,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
 			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
 																};
-	
+
+
+TODO Needs review - AI Generated content

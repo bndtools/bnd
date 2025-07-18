@@ -33,7 +33,19 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
 
 <!-- Manual content from: ext/dynamicimport_package.md --><br /><br />
-	
+
+# DynamicImport-Package
+
+The `DynamicImport-Package` header allows a bundle to declare packages that should be imported dynamically at runtime, rather than being resolved at deployment time. This is useful for cases where the set of required packages is not known in advance.
+
+The header contains a comma-separated list of package names, which can include wildcards and directives. For example:
+
+```
+DynamicImport-Package: com.example.*, org.osgi.service.*
+```
+
+Packages listed here will be resolved by the OSGi framework when they are first referenced by the bundle. Use this feature sparingly, as it can make dependency management less predictable.
+
 	/**
 	 * <pre>
 	 *          DynamicImport-Package ::= dynamic-description
@@ -66,4 +78,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 		}
 	}
 
-	
+
+
+TODO Needs review - AI Generated content

@@ -5,31 +5,9 @@ title: -nobuildincache BOOLEAN
 summary:  Do not use a build in cache for the launcher and JUnit. 
 ---
 
-	@Override
-	protected void setTypeSpecificPlugins(Set<Object> list) {
-		try {
-			super.setTypeSpecificPlugins(list);
-			list.add(this);
-			list.add(maven);
-			list.add(settings);
+The `-nobuildincache` instruction controls whether a build cache is used for the launcher and JUnit. When set to `true`, bnd will not use a build cache, which can be useful for troubleshooting or when you want to ensure that all builds are performed from scratch without relying on cached files.
 
-			if (!isTrue(getProperty(NOBUILDINCACHE))) {
-				list.add(new CachedFileRepo());
-			}
+By default, the build cache is enabled to improve performance by reusing previously built artifacts. Disabling the cache may slow down builds but can help avoid issues related to stale or corrupted cache data.
 
-			resourceRepositoryImpl = new ResourceRepositoryImpl();
-			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
-			resourceRepositoryImpl.setExecutor(getExecutor());
-			resourceRepositoryImpl.setIndexFile(getFile(buildDir, "repo.json"));
-			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
-			customize(resourceRepositoryImpl, null);
-			list.add(resourceRepositoryImpl);
-
-		}
-		catch (RuntimeException e) {
-			throw e;
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+---
+TODO Needs review - AI Generated content

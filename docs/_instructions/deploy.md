@@ -15,30 +15,8 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/deploy.md --><br /><br />
 
-NEEDS WORK?
+The `-deploy` instruction is used to deploy the current project to a repository using deploy plugins, such as the MavenDeploy plugin. When this instruction is set, bnd will attempt to deploy the project's build outputs to the specified repositories.
 
-	/**
-	 * Deploy the current project to a repository
-	 *
-	 * @throws Exception
-	 */
-	public void deploy() throws Exception {
-		Parameters deploy = new Parameters(getProperty(DEPLOY));
-		if (deploy.isEmpty()) {
-			warning("Deploying but %s is not set to any repo", DEPLOY);
-			return;
-		}
-		File[] outputs = getBuildFiles();
-		for (File output : outputs) {
-			for (Deploy d : getPlugins(Deploy.class)) {
-				trace("Deploying %s to: %s", output.getName(), d);
-				try {
-					if (d.deploy(this, output.getName(), new BufferedInputStream(new FileInputStream(output))))
-						trace("deployed %s successfully to %s", output, d);
-				}
-				catch (Exception e) {
-					msgs.Deploying(e);
-				}
-			}
-		}
-	}
+You must specify which repositories to deploy to using the appropriate configuration. If no repositories are set, deployment will not occur and a warning will be issued. This instruction is typically used in conjunction with plugins that handle the actual deployment process.
+
+TODO Needs review - AI Generated content

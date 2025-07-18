@@ -13,12 +13,12 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/dsannotations.md --><br /><br />
 
-The `-dsannotations` instruction tells **bnd** which bundle classes, if any, to search for [Declarative Services (DS)](https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html) annotations. **bnd** will then process those classes into DS XML descriptors.
+The `-dsannotations` instruction tells bnd which classes in your bundle should be scanned for Declarative Services (DS) annotations. bnd will process these classes and generate the necessary DS XML descriptors automatically.
 
-The value of this instruction is a comma delimited list of fully qualified class names.
+You provide a comma-separated list of fully qualified class names or use `*` to process all classes. This makes it easy to enable DS annotation processing for your entire bundle or for specific classes only.
 
-The default value of this instruction is `*`, which means that by default **bnd** will process all bundle classes looking for DS annotations.
-
-The behavior of DS annotation processing can be further configured using the [-dsannotations-options](dsannotations-options.html) instruction.
+You can further configure DS annotation processing using the `-dsannotations-options` instruction.
 
 [source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java)
+
+TODO Needs review - AI Generated content

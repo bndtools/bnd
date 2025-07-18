@@ -5,18 +5,10 @@ title: -nojunit  BOOLEAN
 summary:  Indicate that this project does not have JUnit tests
 ---
 
-	private void checkForTesting(Project project, Properties properties) throws Exception {
+The `-nojunit` instruction indicates that the project does not contain JUnit tests. When this instruction is set to `true`, bnd will not attempt to run JUnit tests for the project, even if test sources are present.
 
-		//
-		// Only run junit when we have a test src directory
-		//
+This is useful for projects that do not require unit testing or do not have any test cases that need to be executed as part of the build process.
 
-		boolean junit = project.getTestSrc().isDirectory() && !Processor.isTrue(project.getProperty(Constants.NOJUNIT));
-		boolean junitOsgi = project.getProperties().getProperty(Constants.TESTCASES) != null
-				&& !Processor.isTrue(project.getProperty(Constants.NOJUNITOSGI));
 
-		if (junit)
-			properties.setProperty("project.junit", "true");
-		if (junitOsgi)
-			properties.setProperty("project.osgi.junit", "true");
-	}
+---
+TODO Needs review - AI Generated content

@@ -15,35 +15,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/noee.md --><br /><br />
 
-			//
-			// We want to add the minimum EE as a requirement
-			// based on the class version
-			//
+The `-noee` instruction controls whether bnd automatically adds a requirement for an Execution Environment (EE) capability based on the class file format. By default, bnd will analyze the class version and add the minimum required EE as a requirement. When this instruction is set to `true`, bnd will not add this automatic requirement, giving you full control over EE requirements in your bundle.
 
-			if (!isTrue(getProperty(NOEE)) //
-					&& !ees.isEmpty() // no use otherwise
-					&& since(About._2_3) // we want people to not have to
-											// automatically add it
-					&& !requirements.containsKey(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE) // and
-																												// it
-																												// should
-																												// not
-																												// be
-																												// there
-																												// already
-			) {
+This is useful if you want to manage EE requirements manually or if your project has special compatibility needs.
 
-				JAVA highest = ees.last();
-				Attrs attrs = new Attrs();
 
-				String filter = doEEProfiles(highest);
-
-				attrs.put(Constants.FILTER_DIRECTIVE, filter);
-
-				//
-				// Java 1.8 introduced profiles.
-				// If -eeprofile= auto | (<profile>="...")+ is set then
-				// we add a
-
-				requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
-			}
+TODO Needs review - AI Generated content

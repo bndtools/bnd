@@ -43,7 +43,20 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
 
 <!-- Manual content from: ext/require_bundle.md --><br /><br />
-	
+
+# Require-Bundle
+
+The `Require-Bundle` header specifies that the bundle requires all exported packages from another bundle. This effectively imports the public interface of the required bundle, making its packages available to the requiring bundle.
+
+Example:
+
+```
+Require-Bundle: com.example.otherbundle
+```
+
+This header is less common in OSGi and can make dependency management more complex. Prefer using `Import-Package` when possible.
+
+
 		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn");
 	
 	
@@ -75,4 +88,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 			}
 		} else if (isPedantic())
 			warning("Use of " + Constants.REQUIRE_BUNDLE + ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
-	
+
+
+TODO Needs review - AI Generated content

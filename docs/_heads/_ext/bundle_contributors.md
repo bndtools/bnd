@@ -4,6 +4,18 @@ class: Header
 title: Bundle-Contributors ... 
 summary: Lists the bundle contributors according to the Maven bundle-contributors pom entry
 ---
+
+# Bundle-Contributors
+
+The `Bundle-Contributors` header lists contributors to the bundle, as defined in the Maven POM or via annotations. This header is not standardized by OSGi but is used for documentation and tracking purposes.
+
+Example:
+
+```
+Bundle-Contributors: John Doe;roles='developer';organization='Example Corp.'
+```
+
+This header is optional and is mainly used for informational purposes.
 	
 	/*
 	 * Bundle-Contributors header
@@ -99,3 +111,6 @@ summary: Lists the bundle contributors according to the Maven bundle-contributor
 			 */
 			int timezone() default 0;
 		}
+
+---
+TODO Needs review - AI Generated content		

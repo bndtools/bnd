@@ -5,58 +5,13 @@ title: -runbuilds BOOLEAN
 summary:  Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true.
 ---
 
-	public boolean getRunBuilds() {
-		boolean result;
-		String runBuildsStr = getProperty(Constants.RUNBUILDS);
-		if (runBuildsStr == null)
-			result = !getPropertiesFile().getName().toLowerCase().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
-		else
-			result = Boolean.parseBoolean(runBuildsStr);
-		return result;
-	}
+The `-runbuilds` instruction controls whether the bundles built by the current project should be automatically added to the `-runbundles` list when running or testing the project. 
 
-	protected void updateFromProject() throws Exception {
-		// pkr: could not use this because this is killing the runtests.
-		// project.refresh();
-		runbundles.clear();
-		Collection<Container> run = project.getRunbundles();
+- In a `.bndrun` file, the default is `false`, so built bundles are not added unless you explicitly set `-runbuilds: true`.
+- In a `.bnd` file, the default is `true`, so built bundles are included unless you set `-runbuilds: false`.
 
-		for (Container container : run) {
-			File file = container.getFile();
-			if (file != null && (file.isFile() || file.isDirectory())) {
-				runbundles.add(file.getAbsolutePath());
-			} else {
-				error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
-			}
-		}
+This instruction is useful for controlling which bundles are available at runtime, especially when you want to test or launch only a subset of the bundles produced by your project.
 
-		if (project.getRunBuilds()) {
-			File[] builds = project.build();
-			if (builds != null)
-				for (File file : builds)
-					runbundles.add(file.getAbsolutePath());
-		}
 
-		Collection<Container> runpath = project.getRunpath();
-		runsystempackages = new Parameters( project.mergeProperties(Constants.RUNSYSTEMPACKAGES));
-		runsystemcapabilities = project.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
-		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
-
-		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
-		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
-
-		runpath.addAll(project.getRunFw());
-
-		for (Container c : runpath) {
-			addClasspath(c);
-		}
-
-		runvm.addAll(project.getRunVM());
-		runprogramargs.addAll(project.getRunProgramArgs());
-		runproperties = project.getRunProperties();
-
-		storageDir = project.getRunStorage();
-		if (storageDir == null) {
-			storageDir = new File(project.getTarget(), "fw");
-		}
-	}
+---
+TODO Needs review - AI Generated content

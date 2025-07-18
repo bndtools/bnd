@@ -11,28 +11,20 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 
 <!-- Manual content from: ext/bootstrap.md --><br /><br />
-## Examples
+## Bootstrap Command
 
-	/**
-	 * start a local framework
-	 */
-	
-	interface BootstrapOptions extends Options {
-		
-	}
-	
-	public void _bootstrap(BootstrapOptions options) throws Exception {
-		Workspace ws = getWorkspace(getBase());
-		File buildDir = ws.getBuildDir();
-		File bndFile = IO.getFile(buildDir, "bnd.bnd");
-		if ( !bndFile.isFile()) {
-			error("No bnd.bnd file found in cnf directory %s", bndFile);
-			return;
-		}
-		
-		Run run = new Run(ws, buildDir, bndFile);
-		
-		run.runLocal();
-		
-		getInfo(run);
-	}
+The `bootstrap` command in bnd is used to start a local OSGi framework using the workspace's configuration. This command looks for the `bnd.bnd` file in the workspace's `cnf` directory and uses it to launch the framework locally.
+
+If the `bnd.bnd` file is not found, the command will report an error and exit. Otherwise, it will initialize the framework and run it in the local environment, making it easy to test or develop OSGi applications directly from your workspace setup.
+
+**Example:**
+
+To start a local framework using the workspace configuration:
+
+```
+bnd bootstrap
+```
+
+This will launch the OSGi framework as defined by your workspace's `bnd.bnd` file.
+
+

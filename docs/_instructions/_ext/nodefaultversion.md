@@ -5,28 +5,9 @@ title: -nodefaultversion  BOOLEAN
 summary:  Do not add a default version to exported packages when no version is present. 
 ---
 
-	public void cleanupVersion(Packages packages, String defaultVersion) {
-		if (defaultVersion != null) {
-			Matcher m = Verifier.VERSION.matcher(defaultVersion);
-			if (m.matches()) {
-				// Strip qualifier from default package version
-				defaultVersion = Version.parseVersion(defaultVersion).getWithoutQualifier().toString();
-			}
-		}
-		for (Map.Entry<PackageRef,Attrs> entry : packages.entrySet()) {
-			Attrs attributes = entry.getValue();
-			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
-			if (v == null && defaultVersion != null) {
-				if (!isTrue(getProperty(Constants.NODEFAULTVERSION))) {
-					v = defaultVersion;
-					if (isPedantic())
-						warning("Used bundle version %s for exported package %s", v, entry.getKey());
-				} else {
-					if (isPedantic())
-						warning("No export version for exported package %s", entry.getKey());
-				}
-			}
-			if (v != null)
-				attributes.put(Constants.VERSION_ATTRIBUTE, cleanupVersion(v));
-		}
-	}
+The `-nodefaultversion` instruction controls whether a default version is added to exported packages when no version is specified. By default, bnd will add the bundle version as the version for any exported package that does not have an explicit version. When this instruction is set to `true`, no default version will be added, and exported packages without a version will remain unversioned.
+
+This can be useful if you want to avoid implicit versioning and ensure that only explicitly specified versions are used in your exported packages.
+
+---
+TODO Needs review - AI Generated content

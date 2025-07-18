@@ -47,80 +47,20 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 <!-- Manual content from: ext/bundle_nativecode.md --><br /><br />
-	
-	/*
-	 * Bundle-NativeCode ::= nativecode ( ',' nativecode )* ( ’,’ optional) ?
-	 * nativecode ::= path ( ';' path )* // See 1.4.2 ( ';' parameter )+
-	 * optional ::= ’*’
-	 */
-	public void verifyNative() {
-		String nc = get(Constants.BUNDLE_NATIVECODE);
-		doNative(nc);
-	}
 
-	public void doNative(String nc) {
-		if (nc != null) {
-			QuotedTokenizer qt = new QuotedTokenizer(nc, ",;=", false);
-			char del;
-			do {
-				do {
-					String name = qt.nextToken();
-					if (name == null) {
-						error("Can not parse name from bundle native code header: " + nc);
-						return;
-					}
-					del = qt.getSeparator();
-					if (del == ';') {
-						if (dot != null && !dot.exists(name)) {
-							error("Native library not found in JAR: " + name);
-						}
-					} else {
-						String value = null;
-						if (del == '=')
-							value = qt.nextToken();
+# Bundle-NativeCode
 
-						String key = name.toLowerCase();
-						if (key.equals("osname")) {
-							// ...
-						} else if (key.equals("osversion")) {
-							// verify version range
-							verify(value, VERSIONRANGE);
-						} else if (key.equals("language")) {
-							verify(value, ISO639);
-						} else if (key.equals("processor")) {
-							// verify(value, PROCESSORS);
-						} else if (key.equals("selection-filter")) {
-							// verify syntax filter
-							verifyFilter(value);
-						} else if (name.equals("*") && value == null) {
-							// Wildcard must be at end.
-							if (qt.nextToken() != null)
-								error("Bundle-Native code header may only END in wildcard: nc");
-						} else {
-							warning("Unknown attribute in native code: " + name + "=" + value);
-						}
-						del = qt.getSeparator();
-					}
-				} while (del == ';');
-			} while (del == ',');
-		}
-	}
+The `Bundle-NativeCode` header specifies native code libraries that are included in the bundle and may be loaded by the OSGi framework. This header lists one or more native code clauses, each describing the path to a native library and optional attributes such as operating system, processor, language, or version constraints.
 
-	public boolean verifyFilter(String value) {
-		String s = validateFilter(value);
-		if (s == null)
-			return true;
+Example:
 
-		error(s);
-		return false;
-	}
+```
+Bundle-NativeCode: lib/linux-x86/libfoo.so;osname=Linux;processor=x86, lib/win32-x86/foo.dll;osname=Windows;processor=x86
+```
 
-	public static String validateFilter(String value) {
-		try {
-			verifyFilter(value, 0);
-			return null;
-		}
-		catch (Exception e) {
-			return "Not a valid filter: " + value + e.getMessage();
-		}
-	}
+A wildcard (`*`) can be used as the last entry to indicate that the bundle can run without native code if no match is found. If a required native library is missing or not found in the JAR, bnd will issue an error.
+
+This header is used for bundles that need to provide platform-specific native libraries alongside Java code.
+
+
+TODO Needs review - AI Generated content

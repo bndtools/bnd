@@ -49,7 +49,8 @@ This should normally not make a difference during resolving. However, in some ca
 situation. The following example restores the pre release 7 situation. 
 
     -resolve.reject     @osgi.identity;filter:='(!(|(type=osgi.bundle)(type=osgi.fragment)))'
-    
-    
 
-  
+
+
+---
+TODO Needs review - AI Generated content

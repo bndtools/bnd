@@ -13,6 +13,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/bundle_version.md --><br /><br />
 
+# Bundle-Version
+
+The `Bundle-Version` header specifies the version of the bundle. If this header is not provided, a default version of `0` will be set. The version must follow the OSGi versioning scheme: `major.minor.micro.qualifier`.
+
+Example:
+
+```
+Bundle-Version: 1.2.3
+```
+
+This header is important for managing updates and dependencies between bundles.
+
 The version of the bundle. If no such header is provided, a version of 0 will be set.	
 	
 	
@@ -45,4 +57,6 @@ The version of the bundle. If no such header is provided, a version of 0 will be
 		
 					if (main.getValue(BUNDLE_VERSION) == null)
 				main.putValue(BUNDLE_VERSION, "0");
-		
+
+
+TODO Needs review - AI Generated content

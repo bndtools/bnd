@@ -5,78 +5,38 @@ title: Bnd-AddXmlToTest RESOURCE ( ',' RESOURCE )
 summary: Add XML resources from the tested bundle to the output of a test report.
 ---
 
-	public void setup(Bundle fw, Bundle targetBundle) {
-		startTime = System.currentTimeMillis();
+# Bnd-AddXmlToTest
 
-		testsuite.addAttribute("hostname", hostname);
-		if (targetBundle != null) {
-			testsuite.addAttribute("name", "test." + targetBundle.getSymbolicName());
-			testsuite.addAttribute("target", targetBundle.getLocation());
-		} else {
-			testsuite.addAttribute("name", "test.run");
+The `Bnd-AddXmlToTest` header allows you to include additional XML resources from the tested bundle in the output of a test report. This can be useful for adding custom metadata, configuration, or other relevant XML files to your test results.
 
-		}
-		testsuite.addAttribute("timestamp", df.format(new Date()));
-		testsuite.addAttribute("framework", fw);
-		testsuite.addAttribute("framework-version", fw.getVersion());
+## How It Works
 
-		Tag properties = new Tag("properties");
-		testsuite.addContent(properties);
+When a test is executed, the test framework inspects the `Bnd-AddXmlToTest` header in the bundle under test. If present, it treats the value as a comma- or space-separated list of resource paths. For each specified resource:
 
-		for (Map.Entry<Object,Object> entry : System.getProperties().entrySet()) {
-			Tag property = new Tag(properties, "property");
-			property.addAttribute("name", entry.getKey());
-			property.addAttribute("value", entry.getValue());
-		}
+- The framework attempts to locate the resource within the bundle.
+- If the resource exists and is an XML file, it is added to the test report output.
+- If the resource cannot be found, an error entry is added to the report indicating the missing resource.
 
-		Tag bundles = new Tag(testsuite, "bundles");
-		Bundle bs[] = fw.getBundleContext().getBundles();
+In addition to including these resources, the test report also contains metadata about the test environment, such as:
+- The hostname where the test ran
+- The symbolic name and location of the tested bundle
+- The timestamp and framework version
+- System properties at the time of the test
+- Information about all bundles in the framework, including their state, version, and symbolic name
 
-		for (int i = 0; i < bs.length; i++) {
-			Tag bundle = new Tag("bundle");
-			bundle.addAttribute("location", bs[i].getLocation());
-			bundle.addAttribute("modified", df.format(new Date(bs[i].getLastModified())));
-			bundle.addAttribute("state", bs[i].getState());
-			bundle.addAttribute("id", bs[i].getBundleId() + "");
-			if ( bs[i].getSymbolicName() != null)
-				bundle.addAttribute("bsn", bs[i].getSymbolicName());
-			if ( bs[i].getVersion() != null)
-				bundle.addAttribute("version", bs[i].getVersion());
+This mechanism provides a flexible way to enrich your test reports with bundle-specific XML data, making it easier to diagnose issues or provide additional context for test results.
 
-			if (bs[i].equals(targetBundle))
-				bundle.addAttribute("target", "true");
+## Example
 
-			bundles.addContent(bundle);
-		}
-		if (targetBundle != null) {
-			String header = (String) targetBundle.getHeaders().get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
-			if (header != null) {
-				StringTokenizer st = new StringTokenizer(header, " ,");
+To use this feature, add the following header to your bundle’s manifest:
 
-				while (st.hasMoreTokens()) {
-					String resource = st.nextToken();
-					URL url = targetBundle.getEntry(resource);
+```
+Bnd-AddXmlToTest: config.xml, extra-info.xml
+```
 
-					if (url != null) {
-						String name = url.getFile();
-						int n = name.lastIndexOf('/');
-						if (n < 0)
-							n = 0;
-						else
-							n = n + 1;
+When the tests run, both `config.xml` and `extra-info.xml` (if present in the bundle) will be included in the test report output.
 
-						if (name.endsWith(".xml"))
-							name = name.substring(n, name.length() - 4);
-						else
-							name = name.substring(n, name.length()).replace('.', '_');
+---
 
-						testsuite.addContent(url);
-
-					} else {
-						Tag addxml = new Tag(testsuite, "error");
-						addxml.addAttribute("reason", "no such resource: " + resource);
-					}
-				}
-			}
-		}
-	}
+---
+TODO Needs review - AI Generated content

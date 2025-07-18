@@ -5,6 +5,13 @@ title: -include PATH-SPEC ( ',' PATH-SPEC ) *
 summary:  Include a number of files from the file system
 ---
 
+## Explanation of `-include` Instruction
+
+The `-include` instruction allows you to include the contents of other files (such as properties or manifest files) into your current configuration. You specify the path or URL of the file to include. The included file's properties will overwrite existing properties by default, unless you use the `~` prefix, which prevents overwriting. If the file or URL does not exist and you use the `-` prefix, no error will be reported.
+
+The `-include` instruction is processed before any other properties, so it cannot use properties defined later in the same file. However, it can use properties defined by a parent configuration. This makes it possible to share common settings across multiple projects or workspaces.
+
+
 You can use `-include` as follows:
 
 	-include: <path or url>
@@ -33,6 +40,7 @@ There are two possible options. The path/URL starts with a:
 * `-` – If file or URL or path does not exist then do not report an error.
 
 
+
 ## Examples
 
 	# Read an optional file in the user's home directory
@@ -51,3 +59,6 @@ There are two possible options. The path/URL starts with a:
 	my.prop = don't overwrite
 	-include ~no.overwrite
 
+
+---
+TODO Needs review - AI Generated content
