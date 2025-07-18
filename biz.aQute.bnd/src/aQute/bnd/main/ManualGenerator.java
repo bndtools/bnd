@@ -179,21 +179,29 @@ class ManualGenerator {
 		StringBuilder content = new StringBuilder();
 
 		boolean inFrontmatter = false;
-		boolean frontmatterEnded = false;
+		boolean frontmatterProcessed = false;
 
-		for (String line : lines) {
-			if (line.trim()
-				.equals("---")) {
-				if (!inFrontmatter) {
-					inFrontmatter = true;
-				} else {
-					frontmatterEnded = true;
+		int index = 0;
+
+		// Check if frontmatter starts at the very beginning
+		if (lines.length > 0 && lines[0].trim()
+			.equals("---")) {
+			inFrontmatter = true;
+			index++; // skip the opening ---
+		}
+
+		// Process lines
+		for (; index < lines.length; index++) {
+			String line = lines[index];
+			if (inFrontmatter) {
+				if (line.trim()
+					.equals("---")) {
+					inFrontmatter = false;
+					frontmatterProcessed = true;
 				}
-				continue;
+				continue; // Skip frontmatter lines
 			}
-			if (inFrontmatter && !frontmatterEnded) {
-				continue; // skip lines in frontmatter
-			}
+
 			content.append(line)
 				.append("\n");
 		}
