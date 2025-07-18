@@ -984,9 +984,15 @@ public class bnd extends Processor {
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
 	public void _build(final buildoptions opts) throws Exception {
 
-		perProject(opts, p -> p.build(opts.test()));
+		perProject(opts, p -> {
+			p.getGenerate()
+				.generate(opts.force());
+			p.compile(opts.test());
+			p.build(opts.test());
+		});
 	}
 
+	@Description("Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.")
 	interface CompileOptions extends ProjectWorkspaceOptions {
 
 		@Description("Compile for test")
@@ -994,8 +1000,10 @@ public class bnd extends Processor {
 
 	}
 
-	@Description("Compile a project or the workspace")
+	@Description("Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.")
+	@Deprecated(forRemoval = true, since = "7.2.0")
 	public void _compile(final CompileOptions opts) throws Exception {
+		out.format("%nDEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.");
 		perProject(opts, p -> p.compile(opts.test()));
 	}
 
