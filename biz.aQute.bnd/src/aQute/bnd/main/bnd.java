@@ -1038,13 +1038,13 @@ public class bnd extends Processor {
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 			List<Project> projects = getFilteredProjects(opts);
-			buildAndWatch(opts.test(), opts.verbose(), executor, scheduler, projects);
+			buildAndWatch(opts.test(), opts.verbose(), opts.force(), executor, scheduler, projects);
 			return;
 		}
 
 		// default build
+		boolean force = opts.force();
 		if (opts.parallel()) {
-			boolean force = opts.force();
 			boolean test = opts.test();
 			long syncms = opts.synctime() <= 0 ? 20000 : opts.synctime();
 			out.format("Build parallel%n");
@@ -1052,6 +1052,8 @@ public class bnd extends Processor {
 			buildParallelInternal(projects, force, test, syncms);
 		} else {
 			perProject(opts, p -> {
+				p.getGenerate()
+					.generate(force);
 				p.compile(opts.test());
 				p.build(opts.test());
 			});
@@ -1059,7 +1061,7 @@ public class bnd extends Processor {
 
 	}
 
-	private void buildAndWatch(boolean undertest, boolean verbose, Executor watchExecutor,
+	private void buildAndWatch(boolean undertest, boolean verbose, boolean force, Executor watchExecutor,
 		ScheduledExecutorService buildScheduler,
 		Collection<Project> projects) throws InterruptedException, Exception {
 
@@ -1068,6 +1070,8 @@ public class bnd extends Processor {
 		try (BuildWatcher bw = new BuildWatcher(projects, (p) -> {
 			try {
 				perProjectAnDependents(p, verbose, (p2) -> {
+					p.getGenerate()
+						.generate(force);
 					p2.compile(undertest);
 					p2.build(undertest);
 				}, true, projectsWellDone);
@@ -1210,6 +1214,8 @@ public class bnd extends Processor {
 		Collection<Project> projects = run.getWorkspace()
 			.getAllProjects();
 
+		boolean force = opts.force();
+
 		boolean needsInitialFullbuild = false;
 		Set<Project> projectsNeedRebuild = new LinkedHashSet<>();
 		for (Project project : projects) {
@@ -1230,7 +1236,6 @@ public class bnd extends Processor {
 				projectsNeedRebuild);
 
 			if (opts.parallel()) {
-				boolean force = opts.force();
 				boolean test = opts.test();
 				long syncms = opts.synctime() <= 0 ? 20000 : opts.synctime();
 				out.format("Build parallel%n");
@@ -1254,7 +1259,7 @@ public class bnd extends Processor {
 
 		outer.submit(() -> {
 			try {
-				buildAndWatch(opts.test(), opts.verbose(), watchExecutor, buildScheduler, projects);
+				buildAndWatch(opts.test(), opts.verbose(), force, watchExecutor, buildScheduler, projects);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
