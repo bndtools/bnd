@@ -18,5 +18,5 @@ Example:
 These properties will be set in the local JVM when the workspace is started.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

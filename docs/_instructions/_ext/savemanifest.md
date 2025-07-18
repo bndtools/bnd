@@ -18,5 +18,5 @@ Example:
 The specified file will contain the manifest as it would appear in the final bundle.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

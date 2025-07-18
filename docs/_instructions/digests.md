@@ -18,4 +18,5 @@ The `-digests` instruction allows you to specify which digest (checksum) algorit
 By default, if no value is specified, both `SHA-1` and `MD-5` are used. Setting this instruction ensures that the generated JAR includes the specified digests, which can be useful for verifying file integrity or meeting repository requirements.
 
 
+<hr />
 TODO Needs review - AI Generated content

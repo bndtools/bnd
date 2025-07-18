@@ -18,4 +18,5 @@ The `-sourcepath` instruction specifies a list of directory names that bnd shoul
 
 This is useful for ensuring that all relevant source files are available for compilation, packaging, or source inclusion in the generated JAR.
 
+<hr />
 TODO Needs review - AI Generated content

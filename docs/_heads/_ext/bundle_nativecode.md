@@ -20,5 +20,5 @@ A wildcard (`*`) can be used as the last entry to indicate that the bundle can r
 This header is used for bundles that need to provide platform-specific native libraries alongside Java code.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

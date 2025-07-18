@@ -22,5 +22,5 @@ This instruction is only relevant when working with distribution-based resolves.
 
 
 
----
+<hr />
 TODO Needs review - AI Generated content

@@ -13,5 +13,5 @@ You can further configure DS annotation processing using the `-dsannotations-opt
 
 [source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java)
 
----
+<hr />
 TODO Needs review - AI Generated content

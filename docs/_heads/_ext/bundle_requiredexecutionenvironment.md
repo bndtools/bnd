@@ -45,5 +45,5 @@ This header is optional and mainly used for legacy compatibility.
 																};
 
 
----
+<hr />
 TODO Needs review - AI Generated content

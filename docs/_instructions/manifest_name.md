@@ -15,4 +15,5 @@ The `-manifest-name` instruction allows you to set a custom resource path for th
 
 Use this instruction to override the default manifest path when needed. For example, you might set it to a different file name or directory to comply with a specific packaging requirement.
 
+<hr />
 TODO Needs review - AI Generated content

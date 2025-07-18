@@ -27,4 +27,5 @@ Bundle-ManifestVersion: 2
 
 This header is automatically set by bnd and should not be modified manually.
 
+<hr />
 TODO Needs review - AI Generated content

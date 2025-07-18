@@ -51,4 +51,5 @@ Using "SNAPSHOT" in the bundle version's qualifier and the `-snapshot` instructi
 are generally for bundles intended for maven builds.
 
 
+<hr />
 TODO Needs review - AI Generated content

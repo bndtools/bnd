@@ -19,5 +19,5 @@ Categories are free-form strings and can be customized as needed. This header is
 
 
 
----
+<hr />
 TODO Needs review - AI Generated content

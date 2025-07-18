@@ -38,5 +38,5 @@ When the tests run, both `config.xml` and `extra-info.xml` (if present in the bu
 
 ---
 
----
+<hr />
 TODO Needs review - AI Generated content

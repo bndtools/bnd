@@ -373,5 +373,5 @@ This header is required for bundles that use OSGi Declarative Services.
 
 
 
----
+<hr />
 TODO Needs review - AI Generated content

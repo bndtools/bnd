@@ -90,4 +90,5 @@ The Bundle-SymbolicName header can be set by the user. The default is the name o
 	public final static String	SYMBOLICNAME_STRING				= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
 
 
+<hr />
 TODO Needs review - AI Generated content

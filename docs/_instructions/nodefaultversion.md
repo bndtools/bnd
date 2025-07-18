@@ -19,4 +19,5 @@ The `-nodefaultversion` instruction controls whether a default version is added 
 
 This can be useful if you want to avoid implicit versioning and ensure that only explicitly specified versions are used in your exported packages.
 
+<hr />
 TODO Needs review - AI Generated content

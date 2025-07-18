@@ -15,5 +15,5 @@ bnd bootstrap
 This will launch the OSGi framework as defined by your workspace's `bnd.bnd` file.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

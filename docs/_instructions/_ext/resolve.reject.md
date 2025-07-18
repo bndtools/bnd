@@ -52,5 +52,5 @@ situation. The following example restores the pre release 7 situation.
 
 
 
----
+<hr />
 TODO Needs review - AI Generated content

@@ -20,5 +20,5 @@ Example:
 The extension will be downloaded and loaded as part of the build process.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

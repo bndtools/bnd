@@ -34,4 +34,5 @@ This instruction can be useful when the workspace requires a feature of Bnd intr
     -require-bnd: "(version>=4.3.0)"
 
 
+<hr />
 TODO Needs review - AI Generated content

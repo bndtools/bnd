@@ -20,4 +20,5 @@ The `-nojunit` instruction indicates that the project does not contain JUnit tes
 This is useful for projects that do not require unit testing or do not have any test cases that need to be executed as part of the build process.
 
 
+<hr />
 TODO Needs review - AI Generated content

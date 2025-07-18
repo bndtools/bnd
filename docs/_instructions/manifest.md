@@ -17,4 +17,5 @@ The `-manifest` instruction allows you to override the default manifest calculat
 
 This is useful when you need to comply with specific manifest requirements or reuse an existing manifest file for your bundle.
 
+<hr />
 TODO Needs review - AI Generated content

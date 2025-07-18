@@ -57,7 +57,9 @@ With the `version` version range attribute it is possible to restrict the candid
 
 Include in the bnd build is a _javagen_ external plugin that is useful to generate Java code based on build information. It uses a template directory with Java files. When the external plugin runs, it will use all these files to write matching Java files in the output directory, in a matching package directory. The input Java files can be prefixed with a properties header:
 
+    ---
     foo: 1
+    ---
     package foo.bar;
     class Foo {
         int foo = ${foo};
