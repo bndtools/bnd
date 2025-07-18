@@ -24,7 +24,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 -  `upload` - Upload a file to staging repository by id 
 
 ### createstaging 
-Create a staging repository. The profileId specifies a particular profile. If you go to nexus, select the staging profiles, and then select the profile you want to use. The profile id is then in the url.
+Create a staging repo
 
 #### Synopsis: 
 	   createstaging [options]  <profileId>
@@ -33,8 +33,6 @@ Create a staging repository. The profileId specifies a particular profile. If yo
 - `[ -d --description <string> ]` 
 
 ### delete 
-Delete a file in a staging repository by id
-
 #### Synopsis: 
 	   delete [options]  <repositoryId> <remotepath_or_gav>
 
@@ -42,8 +40,6 @@ Delete a file in a staging repository by id
 - `[ -f --force ]` 
 
 ### fetch 
-Fetch a file to staging repository by id
-
 #### Synopsis: 
 	   fetch [options]  <repositoryId> <remotepath_or_gav>
 
@@ -72,6 +68,8 @@ Fetch a file to staging repository by id
 - `[ -r --referal <uri> ]` 
 
 ### sign 
+Artifact signing subcommand.
+
 #### Synopsis: 
 	   sign [options]  <path...>
 
@@ -86,8 +84,6 @@ Fetch a file to staging repository by id
 - `[ -x --xclude <string> ]` Specify the exclude pattern for artifacts from the '--from' option. Defaults to no exclude pattern.
 
 ### upload 
-Upload a file to staging repository by id
-
 #### Synopsis: 
 	   upload [options]  <repositoryId> <remotepath_or_gav> <file>
 

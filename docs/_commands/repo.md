@@ -43,7 +43,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -s --standalone <string> ]` A stanalone bndrun file
 
 ### diff 
-Diff jars (or show tree)
+Show the diff tree of a single repo or compare 2  repos. A diff tree is a detailed tree of all aspects of a bundle, including its packages, types, methods, fields, and modifiers.
 
 #### Synopsis: 
 	   diff [options]  <newer repo> <[older repo]>
@@ -115,6 +115,8 @@ List the current repositories
 	   repos 
 
 ### sync 
+
+
 #### Synopsis: 
 	   sync [options]  ...
 
@@ -126,6 +128,8 @@ List the current repositories
 - `[ -w --workspace <string> ]` 
 
 ### topom 
+Create a POM out of a bnd repository
+
 #### Synopsis: 
 	   topom [options]  <repo> <name>
 
@@ -135,7 +139,7 @@ List the current repositories
 - `[ -p --parent <string> ]` The parent of the pom (default none.xml)
 
 ### versions 
-Displays a list of versions for a given bsn that can be found in the current repositories.
+Displays a sorted set of versions for a given bsn that can be found in the current repositories.
 
 #### Synopsis: 
 	   versions  <bsn>

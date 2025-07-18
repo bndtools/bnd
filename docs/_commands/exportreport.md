@@ -69,7 +69,7 @@ List the user defined reports.
 - `[ -w --workspace <string> ]` Use the following workspace
 
 ### readme 
-Export a set of readme files (template can be parametrized with system properties starting with 'bnd.reporter.*').
+Export the user defined reports.
 
 #### Synopsis: 
 	   readme [options]  ...
