@@ -1008,7 +1008,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
-	interface buildoptions extends ProjectWorkspaceOptions {
+	interface buildBaseOptions extends ProjectWorkspaceOptions {
 
 		@Description("Build for test")
 		boolean test();
@@ -1016,8 +1016,16 @@ public class bnd extends Processor {
 		@Description("Force non-incremental")
 		boolean force();
 
+	}
+
+	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
+	interface buildoptions extends ParallelBuildOptions {
+
 		@Description("Continuous incremental build")
 		boolean watch();
+
+		@Description("Build in parallel (Experimental)")
+		boolean parallel();
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.")
@@ -1031,13 +1039,23 @@ public class bnd extends Processor {
 
 			List<Project> projects = getFilteredProjects(opts);
 			buildAndWatch(opts.test(), opts.verbose(), executor, scheduler, projects);
+			return;
 		}
 
 		// default build
-		perProject(opts, p -> {
-			p.compile(opts.test());
-			p.build(opts.test());
-		});
+		if (opts.parallel()) {
+			boolean force = opts.force();
+			boolean test = opts.test();
+			long syncms = opts.synctime() <= 0 ? 20000 : opts.synctime();
+			out.format("Build parallel%n");
+			List<Project> projects = getFilteredProjects(opts);
+			buildParallelInternal(projects, force, test, syncms);
+		} else {
+			perProject(opts, p -> {
+				p.compile(opts.test());
+				p.build(opts.test());
+			});
+		}
 
 	}
 
@@ -1165,10 +1183,15 @@ public class bnd extends Processor {
 
 	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	@Arguments(arg = "[bndrun]")
-	interface devOptions extends runOptions, verboseOptions {
+	interface devOptions extends ParallelBuildOptions, runOptions, verboseOptions {
 
+		@Override
 		@Description("Build for test")
 		boolean test();
+
+		@Description("Build in parallel (Experimental)")
+		boolean parallel();
+
 
 	}
 
@@ -1206,15 +1229,25 @@ public class bnd extends Processor {
 				projects.size(),
 				projectsNeedRebuild);
 
-			Set<Project> projectsDone = new HashSet<>(projects.size());
-			for (Project proj : projects) {
-				perProject(proj, opts.verbose(), p -> {
-					out.format("Build Project %s%n", p.getName());
-					p.compile(opts.test());
-					p.build(opts.test());
-				}, true, projectsDone);
+			if (opts.parallel()) {
+				boolean force = opts.force();
+				boolean test = opts.test();
+				long syncms = opts.synctime() <= 0 ? 20000 : opts.synctime();
+				out.format("Build parallel%n");
+				buildParallelInternal(projects, force, test, syncms);
+			} else {
 
+				Set<Project> projectsDone = new HashSet<>(projects.size());
+				for (Project proj : projects) {
+					perProject(proj, opts.verbose(), p -> {
+						out.format("Build Project %s%n", p.getName());
+						p.compile(opts.test());
+						p.build(opts.test());
+					}, true, projectsDone);
+
+				}
 			}
+
 
 			out.format("Full build finished%n");
 		}
@@ -3616,7 +3649,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("experimental - parallel build")
-	interface ParallelBuildOptions extends buildoptions {
+	interface ParallelBuildOptions extends buildBaseOptions {
 		long synctime();
 	}
 
@@ -3627,13 +3660,22 @@ public class bnd extends Processor {
 	 */
 	@Description("Lets see if we can build in parallel")
 	public void __par(final ParallelBuildOptions options) throws Exception {
+		List<Project> projects = getFilteredProjects(options);
+		boolean force = options.force();
+		boolean test = options.test();
+		long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
+
+		buildParallelInternal(projects, force, test, syncms);
+	}
+
+	private void buildParallelInternal(Collection<Project> projects, boolean force, boolean test, long syncms)
+		throws Exception, InterruptedException {
 		ExecutorService pool = Executors.newCachedThreadPool();
 		final AtomicBoolean quit = new AtomicBoolean();
 
 		try {
 			final Forker<Project> forker = new Forker<>(pool);
 
-			List<Project> projects = getFilteredProjects(options);
 
 			for (final Project proj : projects) {
 				forker.doWhen(proj.getDependson(), proj, () -> {
@@ -3641,11 +3683,12 @@ public class bnd extends Processor {
 
 						try {
 							proj.getGenerate()
-								.generate(options.force());
+								.generate(force);
+							if (!quit.get()) {
+								proj.compile(test);
+							}
 							if (!quit.get())
-								proj.compile(options.test());
-							if (!quit.get())
-								proj.build(options.test());
+								proj.build(test);
 
 							if (!proj.isOk()) {
 								quit.set(true);
@@ -3659,7 +3702,6 @@ public class bnd extends Processor {
 			}
 			err.flush();
 
-			long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
 			forker.start(syncms);
 		} finally {
 			pool.shutdownNow();
