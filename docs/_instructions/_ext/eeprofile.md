@@ -12,3 +12,6 @@ The `-eeprofile` instruction allows you to control which Java 8 (or later) profi
 You can set `-eeprofile` to `auto` to let bnd automatically determine the appropriate profile based on the packages your project uses. Alternatively, you can specify one or more profiles explicitly by name. If your project references packages outside the selected profiles, no profile will be set.
 
 This instruction is useful for optimizing your bundle for specific Java environments and ensuring compatibility with the intended runtime profile.
+
+---
+TODO Needs review - AI Generated content

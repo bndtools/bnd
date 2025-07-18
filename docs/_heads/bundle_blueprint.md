@@ -12,20 +12,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - Pattern: `.*`
 
 <!-- Manual content from: ext/bundle_blueprint.md --><br /><br />
-	
 
-	public class SpringXMLType extends XMLTypeProcessor {
+# Bundle-Blueprint
 
-	@Override
-	protected List<XMLType> getTypes(Analyzer analyzer) throws Exception {
-		List<XMLType> types = new ArrayList<XMLType>();
+The `Bundle-Blueprint` header is used to specify the location of Blueprint XML files within the bundle. These XML files define Blueprint dependency injection containers for OSGi. The header can list one or more resource paths, separated by commas. bnd will process these files and include them in the bundle as needed.
 
-		String header = analyzer.getProperty(Constants.BUNDLE_BLUEPRINT, "OSGI-INF/blueprint");
-		process(types, "extract.xsl", header, ".*\\.xml");
-		header = analyzer.getProperty("Spring-Context", "META-INF/spring");
-		process(types, "extract.xsl", header, ".*\\.xml");
+Example:
 
-		return types;
-	}
+```
+Bundle-Blueprint: OSGI-INF/blueprint/context.xml, META-INF/spring/context.xml
+```
 
-	}
+This header is typically used in bundles that provide OSGi Blueprint services or use Spring DM. The specified XML files must be present in the bundle at the given locations.
+
+
+TODO Needs review - AI Generated content

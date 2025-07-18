@@ -24,3 +24,6 @@ then some headers are _merged_. One of those headers is the Import Package heade
 bnd will calculate the references without taking the host into account. If the fragment uses packages from the host, 
 quite likely, then these would result in imports. For this reason, bnd will subtract any package that can be found
 in the host from the import.
+
+---
+TODO Needs review - AI Generated content

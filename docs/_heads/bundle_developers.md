@@ -12,6 +12,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - Pattern: `.*`
 
 <!-- Manual content from: ext/bundle_developers.md --><br /><br />
+
+# Bundle-Developers
+
+The `Bundle-Developers` header lists developers of the bundle, as defined in the Maven POM or via annotations. This header is not standardized by OSGi but is used for documentation and tracking purposes.
+
+Example:
+
+```
+Bundle-Developers: Jane Smith;roles='lead';organization='Example Corp.'
+```
+
+This header is optional and is mainly used for informational purposes.
 	
 	/*
 	 * Bundle-Developers header
@@ -109,4 +121,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 			 */
 			int timezone() default 0;
 		}
-			
+
+
+TODO Needs review - AI Generated content

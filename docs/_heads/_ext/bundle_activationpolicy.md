@@ -18,3 +18,7 @@ Bundle-ActivationPolicy: lazy
 For more details, see the [OSGi Specification](https://docs.osgi.org/specification/osgi.core/8.0.0/framework.lifecycle.html#i3270439).
 
 If the header is set incorrectly (for example, with no argument or with too many arguments), bnd will issue a warning. The value should be set to `lazy` for standard lazy activation.
+
+
+---
+TODO Needs review - AI Generated content

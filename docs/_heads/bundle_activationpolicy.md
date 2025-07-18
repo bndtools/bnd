@@ -15,21 +15,19 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/bundle_activationpolicy.md --><br /><br />
 
-See [OSGi Specification](https://docs.osgi.org/specification/osgi.core/8.0.0/framework.lifecycle.html#i3270439) for a description of this header.
+# Bundle-ActivationPolicy
 
-	public boolean verifyActivationPolicy(String policy) {
-		Parameters map = parseHeader(policy);
-		if (map.size() == 0)
-			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " is set but has no argument %s", policy);
-		else if (map.size() > 1)
-			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " has too many arguments %s", policy);
-		else {
-			Map<String,String> s = map.get("lazy");
-			if (s == null)
-				warning(Constants.BUNDLE_ACTIVATIONPOLICY + " set but is not set to lazy: %s", policy);
-			else
-				return true;
-		}
+The `Bundle-ActivationPolicy` header specifies how the OSGi framework should activate the bundle once it has been started. The most common value for this header is `lazy`, which indicates that the bundle should be started in lazy activation mode. In this mode, the bundle's activator is not called until the first class from the bundle is loaded.
 
-		return false;
-	}
+This header can also include additional directives, such as `include` and `exclude`, to further control activation behavior. The header is typically used as follows:
+
+```
+Bundle-ActivationPolicy: lazy
+```
+
+For more details, see the [OSGi Specification](https://docs.osgi.org/specification/osgi.core/8.0.0/framework.lifecycle.html#i3270439).
+
+If the header is set incorrectly (for example, with no argument or with too many arguments), bnd will issue a warning. The value should be set to `lazy` for standard lazy activation.
+
+
+TODO Needs review - AI Generated content

@@ -18,3 +18,7 @@ Bundle-NativeCode: lib/linux-x86/libfoo.so;osname=Linux;processor=x86, lib/win32
 A wildcard (`*`) can be used as the last entry to indicate that the bundle can run without native code if no match is found. If a required native library is missing or not found in the JAR, bnd will issue an error.
 
 This header is used for bundles that need to provide platform-specific native libraries alongside Java code.
+
+
+---
+TODO Needs review - AI Generated content

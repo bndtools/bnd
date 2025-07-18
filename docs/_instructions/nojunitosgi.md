@@ -15,18 +15,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/nojunitosgi.md --><br /><br />
 
-	private void checkForTesting(Project project, Properties properties) throws Exception {
+The `-nojunitosgi` instruction indicates that the project does not contain JUnit OSGi tests. When this instruction is set to `true`, bnd will not attempt to run OSGi-based JUnit tests for the project. This is useful for projects that do not require OSGi test execution or do not have any test cases that need to be run in an OSGi environment.
 
-		//
-		// Only run junit when we have a test src directory
-		//
+By default, if test sources and test cases are present, bnd will attempt to run both standard and OSGi-based JUnit tests unless this instruction is specified.
 
-		boolean junit = project.getTestSrc().isDirectory() && !Processor.isTrue(project.getProperty(Constants.NOJUNIT));
-		boolean junitOsgi = project.getProperties().getProperty(Constants.TESTCASES) != null
-				&& !Processor.isTrue(project.getProperty(Constants.NOJUNITOSGI));
 
-		if (junit)
-			properties.setProperty("project.junit", "true");
-		if (junitOsgi)
-			properties.setProperty("project.osgi.junit", "true");
-	}
+TODO Needs review - AI Generated content

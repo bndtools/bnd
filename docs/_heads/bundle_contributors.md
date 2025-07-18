@@ -43,6 +43,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 <!-- Manual content from: ext/bundle_contributors.md --><br /><br />
+
+# Bundle-Contributors
+
+The `Bundle-Contributors` header lists contributors to the bundle, as defined in the Maven POM or via annotations. This header is not standardized by OSGi but is used for documentation and tracking purposes.
+
+Example:
+
+```
+Bundle-Contributors: John Doe;roles='developer';organization='Example Corp.'
+```
+
+This header is optional and is mainly used for informational purposes.
 	
 	/*
 	 * Bundle-Contributors header
@@ -138,3 +150,5 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 			 */
 			int timezone() default 0;
 		}
+
+TODO Needs review - AI Generated content		

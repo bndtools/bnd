@@ -16,3 +16,6 @@ Example:
 ```
 
 When this instruction is set to `true`, bnd will not produce any output JARs for the project.
+
+---
+TODO Needs review - AI Generated content

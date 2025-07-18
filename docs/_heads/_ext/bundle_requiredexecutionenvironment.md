@@ -43,3 +43,7 @@ This header is optional and mainly used for legacy compatibility.
 			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
 			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
 																};
+
+
+---
+TODO Needs review - AI Generated content

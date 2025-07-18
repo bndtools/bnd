@@ -27,7 +27,19 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
   - Pattern: `.*`
 
 <!-- Manual content from: ext/bundle_license.md --><br /><br />
-	
+
+# Bundle-License
+
+The `Bundle-License` header provides machine-readable license information for the bundle. It can list one or more licenses, separated by commas, and may include additional attributes such as a description or a link to the license text.
+
+Example:
+
+```
+Bundle-License: Apache-2.0;description='Apache License, Version 2.0';link='https://www.apache.org/licenses/LICENSE-2.0'
+```
+
+This header is optional but recommended for clarity and compliance. It helps users and tools understand the licensing terms of the bundle.
+
 		/*
 	 * Bundle-License header
 	 */
@@ -40,4 +52,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 		add(Constants.BUNDLE_LICENSE, sb.toString());
 	}
 
-	
+
+
+
+TODO Needs review - AI Generated content

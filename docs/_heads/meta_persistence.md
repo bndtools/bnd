@@ -12,6 +12,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - Pattern: `.*`
 
 <!-- Manual content from: ext/meta_persistence.md --><br /><br />
+
+# Meta-Persistence
+
+The `Meta-Persistence` header marks a bundle as a JPA (Java Persistence API) persistence bundle. It lists one or more resource paths (typically XML files) that describe the persistence units. If this header is not present, the bundle is not considered a persistence bundle and should be ignored by JPA providers.
+
+Example:
+
+```
+Meta-Persistence: META-INF/persistence.xml
+```
+
+bnd will verify that the listed resources exist in the bundle. This header is required for JPA persistence bundles.
 	
 	/**
 	 * Verify the Meta-Persistence header
@@ -50,4 +62,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 		error(Constants.META_PERSISTENCE + " refers to resources not in the bundle: %s", list).header(Constants.META_PERSISTENCE);
 	}
-	
+
+
+TODO Needs review - AI Generated content

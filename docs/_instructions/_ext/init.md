@@ -16,3 +16,6 @@ Example:
 ```
 
 Macros are usually resolved and executed on demand, but those listed in `-init` are always executed during project initialization.
+
+---
+TODO Needs review - AI Generated content

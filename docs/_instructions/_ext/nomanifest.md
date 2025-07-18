@@ -13,3 +13,6 @@ Typically, most OSGi bundles require a manifest, but in some advanced or custom 
 
 By default, the manifest is included in the JAR unless `-nomanifest: true` is specified.
 
+
+---
+TODO Needs review - AI Generated content

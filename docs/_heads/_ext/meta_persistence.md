@@ -54,3 +54,7 @@ bnd will verify that the listed resources exist in the bundle. This header is re
 
 		error(Constants.META_PERSISTENCE + " refers to resources not in the bundle: %s", list).header(Constants.META_PERSISTENCE);
 	}
+
+
+---
+TODO Needs review - AI Generated content

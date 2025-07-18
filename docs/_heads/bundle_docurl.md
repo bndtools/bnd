@@ -12,6 +12,18 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - Pattern: `.*`
 
 <!-- Manual content from: ext/bundle_docurl.md --><br /><br />
+
+# Bundle-DocURL
+
+The `Bundle-DocURL` header specifies a URL that points to documentation for the bundle. This can be a website, wiki page, or any other resource that provides more information about the bundle's usage, features, or configuration.
+
+Example:
+
+```
+Bundle-DocURL: https://docs.example.com/my-bundle
+```
+
+Providing this header is optional but highly recommended for discoverability and support.
 	
 	/*
 	 * Bundle-DocURL header
@@ -20,4 +32,6 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 		add(Constants.BUNDLE_DOCURL, annotation.value());
 	}
 
-	
+
+
+TODO Needs review - AI Generated content

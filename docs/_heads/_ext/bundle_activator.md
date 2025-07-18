@@ -18,3 +18,7 @@ Bundle-Activator: com.example.MyActivator
 ```
 
 If the activator is not specified, the bundle will not have custom start/stop behavior.
+
+
+---
+TODO Needs review - AI Generated content

@@ -54,7 +54,19 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/export_package.md --><br /><br />
 
-The `Export-Package` header contains a declaration of exported packages. Also see [`-exportcontents`](/instructions/exportcontents.html).
+# Export-Package
+
+The `Export-Package` header declares which Java packages in the bundle are made available to other bundles. You can use patterns, wildcards, and directives to control which packages are exported and how.
+
+Example:
+
+```
+Export-Package: !com.*, *
+```
+
+This example exports all packages except those starting with `com`. You can also use directives such as `-noimport:=true` to control import behavior, and bnd will automatically calculate the `uses:` directive for class space consistency.
+
+See also: [`-exportcontents`](/instructions/exportcontents.html).
 
 The bnd definition allows the specification to be done using ''patterns'', a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. 
 
@@ -205,4 +217,6 @@ Directives that are not part of the OSGi specification will give a warning unles
 		}
 	}
 
-	
+
+
+TODO Needs review - AI Generated content

@@ -21,3 +21,7 @@ This header is set by bnd and should not be manually changed.
 
 The `Created-By` header is important for understanding the context in which a Java bundle was created. It provides insight into the Java Development Kit (JDK) version and the vendor's implementation details. This can be critical when you are trying to debug issues, ensure compatibility with other Java components, or verify that the bundle was built using a trusted JDK vendor.
 
+
+
+---
+TODO Needs review - AI Generated content

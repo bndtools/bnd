@@ -12,3 +12,6 @@ You provide a comma-separated list of fully qualified class names or use `*` to 
 You can further configure DS annotation processing using the `-dsannotations-options` instruction.
 
 [source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java)
+
+---
+TODO Needs review - AI Generated content

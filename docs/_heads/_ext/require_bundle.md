@@ -50,3 +50,7 @@ This header is less common in OSGi and can make dependency management more compl
 			}
 		} else if (isPedantic())
 			warning("Use of " + Constants.REQUIRE_BUNDLE + ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
+
+
+---
+TODO Needs review - AI Generated content

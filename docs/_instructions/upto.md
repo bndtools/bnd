@@ -13,30 +13,8 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/upto.md --><br /><br />
 
-/**
-	 * This method is about compatibility. New behavior can be conditionally
-	 * introduced by calling this method and passing what version this behavior
-	 * was introduced. This allows users of bnd to set the -upto instructions to
-	 * the version that they want to be compatible with. If this instruction is
-	 * not set, we assume the latest version.
-	 */
+The `-upto` instruction specifies the highest version of bnd features that your project should be compatible with. When you set this instruction, any features or behaviors introduced after the specified version will be disabled, ensuring compatibility with earlier versions of bnd.
 
-	Version	upto	= null;
+This is useful for maintaining backward compatibility or for projects that need to avoid adopting new behaviors automatically. If `-upto` is not set, bnd assumes the latest version and enables all features by default.
 
-	public boolean since(Version introduced) {
-		if (upto == null) {
-			String uptov = getProperty(UPTO);
-			if (uptov == null) {
-				upto = Version.HIGHEST;
-				return true;
-			}
-			if (!Version.VERSION.matcher(uptov).matches()) {
-				error("The %s given version is not a version: %s", UPTO, uptov);
-				upto = Version.HIGHEST;
-				return true;
-			}
-
-			upto = new Version(uptov);
-		}
-		return upto.compareTo(introduced) >= 0;
-	}
+In summary, use `-upto` to control the introduction of new features and maintain a stable build environment as bnd evolves.

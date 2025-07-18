@@ -18,3 +18,7 @@ Bundle-ClassPath: ., lib/extra.jar
 ```
 
 This header is important for advanced scenarios where you need to include additional classpath entries inside your bundle.
+
+
+---
+TODO Needs review - AI Generated content
