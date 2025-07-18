@@ -953,6 +953,34 @@ public class bnd extends Processor {
 		getInfo(p, p + ": ");
 	}
 
+	/**
+	 * Builds the project and all its dependents
+	 */
+	private void perProjectAnDependents(Project p, boolean verbose, PerProject run, boolean manageDeps,
+		final Set<Project> projectsWellDone) throws Exception {
+		out.println("Build project: " + p.getName());
+		run.doit(p);
+
+		if (manageDeps) {
+			final Collection<Project> projectDeps = p.getDependents(); // ordered
+			if (verbose && !projectDeps.isEmpty()) {
+				out.println("Project dependents for: " + p.getName());
+				projectDeps.forEach(pr -> out
+					.println(" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
+			}
+
+			projectDeps.removeAll(projectsWellDone);
+
+			for (Project dep : projectDeps) {
+				run.doit(dep);
+				projectsWellDone.add(dep);
+			}
+		}
+
+
+		getInfo(p, p + ": ");
+	}
+
 	private List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
 		List<Project> projects = new ArrayList<>();
 
@@ -1027,11 +1055,10 @@ public class bnd extends Processor {
 		Set<Project> projectsWellDone = new HashSet<Project>();
 		try (BuildWatcher bw = new BuildWatcher(projects, (p) -> {
 			try {
-				boolean manageDeps = false; // only this bundle
-				perProject(p, verbose, (p2) -> {
+				perProjectAnDependents(p, verbose, (p2) -> {
 					p2.compile(undertest);
 					p2.build(undertest);
-				}, manageDeps, projectsWellDone);
+				}, true, projectsWellDone);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
