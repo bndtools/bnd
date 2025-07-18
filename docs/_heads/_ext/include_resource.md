@@ -14,5 +14,5 @@ See the documentation for [`-includeresource`](../instructions/includeresource.h
 
 
 
----
+<hr />
 TODO Needs review - AI Generated content

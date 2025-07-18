@@ -19,4 +19,5 @@ If no output is specified, bnd will use default naming strategies, such as the n
 
 Note: See also the `-outputmask` instruction for more advanced output naming options.
 
+<hr />
 TODO Needs review - AI Generated content

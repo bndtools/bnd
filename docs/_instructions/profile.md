@@ -18,4 +18,5 @@ The `-profile` instruction sets a prefix (profile key) that is used when a varia
 This allows you to define profile-specific values for variables, making it easier to manage different build or runtime configurations within the same project. If no profile is set or the variable is not found under the profile, bnd will fall back to the default value.
 
 
+<hr />
 TODO Needs review - AI Generated content

@@ -20,5 +20,5 @@ To generate and use the autocompletion script for bash:
 This will enable tab-completion for all available bnd commands in your current shell session.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

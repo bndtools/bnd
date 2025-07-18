@@ -18,4 +18,5 @@ The `-invalidfilenames` instruction allows you to specify file or directory name
 You can customize the regular expression used to detect invalid names by setting this instruction. If any files or directories in your JAR match the specified pattern, bnd will report an error, helping you avoid portability issues when distributing your bundles.
 
 
+<hr />
 TODO Needs review - AI Generated content

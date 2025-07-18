@@ -48,4 +48,5 @@ bnd will calculate the references without taking the host into account. If the f
 quite likely, then these would result in imports. For this reason, bnd will subtract any package that can be found
 in the host from the import.
 
+<hr />
 TODO Needs review - AI Generated content

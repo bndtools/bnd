@@ -27,4 +27,5 @@ Example:
 
 When this instruction is set to `true`, bnd will not produce any output JARs for the project.
 
+<hr />
 TODO Needs review - AI Generated content

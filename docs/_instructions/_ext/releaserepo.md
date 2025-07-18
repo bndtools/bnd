@@ -20,5 +20,5 @@ Example:
 This instruction is useful for managing release targets in multi-repository environments.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

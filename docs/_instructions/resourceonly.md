@@ -28,4 +28,5 @@ Example:
 When set, bnd will not warn about the absence of classes in the bundle.
 
 
+<hr />
 TODO Needs review - AI Generated content

@@ -11,5 +11,5 @@ The `-noee` instruction controls whether bnd automatically adds a requirement fo
 This is useful if you want to manage EE requirements manually or if your project has special compatibility needs.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

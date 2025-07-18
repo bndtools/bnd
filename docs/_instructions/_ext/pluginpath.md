@@ -9,5 +9,5 @@ The `-pluginpath` instruction allows you to define JAR files or directories that
 
 You can specify multiple `-pluginpath` clauses in different places, and they will be merged together. If a specified file does not exist, you can provide a URL to download it, and optionally a SHA-1 digest to verify the download. This ensures that all required plugin dependencies are available and loaded correctly at build time.
 
----
+<hr />
 TODO Needs review - AI Generated content

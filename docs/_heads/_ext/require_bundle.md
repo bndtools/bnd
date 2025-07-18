@@ -52,5 +52,5 @@ This header is less common in OSGi and can make dependency management more compl
 			warning("Use of " + Constants.REQUIRE_BUNDLE + ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
 
 
----
+<hr />
 TODO Needs review - AI Generated content

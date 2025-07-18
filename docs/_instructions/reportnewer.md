@@ -28,4 +28,5 @@ Example:
 When enabled, bnd will output a list of files that are newer than the previous build.
 
 
+<hr />
 TODO Needs review - AI Generated content

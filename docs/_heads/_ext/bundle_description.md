@@ -18,5 +18,5 @@ Bundle-Description: Provides OSGi-based logging services for applications.
 This header is optional but recommended for clarity and documentation purposes.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

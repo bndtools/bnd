@@ -56,5 +56,5 @@ bnd will verify that the listed resources exist in the bundle. This header is re
 	}
 
 
----
+<hr />
 TODO Needs review - AI Generated content

@@ -23,4 +23,5 @@ You can set `-eeprofile` to `auto` to let bnd automatically determine the approp
 
 This instruction is useful for optimizing your bundle for specific Java environments and ensuring compatibility with the intended runtime profile.
 
+<hr />
 TODO Needs review - AI Generated content

@@ -10,5 +10,5 @@ The `-nojunitosgi` instruction indicates that the project does not contain JUnit
 By default, if test sources and test cases are present, bnd will attempt to run both standard and OSGi-based JUnit tests unless this instruction is specified.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

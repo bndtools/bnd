@@ -56,6 +56,7 @@ Require-Bundle: com.example.otherbundle
 
 This header is less common in OSGi and can make dependency management more complex. Prefer using `Import-Package` when possible.
 
+---
 
 		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn");
 	
@@ -90,4 +91,5 @@ This header is less common in OSGi and can make dependency management more compl
 			warning("Use of " + Constants.REQUIRE_BUNDLE + ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
 
 
+<hr />
 TODO Needs review - AI Generated content

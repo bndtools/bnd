@@ -34,4 +34,5 @@ For example:
 
 The install process is taking place in-line with the build process. It is therefore recommended to only use this for local (i.e. file system based) installs.
 
+<hr />
 TODO Needs review - AI Generated content

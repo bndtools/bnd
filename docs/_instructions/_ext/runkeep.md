@@ -22,5 +22,5 @@ Example:
 By default, the storage directory is deleted between launches.
 
 
----
+<hr />
 TODO Needs review - AI Generated content

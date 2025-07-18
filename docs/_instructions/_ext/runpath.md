@@ -17,5 +17,5 @@ For example:
 		file.jar; version=file
 
 
----
+<hr />
 TODO Needs review - AI Generated content

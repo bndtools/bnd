@@ -9,5 +9,5 @@ The `-systemproperties` instruction allows you to set system properties in the l
 
 This is especially useful for setting environment-specific options or JVM flags that must be in place for your workspace or build to function correctly.
 
----
+<hr />
 TODO Needs review - AI Generated content
