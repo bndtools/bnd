@@ -69,8 +69,10 @@ public class CommandLine {
 		if (cmd.equals("help")) {
 			StringBuilder sb = new StringBuilder();
 			Formatter f = new Formatter(sb);
-			if (input.isEmpty())
+			if (input.isEmpty()) {
 				help(f, target);
+				f.format("More help at: https://bnd.bndtools.org/chapters/400-commands.html");
+			}
 			else {
 				for (String s : input) {
 					help(f, target, s);
@@ -199,8 +201,7 @@ public class CommandLine {
 		f.flush();
 	}
 
-	public void generateDocumentationForCommand(MarkdownFormatter f, String command,
-		Method method, int level) {
+	public void generateDocumentationForCommand(MarkdownFormatter f, String command, Method method, int level) {
 
 		Class<? extends Options> specification = (Class<? extends Options>) method.getParameterTypes()[0];
 		Map<String, Method> options = getOptions(specification);
@@ -267,7 +268,7 @@ public class CommandLine {
 
 					Class<? extends Options> specificationSub = (Class<? extends Options>) submethod
 						.getParameterTypes()[0];
-					Description descr = submethod.getAnnotation(Description.class);
+					Description descr = specificationSub.getAnnotation(Description.class);
 
 					if (descr != null) {
 						f.format("%s%n%n", descr.value());
@@ -278,7 +279,7 @@ public class CommandLine {
 
 			}
 
-					}
+		}
 	}
 
 	private String help(Object target, String cmd, Class<? extends Options> type) throws Exception {
@@ -502,6 +503,7 @@ public class CommandLine {
 		f.format(getSynopsis(cmd, options, patterns));
 
 		help(f, specification, "OPTIONS");
+
 	}
 
 	private void help(Formatter f, Class<? extends Options> specification, String title) {
@@ -573,7 +575,7 @@ public class CommandLine {
 	/**
 	 * Show all commands in a target
 	 */
-	public void help(Formatter f, Object target) throws Exception {
+	public void help(Formatter f, Object target) {
 		f.format("%n");
 		Description descr = target.getClass()
 			.getAnnotation(Description.class);
@@ -619,6 +621,13 @@ public class CommandLine {
 		else {
 			Class<? extends Options> options = (Class<? extends Options>) m.getParameterTypes()[0];
 			help(f, target, cmd, options);
+
+			SubCommands subCmds = m.getAnnotation(SubCommands.class);
+			if (subCmds != null) {
+				help(f, subCmds.value());
+			}
+
+			f.format("More help at: https://bnd.bndtools.org/commands/%s.html", cmd);
 		}
 	}
 

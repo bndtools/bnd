@@ -1,6 +1,6 @@
 package bndtools.wizards.newworkspace;
 
-import static aQute.bnd.osgi.Constants.WORKSPACE_TEMPLATES;
+import static aQute.bnd.wstemplates.FragmentTemplateEngine.DEFAULT_INDEX;
 import static org.eclipse.jface.dialogs.MessageDialog.openConfirm;
 
 import java.io.File;
@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.result.Result;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
@@ -63,7 +64,6 @@ import bndtools.util.ui.UI;
 public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWizard {
 
 
-	static final String				DEFAULT_INDEX	= "https://raw.githubusercontent.com/bndtools/workspace-templates/master/index.bnd";
 	static final Logger				log				= LoggerFactory.getLogger(NewWorkspaceWizard.class);
 
 	final Model						model;
@@ -87,7 +87,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					templates.read(new URL(DEFAULT_INDEX))
 						.unwrap()
 						.forEach(templates::add);
-					Parameters p = workspace.getMergedParameters(WORKSPACE_TEMPLATES);
+					Parameters p = workspace.getMergedParameters(Constants.WORKSPACE_TEMPLATES);
 					templates.read(p)
 						.forEach(templates::add);
 					ui.write(() -> model.templates = templates.getAvailableTemplates());

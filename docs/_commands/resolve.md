@@ -71,7 +71,7 @@ Resolve a bndrun file
 - `[ -x --xchange ]` Fail on changes
 
 ### validate 
-Resolve a repository index against a base to determine if the index is 'complete'
+Validate an OBR file by trying to resolve each entry against itself
 
 #### Synopsis: 
 	   validate [options]  <[index-path]>

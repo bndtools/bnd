@@ -7,7 +7,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 ---
 
 ### Synopsis: 
-	   remove  <what> <name...>
+	   remove  <what> <[name]...>
 
 ## Available sub-commands 
 -  `plugin` - Remove a plugin from the workspace 

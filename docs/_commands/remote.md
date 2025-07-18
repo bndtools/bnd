@@ -26,6 +26,8 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 -  `uninstall` - Uninstall the specified bundles 
 
 ### distro 
+Create a distro jar (or xml) from a remote agent
+
 #### Synopsis: 
 	   distro [options]  <bsn> <[version]>
 
@@ -38,11 +40,13 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -x --xml ]` Generate xml instead of a jar with manifest
 
 ### framework 
+Get the framework info
+
 #### Synopsis: 
 	   framework 
 
 ### install 
-Install/update the specified bundle.
+Communicate with the remote framework to install or update bundle
 
 #### Synopsis: 
 	   install [options]  <filespec...>
@@ -51,7 +55,7 @@ Install/update the specified bundle.
 - `[ -l --location <string;> ]` By default the location is 'manual:<bsn>'. You can specify multiple locations when installing multiple bundles
 
 ### list 
-List the bundles installed in the remote framework
+Communicate with the remote framework to list the installed bundles
 
 #### Synopsis: 
 	   list [options]  ...
@@ -61,27 +65,31 @@ List the bundles installed in the remote framework
 - `[ -j --json ]` Specify to return the output as JSON
 
 ### ping 
+Ping the remote framework
+
 #### Synopsis: 
 	   ping 
 
 ### revisions 
+Get the bundle revisions
+
 #### Synopsis: 
 	   revisions  <bundleid...>
 
 ### start 
-Start the specified bundles
+Communicate with the remote framework to perform bundle operation
 
 #### Synopsis: 
 	   start  <bundleId...>
 
 ### stop 
-Stop the specified bundles
+Communicate with the remote framework to perform bundle operation
 
 #### Synopsis: 
 	   stop  <bundleId...>
 
 ### uninstall 
-Uninstall the specified bundles
+Communicate with the remote framework to perform bundle operation
 
 #### Synopsis: 
 	   uninstall  <bundleId...>
