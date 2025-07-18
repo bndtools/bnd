@@ -13,7 +13,9 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 #### Options: 
 - `[ -e --exclude <string;> ]` Exclude files by pattern
 - `[ -f --force ]` Force non-incremental
-- `[ -p --project <string> ]` Identify another project
+- `[ -p --parallel ]` Build in parallel (Experimental)
+- `[ -P --project <string> ]` Identify another project
+- `[ -s --synctime <long> ]` 
 - `[ -t --test ]` Build for test
 - `[ -v --verbose ]` prints more processing information
 - `[ -w --watch ]` Continuous incremental build
