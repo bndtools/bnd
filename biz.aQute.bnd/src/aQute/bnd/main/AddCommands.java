@@ -58,9 +58,6 @@ public class AddCommands {
 	@Description("Add template fragment(s) to the current workspace. Leave the name empty to see a list of available templates at the index."
 		+ "\\n\\nExample:\\n bnd add fragment osgi gradle ")
 	interface AddTemplateOptions extends Options {
-		@Description("Optional: URL of an alternative template fragment index, for testing purposes. Default is: "
-			+ DEFAULT_INDEX)
-		String index();
 	}
 
 	@Description("Add template fragment(s) to the current workspace.")
@@ -74,7 +71,7 @@ public class AddCommands {
 		}
 
 		List<String> selectedFragmentNames = args;
-		String indexUrl = options.index();
+		String indexUrl = DEFAULT_INDEX;
 		installTemplateFragment(ws, selectedFragmentNames, indexUrl);
 
 	}
@@ -91,9 +88,6 @@ public class AddCommands {
 			+ "To see a list of available templates use 'bnd add fragment' without arguments.")
 		List<String> fragment();
 
-		@Description("Optional: URL of an alternative template fragment index, for testing purposes. Default is: "
-			+ DEFAULT_INDEX)
-		String index();
 	}
 
 	@Description("Create a bnd workspace in the current folder. The workspace can also be inialized with a set of template fragments.")
@@ -116,7 +110,7 @@ public class AddCommands {
 		List<String> fragments = options.fragment();
 		if (fragments != null && !fragments
 			.isEmpty()) {
-			String indexUrl = options.index();
+			String indexUrl = DEFAULT_INDEX;
 			installTemplateFragment(ws, fragments, indexUrl);
 		}
 
