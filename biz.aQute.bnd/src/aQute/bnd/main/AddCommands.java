@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Parameters;
@@ -152,42 +153,6 @@ public class AddCommands {
 
 	}
 
-	private void installTemplateFragment(Workspace ws, List<String> selectedFragmentNames, String index)
-		throws MalformedURLException {
-		FragmentTemplateEngine engine = initFragmentTemplateEngine(ws, index);
-		List<TemplateInfo> availableTemplates = engine.getAvailableTemplates();
-
-		if (selectedFragmentNames.isEmpty()) {
-			// show templates
-			showAvailableTemplates(availableTemplates);
-			return;
-		}
-
-		List<TemplateInfo> selectedTemplates = availableTemplates.stream()
-			.filter(ti -> {
-				return selectedFragmentNames.contains(ti.name());
-			})
-			.toList();
-		engine.updater(ws.getBase(), selectedTemplates)
-			.commit();
-
-		bnd.out.format("Added template fragment(s): %n");
-		selectedTemplates.forEach(ti -> bnd.out.format("%s - %s (Organisation: %s Repo: %s) %n", ti.name(),
-			ti.description(), ti.id()
-				.organisation(),
-			ti.id()
-				.repoUrl()));
-	}
-
-	private void showAvailableTemplates(List<TemplateInfo> availableTemplates) {
-		bnd.out.format("Available template fragments:%n");
-		availableTemplates.forEach(ti -> bnd.out.format("%s - %s (Organisation: %s Repo: %s) %n", ti.name(),
-			ti.description(), ti.id()
-				.organisation(),
-			ti.id()
-				.repoUrl()));
-	}
-
 	private FragmentTemplateEngine initFragmentTemplateEngine(Workspace ws, String index) throws MalformedURLException {
 		FragmentTemplateEngine engine = new FragmentTemplateEngine(ws);
 		String indexUrl = Objects.toString(index, DEFAULT_INDEX);
@@ -201,4 +166,82 @@ public class AddCommands {
 		return engine;
 	}
 
+	private void showTemplatesFragments(List<TemplateInfo> availableTemplates) {
+		availableTemplates.forEach(ti -> bnd.out.format("%s - %s%n  - Organisation: %s%n  - Repo: %s %n", ti.name(),
+			ti.description(), ti.id()
+				.organisation(),
+			ti.id()
+				.repoUrl()));
+	}
+
+	private void installTemplateFragment(Workspace ws, List<String> selectedFragmentNames, String index)
+		throws MalformedURLException {
+		FragmentTemplateEngine engine = initFragmentTemplateEngine(ws, index);
+		List<TemplateInfo> availableTemplates = engine.getAvailableTemplates();
+
+		if (selectedFragmentNames == null || selectedFragmentNames.isEmpty()) {
+			bnd.out.format("Available template fragments:%n");
+			showTemplatesFragments(availableTemplates);
+			return;
+		}
+		List<TemplateInfo> selectedTemplates = availableTemplates.stream()
+			.filter(ti -> {
+				return selectedFragmentNames.contains(ti.name());
+			})
+			.toList();
+
+		if (selectedTemplates.isEmpty()) {
+			// show templates
+			return;
+		}
+
+		List<TemplateInfo> thirdParty = selectedTemplates.stream()
+			.filter(t -> !t.isOfficial())
+			.toList();
+
+		if (!thirdParty.isEmpty()) {
+			bnd.out.format("You have selected " + thirdParty.size() + " fragments from 3rd-party authors: %n");
+			showTemplatesFragments(thirdParty);
+
+			boolean confirmed = showConfirmation(
+				"Are you sure you trust the authors and want to continue fetching the content?");
+
+			if (!confirmed) {
+				// not confirmed. cancel selected
+				bnd.out.format(
+					"%nNo template fragments installed with workspace, because user did not confirm the installation.");
+				return;
+			}
+
+		}
+
+
+		engine.updater(ws.getBase(), selectedTemplates)
+			.commit();
+
+		bnd.out.format("Added %s template fragment(s): %n", selectedTemplates.size());
+		showTemplatesFragments(selectedTemplates);
+	}
+
+	private boolean showConfirmation(String question) {
+		try (Scanner scanner = new Scanner(System.in)) {
+			while (true) {
+				bnd.out.format("%n%s (yes/no): ", question);
+				String input = scanner.nextLine()
+					.trim()
+					.toLowerCase();
+
+				switch (input) {
+					case "yes" :
+					case "y" :
+						return true;
+					case "no" :
+					case "n" :
+						return false;
+					default :
+						System.out.println("Please enter '(y)es' or '(n)o'.");
+				}
+			}
+		}
+	}
 }
