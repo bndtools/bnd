@@ -779,7 +779,7 @@ public class bnd extends Processor {
 					}
 				}
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
-				Project run = getRun(Lists.of(path), null);
+				Project run = getRun(Lists.of(path), null).get(0);
 				doRun(run, false);
 			} else
 				messages.UnrecognizedFileType_(path);
@@ -1190,12 +1190,12 @@ public class bnd extends Processor {
 
 	@Description("Run a project in the OSGi launcher.  If no bndrun is specified, the current project is used for the run specification")
 	public void _run(runOptions opts) throws Exception {
-		Project run = getRun(opts._arguments(), opts.project());
+		Project run = getRun(opts._arguments(), opts.project()).get(0);
 		doRun(run, opts.verify());
 	}
 
 	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
-	@Arguments(arg = "[bndrun]")
+	@Arguments(arg = "[bndrun...]")
 	interface devOptions extends ParallelBuildOptions, runOptions, verboseOptions {
 
 		@Override
@@ -1210,19 +1210,23 @@ public class bnd extends Processor {
 
 	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	public void _dev(devOptions opts) throws Exception {
-		ExecutorService outer = Executors.newFixedThreadPool(2);
-		ExecutorService watchExecutor = Executors.newFixedThreadPool(2);
-		ScheduledExecutorService buildScheduler = Executors.newSingleThreadScheduledExecutor();
 
-		Project run = getRun(opts._arguments(), opts.project());
-		if (run == null) {
+		Workspace ws = getWorkspace(getBase());
+		if (ws == null) {
+			error("No workspace found from %s", getBase());
+			return;
+		}
+
+		List<Project> runs = getRun(opts._arguments(), opts.project());
+		if (runs == null || runs.isEmpty()) {
 			messages.NoProject();
 			return;
 		}
 
-		Collection<Project> projects = run.getWorkspace()
-			.getAllProjects();
-
+		ExecutorService outer = Executors.newFixedThreadPool(runs.size() + 1);
+		ExecutorService watchExecutor = Executors.newFixedThreadPool(runs.size() + 1);
+		ScheduledExecutorService buildScheduler = Executors.newSingleThreadScheduledExecutor();
+		Collection<Project> projects = ws.getAllProjects();
 		boolean force = opts.force();
 
 		boolean needsInitialFullbuild = false;
@@ -1273,12 +1277,16 @@ public class bnd extends Processor {
 				throw Exceptions.duck(e);
 			}
 		});
-		outer.submit(() -> {
-			try {
-				doRun(run, opts.verify());
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+
+
+		runs.forEach(run -> {
+			outer.submit(() -> {
+				try {
+					doRun(run, opts.verify());
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
 		});
 
 		// Wait for tasks to complete (never in this case unless you handle it
@@ -1307,26 +1315,39 @@ public class bnd extends Processor {
 		getInfo(run.getWorkspace());
 	}
 
-	private Project getRun(List<String> args, String project) throws Exception {
-		Project run = null;
+	private List<Project> getRun(List<String> args, String project) throws Exception {
 
 		if (args.isEmpty()) {
-			run = getProject(project);
-		} else {
-			File f = getFile(args.get(0));
-
-			File dir = f.getParentFile();
-			File wsdir = dir.getParentFile();
-
-			if (wsdir == null) {
-				// We are in the filesystem root?? Create a standalone run.
-				run = Run.createRun(null, f);
-			} else {
-				Workspace workspace = Workspace.getWorkspaceWithoutException(wsdir);
-				run = Run.createRun(workspace, f);
+			Project p = getProject(project);
+			if(p == null) {
+				return List.of();
 			}
+			return Collections.singletonList(p);
+		} else {
+			return args.stream()
+				.map(arg -> {
+					try {
+
+						File f = getFile(arg);
+
+						File dir = f.getParentFile();
+						File wsdir = dir.getParentFile();
+
+						if (wsdir == null) {
+							// We are in the filesystem root?? Create a
+							// standalone
+							// run.
+							return (Project) Run.createRun(null, f);
+						} else {
+							Workspace workspace = Workspace.getWorkspaceWithoutException(wsdir);
+							return (Project) Run.createRun(workspace, f);
+						}
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+				})
+				.toList();
 		}
-		return run;
 	}
 
 	@Description("Clean a project")
