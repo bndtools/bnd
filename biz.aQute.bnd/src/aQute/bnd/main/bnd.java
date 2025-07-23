@@ -779,7 +779,7 @@ public class bnd extends Processor {
 					}
 				}
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
-				Project run = getRun(Lists.of(path), null).get(0);
+				Project run = getRuns(Lists.of(path), null).get(0);
 				doRun(run, false);
 			} else
 				messages.UnrecognizedFileType_(path);
@@ -1190,11 +1190,11 @@ public class bnd extends Processor {
 
 	@Description("Run a project in the OSGi launcher.  If no bndrun is specified, the current project is used for the run specification")
 	public void _run(runOptions opts) throws Exception {
-		Project run = getRun(opts._arguments(), opts.project()).get(0);
+		Project run = getRuns(opts._arguments(), opts.project()).get(0);
 		doRun(run, opts.verify());
 	}
 
-	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
+	@Description("Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	@Arguments(arg = "[bndrun...]")
 	interface devOptions extends ParallelBuildOptions, runOptions, verboseOptions {
 
@@ -1208,7 +1208,7 @@ public class bnd extends Processor {
 
 	}
 
-	@Description("Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
+	@Description("Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	public void _dev(devOptions opts) throws Exception {
 
 		Workspace ws = getWorkspace(getBase());
@@ -1217,7 +1217,7 @@ public class bnd extends Processor {
 			return;
 		}
 
-		List<Project> runs = getRun(opts._arguments(), opts.project());
+		List<Project> runs = getRuns(opts._arguments(), opts.project());
 		if (runs == null || runs.isEmpty()) {
 			messages.NoProject();
 			return;
@@ -1315,12 +1315,12 @@ public class bnd extends Processor {
 		getInfo(run.getWorkspace());
 	}
 
-	private List<Project> getRun(List<String> args, String project) throws Exception {
+	private List<Project> getRuns(List<String> args, String project) throws Exception {
 
 		if (args.isEmpty()) {
 			Project p = getProject(project);
 			if(p == null) {
-				return List.of();
+				throw new IllegalArgumentException("Project not found");
 			}
 			return Collections.singletonList(p);
 		} else {
@@ -1329,6 +1329,9 @@ public class bnd extends Processor {
 					try {
 
 						File f = getFile(arg);
+						if (!f.exists()) {
+							throw new IllegalArgumentException(String.format("File not found: %s", arg));
+						}
 
 						File dir = f.getParentFile();
 						File wsdir = dir.getParentFile();

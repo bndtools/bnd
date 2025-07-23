@@ -2,12 +2,12 @@
 layout: default
 title: dev
 summary: |
-   Live coding. Run a .bndrun in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification
+   Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
 ### Synopsis: 
-	   dev [options]  <[bndrun]>
+	   dev [options]  <[bndrun...]>
 
 #### Options: 
 - `[ -e --exclude <string;> ]` Exclude files by pattern
