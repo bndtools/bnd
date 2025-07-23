@@ -1,8 +1,11 @@
 package aQute.bnd.wstemplates;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatException;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.Manifest;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.result.Result;
@@ -171,6 +175,62 @@ class TemplateFragmentsTest {
 			updater.commit();
 
 			assertThat(build).isFile();
+		}
+
+	}
+
+	@Test
+	void testFragmentZipSlip() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+
+			File a = makeJar("a.zip", """
+				-includeresource workspace-master/cnf/build.bnd;literal="# a\\n"
+				""");
+			File b = makeJar("b.zip", """
+				-includeresource workspace-master/cnf/build.bnd;literal="# a\\n"
+				""");
+			File c = makeJar("c.zip", """
+				-includeresource workspace-master/cnf/build.bnd;literal="# a\\n"
+				""");
+			File d = makeJar("d.zip", """
+				-includeresource workspace-master/cnf/build.bnd;literal="# a\\n"
+				""");
+
+			ZipSlipCreator.createZipSlip1(a); // ../
+			ZipSlipCreator.createZipSlip2(b); // ../../
+			ZipSlipCreator.createZipSlip3(c); // subdir/../../
+			ZipSlipCreator.createZipSlip4(d); // absolute path outside wsDir
+
+			// all except d.zip, because the leading '/' in
+			// absolute path are stripped by ZipUtil.cleanPath()
+			Arrays.asList(a, b, c)
+				.forEach(f -> {
+					assertThatException().as("Expected error for file %s", f.getName())
+						.isThrownBy(() -> {
+							try (TemplateUpdater updater = tfs.updater(wsDir,
+							tfs.read("-workspace-templates " + f.toURI() + ";name=a;description=A")
+									.unwrap())) {}
+					})
+						.withMessageContaining("Entry path is outside of zip file");
+				});
+
+			// d.zip with an absolute path outside is safe, because the leading
+			// '/' is stripped by ZipUtil.cleanPath()
+			// making this path relative
+			assertThatNoException().isThrownBy(() -> {
+				try (TemplateUpdater updater = tfs.updater(wsDir,
+					tfs.read("-workspace-templates " + d.toURI() + ";name=a;description=A")
+						.unwrap())) {
+					updater.commit();
+
+					String[] list = wsDir.list();
+					assertThat(list).containsExactlyInAnyOrder("abspath.txt", "cnf");
+
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
 		}
 
 	}
