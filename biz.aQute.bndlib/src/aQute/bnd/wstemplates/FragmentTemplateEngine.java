@@ -273,6 +273,18 @@ public class FragmentTemplateEngine {
 		public void commit() {
 			try (Processor processor = new Processor(workspace)) {
 				updates.forEach((k, us) -> {
+
+					try {
+						File canonicalK = k.getCanonicalFile();
+						if (!canonicalK.getPath()
+							.startsWith(folder.getCanonicalPath())) {
+							// Zip Slip attack
+							throw new SecurityException("Blocked write outside base folder: " + canonicalK);
+						}
+					} catch (IOException e) {
+						throw Exceptions.duck(e);
+					}
+
 					if (us.isEmpty())
 						return;
 					k.getParentFile()
