@@ -38,14 +38,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
@@ -145,7 +141,6 @@ import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.cryptography.SHA512;
-import aQute.libg.forker.Forker;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
@@ -930,7 +925,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void perProject(Project p, boolean verbose, PerProject run, boolean manageDeps,
+	void perProject(Project p, boolean verbose, PerProject run, boolean manageDeps,
 		final Set<Project> projectsWellDone) throws Exception {
 		if (manageDeps) {
 			final Collection<Project> projectDeps = p.getDependson(); // ordered
@@ -953,35 +948,8 @@ public class bnd extends Processor {
 		getInfo(p, p + ": ");
 	}
 
-	/**
-	 * Builds the project and all its dependents
-	 */
-	private void perProjectAnDependents(Project p, boolean verbose, PerProject run, boolean manageDeps,
-		final Set<Project> projectsWellDone) throws Exception {
-		out.println("Build project: " + p.getName());
-		run.doit(p);
 
-		if (manageDeps) {
-			final Collection<Project> projectDeps = p.getDependents(); // ordered
-			if (verbose && !projectDeps.isEmpty()) {
-				out.println("Project dependents for: " + p.getName());
-				projectDeps.forEach(pr -> out
-					.println(" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
-			}
-
-			projectDeps.removeAll(projectsWellDone);
-
-			for (Project dep : projectDeps) {
-				run.doit(dep);
-				projectsWellDone.add(dep);
-			}
-		}
-
-
-		getInfo(p, p + ": ");
-	}
-
-	private List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
+	List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
 		List<Project> projects = new ArrayList<>();
 
 		HandledProjectWorkspaceOptions hpw = handleOptions(opts, "**/bnd.bnd");
@@ -1030,60 +998,10 @@ public class bnd extends Processor {
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.")
 	public void _build(final buildoptions opts) throws Exception {
-
-		if (opts.watch()) {
-			// continous build (for Live Coding)
-			Executor executor = Executors.newCachedThreadPool();
-			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
-			List<Project> projects = getFilteredProjects(opts);
-			buildAndWatch(opts.test(), opts.verbose(), opts.force(), executor, scheduler, projects);
-			return;
-		}
-
-		// default build
-		boolean force = opts.force();
-		if (opts.parallel()) {
-			boolean test = opts.test();
-			long syncms = opts.synctime() <= 0 ? 20000 : opts.synctime();
-			out.format("Build parallel%n");
-			List<Project> projects = getFilteredProjects(opts);
-			buildParallelInternal(projects, force, test, syncms);
-		} else {
-			perProject(opts, p -> {
-				p.getGenerate()
-					.generate(force);
-				p.compile(opts.test());
-				p.build(opts.test());
-			});
-		}
-
+		BuildCommands cmd = new BuildCommands(this);
+		cmd._build(opts);
 	}
 
-	private void buildAndWatch(boolean undertest, boolean verbose, boolean force, Executor watchExecutor,
-		ScheduledExecutorService buildScheduler,
-		Collection<Project> projects) throws InterruptedException, Exception {
-
-
-		Set<Project> projectsWellDone = new HashSet<Project>();
-		try (BuildWatcher bw = new BuildWatcher(projects, (p) -> {
-			try {
-				perProjectAnDependents(p, verbose, (p2) -> {
-					p.getGenerate()
-						.generate(force);
-					p2.compile(undertest);
-					p2.build(undertest);
-				}, true, projectsWellDone);
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-		}, watchExecutor, buildScheduler, out)) {
-			out.format("Watching %s project(s) for changes. Press Ctrl+C to stop.", projects.size());
-			new CountDownLatch(1).await();
-			return;
-
-		}
-	}
 
 	@Description("Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.")
 	interface CompileOptions extends ProjectWorkspaceOptions {
@@ -1203,94 +1121,13 @@ public class bnd extends Processor {
 
 	@Description("Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
 	public void _dev(devOptions opts) throws Exception {
-
-		Workspace ws = getWorkspace(getBase());
-		if (ws == null) {
-			error("No workspace found from %s", getBase());
-			return;
-		}
-
-		List<Project> runs = getRuns(opts._arguments(), opts.project());
-		if (runs == null || runs.isEmpty()) {
-			messages.NoProject();
-			return;
-		}
-
-		ExecutorService buildExecutor = Executors.newFixedThreadPool(2);
-		ExecutorService watchExecutor = Executors.newFixedThreadPool(2);
-		ScheduledExecutorService buildScheduler = Executors.newSingleThreadScheduledExecutor();
-		ExecutorService runExecutor = Executors.newFixedThreadPool(runs.size());
-
-		boolean force = opts.force();
-		Collection<Project> projects = ws.getAllProjects();
-		fullbuildIfNeeded(opts, projects, force);
-
-		buildExecutor.submit(() -> {
-			try {
-				buildAndWatch(opts.test(), opts.verbose(), force, watchExecutor, buildScheduler, projects);
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-		});
-
-		runs.forEach(run -> {
-			buildExecutor.submit(() -> {
-				try {
-					doRun(run, opts.verify());
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			});
-		});
-
-		// Wait for tasks to complete
-		buildExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-
+		BuildCommands cmd = new BuildCommands(this);
+		cmd._dev(opts);
 	}
 
-	private void fullbuildIfNeeded(devOptions opts, Collection<Project> projects, boolean force)
-		throws Exception, InterruptedException {
-		Set<Project> projectsNeedRebuild = new LinkedHashSet<>();
-		for (Project project : projects) {
-			// TODO there is project.isStale() but it seems true too often.
-			// so we just check if there are built files which reduces the
-			// number of rebuilts
-			File[] files = project.getBuildFiles(false);
-			if (files == null) {
-				projectsNeedRebuild.add(project);
-			}
-		}
-
-		if (!projectsNeedRebuild.isEmpty()) {
-
-			out.format("Stale projects detected (%s of %s). Full Build needed [%s]%n", projectsNeedRebuild.size(),
-				projects.size(),
-				projectsNeedRebuild);
-
-			if (opts.parallel()) {
-				boolean test = opts.test();
-				long syncms = opts.synctime() <= 0 ? 20000 : opts.synctime();
-				out.format("Build parallel%n");
-				buildParallelInternal(projects, force, test, syncms);
-			} else {
-
-				Set<Project> projectsDone = new HashSet<>(projects.size());
-				for (Project proj : projects) {
-					perProject(proj, opts.verbose(), p -> {
-						out.format("Build Project %s%n", p.getName());
-						p.compile(opts.test());
-						p.build(opts.test());
-					}, true, projectsDone);
-
-				}
-			}
 
 
-			out.format("Full build finished%n");
-		}
-	}
-
-	private void doRun(Project run, boolean verify) throws Exception {
+	void doRun(Project run, boolean verify) throws Exception {
 		if (run == null) {
 			messages.NoProject();
 			return;
@@ -1310,7 +1147,7 @@ public class bnd extends Processor {
 		getInfo(run.getWorkspace());
 	}
 
-	private List<Project> getRuns(List<String> args, String project) throws Exception {
+	List<Project> getRuns(List<String> args, String project) throws Exception {
 
 		if (args.isEmpty()) {
 			Project p = getProject(project);
@@ -3698,48 +3535,11 @@ public class bnd extends Processor {
 		boolean test = options.test();
 		long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
 
-		buildParallelInternal(projects, force, test, syncms);
+		BuildCommands cmd = new BuildCommands(this);
+		cmd.buildParallelInternal(projects, force, test, syncms);
 	}
 
-	private void buildParallelInternal(Collection<Project> projects, boolean force, boolean test, long syncms)
-		throws Exception, InterruptedException {
-		ExecutorService pool = Executors.newCachedThreadPool();
-		final AtomicBoolean quit = new AtomicBoolean();
 
-		try {
-			final Forker<Project> forker = new Forker<>(pool);
-
-
-			for (final Project proj : projects) {
-				forker.doWhen(proj.getDependson(), proj, () -> {
-					if (!quit.get()) {
-
-						try {
-							proj.getGenerate()
-								.generate(force);
-							if (!quit.get()) {
-								proj.compile(test);
-							}
-							if (!quit.get())
-								proj.build(test);
-
-							if (!proj.isOk()) {
-								quit.set(true);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					getInfo(proj, proj + ": ");
-				});
-			}
-			err.flush();
-
-			forker.start(syncms);
-		} finally {
-			pool.shutdownNow();
-		}
-	}
 
 	/**
 	 * Force a cache update of the workspace
