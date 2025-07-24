@@ -601,7 +601,8 @@ public class BuilderTest {
 		p3.addClasspath(new File("jar/osgi.jar"));
 		p3.setExportPackage("test.activator.inherits;version=0.0.0");
 		p3.build();
-		assertTrue(p3.check("Import package test.activator not found in any bundle on the -buildpath."));
+		assertTrue(p3.check("Import package test.activator not found in any bundle on the -buildpath.",
+			"Depending on unstable API test.activator.inherits in version 0.0.0"));
 
 		p3.getJar()
 			.getManifest()
@@ -3733,7 +3734,8 @@ public class BuilderTest {
 			b.setPedantic(true);
 			b.setProperty("Import-Package", "foo.bar");
 			b.build();
-			softly.assertThat(b.check("Imports that lack version ranges: \\[foo.bar\\]",
+			softly.assertThat(b.check(
+				"Imports that lack version ranges due to no being found in any bundle on the -buildpath: \\[foo.bar\\]",
 				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
 				.isTrue();
 			softly.assertThat(b.getImports()
@@ -3768,7 +3770,8 @@ public class BuilderTest {
 				.toString());
 			b.setProperty("Import-Package", "javax.xml.transform.stax");
 			b.build();
-			// there should be NO warning: Imports that lack version ranges:
+			// there should be NO warning: Imports that lack version ranges due
+			// to no being found in any bundle on the -buildpath:
 			// [javax.xml.transform.stax]
 			softly.assertThat(b.check(
 				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
@@ -3808,9 +3811,11 @@ public class BuilderTest {
 				.toString());
 			b.setProperty("Import-Package", "javax.xml.transform.stax");
 			b.build();
-			// there should be NO warning: Imports that lack version ranges:
+			// there should be NO warning: Imports that lack version ranges due
+			// to no being found in any bundle on the -buildpath:
 			// [javax.xml.transform.stax]
-			softly.assertThat(b.check("Imports that lack version ranges: \\[javax.xml.transform.stax\\]",
+			softly.assertThat(b.check(
+				"Imports that lack version ranges due to no being found in any bundle on the -buildpath: \\[javax.xml.transform.stax\\]",
 				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
 				.isTrue();
 			softly.assertThat(b.getImports()
