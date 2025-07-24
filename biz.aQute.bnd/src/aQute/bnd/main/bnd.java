@@ -1031,13 +1031,6 @@ public class bnd extends Processor {
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.")
 	public void _build(final buildoptions opts) throws Exception {
 
-		perProject(opts, p -> {
-			p.getGenerate()
-				.generate(opts.force());
-			p.compile(opts.test());
-			p.build(opts.test());
-		});
-
 		if (opts.watch()) {
 			// continous build (for Live Coding)
 			Executor executor = Executors.newCachedThreadPool();
@@ -1223,13 +1216,40 @@ public class bnd extends Processor {
 			return;
 		}
 
-		ExecutorService outer = Executors.newFixedThreadPool(runs.size() + 1);
-		ExecutorService watchExecutor = Executors.newFixedThreadPool(runs.size() + 1);
+		ExecutorService buildExecutor = Executors.newFixedThreadPool(2);
+		ExecutorService watchExecutor = Executors.newFixedThreadPool(2);
 		ScheduledExecutorService buildScheduler = Executors.newSingleThreadScheduledExecutor();
-		Collection<Project> projects = ws.getAllProjects();
-		boolean force = opts.force();
+		ExecutorService runExecutor = Executors.newFixedThreadPool(runs.size());
 
-		boolean needsInitialFullbuild = false;
+		boolean force = opts.force();
+		Collection<Project> projects = ws.getAllProjects();
+		fullbuildIfNeeded(opts, projects, force);
+
+		buildExecutor.submit(() -> {
+			try {
+				buildAndWatch(opts.test(), opts.verbose(), force, watchExecutor, buildScheduler, projects);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		});
+
+		runs.forEach(run -> {
+			buildExecutor.submit(() -> {
+				try {
+					doRun(run, opts.verify());
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
+		});
+
+		// Wait for tasks to complete
+		buildExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+	}
+
+	private void fullbuildIfNeeded(devOptions opts, Collection<Project> projects, boolean force)
+		throws Exception, InterruptedException {
 		Set<Project> projectsNeedRebuild = new LinkedHashSet<>();
 		for (Project project : projects) {
 			// TODO there is project.isStale() but it seems true too often.
@@ -1237,12 +1257,11 @@ public class bnd extends Processor {
 			// number of rebuilts
 			File[] files = project.getBuildFiles(false);
 			if (files == null) {
-				needsInitialFullbuild = true;
 				projectsNeedRebuild.add(project);
 			}
 		}
 
-		if (needsInitialFullbuild) {
+		if (!projectsNeedRebuild.isEmpty()) {
 
 			out.format("Stale projects detected (%s of %s). Full Build needed [%s]%n", projectsNeedRebuild.size(),
 				projects.size(),
@@ -1269,30 +1288,6 @@ public class bnd extends Processor {
 
 			out.format("Full build finished%n");
 		}
-
-		outer.submit(() -> {
-			try {
-				buildAndWatch(opts.test(), opts.verbose(), force, watchExecutor, buildScheduler, projects);
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-		});
-
-
-		runs.forEach(run -> {
-			outer.submit(() -> {
-				try {
-					doRun(run, opts.verify());
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			});
-		});
-
-		// Wait for tasks to complete (never in this case unless you handle it
-		// differently)
-		outer.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-
 	}
 
 	private void doRun(Project run, boolean verify) throws Exception {
