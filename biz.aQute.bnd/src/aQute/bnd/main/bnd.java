@@ -1105,7 +1105,7 @@ public class bnd extends Processor {
 		doRun(run, opts.verify());
 	}
 
-	@Description("Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
+	@Description("Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.")
 	@Arguments(arg = "[bndrun...]")
 	interface devOptions extends ParallelBuildOptions, runOptions, verboseOptions {
 
@@ -1113,13 +1113,13 @@ public class bnd extends Processor {
 		@Description("Build for test")
 		boolean test();
 
-		@Description("Build in parallel (Experimental)")
+		@Description("Do the initial full build in parallel (Experimental)")
 		boolean parallel();
 
 
 	}
 
-	@Description("Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification")
+	@Description("Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.")
 	public void _dev(devOptions opts) throws Exception {
 		BuildCommands cmd = new BuildCommands(this);
 		cmd._dev(opts);
