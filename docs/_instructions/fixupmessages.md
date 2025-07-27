@@ -54,21 +54,21 @@ The `-fixupmessages` instruction is a _merged property_. This means that you can
 ## Examples
 
 	# Turn an error into a warning
-	-fixupmessages
-	  "Invalid character'; \
+	-fixupmessages:
+	  'Invalid character'; \
 	    restrict:=error;
 	    is:=warning
   
 	# Replace a message
-	-fixupmessages \
+	-fixupmessages: \
 	  "split";replace:=broken
 	  
 	# Ignore case by appending :i
-	-fixupmessages \
+	-fixupmessages: \
 	  "case insensitive:i"
 	
 	# Wildcards
-	-fixupmessages \
+	-fixupmessages: \
 	  "prefix*suffix"
 
 	# Turn properties parser messages into warnings
