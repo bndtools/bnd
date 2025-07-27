@@ -31,8 +31,8 @@ If you get an error like `activesupport-7.0.7.2 requires ruby version >= 2.7.0, 
 ```
 brew install rbenv
 rbenv init
-rbenv install 3.1.2
-rbenv global 3.1.2
+rbenv install 3.4.5
+rbenv local 3.4.5
 ./run.sh
 ```
 
