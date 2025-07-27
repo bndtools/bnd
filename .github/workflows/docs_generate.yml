@@ -6,7 +6,6 @@ name: Generate Docs
 # - When files in any `_ext` folder under /docs are pushed to master.
 # - When manually triggered via the Actions UI.
 on:
-on:
   workflow_run:
     workflows: ["CI Build"]  # Name of the workflow to listen to
     types:
