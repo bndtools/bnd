@@ -1,9 +1,10 @@
-name: Generate Docs (manual PR)
+name: Generate Docs
 
 on:
-  push:
-      branches:
-        - master
+  workflow_run:
+    workflows: ["CI Build"]  # Name of the workflow to listen to
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
@@ -12,6 +13,7 @@ permissions:
 
 jobs:
   generate-docs:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -58,7 +60,7 @@ jobs:
           git push origin "$branch"
 
           gh pr create \
-            --title "chore(docs): update generated docs" \
+            --title "docs: update generated docs" \
             --body "This PR contains auto-generated documentation files." \
             --base master \
             --head "$branch"
