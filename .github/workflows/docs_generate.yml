@@ -1,6 +1,9 @@
 name: Generate Docs (manual PR)
 
 on:
+  push:
+      branches:
+        - master
   workflow_dispatch:
 
 permissions:
@@ -12,6 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
     - name: Checkout master
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
@@ -46,7 +54,7 @@ jobs:
           branch="docs/gen-$(date +%Y-%m-%d-%H%M%S)"
           git checkout -b "$branch"
           git add .
-          git commit -m "chore(docs): auto-generated content from generate.sh"
+          git commit -m "docs: auto-generated content"
           git push origin "$branch"
 
           gh pr create \
