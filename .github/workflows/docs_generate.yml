@@ -1,10 +1,21 @@
 name: Generate Docs
 
+# Triggers:
+# - When the "CI Build" workflow completes (regardless of success/failure),
+#   but the job will check for success using an `if` condition.
+# - When files in any `_ext` folder under /docs are pushed to master.
+# - When manually triggered via the Actions UI.
+on:
 on:
   workflow_run:
     workflows: ["CI Build"]  # Name of the workflow to listen to
     types:
       - completed
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**/_ext/**'      
   workflow_dispatch:
 
 permissions:
@@ -13,7 +24,9 @@ permissions:
 
 jobs:
   generate-docs:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     steps:
