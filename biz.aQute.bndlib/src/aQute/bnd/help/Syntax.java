@@ -385,10 +385,10 @@ public class Syntax implements Constants {
 			CONTRACT + "!Servlet,*", null, Verifier.WILDCARDNAMEPATTERN),
 		new Syntax(CONSUMER_POLICY,
 			"Specify the default version bump policy for a consumer when a binary incompatible change is detected.",
-			CONSUMER_POLICY + "${range;[==,+)}", null, null),
+			CONSUMER_POLICY + ": ${range;[==,+)}", null, null),
 		new Syntax(PROVIDER_POLICY,
 			"Specify the default version bump policy for a provider when a binary incompatible change is detected.",
-			PROVIDER_POLICY + "${range;[==,=+)}", null, null),
+			PROVIDER_POLICY + ": ${range;[==,=+)}", null, null),
 
 		new Syntax(CDIANNOTATIONS, "The " + CDIANNOTATIONS
 			+ " instruction tells bnd which bundle classes, if any, to search for OSGI CDI Integration (or plain CDI) annotation.",
@@ -516,7 +516,7 @@ public class Syntax implements Constants {
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(FIXUPMESSAGES,
 			"Rearrange and/or replace errors and warnings. Errors that should be ignore or be warnings (and vice versa for warnings) can be moved or rewritten by specifying a globbing pattern for the message.",
-			FIXUPMESSAGES + "='Version mismatch';replace:='************* ${@}';restrict:=error", null, null),
+			FIXUPMESSAGES + ": 'Version mismatch';replace:='************* ${@}';restrict:=error", null, null),
 		new Syntax(GESTALT, "provides access to the gestalt properties that describe the environment",
 			GESTALT + "=interactive",
 			"(" + GESTALT_INTERACTIVE + "|" + GESTALT_BATCH + "|" + GESTALT_CI + "|" + GESTALT_OFFLINE + "|"
