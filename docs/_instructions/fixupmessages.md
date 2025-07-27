@@ -7,7 +7,7 @@ summary: |
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-- Example: `-fixupmessages='Version mismatch';replace:='************* ${@}';restrict:=error`
+- Example: `-fixupmessages: 'Version mismatch';replace:='************* ${@}';restrict:=error`
 
 - Pattern: `.*`
 
