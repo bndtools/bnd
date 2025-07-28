@@ -7,7 +7,7 @@ summary:  Set the default Maven dependency scope to use when generating dependen
 
 The [-pom] instruction can be used to generate a pom in the bundle.  The `-maven-scope` instruction can be used to specify the default dependency scope to use when Bnd generates maven dependency information for a [-buildpath] entry that will be used to create a `<dependency>` in the generated pom.
 
-Also see the [-maven-dependencies] instruction for information on how to manualy configure the maven dependency information in a generated pom.
+Also see the [-maven_dependencies] instruction for information on how to manualy configure the maven dependency information in a generated pom.
 
 ## Default behavior
 
@@ -21,5 +21,5 @@ Change the default dependency scope to `provided`.
 
 [-pom]: pom.html
 [-buildpath]: buildpath.html
-[-maven-dependencies]: maven-dependencies.html
+[-maven_dependencies]: maven_dependencies.html
 [dependency scope]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope
