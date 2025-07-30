@@ -20,6 +20,8 @@ The following properties are supported:
 |`version`        |bundle version   |The version to use.                 |
 |`where`          |`META-INF/maven/<groupid>/<artifactid>/pom.xml`|The location of the pom.xml file. Will default to `pom.xml` if no groupid is set.|
 
+**Note:** When `-pom` is defined, then existing `META-INF/maven/` subfolders will be removed, before the `pom.xml` is generated. This might remove folders which existed previously e.g. by [unrolling jar](/instructions/includeresource.html#rolling) files.
+
 The `-pom` instruction can use any macro but the `${@bsn}` and `${@version}` macros
 refer to the current JAR being built. 
 
