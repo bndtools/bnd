@@ -17,7 +17,8 @@ import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 
 /**
- * Helper which collects ${repo;} references used in -includeresource.
+ * Helper which collects ${repo;} references used in -includeresource,
+ * -buildpath, -testpath, -classpath.
  */
 public class RepoCollector extends Processor {
 	private final Project				project;
