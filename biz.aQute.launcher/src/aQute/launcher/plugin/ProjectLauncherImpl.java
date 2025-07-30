@@ -6,6 +6,7 @@ import java.io.DataInput;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
@@ -25,6 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -60,6 +62,7 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
+import aQute.libg.glob.PathSet;
 
 @Header(name = Constants.LAUNCHER_PLUGIN, value = "${@class}")
 public class ProjectLauncherImpl extends ProjectLauncher {
@@ -67,6 +70,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
 	private static final String	LAUNCHER_PATH		= "launcher.runpath";
 	private static final String	EMBEDDED_LAUNCHER	= "aQute.launcher.pre.EmbeddedLauncher";
+	private static final Predicate<String>	pomPropertiesFilter	= new PathSet("META-INF/maven/*/*/pom.properties")
+		.matches();
 	static final String			PRE_JAR				= "biz.aQute.launcher.pre.jar";
 	private final Container		container;
 	private final List<String>	launcherpath		= new ArrayList<>();
@@ -76,6 +81,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	final private File			launchPropertiesFile;
 	boolean						prepared;
 	DatagramSocket				listenerComms;
+	private final boolean					addrunbundlepoms;
 
 	public ProjectLauncherImpl(Project project, Container container) throws Exception {
 		super(project);
@@ -92,6 +98,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			project.warning(
 				"The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
 		}
+
+		this.addrunbundlepoms = project.is(Constants.POM);
 	}
 
 	@Override
@@ -352,9 +360,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				if (!file.isFile())
 					project.error("Invalid entry in -runbundles %s", file);
 				else {
+					addRunbundlePomTo(jar, file);
 					String newPath = nonCollidingPath(file, jar, instrs.location());
 					jar.putResource(newPath, getJarFileResource(file, rejar, strip));
 					actualPaths.add(newPath);
+
 				}
 			}
 
@@ -425,6 +435,41 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			cleanup();
 			builder.removeClose(jar); // detach jar from builder
 			return jar;
+		}
+	}
+
+	private void addRunbundlePomTo(Jar jar, File runbundle) throws IOException, Exception {
+
+		if (!this.addrunbundlepoms) {
+			return;
+		}
+
+		logger.debug("embedding pom.xml / pom.properties of run bundles {}", runbundle);
+		// add /META-INF/maven/**/pom.xml if exist to parent jar
+		@SuppressWarnings("resource")
+		Jar runbundleJar = new Jar(runbundle);
+		Resource pom = runbundleJar.getPomXmlResources()
+			.findFirst()
+			.orElse(null);
+		Resource pomproperties = runbundleJar.getResources(pomPropertiesFilter)
+			.findFirst()
+			.orElse(null);
+
+		if (pom != null && pomproperties != null) {
+
+			UTF8Properties utf8p = new UTF8Properties();
+			try (InputStream in = pomproperties.openInputStream()) {
+				utf8p.load(in);
+			}
+			String groupId = utf8p.getProperty("groupId");
+			String artifactId = utf8p.getProperty("artifactId");
+
+			String basepath = "META-INF/maven/" + groupId + "/" + artifactId;
+			String pompath = basepath + "/pom.xml";
+			String proppath = basepath + "/pom.properties";
+
+			jar.putResource(pompath, pom);
+			jar.putResource(proppath, pomproperties);
 		}
 	}
 
