@@ -214,9 +214,28 @@ public class ProjectBuilder extends Builder {
 				for (File file : project.getAllsourcepath()) {
 					addSourcepath(file);
 				}
+
+				// add ${repo} references (important for sub-bundles)
+				if (dependencies != null) {
+
+					for (Container c : RepoCollector.collectRepoReferences(this)) {
+
+						File file = c.getFile();
+						if ((c.getType() == TYPE.PROJECT) && !file.exists()) {
+							continue;
+						}
+						Jar jar = new Jar(file);
+						Map<String, String> containerAttributes = c.getAttributes();
+						if (!Boolean.parseBoolean(containerAttributes.getOrDefault("maven-optional", "false"))) {
+							fillDependencies(dependencies, jar, containerAttributes);
+						}
+					}
+				}
+
 				if ((dependencies != null) && !dependencies.isEmpty()) {
 					setProperty(MAVEN_DEPENDENCIES, dependencies.toString());
 				}
+
 			}
 		} catch (Exception e) {
 			msgs.Unexpected_Error_("ProjectBuilder init", e);
@@ -234,59 +253,63 @@ public class ProjectBuilder extends Builder {
 		Map<String, String> containerAttributes = c.getAttributes();
 		if ((dependencies != null)
 			&& !Boolean.parseBoolean(containerAttributes.getOrDefault("maven-optional", "false"))) {
-			String depGroupId = containerAttributes.get("maven-groupId");
-			String depArtifactId = containerAttributes.get("maven-artifactId");
-			String depVersion = containerAttributes.get("maven-version");
-			String scope = containerAttributes.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile"));
-			if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
-				// the repo provided maven attributes to the container
-				Attrs attrs = new Attrs();
-				attrs.put("groupId", depGroupId);
-				attrs.put("artifactId", depArtifactId);
-				attrs.put("version", depVersion);
-				attrs.put("scope", scope);
-				StringBuilder key = new StringBuilder().append(depGroupId)
-					.append(':')
-					.append(depArtifactId)
-					.append(':')
-					.append(depVersion);
-				String depClassifier = containerAttributes.get("maven-classifier");
-				if ((depClassifier != null) && !depClassifier.isEmpty()) {
-					attrs.put("classifier", depClassifier);
-					key.append(":jar:")
-						.append(depClassifier);
-				}
-				dependencies.add(key.toString(), attrs);
-			} else {
-				// fall back to pom.properties in jar
-				jar.getResources(pomPropertiesFilter)
-					.forEachOrdered(r -> {
-						UTF8Properties pomProperties = new UTF8Properties();
-						try (InputStream in = r.openInputStream()) {
-							pomProperties.load(in);
-						} catch (Exception e) {
-							logger.debug("unable to read pom.properties resource {}", r, e);
-							return;
-						}
-						String pomGroupId = pomProperties.getProperty("groupId");
-						String pomArtifactId = pomProperties.getProperty("artifactId");
-						String pomVersion = pomProperties.getProperty("version");
-						if ((pomGroupId != null) && (pomArtifactId != null) && (pomVersion != null)) {
-							Attrs attrs = new Attrs();
-							attrs.put("groupId", pomGroupId);
-							attrs.put("artifactId", pomArtifactId);
-							attrs.put("version", pomVersion);
-							attrs.put("scope", scope);
-							String key = new StringBuilder().append(pomGroupId)
-								.append(':')
-								.append(pomArtifactId)
-								.append(':')
-								.append(pomVersion)
-								.toString();
-							dependencies.add(key, attrs);
-						}
-					});
+			fillDependencies(dependencies, jar, containerAttributes);
+		}
+	}
+
+	private void fillDependencies(Parameters dependencies, Jar jar, Map<String, String> containerAttributes) {
+		String depGroupId = containerAttributes.get("maven-groupId");
+		String depArtifactId = containerAttributes.get("maven-artifactId");
+		String depVersion = containerAttributes.get("maven-version");
+		String scope = containerAttributes.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile"));
+		if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
+			// the repo provided maven attributes to the container
+			Attrs attrs = new Attrs();
+			attrs.put("groupId", depGroupId);
+			attrs.put("artifactId", depArtifactId);
+			attrs.put("version", depVersion);
+			attrs.put("scope", scope);
+			StringBuilder key = new StringBuilder().append(depGroupId)
+				.append(':')
+				.append(depArtifactId)
+				.append(':')
+				.append(depVersion);
+			String depClassifier = containerAttributes.get("maven-classifier");
+			if ((depClassifier != null) && !depClassifier.isEmpty()) {
+				attrs.put("classifier", depClassifier);
+				key.append(":jar:")
+					.append(depClassifier);
 			}
+			dependencies.add(key.toString(), attrs);
+		} else {
+			// fall back to pom.properties in jar
+			jar.getResources(pomPropertiesFilter)
+				.forEachOrdered(r -> {
+					UTF8Properties pomProperties = new UTF8Properties();
+					try (InputStream in = r.openInputStream()) {
+						pomProperties.load(in);
+					} catch (Exception e) {
+						logger.debug("unable to read pom.properties resource {}", r, e);
+						return;
+					}
+					String pomGroupId = pomProperties.getProperty("groupId");
+					String pomArtifactId = pomProperties.getProperty("artifactId");
+					String pomVersion = pomProperties.getProperty("version");
+					if ((pomGroupId != null) && (pomArtifactId != null) && (pomVersion != null)) {
+						Attrs attrs = new Attrs();
+						attrs.put("groupId", pomGroupId);
+						attrs.put("artifactId", pomArtifactId);
+						attrs.put("version", pomVersion);
+						attrs.put("scope", scope);
+						String key = new StringBuilder().append(pomGroupId)
+							.append(':')
+							.append(pomArtifactId)
+							.append(':')
+							.append(pomVersion)
+							.toString();
+						dependencies.add(key, attrs);
+					}
+				});
 		}
 	}
 
