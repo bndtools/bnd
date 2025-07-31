@@ -1,0 +1,11 @@
+Bundle-Version: 1.0.0
+Base-Header: base
+-pom: groupid=p7pom, \
+	artifactid=a, \
+  where=META-INF/maven/p7pom/a/pom.xml
+
+-buildpath: \
+	org.apache.felix.org.apache.felix.ipojo.ant
+
+-includeresource: \
+  ${repo;org.apache.felix.configadmin;1.0.1}    

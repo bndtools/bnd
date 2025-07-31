@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
@@ -649,6 +651,125 @@ public class ProjectTest {
 				.getValue("Sub-Header"));
 			assertEquals("b", mb.getMainAttributes()
 				.getValue("Sub-Header"));
+		}
+	}
+
+	@Test
+	public void testPomXmlWithDeps() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-repo-test"));
+		Project project = ws.getProject("p7-pom");
+		File[] files = project.build();
+
+		System.err.println(Processor.join(project.getErrors(), "\n"));
+		System.err.println(Processor.join(project.getWarnings(), "\n"));
+
+		assertEquals(0, project.getErrors()
+			.size());
+		assertEquals(0, project.getWarnings()
+			.size());
+
+		try (Jar a = new Jar(files[0])) {
+			Resource pom = a.getPomXmlResources()
+				.findFirst()
+				.orElse(null);
+			Resource pomResource = a.getResource("META-INF/maven/p7pom/a/pom.xml");
+
+			assertEquals(pom, pomResource);
+
+			// DocumentBuilder db = dbf.newDocumentBuilder();
+			try (InputStream is = pom.openInputStream()) {
+				// Document doc = db.parse(openInputStream);
+				String xml = IO.collect(is);
+
+				assertEquals(
+					"""
+						<?xml version="1.0" encoding="UTF-8"?>
+						<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+						  <modelVersion>4.0.0</modelVersion>
+						  <groupId>p7pom</groupId>
+						  <artifactId>a</artifactId>
+						  <version>1.0.0</version>
+						  <description>p7-pom</description>
+						  <name>p7-pom</name>
+						  <dependencies>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.ipojo.ant</artifactId>
+						      <version>0.8.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.configadmin</artifactId>
+						      <version>1.0.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						  </dependencies>
+						</project>
+						""",
+					xml);
+			}
+
+		}
+	}
+
+	@Test
+	public void testSubPomXmlWithDeps() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-repo-test"));
+		Project project = ws.getProject("p6-sub-pom");
+		File[] files = project.build();
+		Arrays.sort(files);
+
+		System.err.println(Processor.join(project.getErrors(), "\n"));
+		System.err.println(Processor.join(project.getWarnings(), "\n"));
+
+		assertEquals(0, project.getErrors()
+			.size());
+		assertEquals(0, project.getWarnings()
+			.size());
+
+		try (Jar a = new Jar(files[0])) {
+			Resource pom = a.getPomXmlResources()
+				.findFirst()
+				.orElse(null);
+			Resource pomResource = a.getResource("META-INF/maven/p6subpom/a/pom.xml");
+
+			assertEquals(pom, pomResource);
+
+			// DocumentBuilder db = dbf.newDocumentBuilder();
+			try (InputStream is = pom.openInputStream()) {
+				// Document doc = db.parse(openInputStream);
+				String xml = IO.collect(is);
+
+				assertEquals(
+					"""
+						<?xml version="1.0" encoding="UTF-8"?>
+						<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+						  <modelVersion>4.0.0</modelVersion>
+						  <groupId>p6subpom</groupId>
+						  <artifactId>a</artifactId>
+						  <version>0</version>
+						  <description>p6-sub-pom.a</description>
+						  <name>p6-sub-pom.a</name>
+						  <dependencies>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.configadmin</artifactId>
+						      <version>1.0.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.ipojo.ant</artifactId>
+						      <version>0.8.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						  </dependencies>
+						</project>
+						""",
+					xml);
+			}
+
 		}
 	}
 
