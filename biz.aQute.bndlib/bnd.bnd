@@ -4,9 +4,9 @@
 Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 
 -privatepackage: \
-	aQute.bnd.annotation.*,\
-	aQute.bnd.*;from:=${p},\
-	aQute.lib.spring
+    aQute.bnd.annotation.*,\
+    aQute.bnd.*;from:=${p},\
+    aQute.lib.spring
 
 Export-Package: \
     aQute.bnd.build;-noimport:=true,\
@@ -28,23 +28,24 @@ Export-Package: \
     aQute.bnd.osgi.eclipse;-noimport:=true,\
     aQute.bnd.osgi.repository;-noimport:=true,\
     aQute.bnd.osgi.resource;-noimport:=true,\
-	aQute.bnd.print;-noimport:=true,\
+    aQute.bnd.print;-noimport:=true,\
     aQute.bnd.properties;-noimport:=true,\
     aQute.bnd.service.*;-noimport:=true,\
-	aQute.bnd.url;-noimport:=true,\
-	aQute.bnd.util.dto;-noimport:=true,\
-	aQute.bnd.util.home;-noimport:=true,\
-	aQute.bnd.util.repository;-noimport:=true,\
-	aQute.bnd.version;-noimport:=true,\
-	aQute.bnd.wstemplates;-noimport:=true,\
+    aQute.bnd.url;-noimport:=true,\
+    aQute.bnd.util.dto;-noimport:=true,\
+    aQute.bnd.util.home;-noimport:=true,\
+    aQute.bnd.util.repository;-noimport:=true,\
+    aQute.bnd.version;-noimport:=true,\
+    aQute.bnd.wstemplates;-noimport:=true,\
     aQute.lib.deployer;-noimport:=true,\
-    aQute.service.reporter;-noimport:=true
+    aQute.service.reporter;-noimport:=true,\
+    aQute.libg.command;-noimport:=true
 
 -conditionalpackage: \
-	aQute.lib.*,\
-	aQute.libg.*,\
-	aQute.service.*,\
-	aQute.configurable
+    aQute.lib.*,\
+    aQute.libg.*,\
+    aQute.service.*,\
+    aQute.configurable
 
 Import-Package: \
  org.osgi.*;version="${range;[==,+);${@}}",\
@@ -53,29 +54,29 @@ Import-Package: \
 -includeresource: ${workspace}/LICENSE, img/=img/, {readme.md}
 
 -buildpath: \
-	osgi.annotation,\
-	org.osgi.dto;version='1.0',\
-	org.osgi.resource;version='1.0',\
-	org.osgi.framework;version='1.8',\
-	org.osgi.util.tracker;version='1.5',\
-	org.osgi.namespace.contract,\
-	org.osgi.namespace.extender,\
-	org.osgi.namespace.implementation,\
-	org.osgi.namespace.service,\
-	org.osgi.service.log;version=latest,\
-	org.osgi.service.repository;version=latest,\
-	org.osgi.util.function;version=latest,\
-	org.osgi.util.promise;version=latest,\
-	aQute.libg,\
-	biz.aQute.bnd.annotation;version=project,\
-	biz.aQute.bnd.util;version=latest,\
-	slf4j.api;version=latest,\
-	org.osgi.service.serviceloader,\
-	org.eclipse.jdt.annotation
+    osgi.annotation,\
+    org.osgi.dto;version='1.0',\
+    org.osgi.resource;version='1.0',\
+    org.osgi.framework;version='1.8',\
+    org.osgi.util.tracker;version='1.5',\
+    org.osgi.namespace.contract,\
+    org.osgi.namespace.extender,\
+    org.osgi.namespace.implementation,\
+    org.osgi.namespace.service,\
+    org.osgi.service.log;version=latest,\
+    org.osgi.service.repository;version=latest,\
+    org.osgi.util.function;version=latest,\
+    org.osgi.util.promise;version=latest,\
+    aQute.libg,\
+    biz.aQute.bnd.annotation;version=project,\
+    biz.aQute.bnd.util;version=latest,\
+    slf4j.api;version=latest,\
+    org.osgi.service.serviceloader,\
+    org.eclipse.jdt.annotation
 
 -testpath: \
-	${junit},\
-	${mockito}
+    ${junit},\
+    ${mockito}
 
 Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
