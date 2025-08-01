@@ -1,5 +1,7 @@
 -include: bndtools.shared.bndrun
 
+-runprogramargs: -perspective bndtools.perspective
+
 -runrequires.macos: \
 	bnd.identity;id='org.eclipse.core.filesystem.macosx',\
 	bnd.identity;id='org.eclipse.e4.ui.workbench.renderers.swt.cocoa',\

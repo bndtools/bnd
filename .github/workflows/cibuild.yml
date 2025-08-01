@@ -80,7 +80,7 @@ jobs:
           ${{ matrix.java }}
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96
-    
+
     #- name: Cache cnf cache and ~/.bnd/urlcache/
     #  id: cache-cnf-cache
     #  uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
@@ -96,7 +96,7 @@ jobs:
       id: build
       run: |
         ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
-    
+
     - name: Configure settings.xml for Publish
       if: ${{ matrix.canonical }}
       uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
@@ -124,3 +124,34 @@ jobs:
           */generated/test-reports/*/TEST-*.xml
           maven/*/target/surefire-reports/TEST-*.xml
           gradle-plugins/*/build/test-results/*/TEST-*.xml
+    - name: Publish PR p2 repo
+      if: ${{ github.event_name }} == 'pull_request' && ${{ matrix.java }} == '17'  && ${{ matrix.os }}== 'ubuntu'
+      run: |
+        ls -laR org.bndtools.p2/*
+        env | sort
+        PR=${{ github.event.pull_request.number }}
+        ARTIFACT_PATH="org.bndtools.p2/generated/org.bndtools.p2.jar"
+        if [ -f "$ARTIFACT_PATH" ] && [ "$PR" != "" ]; then
+          echo "artifact found - start upload check"
+          if curl --silent --head --fail "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}" > /dev/null; then
+          echo "URL already existing - delete previous deployment"
+          curl -s -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
+            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
+          fi
+          echo "upload p2 repo to https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
+            -H "X-Explode-Archive: true" \
+            -T "$ARTIFACT_PATH" \
+            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}/org.bndtools.p2.zip"
+          if [ $? -eq 0 ]; then
+            echo "upload successful"
+          else
+            echo "upload failed"
+          fi
+        else
+          echo "Artifact $ARTIFACT_PATH not found, skipping upload."
+        fi
+      env:
+        JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
