@@ -10,9 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +17,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
@@ -344,41 +339,5 @@ public class MavenTest {
 		assertEquals("2.0.0", xpath.evaluate("/project/dependencies/dependency[2]/version", d));
 	}
 
-	@Test
-	public void testMavenTargetVersionInSync() throws Exception {
-		Path bndPath = Paths.get("../cnf/ext/maven-plugin.bnd")
-			.normalize();
-		Path pomPath = Paths.get("../maven-plugins/bnd-plugin-parent/pom.xml")
-			.normalize();
 
-		System.out.println("Looking for BND at: " + bndPath.toAbsolutePath());
-		System.out.println("Looking for POM at: " + pomPath.toAbsolutePath());
-
-		assertTrue(Files.exists(bndPath), "BND file not found");
-		assertTrue(Files.exists(pomPath), "POM file not found");
-
-		// Read the full content of both files
-		String bndFile = Files.readString(bndPath);
-		String pomFile = Files.readString(pomPath);
-
-		// Extract version from bnd file (e.g. maven.target.version: 3.3.9)
-		Pattern bndPattern = Pattern.compile("maven\\.target\\.version:\\s*([\\d\\.]+)");
-		Matcher bndMatcher = bndPattern.matcher(bndFile);
-		assertTrue(bndMatcher.find(), "Version not found in BND file");
-		String bndVersion = bndMatcher.group(1);
-
-		// Extract version from POM file (e.g.
-		// <maven.target.version>3.3.9</maven.target.version>)
-		Pattern pomPattern = Pattern.compile("<maven\\.target\\.version>([\\d\\.]+)</maven\\.target\\.version>");
-		Matcher pomMatcher = pomPattern.matcher(pomFile);
-		assertTrue(pomMatcher.find(), "Version not found in POM file");
-		String pomVersion = pomMatcher.group(1);
-
-		// Compare
-		// It would be better if we find a way to prevent dependabot from
-		// updating pom.xml
-		// but don't know how.
-		assertEquals(bndVersion, pomVersion,
-			"Versions do not match. Ensure cnf/ext/maven-plugin.bnd and /maven-plugins/bnd-plugin-parent/pom.xml use the same maven version (sometimes dependabot updates pom.xml incorrectly.)");
-	}
 }

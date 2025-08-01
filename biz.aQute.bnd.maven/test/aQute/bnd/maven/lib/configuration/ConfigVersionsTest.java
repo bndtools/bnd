@@ -11,7 +11,52 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * Testcases to ensure certain dependency versions in different files are in
+ * sync. The reason is that sometimes dependabot updates versions in pom.xml
+ * automatically and when this slips through PR review unnoticed, it can cause
+ * inconsistencies. The tests below are an attempt to make us at least aware of
+ * it when it happens, so we can fix / revert dependabot PRs.
+ */
 public class ConfigVersionsTest {
+
+	@Test
+	public void testMavenTargetVersionInSync() throws Exception {
+		Path bndPath = Paths.get("../cnf/ext/maven-plugin.bnd")
+			.normalize();
+		Path pomPath = Paths.get("../maven-plugins/bnd-plugin-parent/pom.xml")
+			.normalize();
+
+		System.out.println("Looking for BND at: " + bndPath.toAbsolutePath());
+		System.out.println("Looking for POM at: " + pomPath.toAbsolutePath());
+
+		assertTrue(Files.exists(bndPath), "BND file not found");
+		assertTrue(Files.exists(pomPath), "POM file not found");
+
+		// Read the full content of both files
+		String bndFile = Files.readString(bndPath);
+		String pomFile = Files.readString(pomPath);
+
+		// Extract version from bnd file (e.g. maven.target.version: 3.3.9)
+		Pattern bndPattern = Pattern.compile("maven\\.target\\.version:\\s*([\\d\\.]+)");
+		Matcher bndMatcher = bndPattern.matcher(bndFile);
+		assertTrue(bndMatcher.find(), "Version not found in BND file");
+		String bndVersion = bndMatcher.group(1);
+
+		// Extract version from POM file (e.g.
+		// <maven.target.version>3.3.9</maven.target.version>)
+		Pattern pomPattern = Pattern.compile("<maven\\.target\\.version>([\\d\\.]+)</maven\\.target\\.version>");
+		Matcher pomMatcher = pomPattern.matcher(pomFile);
+		assertTrue(pomMatcher.find(), "Version not found in POM file");
+		String pomVersion = pomMatcher.group(1);
+
+		// Compare
+		// It would be better if we find a way to prevent dependabot from
+		// updating pom.xml
+		// but don't know how.
+		assertEquals(bndVersion, pomVersion,
+			"Versions do not match. Ensure cnf/ext/maven-plugin.bnd and /maven-plugins/bnd-plugin-parent/pom.xml use the same maven version (sometimes dependabot updates pom.xml incorrectly.)");
+	}
 
 	@Test
 	public void testJunitVersionInSync() throws Exception {
