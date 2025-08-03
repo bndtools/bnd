@@ -338,4 +338,6 @@ public class MavenTest {
 		assertEquals("artifact2", xpath.evaluate("/project/dependencies/dependency[2]/artifactId", d));
 		assertEquals("2.0.0", xpath.evaluate("/project/dependencies/dependency[2]/version", d));
 	}
+
+
 }
