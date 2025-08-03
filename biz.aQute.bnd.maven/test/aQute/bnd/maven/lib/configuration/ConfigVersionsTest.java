@@ -59,7 +59,7 @@ public class ConfigVersionsTest {
 	}
 
 	@Test
-	public void testJunitVersionInSync() throws Exception {
+	public void testJunitVersionInSyncPomxml() throws Exception {
 		Path junitbndPath = Paths.get("../cnf/ext/junit.bnd")
 			.normalize();
 		Path pomPath = Paths.get("../maven-plugins/bnd-plugin-parent/pom.xml")
@@ -94,5 +94,41 @@ public class ConfigVersionsTest {
 		// but don't know how.
 		assertEquals(bndVersion, pomVersion,
 			"Versions do not match. Ensure cnf/ext/junit.bnd and /maven-plugins/bnd-plugin-parent/pom.xml use the same junit.jupiter.version (sometimes dependabot updates pom.xml incorrectly.)");
+	}
+
+	@Test
+	public void testJunitVersionInSyncGradle() throws Exception {
+		Path junitbndPath = Paths.get("../cnf/ext/junit.bnd")
+			.normalize();
+		Path gradlePath = Paths.get("../gradle-plugins/biz.aQute.bnd.gradle/build.gradle.kts")
+			.normalize();
+
+		System.out.println("Looking for BND at: " + junitbndPath.toAbsolutePath());
+		System.out.println("Looking for Gradle file at: " + gradlePath.toAbsolutePath());
+
+		assertTrue(Files.exists(junitbndPath), "BND file not found");
+		assertTrue(Files.exists(gradlePath), "Gradle file not found");
+
+		// Read the full content of both files
+		String bndFile = Files.readString(junitbndPath);
+		String gradleFile = Files.readString(gradlePath);
+
+		// Extract version from BND file (e.g. junit.jupiter.version=5.12.2)
+		Pattern bndPattern = Pattern.compile("junit\\.jupiter\\.version=\\s*([\\d\\.]+)");
+		Matcher bndMatcher = bndPattern.matcher(bndFile);
+		assertTrue(bndMatcher.find(), "Version not found in BND file");
+		String bndVersion = bndMatcher.group(1);
+
+		// Extract version from Gradle file (e.g.
+		// testImplementation(enforcedPlatform("org.junit:junit-bom:5.12.2"))
+		Pattern gradlePattern = Pattern
+			.compile("testImplementation\\(enforcedPlatform\\(\"org\\.junit:junit-bom:([\\d\\.]+)\"\\)\\)");
+		Matcher gradleMatcher = gradlePattern.matcher(gradleFile);
+		assertTrue(gradleMatcher.find(), "Version not found in Gradle file");
+		String gradleVersion = gradleMatcher.group(1);
+
+		// Compare
+		assertEquals(bndVersion, gradleVersion,
+			"Versions do not match. Ensure cnf/ext/junit.bnd and gradle-plugins/biz.aQute.bnd.gradle/build.gradle.kts use the same junit.jupiter.version. (sometimes dependabot updates pom.xml incorrectly.)");
 	}
 }
