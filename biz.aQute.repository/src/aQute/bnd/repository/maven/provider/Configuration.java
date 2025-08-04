@@ -81,4 +81,9 @@ public interface Configuration {
 	 * @return a comma separated list of tags.
 	 */
 	String tags();
+
+	/**
+	 * @return if Sonatype releases should be autopublished
+	 */
+	boolean autopublish();
 }

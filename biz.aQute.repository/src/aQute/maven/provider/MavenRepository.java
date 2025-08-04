@@ -46,6 +46,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final boolean						localOnly;
 	private final Map<Revision, Promise<POM>>	poms		= new WeakHashMap<>();
 	private final Reporter						reporter;
+	private boolean								autoPublish	= false;
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
@@ -401,5 +402,13 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		synchronized (poms) {
 			poms.remove(revision);
 		}
+	}
+
+	public boolean isAutoPublish() {
+		return autoPublish;
+	}
+
+	public void setAutoPublish(boolean autopublish) {
+		this.autoPublish = autopublish;
 	}
 }
