@@ -112,7 +112,7 @@ jobs:
         ref: master
 
     - name: download docs/releases/${{ github.event.inputs.V1 }}
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: releasedocs
         path: docs/releases/${{ github.event.inputs.V1 }}/
