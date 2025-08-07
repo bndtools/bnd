@@ -77,7 +77,7 @@ dependencies {
 	implementation("biz.aQute.bnd:biz.aQute.resolve:${version}")
 	runtimeOnly("biz.aQute.bnd:biz.aQute.bnd.embedded-repo:${version}")
 	// keep in sync with cnf/junit.bnd e.g. 'junit.jupiter.version'
-	testImplementation(enforcedPlatform("org.junit:junit-bom:5.12.2"))
+	testImplementation(enforcedPlatform("org.junit:junit-bom:5.13.4"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
