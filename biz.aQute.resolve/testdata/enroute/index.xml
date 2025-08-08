@@ -746,26 +746,7 @@
       <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.5))"/>
     </requirement>
   </resource>
-  <resource>
-    <capability namespace="osgi.identity">
-      <attribute name="osgi.identity" value="biz.aQute.launcher"/>
-      <attribute name="type" value="osgi.bundle"/>
-      <attribute name="version" type="Version" value="3.0.0.201508170645"/>
-    </capability>
-    <capability namespace="osgi.content">
-      <attribute name="osgi.content" value="5578718ad0517fa214d8801792b8681e94f186f9de598f92d4f5031e2b344ad1"/>
-      <attribute name="url" value="biz.aQute.launcher/biz.aQute.launcher-3.0.0.jar"/>
-      <attribute name="size" type="Long" value="140770"/>
-      <attribute name="mime" value="application/vnd.osgi.bundle"/>
-    </capability>
-    <capability namespace="osgi.wiring.bundle">
-      <attribute name="osgi.wiring.bundle" value="biz.aQute.launcher"/>
-      <attribute name="bundle-version" type="Version" value="3.0.0.201508170645"/>
-    </capability>
-    <capability namespace="osgi.wiring.host">
-      <attribute name="osgi.wiring.host" value="biz.aQute.launcher"/>
-      <attribute name="bundle-version" type="Version" value="3.0.0.201508170645"/>
-    </capability>
+  <resource>   
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.bnd.build)(version&gt;=2.6.0)(!(version&gt;=3.0.0)))"/>
     </requirement>

@@ -92,10 +92,17 @@ jobs:
     #      ~/.bnd/urlcache/
     #    key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/cnf/**/*.bnd', '**/cnf/**/*.mvn', '**/cnf/**/*.maven', '**/cnf/ext/*.*') }}
 
-    - name: Build
+    - name: Build (default)
       id: build
+      if: ${{ matrix.java != '24' }}
       run: |
         ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
+
+    - name: Build Java 24 with stacktrace output
+      id: buildJDK24
+      if: ${{ matrix.java == '24' }}
+      run: |
+        ${{ format(matrix.runner, './.github/scripts/ci-build.sh --stacktrace') }}
 
     - name: Configure settings.xml for Publish
       if: ${{ matrix.canonical }}

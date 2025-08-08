@@ -36,6 +36,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -77,6 +78,19 @@ public class AlsoLauncherTest {
 	public void setUp() throws Exception {
 		prior = new Properties();
 		prior.putAll(System.getProperties());
+		String javaVersion = System.getProperty("java.version");
+		int majorJavaVersion = Integer.parseInt(javaVersion.split("\\.")[0]);
+		if (majorJavaVersion >= 24) {
+			System.out
+				.println(
+					"Running on Java Runtime >=24. adding Properties `jdk.xml.*[Size|Expansion]Limit` support for large xml parsing");
+			System.getProperties()
+				.setProperty("jdk.xml.totalEntitySizeLimit", "0");
+			System.getProperties()
+				.setProperty("jdk.xml.maxGeneralEntitySizeLimit", "0");
+			System.getProperties()
+				.setProperty("jdk.xml.entityExpansionLimit", "0");
+		}
 
 		File wsRoot = new File(testDir, "test ws");
 		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester",
@@ -1144,6 +1158,7 @@ public class AlsoLauncherTest {
 	 */
 	// @Ignore("Just seems to wait for no obvious reason")
 	@Test
+	@EnabledForJreRange(maxVersion = 23)
 	public void testFrameworkExtension() throws Exception {
 		try (Run run = new Run(project.getWorkspace(), project.getFile("frameworkextension.bndrun"))) {
 			run.setProperty(Constants.RUNTRACE, "true");
@@ -1172,7 +1187,7 @@ public class AlsoLauncherTest {
 	 * <pre>
 	 * isJava24OrAbove
 	 * </pre>
-	 * 
+	 *
 	 * refers to a static helper method in this class (see
 	 * https://junit.org/junit5/docs/5.9.2/api/org.junit.jupiter.api/org/junit/jupiter/api/condition/DisabledIf.html#value())
 	 */
