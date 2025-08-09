@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,6 +25,7 @@ import org.w3c.dom.Document;
 
 import aQute.bnd.component.MergedRequirement;
 import aQute.bnd.component.annotations.ReferenceCardinality;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -42,10 +41,8 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.strings.Strings;
 import aQute.lib.xml.XML;
-import aQute.libg.glob.PathSet;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for CCR.
@@ -53,7 +50,6 @@ import aQute.libg.glob.PathSet;
 public class CDIAnnotations implements AnalyzerPlugin {
 	static final DocumentBuilderFactory		dbf					= XML.newDocumentBuilderFactory();
 	static final XPathFactory				xpf					= XPathFactory.newInstance();
-	private static final Predicate<String>	beansResourceFilter	= new PathSet("META-INF/beans.xml").matches();
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
@@ -82,10 +78,9 @@ public class CDIAnnotations implements AnalyzerPlugin {
 			.collect(toMap(path -> path, FunctionWithException.asFunction(path -> {
 				Resource resource = currentJar.getResource(path);
 				if (resource != null) {
-					// we need to make sure to close the stream
-					try (Stream<Resource> resources = Jar.getResources(resource, beansResourceFilter)) {
-						Resource beansResource = resources.findFirst()
-							.orElse(null);
+					// we need to make sure to close the jar
+					try (Jar jar = Jar.fromResource(path, resource)) {
+						Resource beansResource = jar.getResource("META-INF/beans.xml");
 						return findDiscoveryMode(beansResource);
 					}
 				} else {
