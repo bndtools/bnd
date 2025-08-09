@@ -2951,7 +2951,7 @@ public class Project extends Processor {
 		// one
 		List<Container> withDefault = Create.list();
 		withDefault.addAll(containers);
-		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler, null));
+		withDefault.addAll(getBundles(Strategy.LOWEST, defaultHandler, null));
 		logger.debug("candidates for handler {}: {}", target, withDefault);
 
 		for (Container c : withDefault) {
