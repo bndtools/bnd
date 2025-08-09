@@ -2070,6 +2070,8 @@ public class Analyzer extends Processor {
 					continue;
 				}
 
+				// flag indicating if importing an unstable API (major version 0)
+				boolean isUnstable = false;
 				if (exportVersion == null) {
 					// TODO Should check if the source is from a bundle.
 					if (importRange != null) {
@@ -2096,9 +2098,16 @@ public class Analyzer extends Processor {
 					}
 					exportVersion = cleanupVersion(exportVersion);
 
-					importRange = applyVersionPolicy(exportVersion, importRange, provider);
+					isUnstable = isUnstableVersion(exportVersion);
+					importRange = applyVersionPolicy(exportVersion, importRange, provider, isUnstable);
 					if (Strings.nonNullOrTrimmedEmpty(importRange)) {
 						importAttributes.put(VERSION_ATTRIBUTE, importRange);
+					} else {
+						if (isUnstable) {
+							warning(
+								"Depending on unstable API %s in version %s, therefore not generating any version range restriction",
+								packageName, exportVersion);
+						}
 					}
 				}
 
@@ -2117,7 +2126,7 @@ public class Analyzer extends Processor {
 
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
 				if ((result == null || !Verifier.isVersionRange(result))
-					&& complainAboutMissingVersionRange(packageRef, ee)) {
+					&& complainAboutMissingVersionRange(packageRef, ee) && !isUnstable) {
 					noimports.add(packageRef);
 				}
 			} finally {
@@ -2128,8 +2137,22 @@ public class Analyzer extends Processor {
 		}
 
 		if (isPedantic() && noimports.size() != 0) {
-			warning("Imports that lack version ranges: %s", noimports);
+			warning("Imports that lack version ranges due to not being found in any bundle on the -buildpath: %s",
+				noimports);
 		}
+	}
+
+	/**
+	 * Checks if the given version is an unstable version (i.e. has major
+	 * version 0).
+	 *
+	 * @param version
+	 * @return {@code true} if the given version can be parsed and has major
+	 *         version 0, {@code false} otherwise.
+	 */
+	private static boolean isUnstableVersion(String version) {
+		// check major version of exportVersion
+		return Version.isVersion(version) && new Version(version).getMajor() == 0;
 	}
 
 	private EE getEEFromReqsOrHighest() {
@@ -2192,14 +2215,16 @@ public class Analyzer extends Processor {
 		return new Pair<>(regularImports, dynamicImports);
 	}
 
-	String applyVersionPolicy(String exportVersion, String importRange, boolean provider) {
+	String applyVersionPolicy(String exportVersion, String importRange, boolean provider, boolean isUnstable) {
 		try {
 			setProperty(CURRENT_VERSION, exportVersion);
 			if (importRange != null) {
 				importRange = cleanupVersion(importRange);
 				importRange = getReplacer().process(importRange);
 			} else {
-				importRange = getVersionPolicy(provider);
+				if (!isUnstable) {
+					importRange = getVersionPolicy(provider);
+				}
 			}
 		} finally {
 			unsetProperty(CURRENT_VERSION);
