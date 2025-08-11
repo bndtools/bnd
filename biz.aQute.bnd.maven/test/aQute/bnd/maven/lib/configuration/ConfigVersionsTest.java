@@ -37,14 +37,14 @@ public class ConfigVersionsTest {
 		String bndFile = Files.readString(bndPath);
 		String pomFile = Files.readString(pomPath);
 
-		// Extract version from bnd file (e.g. maven.target.version: 3.3.9)
+		// Extract version from bnd file (e.g. maven.target.version: 3.9.11)
 		Pattern bndPattern = Pattern.compile("maven\\.target\\.version:\\s*([\\d\\.]+)");
 		Matcher bndMatcher = bndPattern.matcher(bndFile);
 		assertTrue(bndMatcher.find(), "Version not found in BND file");
 		String bndVersion = bndMatcher.group(1);
 
 		// Extract version from POM file (e.g.
-		// <maven.target.version>3.3.9</maven.target.version>)
+		// <maven.target.version>3.9.11</maven.target.version>)
 		Pattern pomPattern = Pattern.compile("<maven\\.target\\.version>([\\d\\.]+)</maven\\.target\\.version>");
 		Matcher pomMatcher = pomPattern.matcher(pomFile);
 		assertTrue(pomMatcher.find(), "Version not found in POM file");

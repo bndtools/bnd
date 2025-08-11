@@ -30,7 +30,7 @@ public class InstructionTest {
 	@Test
 	public void buildpath_decoration() throws Exception {
 		try (Processor p = new Processor()) {
-			p.setProperty("maven.target.version", "3.3.9");
+			p.setProperty("maven.target.version", "3.9.11");
 			p.setProperty("-buildpath+", "aQute.libg;version=project;packages=\"!aQute.lib.exceptions.*,*\"");
 			p.setProperty("-buildpath+.maven",
 				"org.apache.maven:*;version=${maven.target.version};maven-scope=provided");
@@ -59,17 +59,17 @@ public class InstructionTest {
 				"org.apache.maven:maven-repository-metadata", "org.apache.maven:maven-settings");
 			assertThat(bundles.get("aQute.libg")).containsOnly(entry("version", "project"),
 				entry("packages", "!aQute.lib.exceptions.*,*"));
-			assertThat(bundles.get("org.apache.maven:maven-artifact")).containsOnly(entry("version", "3.3.9"),
+			assertThat(bundles.get("org.apache.maven:maven-artifact")).containsOnly(entry("version", "3.9.11"),
 				entry("maven-scope", "provided"));
-			assertThat(bundles.get("org.apache.maven:maven-core")).containsOnly(entry("version", "3.3.9"),
+			assertThat(bundles.get("org.apache.maven:maven-core")).containsOnly(entry("version", "3.9.11"),
 				entry("maven-scope", "provided"));
-			assertThat(bundles.get("org.apache.maven:maven-model")).containsOnly(entry("version", "3.3.9"),
+			assertThat(bundles.get("org.apache.maven:maven-model")).containsOnly(entry("version", "3.9.11"),
 				entry("maven-scope", "provided"));
-			assertThat(bundles.get("org.apache.maven:maven-plugin-api")).containsOnly(entry("version", "3.3.9"),
+			assertThat(bundles.get("org.apache.maven:maven-plugin-api")).containsOnly(entry("version", "3.9.11"),
 				entry("maven-scope", "provided"));
 			assertThat(bundles.get("org.apache.maven:maven-repository-metadata"))
-				.containsOnly(entry("version", "3.3.9"), entry("maven-scope", "provided"));
-			assertThat(bundles.get("org.apache.maven:maven-settings")).containsOnly(entry("version", "3.3.9"),
+				.containsOnly(entry("version", "3.9.11"), entry("maven-scope", "provided"));
+			assertThat(bundles.get("org.apache.maven:maven-settings")).containsOnly(entry("version", "3.9.11"),
 				entry("maven-scope", "provided"));
 		}
 	}

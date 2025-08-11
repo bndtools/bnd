@@ -1,6 +1,6 @@
 # Maven Plugins
 
-The Bnd Maven Plugins require at least Maven 3.3.9.
+The Bnd Maven Plugins require at least Maven 3.9.11.
 
 This README, and the READMEs in the individual Bnd Maven Plugin folders,
 represent the capabilities and features of the Bnd Maven Plugins in

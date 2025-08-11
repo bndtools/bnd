@@ -75,8 +75,22 @@ public class AlsoLauncherTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
+
 		prior = new Properties();
 		prior.putAll(System.getProperties());
+		String javaVersion = System.getProperty("java.version");
+		int majorJavaVersion = Integer.parseInt(javaVersion.split(".")
+			.clone()[0]);
+		if (majorJavaVersion >= 24) {
+			System.out
+				.println("Running on Java Runtime >=24. adding Properties `jdk.xml.*` support for large xml parsing");
+			System.getProperties()
+				.setProperty("jdk.xml.totalEntitySizeLimit", "0");
+			System.getProperties()
+				.setProperty("jdk.xml.totalEntitySizeLimit", "0");
+			System.getProperties()
+				.setProperty("jdk.xml.maxGeneralEntitySizeLimit", "0");
+		}
 
 		File wsRoot = new File(testDir, "test ws");
 		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester",
@@ -356,6 +370,7 @@ public class AlsoLauncherTest {
 
 			File tmp = File.createTempFile("foo", ".jar", testDir);
 			jar.write(tmp);
+
 			Command cmd = new Command();
 			cmd.add(project.getJavaExecutable("java"));
 			cmd.add("-jar");
@@ -1112,6 +1127,7 @@ public class AlsoLauncherTest {
 			l.setTrace(true);
 			l.getRunProperties()
 				.put("test.cmd", cmd);
+			Command command = l.getCommand();
 			assertThat(l.launch()).isEqualTo(rv);
 		}
 	}
@@ -1172,7 +1188,7 @@ public class AlsoLauncherTest {
 	 * <pre>
 	 * isJava24OrAbove
 	 * </pre>
-	 * 
+	 *
 	 * refers to a static helper method in this class (see
 	 * https://junit.org/junit5/docs/5.9.2/api/org.junit.jupiter.api/org/junit/jupiter/api/condition/DisabledIf.html#value())
 	 */
