@@ -30,7 +30,7 @@ public class InstructionTest {
 	@Test
 	public void buildpath_decoration() throws Exception {
 		try (Processor p = new Processor()) {
-			p.setProperty("maven.target.version", "3.3.9");
+			p.setProperty("maven.target.version", "3.8.1");
 			p.setProperty("-buildpath+", "aQute.libg;version=project;packages=\"!aQute.lib.exceptions.*,*\"");
 			p.setProperty("-buildpath+.maven",
 				"org.apache.maven:*;version=${maven.target.version};maven-scope=provided");
