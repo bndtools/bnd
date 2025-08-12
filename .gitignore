@@ -13,3 +13,4 @@ Archive
 .settings
 .flattened-pom.xml
 target/
+_log/
