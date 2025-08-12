@@ -1144,6 +1144,7 @@ public class AlsoLauncherTest {
 	 */
 	// @Ignore("Just seems to wait for no obvious reason")
 	@Test
+	@EnabledForJreRange(maxVersion = 23)
 	public void testFrameworkExtension() throws Exception {
 		try (Run run = new Run(project.getWorkspace(), project.getFile("frameworkextension.bndrun"))) {
 			run.setProperty(Constants.RUNTRACE, "true");
@@ -1172,12 +1173,12 @@ public class AlsoLauncherTest {
 	 * <pre>
 	 * isJava24OrAbove
 	 * </pre>
-	 * 
+	 *
 	 * refers to a static helper method in this class (see
 	 * https://junit.org/junit5/docs/5.9.2/api/org.junit.jupiter.api/org/junit/jupiter/api/condition/DisabledIf.html#value())
 	 */
 	@Test
-	@DisabledIf("isJava24OrAbove")
+	@EnabledForJreRange(maxVersion = 23)
 	public void testOlderLauncherOnRunpath() throws Exception {
 		try (Run run = new Run(project.getWorkspace(), project.getFile("old-launcher.bndrun"))) {
 			run.setProperty(Constants.RUNTRACE, "true");
