@@ -12,6 +12,9 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -125,6 +128,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private final AtomicReference<Throwable>	open				= new AtomicReference<>();
 	Optional<Workspace>							workspace;
 	private AtomicBoolean						polling				= new AtomicBoolean(false);
+	private Path								sonatypeDir;
 
 	/**
 	 * Put result
@@ -278,8 +282,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			String clazz = extra.clazz;
 			File file = new File(path);
 			if (!file.isFile())
-				reporter.error("-release-maven archive contains a path to a file that does not exist: %s",
-					file);
+				reporter.error("-release-maven archive contains a path to a file that does not exist: %s", file);
 			else {
 				try (Resource r = new FileResource(file)) {
 					Resource what;
@@ -482,7 +485,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			release.passphrase = sign.get("passphrase");
 		}
 
-
 		int clazz = 0;
 
 		for (Iterator<Entry<String, Attrs>> it = p.entrySet()
@@ -510,8 +512,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							.getAbsolutePath();
 					} else {
 						reporter.warning(
-							"The -maven-release instruction has an 'archive' without the path attribute: %s",
-							e);
+							"The -maven-release instruction has an 'archive' without the path attribute: %s", e);
 						continue;
 					}
 					extra.path = path;
@@ -640,16 +641,28 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		inited = true;
 
 		try {
-			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
-				localRepo, client);
+			List<MavenBackingRepository> release = new ArrayList<MavenBackingRepository>();
+			String releaseUrl = configuration.releaseUrl();
+			if (isSonatypeCentralPortal(releaseUrl)) {
+				logger.debug("deployment to Sonatype Central Portal configured");
+				sonatypeDir = Files.createTempDirectory("sonatype_");
+				File releaseDir = getSonatypeDir().resolve("release")
+					.toFile();
+				releaseDir.deleteOnExit();
+				List<MavenBackingRepository> releaseLocal = MavenBackingRepository.create(releaseDir.toURI()
+					.toString(), reporter, localRepo, getClient());
+				release.addAll(releaseLocal);
+			} else {
+				release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, getClient());
+			}
+
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 				localRepo, client);
-
 			MavenBackingRepository staging = null;
 
 			if (configuration.stagingUrl() != null) {
-				staging = MavenBackingRepository.getBackingRepository(configuration.stagingUrl(),
-					reporter, localRepo, client);
+				staging = MavenBackingRepository.getBackingRepository(configuration.stagingUrl(), reporter, localRepo,
+					getClient());
 			}
 
 			for (MavenBackingRepository mbr : release) {
@@ -666,9 +679,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					}
 				}
 
-			storage = new MavenRepository(localRepo, name, release, staging, snapshot,
-				client.promiseFactory()
+			storage = new MavenRepository(localRepo, name, release, staging, snapshot, getClient().promiseFactory()
 				.executor(), reporter);
+			((MavenRepository) storage).setAutoPublish(configuration.autopublish());
 
 			File indexFile = getIndexFile();
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
@@ -678,7 +691,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 			Set<String> multi = Strings.splitAsStream(configuration.multi())
 				.collect(Sets.toSet());
-			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
+			this.index = new IndexFile(domain, reporter, indexFile, source, storage, getClient().promiseFactory(),
+				multi);
 			this.index.open();
 
 			try (Formatter f = new Formatter()) {
@@ -701,6 +715,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			status = Exceptions.getDisplayTypeName(e) + " " + Exceptions.causes(e);
 			return false;
 		}
+	}
+
+	private boolean isSonatypeCentralPortal(String releaseUrl) {
+		if (releaseUrl == null)
+			return false;
+		return releaseUrl.contains("central.sonatype.com/api/v1/publisher/upload/");
 	}
 
 	private void validateUris(List<MavenBackingRepository> release, Formatter f) {
@@ -1073,6 +1093,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public boolean isRemote() {
 		return remote;
+	}
+
+	public Path getSonatypeDir() {
+		return sonatypeDir;
+	}
+
+	public HttpClient getClient() {
+		return client;
 	}
 
 }
