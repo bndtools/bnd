@@ -51,7 +51,7 @@ If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketpla
 
 Assuming you have Gradle (version 1.11 or better) installed, you can build bndtools from the command line by changing to the root of your checkout and typing:
 
-`./gradlew :build` (or `./gradlew build -x test -x testOSGi` to skip tests for faster local builds)
+`./gradlew :build` (or `./gradlew build -x test -x testOSGi` to skip tests for faster local builds).
 
 After a a short while the directory - `org.bndtools.p2/generated/p2` appears. It contains an Eclipse P2 Update Site that you can use to install bndtools from the code you have just built.
 
@@ -62,6 +62,12 @@ Back in the update dialog, Bndtools will appear in the category list. Place a ch
 
 We recommend the section [Build Environment](#build-environment) below to learn more about how the build works.
 
+## Running single tests
+
+Sometimes it can be useful to run a single testcase without running a full build. 
+
+- Running only a specific Test `./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest"` (runs the test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`)
+- Running single test method `./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest.testTester"` (runs the method `testTester()` in test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`)
 
 ### Importing Into Eclipse
 
