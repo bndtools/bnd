@@ -13,3 +13,5 @@ Archive
 .settings
 .flattened-pom.xml
 target/
+*.code-workspace
+_log/
