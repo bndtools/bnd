@@ -67,13 +67,23 @@ public interface PomConfiguration {
 
 	/**
 	 * The query used to search Maven Central Search.
+	 *
+	 * @deprecated targeted for removal in bnd 8.0, because
+	 *             search.maven.org/solrsearch is consired "legacy" and very
+	 *             instable (see https://status.maven.org/)
 	 */
+	@Deprecated(forRemoval = true, since = "7.2.0")
 	String query();
 
 	/**
-	 * The url of the Maven Central Search.
+	 * The url of the Maven Central Search. default
+	 * "http://search.maven.org/solrsearch/select"
+	 *
+	 * @deprecated targeted for removal in bnd 8.0, because
+	 *             search.maven.org/solrsearch is consired "legacy" and very
+	 *             instable (see https://status.maven.org/)
 	 */
-	// default "http://search.maven.org/solrsearch/select"
+	@Deprecated(forRemoval = true, since = "7.2.0")
 	String queryUrl(String deflf);
 
 	/**

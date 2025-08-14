@@ -39,6 +39,10 @@ Opening the `Run` tab of the bndrun editor on this file will show you all transi
 
 ## Searching
 
+
+**DEPRECATION:** The searching feature below will be deprecated in bnd 7.2.0 for removal in bnd 8.0. 
+The reason is that this search is considered "legacy" (see https://status.maven.org/), and also is often instable recently.
+
 Maven Central supports a [searching facility](https://blog.sonatype.com/2011/06/you-dont-need-a-browser-to-use-maven-central/) based on Solr. For example, you want all the artifacts of a given group id. In that case you could use the following Bnd Pom Repository plugin:
 
     -standalone: true
