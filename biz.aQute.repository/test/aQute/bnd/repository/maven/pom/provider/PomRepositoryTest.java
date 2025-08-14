@@ -558,6 +558,7 @@ public class PomRepositoryTest {
 		assertFalse(pom.isStale());
 	}
 
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0.")
 	@Test
 	public void testSearchRepoSimple() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
@@ -578,6 +579,7 @@ public class PomRepositoryTest {
 		}
 	}
 
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0.")
 	@Test
 	public void testSearchRepoMultipleConfigurationsDontBreak() throws Exception {
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -626,7 +628,7 @@ public class PomRepositoryTest {
 		}
 	}
 
-	@Disabled("This test is flaky because http://search.maven.org/solrsearch/select often returns 400")
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0. This test is flaky because http://search.maven.org/solrsearch/select often returns 400")
 	@Test
 	public void testSearchRepoAllVersions() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
@@ -665,6 +667,7 @@ public class PomRepositoryTest {
 		}
 	}
 
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0.")
 	@Test
 	public void testSearchRepoFailNoName() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {

@@ -147,6 +147,9 @@ public class BndPomRepository extends BaseRepository
 				status("Archive is neither a file nor a revision " + configuration.revision());
 			}
 		} else if (configuration.query() != null) {
+			reporter
+				.warning(
+					"The query feature for search.maven.org/solrsearch is deprecated since bnd 7.2.0 and targeted for remove in bnd 8.0");
 			this.query = configuration.query();
 			this.queryUrl = configuration.queryUrl("https://search.maven.org/solrsearch/select");
 		} else {
