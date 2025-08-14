@@ -3733,7 +3733,8 @@ public class BuilderTest {
 			b.setPedantic(true);
 			b.setProperty("Import-Package", "foo.bar");
 			b.build();
-			softly.assertThat(b.check("Imports that lack version ranges: \\[foo.bar\\]",
+			softly.assertThat(b.check(
+				"Imports that lack version ranges due to not being found in any bundle on the -buildpath: \\[foo.bar\\]",
 				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
 				.isTrue();
 			softly.assertThat(b.getImports()
@@ -3810,7 +3811,8 @@ public class BuilderTest {
 			b.build();
 			// there should be NO warning: Imports that lack version ranges:
 			// [javax.xml.transform.stax]
-			softly.assertThat(b.check("Imports that lack version ranges: \\[javax.xml.transform.stax\\]",
+			softly.assertThat(b.check(
+				"Imports that lack version ranges due to not being found in any bundle on the -buildpath: \\[javax.xml.transform.stax\\]",
 				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
 				.isTrue();
 			softly.assertThat(b.getImports()
