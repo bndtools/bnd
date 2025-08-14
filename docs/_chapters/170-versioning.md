@@ -159,6 +159,8 @@ The resulting manifest would look like:
         Import-Package:  org.osgi.service.event; version="[1.1,1.2)", ...
         ...
 
+*In case the exported version is [unstable i.e. has major version 0](https://semver.org/#spec-item-4) there is no import version restriction being generated at all. This is because for unstable versions it is impossible to know which versions will be compatible with consumers or providers. Therefore, try to avoid dependencies on unstable APIs!*
+
 ## Substitution
 A key aspect of OSGi is that a package can be both imported and exported. The reason is that this feature allows a framework more leeway during resolving without creating multiple unconnected class spaces.
 
