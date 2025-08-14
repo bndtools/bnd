@@ -75,7 +75,7 @@ The launcher analyzes the `-runpath` JARs. Any additional capabilities in the ma
 
 ### Exporting an older Java 8 compatible launcher
 
-There are where you are working with a recent 7.x release of bnd / bndtools but you want to export an executable .jar which contains e.g. the launcher of bnd 6.4.1 which is compatible with JDK-8 (because newer 7.x bnd and launcher requires JDK-17 minimum). 
+There are cases where you are working with a recent 7.x release of bnd / bndtools but you want to export an executable .jar which contains e.g. the launcher of bnd 6.4.1 which is compatible with JDK-8 (because newer 7.x bnd and launcher requires JDK-17 minimum).
 In this you can do the following:
 
 1. Place `biz.aQute.bnd:biz.aQute.launcher:6.4.1` in one of your repositories
