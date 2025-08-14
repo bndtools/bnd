@@ -73,6 +73,20 @@ The default launcher in bnd. It creates a new VM with the given options, creates
 
 The launcher analyzes the `-runpath` JARs. Any additional capabilities in the manifest (packages and Provide Capability headers) in these JARs are automatically added to the framework.
 
+### Exporting an older Java 8 compatible launcher
+
+There are where you are working with a recent 7.x release of bnd / bndtools but you want to export an executable .jar which contains e.g. the launcher of bnd 6.4.1 which is compatible with JDK-8 (because newer 7.x bnd and launcher requires JDK-17 minimum). 
+In this you can do the following:
+
+1. Place `biz.aQute.bnd:biz.aQute.launcher:6.4.1` in one of your repositories
+2. reference it in your `.bndrun` like this:
+
+```
+# myapp.bndrun
+-runpath: ${repo;biz.aQute.bnd:biz.aQute.launcher;[6.4.1,6.4.2)};version=file
+```
+
+
 ### Runtime Information
 
 The launcher registers a service with object class `Object` that provides some runtime information. The following properties are set on this service:
