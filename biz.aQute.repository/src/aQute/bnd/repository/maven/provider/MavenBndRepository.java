@@ -627,9 +627,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	synchronized boolean init() {
 
-		if (open.get() != null)
-			throw new IllegalStateException("Already closed " + this + "\n" + Exceptions.toString(open.get()),
-				open.get());
+		if (open.get() != null) {
+			// closing can happen e.g. on Reload Workspace
+			// but init() is called by polling and other threads
+			logger.warn("Already closed " + this + "\n" + Exceptions.toString(open.get()));
+			return false;
+
+		}
 
 		if (status != null)
 			return false;
@@ -789,8 +793,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	@Override
-	public void close() throws IOException {
+	public synchronized void close() throws IOException {
 		if (open.getAndSet(new Exception(this + " closed")) == null) {
+			polling.set(false);
 			if (indexPoller != null)
 				indexPoller.cancel(true);
 			IO.close(storage);
