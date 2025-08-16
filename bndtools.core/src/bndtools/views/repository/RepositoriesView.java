@@ -1066,7 +1066,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 	@Override
 	public List<RepositoryPlugin> getRepositories() {
-		return RepositoryUtils.listRepositories(true);
+		return RepositoryUtils.listRepositories(false);
 	}
 
 	private static boolean isJarFile(File candidate) {
