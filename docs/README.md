@@ -110,3 +110,26 @@ or to use a different `pagefind` version.
 
 See the files `.github/workflows/cibuild.yml` and `.github/scripts/docs.sh` for how 
 building the site and executing `pagefind` is done in the final build on github.
+
+
+### CSS Styling for Code Highlighter
+
+- jekyll uses `rouge` code highlighter
+- see `_config.yml` and section `syntax_highlighter_opts`
+- also see this website https://jekyll-themes.com/brazacz/rouge-themes for examples
+- rouge is compatible with and can use 'pygments' styles (see https://pygments.org/styles/)
+- these styles can be generated with the command 
+
+The following commands locally will help to generate the .css files for the pygment styles:
+
+```
+gem install rouge
+# show a list of supported styles
+rougify help style
+# go to the css folder
+cd css
+# generate the css
+rougify style github.dark > github.dark.css
+```
+
+Then reference the `.css` file in `_includes/head.htm `

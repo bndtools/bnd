@@ -2,6 +2,12 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
 markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter_opts:
+    default_lang: shell
+    css_class   : 'highlight' ## see https://github.com/rouge-ruby/rouge/wiki/List-of-supported-languages-and-lexers
 
 collections:
   chapters:
