@@ -638,11 +638,25 @@ public class Workspace extends Processor {
 	}
 
 	class CachedFileRepo extends FileRepo {
+
 		final Lock	lock	= new ReentrantLock();
 		boolean		inited;
 
 		CachedFileRepo() {
 			super(BND_CACHE_REPONAME, getCache(BND_CACHE_REPONAME), false);
+		}
+
+		@Override
+		public String tooltip(Object... target) throws Exception {
+
+			if (target == null || target.length == 0) {
+				String statustext = isTrue(getProperty(NOBUILDINCACHE)) ? "Disabled by -nobuildincache"
+					: "Enabled - Use -nobuildincache to disable this cache";
+				return String.format("%s (%s)%n%s", getName(), statustext, root);
+			}
+
+			return super.tooltip(target);
+
 		}
 
 		@Override
@@ -708,6 +722,7 @@ public class Workspace extends Processor {
 				}
 			}
 		}
+
 	}
 
 	public void syncCache() throws Exception {
