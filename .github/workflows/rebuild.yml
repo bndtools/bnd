@@ -130,3 +130,11 @@ jobs:
           */generated/test-reports/*/TEST-*.xml
           maven/*/target/surefire-reports/TEST-*.xml
           gradle-plugins/*/build/test-results/*/TEST-*.xml
+    - name: Upload Rebuild P2 Repo artifact
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+      with:
+        name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
+        path: |
+          org.bndtools.p2/generated/org.bndtools.p2.jar
+        retention-days: 7   # keep for 7 days

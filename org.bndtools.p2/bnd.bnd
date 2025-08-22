@@ -39,9 +39,30 @@ pluginnames: ${-dependson},\
 
 plugins: ${map;repo;${template;pluginnames;${@};latest}}
 
--includeresource: ${target}/p2
 -resourceonly: true
-#
-# The p2 tasks must be run from the gradle build
-#
--fixupmessages.p2: "Input file does not exist*${target}/p2";is:=warning;replace:="The ${target}/p2 directory must be created with the gradle build."
+
+-maven-release: 
+-buildrepo: 
+-releaserepo:
+
+# P2 signing:
+# key (name of the key), 
+# passphrase (optional)
+# pubkey (read publickey file e.g. from ~./bnd/ folder)
+# below 
+# The idea is to first check global variables in ~./bnd/settings.json
+# and fallback to environment variables.  
+# For Github Actions you would set the environment variables.
+# fallback is "false" if none is set. 
+sign=${global;p2.sign;${env;P2_SIGN;false}}
+key=${global;p2.sign_key;${env;P2_SIGN_KEY}}
+passphrase=${global;p2.sign_passphrase;${env;P2_SIGN_PASSPHRASE}}
+pubkey="${global;p2.pub_key;${env;P2_PUB_KEY}}"
+ 
+-export features.bnd; \
+    type=p2; \
+    name=org.bndtools.p2.jar;\
+    sign=${sign};\
+    sign_key=${key};\
+    sign_passphrase=${passphrase};\
+    sign_pubkey=${pubkey};\
