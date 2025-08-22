@@ -39,9 +39,11 @@ pluginnames: ${-dependson},\
 
 plugins: ${map;repo;${template;pluginnames;${@};latest}}
 
--includeresource: ${target}/p2
 -resourceonly: true
-#
-# The p2 tasks must be run from the gradle build
-#
--fixupmessages.p2: "Input file does not exist*${target}/p2";is:=warning;replace:="The ${target}/p2 directory must be created with the gradle build."
+
+-maven-release: 
+-buildrepo: 
+-releaserepo: 
+-export features.bnd; \
+    type=p2; \
+    name=org.bndtools.p2.jar
