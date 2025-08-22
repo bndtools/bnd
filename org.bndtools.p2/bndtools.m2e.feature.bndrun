@@ -1,0 +1,15 @@
+Bundle-Name:    Bndtools m2e
+Bundle-Description:       m2e integration for Bndtools
+
+
+Bundle-Category bndtools
+
+Require-Capability \
+    feature;name=org.eclipse.m2e.feature;version=2.0.0, \
+    feature;name=bndtools.main.feature
+
+
+-runbundles \
+    bndtools.m2e, \
+    biz.aQute.bnd.maven
+
