@@ -1,0 +1,33 @@
+Bundle-Name:            Bndtools
+Bundle-Description:     OSGi Development Tools for Eclipse based on bnd.
+Bundle-Category         bndtools
+
+Require-Capability \
+    feature;name=org.eclipse.platform;version=4.25.0
+
+-runbundles \
+	biz.aQute.bnd.util, \
+	biz.aQute.bndlib, \
+	biz.aQute.repository, \
+	biz.aQute.resolve, \
+	bndtools.api, \
+	bndtools.core, \
+	bndtools.core.services, \
+	bndtools.builder, \
+	bndtools.jareditor, \
+	bndtools.release, \
+	biz.aQute.bnd.embedded-repo, \
+	org.bndtools.headless.build.manager, \
+	org.bndtools.headless.build.plugin.ant, \
+	org.bndtools.headless.build.plugin.gradle, \
+	org.bndtools.launch, \
+	org.bndtools.remoteinstall, \
+	org.bndtools.versioncontrol.ignores.manager, \
+	org.bndtools.versioncontrol.ignores.plugin.git, \
+	org.bndtools.templating, \
+	org.bndtools.templating.gitrepo, \
+	org.slf4j.api, \
+	org.osgi.service.coordinator, \
+	org.osgi.service.repository, \
+	org.osgi.util.function, \
+	org.osgi.util.promise
