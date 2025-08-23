@@ -46,8 +46,9 @@ plugins: ${map;repo;${template;pluginnames;${@};latest}}
 #
 -fixupmessages.p2: "Input file does not exist*${target}/p2";is:=warning;replace:="The ${target}/p2 directory must be created with the gradle build."
 
+-maven-release: 
 -buildrepo: 
--fixupmessages: The JAR is empty:
+-releaserepo: 
 -export features.bnd; \
     type=p2; \
-    name=bndtools.jar
+    name=org.bndtools.p2.jar
