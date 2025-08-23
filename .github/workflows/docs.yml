@@ -63,7 +63,7 @@ jobs:
     - name: Upload artifact
       id: deployment
       #  uploads an artifact from the './docs/_site' directory
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v4
       with:
           path: docs/_site
 
