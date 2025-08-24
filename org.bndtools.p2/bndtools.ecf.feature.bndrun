@@ -1,6 +1,7 @@
 Bundle-Name:            Bndtools ECF Remote Services
 Bundle-Description:     ECF Remote Services integration for Bndtools
 Bundle-Category         bndtools
+Bundle-Copyright: Copyright Composent, Inc. others, 2025
 
 Require-Capability \
     feature;name=org.eclipse.ecf.core.feature,\
