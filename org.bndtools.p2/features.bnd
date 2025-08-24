@@ -10,38 +10,38 @@ Bundle-License:  \
 \n\
    1. Definitions.\n\
 \n\
-      &quot;License&quot; shall mean the terms and conditions for use, reproduction,\n\
+      'License' shall mean the terms and conditions for use, reproduction,\n\
       and distribution as defined by Sections 1 through 9 of this document.\n\
 \n\
-      &quot;Licensor&quot; shall mean the copyright owner or entity authorized by\n\
+      'Licensor' shall mean the copyright owner or entity authorized by\n\
       the copyright owner that is granting the License.\n\
 \n\
-      &quot;Legal Entity&quot; shall mean the union of the acting entity and all\n\
+      'Legal Entity' shall mean the union of the acting entity and all\n\
       other entities that control, are controlled by, or are under common\n\
       control with that entity. For the purposes of this definition,\n\
-      &quot;control&quot; means (i) the power, direct or indirect, to cause the\n\
+      'control' means (i) the power, direct or indirect, to cause the\n\
       direction or management of such entity, whether by contract or\n\
       otherwise, or (ii) ownership of fifty percent (50%) or more of the\n\
       outstanding shares, or (iii) beneficial ownership of such entity.\n\
 \n\
-      &quot;You&quot; (or &quot;Your&quot;) shall mean an individual or Legal Entity\n\
+      'You' (or 'Your') shall mean an individual or Legal Entity\n\
       exercising permissions granted by this License.\n\
 \n\
-      &quot;Source&quot; form shall mean the preferred form for making modifications,\n\
+      'Source' form shall mean the preferred form for making modifications,\n\
       including but not limited to software source code, documentation\n\
       source, and configuration files.\n\
 \n\
-      &quot;Object&quot; form shall mean any form resulting from mechanical\n\
+      'Object' form shall mean any form resulting from mechanical\n\
       transformation or translation of a Source form, including but\n\
       not limited to compiled object code, generated documentation,\n\
       and conversions to other media types.\n\
 \n\
-      &quot;Work&quot; shall mean the work of authorship, whether in Source or\n\
+      'Work' shall mean the work of authorship, whether in Source or\n\
       Object form, made available under the License, as indicated by a\n\
       copyright notice that is included in or attached to the work\n\
       (an example is provided in the Appendix below).\n\
 \n\
-      &quot;Derivative Works&quot; shall mean any work, whether in Source or Object\n\
+      'Derivative Works' shall mean any work, whether in Source or Object\n\
       form, that is based on (or derived from) the Work and for which the\n\
       editorial revisions, annotations, elaborations, or other modifications\n\
       represent, as a whole, an original work of authorship. For the purposes\n\
@@ -49,21 +49,21 @@ Bundle-License:  \
       separable from, or merely link (or bind by name) to the interfaces of,\n\
       the Work and Derivative Works thereof.\n\
 \n\
-      &quot;Contribution&quot; shall mean any work of authorship, including\n\
+      'Contribution' shall mean any work of authorship, including\n\
       the original version of the Work and any modifications or additions\n\
       to that Work or Derivative Works thereof, that is intentionally\n\
       submitted to Licensor for inclusion in the Work by the copyright owner\n\
       or by an individual or Legal Entity authorized to submit on behalf of\n\
-      the copyright owner. For the purposes of this definition, &quot;submitted&quot;\n\
+      the copyright owner. For the purposes of this definition, 'submitted'\n\
       means any form of electronic, verbal, or written communication sent\n\
       to the Licensor or its representatives, including but not limited to\n\
       communication on electronic mailing lists, source code control systems,\n\
       and issue tracking systems that are managed by, or on behalf of, the\n\
       Licensor for the purpose of discussing and improving the Work, but\n\
       excluding communication that is conspicuously marked or otherwise\n\
-      designated in writing by the copyright owner as &quot;Not a Contribution.&quot;\n\
+      designated in writing by the copyright owner as 'Not a Contribution.'\n\
 \n\
-      &quot;Contributor&quot; shall mean Licensor and any individual or Legal Entity\n\
+      'Contributor' shall mean Licensor and any individual or Legal Entity\n\
       on behalf of whom a Contribution has been received by Licensor and\n\
       subsequently incorporated within the Work.\n\
 \n\
@@ -107,7 +107,7 @@ Bundle-License:  \
           excluding those notices that do not pertain to any part of\n\
           the Derivative Works; and\n\
 \n\
-      (d) If the Work includes a &quot;NOTICE&quot; text file as part of its\n\
+      (d) If the Work includes a 'NOTICE' text file as part of its\n\
           distribution, then any Derivative Works that You distribute must\n\
           include a readable copy of the attribution notices contained\n\
           within such NOTICE file, excluding those notices that do not\n\
@@ -146,7 +146,7 @@ Bundle-License:  \
 \n\
    7. Disclaimer of Warranty. Unless required by applicable law or\n\
       agreed to in writing, Licensor provides the Work (and each\n\
-      Contributor provides its Contributions) on an &quot;AS IS&quot; BASIS,\n\
+      Contributor provides its Contributions) on an 'AS IS' BASIS,\n\
       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n\
       implied, including, without limitation, any warranties or conditions\n\
       of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n\
@@ -182,24 +182,24 @@ Bundle-License:  \
    APPENDIX: How to apply the Apache License to your work.\n\
 \n\
       To apply the Apache License to your work, attach the following\n\
-      boilerplate notice, with the fields enclosed by brackets &quot;{}&quot;\n\
+      boilerplate notice, with the fields enclosed by brackets '{}'\n\
       replaced with your own identifying information. (Don&apos;t include\n\
       the brackets!)  The text should be enclosed in the appropriate\n\
       comment syntax for the file format. We also recommend that a\n\
       file or class name and description of purpose be included on the\n\
-      same &quot;printed page&quot; as the copyright notice for easier\n\
+      same 'printed page' as the copyright notice for easier\n\
       identification within third-party archives.\n\
 \n\
    Copyright {yyyy} {name of copyright owner}\n\
 \n\
-   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);\n\
+   Licensed under the Apache License, Version 2.0 (the 'License');\n\
    you may not use this file except in compliance with the License.\n\
    You may obtain a copy of the License at\n\
 \n\
        http://www.apache.org/licenses/LICENSE-2.0\n\
 \n\
    Unless required by applicable law or agreed to in writing, software\n\
-   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,\n\
+   distributed under the License is distributed on an 'AS IS' BASIS,\n\
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n\
    See the License for the specific language governing permissions and\n\
    limitations under the License.\n\
@@ -209,12 +209,12 @@ Bundle-License:  \
         Eclipse Public License - v 2.0\n\
 \n\
     THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS ECLIPSE\n\
-    PUBLIC LICENSE (&quot;AGREEMENT&quot;). ANY USE, REPRODUCTION OR DISTRIBUTION\n\
+    PUBLIC LICENSE ('AGREEMENT'). ANY USE, REPRODUCTION OR DISTRIBUTION\n\
     OF THE PROGRAM CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.\n\
 \n\
 1. DEFINITIONS\n\
 \n\
-&quot;Contribution&quot; means:\n\
+'Contribution' means:\n\
 \n\
   a) in the case of the initial Contributor, the initial content\n\
      Distributed under this Agreement, and\n\
@@ -224,29 +224,29 @@ Bundle-License:  \
      ii) additions to the Program;\n\
   where such changes and/or additions to the Program originate from\n\
   and are Distributed by that particular Contributor. A Contribution\n\
-  &quot;originates&quot; from a Contributor if it was added to the Program by\n\
+  'originates' from a Contributor if it was added to the Program by\n\
   such Contributor itself or anyone acting on such Contributor's behalf.\n\
   Contributions do not include changes or additions to the Program that\n\
   are not Modified Works.\n\
 \n\
-&quot;Contributor&quot; means any person or entity that Distributes the Program.\n\
+'Contributor' means any person or entity that Distributes the Program.\n\
 \n\
-&quot;Licensed Patents&quot; mean patent claims licensable by a Contributor which\n\
+'Licensed Patents' mean patent claims licensable by a Contributor which\n\
 are necessarily infringed by the use or sale of its Contribution alone\n\
 or when combined with the Program.\n\
 \n\
-&quot;Program&quot; means the Contributions Distributed in accordance with this\n\
+'Program' means the Contributions Distributed in accordance with this\n\
 Agreement.\n\
 \n\
-&quot;Recipient&quot; means anyone who receives the Program under this Agreement\n\
+'Recipient' means anyone who receives the Program under this Agreement\n\
 or any Secondary License (as applicable), including Contributors.\n\
 \n\
-&quot;Derivative Works&quot; shall mean any work, whether in Source Code or other\n\
+'Derivative Works' shall mean any work, whether in Source Code or other\n\
 form, that is based on (or derived from) the Program and for which the\n\
 editorial revisions, annotations, elaborations, or other modifications\n\
 represent, as a whole, an original work of authorship.\n\
 \n\
-&quot;Modified Works&quot; shall mean any work in Source Code or other form that\n\
+'Modified Works' shall mean any work in Source Code or other form that\n\
 results from an addition to, deletion from, or modification of the\n\
 contents of the Program, including, for purposes of clarity any new file\n\
 in Source Code form that contains any contents of the Program. Modified\n\
@@ -255,14 +255,14 @@ interfaces, types, classes, structures, or files of the Program solely\n\
 in each case in order to link to, bind by name, or subclass the Program\n\
 or Modified Works thereof.\n\
 \n\
-&quot;Distribute&quot; means the acts of a) distributing or b) making available\n\
+'Distribute' means the acts of a) distributing or b) making available\n\
 in any manner that enables the transfer of a copy.\n\
 \n\
-&quot;Source Code&quot; means the form of a Program preferred for making\n\
+'Source Code' means the form of a Program preferred for making\n\
 modifications, including but not limited to software source code,\n\
 documentation source, and configuration files.\n\
 \n\
-&quot;Secondary License&quot; means either the GNU General Public License,\n\
+'Secondary License' means either the GNU General Public License,\n\
 Version 2.0, or any later versions of that license, including any\n\
 exceptions or additional permissions as identified by the initial\n\
 Contributor.\n\
@@ -355,7 +355,7 @@ Contributor.\n\
 \n\
 3.3 Contributors may not remove or alter any copyright, patent,\n\
 trademark, attribution notices, disclaimers of warranty, or limitations\n\
-of liability (&quot;notices&quot;) contained within the Program from any copy of\n\
+of liability ('notices') contained within the Program from any copy of\n\
 the Program which they Distribute, provided that Contributors may add\n\
 their own appropriate notices.\n\
 \n\
@@ -368,9 +368,9 @@ the Contributor who includes the Program in a commercial product\n\
 offering should do so in a manner which does not create potential\n\
 liability for other Contributors. Therefore, if a Contributor includes\n\
 the Program in a commercial product offering, such Contributor\n\
-(&quot;Commercial Contributor&quot;) hereby agrees to defend and indemnify every\n\
-other Contributor (&quot;Indemnified Contributor&quot;) against any losses,\n\
-damages and costs (collectively &quot;Losses&quot;) arising from claims, lawsuits\n\
+('Commercial Contributor') hereby agrees to defend and indemnify every\n\
+other Contributor ('Indemnified Contributor') against any losses,\n\
+damages and costs (collectively 'Losses') arising from claims, lawsuits\n\
 and other legal actions brought by a third party against the Indemnified\n\
 Contributor to the extent caused by the acts or omissions of such\n\
 Commercial Contributor in connection with its distribution of the Program\n\
@@ -397,7 +397,7 @@ those damages.\n\
 5. NO WARRANTY\n\
 \n\
 EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, AND TO THE EXTENT\n\
-PERMITTED BY APPLICABLE LAW, THE PROGRAM IS PROVIDED ON AN &quot;AS IS&quot;\n\
+PERMITTED BY APPLICABLE LAW, THE PROGRAM IS PROVIDED ON AN 'AS IS'\n\
 BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR\n\
 IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF\n\
 TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR\n\
@@ -469,10 +469,10 @@ No third-party beneficiary rights are created under this Agreement.\n\
 \n\
 Exhibit A - Form of Secondary Licenses Notice\n\
 \n\
-&quot;This Source Code may also be made available under the following \n\
+'This Source Code may also be made available under the following \n\
 Secondary Licenses when the conditions for such availability set forth \n\
 in the Eclipse Public License, v. 2.0 are satisfied: {name license(s),\n\
-version(s), and exceptions or additional permissions here}.&quot;\n\
+version(s), and exceptions or additional permissions here}.'\n\
 \n\
   Simply including a copy of this Agreement, including this Exhibit A\n\
   is not sufficient to license the Source Code under Secondary Licenses.\n\
