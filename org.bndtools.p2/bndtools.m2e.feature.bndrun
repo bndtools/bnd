@@ -1,6 +1,6 @@
 Bundle-Name:    Bndtools m2e
 Bundle-Description:       m2e integration for Bndtools
-
+Bundle-Copyright: Copyright Gregory Amerson others, 2016
 
 Bundle-Category bndtools
 
