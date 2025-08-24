@@ -15,7 +15,9 @@ Bundle-Copyright:       Copyright bndtools
 features        = \
         bndtools.main.feature.bndrun, \
         bndtools.m2e.feature.bndrun, \
-        bndtools.pde.feature.bndrun
+        bndtools.pde.feature.bndrun,\
+        bndtools.ecf.feature.bndrun
+        
 
 update          =   https://bndtools.jfrog.io/bndtools/update-latest
 update.label    =   Bndtools Update Site
@@ -23,5 +25,5 @@ update.label    =   Bndtools Update Site
 -categories \
     bndtools; \
         label = Bndtools; \
-        description = Bndtools, the incredible IDE for OSGi
+        description = Bndtools, OSGi Development Tools for Eclipse based on bnd.
         
