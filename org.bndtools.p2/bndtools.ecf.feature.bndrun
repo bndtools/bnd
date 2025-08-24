@@ -1,0 +1,17 @@
+Bundle-Name:            Bndtools ECF Remote Services
+Bundle-Description:     ECF Remote Services integration for Bndtools
+Bundle-Category         bndtools
+
+Require-Capability \
+    feature;name=org.eclipse.ecf.core.feature,\
+    feature;name=bndtools.main.feature,\
+    feature;name=org.eclipse.ecf.discovery.feature,\
+    feature;name=org.eclipse.ecf.discovery.jmdns.feature,\
+    feature;name=org.eclipse.ecf.osgi.services.feature,\
+    feature;name=org.eclipse.ecf.provider.generic.feature,\
+    feature;name=org.eclipse.ecf.provider.generic.remoteservice.feature,\
+    feature;name=org.eclipse.ecf.remoteservice.feature,\
+    feature;name=org.eclipse.ecf.remoteservice.sdk.bndtools.feature,\
+    feature;name=org.eclipse.ecf.sharedobject.feature
+    
+    
