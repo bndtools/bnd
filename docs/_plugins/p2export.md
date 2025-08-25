@@ -52,10 +52,7 @@ And last but not least, general header files.
     Bundle-License:  \
         ASL-2.0;\
             description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0";\
-            link="https://opensource.org/licenses/Apache-2.0", \
-        EPL-2.0;\
-            description="This program and the accompanying materials are made available under the terms of the Eclipse License, Version 2.0";\
-            link="https://opensource.org/licenses/EPL-2.0"
+            link="https://opensource.org/licenses/Apache-2.0"
             
     
     Bundle-DocURL:          https://bnd.bndtools.org/
@@ -64,6 +61,26 @@ And last but not least, general header files.
 
 
 These headers are inherited in the features and can be overridden.
+
+**Note on `Bundle-License` for long license texts:**
+
+License text typically must be included in full, which means they are very long and contain line breaks, double quotes and so on. This is hard to add to a `.bnd` header in a `description` property as above.
+
+In such cases a trick is to use the [${cat;license.txt}](/macros/cat.html) macro which can insert the content of a file.
+
+**Example:**
+
+```
+Bundle-License:  \
+    ASL-2.0;\
+        description="${cat;license.txt}";\
+        link="https://opensource.org/licenses/Apache-2.0"
+```
+
+This includes the content of the file `license.txt` (located next to `release.bndrun`) into the `description`.
+This works much better for complex license texts.
+
+Also note that a feature can just contain a single license. This is because the [P2 feature.xml](https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fmisc%2Ffeature_manifest.html) just allows a single license.
 
 ## Feature Definitions
 
@@ -78,7 +95,7 @@ The following headers can be used in the feature files.
 * `Bundle-Description` – A human readable description of the feature
 * `Bundle-DocUrl` – A URL to the documentation of the feature
 * `Bundle-Copyright` – The copyright
-* `Bundle-License` – The licenses
+* `Bundle-License` – The license
 * `Bundle-Category` – The category of the feature
 * `Bundle-Vendor` – The vendor will be used as the provider of the feature
 
