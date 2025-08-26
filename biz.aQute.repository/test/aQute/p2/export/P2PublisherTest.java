@@ -46,7 +46,9 @@ class P2PublisherTest {
 				Jar content = new Jar("content.jar", jar.getResource("content.jar")
 					.openInputStream());
 
-				Jar feature = new Jar("feature.jar", jar.getResource("features/bndtools.main.feature_7.0.0.jar")
+				Jar featureMain = new Jar("feature.jar", jar.getResource("features/bndtools.main.feature_7.0.0.jar")
+					.openInputStream());
+				Jar featurePde = new Jar("feature.jar", jar.getResource("features/bndtools.pde.feature_7.0.0.jar")
 					.openInputStream())) {
 
 				InputStream xml = content.getResource("content.xml")
@@ -55,19 +57,29 @@ class P2PublisherTest {
 				boolean validateXML = validateXML(xml, P2PublisherTest.class.getResourceAsStream("content-schema.xsd"));
 				assertTrue("P2 content.xml is invalid", validateXML);
 
-				InputStream xmlFeatureIs = feature.getResource("feature.xml")
+				InputStream xmlFeatureIs = featureMain.getResource("feature.xml")
 					.openInputStream();
 
 				String doctype = "<!DOCTYPE feature SYSTEM \"feature.dtd\">";
-				String xmlFeature = new String(xmlFeatureIs.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+				String xmlFeatureMain = new String(xmlFeatureIs.readAllBytes(),
+					java.nio.charset.StandardCharsets.UTF_8);
 
-				boolean validateXMLWithDTD = validateXMLWithDTD(doctype + "\n" + xmlFeature,
+				boolean validateXMLWithDTD = validateXMLWithDTD(doctype + "\n" + xmlFeatureMain,
 					P2PublisherTest.class.getResourceAsStream("feature.dtd"));
 				assertTrue("P2 bndtools.main.feature/feature.xml is invalid", validateXMLWithDTD);
 
-				String expected = Files.readString(p.getFile("expected-feature.xml")
+				String expectedMain = Files.readString(p.getFile("expected-feature.main.xml")
 					.toPath());
-				assertEquals("feature.xml does not match expected-feature.xml", expected, xmlFeature);
+				assertEquals("feature.xml does not match expected-feature.main.xml", expectedMain, xmlFeatureMain);
+
+				InputStream xmlFeaturePdeIs = featurePde.getResource("feature.xml")
+					.openInputStream();
+				String xmlFeaturePde = new String(xmlFeaturePdeIs.readAllBytes(),
+					java.nio.charset.StandardCharsets.UTF_8);
+
+				String expectedPde = Files.readString(p.getFile("expected-feature.pde.xml")
+					.toPath());
+				assertEquals("feature.xml does not match expected-feature.xml", expectedPde, xmlFeaturePde);
 			}
 		}
 	}

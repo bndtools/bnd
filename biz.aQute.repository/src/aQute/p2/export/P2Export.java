@@ -37,6 +37,7 @@ import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.collections.MultiMap;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
 import aQute.p2.export.P2.Artifact;
@@ -738,6 +739,7 @@ class P2Export {
 
 	private void doDescription(Tag f, IU feature) {
 		Tag description = new Tag(f, "description", feature.getDescription());
+		description.setCDATA();
 
 		String url = feature.getDescriptionUrl();
 		if (url != null)
@@ -760,15 +762,30 @@ class P2Export {
 				String link = v.get("link");
 				String description = v.get("description");
 
+				// better than description
+				// for large files
+				String licensefilename = v.get("file");
+
 				license.addAttribute("url", link != null ? link : k);
 				license.addAttribute("uri", link != null ? link : k);
-				license.addContent(description != null ? description : v.toString());
+
+				if (licensefilename != null) {
+					try {
+						license.addContent(IO.collect(bndrun.getFile(licensefilename)));
+					} catch (IOException e) {
+						license.addContent("Error: Cannot read license file: " + licensefilename);
+					}
+				} else {
+					license.addContent(description != null ? description : v.toString());
+				}
 
 			});
 			size(licenses);
 		}
 		if (unit.getCopyright() != null) {
-			new Tag(u, "copyright", unit.getCopyright());
+			Tag copyright = new Tag(u, "copyright", unit.getCopyright());
+			copyright.setCDATA();
+
 		}
 
 	}
@@ -779,7 +796,8 @@ class P2Export {
 	private void doLegalFeature(Tag f, IU feature) {
 
 		if (feature.getCopyright() != null) {
-			new Tag(f, "copyright", feature.getCopyright());
+			Tag copyright = new Tag(f, "copyright", feature.getCopyright());
+			copyright.setCDATA();
 		}
 
 		if (feature.getLicense() != null) {
@@ -796,8 +814,21 @@ class P2Export {
 			String link = v.get("link");
 			String description = v.get("description");
 
+			// better than description
+			// for large files
+			String licensefilename = v.get("file");
+
 			license.addAttribute("url", link != null ? link : k);
-			license.addContent(description != null ? description : v.toString());
+
+			if (licensefilename != null) {
+				try {
+					license.addContent(IO.collect(bndrun.getFile(licensefilename)));
+				} catch (IOException e) {
+					license.addContent("Error: Cannot read license file: " + licensefilename);
+				}
+			} else {
+				license.addContent(description != null ? description : v.toString());
+			}
 		}
 	}
 

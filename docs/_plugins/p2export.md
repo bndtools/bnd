@@ -66,21 +66,21 @@ These headers are inherited in the features and can be overridden.
 
 License text typically must be included in full, which means they are very long and contain line breaks, double quotes and so on. This is hard to add to a `.bnd` header in a `description` property as above.
 
-In such cases a trick is to use the [${cat;license.txt}](/macros/cat.html) macro which can insert the content of a file.
+In such cases use the `file` property which expects the name of a file relative to the current `release.bndrun` containing a long license text.
 
 **Example:**
 
 ```
 Bundle-License:  \
     ASL-2.0;\
-        description="${cat;license.txt}";\
+        file="license.txt";\
         link="https://opensource.org/licenses/Apache-2.0"
 ```
 
-This includes the content of the file `license.txt` (located next to `release.bndrun`) into the `description`.
+This includes the content of the file `license.txt` (located next to `release.bndrun`) into the `<license>` tags in the resulting feature.xml (or `content.xml`).
 This works much better for complex license texts.
 
-Also note that a feature can just contain a single license. This is because the [P2 feature.xml](https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fmisc%2Ffeature_manifest.html) just allows a single license.
+Also note that a feature can just contain a single license. This is because the [P2 feature.xml](https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fmisc%2Ffeature_manifest.html) just allows a single license. While on the other hand the `content.xml` can contain multiple `<license>` entries wrapped by a `<licenses>` tag.
 
 ## Feature Definitions
 
