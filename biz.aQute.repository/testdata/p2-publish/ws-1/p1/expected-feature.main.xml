@@ -1,4 +1,7 @@
-SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)
+<feature id="bndtools.main.feature" version="7.0.0" label="Bndtools" provider-name="bnd">
+  <description url="https://bnd.bndtools.org/"><![CDATA[OSGi Development Tools for Eclipse based on bnd.]]></description>
+  <copyright><![CDATA[Copyright bndtools]]></copyright>
+  <license url="https://opensource.org/licenses/Apache-2.0"><![CDATA[SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)
 
                                  Apache License
                            Version 2.0, January 2004
@@ -480,4 +483,33 @@ version(s), and exceptions or additional permissions here}."
   file in a relevant directory) where a recipient would be likely to
   look for such a notice.
 
-  You may add additional accurate notices of copyright ownership.
+  You may add additional accurate notices of copyright ownership.]]></license>
+  <requires>
+    <import feature="org.eclipse.platform.feature.group" version="4.25.0" match="equivalent"/>
+  </requires>
+  <plugin id="biz.aQute.bnd.embedded-repo" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="biz.aQute.bnd.util" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="biz.aQute.bndlib" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="biz.aQute.repository" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="biz.aQute.resolve" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="bndtools.api" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="bndtools.builder" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="bndtools.core" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="bndtools.core.services" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="bndtools.jareditor" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="bndtools.release" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.headless.build.manager" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.headless.build.plugin.ant" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.headless.build.plugin.gradle" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.launch" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.remoteinstall" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.templating" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.templating.gitrepo" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.versioncontrol.ignores.manager" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.bndtools.versioncontrol.ignores.plugin.git" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
+  <plugin id="org.osgi.service.coordinator" version="[1.0.2.201505202024,1.0.2.201505202024]" unpack="false"/>
+  <plugin id="org.osgi.service.repository" version="[1.1.0.201505202024,1.1.0.201505202024]" unpack="false"/>
+  <plugin id="org.osgi.util.function" version="[1.2.0.202109301733,1.2.0.202109301733]" unpack="false"/>
+  <plugin id="org.osgi.util.promise" version="[1.2.0.202109301733,1.2.0.202109301733]" unpack="false"/>
+  <plugin id="org.slf4j.api" version="[1.7.30.v20200204-2150,1.7.30.v20200204-2150]" unpack="false"/>
+</feature>

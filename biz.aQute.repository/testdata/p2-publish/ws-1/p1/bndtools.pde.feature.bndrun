@@ -2,6 +2,11 @@ Bundle-Name:            Bndtools PDE
 Bundle-Description:     PDE integration for Bndtools
 Bundle-Category         bndtools
 
+Bundle-License:  \
+    ASL-2.0;\
+        description="Simple license description";\
+        link="https://opensource.org/licenses/Apache-2.0"
+
 Require-Capability \
     feature;name=org.eclipse.pde;version=3.14.1300, \
     feature;name=bndtools.main.feature 
