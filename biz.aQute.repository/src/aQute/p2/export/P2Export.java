@@ -399,6 +399,13 @@ class P2Export {
 	}
 
 	private Artifact generateFeature(Feature feature) throws Exception {
+		// Feature schema: It was a bit hard to find:
+		// https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Fguide%2Fproduct_def_feature.htm
+		// and
+		// https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fmisc%2Ffeature_manifest.html
+		// and
+		// https://archive.eclipse.org/eclipse/downloads/documentation/2.0/html/plugins/org.eclipse.platform.doc.isv/reference/misc/feature_archive.html
+
 
 		Tag f = new Tag("feature");
 		f.addAttribute("id", feature.id.getBsn());
@@ -407,7 +414,7 @@ class P2Export {
 		f.addAttribute("provider-name", provider);
 
 		doDescription(f, feature);
-		doLegal(f, feature);
+		doLegalFeature(f, feature);
 
 		Tag url = new Tag("url");
 
@@ -737,23 +744,61 @@ class P2Export {
 			description.addAttribute("url", url);
 	}
 
-	private void doLegal(Tag f, IU feature) {
-		if (feature.getLicense() != null) {
-			Tag licenses = new Tag(f, "licenses");
-			Parameters ls = new Parameters(feature.getLicense());
+	/**
+	 * Adds license information for a <unit> inside content.xml (Note: this is
+	 * different than {@link #doLegalFeature(Tag, IU)})
+	 */
+	private void doLegal(Tag u, IU unit) {
+		if (unit.getLicense() != null) {
+			Tag licenses = new Tag(u, "licenses");
+			Parameters ls = new Parameters(unit.getLicense());
 
 			ls.forEach((k, v) -> {
 				Tag license = new Tag(licenses, "license");
-				license.addAttribute("uri", k);
-				license.addAttribute("url", k);
-				license.addContent(v.toString());
+				license.setCDATA();
+
+				String link = v.get("link");
+				String description = v.get("description");
+
+				license.addAttribute("url", link != null ? link : k);
+				license.addAttribute("uri", link != null ? link : k);
+				license.addContent(description != null ? description : v.toString());
+
 			});
 			size(licenses);
 		}
+		if (unit.getCopyright() != null) {
+			new Tag(u, "copyright", unit.getCopyright());
+		}
+
+	}
+
+	/**
+	 * Adds license information inside feature.xml
+	 */
+	private void doLegalFeature(Tag f, IU feature) {
+
 		if (feature.getCopyright() != null) {
 			new Tag(f, "copyright", feature.getCopyright());
 		}
 
+		if (feature.getLicense() != null) {
+			Tag license = new Tag(f, "license");
+			license.setCDATA();
+
+			Parameters ls = new Parameters(feature.getLicense());
+			Entry<String, Attrs> first = ls.stream()
+				.findFirst()
+				.orElse(null);
+			String k = first.getKey();
+			Attrs v = first.getValue();
+
+			String link = v.get("link");
+			String description = v.get("description");
+
+			license.addAttribute("url", link != null ? link : k);
+			license.addContent(description != null ? description : v.toString());
+		}
 	}
 
 	private BundleId getFeatureId(Processor definition) {
