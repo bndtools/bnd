@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
 import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -48,14 +46,12 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 	private static final String			excluded			= " <excluded>";
 	private static final ImageDescriptor	exportedIcon		= Icons.desc("icons/plus-decorator.png");
 	private static final ImageDescriptor	excludedIcon		= Icons.desc("icons/excluded_ovr.gif");
-	private static final String				MARKER_PREFIX		= "Undeclared package(s)";
 
 	@Override
 	public void decorate(Object element, IDecoration decoration) {
 		try {
 
 			if (element instanceof IJavaProject) {
-				// Optional: treat IJavaProject like IProject
 				IProject project = ((IJavaProject) element).getProject();
 				if (!project.isAccessible()) {
 					return; // project is closed or deleted
@@ -66,10 +62,7 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
 				if (excluded.equals(text)) {
 					decoration.addOverlay(excludedIcon);
-				} else {
-					decoration.addOverlay(exportedIcon);
 				}
-				decoration.addSuffix(text);
 				return;
 			}
 
@@ -87,6 +80,8 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 				}
 				if (excluded.equals(text)) {
 					decoration.addOverlay(excludedIcon);
+					decoration.addSuffix(text + " from bundle export");
+					return;
 				} else {
 					decoration.addOverlay(exportedIcon);
 				}
@@ -204,18 +199,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 		if (project == null || !project.isAccessible())
 			return;
 
-		// Remove our old markers, just in case.
-		IMarker[] existing = project.findMarkers(BndtoolsConstants.MARKER_BND_PATH_PROBLEM, true,
-			IResource.DEPTH_ZERO);
-		if (existing.length > 0) {
-			for (IMarker iMarker : existing) {
-				Object msgAttr = iMarker.getAttribute(IMarker.MESSAGE);
-				if (msgAttr instanceof String msg && msg.startsWith(MARKER_PREFIX)) {
-					iMarker.delete();
-				}
-			}
-		}
-
 		List<String> offendingPackages = offendingPackages(project);
 
 		if (offendingPackages.isEmpty()) {
@@ -225,7 +208,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 		}
 
 		project.setPersistentProperty(packageDecoratorKey, excluded);
-		createMarker(project, offendingPackages);
 		Display display = PlatformUI.getWorkbench()
 			.getDisplay();
 		SWTConcurrencyUtil.execForDisplay(display, true, () -> PlatformUI.getWorkbench()
@@ -260,16 +242,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
 		Collections.sort(result);
 		return result;
-	}
-
-	private static void createMarker(IProject project, List<String> pkgNames) throws CoreException {
-		IMarker marker = project.createMarker(BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
-
-		marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-		marker.setAttribute(IMarker.MESSAGE, MARKER_PREFIX + " (" + pkgNames.size() + ") " + pkgNames
-			+ " Add them to -privatepackage or Export-Package in bnd.bnd to avoid resolution or runtime problems.");
-		marker.setAttribute(IMarker.LOCATION, project.getName());
-		marker.setAttribute(IMarker.SOURCE_ID, BndtoolsConstants.CORE_PLUGIN_ID);
 	}
 
 }
