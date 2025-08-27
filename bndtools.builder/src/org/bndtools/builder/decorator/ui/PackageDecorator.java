@@ -106,9 +106,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 			return; // project is not a java project
 		}
 		boolean changed = false;
-		boolean addProjectDecorator = false;
-		boolean removeProjectDecorator = false;
-
 
 		IClasspathEntry[] cpes = new IClasspathEntry[0];
 		try {
@@ -175,8 +172,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 							.containsFQN(pkgName)) {
 							if (!excluded.equals(text)) {
 								pkgResource.setPersistentProperty(packageDecoratorKey, excluded);
-								// createMarker(project, pkgResource, pkgName);
-								addProjectDecorator = true;
 								changed = true;
 							}
 							continue;
@@ -186,7 +181,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 					// Clear decoration
 					if (text != null) {
 						pkgResource.setPersistentProperty(packageDecoratorKey, null);
-						removeProjectDecorator = true;
 						changed = true;
 					}
 				}
@@ -195,13 +189,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
 		// If decoration change, update display
 		if (changed) {
-
-			if (addProjectDecorator) {
-				project.setPersistentProperty(packageDecoratorKey, excluded);
-			}
-			if (removeProjectDecorator) {
-				project.setPersistentProperty(packageDecoratorKey, null);
-			}
 
 			Display display = PlatformUI.getWorkbench()
 				.getDisplay();
@@ -218,7 +205,7 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 			return;
 
 		// Remove our old markers, just in case.
-		IMarker[] existing = project.findMarkers(BndtoolsConstants.MARKER_BND_PATH_PROBLEM, false,
+		IMarker[] existing = project.findMarkers(BndtoolsConstants.MARKER_BND_PATH_PROBLEM, true,
 			IResource.DEPTH_ZERO);
 		if (existing.length > 0) {
 			for (IMarker iMarker : existing) {
@@ -232,10 +219,19 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 		List<String> offendingPackages = offendingPackages(project);
 
 		if (offendingPackages.isEmpty()) {
+			// reset project decorator
+			project.setPersistentProperty(packageDecoratorKey, null);
 			return;
 		}
 
+		project.setPersistentProperty(packageDecoratorKey, excluded);
 		createMarker(project, offendingPackages);
+		Display display = PlatformUI.getWorkbench()
+			.getDisplay();
+		SWTConcurrencyUtil.execForDisplay(display, true, () -> PlatformUI.getWorkbench()
+			.getDecoratorManager()
+			.update(packageDecoratorId));
+
 	}
 
 	private static List<String> offendingPackages(IProject project) throws CoreException {
