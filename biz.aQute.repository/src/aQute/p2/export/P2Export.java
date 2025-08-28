@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ class P2Export {
 		this.name = options.getOrDefault("name", bndrun.getName()
 			.replaceAll("\\.bndrun$", ".jar"));
 		this.update = bndrun.get("update");
-		this.updateLabel = bndrun.getProperty("update", "Update");
+		this.updateLabel = bndrun.getProperty("update.label", "Update");
 		this.provider = bndrun.getProperty("Bundle-Vendor", "bnd");
 	}
 
@@ -158,8 +159,10 @@ class P2Export {
 			"p2.timestamp", System.currentTimeMillis(), //
 			"p2.compressed", true);
 
+		Set<String> addedUpdateUrls = new HashSet<>();
 		Tag references = new Tag(content, "references");
 		if (update != null) {
+			addedUpdateUrls.add(update);
 			new Tag(references, "repository")//
 				.addAttribute("uri", update)
 				.addAttribute("url", update)
@@ -171,6 +174,29 @@ class P2Export {
 				.addAttribute("type", 0)
 				.addAttribute("options", 0);
 		}
+
+		p2.content.units.stream()
+			.distinct()
+			.sorted()
+			.forEach(iu -> {
+
+				if (iu instanceof Feature f) {
+					if (f.update != null && addedUpdateUrls.add(f.update)) {
+						new Tag(references, "repository")//
+							.addAttribute("uri", f.update)
+							.addAttribute("url", f.update)
+							.addAttribute("type", 1)
+							.addAttribute("options", 1);
+						new Tag(references, "repository")//
+							.addAttribute("uri", f.update)
+							.addAttribute("url", f.update)
+							.addAttribute("type", 0)
+							.addAttribute("options", 1);
+					}
+
+				}
+			});
+
 		size(references);
 
 		Tag units = new Tag(content, "units");
@@ -417,12 +443,13 @@ class P2Export {
 		doDescription(f, feature);
 		doLegalFeature(f, feature);
 
-		Tag url = new Tag("url");
+		Tag url = new Tag(f, "url");
 
-		if (update != null) {
+		if (feature.update != null) {
 			Tag tUpdate = new Tag(url, "update");
-			if (updateLabel != null)
-				tUpdate.addAttribute("label", updateLabel);
+			tUpdate.addAttribute("url", feature.update);
+			if (feature.updateLabel != null)
+				tUpdate.addAttribute("label", feature.updateLabel);
 		}
 
 		Tag requires = new Tag(f, "requires");
@@ -570,7 +597,8 @@ class P2Export {
 				parseRequired(requires, definition, defaultRange.toString());
 				parseProvided(provides, definition);
 
-				Feature feature = new Feature(featureId, definition, provides, requires, definition.get("-p2.plugin"));
+				Feature feature = new Feature(featureId, definition, provides, requires, definition.get("-p2.plugin"),
+					definition.get("update"), definition.get("update.label"));
 				units.add(feature);
 
 				Artifact art = generateFeature(feature);

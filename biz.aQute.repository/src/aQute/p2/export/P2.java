@@ -260,13 +260,18 @@ class P2 {
 		final BundleId	groupId;
 		final BundleId	jarId;
 		final String	plugin;
+		final String	update;
+		final String	updateLabel;
 
-		Feature(BundleId id, Domain properties, List<Provided> provides, List<Required> requires, String plugin) {
+		Feature(BundleId id, Domain properties, List<Provided> provides, List<Required> requires, String plugin,
+			String updateSiteUrl, String updateLabel) {
 			super(id, properties, provides, requires);
 			this.plugin = plugin;
 			this.requires.addAll(requires);
 			this.groupId = getBundleId(id.getBsn() + ".feature.group", id.getVersion());
 			this.jarId = getBundleId(id.getBsn() + ".feature.jar", id.getVersion());
+			this.update = updateSiteUrl;
+			this.updateLabel = updateLabel;
 		}
 
 		String getProvider() {
