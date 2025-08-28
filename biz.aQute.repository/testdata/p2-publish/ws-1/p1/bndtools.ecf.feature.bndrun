@@ -1,0 +1,20 @@
+Bundle-Name:            Bndtools ECF Remote Services
+Bundle-Description:     ECF Remote Services integration for Bndtools
+Bundle-Category         bndtools
+Bundle-Copyright: Copyright Composent, Inc. others, 2025
+update: https://download.eclipse.org/rt/ecf/latest/site.p2/
+update.label: ECF Update Site
+
+Require-Capability \
+    feature;name=org.eclipse.ecf.core.feature;version="[0.0.0,1000)",\
+    feature;name=bndtools.main.feature,\
+    feature;name=org.eclipse.ecf.discovery.feature;version="[0.0.0,1000)",\
+    feature;name=org.eclipse.ecf.discovery.jmdns.feature;version="[0.0.0,1000)",\
+    feature;name=org.eclipse.ecf.osgi.services.feature;version="[0.0.0,1000)",\
+    feature;name=org.eclipse.ecf.provider.generic.feature;version="[0.0.0,1000)",\
+    feature;name=org.eclipse.ecf.provider.generic.remoteservice.feature;version="[0.0.0,1000)",\
+    feature;name=org.eclipse.ecf.remoteservice.feature;version="[0.0.0,1000)",\
+    feature;name=org.eclipse.ecf.remoteservice.sdk.bndtools.feature;version="[0.0.0,1000)",\
+    feature;name=org.eclipse.ecf.sharedobject.feature;version="[0.0.0,1000)"
+    
+    
