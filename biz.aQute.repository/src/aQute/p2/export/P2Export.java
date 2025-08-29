@@ -41,6 +41,7 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
+import aQute.maven.nexus.provider.Signer;
 import aQute.p2.export.P2.Artifact;
 import aQute.p2.export.P2.Artifacts;
 import aQute.p2.export.P2.Bundle;
@@ -68,6 +69,7 @@ class P2Export {
 	final String				update;
 	final String				updateLabel;
 	final String				name;
+	private String				passphrase;
 
 	/**
 	 * Publisher
@@ -83,6 +85,7 @@ class P2Export {
 		this.update = bndrun.get("update");
 		this.updateLabel = bndrun.getProperty("update.label", "Update");
 		this.provider = bndrun.getProperty("Bundle-Vendor", "bnd");
+		this.passphrase = options.get("passphrase");
 	}
 
 	Map.Entry<String, Resource> generate() throws IOException {
@@ -133,12 +136,20 @@ class P2Export {
 				.addAttribute("id", a.iu.id.getBsn())
 				.addAttribute("version", a.iu.id.getVersion());
 
-			properties(artifact, //
+
+			Tag properties = properties(artifact, //
 				"artifact.size", a.length, //
 				"download.size", a.length, //
 				"download.md5", a.md5(), //
 				"download.checksum.md5", a.md5(), //
 				"download.checksum.sha-256", a.sha256());
+
+			String signature = sign(a, bndrun.getProperty("gpg", "gpg"), passphrase);
+			if (signature != null) {
+				//System.out.println("pgp.signatures: " + a.resource + ": " + signature);
+				new Tag(properties, "property").addAttribute("name", "pgp.signatures")
+					.addAttribute("value", signature);
+			}
 
 			jar.putResource(a.getPath(), a.resource);
 		}
@@ -147,6 +158,24 @@ class P2Export {
 
 		return wrap("artifacts.jar", "artifacts.xml", repository);
 	}
+
+	private static String sign(Artifact a, String cmd, String passphrase) {
+		if (passphrase == null) {
+			return null;
+		}
+
+		if (a.resource instanceof FileResource res) {
+			File archiveFile = res.getFile();
+			Signer signer = new Signer(passphrase, cmd);
+			try {
+				return new String(signer.sign(archiveFile));
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
 
 	private JarResource generateContent(P2 p2) {
 

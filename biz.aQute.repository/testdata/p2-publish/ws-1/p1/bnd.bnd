@@ -1,6 +1,7 @@
 -fixupmessages: The JAR is empty:
 -export features.bnd; \
     type=p2; \
-    name=bndtools.jar
+    name=bndtools.jar;\
+    passphrase=foo
 
 

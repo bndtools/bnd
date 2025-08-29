@@ -20,6 +20,7 @@ features        = \
 update          =   https://bndtools.jfrog.io/bndtools/update-latest
 update.label    =   Bndtools Update Site
 
+
 -categories \
     bndtools; \
         label = Bndtools; \
