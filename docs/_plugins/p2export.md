@@ -22,6 +22,44 @@ looks as follows:
 
 With this instruction, the plugin exports a p2 repository named "MyReleaseRepo.jar" containing the specified features, plugins, and metadata. You can also include additional requirements and customize various aspects of the repository using Bnd's capabilities. The key is the master release bndrun file, the specified type is for a p2 repository. 
 
+
+## P2 Signing using PGP signatures
+
+The p2 infrastructure analyzes the integrity and trustworthiness of artifacts during provisioning and installation, to guarantee artifact integrity, and also to help users decide whether or not to trust a particular artifact source (see [Using PGP Signatures in p2](https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Fguide%2Fp2_pgp.html)). 
+
+The P2Export supports signing via `gpg` and can be enabled with the `sign=true` option. 
+Without any further options this will sign each artifact using `gpg` (must be installed on the machine).
+
+Example:
+
+```
+
+# key (mandatory - name of the key), 
+# passphrase (optional passphrase for the pgp key)
+# pubkey (mandatory: the public key - read publickey file e.g. from ~./bnd/ folder)
+# below 
+
+key=${global;p2.sign_key;${env;P2_SIGN_KEY}}
+passphrase=${global;p2.sign_passphrase;${env;P2_SIGN_PASSPHRASE}}
+pubkey="${cat;~/.bnd/p2key.pub}"
+
+-export features.bnd; \
+    type=p2; \
+    name=bndtools.jar;\
+    sign=true;\
+    sign_key=${key};\
+    sign_pubkey=${pubkey};\
+    sign_passphrase=${passphrase}
+```
+
+In the example above the idea is to first check global variables in `~./bnd/settings.json` (via `${global}` macro) and fallback to environment (via `${env}` macro) if not found.  
+
+For example if you are using Github Actions for your build you would set the environment variables via Github Secret variables.
+
+
+
+## Defining the features
+
 In the `release.bndrun` file you can specify the following aspects:
 
 A list of features that needs to be included in this release under the macro `features`:
