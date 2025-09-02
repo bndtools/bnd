@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -962,6 +963,24 @@ class P2Export {
 				return new String(signer.sign(archiveFile));
 			} catch (Exception e) {
 				return null;
+			}
+		}
+		else if (a.resource instanceof JarResource res) {
+			File tmp = null;
+			try {
+				tmp = Files.createTempFile(res.getJar()
+					.getName(), "")
+					.toFile();
+
+				res.write(tmp);
+				return new String(signer.sign(tmp));
+			} catch (Exception e) {
+				return null;
+			}
+			finally {
+				if (tmp != null) {
+					IO.delete(tmp);
+				}
 			}
 		}
 		return null;
