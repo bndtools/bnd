@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +53,7 @@ import aQute.p2.export.P2.IUType;
 import aQute.p2.export.P2.Provided;
 import aQute.p2.export.P2.Required;
 import aQute.p2.export.P2.Rule;
+import aQute.p2.provider.Signer;
 
 /**
  * An instance of this class is created for each p2 export.
@@ -68,6 +70,10 @@ class P2Export {
 	final String				update;
 	final String				updateLabel;
 	final String				name;
+	private final boolean		sign;
+	private final String		sign_key;
+	private final String		sign_passphrase;
+	private final String		sign_pubkey;
 
 	/**
 	 * Publisher
@@ -83,6 +89,10 @@ class P2Export {
 		this.update = bndrun.get("update");
 		this.updateLabel = bndrun.getProperty("update.label", "Update");
 		this.provider = bndrun.getProperty("Bundle-Vendor", "bnd");
+		this.sign = Project.isTrue(options.get("sign"));
+		this.sign_key = options.get("sign_key");
+		this.sign_passphrase = options.get("sign_passphrase");
+		this.sign_pubkey = options.get("sign_pubkey");
 	}
 
 	Map.Entry<String, Resource> generate() throws IOException {
@@ -94,6 +104,7 @@ class P2Export {
 		}
 
 		Jar jar = new Jar(name);
+		jar.setReproducible("true");
 		jar.setDoNotTouchManifest();
 		jar.setManifest((Manifest) null);
 		jar.putResource("content.jar", generateContent(p2));
@@ -121,6 +132,8 @@ class P2Export {
 		size(mappings);
 
 		Tag artifacts = new Tag(repository, "artifacts");
+		Signer signer = createSigner();
+		String pgp_publicKeys = signer != null ? this.sign_pubkey : null;
 
 		for (Artifact a : p2.artifacts.artifacts) {
 			String classifier = a.iu.getRefType();
@@ -133,12 +146,16 @@ class P2Export {
 				.addAttribute("id", a.iu.id.getBsn())
 				.addAttribute("version", a.iu.id.getVersion());
 
-			properties(artifact, //
+			String signature = sign(signer, a);
+
+			Tag properties = properties(artifact, //
 				"artifact.size", a.length, //
 				"download.size", a.length, //
 				"download.md5", a.md5(), //
 				"download.checksum.md5", a.md5(), //
-				"download.checksum.sha-256", a.sha256());
+				"download.checksum.sha-256", a.sha256(), //
+				"pgp.signatures", signature, //
+				"pgp.publicKeys", pgp_publicKeys);
 
 			jar.putResource(a.getPath(), a.resource);
 		}
@@ -749,6 +766,7 @@ class P2Export {
 
 	private JarResource wrap(String jarName, String xmlName, Tag xml) {
 		Jar jar = new Jar(jarName);
+		jar.setReproducible("true");
 		jar.setManifest((Manifest) null);
 		jar.setDoNotTouchManifest();
 
@@ -922,5 +940,48 @@ class P2Export {
 			return r.toString();
 
 		return compatible(r.getLeft()).toString();
+	}
+
+	private Signer createSigner() {
+		if (!sign) {
+			return null;
+		}
+		return FakeSigner.BND_FAKE_PGP_KEY.equals(sign_key) ? new FakeSigner(null, null, null)
+			: new Signer(sign_key, sign_passphrase, bndrun.getProperty("gpg", "gpg"));
+	}
+
+
+	private static String sign(Signer signer, Artifact a) {
+		if (signer == null) {
+			return null;
+		}
+
+		if (a.resource instanceof FileResource res) {
+			File archiveFile = res.getFile();
+			try {
+				return new String(signer.sign(archiveFile));
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
+	private final static class FakeSigner extends Signer {
+
+		/**
+		 * reserved magic keyname for unit tests
+		 */
+		static final String BND_FAKE_PGP_KEY = "__BND_FAKE_PGP_KEY__";
+
+		public FakeSigner(String key, String passphrase, String cmd) {
+			super(key, passphrase, cmd);
+		}
+
+		@Override
+		public byte[] sign(File f) throws Exception {
+			return new String("FAKE SIGNATURE").getBytes(StandardCharsets.UTF_8);
+		}
+
 	}
 }

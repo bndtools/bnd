@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import javax.xml.XMLConstants;
@@ -18,6 +19,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
@@ -43,19 +45,28 @@ class P2PublisherTest {
 
 			File file = p.getFile("generated/bndtools.jar");
 			try (Jar jar = new Jar(file);
+				Jar artifacts = new Jar("artifacts.jar", jar.getResource("artifacts.jar")
+					.openInputStream());
 				Jar content = new Jar("content.jar", jar.getResource("content.jar")
 					.openInputStream());
-
 				Jar featureMain = new Jar("feature.jar", jar.getResource("features/bndtools.main.feature_7.0.0.jar")
 					.openInputStream());
 				Jar featurePde = new Jar("feature.jar", jar.getResource("features/bndtools.pde.feature_7.0.0.jar")
 					.openInputStream())) {
 
-				InputStream xml = content.getResource("content.xml")
+				InputStream xmlArtifactsIs = artifacts.getResource("artifacts.xml")
+					.openInputStream();
+				String xmlArtifacts = new String(xmlArtifactsIs.readAllBytes(), StandardCharsets.UTF_8);
+				Assertions.assertThat(xmlArtifacts)
+					.contains("<property name=\"pgp.signatures\" value=\"FAKE SIGNATURE\"/>")
+					.contains("<property name=\"pgp.publicKeys\" value=\"FAKE PUBLIC KEY\"/>");
+
+				InputStream xmlContent = content.getResource("content.xml")
 					.openInputStream();
 
-				boolean validateXML = validateXML(xml, P2PublisherTest.class.getResourceAsStream("content-schema.xsd"));
-				assertTrue("P2 content.xml is invalid", validateXML);
+				boolean validateXMLContent = validateXML(xmlContent,
+					P2PublisherTest.class.getResourceAsStream("content-schema.xsd"));
+				assertTrue("P2 content.xml is invalid", validateXMLContent);
 
 				InputStream xmlFeatureIs = featureMain.getResource("feature.xml")
 					.openInputStream();
