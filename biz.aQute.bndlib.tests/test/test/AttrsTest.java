@@ -65,4 +65,44 @@ public class AttrsTest {
 		assertEquals("version:Version=\"1.2.3\";versions:List<Version>=\"1.2.3,2.1.0\"", attr.toString());
 	}
 
+	/**
+	 * Test for directive ordering consistency issue.
+	 * This reproduces the problem where merging an Attrs with itself
+	 * can change the ordering of attributes and directives.
+	 *
+	 * The issue occurs when:
+	 * 1. An Attrs object is created with attributes/directives in one order
+	 * 2. It's merged with itself (simulating Analyzer behavior)
+	 * 3. The resulting order may be different due to LinkedHashMap insertion order
+	 */
+	@Test
+	public void testDirectiveOrderingConsistency() {
+		// Create an Attrs object simulating an Export-Package clause
+		// with version attribute and uses directive in a specific order
+		Attrs original = new Attrs();
+
+		// Add in the order that would appear in a fresh manifest generation
+		original.put("uses:", "org.eclipse.aether.artifact,org.eclipse.aether.collection");
+		original.put("version", "2.0.11");
+
+		// Verify initial order
+		String originalString = original.toString();
+		System.out.println("Original: " + originalString);
+
+		// When the manifest is loaded, some attributes are already populated
+		Attrs merged = new Attrs();
+		merged.put("version", "2.0.11");
+
+		// Add in the order that would appear in a fresh manifest generation
+		merged.put("uses:", "org.eclipse.aether.artifact,org.eclipse.aether.collection");
+		merged.put("version", "2.0.11");
+
+		String mergedString = merged.toString();
+		System.out.println("Merged:   " + mergedString);
+
+		// The order should remain consistent after merging with itself
+		assertEquals(originalString, mergedString,
+			"Merging Attrs with itself should preserve attribute/directive ordering");
+	}
+
 }

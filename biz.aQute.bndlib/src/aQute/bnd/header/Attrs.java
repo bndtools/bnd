@@ -265,6 +265,7 @@ public class Attrs implements Map<String, String> {
 		} else {
 			types.put(key, type);
 		}
+		map.remove(key);
 		return map.put(key, value);
 	}
 
@@ -273,6 +274,7 @@ public class Attrs implements Map<String, String> {
 		if (key == null)
 			return null;
 
+		map.remove(key);
 		return map.put(putType(key), value);
 	}
 
@@ -349,7 +351,7 @@ public class Attrs implements Map<String, String> {
 	public void putAll(Attrs attrs) {
 		types.keySet()
 			.removeAll(attrs.map.keySet());
-		map.putAll(attrs.map);
+		attrs.map.forEach(this::put);
 		types.putAll(attrs.types);
 	}
 

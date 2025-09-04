@@ -270,7 +270,7 @@ public class MacroTest {
 			proc.setProperty("foo+", "z;v=1,*;v=0");
 			String process = proc.getReplacer()
 				.process("${decorated;foo}");
-			assertThat(process).isEqualTo("a;v=0,b;v=0;x=\"3,4,5\",c;v=0");
+			assertThat(process).isEqualTo("a;v=0,b;x=\"3,4,5\";v=0,c;v=0");
 		}
 	}
 
@@ -282,7 +282,7 @@ public class MacroTest {
 			proc.setProperty("foo+", "z;v=1,*;v=0");
 			String process = proc.getReplacer()
 				.process("${decorated;foo;true}");
-			assertThat(process).isEqualTo("z;v=1,a;v=0,b;v=0;x=\"3,4,5\",c;v=0");
+			assertThat(process).isEqualTo("z;v=1,a;v=0,b;x=\"3,4,5\";v=0,c;v=0");
 		}
 	}
 
