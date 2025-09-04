@@ -4,6 +4,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.File;
@@ -21,14 +24,17 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.text.Collator;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -779,7 +785,11 @@ public class Jar implements Closeable {
 		for (Map.Entry<?, ?> entry : org.getMainAttributes()
 			.entrySet()) {
 			String nice = clean((String) entry.getValue());
-			mainAttributes.put(entry.getKey(), nice);
+			Object key = entry.getKey();
+			if (Constants.OSGI_SYNTAX_HEADERS.contains(key.toString())) {
+				nice = reorderClause(nice);
+			}
+			mainAttributes.put(key, nice);
 		}
 		mainAttributes.putIfAbsent(Attributes.Name.MANIFEST_VERSION, "1.0");
 		for (String name : org.getEntries()
@@ -799,6 +809,38 @@ public class Jar implements Closeable {
 		}
 		return result;
 	}
+
+    private static final Collator ATTR_COLLATOR;
+    static {
+        ATTR_COLLATOR = Collator.getInstance(Locale.ROOT);
+        ATTR_COLLATOR.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+        ATTR_COLLATOR.setStrength(Collator.SECONDARY); // case-insensitive
+    }
+
+    private static int compareAttrKeys(String k1, String k2) {
+        boolean isDirective1 = Attrs.isDirective(k1);
+        boolean isDirective2 = Attrs.isDirective(k2);
+        // Attributes come before directives
+        if (isDirective1 != isDirective2) {
+            return isDirective1 ? 1 : -1;
+        }
+        // Within same type, sort using collator
+        return ATTR_COLLATOR.compare(k1, k2);
+    }
+
+    private static String reorderClause(String s) {
+        Parameters header = OSGiHeader.parseHeader(s);
+        for (Map.Entry<String, Attrs> entry : header.entrySet()) {
+            Attrs newAttrs = new Attrs();
+            Attrs oldAttrs = entry.getValue();
+            oldAttrs.keySet()
+                .stream()
+                .sorted(Jar::compareAttrKeys)
+                .forEachOrdered(key -> newAttrs.put(key, oldAttrs.getType(key), oldAttrs.get(key)));
+            entry.setValue(newAttrs);
+        }
+        return header.toString();
+    }
 
 	private static String clean(String s) {
 		StringBuilder sb = new StringBuilder(s);
