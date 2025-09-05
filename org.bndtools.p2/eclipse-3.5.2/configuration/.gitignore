@@ -1,4 +1,0 @@
-*.log
-org.eclipse.core.runtime/
-org.eclipse.equinox.app/
-org.eclipse.osgi/
