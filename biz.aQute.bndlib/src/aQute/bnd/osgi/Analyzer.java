@@ -2338,11 +2338,12 @@ public class Analyzer extends Processor {
 
 	void fixupAttributes(PackageRef packageRef, Attrs attributes) throws IOException {
 		// Convert any attribute values that have macros.
-		for (String key : attributes.keySet()) {
-			String value = attributes.get(key);
+		for (Map.Entry<String, String> entry : attributes.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
 			if (value.indexOf('$') >= 0) {
 				value = getReplacer().process(value);
-				attributes.put(key, value);
+				entry.setValue(value);
 			}
 			if (!key.endsWith(":")) {
 				String from = attributes.get(FROM_DIRECTIVE);
