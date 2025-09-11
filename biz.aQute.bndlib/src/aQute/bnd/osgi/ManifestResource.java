@@ -34,6 +34,6 @@ public class ManifestResource extends WriteResource {
 
 	@Override
 	public void write(OutputStream out) throws IOException {
-		ManifestUtil.write(manifest, out);
+		Jar.writeManifest(manifest, out);
 	}
 }

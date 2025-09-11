@@ -71,6 +71,52 @@ Applying this recipe gives the following manifest in a JAR named `org.websocket.
      t.framing
     Tool: Bnd-1.51.0
 
+## OSGi Header Attribute and Directive Ordering
+
+When bnd processes OSGi manifest headers, it automatically ensures consistent ordering of attributes and directives within header clauses. This ordering is applied to OSGi syntax headers such as `Export-Package`, `Import-Package`, `Require-Capability`, `Provide-Capability`, and others.
+
+### Ordering Rules
+
+Bnd applies the following ordering rules to attributes and directives within OSGi header clauses:
+
+1. **Attributes come before directives** - All attributes (keys without a trailing colon) are placed before directives (keys with a trailing colon)
+2. **Alphabetical sorting within groups** - Within the attribute group and directive group, keys are sorted alphabetically (case-insensitive)
+
+### Example
+
+Given an input header like:
+```
+Export-Package: com.example.api;uses:="com.example.internal";version=1.0.0;mandatory:="version";provider=acme
+```
+
+Bnd will reorder it to:
+```
+Export-Package: com.example.api;provider=acme;version=1.0.0;mandatory:="version";uses:="com.example.internal"
+```
+
+Notice how:
+- Attributes (`provider`, `version`) come first, sorted alphabetically
+- Directives (`mandatory:`, `uses:`) come second, sorted alphabetically
+
+### Benefits
+
+This consistent ordering provides several benefits:
+
+- **Reproducible builds** - The same input always produces the same output, regardless of the original order
+- **Easier comparison** - Manifest files can be compared more easily when attributes and directives are consistently ordered
+- **Better readability** - Consistent ordering makes manifest headers easier to read and understand
+
+### Affected Headers
+
+This ordering is applied to all headers defined in `Constants.OSGI_SYNTAX_HEADERS`, which includes:
+- `Export-Package`
+- `Import-Package`
+- `Require-Capability`
+- `Provide-Capability`
+- `Bundle-SymbolicName`
+- `Fragment-Host`
+- And other OSGi-defined headers that use the clause syntax
+
 ## Extra entries on the Classpath
 One of the great features of bnd is to use export version from other versions to generate the import ranges. This feature requires that the other JARs are on the classpath. In bndtools you can use the -buildpath. However, you always add entries on the class path per bnd descriptor with the [-classpath](/instructions/classpath.html) instruction:
 

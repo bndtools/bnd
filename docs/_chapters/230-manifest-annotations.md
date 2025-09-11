@@ -182,6 +182,8 @@ When creating *custom bundle annotations* a common requirement is to make them p
 
 [OSGi](https://osgi.org/specification/osgi.core/7.0.0/) specifies two annotations, [`@Attribute`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Attribute) and [`@Directive`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Directive), for this purpose. Any methods of the **custom bundle annotation** annotated with `@Attribute` or  `@Directive` will result in those becoming additional attributes or directives respectively of the resulting header clause _when a value is supplied_.
 
+**Note:** When bnd processes OSGi headers, it automatically ensures consistent ordering of attributes and directives within header clauses, with attributes appearing before directives and both groups sorted alphabetically. See [OSGi Header Attribute and Directive Ordering](/chapters/160-jars.html#osgi-header-attribute-and-directive-ordering) for more details.
+
 ##### `@Attribute`
 
 `@Attribute` allows you to add new or update existing attributes from the _bundle annotation_.
