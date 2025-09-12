@@ -1,0 +1,26 @@
+Bundle-License:  \
+    (ASL-2.0 or EPL-2.0);\
+        file="license.txt";\
+        link="(ASL-2.0 or EPL-2.0)"
+        
+
+Bundle-DocURL:          https://bnd.bndtools.org/
+Bundle-Vendor           bnd
+Bundle-Copyright:       Copyright bndtools
+
+
+features        = \
+        bndtools.main.feature.bndrun, \
+        bndtools.m2e.feature.bndrun, \
+        bndtools.pde.feature.bndrun,\
+        bndtools.ecf.feature.bndrun
+        
+
+update          =   https://bndtools.jfrog.io/bndtools/update-latest
+update.label    =   Bndtools Update Site
+
+-categories \
+    bndtools; \
+        label = Bndtools; \
+        description = Bndtools, OSGi Development Tools for Eclipse based on bnd.
+        
