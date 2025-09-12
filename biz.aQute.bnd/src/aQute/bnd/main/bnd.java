@@ -38,12 +38,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
@@ -143,7 +141,6 @@ import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.cryptography.SHA512;
-import aQute.libg.forker.Forker;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
@@ -777,7 +774,8 @@ public class bnd extends Processor {
 					}
 				}
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
-				doRun(Lists.of(path), false, null);
+				Project run = getRuns(Lists.of(path), null).get(0);
+				doRun(run, false);
 			} else
 				messages.UnrecognizedFileType_(path);
 		}
@@ -923,29 +921,35 @@ public class bnd extends Processor {
 		final Set<Project> projectsWellDone = new HashSet<>();
 
 		for (Project p : projects) {
-			if (manageDeps) {
-				final Collection<Project> projectDeps = p.getDependson(); // ordered
-				if (opts.verbose()) {
-					out.println("Project dependencies for: " + p.getName());
-					projectDeps.forEach(pr -> out.println(
-						" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
-				}
-
-				projectDeps.removeAll(projectsWellDone);
-
-				for (Project dep : projectDeps) {
-					run.doit(dep);
-					projectsWellDone.add(dep);
-				}
-			}
-
-			run.doit(p);
-
-			getInfo(p, p + ": ");
+			perProject(p, opts.verbose(), run, manageDeps, projectsWellDone);
 		}
 	}
 
-	private List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
+	void perProject(Project p, boolean verbose, PerProject run, boolean manageDeps,
+		final Set<Project> projectsWellDone) throws Exception {
+		if (manageDeps) {
+			final Collection<Project> projectDeps = p.getDependson(); // ordered
+			if (verbose) {
+				out.println("Project dependencies for: " + p.getName());
+				projectDeps.forEach(pr -> out.println(
+					" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
+			}
+
+			projectDeps.removeAll(projectsWellDone);
+
+			for (Project dep : projectDeps) {
+				run.doit(dep);
+				projectsWellDone.add(dep);
+			}
+		}
+
+		run.doit(p);
+
+		getInfo(p, p + ": ");
+	}
+
+
+	List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
 		List<Project> projects = new ArrayList<>();
 
 		HandledProjectWorkspaceOptions hpw = handleOptions(opts, "**/bnd.bnd");
@@ -972,25 +976,32 @@ public class bnd extends Processor {
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
-	interface buildoptions extends ProjectWorkspaceOptions {
+	interface buildBaseOptions extends ProjectWorkspaceOptions {
 
 		@Description("Build for test")
 		boolean test();
 
 		@Description("Force non-incremental")
 		boolean force();
+
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
-	public void _build(final buildoptions opts) throws Exception {
+	interface buildoptions extends ParallelBuildOptions {
 
-		perProject(opts, p -> {
-			p.getGenerate()
-				.generate(opts.force());
-			p.compile(opts.test());
-			p.build(opts.test());
-		});
+		@Description("Continuous incremental build")
+		boolean watch();
+
+		@Description("Build in parallel (Experimental)")
+		boolean parallel();
 	}
+
+	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.")
+	public void _build(final buildoptions opts) throws Exception {
+		BuildCommands cmd = new BuildCommands(this);
+		cmd._build(opts);
+	}
+
 
 	@Description("Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.")
 	interface CompileOptions extends ProjectWorkspaceOptions {
@@ -1078,7 +1089,7 @@ public class bnd extends Processor {
 		return false;
 	}
 
-	@Description("Run a project in the OSGi launcher. If not bndrun is specified, the current project is used for the run specification")
+	@Description("Run a project in the OSGi launcher. If no bndrun is specified, the current project is used for the run specification")
 	@Arguments(arg = "[bndrun]")
 	interface runOptions extends Options {
 		@Description("Path to another project than the current project. Only valid if no bndrun is specified")
@@ -1088,33 +1099,38 @@ public class bnd extends Processor {
 		boolean verify();
 	}
 
-	@Description("Run a project in the OSGi launcher.  If not bndrun is specified, the current project is used for the run specification")
+	@Description("Run a project in the OSGi launcher.  If no bndrun is specified, the current project is used for the run specification")
 	public void _run(runOptions opts) throws Exception {
-		doRun(opts._arguments(), opts.verify(), opts.project());
+		Project run = getRuns(opts._arguments(), opts.project()).get(0);
+		doRun(run, opts.verify());
 	}
 
-	private void doRun(List<String> args, boolean verify, String project) throws Exception {
-		Project run = null;
+	@Description("Experimental: Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.")
+	@Arguments(arg = "[bndrun...]")
+	interface devOptions extends ParallelBuildOptions, runOptions, verboseOptions {
 
-		if (args.isEmpty()) {
-			run = getProject(project);
-			if (run == null) {
-				messages.NoProject();
-				return;
-			}
-		} else {
-			File f = getFile(args.get(0));
+		@Override
+		@Description("Build for test")
+		boolean test();
 
-			File dir = f.getParentFile();
-			File wsdir = dir.getParentFile();
+		@Description("Do the initial full build in parallel (Experimental)")
+		boolean parallel();
 
-			if (wsdir == null) {
-				// We are in the filesystem root?? Create a standalone run.
-				run = Run.createRun(null, f);
-			} else {
-				Workspace workspace = Workspace.getWorkspaceWithoutException(wsdir);
-				run = Run.createRun(workspace, f);
-			}
+
+	}
+
+	@Description("Experimental: Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.")
+	public void _dev(devOptions opts) throws Exception {
+		BuildCommands cmd = new BuildCommands(this);
+		cmd._dev(opts);
+	}
+
+
+
+	void doRun(Project run, boolean verify) throws Exception {
+		if (run == null) {
+			messages.NoProject();
+			return;
 		}
 		verifyDependencies(run, verify, false);
 		ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -1129,6 +1145,44 @@ public class bnd extends Processor {
 		}
 		getInfo(run);
 		getInfo(run.getWorkspace());
+	}
+
+	List<Project> getRuns(List<String> args, String project) throws Exception {
+
+		if (args.isEmpty()) {
+			Project p = getProject(project);
+			if(p == null) {
+				throw new IllegalArgumentException("Project not found");
+			}
+			return Collections.singletonList(p);
+		} else {
+			return args.stream()
+				.map(arg -> {
+					try {
+
+						File f = getFile(arg);
+						if (!f.exists()) {
+							throw new IllegalArgumentException(String.format("File not found: %s", arg));
+						}
+
+						File dir = f.getParentFile();
+						File wsdir = dir.getParentFile();
+
+						if (wsdir == null) {
+							// We are in the filesystem root?? Create a
+							// standalone
+							// run.
+							return (Project) Run.createRun(null, f);
+						} else {
+							Workspace workspace = Workspace.getWorkspaceWithoutException(wsdir);
+							return (Project) Run.createRun(workspace, f);
+						}
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+				})
+				.toList();
+		}
 	}
 
 	@Description("Clean a project")
@@ -3465,7 +3519,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("experimental - parallel build")
-	interface ParallelBuildOptions extends buildoptions {
+	interface ParallelBuildOptions extends buildBaseOptions {
 		long synctime();
 	}
 
@@ -3476,44 +3530,16 @@ public class bnd extends Processor {
 	 */
 	@Description("Lets see if we can build in parallel")
 	public void __par(final ParallelBuildOptions options) throws Exception {
-		ExecutorService pool = Executors.newCachedThreadPool();
-		final AtomicBoolean quit = new AtomicBoolean();
+		List<Project> projects = getFilteredProjects(options);
+		boolean force = options.force();
+		boolean test = options.test();
+		long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
 
-		try {
-			final Forker<Project> forker = new Forker<>(pool);
-
-			List<Project> projects = getFilteredProjects(options);
-
-			for (final Project proj : projects) {
-				forker.doWhen(proj.getDependson(), proj, () -> {
-					if (!quit.get()) {
-
-						try {
-							proj.getGenerate()
-								.generate(options.force());
-							if (!quit.get())
-								proj.compile(options.test());
-							if (!quit.get())
-								proj.build(options.test());
-
-							if (!proj.isOk()) {
-								quit.set(true);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					getInfo(proj, proj + ": ");
-				});
-			}
-			err.flush();
-
-			long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
-			forker.start(syncms);
-		} finally {
-			pool.shutdownNow();
-		}
+		BuildCommands cmd = new BuildCommands(this);
+		cmd.buildParallelInternal(projects, force, test, syncms);
 	}
+
+
 
 	/**
 	 * Force a cache update of the workspace
