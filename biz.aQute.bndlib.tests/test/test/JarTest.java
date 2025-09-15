@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.text.Collator;
+import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -463,12 +465,17 @@ public class JarTest {
 	@Test
 	public void testReorderClauseMethod() throws Exception {
 		// Test the reorderClause method directly using reflection
-		Method reorderClauseMethod = Jar.class.getDeclaredMethod("reorderClause", String.class);
+		Method reorderClauseMethod = Jar.class.getDeclaredMethod("reorderClause", String.class, Collator.class);
 		reorderClauseMethod.setAccessible(true);
+
+		// Create a collator for testing
+		Collator collator = Collator.getInstance(Locale.ROOT);
+		collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+		collator.setStrength(Collator.SECONDARY); // case-insensitive
 
 		// Test case 1: Mixed attributes and directives
 		String input1 = "com.example.api;uses:=\"com.example.internal\";version=\"1.0.0\";mandatory:=\"version\";provider=acme";
-		String output1 = (String) reorderClauseMethod.invoke(null, input1);
+		String output1 = (String) reorderClauseMethod.invoke(null, input1, collator);
 
 		// Verify that all components are present
 		assertTrue(output1.contains("com.example.api"), "Package name should be preserved");
@@ -487,7 +494,7 @@ public class JarTest {
 
 		// Test case 2: Simple case with one attribute and one directive
 		String input2 = "com.example;directive:=value;attribute=value";
-		String output2 = (String) reorderClauseMethod.invoke(null, input2);
+		String output2 = (String) reorderClauseMethod.invoke(null, input2, collator);
 
 		assertTrue(output2.contains("com.example"), "Package name should be preserved");
 		assertTrue(output2.contains("directive:=value"), "directive should be present");
@@ -495,7 +502,7 @@ public class JarTest {
 
 		// Test case 3: Only attributes
 		String input3 = "com.example;version=\"1.0.0\";provider=acme";
-		String output3 = (String) reorderClauseMethod.invoke(null, input3);
+		String output3 = (String) reorderClauseMethod.invoke(null, input3, collator);
 
 		assertTrue(output3.contains("com.example"), "Package name should be preserved");
 		assertTrue(output3.contains("version=\"1.0.0\""), "version should be present");
@@ -503,7 +510,7 @@ public class JarTest {
 
 		// Test case 4: Only directives
 		String input4 = "com.example;uses:=\"com.other\";mandatory:=\"version\"";
-		String output4 = (String) reorderClauseMethod.invoke(null, input4);
+		String output4 = (String) reorderClauseMethod.invoke(null, input4, collator);
 
 		assertTrue(output4.contains("com.example"), "Package name should be preserved");
 		assertTrue(output4.contains("uses:="), "uses directive should be present");
