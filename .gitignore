@@ -15,3 +15,5 @@ Archive
 target/
 *.code-workspace
 _log/
+.polyglot*
+.tycho*
