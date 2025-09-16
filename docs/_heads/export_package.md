@@ -93,6 +93,12 @@ However, in certain cases it is necessary to augment the uses clause. It is ther
 
 Directives that are not part of the OSGi specification will give a warning unless they are prefixed with a 'x-'.
 
+## Attribute and Directive Ordering
+
+When bnd processes the `Export-Package` header, it automatically ensures consistent ordering of attributes and directives within each package clause. Attributes (keys without a trailing colon) are placed before directives (keys with a trailing colon), and both groups are sorted alphabetically. This ensures reproducible builds and easier comparison of manifest files.
+
+For more details, see [OSGi Header Attribute and Directive Ordering](/chapters/160-jars.html#osgi-header-attribute-and-directive-ordering).
+
 
 			//
 			// EXPORTS
