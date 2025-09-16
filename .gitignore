@@ -16,3 +16,6 @@ Archive
 target/
 *.code-workspace
 bndtools.test/workspace/
+_log/
+.polyglot*
+.tycho*
