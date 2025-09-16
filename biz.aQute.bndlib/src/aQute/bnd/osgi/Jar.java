@@ -4,6 +4,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.File;
@@ -21,14 +24,17 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.text.Collator;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -776,10 +782,15 @@ public class Jar implements Closeable {
 	private static Manifest clean(Manifest org) {
 		Manifest result = new Manifest();
 		Attributes mainAttributes = result.getMainAttributes();
+		Collator collator = attrCollator(); // Create once and reuse
 		for (Map.Entry<?, ?> entry : org.getMainAttributes()
 			.entrySet()) {
 			String nice = clean((String) entry.getValue());
-			mainAttributes.put(entry.getKey(), nice);
+			Object key = entry.getKey();
+			if (Constants.OSGI_SYNTAX_HEADERS.contains(key.toString())) {
+				nice = reorderClause(nice, collator);
+			}
+			mainAttributes.put(key, nice);
 		}
 		mainAttributes.putIfAbsent(Attributes.Name.MANIFEST_VERSION, "1.0");
 		for (String name : org.getEntries()
@@ -799,6 +810,38 @@ public class Jar implements Closeable {
 		}
 		return result;
 	}
+
+    private static Collator attrCollator() {
+        Collator collator = Collator.getInstance(Locale.ROOT);
+        collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+        collator.setStrength(Collator.SECONDARY); // case-insensitive
+        return collator;
+    }
+
+    private static int compareAttrKeys(String k1, String k2, Collator collator) {
+        boolean isDirective1 = Attrs.isDirective(k1);
+        boolean isDirective2 = Attrs.isDirective(k2);
+        // Attributes come before directives
+        if (isDirective1 != isDirective2) {
+            return isDirective1 ? 1 : -1;
+        }
+        // Within same type, sort using collator
+        return collator.compare(k1, k2);
+    }
+
+    private static String reorderClause(String s, Collator collator) {
+        Parameters header = OSGiHeader.parseHeader(s);
+        for (Map.Entry<String, Attrs> entry : header.entrySet()) {
+            Attrs newAttrs = new Attrs();
+            Attrs oldAttrs = entry.getValue();
+            oldAttrs.keySet()
+                .stream()
+                .sorted((k1, k2) -> compareAttrKeys(k1, k2, collator))
+                .forEachOrdered(key -> newAttrs.put(key, oldAttrs.getType(key), oldAttrs.get(key)));
+            entry.setValue(newAttrs);
+        }
+        return header.toString();
+    }
 
 	private static String clean(String s) {
 		StringBuilder sb = new StringBuilder(s);
