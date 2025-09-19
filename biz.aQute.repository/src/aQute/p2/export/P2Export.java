@@ -28,6 +28,7 @@ import org.osgi.framework.namespace.BundleNamespace;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.BundleId;
@@ -104,10 +105,20 @@ class P2Export {
 			return null;
 		}
 
-		Jar jar = new Jar(name);
+		File file = Project.getFile(bndrun.getTargetDir(), name);
+		Jar jar;
+		if (file.exists()) {
+			try {
+				jar = Jar.fromResource(name, new FileResource(file));
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		} else {
+			jar = new Jar(name);
+			jar.setDoNotTouchManifest();
+			jar.setManifest((Manifest) null);
+		}
 		jar.setReproducible("true");
-		jar.setDoNotTouchManifest();
-		jar.setManifest((Manifest) null);
 		jar.putResource("content.jar", generateContent(p2));
 		jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
 		return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));

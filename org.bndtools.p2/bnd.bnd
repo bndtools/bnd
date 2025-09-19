@@ -40,10 +40,10 @@ pluginnames: ${-dependson},\
 plugins: ${map;repo;${template;pluginnames;${@};latest}}
 
 -resourceonly: true
-
 -maven-release: 
 -buildrepo: 
 -releaserepo:
+
 
 # P2 signing:
 # key (name of the key), 
