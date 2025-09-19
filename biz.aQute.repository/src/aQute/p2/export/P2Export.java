@@ -28,7 +28,6 @@ import org.osgi.framework.namespace.BundleNamespace;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.BundleId;
@@ -108,12 +107,10 @@ class P2Export {
 		File file = Project.getFile(bndrun.getTargetDir(), name);
 		Jar jar;
 		if (file.exists()) {
-			try {
-				jar = Jar.fromResource(name, new FileResource(file));
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
+			// reuse existing jar built by bnd for the bundle
+			jar = new Jar(file);
 		} else {
+			// new jar with only the p2 artifacts but no META-INF folder
 			jar = new Jar(name);
 			jar.setDoNotTouchManifest();
 			jar.setManifest((Manifest) null);
