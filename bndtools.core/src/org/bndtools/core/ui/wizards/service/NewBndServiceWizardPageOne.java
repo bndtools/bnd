@@ -223,43 +223,46 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 
 	@Override
 	public void setVisible(boolean visible) {
-		String failMessage = null;
+		boolean failed = false;
 		if (visible) {
 			if (this.templateName != null) {
 				try {
 					// load templates here
 					this.templateLoadingJob.loadTemplates(getContainer(), getShell().getDisplay());
 				} catch (InvocationTargetException e) {
-					failMessage = e.getMessage();
+					failed = true;
 				}
 				// then check to make sure that service api, impl and consumer
-				// template types (with
-				// name templateName) are all non-null/found.
-				Template apiTemplate = getServiceApiTemplate();
-				if (apiTemplate == null) {
-					failMessage = "Error loading service-api template '" + this.templateName + "'";
-				}
-				Template implTemplate = getServiceImplTemplate();
-				if (implTemplate == null) {
-					failMessage = "Error loading service-impl template '" + this.templateName + "'";
-				}
-				Template consumerTemplate = getServiceConsumerTemplate();
-				if (consumerTemplate == null) {
-					failMessage = "Error loading service-consumer template '" + this.templateName + "'";
+				// template types are all non-null/found.
+				Template template = getServiceApiTemplate();
+				if (template == null) {
+					failed = true;
+				} else {
+					template = getServiceImplTemplate();
+					if (template == null) {
+						failed = true;
+					} else {
+						template = getServiceConsumerTemplate();
+						if (template == null) {
+							failed = true;
+						}
+					}
 				}
 			}
 		}
-		if (failMessage != null) {
-			ErrorDialog.openError(getShell(), failMessage,
-				"Could not load service template '" + "'\n" + "\n" + "This results from \n"
-					+ "a) Attempting to create OSGi projects before creating a Bnd OSGi workspace\n"
-					+ "   Fo fix, first create a Bnd OSGi workspace before creating new OSGi projects\n\n"
-					+ "b) Attempting to create Remote Service projects without using the ECF \n"
-					+ "   Remote Services Workspace template\n"
-					+ "   When creating a Bnd Workspace, use the ECF Remote Services Workspace template\n"
-					+ "   at https://github.com/ECF/bndtools.workspace.  This workspace template\n"
-					+ "   provides all of the remote service Bnd OSGi Project templates",
-				null, ERROR);
+		if (failed) {
+			MessageDialog.open(ERROR, getShell(), "Error loading service template",
+				"Could not load service template named '" + this.templateName + "'\n\n" + "This results from \n\n"
+					+ "a) Attempting to create Bnd OSGi projects before creating a Bnd OSGi workspace\n\n"
+					+ "    To fix, create a Bnd OSGi workspace before using this wizard.\n\n"
+					+ "b) Attempting to create remote service projects without using the ECF \n"
+					+ "     Remote Services Workspace template\n\n"
+					+ "     To fix, use the ECF Remote Services Workspace template\n"
+					+ "     at https://github.com/ECF/bndtools.workspace. This workspace template\n"
+					+ "     provides all of the remote service Bnd OSGi Project templates.",
+				ERROR, new String[] {
+					"Ok", "Cancel"
+				});
 			// Now close dialog
 			IWizardContainer wizardContainer = getWizard().getContainer();
 			if (wizardContainer instanceof WizardDialog) {
