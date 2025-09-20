@@ -1,6 +1,7 @@
 package aQute.p2.export;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 
 
@@ -43,8 +45,9 @@ class P2PublisherTest {
 			File[] build = p.build();
 			assertTrue(p.check());
 
-			File file = p.getFile("generated/bndtools.jar");
+			File file = p.getFile("generated/p1.jar");
 			try (Jar jar = new Jar(file);
+
 				Jar artifacts = new Jar("artifacts.jar", jar.getResource("artifacts.jar")
 					.openInputStream());
 				Jar content = new Jar("content.jar", jar.getResource("content.jar")
@@ -53,6 +56,9 @@ class P2PublisherTest {
 					.openInputStream());
 				Jar featurePde = new Jar("feature.jar", jar.getResource("features/bndtools.pde.feature_7.0.0.jar")
 					.openInputStream())) {
+
+				Resource metainf = jar.getResource("META-INF/MANIFEST.MF");
+				assertNotNull(metainf);
 
 				InputStream xmlArtifactsIs = artifacts.getResource("artifacts.xml")
 					.openInputStream();
@@ -91,7 +97,7 @@ class P2PublisherTest {
 				String expectedPde = Files.readString(p.getFile("expected-feature.pde.xml")
 					.toPath());
 				assertEquals("feature.xml does not match expected-feature.xml", expectedPde, xmlFeaturePde);
-			}
+			} finally {}
 		}
 	}
 
