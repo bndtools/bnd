@@ -6,9 +6,11 @@ import static aQute.p2.export.P2.IUType.other;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,7 +98,7 @@ class P2Export {
 		this.sign_pubkey = options.get("sign_pubkey");
 	}
 
-	Map.Entry<String, Resource> generate() throws IOException {
+	Map.Entry<String, Resource> generate() throws Exception {
 		P2 p2 = parse();
 
 		if (p2 == null || !bndrun.isOk()) {
@@ -104,21 +106,56 @@ class P2Export {
 			return null;
 		}
 
-		File file = Project.getFile(bndrun.getTargetDir(), name);
-		Jar jar;
-		if (file.exists()) {
-			// reuse existing jar built by bnd for the bundle
-			jar = new Jar(file);
+		File targetFile = Project.getFile(bndrun.getTargetDir(), name);
+		Jar jar = createJar(p2, targetFile);
+		return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));
+	}
+
+	private Jar createJar(P2 p2, File targetFile) throws IOException, Exception {
+		Jar jar = new Jar(name);
+
+		if (targetFile.exists()) {
+			// Special case: existing file, reuse existing META-INF
+			// This happens when we are using the same export filename as bnd
+			// already created for the project e.g. bsn.jar
+			// in this case we want to reuse all the META-INF / Manifest content
+			// which bnd already created for us
+			// this is needed e.g. to install the p2export jar into a
+			// MavenBndRepo which requires proper META-INF data
+
+			try (Jar oldJar = new Jar(targetFile)) {
+
+				// Copy all existing resources eagerly into memory
+				for (Map.Entry<String, Resource> e : oldJar.getResources()
+					.entrySet()) {
+					try (InputStream in = e.getValue()
+						.openInputStream()) {
+						byte[] bytes = in.readAllBytes();
+						jar.putResource(e.getKey(), new EmbeddedResource(bytes, 0));
+					}
+				}
+			}
+
+			jar.setReproducible("true");
+			jar.putResource("content.jar", generateContent(p2));
+			jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
+
+			// Write to temporary file, then atomically replace original
+			File tempFile = new File(targetFile.getParentFile(), targetFile.getName() + ".tmp");
+			jar.write(tempFile);
+			Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
 		} else {
-			// new jar with only the p2 artifacts but no META-INF folder
-			jar = new Jar(name);
+			// New JAR, no existing META-INF
 			jar.setDoNotTouchManifest();
 			jar.setManifest((Manifest) null);
+			jar.setReproducible("true");
+			jar.putResource("content.jar", generateContent(p2));
+			jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
+
+			// No write-to-disk needed here, return purely in-memory
 		}
-		jar.setReproducible("true");
-		jar.putResource("content.jar", generateContent(p2));
-		jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
-		return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));
+		return jar;
 	}
 
 	private Resource generateArtifacts(P2 p2, Jar jar) {
