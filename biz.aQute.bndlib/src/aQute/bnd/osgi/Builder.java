@@ -731,8 +731,10 @@ public class Builder extends Analyzer {
 				String directory = p.getKey();
 				PackageRef packageRef = getPackageRef(directory);
 
-				// Skip * and meta data, we're talking packages!
-				if (packageRef.isMetaData() && instruction.isAny())
+				// Skip * and meta data, we're talking packages! (except for
+				// project==true in which case we also want to include the
+				// default package)
+				if (!(project && packageRef.isDefaultPackage()) && packageRef.isMetaData() && instruction.isAny())
 					continue;
 
 				if (!instruction.matches(packageRef.getFQN()))

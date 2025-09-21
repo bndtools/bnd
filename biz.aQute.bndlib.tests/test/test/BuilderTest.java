@@ -172,6 +172,24 @@ public class BuilderTest {
 	}
 
 	/**
+	 * This tests that files in default project e.g.
+	 * /src/file-in-default-package.txt are also included with
+	 * -includepackage=Constants.ALL_FROM_PROJECT
+	 */
+	@Test
+	public void testIncludeWholeProject2() throws Exception {
+		try (Builder b = new Builder()) {
+			Jar jar = new Jar(IO.getFile("jar/osgi.jar"));
+			jar.putResource(Constants.PROJECT_MARKER, new EmbeddedResource("", 0L));
+			jar.putResource("file-in-default-package.txt", new EmbeddedResource("", 0L));
+			b.addClasspath(jar);
+			b.setProperty("-includepackage", Constants.ALL_FROM_PROJECT);
+			Jar build = b.build();
+			assertThat(build.getResource("file-in-default-package.txt")).isNotNull();
+		}
+	}
+
+	/**
 	 * There shouldn't be "Duplicate name..." warnings with pedantic flag set to
 	 * true #2803 https://github.com/bndtools/bnd/issues/2803
 	 *
