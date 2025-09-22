@@ -105,19 +105,14 @@ class P2Export {
 			return null;
 		}
 
-		try (Builder builder = new Builder(bndrun)) {
-			Manifest manifest = builder.build()
-				.getManifest();
-			Jar jar = new Jar(name);
-			jar.setManifest(manifest);
-			jar.setReproducible("true");
-			// jar.setDoNotTouchManifest();
-			jar.putResource("content.jar", generateContent(p2));
-			jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
-
-			jar.putResource("p2.index", generateP2Index());
-			return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));
-		}
+		@SuppressWarnings("resource")
+		Builder builder = new Builder(bndrun);
+		Jar jar = builder.build();
+		jar.setReproducible("true");
+		jar.putResource("content.jar", generateContent(p2));
+		jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
+		jar.putResource("p2.index", generateP2Index());
+		return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));
 	}
 
 	private Resource generateP2Index() {

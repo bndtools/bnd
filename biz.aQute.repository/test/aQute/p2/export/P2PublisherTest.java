@@ -1,5 +1,6 @@
 package aQute.p2.export;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +30,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
@@ -52,13 +54,31 @@ class P2PublisherTest {
 					.openInputStream());
 				Jar content = new Jar("content.jar", jar.getResource("content.jar")
 					.openInputStream());
-				Jar featureMain = new Jar("feature.jar", jar.getResource("features/bndtools.main.feature_7.0.0.jar")
+				Jar featureMain = new Jar("feature.jar",
+					jar.getResource("features/bndtools.main.feature_7.0.0.0000-SNAPSHOT.jar")
 					.openInputStream());
-				Jar featurePde = new Jar("feature.jar", jar.getResource("features/bndtools.pde.feature_7.0.0.jar")
+				Jar featurePde = new Jar("feature.jar",
+					jar.getResource("features/bndtools.pde.feature_7.0.0.0000-SNAPSHOT.jar")
 					.openInputStream())) {
 
 				Resource metainf = jar.getResource("META-INF/MANIFEST.MF");
 				assertNotNull(metainf);
+				// notice the timestamp portion 0000 which should be in
+				// MANIFEST.MF
+				assertEquals("7.0.0.0000-SNAPSHOT", jar.getManifest()
+					.getMainAttributes()
+					.getValue(Constants.BUNDLE_VERSION));
+
+				// but in pom.properties we want just
+				// 7.0.0-SNAPSHOT (without the timestamp 0000 portion)
+				Resource pomproperties = jar.getResource("META-INF/maven/org.bndtools/org.bndtools.p2/pom.properties");
+				assertNotNull(pomproperties);
+				try (InputStream is = pomproperties.openInputStream()) {
+					String pomprops = new String(is.readAllBytes());
+					assertThat(pomprops).contains("groupId=org.bndtools");
+					assertThat(pomprops).contains("artifactId=org.bndtools.p2");
+					assertThat(pomprops).contains("version=7.0.0-SNAPSHOT");
+				}
 
 				InputStream xmlArtifactsIs = artifacts.getResource("artifacts.xml")
 					.openInputStream();
