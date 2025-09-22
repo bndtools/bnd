@@ -1,6 +1,8 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
+-fixupmessages: Eclipse: The Bundle
+Bundle-SymbolicName: org.bndtools.p2.dummy
 p2.version: ${base.version}.${first;${def;-snapshot;DEV};REL}
 timestamp: ${tstamp}
 
@@ -38,6 +40,7 @@ pluginnames: ${-dependson},\
 	org.osgi.util.promise
 
 plugins: ${map;repo;${template;pluginnames;${@};latest}}
+-maven-release:         pom
 
 -resourceonly: true
 
