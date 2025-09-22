@@ -6,11 +6,9 @@ import static aQute.p2.export.P2.IUType.other;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +30,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
@@ -106,65 +105,44 @@ class P2Export {
 			return null;
 		}
 
-		File targetFile = Project.getFile(bndrun.getTargetDir(), name);
-		Jar jar = createJar(p2, targetFile);
-		return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));
+		try (Builder builder = new Builder(bndrun)) {
+			Manifest manifest = builder.build()
+				.getManifest();
+			Jar jar = new Jar(name);
+			jar.setManifest(manifest);
+			jar.setReproducible("true");
+			// jar.setDoNotTouchManifest();
+			jar.putResource("content.jar", generateContent(p2));
+			jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
+
+			jar.putResource("p2.index", generateP2Index());
+			return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));
+		}
 	}
 
-	private Jar createJar(P2 p2, File targetFile) throws IOException, Exception {
-		Jar jar = new Jar(name);
-
-		if (targetFile.exists()) {
-			// Special case: existing file, reuse existing META-INF
-			// This happens when we are using the same export filename as bnd
-			// already created for the project e.g. bsn.jar
-			// in this case we want to reuse all the META-INF / Manifest content
-			// which bnd already created for us
-			// this is needed e.g. to install the p2export jar into a
-			// MavenBndRepo which requires proper META-INF data
-
-			try (Jar oldJar = new Jar(targetFile)) {
-
-				// Copy all existing resources eagerly into memory
-				for (Map.Entry<String, Resource> e : oldJar.getResources()
-					.entrySet()) {
-					try (InputStream in = e.getValue()
-						.openInputStream()) {
-						byte[] bytes = in.readAllBytes();
-						jar.putResource(e.getKey(), new EmbeddedResource(bytes, 0));
-					}
-				}
-			}
-
-			jar.setReproducible("true");
-			jar.putResource("content.jar", generateContent(p2));
-			jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
-
-			// Write to temporary file, then atomically replace original
-			File tempFile = new File(targetFile.getParentFile(), targetFile.getName() + ".tmp");
-			jar.write(tempFile);
-			Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-		} else {
-			// New JAR, no existing META-INF
-			jar.setDoNotTouchManifest();
-			jar.setManifest((Manifest) null);
-			jar.setReproducible("true");
-			jar.putResource("content.jar", generateContent(p2));
-			jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
-
-			// No write-to-disk needed here, return purely in-memory
-		}
-		return jar;
+	private Resource generateP2Index() {
+		// see https://wiki.eclipse.org/Equinox/p2/p2_index
+		String index = """
+			version=1
+			metadata.repository.factory.order=content.xml,\\!
+			artifact.repository.factory.order=artifacts.xml,\\!""";
+		return new EmbeddedResource(index, 0);
 	}
 
 	private Resource generateArtifacts(P2 p2, Jar jar) {
+
+		Signer signer = createSigner();
+		String pgp_publicKeys = signer != null ? this.sign_pubkey : null;
+
 		Tag repository = new Tag("repository");
 		repository.addAttribute("name", p2.name);
 		repository.addAttribute("type", "org.eclipse.equinox.p2.artifact.repository.simpleRepository");
 		repository.addAttribute("version", "1");
 
-		properties(repository, "p2.timestamp", System.currentTimeMillis(), "p2.compresssed", true);
+		properties(repository, //
+			"p2.timestamp", System.currentTimeMillis(), //
+			"p2.compresssed", true, //
+			"pgp.publicKeys", pgp_publicKeys);
 
 		Tag mappings = new Tag(repository, "mappings");
 		new Tag(mappings, "rule")//
@@ -178,8 +156,6 @@ class P2Export {
 		size(mappings);
 
 		Tag artifacts = new Tag(repository, "artifacts");
-		Signer signer = createSigner();
-		String pgp_publicKeys = signer != null ? this.sign_pubkey : null;
 
 		for (Artifact a : p2.artifacts.artifacts) {
 			String classifier = a.iu.getRefType();
@@ -200,8 +176,7 @@ class P2Export {
 				"download.md5", a.md5(), //
 				"download.checksum.md5", a.md5(), //
 				"download.checksum.sha-256", a.sha256(), //
-				"pgp.signatures", signature, //
-				"pgp.publicKeys", pgp_publicKeys);
+				"pgp.signatures", signature);
 
 			jar.putResource(a.getPath(), a.resource);
 		}

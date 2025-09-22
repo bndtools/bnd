@@ -1,3 +1,4 @@
+Bundle-SymbolicName: bndtools.main.feature
 Bundle-Name:            Bndtools
 Bundle-Description:     OSGi Development Tools for Eclipse based on bnd.
 Bundle-Category         bndtools

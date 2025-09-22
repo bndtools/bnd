@@ -21,7 +21,7 @@ pubkey=FAKE PUBLIC KEY
 
 -export features.bnd; \
     type=p2; \
-    name=p1.jar;\
+    name=bndtools.jar;\
     sign=true;\
     sign_key=${key};\
     sign_passphrase=${passphrase};\
