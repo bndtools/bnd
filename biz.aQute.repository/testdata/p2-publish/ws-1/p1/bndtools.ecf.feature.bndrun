@@ -1,3 +1,4 @@
+Bundle-SymbolicName: bndtools.ecf.feature
 Bundle-Name:            Bndtools ECF Remote Services
 Bundle-Description:     ECF Remote Services integration for Bndtools
 Bundle-Category         bndtools

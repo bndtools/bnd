@@ -45,7 +45,7 @@ class P2PublisherTest {
 			File[] build = p.build();
 			assertTrue(p.check());
 
-			File file = p.getFile("generated/p1.jar");
+			File file = p.getFile("generated/bndtools.jar");
 			try (Jar jar = new Jar(file);
 
 				Jar artifacts = new Jar("artifacts.jar", jar.getResource("artifacts.jar")
