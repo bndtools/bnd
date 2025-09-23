@@ -40,7 +40,6 @@ pluginnames: ${-dependson},\
 	org.osgi.util.promise
 
 plugins: ${map;repo;${template;pluginnames;${@};latest}}
--maven-release:         pom
 
 -resourceonly: true
 
