@@ -4,3 +4,8 @@
 		name                ='P2'
 
 Bundle-Version 800
+
+
+-groupid:               org.bndtools
+-pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
+-maven-release:         pom;path=JAR,javadoc;-classpath="${project.buildpath}"
