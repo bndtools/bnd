@@ -37,26 +37,23 @@ Example:
 # key (mandatory - name of the key), 
 # passphrase (optional passphrase for the pgp key)
 # pubkey (mandatory: the public key - read publickey file e.g. from ~./bnd/ folder)
-# below 
 
+sign=${global;p2.sign;${env;P2_SIGN;false}}
 key=${global;p2.sign_key;${env;P2_SIGN_KEY}}
 passphrase=${global;p2.sign_passphrase;${env;P2_SIGN_PASSPHRASE}}
-pubkey="${cat;~/.bnd/p2key.pub}"
+pubkey="${global;p2.pub_key;${env;P2_PUB_KEY}}"
 
 -export features.bnd; \
     type=p2; \
     name=bndtools.jar;\
-    sign=true;\
+    sign=${sign};\
     sign_key=${key};\
     sign_pubkey=${pubkey};\
     sign_passphrase=${passphrase}
 ```
 
 In the example above the idea is to first check global variables in `~./bnd/settings.json` (via `${global}` macro) and fallback to environment (via `${env}` macro) if not found.  
-
 For example if you are using Github Actions for your build you would set the environment variables via Github Secret variables.
-
-
 
 ## Defining the features
 
@@ -192,7 +189,7 @@ The repository can be used as a drop-in replacement for the Eclipse p2 repositor
 
 ## Sample Setup
 
-In the workspace's build.bnd file:
+In the workspace's `cnf/build.bnd` file:
 
     -plugin \
         aQute.p2.export.P2Exporter
@@ -203,19 +200,27 @@ In the workspace's build.bnd file:
     Bundle-Copyright: Public domain
 
 
-In project X's bnd.bnd file:
+In project X's `bnd.bnd` file:
 
     -export \
         release.bndrun; \
+			type=p2;\
             name=myrepo.jar; \
-            features="a.bndrun,b.bndrun"
+            
+
+In `release.bndrun` file (this file will control the content of `META-INF/MANIFEST.MF` in the resulting `myrepo.jar`. It inherits everything from `cnf/build.bnd`, but NOT from the project's  `bnd.bnd`):
+
+    Bundle-SymbolicName: myrepo
+
+    features=	a.bndrun,\
+				b.bndrun
 
     -categories \
         java; \
             label=Java ©; \
             description=The Java language
 
-In the a.bndrun file:
+In the `a.bndrun` file:
 
     Bundle-Name: A
     Bundle-SymbolicName: com.example.a
@@ -231,7 +236,7 @@ In the a.bndrun file:
         com.example.util, \
         com.example.a
 
-In the b.bndrun file:
+In the `b.bndrun` file:
 
     Bundle-Name: B
     Bundle-SymbolicName: com.example.b
@@ -244,25 +249,33 @@ In the b.bndrun file:
         com.example.util2
         com.example.b
 
-This will generate a p2 archive called myrepo.jar with:
+This will generate a p2 archive called `myrepo.jar` in the project's `generated` folder with:
 
+* `META-INF`
+  * `MANIFEST.MF`
+* `artifacts.jar`
+  * `artifacts.xml` – A list of all the artifacts in the repository and rules how to map an id to a file in the p2 archive.
 * `content.jar`
   * `content.xml` – The metadata of the repository
     * repository metadata with name X, version 1.0.0, and provider Example
     * for each feature, an jar IU and group IU
     * for each bundle, a bundle IU
-* `artifacts.jar`
-  * `artifacts.xml` – A list of all the artifacts in the repository and rules how to map an id to a file in the p2 archive.
-* `plugins/`
-    * `com.example.util-1.0.0.jar`
-    * `com.example.util2-1.0.0.jar` 
-    * `com.example.a-1.0.0.jar`
-    * `com.example.b-1.0.0.jar`
 * `features/`
   * `a-1.0.0.jar`
      * `feature.xml` – The feature metadata for feature a
   * `b-1.0.0.jar`
     * `feature.xml` – The feature metadata for feature b
+* `p2.index`
+* `plugins/`
+    * `com.example.util-1.0.0.jar`
+    * `com.example.util2-1.0.0.jar` 
+    * `com.example.a-1.0.0.jar`
+    * `com.example.b-1.0.0.jar`
+ 
+Note that bnd still creates a normal jar file for the project's `bnd.bnd` with the usual `bsn.jar` name. If you set `-export`'s `name` property also to `bsn.jar` then the P2Export will overwrite the normal `bsn.jar`. 
+
+A working example can be found in this [testcase](https://github.com/bndtools/bnd/blob/master/biz.aQute.repository/testdata/p2-publish/ws-1/p1/bnd.bnd) and in bnd's own [org.bndtools.p2 bundle](https://github.com/bndtools/bnd/blob/master/org.bndtools.p2/bnd.bnd).
+
 
 ## Notes
 
