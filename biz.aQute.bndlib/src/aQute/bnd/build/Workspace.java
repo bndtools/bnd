@@ -98,6 +98,7 @@ import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.service.tags.Tags;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.url.MultiURLConnectionHandler;
 import aQute.bnd.util.home.Home;
@@ -733,6 +734,32 @@ public class Workspace extends Processor {
 
 	public List<RepositoryPlugin> getRepositories() {
 		return data.repositories.get();
+	}
+
+	/**
+	 * @param tags list tags to filter. <code>null</code> means all.
+	 * @return matching repositories.
+	 */
+	public List<RepositoryPlugin> getRepositories(String... tags) {
+
+		if (tags == null) {
+			return data.repositories.get();
+		}
+
+		Tags activeTags = Tags.parse(getProperty(Constants.ACTIVETAGS), Tags.of(Constants.REPOTAGS_RESOLVE));
+
+		return data.repositories.get()
+			.stream()
+			.filter(repo -> {
+				Tags repotags = repo.getTags();
+
+				if (repotags == null || !activeTags.includesAny(tags) || repotags.includesAny(tags)) {
+					return true;
+				}
+
+				return false;
+			})
+			.toList();
 	}
 
 	private List<RepositoryPlugin> initRepositories() {
