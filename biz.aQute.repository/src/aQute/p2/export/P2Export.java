@@ -139,6 +139,46 @@ class P2Export {
 			"p2.compresssed", true, //
 			"pgp.publicKeys", pgp_publicKeys);
 
+		Set<String> addedUpdateUrls = new HashSet<>();
+		Tag references = new Tag(repository, "references");
+		if (update != null) {
+			addedUpdateUrls.add(update);
+			new Tag(references, "repository")//
+				.addAttribute("uri", update)
+				.addAttribute("url", update)
+				.addAttribute("type", 1)
+				.addAttribute("options", 0);
+			new Tag(references, "repository")//
+				.addAttribute("uri", update)
+				.addAttribute("url", update)
+				.addAttribute("type", 0)
+				.addAttribute("options", 0);
+		}
+
+		p2.content.units.stream()
+			.distinct()
+			.sorted()
+			.forEach(iu -> {
+
+				if (iu instanceof Feature f) {
+					if (f.update != null && addedUpdateUrls.add(f.update)) {
+						new Tag(references, "repository")//
+							.addAttribute("uri", f.update)
+							.addAttribute("url", f.update)
+							.addAttribute("type", 1)
+							.addAttribute("options", 1);
+						new Tag(references, "repository")//
+							.addAttribute("uri", f.update)
+							.addAttribute("url", f.update)
+							.addAttribute("type", 0)
+							.addAttribute("options", 1);
+					}
+
+				}
+			});
+
+		size(references);
+
 		Tag mappings = new Tag(repository, "mappings");
 		new Tag(mappings, "rule")//
 			.addAttribute("filter", "(&(classifier=osgi.bundle))")
@@ -483,6 +523,11 @@ class P2Export {
 			tUpdate.addAttribute("url", feature.update);
 			if (feature.updateLabel != null)
 				tUpdate.addAttribute("label", feature.updateLabel);
+
+			Tag tDiscovery = new Tag(url, "discovery");
+			tDiscovery.addAttribute("url", feature.update);
+			if (feature.updateLabel != null)
+				tDiscovery.addAttribute("label", feature.updateLabel);
 		}
 
 		Tag requires = new Tag(f, "requires");

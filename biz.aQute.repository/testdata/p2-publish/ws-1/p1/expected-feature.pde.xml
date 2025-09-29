@@ -4,6 +4,7 @@
   <license url="https://opensource.org/licenses/Apache-2.0"><![CDATA[Simple license description]]></license>
   <url>
     <update url="https://bndtools.jfrog.io/bndtools/update-latest" label="Bndtools Update Site"/>
+    <discovery url="https://bndtools.jfrog.io/bndtools/update-latest" label="Bndtools Update Site"/>
   </url>
   <requires>
     <import feature="bndtools.main.feature.feature.group" version="7.0.0.0000-SNAPSHOT" match="perfect"/>
