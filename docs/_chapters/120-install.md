@@ -24,9 +24,9 @@ java -jar biz.aQute.bnd-{VERSION}.jar <command>
 ```
 
 ## Libraries
-The binaries are available on [JFrog][4]. The latest version can be found at:
+The binaries are available on [JFrog][7]. The latest version can be found at:
 
-	https://bndtools.jfrog.io/bndtools/libs-snapshot
+	https://bndtools.jfrog.io/bndtools/libs-snapshot/biz/aQute/bnd/biz.aQute.bnd/
 
 If you are a maven user, you can find many version in central. The coordinates are:
 
