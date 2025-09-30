@@ -279,6 +279,8 @@ A working example can be found in this [testcase](https://github.com/bndtools/bn
 
 ## Notes
 
-P2 is a surprisingly complex beast for what it tries to achieve. The P2Exporter plugin makes an attempt to map the much cleaner OSGi model to the P2 model. Sadly, P2 has the attitude that the file formats are not standardized and that the only way to get the right format is to use the P2 API. The authors found it hard to understand the concept of backward compatibility. Once a format is out there, it must be supported in a backward compatible way forever, severely restricting the ability to change the data format. Which means that most of the data formats have been reverse enginered from existing repos. This is not a good situation. Where the OSGi provides a solid foundation with well defined namespaces, the P2 model seems a lot more ad-hoc.
+The p2 system defines its metadata primarily through its API, and its file formats are not formally standardized. As a result, much of the knowledge about these formats has been derived through reverse engineering of existing repositories. This approach ensures practical interoperability, but it also means that precise documentation of the formats has historically been limited.
 
-To minimize compatibility problems for this bnd plugin, the code generates the metadata in almost exactly the way it was found that p2 generated the metadata for bndtools. Writing this code raised lots of questions but there was nobody to ask as far as I could see. Any feedback would be highly appreciated.
+The P2Exporter plugin in bnd generates metadata in a manner that is consistent with the formats observed in repositories used by bndtools. This alignment helps maintain compatibility and reduces the risk of discrepancies between bnd-generated artifacts and p2 expectations.
+
+Since the understanding of these formats is based on reverse engineering rather than official specifications, the implementation may evolve as further insights are gained. Contributions and feedback from the community are therefore especially valuable to improve accuracy and maintain interoperability.
