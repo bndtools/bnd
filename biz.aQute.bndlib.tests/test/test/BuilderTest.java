@@ -1719,6 +1719,102 @@ public class BuilderTest {
 	}
 
 	@Test
+	public void testSubstitutionEnabled() throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "false");
+			b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;");
+			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.osgi.service.http"));
+			assertTrue(imports.contains("org.osgi.service.http"));
+		}
+
+	}
+
+	@Test
+	public void testSubstitutionDisabled() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "true");
+			b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;");
+			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.osgi.service.http"));
+			assertFalse(imports.contains("org.osgi.service.http"));
+		}
+
+	}
+
+	@Test
+	public void testSubstitutionEnabled2() throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "false");
+			b.setProperty("Export-Package", "org.apache.felix.*");
+			b.addClasspath(IO.getFile(
+				"testresources/ws/cnf/repo2/org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar"));
+			b.addClasspath(new File("bin_test"));
+			b.setProperty("Private-Package", "org.apache.felix.cm.impl");
+			b.setProperty("-fixupmessages.export",
+				"The annotation aQute.bnd.annotation.Export");
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.apache.felix.cm;"));
+			assertTrue(imports.contains("org.apache.felix.cm;"));
+		}
+
+	}
+
+	@Test
+	public void testSubstitutionDisabled2() throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "true");
+			b.setProperty("Export-Package", "org.apache.felix.*");
+			b.addClasspath(IO.getFile(
+				"testresources/ws/cnf/repo2/org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar"));
+			b.addClasspath(new File("bin_test"));
+			b.setProperty("Private-Package", "org.apache.felix.cm.impl");
+			b.setProperty("-fixupmessages.export", "The annotation aQute.bnd.annotation.Export");
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.apache.felix.cm;"));
+			assertFalse(imports.contains("org.apache.felix.cm;"));
+		}
+
+	}
+
+	@Test
 	public void testNoImportDirective() throws Exception {
 		Builder b = new Builder();
 		try {

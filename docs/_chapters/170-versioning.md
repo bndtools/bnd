@@ -170,6 +170,8 @@ After the bundle has been created and analyzed bnd will see if an exported packa
 
 If a package is imported it will use the version as defined by the version policy.
 
+With the [-nosubstitution: true](/instructions/nosubstitution.html) instruction, this behavior can be disabled globally.
+
 ## Versioning Bundles
 Versioning bundles usually requires bumping the version every time it is placed in a repository. When package versioning is used, the bundle version is only important for tracking an artifact.
 
