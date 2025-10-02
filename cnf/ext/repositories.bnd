@@ -31,8 +31,8 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 # Eclipse Platform 4.256 / 2022-12 Release repository
 #-plugin.1.Eclipse:\
 #	aQute.bnd.repository.p2.provider.P2Repository; \
-#	 	url = https://download.eclipse.org/releases/2022-12/; \
-#	 	name = "Eclipse-4_26-2022-12"       
+#	 	url = https://download.eclipse.org/releases/2023-12/; \
+#	 	name = "Eclipse-4_30-2023-12"       
 
 # How to update to a different Eclipse Version?
 # ---------------------------------------------
