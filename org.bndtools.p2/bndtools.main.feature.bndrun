@@ -29,7 +29,7 @@ Require-Capability \
 	org.bndtools.versioncontrol.ignores.plugin.git, \
 	org.bndtools.templating, \
 	org.bndtools.templating.gitrepo, \
-	org.slf4j.api, \
+	slf4j.api, \
 	org.osgi.service.coordinator, \
 	org.osgi.service.repository, \
 	org.osgi.util.function, \

@@ -77,7 +77,7 @@
 	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
 	bnd.identity;id='junit-vintage-engine';version='${range;[===,==+);${junit.jupiter.eclipse.version}}'
 
--runfw: org.eclipse.osgi;version='[3.18.200.v20221116-1324,3.18.200.v20221116-1324]'
+-runfw: org.eclipse.osgi;version='[3.18.600.v20231110-1900,3.18.600.v20231110-1900]'
 -runee: JavaSE-17
 
 # Useful debugging directives
