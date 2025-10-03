@@ -2,4 +2,5 @@
 
 -runbundles.engines: \
 	junit-jupiter-engine;version='[5.10.1,5.10.2)',\
-	junit-vintage-engine;version='[5.10.1,5.10.2)'
+	junit-vintage-engine;version='[5.10.1,5.10.2)',\
+	junit-platform-engine;version='[1.10.1,1.10.2)'
