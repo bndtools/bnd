@@ -80,7 +80,7 @@ dependencies {
 	testImplementation(enforcedPlatform("org.junit:junit-bom:5.12.2"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+	testImplementation("org.spockframework:spock-core:2.4-M5-groovy-4.0")
 }
 
 // Gradle plugin descriptions
