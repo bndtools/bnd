@@ -48,4 +48,6 @@ Import-Package: \
 	biz.aQute.resolve,\
 	org.osgi.service.repository,\
 	org.osgi.resource,\
-	osgi.core
+	osgi.core,\
+	org.eclipse.jdt.core.manipulation,\
+	org.eclipse.jdt.core.compiler.batch
