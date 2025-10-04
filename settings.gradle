@@ -5,89 +5,58 @@
 import aQute.bnd.osgi.Constants
 
 pluginManagement {
-	plugins {
-		id "com.gradle.enterprise" version "3.13.4"
-	}
+    plugins {
+        id "com.gradle.enterprise" version "3.13.4"
+    }
 }
 
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
-	repositories {
-		maven {
-			name = "Bnd Snapshots"
-			url = uri(bnd_snapshots)
-		}
-		maven {
-			name = "Bnd Releases"
-			url = uri(bnd_releases)
-		}
-		mavenCentral()
-	}
-	var bndConfiguration = configurations.create("bnd") {
-		/* Since the files in the repository change with each build, we need to recheck for changes */
-		resolutionStrategy {
-			cacheChangingModulesFor(30, "minutes")
-			cacheDynamicVersionsFor(30, "minutes")
-		}
-	}
-	configurations.classpath.extendsFrom(bndConfiguration)
-	dependencies {
-		bnd("biz.aQute.bnd:biz.aQute.bnd.gradle") {
-			version {
-				require bnd_version
-				// Prefer RC over SNAPSHOT for next branch
-				prefer "latest.release"
-			}
-		}
-		components {
-			all { ComponentMetadataDetails details ->
-				if ((details.id.group == "biz.aQute.bnd") || (details.id.group == "biz.aQute.bnd.workspace")) {
-					details.changing = true
-				}
-			}
-		}
-	}
-	/* Add bnd gradle plugin to buildscript classpath of rootProject */
-	var bndPlugin = files(bndConfiguration.files)
-	gradle.rootProject {
-		buildscript {
-			dependencies {
-				classpath(bndPlugin)
-			}
-		}
-	}
+    repositories {
+        maven {
+            name = "Bnd Snapshots"
+            url = uri(bnd_snapshots)
+        }
+        maven {
+            name = "Bnd Releases"
+            url = uri(bnd_releases)
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath("biz.aQute.bnd:biz.aQute.bnd.gradle:$bnd_version") {
+            version {
+                require bnd_version
+                prefer "latest.release"
+            }
+        }
+    }
 }
 
 plugins {
-	id "com.gradle.enterprise"
+    id "com.gradle.enterprise"
 }
 
 if (Boolean.parseBoolean(System.getenv("CI"))) {
-	gradleEnterprise {
-		buildScan {
-			publishAlways()
-			termsOfServiceUrl = "https://gradle.com/terms-of-service"
-			termsOfServiceAgree = "yes"
-		}
-	}
+    gradleEnterprise {
+        buildScan {
+            publishAlways()
+            termsOfServiceUrl = "https://gradle.com/terms-of-service"
+            termsOfServiceAgree = "yes"
+        }
+    }
 }
 
 rootProject.name = "bnd"
 
 gradle.ext.bndWorkspaceConfigure = { workspace ->
-	/*
-	 * Compute the build time stamp.
-	 * If the git workspace is clean, the build time is the time of the head commit.
-	 * If the git workspace is dirty, the build time is the current time.
-	 */
-	if ("git diff --no-ext-diff --quiet".execute().waitFor() == 0) {
-		workspace.setProperty(Constants.TSTAMP, "git show --no-patch --format=%ct000".execute().text.trim())
-	} else {
-		workspace.setProperty(Constants.TSTAMP, Long.toString(System.currentTimeMillis()))
-	}
+    if ("git diff --no-ext-diff --quiet".execute().waitFor() == 0) {
+        workspace.setProperty(Constants.TSTAMP, "git show --no-patch --format=%ct000".execute().text.trim())
+    } else {
+        workspace.setProperty(Constants.TSTAMP, Long.toString(System.currentTimeMillis()))
+    }
 }
 
 apply plugin: "biz.aQute.bnd.workspace"
 
 includeBuild("gradle-plugins")
-

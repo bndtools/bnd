@@ -300,10 +300,18 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
-					if (!isGradleCompatible("8.0")) { // only for pre 8.0
+					if (!isGradleCompatible("9.0")) { // Only include for Gradle <9
 						@SuppressWarnings("deprecation")
-						Map<String, Object> plugins = new DslObject(sourceSet).getConvention()
-							.getPlugins();
+						Map<String, Object> plugins = new LinkedHashMap<>();
+						sourceSet.getExtensions()
+							.getExtensionsSchema()
+							.forEach(schema -> {
+								String name = schema.getName();
+								Object ext = sourceSet.getExtensions().findByName(name);
+								if (ext != null) {
+									plugins.put(name, ext);
+								}
+							});
 						plugins.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
 								Object sds = getter(plugin, name);
@@ -312,6 +320,17 @@ public class BndPlugin implements Plugin<Project> {
 								}
 							}
 						});
+					} else {
+						// Gradle 9+ replacement: use extensions directly
+						sourceSet.getExtensions()
+							.getExtensionsSchema()
+							.forEach(schema -> {
+								String name = schema.getName();
+								Object sds = sourceSet.getExtensions().findByName(name);
+								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
+									sourceDirectorySets.put(name, sourceDirectorySet);
+								}
+							});
 					}
 					Provider<Directory> destinationDir = sourceSet.getJava()
 						.getClassesDirectory();
@@ -349,10 +368,18 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
-					if (!isGradleCompatible("8.0")) { // only for pre 8.0
+					if (!isGradleCompatible("9.0")) { // Only include for Gradle <9
 						@SuppressWarnings("deprecation")
-						Map<String, Object> plugins = new DslObject(sourceSet).getConvention()
-							.getPlugins();
+						Map<String, Object> plugins = new LinkedHashMap<>();
+						sourceSet.getExtensions()
+							.getExtensionsSchema()
+							.forEach(schema -> {
+								String name = schema.getName();
+								Object ext = sourceSet.getExtensions().findByName(name);
+								if (ext != null) {
+									plugins.put(name, ext);
+								}
+							});
 						plugins.forEach((name, plugin) -> {
 							if (!sourceDirectorySets.containsKey(name)) {
 								Object sds = getter(plugin, name);
@@ -361,6 +388,17 @@ public class BndPlugin implements Plugin<Project> {
 								}
 							}
 						});
+					} else {
+						// Gradle 9+ replacement: use extensions directly
+						sourceSet.getExtensions()
+							.getExtensionsSchema()
+							.forEach(schema -> {
+								String name = schema.getName();
+								Object sds = sourceSet.getExtensions().findByName(name);
+								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
+									sourceDirectorySets.put(name, sourceDirectorySet);
+								}
+							});
 					}
 					Provider<Directory> destinationDir = sourceSet.getJava()
 						.getClassesDirectory();
