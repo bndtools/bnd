@@ -1,4 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!-- 
+This repository contains a few manually added dependencies 
+from previous / older Eclipse version which are still needed, but dropped in more recent
+Eclipse versions. Those are mostly non-OSGi libs for which no OSGi-bundle exists on Maven Central
+but were OSGified by Eclipse team.
+-->
 <repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="Eclipse_2022-12-Legacy" increment="1759431158054">
 <resource>
     <capability namespace="osgi.identity">
