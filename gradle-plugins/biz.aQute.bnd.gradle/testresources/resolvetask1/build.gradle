@@ -52,3 +52,11 @@ task resolvefail(type: Resolve) {
 	bndrun = file("${name}.bndrun")
 	bundles = configurations.bundles
 }
+
+task projectname(type: Resolve) {
+	description = "Resolve ${name}.bndrun"
+	bndrun = file("${name}.bndrun")
+	outputBndrun = file("${buildDir}/${name}.bndrun")
+	bundles = configurations.bundles
+}
+

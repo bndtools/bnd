@@ -253,7 +253,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 		DirectoryProperty temporaryDirProperty = objects.directoryProperty()
 			.fileValue(getTemporaryDir());
 		workingDirectory = objects.directoryProperty()
-			.convention(temporaryDirProperty);
+			.convention(temporaryDirProperty.dir(projectName));
 		bundles = objects.fileCollection();
 		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 		targetVersion = project.getTasks()
