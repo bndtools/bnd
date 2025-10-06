@@ -2277,13 +2277,17 @@ public class Analyzer extends Processor {
 								dot.putResource(path, resource);
 							}
 						}
+						// Mark package as contained (embedded)
+						Attrs attrs = packagesToEmbed.get(packageRef);
+						if (attrs == null) {
+							attrs = new Attrs();
+						}
+						contained.put(packageRef, attrs);
 						// Package found and copied, no need to check other jars
 						break;
 					}
 				}
 			}
-			// After embedding, we need to re-analyze the jar to update contained packages
-			analyzeJar(dot, "", true, null, true);
 		} catch (Exception e) {
 			exception(e, "Failed to embed conditional packages: %s", e.getMessage());
 		}
