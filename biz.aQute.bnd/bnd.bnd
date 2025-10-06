@@ -30,6 +30,8 @@
 	@${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.reporter;latest}!/!META-INF/*, \
  	@${repo;biz.aQute.launchpad;latest}!/!META-INF/*, \
+ 	@${repo;slf4j.api;[1.7.25,2)}!/!META-INF/*, \
+	@${repo;slf4j.simple;[1.7.25,2)}!/!META-INF/*, \
 	@${repo;jline}!/!META-INF/*, \
     @${repo;jline}!/META-INF/native/*, \
 
