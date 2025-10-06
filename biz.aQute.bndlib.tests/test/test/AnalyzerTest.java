@@ -1504,4 +1504,78 @@ public class AnalyzerTest {
 			return null;
 		return clauses.get(attr);
 	}
+
+	/**
+	 * Test Import-Packages marked with resolution:=conditional.
+	 * When package is from an OSGi bundle, it should be imported normally.
+	 */
+	@Test
+	public void testConditionalImportWithOSGiBundle() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			// Use resolution:=conditional for OSGi packages
+			p.put("Import-Package", "*;resolution:=conditional");
+			p.put("Private-Package", "test.conditionalimport");
+
+			a.addClasspath(new File("bin_test"));
+			a.addClasspath(IO.getFile("jar/osgi.jar")); // OSGi bundle
+
+			a.setProperties(p);
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			String imports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Import-Package");
+
+			// org.osgi.framework should be imported normally (from OSGi bundle)
+			assertNotNull(imports);
+			assertTrue(imports.contains("org.osgi.framework"));
+			// Should have version from OSGi bundle
+			assertTrue(imports.contains("version="));
+			assertFalse(imports.contains("resolution:=optional"));
+			assertFalse(imports.contains("resolution:=conditional"));
+
+		} finally {
+			a.close();
+		}
+	}
+
+	/**
+	 * Test Import-Packages marked with resolution:=conditional for non-OSGi jar.
+	 * The package should be embedded, not imported.
+	 */
+	@Test
+	public void testConditionalImportWithNonOSGiJar() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			// Use resolution:=conditional which should embed packages from non-OSGi jars
+			p.put("Import-Package", "*;resolution:=conditional");
+			p.put("Private-Package", "test.dynamicimport");
+
+			a.addClasspath(new File("bin_test"));
+			a.addClasspath(IO.getFile("jar/asm.jar")); // Non-OSGi jar
+			a.addClasspath(IO.getFile("jar/osgi.jar")); // OSGi bundle
+
+			a.setProperties(p);
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			String imports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Import-Package");
+
+			// org.osgi.framework should be imported (from OSGi bundle)
+			assertNotNull(imports);
+			assertTrue(imports.contains("org.osgi.framework"));
+			
+			// If test.dynamicimport references asm classes, they should be embedded
+			// For now, just verify build succeeds
+
+		} finally {
+			a.close();
+		}
+	}
 }

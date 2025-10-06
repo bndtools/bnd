@@ -404,6 +404,8 @@ public interface Constants {
 	String		CLASS_ATTRIBUTE								= "class";
 	String		NAME_ATTRIBUTE								= "name";
 	String		RESOLUTION_DYNAMIC							= "dynamic";
+	String		RESOLUTION_OPTIONAL							= "optional";
+	String		RESOLUTION_CONDITIONAL						= "conditional";
 	String		DESCRIPTION_ATTRIBUTE						= "description";
 	String		OSNAME_ATTRIBUTE							= "osname";
 	String		OSVERSION_ATTRIBUTE							= "osversion";

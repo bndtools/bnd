@@ -2191,6 +2191,9 @@ public class Analyzer extends Processor {
 		Packages regularImports = new Packages(imports);
 		Parameters dynamicImports = getDynamicImportPackage();
 
+		// First, handle conditional imports before processing dynamic imports
+		processConditionalImports(regularImports);
+
 		Iterator<Entry<PackageRef, Attrs>> regularImportsIterator = regularImports.entrySet()
 			.iterator();
 		while (regularImportsIterator.hasNext()) {
@@ -2205,6 +2208,85 @@ public class Analyzer extends Processor {
 			}
 		}
 		return new Pair<>(regularImports, dynamicImports);
+	}
+
+	/**
+	 * Process imports with resolution:=conditional directive.
+	 * For each conditional import:
+	 * 1. If package is from an OSGi bundle (in classpathExports with INTERNAL_EXPORTED_DIRECTIVE),
+	 *    keep it as a regular import (remove the resolution directive)
+	 * 2. If package is from a non-OSGi jar (in classpathExports but without INTERNAL_EXPORTED_DIRECTIVE),
+	 *    remove from imports and add to conditional packages to be embedded
+	 * 3. If package is not on classpath at all, change resolution to optional
+	 */
+	private void processConditionalImports(Packages regularImports) {
+		Packages packagesToEmbed = new Packages();
+		
+		Iterator<Entry<PackageRef, Attrs>> importsIterator = regularImports.entrySet()
+			.iterator();
+		while (importsIterator.hasNext()) {
+			Entry<PackageRef, Attrs> packageEntry = importsIterator.next();
+			PackageRef packageRef = packageEntry.getKey();
+			Attrs attrs = packageEntry.getValue();
+			String resolution = attrs.get(Constants.RESOLUTION_DIRECTIVE);
+			
+			if (Constants.RESOLUTION_CONDITIONAL.equals(resolution)) {
+				attrs.remove(Constants.RESOLUTION_DIRECTIVE);
+				
+				Attrs classpathAttrs = classpathExports.get(packageRef);
+				if (classpathAttrs != null) {
+					// Package is on the classpath
+					if (classpathAttrs.containsKey(Constants.INTERNAL_EXPORTED_DIRECTIVE)) {
+						// Package is from an OSGi bundle - keep as regular import
+						// Directive already removed, nothing else to do
+					} else {
+						// Package is from a non-OSGi jar - mark for embedding
+						packagesToEmbed.put(packageRef, attrs);
+						importsIterator.remove();
+					}
+				} else {
+					// Package not found on classpath - make it optional
+					attrs.put(Constants.RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
+				}
+			}
+		}
+		
+		// Add packages to embed to conditional packages
+		if (!packagesToEmbed.isEmpty()) {
+			embedConditionalPackages(packagesToEmbed);
+		}
+	}
+
+	/**
+	 * Add packages that need to be embedded to the jar.
+	 * This is called for conditional imports from non-OSGi jars.
+	 */
+	private void embedConditionalPackages(Packages packagesToEmbed) {
+		try {
+			for (PackageRef packageRef : packagesToEmbed.keySet()) {
+				// Find the package in the classpath and copy it to the dot jar
+				for (Jar cpe : getClasspath()) {
+					Map<String, Resource> packageDir = cpe.getDirectory(packageRef.getPath());
+					if (packageDir != null && !packageDir.isEmpty()) {
+						// Copy all resources from this package
+						for (Map.Entry<String, Resource> entry : packageDir.entrySet()) {
+							String path = entry.getKey();
+							Resource resource = entry.getValue();
+							// Only copy if not already present
+							if (dot.getResource(path) == null) {
+								dot.putResource(path, resource);
+							}
+						}
+						// Package found and copied, no need to check other jars
+						break;
+					}
+				}
+			}
+			// After embedding, we need to re-analyze the jar to update contained packages
+			analyzeJar(dot, "", true, null, true);
+		} catch (Exception e) {
+			exception(e, "Failed to embed conditional packages: %s", e.getMessage());
+		}
 	}
 
 	String applyVersionPolicy(String exportVersion, String importRange, boolean provider) {
