@@ -2,7 +2,7 @@
 
 # Do not run this, use the platform-specific bndrun files (which "-include" this)
 
--runfw: org.eclipse.osgi;repo='Eclipse*'
+-runfw: org.eclipse.osgi
 
 -runvm: \
   -Xmx2g, \
@@ -39,7 +39,6 @@
 	bnd.identity;id='bndtools.release',\
 	bnd.identity;id='com.google.guava';version='[33.4.8,34.0.0)',\
 	bnd.identity;id='com.google.guava.failureaccess',\
-	bnd.identity;id='javax.annotation',\
 	bnd.identity;id='org.apache.ant',\
 	bnd.identity;id='org.apache.felix.gogo.command',\
 	bnd.identity;id='org.apache.felix.gogo.runtime',\
@@ -79,6 +78,7 @@
 	bnd.identity;id='org.eclipse.m2e.discovery',\
 	bnd.identity;id='org.eclipse.m2e.editor',\
 	bnd.identity;id='org.eclipse.m2e.jdt.ui',\
+	bnd.identity;id='org.eclipse.m2e.maven.runtime',\
 	bnd.identity;id='org.eclipse.m2e.profiles.core',\
 	bnd.identity;id='org.eclipse.m2e.profiles.ui',\
 	bnd.identity;id='org.eclipse.m2e.refactoring',\
@@ -106,7 +106,8 @@
 	bnd.identity;id='org.eclipse.ui.intro.quicklinks.source',\
 	bnd.identity;id='org.eclipse.ui.intro.source',\
 	bnd.identity;id='org.eclipse.ui.intro.universal',\
-	bnd.identity;id='org.eclipse.ui.intro.universal.source'
+	bnd.identity;id='org.eclipse.ui.intro.universal.source',\
+	bnd.identity;id='jakarta.inject.jakarta.inject-api'
 
 -runblacklist: \
 	bnd.identity;id='biz.aQute.bnd.annotation',\
@@ -114,7 +115,9 @@
 	bnd.identity;id='biz.aQute.junit',\
 	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
 	bnd.identity;id='osgi.*',\
-	bnd.identity;id='org.osgi.*.annotations'
+	bnd.identity;id='org.osgi.*.annotations',\
+	bnd.identity;id='biz.aQute.bndlib';version='[7.0.0,7.0.1)',\
+	bnd.identity;id='org.hamcrest';version='[3.0.0,4)'
 
 
 -runee: JavaSE-17

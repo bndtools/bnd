@@ -103,4 +103,9 @@ public class EclipseGitProgressTransformer implements ProgressMonitor {
 			return task.isCanceled();
 		return root.isCanceled();
 	}
+
+	@Override
+	public void showDuration(boolean enabled) {
+		// not implemented
+	}
 }

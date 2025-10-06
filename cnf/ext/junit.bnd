@@ -3,13 +3,13 @@
 # require people to be on the bleeding edge, these versions will typically be behind the
 # latest versions and also behind the version that we use in the bndtools workspace's own tests.
 junit4.tester.version=4.10
-junit.platform.tester.version=1.9.1
+junit.platform.tester.version=1.10.1
 # The following is also used as junit.vintage.tester.version
-junit.jupiter.tester.version=5.9.1
+junit.jupiter.tester.version=5.10.1
 # This is the minimum version of JUnit 4 supported by junit-vintage-engine;
 # can be higher than minimum junit4 supported by biz.aQute.tester
 junit.vintage.tester.junit4.version=4.12
-opentest4j.tester.version=1.2.0
+opentest4j.tester.version=1.3.0
 
 # Runtime versions/versions used in Bnd's own tests
 junit3.version=3.8.3
@@ -18,8 +18,8 @@ junit4.eclipse.version=4.13.2
 # The Eclipse versions are currently not used but are sometimes
 # necessary depending on the compatiblity with Eclipse's version
 # of junit-platform and the version we're building against.
-junit.jupiter.eclipse.version=5.9.1
-junit.platform.eclipse.version=1.9.1
+junit.jupiter.eclipse.version=5.10.1
+junit.platform.eclipse.version=1.10.1
 junit.jupiter.version=5.12.2
 junit.platform.version=1.12.2
 opentest4j.version=1.3.0
@@ -37,9 +37,9 @@ junit: ${junit-osgi},\
 	org.osgi.framework;version='[1.8,1.9)'
 
 junit-osgi: \
-	junit-platform-commons;version=latest,\
-	junit-platform-engine;version=latest,\
-	junit-platform-launcher;version=latest,\
+	junit-platform-commons;version='${range;[===,==+);${junit.platform.version}}',\
+	junit-platform-engine;version='${range;[===,==+);${junit.platform.version}}',\
+	junit-platform-launcher;version='${range;[===,==+);${junit.platform.version}}',\
 	assertj-core;version=latest,\
 	net.bytebuddy.byte-buddy;version=latest,\
 	org.opentest4j;version=latest,\

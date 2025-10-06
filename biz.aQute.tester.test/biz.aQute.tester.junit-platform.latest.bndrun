@@ -12,6 +12,7 @@
 	org.opentest4j,\
 	org.junit,\
 	org.hamcrest.core,\
+	org.hamcrest;version='[2.2.0,2.2.1)',\
 	junit-jupiter-engine,\
 	junit-vintage-engine
 
