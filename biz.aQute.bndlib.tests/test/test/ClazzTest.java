@@ -6,16 +6,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
@@ -30,16 +34,21 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.FieldDef;
+import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.io.IO;
+import aQute.lib.manifest.ManifestUtil;
 
 public class ClazzTest {
 
@@ -1111,4 +1120,77 @@ public class ClazzTest {
 		}
 	}
 
+
+	/**
+	 * This test creates a fake java .class file with an imaginary large major
+	 * version (10000) to test how our Analyzer handles class files of a yet
+	 * unknown future JDK.
+	 */
+	@Test
+	void testUnknownJDKClass() throws Exception {
+
+
+		File file = IO.getFile("bin_test/test/ClazzTest$Inner.class");
+		byte[] fakeClassBytes = Files.readAllBytes(file.toPath());
+
+		int newMajor = 10_000;
+		int expected = 9955; // newMajor - 45;
+		// Patch major version (u2 big-endian)
+		// https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-4.html
+		fakeClassBytes[6] = (byte) ((newMajor >> 8) & 0xFF);
+		fakeClassBytes[7] = (byte) (newMajor & 0xFF);
+
+		try (Jar jar = new Jar("future");
+			Analyzer a = new Analyzer(jar)) {
+
+			Resource r = new EmbeddedResource(fakeClassBytes, fakeClassBytes.length);
+
+			Clazz c = new Clazz(a, "", r);
+			c.parseClassFile(new ByteArrayInputStream(fakeClassBytes), new ClassDataCollector() {});
+			a.getClassspace()
+			.put(c.getClassName(), c);
+
+			assertThat(c.getMajorVersion()).isEqualTo(newMajor);
+
+			Manifest calcManifest = a.calcManifest();
+			ManifestUtil.write(calcManifest, System.out);
+			Attributes mainAttributes = calcManifest.getMainAttributes();
+			assertThat(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY))
+				.contains("(&(osgi.ee=JavaSE)(version=" + expected + "))");
+			assertThat(a.getEEs()).containsExactly(JAVA.UNKNOWN);
+
+
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+
+	}
+
+	@Test
+	void testBuildEEFilter_lenientKnown() {
+		// lenient = true but version within known range
+		String result = Clazz.JAVA.buildEEFilterLenient(55); // within range
+		assertEquals("(&(osgi.ee=JavaSE)(version=11))", result);
+	}
+
+
+	@Test
+	void testBuildEEFilter_lenientTooLow() {
+		// version < 0 -> UNKNOWN
+		String result = Clazz.JAVA.buildEEFilterLenient(40);
+		assertEquals("(&(osgi.ee=JavaSE)(version=UNKNOWN))", result);
+	}
+
+	@Test
+	void testBuildEEFilter_lenientTooHigh() {
+		// version >= JAVA.values.length - 1 -> eeFilter(version)
+		int maxmajor = Clazz.JAVA.values()[Clazz.JAVA.values().length - 2].getMajor();
+		int tooHigh = maxmajor + 10;
+		int expected = tooHigh - 45;
+		String result = Clazz.JAVA.buildEEFilterLenient(tooHigh);
+		// version = max. known version + 1
+		assertEquals("(&(osgi.ee=JavaSE)(version=" + expected + "))", result);
+	}
 }
