@@ -156,4 +156,40 @@ class TestResolveTask extends Specification {
 		props.load(bndrun, reporter)
 		!props.getProperty("-runbundles")
 	}
+
+	def "Simple Bnd Resolve Task Resolve Fail with project.name Test"() {
+		given:
+		String testProject = "resolvetask1"
+		File testProjectDir = new File(testResources, testProject).canonicalFile
+		assert testProjectDir.isDirectory()
+		File testProjectBuildDir = new File(testProjectDir, "build").canonicalFile
+		def reporter = new Slf4jReporter(TestResolveTask.class)
+		String taskname = "projectname"
+
+		when:
+		File bndrun = new File(testProjectDir, "${taskname}.bndrun")
+		UTF8Properties props = new UTF8Properties()
+
+		then:
+		bndrun.isFile()
+		props.load(bndrun, reporter)
+		!props.getProperty("-runbundles")
+
+		when:
+		props = new UTF8Properties()
+		def result = TestHelper.getGradleRunner()
+				.withProjectDir(testProjectDir)
+				.withArguments("--parallel", "--stacktrace", taskname)
+				.withPluginClasspath()
+				.forwardOutput()
+				.buildAndFail()
+
+		then:
+		result.task(":${taskname}").outcome == FAILED
+		result.output =~ /Resolution failed\. Capabilities satisfying the following requirements could not be found:/
+		result.output =~ /osgi\.identity: \(osgi\.identity=resolvetask1\)/
+		bndrun.isFile()
+		props.load(bndrun, reporter)
+		!props.getProperty("-runbundles")
+	}
 }
