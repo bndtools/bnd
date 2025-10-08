@@ -1887,6 +1887,14 @@ public class Analyzer extends Processor {
 	 * Not clear anymore ...
 	 */
 	Packages doExportsToImports(Packages exports) {
+
+		if (is(Constants.NOSUBSTITUTION)) {
+			// package substitution disabled completely
+			// means: we do not import at all, any package we export
+			// this is equivalent to Export-Package:*;-noimport:=true
+			return new Packages();
+		}
+
 		// private packages = contained - exported.
 		Set<PackageRef> privatePackages = new HashSet<>(contained.keySet());
 		privatePackages.removeAll(exports.keySet());

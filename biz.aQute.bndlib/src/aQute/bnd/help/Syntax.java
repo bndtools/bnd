@@ -620,6 +620,10 @@ public class Syntax implements Constants {
 			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NOIMPORTJAVA, "Do not calculate " + IMPORT_PACKAGE + " references for java.* packages.",
 			NOIMPORTJAVA + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOSUBSTITUTION,
+			"Setting this to true disables package substitution globally (default is false). That means, that bnd does not calculate "
+				+ IMPORT_PACKAGE + " references for packages exported by the current bundle.",
+			NOSUBSTITUTION + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
 			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
