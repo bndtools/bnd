@@ -18,7 +18,6 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;

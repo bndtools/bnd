@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.text.Collator;
 import java.util.Locale;
 import java.util.jar.Attributes;
