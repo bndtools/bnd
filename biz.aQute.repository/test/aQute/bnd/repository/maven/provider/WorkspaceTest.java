@@ -11,9 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
@@ -25,6 +28,7 @@ import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class WorkspaceTest {
 	@InjectTemporaryDirectory
 	File						tmp;
@@ -79,6 +83,10 @@ public class WorkspaceTest {
 			.size());
 		assertTrue(((Tagged) repo).getTags()
 			.includesAny(Constants.REPOTAGS_RESOLVE));
+
+		// same for 'compile' tag
+		List<Repository> compileRepos = workspace.getPlugins(Repository.class, Constants.REPOTAGS_RESOLVE);
+		assertEquals(repos, compileRepos);
 
 	}
 
@@ -145,5 +153,60 @@ public class WorkspaceTest {
 		assertEquals("-", Tags.print(Tags.of(Tagged.EMPTY_TAGS)));
 		assertEquals("foo", Tags.print(Tags.of(Tagged.EMPTY_TAGS, "foo")));
 		assertEquals("bar,foo", Tags.print(Tags.of(Tagged.EMPTY_TAGS, "foo", "bar")));
+	}
+
+	@Test
+	public void testTags(SoftAssertions softly) {
+
+		softly.assertThat(Tags.of()
+			.includesAny("resolve"))
+			.isTrue();
+
+		softly.assertThat(Tags.of()
+			.includesAny("compile"))
+			.isTrue();
+
+		softly.assertThat(Tags.of("resolve")
+			.includesAny("resolve"))
+			.isTrue();
+
+
+		softly.assertThat(Tags.of("resolve", "compile")
+			.includesAny("resolve"))
+			.isTrue();
+
+		softly.assertThat(Tags.of("resolve", "compile")
+			.includesAny("compile"))
+			.isTrue();
+
+		softly.assertThat(Tags.of("resolve", "compile")
+			.includesAny("compile", "resolve"))
+			.isTrue();
+
+		softly.assertThat(Tags.of("resolve", "compile")
+			.includesAny("resolve", "compile"))
+			.isTrue();
+
+		softly.assertThat(Tags.of("resolve", "compile", "somethingelse")
+			.includesAny("resolve", "compile"))
+			.isTrue();
+
+		// negative
+		softly.assertThat(Tags.of("resolve", "nocompile")
+			.includesAny("resolve"))
+			.isTrue();
+
+		softly.assertThat(Tags.of("resolve", "nocompile")
+			.includesAny("compile"))
+			.isFalse();
+
+		softly.assertThat(Tags.of("noresolve", "nocompile")
+			.includesAny("resolve"))
+			.isFalse();
+
+		softly.assertThat(Tags.of("noresolve", "nocompile")
+			.includesAny("compile"))
+			.isFalse();
+
 	}
 }
