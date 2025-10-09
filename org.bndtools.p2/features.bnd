@@ -5,10 +5,7 @@ Bundle-License:  \
         file="license.txt";\
         link="(ASL-2.0 or EPL-2.0)"
         
-
-Bundle-DocURL:          https://bnd.bndtools.org/
 Bundle-Vendor           bnd
-Bundle-Copyright:       Copyright bndtools
 
 features        = \
         bndtools.main.feature.bndrun, \
