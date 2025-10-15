@@ -3187,6 +3187,86 @@ public class BuilderTest {
 		}
 	}
 
+	/**
+	 * Check that the defined activator is found, and not concatenated by the
+	 * Bundle-Activator annotation in TypeInVersionedPackage
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testBundleActivatorShouldNotBeConcatenated() throws Exception {
+		Builder bmaker = new Builder();
+		try {
+			bmaker.setProperty("Bundle-Activator", "test.activator.Activator");
+			bmaker.setProperty("build", "xyz"); // for @Version annotation
+			bmaker.setProperty("Private-Package", "test.*");
+			bmaker.setProperty("-bundleannotations",
+				"test.annotationheaders.attrs.std.activator.TypeInVersionedPackage");
+			// bmaker.setProperty("-dsannotations", "!*");
+			// bmaker.setProperty("-metatypeannotations", "!*");
+			bmaker.setClasspath(new File[] {
+				new File("bin_test")
+			});
+			bmaker.setProperty("-fixupmessages.export",
+				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+			bmaker.setProperty("-fixupmessages.directive",
+				"Unknown directive foobar: in Export-Package, allowed directives are uses:,mandatory:,include:,exclude:,-import:, and 'x-*'");
+
+			Jar jar = bmaker.build();
+			report("testBundleActivatorShouldNotBeConcatenated", bmaker, jar);
+
+			Attributes main = jar.getManifest()
+				.getMainAttributes();
+			assertEquals("test.activator.Activator", main.getValue(Constants.BUNDLE_ACTIVATOR));
+			assertFalse(
+				bmaker
+					.check(
+						"The Bundle-Activator header only supports a single type. The following types were found: test.activator.Activator,test.annotationheaders.attrs.std.activator.TypeInVersionedPackage. This usually happens when a macro resolves to multiple types"));
+		} finally {
+			bmaker.close();
+		}
+	}
+
+	/**
+	 * Check that the Bundle-Activator annotation in TypeInVersionedPackage
+	 * defines the Bundle-Activator of our bundle.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testBundleActivatorFromAnnotation() throws Exception {
+		Builder bmaker = new Builder();
+		try {
+			// bmaker.setProperty("Bundle-Activator",
+			// "test.activator.Activator");
+			bmaker.setProperty("build", "xyz"); // for @Version annotation
+			bmaker.setProperty("Private-Package", "test.*");
+			bmaker.setProperty("-bundleannotations",
+				"test.annotationheaders.attrs.std.activator.TypeInVersionedPackage,*");
+			bmaker.setClasspath(new File[] {
+				new File("bin_test")
+			});
+			bmaker.setProperty("-fixupmessages.export",
+				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+			bmaker.setProperty("-fixupmessages.directive",
+				"Unknown directive foobar: in Export-Package, allowed directives are uses:,mandatory:,include:,exclude:,-import:, and 'x-*'");
+
+			Jar jar = bmaker.build();
+			// assertTrue(bmaker.check());
+			report("testBundleActivatorFromAnnotation", bmaker, jar);
+
+			Attributes main = jar.getManifest()
+				.getMainAttributes();
+			assertEquals("test.annotationheaders.attrs.std.activator.TypeInVersionedPackage",
+				main.getValue(Constants.BUNDLE_ACTIVATOR));
+
+			assertFalse(bmaker.check(
+				"The Bundle-Activator header only supports a single type*"));
+		} finally {
+			bmaker.close();
+		}
+	}
+
 	@Test
 	public void testImportVersionRange() throws Exception {
 		assertVersionEquals("[1.1,2.0)", "[1.1,2.0)");
