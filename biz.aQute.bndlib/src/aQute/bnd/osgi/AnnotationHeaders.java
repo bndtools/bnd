@@ -146,6 +146,19 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		PROVIDE_CAPABILITY, BUNDLE_CATEGORY, BUNDLE_DOC_URL, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS, BUNDLE_COPYRIGHT,
 		STD_REQUIREMENT, STD_CAPABILITY, STD_HEADER);
 
+	/**
+	 * OSGi Bundle headers, which should not be touched (concatenated by
+	 * additional headers from annotations) if their value already defined in
+	 * analyzer .bnd file , because these headers allow only a single value
+	 * (i.e. not multiple values concatenated by comma). Thus concatenating
+	 * would create invalid / broken header values. For example if
+	 * Bundle-Activator is already specified in analyzer .bnd then this should
+	 * win.
+	 */
+	private static final Set<String>	BUNDLE_HEADERS_ANALYZER_WINS	= Sets.of(Constants.BUNDLE_ACTIVATOR,
+		Constants.BUNDLE_ACTIVATIONPOLICY, Constants.BUNDLE_NAME, Constants.BUNDLE_SYMBOLICNAME,
+		Constants.BUNDLE_VERSION, Constants.BUNDLE_MANIFESTVERSION, Constants.MAIN_CLASS);
+
 	// Used to detect attributes and directives on Require-Capability and
 	// Provide-Capability
 	static final String					STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
@@ -1030,11 +1043,20 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * This method is a pass thru for the properties of the analyzer. If we have
 	 * such a header, we get the analyzer header and concatenate our values
-	 * after removing dups.
+	 * after removing dups. But there are exceptions: Some headers (e.g.
+	 * Bundle-Activator) only allow a single value and for them concatenating to
+	 * the analyzer header does not make sense.
 	 */
 
 	public String getHeader(String name) {
 		String value = analyzer.getProperty(name);
+
+		// for some OSGi headers we do not want to concatenate to existing
+		// analyzer value (analyzer value wins)
+		if (value != null && BUNDLE_HEADERS_ANALYZER_WINS.contains(name)) {
+			return value;
+		}
+
 		if (headers.containsKey(name)) {
 			//
 			// Remove duplicates and sort
