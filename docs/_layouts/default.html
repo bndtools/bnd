@@ -24,8 +24,13 @@
 						{% include pagination.htm %}
 						
 						{% if page.class %}
-							<div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
-								{{page.class}}
+						<div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
+							{{page.class}}
+						</div>
+						{% endif %}
+						{% if page.since %}
+							<div class="pageclass page-since-tag" title="The content below assumes bndtools version {{ page.since }}.">
+								<a href="https://github.com/bndtools/bnd/wiki/Changes-in-{{ page.since }}" target="_blank">Since {{ page.since }}</a>
 							</div>
 						{% endif %}
 					</div>

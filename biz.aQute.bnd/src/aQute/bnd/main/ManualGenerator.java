@@ -10,8 +10,10 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import aQute.bnd.help.Syntax;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
@@ -132,8 +134,28 @@ class ManualGenerator {
 				f.format("class: %s\n", overrideFrontmatter.getOrDefault("class", "Header"));
 			}
 			f.format("summary: |\n   %s\n", overrideFrontmatter.getOrDefault("summary", sx.getLead()));
+
+			String since = overrideFrontmatter.getOrDefault("since", null);
+			if (since != null) {
+				f.format("since: %s\n", since);
+			}
+
 			f.format(
 				"note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. ");
+
+			// add custom frontmatter tags
+			Set<String> frontterNoOverwrite = Sets.of("layout", "title", "class", "summary", "note", "since");
+			overrideFrontmatter.entrySet()
+				.stream()
+				.filter(e -> !frontterNoOverwrite.contains(e.getKey()))
+				.forEach(entry -> {
+					String key = entry.getKey();
+					String value = entry.getValue();
+					if (value != null && !value.isBlank()) {
+						f.format("%n%s: %s%n", key, value);
+					}
+				});
+
 			f.format("\n---\n\n");
 
 

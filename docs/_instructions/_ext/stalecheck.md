@@ -3,7 +3,7 @@ layout: default
 class: Project
 title: -stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* ...
 summary: Perform a stale check of files and directories before building a jar 
-since: 4.3
+since: 4.3.0
 ---
 
 If you work in Bndtools then there is normally little to worry about, bndtools keeps everything up to dated all the time. 

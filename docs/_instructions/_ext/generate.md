@@ -3,7 +3,7 @@ layout: default
 class: Project
 title: "-generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ..."
 summary: Generate sources 
-since: 5.1
+since: 5.1.0
 ---
 
 Virtually all the work bnd is concerned about happens in generating the JAR file. The key idea is to _pull_ resources in the JAR, instead of the more traditional _push_ model of other builders. This works well, except for _generating source code_. This generating step must happen before the compiler is called, and the compiler is generally called before bnd becomes active. 
