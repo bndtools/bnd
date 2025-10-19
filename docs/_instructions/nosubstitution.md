@@ -3,6 +3,7 @@ layout: default
 title: -nosubstitution
 summary: |
    Setting this to true disables package substitution globally (default is false). That means, that bnd does not calculate Import-Package references for packages exported by the current bundle.
+since: 7.2.0
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

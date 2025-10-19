@@ -5,6 +5,8 @@ class: Run
 summary: |
    Disconnects the bndrun file from the workspace and defines its on repositories
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+from: 3.0.1
+
 ---
 
 - Example: `-standalone=index.html;name=..., ...`
