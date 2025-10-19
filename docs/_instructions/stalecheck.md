@@ -4,6 +4,7 @@ title: -stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* 
 class: Project
 summary: |
    Perform a stale check of files and directories before building a jar
+since: 4.3.0
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

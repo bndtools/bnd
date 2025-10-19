@@ -4,6 +4,7 @@ title: -generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ..
 class: Project
 summary: |
    Generate sources
+since: 5.1.0
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
