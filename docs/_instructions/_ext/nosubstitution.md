@@ -1,6 +1,7 @@
 ---
 layout: default
 title: -nosubstitution
+since: 7.2
 ---
 
 See [Subsitution](/chapters/170-versioning.html#substitution) to learn more about package Substition (a key aspect of OSGi allowing that a package can be both exported and imported).
