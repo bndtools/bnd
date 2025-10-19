@@ -15,7 +15,18 @@ Example:
 Export-Package: !com.*, *
 ```
 
-This example exports all packages except those starting with `com`. You can also use directives such as `-noimport:=true` to control import behavior, and bnd will automatically calculate the `uses:` directive for class space consistency.
+This example exports all packages except those starting with `com`. 
+
+**Note:** By default bnd automatically calculates `Import-Package` references for exported packages. This is called [package substitution](/chapters/170-versioning.html#substitution)
+You can use the `-noimport:=true` directive which instructs bnd to **not** calculate `Import-Package` references for exported packages.
+
+Example:
+
+````
+Export-Package: com.*;-noimport:=true
+```
+
+With the [-nosubstitution: true](/instructions/nosubstitution.html) instruction, this substitution behavior can be disabled globally.
 
 See also: [`-exportcontents`](/instructions/exportcontents.html).
 

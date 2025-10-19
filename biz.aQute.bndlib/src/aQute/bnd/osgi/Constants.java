@@ -198,6 +198,7 @@ public interface Constants {
 	String		NOUSES										= "-nouses";
 	String		NOCLASSFORNAME								= "-noclassforname";
 	String		NOIMPORTJAVA								= "-noimportjava";
+	String		NOSUBSTITUTION								= "-nosubstitution";
 	String		NOBUNDLES									= "-nobundles";
 	String		NOPARALLEL									= "-noparallel";
 	String		OUTPUTMASK									= "-outputmask";																																						// default
@@ -344,7 +345,7 @@ public interface Constants {
 		CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPRODUCIBLE, INCLUDEPACKAGE,
 		CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK, MAVEN_SCOPE, RUNSTARTLEVEL,
 		RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE, RUNFRAMEWORKRESTART,
-		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY, METAINF_SERVICES);
+		NOIMPORTJAVA, NOSUBSTITUTION, VERSIONDEFAULTS, LIBRARY, METAINF_SERVICES);
 
 	// Ignore bundle specific headers. These headers do not make a lot of sense
 	// to inherit
