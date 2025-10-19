@@ -2,7 +2,7 @@
 layout: default
 class: Ant
 title: -noee  BOOLEAN
-since: 2.3
+since: 2.3.0
 summary:  Donot add an automatic requirement on an EE capability based on the class format.
 ---
 
