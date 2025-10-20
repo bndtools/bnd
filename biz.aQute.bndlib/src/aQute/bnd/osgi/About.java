@@ -76,27 +76,66 @@ public class About {
 	public static final Version					_7_2		= new Version(7, 2, 0);
 	public static final Version					CURRENT		= _7_2;
 
-	public static final String[]				CHANGES_7_1	= {};
-	public static final String[]				CHANGES_7_0	= {};
-	public static final String[]				CHANGES_6_4	= {};
-	public static final String[]				CHANGES_6_3	= {};
-	public static final String[]				CHANGES_6_2	= {};
-	public static final String[]				CHANGES_6_1	= {};
-	public static final String[]				CHANGES_6_0	= {};
-	public static final String[]				CHANGES_5_3	= {};
-	public static final String[]				CHANGES_5_2	= {};
-	public static final String[]				CHANGES_5_1	= {};
-	public static final String[]				CHANGES_5_0	= {};
-	public static final String[]				CHANGES_4_3	= {};
-	public static final String[]				CHANGES_4_2	= {};
-	public static final String[]				CHANGES_4_1	= {};
-	public static final String[]				CHANGES_4_0	= {};
+	public static final String[]				CHANGES_7_2	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.2.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_7_1	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.1.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_7_0	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.0.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_6_4	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-6.4.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_6_3	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-6.3.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_6_2	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-6.2.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_6_1	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-6.1.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_6_0	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-6.0.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_5_3	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-5.3.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_5_2	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-5.2.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_5_1	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-5.1.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_5_0	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-5.0.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_4_3	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-4.3.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_4_2	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-4.2.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_4_1	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-4.1.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_4_0	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-4.0.0 for a list of changes."
+	};
 
-	public static final String[]				CHANGES_3_5	= {};
+	public static final String[]				CHANGES_3_5	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-3.5.0 for a list of changes."
+	};
 
-	public static final String[]				CHANGES_3_4	= {};
+	public static final String[]				CHANGES_3_4	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-3.4.0 for a list of changes."
+	};
 
-	public static final String[]				CHANGES_3_3	= {};
+	public static final String[]				CHANGES_3_3	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-3.3.0 for a list of changes."
+	};
 
 	public static final String[]				CHANGES_3_2	= {
 		"Default content for bundle", "bndlib: Remove synchronization which causes deadlocks",
@@ -250,6 +289,7 @@ public class About {
 
 	public static final Map<Version, String[]>	CHANGES		= Maps.ofEntries(
 		// In decreasing order
+		Maps.entry(_7_2, CHANGES_7_2),																																							//
 		Maps.entry(_7_1, CHANGES_7_1),																																							//
 		Maps.entry(_7_0, CHANGES_7_0),																																							//
 		Maps.entry(_6_4, CHANGES_6_4),																																							//
