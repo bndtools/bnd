@@ -1,5 +1,6 @@
 package bndtools.editor.completion;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bndtools.api.editor.IBndEditor;
@@ -117,6 +118,13 @@ public class BndHover extends DefaultTextHover implements ITextHoverExtension, I
 				.append(key)
 				.append("=")
 				.append(decorated);
+		}
+
+		List<String> errors = properties.getErrors();
+		if (errors != null && !errors.isEmpty()) {
+			sb.append("\n\n");
+			sb.append("Errors: ");
+			sb.append(errors);
 		}
 
 		String text = sb.toString();

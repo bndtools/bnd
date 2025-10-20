@@ -425,8 +425,8 @@ public class BndSourceEffectivePage extends FormPage {
 			} else {
 
 				for (PropertyKey k : visible) {
-
-					String value = showExpandedValues ? getExpandedValue(k) : k.getRawValue();
+					Processor p = getProperties();
+					String value = showExpandedValues ? getExpandedValue(k, p) : k.getRawValue();
 					sb.append(k.key())
 						.append(": ")
 						.append(BndEditModel.format(k.key(), value))
@@ -490,6 +490,14 @@ public class BndSourceEffectivePage extends FormPage {
 				}), //
 			new ColSpec("Value", -250, PropertyRow::value, PropertyRow::tooltip, null), //
 			new ColSpec("Provenance", 150, (pr -> relativizeProvenancePath(pr.provenance())), null, null), //
+			new ColSpec("Errors", 150, (pr -> {
+				List<String> errors = pr.errors();
+				return errors.isEmpty() ? "" : errors.toString();
+			}
+			), (pr -> {
+				List<String> errors = pr.errors();
+				return errors.isEmpty() ? "" : errors.toString();
+			}), null), //
 		};
 
 		int[] widths = new int[specs.length];
@@ -618,13 +626,12 @@ public class BndSourceEffectivePage extends FormPage {
 		};
 	}
 
-	private String expandedOrRawValue(PropertyKey k) {
+	private String expandedOrRawValue(PropertyKey k, Processor p) {
 		boolean showExpandedValues = showExpandedValuesButton.getSelection();
-		return showExpandedValues ? getExpandedValue(k) : k.getRawValue();
+		return showExpandedValues ? getExpandedValue(k, p) : k.getRawValue();
 	}
 
-	private String getExpandedValue(PropertyKey k) {
-		Processor p = getProperties();
+	private String getExpandedValue(PropertyKey k, Processor p) {
 		return p.getProperty(k.key());
 	}
 
@@ -652,9 +659,8 @@ public class BndSourceEffectivePage extends FormPage {
 	Object[] getTableData() {
 
 		try {
-
-			Processor p = getProperties();
-			List<PropertyKey> propertyKeys = p.getPropertyKeys(k -> true);
+			Processor p1 = getProperties();
+			List<PropertyKey> propertyKeys = p1.getPropertyKeys(k -> true);
 			List<PropertyKey> visible = PropertyKey.findVisible(propertyKeys);
 
 			boolean showMerged = showMergedPropertiesButton.getSelection();
@@ -673,7 +679,9 @@ public class BndSourceEffectivePage extends FormPage {
 
 				return stems.stream()
 					.map(stem -> {
-						return new PropertyRow(stem, p.mergeProperties(stem), null, p.mergeProperties(stem));
+						Processor p = getProperties();
+						return new PropertyRow(stem, p.mergeProperties(stem), null, p.mergeProperties(stem),
+							p.getErrors());
 					})
 					.toArray();
 
@@ -683,7 +691,9 @@ public class BndSourceEffectivePage extends FormPage {
 					.map(k -> {
 						String provenance = k.getProvenance()
 							.orElse(null);
-						return new PropertyRow(k.key(), expandedOrRawValue(k), provenance, getExpandedValue(k));
+						Processor p = getProperties();
+						return new PropertyRow(k.key(), expandedOrRawValue(k, p), provenance, getExpandedValue(k, p),
+							p.getErrors());
 					})
 					.toArray();
 			}
@@ -757,5 +767,5 @@ public class BndSourceEffectivePage extends FormPage {
 	/**
 	 * represents a row in the Effective view table.
 	 */
-	record PropertyRow(String title, String value, String provenance, String tooltip) {}
+	record PropertyRow(String title, String value, String provenance, String tooltip, List<String> errors) {}
 }
