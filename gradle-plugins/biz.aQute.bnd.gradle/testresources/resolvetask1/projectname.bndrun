@@ -1,0 +1,2 @@
+-runfw: org.apache.felix.framework;version='[6.0.5,6.0.5]'
+-runrequires: osgi.identity;filter:='(osgi.identity=${project.name})'
