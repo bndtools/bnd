@@ -3,9 +3,9 @@ title: Headers
 layout: default
 ---
 
-<div>
-
 Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html) page. 
+
+<div>
 
 <dl class="property-index">
 

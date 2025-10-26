@@ -3,9 +3,10 @@ title: Instruction Index
 layout: default
 ---
 
+Learn the basics of bnd instructions in the [Instruction reference](/chapters/820-instructions.html).
+
 <div>
 
-Learn the basics of bnd instructions in the [Instruction reference](/chapters/820-instructions.html).
 
 <table class="property-index">
     <thead>
