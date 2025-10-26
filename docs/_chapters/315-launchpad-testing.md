@@ -541,4 +541,4 @@ The service will remain hidden until you close the `Closeable`.
 
 
 
-[Service Hooks]: https://osgi.org/specification/osgi.core/7.0.0/framework.servicehooks.html
+[Service Hooks]: https://osgi.org/specification/osgi.core/8.0.0/framework.servicehooks.html
