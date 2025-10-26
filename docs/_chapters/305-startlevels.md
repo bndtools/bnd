@@ -97,7 +97,7 @@ A quick way to disable the start level handling by the launch is to set the prop
 start level, `launch.startlevel.default` to 0. This will disable the complete start level handling regardless
 of other settings.
 
-[1]: https://osgi.org/specification/osgi.cmpn/7.0.0/service.configurator.html 
+[1]: https://osgi.org/specification/osgi.cmpn/8.0.0/service.configurator.html 
 [-launcher]: /instructions/launcher.html
 [-runbundles]: /instructions/runbundles.html
 [-runstartlevel]: /instructions/runstartlevel.html

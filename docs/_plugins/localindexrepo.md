@@ -4,7 +4,7 @@ layout: default
 summary: A Plugin for locally indexed repositories 
 ---
 
-Bnd stores information about bundles it knows in an index, following the [OSGi Repository Service Specification](https://docs.osgi.org/specification/osgi.cmpn/7.0.0/service.repository.html). The `LocalIndexedRepo` can be used as a repository to release bundles in or where bundles can be added manually (in bndtools via drag and drop). 
+Bnd stores information about bundles it knows in an index, following the [OSGi Repository Service Specification](https://docs.osgi.org/specification/osgi.cmpn/8.0.0/service.repository.html). The `LocalIndexedRepo` can be used as a repository to release bundles in or where bundles can be added manually (in bndtools via drag and drop). 
 
 ## Configuration
 

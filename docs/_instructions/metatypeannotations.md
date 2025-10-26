@@ -13,7 +13,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 <!-- Manual content from: ext/metatypeannotations.md --><br /><br />
 
-The `-metatypeannotations` instruction tells **bnd** which bundle classes, if any, to search for [Metatype Service](https://osgi.org/specification/osgi.cmpn/7.0.0/service.metatype.html) annotations. **bnd** will then process those classes into Metatype XML resources.
+The `-metatypeannotations` instruction tells **bnd** which bundle classes, if any, to search for [Metatype Service](https://osgi.org/specification/osgi.cmpn/8.0.0/service.metatype.html) annotations. **bnd** will then process those classes into Metatype XML resources.
 
 The value of this instruction is a comma delimited list of fully qualified class names.
 

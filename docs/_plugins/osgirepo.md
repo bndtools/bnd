@@ -4,7 +4,7 @@ layout: default
 summary: A plugin to use OSGi repositories 
 ---
 
-The OSGi Repository can read index files as specified by the [OSGi Repository Service Specification](https://docs.osgi.org/specification/osgi.cmpn/7.0.0/service.repository.html) and is a read only repository.
+The OSGi Repository can read index files as specified by the [OSGi Repository Service Specification](https://docs.osgi.org/specification/osgi.cmpn/8.0.0/service.repository.html) and is a read only repository.
 
 ## Plugin Configuration
 

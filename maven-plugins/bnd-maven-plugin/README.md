@@ -499,4 +499,4 @@ Bnd's integration testing uses the manifest header `Test-Cases` to identify clas
 
 [1]: https://maven.apache.org/guides/mini/guide-reproducible-builds.html
 [2]: https://maven.apache.org/pom.html
-[3]: https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle
+[3]: https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle

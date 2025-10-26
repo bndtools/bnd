@@ -8,11 +8,11 @@ Manifest headers are challenging to keep in sync with the code in the bundle. It
 
 One of the goals of bnd is to eliminate such issues by relying on Java's type system to express the semantics of OSGi metadata.
 
-To address this bnd pioneered _manifest annotations_ which evolved into OSGi's [_bundle annotations_](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle). A **bundle annotation** is used to express metadata that cannot otherwise be derived from code.
+To address this bnd pioneered _manifest annotations_ which evolved into OSGi's [_bundle annotations_](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle). A **bundle annotation** is used to express metadata that cannot otherwise be derived from code.
 
 A *bundle annotation* is applied to a type or package and when processed by bnd will cause the generation of corresponding manifest headers (and header clauses). Generating manifest headers from type safe structures is far less likely to result in errors, simplifies the developers life and is more conducive to code refactoring which won't result in information loss.
 
-The following example shows the _preferred way_ to handle package versioning by applying the [`@Export`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Export) and [`@Version`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.versioning.Version) _bundle annotations_ to `com/acme/package-info.java`.
+The following example shows the _preferred way_ to handle package versioning by applying the [`@Export`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Export) and [`@Version`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.versioning.Version) _bundle annotations_ to `com/acme/package-info.java`.
 
 ```java
 @Export
@@ -62,9 +62,9 @@ Since the annotations & imports happen in the comments, it is not possible to di
 
 Though Java class files contain enough information to find code dependencies, there are many dependencies that are indirect. OSGi _extenders_ for instance are often a requirement to make a bundle function correctly but often client bundles have no code dependency on the extender. For example, Declarative Services (DS) went out of its way to allow components to be Plain Old Java Objects (POJO). The result is that resolving a closure of bundles starting from a DS client bundle would not drag in the Service Component Runtime (SCR), resulting in a satisfied but rather idle closure.
 
-The solution was to describe the requirement for the runtime SCR dependency using [Requirements and Capabilities](https://osgi.org/specification/osgi.core/7.0.0/framework.module.html#framework.module.dependencies). But again, writing these complex clauses in the manifest by hand is both error prone and painful.
+The solution was to describe the requirement for the runtime SCR dependency using [Requirements and Capabilities](https://osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.module.dependencies). But again, writing these complex clauses in the manifest by hand is both error prone and painful.
 
-The [`@Requirement`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Requirement) and [`@Capability`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Capability) annotations were designed to address this issue. These annotations can be used to create [*custom bundle annotations*](#custom-bundle-annotations), described later on. Let's discuss the DS example.
+The [`@Requirement`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Requirement) and [`@Capability`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Capability) annotations were designed to address this issue. These annotations can be used to create [*custom bundle annotations*](#custom-bundle-annotations), described later on. Let's discuss the DS example.
 
 Recent DS specifications require implementations to provide the following capability:
 
@@ -127,7 +127,7 @@ This will generate a manifest Require-Capability header of:
 
 _Bundle annotations_ aren't just about package versioning or requirements and capabilities. They are about lifting *metadata* out of our code to avoid, among other things, error prone duplication of information. A common example is the bundle activator. Bundle Activators are require to be described in a manifest header. This association is not visible to refactoring tools and as such can easily end up out of sync.
 
-The [`@Header`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Header) annotation exists to address this problem.
+The [`@Header`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Header) annotation exists to address this problem.
 
 ```java
 package com.acme;
@@ -180,7 +180,7 @@ class Foo { ... }
 
 When creating *custom bundle annotations* a common requirement is to make them parameterizable such that the values of the *custom bundle annotation* feed into the header clauses resulting from the *bundle annotation* applied to it (*remember; a **custom bundle annotation** is meta-annotated with a **bundle annotation***.)
 
-[OSGi](https://osgi.org/specification/osgi.core/7.0.0/) specifies two annotations, [`@Attribute`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Attribute) and [`@Directive`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Directive), for this purpose. Any methods of the **custom bundle annotation** annotated with `@Attribute` or  `@Directive` will result in those becoming additional attributes or directives respectively of the resulting header clause _when a value is supplied_.
+[OSGi](https://osgi.org/specification/osgi.core/8.0.0/) specifies two annotations, [`@Attribute`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Attribute) and [`@Directive`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Directive), for this purpose. Any methods of the **custom bundle annotation** annotated with `@Attribute` or  `@Directive` will result in those becoming additional attributes or directives respectively of the resulting header clause _when a value is supplied_.
 
 **Note:** When bnd processes OSGi headers, it automatically ensures consistent ordering of attributes and directives within header clauses, with attributes appearing before directives and both groups sorted alphabetically. See [OSGi Header Attribute and Directive Ordering](/chapters/160-jars.html#osgi-header-attribute-and-directive-ordering) for more details.
 
@@ -298,23 +298,23 @@ For more customisation options see chapter on [Accessor Properties](/chapters/23
 
 OSGi Bundle Annotations:
 
-- [`@Attribute`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Attribute)
-- [`@Capability`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Capability)
-- [`@Directive`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Directive)
-- [`@Export`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Export)
-- [`@Header`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Header)
-- [`@Requirement`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Requirement)
+- [`@Attribute`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Attribute)
+- [`@Capability`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Capability)
+- [`@Directive`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Directive)
+- [`@Export`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Export)
+- [`@Header`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Header)
+- [`@Requirement`](https://osgi.org/specification/osgi.core/8.0.0/framework.api.html#org.osgi.annotation.bundle.Requirement)
 - Many OSGi Specifications also define their own _custom bundle annotations_
-  - [`@RequireConfigurationAdmin`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.cm.html#org.osgi.service.cm.annotations.RequireConfigurationAdmin)
-  - [`@RequireMetaTypeExtender`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.metatype.html#org.osgi.service.metatype.annotations.RequireMetaTypeExtender)
-  - [`@RequireMetaTypeImplementation`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.metatype.html#org.osgi.service.metatype.annotations.RequireMetaTypeImplementation)
-  - [`@RequireServiceComponentRuntime`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html#org.osgi.service.component.annotations.RequireServiceComponentRuntime)
-  - [`@RequireEventAdmin`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.event.html#org.osgi.service.event.annotations.RequireEventAdmin)
-  - [`@RequireJPAExtender`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.jpa.html#org.osgi.service.jpa.annotations.RequireJPAExtender)
-  - [`@RequireHttpWhiteboard`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.http.whiteboard.html#org.osgi.service.http.whiteboard.annotations.RequireHttpWhiteboard)
-  - [`@RequireConfigurator`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.configurator.html#org.osgi.service.configurator.annotations.RequireConfigurator)
-  - [`@RequireJaxrsWhiteboard`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.jaxrs.html#org.osgi.service.jaxrs.whiteboard.annotations.RequireJaxrsWhiteboard)
-  - [`@JSONRequired`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.jaxrs.html#org.osgi.service.jaxrs.whiteboard.propertytypes.JSONRequired)
+  - [`@RequireConfigurationAdmin`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.cm.html#org.osgi.service.cm.annotations.RequireConfigurationAdmin)
+  - [`@RequireMetaTypeExtender`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.metatype.html#org.osgi.service.metatype.annotations.RequireMetaTypeExtender)
+  - [`@RequireMetaTypeImplementation`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.metatype.html#org.osgi.service.metatype.annotations.RequireMetaTypeImplementation)
+  - [`@RequireServiceComponentRuntime`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.component.html#org.osgi.service.component.annotations.RequireServiceComponentRuntime)
+  - [`@RequireEventAdmin`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.event.html#org.osgi.service.event.annotations.RequireEventAdmin)
+  - [`@RequireJPAExtender`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.jpa.html#org.osgi.service.jpa.annotations.RequireJPAExtender)
+  - [`@RequireHttpWhiteboard`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.http.whiteboard.html#org.osgi.service.http.whiteboard.annotations.RequireHttpWhiteboard)
+  - [`@RequireConfigurator`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.configurator.html#org.osgi.service.configurator.annotations.RequireConfigurator)
+  - [`@RequireJaxrsWhiteboard`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.jaxrs.html#org.osgi.service.jaxrs.whiteboard.annotations.RequireJaxrsWhiteboard)
+  - [`@JSONRequired`](https://osgi.org/specification/osgi.cmpn/8.0.0/service.jaxrs.html#org.osgi.service.jaxrs.whiteboard.propertytypes.JSONRequired)
   - [`@RequireCDIExtender`](https://osgi.org/specification/osgi.enterprise/7.0.0/service.cdi.html#org.osgi.service.cdi.annotations.RequireCDIExtender)
   - [`@RequireCDIImplementation`](https://osgi.org/specification/osgi.enterprise/7.0.0/service.cdi.html#org.osgi.service.cdi.annotations.RequireCDIImplementation)
 
@@ -338,5 +338,5 @@ Bnd Bundle Annotations:
   * `@MIT_1_0`
   * `@MPL_2_0`
 
-* `@ServiceConsumer` - Generates requirements in support of the consumer side of the [Service Loader Mediator](https://osgi.org/specification/osgi.cmpn/7.0.0/service.loader.html) specification.
-* `@ServiceProvider` - Generates requirements and capabilities in support of the provider side of the [Service Loader Mediator](https://osgi.org/specification/osgi.cmpn/7.0.0/service.loader.html) specification. Also generates `META-INF/service` descriptors.
+* `@ServiceConsumer` - Generates requirements in support of the consumer side of the [Service Loader Mediator](https://osgi.org/specification/osgi.cmpn/8.0.0/service.loader.html) specification.
+* `@ServiceProvider` - Generates requirements and capabilities in support of the provider side of the [Service Loader Mediator](https://osgi.org/specification/osgi.cmpn/8.0.0/service.loader.html) specification. Also generates `META-INF/service` descriptors.

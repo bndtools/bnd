@@ -4,7 +4,7 @@ title: SPI Annotations
 layout: default
 ---
 
-Writing Java libraries which support **OSGi** does not typically require more than generating proper OSGi metadata. **bnd** helps accomplish with minimal effort on the part of developers. One issue that remains somewhat complex is properly handling the use of the [Java SPI](https://docs.oracle.com/javase/tutorial/ext/basics/spi.html) such that it works seamlessly in OSGi and avoiding the need for custom code to accomplish a similar goal. OSGi defines the [Service Loader Mediator Specification](https://osgi.org/specification/osgi.cmpn/7.0.0/service.loader.html) but applying it requires a significant amount of manifest metadata.
+Writing Java libraries which support **OSGi** does not typically require more than generating proper OSGi metadata. **bnd** helps accomplish with minimal effort on the part of developers. One issue that remains somewhat complex is properly handling the use of the [Java SPI](https://docs.oracle.com/javase/tutorial/ext/basics/spi.html) such that it works seamlessly in OSGi and avoiding the need for custom code to accomplish a similar goal. OSGi defines the [Service Loader Mediator Specification](https://osgi.org/specification/osgi.cmpn/8.0.0/service.loader.html) but applying it requires a significant amount of manifest metadata.
 
 ## SPI Annotations
 
