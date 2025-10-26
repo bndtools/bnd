@@ -3,9 +3,9 @@ title: Macro Index
 layout: default
 ---
 
-<div>
-
 Learn the basics of bnd macros in the [Macro reference](/chapters/850-macros.html).
+
+<div>
 
 <dl class="property-index">
 
