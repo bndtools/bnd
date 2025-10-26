@@ -4,6 +4,8 @@ layout: default
 ---
 A bnd instruction is a property that starts with a minus sign ('-'). An instruction instructs bndlib to do something, in general providing parameters to the code. All instructions in bndlib are listed later in this page.
 
+All instructions are listed on the [Instruction index](/chapters/825-instructions-ref.html)
+
 ## Syntax
 
 Almost all bndlib instructions follow the general OSGi syntax. However, the bndlib syntax is in general a bit more relaxed, for example you can use either single quotes (''') or double quotes ('"') while OSGi only allows double quotes. Dangling comma's and some other not exactly correct headers are accepted by bndlib without complaining. Values without quotes are accepted as long as they cannot confuse the general syntax. For example, a value like 1.20 does not have to be quoted since the period ('.') cannot confuse the parser on that place, however, a value like [1.3,4) must be quoted since it contains a comma.
