@@ -4,6 +4,9 @@ layout: default
 ---
 
 <div>
+
+Learn the basics of bnd macros in the [Macro reference](/chapters/850-macros.html).
+
 <dl class="property-index">
 
 <div>

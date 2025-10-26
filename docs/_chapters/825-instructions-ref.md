@@ -4,6 +4,9 @@ layout: default
 ---
 
 <div>
+
+Learn the basics of bnd instructions in the [Instruction reference](/chapters/820-instructions.html).
+
 <table class="property-index">
     <thead>
         <th>Instruction</th>
