@@ -78,10 +78,30 @@ public enum EE {
 	JavaSE_28(28),
 	JavaSE_29(29),
 	JavaSE_30(30),
+	JavaSE_31(31),
+	JavaSE_32(32),
+	JavaSE_33(33),
+	JavaSE_34(34),
+	JavaSE_35(35),
+	JavaSE_36(36),
+	JavaSE_37(37),
+	JavaSE_38(38),
+	JavaSE_39(39),
+	JavaSE_40(40),
+	JavaSE_41(41),
+	JavaSE_42(42),
+	JavaSE_43(43),
+	JavaSE_44(44),
+	JavaSE_45(45),
+	JavaSE_46(46),
+	JavaSE_47(47),
+	JavaSE_48(48),
+	JavaSE_49(49),
+	JavaSE_50(50),
 
 	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0", 0);
 
-	final public static int			MAX_SUPPORTED_RELEASE	= 24;
+	final public static int			MAX_SUPPORTED_RELEASE	= 50;
 
 	private final String			eeName;
 	private final String			capabilityName;
@@ -309,7 +329,9 @@ public enum EE {
 		UNKNOWN, JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, JavaSE_1_8, JavaSE_9,
 		JavaSE_10, JavaSE_11, JavaSE_12, JavaSE_13, JavaSE_14, JavaSE_15, JavaSE_16, JavaSE_17, JavaSE_18, JavaSE_19,
 		JavaSE_20, JavaSE_21, JavaSE_22, JavaSE_23, JavaSE_24, JavaSE_25, JavaSE_26, JavaSE_27, JavaSE_28, JavaSE_29,
-		JavaSE_30
+		JavaSE_30, JavaSE_31, JavaSE_32, JavaSE_33, JavaSE_34, JavaSE_35, JavaSE_36, JavaSE_37, JavaSE_38, JavaSE_39,
+		JavaSE_40, JavaSE_41, JavaSE_42, JavaSE_43, JavaSE_44, JavaSE_45, JavaSE_46, JavaSE_47, JavaSE_48, JavaSE_49,
+		JavaSE_50
 	};
 
 	/**
