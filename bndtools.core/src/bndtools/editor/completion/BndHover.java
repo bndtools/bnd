@@ -1,5 +1,8 @@
 package bndtools.editor.completion;
 
+import static aQute.bnd.help.Syntax.isInstruction;
+import static aQute.bnd.osgi.Constants.MERGED_HEADERS;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +22,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 
-import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Processor;
 
@@ -102,7 +104,6 @@ public class BndHover extends DefaultTextHover implements ITextHoverExtension, I
 		StringBuilder sb = new StringBuilder();
 
 		if (syntax != null) {
-
 			sb.append(syntax.getLead());
 			String values = syntax.getValues();
 			if (values != null && !values.isBlank()) {
@@ -112,12 +113,16 @@ public class BndHover extends DefaultTextHover implements ITextHoverExtension, I
 			sb.append("\nExample: ");
 			sb.append(syntax.getExample());
 		}
-		Parameters decorated = properties.decorated(key);
-		if (!decorated.isEmpty()) {
+
+		String value = isInstruction(key) || MERGED_HEADERS.contains(key) ? properties.decorated(key)
+			.toString()
+			: properties.get(key);
+
+		if (!value.isEmpty()) {
 			sb.append("\n")
 				.append(key)
 				.append("=")
-				.append(decorated);
+				.append(value);
 		}
 
 		List<String> errors = properties.getErrors();

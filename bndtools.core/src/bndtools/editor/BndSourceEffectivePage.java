@@ -1,5 +1,7 @@
 package bndtools.editor;
 
+import static aQute.bnd.help.Syntax.isInstruction;
+import static aQute.bnd.osgi.Constants.MERGED_HEADERS;
 import static bndtools.editor.completion.BndHover.lookupSyntax;
 import static bndtools.editor.completion.BndHover.syntaxHoverText;
 
@@ -82,7 +84,6 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.help.Syntax;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.PropertyKey;
 import bndtools.central.Central;
@@ -405,7 +406,7 @@ public class BndSourceEffectivePage extends FormPage {
 				Collection<String> stems = visible.stream()
 					.map(k -> {
 						String stem = BndEditModel.getStem(k.key());
-						if (Constants.MERGED_HEADERS.contains(stem)) {
+						if (isInstruction(stem) || MERGED_HEADERS.contains(stem)) {
 							return stem;
 						}
 						return k.key();
@@ -414,7 +415,10 @@ public class BndSourceEffectivePage extends FormPage {
 
 				for (String stem : stems) {
 
-					String value = properties.mergeProperties(stem);
+					String value = isInstruction(stem) || MERGED_HEADERS.contains(stem)
+						? properties.decorated(stem)
+							.toString()
+						: properties.get(stem);
 
 					sb.append(stem)
 						.append(": ")
@@ -670,7 +674,7 @@ public class BndSourceEffectivePage extends FormPage {
 				Collection<String> stems = visible.stream()
 					.map(k -> {
 						String stem = BndEditModel.getStem(k.key());
-						if (Constants.MERGED_HEADERS.contains(stem)) {
+						if (isInstruction(stem) || MERGED_HEADERS.contains(stem)) {
 							return stem;
 						}
 						return k.key();
@@ -680,7 +684,14 @@ public class BndSourceEffectivePage extends FormPage {
 				return stems.stream()
 					.map(stem -> {
 						Processor p = getProperties();
-						return new PropertyRow(stem, p.mergeProperties(stem), null, p.mergeProperties(stem),
+
+						String value = isInstruction(stem) || MERGED_HEADERS.contains(stem)
+							? p.decorated(stem)
+								.toString()
+							: p.get(stem);
+
+						String tooltip = BndEditModel.format(stem, value);
+						return new PropertyRow(stem, value, null, tooltip,
 							p.getErrors());
 					})
 					.toArray();
@@ -692,7 +703,8 @@ public class BndSourceEffectivePage extends FormPage {
 						String provenance = k.getProvenance()
 							.orElse(null);
 						Processor p = getProperties();
-						return new PropertyRow(k.key(), expandedOrRawValue(k, p), provenance, getExpandedValue(k, p),
+						String tooltip = BndEditModel.format(k.key(), expandedOrRawValue(k, p));
+						return new PropertyRow(k.key(), expandedOrRawValue(k, p), provenance, tooltip,
 							p.getErrors());
 					})
 					.toArray();
@@ -745,11 +757,7 @@ public class BndSourceEffectivePage extends FormPage {
 		@Override
 		public String getToolTipText(Object element) {
 			if (spec.tooltip != null && element instanceof PropertyRow pkey) {
-				String s = spec.tooltip.apply(pkey);
-				if (s != null && s.length() > 30) {
-					return BndEditModel.format(pkey.title, s);
-				} else
-					return s;
+				return spec.tooltip.apply(pkey);
 			}
 			return null;
 		}

@@ -1602,11 +1602,20 @@ public class BndEditModel {
 	}
 
 	public static String getStem(String header) {
+		String stem;
 		int n = header.indexOf('.');
 		if (n < 0)
-			return header;
+			stem = header;
+		else
+			stem = header.substring(0, n);
 
-		return header.substring(0, n);
+		// remove any trailing +, ++ (decorated instructions)
+		int m = stem.indexOf('+');
+		if (m < 0)
+			return stem;
+		else
+			return stem.substring(0, m);
+
 	}
 
 	@SuppressWarnings("unchecked")

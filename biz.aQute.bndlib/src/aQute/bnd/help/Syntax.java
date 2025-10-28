@@ -1134,4 +1134,8 @@ public class Syntax implements Constants {
 		return ret.toLowerCase()
 			.replace("-", "_");
 	}
+
+	public static boolean isInstruction(String key) {
+		return key.startsWith("-");
+	}
 }
