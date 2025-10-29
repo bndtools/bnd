@@ -145,12 +145,27 @@ public class Macro {
 				}
 			} else if (c1 == begin)
 				nesting++;
-			else if (c1 == '\\' && index < line.length() - 1
-				&& (line.charAt(index) == '$' || line.charAt(index) == ';')) {
-				// remove the escape backslash and interpret the dollar or ;
-				// as a literal
-				variable.append(line.charAt(index));
-				index++;
+			else if (c1 == '\\') {
+				int backslashCount = 1;
+				while (index < line.length() && line.charAt(index) == '\\') {
+					backslashCount++;
+					index++;
+				}
+				if (index < line.length() && (line.charAt(index) == '$' || line.charAt(index) == ';')) {
+					if (backslashCount % 2 == 0) {
+						// Even number of backslashes => macro starts
+						variable.append("\\".repeat(backslashCount / 2));
+						continue outer;
+					} else {
+						// Odd number of backslashes => escape the $
+						variable.append("\\".repeat(backslashCount / 2));
+						variable.append(line.charAt(index));
+						index++;
+						continue outer;
+					}
+				} else {
+					variable.append("\\".repeat(backslashCount));
+				}
 				continue outer;
 			} else if (c1 == '$' && index < line.length() - 2 && !inMacro) {
 				char c2 = line.charAt(index);

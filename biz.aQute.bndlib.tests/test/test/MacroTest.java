@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -2163,5 +2164,62 @@ public class MacroTest {
 			assertEquals("100,000", processor.getReplacer()
 				.process("${format;%,6d;100000}"));
 		}
+	}
+
+
+
+	@Test
+	public void testDollarEscaping() throws IOException {
+		try (Processor processor = new Processor()) {
+			processor.set("a", "42");
+
+			// No backslash -> expands
+			assertEquals("a0: 42", processor.getReplacer()
+				.process("a0: ${a}"));
+
+			// 1 backslash before $ -> odd -> $ is escaped -> literal ${a}
+			assertEquals("a1: ${a}", processor.getReplacer()
+				.process("a1: \\${a}"));
+
+			// 2 backslashes -> even -> macro expands, with one literal
+			// backslash before expansion
+			assertEquals("a2: \\42", processor.getReplacer()
+				.process("a2: \\\\${a}"));
+
+			// 3 backslashes -> odd -> produces one backslash then literal ${a}
+			assertEquals("a3: \\${a}", processor.getReplacer()
+				.process("a3: \\\\\\${a}"));
+
+			// 4 backslashes -> even -> two literal backslashes then expansion
+			assertEquals("a4: \\\\42", processor.getReplacer()
+				.process("a4: \\\\\\\\${a}"));
+
+			// 5 backslashes -> odd -> two literal backslashes then literal ${a}
+			assertEquals("a5: \\\\${a}", processor.getReplacer()
+				.process("a5: \\\\\\\\\\${a}"));
+
+			// 6 backslashes -> even -> three literal backslashes then expansion
+			assertEquals("a6: \\\\\\42", processor.getReplacer()
+				.process("a6: \\\\\\\\\\\\${a}"));
+		}
+	}
+
+	/**
+	 * Not a real test, but just for demonstration of an effect which is
+	 * relevant to know for {@link #testDollarEscaping()}
+	 */
+	@Test
+	public void testDemonstrateThatPropertiesParsingDropsBackslash() throws IOException {
+		String data = """
+			Property-a0: ${a}
+			Property-a1: \\${a}
+			""";
+
+		Properties p = new Properties();
+		p.load(new StringReader(data));
+
+		System.out.println("Simple demonstrate that Java Properties parsing drops the backslash");
+		System.out.println("a0 = " + p.getProperty("Property-a0"));
+		System.out.println("a1 = " + p.getProperty("Property-a1") + " (but expected would be a1 = \\${a}");
 	}
 }
