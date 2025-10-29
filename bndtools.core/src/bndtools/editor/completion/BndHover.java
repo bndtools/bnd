@@ -118,7 +118,7 @@ public class BndHover extends DefaultTextHover implements ITextHoverExtension, I
 			.toString()
 			: properties.get(key);
 
-		if (!value.isEmpty()) {
+		if (value != null && !value.isEmpty()) {
 			sb.append("\n")
 				.append(key)
 				.append("=")
