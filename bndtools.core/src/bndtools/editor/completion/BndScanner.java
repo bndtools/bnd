@@ -116,23 +116,77 @@ public class BndScanner extends RuleBasedScanner {
 		return bsvc.T_KEY;
 	}
 
+
+	/**
+	 * Scans for invalid backslash sequences in a Java properties file and
+	 * returns a token indicating the type of content.
+	 * <p>
+	 * This method detects:
+	 * <ul>
+	 * <li>Single backslashes at the end of the line or before EOF (line
+	 * continuation)</li>
+	 * <li>Invalid sequences such as a backslash followed by a space or tab
+	 * (error)</li>
+	 * <li>Valid escape sequences like \t, \n, \r, \f, \\, \:, \=, \#, \!, and
+	 * Unicode \\uXXXX</li>
+	 * </ul>
+	 * <p>
+	 * Implementation notes:
+	 * <ul>
+	 * <li>The first character is read and checked for a backslash.</li>
+	 * <li>All consecutive backslashes are collected into a buffer.</li>
+	 * <li>If the number of consecutive backslashes is even, it is valid and
+	 * unread back into the scanner.</li>
+	 * <li>If odd, the next character determines whether it is a valid escape,
+	 * line continuation, or error.</li>
+	 * <li>Special handling for EOF: a single backslash at EOF returns T_DEFAULT
+	 * instead of UNDEFINED to force Eclipse to refresh the partition and
+	 * prevent "sticky red" highlighting.</li>
+	 * <li>Buffering ensures scanner state is fully restored for non-error
+	 * sequences.</li>
+	 * </ul>
+	 *
+	 * @param scanner the character scanner
+	 * @return a token representing either UNDEFINED, T_ERROR, or T_DEFAULT for
+	 *         a valid backslash at EOF
+	 */
 	IToken error(ICharacterScanner scanner) {
-		int c = scanner.read();
-		int n = 1;
-		if (c == '\\') {
-			c = scanner.read();
-			n++;
-			if (c == ' ' || c == '\t') {
-				while (c == ' ' || c == '\t') {
-					c = scanner.read();
-				}
-				scanner.unread();
-				return bsvc.T_ERROR;
-			}
+		int startColumn = scanner.getColumn();
+		int first = scanner.read();
+		// BackslashValidator.dbg("error() start col=%d first='%s' (code=%d)",
+		// startColumn,
+		// (first == ICharacterScanner.EOF ? "<EOF>" : Character.toString((char)
+		// first)), first);
+
+		if (first == ICharacterScanner.EOF) {
+			return Token.UNDEFINED;
 		}
-		while (n-- > 0)
-			scanner.unread();
-		return Token.UNDEFINED;
+
+		IToken token = handleBackspaces(scanner, first);
+		// BackslashValidator.dbg("→ return token=%s at col=%d%n",
+		// token.isUndefined() ? "UNDEFINED" : token.getData(),
+		// scanner.getColumn());
+		return token;
 	}
+
+
+	private IToken handleBackspaces(ICharacterScanner scanner, int first) {
+
+		// Use the shared helper to determine the result
+		BackslashValidator.Result result = BackslashValidator.handleBackslashes(scanner, first);
+
+		switch (result) {
+			case UNDEFINED :
+				return Token.UNDEFINED;
+			case ERROR :
+				return bsvc.T_ERROR;
+			case REFRESH :
+				return bsvc.T_DEFAULT; // forces partition refresh
+			default :
+				return Token.UNDEFINED;
+		}
+	}
+
+
 
 }
