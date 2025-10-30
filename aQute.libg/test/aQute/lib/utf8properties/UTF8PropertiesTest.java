@@ -296,6 +296,11 @@ public class UTF8PropertiesTest {
 			+ "a;b=9", "a;b", 7, "Invalid property key: `a;b`:");
 		assertError("\n" //
 			+ "a=\\ \n     a;v=4", "a", 1, "Found \\\\<whitespace>", "Invalid property key: `a;v`");
+		assertError("\n" //
+			+ "a=\\abc\n", "a", 1, "Found odd number of backslashes before");
+		assertError("\n" //
+			+ "a=\\u12G4", "a", 1, "Invalid unicode string");
+
 		assertError("\n\n\n\n\n\n\n" //
 			+ "a", "a", 7, "No value specified for key");
 		assertError("\npropertyName=property\0Value\n", "propertyName", 1,
