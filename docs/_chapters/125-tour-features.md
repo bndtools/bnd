@@ -71,6 +71,28 @@ Though lines can be as long as you want, it is better for your brains to keep th
 
 Since bnd files are property files, you cannot repeat a property. Later properties will completely overwrite earlier ones and there is no order between properties.
 
+**Notes on backslashes in .bnd files:** Be aware that [Java properties parsing](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Properties.html) **silently drops** single backslashes (or more precisely odd numbers of consecutive backslashes). In the past, this was a common source of confusion, but since bnd 7.2.0, a warning is issued when such cases are detected.
+
+For example consider this `.bnd` file: 
+
+```
+a: 42
+a0: ${a}
+a1: \${a}
+a2: \\${a}
+```
+
+This produces the following output:
+
+```
+a: 42
+a0: 42
+a1: 42
+a2: ${a}
+```
+
+Notice that `a0` and `a1` resolve to the same value because the single backslash in a1 is silently dropped by Java’s property parser.
+
 ## Running bnd
 
 We can now wrap the source JAR with the following command:
