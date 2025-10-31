@@ -1,0 +1,8 @@
+# name = org.bndtools.templates.osgi-servlet
+# releaseUrl = https://repo.maven.apache.org/maven2/somethingforthetest
+# snapshotUrl = https://oss.sonatype.org/content/repositories/snapshots/somethingforthetest
+#
+# Repository for the template org.bndtools.templates.osgi-servlet
+# Source: https://github.com/bndtools/workspace-templates/servlet
+
+#not relevant for the test org.slf4j:slf4j-api:1.7.36

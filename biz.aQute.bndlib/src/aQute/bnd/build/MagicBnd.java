@@ -34,6 +34,9 @@ import aQute.libg.re.RE.Match;
  * This is used in included files in a bnd file. It allows another file to be
  * mapped to the properties. This can be used to setup a plugin that is
  * parameterized by that file.
+ * <p>
+ * See test.WorkspaceTest.testMagicBnd() for a test.
+ * </p>
  */
 public class MagicBnd {
 	final static RE	KEY_P		= re("[\\w\\d_\\.]+");
@@ -155,11 +158,11 @@ public class MagicBnd {
 
 		if (release.isEmpty())
 			release.add("https://repo.maven.apache.org/maven2/");
-		sb.append(";releaseUrl=")
+		sb.append(";releaseUrl='")
 			.append(release.stream()
 				.collect(Collectors.joining()))
 			.append("'");
-		sb.append(";snapshotUrl=")
+		sb.append(";snapshotUrl='")
 			.append(snapshot.stream()
 				.collect(Collectors.joining()))
 			.append("'");

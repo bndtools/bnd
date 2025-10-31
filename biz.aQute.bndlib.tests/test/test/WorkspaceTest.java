@@ -20,9 +20,12 @@ import org.osgi.framework.Version;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.repository.maven.provider.MavenBndRepository;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -381,5 +384,37 @@ public class WorkspaceTest {
 				return null;
 			}, 10_000L);
 		}
+	}
+
+	/**
+	 * Tests the parsing of .pmv, pobr files in MagicBnd.java See
+	 * https://bnd.bndtools.org/chapters/150-build.html#the-cnfext-directory
+	 */
+	@Test
+	public void testMagicBnd() throws Exception {
+		IO.copy(IO.getFile("testresources/ws-magicbnd"), testDir);
+		try (Workspace ws = new Workspace(testDir)) {
+
+			List<MavenBndRepository> plugins = ws.getPlugins(MavenBndRepository.class);
+			assertThat(plugins).hasSize(1);
+
+			Parameters mvn = ws.getMergedParameters("-plugin.ext.org.bndtools.demo.webapp.pmvn");
+			Attrs attrs = mvn.get("aQute.bnd.repository.maven.provider.MavenBndRepository");
+			assertThat(attrs.get("index")).contains("testMagicBnd/cnf/ext/org.bndtools.demo.webapp.pmvn");
+			assertThat(attrs.get("name")).isEqualTo("org.bndtools.templates.osgi-servlet");
+			assertThat(attrs.get("releaseUrl")).isEqualTo("https://repo.maven.apache.org/maven2/somethingforthetest");
+			assertThat(attrs.get("snapshotUrl"))
+				.isEqualTo("https://oss.sonatype.org/content/repositories/snapshots/somethingforthetest");
+
+			List<OSGiRepository> plugins2 = ws.getPlugins(OSGiRepository.class);
+			assertThat(plugins2).hasSize(1);
+
+			Parameters obr = ws.getMergedParameters("-plugin.ext.eclipse.p2-helper.xml.pobr");
+			Attrs attrs2 = obr.get("aQute.bnd.repository.osgi.OSGiRepository");
+			assertThat(attrs2.get("locations")).contains("testMagicBnd/cnf/ext/eclipse.p2-helper.xml.pobr");
+			assertThat(attrs2.get("name")).isEqualTo("Eclipse_2022-12-Legacy");
+
+		}
+
 	}
 }
