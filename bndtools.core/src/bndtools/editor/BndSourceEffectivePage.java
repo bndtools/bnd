@@ -4,6 +4,9 @@ import static aQute.bnd.help.Syntax.isInstruction;
 import static aQute.bnd.osgi.Constants.MERGED_HEADERS;
 import static bndtools.editor.completion.BndHover.lookupSyntax;
 import static bndtools.editor.completion.BndHover.syntaxHoverText;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toCollection;
 
 import java.io.File;
 import java.net.URI;
@@ -315,7 +318,15 @@ public class BndSourceEffectivePage extends FormPage {
 
 	private void open(Object element) {
 		if (element instanceof PropertyRow prop) {
-			String fpath = prop.provenance();
+			List<String> fpaths = prop.provenances();
+
+			if (fpaths == null || fpaths.isEmpty()) {
+				return;
+			}
+
+			// we can only open one path
+			String fpath = fpaths.get(0);
+
 			if (fpath == null || fpath.isBlank()) {
 				return;
 			}
@@ -493,7 +504,13 @@ public class BndSourceEffectivePage extends FormPage {
 					return syntax != null ? syntax.autoHelpUrl() : null;
 				}), //
 			new ColSpec("Value", -250, PropertyRow::value, PropertyRow::tooltip, null), //
-			new ColSpec("Provenance", 150, (pr -> relativizeProvenancePath(pr.provenance())), null, null), //
+			new ColSpec("Provenance", 150, (pr -> {
+				return pr.provenances()
+					.stream()
+					.map(prov -> relativizeProvenancePath(prov))
+					.collect(Collectors.joining(","));
+			}),
+				null, null), //
 			new ColSpec("Errors", 150, (pr -> {
 				List<String> errors = pr.errors();
 				return errors.isEmpty() ? "" : errors.toString();
@@ -681,6 +698,24 @@ public class BndSourceEffectivePage extends FormPage {
 					})
 					.collect(Collectors.toCollection(LinkedHashSet::new));
 
+				Map<String, List<String>> stemProvenances = visible.stream()
+					.collect(Collectors.groupingBy(k -> {
+						String stem = BndEditModel.getStem(k.key());
+						if (isInstruction(stem) || MERGED_HEADERS.contains(stem)) {
+							return stem;
+						}
+						return k.key();
+					}, mapping(k -> {
+						String prov = k.getProvenance()
+							.orElse(null);
+						return prov;
+					}, //
+						// remove duplicates
+						collectingAndThen(toCollection(LinkedHashSet::new),
+							// convert back to List
+							ArrayList::new
+					))));
+
 				return stems.stream()
 					.map(stem -> {
 						Processor p = getProperties();
@@ -690,8 +725,10 @@ public class BndSourceEffectivePage extends FormPage {
 								.toString()
 							: p.get(stem);
 
+						List<String> provList = stemProvenances.get(stem);
+
 						String tooltip = BndEditModel.format(stem, value);
-						return new PropertyRow(stem, value, null, tooltip,
+						return new PropertyRow(stem, value, provList, tooltip,
 							p.getErrors());
 					})
 					.toArray();
@@ -704,7 +741,7 @@ public class BndSourceEffectivePage extends FormPage {
 							.orElse(null);
 						Processor p = getProperties();
 						String tooltip = BndEditModel.format(k.key(), expandedOrRawValue(k, p));
-						return new PropertyRow(k.key(), expandedOrRawValue(k, p), provenance, tooltip,
+						return new PropertyRow(k.key(), expandedOrRawValue(k, p), List.of(provenance), tooltip,
 							p.getErrors());
 					})
 					.toArray();
@@ -756,9 +793,15 @@ public class BndSourceEffectivePage extends FormPage {
 
 		@Override
 		public String getToolTipText(Object element) {
-			if (spec.tooltip != null && element instanceof PropertyRow pkey) {
-				return spec.tooltip.apply(pkey);
+			if ("Provenance".equals(spec.title) && element instanceof PropertyRow prow) {
+				return prow.provenances()
+					.stream()
+					.collect(Collectors.joining("\n"));
 			}
+			if (spec.tooltip != null && element instanceof PropertyRow prow) {
+				return spec.tooltip.apply(prow);
+			}
+
 			return null;
 		}
 
@@ -775,5 +818,6 @@ public class BndSourceEffectivePage extends FormPage {
 	/**
 	 * represents a row in the Effective view table.
 	 */
-	record PropertyRow(String title, String value, String provenance, String tooltip, List<String> errors) {}
+	record PropertyRow(String title, String value, List<String> provenances, String tooltip,
+		List<String> errors) {}
 }
