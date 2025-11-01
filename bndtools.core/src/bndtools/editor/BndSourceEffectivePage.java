@@ -135,14 +135,14 @@ public class BndSourceEffectivePage extends FormPage {
 		toggleButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
 		this.showExpandedValuesButton = toolkit.createButton(body, "Show expanded values", SWT.CHECK);
-		showExpandedValuesButton.setSelection(false);
+		showExpandedValuesButton.setSelection(true);
 		showExpandedValuesButton.setToolTipText("Shows the actual values instead of placeholders.");
 
 		this.showMergedPropertiesButton = toolkit.createButton(body, "Show as merged properties", SWT.CHECK);
 		showMergedPropertiesButton.setToolTipText(
 			"Groups all instructions by the stem of the property, which previews how bnd sees the instructions under the hood.");
-		showMergedPropertiesButton.setSelection(false);
-		showMergedPropertiesButton.setEnabled(false);
+		showMergedPropertiesButton.setSelection(true);
+		showMergedPropertiesButton.setEnabled(true);
 
 		// Create composite for viewers
 		viewersComposite = toolkit.createComposite(body);
