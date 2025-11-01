@@ -22,6 +22,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Processor;
 
@@ -100,6 +101,7 @@ public class BndHover extends DefaultTextHover implements ITextHoverExtension, I
 	}
 
 	public static String syntaxHoverText(String key, Processor properties) {
+
 		Syntax syntax = lookupSyntax(key);
 		StringBuilder sb = new StringBuilder();
 
@@ -118,11 +120,14 @@ public class BndHover extends DefaultTextHover implements ITextHoverExtension, I
 			.toString()
 			: properties.get(key);
 
+
 		if (value != null && !value.isEmpty()) {
+			String stem = BndEditModel.getStem(key);
+			String formatted = BndEditModel.format(stem, value);
 			sb.append("\n")
 				.append(key)
 				.append("=")
-				.append(value);
+				.append(formatted);
 		}
 
 		List<String> errors = properties.getErrors();
@@ -132,16 +137,13 @@ public class BndHover extends DefaultTextHover implements ITextHoverExtension, I
 			sb.append(errors);
 		}
 
-		String text = sb.toString();
-
-		if (text.length() > 30) {
-			text = wrap(text, 30);
-		}
-		return text;
+		return sb.toString();
 	}
 
 	public static Syntax lookupSyntax(String key) {
-		Syntax syntax = Syntax.HELP.get(key);
+
+		String stem = BndEditModel.getStem(key);
+		Syntax syntax = Syntax.HELP.get(stem);
 
 		if (syntax == null) {
 			if (!key.startsWith("-"))
