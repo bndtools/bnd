@@ -42,7 +42,6 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.forms.widgets.FormText;
-import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +69,6 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	final UI<Model>					ui;
 	final NewWorkspaceWizardPage	page			= new NewWorkspaceWizardPage();
 	final FragmentTemplateEngine			templates;
-	private ScrolledFormText		txtDescription;
 
 	final static Image				verified			= Icons.image("icons/tick.png", false);
 	final static Image				verifiedGreyedOut	= new Image(Display.getDefault(), verified, SWT.IMAGE_DISABLE);
@@ -155,11 +153,12 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		NewWorkspaceWizardPage() {
 			super("New Workspace");
 			setTitle("Create New Workspace");
-			setDescription("Specify the workspace details.");
+			setDescription("Specify the workspace details and select the template fragments to apply.");
 		}
 
 		@Override
 		public void createControl(Composite parent) {
+
 			Composite container = new Composite(parent, SWT.NONE);
 			setControl(container);
 			container.setLayout(new GridLayout(8, false));
@@ -272,19 +271,19 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 
 			tableLayout.addColumnData(new ColumnWeightData(1, 150, false));
-			tableLayout.addColumnData(new ColumnWeightData(10, 200, true));
-			tableLayout.addColumnData(new ColumnWeightData(20, 80, true));
+			tableLayout.addColumnData(new ColumnWeightData(10, 400, true));
+			tableLayout.addColumnData(new ColumnWeightData(20, 100, true));
 
 			Button addButton = new Button(container, SWT.PUSH);
 			addButton.setText("+");
 			addButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
+			addButton.setToolTipText("Add entry via URI to a template repo index.bnd");
 
-			txtDescription = new ScrolledFormText(container, SWT.V_SCROLL | SWT.H_SCROLL, false);
-			FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
-			txtDescription.setFormText(formText);
-			formText.setText("Double click to open the Github-Repo in your browser.", false, false);
+			FormText formText = new FormText(container, SWT.NO_FOCUS | SWT.FILL);
+			formText.setText("Double click to open the fragment template Github-Repo in your browser.", false, false);
+			formText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 6, 1));
 
-
+			model.updateWorkspace(true);
 			ui.u("location", model.location, UI.text(location)
 				.map(File::getAbsolutePath, File::new));
 			ui.u("clean", model.clean, UI.checkbox(clean));
@@ -293,7 +292,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				.bind(v -> browseButton.setEnabled(!v))
 				.bind(v -> switchWorkspace.setEnabled(!v))
 				.bind(v -> clean.setEnabled(!v))
-				.bind(v -> setTitle(v ? "Update Workspace" : "Create New Workspace"))
+				.bind(v -> setTitle(
+					v ? "Update Workspace with template fragment" : "Create New Workspace from template fragment"))
 				.bind(v -> setWindowTitle(v ? "Update Workspace" : "Create New Workspace"));
 
 			ui.u("valid", model.valid, this::setErrorMessage);
@@ -308,6 +308,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			UI.checkbox(browseButton)
 				.subscribe(this::browseForLocation);
 
+			getShell().setSize(840, 480);
 			ui.update();
 		}
 
