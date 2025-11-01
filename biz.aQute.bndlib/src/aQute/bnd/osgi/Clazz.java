@@ -198,7 +198,7 @@ public class Clazz {
 			this.major = ordinal() + 45;
 			String version = Integer.toString(ordinal() + 1);
 			this.ee = "JavaSE-" + version;
-			this.filter = "(&(osgi.ee=JavaSE)(version=" + version + "))";
+			this.filter = eeFilter(version);
 		}
 
 		JAVA(String ee, String filter) {
@@ -246,6 +246,28 @@ public class Clazz {
 
 		public String getEE() {
 			return ee;
+		}
+
+		/**
+		 * Returns an eeFilter String also supporting yet unknown JDKs (lenient)
+		 */
+		public static String buildEEFilterLenient(int major) {
+
+			// lenient: We try to return a useful filter
+			// even for yet unknown JDKs
+			int version = major - 45;
+			if ((version < 0)) {
+				return eeFilter("UNKNOWN");
+			} else if (version >= (JAVA.values.length - 1)) {
+				// yet UNKNOWN
+				return eeFilter(Integer.toString(version));
+			}
+
+			return format(major).getFilter();
+		}
+
+		private static String eeFilter(String version) {
+			return "(&(osgi.ee=JavaSE)(version=" + version + "))";
 		}
 
 		public String getFilter() {
@@ -1933,6 +1955,11 @@ public class Clazz {
 
 	public JAVA getFormat() {
 		return JAVA.format(classFile.major_version);
+
+	}
+
+	public int getMajorVersion() {
+		return classFile.major_version;
 
 	}
 
