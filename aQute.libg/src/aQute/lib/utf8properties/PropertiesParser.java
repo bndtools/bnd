@@ -371,9 +371,6 @@ final class PropertiesParser {
 					return (char) Integer.parseInt(unicode, 16);
 				}
 
-			case ':' :
-			case '=' :
-				return c;
 			case 't' :
 				return '\t';
 			case 'f' :
@@ -384,15 +381,29 @@ final class PropertiesParser {
 				return '\n';
 			case '\\' :
 				return '\\';
+			case ':' :
+			case '=' :
+			case '#' :
+			case '!' :
+				return c;
 
-			case '\f' :
-			case '\t' :
 			case ' ' :
+			case '\t' :
+				// whitespace immediately after backslash
 				warning(
 					"Found \\<whitespace>. This is allowed in a properties file but not in bnd to prevent mistakes");
 				return c;
 
 			default :
+				// any other character after backslash not forming a valid
+				// escape -> warning
+				if ("tnrf\\'\":=#!".indexOf(c) >= 0 || c == 'u') {
+					// valid escape -> no warning
+					return c;
+				}
+				warning(
+					"Found odd number of backslashes before '%s'. These are silently dropped by Java properties parsing and lead to confusing behavior",
+					c);
 				return c;
 		}
 	}
