@@ -16,3 +16,4 @@ Gradle-Missing-Prop: ${task.projectprop}
 Here: ${.}
 -reproducible: true
 Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test}
+BndfileProvided-PropWithReference: ${website.uri}

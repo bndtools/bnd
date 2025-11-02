@@ -38,6 +38,10 @@ def jar = tasks.named('jar') {
 	bundle.properties.put("project.name", provider({project.name}))
 	bundle.properties.put("project.projectprop", provider({project.projectprop}))
 	bundle.properties.put("task.project.projectprop", provider({project.projectprop}))
+	bundle.properties.put("website.uri", URI.create("https://bnd.bndtools.org"))
+	bundle.properties.put("GradleProvided-PropWithReference", "\${website.uri}")
+	bundle.properties.put("GradleProvided-PropWithProjectReference", "\${project.projectprop}")
+	bundle.properties.put("GradleProvided-PropWithTaskReference", "\${task.name}")
 }
 
 def bundle = tasks.register('bundle', Bundle.class) {

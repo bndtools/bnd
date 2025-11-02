@@ -326,6 +326,10 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Gradle-Missing-Prop") == "\${task.projectprop}"
 		jartask_manifest.getValue("Here") == testProjectDir.absolutePath.replace(File.separatorChar, (char)'/')
 		jartask_manifest.getValue("Test-Cases") == "doubler.impl.DoublerImplOSGiTest"
+		jartask_manifest.getValue("BndfileProvided-PropWithReference") == "https://bnd.bndtools.org"
+		jartask_manifest.getValue("GradleProvided-PropWithReference") == "https://bnd.bndtools.org"
+		jartask_manifest.getValue("GradleProvided-PropWithProjectReference") == "prop.project"
+		jartask_manifest.getValue("GradleProvided-PropWithTaskReference") == "jar"
 		jartask_jar.getEntry("doubler/Doubler.class")
 		jartask_jar.getEntry("doubler/packageinfo")
 		jartask_jar.getEntry("doubler/impl/DoublerImpl.class")
