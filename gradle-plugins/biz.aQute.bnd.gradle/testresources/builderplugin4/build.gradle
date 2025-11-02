@@ -34,11 +34,7 @@ def jar = tasks.named('jar') {
 		)
 	}
 	bundle.bnd = ['Override': 'This will be ignored since there is a bnd file for this task']
-	bundle.properties.put("project.group", provider({project.group}))
-	bundle.properties.put("project.name", provider({project.name}))
-	bundle.properties.put("project.projectprop", provider({project.projectprop}))
-	bundle.properties.put("task.project.projectprop", provider({project.projectprop}))
-	bundle.properties.put("website.uri", URI.create("https://bnd.bndtools.org"))
+	bundle.properties.put("website.uri", provider({URI.create("https://bnd.bndtools.org")}))
 	bundle.properties.put("GradleProvided-PropWithReference", "\${website.uri}")
 	bundle.properties.put("GradleProvided-PropWithProjectReference", "\${project.projectprop}")
 	bundle.properties.put("GradleProvided-PropWithTaskReference", "\${task.name}")
