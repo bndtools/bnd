@@ -398,10 +398,9 @@ public class BundleTaskExtension {
 		final var customBeanProperties = new BeanProperties();
 		customBeanProperties.putAll(unwrap(getProperties()));
 		try (Processor processor = new Processor(customBeanProperties, false)) {
-			// Read the bndfile if it exists. Ignore errors, since we'll read it again later.
-			if (getBndfile().getAsFile().map(File::isFile).getOrElse(false)) {
-				processor.setProperties(getBndfile().get().getAsFile());
-			}
+			// Read the bndfile or bnd string if it exists. Ignore errors, since we'll read it again later.
+			processor.setProperties(loadBndInstructions(processor));
+
 			final var gradleProperties = new BeanProperties();
 			gradleProperties.put("project", getTask().getProject());
 			gradleProperties.put("task", getTask());
@@ -419,13 +418,27 @@ public class BundleTaskExtension {
 		}
 	}
 
+	private Properties loadBndInstructions(Processor processor) throws IOException {
+		Optional<File> bndfile = unwrapFileOptional(getBndfile()).filter(File::isFile);
+		if (bndfile.isPresent()) {
+			return processor.loadProperties(bndfile.get());
+		} else {
+			final UTF8Properties props = new UTF8Properties();
+			String bnd = unwrap(getBnd());
+			if (!bnd.isEmpty()) {
+				props.load(bnd, getBuildFile(), processor);
+				props.replaceHere(getProjectDir());
+			}
+			return props;
+		}
+	}
+
 	private class BuildAction implements Action<Task> {
 		@Override
 		public void execute(Task t) {
 			try {
-				File projectDir = unwrapFile(getLayout().getProjectDirectory());
+				File projectDir = getProjectDir();
 				File outputDir = unwrapFile(getOutputDirectory());
-				File buildFile = getBuildFile();
 				FileCollection sourcepath = getAllSource().filter(File::exists);
 				Optional<org.gradle.api.java.archives.Manifest> taskManifest = Optional
 					.ofNullable(getTask().getManifest());
@@ -455,19 +468,7 @@ public class BundleTaskExtension {
 						}
 						// if the bnd file exists, add its contents to the
 						// tmp bnd file
-						Optional<File> bndfile = unwrapFileOptional(getBndfile()).filter(File::isFile);
-						if (bndfile.isPresent()) {
-							builder.loadProperties(bndfile.get())
-								.store(writer, null);
-						} else {
-							String bnd = unwrap(getBnd());
-							if (!bnd.isEmpty()) {
-								UTF8Properties props = new UTF8Properties();
-								props.load(bnd, buildFile, builder);
-								props.replaceHere(projectDir)
-									.store(writer, null);
-							}
-						}
+						loadBndInstructions(builder).store(writer, null);
 					}
 					// this will cause project.dir property to be set
 					builder.setProperties(temporaryBndFile, projectDir);
@@ -610,6 +611,10 @@ public class BundleTaskExtension {
 			return Objects.isNull(header) || header.trim()
 				.isEmpty() || Constants.EMPTY_HEADER.equals(header);
 		}
+	}
+
+	private File getProjectDir() {
+		return unwrapFile(getLayout().getProjectDirectory());
 	}
 
 	static final class AttributesMap extends AbstractMap<String, Object> {
