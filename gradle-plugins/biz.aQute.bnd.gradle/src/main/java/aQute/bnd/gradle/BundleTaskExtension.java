@@ -33,7 +33,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.stream.MapStream;
-import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -94,6 +93,7 @@ public class BundleTaskExtension {
 	private final ConfigurableFileCollection	classpath;
 	private final Provider<String>				bnd;
 	private final MapProperty<String, Object>	properties;
+	private final Provider<UTF8Properties>      projectAndTaskProperties;
 	private final Provider<String>				defaultBundleSymbolicName;
 	private final Provider<String>				defaultBundleVersion;
 
@@ -140,18 +140,19 @@ public class BundleTaskExtension {
 	}
 
 	/**
-	 * Properties that are available for evaluation of the bnd instructions.
-	 * <p>
-	 * If this property is not set, the properties of the following are
-	 * available:
-	 * <dl>
-	 * <dt>{@code task}</dt>
-	 * <dd>The Task object of this extension.</dd>
-	 * <dt>{@code project}</dt>
-	 * <dd>The Project object for the task of this extension.</dd>
-	 * </dl>
-	 * If the {@code task} property is not set, the properties of the Task
-	 * object of this extension will automatically be available.
+	 * Properties that the Gradle configuration makes available for evaluation
+	 * of the bnd instructions.
+	 *
+	 * @return Properties available for evaluation of the bnd instructions.
+	 */
+	@Input
+	public MapProperty<String, Object> getProperties() {
+		return properties;
+	}
+
+	/**
+	 * Properties of the Gradle project and task that are referenced in the
+	 * bndfile or in {@link #getProperties()}.
 	 * <p>
 	 * The following properties are set by the builder and are also available:
 	 * <dl>
@@ -165,18 +166,11 @@ public class BundleTaskExtension {
 	 * <dd>The project sourcepath.</dd>
 	 * </dl>
 	 * <p>
-	 * Note: The defaults for this property use the Project object which makes
-	 * the task ineligible for the Gradle configuration cache. If you want to
-	 * use this task with the Gradle configuration cache, you must set this
-	 * property to ensure it does not use the Project object. Of course, this
-	 * then means you cannot use <code>${project.xxx}</code> style expressions
-	 * in the bnd instructions unless you set those values in this property.
-	 *
-	 * @return Properties available for evaluation of the bnd instructions.
+	 * @return Properties available for evalutation of the bnd instructions.
 	 */
 	@Input
-	public MapProperty<String, Object> getProperties() {
-		return properties;
+	public Provider<UTF8Properties> getProjectAndTaskProperties() {
+		return projectAndTaskProperties;
 	}
 
 	private final ConfigurableFileCollection		allSource;
@@ -211,8 +205,8 @@ public class BundleTaskExtension {
 		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 		setSourceSet(mainSourceSet);
 		classpath(jarLibraryElements(task, mainSourceSet.getCompileClasspathConfigurationName()));
-		properties = objects.mapProperty(String.class, Object.class)
-			.convention(Maps.of("project", "__convention__"));
+		properties = objects.mapProperty(String.class, Object.class);
+		projectAndTaskProperties = project.provider(this::computeProjectAndTaskProperties);
 		defaultBundleSymbolicName = task.getArchiveBaseName()
 			.zip(task.getArchiveClassifier(), (baseName, classifier) -> classifier.isEmpty() ? baseName : baseName + "-" + classifier);
 		defaultBundleVersion = task.getArchiveVersion()
@@ -236,6 +230,8 @@ public class BundleTaskExtension {
 			.property("bnd", getBnd());
 		task.getInputs()
 			.property("properties", getProperties());
+		task.getInputs()
+			.property("gradleProperties", getProjectAndTaskProperties());
 		task.getInputs()
 			.property("default Bundle-SymbolicName", getDefaultBundleSymbolicName());
 		task.getInputs()
@@ -390,6 +386,39 @@ public class BundleTaskExtension {
 		return new BuildAction();
 	}
 
+	/**
+	 * Extract properties of the Gradle {@link Project} and {@link Task} that are
+	 * referenced by macros in {@link #getBndfile()} or {@link #getProperties()}.
+	 * This is done to avoid using the Gradle types at runtime, to allow use of
+	 * the configuration cache.
+	 * @return A {@link UTF8Properties} containing properties extracted from the
+	 * project and task, with values converted to strings.
+	 */
+	private UTF8Properties computeProjectAndTaskProperties() {
+		final var customBeanProperties = new BeanProperties();
+		customBeanProperties.putAll(unwrap(getProperties()));
+		try (Processor processor = new Processor(customBeanProperties, false)) {
+			// Read the bndfile if it exists. Ignore errors, since we'll read it again later.
+			if (getBndfile().getAsFile().map(File::isFile).getOrElse(false)) {
+				processor.setProperties(getBndfile().get().getAsFile());
+			}
+			final var gradleProperties = new BeanProperties();
+			gradleProperties.put("project", getTask().getProject());
+			gradleProperties.put("task", getTask());
+
+			final UTF8Properties foundProperties = new UTF8Properties();
+			processor.getMacroReferences(Processor.MacroReference.UNKNOWN).forEach(propertyName -> {
+				String propertyValue = gradleProperties.getProperty(propertyName);
+				if (propertyValue != null) {
+					foundProperties.setProperty(propertyName, propertyValue);
+				}
+			});
+			return foundProperties;
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
 	private class BuildAction implements Action<Task> {
 		@Override
 		public void execute(Task t) {
@@ -403,10 +432,9 @@ public class BundleTaskExtension {
 				// create Builder
 				Properties gradleProperties = new BeanProperties();
 				gradleProperties.putAll(unwrap(getProperties()));
-				gradleProperties.computeIfPresent("project",
-					(k, v) -> "__convention__".equals(v) ? getTask().getProject() : v);
-				gradleProperties.putIfAbsent("task", getTask());
 				try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
+					builder.setProperties(unwrap(getProjectAndTaskProperties()));
+
 					// load bnd properties
 					File temporaryBndFile = File.createTempFile("bnd", ".bnd", getTask().getTemporaryDir());
 					try (Writer writer = IO.writer(temporaryBndFile)) {
