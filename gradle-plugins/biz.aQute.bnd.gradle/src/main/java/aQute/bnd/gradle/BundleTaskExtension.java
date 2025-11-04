@@ -154,7 +154,8 @@ public class BundleTaskExtension {
 	 * Properties of the Gradle project and task that are referenced in the
 	 * bndfile or in {@link #getProperties()}.
 	 * <p>
-	 * The following properties are set by the builder and are also available:
+	 * The following properties are set by the builder at runtime and are also available:
+	 * </p>
 	 * <dl>
 	 * <dt>{@code project.dir}</dt>
 	 * <dd>The project directory.</dd>
@@ -165,7 +166,6 @@ public class BundleTaskExtension {
 	 * <dt>{@code project.sourcepath<}</dt>
 	 * <dd>The project sourcepath.</dd>
 	 * </dl>
-	 * <p>
 	 * @return Properties available for evalutation of the bnd instructions.
 	 */
 	@Input
