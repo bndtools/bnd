@@ -33,7 +33,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.stream.MapStream;
-import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -212,7 +211,7 @@ public class BundleTaskExtension {
 		setSourceSet(mainSourceSet);
 		classpath(jarLibraryElements(task, mainSourceSet.getCompileClasspathConfigurationName()));
 		properties = objects.mapProperty(String.class, Object.class)
-			.convention(Maps.of("project", "__convention__"));
+			.convention(project.provider(this::getGradleProjectProperties));
 		defaultBundleSymbolicName = task.getArchiveBaseName()
 			.zip(task.getArchiveClassifier(), (baseName, classifier) -> classifier.isEmpty() ? baseName : baseName + "-" + classifier);
 		defaultBundleVersion = task.getArchiveVersion()
@@ -240,6 +239,22 @@ public class BundleTaskExtension {
 			.property("default Bundle-SymbolicName", getDefaultBundleSymbolicName());
 		task.getInputs()
 			.property("default Bundle-Version", getDefaultBundleVersion());
+	}
+
+	private Map<String, String> getGradleProjectProperties() throws Exception {
+		Properties gradleProperties = new BeanProperties();
+		gradleProperties.put("project", getTask().getProject());
+		try (Processor processor = new Processor()) {
+			loadBndProperties(processor);
+			return MapStream.ofEntries(
+					processor.getMacroReferences(Processor.MacroReference.UNKNOWN)
+						.stream()
+						.filter(k -> k.startsWith("project.")),
+					k -> MapStream.entry(k, gradleProperties.getProperty(k))
+				)
+				.filterValue(Objects::nonNull)
+				.collect(MapStream.toMap());
+		}
 	}
 
 	private void loadBndProperties(Processor processor) throws Exception {
@@ -450,8 +465,6 @@ public class BundleTaskExtension {
 				// create Builder
 				Properties gradleProperties = new BeanProperties();
 				gradleProperties.putAll(unwrap(getProperties()));
-				gradleProperties.computeIfPresent("project",
-					(k, v) -> "__convention__".equals(v) ? getTask().getProject() : v);
 				gradleProperties.putIfAbsent("task", getTask());
 				try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
 					// load bnd properties
