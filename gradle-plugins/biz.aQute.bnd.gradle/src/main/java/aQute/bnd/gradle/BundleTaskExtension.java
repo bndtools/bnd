@@ -412,6 +412,11 @@ public class BundleTaskExtension {
 					foundProperties.setProperty(propertyName, propertyValue);
 				}
 			});
+			foundProperties.setProperty("project.dir", getProjectDir().getCanonicalPath());
+			foundProperties.setProperty("project.output", getOutputDir().getCanonicalPath());
+			foundProperties.setProperty("project.sourcepath", getSourcepath().getAsPath());
+			foundProperties.setProperty("project.buildpath", getBuildpath().getAsPath());
+			getTask().getLogger().debug("Found project and task properties: " + foundProperties);
 			return foundProperties;
 		} catch (IOException e) {
 			throw Exceptions.duck(e);
@@ -438,8 +443,7 @@ public class BundleTaskExtension {
 		public void execute(Task t) {
 			try {
 				File projectDir = getProjectDir();
-				File outputDir = unwrapFile(getOutputDirectory());
-				FileCollection sourcepath = getAllSource().filter(File::exists);
+				FileCollection sourcepath = getSourcepath();
 				Optional<org.gradle.api.java.archives.Manifest> taskManifest = Optional
 					.ofNullable(getTask().getManifest());
 				// create Builder
@@ -472,7 +476,6 @@ public class BundleTaskExtension {
 					}
 					// this will cause project.dir property to be set
 					builder.setProperties(temporaryBndFile, projectDir);
-					builder.setProperty("project.output", outputDir.getCanonicalPath());
 					// If no bundle to be built, we have nothing to do
 					if (builder.is(Constants.NOBUNDLES)) {
 						return;
@@ -507,23 +510,7 @@ public class BundleTaskExtension {
 					builder.setJar(bundleJar);
 
 					// set builder classpath
-					FileCollection buildpath = getClasspath().filter(file -> {
-						if (!file.exists()) {
-							return false;
-						}
-						if (file.isDirectory()) {
-							return true;
-						}
-						try (ZipFile zip = new ZipFile(file)) {
-							// make sure it is a valid zip file and not a pom
-							zip.entries();
-						} catch (IOException e) {
-							return false;
-						}
-						return true;
-					});
-					builder.setProperty("project.buildpath", buildpath.getAsPath());
-					builder.setClasspath(buildpath.getFiles()
+					builder.setClasspath(getBuildpath().getFiles()
 						.toArray(new File[0]));
 					getTask().getLogger()
 						.debug("builder classpath: {}", builder.getClasspath()
@@ -531,7 +518,6 @@ public class BundleTaskExtension {
 							.map(Jar::getSource)
 							.collect(toList()));
 					// set builder sourcepath
-					builder.setProperty("project.sourcepath", sourcepath.getAsPath());
 					builder.setSourcepath(sourcepath.getFiles()
 						.toArray(new File[0]));
 					getTask().getLogger()
@@ -613,8 +599,35 @@ public class BundleTaskExtension {
 		}
 	}
 
+	private FileCollection getBuildpath() {
+		FileCollection buildpath = getClasspath().filter(file -> {
+			if (!file.exists()) {
+				return false;
+			}
+			if (file.isDirectory()) {
+				return true;
+			}
+			try (ZipFile zip = new ZipFile(file)) {
+				// make sure it is a valid zip file and not a pom
+				zip.entries();
+			} catch (IOException e) {
+				return false;
+			}
+			return true;
+		});
+		return buildpath;
+	}
+
+	private FileCollection getSourcepath() {
+		return getAllSource().filter(File::exists);
+	}
+
 	private File getProjectDir() {
 		return unwrapFile(getLayout().getProjectDirectory());
+	}
+
+	private File getOutputDir() {
+		return unwrapFile(getOutputDirectory());
 	}
 
 	static final class AttributesMap extends AbstractMap<String, Object> {
