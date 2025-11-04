@@ -11,7 +11,6 @@ Project-Sourcepath: ${project.sourcepath}
 Project-Buildpath: ${project.buildpath}
 Gradle-Project-Prop: ${project.projectprop}
 Gradle-Task-Prop: ${task.name}
-Gradle-Task-Project-Prop: ${task.project.projectprop}
 Gradle-Missing-Prop: ${task.projectprop}
 Here: ${.}
 -reproducible: true

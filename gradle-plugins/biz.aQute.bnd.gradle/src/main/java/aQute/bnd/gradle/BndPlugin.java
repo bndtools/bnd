@@ -663,7 +663,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.setDescription(
 					"Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.");
 				t.setEnabled(
-					!bndProject.is(Constants.NOJUNITOSGI) && !bndProject.getUnprocessedProperty(Constants.TESTCASES, "")
+					!bndProject.is(Constants.NOJUNITOSGI) && !Optional.ofNullable(bndProject.getUnexpandedProperty(Constants.TESTCASES)).orElse("")
 						.isEmpty());
 				t.getInputs()
 					.files(jar)

@@ -104,7 +104,7 @@ public abstract class BndPluginExtension implements ExtensionAware {
 	 * @return The trimmed unprocessed value of the specified property.
 	 */
 	public Object unprocessed(String name, Object defaultValue) {
-		String value = project.getUnprocessedProperty(name, null);
+		String value = project.getUnexpandedProperty(name);
 		if (Objects.nonNull(value)) {
 			return value.trim();
 		}
