@@ -38,24 +38,21 @@ class TestHelper {
 	}
 
 	private static String gradleVersion() {
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_25)) {
+			return "9.1"
+		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_24)) {
 			return "8.14"
 		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21) || 
-			JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_22) || 
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21) ||
+			JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_22) ||
 			JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_23)) {
 			return "8.10.1"
 		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_20)) {
 			return "8.1.1"
 		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_19)) {
-			return "7.6"
-		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
-			return "7.5"
-		}
-		return "7.3.2"
+		return "8.0"
 	}
 
 	public static String formatTime(ZipEntry entry) {

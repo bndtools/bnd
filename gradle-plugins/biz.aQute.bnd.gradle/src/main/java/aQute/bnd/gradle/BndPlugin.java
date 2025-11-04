@@ -166,18 +166,23 @@ public class BndPlugin implements Plugin<Project> {
 			configurations.getByName(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME)
 				.getArtifacts()
 				.clear();
-			configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
-				.getArtifacts()
-				.clear();
+			if (!isGradleCompatible("10.0")) { // only for pre 10.0
+				//@SuppressWarnings("deprecation")
+				configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
+					.getArtifacts()
+					.clear();
+			}
 			/* Set up deliverables */
 			ArtifactHandler artifacts = project.getArtifacts();
 			decontainer(bndProject.getDeliverables()).forEach(deliverable -> {
 				artifacts.add(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, deliverable,
 					cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
-				artifacts.add(Dependency.ARCHIVES_CONFIGURATION, deliverable,
-					cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
+				if (!isGradleCompatible("10.0")) { // only for pre 10.0
+					artifacts.add(Dependency.ARCHIVES_CONFIGURATION, deliverable,
+						cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
+				}
 			});
-			FileCollection deliverables = configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
+			FileCollection deliverables = configurations.getByName(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME)
 				.getArtifacts()
 				.getFiles();
 
@@ -300,19 +305,6 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
-					if (!isGradleCompatible("8.0")) { // only for pre 8.0
-						@SuppressWarnings("deprecation")
-						Map<String, Object> plugins = new DslObject(sourceSet).getConvention()
-							.getPlugins();
-						plugins.forEach((name, plugin) -> {
-							if (!sourceDirectorySets.containsKey(name)) {
-								Object sds = getter(plugin, name);
-								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
-									sourceDirectorySets.put(name, sourceDirectorySet);
-								}
-							}
-						});
-					}
 					Provider<Directory> destinationDir = sourceSet.getJava()
 						.getClassesDirectory();
 					TaskProvider<Task> processResourcesTask = tasks.named(sourceSet.getProcessResourcesTaskName());
@@ -349,19 +341,6 @@ public class BndPlugin implements Plugin<Project> {
 								sourceDirectorySets.put(name, sourceDirectorySet);
 							}
 						});
-					if (!isGradleCompatible("8.0")) { // only for pre 8.0
-						@SuppressWarnings("deprecation")
-						Map<String, Object> plugins = new DslObject(sourceSet).getConvention()
-							.getPlugins();
-						plugins.forEach((name, plugin) -> {
-							if (!sourceDirectorySets.containsKey(name)) {
-								Object sds = getter(plugin, name);
-								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
-									sourceDirectorySets.put(name, sourceDirectorySet);
-								}
-							}
-						});
-					}
 					Provider<Directory> destinationDir = sourceSet.getJava()
 						.getClassesDirectory();
 					TaskProvider<Task> processResourcesTask = tasks.named(sourceSet.getProcessResourcesTaskName());
