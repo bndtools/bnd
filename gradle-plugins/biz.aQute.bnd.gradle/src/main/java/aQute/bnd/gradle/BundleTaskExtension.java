@@ -416,7 +416,7 @@ public class BundleTaskExtension {
 			foundProperties.setProperty("project.output", getOutputDir().getCanonicalPath());
 			foundProperties.setProperty("project.sourcepath", getSourcepath().getAsPath());
 			foundProperties.setProperty("project.buildpath", getBuildpath().getAsPath());
-			getTask().getLogger().debug("Found project and task properties: " + foundProperties);
+			getTask().getLogger().debug("Computed properties for task {}: {}", getTask().getName(), foundProperties);
 			return foundProperties;
 		} catch (IOException e) {
 			throw Exceptions.duck(e);
