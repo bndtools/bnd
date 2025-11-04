@@ -432,9 +432,8 @@ public class BundleTaskExtension {
 			String bnd = unwrap(getBnd());
 			if (!bnd.isEmpty()) {
 				props.load(bnd, getBuildFile(), processor);
-				props.replaceHere(getProjectDir());
 			}
-			return props;
+			return props.replaceHere(getProjectDir());
 		}
 	}
 
