@@ -13,11 +13,15 @@ buildscript {
 
 apply plugin: 'biz.aQute.bnd.workspace'
 
+var project_ext = project.ext
+var project_name = project.name
+var project_path = project.path
+
 task('build') {
 	doLast {
-		if (!project.ext.has('bndWorkspace')) {
+		if (!project_ext.has('bndWorkspace')) {
 			throw new GradleException("workspace does not have a Bnd Workspace")
 		}
-		println "### Project ${project.name} ${project.path} ${bndWorkspace}"
+		println "### Project ${project_name} ${project_path} ${bndWorkspace}"
 	}
 }

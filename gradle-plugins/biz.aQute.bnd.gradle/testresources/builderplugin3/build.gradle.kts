@@ -26,9 +26,9 @@ tasks.jar {
 	val taskprop by extra("prop.task")
 	manifest {
 		attributes(mapOf("Implementation-Title" to base.archivesName,
-		"Implementation-Version" to project.version,
-		"-includeresource" to "{\${.}/bar.txt}",
-		"-include" to "\${.}/other.bnd",
+		"Implementation-Version" to "${'$'}{project.version}",
+		"-includeresource" to "{${'$'}{.}/bar.txt}",
+		"-include" to "${'$'}{.}/other.bnd",
 		"Override" to "This should be overridden by the bnd file")
 		)
 	}

@@ -13,7 +13,7 @@ version = '1.1.0'
 
 repositories {
 	maven {
-		url uri('repodir')
+		url = uri('repodir')
 	}
 	mavenCentral()
 }
@@ -46,23 +46,23 @@ task baselineDiffpackages(type: Baseline) {
 	bundle = jar
 	baseline = configurations.baseline
 	diffpackages = ['!doubler']
-	diffpackages '*'
+	diffpackages.add('*')
 	ignoreFailures = false
 }
 
 task baselineDiffignore(type: Baseline) {
 	description = 'Baseline diffignore'
-	bundle jar
-	baseline configurations.baseline
-	diffignore 'foo.txt'
+	bundle = jar
+	baseline = configurations.baseline
+	diffignore.add('foo.txt')
 	diffignore = ['OSGI-OPT']
 	ignoreFailures = false
 }
 
 task baselineSelf(type: Baseline) {
 	description = 'Baseline Self'
-	bundle jar
-	baseline jar.archiveFile
+	bundle = jar
+	baseline = jar.archiveFile
 	ignoreFailures = false
 	baselineReportDirName = 'foo'
 }

@@ -33,7 +33,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.stream.MapStream;
-import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -212,7 +211,7 @@ public class BundleTaskExtension {
 		setSourceSet(mainSourceSet);
 		classpath(jarLibraryElements(task, mainSourceSet.getCompileClasspathConfigurationName()));
 		properties = objects.mapProperty(String.class, Object.class)
-			.convention(Maps.of("project", "__convention__"));
+			.convention(project.provider(this::getGradleProjectProperties));
 		defaultBundleSymbolicName = task.getArchiveBaseName()
 			.zip(task.getArchiveClassifier(), (baseName, classifier) -> classifier.isEmpty() ? baseName : baseName + "-" + classifier);
 		defaultBundleVersion = task.getArchiveVersion()
@@ -240,6 +239,71 @@ public class BundleTaskExtension {
 			.property("default Bundle-SymbolicName", getDefaultBundleSymbolicName());
 		task.getInputs()
 			.property("default Bundle-Version", getDefaultBundleVersion());
+	}
+
+	private Map<String, String> getGradleProjectProperties() throws Exception {
+		Properties gradleProperties = new BeanProperties();
+		gradleProperties.put("project", getTask().getProject());
+		try (Processor processor = new Processor()) {
+			loadBndProperties(processor);
+			return MapStream.ofEntries(
+					processor.getMacroReferences(Processor.MacroReference.UNKNOWN)
+						.stream()
+						.filter(k -> k.startsWith("project.")),
+					k -> MapStream.entry(k, gradleProperties.getProperty(k))
+				)
+				.filterValue(Objects::nonNull)
+				.collect(MapStream.toMap());
+		}
+	}
+
+	private void loadBndProperties(Processor processor) throws Exception {
+		File projectDir = unwrapFile(getLayout().getProjectDirectory());
+		Optional<org.gradle.api.java.archives.Manifest> taskManifest = Optional
+			.ofNullable(getTask().getManifest());
+		File temporaryBndFile = File.createTempFile("bnd", ".bnd", getTask().getTemporaryDir());
+		try (Writer writer = IO.writer(temporaryBndFile)) {
+			// write any task manifest entries into the tmp bnd file
+			Optional<UTF8Properties> properties = taskManifest.map(manifest -> MapStream
+				.ofNullable(manifest.getEffectiveManifest()
+					.getAttributes())
+				.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
+				.mapValue(this::unwrapAttributeValue)
+				.collect(MapStream.toMap((k1, k2) -> {
+					throw new IllegalStateException("Duplicate key " + k1);
+				}, UTF8Properties::new)));
+			if (properties.isPresent()) {
+				properties.get()
+					.replaceHere(projectDir)
+					.store(writer, null);
+			}
+			// if the bnd file exists, add its contents to the tmp bnd file
+			Optional<File> bndfile = unwrapFileOptional(getBndfile()).filter(File::isFile);
+			if (bndfile.isPresent()) {
+				processor.loadProperties(bndfile.get())
+					.store(writer, null);
+			} else {
+				String bnd = unwrap(getBnd());
+				if (!bnd.isEmpty()) {
+					UTF8Properties props = new UTF8Properties();
+					props.load(bnd, getBuildFile(), processor);
+					props.replaceHere(projectDir)
+						.store(writer, null);
+				}
+			}
+		}
+		// this will cause project.dir property to be set
+		processor.setProperties(temporaryBndFile, projectDir);
+	}
+
+	private String unwrapAttributeValue(Object value) {
+		while (value instanceof Provider<?> provider) {
+			value = provider.getOrNull();
+		}
+		if (value == null) {
+			return null;
+		}
+		return value.toString();
 	}
 
 	/**
@@ -394,55 +458,17 @@ public class BundleTaskExtension {
 		@Override
 		public void execute(Task t) {
 			try {
-				File projectDir = unwrapFile(getLayout().getProjectDirectory());
 				File outputDir = unwrapFile(getOutputDirectory());
-				File buildFile = getBuildFile();
 				FileCollection sourcepath = getAllSource().filter(File::exists);
 				Optional<org.gradle.api.java.archives.Manifest> taskManifest = Optional
 					.ofNullable(getTask().getManifest());
 				// create Builder
 				Properties gradleProperties = new BeanProperties();
 				gradleProperties.putAll(unwrap(getProperties()));
-				gradleProperties.computeIfPresent("project",
-					(k, v) -> "__convention__".equals(v) ? getTask().getProject() : v);
 				gradleProperties.putIfAbsent("task", getTask());
 				try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
 					// load bnd properties
-					File temporaryBndFile = File.createTempFile("bnd", ".bnd", getTask().getTemporaryDir());
-					try (Writer writer = IO.writer(temporaryBndFile)) {
-						// write any task manifest entries into the tmp bnd
-						// file
-						Optional<UTF8Properties> properties = taskManifest.map(manifest -> MapStream
-							.ofNullable(manifest.getEffectiveManifest()
-								.getAttributes())
-							.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
-							.mapValue(this::unwrapAttributeValue)
-							.collect(MapStream.toMap((k1, k2) -> {
-								throw new IllegalStateException("Duplicate key " + k1);
-							}, UTF8Properties::new)));
-						if (properties.isPresent()) {
-							properties.get()
-								.replaceHere(projectDir)
-								.store(writer, null);
-						}
-						// if the bnd file exists, add its contents to the
-						// tmp bnd file
-						Optional<File> bndfile = unwrapFileOptional(getBndfile()).filter(File::isFile);
-						if (bndfile.isPresent()) {
-							builder.loadProperties(bndfile.get())
-								.store(writer, null);
-						} else {
-							String bnd = unwrap(getBnd());
-							if (!bnd.isEmpty()) {
-								UTF8Properties props = new UTF8Properties();
-								props.load(bnd, buildFile, builder);
-								props.replaceHere(projectDir)
-									.store(writer, null);
-							}
-						}
-					}
-					// this will cause project.dir property to be set
-					builder.setProperties(temporaryBndFile, projectDir);
+					loadBndProperties(builder);
 					builder.setProperty("project.output", outputDir.getCanonicalPath());
 					// If no bundle to be built, we have nothing to do
 					if (builder.is(Constants.NOBUNDLES)) {
@@ -561,16 +587,6 @@ public class BundleTaskExtension {
 			builtManifest.getEntries()
 				.forEach((section, attrs) -> mergeManifest.attributes(new AttributesMap(attrs), section));
 			return mergeManifest;
-		}
-
-		private String unwrapAttributeValue(Object value) {
-			while (value instanceof Provider<?> provider) {
-				value = provider.getOrNull();
-			}
-			if (value == null) {
-				return null;
-			}
-			return value.toString();
 		}
 
 		private void failTask(String msg, File archiveFile) {

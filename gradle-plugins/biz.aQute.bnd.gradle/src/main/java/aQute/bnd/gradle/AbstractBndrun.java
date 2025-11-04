@@ -26,7 +26,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.unmodifiable.Maps;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import org.gradle.api.DefaultTask;
@@ -289,8 +289,29 @@ public abstract class AbstractBndrun extends DefaultTask {
 		} else {
 			bundles(mainSourceSet.getRuntimeClasspath());
 			bundles(artifacts);
-			properties.convention(Maps.of("project", "__convention__"));
+			properties.convention(project.provider(this::getGradleProjectProperties));
 		}
+	}
+
+	private Map<String, String> getGradleProjectProperties() throws Exception {
+		Properties gradleProperties = new BeanProperties();
+		gradleProperties.put("project", getProject());
+		try (Processor processor = new Processor()) {
+			loadBndProperties(processor);
+			return MapStream.ofEntries(
+					processor.getMacroReferences(Processor.MacroReference.UNKNOWN)
+						.stream()
+						.filter(k -> k.startsWith("project.")),
+					k -> MapStream.entry(k, gradleProperties.getProperty(k))
+				)
+				.filterValue(Objects::nonNull)
+				.collect(MapStream.toMap());
+		}
+	}
+
+	private void loadBndProperties(Processor processor) throws Exception {
+		File bndrunFile = unwrapFile(getBndrun());
+		processor.setProperties(bndrunFile, unwrapFile(getProject().getLayout().getProjectDirectory()));
 	}
 
 	/**
@@ -342,7 +363,6 @@ public abstract class AbstractBndrun extends DefaultTask {
 			if (workspace.isEmpty()) {
 				Properties gradleProperties = new BeanProperties(runWorkspace.getProperties());
 				gradleProperties.putAll(unwrap(getProperties()));
-				gradleProperties.computeIfPresent("project", (k, v) -> "__convention__".equals(v) ? getProject() : v);
 				gradleProperties.putIfAbsent("task", this);
 				run.setParent(new Processor(runWorkspace, gradleProperties, false));
 				run.clear();

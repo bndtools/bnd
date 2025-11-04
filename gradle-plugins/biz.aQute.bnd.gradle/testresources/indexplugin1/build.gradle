@@ -27,7 +27,7 @@ jar {
 	ext.taskprop = 'prop.task'
 	manifest {
 		attributes('Implementation-Title': base.archivesName,
-		'Implementation-Version': project.version,
+		'Implementation-Version': '${project.version}',
 		'-includeresource': '{${.}/bar.txt}',
 		'-include': '${.}/other.bnd',
 		'Override': 'This should be overridden by the bnd file'
