@@ -6,6 +6,6 @@
     test.simple, \
 	osgi.enroute.junit.wrapper
 
--runproperties:
+-runproperties: testprojectname=${project.name}
 
 -runtrace: true

@@ -452,6 +452,16 @@ class TestBndPlugin extends Specification {
 		then:
 		result.task(":test.simple:testrun.testOSGi2").outcome == SUCCESS
 
+		when:
+		result = TestHelper.getGradleRunner()
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--parallel", "--stacktrace", "--debug", "testrun.testOSGi2", "--tests=test.simple.ProjectNameTest")
+				.forwardOutput()
+				.build()
+
+		then:
+		result.task(":test.simple:testrun.testOSGi2").outcome == SUCCESS
+
 		new File(testReports, "testrun.testOSGi2/TEST-testrun.testOSGi2.xml").isFile()
 	}
 
