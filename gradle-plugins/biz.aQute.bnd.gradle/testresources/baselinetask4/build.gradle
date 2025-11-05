@@ -24,7 +24,7 @@ dependencies {
 	baseline ':baselinetask1:1.0.0'
 }
 
-jar {
+tasks.named('jar', Jar) {
 	manifest {
 		attributes('Implementation-Title': base.archivesName,
 		'Implementation-Version': project.version,
@@ -35,7 +35,7 @@ jar {
 	}
 }
 
-baseline {
+tasks.named('baseline', Baseline) {
 	description = 'Baseline'
 	group = 'build'
 	ignoreFailures = true

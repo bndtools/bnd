@@ -24,7 +24,7 @@ dependencies {
 	runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.18.100'
 }
 
-def jar = tasks.named('jar') {
+def jarTask = tasks.named('jar', Jar) {
 	manifest {
 		attributes('Implementation-Title': base.archivesName,
 		'Implementation-Version': project.version,
@@ -40,7 +40,7 @@ def jar = tasks.named('jar') {
 	bundle.properties.put("task.project.projectprop", provider({project.projectprop}))
 }
 
-def bundle = tasks.register('bundle', Bundle.class) {
+def bundleTask = tasks.register('bundle', Bundle) {
 	description = 'Bundle'
 	group = 'build'
 	from sourceSets.test.output
@@ -66,14 +66,17 @@ Project-Buildpath: ${project.buildpath}
 		properties.put("project.name", provider({project.name}))
 		sourceSet = sourceSets.test
 		classpath = configurations.compileClasspath
-		classpath jar
+		classpath jarTask
 	}
 	archiveVersion = '1.1.0'
 }
 
+tasks.named('assemble') {
+	dependsOn bundleTask
+}
+
 artifacts {
-	runtimeOnly bundle
-	archives bundle
+	runtimeOnly bundleTask
 }
 
 def resolveTask = tasks.register('resolve', Resolve) {

@@ -17,7 +17,7 @@ var project_ext = project.ext
 var project_name = project.name
 var project_path = project.path
 
-task('build') {
+tasks.register('build') {
 	doLast {
 		if (!project_ext.has('bndWorkspace')) {
 			throw new GradleException("workspace does not have a Bnd Workspace")

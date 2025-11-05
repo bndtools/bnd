@@ -166,7 +166,7 @@ public class BndPlugin implements Plugin<Project> {
 			configurations.getByName(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME)
 				.getArtifacts()
 				.clear();
-			if (!isGradleCompatible("10.0")) { // only for pre 10.0
+			if (!isGradleCompatible("9.0")) { // only for pre 9.0
 				//@SuppressWarnings("deprecation")
 				configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
 					.getArtifacts()
@@ -177,7 +177,7 @@ public class BndPlugin implements Plugin<Project> {
 			decontainer(bndProject.getDeliverables()).forEach(deliverable -> {
 				artifacts.add(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, deliverable,
 					cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
-				if (!isGradleCompatible("10.0")) { // only for pre 10.0
+				if (!isGradleCompatible("9.0")) { // only for pre 9.0
 					artifacts.add(Dependency.ARCHIVES_CONFIGURATION, deliverable,
 						cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
 				}

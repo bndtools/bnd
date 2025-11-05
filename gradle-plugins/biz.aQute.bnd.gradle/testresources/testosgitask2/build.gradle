@@ -24,14 +24,16 @@ dependencies {
 	framework 'org.eclipse.platform:org.eclipse.osgi:3.18.100'
 }
 
-task testosgi(type: TestOSGi) {
+def jarTask = tasks.named('jar', Jar)
+
+def testosgiTask = tasks.register('testosgi', TestOSGi) {
 	description = "OSGi Test ${name}.bndrun"
-	inputs.files jar
+	inputs.files jarTask
 	bndrun = file("${name}.bndrun")
 	bundles configurations.framework
 	workingDirectory = new File(temporaryDir, 'temptemp')
 }
 
-check {
-	dependsOn testosgi
+tasks.named('check') {
+	dependsOn testosgiTask
 }

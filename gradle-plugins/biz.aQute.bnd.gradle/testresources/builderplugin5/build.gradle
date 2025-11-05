@@ -20,9 +20,11 @@ tasks.withType(Jar).configureEach {
     doLast(bundle.buildAction())
 }
 
+def jarTask = tasks.named("jar", Jar)
+
 tasks.register("jarlibraryelements") {
     def compileClasspath = configurations.compileClasspath
-    def bundleExtensionClasspath = tasks.named("jar").map {it.extensions.findByType(BundleTaskExtension.class).classpath }
+    def bundleExtensionClasspath = jarTask.map {it.extensions.findByType(BundleTaskExtension.class).classpath }
     dependsOn compileClasspath
 
     doLast {

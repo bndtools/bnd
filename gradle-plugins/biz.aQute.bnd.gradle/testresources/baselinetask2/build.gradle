@@ -16,16 +16,16 @@ group = 'biz.aQute.bnd'
 base.archivesName = 'biz.aQute.bndlib'
 version = '3.1.0'
 
-jar {
+tasks.named('jar', Jar) {
 	archiveBaseName = 'biz.aQute.bnd'
 	archiveVersion = '3.0.0'
 }
 
-task echo {
+tasks.register('echo') {
 	doFirst {
 		File file = configurations.baseline.singleFile
-		JarFile jar = new JarFile(file)
-		Attributes manifest = jar.getManifest().getMainAttributes()
+		JarFile jarFile = new JarFile(file)
+		Attributes manifest = jarFile.getManifest().getMainAttributes()
 		println "Bundle-SymbolicName: ${manifest.getValue('Bundle-SymbolicName')}"
 		println "Bundle-Version: ${manifest.getValue('Bundle-Version')}"
 	}

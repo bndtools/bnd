@@ -22,7 +22,7 @@ dependencies {
 	testImplementation 'junit:junit:4.9'
 }
 
-jar {
+def jarTask = tasks.named('jar', Jar) {
 	ext.taskprop = 'prop.task'
 	manifest {
 		attributes('Implementation-Title': base.archivesName,
@@ -35,7 +35,7 @@ jar {
 	bundle.bnd = ['Override': 'This will be ignored since there is a bnd file for this task']
 }
 
-task bundle(type: Bundle) {
+def bundleTask = tasks.register('bundle', Bundle) {
 	description = 'Bundle'
 	from sourceSets.test.output
 	archiveClassifier = 'bundle'
@@ -56,20 +56,20 @@ Project-Buildpath: ${project.buildpath}
 		bnd '-includeresource.lib': 'commons-lang-2.6.jar;lib:=true'
 		sourceSet = sourceSets.test
 		classpath = configurations.compileClasspath
-		classpath jar
+		classpath jarTask
 	}
 	archiveVersion = '1.1.0'
 }
 
-assemble {
-	dependsOn bundle
+tasks.named('assemble') {
+	dependsOn bundleTask
 	doLast {
 		// Test that we store the generated manifest back into the task
-		println "### jar Bundle-SymbolicName: ${jar.manifest.effectiveManifest.attributes['Bundle-SymbolicName']}"
-		println "### bundle Bundle-SymbolicName: ${bundle.manifest.effectiveManifest.attributes['Bundle-SymbolicName']}"
+		println "### jar Bundle-SymbolicName: ${jarTask.get().manifest.effectiveManifest.attributes['Bundle-SymbolicName']}"
+		println "### bundle Bundle-SymbolicName: ${bundleTask.get().manifest.effectiveManifest.attributes['Bundle-SymbolicName']}"
 	}
 }
+
 artifacts {
-	runtimeOnly bundle
-	archives bundle
+	runtimeOnly bundleTask
 }

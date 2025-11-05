@@ -1,13 +1,13 @@
 import aQute.bnd.gradle.Resolve
 
-tasks.getByName('resolve.resolvenochange') {
+tasks.named('resolve.resolvenochange') {
 	failOnChanges = true
 }
-tasks.getByName('resolve.resolvechange') {
+tasks.named('resolve.resolvechange') {
 	failOnChanges = true
 }
 
-task('resolve2', type: Resolve) {
-	dependsOn assemble
+tasks.register('resolve2', Resolve) {
+	dependsOn tasks.named('assemble')
 	bndrun = file('resolve2.bndrunx')
 }

@@ -38,7 +38,7 @@ tasks.jar {
 val bundleTask = tasks.register<Bundle>("bundle") {
 	description = "Bundle"
 	group = "build"
-	from(sourceSets.test.get().output)
+	from(sourceSets.test.map{ it.output })
 	archiveClassifier.set("bundle")
 	bundle {
 		setBnd("""
@@ -56,13 +56,16 @@ Project-Buildpath: ${'$'}{project.buildpath}
 		bnd("Here: ${'$'}{.}")
 		bnd(mapOf("-includeresource.lib" to "commons-lang-2.6.jar;lib:=true"))
 		setSourceSet(sourceSets.test.get())
-		setClasspath(configurations.compileClasspath.get())
+		setClasspath(configurations.compileClasspath)
 		classpath(tasks.jar)
 	}
 	archiveVersion.set("1.1.0")
 }
 
+tasks.assemble {
+	dependsOn(bundleTask)
+}
+
 artifacts {
 	runtimeOnly(bundleTask)
-	archives(bundleTask)
 }

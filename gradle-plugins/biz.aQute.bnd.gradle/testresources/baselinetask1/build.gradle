@@ -24,7 +24,7 @@ dependencies {
 	testImplementation 'junit:junit:4.9'
 }
 
-jar {
+def jarTask = tasks.named('jar', Jar) {
 	manifest {
 		attributes('Implementation-Title': base.archivesName,
 		'Implementation-Version': project.version,
@@ -35,34 +35,34 @@ jar {
 	}
 }
 
-baseline {
+tasks.named('baseline', Baseline) {
 	description = 'Baseline'
 	group = 'build'
 	ignoreFailures = true
 }
 
-task baselineDiffpackages(type: Baseline) {
+tasks.register('baselineDiffpackages', Baseline) {
 	description = 'Baseline diffpackages'
-	bundle = jar
+	bundle = jarTask
 	baseline = configurations.baseline
 	diffpackages = ['!doubler']
 	diffpackages.add('*')
 	ignoreFailures = false
 }
 
-task baselineDiffignore(type: Baseline) {
+tasks.register('baselineDiffignore', Baseline) {
 	description = 'Baseline diffignore'
-	bundle = jar
+	bundle = jarTask
 	baseline = configurations.baseline
 	diffignore.add('foo.txt')
 	diffignore = ['OSGI-OPT']
 	ignoreFailures = false
 }
 
-task baselineSelf(type: Baseline) {
+tasks.register('baselineSelf', Baseline) {
 	description = 'Baseline Self'
-	bundle = jar
-	baseline = jar.archiveFile
+	bundle = jarTask
+	baseline = jarTask.flatMap { it.archiveFile }
 	ignoreFailures = false
 	baselineReportDirName = 'foo'
 }
