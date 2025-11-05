@@ -1,3 +1,5 @@
+import groovy.lang.GroovySystem
+import org.gradle.util.internal.VersionNumber
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -22,6 +24,10 @@ val bnd_distrepo: String by project
 
 group = bnd_group
 version = bnd_version
+
+val groovyVersion = GroovySystem.getVersion()
+val isGroovy4 = VersionNumber.parse(groovyVersion).major >= 4
+val spockVersion = if (isGroovy4) "2.3-groovy-4.0" else "2.3-groovy-3.0"
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_17
@@ -80,7 +86,7 @@ dependencies {
 	testImplementation(enforcedPlatform("org.junit:junit-bom:5.12.2"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+	testImplementation("org.spockframework:spock-core:${spockVersion}")
 }
 
 // Gradle plugin descriptions
