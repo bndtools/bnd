@@ -2,6 +2,7 @@ import groovy.lang.GroovySystem
 import org.gradle.util.internal.VersionNumber
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 import java.util.*
@@ -29,9 +30,12 @@ val groovyVersion = GroovySystem.getVersion()
 val isGroovy4 = VersionNumber.parse(groovyVersion).major >= 4
 val spockVersion = if (isGroovy4) "2.3-groovy-4.0" else "2.3-groovy-3.0"
 
+val javaVersion = JavaVersion.VERSION_17 // Bnd target language level
+val kotlinVersion = KotlinVersion.KOTLIN_2_0 // Supported in Gradle 8
+
 java {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = javaVersion
+	targetCompatibility = javaVersion
 	withJavadocJar()
 	withSourcesJar()
 }
@@ -189,10 +193,11 @@ tasks.withType<JavaCompile>() {
 	options.compilerArgs.add("-Xlint:unchecked")
 }
 
-// Use same jvm target for kotlin code as for java code
 tasks.withType<KotlinCompilationTask<KotlinJvmCompilerOptions>>().configureEach {
 	compilerOptions {
-		jvmTarget.set(JvmTarget.fromTarget(java.targetCompatibility.toString()))
+		jvmTarget = JvmTarget.fromTarget(javaVersion.toString())
+		apiVersion = kotlinVersion
+		languageVersion = kotlinVersion
 	}
 }
 
