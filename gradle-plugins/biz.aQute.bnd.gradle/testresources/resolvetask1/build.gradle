@@ -25,29 +25,29 @@ ext {
 	osgiIdentity = 'org.apache.felix.eventadmin'
 }
 
-task create(type: Resolve) {
+tasks.register('create', Resolve) {
 	description = "Resolve ${name}.bndrun"
 	bndrun = file("${name}.bndrun")
 	outputBndrun = file("${buildDir}/${name}.bndrun")
 	bundles = configurations.bundles
 }
 
-task same(type: Resolve) {
+tasks.register('same', Resolve) {
 	description = "Resolve ${name}.bndrun"
 	bndrun = file("${name}.bndrun")
 	failOnChanges = true
 	bundles = configurations.bundles
-	properties = ["project.osgiIdentity" : osgiIdentity]
+	properties = ["project.osgiIdentity": osgiIdentity]
 }
 
-task changefail(type: Resolve) {
+tasks.register('changefail', Resolve) {
 	description = "Resolve ${name}.bndrun"
 	bndrun = file("${name}.bndrun")
 	failOnChanges = true
 	bundles = configurations.bundles
 }
 
-task resolvefail(type: Resolve) {
+tasks.register('resolvefail', Resolve) {
 	description = "Resolve ${name}.bndrun"
 	bndrun = file("${name}.bndrun")
 	bundles = configurations.bundles

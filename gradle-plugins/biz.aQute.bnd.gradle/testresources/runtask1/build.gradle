@@ -19,9 +19,11 @@ dependencies {
 	runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.18.100'
 }
 
-task run(type: Bndrun) {
+def jarTask = tasks.named('jar', Jar)
+
+tasks.register('run', Bndrun) {
 	description = "OSGi Bndrun ${name}.bndrun"
-	inputs.files jar
+	inputs.files jarTask
 	bndrun = file("${name}.bndrun")
 	javaLauncher = javaToolchains.launcherFor {
 		languageVersion = JavaLanguageVersion.of(JavaVersion.current().getMajorVersion())

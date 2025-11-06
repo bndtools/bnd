@@ -9,7 +9,10 @@ plugins {
 }
 
 version = '1.0.0'
-testResultsDirName = 'testing-results'
+
+java {
+	testResultsDir = layout.buildDirectory.dir('testing-results')
+}
 
 repositories {
 	mavenLocal().metadataSources { mavenPom(); artifact() }
@@ -21,21 +24,23 @@ dependencies {
 	runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.18.100'
 }
 
-task testosgiIgnoreFail(type: TestOSGi) {
+def jarTask = tasks.named('jar', Jar)
+
+def testosgiIgnoreFailTask = tasks.register('testosgiIgnoreFail', TestOSGi) {
 	description = "OSGi Test ${name}.bndrun"
-	inputs.files jar
+	inputs.files jarTask
 	bndrun = file("${name}.bndrun")
 	ignoreFailures = true
 }
 
-task testosgiFail(type: TestOSGi) {
+def testosgiFailTask = tasks.register('testosgiFail', TestOSGi) {
 	description = "OSGi Test ${name}.bndrun"
-	inputs.files jar
+	inputs.files jarTask
 	bndrun = file("${name}.bndrun")
 	ignoreFailures = false
 	resultsDirectory = layout.buildDirectory.dir("${name}-results")
 }
 
-check {
-	dependsOn testosgiIgnoreFail, testosgiFail
+tasks.named('check') {
+	dependsOn testosgiIgnoreFailTask, testosgiFailTask
 }
