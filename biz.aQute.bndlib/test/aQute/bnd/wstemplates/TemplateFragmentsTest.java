@@ -180,6 +180,233 @@ class TemplateFragmentsTest {
 	}
 
 	@Test
+	void testRequireField() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			
+			// Create template jars
+			File base = makeJar("base.zip", """
+				-includeresource workspace-master/cnf/base.txt;literal="base content\\n"
+				""");
+			File common = makeJar("common.zip", """
+				-includeresource workspace-master/cnf/common.txt;literal="common content\\n"
+				""");
+			File app = makeJar("app.zip", """
+				-includeresource workspace-master/cnf/app.txt;literal="app content\\n"
+				""");
+
+			// Read templates with require dependencies:
+			// app requires common, common requires base
+			Result<List<TemplateInfo>> result = tfs.read(
+				"-workspace-templates " + 
+				base.toURI() + ";name=base;description=Base," +
+				common.toURI() + ";name=common;description=Common;require=" + base.toURI() + "," +
+				app.toURI() + ";name=app;description=App;require=" + common.toURI());
+
+			assertThat(result.isOk()).describedAs(result.toString())
+				.isTrue();
+
+			List<TemplateInfo> infos = result.unwrap();
+			assertThat(infos).hasSize(3);
+			
+			// Add all templates to the engine
+			infos.forEach(tfs::add);
+
+			// Only select the 'app' template - base and common should be auto-included
+			TemplateInfo appTemplate = infos.stream()
+				.filter(t -> t.name().equals("app"))
+				.findFirst()
+				.orElseThrow();
+
+			try (TemplateUpdater updater = tfs.updater(wsDir, List.of(appTemplate))) {
+				updater.commit();
+			}
+
+			// Verify all three files are created (app and its dependencies)
+			assertThat(IO.getFile(wsDir, "cnf/base.txt")).isFile();
+			assertThat(IO.getFile(wsDir, "cnf/common.txt")).isFile();
+			assertThat(IO.getFile(wsDir, "cnf/app.txt")).isFile();
+			
+			assertThat(IO.collect(IO.getFile(wsDir, "cnf/base.txt"))).isEqualTo("base content\n");
+			assertThat(IO.collect(IO.getFile(wsDir, "cnf/common.txt"))).isEqualTo("common content\n");
+			assertThat(IO.collect(IO.getFile(wsDir, "cnf/app.txt"))).isEqualTo("app content\n");
+		}
+	}
+
+	@Test
+	void testRequireMultipleDependencies() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			
+			// Create template jars
+			File pluginA = makeJar("pluginA.zip", """
+				-includeresource workspace-master/cnf/pluginA.txt;literal="plugin A\\n"
+				""");
+			File pluginB = makeJar("pluginB.zip", """
+				-includeresource workspace-master/cnf/pluginB.txt;literal="plugin B\\n"
+				""");
+			File main = makeJar("main.zip", """
+				-includeresource workspace-master/cnf/main.txt;literal="main\\n"
+				""");
+
+			// Main requires both pluginA and pluginB
+			Result<List<TemplateInfo>> result = tfs.read(
+				"-workspace-templates " + 
+				pluginA.toURI() + ";name=pluginA," +
+				pluginB.toURI() + ";name=pluginB," +
+				main.toURI() + ";name=main;require=\"" + pluginA.toURI() + "," + pluginB.toURI() + "\"");
+
+			assertThat(result.isOk()).describedAs(result.toString())
+				.isTrue();
+
+			List<TemplateInfo> infos = result.unwrap();
+			infos.forEach(tfs::add);
+
+			// Only select main template
+			TemplateInfo mainTemplate = infos.stream()
+				.filter(t -> t.name().equals("main"))
+				.findFirst()
+				.orElseThrow();
+
+			try (TemplateUpdater updater = tfs.updater(wsDir, List.of(mainTemplate))) {
+				updater.commit();
+			}
+
+			// Verify all three files are created
+			assertThat(IO.getFile(wsDir, "cnf/pluginA.txt")).isFile();
+			assertThat(IO.getFile(wsDir, "cnf/pluginB.txt")).isFile();
+			assertThat(IO.getFile(wsDir, "cnf/main.txt")).isFile();
+		}
+	}
+
+	@Test
+	void testRequireCircularDependency() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			
+			File templateA = makeJar("templateA.zip", """
+				-includeresource workspace-master/cnf/a.txt;literal="A\\n"
+				""");
+			File templateB = makeJar("templateB.zip", """
+				-includeresource workspace-master/cnf/b.txt;literal="B\\n"
+				""");
+
+			// Create circular dependency: A requires B, B requires A
+			Result<List<TemplateInfo>> result = tfs.read(
+				"-workspace-templates " + 
+				templateA.toURI() + ";name=A;require=" + templateB.toURI() + "," +
+				templateB.toURI() + ";name=B;require=" + templateA.toURI());
+
+			assertThat(result.isOk()).describedAs(result.toString())
+				.isTrue();
+
+			List<TemplateInfo> infos = result.unwrap();
+			infos.forEach(tfs::add);
+
+			TemplateInfo templateAInfo = infos.stream()
+				.filter(t -> t.name().equals("A"))
+				.findFirst()
+				.orElseThrow();
+
+			// Should handle circular dependency gracefully
+			try (TemplateUpdater updater = tfs.updater(wsDir, List.of(templateAInfo))) {
+				updater.commit();
+			}
+
+			// Both files should be created without infinite loop
+			assertThat(IO.getFile(wsDir, "cnf/a.txt")).isFile();
+			assertThat(IO.getFile(wsDir, "cnf/b.txt")).isFile();
+		}
+	}
+
+	@Test
+	void testRequireMissingDependency() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			
+			File template = makeJar("template.zip", """
+				-includeresource workspace-master/cnf/main.txt;literal="main\\n"
+				""");
+
+			// Template requires a non-existent template
+			Result<List<TemplateInfo>> result = tfs.read(
+				"-workspace-templates " + 
+				template.toURI() + ";name=main;require=nonexistent/missing");
+
+			assertThat(result.isOk()).describedAs(result.toString())
+				.isTrue();
+
+			List<TemplateInfo> infos = result.unwrap();
+			infos.forEach(tfs::add);
+
+			TemplateInfo mainTemplate = infos.get(0);
+
+			// Should handle missing dependency gracefully (with warning log)
+			try (TemplateUpdater updater = tfs.updater(wsDir, List.of(mainTemplate))) {
+				updater.commit();
+			}
+
+			// Main template should still be applied
+			assertThat(IO.getFile(wsDir, "cnf/main.txt")).isFile();
+		}
+	}
+
+	@Test
+	void testRequireDeduplication() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			
+			File base = makeJar("base.zip", """
+				-includeresource workspace-master/cnf/base.txt;literal="base\\n"
+				""");
+			File moduleA = makeJar("moduleA.zip", """
+				-includeresource workspace-master/cnf/moduleA.txt;literal="module A\\n"
+				""");
+			File moduleB = makeJar("moduleB.zip", """
+				-includeresource workspace-master/cnf/moduleB.txt;literal="module B\\n"
+				""");
+
+			// Both moduleA and moduleB require base
+			Result<List<TemplateInfo>> result = tfs.read(
+				"-workspace-templates " + 
+				base.toURI() + ";name=base," +
+				moduleA.toURI() + ";name=moduleA;require=" + base.toURI() + "," +
+				moduleB.toURI() + ";name=moduleB;require=" + base.toURI());
+
+			assertThat(result.isOk()).describedAs(result.toString())
+				.isTrue();
+
+			List<TemplateInfo> infos = result.unwrap();
+			infos.forEach(tfs::add);
+
+			// Select both moduleA and moduleB (both require base)
+			List<TemplateInfo> selectedTemplates = infos.stream()
+				.filter(t -> t.name().equals("moduleA") || t.name().equals("moduleB"))
+				.collect(java.util.stream.Collectors.toList());
+
+			try (TemplateUpdater updater = tfs.updater(wsDir, selectedTemplates)) {
+				Map<File, List<Update>> updates = updater.updaters();
+				
+				// Base should only appear once in updates, not twice
+				File baseFile = IO.getFile(wsDir, "cnf/base.txt");
+				if (updates.containsKey(baseFile)) {
+					assertThat(updates.get(baseFile)).hasSize(1);
+				}
+				
+				updater.commit();
+			}
+
+			// All three files should exist
+			assertThat(IO.getFile(wsDir, "cnf/base.txt")).isFile();
+			assertThat(IO.getFile(wsDir, "cnf/moduleA.txt")).isFile();
+			assertThat(IO.getFile(wsDir, "cnf/moduleB.txt")).isFile();
+			
+			// Base content should appear only once
+			assertThat(IO.collect(IO.getFile(wsDir, "cnf/base.txt"))).isEqualTo("base\n");
+		}
+	}
+
+	@Test
 	void testFragmentZipSlip() throws Exception {
 		try (Workspace w = getworkSpace()) {
 			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);

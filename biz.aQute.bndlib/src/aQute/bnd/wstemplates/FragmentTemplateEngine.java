@@ -56,17 +56,17 @@ public class FragmentTemplateEngine {
 
 	public static final String		DEFAULT_INDEX		= "https://raw.githubusercontent.com/bndtools/workspace-templates/master/index.bnd";
 
-	private static final String	TAG					= "tag";
-	private static final String	REQUIRE				= "require";
-	private static final String	DESCRIPTION			= "description";
-	private static final String	WORKSPACE_TEMPLATES	= "-workspace-templates";
-	private static final String	NAME				= "name";
+	private static final String		TAG					= "tag";
+	private static final String		REQUIRE				= "require";
+	private static final String		DESCRIPTION			= "description";
+	private static final String		WORKSPACE_TEMPLATES	= "-workspace-templates";
+	private static final String		NAME				= "name";
 	private static final Pattern	COMMIT_SHA			= Pattern.compile("[a-f0-9]{40}$");
 
-	final static Logger			log					= LoggerFactory.getLogger(FragmentTemplateEngine.class);
-	final List<TemplateInfo>	templates			= new ArrayList<>();
-	final HttpClient			httpClient;
-	final Workspace				workspace;
+	final static Logger				log					= LoggerFactory.getLogger(FragmentTemplateEngine.class);
+	final List<TemplateInfo>		templates			= new ArrayList<>();
+	final HttpClient				httpClient;
+	final Workspace					workspace;
 
 	/**
 	 * The conflict status.
@@ -80,8 +80,7 @@ public class FragmentTemplateEngine {
 	 * Info about a template, comes from the index files.
 	 */
 
-	public record TemplateInfo(TemplateID id, String name, String description, String[] require,
-		String... tag)
+	public record TemplateInfo(TemplateID id, String name, String description, String[] require, String... tag)
 		implements Comparable<TemplateInfo> {
 
 		@Override
@@ -114,7 +113,6 @@ public class FragmentTemplateEngine {
 		}
 
 	}
-
 
 	public enum Action {
 		skip,
@@ -245,7 +243,7 @@ public class FragmentTemplateEngine {
 	 */
 	public class TemplateUpdater implements AutoCloseable {
 		private static final String		TOOL_BND	= "tool.bnd";
-		final List<TemplateInfo>	templates;
+		final List<TemplateInfo>		templates;
 		final File						folder;
 		final MultiMap<File, Update>	updates		= new MultiMap<>();
 		final List<AutoCloseable>		closeables	= new ArrayList<>();
@@ -327,12 +325,10 @@ public class FragmentTemplateEngine {
 
 			TemplateID id = template.id();
 
-			Jar jar = getFiles(id
-				.uri());
+			Jar jar = getFiles(id.uri());
 			closeables.add(jar);
 
-			String prefix = fixup(id
-				.path());
+			String prefix = fixup(id.path());
 
 			List<Update> updates = new ArrayList<>();
 
@@ -446,7 +442,69 @@ public class FragmentTemplateEngine {
 	 * Create a TemplateUpdater
 	 */
 	public TemplateUpdater updater(File folder, List<TemplateInfo> templates) {
-		return new TemplateUpdater(folder, templates);
+		List<TemplateInfo> resolved = resolveRequirements(templates);
+		return new TemplateUpdater(folder, resolved);
+	}
+
+	/**
+	 * Resolve all required templates recursively. This method processes the
+	 * 'require' field of each template and includes all transitively required
+	 * templates.
+	 * 
+	 * @param templates the initial list of templates
+	 * @return a list containing the original templates plus all required
+	 *         templates, with duplicates removed
+	 */
+	List<TemplateInfo> resolveRequirements(List<TemplateInfo> templates) {
+		Set<TemplateID> seen = new HashSet<>();
+		List<TemplateInfo> result = new ArrayList<>();
+		
+		for (TemplateInfo template : templates) {
+			resolveRequirements(template, seen, result);
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Recursively resolve requirements for a single template.
+	 * 
+	 * @param template the template to resolve
+	 * @param seen set of already processed template IDs to prevent circular
+	 *            dependencies
+	 * @param result the accumulated list of templates
+	 */
+	private void resolveRequirements(TemplateInfo template, Set<TemplateID> seen, List<TemplateInfo> result) {
+		// Check if we've already processed this template
+		if (seen.contains(template.id())) {
+			return;
+		}
+		
+		seen.add(template.id());
+		
+		// First, recursively resolve all required templates
+		if (template.require() != null && template.require().length > 0) {
+			for (String requiredId : template.require()) {
+				TemplateID reqId = TemplateID.from(requiredId.trim());
+				
+				// Find the required template in our available templates
+				TemplateInfo requiredTemplate = templates.stream()
+					.filter(t -> t.id().equals(reqId))
+					.findFirst()
+					.orElse(null);
+				
+				if (requiredTemplate != null) {
+					// Recursively resolve this required template
+					resolveRequirements(requiredTemplate, seen, result);
+				} else {
+					log.warn("Required template '{}' for template '{}' not found in available templates",
+						requiredId, template.id());
+				}
+			}
+		}
+		
+		// Add the current template after its dependencies
+		result.add(template);
 	}
 
 	String[] toArray(String string) {
