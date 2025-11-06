@@ -39,7 +39,7 @@ class TestHelper {
 
 	private static String gradleVersion() {
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_25)) {
-			return "9.1"
+			return "9.1.0"
 		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_24)) {
 			return "8.14"
