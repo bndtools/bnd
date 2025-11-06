@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -1005,8 +1006,10 @@ public class BndEditModel {
 			List<HeaderClause> headers = PropertyKey.findVisible(propertyKeys)
 				.stream()
 				.map(p -> headerClauseListConverter.convert(p.getValue()))
+				.filter(Objects::nonNull)
 				.flatMap(List::stream)
 				.toList();
+
 
 			return headers;
 
@@ -1057,11 +1060,14 @@ public class BndEditModel {
 
 					boolean isLocal = localKeys.contains(pk.key());
 
-					List<BndEditModelHeaderClause> headers = headerClauseListConverter.convert(pk.getValue())
-						.stream()
-						.map(h -> new BndEditModelHeaderClause(pk.key(), h, isLocal))
-						.collect(Collectors.toList());
-					map.put(pk.key(), headers);
+					List<HeaderClause> converter = headerClauseListConverter.convert(pk.getValue());
+					if (converter != null) {
+
+						List<BndEditModelHeaderClause> headers = converter.stream()
+							.map(h -> new BndEditModelHeaderClause(pk.key(), h, isLocal))
+							.collect(Collectors.toList());
+						map.put(pk.key(), headers);
+					}
 
 				});
 
