@@ -89,8 +89,7 @@ jobs:
         java:
         - '17'
         - '21'
-        - '24'
-        #- '25-ea'
+        - '25'
         runner:
         - '{0}' # 'xvfb-run --auto-servernum {0}'
     name: Rebuild JDK${{ matrix.java }} ${{ matrix.os }}
@@ -130,6 +129,7 @@ jobs:
           */generated/test-reports/*/TEST-*.xml
           maven/*/target/surefire-reports/TEST-*.xml
           gradle-plugins/*/build/test-results/*/TEST-*.xml
+          gradle-plugins/build/reports/*
     - name: Upload Rebuild P2 Repo artifact
       if: ${{ github.event_name == 'pull_request' }}
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
