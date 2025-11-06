@@ -123,6 +123,7 @@ jobs:
           */generated/test-reports/*/TEST-*.xml
           maven/*/target/surefire-reports/TEST-*.xml
           gradle-plugins/*/build/test-results/*/TEST-*.xml
+          gradle-plugins/build/reports/*
     - name: Publish PR p2 repo
       if: ${{ github.event_name }} == 'pull_request' && ${{ matrix.java }} == '17'  && ${{ matrix.os }}== 'ubuntu'
       run: |
