@@ -618,6 +618,10 @@ public class Syntax implements Constants {
 		new Syntax(NOCLASSFORNAME, "Do not calculate " + IMPORT_PACKAGE
 			+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
 			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOPROXYINTERFACES,
+			"Do not calculate " + IMPORT_PACKAGE
+				+ " references for 'Proxy.newProxyInstance' usage found in method bodies during class processing.",
+			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NOIMPORTJAVA, "Do not calculate " + IMPORT_PACKAGE + " references for java.* packages.",
 			NOIMPORTJAVA + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NOSUBSTITUTION,
