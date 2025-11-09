@@ -69,7 +69,8 @@ jobs:
         echo "== Diff summary =="
         git diff --stat || true
 
-        if ! git diff --quiet; then
+        # Check for any tracked *or untracked* changes
+        if ! git diff --quiet --ignore-submodules --exit-code || [ -n "$(git ls-files --others --exclude-standard)" ]; then
           branch="docs/gen-$(date +%Y-%m-%d-%H%M%S)"
           git checkout -b "$branch"
           git add -A
