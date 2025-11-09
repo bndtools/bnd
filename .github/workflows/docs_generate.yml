@@ -60,6 +60,7 @@ jobs:
     - name: Create PR if changes exist
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      working-directory: docs
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
