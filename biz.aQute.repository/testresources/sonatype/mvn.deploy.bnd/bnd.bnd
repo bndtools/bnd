@@ -1,0 +1,10 @@
+-buildpath: \
+	osgi.core,\
+	osgi.enterprise
+
+Private-Package: mvn.deploy.bnd
+
+-export: \
+	mvn-deploy-bnd.bndrun;name=mvn.deploy.bnd.executable.jar;\
+        bsn=mvn.deploy.bnd.executable;\
+        version=${base.version}.${tstamp}

@@ -94,8 +94,15 @@ jobs:
     - name: Build
       id: build
       run: |
-        ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
-
+        ${{ format(matrix.runner, 'echo "$GPG_PRIVATE_KEY" | gpg --batch --import && gpg --list-secret-keys --keyid-format LONG && ./.github/scripts/ci-build.sh') }}
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          P2_SIGN: true
+          P2_SIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
     - name: Configure settings.xml for Publish
       if: ${{ matrix.canonical }}
       uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
