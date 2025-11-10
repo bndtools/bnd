@@ -63,6 +63,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -557,7 +558,15 @@ public class BndSourceEffectivePage extends FormPage {
 			false) {
 			@Override
 			protected Composite createToolTipContentArea(Event event, Composite parent) {
+				// Define tooltip size constants
+				final int TOOLTIP_WIDTH = 700;
+				final int TOOLTIP_HEIGHT = 300;
+				
 				Composite container = new Composite(parent, SWT.NONE);
+
+				if (parent instanceof Shell) {
+					parent.setSize(TOOLTIP_WIDTH, TOOLTIP_HEIGHT);
+				}
 				container.setLayout(new GridLayout(1, false));
 
 				// unfortunatelly lots of ceremony to
@@ -598,8 +607,8 @@ public class BndSourceEffectivePage extends FormPage {
 				text.setMargins(5, 5, 5, 5); // left, top, right, bottom
 
 				GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-				gd.widthHint = 350;
-				gd.heightHint = 200;
+				gd.widthHint = TOOLTIP_WIDTH - 50; // Account for margins and scrollbars
+				gd.heightHint = TOOLTIP_HEIGHT - 80; // Account for margins, scrollbars, and toolbar
 				text.setLayoutData(gd);
 				text.setText(tooltipText);
 

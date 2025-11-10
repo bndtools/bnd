@@ -5,6 +5,12 @@ Archive
 .DS_Store
 .*.swp
 /.gradle/
-/reports/
+/bin/
 /generated/
+/reports/
+/install-jdk.sh
 .to
+.idea
+.settings
+.flattened-pom.xml
+target/

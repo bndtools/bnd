@@ -28,6 +28,8 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
@@ -36,6 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IImportWizard;
@@ -62,13 +65,12 @@ import bndtools.util.ui.UI;
  */
 public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWizard {
 
-
-	static final Logger				log				= LoggerFactory.getLogger(NewWorkspaceWizard.class);
+	static final Logger				log					= LoggerFactory.getLogger(NewWorkspaceWizard.class);
 
 	final Model						model;
 	final UI<Model>					ui;
-	final NewWorkspaceWizardPage	page			= new NewWorkspaceWizardPage();
-	final FragmentTemplateEngine			templates;
+	final NewWorkspaceWizardPage	page				= new NewWorkspaceWizardPage();
+	final FragmentTemplateEngine	templates;
 
 	final static Image				verified			= Icons.image("icons/tick.png", false);
 	final static Image				verifiedGreyedOut	= new Image(Display.getDefault(), verified, SWT.IMAGE_DISABLE);
@@ -124,8 +126,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		// show a confirmation dialog
 		// if there is at least one 3rd-party template selected
 		long num3rdParty = model.selectedTemplates.stream()
-			.filter(t -> !t
-				.isOfficial())
+			.filter(t -> !t.isOfficial())
 			.count();
 
 		boolean confirmed = num3rdParty == 0 || openConfirm(getShell(), "Install 3rd-Party templates",
@@ -145,7 +146,6 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			return true;
 		} else
 			return false;
-
 
 	}
 
@@ -244,12 +244,10 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public String getText(Object element) {
 					if (element instanceof TemplateInfo ti) {
-						if (ti
-							.isOfficial()) {
+						if (ti.isOfficial()) {
 							return "bndtools (Official)";
 
-						}
-						else {
+						} else {
 							return ti.id()
 								.organisation() + " (3rd Party)";
 						}
@@ -269,9 +267,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			});
 
-
-			tableLayout.addColumnData(new ColumnWeightData(1, 150, false));
-			tableLayout.addColumnData(new ColumnWeightData(10, 400, true));
+			tableLayout.addColumnData(new ColumnWeightData(1, 200, false));
+			tableLayout.addColumnData(new ColumnWeightData(10, 460, true));
 			tableLayout.addColumnData(new ColumnWeightData(20, 100, true));
 
 			Button addButton = new Button(container, SWT.PUSH);
@@ -308,8 +305,30 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			UI.checkbox(browseButton)
 				.subscribe(this::browseForLocation);
 
-			getShell().setSize(840, 480);
+			centerShell();
 			ui.update();
+		}
+
+		private void centerShell() {
+			Shell shell = getShell();
+			shell.setSize(840, 480);
+			Shell parent = (Shell) shell.getParent();
+			if (parent != null) {
+				Rectangle parentBounds = parent.getBounds();
+				Point shellSize = shell.getSize();
+				int x = parentBounds.x + (parentBounds.width - shellSize.x) / 2;
+				int y = parentBounds.y + (parentBounds.height - shellSize.y) / 2;
+				shell.setLocation(x, y);
+			} else {
+				// If no parent, center on the display
+				Rectangle displayBounds = shell.getDisplay()
+					.getPrimaryMonitor()
+					.getBounds();
+				Point shellSize = shell.getSize();
+				int x = (displayBounds.width - shellSize.x) / 2;
+				int y = (displayBounds.height - shellSize.y) / 2;
+				shell.setLocation(x, y);
+			}
 		}
 
 		List<TemplateInfo> toTemplates(Object[] selection) {
