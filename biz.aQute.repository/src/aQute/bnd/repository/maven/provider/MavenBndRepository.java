@@ -215,6 +215,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						.isEmpty()) {
 						releaser.setPassphrase(instructions.passphrase);
 					}
+					if (instructions.keyname != null && !instructions.keyname.trim()
+						.isEmpty()) {
+						releaser.setKeyname(instructions.keyname);
+					}
 					if (instructions.snapshot >= 0)
 						releaser.setBuild(instructions.snapshot, null);
 
@@ -479,6 +483,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Attrs sign = p.remove("sign");
 		if (sign != null) {
+			release.keyname = sign.get("keyname");
 			release.passphrase = sign.get("passphrase");
 		}
 

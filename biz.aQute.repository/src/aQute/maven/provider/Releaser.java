@@ -31,6 +31,7 @@ class Releaser implements Release {
 	protected boolean					localOnly;
 	protected MavenBackingRepository	repo;
 	private Properties					context;
+	private String						keyname;
 	private String						passphrase;
 
 	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo, Properties context)
@@ -178,7 +179,10 @@ class Releaser implements Release {
 
 		File sign = new File(home.toLocalFile(archive.localPath)
 			.getAbsolutePath() + ".asc");
-		int result = Signer.sign(f, context.getProperty("gpg", "gpg"), passphrase.equals("DEFAULT") ? null : passphrase,
+		String key = (keyname != null) ? keyname : null;
+		String pass = passphrase.equals("DEFAULT") ? null : passphrase;
+		int result = Signer.sign(f, context.getProperty("gpg", "gpg"), key,
+			pass,
 			sign);
 		if (result == 0) {
 			repo.store(sign, archive.remotePath + ".asc");
@@ -250,4 +254,8 @@ class Releaser implements Release {
 		this.passphrase = passphrase;
 	}
 
+	@Override
+	public void setKeyname(String keyname) {
+		this.keyname = keyname;
+	}
 }
