@@ -40,6 +40,7 @@ Though this instruction is not specific for a plugin, it was developed in conjun
                        ( ';path=' ( 'JAR' | PATH ) )?
     sign            ::= 'sign'
                        ( ';passphrase=' VALUE )?
+                       ( ';keyname=' VALUE )?
 
 If `sources` or `javadoc` has the attribute `force=true`, either one will be release to the maven repository even if no `releaseUrl` or `snapshotUrl` is set or `maven-release=local`. 
 
@@ -65,13 +66,17 @@ For example:
 
 # Signing
 
-If the instruction contains the sign attribute  and release build is detected the repository tries to apply [gnupg](https://gnupg.org/) via a command process to create `.asc` files for all deployed artifacts. This requires a Version of [gnupg](https://gnupg.org/) installed on your build system. By default it uses the `gpg` command. If the `passphrase` is configured, it will hand it over to the command as standard input. The command will be constructed as follows: `gpg --batch --passphrase-fd 0 --output <filetosign>.asc --detach-sign --armor <filetosign>`. Some newer gnupg versions will ignore the passphrase via standard input for the first try and ask again with password screen. This will crash the process. Have a look [here](https://stackoverflow.com/questions/19895122/how-to-use-gnupgs-passphrase-fd-argument) to teach gnupg otherwise. The command can be exchanged or amended with additional options by defining a property named `gpg` in your workspace (e.g. `build.bnd` or somewhere in the ext directory).
+If the instruction contains the sign attribute  and release build is detected the repository tries to apply [gnupg](https://gnupg.org/) via a command process to create `.asc` files for all deployed artifacts. This requires a Version of [gnupg](https://gnupg.org/) installed on your build system. By default it uses the `gpg` command. If the `passphrase` is configured, it will hand it over to the command as standard input, same for the `keyname`. 
+
+The command will be constructed as follows: 
+
+`gpg --batch --local-user <keyname> --passphrase-fd 0 --output <filetosign>.asc --detach-sign --armor <filetosign>`. Some newer gnupg versions will ignore the passphrase via standard input for the first try and ask again with password screen. This will crash the process. Have a look [here](https://stackoverflow.com/questions/19895122/how-to-use-gnupgs-passphrase-fd-argument) to teach gnupg otherwise. The command can be exchanged or amended with additional options by defining a property named `gpg` in your workspace (e.g. `build.bnd` or somewhere in the ext directory).
 
 Example config could look like:
 
 ```
 # use the env macro to avoid to set the passphrase somehwere in your project
--maven-release: pom,sign;passphrase=${env;GNUPG_PASSPHRASE}
+-maven-release: pom,sign;keyname=${env;GNUPG_KEYNAME}, passphrase=${env;GNUPG_PASSPHRASE}
 gpg: gpg --homedir /mnt/n/tmp/gpg/.gnupg --pinentry-mode loopback
 ```
 
