@@ -48,5 +48,6 @@ public class ReleaseDTO extends DTO {
 	public SourceDTO		sources		= new SourceDTO();
 	public List<ExtraDTO>	extra		= new ArrayList<>();
 	public long				snapshot	= -1;
+	public String			keyname;
 	public String			passphrase;
 }
