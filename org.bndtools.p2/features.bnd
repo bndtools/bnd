@@ -3,7 +3,7 @@ Bundle-SymbolicName: org.bndtools.p2
 Bundle-License:  \
     (ASL-2.0 or EPL-2.0);\
         file="license.txt";\
-        link="(ASL-2.0 or EPL-2.0)"
+        link="https://raw.githubusercontent.com/bndtools/bnd/refs/heads/master/LICENSE"
         
 Bundle-Vendor           bnd
 
