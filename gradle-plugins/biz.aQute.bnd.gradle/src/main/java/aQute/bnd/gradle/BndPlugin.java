@@ -268,6 +268,10 @@ public class BndPlugin implements Plugin<Project> {
 					.dir(Maps.of("builtBy", compileTask.getName()), destinationDir);
 				TaskProvider<Task> processResourcesTask = tasks.named(sourceSet.getProcessResourcesTaskName());
 				generateInputAction.ifPresent(processResourcesTask::configure);
+				// Since both compileJava and processResources write to the same destination directory,
+				// we must ensure processResources runs after compileJava to prevent resources from
+				// overwriting compiled classes (issue #6896)
+				processResourcesTask.configure(t -> t.mustRunAfter(compileTask));
 			});
 			sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME, sourceSet -> {
 				ConfigurableFileCollection srcDirs = objects.fileCollection()
@@ -291,6 +295,11 @@ public class BndPlugin implements Plugin<Project> {
 					});
 				sourceSet.getOutput()
 					.dir(Maps.of("builtBy", compileTask.getName()), destinationDir);
+				TaskProvider<Task> processResourcesTask = tasks.named(sourceSet.getProcessResourcesTaskName());
+				// Since both compileTestJava and processTestResources write to the same destination directory,
+				// we must ensure processTestResources runs after compileTestJava to prevent resources from
+				// overwriting compiled classes (issue #6896)
+				processResourcesTask.configure(t -> t.mustRunAfter(compileTask));
 			});
 			/* Configure srcDirs for any additional languages */
 			project.afterEvaluate(p -> {
