@@ -254,8 +254,9 @@ public class BndPlugin implements Plugin<Project> {
 				sourceSet.getJava()
 					.getDestinationDirectory()
 					.fileValue(destinationDir);
-				sourceSet.getOutput()
-					.setResourcesDir(destinationDir);
+				sourceSet.getResources()
+					.getDestinationDirectory()
+					.fileValue(destinationDir);
 				TaskProvider<AbstractCompile> compileTask = tasks.named(sourceSet.getCompileJavaTaskName(),
 					AbstractCompile.class, t -> {
 						t.getDestinationDirectory()
