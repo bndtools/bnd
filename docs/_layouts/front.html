@@ -19,13 +19,172 @@
 		</h4>
 	</div>
 
+	<div class=container12>
+		<h1 style="text-align: center">Getting Started with bnd</h1>
+	</div>
 
+	<ul class=container12>
+		<li span=12>
+			<h2>Quick Start Examples</h2>
+			<p>Bnd makes it easy to add OSGi metadata to JARs, whether wrapping existing libraries or building your own
+				projects.</p>
+
+			<div class="code-tabs">
+				<div class="tab-buttons">
+					<button class="tab-button active" onclick="openTab(event, 'tab-wrap')">bnd CLI wrap</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-cli')">bnd CLI advanced</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-maven')">Maven</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-gradle')">Gradle</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-workspace')">Build Workspace and
+						Projects</button>
+				</div>
+
+				<div id="tab-wrap" class="tab-content active">
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code># Quick wrap - automatically generates OSGi metadata
+$ curl -L -o activation.jar \
+	https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+$ bnd wrap activation.jar
+</code></pre>
+						</div>
+						The result is a new jar file with OSGi metadata (<i>META-INF/MANIFEST.MF</i>).
+					</div>
+					<p><a href="{{ '/commands/wrap.html' | prepend: site.baseurl }}">bnd wrap command documentation</a>
+					</p>
+				</div>
+
+				<div id="tab-cli" class="tab-content">
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code># Use a bnd file for more control
+$ curl -L -o activation.jar \
+	https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+$ cat > activation.bnd &lt;&lt;EOF
+-classpath: activation.jar
+Export-Package: *;version=1.1.1
+Bundle-Version: 1.1.1
+EOF
+$ bnd activation.bnd
+</code></pre>
+						</div>
+						The result is a new jar file with OSGi metadata (<i>META-INF/MANIFEST.MF</i>).
+					</div>
+					<p><a href="{{ '/chapters/125-tour-features.html' | prepend: site.baseurl }}">bnd CLI advanced JAR
+							wrapping tutorial</a></p>
+				</div>
+
+				<div id="tab-maven" class="tab-content">
+					<div class="language-xml highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>&lt;!-- Generates OSGi metadata during build process --&gt;
+&lt;!-- Adds manifest headers and processes annotations --&gt;
+
+&lt;pluginRepositories&gt;
+    &lt;pluginRepository&gt;
+        &lt;id&gt;bnd-releases&lt;/id&gt;
+        &lt;url&gt;https://bndtools.jfrog.io/bndtools/libs-release/&lt;/url&gt;
+        &lt;layout&gt;default&lt;/layout&gt;
+        &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+        &lt;/snapshots&gt;
+    &lt;/pluginRepository&gt;
+&lt;/pluginRepositories&gt;
+
+&lt;plugin&gt;
+  &lt;groupId&gt;biz.aQute.bnd&lt;/groupId&gt;
+  &lt;artifactId&gt;bnd-maven-plugin&lt;/artifactId&gt;
+  &lt;version&gt;7.1.0&lt;/version&gt;
+  &lt;executions&gt;
+    &lt;execution&gt;
+      &lt;goals&gt;
+        &lt;goal&gt;bnd-process&lt;/goal&gt;
+      &lt;/goals&gt;
+    &lt;/execution&gt;
+  &lt;/executions&gt;
+&lt;/plugin&gt;
+</code></pre>
+						</div>
+						This will automatically generate OSGi metadata (META-INF/MANIFEST.MF) during the Maven build.
+					</div>
+					<p><a href="https://github.com/bndtools/bnd/blob/master/maven-plugins/bnd-maven-plugin/README.md">Maven
+							plugin documentation</a></p>
+				</div>
+
+				<div id="tab-gradle" class="tab-content">
+					<div class="language-groovy highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>// Extends the jar task to generate OSGi bundles
+// Automatically calculates imports/exports from bytecode
+plugins {
+  id "biz.aQute.bnd.builder" version "7.1.0"
+}
+
+jar {
+  bundle {
+    bnd '''
+-exportcontents: com.acme.api.*
+-sources: true
+'''
+  }
+}
+</code></pre>
+						</div>
+						This will automatically generate OSGi metadata (META-INF/MANIFEST.MF) during the Gradle build.
+					</div>
+					<p><a
+							href="https://github.com/bndtools/bnd/tree/master/gradle-plugins#create-a-task-of-the-bundle-type">Gradle
+							plugin documentation</a></p>
+				</div>
+
+				<div id="tab-workspace" class="tab-content">
+					<p>Bnd provides an IDE/build tool independent model of workspaces with projects. Create and build a
+						workspace with these commands (requires bnd 7.2.0):</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code># Create a new workspace with templates
+$ bnd add workspace -f demo-webapp -f osgi myworkspace
+
+# Navigate to the workspace
+$ cd myworkspace
+
+# Build all projects
+$ bnd build
+
+# Start a live-coding / hot reload dev server to run the application during development in an editor
+$ bnd dev launch.bndrun
+
+# or alternatively just run the application withhout hot-reloading:
+$ bnd run launch.bndrun
+
+</code></pre>
+						</div>
+					</div>
+
+					<p>This creates a complete OSGi workspace that works identically across Eclipse, Gradle, Maven, and
+						the command line.</p>
+					<p><strong>Learn more:</strong> <a
+							href="{{ '/chapters/123-tour-workspace.html' | prepend: site.baseurl }}">Workspace and
+							Projects Tour</a></p>
+					<p><strong>Command reference:</strong>
+						<a href="{{ '/commands/add.html' | prepend: site.baseurl }}">bnd add</a> |
+						<a href="{{ '/commands/build.html' | prepend: site.baseurl }}">bnd build</a> |
+						<a href="{{ '/commands/dev.html' | prepend: site.baseurl }}">bnd dev</a> |
+						<a href="{{ '/commands/run.html' | prepend: site.baseurl }}">bnd run</a>
+					</p>
+
+				</div>
+			</div>
+		</li>
+
+	</ul>
 
 	<ul class=container12>
 		<li span=4>
 			<h1>What is bnd?</h1>
-			<blockquote style='margin-top:20px'>“If you want to teach people a new way of thinking, don't bother trying to teach them. Instead, give them a tool, the use of which will lead to new ways of thinking.”
-			<br><b>― R. Buckminster Fuller</b>
+			<blockquote style='margin-top:20px'>“If you want to teach people a new way of thinking, don't bother trying
+				to teach them. Instead, give them a tool, the use of which will lead to new ways of thinking.”
+				<br><b>― R. Buckminster Fuller</b>
 			</blockquote>
 			<p>
 				bnd is the engine behind a number of popular software development
@@ -54,36 +213,110 @@
 		<li span=4>
 			<h1>How to get started?</h1>
 			<p>There are several different ways to get started with bnd. The most elegant
-            one is to start with <a href="https://bndtools.org/">Bndtools Eclipse IDE</a>. There 
-            are a number of <a href="workspace.html">videos</a> available that provide a gentle introduction. There is also an accompanying 
-            <a href="https://bndtools.org/assets/osgi-starter-workspace.pdf">OSGi Starter</a> that provides a lot of detail
-            how to use bnd for larger projects. It includes a Gradle plugin out of the box that
-            will build the Bndtools workspace identical to how things are build inside Eclipse 
-            for Continuous Integration with <a href="https://bndtools.org/workspace.html#github--actions">Github Actions</a> or other build servers.
-            <p>
-            If you insist on using Maven, then you can start with the  description of the 
-            <a href="https://github.com/bndtools/bnd/tree/master/maven-plugins#maven-plugins">Maven plugins</a>.
-            <p>
-            There is also a Gradle plugin that is the preferred way to build OSGi bundles 
-            with plain old vanilla Gradle. This is described in the <a href="https://github.com/bndtools/bnd/tree/master/gradle-plugins#gradle-plugins">Gradle Plugins 
-            readme</a>.
-            <p> 
-            If you just want to figure out how different commands and macros work, the <a href="https://bnd.bndtools.org/chapters/400-commands.html">bnd commandline</a>
-            is your friend. Especially the <code>shell</code> command is very useful exploring it. 
-            <p>
-            Last but not least, the whole source code is on GitHub. So feel
-            free to explore it. And when you like, we&#39;re very actively taken outside PR&#39;s. There is a
-            lot of activity going on.</p>
+				one is to start with <a href="https://bndtools.org/">Bndtools Eclipse IDE</a>. There
+				are a number of <a href="workspace.html">videos</a> available that provide a gentle introduction. There
+				is also an accompanying
+				<a href="https://bndtools.org/assets/osgi-starter-workspace.pdf">OSGi Starter</a> that provides a lot of
+				detail
+				how to use bnd for larger projects. It includes a Gradle plugin out of the box that
+				will build the Bndtools workspace identical to how things are build inside Eclipse
+				for Continuous Integration with <a href="https://bndtools.org/workspace.html#github--actions">Github
+					Actions</a> or other build servers.
+			<p>
+				If you insist on using Maven, then you can start with the description of the
+				<a href="https://github.com/bndtools/bnd/tree/master/maven-plugins#maven-plugins">Maven plugins</a>.
+			<p>
+				There is also a Gradle plugin that is the preferred way to build OSGi bundles
+				with plain old vanilla Gradle. This is described in the <a
+					href="https://github.com/bndtools/bnd/tree/master/gradle-plugins#gradle-plugins">Gradle Plugins
+					readme</a>.
+			<p>
+				If you just want to figure out how different commands and macros work, the <a
+					href="https://bnd.bndtools.org/chapters/400-commands.html">bnd commandline</a>
+				is your friend. Especially the <code>shell</code> command is very useful exploring it.
+			<p>
+				Last but not least, the whole source code is on GitHub. So feel
+				free to explore it. And when you like, we&#39;re very actively taken outside PR&#39;s. There is a
+				lot of activity going on.</p>
 		<li span=4>
 			<h1>Table of contents</h1>
 			<ol>
 				{% for chapter in site.chapters %}
 				<li>
-				<a href="{{ chapter.url | prepend: site.baseurl }}">{{chapter.title}}</a> {% endfor %}
+					<a href="{{ chapter.url | prepend: site.baseurl }}">{{chapter.title}}</a> {% endfor %}
 			</ol>
 	</ul>
 
 	{% include footer.htm %}
 
 </body>
+
+<script>
+	function openTab(evt, tabId) {
+		var i, tabContent, tabButtons;
+		tabContent = document.getElementsByClassName("tab-content");
+		for (i = 0; i < tabContent.length; i++) {
+			tabContent[i].classList.remove("active");
+		}
+		tabButtons = document.getElementsByClassName("tab-button");
+		for (i = 0; i < tabButtons.length; i++) {
+			tabButtons[i].classList.remove("active");
+		}
+		document.getElementById(tabId).classList.add("active");
+		evt.currentTarget.classList.add("active");
+	}
+</script>
+
+<style>
+	.code-tabs {
+		margin-top: 1em;
+	}
+
+	.tab-buttons {
+		display: flex;
+		gap: 0;
+		border-bottom: 2px solid #ddd;
+		margin-bottom: 1em;
+	}
+
+	.tab-button {
+		background-color: #f0f0f0;
+		border: none;
+		border-top: 2px solid #ddd;
+		border-left: 2px solid #ddd;
+		border-right: 2px solid #ddd;
+		padding: 10px 20px;
+		cursor: pointer;
+		font-size: 0.9em;
+		transition: background-color 0.3s;
+		margin-bottom: -2px;
+	}
+
+	.tab-button:first-child {
+		border-top-left-radius: 4px;
+	}
+
+	.tab-button:last-child {
+		border-top-right-radius: 4px;
+	}
+
+	.tab-button:hover {
+		background-color: #e0e0e0;
+	}
+
+	.tab-button.active {
+		background-color: white;
+		border-bottom: 2px solid white;
+		font-weight: bold;
+	}
+
+	.tab-content {
+		display: none;
+	}
+
+	.tab-content.active {
+		display: block;
+	}
+</style>
+
 </html>
