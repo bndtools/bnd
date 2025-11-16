@@ -19,21 +19,35 @@ bnd is not a single product, it is a library (bndlib) used in many different sof
 That said, there is also a command line version of bnd, providing an easy way to try out its many features. You can install bnd through [brew][1] on MacOS.
 
 You can also run bnd command as executable jar, which can be downloaded from [JFrog][7]:
+
 ```bash
-java -jar biz.aQute.bnd-{VERSION}.jar <command>
+# Install bnd CLI
+$ curl -L -o biz.aQute.bnd-7.1.0.jar \
+	https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/7.1.0/biz.aQute.bnd-7.1.0.jar
+$ alias bnd='java -jar "$PWD/biz.aQute.bnd-7.1.0.jar"'
+
+# Run commands
+bnd <command>
+
+# Example
+bnd help
 ```
 
+
 ## Libraries
-The binaries are available on [JFrog][7]. The latest version can be found at:
 
-	https://bndtools.jfrog.io/bndtools/libs-snapshot/biz/aQute/bnd/biz.aQute.bnd/
+The binaries are available on JFrog:
 
-If you are a maven user, you can find many version in central. The coordinates are:
+- [Releases and Release Candidates (RC)](https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/)
+- [SNAPSHOT releases](https://bndtools.jfrog.io/bndtools/libs-snapshot/biz/aQute/bnd/biz.aQute.bnd/) (e.g. the latest from current master branch)
+
+
+If you are a maven user, you can find many versions in central. The coordinates are:
 
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bndlib</artifactId>
-			<version>....</version>
+			<version>7.1.0</version>
 		</dependency>
 
 
