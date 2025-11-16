@@ -19,7 +19,61 @@
 		</h4>
 	</div>
 
+	<div class=container12>
+		<h1 style="text-align: center">Getting Started</h1>
+	</div>
 
+	<ul class=container12>
+		<li span=6>
+			<h2>JAR Wrapping</h2>
+			<p>One of bnd's key features is wrapping existing JARs to add OSGi metadata. Here's a quick example:</p>
+			<pre><code class="language-shell"># Download a JAR
+$ bnd copy https://repo.maven.apache.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar \
+    activation-1.1.1.jar
+
+# Create a simple bnd file
+$ cat > activation.bnd &lt;&lt;EOF
+-classpath: activation-1.1.1.jar
+Export-Package: *;version=1.1.1
+Bundle-Version: 1.1.1
+EOF
+
+# Wrap the JAR
+$ bnd activation.bnd
+
+# Inspect the result
+$ bnd print activation.jar
+</code></pre>
+			<p>This generates proper OSGi metadata including Import-Package, Export-Package, and uses constraints.</p>
+			<p><strong>Learn more:</strong> <a href="{{ '/chapters/125-tour-features.html' | prepend: site.baseurl }}">JAR Wrapping and bnd Features</a></p>
+		</li>
+		<li span=6>
+			<h2>Workspace and Projects</h2>
+			<p>Bnd provides an IDE/build tool independent model of workspaces with projects. Create and build a workspace with these commands:</p>
+			<pre><code class="language-shell"># Create a new workspace with templates
+$ bnd add workspace -f demo-webapp -f osgi myworkspace
+
+# Navigate to the workspace
+$ cd myworkspace
+
+# Build all projects
+$ bnd build
+
+# Run the application
+$ bnd dev launch.bndrun
+# or alternatively:
+$ bnd run launch.bndrun
+</code></pre>
+			<p>This creates a complete OSGi workspace that works identically across Eclipse, Gradle, Maven, and the command line.</p>
+			<p><strong>Learn more:</strong> <a href="{{ '/chapters/123-tour-workspace.html' | prepend: site.baseurl }}">Workspace and Projects Tour</a></p>
+			<p><strong>Command reference:</strong> 
+				<a href="{{ '/commands/add.html' | prepend: site.baseurl }}">bnd add</a> | 
+				<a href="{{ '/commands/build.html' | prepend: site.baseurl }}">bnd build</a> | 
+				<a href="{{ '/commands/dev.html' | prepend: site.baseurl }}">bnd dev</a> | 
+				<a href="{{ '/commands/run.html' | prepend: site.baseurl }}">bnd run</a>
+			</p>
+		</li>
+	</ul>
 
 	<ul class=container12>
 		<li span=4>
