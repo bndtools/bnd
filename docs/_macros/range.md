@@ -49,10 +49,7 @@ With `${versionmask}`:
 
 
 
-Also see [versionmask][5] / [version][4].  
-
-
-
+Also see [versionmask][5] / [version][4].
 
 [1]: /chapters/170-versioning.html
 [2]: /instructions/consumer_policy.html
@@ -60,61 +57,8 @@ Also see [versionmask][5] / [version][4].
 [4]: /macros/version.html
 [5]: /macros/versionmask.html
 
-	/**
-	 * Schortcut for version policy
-	 * 
-	 * <pre>
-	 * -provide-policy : ${policy;[==,=+)}
-	 * -consume-policy : ${policy;[==,+)}
-	 * </pre>
-	 * 
-	 * @param args
-	 * @return
-	 */
 
-	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
-	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
-											+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
-											+ "M ::= '+' | '-' | MQ\n"
-											+ "MQ ::= '~' | '='";
-	static Pattern	_rangePattern[]	= new Pattern[] {
-			null, RANGE_MASK
-									};
 
-	public String _range(String args[]) {
-		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
-		Version version = null;
-		if (args.length >= 3)
-			version = new Version(args[2]);
-		else {
-			String v = domain.getProperty("@");
-			if (v == null)
-				return null;
-			version = new Version(v);
-		}
-		String spec = args[1];
+---
 
-		Matcher m = RANGE_MASK.matcher(spec);
-		m.matches();
-		String floor = m.group(1);
-		String floorMask = m.group(2);
-		String ceilingMask = m.group(3);
-		String ceiling = m.group(4);
-
-		String left = version(version, floorMask);
-		String right = version(version, ceilingMask);
-		StringBuilder sb = new StringBuilder();
-		sb.append(floor);
-		sb.append(left);
-		sb.append(",");
-		sb.append(right);
-		sb.append(ceiling);
-
-		String s = sb.toString();
-		VersionRange vr = new VersionRange(s);
-		if (!(vr.includes(vr.getHigh()) || vr.includes(vr.getLow()))) {
-			domain.error("${range} macro created an invalid range %s from %s and mask %s", s, version, spec);
-		}
-		return sb.toString();
-	}
-
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

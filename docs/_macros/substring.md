@@ -2,32 +2,83 @@
 layout: default
 class: Macro
 title: substring ';' STRING ';' START ( ';' END )?
-summary: Return a substring of a given string, negative indexes allowed
+summary: Extract a substring from a string with support for negative indices
 ---
 
-	static String	_substring	= "${substring;<string>;<start>[;<end>]}";
+## Summary
 
-	public String _substring(String args[]) throws Exception {
-		verifyCommand(args, _substring, null, 3, 4);
+The `substring` macro extracts a portion of a string between start and end positions. It supports negative indices to count from the end of the string.
 
-		String string = args[1];
-		int start = Integer.parseInt(args[2].equals("") ? "0" : args[2]);
-		int end = string.length();
+## Syntax
 
-		if (args.length > 3) {
-			end = Integer.parseInt(args[3]);
-			if (end < 0)
-				end = string.length() + end;
-		}
+```
+${substring;<string>;<start>[;<end>]}
+```
 
-		if (start < 0)
-			start = string.length() + start;
-		
-		if ( start > end ) {
-			int t = start;
-			start = end;
-			end = t;
-		}
+## Parameters
 
-		return string.substring(start, end);
-	}
+- `string` - The source string
+- `start` - Starting index (0-based, negative counts from end)
+- `end` (optional) - Ending index (exclusive, negative counts from end, default: end of string)
+
+## Behavior
+
+- Extracts substring from start (inclusive) to end (exclusive)
+- Negative indices count from the end (-1 = last character)
+- If start > end, they are automatically swapped
+- Default end is the string length
+- Returns the extracted substring
+
+## Examples
+
+Get first 5 characters:
+```
+${substring;hello world;0;5}
+# Returns: "hello"
+```
+
+Get last 5 characters:
+```
+${substring;hello world;-5}
+# Returns: "world"
+```
+
+Remove first 2 characters:
+```
+${substring;hello;2}
+# Returns: "llo"
+```
+
+Extract middle portion:
+```
+${substring;hello world;6;11}
+# Returns: "world"
+```
+
+Use negative indices:
+```
+${substring;hello world;-5;-1}
+# Returns: "worl"
+```
+
+## Use Cases
+
+- Extracting prefixes or suffixes
+- Removing fixed-length headers
+- Parsing formatted strings
+- Getting file extensions
+- Truncating strings
+- String manipulation in templates
+
+## Notes
+
+- Indices are 0-based (first character is 0)
+- Negative indices count backwards from end
+- End index is exclusive (not included in result)
+- Start and end are swapped if start > end
+- Throws exception if indices are out of bounds
+
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

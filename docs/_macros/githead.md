@@ -2,56 +2,77 @@
 layout: default
 class: Builder
 title: githead
-summary: Get the head commit number. Look for a .git/HEAD file, going up in the file hierarchy. Then get this file, and resolve any symbolic reference.
+summary: Get the Git commit SHA of the current HEAD
 ---
 
+## Summary
 
-	/**
-	 * #388 Manifest header to get GIT head Get the head commit number. Look
-	 * for a .git/HEAD file, going up in the file hierarchy. Then get this file,
-	 * and resolve any symbolic reference.
-	 *
-	 * @throws IOException
-	 */
-	static Pattern	GITREF	= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
+The `githead` macro returns the SHA-1 hash of the current Git HEAD commit. It searches for a `.git` directory starting from the project base directory and walking up the file hierarchy, then resolves symbolic references to find the actual commit hash.
 
-	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
+## Syntax
 
-	public String _githead(String[] args) throws IOException {
-		Macro.verifyCommand(args, _githeadHelp, null, 1, 1);
+```
+${githead}
+```
 
-		//
-		// Locate the .git directory
-		//
+## Parameters
 
-		File rover = getBase();
-		while (rover !=null && rover.isDirectory()) {
-			File headFile = IO.getFile(rover, ".git/HEAD");
-			if (headFile.isFile()) {
-				//
-				// The head is either a symref (ref: refs/(heads|tags|remotes)/<name>)
-				//
-				String head = IO.collect(headFile).trim();
-				if (!Hex.isHex(head)) {
-					//
-					// Should be a symref
-					//
-					Matcher m = GITREF.matcher(head);
-					if (m.matches()) {
+None - this macro takes no parameters.
 
-						// so the commit is in the following path
+## Behavior
 
-						head = IO.collect(IO.getFile(rover, ".git/" + m.group(1)));
-					}
-					else {
-						error("Git repo seems corrupt. It exists, find the HEAD but the content is neither hex nor a sym-ref: %s",
-								head);
-					}
-				}
-				return head.trim().toUpperCase();
-			}
-			rover = rover.getParentFile();
-		}
-		// Cannot find git directory
-		return "";
-	}
+- Searches for a `.git` directory starting from the project base, going up the directory tree
+- Handles both regular Git repositories and Git worktrees
+- Reads the `.git/HEAD` file to find the current commit
+- Resolves symbolic references (e.g., `ref: refs/heads/main`) to actual commit SHAs
+- Handles packed references (when Git has optimized/compressed references)
+- Returns the commit SHA in uppercase hexadecimal format
+- Returns empty string if no Git repository is found
+
+## Examples
+
+Include Git commit in manifest:
+```
+Bundle-SCM-Revision: ${githead}
+# Result: Bundle-SCM-Revision: 4A3B2C1D0E9F8A7B6C5D4E3F2A1B0C9D8E7F6A5B
+```
+
+Create version with Git hash:
+```
+Implementation-Version: ${version}-${githead}
+```
+
+Document build source:
+```
+Build-From: commit ${githead}
+```
+
+Conditional on Git availability:
+```
+git.revision=${if;${githead};${githead};not-in-git-repo}
+```
+
+## Use Cases
+
+- Tracking exact source code version in built artifacts
+- Creating reproducible builds with commit information
+- Debugging - knowing exactly which commit produced an artifact
+- Audit trails for compliance and security
+- Continuous integration - linking builds to source commits
+- Version identification beyond semantic versioning
+
+## Notes
+
+- Returns empty string if not in a Git repository
+- Works with Git worktrees (separate working directories)
+- Handles both direct SHA references and symbolic references
+- Handles Git's packed-refs optimization
+- The returned SHA is in uppercase
+- The search walks up the directory tree to find the Git repository
+- Useful for embedding in bundle manifests for traceability
+
+
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

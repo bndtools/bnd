@@ -2,68 +2,79 @@
 layout: default
 class: Workspace
 title: gestalt ';' NAME ( ';' NAME (';' ANY )? )? 
-summary: provides access to the gestalt properties that describe the environment.
+summary: Access environment description properties (gestalt)
 ---
 
-	/**
-	 * Add a gestalt to all workspaces. The gestalt is a set of parts describing
-	 * the environment. Each part has a name and optionally attributes. This
-	 * method adds a gestalt to the VM. Per workspace it is possible to augment
-	 * this.
-	 */
+## Summary
 
-	public static void addGestalt(String part, Attrs attrs) {
-		Attrs already = overallGestalt.get(part);
-		if (attrs == null)
-			attrs = new Attrs();
+The `gestalt` macro provides access to gestalt properties that describe the build environment. Gestalt is a set of parts describing the environment, where each part has a name and optional attributes. This can be configured globally or per-workspace via the `-gestalt` property.
 
-		if (already != null) {
-			already.putAll(attrs);
-		} else
-			already = attrs;
+## Syntax
 
-		overallGestalt.put(part, already);
-	}
+```
+${gestalt;<part>[;<key>[;<value>]]}
+```
 
-	/**
-	 * Get the attrs for a gestalt part
-	 */
-	public Attrs getGestalt(String part) {
-		if (gestalt == null) {
-			gestalt = new Parameters(getProperty(Constants.GESTALT));
-			gestalt.mergeWith(overallGestalt, false);
-		}
-		return gestalt.get(part);
-	}
+## Parameters
 
-	/**
-	 * The macro to access the gestalt
-	 * <p>
-	 * {@code $ gestalt;part[;key[;value]]}}
-	 */
+- `part` - The gestalt part name
+- `key` (optional) - Attribute key within the part
+- `value` (optional) - Expected value to match
 
-	public String _gestalt(String args[]) {
-		if (args.length >= 2) {
-			Attrs attrs = getGestalt(args[1]);
-			if (attrs == null)
-				return "";
+## Behavior
 
-			if (args.length == 2)
-				return args[1];
+- **One argument** (`${gestalt;<part>}`): Returns the part name if it exists, empty otherwise
+- **Two arguments** (`${gestalt;<part>;<key>}`): Returns the attribute value for the key, or empty if not found
+- **Three arguments** (`${gestalt;<part>;<key>;<value>}`): Returns the value if it matches, empty otherwise (useful for boolean checks)
 
-			String s = attrs.get(args[2]);
-			if (args.length == 3) {
-				if (s == null)
-					s = "";
-				return s;
-			}
+## Examples
 
-			if (args.length == 4) {
-				if (args[3].equals(s))
-					return s;
-				else
-					return "";
-			}
-		}
-		throw new IllegalArgumentException("${gestalt;<part>[;key[;<value>]]} has too many arguments");
-	}
+Check if gestalt part exists:
+```
+${gestalt;ci}
+# Returns: "ci" if CI gestalt is defined, "" otherwise
+```
+
+Get attribute value:
+```
+${gestalt;platform;os}
+# Returns the OS attribute value from platform gestalt
+```
+
+Match specific value:
+```
+${if;${gestalt;ci;provider;github};github-ci;other-ci}
+```
+
+Configure gestalt:
+```
+-gestalt: ci;provider=github, platform;os=linux
+```
+
+Use in conditional logic:
+```
+${if;${gestalt;ci};ci-mode;local-mode}
+```
+
+## Use Cases
+
+- Environment detection and adaptation
+- Build behavior customization per environment
+- CI/CD-specific configuration
+- Platform-specific settings
+- Feature flags based on environment
+- Conditional build logic
+
+## Notes
+
+- Gestalt parts can be added programmatically or via `-gestalt` property
+- Global gestalt affects all workspaces
+- Per-workspace gestalt augments global gestalt
+- Empty string return values can be used in conditionals (falsy)
+- Useful with `${if}` macro for environment-specific behavior
+
+
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

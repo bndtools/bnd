@@ -552,3 +552,96 @@ rm "$JDK_FILE"  # Clean up downloaded archive
 
 echo "All JDKs downloaded and extracted!"
 ```
+
+
+## Macro Documentation Testing
+
+### Overview
+
+The test `/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java` is a comprehensive test suite for validating macro documentation examples in `docs/_macros/*.md` files.
+
+### Purpose
+
+The goal of test suite is that:
+1. All macro examples in documentation actually work
+2. Expected outputs match actual macro behavior
+3. Syntax errors in documentation are caught
+4. Users can rely on documentation examples
+
+
+### Test Structure
+
+Each test follows this pattern:
+
+```java
+// ===== filename.md =====
+@Test
+public void testMacroName() throws IOException {
+    try (Processor p = new Processor()) {
+        String result = p.getReplacer().process("${macro;args}");
+        assertThat(result).isEqualTo("expected");
+    }
+}
+```
+
+The comment indicates which documentation file the test validates.
+
+### Running Tests
+
+```bash
+# Run all macro documentation tests
+./gradlew :biz.aQute.bndlib.tests:test --tests "test.MacroTestsForDocsExamples"
+
+# Run specific test
+./gradlew :biz.aQute.bndlib.tests:test --tests "test.MacroTestsForDocsExamples.testAverage_SimpleList"
+
+# Run with more detail
+./gradlew :biz.aQute.bndlib.tests:test --tests "test.MacroTestsForDocsExamples" --info
+```
+
+### Macro Behavior Reference
+
+#### Common Patterns:
+
+**Boolean-like Returns**:
+- `startswith`, `endswith`: Return original string (truthy) or empty (falsy), not "true"/"false"
+- `def`: Returns property value, not boolean
+- `is`: Returns "true" or "false"
+
+**Numeric Returns**:
+- `average`, `sum`: Strip `.0` from whole numbers (3 not 3.0)
+- `rand`: Returns integer
+- `random`: Returns string identifier (different macro!)
+
+**List Operations**:
+- Most combine multiple list arguments first
+- Zero-based indexing
+- Negative indices count from end
+
+**File Operations**:
+- Often require absolute paths
+- Platform-specific behavior (Windows vs Unix)
+- Path separator differences
+
+### Contributing Macro Documentation and Examples
+
+If you create a new macro then add a new file in `docs/_macros/*.md` with the filename being the name of the macro.
+
+When adding examples to documentation (`docs/_macros/*.md` files):
+1. Add corresponding test to this file
+2. Run test to verify example works
+3. Include comment indicating which .md file
+4. Test both success and failure cases where applicable
+
+## See Also
+
+- `MacroTest.java` - Original comprehensive macro tests
+- `docs/_macros/` - Macro documentation files
+- `biz.aQute.bndlib/src/aQute/bnd/osgi/Macro.java` - Macro implementations
+
+Macros are in the following classes, recognized by methods starting with an underscore:
+
+- `biz.aQute.bndlib/src/aQute/bnd/build/Project.java`
+- `biz.aQute.bndlib/src/aQute/bnd/osgi/Analyzer.java`
+- `biz.aQute.bndlib/src/aQute/bnd/osgi/Builder.java`
+- `biz.aQute.bndlib/src/aQute/bnd/build/Workspace.java`

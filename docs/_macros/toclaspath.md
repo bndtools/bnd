@@ -1,23 +1,75 @@
 ---
+layout: default
 class: Macro
 title: toclasspath ';' LIST ( ';' BOOLEAN )?
-summary: Convert a list of class names to a list of paths.
+summary: Convert class names to file paths
 ---
 
+## Summary
 
-	static String	_toclasspathHelp	= "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
+The `toclasspath` macro converts fully qualified class names to file paths by replacing dots with path separators and optionally adding `.class` extension.
 
-	public String _toclasspath(String args[]) {
-		verifyCommand(args, _toclasspathHelp, null, 2, 3);
-		boolean cl = true;
-		if (args.length > 2)
-			cl = Boolean.valueOf(args[2]);
+## Syntax
 
-		Collection<String> names = Processor.split(args[1]);
-		Collection<String> paths = new ArrayList<String>(names.size());
-		for (String name : names) {
-			String path = name.replace('.', '/') + (cl ? ".class" : "");
-			paths.add(path);
-		}
-		return Processor.join(paths, ",");
-	}
+```
+${toclasspath;<class-names>[;<add-extension>]}
+```
+
+## Parameters
+
+- `class-names` - Comma-separated list of fully qualified class names
+- `add-extension` (optional) - Boolean to add `.class` extension (default: true)
+
+## Behavior
+
+- Replaces dots (`.`) with path separators (`/`)
+- Optionally adds `.class` extension (default: yes)
+- Returns comma-separated list of paths
+
+## Examples
+
+Convert class names with extension:
+```
+${toclasspath;com.example.Main,com.example.Util}
+# Returns: "com/example/Main.class,com/example/Util.class"
+```
+
+Convert without extension:
+```
+${toclasspath;org.test.TestCase;false}
+# Returns: "org/test/TestCase"
+```
+
+Create paths for lookup:
+```
+paths=${toclasspath;${classes};true}
+```
+
+Package paths without extension:
+```
+${toclasspath;com.example.api;false}
+# Returns: "com/example/api"
+```
+
+## Use Cases
+
+- Converting class names to resource paths
+- Building file paths from class names
+- Creating include/exclude patterns
+- Resource lookup paths
+- Build script generation
+- File system operations on classes
+
+## Notes
+
+- Always uses forward slash `/` as separator
+- Extension parameter defaults to true
+- Inverse operation of `${toclassname}`
+- Useful for locating class files
+- See also: `${toclassname}` for reverse operation
+
+
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

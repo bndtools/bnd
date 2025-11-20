@@ -180,7 +180,11 @@ Bridge between Eclipse extension registry and OSGi Declarative Services:
 - Documentation in `docs/` directory
 - Jekyll-based site at https://bnd.bndtools.org
 - Instructions documented in `docs/_instructions/`
-- Changes/releases documented in wiki
+- Macros documented in `docs/_macros/` and tested in `biz.aQute.bndlib.tests/test/MacroTestsForDocsExamples.java` (also see `biz.aQute.bndlib.tests/test/test/MACRO_TESTING_README.md` for instructions keeping examples in sync with `MacroTestsForDocsExamples.java`)
+- bnd CLI commands documented in `docs/_commands/`
+- bnd and OSGi MANIFEST headers documented in `docs/_heads/`
+- Changes/releases documented in wiki (https://github.com/bndtools/bnd/wiki)
+- Release Process documented in https://github.com/bndtools/bnd/wiki/Release-Process
 
 ## Contribution Workflow
 

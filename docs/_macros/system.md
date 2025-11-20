@@ -2,71 +2,84 @@
 layout: default
 class: Macro
 title: system ';' STRING ( ';' STRING )?
-summary: Execute a system command
+summary: Execute a system command and return its output
 ---
 
+## Summary
 
-	public String _system(String args[]) throws Exception {
-		return system_internal(false, args);
-	}
+The `system` macro executes an operating system command and returns its standard output. The command runs in the project's base directory. The build fails if the command returns a non-zero exit code.
 
-	public String _system_allow_fail(String args[]) throws Exception {
-		String result = "";
-		try {
-			result = system_internal(true, args);
-		}
-		catch (Throwable t) {
-			/* ignore */
-		}
-		return result;
-	}
+## Syntax
 
-		/**
-	 * System command. Execute a command and insert the result.
-	 * 
-	 * @param args
-	 * @param help
-	 * @param patterns
-	 * @param low
-	 * @param high
-	 */
-	public String system_internal(boolean allowFail, String args[]) throws Exception {
-		if (nosystem)
-			throw new RuntimeException("Macros in this mode cannot excute system commands");
+```
+${system;<command>[;<input>]}
+```
 
-		verifyCommand(args, "${" + (allowFail ? "system-allow-fail" : "system")
-				+ ";<command>[;<in>]}, execute a system command", null, 2, 3);
-		String command = args[1];
-		String input = null;
+## Parameters
 
-		if (args.length > 2) {
-			input = args[2];
-		}
-		
-		if ( File.separatorChar == '\\')
-			command = "cmd /c \"" + command + "\"";
-		
+- `command` - The system command to execute
+- `input` (optional) - Text to send to the command's standard input
 
-		Process process = Runtime.getRuntime().exec(command, null, domain.getBase());
-		if (input != null) {
-			process.getOutputStream().write(input.getBytes("UTF-8"));
-		}
-		process.getOutputStream().close();
+## Behavior
 
-		String s = IO.collect(process.getInputStream(), "UTF-8");
-		int exitValue = process.waitFor();
-		if (exitValue != 0)
-			return exitValue + "";
+- Executes the command in the project base directory
+- On Windows, automatically wraps command with `cmd /c`
+- Captures and returns standard output (trimmed)
+- If input is provided, writes it to the command's stdin
+- Returns empty string and generates error if command fails
+- Build fails on non-zero exit codes
 
-		if (exitValue != 0) {
-			if (!allowFail) {
-				domain.error("System command " + command + " failed with exit code " + exitValue);
-			} else {
-				domain.warning("System command " + command + " failed with exit code " + exitValue + " (allowed)");
+## Examples
 
-			}
-		}
+Get Git commit hash:
+```
+Git-Commit: ${system;git rev-parse HEAD}
+```
 
-		return s.trim();
-	}
+Get current date:
+```
+Build-Date: ${system;date}
+```
+
+Execute command with input:
+```
+${system;wc -l;line1\nline2\nline3}
+```
+
+Get Maven version:
+```
+mvn.version=${system;mvn --version}
+```
+
+List files:
+```
+files=${system;ls -la}
+```
+
+## Use Cases
+
+- Embedding command output in manifests
+- Getting version control information
+- Capturing build environment details
+- Running custom build scripts
+- Platform-specific build information
+- Integration with external tools
+
+## Notes
+
+- **Security Warning**: Be cautious with user input in commands
+- Commands run in the project base directory
+- Windows commands are automatically wrapped with `cmd /c`
+- Standard output is captured and trimmed
+- Standard error is not captured
+- Build fails on command failure
+- See also: `${system-allow-fail}` for non-failing variant
+- May be disabled in restricted execution modes
 	
+
+<hr />
+TODO Needs review - AI Generated content
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**
