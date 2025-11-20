@@ -13,6 +13,7 @@ if [[ -n "${GPG_PRIVATE_KEY}" && -n "${GPG_PASSPHRASE}" ]]; then
 
     echo -e "#\n# list secret keys\n#\n"
     gpg --list-secret-keys --keyid-format LONG
+    export GPG_TTY=$(tty)
 fi
 
 # build
