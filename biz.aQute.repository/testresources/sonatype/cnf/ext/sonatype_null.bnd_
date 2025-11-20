@@ -1,0 +1,10 @@
+releaserepo:         ${workspace}/dist/bundles
+
+-releaserepo: Rel_Local
+
+-plugin.31.LocalRelease:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        releaseUrl        = "${fileuri;${releaserepo}}";\
+        snapshotUrl       = "${fileuri;${releaserepo}}";\
+        index             = ${.}/gav_30_sonatype.mvn; \
+        name              = "Rel_Local"

@@ -23,6 +23,7 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.repository.maven.provider.SonatypeMode;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
@@ -36,16 +37,18 @@ import aQute.maven.api.Revision;
 import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements IMavenRepo, Closeable {
-	final static Logger							logger		= LoggerFactory.getLogger(MavenRepository.class);
+	final static Logger							logger			= LoggerFactory.getLogger(MavenRepository.class);
 	private final File							base;
 	private final String						id;
-	private final List<MavenBackingRepository>	release		= new ArrayList<>();
+	private final List<MavenBackingRepository>	release			= new ArrayList<>();
 	private final MavenBackingRepository		stagingRepository;
-	private final List<MavenBackingRepository>	snapshot	= new ArrayList<>();
+	private final List<MavenBackingRepository>	snapshot		= new ArrayList<>();
 	private final PromiseFactory				promiseFactory;
 	private final boolean						localOnly;
-	private final Map<Revision, Promise<POM>>	poms		= new WeakHashMap<>();
+	private final Map<Revision, Promise<POM>>	poms			= new WeakHashMap<>();
 	private final Reporter						reporter;
+	private SonatypeMode						sonatypeMode	= SonatypeMode.NONE;
+	private String								sonatypeUrl     = null;
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
@@ -374,6 +377,10 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return Collections.unmodifiableList(snapshot);
 	}
 
+	public MavenBackingRepository getStagingRepository() {
+		return stagingRepository;
+	}
+
 	@Override
 	public List<MavenBackingRepository> getReleaseRepositories() {
 		return Collections.unmodifiableList(release);
@@ -401,5 +408,21 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		synchronized (poms) {
 			poms.remove(revision);
 		}
+	}
+
+	public void setSonatypeMode(SonatypeMode sonatypeMode) {
+		this.sonatypeMode = sonatypeMode;
+	}
+
+	public SonatypeMode getSonatypeMode() {
+		return sonatypeMode;
+	}
+
+	public void setSonatypePublisherUrl(String sonatypeUrl) {
+		this.sonatypeUrl = sonatypeUrl;
+	}
+
+	public String getSonatypePublisherUrl() {
+		return sonatypeUrl;
 	}
 }

@@ -1142,16 +1142,17 @@ public class Project extends Processor {
 			RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only
 																// first
 			// release repo
-			return releaseRepo(releaseRepo, builder, jarName, jarStream);
+			return releaseRepo(releaseRepo, builder, jarName, jarStream, false);
 		}
 	}
 
-	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream)
-		throws Exception {
+	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream,
+		boolean lastBundleInWorkspace) throws Exception {
 		logger.debug("release to {}", releaseRepo.getName());
 		try {
 			PutOptions putOptions = new RepositoryPlugin.PutOptions();
 			// TODO find sub bnd that is associated with this thing
+			context.set("startSonatypePublish", Boolean.toString(lastBundleInWorkspace));
 			putOptions.context = context;
 			PutResult r = releaseRepo.put(jarStream, putOptions);
 			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, releaseRepo);
@@ -1213,14 +1214,30 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void release(String name, boolean test) throws Exception {
-		List<RepositoryPlugin> releaseRepos = getReleaseRepos(name);
+		release(new ReleaseParameter(name, test, false));
+	}
+
+	public static class ReleaseParameter {
+		public String	name;
+		public boolean	test;
+		public boolean	lastBundleInWorkspace;
+
+		public ReleaseParameter(String name, boolean test, boolean lastBundleInWorkspace) {
+			this.name = name;
+			this.test = test;
+			this.lastBundleInWorkspace = lastBundleInWorkspace;
+		}
+	}
+
+	public void release(ReleaseParameter relParam) throws Exception, IOException {
+		List<RepositoryPlugin> releaseRepos = getReleaseRepos(relParam.name);
 		if (releaseRepos.isEmpty()) {
 			return;
 		}
 		logger.debug("release");
 		File[] jars = getBuildFiles(false);
 		if (jars == null) {
-			jars = build(test);
+			jars = build(relParam.test);
 			// If build fails jars will be null
 			if (jars == null) {
 				logger.debug("no jars built");
@@ -1232,9 +1249,17 @@ public class Project extends Processor {
 		try (ProjectBuilder builder = getBuilder(null)) {
 			builder.init();
 			for (RepositoryPlugin releaseRepo : releaseRepos) {
-				for (File jar : jars) {
+				for (int i = 0; i < jars.length; i++) {
+					File jar = jars[i];
 					try (InputStream jarStream = new BufferedInputStream(IO.stream(jar))) {
-						releaseRepo(releaseRepo, builder, jar.getName(), jarStream);
+						if (relParam.lastBundleInWorkspace && i == jars.length - 1) {
+							// this is the last jar builded inside bnd workspace
+							// and if appropriate "-sub" - the last of builded
+							// sub-bundles
+							releaseRepo(releaseRepo, builder, jar.getName(), jarStream, true);
+						} else {
+							releaseRepo(releaseRepo, builder, jar.getName(), jarStream, false);
+						}
 					}
 				}
 			}

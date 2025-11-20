@@ -231,7 +231,9 @@ public abstract class MavenBackingRepository implements Closeable {
 		if (uri.getScheme()
 			.equalsIgnoreCase("file")) {
 			File remote = new File(uri);
-			return new MavenFileRepository(localRepo, remote, reporter);
+			MavenFileRepository fileRepo = new MavenFileRepository(localRepo, remote, reporter);
+			fileRepo.setClient(client);
+			return fileRepo;
 		} else {
 			return new MavenRemoteRepository(localRepo, client, url, reporter);
 		}

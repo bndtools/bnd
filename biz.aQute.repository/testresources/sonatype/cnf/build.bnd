@@ -1,0 +1,59 @@
+#########################
+## BUILD SETTINGS ##
+########################
+## Java Compiler Options
+#java:                  java
+#javac:                 javac
+javac.source:           17
+javac.target:           17
+javac.compliance:       17
+javac.debug:            on
+-noimportjava: true
+
+# This build requires newer Bnd features
+-require-bnd: "(version>=7.2.0)"
+
+# git properties
+git-sha-short: ${system-allow-fail;git describe --dirty --always --abbrev=9}
+git-sha:       ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
+
+base.version:     1.0.0
+Bundle-Version:   ${base.version}.${tstamp}-SNAPSHOT
+
+# -snapshot unset (commented out) is a snapshot build. (e.g. 6.0.0-SNAPSHOT)
+# -snapshot set to a value (e.g. RC1) is a release build with the value as the Maven version qualifier. (e.g. 6.0.0-RC1)
+# -snapshot set to the empty string is a release build with no Maven version qualifier. (e.g. 6.0.0)
+-snapshot:
+
+-groupid:               biz.aqute.eval
+-pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
+-maven-release:         pom,sign;keyname=${env;GPG_KEYNAME};passphrase=${env;GPG_PASSPHRASE}
+
+gpg: gpg --homedir ${def;USERHOME;~}/.gnupg --pinentry-mode loopback
+
+Automatic-Module-Name:  ${def;bsn}
+Bundle-Vendor:          Bndtools https://bndtools.org/
+Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
+SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)
+Bundle-License:         "${SPDX-License-Identifier}";\
+                        description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0, or the Eclipse Public License 2.0.";\
+                        link="https://opensource.org/licenses/Apache-2.0,https://opensource.org/licenses/EPL-2.0"
+Bundle-DocURL:          https://bnd.bndtools.org/
+Bundle-SCM:             url=https://github.com/bndtools/bnd,\
+                        connection=scm:git:https://github.com/bndtools/bnd.git,\
+                        developerConnection=scm:git:git@github.com:bndtools/bnd.git,\
+                        tag=${base.version}${if;${def;-snapshot;SNAPSHOT};-${def;-snapshot;SNAPSHOT}}
+Bundle-Developers: \
+    pkriens; \
+        email=peter@klib.io; \
+        name="Peter Kirschner"; \
+        organization=Bndtools; \
+        organizationUrl=https://github.com/bndtools; \
+        roles="developer"; \
+        timezone="Europe/Berliin"
+        
+-make: (*).(jar);type=bnd; recipe="bnd/$1.bnd"
+-reproducible: true
+
+# ignore encoding issues in eclipse
+-fixupmessages: "* has no explicit encoding set";is:=ignore
