@@ -1,8 +1,8 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
-Bundle-SymbolicName: org.bndtools.p2.dummy
--fixupmessages: The Bundle Symbolic org.bndtools.p2.dummy starts with the project name org.bndtools.p2 but then continues while it is not a sub-bundle
+Bundle-SymbolicName: org.bndtools.p2
+-fixupmessages: The Bundle Symbolic org.bndtools.p2 starts with the project name org.bndtools.p2 but then continues while it is not a sub-bundle
 
 # Plugins to be included in the Bndtools p2 update repository
 -dependson: \
