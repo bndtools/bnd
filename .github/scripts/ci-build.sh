@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 set -ev
+
+# gpg key handling for github action build
+if [[ -n "${GPG_PRIVATE_KEY}" && -n "${GPG_PASSPHRASE}" ]]; then
+    echo "GPG environment variables validated successfully"
+    echo "${GPG_PRIVATE_KEY}" | \
+    gpg --batch \
+        --yes \
+        --pinentry-mode loopback \
+        --passphrase "${GPG_PASSPHRASE}" \
+        --import
+
+    echo -e "#\n# list secret keys\n#\n"
+    gpg --list-secret-keys --keyid-format LONG
+fi
+
+# build
 ./gradlew --no-daemon --version
 ./mvnw --version
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :build "$@"

@@ -29,6 +29,13 @@ env:
     -Daether.connector.http.connectionMaxTtl=25
     -Daether.connector.connectTimeout=120000
   BNDTOOLS_CORE_TEST_NOJUNITOSGI: true # This test is very flaky on CI
+  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+  GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+  P2_SIGN: true
+  P2_SIGN_KEY: ${{ secrets.GPG_KEY_ID }}
+  P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+  P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}        
+  SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}          
 
 defaults:
   run:

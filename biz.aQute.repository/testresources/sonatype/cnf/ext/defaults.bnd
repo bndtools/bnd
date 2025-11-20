@@ -1,0 +1,17 @@
+-plugin.10.build: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
+        releaseUrl=https://repo.maven.apache.org/maven2/; \
+        index=${.}/gav_10_build.mvn; \
+        readOnly=true; \
+        name="OSGI R8 - Build"
+
+-plugin.20.runtime: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl="https://repo.maven.apache.org/maven2/"; \
+        releaseUrl="https://repo.maven.apache.org/maven2/"; \
+        index=${.}/gav_20_runtime.mvn; \
+        readOnly=true; \
+        name="OSGI R8 - Runtime Distro"
+
+-runsystemcapabilities.dflt:    ${native_capability}
