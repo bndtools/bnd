@@ -10,6 +10,18 @@
 	<properties>
 		<!-- properties can be defined -->
 	</properties>
+	<repositories>
+		<repository>
+			<id>bndtools-snapshots</id>
+			<url>https://bndtools.jfrog.io/artifactory/libs-snapshot/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
 	<build>
 		<pluginManagement>
 			<!-- add your general plugin configuration here or customize the defaults -->
