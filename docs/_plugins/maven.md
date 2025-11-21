@@ -20,9 +20,9 @@ You can add `Group:Artifact:Version` coordinates in the `central.maven` file. Th
 
 #### Release to Maven Central
 
-Releasing to maven Central requires usually a couple of steps. For one you usually go through a staging repositroy like the staging nexus of sonartype. They perform a couple of checks and you manually have to clear the release via their web frontend. 
+Releasing to Maven Central requires usually a couple of steps. For one you usually go through a staging repository like the staging nexus of Sonatype. They perform a couple of checks and you manually have to clear the release via their web frontend. 
 
-In case you version your bundles individually, e.g. sonartype will not complain if a Version of one Artifact in your staging repo already exists. The release will simply not work. Thus you can define a staging repository. The Release process will check against the releaseUrl if something already exists, but will upload to the staging URL. 
+In case you version your bundles individually, e.g. Sonatype will not complain if a Version of one Artifact in your staging repo already exists. The release will simply not work. Thus you can define a staging repository. The Release process will check against the releaseUrl if something already exists, but will upload to the staging URL. 
 
 A configuration can look like this:
 
@@ -32,6 +32,89 @@ A configuration can look like this:
 			stagingUrl=https://oss.sonatype.org/service/local/staging/deploy/maven2/; \
 			index=${.}/release.maven; \
 			name="Release"
+
+#### Release to Maven Central via Sonatype Central Portal
+
+Maven Central now offers publishing through the [Sonatype Central Portal](https://central.sonatype.com/), which provides a streamlined publishing process. The MavenBndRepository plugin supports this with the `sonatypeMode` configuration property.
+
+The `sonatypeMode` property controls how artifacts are published to Maven Central through the Sonatype Central Portal API:
+
+* **`none`** (default) - Standard Maven repository behavior without special Sonatype Portal handling
+* **`manual`** - Artifacts are uploaded to Sonatype Central Portal for validation, but publishing must be done manually via the Sonatype web interface
+* **`autopublish`** - Artifacts are automatically published to Maven Central after successful upload and validation
+
+##### Authentication
+
+Publishing to Sonatype Central Portal requires authentication using a Bearer Token. Configure this in the [-connection-settings] instruction:
+
+	# Define your Bearer Token (typically from environment variable)
+	sonatype_bearer: '${env;SONATYPE_BEARER;}'
+	
+	# Configure connection settings
+	-connection-settings.sonatype:\
+	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
+	        password = ${sonatype_bearer};\
+	          verify = false
+
+The Bearer Token can be obtained from your [Sonatype Central Portal account](https://central.sonatype.org/publish/generate-portal-token/).
+
+##### Configuration Examples
+
+**Example 1: Automatic Publishing**
+
+This configuration automatically publishes artifacts to Maven Central after upload and validation:
+
+	sonatype_bearer: '${env;SONATYPE_BEARER;}'
+	
+	-connection-settings.sonatype:\
+	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
+	        password = ${sonatype_bearer};\
+	          verify = false
+	
+	-plugin.release = \
+	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+	        releaseUrl   = https://central.sonatype.com/api/v1/publisher/upload; \
+	        snapshotUrl  = https://central.sonatype.com/repository/maven-snapshots; \
+	        index        = ${.}/release.maven; \
+	        name         = "Maven Central"; \
+	        sonatypeMode = autopublish
+
+**Example 2: Manual Publishing with Staging**
+
+This configuration uses a staging URL and requires manual publishing approval:
+
+	sonatype_bearer: '${env;SONATYPE_BEARER;}'
+	maven_central: https://repo.maven.apache.org/maven2/
+	
+	-connection-settings.sonatype:\
+	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
+	        password = ${sonatype_bearer};\
+	          verify = false
+	
+	-plugin.release = \
+	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+	        releaseUrl   = ${maven_central}; \
+	        stagingUrl   = https://central.sonatype.com/api/v1/publisher/upload; \
+	        snapshotUrl  = https://central.sonatype.com/repository/maven-snapshots; \
+	        index        = ${.}/release.maven; \
+	        name         = "Maven Central Staging"; \
+	        sonatypeMode = manual
+
+When `stagingUrl` is specified with `sonatypeMode`, the plugin:
+1. Checks the `releaseUrl` (Maven Central) to verify the artifact doesn't already exist
+2. Uploads to the `stagingUrl` (Sonatype Portal) for validation
+3. In `manual` mode, waits for manual approval via the [Sonatype web interface](https://central.sonatype.com/publishing)
+
+**Example 3: Local Repository Only**
+
+This configuration disables Sonatype Portal integration:
+
+	-plugin.release = \
+	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+	        releaseUrl   = file:///path/to/local/repo; \
+	        index        = ${.}/release.maven; \
+	        name         = "Local Release"; \
+	        sonatypeMode = none
 
 
 
@@ -80,11 +163,12 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 |------------------|-------|---------|-------------|
 | `releaseUrl`     | `URI` |         | Comma separated list of URLs to the repositories of released artifacts.|
 | `snapshotUrl`    | `URI` |         | Comma separated list of URLs to the repositories of snapshot artifacts.|
-| `stagingUrl`    | `URI` |         | A single URL to the repositories staging repository. THis is required, e.g. for a release to maven central, which usually goes through a staging repository.|
+| `stagingUrl`    | `URI` |         | A single URL to the repositories staging repository. This is required, e.g. for a release to maven central, which usually goes through a staging repository.|
+| `sonatypeMode`   | `none`\|`manual`\|`autopublish` | `none` | Controls how artifacts are published to Maven Central via the Sonatype Central Portal. `none`: standard Maven repository behavior; `manual`: upload for validation but requires manual publishing approval; `autopublish`: automatically publish after validation. Requires Bearer Token authentication via [-connection-settings]. |
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
 |                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
 |                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
-| `readOnly`       | `true|false` | `false` | If set to _truthy_ then this repository is read only.|
+| `readOnly`       | `true`|`false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
 | `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.|
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
