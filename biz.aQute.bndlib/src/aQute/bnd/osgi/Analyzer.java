@@ -3283,9 +3283,16 @@ public class Analyzer extends Processor {
 				throw new FileNotFoundException("From sha1, not found " + args[1]);
 
 			IO.copy(r.openInputStream(), digester);
+
+			boolean hex = args.length > 2 && args[2].equals("hex");
+			if (hex)
+				return Hex.toHexString(digester.digest()
+					.digest());
+
 			return Base64.encodeBase64(digester.digest()
 				.digest());
 		}
+
 	}
 
 	public Descriptor getDescriptor(String descriptor) {

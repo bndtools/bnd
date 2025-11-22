@@ -1931,6 +1931,10 @@ public class Macro {
 
 	static final String _jsHelp = "${js [;<js expr>...]}";
 
+	/**
+	 * @deprecated javascript script engine removed in Java 15
+	 */
+	@Deprecated
 	public Object _js(String[] args) throws Exception {
 		verifyCommand(args, _jsHelp, null, 2, Integer.MAX_VALUE);
 
