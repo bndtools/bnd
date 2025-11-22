@@ -2,23 +2,80 @@
 layout: default
 class: Macro
 title: fmodified ( ';' RESOURCE )+
-summary:  Latest modification date of a list of resources
+summary: Get the latest modification timestamp from a list of files
 ---
 
-	public final static String	_fmodifiedHelp	= "${fmodified;<list of filenames>...}, return latest modification date";
+## Summary
 
-	public String _fmodified(String args[]) throws Exception {
-		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
+The `fmodified` macro finds the most recent modification time among a list of files and returns it as a long integer (milliseconds since epoch). This is useful for detecting when files have changed.
 
-		long time = 0;
-		Collection<String> names = new ArrayList<String>();
-		for (int i = 1; i < args.length; i++) {
-			Processor.split(args[i], names);
-		}
-		for (String name : names) {
-			File f = new File(name);
-			if (f.exists() && f.lastModified() > time)
-				time = f.lastModified();
-		}
-		return "" + time;
-	}
+## Syntax
+
+```
+${fmodified;<file>[;<file>...]}
+```
+
+## Parameters
+
+- `file` - One or more file paths (can be comma or semicolon-separated lists)
+
+## Behavior
+
+- Checks the last modified timestamp of each specified file
+- Returns the latest (most recent) modification time found
+- Returns the time in milliseconds since Unix epoch (January 1, 1970)
+- Non-existent files are ignored
+- Returns 0 if no files exist
+
+## Examples
+
+Get modification time of a single file:
+```
+${fmodified;build.gradle}
+# Returns: 1700000000000 (example timestamp)
+```
+
+Find latest modification among multiple files:
+```
+${fmodified;src/Main.java;src/Util.java;src/Config.java}
+# Returns timestamp of most recently modified file
+```
+
+Check if source files changed:
+```
+source.modified=${fmodified;${lsr;src;*.java}}
+```
+
+Compare modification times:
+```
+${if;${vcompare;${fmodified;input.txt};${fmodified;output.txt}};input-newer;output-newer}
+```
+
+Track build inputs:
+```
+Build-Input-Modified: ${fmodified;${buildpath}}
+```
+
+## Use Cases
+
+- Detecting when source files have changed
+- Implementing incremental build logic
+- Tracking file dependencies
+- Determining if regeneration is needed
+- Caching and cache invalidation
+- Build timestamp tracking
+
+## Notes
+
+- Returns milliseconds since epoch (not seconds)
+- Non-existent files are silently ignored
+- To convert to readable format, use `${long2date}` macro
+- Returns 0 if all files are missing
+- The timestamp represents the OS file system's last modified time
+- Useful with `${if}` or `${vcompare}` for conditional logic
+
+
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

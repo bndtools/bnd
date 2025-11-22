@@ -1,53 +1,74 @@
 ---
 layout: default
 class: Project
-title:	findname ';' PATH ( ';' FILTER )
-summary: A list of filtered by name resource paths with optional replacement
+title:	findname ';' REGEX ( ';' REPLACEMENT )?
+summary: Find bundle resources by filename with optional regex replacement
 ---
 
-	public String _findname(String args[]) {
-		return findPath("findname", args, false);
-	}
+## Summary
 
-	String findPath(String name, String[] args, boolean fullPathName) {
-		if (args.length > 3) {
-			warning("Invalid nr of arguments to " + name + " " + Arrays.asList(args) + ", syntax: ${" + name
-					+ " (; reg-expr (; replacement)? )? }");
-			return null;
-		}
+The `findname` macro finds resources in the current bundle by matching filenames (not full paths) against a regular expression, with optional replacement to transform the results.
 
-		String regexp = ".*";
-		String replace = null;
+## Syntax
 
-		switch (args.length) {
-			case 3 :
-				replace = args[2];
-				//$FALL-THROUGH$
-			case 2 :
-				regexp = args[1];
-		}
-		StringBuilder sb = new StringBuilder();
-		String del = "";
+```
+${findname[;<regex>[;<replacement>]]}
+```
 
-		Pattern expr = Pattern.compile(regexp);
-		for (Iterator<String> e = dot.getResources().keySet().iterator(); e.hasNext();) {
-			String path = e.next();
-			if (!fullPathName) {
-				int n = path.lastIndexOf('/');
-				if (n >= 0) {
-					path = path.substring(n + 1);
-				}
-			}
+## Parameters
 
-			Matcher m = expr.matcher(path);
-			if (m.matches()) {
-				if (replace != null)
-					path = m.replaceAll(replace);
+- `regex` (optional) - Regular expression to match filenames (default: ".*" matches all)
+- `replacement` (optional) - Replacement pattern using regex groups (e.g., "$1")
 
-				sb.append(del);
-				sb.append(path);
-				del = ", ";
-			}
-		}
-		return sb.toString();
-	}
+## Behavior
+
+- Searches bundle resources by filename only (not full path)
+- Matches filename against regex pattern
+- Optionally applies replacement to matched names
+- Returns comma-separated list of results
+
+## Examples
+
+Find all resources:
+```
+${findname}
+```
+
+Find by pattern:
+```
+${findname;.*\.properties}
+# Returns filenames ending in .properties
+```
+
+Find and transform:
+```
+${findname;(.*)\.class;$1}
+# Returns class names without .class extension
+```
+
+Extract parts of filenames:
+```
+${findname;config-(.*)\.xml;$1}
+# Returns: "dev,prod,test" from "config-dev.xml", "config-prod.xml", etc.
+```
+
+## Use Cases
+
+- Resource discovery by name
+- Filename pattern matching
+- Name transformation
+- Bundle content analysis
+- Dynamic resource lists
+
+## Notes
+
+- Matches filename only, not directory path
+- Uses Java regex syntax
+- See also: `${findpath}` for full path matching
+- See also: `${lsr}` for file system searches
+
+
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

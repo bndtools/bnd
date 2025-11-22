@@ -2,72 +2,78 @@
 layout: default
 class: Macro
 title: system_allow_fail ';' STRING ( ';' STRING )?
-summary: Execute a system command but ignore any failures
+summary: Execute a system command, returning output and ignoring failures
 ---
 
+## Summary
 
+The `system-allow-fail` macro executes an operating system command and returns its output, but unlike `${system}`, it does not fail the build if the command returns a non-zero exit code. Failed commands generate a warning instead.
 
-	public String _system(String args[]) throws Exception {
-		return system_internal(false, args);
-	}
+## Syntax
 
-	public String _system_allow_fail(String args[]) throws Exception {
-		String result = "";
-		try {
-			result = system_internal(true, args);
-		}
-		catch (Throwable t) {
-			/* ignore */
-		}
-		return result;
-	}
+```
+${system-allow-fail;<command>[;<input>]}
+```
 
-		/**
-	 * System command. Execute a command and insert the result.
-	 * 
-	 * @param args
-	 * @param help
-	 * @param patterns
-	 * @param low
-	 * @param high
-	 */
-	public String system_internal(boolean allowFail, String args[]) throws Exception {
-		if (nosystem)
-			throw new RuntimeException("Macros in this mode cannot excute system commands");
+## Parameters
 
-		verifyCommand(args, "${" + (allowFail ? "system-allow-fail" : "system")
-				+ ";<command>[;<in>]}, execute a system command", null, 2, 3);
-		String command = args[1];
-		String input = null;
+- `command` - The system command to execute
+- `input` (optional) - Text to send to the command's standard input
 
-		if (args.length > 2) {
-			input = args[2];
-		}
-		
-		if ( File.separatorChar == '\\')
-			command = "cmd /c \"" + command + "\"";
-		
+## Behavior
 
-		Process process = Runtime.getRuntime().exec(command, null, domain.getBase());
-		if (input != null) {
-			process.getOutputStream().write(input.getBytes("UTF-8"));
-		}
-		process.getOutputStream().close();
+- Executes the command in the project base directory
+- On Windows, automatically wraps command with `cmd /c`
+- Captures and returns standard output (trimmed)
+- If input is provided, writes it to stdin
+- Returns empty string if command fails (no build error)
+- Generates warning (not error) on non-zero exit codes
+- Build continues even on command failure
 
-		String s = IO.collect(process.getInputStream(), "UTF-8");
-		int exitValue = process.waitFor();
-		if (exitValue != 0)
-			return exitValue + "";
+## Examples
 
-		if (exitValue != 0) {
-			if (!allowFail) {
-				domain.error("System command " + command + " failed with exit code " + exitValue);
-			} else {
-				domain.warning("System command " + command + " failed with exit code " + exitValue + " (allowed)");
+Try to get Git info (may not be in repo):
+```
+Git-Branch: ${system-allow-fail;git branch --show-current}
+```
 
-			}
-		}
+Optional version check:
+```
+tool.version=${system-allow-fail;tool --version}
+```
 
-		return s.trim();
-	}
+Check for optional tool:
+```
+${if;${system-allow-fail;which docker};docker-available;docker-not-found}
+```
+
+Get info with fallback:
+```
+host=${def;${system-allow-fail;hostname};unknown-host}
+```
+
+## Use Cases
+
+- Running commands that may not be available
+- Optional build information gathering
+- Checking for tool availability
+- Platform-specific commands that may fail
+- Best-effort information collection
+- Graceful degradation in builds
+
+## Notes
+
+- **Does not fail the build** on command errors
+- Returns empty string on failure
+- Generates warning (visible in logs) on failure
+- Same execution model as `${system}`
+- Useful when command availability is uncertain
+- See also: `${system}` for failing variant
+- May be disabled in restricted execution modes
 	
+<hr />
+TODO Needs review - AI Generated content
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

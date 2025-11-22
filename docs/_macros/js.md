@@ -2,48 +2,78 @@
 layout: default
 class: Macro
 title: js (';' JAVASCRIPT )*
-summary: Execute Javascript, return the value of the last expression
+summary: Execute JavaScript expressions and return the result. 
 ---
 
-	ScriptEngine	engine		= new ScriptEngineManager().getEngineByName("javascript");
-	ScriptContext	context		= null;
-	Bindings		bindings	= null;
-	StringWriter	stdout		= new StringWriter();
-	StringWriter	stderr		= new StringWriter();
+## Summary
 
-	static String	_js			= "${js [;<js expr>...]}";
+Deprecated: Javascript script engine removed in Java 15. This macro might not work anymore and might be removed in future versions.
 
-	public Object _js(String args[]) throws Exception {
-		verifyCommand(args, _js, null, 2, Integer.MAX_VALUE);
+The `js` macro executes one or more JavaScript expressions using the Java ScriptEngine and returns the value of the last expression or any output produced.
 
-		StringBuilder sb = new StringBuilder();
+## Syntax
 
-		for (int i = 1; i < args.length; i++)
-			sb.append(args[i]).append(';');
+```
+${js;<expression>[;<expression>...]}
+```
 
-		if (context == null) {
-			context = engine.getContext();
-			bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
-			bindings.put("domain", domain);
-			String javascript = domain.mergeProperties("javascript", ";");
-			if (javascript != null && javascript.length() > 0) {
-				engine.eval(javascript, context);
-			}
-			context.setErrorWriter(stderr);
-			context.setWriter(stdout);
-		}
-		Object eval = engine.eval(sb.toString(), context);
-		StringBuffer buffer = stdout.getBuffer();
-		if (buffer.length() > 0) {
-			domain.error("Executing js: %s: %s", sb, buffer);
-			buffer.setLength(0);
-		}
+## Parameters
 
-		if (eval != null) {
-			return toString(eval);
-		}
+- `expression` - One or more JavaScript expressions to execute
 
-		String out = stdout.toString();
-		stdout.getBuffer().setLength(0);
-		return out;
-	}
+## Behavior
+
+- Executes all expressions in sequence
+- Returns the value of the last expression
+- If no return value, returns stdout output
+- Has access to `domain` object (Processor instance)
+- Persistent context across macro invocations
+- Can load JavaScript from `javascript` property
+
+## Examples
+
+Simple calculation:
+```
+${js;2 + 2}
+# Returns: "4"
+```
+
+String manipulation:
+```
+${js;"hello".toUpperCase()}
+# Returns: "HELLO"
+```
+
+Multiple expressions:
+```
+${js;var x = 10;x * 2}
+# Returns: "20"
+```
+
+Access properties:
+```
+${js;domain.getProperty("version")}
+```
+
+## Use Cases
+
+- Complex calculations
+- String transformations
+- Conditional logic too complex for macros
+- Property manipulation
+- Dynamic value generation
+
+## Notes
+
+- Uses Java's ScriptEngine (Nashorn/GraalVM)
+- Context persists between calls
+- `domain` object provides access to bnd
+- JavaScript property can define initialization code
+- Errors reported to build
+- **Warning**: Adds JavaScript engine dependency
+
+
+
+---
+
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**
