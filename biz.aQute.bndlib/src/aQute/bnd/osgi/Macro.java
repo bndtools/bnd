@@ -2156,26 +2156,33 @@ public class Macro {
 	}
 
 	/**
-	 * Format bytes
+	 * Format bytes Expects args[0] == "bytes" (ignored), args[1...] = byte
+	 * values as strings e.g. ${bytes;1048576;10000048576} returns 1.0 Mb 9.3 Gb
 	 */
 	public String _bytes(String[] args) {
+
 		try (Formatter sb = new Formatter()) {
-			for (String arg : args) {
-				long l = Long.parseLong(arg);
+			for (int idx = 1; idx < args.length; idx++) {
+				long l = Long.parseLong(args[idx]);
 				bytes(sb, l, 0, new String[] {
 					"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
 				});
+				if (idx < args.length - 1) {
+					sb.format(" ");
+				}
 			}
 			return sb.toString();
+		} catch (NumberFormatException e) {
+			return "Invalid number format";
 		}
 	}
 
 	private void bytes(Formatter sb, double l, int i, String[] strings) {
-		if (l > 1024 && i < strings.length - 1) {
+		if (l >= 1024 && i < strings.length - 1) {
 			bytes(sb, l / 1024, i + 1, strings);
 			return;
 		}
-		l = Math.round(l * 10) / 10;
+		l = Math.round(l * 10) / 10.0;
 		sb.format("%s %s", l, strings[i]);
 	}
 
