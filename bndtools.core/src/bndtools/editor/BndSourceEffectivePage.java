@@ -561,7 +561,7 @@ public class BndSourceEffectivePage extends FormPage {
 				// Define tooltip size constants
 				final int TOOLTIP_WIDTH = 700;
 				final int TOOLTIP_HEIGHT = 300;
-				
+
 				Composite container = new Composite(parent, SWT.NONE);
 
 				if (parent instanceof Shell) {
@@ -773,6 +773,8 @@ public class BndSourceEffectivePage extends FormPage {
 				return super.getUnexpandedProperty(key);
 			}
 		};
+		p.setBase(editModel.getOwner()
+			.getBase());
 		return p;
 	}
 
