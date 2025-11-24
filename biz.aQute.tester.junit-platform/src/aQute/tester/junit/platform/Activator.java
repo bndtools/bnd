@@ -2,6 +2,7 @@ package aQute.tester.junit.platform;
 
 import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
 import static aQute.junit.constants.TesterConstants.TESTER_CONTROLPORT;
+import static aQute.junit.constants.TesterConstants.TESTER_CUSTOMSERVICE;
 import static aQute.junit.constants.TesterConstants.TESTER_DIR;
 import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
@@ -88,11 +89,17 @@ public class Activator implements BundleActivator, Runnable {
 		this.context = context;
 		active = true;
 
+		boolean isCustomService = Boolean.valueOf(context.getProperty(TESTER_CUSTOMSERVICE));
 		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
-			&& Boolean.valueOf(context.getProperty("launch.services"))) {
+			&& (isCustomService || Boolean.valueOf(context.getProperty("launch.services")))) {
 			// can't register services on mini framework
 			Hashtable<String, String> ht = new Hashtable<>();
-			ht.put("main.thread", "true");
+			if (isCustomService) {
+				ht.put("junit.tester", "true");
+			}
+			else {
+				ht.put("main.thread", "true");
+			}
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
 			context.registerService(Runnable.class.getName(), this, ht);
 		} else {
