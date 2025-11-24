@@ -224,10 +224,11 @@ public class ProjectBuilder extends Builder {
 						if ((c.getType() == TYPE.PROJECT) && !file.exists()) {
 							continue;
 						}
-						Jar jar = new Jar(file);
 						Map<String, String> containerAttributes = c.getAttributes();
 						if (!Boolean.parseBoolean(containerAttributes.getOrDefault("maven-optional", "false"))) {
-							fillDependencies(dependencies, jar, containerAttributes);
+							try (Jar jar = new Jar(file)) {
+								fillDependencies(dependencies, jar, containerAttributes);
+							}
 						}
 					}
 				}
