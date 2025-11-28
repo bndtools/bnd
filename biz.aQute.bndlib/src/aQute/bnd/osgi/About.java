@@ -74,8 +74,12 @@ public class About {
 	public static final Version					_7_0		= new Version(7, 0, 0);
 	public static final Version					_7_1		= new Version(7, 1, 0);
 	public static final Version					_7_2		= new Version(7, 2, 0);
-	public static final Version					CURRENT		= _7_2;
+	public static final Version					_7_3		= new Version(7, 3, 0);
+	public static final Version					CURRENT		= _7_3;
 
+	public static final String[]				CHANGES_7_3	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.3.0 for a list of changes."
+	};
 	public static final String[]				CHANGES_7_2	= {
 		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.2.0 for a list of changes."
 	};
