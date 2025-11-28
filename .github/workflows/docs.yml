@@ -51,7 +51,7 @@ jobs:
     - name: Install Pagefind for Search
       run: |
         cd docs
-        curl -L https://github.com/CloudCannon/pagefind/releases/download/v1.3.0/pagefind-v1.3.0-x86_64-unknown-linux-musl.tar.gz \
+        curl -L https://github.com/Pagefind/pagefind/releases/download/v1.4.0/pagefind-v1.4.0-x86_64-unknown-linux-musl.tar.gz \
           -o pagefind.tar.gz
         tar xzf pagefind.tar.gz
         chmod +x pagefind
