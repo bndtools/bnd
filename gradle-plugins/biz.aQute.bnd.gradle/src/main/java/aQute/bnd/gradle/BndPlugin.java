@@ -55,7 +55,6 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePluginExtension;
@@ -66,6 +65,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.ClasspathNormalizer;
 import org.gradle.api.tasks.Delete;
@@ -81,6 +81,8 @@ import org.gradle.api.tasks.testing.AbstractTestTask;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
 import org.gradle.process.CommandLineArgumentProvider;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
 
 /**
  * BndPlugin for Gradle.
@@ -98,10 +100,6 @@ public class BndPlugin implements Plugin<Project> {
 	 * Name of the plugin.
 	 */
 	public static final String				PLUGINID	= "biz.aQute.bnd";
-	private Project							project;
-	private Project							workspace;
-	private ObjectFactory					objects;
-	private aQute.bnd.build.Project			bndProject;
 
 	/**
 	 * Default public constructor.
@@ -114,10 +112,9 @@ public class BndPlugin implements Plugin<Project> {
 	@Override
 	public void apply(Project project) {
 		try {
-			this.project = project;
-			Project workspace = this.workspace = project.getParent();
+			Project workspace = project.getParent();
 			ProjectLayout layout = project.getLayout();
-			ObjectFactory objects = this.objects = project.getObjects();
+			ObjectFactory objects = project.getObjects();
 			TaskContainer tasks = project.getTasks();
 			if (project.getPluginManager()
 				.hasPlugin(BndBuilderPlugin.PLUGINID)) {
@@ -129,7 +126,8 @@ public class BndPlugin implements Plugin<Project> {
 					+ BndBuilderPlugin.PLUGINID + "\" plugin?");
 			}
 			Workspace bndWorkspace = BndWorkspacePlugin.getBndWorkspace(workspace);
-			aQute.bnd.build.Project bndProject = this.bndProject = bndWorkspace.getProject(project.getName());
+			aQute.bnd.build.Project bndProject = bndWorkspace.getProject(project.getName());
+			PluginApplicationHelper helper = new PluginApplicationHelper(workspace, bndProject, project.getProviders(), objects);
 			if (Objects.isNull(bndProject)) {
 				throw new GradleException(String.format("Unable to load bnd project %s from workspace %s",
 					project.getName(), workspace.getLayout()
@@ -137,7 +135,7 @@ public class BndPlugin implements Plugin<Project> {
 			}
 			bndProject.prepare();
 			if (!bndProject.isValid()) {
-				checkErrors(project.getLogger());
+				helper.checkErrors(project.getLogger());
 				throw new GradleException(String.format("Project %s is not a valid bnd project", bndProject.getName()));
 			}
 			BndPluginExtension extension = project.getExtensions()
@@ -200,14 +198,14 @@ public class BndPlugin implements Plugin<Project> {
 						.withPropertyName("generateInputs");
 					/* bnd can include from -dependson */
 					t.getInputs()
-						.files(getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
+						.files(helper.getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
 						.withPropertyName("buildDependencies");
 					/*
 					 * Workspace and project configuration changes should
 					 * trigger task
 					 */
 					t.getInputs()
-						.files(bndConfiguration())
+						.files(helper.bndConfiguration())
 						.withPathSensitivity(RELATIVE)
 						.withPropertyName("bndConfiguration")
 						.normalizeLineEndings();
@@ -225,7 +223,7 @@ public class BndPlugin implements Plugin<Project> {
 							} catch (Exception e) {
 								throw new GradleException(String.format("Project %s failed to generate", bndProject.getName()), e);
 							}
-							checkErrors(tt.getLogger());
+							helper.checkErrors(tt.getLogger());
 						}
 					});
 				}));
@@ -375,10 +373,10 @@ public class BndPlugin implements Plugin<Project> {
 				.set("allSrcDirs", allSrcDirs);
 			/* Set up dependencies */
 			DependencyHandler dependencies = project.getDependencies();
-			dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, pathFiles(bndProject.getBuildpath()));
+			dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, helper.pathFiles(bndProject.getBuildpath()));
 			dependencies.add(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, objects.fileCollection()
 				.from(bndProject.getSrcOutput()));
-			dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, pathFiles(bndProject.getTestpath()));
+			dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, helper.pathFiles(bndProject.getTestpath()));
 			dependencies.add(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, objects.fileCollection()
 				.from(bndProject.getTestOutput()));
 			/* Set up compile tasks */
@@ -446,7 +444,7 @@ public class BndPlugin implements Plugin<Project> {
 						@Override
 						public void execute(Task tt) {
 							Logger logger = tt.getLogger();
-							checkErrors(logger);
+							helper.checkErrors(logger);
 							if (logger.isInfoEnabled()) {
 								logger.info("Compile to {}", unwrapFile(t.getDestinationDirectory()));
 								if (t.getOptions()
@@ -527,14 +525,14 @@ public class BndPlugin implements Plugin<Project> {
 						.withPropertyName("buildpath");
 					/* bnd can include from -dependson */
 					t.getInputs()
-						.files(getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
+						.files(helper.getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
 						.withPropertyName("buildDependencies");
 					/*
 					 * Workspace and project configuration changes should
 					 * trigger jar task
 					 */
 					t.getInputs()
-						.files(bndConfiguration())
+						.files(helper.bndConfiguration())
 						.withPathSensitivity(RELATIVE)
 						.withPropertyName("bndConfiguration")
 						.normalizeLineEndings();
@@ -561,7 +559,7 @@ public class BndPlugin implements Plugin<Project> {
 								throw new GradleException(
 									String.format("Project %s failed to build", bndProject.getName()), e);
 							}
-							checkErrors(tt.getLogger());
+							helper.checkErrors(tt.getLogger());
 							if (Objects.nonNull(built)) {
 								tt.getLogger()
 									.info("Generated bundles: {}", (Object) built);
@@ -573,13 +571,13 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<Task> jarDependencies = tasks.register("jarDependencies", t -> {
 				t.setDescription("Jar all projects this project depends on.");
 				t.setGroup(LifecycleBasePlugin.BUILD_GROUP);
-				t.dependsOn(getBuildDependencies(JavaPlugin.JAR_TASK_NAME));
+				t.dependsOn(helper.getBuildDependencies(JavaPlugin.JAR_TASK_NAME));
 			});
 
 			TaskProvider<Task> buildDependencies = tasks.register("buildDependencies", t -> {
 				t.setDescription("Assembles and tests all projects this project depends on.");
 				t.setGroup(LifecycleBasePlugin.BUILD_GROUP);
-				t.dependsOn(getTestDependencies(JavaBasePlugin.BUILD_NEEDED_TASK_NAME));
+				t.dependsOn(helper.getTestDependencies(JavaBasePlugin.BUILD_NEEDED_TASK_NAME));
 			});
 
 			TaskProvider<Task> buildNeeded = tasks.named(JavaBasePlugin.BUILD_NEEDED_TASK_NAME, t -> {
@@ -587,7 +585,7 @@ public class BndPlugin implements Plugin<Project> {
 			});
 
 			TaskProvider<Task> buildDependents = tasks.named(JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME, t -> {
-				t.dependsOn(getDependents(JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME));
+				t.dependsOn(helper.getDependents(JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME));
 			});
 
 			TaskProvider<Task> release = tasks.register("release", t -> {
@@ -607,7 +605,7 @@ public class BndPlugin implements Plugin<Project> {
 							throw new GradleException(
 								String.format("Project %s failed to release", bndProject.getName()), e);
 						}
-						checkErrors(tt.getLogger());
+						helper.checkErrors(tt.getLogger());
 					}
 				});
 			});
@@ -615,7 +613,7 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<Task> releaseDependencies = tasks.register("releaseDependencies", t -> {
 				t.setDescription("Release all projects this project depends on.");
 				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
-				t.dependsOn(getBuildDependencies("releaseNeeded"));
+				t.dependsOn(helper.getBuildDependencies("releaseNeeded"));
 			});
 
 			TaskProvider<Task> releaseNeeded = tasks.register("releaseNeeded", t -> {
@@ -628,12 +626,12 @@ public class BndPlugin implements Plugin<Project> {
 				t.setEnabled(!bndProject.is(Constants.NOJUNIT) && !bndProject.is("no.junit"));
 				/* tests can depend upon jars from -dependson */
 				t.getInputs()
-					.files(getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
+					.files(helper.getBuildDependencies(JavaPlugin.JAR_TASK_NAME))
 					.withPropertyName("buildDependencies");
 				t.doFirst("checkErrors", new Action<>() {
 					@Override
 					public void execute(Task tt) {
-						checkErrors(tt.getLogger(), t.getIgnoreFailures());
+						helper.checkErrors(tt.getLogger(), t.getIgnoreFailures());
 					}
 				});
 			});
@@ -658,7 +656,7 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<Task> checkDependencies = tasks.register("checkDependencies", t -> {
 				t.setDescription("Runs all checks on all projects this project depends on.");
 				t.setGroup(LifecycleBasePlugin.VERIFICATION_GROUP);
-				t.dependsOn(getTestDependencies("checkNeeded"));
+				t.dependsOn(helper.getTestDependencies("checkNeeded"));
 			});
 
 			TaskProvider<Task> checkNeeded = tasks.register("checkNeeded", t -> {
@@ -679,7 +677,7 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<Task> cleanDependencies = tasks.register("cleanDependencies", t -> {
 				t.setDescription("Cleans all projects this project depends on.");
 				t.setGroup(LifecycleBasePlugin.BUILD_GROUP);
-				t.dependsOn(getTestDependencies("cleanNeeded"));
+				t.dependsOn(helper.getTestDependencies("cleanNeeded"));
 			});
 
 			TaskProvider<Task> cleanNeeded = tasks.register("cleanNeeded", t -> {
@@ -837,7 +835,7 @@ public class BndPlugin implements Plugin<Project> {
 							}
 							System.out.print(f.toString());
 						}
-						checkErrors(tt.getLogger(), true);
+						helper.checkErrors(tt.getLogger(), true);
 					}
 				});
 			});
@@ -860,7 +858,7 @@ public class BndPlugin implements Plugin<Project> {
 							f.format("%n");
 							System.out.print(f.toString());
 						}
-						checkErrors(tt.getLogger(), true);
+						helper.checkErrors(tt.getLogger(), true);
 					}
 				});
 			});
@@ -888,55 +886,109 @@ public class BndPlugin implements Plugin<Project> {
 		}
 	}
 
-	private Provider<List<TaskProvider<Task>>> getTasks(Collection<? extends aQute.bnd.build.Project> projects,
-		String taskName) {
-		return project.provider(() -> projects.stream()
-			.map(p -> workspace.project(p.getName())
-				.getTasks()
-				.named(taskName))
-			.collect(toList()));
-	}
+	private static class PluginApplicationHelper {
 
-	private ConfigurableFileCollection pathFiles(Collection<? extends Container> path) {
-		return objects.fileCollection()
-			.from(decontainer(path))
-			.builtBy(getTasks(path.stream()
-				.filter(c -> c.getType() == TYPE.PROJECT)
-				.map(Container::getProject)
-				.collect(toList()), JavaPlugin.JAR_TASK_NAME));
-	}
+		private final Project workspace;
+		private final aQute.bnd.build.Project bndProject;
+		private final ProviderFactory providers;
+		private final ObjectFactory objects;
 
-	private Provider<List<TaskProvider<Task>>> getBuildDependencies(String taskName) {
-		try {
-			return getTasks(bndProject.getBuildDependencies(), taskName);
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
+		public PluginApplicationHelper(Project workspace, aQute.bnd.build.Project bndProject, ProviderFactory providers, ObjectFactory objects) {
+			this.workspace = workspace;
+			this.bndProject = bndProject;
+			this.providers = providers;
+			this.objects = objects;
 		}
-	}
 
-	private Provider<List<TaskProvider<Task>>> getTestDependencies(String taskName) {
-		try {
-			return getTasks(bndProject.getTestDependencies(), taskName);
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
+		private Provider<List<TaskProvider<Task>>> getTasks(Collection<? extends aQute.bnd.build.Project> projects,
+															String taskName) {
+			return providers.provider(() -> projects.stream()
+				.map(p -> workspace.project(p.getName())
+					.getTasks()
+					.named(taskName))
+				.collect(toList()));
 		}
-	}
 
-	private Provider<List<TaskProvider<Task>>> getDependents(String taskName) {
-		try {
-			return getTasks(bndProject.getDependents(), taskName);
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
+		private ConfigurableFileCollection pathFiles(Collection<? extends Container> path) {
+			return objects.fileCollection()
+				.from(decontainer(path))
+				.builtBy(getTasks(path.stream()
+					.filter(c -> c.getType() == TYPE.PROJECT)
+					.map(Container::getProject)
+					.collect(toList()), JavaPlugin.JAR_TASK_NAME));
 		}
+
+		private Provider<List<TaskProvider<Task>>> getBuildDependencies(String taskName) {
+			try {
+				return getTasks(bndProject.getBuildDependencies(), taskName);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		}
+
+		private Provider<List<TaskProvider<Task>>> getTestDependencies(String taskName) {
+			try {
+				return getTasks(bndProject.getTestDependencies(), taskName);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		}
+
+		private Provider<List<TaskProvider<Task>>> getDependents(String taskName) {
+			try {
+				return getTasks(bndProject.getDependents(), taskName);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		}
+
+		private ConfigurableFileCollection bndConfiguration() {
+			Workspace bndWorkspace = bndProject.getWorkspace();
+			return objects.fileCollection()
+				.from(bndWorkspace.getPropertiesFile(), bndWorkspace.getIncluded(), bndProject.getPropertiesFile(),
+					bndProject.getIncluded());
+		}
+
+		private void checkErrors(Logger logger) {
+			checkProjectErrors(bndProject, logger, false);
+		}
+
+		private void checkErrors(Logger logger, boolean ignoreFailures) {
+			checkProjectErrors(bndProject, logger, ignoreFailures);
+		}
+
+		private void checkProjectErrors(aQute.bnd.build.Project p, Logger logger, boolean ignoreFailures) {
+			p.getInfo(p.getWorkspace(), p.getWorkspace()
+				.getBase()
+				.getName()
+				.concat(" :"));
+			boolean failed = !ignoreFailures && !p.isOk();
+			int errorCount = p.getErrors()
+				.size();
+			logReport(p, logger);
+			p.clear();
+			if (failed) {
+				String str;
+				if (errorCount == 1) {
+					str = "%s has errors, one error was reported";
+				} else if (errorCount > 1) {
+					str = "%s has errors, %s errors were reported";
+				} else {
+					str = "%s has errors even though no errors were reported";
+				}
+				throw new GradleException(String.format(str, p.getName(), errorCount));
+			}
+		}
+
 	}
 
-	private List<File> decontainer(Collection<? extends Container> path) {
+	private static List<File> decontainer(Collection<? extends Container> path) {
 		return path.stream()
 			.map(Container::getFile)
 			.collect(toList());
 	}
 
-	private <ITERABLE extends Iterable<String>> CommandLineArgumentProvider argProvider(Optional<ITERABLE> provider) {
+	private static <ITERABLE extends Iterable<String>> CommandLineArgumentProvider argProvider(Optional<ITERABLE> provider) {
 		return new CommandLineArgumentProvider() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -946,45 +998,7 @@ public class BndPlugin implements Plugin<Project> {
 		};
 	}
 
-	private ConfigurableFileCollection bndConfiguration() {
-		Workspace bndWorkspace = bndProject.getWorkspace();
-		return objects.fileCollection()
-			.from(bndWorkspace.getPropertiesFile(), bndWorkspace.getIncluded(), bndProject.getPropertiesFile(),
-				bndProject.getIncluded());
-	}
-
-	private void checkErrors(Logger logger) {
-		checkProjectErrors(bndProject, logger, false);
-	}
-
-	private void checkErrors(Logger logger, boolean ignoreFailures) {
-		checkProjectErrors(bndProject, logger, ignoreFailures);
-	}
-
-	private void checkProjectErrors(aQute.bnd.build.Project p, Logger logger, boolean ignoreFailures) {
-		p.getInfo(p.getWorkspace(), p.getWorkspace()
-			.getBase()
-			.getName()
-			.concat(" :"));
-		boolean failed = !ignoreFailures && !p.isOk();
-		int errorCount = p.getErrors()
-			.size();
-		logReport(p, logger);
-		p.clear();
-		if (failed) {
-			String str;
-			if (errorCount == 1) {
-				str = "%s has errors, one error was reported";
-			} else if (errorCount > 1) {
-				str = "%s has errors, %s errors were reported";
-			} else {
-				str = "%s has errors even though no errors were reported";
-			}
-			throw new GradleException(String.format(str, p.getName(), errorCount));
-		}
-	}
-
-	private Optional<String> optional(String value) {
+	private static Optional<String> optional(String value) {
 		return Optional.ofNullable(value).filter(Strings::notEmpty);
 	}
 
