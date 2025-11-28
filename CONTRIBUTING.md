@@ -87,21 +87,49 @@ You should now have all the bndtools projects in your workspace, ready to begin 
 ## Build Environment
 
 The only thing you need to build Bnd/Bndtools is Java.
-- We require at least Java 17.
-- We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
+- We require at least Java 17 locally installed in path.
+- We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` wrappers with the necessary versions.
 
-- `./gradlew :build` (or `./gradlew build -x test -x testOSGi` to skip tests for faster local builds) - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
-- `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
-- `./mvnw install` - Assembles and tests the Bnd Maven plugins.
-- `./gradlew :publish` - Assembles and publishes the Bnd Workspace projects into `dist/bundles`.
-- `./gradlew :gradle-plugins:publish` - Assembles and publishes the Bnd Gradle plugins into `dist/bundles`.
-- `./mvnw -Pdist deploy` - Assembles and publishes the Bnd Maven plugins into `dist/bundles`.
+- assembles and tests the Bnd Workspace projects
+  ```bash
+  ./gradlew build 2>&1 | tee "build_$(date +%Y%m%d_%H%M%S).log"
+  ```
+- alternative skip tests for faster local builds 
+  ```bash
+  ./gradlew build -x test -x testOSGi 2>&1 | tee "build_skipTests_$(date +%Y%m%d_%H%M%S).log"
+  ```
+**MIND: Above step is pre-requisite for following build of Bnd Maven and Gradle plugin.**
+- assembles and tests the Bnd Gradle plugins
+  ```bash
+  ./gradlew :gradle-plugins:build 2>&1 | tee "build_gradle-plguns_$(date +%Y%m%d_%H%M%S).log"
+  ```
+- assembles and tests the Bnd Maven plugins
+  ```bash
+  ./mvnw install 2>&1 | tee "build_mvn_$(date +%Y%m%d_%H%M%S).log"
+  ```
+- assembles and publishes the Bnd Workspace projects into `dist/bundles`
+  ```bash
+  ./gradlew publish 2>&1 | tee "build_publish_$(date +%Y%m%d_%H%M%S).log"
+  ```
+- assembles and publishes the Bnd Gradle plugins into `dist/bundles`
+  ```bash
+  ./gradlew :gradle-plugins:publish 2>&1 | tee "build_gradle-plugins_publish_$(date +%Y%m%d_%H%M%S).log"
+  ```
+- assembles and publishes the Bnd Maven plugins into `dist/bundles`
+  ```bash
+  ./mvnw -Pdist deploy 2>&1 | tee "build_mvn_deploy_$(date +%Y%m%d_%H%M%S).log"
+  ```
 
 Rebuilding: bnd is built with bnd. For that reason we rebuild and retest bnd with the build we just built.
 To do a full build-rebuild cycle (like the github build), you can use the following command:
 
-`.cd /gradlew :build ; ./gradlew :gradle-plugins:build ; ./.github/scripts/rebuild-build.sh ; ./.github/scripts/rebuild-test.sh`
-
+```
+./gradlew build \
+  && ./gradlew :gradle-plugins:build \
+  && ./.github/scripts/rebuild-build.sh \
+  && ./.github/scripts/rebuild-test.sh \
+  2>&1 | tee "build_full_$(date +%Y%m%d_%H%M%S).log"
+```
 
 We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22) for continuous integration and the repo includes a `.github/workflows/cibuild.yml` file to build via GitHub Actions.
 
@@ -305,4 +333,3 @@ If your pull request was originally a work-in-progress, don't forget to remove W
 Don't forget: being a maintainer is a time investment.
 Make sure you will have time to make yourself available.
 You don't have to be a maintainer to make a difference on the project!
-
