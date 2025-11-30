@@ -959,6 +959,7 @@ class P2Export {
 			}
 		}
 
+		version = Builder.doSnapshot(version, definition.get(Constants.SNAPSHOT));
 		return getBundleId(featureName, version);
 	}
 

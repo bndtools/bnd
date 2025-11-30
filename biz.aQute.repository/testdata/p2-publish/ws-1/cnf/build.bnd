@@ -3,7 +3,9 @@
 		locations           ='${fileuri;${workspace}/cnf/repo/index.xml}'; \
 		name                ='P2'
 
-Bundle-Version 800
+-snapshot: RC1
+base.version:           7.0.0.0000
+Bundle-Version:         ${base.version}-SNAPSHOT
 
 
 -groupid:               org.bndtools
