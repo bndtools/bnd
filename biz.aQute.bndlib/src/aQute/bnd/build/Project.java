@@ -2908,7 +2908,7 @@ public class Project extends Processor {
 			for (Builder b : pb.getSubBuilders()) {
 				if (b.getBsn()
 					.equals(bsn)) {
-					String version = b.getVersion();
+					String version = getVersion(bsn).toString();
 					Container c = new Container(this, bsn, version, Container.TYPE.PROJECT, getOutputFile(bsn, version),
 						null, attrs, null);
 					return c;

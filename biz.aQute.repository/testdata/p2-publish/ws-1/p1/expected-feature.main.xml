@@ -1,4 +1,4 @@
-<feature id="bndtools.main.feature" version="7.0.0.0000-SNAPSHOT" label="Bndtools" provider-name="bnd">
+<feature id="bndtools.main.feature" version="7.0.0.0000-RC1" label="Bndtools" provider-name="bnd">
   <description url="https://bnd.bndtools.org/"><![CDATA[OSGi Development Tools for Eclipse based on bnd.]]></description>
   <copyright><![CDATA[Copyright bndtools]]></copyright>
   <license url="https://opensource.org/licenses/Apache-2.0"><![CDATA[SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)

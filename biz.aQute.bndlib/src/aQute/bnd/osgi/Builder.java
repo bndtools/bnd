@@ -470,38 +470,12 @@ public class Builder extends Analyzer {
 		String version = getProperty(BUNDLE_VERSION);
 		if (version != null) {
 			version = cleanupVersion(version);
-			version = doSnapshot(version);
+			version = doSnapshot(version, getProperty(Constants.SNAPSHOT));
 			setProperty(BUNDLE_VERSION, version);
 		}
 	}
 
-	private String doSnapshot(String version) {
-		String snapshot = getProperty(SNAPSHOT);
-		if (snapshot == null) {
-			return version;
-		}
-		if (snapshot.isEmpty()) {
-			snapshot = null;
-		}
-		Version v = Version.parseVersion(version);
-		String q = v.getQualifier();
-		if (q == null) {
-			return version;
-		}
-		if (q.equals("SNAPSHOT")) {
-			q = snapshot;
-		} else if (q.endsWith("-SNAPSHOT")) {
-			int end = q.length() - "SNAPSHOT".length();
-			if (snapshot == null) {
-				q = q.substring(0, end - 1);
-			} else {
-				q = q.substring(0, end) + snapshot;
-			}
-		} else {
-			return version;
-		}
-		return new Version(v.getMajor(), v.getMinor(), v.getMicro(), q).toString();
-	}
+
 
 	public void cleanupVersion(Packages packages, String defaultVersion) {
 		cleanupVersion(packages, defaultVersion, "external");
@@ -2267,6 +2241,33 @@ public class Builder extends Analyzer {
 		}
 	}
 
+	public static String doSnapshot(String version, String snapshot) {
+
+		if (snapshot == null) {
+			return version;
+		}
+		if (snapshot.isEmpty()) {
+			snapshot = null;
+		}
+		Version v = Version.parseVersion(version);
+		String q = v.getQualifier();
+		if (q == null) {
+			return version;
+		}
+		if (q.equals("SNAPSHOT")) {
+			q = snapshot;
+		} else if (q.endsWith("-SNAPSHOT")) {
+			int end = q.length() - "SNAPSHOT".length();
+			if (snapshot == null) {
+				q = q.substring(0, end - 1);
+			} else {
+				q = q.substring(0, end) + snapshot;
+			}
+		} else {
+			return version;
+		}
+		return new Version(v.getMajor(), v.getMinor(), v.getMicro(), q).toString();
+	}
 
 
 }
