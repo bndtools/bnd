@@ -1,4 +1,4 @@
-<feature id="bndtools.pde.feature" version="7.0.0.0000-SNAPSHOT" label="Bndtools PDE" provider-name="bnd">
+<feature id="bndtools.pde.feature" version="7.0.0.0000-RC1" label="Bndtools PDE" provider-name="bnd">
   <description url="https://bnd.bndtools.org/"><![CDATA[PDE integration for Bndtools]]></description>
   <copyright><![CDATA[Copyright bndtools]]></copyright>
   <license url="https://opensource.org/licenses/Apache-2.0"><![CDATA[Simple license description]]></license>
@@ -7,7 +7,7 @@
     <discovery url="https://bndtools.jfrog.io/bndtools/update-latest" label="Bndtools Update Site"/>
   </url>
   <requires>
-    <import feature="bndtools.main.feature.feature.group" version="7.0.0.0000-SNAPSHOT" match="perfect"/>
+    <import feature="bndtools.main.feature.feature.group" version="7.0.0.0000-RC1" match="perfect"/>
     <import feature="org.eclipse.pde.feature.group" version="3.14.1300" match="equivalent"/>
   </requires>
   <plugin id="bndtools.pde" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>

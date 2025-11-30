@@ -1,5 +1,4 @@
 Bundle-SymbolicName: org.bndtools.p2
-Bundle-Version  7.0.0.0000-SNAPSHOT
 Bundle-License:  \
     ASL-2.0;\
         file="license.txt";\
