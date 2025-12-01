@@ -41,28 +41,36 @@ Usage: $(basename "$0") [OPTIONS]
 Automate bnd release preparation.
 
 Options:
-  -m, --mode MODE           Release mode: first-rc, next-rc, or release (required)
+  -m, --mode MODE           Release mode: first-rc, prepare-next, next-rc, or release (required)
   -v, --release-version VER Version to release (V1), e.g., 7.2.0 (required)
-  -n, --next-version VER    Next development version (V2), e.g., 7.3.0 (required for first-rc)
-  -r, --rc NUMBER           Release candidate number, e.g., 1, 2 (required for first-rc and next-rc)
+  -n, --next-version VER    Next development version (V2), e.g., 7.3.0 (required for first-rc and prepare-next)
+  -r, --rc NUMBER           Release candidate number, e.g., 1, 2 (required for first-rc, prepare-next, and next-rc)
   --dry-run                 Show what would be changed without making changes
   -h, --help                Show this help message
 
 Modes:
-  first-rc  Prepare master branch for V2 and next branch for V1.RC1
-            Requires: --release-version, --next-version, --rc
+  first-rc      Prepare master branch for V2 (next development version)
+                Requires: --release-version, --next-version, --rc
+                Run this on the master branch first.
 
-  next-rc   Update next branch from current RC to next RC
-            Requires: --release-version, --rc (the NEW rc number)
+  prepare-next  Prepare next branch for first release candidate (V1.RC1)
+                Requires: --release-version, --next-version, --rc
+                Run this on the next branch after first-rc is done on master.
 
-  release   Update next branch from RC to final release
-            Requires: --release-version
+  next-rc       Update next branch from current RC to next RC
+                Requires: --release-version, --rc (the NEW rc number)
+
+  release       Update next branch from RC to final release
+                Requires: --release-version
 
 Examples:
-  # First release candidate for 7.2.0, with 7.3.0 as next dev version
+  # Step 1: On master, prepare for 7.3.0 development stream
   $(basename "$0") --mode first-rc --release-version 7.2.0 --next-version 7.3.0 --rc 1
 
-  # Second release candidate for 7.2.0
+  # Step 2: On next, prepare for 7.2.0-RC1 release
+  $(basename "$0") --mode prepare-next --release-version 7.2.0 --next-version 7.3.0 --rc 1
+
+  # Subsequent RC: Update to 7.2.0-RC2
   $(basename "$0") --mode next-rc --release-version 7.2.0 --rc 2
 
   # Final release of 7.2.0
@@ -163,11 +171,27 @@ validate_args() {
                 exit 1
             fi
             ;;
+        prepare-next)
+            if [[ -z "$NEXT_VERSION" ]]; then
+                log_error "Next version is required for prepare-next mode"
+                usage
+                exit 1
+            fi
+            if ! [[ "$NEXT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                log_error "Invalid next version format. Expected: X.Y.Z (e.g., 7.3.0)"
+                exit 1
+            fi
+            if [[ -z "$RC_NUMBER" ]]; then
+                log_error "RC number is required for prepare-next mode"
+                usage
+                exit 1
+            fi
+            ;;
         release)
             # No additional requirements
             ;;
         *)
-            log_error "Invalid mode: $MODE. Must be: first-rc, next-rc, or release"
+            log_error "Invalid mode: $MODE. Must be: first-rc, prepare-next, next-rc, or release"
             usage
             exit 1
             ;;
@@ -436,19 +460,50 @@ do_first_rc() {
     log_info "       ./mvnw --file=maven-plugins install"
     log_info "  5. Push: git push origin master ${NEXT_VERSION}.DEV"
     log_info ""
-    log_info "After pushing master, run this script again on the 'next' branch:"
+    log_info "After pushing master, prepare the 'next' branch:"
     log_info "  git checkout next"
-    log_info "  # Then run: $(basename "$0") --mode next-rc --release-version $RELEASE_VERSION --rc $RC_NUMBER"
-    log_info "  # Or manually apply the following changes for V1.RC$RC_NUMBER:"
+    log_info "  $(basename "$0") --mode prepare-next --release-version $RELEASE_VERSION --next-version $NEXT_VERSION --rc $RC_NUMBER"
+}
+
+# Mode: prepare-next
+# Prepare next branch for first release candidate (V1.RC1)
+do_prepare_next() {
+    log_info "=========================================="
+    log_info "Mode: Prepare Next Branch for RC"
+    log_info "Release Version (V1): $RELEASE_VERSION"
+    log_info "Next Version (V2): $NEXT_VERSION"
+    log_info "RC Number: $RC_NUMBER"
+    log_info "=========================================="
 
     echo ""
-    log_info "Step 2: Changes needed for next branch (V1.RC$RC_NUMBER)"
+    log_info "Preparing next branch for V1.RC$RC_NUMBER ($RELEASE_VERSION-RC$RC_NUMBER)"
     log_info "------------------------------------------"
-    log_info "On the 'next' branch, the following changes are needed:"
-    log_info "  - cnf/build.bnd: Set -snapshot: RC$RC_NUMBER"
-    log_info "  - gradle.properties: Set bnd_version=[${RELEASE_VERSION}-RC,${NEXT_VERSION})"
-    log_info "  - maven-plugins/bnd-plugin-parent/pom.xml: Set revision to ${RELEASE_VERSION}-RC$RC_NUMBER"
-    log_info "  - gradle-plugins/gradle.properties: Set bnd_version to ${RELEASE_VERSION}-RC$RC_NUMBER"
+
+    # Update root gradle.properties with version range
+    update_root_gradle_properties "[${RELEASE_VERSION}-RC,${NEXT_VERSION})"
+
+    # Update -snapshot in build.bnd
+    update_build_bnd "$RELEASE_VERSION" "RC$RC_NUMBER"
+
+    # Update maven pom
+    update_maven_pom "${RELEASE_VERSION}-RC$RC_NUMBER"
+
+    # Update gradle-plugins/gradle.properties
+    update_gradle_plugins_properties "${RELEASE_VERSION}-RC$RC_NUMBER"
+
+    echo ""
+    log_info "Changes complete."
+    log_info ""
+    log_info "Next steps:"
+    log_info "  1. Review changes with: git diff"
+    log_info "  2. Commit: git add . && git commit -m 'build: Build Release ${RELEASE_VERSION}.RC$RC_NUMBER'"
+    log_info "  3. Tag: git tag -s ${RELEASE_VERSION}.RC$RC_NUMBER"
+    log_info "  4. Push: git push --force origin next ${RELEASE_VERSION}.RC$RC_NUMBER"
+    log_info ""
+    log_info "After pushing, update JFROG manually (see release process documentation)."
+    log_info ""
+    log_info "To see changes since last release:"
+    log_info "  git shortlog ${RELEASE_VERSION}.DEV..next --no-merges"
 }
 
 # Mode: next-rc
@@ -532,6 +587,9 @@ main() {
     case "$MODE" in
         first-rc)
             do_first_rc
+            ;;
+        prepare-next)
+            do_prepare_next
             ;;
         next-rc)
             do_next_rc
