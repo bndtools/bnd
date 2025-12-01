@@ -198,7 +198,8 @@ validate_args() {
     esac
 }
 
-# Extract version components
+# Extract version components into variables named ${prefix}_MAJOR, ${prefix}_MINOR, ${prefix}_PATCH
+# Usage: parse_version "1.2.3" "VER" creates VER_MAJOR=1, VER_MINOR=2, VER_PATCH=3
 parse_version() {
     local version=$1
     local var_prefix=$2
@@ -351,10 +352,12 @@ update_gradle_plugins_properties() {
         return
     fi
 
+    # Note: gradle-plugins/gradle.properties uses colon separator (bnd_version: value)
     sed -i "s/^bnd_version:.*$/bnd_version: $version/" "$file"
 }
 
 # Update gradle.properties (root)
+# Note: Root gradle.properties uses equals separator (bnd_version=value), different from gradle-plugins/gradle.properties
 update_root_gradle_properties() {
     local file="${REPO_ROOT}/gradle.properties"
     local version=$1
@@ -366,6 +369,7 @@ update_root_gradle_properties() {
         return
     fi
 
+    # Note: Root gradle.properties uses equals separator (bnd_version=value)
     sed -i "s/^bnd_version=.*$/bnd_version=$version/" "$file"
 }
 
