@@ -76,8 +76,9 @@ You can then run `./mvnw install` to build the Bnd Maven plugins (or `mvn instal
 
 If you want to try the latest development SNAPSHOT build of the
 Bnd Maven Plugins, you will need to adjust your pom to refer to the snapshot
-repository and select the latest version of the plugins. For example, edit the
-pom's `pluginManagement` section, to configure the repository:
+repository and select the latest version of the plugins. Edit the
+pom's [`pluginRepositories` section](https://maven.apache.org/pom.html#Plugin_Repositories)
+to configure the repository like this:
 
 ```xml
 <pluginRepositories>
@@ -95,8 +96,9 @@ pom's `pluginManagement` section, to configure the repository:
 
 If you want to try the latest milestone or release candidate build of the
 Bnd Maven Plugins, you will need to adjust your pom to refer to the release
-repository and select the desired version of the plugins. For example, edit the
-pom's `pluginManagement` section, to configure the repository:
+repository and select the desired version of the plugins. Edit the
+pom's [`pluginRepositories` section](https://maven.apache.org/pom.html#Plugin_Repositories)
+to configure the repository like this
 
 ```xml
 <pluginRepositories>
