@@ -21,6 +21,15 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
+# Detect if we're on macOS (BSD sed) or Linux (GNU sed)
+if sed --version >/dev/null 2>&1; then
+    # GNU sed (Linux)
+    SED_INPLACE=(sed -i)
+else
+    # BSD sed (macOS)
+    SED_INPLACE=(sed -i '')
+fi
+
 # Default values
 MODE=""
 RELEASE_VERSION=""
@@ -221,26 +230,26 @@ update_build_bnd() {
     fi
 
     # Update base.version
-    sed -i "s/^base\.version:.*$/base.version:           $version/" "$file"
+    "${SED_INPLACE[@]}" "s/^base\.version:.*$/base.version:           $version/" "$file"
 
     if [[ -z "$snapshot_value" ]]; then
         # Final release: -snapshot: (empty value)
         if grep -q "^#-snapshot:" "$file"; then
-            sed -i "s/^#-snapshot:.*$/-snapshot:/" "$file"
+            "${SED_INPLACE[@]}" "s/^#-snapshot:.*$/-snapshot:/" "$file"
         elif grep -q "^-snapshot:" "$file"; then
-            sed -i "s/^-snapshot:.*$/-snapshot:/" "$file"
+            "${SED_INPLACE[@]}" "s/^-snapshot:.*$/-snapshot:/" "$file"
         fi
     elif [[ "$snapshot_value" == "SNAPSHOT" ]]; then
         # Development: #-snapshot: (commented out)
         if grep -q "^-snapshot:" "$file"; then
-            sed -i "s/^-snapshot:.*$/#-snapshot:/" "$file"
+            "${SED_INPLACE[@]}" "s/^-snapshot:.*$/#-snapshot:/" "$file"
         fi
     else
         # RC release: -snapshot: RCx
         if grep -q "^#-snapshot:" "$file"; then
-            sed -i "s/^#-snapshot:.*$/-snapshot: $snapshot_value/" "$file"
+            "${SED_INPLACE[@]}" "s/^#-snapshot:.*$/-snapshot: $snapshot_value/" "$file"
         elif grep -q "^-snapshot:" "$file"; then
-            sed -i "s/^-snapshot:.*$/-snapshot: $snapshot_value/" "$file"
+            "${SED_INPLACE[@]}" "s/^-snapshot:.*$/-snapshot: $snapshot_value/" "$file"
         fi
     fi
 }
@@ -274,13 +283,15 @@ update_about_java() {
 
         if [[ -n "$last_version_line" ]]; then
             # Insert the new version after the last version constant
-            sed -i "${last_version_line}a\\	public static final Version					${version_const}		= new Version(${NEW_MAJOR}, ${NEW_MINOR}, 0);" "$file"
+            # Use a temp file approach for portability across GNU and BSD sed
+            local new_line="	public static final Version					${version_const}		= new Version(${NEW_MAJOR}, ${NEW_MINOR}, 0);"
+            awk -v line="$last_version_line" -v text="$new_line" 'NR==line {print; print text; next} 1' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
         fi
     fi
 
     if [[ "$update_current" == true ]]; then
         # Update CURRENT to point to the new version
-        sed -i "s/public static final Version[[:space:]]*CURRENT[[:space:]]*=.*/public static final Version					CURRENT		= ${version_const};/" "$file"
+        "${SED_INPLACE[@]}" "s/public static final Version[[:space:]]*CURRENT[[:space:]]*=.*/public static final Version					CURRENT		= ${version_const};/" "$file"
 
         # Check if CHANGES constant exists, if not add it
         local changes_const="CHANGES_${NEW_MAJOR}_${NEW_MINOR}"
@@ -290,9 +301,14 @@ update_about_java() {
             first_changes_line=$(grep -n "public static final String\[\].*CHANGES_[0-9]*_[0-9]*[[:space:]]*=" "$file" | head -1 | cut -d: -f1)
 
             if [[ -n "$first_changes_line" ]]; then
-                sed -i "${first_changes_line}i\\	public static final String[]				${changes_const}	= {\\
-		\"See https://github.com/bndtools/bnd/wiki/Changes-in-${new_version} for a list of changes.\"\\
-	};" "$file"
+                # Use a temp file approach for portability
+                {
+                    head -n $((first_changes_line - 1)) "$file"
+                    echo "	public static final String[]				${changes_const}	= {"
+                    echo "		\"See https://github.com/bndtools/bnd/wiki/Changes-in-${new_version} for a list of changes.\""
+                    echo "	};"
+                    tail -n +"$first_changes_line" "$file"
+                } > "$file.tmp" && mv "$file.tmp" "$file"
             fi
         fi
 
@@ -303,8 +319,9 @@ update_about_java() {
             local comment_line
             comment_line=$(grep -n "// In decreasing order" "$file" | head -1 | cut -d: -f1)
             if [[ -n "$comment_line" ]]; then
-                # Add the new entry after the comment line
-                sed -i "${comment_line}a\\		Maps.entry(${version_const}, ${changes_const}),																																							//" "$file"
+                # Add the new entry after the comment line using awk
+                local new_entry="		Maps.entry(${version_const}, ${changes_const}),																																							//"
+                awk -v line="$comment_line" -v text="$new_entry" 'NR==line {print; print text; next} 1' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
             fi
         fi
     fi
@@ -322,7 +339,7 @@ update_package_info() {
         return
     fi
 
-    sed -i "s/@Version(\"[^\"]*\")/@Version(\"$version\")/" "$file"
+    "${SED_INPLACE[@]}" "s/@Version(\"[^\"]*\")/@Version(\"$version\")/" "$file"
 }
 
 # Update maven-plugins/bnd-plugin-parent/pom.xml
@@ -337,7 +354,7 @@ update_maven_pom() {
         return
     fi
 
-    sed -i "s/<revision>[^<]*<\/revision>/<revision>$version<\/revision>/" "$file"
+    "${SED_INPLACE[@]}" "s/<revision>[^<]*<\/revision>/<revision>$version<\/revision>/" "$file"
 }
 
 # Update gradle-plugins/gradle.properties
@@ -353,7 +370,7 @@ update_gradle_plugins_properties() {
     fi
 
     # Note: gradle-plugins/gradle.properties uses colon separator (bnd_version: value)
-    sed -i "s/^bnd_version:.*$/bnd_version: $version/" "$file"
+    "${SED_INPLACE[@]}" "s/^bnd_version:.*$/bnd_version: $version/" "$file"
 }
 
 # Update gradle.properties (root)
@@ -370,7 +387,7 @@ update_root_gradle_properties() {
     fi
 
     # Note: Root gradle.properties uses equals separator (bnd_version=value)
-    sed -i "s/^bnd_version=.*$/bnd_version=$version/" "$file"
+    "${SED_INPLACE[@]}" "s/^bnd_version=.*$/bnd_version=$version/" "$file"
 }
 
 # Update gradle-plugins/README.md
@@ -389,8 +406,8 @@ update_gradle_readme() {
 
     # Only replace the actual version references (those matching the old version pattern)
     # This preserves milestone/RC example versions like "6.0.0-M1"
-    sed -i "s/\"biz.aQute.bnd.builder\" version \"${old_version}\"/\"biz.aQute.bnd.builder\" version \"${new_version}\"/g" "$file"
-    sed -i "s/\"biz.aQute.bnd.workspace\" version \"${old_version}\"/\"biz.aQute.bnd.workspace\" version \"${new_version}\"/g" "$file"
+    "${SED_INPLACE[@]}" "s/\"biz.aQute.bnd.builder\" version \"${old_version}\"/\"biz.aQute.bnd.builder\" version \"${new_version}\"/g" "$file"
+    "${SED_INPLACE[@]}" "s/\"biz.aQute.bnd.workspace\" version \"${old_version}\"/\"biz.aQute.bnd.workspace\" version \"${new_version}\"/g" "$file"
 }
 
 # Create version defaults .bnd file
