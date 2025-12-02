@@ -48,6 +48,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	private static final Pattern		OPTION_P			= Pattern.compile("--(?<option>\\w+)(?:=(?<value>\\S+)?)?");
 	private static final Pattern		TASKNAME_SPLITTER	= Pattern.compile(":");
 	private static final Set<String>	SPECIAL_FOLDERS		= Sets.of("buildSrc", "gradle");
+	public static final String 			BND_WORKSPACE_PROPERTY = "bndWorkspace";
 
 	/**
 	 * Default public constructor.
@@ -221,7 +222,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			ExtraPropertiesExtension ext = project.getExtensions()
 				.getExtraProperties();
 			ext.set("bnd_cnf", cnf);
-			ext.set("bndWorkspace", workspace);
+			ext.set(BND_WORKSPACE_PROPERTY, workspace);
 			project.getPluginManager()
 				.apply(BndWorkspacePlugin.class);
 		});
@@ -256,7 +257,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			bnd_cnf = Workspace.CNFDIR;
 			ext.set("bnd_cnf", bnd_cnf);
 		}
-		Workspace bndWorkspace = (Workspace) workspace.findProperty("bndWorkspace");
+		Workspace bndWorkspace = (Workspace) workspace.findProperty(BND_WORKSPACE_PROPERTY);
 		if (Objects.isNull(bndWorkspace)) {
 			// if not passed from settings
 			Workspace.setDriver(Constants.BNDDRIVER_GRADLE);
@@ -267,7 +268,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			bndWorkspace = new Workspace(rootDir, bnd_cnf);
 			bndWorkspace.setOffline(gradle.getStartParameter()
 				.isOffline());
-			ext.set("bndWorkspace", bndWorkspace);
+			ext.set(BND_WORKSPACE_PROPERTY, bndWorkspace);
 			bndWorkspaceConfigure(bndWorkspace, gradle);
 		}
 
