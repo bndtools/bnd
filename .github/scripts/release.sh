@@ -285,7 +285,9 @@ update_about_java() {
             # Insert the new version after the last version constant
             # Use a temp file approach for portability across GNU and BSD sed
             local new_line="	public static final Version					${version_const}		= new Version(${NEW_MAJOR}, ${NEW_MINOR}, 0);"
-            awk -v line="$last_version_line" -v text="$new_line" 'NR==line {print; print text; next} 1' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+            local tmpfile
+            tmpfile=$(mktemp)
+            awk -v line="$last_version_line" -v text="$new_line" 'NR==line {print; print text; next} 1' "$file" > "$tmpfile" && mv "$tmpfile" "$file"
         fi
     fi
 
@@ -302,13 +304,15 @@ update_about_java() {
 
             if [[ -n "$first_changes_line" ]]; then
                 # Use a temp file approach for portability
+                local tmpfile
+                tmpfile=$(mktemp)
                 {
                     head -n $((first_changes_line - 1)) "$file"
                     echo "	public static final String[]				${changes_const}	= {"
                     echo "		\"See https://github.com/bndtools/bnd/wiki/Changes-in-${new_version} for a list of changes.\""
                     echo "	};"
                     tail -n +"$first_changes_line" "$file"
-                } > "$file.tmp" && mv "$file.tmp" "$file"
+                } > "$tmpfile" && mv "$tmpfile" "$file"
             fi
         fi
 
@@ -321,7 +325,9 @@ update_about_java() {
             if [[ -n "$comment_line" ]]; then
                 # Add the new entry after the comment line using awk
                 local new_entry="		Maps.entry(${version_const}, ${changes_const}),																																							//"
-                awk -v line="$comment_line" -v text="$new_entry" 'NR==line {print; print text; next} 1' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+                local tmpfile
+                tmpfile=$(mktemp)
+                awk -v line="$comment_line" -v text="$new_entry" 'NR==line {print; print text; next} 1' "$file" > "$tmpfile" && mv "$tmpfile" "$file"
             fi
         fi
     fi
