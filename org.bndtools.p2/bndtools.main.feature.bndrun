@@ -33,4 +33,6 @@ Require-Capability \
 	org.osgi.service.coordinator, \
 	org.osgi.service.repository, \
 	org.osgi.util.function, \
-	org.osgi.util.promise
+	org.osgi.util.promise,\
+	com.google.errorprone.annotations
+	
