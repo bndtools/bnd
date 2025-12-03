@@ -20,5 +20,8 @@ update.label    =   Bndtools Update Site
 -categories \
     bndtools; \
         label = Bndtools; \
-        description = Bndtools, OSGi Development Tools for Eclipse based on bnd.
+        description = Bndtools, OSGi Development Tools for Eclipse based on bnd. You need to select this.,\
+    bndtools-optional; \
+        label = Bndtools - Optionals; \
+        description = Optional features for bndtools. Select them individually when needed.
         

@@ -1,7 +1,7 @@
 Bundle-SymbolicName: bndtools.pde.feature
 Bundle-Name:            Bndtools PDE
 Bundle-Description:     PDE integration for Bndtools
-Bundle-Category         bndtools
+Bundle-Category         bndtools-optional
 Bundle-Copyright: Copyright Elias N Vasylenko and others, 2017
 
 Require-Capability \
