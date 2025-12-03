@@ -116,7 +116,7 @@ class P2Export {
 	}
 
 	// TODO this p2.index is maybe wrong. it points to content.xml which does
-	// not exist
+	// not exist.
 	// but instead it should look for it in the content.jar
 	// the exclamation marks seem to mean "stop searching"
 	// private Resource generateP2Index() {
