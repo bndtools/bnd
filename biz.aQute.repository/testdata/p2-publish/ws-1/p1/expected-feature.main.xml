@@ -485,8 +485,8 @@ version(s), and exceptions or additional permissions here}."
 
   You may add additional accurate notices of copyright ownership.]]></license>
   <url>
-    <update url="https://bndtools.jfrog.io/bndtools/update-latest" label="Bndtools Update Site"/>
-    <discovery url="https://bndtools.jfrog.io/bndtools/update-latest" label="Bndtools Update Site"/>
+    <update url="https://download.eclipse.org/eclipse/updates/4.30/" label="Eclipse Update Site"/>
+    <discovery url="https://download.eclipse.org/eclipse/updates/4.30/" label="Eclipse Update Site"/>
   </url>
   <requires>
     <import feature="org.eclipse.platform.feature.group" version="4.25.0" match="equivalent"/>

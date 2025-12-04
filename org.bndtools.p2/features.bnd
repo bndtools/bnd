@@ -14,9 +14,6 @@ features        = \
         bndtools.ecf.feature.bndrun
         
 
-update          =   https://bndtools.jfrog.io/bndtools/update-latest
-update.label    =   Bndtools Update Site
-
 -categories \
     bndtools; \
         label = Bndtools; \
