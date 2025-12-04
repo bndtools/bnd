@@ -2,6 +2,8 @@ Bundle-SymbolicName: bndtools.main.feature
 Bundle-Name:            Bndtools
 Bundle-Description:     OSGi Development Tools for Eclipse based on bnd.
 Bundle-Category         bndtools
+update          =   https://download.eclipse.org/eclipse/updates/4.30/
+update.label    =   Eclipse Update Site
 
 Require-Capability \
     feature;name=org.eclipse.platform;version=4.25.0
