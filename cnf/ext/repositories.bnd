@@ -2,6 +2,19 @@ releaserepo:            ${workspace}/dist/bundles
 mavencentral:           https://repo.maven.apache.org/maven2
 ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
+sonatype_release:    https://central.sonatype.com/api/v1/publisher/upload/
+sonatype_snapshots:  https://central.sonatype.com/repository/maven-snapshots/
+
+sonatype_bearer: '${env;SONATYPE_BEARER}'
+
+-connection-settings.sonatype:\
+   server;    id = ${sonatype_release};\
+        password = ${sonatype_bearer};\
+          verify = false,\
+   server;    id = ${sonatype_snapshots};\
+        password = ${sonatype_bearer};\
+          verify = false
+
 -plugin.0.Main:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
     	tags  = 'resolve'; \
@@ -25,7 +38,13 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
-        noupdateOnRelease=true
+        noupdateOnRelease=true,\
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        releaseUrl   = ${sonatype_release}; \
+        snapshotUrl  = ${sonatype_snapshots}; \
+        index        = ${.}/release.maven; \
+        name         = "Sonatype"; \
+        sonatypeMode = manual
 
 
 # Eclipse Release repository
@@ -67,9 +86,9 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 	 	url = https://download.eclipse.org/rt/ecf/3.16.5/site.p2; \
 	 	name = ECF Remote Services SDK
 
-
 -buildrepo: Local
 -releaserepo: Release
 -releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
+-releaserepo.sonatype: ${if;${env;CANONICAL};${if;${env;SONATYPE};Sonatype}}
 
 -baselinerepo: Baseline
