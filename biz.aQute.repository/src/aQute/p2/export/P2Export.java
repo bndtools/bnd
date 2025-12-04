@@ -111,22 +111,18 @@ class P2Export {
 		jar.setReproducible("true");
 		jar.putResource("content.jar", generateContent(p2));
 		jar.putResource("artifacts.jar", generateArtifacts(p2, jar));
-		//jar.putResource("p2.index", generateP2Index());
+		jar.putResource("p2.index", generateP2Index());
 		return new AbstractMap.SimpleEntry<String, Resource>("p2", new JarResource(jar));
 	}
 
-	// TODO this p2.index is maybe wrong. it points to content.xml which does
-	// not exist
-	// but instead it should look for it in the content.jar
-	// the exclamation marks seem to mean "stop searching"
-	// private Resource generateP2Index() {
-	// // see https://wiki.eclipse.org/Equinox/p2/p2_index
-	// String index = """
-	// version=1
-	// metadata.repository.factory.order=content.xml,\\!
-	// artifact.repository.factory.order=artifacts.xml,\\!""";
-	// return new EmbeddedResource(index, 0);
-	// }
+	private Resource generateP2Index() {
+		// see https://wiki.eclipse.org/Equinox/p2/p2_index
+		String index = """
+			version=1
+			metadata.repository.factory.order=content.xml,\\!
+			artifact.repository.factory.order=artifacts.xml,\\!""";
+		return new EmbeddedResource(index, 0);
+	}
 
 	private Resource generateArtifacts(P2 p2, Jar jar) {
 

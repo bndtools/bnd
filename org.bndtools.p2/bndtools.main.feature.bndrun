@@ -4,6 +4,8 @@ Bundle-Description:     OSGi Development Tools for Eclipse based on bnd.
 Bundle-Category         bndtools
 Bundle-Copyright: Copyright Neil Bartlett and others, 2011 \
 	This software uses icons from the FamFamFam \"Silk\" icon set by Mark James (http://www.famfamfam.com/lab/icons/silk/)
+update          =   https://download.eclipse.org/eclipse/updates/4.30/
+update.label    =   Eclipse Update Site
 
 Require-Capability \
     feature;name=org.eclipse.platform;version=4.25.0
