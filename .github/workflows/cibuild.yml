@@ -125,7 +125,6 @@ jobs:
         CANONICAL: ${{ matrix.canonical }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-        SONATYPE: true
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
