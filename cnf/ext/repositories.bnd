@@ -12,7 +12,7 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
           verify = false,\
    server;    id = ${sonatype_snapshots};\
         password = ${sonatype_bearer};\
-          verify = false
+          verify = false,\
    server;    id = bndtools.jfrog.io;\
         username = ${env;JFROG_USERNAME};\
         password = ${env;JFROG_PASSWORD};\
