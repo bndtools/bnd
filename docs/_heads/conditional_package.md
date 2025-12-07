@@ -17,7 +17,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 # Conditional-Package
 
-This instruction is equal to using [-conditionalpackage](conditionalpackage.html) except for the fact that the header in addition will be copied into the generated bundle manifest (like all headers beginning with a capital letter).
+This instruction is equal to using [-conditionalpackage](/instructions/conditionalpackage.html) except for the fact that the header in addition will be copied into the generated bundle manifest (like all headers beginning with a capital letter).
 
 The `Conditional-Package` header allows you to specify package patterns that, when referred to by your code, will be included in the bundle if they match the given specifications. This is useful for conditionally including packages from the classpath based on actual usage.
 
