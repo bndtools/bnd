@@ -20,11 +20,15 @@
 	org.tukaani.xz;version=latest;maven-scope=provided
 	
 -testpath: \
-	biz.aQute.bnd.test;version=project,\
-	${junit},\
-	${mockito},\
-	biz.aQute.http.testservers;version=latest,\
-	slf4j.simple;version=latest
+        biz.aQute.bnd.test;version=project,\
+        ${junit},\
+        ${mockito},\
+        biz.aQute.http.testservers;version=latest,\
+        slf4j.simple;version=latest
+
+-runpath: \
+        slf4j.api;version='[1.7.25,2)',\
+        slf4j.simple;version=latest
 
 Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\

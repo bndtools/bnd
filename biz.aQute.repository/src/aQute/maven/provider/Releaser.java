@@ -106,7 +106,7 @@ class Releaser implements Release {
 
 	private void prepareSonatypeUpload() throws IOException, Exception {
 		MavenBackingRepository mbr = home.getStagingRepository();
-		publisherUrl = home.getSonatypePublisherUrl();
+		publisherUrl = normalize(home.getSonatypePublisherUrl());
 		if (mbr == null) {
 			List<MavenBackingRepository> releaseRepositories = home.getReleaseRepositories();
 			if (!releaseRepositories.isEmpty()) {
@@ -125,6 +125,14 @@ class Releaser implements Release {
 		Files.writeString(deploymentIdFile.toPath(), deploymentId, StandardOpenOption.CREATE);
 		deploymentIdFile.deleteOnExit();
 		mbr.store(deploymentIdFile, MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE);
+	}
+
+	private String normalize(String sonatypePublisherUrl) {
+		String uploadUrl = sonatypePublisherUrl;
+		if (uploadUrl.endsWith("/")) {
+			uploadUrl = uploadUrl.substring(0, uploadUrl.length() - 1);
+		}
+		return uploadUrl;
 	}
 
 	protected RevisionMetadata localMetadata() {
@@ -309,13 +317,12 @@ class Releaser implements Release {
 
 	private void uploadToPortal(File deploymentBundle) throws Exception {
 		logger.info("Uploading deployment bundle to Sonatype Central Portal...");
-		String uploadUrl = publisherUrl + UPLOAD_ENDPOINT;
 
 		try {
 			String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
 			File multipartForm = createMultipartForm(deploymentBundle, boundary);
 
-			logger.debug("Upload details: URL={}, Bundle size={} bytes, Multipart size={} bytes", uploadUrl,
+			logger.debug("Upload details: URL={}, Bundle size={} bytes, Multipart size={} bytes", publisherUrl,
 				deploymentBundle.length(), multipartForm.length());
 
 			StringJoiner urlQueryParamJoiner = new StringJoiner("&", "?", "");
@@ -339,7 +346,7 @@ class Releaser implements Release {
 				.upload(multipartForm)
 				.post()
 				.asTag()
-				.go(new URI(uploadUrl + urlQueryParamJoiner.toString()).toURL());
+				.go(new URI(publisherUrl + urlQueryParamJoiner.toString()).toURL());
 
 			if (taggedData.isOk()) {
 				deploymentId = IO.collect(taggedData.getInputStream());
@@ -396,7 +403,9 @@ class Releaser implements Release {
 			return false;
 		}
 
-		String statusUrl = publisherUrl + STATUS_ENDPOINT + "?id=" + deploymentId;
+		String statusEndpointUrl = publisherUrl.substring(0, publisherUrl.length() - UPLOAD_ENDPOINT.length())
+			+ STATUS_ENDPOINT;
+		String statusUrl = statusEndpointUrl + "?id=" + deploymentId;
 
 		try {
 			var taggedData = client.build()
