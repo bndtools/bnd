@@ -123,6 +123,7 @@ jobs:
         ./.github/scripts/ci-publish.sh
       env:
         CANONICAL: ${{ matrix.canonical }}
+        SONATYPE: ${{ matrix.canonical }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload Test Reports
