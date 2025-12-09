@@ -27,7 +27,7 @@ Bundle-Version:   ${base.version}.${tstamp}-SNAPSHOT
 
 -groupid:               biz.aqute.eval
 -pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
--maven-release:         pom,sign;keyname=${env;GPG_KEYNAME};passphrase=${env;GPG_PASSPHRASE}
+-maven-release:         pom,sign;keyname=${env;GPG_KEY_ID};passphrase=${env;GPG_PASSPHRASE}
 
 gpg: gpg --homedir ${def;USERHOME;~}/.gnupg --pinentry-mode loopback
 

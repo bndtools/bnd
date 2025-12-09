@@ -5,6 +5,7 @@ Archive
 .DS_Store
 .*.swp
 /.gradle/
+/build/
 /reports/
 /generated/
 /install-jdk.sh
