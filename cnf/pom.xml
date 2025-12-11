@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.example.mygroup</groupId>
+	<artifactId>configurator</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<properties>
+		<!-- properties can be defined -->
+	</properties>
+	<repositories>
+		<repository>
+			<id>bndtools-snapshots</id>
+			<url>https://bndtools.jfrog.io/artifactory/libs-snapshot/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+	<build>
+		<pluginManagement>
+			<!-- add your general plugin configuration here or customize the defaults -->
+		</pluginManagement>
+	</build>
+	<profiles>
+		<profile>
+			<id>file-activation-example</id>
+			<activation>
+				<file>
+					<exists>someFile</exists>
+				</file>
+			</activation>
+			<build>
+			<plugins>
+				<!-- add additional plugin configuration here that shoul be activated by a given file type -->
+			</plugins>
+			</build>
+		</profile>
+	</profiles>
+    <modules>
+		<module>../maven-plugins</module>
+	</modules>
+</project>

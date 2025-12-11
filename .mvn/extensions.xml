@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extensions>
+   <extension>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-build</artifactId>
+      <version>${tycho-version}</version>
+   </extension>
+</extensions>
