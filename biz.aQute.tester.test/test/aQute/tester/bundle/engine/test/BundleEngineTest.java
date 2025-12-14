@@ -60,6 +60,7 @@ import aQute.lib.io.IO;
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.BundleEngineDescriptor;
+import aQute.tester.bundle.engine.ExecutionRequestFactory;
 import aQute.tester.bundle.engine.StaticFailureDescriptor;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.bundle.engine.discovery.BundleSelectorResolver;
@@ -399,6 +400,9 @@ public class BundleEngineTest {
 					.addResourceWithCopy(BundleSelector.class)
 					.addResourceWithCopy(BundleUtils.class)
 					.addResourceWithRecursiveCopy(BundleSelectorResolver.class)
+					// Add ExecutionRequestFactory - needed for JUnit Platform
+					// 1.13+ support
+					.addResourceWithCopy(ExecutionRequestFactory.class)
 					.exportPackage(BundleEngine.class.getPackage()
 						.getName())
 					.exportPackage(BundleSelector.class.getPackage()
