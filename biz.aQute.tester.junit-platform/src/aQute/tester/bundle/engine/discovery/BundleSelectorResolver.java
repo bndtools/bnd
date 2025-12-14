@@ -129,7 +129,7 @@ public class BundleSelectorResolver {
 				// recreate the selector using getMethodParameterTypes().
 				try {
 					// Try the new API - if it works, the selector is already properly formed
-					Method method = selector.getJavaMethod();
+					selector.getJavaMethod(); // Just test if the method exists
 					return selector;
 				} catch (NoSuchMethodError e) {
 					// Older JUnit Platform version, normalize using deprecated method
@@ -454,8 +454,7 @@ public class BundleSelectorResolver {
 		// Fall back to getMethodParameterTypes() for older versions
 		Optional<Method> method;
 		try {
-			Method m = selector.getJavaMethod();
-			method = Optional.ofNullable(m);
+			method = Optional.ofNullable(selector.getJavaMethod());
 		} catch (NoSuchMethodError e) {
 			// Older JUnit Platform version, use deprecated method
 			@SuppressWarnings("deprecation")
