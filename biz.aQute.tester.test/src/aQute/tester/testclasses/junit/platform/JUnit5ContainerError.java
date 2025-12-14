@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 public class JUnit5ContainerError {
 
 	@BeforeAll
-	void beforeAll() {
+	static void beforeAll() {
 		throw new IllegalStateException();
 	}
 
