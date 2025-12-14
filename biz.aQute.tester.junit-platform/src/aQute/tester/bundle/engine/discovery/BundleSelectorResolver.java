@@ -123,8 +123,22 @@ public class BundleSelectorResolver {
 
 		methodSelectors = request.getSelectorsByType(MethodSelector.class)
 			.stream()
-			.map(selector -> DiscoverySelectors.selectMethod(selector.getClassName(), selector.getMethodName(),
-				selector.getMethodParameterTypes()))
+			.map(selector -> {
+				// With JUnit Platform 1.13+, getJavaMethod() returns the resolved Method
+				// and we can use the selector as-is. For older versions, we need to
+				// recreate the selector using getMethodParameterTypes().
+				try {
+					// Try the new API - if it works, the selector is already properly formed
+					Method method = selector.getJavaMethod();
+					return selector;
+				} catch (NoSuchMethodError e) {
+					// Older JUnit Platform version, normalize using deprecated method
+					@SuppressWarnings("deprecation")
+					String paramTypes = selector.getMethodParameterTypes();
+					return DiscoverySelectors.selectMethod(selector.getClassName(), selector.getMethodName(),
+						paramTypes);
+				}
+			})
 			.collect(toList());
 
 		bundleSelectors = request.getSelectorsByType(BundleSelector.class);
@@ -436,8 +450,19 @@ public class BundleSelectorResolver {
 	}
 
 	private static MethodSelector selectMethod(Class<?> testClass, MethodSelector selector) {
-		return findMethod(testClass, selector.getMethodName(), selector.getMethodParameterTypes())
-			.map(method -> DiscoverySelectors.selectMethod(testClass, method))
+		// Try to use getJavaMethod() if available (JUnit Platform 1.13+)
+		// Fall back to getMethodParameterTypes() for older versions
+		Optional<Method> method;
+		try {
+			Method m = selector.getJavaMethod();
+			method = Optional.ofNullable(m);
+		} catch (NoSuchMethodError e) {
+			// Older JUnit Platform version, use deprecated method
+			@SuppressWarnings("deprecation")
+			String paramTypes = selector.getMethodParameterTypes();
+			method = findMethod(testClass, selector.getMethodName(), paramTypes);
+		}
+		return method.map(m -> DiscoverySelectors.selectMethod(testClass, m))
 			.orElse(null);
 	}
 
