@@ -124,19 +124,22 @@ public class BundleSelectorResolver {
 		methodSelectors = request.getSelectorsByType(MethodSelector.class)
 			.stream()
 			.map(selector -> {
-				// With JUnit Platform 1.13+, getJavaMethod() returns the resolved Method
-				// and we can use the selector as-is. For older versions, we need to
-				// recreate the selector using getMethodParameterTypes().
+				// With JUnit Platform 1.13+, MethodSelector no longer has getMethodParameterTypes().
+				// We need to detect the API version without calling getJavaMethod() which would
+				// throw PreconditionViolationException if the method doesn't exist.
+				// We test for the deprecated method's existence using reflection on the class.
 				try {
-					// Try the new API - if it works, the selector is already properly formed
-					selector.getJavaMethod(); // Just test if the method exists
-					return selector;
-				} catch (NoSuchMethodError e) {
+					// Check if the deprecated method exists (JUnit Platform < 1.13)
+					selector.getClass().getMethod("getMethodParameterTypes");
 					// Older JUnit Platform version, normalize using deprecated method
 					@SuppressWarnings("deprecation")
 					String paramTypes = selector.getMethodParameterTypes();
 					return DiscoverySelectors.selectMethod(selector.getClassName(), selector.getMethodName(),
 						paramTypes);
+				} catch (NoSuchMethodException e) {
+					// JUnit Platform 1.13+: just return the selector as-is
+					// Don't call getJavaMethod() here as it would throw if method doesn't exist
+					return selector;
 				}
 			})
 			.collect(toList());
@@ -450,16 +453,24 @@ public class BundleSelectorResolver {
 	}
 
 	private static MethodSelector selectMethod(Class<?> testClass, MethodSelector selector) {
-		// Try to use getJavaMethod() if available (JUnit Platform 1.13+)
-		// Fall back to getMethodParameterTypes() for older versions
+		// Detect JUnit Platform version by checking if deprecated method exists
 		Optional<Method> method;
 		try {
-			method = Optional.ofNullable(selector.getJavaMethod());
-		} catch (NoSuchMethodError e) {
+			// Check if the deprecated method exists (JUnit Platform < 1.13)
+			selector.getClass().getMethod("getMethodParameterTypes");
 			// Older JUnit Platform version, use deprecated method
 			@SuppressWarnings("deprecation")
 			String paramTypes = selector.getMethodParameterTypes();
 			method = findMethod(testClass, selector.getMethodName(), paramTypes);
+		} catch (NoSuchMethodException e) {
+			// JUnit Platform 1.13+: try to get the resolved method
+			// This may throw PreconditionViolationException if method doesn't exist
+			try {
+				method = Optional.ofNullable(selector.getJavaMethod());
+			} catch (Exception ex) {
+				// Method doesn't exist or can't be resolved
+				method = Optional.empty();
+			}
 		}
 		return method.map(m -> DiscoverySelectors.selectMethod(testClass, m))
 			.orElse(null);
