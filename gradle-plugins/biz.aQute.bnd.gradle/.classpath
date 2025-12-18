@@ -3,13 +3,13 @@
 	<classpathentry kind="src" output="bin/main" path="src/main/java">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
-			<attribute name="gradle_used_by_scope" value="main,test,dsl"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" output="bin/dsl" path="src/dsl/kotlin">
 		<attributes>
 			<attribute name="gradle_scope" value="dsl"/>
-			<attribute name="gradle_used_by_scope" value="test,dsl"/>
+			<attribute name="gradle_used_by_scope" value="dsl"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" output="bin/test" path="src/test/groovy">
