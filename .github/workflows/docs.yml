@@ -40,7 +40,7 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
     - name: Set up Ruby
-      uses: ruby/setup-ruby@d697be2f83c6234b20877c3b5eac7a7f342f0d0c
+      uses: ruby/setup-ruby@a25f1e45f0e65a92fcb1e95e8847f78fb0a7197a
       with:
         ruby-version: 3.4.5
         bundler-cache: true
