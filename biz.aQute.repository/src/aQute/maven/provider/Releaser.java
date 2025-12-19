@@ -115,16 +115,34 @@ class Releaser implements Release {
 				throw new IllegalStateException("No release repository configured for Sonatype upload");
 			}
 		}
-		logger.info("Creating and uploading deployment bundle for Sonatype Central Portal");
+		logger.info("Creating and uploading deployment bundles for Sonatype Central Portal");
 		MavenFileRepository mfr = (MavenFileRepository) mbr;
 		client = mfr.getClient();
-		File deploymentBundle = mfr.createZipArchive();
-		uploadToPortal(deploymentBundle);
-		File deploymentIdFile = Files.createTempFile("deploymentid", ".txt")
-			.toFile();
-		Files.writeString(deploymentIdFile.toPath(), deploymentId, StandardOpenOption.CREATE);
-		deploymentIdFile.deleteOnExit();
-		mbr.store(deploymentIdFile, MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE);
+		
+		// Create archives for each groupId
+		List<MavenFileRepository.GroupIdArchive> archives = mfr.createZipArchive();
+		if (archives.isEmpty()) {
+			throw new IllegalStateException("No groupIds found in staging repository");
+		}
+		
+		logger.info("Found {} groupId(s) to upload", archives.size());
+		
+		// Upload each archive separately
+		for (MavenFileRepository.GroupIdArchive archive : archives) {
+			logger.info("Processing groupId: {}", archive.groupId);
+			uploadToPortal(archive.archiveFile);
+			
+			// Store deployment ID file with groupId in filename
+			String sanitizedGroupId = archive.getSanitizedGroupId();
+			File deploymentIdFile = Files.createTempFile(sanitizedGroupId + "_deploymentid", ".txt")
+				.toFile();
+			Files.writeString(deploymentIdFile.toPath(), deploymentId, StandardOpenOption.CREATE);
+			deploymentIdFile.deleteOnExit();
+			
+			String deploymentIdPath = sanitizedGroupId + "_" + MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE;
+			mbr.store(deploymentIdFile, deploymentIdPath);
+			logger.info("Completed upload for groupId: {} with deployment ID: {}", archive.groupId, deploymentId);
+		}
 	}
 
 	private String normalize(String sonatypePublisherUrl) {

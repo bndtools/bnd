@@ -55,7 +55,7 @@ gpg: gpg --homedir ${def;USERHOME;~}/.gnupg --pinentry-mode loopback
 # -snapshot unset (commented out) is a snapshot build. (e.g. 6.0.0-SNAPSHOT)
 # -snapshot set to a value (e.g. RC1) is a release build with the value as the Maven version qualifier. (e.g. 6.0.0-RC1)
 # -snapshot set to the empty string is a release build with no Maven version qualifier. (e.g. 6.0.0)
--snapshot: RC11
+-snapshot: RC12
 
 Automatic-Module-Name:  ${def;bsn}
 Bundle-Vendor:          Bndtools https://bndtools.org/
@@ -92,7 +92,22 @@ Bundle-Developers: \
         organization="Liferay Inc."; \
         organizationUrl="https://www.liferay.com"; \
         roles="developer"; \
-        timezone="America/New_York"
+        timezone="America/New_York",\
+    chrisrueger; \
+        name="Christoph Rueger"; \
+        email="chrisrueger@gmail.com"; \
+        organization="Synesty GmbH"; \
+        organizationUrl="https://synesty.com/"; \
+        roles="developer"; \
+        timezone="Europe/Berlin",\
+    peterkir; \
+        name="Peter Kirschner"; \
+        email="peter@klib.io"; \
+        url="https://peterkir.github.io"; \
+        organization="Kirschners GmbH"; \
+        organizationUrl="https://peterkir.github.io/"; \
+        roles="developer"; \
+        timezone="Europe/Berlin"
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 -reproducible: true
