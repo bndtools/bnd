@@ -18,7 +18,9 @@
 	bndtools.api;version=latest,\
 	bndtools.core;version=latest,\
 	slf4j.api;version=latest,\
-	org.eclipse.m2e.maven.runtime,\
+	org.eclipse.m2e.maven.runtime;maven-optional=true,\
+	org.eclipse.m2e.core;maven-optional=true,\
+	org.eclipse.m2e.jdt;maven-optional=true,\
 	org.apache.maven:maven-artifact,\
 	org.apache.maven:maven-core,\
 	org.apache.maven:maven-model,\

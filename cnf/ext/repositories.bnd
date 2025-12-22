@@ -48,8 +48,8 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
         snapshotUrl  = ${sonatype_snapshots}; \
         index        = ${.}/release.maven; \
         name         = "Sonatype"; \
-        sonatypeMode = manual
-
+        sonatypeMode = manual;\
+        noupdateOnRelease=true
 
 # Eclipse Release repository
 #-plugin.1.Eclipse:\

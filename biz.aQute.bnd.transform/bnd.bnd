@@ -23,10 +23,6 @@ Bundle-Description: Class file and Manifest header Transformation Support
 
 -sources: false
 
--maven-release: pom;path=JAR,\
-	sources;-sourcepath="${project.allsourcepath}",\
-	javadoc;-classpath="${project.buildpath}"
-
 -maven-scope: provided
 
 -buildpath: \
