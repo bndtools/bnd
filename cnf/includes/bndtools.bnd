@@ -20,5 +20,4 @@ eclipse.importpackage: \
 
 # Add a fixup for the Unsued import on the refactoring package from above.
 # This package is only used by a small number of bundles (only bndtools.core)
--fixupmessages.eclipserefactor: "Unused Import-Package instructions: \\[org.eclipse.jdt.internal.corext.refactoring.*\\]
-
+-fixupmessages.eclipserefactor: "Unused Import-Package instructions: \\[org.eclipse.jdt.internal.corext.refactoring.*\\]"

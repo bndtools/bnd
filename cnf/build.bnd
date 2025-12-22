@@ -43,9 +43,17 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
     "org.osgi.service.*.annotations";~version=latest
 
 # Maven info. The maven artifactId defaults to Bundle-SymbolicName
+# signing is only active if GPG_KEY_ID and GPG_PASSPHRASE are set
 -groupid:               biz.aQute.bnd
 -pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
--maven-release:         pom;path=JAR,javadoc;-classpath="${project.buildpath}"
+
+-maven-release:         \
+    pom;path=JAR,\
+	javadoc;-classpath="${project.buildpath}",\
+	sign;keyname=${env;GPG_KEY_ID};passphrase=${env;GPG_PASSPHRASE}
+
+# supress the warning if keyname/passphrase is empty. needed to avoid failing the build
+-fixupmessages.releasesign: "No value after '=' sign for attribute (passphrase|keyname)"
 
 gpg: gpg --homedir ${def;USERHOME;~}/.gnupg --pinentry-mode loopback
 
@@ -89,7 +97,22 @@ Bundle-Developers: \
         organization="Liferay Inc."; \
         organizationUrl="https://www.liferay.com"; \
         roles="developer"; \
-        timezone="America/New_York"
+        timezone="America/New_York",\
+    chrisrueger; \
+        name="Christoph Rueger"; \
+        email="chrisrueger@gmail.com"; \
+        organization="Synesty GmbH"; \
+        organizationUrl="https://synesty.com/"; \
+        roles="developer"; \
+        timezone="Europe/Berlin",\
+    peterkir; \
+        name="Peter Kirschner"; \
+        email="peter@klib.io"; \
+        url="https://peterkir.github.io"; \
+        organization="Kirschners GmbH"; \
+        organizationUrl="https://peterkir.github.io/"; \
+        roles="developer"; \
+        timezone="Europe/Berlin"
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 -reproducible: true

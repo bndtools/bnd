@@ -38,8 +38,8 @@ env:
   P2_SIGN: true
   P2_SIGN_KEY: ${{ secrets.GPG_KEY_ID }}
   P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-  P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}        
-  SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}          
+  P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+  SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
 
 defaults:
   run:
@@ -123,6 +123,9 @@ jobs:
         ./.github/scripts/ci-publish.sh
       env:
         CANONICAL: ${{ matrix.canonical }}
+        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload Test Reports
