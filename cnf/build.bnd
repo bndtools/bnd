@@ -43,12 +43,16 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
     "org.osgi.service.*.annotations";~version=latest
 
 # Maven info. The maven artifactId defaults to Bundle-SymbolicName
+# signing is only active if GPG_KEY_ID and GPG_PASSPHRASE are set
 -groupid:               biz.aQute.bnd
 -pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
 -maven-release:         \
     pom;path=JAR,\
 	javadoc;-classpath="${project.buildpath}",\
 	sign;keyname=${env;GPG_KEY_ID};passphrase=${env;GPG_PASSPHRASE}
+
+# supress the warning if keyname/passphrase is empty. needed to avoid failing the build
+-fixupmessages.releasesign: "No value after '=' sign for attribute (passphrase|keyname)"
 
 gpg: gpg --homedir ${def;USERHOME;~}/.gnupg --pinentry-mode loopback
 
