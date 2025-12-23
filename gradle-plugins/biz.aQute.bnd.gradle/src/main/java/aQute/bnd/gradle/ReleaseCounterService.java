@@ -13,10 +13,9 @@ public abstract class ReleaseCounterService
 
     private final AtomicInteger remaining = new AtomicInteger(0);
 
-    /** Call during configuration for each enabled release task */
-    public void registerReleaseTask() {
-        remaining.incrementAndGet();
-    }
+	public void setInitialCount(int n) {
+		remaining.set(n);
+	}
 
     /**
 	 * Call during execution by each release task. Returns true exactly once:

@@ -597,6 +597,18 @@ public class BndPlugin implements Plugin<Project> {
 			        spec -> { /* no params */ }
 			    );
 
+			project.getGradle().getTaskGraph().whenReady(graph -> {
+			    long count = graph.getAllTasks().stream()
+			        .filter(t -> t.getName().equals("release"))
+			        .filter(Task::getEnabled)
+			        .count();
+
+			    // helpful while you validate:
+			    project.getLogger().lifecycle("bnd: release tasks in execution graph = {}", count);
+
+			    releaseCounter.get().setInitialCount((int) count);
+				});
+
 			TaskProvider<Task> release = tasks.register("release", t -> {
 				t.setDescription("Release this project to the release repository.");
 				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
@@ -608,11 +620,9 @@ public class BndPlugin implements Plugin<Project> {
 					.files(jar)
 					.withPropertyName(jar.getName());
 
-				// IMPORTANT: only register tasks that can actually run
-			    if (enabled) {
-			        // configuration-time registration is what makes the counter correct
-			        releaseCounter.get().registerReleaseTask();
-			    }
+			    // Declare the service usage for correctness w/ parallel execution + configuration cache
+			    t.usesService(releaseCounter);
+
 
 				t.doLast("release", new Action<>() {
 					@Override
