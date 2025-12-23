@@ -25,7 +25,7 @@ Bundle-Version:   ${base.version}.${tstamp}-SNAPSHOT
 # -snapshot set to the empty string is a release build with no Maven version qualifier. (e.g. 6.0.0)
 -snapshot:
 
--groupid:               biz.aqute.eval
+-groupid:               biz.aQute.eval
 -pom:                   version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
 -maven-release:         pom,sign;keyname=${env;GPG_KEY_ID};passphrase=${env;GPG_PASSPHRASE}
 
