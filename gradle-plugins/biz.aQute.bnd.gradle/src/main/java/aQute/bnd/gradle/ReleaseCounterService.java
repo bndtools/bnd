@@ -1,0 +1,30 @@
+package aQute.bnd.gradle;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.gradle.api.services.BuildService;
+import org.gradle.api.services.BuildServiceParameters;
+
+public abstract class ReleaseCounterService
+        implements BuildService<BuildServiceParameters.None>, AutoCloseable {
+
+    private final AtomicInteger remaining = new AtomicInteger(0);
+
+    /** Call during configuration for each enabled release task */
+    public void registerReleaseTask() {
+        remaining.incrementAndGet();
+    }
+
+    /**
+     * Call during execution by each release task.
+     * Returns true exactly once: for the last release task that runs.
+     */
+    public boolean isLastReleaseTask() {
+        return remaining.decrementAndGet() == 0;
+    }
+
+    @Override
+    public void close() {
+        // nothing
+    }
+}
