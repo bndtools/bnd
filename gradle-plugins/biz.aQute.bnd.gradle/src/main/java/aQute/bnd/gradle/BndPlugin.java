@@ -29,6 +29,7 @@ import java.util.stream.StreamSupport;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Project.ReleaseParameter;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
@@ -55,7 +56,6 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePluginExtension;
@@ -590,19 +590,44 @@ public class BndPlugin implements Plugin<Project> {
 				t.dependsOn(getDependents(JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME));
 			});
 
+			Provider<ReleaseCounterService> releaseCounter =
+			    project.getGradle().getSharedServices().registerIfAbsent(
+			        "bndReleaseCounter",
+			        ReleaseCounterService.class,
+			        spec -> { /* no params */ }
+			    );
+
 			TaskProvider<Task> release = tasks.register("release", t -> {
 				t.setDescription("Release this project to the release repository.");
 				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
-				t.setEnabled(!bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset")
-					.isEmpty());
+
+				boolean enabled = !bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset")
+					.isEmpty();
+				t.setEnabled(enabled);
 				t.getInputs()
 					.files(jar)
 					.withPropertyName(jar.getName());
+
+				// IMPORTANT: only register tasks that can actually run
+			    if (enabled) {
+			        // configuration-time registration is what makes the counter correct
+			        releaseCounter.get().registerReleaseTask();
+			    }
+
 				t.doLast("release", new Action<>() {
 					@Override
 					public void execute(Task tt) {
 						try {
-							bndProject.release();
+
+							boolean isLastBundle = releaseCounter.get().isLastReleaseTask();
+							if (!isLastBundle) {
+								bndProject.release();
+							} else {
+								// releasing last bundle in workspace (special
+								// case for sonatype release)
+								logger.info("Last release bundle {}", jar.getName());
+								bndProject.release(new ReleaseParameter(null, false, true));
+							}
 						} catch (Exception e) {
 							throw new GradleException(
 								String.format("Project %s failed to release", bndProject.getName()), e);
