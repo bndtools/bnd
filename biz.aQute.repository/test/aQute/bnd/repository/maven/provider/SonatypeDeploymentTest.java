@@ -42,7 +42,8 @@ public class SonatypeDeploymentTest {
 	File				sonatypeRepoFile				= new File(wsDir, "cnf/ext/sonatype_release.bnd");
 	File				releasedVersionFile				= new File(wsDir, "cnf/ext/gav_30_sonatype.mvn");
 	File				deploymentIDFile				= new File(wsDir,
-		MavenBndRepository.SONATYPE_RELEASE_DIR + "/" + MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE);
+		MavenBndRepository.SONATYPE_RELEASE_DIR + "/" + "biz_aQute_eval_"
+			+ MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE);
 	boolean				remoteTest						= true;
 
 	@BeforeAll
