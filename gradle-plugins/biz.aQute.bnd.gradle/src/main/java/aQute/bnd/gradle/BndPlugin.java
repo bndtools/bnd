@@ -594,19 +594,28 @@ public class BndPlugin implements Plugin<Project> {
 			    project.getGradle().getSharedServices().registerIfAbsent(
 			        "bndReleaseCounter",
 			        ReleaseCounterService.class,
-			        spec -> { /* no params */ }
+						spec -> {
+							spec.getMaxParallelUsages()
+								.set(1);
+						}
 			    );
 
-			project.getGradle().getTaskGraph().whenReady(graph -> {
-			    long count = graph.getAllTasks().stream()
-			        .filter(t -> t.getName().equals("release"))
-			        .filter(Task::getEnabled)
-			        .count();
+			project.getGradle()
+				.getTaskGraph()
+				.whenReady(graph -> {
+					long count = graph.getAllTasks()
+						.stream()
+						.filter(t -> t.getName()
+							.equals("release"))
+						.filter(Task::getEnabled)
+						.count();
 
-			    // helpful while you validate:
-			    project.getLogger().lifecycle("bnd: release tasks in execution graph = {}", count);
+					// helpful while you validate:
+					project.getLogger()
+						.lifecycle("bnd: release tasks in execution graph = {}", count);
 
-			    releaseCounter.get().setInitialCount((int) count);
+					releaseCounter.get()
+						.setInitialCount((int) count);
 				});
 
 			TaskProvider<Task> release = tasks.register("release", t -> {
@@ -629,13 +638,20 @@ public class BndPlugin implements Plugin<Project> {
 					public void execute(Task tt) {
 						try {
 
-							boolean isLastBundle = releaseCounter.get().isLastReleaseTask();
+							int count = releaseCounter.get()
+								.getRemaining();
+							boolean isLastBundle = releaseCounter.get()
+								.isLastReleaseTask();
+
 							if (!isLastBundle) {
+								tt.getLogger()
+									.lifecycle("bnd: Release bundle ({}) {}", count, jar.getName());
 								bndProject.release();
 							} else {
 								// releasing last bundle in workspace (special
 								// case for sonatype release)
-								logger.info("Last release bundle {}", jar.getName());
+								tt.getLogger()
+									.lifecycle("bnd: Last release bundle ({}) {}", count, jar.getName());
 								bndProject.release(new ReleaseParameter(null, false, true));
 							}
 						} catch (Exception e) {
