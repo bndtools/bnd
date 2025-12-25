@@ -13,6 +13,11 @@ public abstract class ReleaseCounterService
 
     private final AtomicInteger remaining = new AtomicInteger(0);
 
+	/**
+	 * Default public constructor.
+	 */
+	public ReleaseCounterService() {}
+
 	public void setInitialCount(int n) {
 		remaining.set(n);
 	}
@@ -26,6 +31,13 @@ public abstract class ReleaseCounterService
     public boolean isLastReleaseTask() {
         return remaining.decrementAndGet() == 0;
     }
+
+	/**
+	 * @return the current count of remaining.
+	 */
+	public int getRemaining() {
+		return remaining.get();
+	}
 
     @Override
     public void close() {
