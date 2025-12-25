@@ -9,6 +9,9 @@ set -ev
 # publish maven-plugins to dist/bundles
 ./mvnw -Dmaven.repo.local=dist/m2  --batch-mode -Pdist -Dreleaserepo=file:dist/bundles deploy
 
+pwd
+ls -l
+
 # Hack for sonatype release: Copy all above to cnf/cache/sonatype-release
 # so that they get picked up by the workspace release process
 mkdir -p cnf/cache/sonatype-release && \
