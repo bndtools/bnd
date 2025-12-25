@@ -11,6 +11,7 @@ set -ev
 
 pwd
 ls -l
+ls -lR dist
 
 # Hack for sonatype release: Copy all above to cnf/cache/sonatype-release
 # so that they get picked up by the workspace release process
