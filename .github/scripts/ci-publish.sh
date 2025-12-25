@@ -6,7 +6,14 @@ set -ev
 # publish gradle-plugins to dist/bundles
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :gradle-plugins:publish "$@"
 
-# publish maven-plugins to dist/bundles
+# Publish twice (1st for dist/bundles, 2nd for jfrog)
+# This double publishing is a hack to always populate dist/bundles,
+# even if we deploy to jfrog
+
+# publish maven-plugins to dist/bundles (enforce dist profile, and explicitly disable jfrog)
+./mvnw -Dmaven.repo.local=dist/m2  --batch-mode -Pdist,\!jfrog -Dreleaserepo=file:dist/bundles deploy
+
+# publish again. This is for with env.CANONICAL=true, where jfrog profile is chosen
 ./mvnw -Dmaven.repo.local=dist/m2  --batch-mode -Pdist -Dreleaserepo=file:dist/bundles deploy
 
 pwd
