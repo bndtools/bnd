@@ -35,8 +35,7 @@ ls -lR dist
 # so that they get picked up by the workspace release process
 mkdir -p cnf/cache/sonatype-release/biz/aQute/bnd/ && \
 cp -a \
-  dist/bundles/biz/aQute/bnd/bnd* \
-  dist/bundles/biz/aQute/bnd/biz* \
+  dist/bundles/biz/aQute/bnd/* \
   cnf/cache/sonatype-release/biz/aQute/bnd/
 
 # Debugging: print cnf/cache/sonatype-release
@@ -46,4 +45,4 @@ ls cnf/cache/sonatype-release
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :publish "$@"
 
 # Debugging: print cnf/cache/sonatype-release
-ls cnf/cache/sonatype-release
+ls -lR cnf/cache/sonatype-release
