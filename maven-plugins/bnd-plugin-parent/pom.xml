@@ -455,6 +455,26 @@
 					<artifactId>plexus-component-metadata</artifactId>
 					<version>2.2.0</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>3.2.8</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+							<configuration>
+								<gpgArguments>
+									<arg>--pinentry-mode</arg>
+									<arg>loopback</arg>
+								</gpgArguments>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
@@ -553,6 +573,22 @@
 					<url>https://bndtools.jfrog.io/bndtools/libs-release-local/</url>
 				</repository>
 			</distributionManagement>
+		</profile>
+		<profile>
+			<id>gpg-sign</id>
+			<activation>
+				<property>
+					<name>env.GPG_KEY_ID</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
