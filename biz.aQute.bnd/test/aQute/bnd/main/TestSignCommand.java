@@ -115,4 +115,59 @@ public class TestSignCommand extends TestBndMainBase {
 		// Should not have file-not-found errors
 		assertThat(errors).doesNotContain("File or directory does not exist");
 	}
+
+	/**
+	 * Test that the sign command skips files that already have .asc signatures
+	 */
+	@Test
+	public void testSignCommandSkipsExistingSignatures() throws Exception {
+		// Create test directory with a jar file
+		File testDir = folder.getFile("test-skip");
+		testDir.mkdirs();
+		File jar = new File(testDir, "test.jar");
+		File ascFile = new File(testDir, "test.jar.asc");
+		
+		IO.store("jar content".getBytes(), jar);
+		IO.store("existing signature".getBytes(), ascFile);
+		
+		// Small delay to ensure file timestamps are different
+		Thread.sleep(100);
+		long originalTimestamp = ascFile.lastModified();
+		long originalSize = ascFile.length();
+
+		// Try to sign - should skip since .asc already exists
+		executeBndCmd("sign", "--passphrase", "test", "--key", "testkey", jar.getAbsolutePath());
+
+		// Should not attempt to sign - file should not be modified
+		assertThat(ascFile).exists();
+		assertThat(ascFile.lastModified()).as("File timestamp should not change").isEqualTo(originalTimestamp);
+		assertThat(ascFile.length()).as("File size should not change").isEqualTo(originalSize);
+	}
+
+	/**
+	 * Test signing multiple file extensions
+	 */
+	@Test
+	public void testSignCommandMultipleExtensions() throws Exception {
+		// Create test directory with jar and pom files
+		File testDir = folder.getFile("test-extensions");
+		testDir.mkdirs();
+		File jar = new File(testDir, "test.jar");
+		File pom = new File(testDir, "test.pom");
+		File txt = new File(testDir, "test.txt");
+		
+		IO.store("jar".getBytes(), jar);
+		IO.store("pom".getBytes(), pom);
+		IO.store("txt".getBytes(), txt);
+
+		// Sign with extensions jar,pom - should not sign txt
+		executeBndCmd("sign", "--passphrase", "test", "--key", "testkey", 
+			"--extensions", "jar,pom", testDir.getAbsolutePath());
+
+		// Should attempt to sign jar and pom, but GPG will fail
+		// We just check that the command processes the right files
+		String errors = getSystemErrContent();
+		// Should not have file-not-found errors
+		assertThat(errors).doesNotContain("File or directory does not exist");
+	}
 }

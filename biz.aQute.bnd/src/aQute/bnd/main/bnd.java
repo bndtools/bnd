@@ -4711,9 +4711,12 @@ public class bnd extends Processor {
 
 		@Description("Base directory for recursive file scanning. If not specified, uses current directory or first argument if it's a directory.")
 		String dir();
+
+		@Description("Comma-separated list of file extensions to sign (e.g., 'jar,pom'). Defaults to 'jar'.")
+		String extensions();
 	}
 
-	@Description("Sign JAR files with GPG. Can sign files directly or recursively scan a directory for JAR files.")
+	@Description("Sign files with GPG. Can sign JAR, POM, and other files directly or recursively scan a directory.")
 	public void _sign(SignOptions options) throws Exception {
 		String passphrase = options.passphrase();
 		if (passphrase == null) {
@@ -4738,6 +4741,10 @@ public class bnd extends Processor {
 
 		List<String> args = options._arguments();
 		List<File> filesToSign = new ArrayList<>();
+		
+		// Parse extensions - default to "jar" if not specified
+		String extensionsStr = options.extensions() != null ? options.extensions() : "jar";
+		List<String> extensions = Lists.of(extensionsStr.split(","));
 
 		if (args.isEmpty()) {
 			// No arguments - scan current directory or specified dir
@@ -4746,7 +4753,7 @@ public class bnd extends Processor {
 				error("Base directory does not exist: %s", baseDir);
 				return;
 			}
-			filesToSign.addAll(scanForJars(baseDir, options.include(), options.xclude()));
+			filesToSign.addAll(scanForFiles(baseDir, options.include(), options.xclude(), extensions));
 		} else {
 			// Arguments provided - check if they are files or directories
 			for (String arg : args) {
@@ -4758,7 +4765,7 @@ public class bnd extends Processor {
 				if (f.isFile()) {
 					filesToSign.add(f);
 				} else if (f.isDirectory()) {
-					filesToSign.addAll(scanForJars(f, options.include(), options.xclude()));
+					filesToSign.addAll(scanForFiles(f, options.include(), options.xclude(), extensions));
 				}
 			}
 		}
@@ -4770,12 +4777,17 @@ public class bnd extends Processor {
 
 		for (File f : filesToSign) {
 			try {
+				File outFile = new File(f.getParentFile(), f.getName() + ".asc");
+				if (outFile.exists()) {
+					trace("Skipping %s - signature already exists: %s", f, outFile);
+					continue;
+				}
+				
 				trace("Signing %s", f);
 				byte[] signature = signer.sign(f);
 				if (signature == null) {
 					error("Failed to sign %s", f);
 				} else {
-					File outFile = new File(f.getParentFile(), f.getName() + ".asc");
 					IO.store(signature, outFile);
 					err.printf("Signed: %s -> %s\n", f, outFile);
 				}
@@ -4785,9 +4797,25 @@ public class bnd extends Processor {
 		}
 	}
 
-	private List<File> scanForJars(File baseDir, String include, String exclude) {
+	private List<File> scanForFiles(File baseDir, String include, String exclude, List<String> extensions) {
 		List<File> result = new ArrayList<>();
-		String includePattern = include != null ? include : "**/*.jar";
+		
+		// Build include pattern based on extensions
+		String includePattern;
+		if (include != null) {
+			includePattern = include;
+		} else {
+			// Default pattern based on extensions
+			if (extensions.size() == 1) {
+				includePattern = "**/*." + extensions.get(0).trim();
+			} else {
+				// Multiple extensions: **/*.{jar,pom,war}
+				String exts = extensions.stream()
+					.map(String::trim)
+					.collect(Collectors.joining(","));
+				includePattern = "**/*.{" + exts + "}";
+			}
+		}
 		
 		FileTree tree = new FileTree();
 		tree.addIncludes(Lists.of(includePattern));
@@ -4796,7 +4824,10 @@ public class bnd extends Processor {
 		}
 		
 		// Pass default includes as array to getFiles method
-		List<File> files = tree.getFiles(baseDir, new String[]{"**/*.jar"});
+		String[] defaultIncludes = extensions.stream()
+			.map(ext -> "**/*." + ext.trim())
+			.toArray(String[]::new);
+		List<File> files = tree.getFiles(baseDir, defaultIncludes);
 		// Files are already filtered by FileTree, no need for additional filtering
 		result.addAll(files);
 		return result;
