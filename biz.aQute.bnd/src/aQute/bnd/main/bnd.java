@@ -4795,12 +4795,10 @@ public class bnd extends Processor {
 			tree.addExcludes(Lists.of(exclude));
 		}
 		
-		List<File> files = tree.getFiles(baseDir, includePattern);
-		for (File f : files) {
-			if (f.isFile() && f.getName().endsWith(".jar")) {
-				result.add(f);
-			}
-		}
+		// Pass default includes as array to getFiles method
+		List<File> files = tree.getFiles(baseDir, new String[]{"**/*.jar"});
+		// Files are already filtered by FileTree, no need for additional filtering
+		result.addAll(files);
 		return result;
 	}
 
