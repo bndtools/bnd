@@ -4688,6 +4688,121 @@ public class bnd extends Processor {
 
 	}
 
+	/**
+	 * Sign command - GPG sign JAR files
+	 */
+	@Description("Sign JAR files with GPG. Can sign files directly or recursively scan a directory for JAR files.")
+	@Arguments(arg = "[files or directories...]")
+	interface SignOptions extends Options {
+		@Description("Specify the local-user USER-ID for signing. Defaults to signing with the default key.")
+		String key();
+
+		@Description("Specify the passphrase to the gpg command. Defaults to reading stdin for the passphrase.")
+		String passphrase();
+
+		@Description("Specify the path to the gpg command. The gpg path can also be specified using the 'gpg' system property or the 'GPG' environment variable. Defaults to 'gpg'.")
+		String command();
+
+		@Description("Specify the include pattern for files. Defaults to '**/*.jar'. Pattern is applied relative to base directory.")
+		String include();
+
+		@Description("Specify the exclude pattern for files. Defaults to no exclude pattern.")
+		String xclude();
+
+		@Description("Base directory for recursive file scanning. If not specified, uses current directory or first argument if it's a directory.")
+		String dir();
+	}
+
+	@Description("Sign JAR files with GPG. Can sign files directly or recursively scan a directory for JAR files.")
+	public void _sign(SignOptions options) throws Exception {
+		String passphrase = options.passphrase();
+		if (passphrase == null) {
+			java.io.Console console = System.console();
+			if (console == null) {
+				error("No --passphrase set for PGP key and no console to ask for passphrase");
+			} else {
+				char[] pw = console.readPassword("Passphrase for gpg: ");
+				if (pw == null || pw.length == 0) {
+					error("Passphrase not entered");
+				} else {
+					passphrase = new String(pw);
+				}
+			}
+		}
+
+		if (passphrase == null || !isOk())
+			return;
+
+		aQute.maven.nexus.provider.Signer signer = new aQute.maven.nexus.provider.Signer(options.key(), passphrase,
+			options.command() != null ? options.command() : getProperty("gpg", System.getenv("GPG")));
+
+		List<String> args = options._arguments();
+		List<File> filesToSign = new ArrayList<>();
+
+		if (args.isEmpty()) {
+			// No arguments - scan current directory or specified dir
+			File baseDir = options.dir() != null ? getFile(options.dir()) : getBase();
+			if (!baseDir.isDirectory()) {
+				error("Base directory does not exist: %s", baseDir);
+				return;
+			}
+			filesToSign.addAll(scanForJars(baseDir, options.include(), options.xclude()));
+		} else {
+			// Arguments provided - check if they are files or directories
+			for (String arg : args) {
+				File f = getFile(arg);
+				if (!f.exists()) {
+					error("File or directory does not exist: %s", f);
+					continue;
+				}
+				if (f.isFile()) {
+					filesToSign.add(f);
+				} else if (f.isDirectory()) {
+					filesToSign.addAll(scanForJars(f, options.include(), options.xclude()));
+				}
+			}
+		}
+
+		if (filesToSign.isEmpty()) {
+			warning("No files found to sign");
+			return;
+		}
+
+		for (File f : filesToSign) {
+			try {
+				trace("Signing %s", f);
+				byte[] signature = signer.sign(f);
+				if (signature == null) {
+					error("Failed to sign %s", f);
+				} else {
+					File outFile = new File(f.getParentFile(), f.getName() + ".asc");
+					IO.store(signature, outFile);
+					err.printf("Signed: %s -> %s\n", f, outFile);
+				}
+			} catch (Exception e) {
+				exception(e, "Failed to sign %s", f);
+			}
+		}
+	}
+
+	private List<File> scanForJars(File baseDir, String include, String exclude) {
+		List<File> result = new ArrayList<>();
+		String includePattern = include != null ? include : "**/*.jar";
+		
+		FileTree tree = new FileTree();
+		tree.addIncludes(Lists.of(includePattern));
+		if (exclude != null) {
+			tree.addExcludes(Lists.of(exclude));
+		}
+		
+		List<File> files = tree.getFiles(baseDir, includePattern);
+		for (File f : files) {
+			if (f.isFile() && f.getName().endsWith(".jar")) {
+				result.add(f);
+			}
+		}
+		return result;
+	}
 
 
 
