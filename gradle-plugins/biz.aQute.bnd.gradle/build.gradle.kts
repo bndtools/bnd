@@ -12,6 +12,7 @@ plugins {
 	`kotlin-dsl`
 	id("com.gradle.plugin-publish")
 	id("dev.hargrave.addmavendescriptor")
+	signing
 }
 
 interface Injected {
@@ -184,6 +185,21 @@ publishing {
 				}
 			}
 		}
+	}
+}
+
+// Signing configuration
+signing {
+	// Only sign if GPG_KEY_ID environment variable is present
+	val gpgKeyId: String? = System.getenv("GPG_KEY_ID")
+	
+	isRequired = gpgKeyId != null
+	
+	if (isRequired) {
+		// Use GPG command since key is imported into GPG keyring by ci-build.sh
+		// The passphrase is handled by gpg-agent which was configured in ci-build.sh
+		useGpgCmd()
+		sign(publishing.publications)
 	}
 }
 
