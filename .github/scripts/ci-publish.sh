@@ -33,3 +33,6 @@ ls cnf/cache/sonatype-release
 
 # publish (release) bnd workspace, which signs and releases everything under cnf/cache/sonatype-release
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :publish "$@"
+
+# Debugging: print cnf/cache/sonatype-release
+ls cnf/cache/sonatype-release
