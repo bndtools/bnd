@@ -46,4 +46,4 @@ ls cnf/cache/sonatype-release
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :publish "$@"
 
 # Debugging: print cnf/cache/sonatype-release
-ls cnf/cache/sonatype-release
+ls -lR cnf/cache/sonatype-release
