@@ -59,7 +59,7 @@ gpg: gpg --homedir ${def;USERHOME;~}/.gnupg --pinentry-mode loopback
 # -snapshot unset (commented out) is a snapshot build. (e.g. 6.0.0-SNAPSHOT)
 # -snapshot set to a value (e.g. RC1) is a release build with the value as the Maven version qualifier. (e.g. 6.0.0-RC1)
 # -snapshot set to the empty string is a release build with no Maven version qualifier. (e.g. 6.0.0)
--snapshot: RC24
+-snapshot: RC25
 
 Automatic-Module-Name:  ${def;bsn}
 Bundle-Vendor:          Bndtools https://bndtools.org/
