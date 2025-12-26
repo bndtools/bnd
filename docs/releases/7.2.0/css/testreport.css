@@ -1,0 +1,82 @@
+body { background-color:white; width:100%; margin-left:20px; }
+a,input,button,textarea,select { margin:0; padding:0;}
+
+td, table, th, tr { margin: 0px; padding: 0px; }
+
+h1, h2, h3, h4, h5, p,body, div, td, th { 
+	font-family: Verdana, Arial, sans-serif; 
+	font-weight: normal; 
+	vertical-align:top;
+	text-align:left; 
+  	font-size: small;
+	font-family: verdana;
+	font-weight:normal;
+	line-height:120%;
+}
+p,h1, h2, h3, h4 { font-family: Verdana, Arial,sans-serif; padding:0px; margin:0px;  }
+h1  		{ font-size: large; font-weight: normal;  color:#00669C; margin-bottom: 10px; padding-left:4px; border-left: 4px #00669C solid;}
+h2  		{ font-size: medium; font-weight: bold;  margin-bottom: 2px; }
+h3  		{ font-size: medium; font-weight: normal; }
+h4  		{ font-size: small; font-weight: bold; }
+td  		{ vertical-align:top; text-align:left; padding-right:6px; padding-top:2px;}
+th  		{ padding-top:10px; background-color: #FFFFCC; color:blue; font-weight:bold; }
+th.title	{ background-color: #FFFFFF; font-weight: normal; }
+table.list  { background-color: #B0B0FF}
+em  		{ font-style: italic; }
+strong      { font-weight: bold; }
+/*
+ul, ol, li			{ border:1px solid black; } 
+*/
+ul, ol		{ padding-top: 6px; padding-left:16px; }
+li ol, li ul { padding-top: 0px; }
+
+div.body	{ width:700px;margin:0px; padding:0px; margin-left:20px; }
+.footer	{ font-size:xx-small; text-align: center; }
+a.navigate  { font-weight: bold }
+pre 		{ font-family: Courier }
+td.index	{ background-color: #B0B0FF; font-size: larger; font-weight:bold; }
+td.categories    { background-color: #B0B0FF; font-size: larger; font-weight: bold; }
+tt			{ font-family: Courier New; }
+.tt			{ font-family: Courier New; }
+.blog       { font-size: smaller; }
+br			{ line-height:0px; margin:0; padding:0; }
+
+
+.index  { 
+	margin-left: 4px;
+	padding-top: 8px;
+	background-color: #A0C0D0; 
+	color: white;
+	vertical-align:top;
+	width: 160px;
+}
+
+
+a:link {
+  color:#268298; 
+  text-decoration: none; 
+}
+a:visited {
+  color:#066298; 
+  text-decoration: none; 
+}
+a:hover {
+  color:grey; 
+  text-decoration: underline; 
+}
+
+
+.left-nav-menu {
+  text-align: left;
+  font-size: 11px;
+  font-weight: bold;
+  padding:7px;
+  margin:7px;
+  background-color:#A0C0D0;
+}
+
+#wikitext td {padding: 2px; padding-left: 6px; }
+#wikitext th {padding: 2px; padding-left: 6px; margin-top:10px;}
+
+br { margin-top:12px; }
+

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/7.2.0/css/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="/css/github.dark.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/sitemap.xml">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>bnd - one tool to bnd them all! | bnd</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="bnd - one tool to bnd them all!" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Bnd/Bndtools. Tooling to build OSGi bundles including Eclipse, Maven, and Gradle plugins." />
+<meta property="og:description" content="Bnd/Bndtools. Tooling to build OSGi bundles including Eclipse, Maven, and Gradle plugins." />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="bnd - one tool to bnd them all!" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","description":"Bnd/Bndtools. Tooling to build OSGi bundles including Eclipse, Maven, and Gradle plugins.","headline":"bnd - one tool to bnd them all!","name":"bnd","url":"/releases/7.2.0/"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="/releases/7.2.0/"><img
+			class=menu-logo src="/releases/7.2.0/img/bnd-80x40-white.png"></a>
+			<a 
+				class="" 
+				href="/releases/7.2.0/chapters/110-introduction.html">Intro
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/800-headers.html">Headers
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/825-instructions-ref.html">Instructions
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/855-macros-ref.html">Macros
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/400-commands.html">Commands
+			</a>
+			<div class="releases">
+				<button class="dropbtn"><span class="fa fa-bars"></span> 7.2.0</button>
+				<div class="dropdown-content"></div>
+			</div>
+    <li span=4>     
+        <div class="search-container">
+			<button type="button" class="fa fa-search" onclick="openModal()"></button>
+       </div>
+</ul>
+<div class=menu-link span=0><a
+	id="repo-link"
+	href="https://github.com/bndtools/bnd/blob/master/docs/index.md"
+	target="_blank"
+>
+	<img
+		style="
+			position: absolute;
+			top: 0;
+			right: 0;
+			margin: 0;
+			padding: 4px;
+			z-index: 100;
+			width: 45px;
+		"
+		src="/img/github-mark.svg"
+		alt="Fork me on GitHub"
+		title="Fork me on GitHub"
+/></a>
+</div>
+
+
+
+	<div class=container12>
+		<img span=12 src="/releases/7.2.0/img/front-page.png">
+	</div>
+
+	<div class=container12>
+		<h4 style="text-align: center">Bnd is a tooling suite for building OSGi bundles.
+			Its primary function is generating OSGi meta data by analyzing Java classes.
+			<br />
+			There are plugins for popular tools like Eclipse, Maven and Gradle.
+		</h4>
+	</div>
+
+	<div class=container12>
+		<h1 style="text-align: center">Getting Started with bnd</h1>
+	</div>
+
+	<ul class=container12>
+		<li span=12>
+			<h2>Quick Start Examples</h2>
+			<p>Bnd makes it easy to add OSGi metadata to JARs, whether wrapping existing libraries or building your own
+				projects.</p>
+
+			<div class="code-tabs">
+				<div class="tab-buttons">
+					<button class="tab-button" onclick="openTab(event, 'tab-install-cli')">Install bnd CLI</button>
+					<button class="tab-button active" onclick="openTab(event, 'tab-wrap')">bnd CLI JAR wrapping</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-cli')">bnd CLI JAR wrapping
+						advanced</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-maven')">Maven</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-gradle')">Gradle</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-workspace')">Build Workspace and
+						Projects</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-eclipse')">Eclipse plugin</button>
+				</div>
+
+				<div id="tab-install-cli" class="tab-content">
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code># Install bnd CLI (precondition for the other examples)
+$ curl -L -o biz.aQute.bnd-7.1.0.jar \
+	https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/7.1.0/biz.aQute.bnd-7.1.0.jar
+$ alias bnd='java -jar "$PWD/biz.aQute.bnd-7.1.0.jar"'
+</code></pre>
+						</div>
+						This installs the bnd CLI and makes the 'bnd' command available in your shell.
+					</div>
+					<p><strong>Reference:</strong>
+						<a href="/releases/7.2.0/chapters/120-install.html#command-line">bnd CLI
+							installation</a> |
+						<a href="/releases/7.2.0/chapters/400-commands.html">bnd CLI documentatiion</a>
+					</p>
+				</div>
+
+				<div id="tab-wrap" class="tab-content active">
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code># Quick wrap - automatically generates OSGi metadata
+# download an example jar to wrap
+$ curl -L -o activation.jar \
+	https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+$ bnd wrap activation.jar
+</code></pre>
+						</div>
+						The result is a new jar file with OSGi metadata (<i>META-INF/MANIFEST.MF</i>).
+					</div>
+					<p><strong>Reference:</strong>
+						<a href="/releases/7.2.0/commands/wrap.html">bnd wrap command documentation</a>
+						|
+					</p>
+				</div>
+
+				<div id="tab-cli" class="tab-content">
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code># Use a bnd file for more control
+# download an example jar to wrap
+$ curl -L -o activation.jar \
+	https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+
+# a activation.bnd file to specify OSGi metadata
+$ cat > activation.bnd &lt;&lt;EOF
+-classpath: activation.jar
+Export-Package: *;version=1.1.1
+Bundle-Version: 1.1.1
+EOF
+
+# Generate the OSGi bundle
+$ bnd activation.bnd
+</code></pre>
+						</div>
+						The result is a new jar file with OSGi metadata (<i>META-INF/MANIFEST.MF</i>).
+					</div>
+					<p><strong>Reference:</strong>
+						<a href="/releases/7.2.0/chapters/125-tour-features.html">bnd CLI advanced JAR
+							wrapping tutorial</a> |
+				</div>
+
+				<div id="tab-maven" class="tab-content">
+					<div class="language-xml highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>&lt;!-- Generates OSGi metadata during build process --&gt;
+&lt;!-- Adds manifest headers and processes annotations --&gt;
+
+&lt;pluginRepositories&gt;
+    &lt;pluginRepository&gt;
+        &lt;id&gt;bnd-releases&lt;/id&gt;
+        &lt;url&gt;https://bndtools.jfrog.io/bndtools/libs-release/&lt;/url&gt;
+        &lt;layout&gt;default&lt;/layout&gt;
+        &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+        &lt;/snapshots&gt;
+    &lt;/pluginRepository&gt;
+&lt;/pluginRepositories&gt;
+
+&lt;plugin&gt;
+  &lt;groupId&gt;biz.aQute.bnd&lt;/groupId&gt;
+  &lt;artifactId&gt;bnd-maven-plugin&lt;/artifactId&gt;
+  &lt;version&gt;7.1.0&lt;/version&gt;
+  &lt;executions&gt;
+    &lt;execution&gt;
+      &lt;goals&gt;
+        &lt;goal&gt;bnd-process&lt;/goal&gt;
+      &lt;/goals&gt;
+    &lt;/execution&gt;
+  &lt;/executions&gt;
+&lt;/plugin&gt;
+</code></pre>
+						</div>
+						This will automatically generate OSGi metadata (META-INF/MANIFEST.MF) during the Maven build.
+					</div>
+					<p><strong>Reference:</strong>
+						<a href="https://github.com/bndtools/bnd/blob/master/maven-plugins/bnd-maven-plugin/README.md">Maven
+							plugin documentation</a>
+					</p>
+				</div>
+
+				<div id="tab-gradle" class="tab-content">
+					<div class="language-groovy highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>// Extends the jar task to generate OSGi bundles
+// Automatically calculates imports/exports from bytecode
+plugins {
+  id "biz.aQute.bnd.builder" version "7.1.0"
+}
+
+jar {
+  bundle {
+    bnd '''
+-exportcontents: com.acme.api.*
+-sources: true
+'''
+  }
+}
+</code></pre>
+						</div>
+						This will automatically generate OSGi metadata (META-INF/MANIFEST.MF) during the Gradle build.
+					</div>
+					<p><strong>Reference:</strong>
+						<a
+							href="https://github.com/bndtools/bnd/tree/master/gradle-plugins#create-a-task-of-the-bundle-type">Gradle
+							plugin documentation</a>
+					</p>
+				</div>
+
+				<div id="tab-workspace" class="tab-content">
+					<p>Bnd provides an IDE/build tool independent model of workspaces with projects. Create and build a
+						workspace with these commands (requires bnd 7.2.0):</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code># Create a new workspace with templates
+$ bnd add workspace -f demo-webapp -f osgi myworkspace
+
+# Navigate to the workspace
+$ cd myworkspace
+
+# Start a live-coding / hot reload dev server to run the application during development in an editor
+$ bnd dev launch.bndrun
+
+# or alternatively just build and run the application without hot-reloading:
+$ bnd build
+$ bnd run launch.bndrun
+</code></pre>
+						</div>
+					</div>
+
+					<p>This creates a complete bnd workspace that works identically across Eclipse, Gradle, Maven, and
+						the command line.</p>
+					<p><strong>Learn more:</strong> <a
+							href="/releases/7.2.0/chapters/123-tour-workspace.html">Workspace and
+							Projects Tour</a></p>
+					<p><strong>Reference:</strong>
+						<a href="/releases/7.2.0/commands/add.html">bnd add</a> |
+						<a href="/releases/7.2.0/commands/build.html">bnd build</a> |
+						<a href="/releases/7.2.0/commands/dev.html">bnd dev</a> |
+						<a href="/releases/7.2.0/commands/run.html">bnd run</a>
+					</p>
+
+				</div>
+
+				<div id="tab-eclipse" class="tab-content">
+					<p>The bndtools plugin for Eclipse provides tight integration with the bnd build system. It allows you
+						to create, build, and run OSGi projects directly from within Eclipse.</p>
+						<p><strong>Reference:</strong>
+							<a href="https://bndtools.org/">Bndtools Plugin Documentation</a>
+						</p>
+						<p><strong>Get started:</strong> <a
+								href="https://bndtools.org/workspace.html">Bndtools Workspace Tutorial</a></p>
+
+			</div>
+		</li>
+
+	</ul>
+
+	<ul class=container12>
+		<li span=4>
+			<h1>What is bnd?</h1>
+			<blockquote style='margin-top:20px'>“If you want to teach people a new way of thinking, don't bother trying
+				to teach them. Instead, give them a tool, the use of which will lead to new ways of thinking.”
+				<br><b>― R. Buckminster Fuller</b>
+			</blockquote>
+			<p>
+				bnd is the engine behind a number of popular software development
+				tools that support OSGi. It can be found in several maven plugins,
+				ant, gradle, and of course Eclipse (<a href="https://bndtools.org">bndtools</a>).
+				It actively seeks other build tool vendors to use bnd to improve the
+				quality of the generated OSGi metadata.
+			<p>bnd actually consists of 2 major parts, one part is really
+				good in creating a JAR with OSGi meta data based on instructions and
+				the information in the class files. Over time bnd has collected
+				hundreds of heuristics that provide for good bundles. This part is
+				therefore often used in build tools like maven or gradle that
+				already generate JARs. They mainly use the manifest generation
+				features of bnd.
+			<p>The other part is a IDE/build tool independent model of a
+				workspace with projects. This was the result of the frustration that
+				certain things could be done very well in Eclipse but that other
+				things are best done in a command line tool. Since IDEs are
+				incremental and very event driven, command line tools tend to run
+				everything from start to end. What was needed was an independent
+				model that could work with Eclipse, maven, ant, gradle, and
+				hopefully one day Intellij.
+			<p>So to use bnd, look at the the descriptions of the tools that
+				include bnd. Then when you want to find out what a certain command
+				does, or how to call a macro, then use this manual.
+		<li span=4>
+			<h1>How to get started?</h1>
+			<p>There are several different ways to get started with bnd. The most elegant
+				one is to start with <a href="https://bndtools.org/">Bndtools Eclipse IDE</a>. There
+				are a number of <a href="workspace.html">videos</a> available that provide a gentle introduction. There
+				is also an accompanying
+				<a href="https://bndtools.org/assets/osgi-starter-workspace.pdf">OSGi Starter</a> that provides a lot of
+				detail
+				how to use bnd for larger projects. It includes a Gradle plugin out of the box that
+				will build the Bndtools workspace identical to how things are build inside Eclipse
+				for Continuous Integration with <a href="https://bndtools.org/workspace.html#github--actions">Github
+					Actions</a> or other build servers.
+			<p>
+				If you insist on using Maven, then you can start with the description of the
+				<a href="https://github.com/bndtools/bnd/tree/master/maven-plugins#maven-plugins">Maven plugins</a>.
+			<p>
+				There is also a Gradle plugin that is the preferred way to build OSGi bundles
+				with plain old vanilla Gradle. This is described in the <a
+					href="https://github.com/bndtools/bnd/tree/master/gradle-plugins#gradle-plugins">Gradle Plugins
+					readme</a>.
+			<p>
+				If you just want to figure out how different commands and macros work, the <a
+					href="https://bnd.bndtools.org/chapters/400-commands.html">bnd commandline</a>
+				is your friend. Especially the <code>shell</code> command is very useful exploring it.
+			<p>
+				Last but not least, the whole source code is on GitHub. So feel
+				free to explore it. And when you like, we&#39;re very actively taken outside PR&#39;s. There is a
+				lot of activity going on.</p>
+		<li span=4>
+			<h1>Table of contents</h1>
+			<ol>
+				
+				<li>
+					<a href="/releases/7.2.0/chapters/110-introduction.html">Introduction</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/120-install.html">How to install bnd</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/123-tour-workspace.html">Guided Tour Workspace & Projects</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/125-tour-features.html">bnd / bndlib Features and JAR Wrapping Techniques</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/130-concepts.html">Concepts</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/135-history.html">Background</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/140-best-practices.html">Best practices</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/150-build.html">Build</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/155-project-setup.html">Project Setup</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/160-jars.html">Generating JARs</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/170-versioning.html">Versioning</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/180-baselining.html">Baselining</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/200-components.html">Service Components</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/210-metatype.html">Metatype</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/220-contracts.html">Contracts</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/235-accessor-properties.html">Accessor Properties</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/240-spi-annotations.html">SPI Annotations</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/250-resolving.html">Resolving Dependencies</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/300-launching.html">Launching</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/305-startlevels.html">Startlevels</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/310-testing.html">Testing</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/320-packaging.html">Packaging Applications</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/330-jpms.html">JPMS Libraries</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/395-generating-documentation.html">Generating Documentation</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/400-commands.html">bnd CLI Commands</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/600-developer.html">For Developers</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/620-template-fragments.html">Templates for Workspaces</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/650-windows.html">Tips for Windows users</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/700-tools.html">Tools bound to bnd</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/790-reference.html">Reference</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/800-headers.html">Headers</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/820-instructions.html">Instruction Reference</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/825-instructions-ref.html">Instruction Index</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/850-macros.html">Macro Reference</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/855-macros-ref.html">Macro Index</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/870-plugins.html">Plugins</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/875-external-plugins.html">External Plugins</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/880-settings.html">Settings</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/900-errors.html">Errors</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/910-warnings.html">Warnings</a> 
+				<li>
+					<a href="/releases/7.2.0/chapters/920-faq.html">FAQ - Frequently Asked Questions</a> 
+			</ol>
+	</ul>
+
+	
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<div class="container-right">
+		<nav class="next-prev" data-pagefind-ignore>
+     
+     
+</nav>
+	</div>
+
+	<div class="modal" id="searchmodal" aria-hidden="true">
+    <div class="modal_overlay" tabindex="-1">
+        <div class="modal_container" role="dialog" aria-modal="true">
+            <header class="modal_header" style="margin-bottom: 10px;">
+                <b>
+                    Search
+                    <button class="modal_btn modal_btn-primary" data-modal-close=""
+                        aria-label="Close this dialog window" style="float:right;">Close</button>
+                </b>
+            </header>
+            <main class="modal_content" id="modalcontent">
+                <div id="pagefindsearch"></div>
+            </main>
+            <footer class="modal_footer">
+
+            </footer>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Basic styling to hide/show the modal */
+    .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Container for modal content */
+    .modal_container {
+        background: #fff;
+        margin: 5% auto;
+        /* Position the box somewhat centered */
+        padding: 1rem;
+        max-width: 600px;
+        border-radius: 4px;
+        position: relative;
+
+        /* Height and overflow for scrolling */
+        max-height: 80vh;
+        /* Use 80% of the viewport height */
+        overflow-y: auto;
+        /* Enable scrolling within the modal */
+    }
+
+    /* When modal is open, display it */
+    .modal.is-open {
+        display: block;
+    }
+</style>
+
+<script type="text/javascript">
+    // Function to open the modal
+    function openModal() {
+        const modal = document.getElementById('searchmodal');
+        // Change aria-hidden to false
+        modal.setAttribute('aria-hidden', 'false');
+        // Add a class to make it visible (assuming CSS uses .is-open to show)
+        modal.classList.add('is-open');
+
+        const searchFieldInput = document.querySelector('#modalcontent input');
+        searchFieldInput.focus();
+
+        // Define an event listener for the ESC key
+        escapeKeyListener = function (event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                closeModal(modal);
+            }
+        };
+
+        // Attach the ESC key event listener
+        document.addEventListener('keydown', escapeKeyListener);
+
+        // Attach click event listeners to close triggers
+        attachCloseEvents(modal);
+    }
+
+    function attachCloseEvents(modal) {
+        // Get all elements that can close the modal (overlay and close button)
+        const closeElements = modal.querySelectorAll('[data-modal-close]');
+
+        closeElements.forEach(el => {
+            el.addEventListener('click', function handleClose() {
+                closeModal(modal);
+                // Remove this event listener once closed (cleanup)
+                el.removeEventListener('click', handleClose);
+            });
+        });
+    }
+
+    // Function to close the modal
+    function closeModal(modal) {
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('is-open');
+    }
+</script>
+
+
+
+<link href="/pagefindindex/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefindindex/pagefind-ui.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        new PagefindUI({
+            element: "#pagefindsearch",
+            showSubResults: true,
+            translations: {
+                placeholder: "Search the bnd manual",
+            },
+            openFilters: ['pagetype']
+
+        });
+    });
+</script>
+
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/7.2.0/">Home</a>
+			</ul>
+	</ul>
+
+	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', () => {
+			const headers = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+
+			headers.forEach(header => {
+				const iconLink = document.createElement('a');
+				iconLink.href = `#${header.id}`;
+				iconLink.innerHTML = '#';
+				iconLink.className = 'header-link';
+
+				// Wrap the icon inside a span to control visibility with CSS
+				const wrapper = document.createElement('span');
+				wrapper.className = 'header-link-wrapper';
+				wrapper.appendChild(iconLink);
+
+				// Append the wrapper to the header
+				header.appendChild(wrapper);
+			});
+		});
+
+
+		// copy to clipboard buttons
+
+		const copyButtonLabel = "Copy";
+		let blocks = document.querySelectorAll("pre.highlight");
+
+		blocks.forEach((block) => {
+		// only add button if browser supports Clipboard API
+		if (navigator.clipboard) {
+			let button = document.createElement("button");
+			button.classList.add("copycodebtn");
+
+			button.innerText = copyButtonLabel;
+			block.appendChild(button);
+
+			button.addEventListener("click", async () => {
+			await copyCode(block, button);
+			});
+
+		}
+		});
+
+		async function copyCode(block, button) {
+		let code = block.querySelector("code");
+		let text = code.innerText;
+
+		await navigator.clipboard.writeText(text);
+
+		button.innerText = "Copied";
+
+			setTimeout(()=> {
+				button.innerText = copyButtonLabel;
+			},2000)
+		}
+	</script>
+
+</footer>
+
+
+</body>
+
+<script>
+	function openTab(evt, tabId) {
+		var i, tabContent, tabButtons;
+		tabContent = document.getElementsByClassName("tab-content");
+		for (i = 0; i < tabContent.length; i++) {
+			tabContent[i].classList.remove("active");
+		}
+		tabButtons = document.getElementsByClassName("tab-button");
+		for (i = 0; i < tabButtons.length; i++) {
+			tabButtons[i].classList.remove("active");
+		}
+		document.getElementById(tabId).classList.add("active");
+		evt.currentTarget.classList.add("active");
+	}
+</script>
+
+<style>
+	.code-tabs {
+		margin-top: 1em;
+	}
+
+	.tab-buttons {
+		display: flex;
+		gap: 0;
+		border-bottom: 2px solid #ddd;
+		margin-bottom: 1em;
+	}
+
+	.tab-button {
+		background-color: #f0f0f0;
+		border: none;
+		border-top: 2px solid #ddd;
+		border-left: 2px solid #ddd;
+		border-right: 2px solid #ddd;
+		padding: 10px 20px;
+		cursor: pointer;
+		font-size: 0.9em;
+		transition: background-color 0.3s;
+		margin-bottom: -2px;
+	}
+
+	.tab-button:first-child {
+		border-top-left-radius: 4px;
+	}
+
+	.tab-button:last-child {
+		border-top-right-radius: 4px;
+	}
+
+	.tab-button:hover {
+		background-color: #e0e0e0;
+	}
+
+	.tab-button.active {
+		background-color: white;
+		border-bottom: 2px solid white;
+		font-weight: bold;
+	}
+
+	.tab-content {
+		display: none;
+	}
+
+	.tab-content.active {
+		display: block;
+	}
+</style>
+
+</html>

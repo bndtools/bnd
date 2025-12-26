@@ -1,0 +1,8175 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/7.2.0/css/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="/css/github.dark.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/sitemap.xml">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>diff | bnd</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="diff" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Synopsis: diff [options] &lt;[newer file]&gt; &lt;[older file]&gt;" />
+<meta property="og:description" content="Synopsis: diff [options] &lt;[newer file]&gt; &lt;[older file]&gt;" />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-12-27T00:11:56+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="diff" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2025-12-27T00:11:56+01:00","datePublished":"2025-12-27T00:11:56+01:00","description":"Synopsis: diff [options] &lt;[newer file]&gt; &lt;[older file]&gt;","headline":"diff","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/7.2.0/commands/diff.html"},"url":"/releases/7.2.0/commands/diff.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+	
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="/releases/7.2.0/"><img
+			class=menu-logo src="/releases/7.2.0/img/bnd-80x40-white.png"></a>
+			<a 
+				class="" 
+				href="/releases/7.2.0/chapters/110-introduction.html">Intro
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/800-headers.html">Headers
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/825-instructions-ref.html">Instructions
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/855-macros-ref.html">Macros
+			</a>
+			<a 
+				class="selected"
+				href="/releases/7.2.0/chapters/400-commands.html">Commands
+			</a>
+			<div class="releases">
+				<button class="dropbtn"><span class="fa fa-bars"></span> 7.2.0</button>
+				<div class="dropdown-content"></div>
+			</div>
+    <li span=4>     
+        <div class="search-container">
+			<button type="button" class="fa fa-search" onclick="openModal()"></button>
+       </div>
+</ul>
+<div class=menu-link span=0><a
+	id="repo-link"
+	href="https://github.com/bndtools/bnd/blob/master/docs/_commands/diff.md"
+	target="_blank"
+>
+	<img
+		style="
+			position: absolute;
+			top: 0;
+			right: 0;
+			margin: 0;
+			padding: 4px;
+			z-index: 100;
+			width: 45px;
+		"
+		src="/img/github-mark.svg"
+		alt="Fork me on GitHub"
+		title="Fork me on GitHub"
+/></a>
+</div>
+
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div class="side-nav">
+			
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Getting Started</span>
+		<ul class="side-nav">
+		
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/110-introduction.html">Introduction</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/120-install.html">How to install bnd</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/123-tour-workspace.html">Guided Tour Workspace & Projects</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/125-tour-features.html">bnd / bndlib Features and JAR Wrapping Techniques</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/920-faq.html">FAQ - Frequently Asked Questions</a></li>
+					
+
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Concepts and Practices</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/130-concepts.html">Concepts</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/135-history.html">Background</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/140-best-practices.html">Best practices</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Build and Development</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/150-build.html">Build</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/160-jars.html">Generating JARs</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/170-versioning.html">Versioning</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/180-baselining.html">Baselining</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/200-components.html">Service Components</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/210-metatype.html">Metatype</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/220-contracts.html">Contracts</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/235-accessor-properties.html">Accessor Properties</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/240-spi-annotations.html">SPI Annotations</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Dependency and Launching</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/250-resolving.html">Resolving Dependencies</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/300-launching.html">Launching</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/305-startlevels.html">Startlevels</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Testing</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/310-testing.html">Testing</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Packaging and Distribution</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/320-packaging.html">Packaging Applications</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/330-jpms.html">JPMS Libraries</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Documentation and Tools</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/395-generating-documentation.html">Generating Documentation</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/400-commands.html">bnd CLI Commands</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/600-developer.html">For Developers</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/620-template-fragments.html">Templates for Workspaces</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/650-windows.html">Tips for Windows users</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/700-tools.html">Tools bound to bnd</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Reference Material</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/790-reference.html">Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/800-headers.html">Headers</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/820-instructions.html">Instruction Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/825-instructions-ref.html">Instruction Index</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/850-macros.html">Macro Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/855-macros-ref.html">Macro Index</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/870-plugins.html">Plugins</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/875-external-plugins.html">External Plugins</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Configuration and Troubleshooting</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/880-settings.html">Settings</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/900-errors.html">Errors</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/910-warnings.html">Warnings</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+
+
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+
+<main data-pagefind-body>
+				<div class="page-header">
+					<h1 data-pagefind-filter="pagetype:commands"> diff</h1>
+					<div class="container-right">
+						<nav class="next-prev" data-pagefind-ignore>
+     
+    <a href='/releases/7.2.0/commands/dev.html' title="dev">Prev</a> 
+     
+    
+    <a href='/releases/7.2.0/commands/digest.html' title="digest">Next</a>
+     
+</nav>
+						
+						
+						
+					</div>
+					
+				</div>
+
+
+
+<h2>Description</h2>
+
+
+Compares two jars. Without specifying the JARs (and when there is a current project) the jars of this project are diffed against their baseline in the baseline repository, using the sub-builder's options (these can be overridden). If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are then compared to eachother.
+
+<br /><br />
+
+				<h3 id="synopsis">Synopsis:</h3>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   diff <span class="o">[</span>options]  &lt;<span class="o">[</span>newer file]&gt; &lt;<span class="o">[</span>older file]&gt;
+</code></pre></div></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-a</span> <span class="nt">--api</span> <span class="o">]</span></code> Print the API</li>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-f</span> <span class="nt">--full</span> <span class="o">]</span></code> Show full tree</li>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-i</span> <span class="nt">--ignore</span> &lt;string&gt;<span class="k">*</span> <span class="o">]</span></code> Ignore headers</li>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-m</span> <span class="nt">--manifest</span> <span class="o">]</span></code> Print the Manifest</li>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-o</span> <span class="nt">--output</span> &lt;file&gt; <span class="o">]</span></code> Where to send the output</li>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-p</span> <span class="nt">--pack</span> &lt;string&gt;<span class="k">*</span> <span class="o">]</span></code> Limit to these packages (can have wildcards)</li>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-r</span> <span class="nt">--resources</span> <span class="o">]</span></code> Print the Resources</li>
+  <li><code class="language-shell highlighter-rouge"><span class="o">[</span> <span class="nt">-x</span> <span class="nt">--xml</span> <span class="o">]</span></code> Print difference as valid XML</li>
+</ul>
+
+<!-- Manual content from: ext/diff.md -->
+<p><br /><br /></p>
+
+<h2 id="examples">Examples</h2>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>biz.aQute.bnd <span class="o">(</span>master<span class="o">)</span><span class="nv">$ </span>bnd diff generated/
+generated/.index             generated/biz.aQute.bnd.jar  generated/buildfiles         
+biz.aQute.bnd <span class="o">(</span>master<span class="o">)</span><span class="nv">$ </span>bnd diff generated/biz.aQute.bnd.jar /Ws/archive/aQute.archive/aQute.bnd/archive/tmp/biz.aQute.bnd.jar 
+ADDED      PACKAGE    aQute.bnd.build
+ADDED      PACKAGE    aQute.bnd.header
+ADDED      PACKAGE    aQute.bnd.maven.support
+ADDED      PACKAGE    aQute.bnd.osgi
+ADDED      PACKAGE    aQute.bnd.osgi.resource
+ADDED      PACKAGE    aQute.bnd.service
+ADDED      PACKAGE    aQute.bnd.service.action
+ADDED      PACKAGE    aQute.bnd.service.classparser
+ADDED      PACKAGE    aQute.bnd.service.diff
+ADDED      PACKAGE    aQute.bnd.service.extension
+ADDED      PACKAGE    aQute.bnd.service.progress
+ADDED      PACKAGE    aQute.bnd.service.repository
+ADDED      PACKAGE    aQute.bnd.service.resolve.hook
+ADDED      PACKAGE    aQute.bnd.service.url
+ADDED      PACKAGE    aQute.bnd.util.dto
+ADDED      PACKAGE    aQute.bnd.version
+REMOVED    PACKAGE    aQute.lib.osgi
+ADDED      PACKAGE    aQute.service.reporter
+ADDED      PACKAGE    org.osgi.resource
+ADDED      PACKAGE    org.osgi.service.bindex
+ADDED      PACKAGE    org.osgi.service.repository
+ADDED      CLASS_VERSION J2SE6
+CHANGED    MANIFEST   &lt;manifest&gt;
+REMOVED    HEADER     Bundle-ActivationPolicy:lazy
+REMOVED    HEADER     Bundle-Activator:aQute.bnd.plugin.Activator
+REMOVED    HEADER     Bundle-Copyright:2006, 2007 <span class="o">(</span>c<span class="o">)</span> aQute, All rights reserved
+ADDED      HEADER     Bundle-Copyright:Copyright <span class="o">(</span>c<span class="o">)</span> aQute <span class="o">(</span>2000, 2014<span class="o">)</span><span class="nb">.</span> All Rights Reserved.
+REMOVED    HEADER     Bundle-Description:A utility and plugin to wrap, build, or print bundles
+ADDED      HEADER     Bundle-Description:This <span class="nb">command </span>line utility is the Swiss army knife of OSGi. It provides you with a breadth
+CHANGED    HEADER     Bundle-License
+  REMOVED    CLAUSE     ASL20
+  ADDED      CLAUSE     http://www.opensource.org/licenses/apache2.0.php
+REMOVED    HEADER     Bundle-Name:aQute Bundle Tool
+ADDED      HEADER     Bundle-Name:biz.aQute.bnd
+ADDED      HEADER     Bundle-SCM:git://github.com/bndtools/bnd.git
+CHANGED    HEADER     Bundle-SymbolicName
+  CHANGED    CLAUSE     biz.aQute.bnd
+  REMOVED    PARAMETER  singleton::true
+REMOVED    HEADER     Bundle-Version:0.0.279
+ADDED      HEADER     Bundle-Version:2.4.0
+REMOVED    HEADER     Conditional-Package:aQute.libg.<span class="k">*</span>, aQute.lib.<span class="k">*</span>
+ADDED      HEADER     Conditional-Package:aQute.libg.<span class="k">*</span>,aQute.lib.<span class="k">*</span>,aQute.configurable
+CHANGED    HEADER     Export-Package
+  ADDED      CLAUSE     aQute.bnd.build
+  ADDED      CLAUSE     aQute.bnd.header
+  ADDED      CLAUSE     aQute.bnd.maven.support
+  ADDED      CLAUSE     aQute.bnd.osgi
+  ADDED      CLAUSE     aQute.bnd.osgi.resource
+  ADDED      CLAUSE     aQute.bnd.service
+  ADDED      CLAUSE     aQute.bnd.service.action
+  ADDED      CLAUSE     aQute.bnd.service.classparser
+  ADDED      CLAUSE     aQute.bnd.service.diff
+  ADDED      CLAUSE     aQute.bnd.service.extension
+  ADDED      CLAUSE     aQute.bnd.service.progress
+  ADDED      CLAUSE     aQute.bnd.service.repository
+  ADDED      CLAUSE     aQute.bnd.service.resolve.hook
+  ADDED      CLAUSE     aQute.bnd.service.url
+  ADDED      CLAUSE     aQute.bnd.util.dto
+  ADDED      CLAUSE     aQute.bnd.version
+  REMOVED    CLAUSE     aQute.lib.osgi
+  ADDED      CLAUSE     aQute.service.reporter
+  ADDED      CLAUSE     org.osgi.resource
+  ADDED      CLAUSE     org.osgi.service.bindex
+  ADDED      CLAUSE     org.osgi.service.repository
+ADDED      HEADER     Git-Descriptor:2.4.0.M1-66-gc1ad07d-dirty
+ADDED      HEADER     Git-SHA:c1ad07dfeb4704ce590bd93c1405d7bfe8bef131
+CHANGED    HEADER     Import-Package
+  ADDED      CLAUSE     aQute.bnd.service
+  ADDED      CLAUSE     aQute.bnd.service.action
+  ADDED      CLAUSE     aQute.bnd.service.diff
+  ADDED      CLAUSE     aQute.bnd.service.progress
+  ADDED      CLAUSE     aQute.bnd.service.repository
+  ADDED      CLAUSE     aQute.bnd.service.url
+  ADDED      CLAUSE     aQute.bnd.version
+  REMOVED    CLAUSE     aQute.lib.filter
+  REMOVED    CLAUSE     aQute.lib.osgi
+  REMOVED    CLAUSE     aQute.libg.generics
+  REMOVED    CLAUSE     aQute.libg.header
+  REMOVED    CLAUSE     aQute.libg.qtokens
+  REMOVED    CLAUSE     aQute.libg.reporter
+  REMOVED    CLAUSE     aQute.libg.version
+  ADDED      CLAUSE     aQute.service.reporter
+  ADDED      CLAUSE     javax.crypto
+  ADDED      CLAUSE     javax.crypto.spec
+  ADDED      CLAUSE     javax.naming
+  ADDED      CLAUSE     javax.net.ssl
+  ADDED      CLAUSE     javax.script
+  ADDED      CLAUSE     javax.xml.namespace
+  ADDED      CLAUSE     javax.xml.transform
+  ADDED      CLAUSE     javax.xml.transform.dom
+  ADDED      CLAUSE     javax.xml.transform.stream
+  ADDED      CLAUSE     javax.xml.xpath
+  ADDED      CLAUSE     junit.framework
+  CHANGED    CLAUSE     org.apache.tools.ant
+  ADDED      PARAMETER  resolution::optional
+  ADDED      CLAUSE     org.apache.tools.ant.taskdefs
+  CHANGED    CLAUSE     org.apache.tools.ant.types
+  ADDED      PARAMETER  resolution::optional
+  REMOVED    CLAUSE     org.eclipse.core.resources
+  REMOVED    CLAUSE     org.eclipse.core.runtime
+  REMOVED    CLAUSE     org.eclipse.debug.core
+  REMOVED    CLAUSE     org.eclipse.debug.ui
+  REMOVED    CLAUSE     org.eclipse.debug.ui.sourcelookup
+  REMOVED    CLAUSE     org.eclipse.jdt.core
+  REMOVED    CLAUSE     org.eclipse.jdt.debug.ui.launchConfigurations
+  REMOVED    CLAUSE     org.eclipse.jdt.internal.junit.launcher
+  REMOVED    CLAUSE     org.eclipse.jdt.junit.launcher
+  REMOVED    CLAUSE     org.eclipse.jdt.launching
+  REMOVED    CLAUSE     org.eclipse.jdt.ui.wizards
+  REMOVED    CLAUSE     org.eclipse.jface.action
+  REMOVED    CLAUSE     org.eclipse.jface.dialogs
+  REMOVED    CLAUSE     org.eclipse.jface.resource
+  REMOVED    CLAUSE     org.eclipse.jface.text
+  REMOVED    CLAUSE     org.eclipse.jface.text.source
+  REMOVED    CLAUSE     org.eclipse.jface.viewers
+  REMOVED    CLAUSE     org.eclipse.jface.wizard
+  REMOVED    CLAUSE     org.eclipse.swt.events
+  REMOVED    CLAUSE     org.eclipse.swt.graphics
+  REMOVED    CLAUSE     org.eclipse.swt.layout
+  REMOVED    CLAUSE     org.eclipse.swt.widgets
+  REMOVED    CLAUSE     org.eclipse.ui
+  REMOVED    CLAUSE     org.eclipse.ui.part
+  REMOVED    CLAUSE     org.eclipse.ui.plugin
+  REMOVED    CLAUSE     org.eclipse.ui.texteditor
+  CHANGED    CLAUSE     org.osgi.framework
+  ADDED      PARAMETER  version:[1.6,2<span class="o">)</span>
+  ADDED      CLAUSE     org.osgi.resource
+  ADDED      CLAUSE     org.osgi.service.log
+  REMOVED    CLAUSE     org.osgi.service.packageadmin
+  ADDED      CLAUSE     org.xml.sax.helpers
+REMOVED    HEADER     Include-Resource:plugin.xml, LICENSE, maven-dependencies.txt
+ADDED      HEADER     Private-Package:aQute.bnd.annotation<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.43.2"</span>,aQute.bnd.annotation.component<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.43.1"</span>,aQute.bnd.annotation.headers<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.bnd.annotation.licenses<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.bnd.annotation.metatype<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.44.1"</span>,aQute.bnd.ant,aQute.bnd.build.model<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"2.6.0"</span>,aQute.bnd.build.model.clauses<span class="p">;</span><span class="nv">version</span><span class="o">=</span>2,aQute.bnd.build.model.conversions,aQute.bnd.compatibility,aQute.bnd.component,aQute.bnd.component.error<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0.0"</span>,aQute.bnd.differ<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.bnd.enroute.commands,aQute.bnd.filerepo<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.bnd.gradle,aQute.bnd.help<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1"</span>,aQute.bnd.indexer,aQute.bnd.indexer.analyzers,aQute.bnd.main<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"0.9"</span>,aQute.bnd.make,aQute.bnd.make.calltree,aQute.bnd.make.component,aQute.bnd.make.coverage,aQute.bnd.make.metatype,aQute.bnd.maven,aQute.bnd.obr,aQute.bnd.osgi.eclipse,aQute.bnd.properties<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"2.0"</span>,aQute.bnd.resource.repository,aQute.bnd.signing,aQute.bnd.testing<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.bnd.url<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.configurable<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0.0"</span>,aQute.lib.deployer,embedded-repo.jar,org.osgi.service.component.annotations<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.3"</span>,org.osgi.service.coordinator<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,templates,aQute.lib.base64<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.2.0"</span>,aQute.lib.collections<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.2.0"</span>,aQute.lib.converter<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"2.0.1"</span>,aQute.lib.filter<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.lib.getopt<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0.0"</span>,aQute.lib.hex<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.lib.io<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.4.0"</span>,aQute.lib.json<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"3.0.0"</span>,aQute.lib.justif<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.lib.persistentmap<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.lib.settings<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.2.0"</span>,aQute.lib.strings<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.lib.tag<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1"</span>,aQute.libg.classdump<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.libg.command<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"3.0.0"</span>,aQute.libg.cryptography<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.libg.filelock<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0.0"</span>,aQute.libg.filters<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.libg.forker<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.libg.generics<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.libg.glob<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.1"</span>,aQute.libg.map<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.2.0"</span>,aQute.libg.qtokens<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.libg.reporter<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.5"</span>,aQute.libg.sed<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.1.0"</span>,aQute.libg.tuple<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span>,aQute.lib.markdown
+REMOVED    HEADER     Private-Package:aQute.lib.deployer,aQute.bnd.test,aQute.bnd.junit,aQute.bnd.launch,aQute.lib.jardiff,aQute.bnd.build,aQute.bnd.plugin.popup.actions,aQute.bnd.annotation,aQute.bnd.service,aQute.lib.osgi.eclipse,aQute.bnd.ant,aQute.bnd.main<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s2">"0.9"</span>,aQute.bnd.plugin,aQute.bnd.make,aQute.bnd.plugin.builder,aQute.bnd.jareditor,aQute.bnd.classpath
+ADDED      HEADER     Require-Capability:osgi.ee<span class="p">;</span>filter:<span class="o">=</span><span class="s2">"(&amp;(osgi.ee=JavaSE)(version=1.6))"</span>
+MAJOR      RESOURCES  &lt;resources&gt;
+MAJOR      RESOURCE   LICENSE
+  ADDED      SHA        2B8B815229AA8A61E483FB4BA0588B8B6C491890
+  REMOVED    SHA        47B573E3824CD5E02A1A3AE99E2735B49E0256E4
+REMOVED    RESOURCE   OSGI-OPT/bnd.bnd
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/ConsumerType.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/Export.java
+  ADDED      SHA        57B5F624DE03F979D4876F63422BA92203EF1910
+  REMOVED    SHA        6A6378BCE886CA435A3F166F70F0E0AB12828B13
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/Import.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/Pair.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/ProviderType.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/Version.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/component/Activate.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/component/Component.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/component/ConfigurationPolicy.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/component/Deactivate.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/component/Modified.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/component/Reference.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/component/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/About.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/BundleCategory.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/BundleContributors.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/BundleCopyright.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/BundleDevelopers.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/BundleDocURL.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/BundleLicense.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/Category.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/ProvideCapability.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/RequireCapability.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/Resolution.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/headers/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/ASL_2_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/BSD_2_Clause.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/BSD_3_Clause.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/CDDL_1_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/CPL_1_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/EPL_1_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/GPL_2_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/GPL_3_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/LGPL_2_1.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/MIT_1_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/MPL_2_0.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/licenses/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/metatype/Configurable.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/metatype/Meta.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/metatype/packageinfo
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/package-info.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/annotation/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/AntMessages.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/BaseTask.java
+  REMOVED    SHA        45CF7C2907DD82AD23A979E880C20007206AA0E6
+  ADDED      SHA        C27D9C96DFCDB750A1FDBA926EE99A1ED5B154B2
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/BndTask.java
+  ADDED      SHA        881EC2597543A91A9F1A883817C55D2B80F12CB7
+  REMOVED    SHA        ABCC53977C4924B29EDF334DA1B3FE5010EFD3B6
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/ConsoleProgress.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/DeployTask.java
+  ADDED      SHA        33ED2BB9356BCFBD7A0D0AF8EB1BB10B6D7E7C7D
+  REMOVED    SHA        CF24BA22F1A33E61F950E34317F0D82082B08921
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/EclipseTask.java
+  REMOVED    SHA        62E6497D3868BD6E48C86689E6CE26157A33AC6D
+  ADDED      SHA        B6D59DF94689FEEE1166D9EAC0938CCF92812115
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/ExpandPropertiesTask.java
+  REMOVED    SHA        08B914BB997480B60C3F48E8A5CB4BD1E7E84EF9
+  ADDED      SHA        B429909161768A44F2BE870C43E3F3DA84E6D827
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/PackageTask.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/PrepareTask.java
+  REMOVED    SHA        60468618217981C8ED498CE4D66668C7D3A0459B
+  ADDED      SHA        949B04B29AEBC412A3485BF9AFAF446ED292DBF8
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/ProjectBuildOrderTask.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/ProjectTask.java
+  ADDED      SHA        9540543903DD936FFAD6C972D40C772C3B6CD3B0
+  REMOVED    SHA        9D9BF171CB0AF435A92FA6F7F7BA6D6ADDAE8A22
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/ReleaseTask.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/RunconfigToDistributionTask.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/TestTask.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/ant/WrapTask.java
+  ADDED      SHA        164E838D471D1773C0010560A3B419EE5D666418
+  REMOVED    SHA        62318CD6C8F4D42EFDA0C39D22F418185091A712
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/build/CircularDependencyException.java
+  ADDED      SHA        2DBD8F2F5382CBF94E4F495B085C44770FD52796
+  REMOVED    SHA        903622D5709FBB2D44120AC242F8A6BAB2ED9604
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/build/Container.java
+  REMOVED    SHA        914441F7D5DBB2F86BFD83F4FAC9EB047E464ABD
+  ADDED      SHA        A897B7CAFD1004D6FA0F06625F25CAB5D19CBFA6
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/DownloadBlocker.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ErrorDetails.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/build/Framework.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/JUnitLauncher.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/build/Project.java
+  ADDED      SHA        C7A0428FE040DA06D28D865209F573B88D0ABCB5
+  REMOVED    SHA        D33BBA8757E45959B32ED2283B1E176DFF8A6BAE
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ProjectBuilder.java
+  REMOVED    SHA        4BC12A6E5EE452B093F8EDCFC7810D7E475C89B3
+  ADDED      SHA        6069CBE1015591C5E02C3A63272EE499573A12A4
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ProjectLauncher.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ProjectMessages.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ProjectTester.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ReflectAction.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ResolverMode.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/Run.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/ScriptAction.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/build/Workspace.java
+  REMOVED    SHA        07AF5474B58E11D2806FBD6AAC0DBFB4B8F66EBC
+  ADDED      SHA        6A9DEF93C7F8704B74059D56AFD4A7F279FB3D75
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/WorkspaceRepository.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/BndEditModel.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/EE.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/clauses/ComponentSvcReference.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/clauses/ExportedPackage.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/clauses/HeaderClause.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/clauses/ImportPattern.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/clauses/ServiceComponent.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/clauses/VersionedClause.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/clauses/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/ClauseListConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/CollectionFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/Converter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/DefaultBooleanFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/DefaultFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/EEConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/EEFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/EnumConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/EnumFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/HeaderClauseConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/HeaderClauseFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/HeaderClauseListConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/MapFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/NewlineEscapedStringFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/NoopConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/PropertiesConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/PropertiesEntryFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/RequirementFormatter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/RequirementListConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/SimpleListConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/StringEntryConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/conversions/VersionedClauseConverter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/model/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/build/packageinfo
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/classpath/BndContainer.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/classpath/BndContainerInitializer.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/classpath/BndContainerPage.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/classpath/ModelListener.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/Access.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/GenericParameter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/GenericType.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/Kind.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/ParseSignatureBuilder.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/RuntimeSignatureBuilder.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/Scope.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/compatibility/Signatures.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/AnnotationReader.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/ComponentDef.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/DSAnnotations.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/HeaderReader.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/ReferenceDef.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/TagResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/error/DeclarativeServicesAnnotationError.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/component/error/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/differ/Baseline.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/differ/DiffImpl.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/differ/DiffPluginImpl.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/differ/Element.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/differ/JavaElement.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/differ/RepositoryElement.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/differ/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/enroute/commands/EnrouteCommand.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/enroute/commands/EnrouteOptions.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/filerepo/FileRepo.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/filerepo/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/header/Attrs.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/header/OSGiHeader.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/header/Parameters.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/header/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/help/Syntax.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/help/Warnings.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/help/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/MimeType.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/Namespaces.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/RepoIndex.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/ResourceAnalyzer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/analyzers/BlueprintAnalyzer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/analyzers/BundleAnalyzer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/analyzers/EE.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/analyzers/KnownBundleAnalyzer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/analyzers/OSGiFrameworkAnalyzer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/analyzers/SCRAnalyzer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/indexer/analyzers/Yield.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/jareditor/JarConfiguration.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/jareditor/JarDocumentProvider.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/jareditor/JarEditor.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/junit/OSGiArgumentsTab.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/junit/OSGiJUnitLaunchShortcut.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/junit/OSGiJUnitLauncherConfigurationDelegate.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/junit/OSGiJUnitTabGroup.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/launch/LaunchDelegate.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/launch/LaunchTabGroup.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/launch/Shortcut.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/main/BaselineCommands.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/main/BndMessages.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/main/DiffCommand.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/main/PatchCommand.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/main/RepoCommand.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/main/bnd.java
+  ADDED      SHA        57EE3BDF196034FB708705A3F4656111277E9F97
+  REMOVED    SHA        6CCDD322FC98BF0D7ACA4F26451A62F02D7A078A
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/main/packageinfo
+  REMOVED    SHA        4CBF1AE09B541F925C0D6BCBB8684EF85A0B8373
+  ADDED      SHA        D6E9A3759405E18A266202C40D9AA4EBA6F83A87
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/make/Make.java
+  ADDED      SHA        32419B285AD910CED3A1BE2CA2DE06103634D997
+  REMOVED    SHA        ABD503ABDB9F0A9D20FCDDB541B819EC0D70BA70
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/make/MakeBnd.java
+  ADDED      SHA        7A16BD28EBD4A2334424FB9836644D4ABCBFFABC
+  REMOVED    SHA        C4FC212EB0584C41BA276F679A0F137802F387AF
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/make/MakeCopy.java
+  REMOVED    SHA        06D298002296B2AEAFA4412515174712A2893ED2
+  ADDED      SHA        D4C879A84C0D44461049118CFD2B6DE835EC0295
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/make/calltree/CalltreeResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/make/component/ComponentAnnotationReader.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/make/component/ServiceComponent.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/make/coverage/Coverage.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/make/coverage/CoverageResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/make/metatype/MetaTypeReader.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/make/metatype/MetatypePlugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/BsnToMavenPath.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/MavenCommand.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/MavenDependencyGraph.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/MavenDeploy.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/MavenDeployCmd.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/MavenGroup.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/MavenRepository.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/PomFromManifest.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/PomParser.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/PomResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/CachedPom.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/Maven.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/MavenEntry.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/MavenRemoteRepository.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/Pom.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/ProjectPom.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/Repo.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/maven/support/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/obr/OBRFragment.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/About.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/AbstractResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Analyzer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/AnalyzerMessages.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Annotation.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/AnnotationHeaders.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Builder.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/BundleId.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/ClassDataCollector.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/ClassDataCollectors.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Classpath.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Clazz.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/CombinedResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/CommandResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Constants.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Contracts.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Descriptors.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Domain.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/EmbeddedResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/FileResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Instruction.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Instructions.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Jar.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/JarResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Macro.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/OSInformation.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/OpCodes.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Packages.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/PreprocessResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Processor.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Resource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/URLResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/Verifier.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/WriteResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/ZipResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/eclipse/EclipseClasspath.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/CapReq.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/CapReqBuilder.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/CapabilityImpl.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/FilterParser.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/Filters.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/PersistentResource.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/RequirementImpl.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/ResourceBuilder.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/ResourceImpl.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/osgi/resource/packageinfo
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/Activator.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/Central.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/builder/BndBuilder.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/builder/BndNature.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/builder/ToggleNatureAction.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/popup/actions/InstallBundle.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/popup/actions/MakeBundle.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/popup/actions/VerifyBundle.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/plugin/popup/actions/WrapBundle.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/BadLocationException.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/CopyOnWriteTextStore.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/Document.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/GapTextStore.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/IDocument.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/IRegion.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/ITextStore.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/Line.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/LineTracker.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/LineType.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/PropertiesLineReader.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/Region.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/properties/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/resource/repository/ResourceDescriptorImpl.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/resource/repository/ResourceRepositoryImpl.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Actionable.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/service/AnalyzerPlugin.java
+  REMOVED    SHA        01DCF34F1B2C6961BC001D6EB5D68BFFEEF15F70
+  ADDED      SHA        D25A7039580D56816F0E9ECE913C23644B43802A
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/BndListener.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/CommandPlugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Compiler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/DependencyContributor.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Deploy.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/EclipseJUnitTester.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/IndexProvider.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/LauncherPlugin.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/service/MakePlugin.java
+  ADDED      SHA        1DD964999442F1CEAED362243DA916643C348359
+  REMOVED    SHA        C6C083B804A2784D789182E00597B32CDFB89A78
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Plugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Refreshable.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Registry.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/RegistryDonePlugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/RegistryPlugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/RemoteRepositoryPlugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/RepositoryListenerPlugin.java
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/bnd/service/RepositoryPlugin.java
+  REMOVED    SHA        3A6380D8D841D53668F18EF37363EFFA25A9FC73
+  ADDED      SHA        BC4B6801701A62CE8D4FD31090D31357D7595DC3
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/ResolutionPhase.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/ResourceHandle.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Scripter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/SignerPlugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/Strategy.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/action/Action.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/action/NamedAction.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/action/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/classparser/ClassParser.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/classparser/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/diff/Delta.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/diff/Diff.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/diff/Differ.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/diff/Tree.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/diff/Type.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/diff/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/extension/ExtensionActivator.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/extension/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/progress/ProgressPlugin.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/progress/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/repository/InfoRepository.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/repository/MinimalRepository.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/repository/Phase.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/repository/RepositoryDigest.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/repository/ResourceRepository.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/repository/SearchableRepository.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/repository/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/resolve/hook/ResolverHook.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/resolve/hook/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/url/TaggedData.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/url/URLConnectionHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/url/URLConnector.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/service/url/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/signing/JartoolSigner.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/signing/Signer.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/bnd/test/ProjectLauncher.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/testing/DSTestWiring.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/testing/TestingLog.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/testing/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/url/BasicAuthentication.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/url/BndAuthentication.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/url/ConnectionSettings.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/url/DefaultURLConnectionHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/url/HttpsVerification.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/url/MultiURLConnectionHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/url/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/util/dto/DTO.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/util/dto/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/version/Version.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/version/VersionRange.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/bnd/version/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/configurable/Config.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/configurable/Configurable.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/configurable/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/base64/Base64.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/base64/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/EnumerationIterator.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/ExtList.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/IteratorList.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/LineCollection.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/Logic.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/MultiMap.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/SortedList.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/collections/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/converter/Converter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/converter/TypeReference.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/converter/packageinfo
+MAJOR      RESOURCE   OSGI-OPT/src/aQute/lib/deployer/FileRepo.java
+  REMOVED    SHA        43016599CDFB8D16479E06DBADA03D8AF32783F1
+  ADDED      SHA        C447FBEB09414CF0ECF5508BA06A649DC9DD34FD
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/deployer/ProjectRepo.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/deployer/RDImpl.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/deployer/RepoDeployer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/filter/Filter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/filter/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/getopt/Arguments.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/getopt/CommandLine.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/getopt/CommandLineMessages.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/getopt/Description.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/getopt/OptionArgument.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/getopt/Options.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/getopt/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/hex/Hex.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/hex/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/io/IO.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/io/IOConstants.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/io/LimitedInputStream.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/io/packageinfo
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/jardiff/Diff.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/ArrayHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/BooleanHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/ByteArrayHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/CharacterHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/CollectionHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/DateHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/Decoder.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/Encoder.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/EnumHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/FileHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/Handler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/JSONCodec.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/MapHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/NumberHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/ObjectHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/SpecialHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/StringHandler.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/json/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/justif/Justif.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/justif/Table.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/justif/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/markdown/MarkdownFormatter.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/About.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Analyzer.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Builder.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Clazz.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Constants.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/EmbeddedResource.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/FileResource.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Instruction.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Jar.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/JarResource.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Macro.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/OpCodes.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Plugin.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/PreprocessResource.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Processor.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Resource.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/URLResource.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/Verifier.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/ZipResource.java
+REMOVED    RESOURCE   OSGI-OPT/src/aQute/lib/osgi/eclipse/EclipseClasspath.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/persistentmap/PersistentMap.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/persistentmap/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/settings/PasswordCryptor.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/settings/Settings.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/settings/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/strings/Strings.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/strings/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/tag/Tag.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/lib/tag/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/classdump/ClassDumper.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/classdump/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/command/Command.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/command/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/Crypto.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/Digest.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/Digester.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/Key.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/MD5.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/RSA.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/SHA1.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/SHA256.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/Signer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/Verifier.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/cryptography/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filelock/DirectoryLock.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filelock/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/AndFilter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/Filter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/LiteralFilter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/NotFilter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/Operator.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/OrFilter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/SimpleFilter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/filters/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/forker/Forker.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/forker/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/generics/Create.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/generics/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/glob/Glob.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/glob/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/map/MAP.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/map/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/qtokens/QuotedTokenizer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/qtokens/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/reporter/Message.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/reporter/ReporterAdapter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/reporter/ReporterMessages.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/reporter/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/sed/Domain.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/sed/Replacer.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/sed/ReplacerAdapter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/sed/Sed.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/sed/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/tuple/ComparablePair.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/tuple/Pair.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/libg/tuple/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/aQute/service/reporter/Messages.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/service/reporter/Report.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/service/reporter/Reporter.java
+ADDED      RESOURCE   OSGI-OPT/src/aQute/service/reporter/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/Capability.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/Namespace.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/Requirement.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/Resource.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/Wire.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/Wiring.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/package-info.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/resource/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/bindex/BundleIndexer.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/bindex/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/Activate.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/Component.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/ConfigurationPolicy.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/Deactivate.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/LookupReference.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/Modified.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/Reference.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/ReferenceCardinality.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/ReferencePolicy.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/ReferencePolicyOption.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/ReferenceScope.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/ServiceScope.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/package-info.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/component/annotations/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/coordinator/Coordination.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/coordinator/CoordinationException.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/coordinator/CoordinationPermission.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/coordinator/Coordinator.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/coordinator/Participant.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/coordinator/package-info.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/coordinator/packageinfo
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/repository/ContentNamespace.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/repository/Repository.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/repository/RepositoryContent.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/repository/package-info.java
+ADDED      RESOURCE   OSGI-OPT/src/org/osgi/service/repository/packageinfo
+ADDED      RESOURCE   aQute/bnd/annotation/ConsumerType.class
+MAJOR      RESOURCE   aQute/bnd/annotation/Export.class
+  ADDED      SHA        1143580202AA1EED607C3B44C18C4FDDFF807556
+  REMOVED    SHA        2BFAD4181827144A0B7BF70F1B50AFFFD1486DB0
+REMOVED    RESOURCE   aQute/bnd/annotation/Import.class
+REMOVED    RESOURCE   aQute/bnd/annotation/Pair.class
+ADDED      RESOURCE   aQute/bnd/annotation/ProviderType.class
+ADDED      RESOURCE   aQute/bnd/annotation/Version.class
+ADDED      RESOURCE   aQute/bnd/annotation/component/Activate.class
+ADDED      RESOURCE   aQute/bnd/annotation/component/Component.class
+ADDED      RESOURCE   aQute/bnd/annotation/component/ConfigurationPolicy.class
+ADDED      RESOURCE   aQute/bnd/annotation/component/Deactivate.class
+ADDED      RESOURCE   aQute/bnd/annotation/component/Modified.class
+ADDED      RESOURCE   aQute/bnd/annotation/component/Reference.class
+ADDED      RESOURCE   aQute/bnd/annotation/component/packageinfo
+ADDED      RESOURCE   aQute/bnd/annotation/headers/About.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/BundleCategory.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/BundleContributors.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/BundleCopyright.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/BundleDevelopers.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/BundleDocURL.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/BundleLicense.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/Category.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/ProvideCapability.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/RequireCapability.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/Resolution.class
+ADDED      RESOURCE   aQute/bnd/annotation/headers/packageinfo
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/ASL_2_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/BSD_2_Clause.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/BSD_3_Clause.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/CDDL_1_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/CPL_1_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/EPL_1_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/GPL_2_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/GPL_3_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/LGPL_2_1.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/MIT_1_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/MPL_2_0.class
+ADDED      RESOURCE   aQute/bnd/annotation/licenses/packageinfo
+ADDED      RESOURCE   aQute/bnd/annotation/metatype/Configurable<span class="nv">$ConfigurableHandler</span>.class
+ADDED      RESOURCE   aQute/bnd/annotation/metatype/Configurable.class
+ADDED      RESOURCE   aQute/bnd/annotation/metatype/Meta<span class="nv">$AD</span>.class
+ADDED      RESOURCE   aQute/bnd/annotation/metatype/Meta<span class="nv">$OCD</span>.class
+ADDED      RESOURCE   aQute/bnd/annotation/metatype/Meta<span class="nv">$Type</span>.class
+ADDED      RESOURCE   aQute/bnd/annotation/metatype/Meta.class
+ADDED      RESOURCE   aQute/bnd/annotation/metatype/packageinfo
+REMOVED    RESOURCE   aQute/bnd/annotation/package-info.class
+ADDED      RESOURCE   aQute/bnd/annotation/packageinfo
+ADDED      RESOURCE   aQute/bnd/ant/AntMessages.class
+MAJOR      RESOURCE   aQute/bnd/ant/BaseTask.class
+  REMOVED    SHA        51D09D3D464164F6ADC6362CA1B27B38DFFF7775
+  ADDED      SHA        B4D7F65A6C5B0945D0BBDD1AD45C628C69945A49
+MAJOR      RESOURCE   aQute/bnd/ant/BndTask.class
+  ADDED      SHA        2B9158162896486E31EF06E4EAADE45EC4F928BD
+  REMOVED    SHA        3D24F9D832A2CFCE08FB5B63A0787BF8D8B9C08F
+ADDED      RESOURCE   aQute/bnd/ant/ConsoleProgress<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/ant/ConsoleProgress.class
+MAJOR      RESOURCE   aQute/bnd/ant/DeployTask.class
+  REMOVED    SHA        52741E8FA833A6F5770C2E07C44926B51AA03FF4
+  ADDED      SHA        B1FD3738343C5BDDEDCD61C8F16C82151F1E5C38
+MAJOR      RESOURCE   aQute/bnd/ant/EclipseTask.class
+  REMOVED    SHA        1EDD3A0BD19408E75550B699EFD8E605175A966C
+  ADDED      SHA        3BAD8CC8DB9F4C3AD5D0BBFF0CA4471FBB1DC27A
+MAJOR      RESOURCE   aQute/bnd/ant/ExpandPropertiesTask.class
+  ADDED      SHA        27A2EFF363C15BAF95BBF4FE0F4511F082CC89D7
+  REMOVED    SHA        2EFC6B42F01F13BFACB93F0D794547749A2392BF
+ADDED      RESOURCE   aQute/bnd/ant/PackageTask.class
+MAJOR      RESOURCE   aQute/bnd/ant/PrepareTask.class
+  REMOVED    SHA        54FE708015DC152FBA2AC912C5F43823F2297E11
+  ADDED      SHA        605DCAD147113525F3FA93F47FC598AC49B35266
+ADDED      RESOURCE   aQute/bnd/ant/ProjectBuildOrderTask.class
+MAJOR      RESOURCE   aQute/bnd/ant/ProjectTask.class
+  REMOVED    SHA        B99801A0059530E09B4C378C6BFB19F7EC51FC87
+  ADDED      SHA        C80B65108386F8484624573016EB7B170743DD5E
+ADDED      RESOURCE   aQute/bnd/ant/ReleaseTask.class
+ADDED      RESOURCE   aQute/bnd/ant/RunconfigToDistributionTask<span class="nv">$JarFileFilter</span>.class
+ADDED      RESOURCE   aQute/bnd/ant/RunconfigToDistributionTask<span class="nv">$NonTestProjectFileFilter</span>.class
+ADDED      RESOURCE   aQute/bnd/ant/RunconfigToDistributionTask.class
+ADDED      RESOURCE   aQute/bnd/ant/TestTask.class
+MAJOR      RESOURCE   aQute/bnd/ant/WrapTask.class
+  REMOVED    SHA        1B2451001E019453C391ADD866B2C6F447BB8634
+  ADDED      SHA        F7EF8607FD423257913E692044478BA62CBC23AA
+MAJOR      RESOURCE   aQute/bnd/ant/taskdef.properties
+  REMOVED    SHA        1F5BB944D17010889C822CB49ACD790CA0B4BEAA
+  ADDED      SHA        BB9108C257261825D22A7E893516293707C87E20
+MAJOR      RESOURCE   aQute/bnd/build/CircularDependencyException.class
+  REMOVED    SHA        76252D29BAB7D6C9EEE9CA30D7C487A214974E40
+  ADDED      SHA        D4B16B74592DDA7F7E3DC794FD2FEB062EFB2B45
+MAJOR      RESOURCE   aQute/bnd/build/Container<span class="nv">$TYPE</span>.class
+  ADDED      SHA        098B23F977005C8CD012084BF095FB6F0A4EA49F
+  REMOVED    SHA        AE3A226139BCF586C92B7003D1961DA741CA1738
+MAJOR      RESOURCE   aQute/bnd/build/Container.class
+  REMOVED    SHA        8458A19DB2BB531949466ED9DB5B72E310BAC81D
+  ADDED      SHA        D196DA5CE6E0FF6D680D279C3C1017656BB9A579
+ADDED      RESOURCE   aQute/bnd/build/DownloadBlocker<span class="nv">$Stage</span>.class
+ADDED      RESOURCE   aQute/bnd/build/DownloadBlocker.class
+ADDED      RESOURCE   aQute/bnd/build/ErrorDetails.class
+REMOVED    RESOURCE   aQute/bnd/build/Framework<span class="nv">$FilterLoader</span>.class
+REMOVED    RESOURCE   aQute/bnd/build/Framework.class
+ADDED      RESOURCE   aQute/bnd/build/JUnitLauncher.class
+ADDED      RESOURCE   aQute/bnd/build/Project<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/build/Project<span class="nv">$2</span>.class
+MAJOR      RESOURCE   aQute/bnd/build/Project.class
+  ADDED      SHA        6B8BC68C0CA5FB105A03813147E09DC02C236327
+  REMOVED    SHA        C5F1CBF529FFFBE114BB09F8D0609B586E61103A
+MAJOR      RESOURCE   aQute/bnd/build/ProjectBuilder.class
+  REMOVED    SHA        2E8690B06114FC5ECF967371D0A9F92FA64D1B35
+  ADDED      SHA        6997CF482327EECA249D215F9522CD051FB13952
+ADDED      RESOURCE   aQute/bnd/build/ProjectLauncher<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/build/ProjectLauncher<span class="nv">$NotificationListener</span>.class
+ADDED      RESOURCE   aQute/bnd/build/ProjectLauncher<span class="nv">$NotificationType</span>.class
+ADDED      RESOURCE   aQute/bnd/build/ProjectLauncher.class
+ADDED      RESOURCE   aQute/bnd/build/ProjectMessages.class
+ADDED      RESOURCE   aQute/bnd/build/ProjectTester.class
+ADDED      RESOURCE   aQute/bnd/build/ReflectAction.class
+ADDED      RESOURCE   aQute/bnd/build/ResolverMode.class
+ADDED      RESOURCE   aQute/bnd/build/Run.class
+ADDED      RESOURCE   aQute/bnd/build/ScriptAction.class
+ADDED      RESOURCE   aQute/bnd/build/Workspace<span class="nv">$CachedFileRepo</span>.class
+MAJOR      RESOURCE   aQute/bnd/build/Workspace.class
+  ADDED      SHA        53261A511EDC0A6939C7CC784F2929BE2D1A233C
+  REMOVED    SHA        C1E463E37C42CB254EC9EE5AFDB456108F01B263
+ADDED      RESOURCE   aQute/bnd/build/WorkspaceRepository.class
+ADDED      RESOURCE   aQute/bnd/build/defaults.bnd
+ADDED      RESOURCE   aQute/bnd/build/model/BndEditModel<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/build/model/BndEditModel<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/build/model/BndEditModel<span class="nv">$3</span>.class
+ADDED      RESOURCE   aQute/bnd/build/model/BndEditModel<span class="nv">$4</span>.class
+ADDED      RESOURCE   aQute/bnd/build/model/BndEditModel<span class="nv">$5</span>.class
+ADDED      RESOURCE   aQute/bnd/build/model/BndEditModel<span class="nv">$6</span>.class
+ADDED      RESOURCE   aQute/bnd/build/model/BndEditModel.class
+ADDED      RESOURCE   aQute/bnd/build/model/EE.class
+ADDED      RESOURCE   aQute/bnd/build/model/clauses/ComponentSvcReference.class
+ADDED      RESOURCE   aQute/bnd/build/model/clauses/ExportedPackage.class
+ADDED      RESOURCE   aQute/bnd/build/model/clauses/HeaderClause.class
+ADDED      RESOURCE   aQute/bnd/build/model/clauses/ImportPattern.class
+ADDED      RESOURCE   aQute/bnd/build/model/clauses/ServiceComponent.class
+ADDED      RESOURCE   aQute/bnd/build/model/clauses/VersionedClause.class
+ADDED      RESOURCE   aQute/bnd/build/model/clauses/packageinfo
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/ClauseListConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/CollectionFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/Converter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/DefaultBooleanFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/DefaultFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/EEConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/EEFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/EnumConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/EnumFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/HeaderClauseConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/HeaderClauseFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/HeaderClauseListConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/MapFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/NewlineEscapedStringFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/NoopConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/PropertiesConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/PropertiesEntryFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/RequirementFormatter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/RequirementListConverter<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/RequirementListConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/SimpleListConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/StringEntryConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/conversions/VersionedClauseConverter.class
+ADDED      RESOURCE   aQute/bnd/build/model/packageinfo
+ADDED      RESOURCE   aQute/bnd/build/packageinfo
+REMOVED    RESOURCE   aQute/bnd/classpath/BndContainer.class
+REMOVED    RESOURCE   aQute/bnd/classpath/BndContainerInitializer.class
+REMOVED    RESOURCE   aQute/bnd/classpath/BndContainerPage<span class="nv">$1</span>.class
+REMOVED    RESOURCE   aQute/bnd/classpath/BndContainerPage<span class="nv">$2</span>.class
+REMOVED    RESOURCE   aQute/bnd/classpath/BndContainerPage<span class="nv">$3</span>.class
+REMOVED    RESOURCE   aQute/bnd/classpath/BndContainerPage.class
+REMOVED    RESOURCE   aQute/bnd/classpath/ModelListener.class
+REMOVED    RESOURCE   aQute/bnd/classpath/messages.properties
+ADDED      RESOURCE   aQute/bnd/compatibility/Access.class
+ADDED      RESOURCE   aQute/bnd/compatibility/GenericParameter.class
+ADDED      RESOURCE   aQute/bnd/compatibility/GenericType<span class="nv">$GenericArray</span>.class
+ADDED      RESOURCE   aQute/bnd/compatibility/GenericType<span class="nv">$GenericWildcard</span>.class
+ADDED      RESOURCE   aQute/bnd/compatibility/GenericType.class
+ADDED      RESOURCE   aQute/bnd/compatibility/Kind.class
+ADDED      RESOURCE   aQute/bnd/compatibility/ParseSignatureBuilder<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/compatibility/ParseSignatureBuilder.class
+ADDED      RESOURCE   aQute/bnd/compatibility/RuntimeSignatureBuilder.class
+ADDED      RESOURCE   aQute/bnd/compatibility/Scope.class
+ADDED      RESOURCE   aQute/bnd/compatibility/Signatures<span class="nv">$Rover</span>.class
+ADDED      RESOURCE   aQute/bnd/compatibility/Signatures.class
+ADDED      RESOURCE   aQute/bnd/component/AnnotationReader<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/component/AnnotationReader.class
+ADDED      RESOURCE   aQute/bnd/component/ComponentDef.class
+ADDED      RESOURCE   aQute/bnd/component/DSAnnotations.class
+ADDED      RESOURCE   aQute/bnd/component/HeaderReader<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/component/HeaderReader.class
+ADDED      RESOURCE   aQute/bnd/component/ReferenceDef.class
+ADDED      RESOURCE   aQute/bnd/component/TagResource.class
+ADDED      RESOURCE   aQute/bnd/component/error/DeclarativeServicesAnnotationError<span class="nv">$ErrorType</span>.class
+ADDED      RESOURCE   aQute/bnd/component/error/DeclarativeServicesAnnotationError.class
+ADDED      RESOURCE   aQute/bnd/component/error/packageinfo
+ADDED      RESOURCE   aQute/bnd/differ/Baseline<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/differ/Baseline<span class="nv">$BundleInfo</span>.class
+ADDED      RESOURCE   aQute/bnd/differ/Baseline<span class="nv">$Info</span>.class
+ADDED      RESOURCE   aQute/bnd/differ/Baseline.class
+ADDED      RESOURCE   aQute/bnd/differ/DiffImpl.class
+ADDED      RESOURCE   aQute/bnd/differ/DiffPluginImpl.class
+ADDED      RESOURCE   aQute/bnd/differ/Element.class
+ADDED      RESOURCE   aQute/bnd/differ/JavaElement<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/differ/JavaElement.class
+ADDED      RESOURCE   aQute/bnd/differ/RepositoryElement.class
+ADDED      RESOURCE   aQute/bnd/differ/packageinfo
+ADDED      RESOURCE   aQute/bnd/enroute/commands/EnrouteCommand<span class="nv">$WorkspaceOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/enroute/commands/EnrouteCommand.class
+ADDED      RESOURCE   aQute/bnd/enroute/commands/EnrouteOptions.class
+ADDED      RESOURCE   aQute/bnd/filerepo/FileRepo<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/filerepo/FileRepo<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/filerepo/FileRepo<span class="nv">$3</span>.class
+ADDED      RESOURCE   aQute/bnd/filerepo/FileRepo.class
+ADDED      RESOURCE   aQute/bnd/filerepo/packageinfo
+ADDED      RESOURCE   aQute/bnd/gradle/BndPlugin.gradle
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$3</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$4</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$5</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$6</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$7</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$8</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$DataType</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs<span class="nv">$Type</span>.class
+ADDED      RESOURCE   aQute/bnd/header/Attrs.class
+ADDED      RESOURCE   aQute/bnd/header/OSGiHeader.class
+ADDED      RESOURCE   aQute/bnd/header/Parameters.class
+ADDED      RESOURCE   aQute/bnd/header/packageinfo
+ADDED      RESOURCE   aQute/bnd/help/Syntax.class
+ADDED      RESOURCE   aQute/bnd/help/Warnings.class
+ADDED      RESOURCE   aQute/bnd/help/changed.txt
+ADDED      RESOURCE   aQute/bnd/help/packageinfo
+ADDED      RESOURCE   aQute/bnd/help/syntax.properties
+ADDED      RESOURCE   aQute/bnd/help/syntax.xml
+ADDED      RESOURCE   aQute/bnd/indexer/MimeType.class
+ADDED      RESOURCE   aQute/bnd/indexer/NOTE
+ADDED      RESOURCE   aQute/bnd/indexer/Namespaces.class
+ADDED      RESOURCE   aQute/bnd/indexer/RepoIndex<span class="nv">$IndexResult</span>.class
+ADDED      RESOURCE   aQute/bnd/indexer/RepoIndex.class
+ADDED      RESOURCE   aQute/bnd/indexer/ResourceAnalyzer.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/BlueprintAnalyzer.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/BundleAnalyzer<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/BundleAnalyzer<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/BundleAnalyzer.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/EE<span class="nv">$Segment</span>.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/EE.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/KnownBundleAnalyzer.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/NOTE
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/OSGiFrameworkAnalyzer.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/SCRAnalyzer<span class="nv">$SCRContentHandler</span>.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/SCRAnalyzer.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/Yield.class
+ADDED      RESOURCE   aQute/bnd/indexer/analyzers/known-bundles.properties
+REMOVED    RESOURCE   aQute/bnd/jareditor/JarConfiguration.class
+REMOVED    RESOURCE   aQute/bnd/jareditor/JarDocumentProvider.class
+REMOVED    RESOURCE   aQute/bnd/jareditor/JarEditor.class
+REMOVED    RESOURCE   aQute/bnd/junit/OSGiArgumentsTab.class
+REMOVED    RESOURCE   aQute/bnd/junit/OSGiJUnitLaunchShortcut.class
+REMOVED    RESOURCE   aQute/bnd/junit/OSGiJUnitLauncherConfigurationDelegate.class
+REMOVED    RESOURCE   aQute/bnd/junit/OSGiJUnitTabGroup.class
+REMOVED    RESOURCE   aQute/bnd/launch/LaunchDelegate.class
+REMOVED    RESOURCE   aQute/bnd/launch/LaunchTabGroup.class
+REMOVED    RESOURCE   aQute/bnd/launch/Shortcut.class
+ADDED      RESOURCE   aQute/bnd/main/BaselineCommands<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/main/BaselineCommands<span class="nv">$PSpec</span>.class
+ADDED      RESOURCE   aQute/bnd/main/BaselineCommands<span class="nv">$baseLineOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/BaselineCommands<span class="nv">$schemaOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/BaselineCommands.class
+ADDED      RESOURCE   aQute/bnd/main/BndMessages.class
+ADDED      RESOURCE   aQute/bnd/main/DiffCommand<span class="nv">$diffOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/DiffCommand.class
+ADDED      RESOURCE   aQute/bnd/main/PatchCommand<span class="nv">$applyOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/PatchCommand<span class="nv">$createOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/PatchCommand.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$1Spec</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$CopyOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$RefreshOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$VersionsOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$diffOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$getOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$listOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$putOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$repoOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand<span class="nv">$reposOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/RepoCommand.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$ActionOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$Alg</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$All</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$BootstrapOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$Bsn2UrlOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$ChangesOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$EEOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$FindOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$MergeOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$ParallelBuildOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$bndOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$buildoptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$buildxOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$bumpoptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$cleanOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$convertOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$createOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$debugOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$deliverableOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$dooptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$eclipseOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$extractOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$grepOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$hashOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$infoOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$macroOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$packageOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$patchOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$printOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$projectOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$releaseOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$runOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$runtestsOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$selectOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$settingOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$sourceOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$syntaxOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$testOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$typeOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$verifyOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$versionOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$viewOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$wrapOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd<span class="nv">$xrefOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/main/bnd-completion.bash
+MAJOR      RESOURCE   aQute/bnd/main/bnd.class
+  REMOVED    SHA        EC8E2F8B6765E64C5D418653DC3871A6DA71844F
+  ADDED      SHA        FF3A6531C0DD6E4E5CD3D729560D599EB929AF89
+ADDED      RESOURCE   aQute/bnd/main/component.xslt
+ADDED      RESOURCE   aQute/bnd/main/maven-settings.xsl
+MAJOR      RESOURCE   aQute/bnd/main/packageinfo
+  REMOVED    SHA        4CBF1AE09B541F925C0D6BCBB8684EF85A0B8373
+  ADDED      SHA        D6E9A3759405E18A266202C40D9AA4EBA6F83A87
+ADDED      RESOURCE   aQute/bnd/main/schema.xsl
+ADDED      RESOURCE   aQute/bnd/main/testreport.xsl
+MAJOR      RESOURCE   aQute/bnd/make/Make.class
+  REMOVED    SHA        C450A93D92842FFF73F919416D67D8566529ECD2
+  ADDED      SHA        F248C429BED7224A1B11ADAB230FF812487D41E2
+MAJOR      RESOURCE   aQute/bnd/make/MakeBnd.class
+  ADDED      SHA        B3A3364451F9DC3A4E091C47EA9D85E345B6F6F1
+  REMOVED    SHA        F255AC80281C5577080A25A0E0F2C1CEF36C53E9
+MAJOR      RESOURCE   aQute/bnd/make/MakeCopy.class
+  REMOVED    SHA        1B9DD05EB5FF75A176E39BA6B3D23D8FA1610953
+  ADDED      SHA        C99F91A71B005FBA46F74B265A12475BA7B056AC
+ADDED      RESOURCE   aQute/bnd/make/calltree/CalltreeResource<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/make/calltree/CalltreeResource<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/make/calltree/CalltreeResource.class
+ADDED      RESOURCE   aQute/bnd/make/component/ComponentAnnotationReader.class
+ADDED      RESOURCE   aQute/bnd/make/component/ServiceComponent<span class="nv">$ComponentMaker</span>.class
+ADDED      RESOURCE   aQute/bnd/make/component/ServiceComponent.class
+ADDED      RESOURCE   aQute/bnd/make/coverage/Coverage<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/make/coverage/Coverage<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/make/coverage/Coverage<span class="nv">$3</span>.class
+ADDED      RESOURCE   aQute/bnd/make/coverage/Coverage.class
+ADDED      RESOURCE   aQute/bnd/make/coverage/CoverageResource.class
+ADDED      RESOURCE   aQute/bnd/make/metatype/MetaTypeReader<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/make/metatype/MetaTypeReader<span class="nv">$Find</span>.class
+ADDED      RESOURCE   aQute/bnd/make/metatype/MetaTypeReader.class
+ADDED      RESOURCE   aQute/bnd/make/metatype/MetatypePlugin.class
+ADDED      RESOURCE   aQute/bnd/maven/BsnToMavenPath.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenCommand.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenDependencyGraph<span class="nv">$Artifact</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenDependencyGraph<span class="nv">$Scope</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenDependencyGraph.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenDeploy.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenDeployCmd.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenGroup.class
+ADDED      RESOURCE   aQute/bnd/maven/MavenRepository.class
+ADDED      RESOURCE   aQute/bnd/maven/PomFromManifest.class
+ADDED      RESOURCE   aQute/bnd/maven/PomParser.class
+ADDED      RESOURCE   aQute/bnd/maven/PomResource.class
+ADDED      RESOURCE   aQute/bnd/maven/support/CachedPom.class
+ADDED      RESOURCE   aQute/bnd/maven/support/Maven.class
+ADDED      RESOURCE   aQute/bnd/maven/support/MavenEntry<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/support/MavenEntry<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/support/MavenEntry.class
+ADDED      RESOURCE   aQute/bnd/maven/support/MavenRemoteRepository.class
+ADDED      RESOURCE   aQute/bnd/maven/support/Pom<span class="nv">$Dependency</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/support/Pom<span class="nv">$Rover</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/support/Pom<span class="nv">$Scope</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/support/Pom.class
+ADDED      RESOURCE   aQute/bnd/maven/support/ProjectPom<span class="nv">$Rover</span>.class
+ADDED      RESOURCE   aQute/bnd/maven/support/ProjectPom.class
+ADDED      RESOURCE   aQute/bnd/maven/support/Repo.class
+ADDED      RESOURCE   aQute/bnd/maven/support/packageinfo
+ADDED      RESOURCE   aQute/bnd/obr/OBRFragment.class
+ADDED      RESOURCE   aQute/bnd/osgi/About.class
+ADDED      RESOURCE   aQute/bnd/osgi/AbstractResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/Analyzer<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Analyzer<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Analyzer.class
+ADDED      RESOURCE   aQute/bnd/osgi/AnalyzerMessages.class
+ADDED      RESOURCE   aQute/bnd/osgi/Annotation.class
+ADDED      RESOURCE   aQute/bnd/osgi/AnnotationHeaders.class
+ADDED      RESOURCE   aQute/bnd/osgi/Builder.class
+ADDED      RESOURCE   aQute/bnd/osgi/BundleId.class
+ADDED      RESOURCE   aQute/bnd/osgi/ClassDataCollector.class
+ADDED      RESOURCE   aQute/bnd/osgi/ClassDataCollectors.class
+ADDED      RESOURCE   aQute/bnd/osgi/Classpath<span class="nv">$ClassVisitor</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Classpath.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$Assoc</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$ClassConstant</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$Def</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$FieldDef</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$JAVA$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$JAVA</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$MethodDef</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$QUERY</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz<span class="nv">$TypeDef</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Clazz.class
+ADDED      RESOURCE   aQute/bnd/osgi/CombinedResource<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/CombinedResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/CommandResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/Constants.class
+ADDED      RESOURCE   aQute/bnd/osgi/Contracts<span class="nv">$Contract</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Contracts.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors<span class="nv">$ArrayRef</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors<span class="nv">$ConcreteRef</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors<span class="nv">$Descriptor</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors<span class="nv">$PackageRef</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors<span class="nv">$Signature</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors<span class="nv">$SignatureType</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors<span class="nv">$TypeRef</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Descriptors.class
+ADDED      RESOURCE   aQute/bnd/osgi/Domain<span class="nv">$1$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Domain<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Domain<span class="nv">$2$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Domain<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Domain<span class="nv">$3</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Domain.class
+ADDED      RESOURCE   aQute/bnd/osgi/EmbeddedResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/FileResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/Instruction<span class="nv">$Filter</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Instruction.class
+ADDED      RESOURCE   aQute/bnd/osgi/Instructions.class
+ADDED      RESOURCE   aQute/bnd/osgi/Jar<span class="nv">$Compression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Jar.class
+ADDED      RESOURCE   aQute/bnd/osgi/JarResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/Macro<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Macro<span class="nv">$Link</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Macro.class
+ADDED      RESOURCE   aQute/bnd/osgi/OSInformation.class
+ADDED      RESOURCE   aQute/bnd/osgi/OpCodes.class
+ADDED      RESOURCE   aQute/bnd/osgi/Packages.class
+ADDED      RESOURCE   aQute/bnd/osgi/PreprocessResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/Processor<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Processor<span class="nv">$CL</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Processor<span class="nv">$FileLine</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Processor<span class="nv">$SetLocationImpl</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Processor.class
+ADDED      RESOURCE   aQute/bnd/osgi/Resource.class
+ADDED      RESOURCE   aQute/bnd/osgi/URLResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/Verifier<span class="nv">$ActivatorErrorType</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Verifier<span class="nv">$BundleActivatorError</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Verifier<span class="nv">$EE</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/Verifier.class
+ADDED      RESOURCE   aQute/bnd/osgi/WriteResource<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/WriteResource<span class="nv">$CountingOutputStream</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/WriteResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/ZipResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/bnd.info
+ADDED      RESOURCE   aQute/bnd/osgi/eclipse/EclipseClasspath.class
+ADDED      RESOURCE   aQute/bnd/osgi/packageinfo
+ADDED      RESOURCE   aQute/bnd/osgi/profiles-OpenJDK8.properties
+ADDED      RESOURCE   aQute/bnd/osgi/resource/CapReq<span class="nv">$MODE</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/CapReq.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/CapReqBuilder.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/CapabilityImpl.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$And</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$ApproximateExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$BundleExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$Expression$1</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$Expression$2</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$Expression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$HostExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$IdentityExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$Not</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$Op</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$Or</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$PackageExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$PatternExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$RangeExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$Rover</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$SimpleExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$SubExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser<span class="nv">$WithRangeExpression</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/FilterParser.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/Filters.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/PersistentResource<span class="nv">$Attr</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/PersistentResource<span class="nv">$DataType</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/PersistentResource<span class="nv">$Namespace</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/PersistentResource<span class="nv">$RC</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/PersistentResource<span class="nv">$RCData</span>.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/PersistentResource.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/RequirementImpl.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/ResourceBuilder.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/ResourceImpl.class
+ADDED      RESOURCE   aQute/bnd/osgi/resource/packageinfo
+REMOVED    RESOURCE   aQute/bnd/plugin/Activator<span class="nv">$1</span>.class
+REMOVED    RESOURCE   aQute/bnd/plugin/Activator<span class="nv">$2</span>.class
+REMOVED    RESOURCE   aQute/bnd/plugin/Activator<span class="nv">$3</span>.class
+REMOVED    RESOURCE   aQute/bnd/plugin/Activator.class
+REMOVED    RESOURCE   aQute/bnd/plugin/Central<span class="nv">$1</span>.class
+REMOVED    RESOURCE   aQute/bnd/plugin/Central.class
+REMOVED    RESOURCE   aQute/bnd/plugin/builder/BndBuilder<span class="nv">$DeltaVisitor</span>.class
+REMOVED    RESOURCE   aQute/bnd/plugin/builder/BndBuilder<span class="nv">$ResourceVisitor</span>.class
+REMOVED    RESOURCE   aQute/bnd/plugin/builder/BndBuilder.class
+REMOVED    RESOURCE   aQute/bnd/plugin/builder/BndNature.class
+REMOVED    RESOURCE   aQute/bnd/plugin/builder/ToggleNatureAction.class
+REMOVED    RESOURCE   aQute/bnd/plugin/popup/actions/InstallBundle.class
+REMOVED    RESOURCE   aQute/bnd/plugin/popup/actions/MakeBundle.class
+REMOVED    RESOURCE   aQute/bnd/plugin/popup/actions/VerifyBundle.class
+REMOVED    RESOURCE   aQute/bnd/plugin/popup/actions/WrapBundle.class
+ADDED      RESOURCE   aQute/bnd/properties/BadLocationException.class
+ADDED      RESOURCE   aQute/bnd/properties/CopyOnWriteTextStore<span class="nv">$StringTextStore</span>.class
+ADDED      RESOURCE   aQute/bnd/properties/CopyOnWriteTextStore.class
+ADDED      RESOURCE   aQute/bnd/properties/Document<span class="nv">$DelimiterInfo</span>.class
+ADDED      RESOURCE   aQute/bnd/properties/Document.class
+ADDED      RESOURCE   aQute/bnd/properties/GapTextStore.class
+ADDED      RESOURCE   aQute/bnd/properties/IDocument.class
+ADDED      RESOURCE   aQute/bnd/properties/IRegion.class
+ADDED      RESOURCE   aQute/bnd/properties/ITextStore.class
+ADDED      RESOURCE   aQute/bnd/properties/Line.class
+ADDED      RESOURCE   aQute/bnd/properties/LineTracker.class
+ADDED      RESOURCE   aQute/bnd/properties/LineType.class
+ADDED      RESOURCE   aQute/bnd/properties/PropertiesLineReader.class
+ADDED      RESOURCE   aQute/bnd/properties/Region.class
+ADDED      RESOURCE   aQute/bnd/properties/packageinfo
+ADDED      RESOURCE   aQute/bnd/resource/repository/ResourceDescriptorImpl.class
+ADDED      RESOURCE   aQute/bnd/resource/repository/ResourceRepositoryImpl<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/resource/repository/ResourceRepositoryImpl<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/resource/repository/ResourceRepositoryImpl<span class="nv">$FileLayout</span>.class
+ADDED      RESOURCE   aQute/bnd/resource/repository/ResourceRepositoryImpl.class
+ADDED      RESOURCE   aQute/bnd/service/Actionable.class
+MAJOR      RESOURCE   aQute/bnd/service/AnalyzerPlugin.class
+  REMOVED    SHA        6174C960699993F1F85880FE856A711616BDE67E
+  ADDED      SHA        627FCDE5472BC5042106CCF06CBD3080BEA7B30D
+ADDED      RESOURCE   aQute/bnd/service/BndListener.class
+ADDED      RESOURCE   aQute/bnd/service/CommandPlugin.class
+ADDED      RESOURCE   aQute/bnd/service/Compiler.class
+ADDED      RESOURCE   aQute/bnd/service/DependencyContributor.class
+ADDED      RESOURCE   aQute/bnd/service/Deploy.class
+ADDED      RESOURCE   aQute/bnd/service/EclipseJUnitTester.class
+ADDED      RESOURCE   aQute/bnd/service/IndexProvider.class
+ADDED      RESOURCE   aQute/bnd/service/LauncherPlugin.class
+MAJOR      RESOURCE   aQute/bnd/service/MakePlugin.class
+  REMOVED    SHA        6CBEC0D0266E75F5B416D933C8DB96BAD3F11858
+  ADDED      SHA        862ADC2AD2ED8E88CEE4F668F281B41C7883E53A
+ADDED      RESOURCE   aQute/bnd/service/Plugin.class
+ADDED      RESOURCE   aQute/bnd/service/Refreshable.class
+ADDED      RESOURCE   aQute/bnd/service/Registry.class
+ADDED      RESOURCE   aQute/bnd/service/RegistryDonePlugin.class
+ADDED      RESOURCE   aQute/bnd/service/RegistryPlugin.class
+ADDED      RESOURCE   aQute/bnd/service/RemoteRepositoryPlugin.class
+ADDED      RESOURCE   aQute/bnd/service/RepositoryListenerPlugin.class
+ADDED      RESOURCE   aQute/bnd/service/RepositoryPlugin<span class="nv">$DownloadListener</span>.class
+ADDED      RESOURCE   aQute/bnd/service/RepositoryPlugin<span class="nv">$PutOptions</span>.class
+ADDED      RESOURCE   aQute/bnd/service/RepositoryPlugin<span class="nv">$PutResult</span>.class
+MAJOR      RESOURCE   aQute/bnd/service/RepositoryPlugin.class
+  ADDED      SHA        7865276EC971AD9FFACB3A296DECE9E4C9A4A03F
+  REMOVED    SHA        957238133AA5116ABC5415641ACE3D087FFD44BE
+ADDED      RESOURCE   aQute/bnd/service/ResolutionPhase.class
+ADDED      RESOURCE   aQute/bnd/service/ResourceHandle<span class="nv">$Location</span>.class
+ADDED      RESOURCE   aQute/bnd/service/ResourceHandle.class
+ADDED      RESOURCE   aQute/bnd/service/Scripter.class
+ADDED      RESOURCE   aQute/bnd/service/SignerPlugin.class
+ADDED      RESOURCE   aQute/bnd/service/Strategy.class
+ADDED      RESOURCE   aQute/bnd/service/action/Action.class
+ADDED      RESOURCE   aQute/bnd/service/action/NamedAction.class
+ADDED      RESOURCE   aQute/bnd/service/action/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/classparser/ClassParser.class
+ADDED      RESOURCE   aQute/bnd/service/classparser/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/diff/Delta.class
+ADDED      RESOURCE   aQute/bnd/service/diff/Diff<span class="nv">$Data</span>.class
+ADDED      RESOURCE   aQute/bnd/service/diff/Diff<span class="nv">$Ignore</span>.class
+ADDED      RESOURCE   aQute/bnd/service/diff/Diff.class
+ADDED      RESOURCE   aQute/bnd/service/diff/Differ.class
+ADDED      RESOURCE   aQute/bnd/service/diff/Tree<span class="nv">$Data</span>.class
+ADDED      RESOURCE   aQute/bnd/service/diff/Tree.class
+ADDED      RESOURCE   aQute/bnd/service/diff/Type.class
+ADDED      RESOURCE   aQute/bnd/service/diff/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/extension/ExtensionActivator.class
+ADDED      RESOURCE   aQute/bnd/service/extension/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/progress/ProgressPlugin<span class="nv">$Task</span>.class
+ADDED      RESOURCE   aQute/bnd/service/progress/ProgressPlugin.class
+ADDED      RESOURCE   aQute/bnd/service/progress/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/repository/InfoRepository.class
+ADDED      RESOURCE   aQute/bnd/service/repository/MinimalRepository<span class="nv">$Gestalt</span>.class
+ADDED      RESOURCE   aQute/bnd/service/repository/MinimalRepository.class
+ADDED      RESOURCE   aQute/bnd/service/repository/Phase.class
+ADDED      RESOURCE   aQute/bnd/service/repository/RepositoryDigest.class
+ADDED      RESOURCE   aQute/bnd/service/repository/ResourceRepository<span class="nv">$Listener</span>.class
+ADDED      RESOURCE   aQute/bnd/service/repository/ResourceRepository<span class="nv">$ResourceRepositoryEvent</span>.class
+ADDED      RESOURCE   aQute/bnd/service/repository/ResourceRepository<span class="nv">$TYPE</span>.class
+ADDED      RESOURCE   aQute/bnd/service/repository/ResourceRepository.class
+ADDED      RESOURCE   aQute/bnd/service/repository/SearchableRepository<span class="nv">$ResourceDescriptor</span>.class
+ADDED      RESOURCE   aQute/bnd/service/repository/SearchableRepository.class
+ADDED      RESOURCE   aQute/bnd/service/repository/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/resolve/hook/ResolverHook.class
+ADDED      RESOURCE   aQute/bnd/service/resolve/hook/packageinfo
+ADDED      RESOURCE   aQute/bnd/service/url/TaggedData.class
+ADDED      RESOURCE   aQute/bnd/service/url/URLConnectionHandler.class
+ADDED      RESOURCE   aQute/bnd/service/url/URLConnector.class
+ADDED      RESOURCE   aQute/bnd/service/url/packageinfo
+ADDED      RESOURCE   aQute/bnd/signing/JartoolSigner<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/signing/JartoolSigner.class
+ADDED      RESOURCE   aQute/bnd/signing/Signer.class
+REMOVED    RESOURCE   aQute/bnd/test/ProjectLauncher<span class="nv">$1</span>.class
+REMOVED    RESOURCE   aQute/bnd/test/ProjectLauncher<span class="nv">$Streamer</span>.class
+REMOVED    RESOURCE   aQute/bnd/test/ProjectLauncher.class
+REMOVED    RESOURCE   aQute/bnd/test/aQute.runtime.jar
+ADDED      RESOURCE   aQute/bnd/testing/DSTestWiring<span class="nv">$Component</span>.class
+ADDED      RESOURCE   aQute/bnd/testing/DSTestWiring<span class="nv">$Reference</span>.class
+ADDED      RESOURCE   aQute/bnd/testing/DSTestWiring.class
+ADDED      RESOURCE   aQute/bnd/testing/TestingLog<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/testing/TestingLog<span class="nv">$Config</span>.class
+ADDED      RESOURCE   aQute/bnd/testing/TestingLog.class
+ADDED      RESOURCE   aQute/bnd/testing/packageinfo
+ADDED      RESOURCE   aQute/bnd/url/BasicAuthentication.class
+ADDED      RESOURCE   aQute/bnd/url/BndAuthentication.class
+ADDED      RESOURCE   aQute/bnd/url/ConnectionSettings<span class="nv">$Config</span>.class
+ADDED      RESOURCE   aQute/bnd/url/ConnectionSettings.class
+ADDED      RESOURCE   aQute/bnd/url/DefaultURLConnectionHandler.class
+ADDED      RESOURCE   aQute/bnd/url/HttpsVerification<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/bnd/url/HttpsVerification<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/bnd/url/HttpsVerification.class
+ADDED      RESOURCE   aQute/bnd/url/MultiURLConnectionHandler.class
+ADDED      RESOURCE   aQute/bnd/url/packageinfo
+ADDED      RESOURCE   aQute/bnd/util/dto/DTO.class
+ADDED      RESOURCE   aQute/bnd/util/dto/packageinfo
+ADDED      RESOURCE   aQute/bnd/version/Version.class
+ADDED      RESOURCE   aQute/bnd/version/VersionRange.class
+ADDED      RESOURCE   aQute/bnd/version/packageinfo
+ADDED      RESOURCE   aQute/configurable/Config.class
+ADDED      RESOURCE   aQute/configurable/Configurable<span class="nv">$ConfigurableHandler</span>.class
+ADDED      RESOURCE   aQute/configurable/Configurable.class
+ADDED      RESOURCE   aQute/configurable/packageinfo
+ADDED      RESOURCE   aQute/lib/base64/Base64.class
+ADDED      RESOURCE   aQute/lib/base64/packageinfo
+ADDED      RESOURCE   aQute/lib/collections/EnumerationIterator.class
+ADDED      RESOURCE   aQute/lib/collections/ExtList.class
+ADDED      RESOURCE   aQute/lib/collections/IteratorList.class
+ADDED      RESOURCE   aQute/lib/collections/LineCollection.class
+ADDED      RESOURCE   aQute/lib/collections/Logic.class
+ADDED      RESOURCE   aQute/lib/collections/MultiMap<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/lib/collections/MultiMap.class
+ADDED      RESOURCE   aQute/lib/collections/SortedList<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/lib/collections/SortedList<span class="nv">$It</span>.class
+ADDED      RESOURCE   aQute/lib/collections/SortedList.class
+ADDED      RESOURCE   aQute/lib/collections/packageinfo
+ADDED      RESOURCE   aQute/lib/converter/Converter<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/lib/converter/Converter<span class="nv">$Hook</span>.class
+ADDED      RESOURCE   aQute/lib/converter/Converter.class
+ADDED      RESOURCE   aQute/lib/converter/TypeReference.class
+ADDED      RESOURCE   aQute/lib/converter/packageinfo
+ADDED      RESOURCE   aQute/lib/deployer/FileRepo<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/lib/deployer/FileRepo<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/lib/deployer/FileRepo<span class="nv">$3</span>.class
+MAJOR      RESOURCE   aQute/lib/deployer/FileRepo.class
+  ADDED      SHA        5AE445A1EFA3EA6F6BF2120F28AF029BC32DEFC1
+  REMOVED    SHA        DA9A1E483557668D4A3CD944C96DB236DE7920CB
+REMOVED    RESOURCE   aQute/lib/deployer/ProjectRepo.class
+ADDED      RESOURCE   aQute/lib/deployer/RDImpl.class
+REMOVED    RESOURCE   aQute/lib/deployer/RepoDeployer.class
+ADDED      RESOURCE   aQute/lib/filter/Filter<span class="nv">$DictQuery</span>.class
+ADDED      RESOURCE   aQute/lib/filter/Filter<span class="nv">$MapQuery</span>.class
+ADDED      RESOURCE   aQute/lib/filter/Filter<span class="nv">$Query</span>.class
+ADDED      RESOURCE   aQute/lib/filter/Filter.class
+ADDED      RESOURCE   aQute/lib/filter/packageinfo
+ADDED      RESOURCE   aQute/lib/getopt/Arguments.class
+ADDED      RESOURCE   aQute/lib/getopt/CommandLine<span class="nv">$Option</span>.class
+ADDED      RESOURCE   aQute/lib/getopt/CommandLine.class
+ADDED      RESOURCE   aQute/lib/getopt/CommandLineMessages.class
+ADDED      RESOURCE   aQute/lib/getopt/Description.class
+ADDED      RESOURCE   aQute/lib/getopt/OptionArgument.class
+ADDED      RESOURCE   aQute/lib/getopt/Options.class
+ADDED      RESOURCE   aQute/lib/getopt/packageinfo
+ADDED      RESOURCE   aQute/lib/hex/Hex.class
+ADDED      RESOURCE   aQute/lib/hex/packageinfo
+ADDED      RESOURCE   aQute/lib/io/IO<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/lib/io/IO<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/lib/io/IO.class
+ADDED      RESOURCE   aQute/lib/io/IOConstants.class
+ADDED      RESOURCE   aQute/lib/io/LimitedInputStream.class
+ADDED      RESOURCE   aQute/lib/io/packageinfo
+REMOVED    RESOURCE   aQute/lib/jardiff/Diff.class
+ADDED      RESOURCE   aQute/lib/json/ArrayHandler.class
+ADDED      RESOURCE   aQute/lib/json/BooleanHandler.class
+ADDED      RESOURCE   aQute/lib/json/ByteArrayHandler.class
+ADDED      RESOURCE   aQute/lib/json/CharacterHandler.class
+ADDED      RESOURCE   aQute/lib/json/CollectionHandler.class
+ADDED      RESOURCE   aQute/lib/json/DateHandler.class
+ADDED      RESOURCE   aQute/lib/json/Decoder.class
+ADDED      RESOURCE   aQute/lib/json/Encoder.class
+ADDED      RESOURCE   aQute/lib/json/EnumHandler.class
+ADDED      RESOURCE   aQute/lib/json/FileHandler.class
+ADDED      RESOURCE   aQute/lib/json/Handler.class
+ADDED      RESOURCE   aQute/lib/json/JSONCodec.class
+ADDED      RESOURCE   aQute/lib/json/MapHandler.class
+ADDED      RESOURCE   aQute/lib/json/NumberHandler.class
+ADDED      RESOURCE   aQute/lib/json/ObjectHandler<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/lib/json/ObjectHandler.class
+ADDED      RESOURCE   aQute/lib/json/SpecialHandler.class
+ADDED      RESOURCE   aQute/lib/json/StringHandler.class
+ADDED      RESOURCE   aQute/lib/json/packageinfo
+ADDED      RESOURCE   aQute/lib/justif/Justif.class
+ADDED      RESOURCE   aQute/lib/justif/Table.class
+ADDED      RESOURCE   aQute/lib/justif/packageinfo
+ADDED      RESOURCE   aQute/lib/markdown/MarkdownFormatter.class
+REMOVED    RESOURCE   aQute/lib/osgi/About.class
+REMOVED    RESOURCE   aQute/lib/osgi/Analyzer.class
+REMOVED    RESOURCE   aQute/lib/osgi/Builder.class
+REMOVED    RESOURCE   aQute/lib/osgi/Clazz<span class="nv">$Assoc</span>.class
+REMOVED    RESOURCE   aQute/lib/osgi/Clazz<span class="nv">$QUERY</span>.class
+REMOVED    RESOURCE   aQute/lib/osgi/Clazz.class
+REMOVED    RESOURCE   aQute/lib/osgi/Constants.class
+REMOVED    RESOURCE   aQute/lib/osgi/EmbeddedResource.class
+REMOVED    RESOURCE   aQute/lib/osgi/FileResource.class
+REMOVED    RESOURCE   aQute/lib/osgi/Instruction.class
+REMOVED    RESOURCE   aQute/lib/osgi/Jar.class
+REMOVED    RESOURCE   aQute/lib/osgi/JarResource.class
+REMOVED    RESOURCE   aQute/lib/osgi/Macro<span class="nv">$Link</span>.class
+REMOVED    RESOURCE   aQute/lib/osgi/Macro.class
+REMOVED    RESOURCE   aQute/lib/osgi/OpCodes.class
+REMOVED    RESOURCE   aQute/lib/osgi/Plugin.class
+REMOVED    RESOURCE   aQute/lib/osgi/PreprocessResource.class
+REMOVED    RESOURCE   aQute/lib/osgi/Processor.class
+REMOVED    RESOURCE   aQute/lib/osgi/Resource.class
+REMOVED    RESOURCE   aQute/lib/osgi/URLResource.class
+REMOVED    RESOURCE   aQute/lib/osgi/Verifier.class
+REMOVED    RESOURCE   aQute/lib/osgi/ZipResource.class
+REMOVED    RESOURCE   aQute/lib/osgi/bnd.info
+REMOVED    RESOURCE   aQute/lib/osgi/eclipse/EclipseClasspath.class
+ADDED      RESOURCE   aQute/lib/persistentmap/PersistentMap<span class="nv">$1$1$1</span>.class
+ADDED      RESOURCE   aQute/lib/persistentmap/PersistentMap<span class="nv">$1$1</span>.class
+ADDED      RESOURCE   aQute/lib/persistentmap/PersistentMap<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/lib/persistentmap/PersistentMap.class
+ADDED      RESOURCE   aQute/lib/persistentmap/packageinfo
+ADDED      RESOURCE   aQute/lib/settings/PasswordCryptor.class
+ADDED      RESOURCE   aQute/lib/settings/Settings<span class="nv">$Data</span>.class
+ADDED      RESOURCE   aQute/lib/settings/Settings.class
+ADDED      RESOURCE   aQute/lib/settings/packageinfo
+ADDED      RESOURCE   aQute/lib/strings/Strings.class
+ADDED      RESOURCE   aQute/lib/strings/packageinfo
+ADDED      RESOURCE   aQute/lib/tag/Tag.class
+ADDED      RESOURCE   aQute/lib/tag/packageinfo
+ADDED      RESOURCE   aQute/libg/classdump/ClassDumper<span class="nv">$Assoc</span>.class
+ADDED      RESOURCE   aQute/libg/classdump/ClassDumper.class
+ADDED      RESOURCE   aQute/libg/classdump/packageinfo
+ADDED      RESOURCE   aQute/libg/command/Command<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/libg/command/Command<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/libg/command/Command<span class="nv">$3</span>.class
+ADDED      RESOURCE   aQute/libg/command/Command<span class="nv">$Collector</span>.class
+ADDED      RESOURCE   aQute/libg/command/Command.class
+ADDED      RESOURCE   aQute/libg/command/packageinfo
+ADDED      RESOURCE   aQute/libg/cryptography/Crypto.class
+ADDED      RESOURCE   aQute/libg/cryptography/Digest.class
+ADDED      RESOURCE   aQute/libg/cryptography/Digester.class
+ADDED      RESOURCE   aQute/libg/cryptography/Key.class
+ADDED      RESOURCE   aQute/libg/cryptography/MD5<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/libg/cryptography/MD5.class
+ADDED      RESOURCE   aQute/libg/cryptography/RSA.class
+ADDED      RESOURCE   aQute/libg/cryptography/SHA1<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/libg/cryptography/SHA1.class
+ADDED      RESOURCE   aQute/libg/cryptography/SHA256<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/libg/cryptography/SHA256.class
+ADDED      RESOURCE   aQute/libg/cryptography/Signer.class
+ADDED      RESOURCE   aQute/libg/cryptography/Verifier.class
+ADDED      RESOURCE   aQute/libg/cryptography/packageinfo
+ADDED      RESOURCE   aQute/libg/filelock/DirectoryLock.class
+ADDED      RESOURCE   aQute/libg/filelock/packageinfo
+ADDED      RESOURCE   aQute/libg/filters/AndFilter.class
+ADDED      RESOURCE   aQute/libg/filters/Filter.class
+ADDED      RESOURCE   aQute/libg/filters/LiteralFilter.class
+ADDED      RESOURCE   aQute/libg/filters/NotFilter.class
+ADDED      RESOURCE   aQute/libg/filters/Operator.class
+ADDED      RESOURCE   aQute/libg/filters/OrFilter.class
+ADDED      RESOURCE   aQute/libg/filters/SimpleFilter.class
+ADDED      RESOURCE   aQute/libg/filters/packageinfo
+ADDED      RESOURCE   aQute/libg/forker/Forker<span class="nv">$Job</span>.class
+ADDED      RESOURCE   aQute/libg/forker/Forker.class
+ADDED      RESOURCE   aQute/libg/forker/packageinfo
+ADDED      RESOURCE   aQute/libg/generics/Create.class
+ADDED      RESOURCE   aQute/libg/generics/packageinfo
+ADDED      RESOURCE   aQute/libg/glob/Glob.class
+ADDED      RESOURCE   aQute/libg/glob/packageinfo
+ADDED      RESOURCE   aQute/libg/map/MAP<span class="nv">$MAPX</span>.class
+ADDED      RESOURCE   aQute/libg/map/MAP.class
+ADDED      RESOURCE   aQute/libg/map/packageinfo
+ADDED      RESOURCE   aQute/libg/qtokens/QuotedTokenizer.class
+ADDED      RESOURCE   aQute/libg/qtokens/packageinfo
+ADDED      RESOURCE   aQute/libg/reporter/Message.class
+ADDED      RESOURCE   aQute/libg/reporter/ReporterAdapter<span class="nv">$LocationImpl</span>.class
+ADDED      RESOURCE   aQute/libg/reporter/ReporterAdapter.class
+ADDED      RESOURCE   aQute/libg/reporter/ReporterMessages<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/libg/reporter/ReporterMessages<span class="nv">$ERRORImpl</span>.class
+ADDED      RESOURCE   aQute/libg/reporter/ReporterMessages<span class="nv">$WARNINGImpl</span>.class
+ADDED      RESOURCE   aQute/libg/reporter/ReporterMessages.class
+ADDED      RESOURCE   aQute/libg/reporter/packageinfo
+ADDED      RESOURCE   aQute/libg/sed/Domain.class
+ADDED      RESOURCE   aQute/libg/sed/Replacer.class
+ADDED      RESOURCE   aQute/libg/sed/ReplacerAdapter<span class="nv">$1</span>.class
+ADDED      RESOURCE   aQute/libg/sed/ReplacerAdapter<span class="nv">$2</span>.class
+ADDED      RESOURCE   aQute/libg/sed/ReplacerAdapter<span class="nv">$3</span>.class
+ADDED      RESOURCE   aQute/libg/sed/ReplacerAdapter<span class="nv">$Link</span>.class
+ADDED      RESOURCE   aQute/libg/sed/ReplacerAdapter.class
+ADDED      RESOURCE   aQute/libg/sed/Sed.class
+ADDED      RESOURCE   aQute/libg/sed/packageinfo
+ADDED      RESOURCE   aQute/libg/tuple/ComparablePair.class
+ADDED      RESOURCE   aQute/libg/tuple/Pair.class
+ADDED      RESOURCE   aQute/libg/tuple/packageinfo
+ADDED      RESOURCE   aQute/service/reporter/Messages<span class="nv">$ERROR</span>.class
+ADDED      RESOURCE   aQute/service/reporter/Messages<span class="nv">$WARNING</span>.class
+ADDED      RESOURCE   aQute/service/reporter/Messages.class
+ADDED      RESOURCE   aQute/service/reporter/Report<span class="nv">$Location</span>.class
+ADDED      RESOURCE   aQute/service/reporter/Report.class
+ADDED      RESOURCE   aQute/service/reporter/Reporter<span class="nv">$SetLocation</span>.class
+ADDED      RESOURCE   aQute/service/reporter/Reporter.class
+ADDED      RESOURCE   aQute/service/reporter/packageinfo
+ADDED      RESOURCE   embedded-repo.jar
+REMOVED    RESOURCE   maven-dependencies.txt
+ADDED      RESOURCE   org/osgi/resource/Capability.class
+ADDED      RESOURCE   org/osgi/resource/Namespace.class
+ADDED      RESOURCE   org/osgi/resource/Requirement.class
+ADDED      RESOURCE   org/osgi/resource/Resource.class
+ADDED      RESOURCE   org/osgi/resource/Wire.class
+ADDED      RESOURCE   org/osgi/resource/Wiring.class
+ADDED      RESOURCE   org/osgi/resource/package-info.class
+ADDED      RESOURCE   org/osgi/resource/packageinfo
+ADDED      RESOURCE   org/osgi/service/bindex/BundleIndexer.class
+ADDED      RESOURCE   org/osgi/service/bindex/packageinfo
+ADDED      RESOURCE   org/osgi/service/component/annotations/Activate.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/Component.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/ConfigurationPolicy.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/Deactivate.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/LookupReference.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/Modified.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/Reference.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/ReferenceCardinality.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/ReferencePolicy.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/ReferencePolicyOption.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/ReferenceScope.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/ServiceScope.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/package-info.class
+ADDED      RESOURCE   org/osgi/service/component/annotations/packageinfo
+ADDED      RESOURCE   org/osgi/service/coordinator/Coordination.class
+ADDED      RESOURCE   org/osgi/service/coordinator/CoordinationException.class
+ADDED      RESOURCE   org/osgi/service/coordinator/CoordinationPermission<span class="nv">$1</span>.class
+ADDED      RESOURCE   org/osgi/service/coordinator/CoordinationPermission.class
+ADDED      RESOURCE   org/osgi/service/coordinator/CoordinationPermissionCollection.class
+ADDED      RESOURCE   org/osgi/service/coordinator/Coordinator.class
+ADDED      RESOURCE   org/osgi/service/coordinator/Participant.class
+ADDED      RESOURCE   org/osgi/service/coordinator/SignerProperty.class
+ADDED      RESOURCE   org/osgi/service/coordinator/package-info.class
+ADDED      RESOURCE   org/osgi/service/coordinator/packageinfo
+ADDED      RESOURCE   org/osgi/service/repository/ContentNamespace.class
+ADDED      RESOURCE   org/osgi/service/repository/Repository.class
+ADDED      RESOURCE   org/osgi/service/repository/RepositoryContent.class
+ADDED      RESOURCE   org/osgi/service/repository/package-info.class
+ADDED      RESOURCE   org/osgi/service/repository/packageinfo
+REMOVED    RESOURCE   plugin.xml
+REMOVED    RESOURCE   pom.xml
+ADDED      RESOURCE   templates/enroute.zip
+</code></pre></div></div>
+
+				</main>
+			</div>
+	</ul>
+
+
+
+
+	
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<div class="container-right">
+		<nav class="next-prev" data-pagefind-ignore>
+     
+    <a href='/releases/7.2.0/commands/dev.html' title="dev">Prev</a> 
+     
+    
+    <a href='/releases/7.2.0/commands/digest.html' title="digest">Next</a>
+     
+</nav>
+	</div>
+
+	<div class="modal" id="searchmodal" aria-hidden="true">
+    <div class="modal_overlay" tabindex="-1">
+        <div class="modal_container" role="dialog" aria-modal="true">
+            <header class="modal_header" style="margin-bottom: 10px;">
+                <b>
+                    Search
+                    <button class="modal_btn modal_btn-primary" data-modal-close=""
+                        aria-label="Close this dialog window" style="float:right;">Close</button>
+                </b>
+            </header>
+            <main class="modal_content" id="modalcontent">
+                <div id="pagefindsearch"></div>
+            </main>
+            <footer class="modal_footer">
+
+            </footer>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Basic styling to hide/show the modal */
+    .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Container for modal content */
+    .modal_container {
+        background: #fff;
+        margin: 5% auto;
+        /* Position the box somewhat centered */
+        padding: 1rem;
+        max-width: 600px;
+        border-radius: 4px;
+        position: relative;
+
+        /* Height and overflow for scrolling */
+        max-height: 80vh;
+        /* Use 80% of the viewport height */
+        overflow-y: auto;
+        /* Enable scrolling within the modal */
+    }
+
+    /* When modal is open, display it */
+    .modal.is-open {
+        display: block;
+    }
+</style>
+
+<script type="text/javascript">
+    // Function to open the modal
+    function openModal() {
+        const modal = document.getElementById('searchmodal');
+        // Change aria-hidden to false
+        modal.setAttribute('aria-hidden', 'false');
+        // Add a class to make it visible (assuming CSS uses .is-open to show)
+        modal.classList.add('is-open');
+
+        const searchFieldInput = document.querySelector('#modalcontent input');
+        searchFieldInput.focus();
+
+        // Define an event listener for the ESC key
+        escapeKeyListener = function (event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                closeModal(modal);
+            }
+        };
+
+        // Attach the ESC key event listener
+        document.addEventListener('keydown', escapeKeyListener);
+
+        // Attach click event listeners to close triggers
+        attachCloseEvents(modal);
+    }
+
+    function attachCloseEvents(modal) {
+        // Get all elements that can close the modal (overlay and close button)
+        const closeElements = modal.querySelectorAll('[data-modal-close]');
+
+        closeElements.forEach(el => {
+            el.addEventListener('click', function handleClose() {
+                closeModal(modal);
+                // Remove this event listener once closed (cleanup)
+                el.removeEventListener('click', handleClose);
+            });
+        });
+    }
+
+    // Function to close the modal
+    function closeModal(modal) {
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('is-open');
+    }
+</script>
+
+
+
+<link href="/pagefindindex/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefindindex/pagefind-ui.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        new PagefindUI({
+            element: "#pagefindsearch",
+            showSubResults: true,
+            translations: {
+                placeholder: "Search the bnd manual",
+            },
+            openFilters: ['pagetype']
+
+        });
+    });
+</script>
+
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/7.2.0/">Home</a>
+			</ul>
+	</ul>
+
+	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', () => {
+			const headers = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+
+			headers.forEach(header => {
+				const iconLink = document.createElement('a');
+				iconLink.href = `#${header.id}`;
+				iconLink.innerHTML = '#';
+				iconLink.className = 'header-link';
+
+				// Wrap the icon inside a span to control visibility with CSS
+				const wrapper = document.createElement('span');
+				wrapper.className = 'header-link-wrapper';
+				wrapper.appendChild(iconLink);
+
+				// Append the wrapper to the header
+				header.appendChild(wrapper);
+			});
+		});
+
+
+		// copy to clipboard buttons
+
+		const copyButtonLabel = "Copy";
+		let blocks = document.querySelectorAll("pre.highlight");
+
+		blocks.forEach((block) => {
+		// only add button if browser supports Clipboard API
+		if (navigator.clipboard) {
+			let button = document.createElement("button");
+			button.classList.add("copycodebtn");
+
+			button.innerText = copyButtonLabel;
+			block.appendChild(button);
+
+			button.addEventListener("click", async () => {
+			await copyCode(block, button);
+			});
+
+		}
+		});
+
+		async function copyCode(block, button) {
+		let code = block.querySelector("code");
+		let text = code.innerText;
+
+		await navigator.clipboard.writeText(text);
+
+		button.innerText = "Copied";
+
+			setTimeout(()=> {
+				button.innerText = copyButtonLabel;
+			},2000)
+		}
+	</script>
+
+</footer>
+
+</body>
+</html>

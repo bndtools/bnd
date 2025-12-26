@@ -1,0 +1,7185 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/7.2.0/css/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="/css/github.dark.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/sitemap.xml">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>bnd CLI Commands | bnd</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="bnd CLI Commands" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The command line interface (bnd CLI) provides various tools to invoke bnd functions and features. It is using bndlib under the hood just like other tooling like bndtools, maven or gradle plugins do too." />
+<meta property="og:description" content="The command line interface (bnd CLI) provides various tools to invoke bnd functions and features. It is using bndlib under the hood just like other tooling like bndtools, maven or gradle plugins do too." />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-12-27T00:11:56+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="bnd CLI Commands" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2025-12-27T00:11:56+01:00","datePublished":"2025-12-27T00:11:56+01:00","description":"The command line interface (bnd CLI) provides various tools to invoke bnd functions and features. It is using bndlib under the hood just like other tooling like bndtools, maven or gradle plugins do too.","headline":"bnd CLI Commands","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/7.2.0/chapters/400-commands.html"},"url":"/releases/7.2.0/chapters/400-commands.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+		<style>
+			 body {
+				counter-reset: h1 28;
+			}
+		</style>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+	
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="/releases/7.2.0/"><img
+			class=menu-logo src="/releases/7.2.0/img/bnd-80x40-white.png"></a>
+			<a 
+				class="" 
+				href="/releases/7.2.0/chapters/110-introduction.html">Intro
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/800-headers.html">Headers
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/825-instructions-ref.html">Instructions
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/855-macros-ref.html">Macros
+			</a>
+			<a 
+				class="selected"
+				href="/releases/7.2.0/chapters/400-commands.html">Commands
+			</a>
+			<div class="releases">
+				<button class="dropbtn"><span class="fa fa-bars"></span> 7.2.0</button>
+				<div class="dropdown-content"></div>
+			</div>
+    <li span=4>     
+        <div class="search-container">
+			<button type="button" class="fa fa-search" onclick="openModal()"></button>
+       </div>
+</ul>
+<div class=menu-link span=0><a
+	id="repo-link"
+	href="https://github.com/bndtools/bnd/blob/master/docs/_chapters/400-commands.md"
+	target="_blank"
+>
+	<img
+		style="
+			position: absolute;
+			top: 0;
+			right: 0;
+			margin: 0;
+			padding: 4px;
+			z-index: 100;
+			width: 45px;
+		"
+		src="/img/github-mark.svg"
+		alt="Fork me on GitHub"
+		title="Fork me on GitHub"
+/></a>
+</div>
+
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div class="side-nav">
+			
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Getting Started</span>
+		<ul class="side-nav">
+		
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/110-introduction.html">Introduction</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/120-install.html">How to install bnd</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/123-tour-workspace.html">Guided Tour Workspace & Projects</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/125-tour-features.html">bnd / bndlib Features and JAR Wrapping Techniques</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/920-faq.html">FAQ - Frequently Asked Questions</a></li>
+					
+
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Concepts and Practices</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/130-concepts.html">Concepts</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/135-history.html">Background</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/140-best-practices.html">Best practices</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Build and Development</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/150-build.html">Build</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/160-jars.html">Generating JARs</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/170-versioning.html">Versioning</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/180-baselining.html">Baselining</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/200-components.html">Service Components</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/210-metatype.html">Metatype</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/220-contracts.html">Contracts</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/235-accessor-properties.html">Accessor Properties</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/240-spi-annotations.html">SPI Annotations</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Dependency and Launching</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/250-resolving.html">Resolving Dependencies</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/300-launching.html">Launching</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/305-startlevels.html">Startlevels</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Testing</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/310-testing.html">Testing</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Packaging and Distribution</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/320-packaging.html">Packaging Applications</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/330-jpms.html">JPMS Libraries</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Documentation and Tools</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/395-generating-documentation.html">Generating Documentation</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li class=selected>bnd CLI Commands</li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/600-developer.html">For Developers</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/620-template-fragments.html">Templates for Workspaces</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/650-windows.html">Tips for Windows users</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/700-tools.html">Tools bound to bnd</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Reference Material</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/790-reference.html">Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/800-headers.html">Headers</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/820-instructions.html">Instruction Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/825-instructions-ref.html">Instruction Index</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/850-macros.html">Macro Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/855-macros-ref.html">Macro Index</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/870-plugins.html">Plugins</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/875-external-plugins.html">External Plugins</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Configuration and Troubleshooting</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/880-settings.html">Settings</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/900-errors.html">Errors</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/910-warnings.html">Warnings</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+
+
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+
+<main data-pagefind-body>
+				<div class="page-header">
+					<h1 data-pagefind-filter="pagetype:chapters"> bnd CLI Commands</h1>
+					<div class="container-right">
+						<nav class="next-prev" data-pagefind-ignore>
+     
+    <a href='/releases/7.2.0/chapters/395-generating-documentation.html' title="Generating Documentation">Prev</a> 
+     
+    
+    <a href='/releases/7.2.0/chapters/600-developer.html' title="For Developers">Next</a>
+     
+</nav>
+						
+						
+						
+					</div>
+					
+				</div>
+
+				<p>The command line interface (bnd CLI) provides various tools to invoke bnd functions and features. It is using bndlib under the hood just like other tooling like bndtools, maven or gradle plugins do too.</p>
+
+<p>Checkout the <a href="/chapters/123-tour-workspace.html">tutorial</a> which makes use of the CLI.</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>See here to <a href="/chapters/120-install.html#command-line">install the CLI</a>.</p>
+
+<h2 id="use">Use</h2>
+
+<p>The bnd CLI can be invoked in several different ways:</p>
+
+<ul>
+  <li>bnd ‘‘general-options’’ ‘‘cmd’’ ‘‘cmd-options’’</li>
+  <li>bnd ‘‘general-options’’ ‘‘<file>.jar''</file></li>
+  <li>bnd ‘‘general-options’’ ‘‘<file>.bnd''</file></li>
+</ul>
+
+<p>In this text <code class="language-shell highlighter-rouge">bnd</code> is used as if it is a command line program. This should be set up as:</p>
+
+<p>java -jar <path to="" bnd="">.jar ...</path></p>
+
+<h3 id="general-options">General Options</h3>
+
+<table>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td>General Option</td>
+      <td> </td>
+      <td>Description</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>–debug</td>
+      <td> </td>
+      <td>Show log debug output</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>–failok</td>
+      <td> </td>
+      <td>Turns errors into warnings so command always succeeds</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>–exceptions</td>
+      <td> </td>
+      <td>Will print the exception when the software has ran into a bad exception and bails out. Normally only a message is printed. For debugging or diagnostic reasons, the exception stack trace can be very helpful.</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Show <a href="/commands/bnd.html">list of all options</a> for the bnd CLI.</p>
+
+<h3 id="reference">Reference</h3>
+
+<div>
+
+<div>
+<table class="property-index">
+    <thead>
+        <th>page</th>
+        <th>Description</th>
+        <th>Class</th>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/action.html">action</a></td>
+            <td>Execute an action on a repo, or if no name is give, list the actions
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/add.html">add</a></td>
+            <td>Add a project, workspace, plugin or template fragment to the workspace
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/baseline.html">baseline</a></td>
+            <td>Compare a newer bundle to a baselined bundle and provide versioning advice
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/bash.html">bash</a></td>
+            <td>Generate autocompletion file for bash
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/bnd.html">bnd</a></td>
+            <td>The swiss army tool for OSGi
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/bootstrap.html">bootstrap</a></td>
+            <td>Interactive gogo shell
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/bsn2url.html">bsn2url</a></td>
+            <td>From a set of bsns, create a list of urls if found in the repo
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/build.html">build</a></td>
+            <td>Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/buildtool.html">buildtool</a></td>
+            <td>Install the build tool
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/buildx.html">buildx</a></td>
+            <td>Build project, is deprecated but here for backward compatibility
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/bump.html">bump</a></td>
+            <td>Bumps the version of a project. Will take the current version and then increment with a major, minor, or micro increment. The default bump is minor.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/changes.html">changes</a></td>
+            <td>Show the changes in this release of bnd
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/classpath.html">classpath</a></td>
+            <td>Show the classpath with all the current -buildpath and optional -testpath dependencies
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/classtoresource.html">classtoresource</a></td>
+            <td>Convert class names to resource paths from stdin to stdout
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/clean.html">clean</a></td>
+            <td>Clean a project or workspace
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/collect.html">collect</a></td>
+            <td>Extract a set of resources from a set of JARs given a set of prefixes. All prefixes in any of the given input jars are added to the output jar
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/com.html">com</a></td>
+            <td>Commands to verify and check the communications settings for the http client.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/compile.html">compile</a></td>
+            <td>Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use &#39;bnd build&#39; for compile and build.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/convert.html">convert</a></td>
+            <td>Converter to different formats
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/copy.html">copy</a></td>
+            <td>Copy a bundle, potentially stripping it
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/create.html">create</a></td>
+            <td>Create jar, used to support backward compatible java jar commands
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/debug.html">debug</a></td>
+            <td>Show a lot of info about the project you&#39;re in
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/defaults.html">defaults</a></td>
+            <td>Show all the defaults in bnd
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/deliverables.html">deliverables</a></td>
+            <td>Show all deliverables from this workspace. with their current version and path.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/dependencies.html">dependencies</a></td>
+            <td>Show the used workspace dependencies 
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/dev.html">dev</a></td>
+            <td>Experimental: Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/diff.html">diff</a></td>
+            <td>Compares two jars. Without specifying the JARs (and when there is a current project) the jars of this project are diffed against their baseline in the baseline repository, using the sub-builder&#39;s options (these can be overridden). If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are then compared to eachother.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/digest.html">digest</a></td>
+            <td>Digests a number of files
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/do.html">do</a></td>
+            <td>Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/eclipse.html">eclipse</a></td>
+            <td>Show info about the current directory&#39;s eclipse project
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/ees.html">ees</a></td>
+            <td>Show the Execution Environments of a JAR
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/export.html">export</a></td>
+            <td>Export a bndrun file
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/exportreport.html">exportreport</a></td>
+            <td>Generate and export reports of a workspace, a project or of a jar.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/extract.html">extract</a></td>
+            <td>Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/find.html">find</a></td>
+            <td>Go through the exports and/or imports and match the given exports/imports globs. If thet match print the file, package and version.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/flatten.html">flatten</a></td>
+            <td>Flatten a bundle by expanding all entries on the Bundle-ClassPath
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/generate.html">generate</a></td>
+            <td>Generate source code
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/generatemanual.html">generatemanual</a></td>
+            <td>Generate markdown files for bnd manual e.g. for all headers / instructions / commands defined in Syntax.java and bnd.java. You can point it the the /docs folder of the bnd manual, to add or regenerate pages.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/gmd.html">gmd</a></td>
+            <td>Generate markdown documentation for all bnd CLI commands
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/graph.html">graph</a></td>
+            <td>Commands to inspect a dependency graph of a set of bundles
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/grep.html">grep</a></td>
+            <td>Grep the manifest of bundles/jar files. 
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/index.html">index</a></td>
+            <td>Index bundles from the local file system
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/info.html">info</a></td>
+            <td>Show key project variables
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/junit.html">junit</a></td>
+            <td>Test a project with plain JUnit
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/macro.html">macro</a></td>
+            <td>Show macro value. Macro can contain the ${ and } parentheses but it is also ok without. You can use the &#39;:&#39; instead of the &#39;;&#39; in a macro
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/maven.html">maven ( &#39;settings&#39; | &#39;bundle&#39;</a></td>
+            <td>Special maven commands
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/mbr.html">mbr</a></td>
+            <td>Maintain Maven Bnd Repository GAV files
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/nexus.html">nexus</a></td>
+            <td>Nexus repository command. Provides a number of sub commands to manipulate a Nexus repository.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/package.html">package</a></td>
+            <td>Package a bnd or bndrun file into a single jar that executes with java -jar &lt;&gt;.jar. The JAR contains all dependencies, including the framework and the launcher. A profile can be specified which will be used to find properties. If a property is not found, a property with the name [&lt;profile&gt;]NAME will be looked up. This allows you to make different profiles for testing and runtime.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/packagetoresource.html">packagetoresource</a></td>
+            <td>Convert package names to resource paths from stdin to stdout
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/plugins.html">plugins</a></td>
+            <td>Show the loaded workspace plugins
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/print.html">print</a></td>
+            <td>Provides detailed view of the JAR / bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/profile.html">profile</a></td>
+            <td>Profile management. A profile is a JAR that only contains packages and capabilities
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/project.html">project</a></td>
+            <td>Execute a Project action, or if no params given, show information about the project
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/properties.html">properties</a></td>
+            <td>Show the project or the workspace properties
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/release.html">release</a></td>
+            <td>Release this project
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/remote.html">remote</a></td>
+            <td>Communicates with the remote agent
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/remove.html">remove</a></td>
+            <td>Remove a project or a plugin from the workspace
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/repo.html">repo</a></td>
+            <td>Access to the repositories. Provides a number of sub commands to manipulate the repository (see repo help) that provide access to the installed repos for the current project.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/resolve.html">resolve</a></td>
+            <td>Resolve a number of bndrun files (either standalone or based on the workspace) and print the bundles 
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/run.html">run</a></td>
+            <td>Run a project in the OSGi launcher.  If no bndrun is specified, the current project is used for the run specification
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/runtests.html">runtests</a></td>
+            <td>Run OSGi tests and create report
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/schema.html">schema</a></td>
+            <td>Highly specialized function to create an overview of package deltas in ees. Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema ee.j2se-1.6.0 ee.j2se-1.5.0 ee.j2ee-1.4.0
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/select.html">select</a></td>
+            <td>Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/settings.html">settings</a></td>
+            <td>Set bnd global variables. The key can be wildcard.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/shell.html">shell [options]</a></td>
+            <td>Open a shell on a project, workspace, or plain bnd defaults and exercise commands and macros
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/source.html">source</a></td>
+            <td>Merge a binary jar with its sources. It is possible to specify  source path
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/sync.html">sync</a></td>
+            <td>Force a cache update of the workspace
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/syntax.html">syntax</a></td>
+            <td>Access the internal bnd database of keywords and options
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/test.html">test</a></td>
+            <td>Test a project according to an OSGi test
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/type.html">type</a></td>
+            <td>List files int a JAR file, equivalent jar command t[vf] (syntax supported)
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/verify.html">verify</a></td>
+            <td>Verify jars
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/version.html">version</a></td>
+            <td>Show version information about bnd
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/view.html">view</a></td>
+            <td>View a resource from a JAR file. Manifest will be pretty printed and class files are shown disassembled.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/wrap.html">wrap</a></td>
+            <td>Wrap a jar into a bundle. This is a poor man&#39;s facility to quickly turn a non-OSGi JAR into an OSGi bundle. It is usually better to write a bnd file and use the bnd &lt;file&gt;.bnd command because that has greater control. Even better is to wrap in bndtools.
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/xmlrepodiff.html">xmlrepodiff</a></td>
+            <td>Shows the differences between two XML resource repositories
+</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/releases/7.2.0/commands/xref.html">xref</a></td>
+            <td>Show a cross references for all classes in a set of jars.
+</td>
+            <td></td>
+        </tr>
+        
+    </tbody>
+</table>
+</div>
+</div>
+
+				</main>
+			</div>
+	</ul>
+
+
+
+
+	
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<div class="container-right">
+		<nav class="next-prev" data-pagefind-ignore>
+     
+    <a href='/releases/7.2.0/chapters/395-generating-documentation.html' title="Generating Documentation">Prev</a> 
+     
+    
+    <a href='/releases/7.2.0/chapters/600-developer.html' title="For Developers">Next</a>
+     
+</nav>
+	</div>
+
+	<div class="modal" id="searchmodal" aria-hidden="true">
+    <div class="modal_overlay" tabindex="-1">
+        <div class="modal_container" role="dialog" aria-modal="true">
+            <header class="modal_header" style="margin-bottom: 10px;">
+                <b>
+                    Search
+                    <button class="modal_btn modal_btn-primary" data-modal-close=""
+                        aria-label="Close this dialog window" style="float:right;">Close</button>
+                </b>
+            </header>
+            <main class="modal_content" id="modalcontent">
+                <div id="pagefindsearch"></div>
+            </main>
+            <footer class="modal_footer">
+
+            </footer>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Basic styling to hide/show the modal */
+    .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Container for modal content */
+    .modal_container {
+        background: #fff;
+        margin: 5% auto;
+        /* Position the box somewhat centered */
+        padding: 1rem;
+        max-width: 600px;
+        border-radius: 4px;
+        position: relative;
+
+        /* Height and overflow for scrolling */
+        max-height: 80vh;
+        /* Use 80% of the viewport height */
+        overflow-y: auto;
+        /* Enable scrolling within the modal */
+    }
+
+    /* When modal is open, display it */
+    .modal.is-open {
+        display: block;
+    }
+</style>
+
+<script type="text/javascript">
+    // Function to open the modal
+    function openModal() {
+        const modal = document.getElementById('searchmodal');
+        // Change aria-hidden to false
+        modal.setAttribute('aria-hidden', 'false');
+        // Add a class to make it visible (assuming CSS uses .is-open to show)
+        modal.classList.add('is-open');
+
+        const searchFieldInput = document.querySelector('#modalcontent input');
+        searchFieldInput.focus();
+
+        // Define an event listener for the ESC key
+        escapeKeyListener = function (event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                closeModal(modal);
+            }
+        };
+
+        // Attach the ESC key event listener
+        document.addEventListener('keydown', escapeKeyListener);
+
+        // Attach click event listeners to close triggers
+        attachCloseEvents(modal);
+    }
+
+    function attachCloseEvents(modal) {
+        // Get all elements that can close the modal (overlay and close button)
+        const closeElements = modal.querySelectorAll('[data-modal-close]');
+
+        closeElements.forEach(el => {
+            el.addEventListener('click', function handleClose() {
+                closeModal(modal);
+                // Remove this event listener once closed (cleanup)
+                el.removeEventListener('click', handleClose);
+            });
+        });
+    }
+
+    // Function to close the modal
+    function closeModal(modal) {
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('is-open');
+    }
+</script>
+
+
+
+<link href="/pagefindindex/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefindindex/pagefind-ui.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        new PagefindUI({
+            element: "#pagefindsearch",
+            showSubResults: true,
+            translations: {
+                placeholder: "Search the bnd manual",
+            },
+            openFilters: ['pagetype']
+
+        });
+    });
+</script>
+
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/7.2.0/">Home</a>
+			</ul>
+	</ul>
+
+	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', () => {
+			const headers = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+
+			headers.forEach(header => {
+				const iconLink = document.createElement('a');
+				iconLink.href = `#${header.id}`;
+				iconLink.innerHTML = '#';
+				iconLink.className = 'header-link';
+
+				// Wrap the icon inside a span to control visibility with CSS
+				const wrapper = document.createElement('span');
+				wrapper.className = 'header-link-wrapper';
+				wrapper.appendChild(iconLink);
+
+				// Append the wrapper to the header
+				header.appendChild(wrapper);
+			});
+		});
+
+
+		// copy to clipboard buttons
+
+		const copyButtonLabel = "Copy";
+		let blocks = document.querySelectorAll("pre.highlight");
+
+		blocks.forEach((block) => {
+		// only add button if browser supports Clipboard API
+		if (navigator.clipboard) {
+			let button = document.createElement("button");
+			button.classList.add("copycodebtn");
+
+			button.innerText = copyButtonLabel;
+			block.appendChild(button);
+
+			button.addEventListener("click", async () => {
+			await copyCode(block, button);
+			});
+
+		}
+		});
+
+		async function copyCode(block, button) {
+		let code = block.querySelector("code");
+		let text = code.innerText;
+
+		await navigator.clipboard.writeText(text);
+
+		button.innerText = "Copied";
+
+			setTimeout(()=> {
+				button.innerText = copyButtonLabel;
+			},2000)
+		}
+	</script>
+
+</footer>
+
+</body>
+</html>
