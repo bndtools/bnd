@@ -1,0 +1,7137 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/7.2.0/css/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="/css/github.dark.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/sitemap.xml">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Testing with Launchpad | bnd</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Testing with Launchpad" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="note This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage." />
+<meta property="og:description" content="note This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage." />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-12-27T00:11:56+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Testing with Launchpad" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2025-12-27T00:11:56+01:00","datePublished":"2025-12-27T00:11:56+01:00","description":"note This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage.","headline":"Testing with Launchpad","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/7.2.0/chapters/315-launchpad-testing.html"},"url":"/releases/7.2.0/chapters/315-launchpad-testing.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+		<style>
+			 body {
+				counter-reset: h1 23;
+			}
+		</style>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+	
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="/releases/7.2.0/"><img
+			class=menu-logo src="/releases/7.2.0/img/bnd-80x40-white.png"></a>
+			<a 
+				class="" 
+				href="/releases/7.2.0/chapters/110-introduction.html">Intro
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/800-headers.html">Headers
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/825-instructions-ref.html">Instructions
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/855-macros-ref.html">Macros
+			</a>
+			<a 
+				class=""
+				href="/releases/7.2.0/chapters/400-commands.html">Commands
+			</a>
+			<div class="releases">
+				<button class="dropbtn"><span class="fa fa-bars"></span> 7.2.0</button>
+				<div class="dropdown-content"></div>
+			</div>
+    <li span=4>     
+        <div class="search-container">
+			<button type="button" class="fa fa-search" onclick="openModal()"></button>
+       </div>
+</ul>
+<div class=menu-link span=0><a
+	id="repo-link"
+	href="https://github.com/bndtools/bnd/blob/master/docs/_chapters/315-launchpad-testing.md"
+	target="_blank"
+>
+	<img
+		style="
+			position: absolute;
+			top: 0;
+			right: 0;
+			margin: 0;
+			padding: 4px;
+			z-index: 100;
+			width: 45px;
+		"
+		src="/img/github-mark.svg"
+		alt="Fork me on GitHub"
+		title="Fork me on GitHub"
+/></a>
+</div>
+
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div class="side-nav">
+			
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Getting Started</span>
+		<ul class="side-nav">
+		
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/110-introduction.html">Introduction</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/120-install.html">How to install bnd</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/123-tour-workspace.html">Guided Tour Workspace & Projects</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/125-tour-features.html">bnd / bndlib Features and JAR Wrapping Techniques</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/920-faq.html">FAQ - Frequently Asked Questions</a></li>
+					
+
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Concepts and Practices</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/130-concepts.html">Concepts</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/135-history.html">Background</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/140-best-practices.html">Best practices</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Build and Development</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/150-build.html">Build</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/160-jars.html">Generating JARs</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/170-versioning.html">Versioning</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/180-baselining.html">Baselining</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/200-components.html">Service Components</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/210-metatype.html">Metatype</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/220-contracts.html">Contracts</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/235-accessor-properties.html">Accessor Properties</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/240-spi-annotations.html">SPI Annotations</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Dependency and Launching</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/250-resolving.html">Resolving Dependencies</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/300-launching.html">Launching</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/305-startlevels.html">Startlevels</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Testing</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/310-testing.html">Testing</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li class=selected>Testing with Launchpad</li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Packaging and Distribution</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/320-packaging.html">Packaging Applications</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/330-jpms.html">JPMS Libraries</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Documentation and Tools</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/395-generating-documentation.html">Generating Documentation</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/400-commands.html">bnd CLI Commands</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/600-developer.html">For Developers</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/620-template-fragments.html">Templates for Workspaces</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/650-windows.html">Tips for Windows users</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/700-tools.html">Tools bound to bnd</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Reference Material</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/790-reference.html">Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/800-headers.html">Headers</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/820-instructions.html">Instruction Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/825-instructions-ref.html">Instruction Index</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/850-macros.html">Macro Reference</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/855-macros-ref.html">Macro Index</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/870-plugins.html">Plugins</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/875-external-plugins.html">External Plugins</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+	
+	<ul class="side-nav">
+	<li><span class="side-nav-section">Configuration and Troubleshooting</span>
+		<ul class="side-nav">
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/880-settings.html">Settings</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/900-errors.html">Errors</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+				
+				
+			
+			
+		
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+				
+			
+				
+
+					
+					<li><a href="/releases/7.2.0/chapters/910-warnings.html">Warnings</a></li>
+					
+
+				
+				
+			
+				
+				
+			
+			
+		
+		</ul>
+	</li>
+	</ul>
+
+
+
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+
+<main data-pagefind-body>
+				<div class="page-header">
+					<h1 data-pagefind-filter="pagetype:chapters"> Testing with Launchpad</h1>
+					<div class="container-right">
+						<nav class="next-prev" data-pagefind-ignore>
+     
+    <a href='/releases/7.2.0/chapters/310-testing.html' title="Testing">Prev</a> 
+     
+    
+    <a href='/releases/7.2.0/chapters/320-packaging.html' title="Packaging Applications">Next</a>
+     
+</nav>
+						
+						
+						<div class="pageclass" onclick="window.location.href='/chapters/790-reference.html';">
+							Project
+						</div>
+						
+						
+					</div>
+					
+				</div>
+
+				<p><em>note</em> This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage.</p>
+
+<p>An OSGi framework poses special challenges to testing because it is necessary to start a framework instance for each 
+test. There has always been a bnd OSGi testing framework that was developed to test the OSGi specifications and  reference
+implementations. This testing framework packaged the tests as a bundle and had a special version of JUnit that could run
+these tests from inside the framework. Actually quite powerful and it was fully integrated with  Eclipse JUnit testing,
+delivering identical output to the CI build tools. However, the use of a special JUnit runner excluded it for people that wanted
+to use TestNG or other test frameworks.</p>
+
+<p>A second problem was that since tests ran inside the framework as a bundle they could not influence the setup of the OSGi
+framework easily. A last problem was that tests shared the same framework which could result in ordering dependencies.</p>
+
+<h2 id="launchpad">Launchpad</h2>
+
+<p>Launchpad is a bnd runtime library that provides an API to launch a framework that is fully integrated with the 
+bnd workspace. It automatically exports the runtime class path via the framework bundle, ensuring there is a single class space for
+the code on the class path and the code in the bundles. (This does require that bundles properly import their 
+exported packages.)</p>
+
+<p>Launchpad provides a builder that incrementally can build up the specifications of the framework. The builder can
+take <code class="language-shell highlighter-rouge">bndrun</code> files or bundle specifications in the same format as that are used to set the <code class="language-shell highlighter-rouge"><span class="nt">-buildpath</span></code> or
+<code class="language-shell highlighter-rouge"><span class="nt">-runbundles</span></code> in the <code class="language-shell highlighter-rouge">bnd.bnd</code> files. Once the information is setup, bnd will calculate the setup based on 
+the classes in the <code class="language-shell highlighter-rouge"><span class="nb">test</span></code> folder and launch an OSGi framework.</p>
+
+<p>Once the framework is launched, Launchpad can then inject services and some key framework objects into annotated
+fields. Each field can specify a timeout, target filter, and minimum cardinality. Injection can take place in any object but is
+usually on the test instance.</p>
+
+<p>In the original OSGi testing support test bundles had to be created during the build. In the OSGi test cases for the Blueprint
+reference implementation more than 200 test bundles were used. Although the overhead was relatively small due to the bnd <code class="language-shell highlighter-rouge"><span class="nt">-make</span></code> facility,
+it was still a nuisance because the information in a test case had to be synchronized in a <code class="language-shell highlighter-rouge">bnd</code> file in another directory. For
+this reason Launchpad contains a <em>bundle builder</em>. This bundle builder used <code class="language-shell highlighter-rouge">bnd</code> under the hood. It can use anything that a bnd
+sub bundle could use; it is build in the context of the project that contains the test classes and shares the same 
+<code class="language-shell highlighter-rouge"><span class="nt">-buildpath</span></code>. Bundles that are build with the bundle builder can actually leverage nested classes in the test class for
+Bundle Activator or component classes.</p>
+
+<p>Overall this is a comprehensive library for testing OSGi projects in a Bndtools workspace.</p>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<p>You need the <code class="language-shell highlighter-rouge">biz.aQute.launchpad</code> library on your <code class="language-shell highlighter-rouge"><span class="nt">-testpath</span></code>.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bnd.bnd:
+...	
+<span class="nt">-buildpath</span>: ...
+<span class="nt">-testpath</span>: <span class="se">\</span>
+	osgi.enroute.junit.wrapper, <span class="se">\</span>
+	biz.aQute.launchpad
+</code></pre></div></div>
+
+<p><em>note</em> The biz.aQute.launchpad is available in 4.2 but there are a few minor API changes that did not make it. You can
+therefore use the snapshot version on JFrog or download the latest version and use:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lib/biz.aQute.launchpad.jar<span class="p">;</span><span class="nv">version</span><span class="o">=</span>file
+</code></pre></div></div>
+
+<p>The next step is to enable your <em>workspace</em> for launchpad. A bnd workspace can have a Remote Workspace Server and
+Launchpad needs it. You therefore need to add the following to your <code class="language-shell highlighter-rouge">cnf/build.bnd</code> file.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cnf/build.bnd:
+    <span class="nt">-remoteworkspace</span>        <span class="nb">true</span>
+</code></pre></div></div>
+
+<p>Using JUnit, we can now create a test. We start with creating a <code class="language-shell highlighter-rouge">LaunchpadBuilder</code>. This builder stores information about the to be started framework. It has many
+methods that usually align with the properties for a <code class="language-shell highlighter-rouge">bnd.bnd</code> file. The Javadoc contains the details. We could create this
+object in a <code class="language-shell highlighter-rouge">@Before</code> method and close it in an <code class="language-shell highlighter-rouge">@After</code> method but this object does not have to be closed. It contains only
+the settings.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>LaunchpadBuilder	builder	<span class="o">=</span> new LaunchpadBuilder<span class="o">()</span>
+					.runfw<span class="o">(</span><span class="s2">"org.apache.felix.framework"</span><span class="o">)</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>For this first quick start test we inject a Bundle Context, the core OSGi object that allows us to interact with the framework.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Service
+BundleContext		context<span class="p">;</span>
+</code></pre></div></div>
+
+<p>The method is a normal JUnit test method. We open the Launchpad in a <em>try resource</em> block. Closing the <code class="language-shell highlighter-rouge">Launchpad</code> object will
+shutdown the framework. The test is simply verifying that the injection has worked.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void quickStart<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder.create<span class="o">()</span>
+		.inject<span class="o">(</span>this<span class="o">))</span> <span class="o">{</span>
+		assertNotNull<span class="o">(</span>context<span class="o">)</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Voila! The first Launchpad test case.</p>
+
+<h2 id="two-models">Two Models</h2>
+
+<p>The Launchpad code can be used in different modes:</p>
+
+<ul>
+  <li>Using the class path. In this mode classes on the classpath are exported as framework classes and override 
+any classes in the framework. This mode does not require any support from the test framework but there are
+a number of caveats. This setup works very well if you want to tests POJOs that require an OSGi context.</li>
+  <li>JUnit Runner. In this mode bnd creates a bundle that is the project’s bundle but includes the test classes. These
+test classes use DynamicImport-Package to minimize disruptions to the manifest. The Launchpad Runner will then start
+the framework, install the test bundle, and run the tests. This mode works well when you want to test your finished bundle.</li>
+</ul>
+
+<h2 id="junit-launchpad-runner-mode">JUnit Launchpad Runner Mode</h2>
+
+<p>To use the Launchpad Runner it is necessary to add an <code class="language-shell highlighter-rouge">@RunWith</code> annotation on your JUnit test class:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@RunWith<span class="o">(</span>LaunchpadRunner.class<span class="o">)</span>
+public class TestMyCode <span class="o">{</span>
+
+    LaunchpadBuilder    builder <span class="o">=</span> new LaunchpadBuilder<span class="o">()</span>.runfw<span class="o">(</span><span class="s2">"org.apache.felix.framework"</span><span class="o">)</span>.debug<span class="o">()</span><span class="p">;</span>
+
+    @Service
+    Launchpad       launchpad<span class="p">;</span>
+
+    @Test
+    public void testMyCode<span class="o">()</span> <span class="o">{</span>
+        launchpad.report<span class="o">()</span><span class="p">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="junit-theory">Junit Theory</h3>
+
+<p>The Launchpad Runner is in control to gather the tests and then execute them. The test gathering is handled via the
+standard JUnit support. However, when the test must run, LaunchpadRunner creates a bundle that has the following qualities:</p>
+
+<ul>
+  <li>Fully contains the project’s build artifact. This is the sole bundle for a single bundle project or the first bundle (sorted 
+by name) if a multi bundle project is used. The code actually uses a prior build JAR.</li>
+  <li>All the test classes are added to this JAR</li>
+  <li>A DynamicImport-Package * is added</li>
+</ul>
+
+<p>The runner then launches a framework based on a LaunchpadBuilder that it finds in the the <code class="language-shell highlighter-rouge">static</code> field <code class="language-shell highlighter-rouge">builder</code>.</p>
+
+<p>It then installs the bundles, and adds the test bundle. To execute a test, it loads the
+class from the test bundle and finds the appropriate method, instantiates the class in an instance, runs the injector
+on this object. and executes the methods.</p>
+
+<p>This mode is similar to the PAX Exam model. It has similar constraints. It does run the <code class="language-shell highlighter-rouge">@Before</code> and <code class="language-shell highlighter-rouge">@After</code> annotated
+methods but it cannot run the <code class="language-shell highlighter-rouge">@BeforeClass</code> and <code class="language-shell highlighter-rouge">@AfterClass</code>.</p>
+
+<h2 id="classpath-mode">Classpath Mode</h2>
+
+<p>Launchpad is quite awesome to use but there are some pitfalls to take into account. It is strongly recommended
+to read this section to get an idea how Launchpad handles class sharing between the test classes (which are on the
+normal Java class path) and the classes in bundles. There is more going on than what one suspects looking at the
+simplicity how it can be used. This section details the workings to make you aware of potential bugs and should 
+help in debugging problems. In general, the cleaner your code base, the better this all works. If you have a very messy
+setup with lots of scripts, fragments, require bundle, and very wide code interfaces instead of services then this
+might not be for you …</p>
+
+<h3 id="class-loading">Class Loading</h3>
+
+<p>In Java, class are loaded from the <em>classpath</em>. The class path is a (usually very long) list of Jar files. When a class
+needs to be loaded, Java searches al those Jars for that class, first one wins.</p>
+
+<p>In OSGi, this model is changed for a <em>delegating</em> model. Each bundle <em>imports</em> a set of <em>packages</em> and <em>exports</em> a set 
+of packages. This information is in a bundle’s <em>manifest</em>. When an OSGi framework <em>resolves</em> a bundle, it wires these
+imports to a corresponding export.</p>
+
+<h3 id="lauchpads-classpath">Lauchpad’s Classpath</h3>
+
+<p>When a test case gets started the <em>driver</em> (Eclipse, Gradle, etc.) launches a new Java VM. The class path for that
+VM will consist of all entries on the <code class="language-shell highlighter-rouge"><span class="nt">-buildpath</span></code>, <code class="language-shell highlighter-rouge"><span class="nt">-testpath</span></code>, and the main and test output folders. When the
+Launchpad builder is first called it will contact the <em>Remote Workspace</em> in the driver and request for an analysis of 
+the test code. The Remote Workspace then uses the project setup to calculate a bundle that would export all the
+test code and its imports. The Launchpad Builder then makes the OSGi framework export all packages that that
+virtual test bundle would have exported. That is, any class visible from the test cases will be exported by 
+the OSGi framework by default. It is possible to <em>exclude exports</em> using glob expressions or predicates from a test case.
+See the <code class="language-shell highlighter-rouge">excludeExport<span class="o">()</span></code> methods.</p>
+
+<h3 id="bundles">Bundles</h3>
+
+<p>A bundle installed on the OSGi Framework should this see all the relevant classes from the class path instead of
+from other bundles. The tricky case is when a bundle exports a package that is also available from the 
+class path. If this package is only exported then the framework cannot substitute it for the package from the 
+class path. In such a bad case the bundle that exports it will see its embedded version of the class while
+the rest of the system sees the version from the class path. This can then result in a class cast exception
+like:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.ClassCastException: an instance of org.example.Foo cannot be assigned to org.example.Foo
+</code></pre></div></div>
+
+<p>Although the names of those classes are identical, the problem is that they will be loaded by different class
+loaders.</p>
+
+<h3 id="version-sensitivity">Version Sensitivity</h3>
+
+<p>Due to this setup there is very strict sensitivity to the version of the OSGi Framework packages and bundles. Most bnd projects
+have the OSGi framework packages on the <code class="language-shell highlighter-rouge"><span class="nt">-buildpath</span></code>. The version of these packages can be lower than the version
+of the Framework because of backward compatibility. Actually, bnd generally recommends to compile against the
+lowest possible framework packages. However, with launchpad these packages will also be used by the Framework, there
+is unfortunately no good way around this. The consequence is that the <code class="language-shell highlighter-rouge"><span class="nt">-buildpath</span></code> version of the Framework
+packages must match the exact version used by the implementation of the framework.</p>
+
+<h3 id="excluding-exported-system-packages">Excluding Exported System Packages</h3>
+
+<p>Launchpad will calculate the set of packages that are exported by the framework from the claspath. The so called
+<code class="language-shell highlighter-rouge">org.osgi.framework.system.packages.extra</code>. It calculates this by creating bundle from the test sources, adding
+all dependencies, and then exporting the full content. That export statement is then uses for <code class="language-shell highlighter-rouge">org.osgi.framework.system.packages.extra</code>.</p>
+
+<p>However, this is generally too wide since it includes all dependencies, not just public dependencies. Version mismatches
+can create nasty problems and sometimes the solution is to exclude exports.</p>
+
+<p>The Launchpad Builder provides a number of methods called <code class="language-shell highlighter-rouge">excludeExport<span class="o">()</span></code> that take either a <em>glob</em> or a predicate.
+The globs/predicates are then ran against the list of calculated export package names. Any matching entry is then
+not exported.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Launchpad b <span class="o">=</span> new LaunchpadBuilder<span class="o">()</span>
+    .excludeExports<span class="o">(</span> <span class="s2">"slf4j.*"</span><span class="o">)</span>
+    .create<span class="o">()</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>If a bndrun file is the <code class="language-shell highlighter-rouge"><span class="nt">-excludeexports</span></code> instruction can be placed in the bndrun file containing a list globs.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">-excludeexports</span>     aQute.lib<span class="k">*</span>, slf4j.<span class="k">*</span>
+</code></pre></div></div>
+
+<h2 id="naming">Naming</h2>
+
+<p>The Launchpad has a default name of the method and class that called <code class="language-shell highlighter-rouge">create<span class="o">()</span></code>. These names can be overwritten with
+<code class="language-shell highlighter-rouge">create<span class="o">(</span>name<span class="o">)</span></code> and <code class="language-shell highlighter-rouge">create<span class="o">(</span>name,className<span class="o">)</span></code>. The actual name of Launchpad is set under the following framework 
+property names:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>launchpad.name
+launchpad.className
+</code></pre></div></div>
+
+<h2 id="interaction-with-services">Interaction with Services</h2>
+
+<p>Clearly the best part of Launchpad is that you can actually use real services and do not have
+to mock them up. Many a test seems to mostly test their mocks.</p>
+
+<p>With Launchpad, real framework is running. You can inject services or register services.</p>
+
+<p>In the following example we register a service <code class="language-shell highlighter-rouge">Foo</code> and then verify if we can get it. We then
+unregister the service and see that it no longer exists.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>interface Foo <span class="o">{}</span>
+
+@Test
+public void services<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder.create<span class="o">())</span> <span class="o">{</span>
+
+		ServiceRegistration&lt;Foo&gt; register <span class="o">=</span> 
+			launchpad.register<span class="o">(</span>Foo.class, new Foo<span class="o">()</span> <span class="o">{})</span><span class="p">;</span>
+		Optional&lt;Foo&gt; s <span class="o">=</span> 
+			launchpad.waitForService<span class="o">(</span>Foo.class, 100<span class="o">)</span><span class="p">;</span>
+		assertThat<span class="o">(</span>s.isPresent<span class="o">())</span>.isTrue<span class="o">()</span><span class="p">;</span>
+
+		register.unregister<span class="o">()</span><span class="p">;</span>
+
+		s <span class="o">=</span> launchpad.waitForService<span class="o">(</span>Foo.class, 100<span class="o">)</span><span class="p">;</span>
+		assertThat<span class="o">(</span>s.isPresent<span class="o">())</span>.isFalse<span class="o">()</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-shell highlighter-rouge">waitForService</code> methods take a timeout in milliseconds. Their purpose is to provide some leeway
+during startup for the system to settle. If a service should be there then it the <code class="language-shell highlighter-rouge">getService<span class="o">()</span></code> methods
+can be used.</p>
+
+<h2 id="injection">Injection</h2>
+
+<p>Injection is not automatic because in many cases you want to handle the setup of the framework before
+you inject. Injection can also happen as often as you want. However, you first need to create and
+start the framework.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void inject<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder.create<span class="o">())</span> <span class="o">{</span>
+		ServiceRegistration&lt;Foo&gt; register <span class="o">=</span> launchpad.register<span class="o">(</span>Foo.class, new Foo<span class="o">()</span> <span class="o">{})</span><span class="p">;</span>
+
+		class I <span class="o">{</span>
+			@Service
+			Foo foo<span class="p">;</span>
+			@Service
+			Bundle			bundles[]<span class="p">;</span>
+			@Service
+			BundleContext	context<span class="p">;</span>
+		<span class="o">}</span>
+		I inject <span class="o">=</span> new I<span class="o">()</span><span class="p">;</span>
+		launchpad.inject<span class="o">(</span>inject<span class="o">)</span><span class="p">;</span>
+		assertThat<span class="o">(</span>inject.bundles<span class="o">)</span>.isNotEmpty<span class="o">()</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="hello-world">Hello World</h2>
+
+<p>Although Bundle-Activator’s are not recommended to be used (they are singletons), they are very useful in
+test cases. With Launchpad it is not necessary to to make a separate bundle, we can make a bundle with
+an inner class as activator.</p>
+
+<p>We therefore first define the Bundle Activator as a static public inner class of the test class:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public static class Activator implements BundleActivator <span class="o">{</span>
+	@Override
+	public void start<span class="o">(</span>BundleContext context<span class="o">)</span> throws Exception <span class="o">{</span>
+		System.out.println<span class="o">(</span><span class="s2">"Hello World"</span><span class="o">)</span><span class="p">;</span>
+	<span class="o">}</span>
+	@Override
+	public void stop<span class="o">(</span>BundleContext context<span class="o">)</span> throws Exception <span class="o">{</span>
+		System.out.println<span class="o">(</span><span class="s2">"Goodbye World"</span><span class="o">)</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The Launchpad class contains a special <em>Bundle builder</em>. This bundle builder is based on bnd and can can do everything that
+bnd can do in a <code class="language-shell highlighter-rouge">bnd.bnd</code> file. In this case we add the Bundle Activator and start it.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void activator<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder.create<span class="o">())</span> <span class="o">{</span>
+
+		Bundle start <span class="o">=</span> launchpad.bundle<span class="o">()</span>
+			.bundleActivator<span class="o">(</span>Activator.class<span class="o">)</span>
+			.start<span class="o">()</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>When the test is run the output is:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Hello World
+Goodbye World
+</code></pre></div></div>
+
+<h2 id="components">Components</h2>
+
+<p>Since the bundle builder can do anything bnd can do, we can also use inner classes for components. These inner
+classes must be static and public (this is an OSGi DS requirement). The following is an example of a class
+that depends on the <code class="language-shell highlighter-rouge">Bar</code> service.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>interface Bar <span class="o">{</span>
+    void bar<span class="o">()</span><span class="p">;</span>
+<span class="o">}</span>
+
+@Component
+public static class C <span class="o">{</span>
+	@Reference Bar bar<span class="p">;</span>
+    @Activate  void activate<span class="o">()</span> <span class="o">{</span> bar.bar<span class="o">()</span><span class="p">;</span> <span class="o">}</span>
+<span class="o">}</span>
+
+@Test
+public void component<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder
+		.bundles<span class="o">(</span><span class="s2">"org.apache.felix.log"</span><span class="o">)</span>
+		.bundles<span class="o">(</span><span class="s2">"org.apache.felix.scr"</span><span class="o">)</span>
+		.bundles<span class="o">(</span><span class="s2">"org.apache.felix.configadmin"</span><span class="o">)</span>
+		.create<span class="o">())</span> <span class="o">{</span>
+
+		Bundle b <span class="o">=</span> launchpad.component<span class="o">(</span>C.class<span class="o">)</span><span class="p">;</span>
+        AtomicBoolean   called <span class="o">=</span> new AtomicBoolean<span class="o">(</span><span class="nb">false</span><span class="o">)</span><span class="p">;</span>
+        launchpad.register<span class="o">(</span>Bar.class, <span class="o">()</span>-&gt; called.set<span class="o">(</span><span class="nb">true</span><span class="o">)</span> <span class="o">)</span><span class="p">;</span>
+        assertThat<span class="o">(</span>called.get<span class="o">())</span>.isTrue<span class="o">()</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Adding a component will return a Bundle. Uninstalling the bundle will remove the component.</p>
+
+<h2 id="debugging">Debugging</h2>
+
+<p>Clearly there are lots of things that can go wrong. You can therefore activate the <code class="language-shell highlighter-rouge">debug<span class="o">()</span></code> on the builder or
+Launchpad. This will provide logging to the console.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void debug<span class="o">()</span> <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder
+        .debug<span class="o">()</span>
+		.create<span class="o">())</span> <span class="o">{</span>
+                        
+        <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>If you run this the console will show a lot of diagnostics information.</p>
+
+<h2 id="using-a-bndrun-file">Using a bndrun file</h2>
+
+<p>One of the great innovations in bndtools is the resolver. So far we’ve assembled the list of bundles to run ourselves.
+However, we can also use a <code class="language-shell highlighter-rouge">bndrun</code> file and <code class="language-shell highlighter-rouge">bndrun</code> files can be resolved.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void bndrun<span class="o">()</span> <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder
+        .bndrun<span class="o">(</span><span class="s2">"showit.bndrun"</span><span class="o">)</span>
+		.create<span class="o">())</span> <span class="o">{</span>         
+        <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>If the <code class="language-shell highlighter-rouge">bndrun</code> file contains the following after resolving:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">-runrequires</span>: <span class="se">\</span>
+    osgi.identity<span class="p">;</span>filter:<span class="o">=</span><span class="s1">'(osgi.identity=org.apache.felix.gogo.shell)'</span>,<span class="se">\</span>
+    osgi.identity<span class="p">;</span>filter:<span class="o">=</span><span class="s1">'(osgi.identity=biz.aQute.bnd.runtime.gogo)'</span>
+
+
+<span class="nt">-runbundles</span>: <span class="se">\</span>
+    org.apache.felix.gogo.runtime<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s1">'[1.1.0,1.1.1)'</span>,<span class="se">\</span>
+    org.apache.felix.gogo.shell<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s1">'[1.1.0,1.1.1)'</span>,<span class="se">\</span>
+    biz.aQute.bnd.runtime.gogo<span class="p">;</span><span class="nv">version</span><span class="o">=</span>snapshot,<span class="se">\</span>
+    org.apache.felix.log<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s1">'[1.0.1,1.0.2)'</span>
+<span class="nt">-runfw</span>: org.apache.felix.framework<span class="p">;</span><span class="nv">version</span><span class="o">=</span><span class="s1">'[5.6.10,5.6.10]'</span>
+<span class="nt">-runee</span>: JavaSE-1.8
+</code></pre></div></div>
+
+<p>Then we see the following output:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Welcome to Apache Felix Gogo
+g!
+</code></pre></div></div>
+
+<h2 id="making-bundles">Making Bundles</h2>
+
+<p>The Launchpad object contains a special bundle builder. It provides the same capabilities that bnd already has when
+it creates bundles. You can use all the facilities that you can use in the <code class="language-shell highlighter-rouge">bnd.bnd</code> file. Export-Package, Import-Package,
+-includeresource, etc.</p>
+
+<p>The following example shows how to create a bundle with a a special header.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void bundles<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad launchpad <span class="o">=</span> builder.create<span class="o">())</span> <span class="o">{</span>
+		Bundle b <span class="o">=</span> launchpad.bundle<span class="o">()</span>
+			.header<span class="o">(</span><span class="s2">"FooBar"</span>, <span class="s2">"1"</span><span class="o">)</span>
+			.install<span class="o">()</span><span class="p">;</span>
+		String string <span class="o">=</span> b.getHeaders<span class="o">()</span>
+			.get<span class="o">(</span><span class="s2">"FooBar"</span><span class="o">)</span><span class="p">;</span>
+		assertThat<span class="o">(</span>string<span class="o">)</span>.isEqualTo<span class="o">(</span><span class="s2">"1"</span><span class="o">)</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="inheriting-from-the-project-workspace-or-a-bnd-file">Inheriting from the project, workspace, or a bnd file</h3>
+
+<p>When you create a bundle from the Launchpad class then by default you inherit nothing from the enironment. However,
+it is possible to set the parent of the builder. The <code class="language-shell highlighter-rouge">parent<span class="o">(</span>String<span class="o">)</span></code> or <code class="language-shell highlighter-rouge">parent<span class="o">(</span>File<span class="o">)</span></code> method can set multiple
+parents.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>parent ::<span class="o">=</span> FILE<span class="k">*</span> <span class="o">(</span> WORKSPACE | PROJECT <span class="o">)</span>?
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-shell highlighter-rouge">WORKSPACE</code> – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.</li>
+  <li><code class="language-shell highlighter-rouge">PROJECT</code> – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.</li>
+  <li><code class="language-shell highlighter-rouge">FILE</code>    – A file path with forward slashes on all platforms. This must point to a bnd/properties file.</li>
+</ul>
+
+<p>The order of the parents is important. Earlier bnd files override the same named value in later bnd files.</p>
+
+<p>Example:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Bundle b <span class="o">=</span> lp.bundle<span class="o">()</span>.parent<span class="o">(</span><span class="s1">'foo.bnd'</span><span class="o">)</span>.parent<span class="o">(</span>WORKSPACE<span class="o">)</span>.start<span class="o">()</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h2 id="hiding-a-service">Hiding a Service</h2>
+
+<p>In some scenarios you’d like to hide a service so you can override it with a mocked version. Hiding in OSGi
+can be achieved with the [Servic Hooks] services. The easiest way is to hide a service via the Launchpad Builder.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	LaunchpadBuilder	builder	<span class="o">=</span> new LaunchpadBuilder<span class="o">()</span>.runfw<span class="o">(</span><span class="s2">"org.apache.felix.framework"</span><span class="o">)</span>.hide<span class="o">(</span>SomeService.class<span class="o">)</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>If you now create a framework, all services <em>not</em> registered via Launchpad will be invisible to all bundles. That is,
+only services registered through Launchpad can be seen by the other bundles in the OSGi framework.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void testHidingViaBuilder<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad fw <span class="o">=</span> builder.runfw<span class="o">(</span><span class="s2">"org.apache.felix.framework"</span><span class="o">)</span>
+			.create<span class="o">())</span> <span class="o">{</span>
+
+		boolean isHidden <span class="o">=</span> fw.getServices<span class="o">(</span>String.class<span class="o">)</span>
+				.isEmpty<span class="o">()</span><span class="p">;</span>			
+		assertThat<span class="o">(</span>isHidden<span class="o">)</span>.isTrue<span class="o">()</span><span class="p">;</span>
+
+		fw.framework.getBundleContext<span class="o">()</span>
+				.registerService<span class="o">(</span>String.class, <span class="s2">"fw"</span>, null<span class="o">)</span><span class="p">;</span>
+
+		isHidden <span class="o">=</span> fw.getServices<span class="o">(</span>String.class<span class="o">)</span>
+				.isEmpty<span class="o">()</span><span class="p">;</span>
+		assertThat<span class="o">(</span>isHidden<span class="o">)</span>.isTrue<span class="o">()</span><span class="p">;</span>
+
+		ServiceRegistration&lt;String&gt; visibleToAllViaTestbundle <span class="o">=</span> fw.register<span class="o">(</span>String.class, <span class="s2">"Hello"</span><span class="o">)</span><span class="p">;</span>
+
+		assertThat<span class="o">(</span>fw.getServices<span class="o">(</span>String.class<span class="o">))</span>.containsOnly<span class="o">(</span><span class="s2">"Hello"</span><span class="o">)</span><span class="p">;</span>
+		visibleToAllViaTestbundle.unregister<span class="o">()</span><span class="p">;</span>
+
+		isHidden <span class="o">=</span> fw.getServices<span class="o">(</span>String.class<span class="o">)</span>
+				.isEmpty<span class="o">()</span><span class="p">;</span>
+		assertThat<span class="o">(</span>isHidden<span class="o">)</span>.isTrue<span class="o">()</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Although hiding via the Launchpad Builder is the easiest way to hide services, it has the disadvantage that all
+tests hide the same service(s). It is also possible to handle the service hiding in a more controlled way
+by hiding via the Launchpad object.  Using this function does require a bit of orchestration. Once you hide 
+a service it becomes invisible to bundles that look for that service later. However, bundles that already 
+obtained this service will not lose sight of it. It is therefore necessary to hide a service before the 
+corresponding framework is started. Since the default is automatic start, the automatic start must be 
+disabled with the <code class="language-shell highlighter-rouge">nostart<span class="o">()</span></code> method on the builder.</p>
+
+<p>After the framework is then created. the service is hidden and then the framework is started.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void testHiding<span class="o">()</span> throws Exception <span class="o">{</span>
+	try <span class="o">(</span>Launchpad fw <span class="o">=</span> builder.runfw<span class="o">(</span><span class="s2">"org.apache.felix.framework"</span><span class="o">)</span>
+			.nostart<span class="o">()</span>
+			.create<span class="o">())</span> <span class="o">{</span>
+
+		@SuppressWarnings<span class="o">(</span><span class="s2">"resource"</span><span class="o">)</span>
+		Closeable hide <span class="o">=</span> fw.hide<span class="o">(</span>String.class<span class="o">)</span><span class="p">;</span>
+		fw.start<span class="o">()</span><span class="p">;</span>
+
+		boolean isHidden <span class="o">=</span> fw.getServices<span class="o">(</span>String.class<span class="o">)</span>
+				.isEmpty<span class="o">()</span><span class="p">;</span>
+		assertThat<span class="o">(</span>isHidden<span class="o">)</span>.isTrue<span class="o">()</span><span class="p">;</span>
+
+		fw.framework.getBundleContext<span class="o">()</span>
+				.registerService<span class="o">(</span>String.class, <span class="s2">"fw"</span>, null<span class="o">)</span><span class="p">;</span>
+
+		isHidden <span class="o">=</span> fw.getServices<span class="o">(</span>String.class<span class="o">)</span>
+				.isEmpty<span class="o">()</span><span class="p">;</span>
+		assertThat<span class="o">(</span>isHidden<span class="o">)</span>.isTrue<span class="o">()</span><span class="p">;</span>
+
+		ServiceRegistration&lt;String&gt; visibleToAllViaTestbundle <span class="o">=</span> fw.register<span class="o">(</span>String.class, <span class="s2">"Hello"</span><span class="o">)</span><span class="p">;</span>
+
+		assertThat<span class="o">(</span>fw.getServices<span class="o">(</span>String.class<span class="o">))</span>.containsOnly<span class="o">(</span><span class="s2">"Hello"</span><span class="o">)</span><span class="p">;</span>
+		visibleToAllViaTestbundle.unregister<span class="o">()</span><span class="p">;</span>
+
+		isHidden <span class="o">=</span> fw.getServices<span class="o">(</span>String.class<span class="o">)</span>
+				.isEmpty<span class="o">()</span><span class="p">;</span>
+		assertThat<span class="o">(</span>isHidden<span class="o">)</span>.isTrue<span class="o">()</span><span class="p">;</span>
+
+		hide.close<span class="o">()</span><span class="p">;</span>
+		assertThat<span class="o">(</span>fw.getServices<span class="o">(</span>String.class<span class="o">))</span>.containsOnly<span class="o">(</span><span class="s2">"fw"</span><span class="o">)</span><span class="p">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>As you can see from the test code, the <code class="language-shell highlighter-rouge">hide</code> method in this case returns a <code class="language-shell highlighter-rouge">Closeable</code>. This object can be used to
+remove the hiding of the given service.</p>
+
+<h3 id="visibility">Visibility</h3>
+
+<p>To diagnose any issues it is important to realize that there are some special rules around which bundle does what. Launchpad
+has the Bundle Context of the OSGi Framework as well as a special test bundle. The test bundle is empty but it used to have
+a Bundle Context for the test code that runs outside the Framework. When you hide a service it will register
+Service Hooks that only let services from the test bundle pass through, all other services of the given type are removed
+from visibility.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Closeable Launchpad.hide<span class="o">(</span>SomeService.class<span class="o">)</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>The service will remain hidden until you close the <code class="language-shell highlighter-rouge">Closeable</code>.</p>
+
+
+				</main>
+			</div>
+	</ul>
+
+
+
+
+	
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<div class="container-right">
+		<nav class="next-prev" data-pagefind-ignore>
+     
+    <a href='/releases/7.2.0/chapters/310-testing.html' title="Testing">Prev</a> 
+     
+    
+    <a href='/releases/7.2.0/chapters/320-packaging.html' title="Packaging Applications">Next</a>
+     
+</nav>
+	</div>
+
+	<div class="modal" id="searchmodal" aria-hidden="true">
+    <div class="modal_overlay" tabindex="-1">
+        <div class="modal_container" role="dialog" aria-modal="true">
+            <header class="modal_header" style="margin-bottom: 10px;">
+                <b>
+                    Search
+                    <button class="modal_btn modal_btn-primary" data-modal-close=""
+                        aria-label="Close this dialog window" style="float:right;">Close</button>
+                </b>
+            </header>
+            <main class="modal_content" id="modalcontent">
+                <div id="pagefindsearch"></div>
+            </main>
+            <footer class="modal_footer">
+
+            </footer>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Basic styling to hide/show the modal */
+    .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Container for modal content */
+    .modal_container {
+        background: #fff;
+        margin: 5% auto;
+        /* Position the box somewhat centered */
+        padding: 1rem;
+        max-width: 600px;
+        border-radius: 4px;
+        position: relative;
+
+        /* Height and overflow for scrolling */
+        max-height: 80vh;
+        /* Use 80% of the viewport height */
+        overflow-y: auto;
+        /* Enable scrolling within the modal */
+    }
+
+    /* When modal is open, display it */
+    .modal.is-open {
+        display: block;
+    }
+</style>
+
+<script type="text/javascript">
+    // Function to open the modal
+    function openModal() {
+        const modal = document.getElementById('searchmodal');
+        // Change aria-hidden to false
+        modal.setAttribute('aria-hidden', 'false');
+        // Add a class to make it visible (assuming CSS uses .is-open to show)
+        modal.classList.add('is-open');
+
+        const searchFieldInput = document.querySelector('#modalcontent input');
+        searchFieldInput.focus();
+
+        // Define an event listener for the ESC key
+        escapeKeyListener = function (event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                closeModal(modal);
+            }
+        };
+
+        // Attach the ESC key event listener
+        document.addEventListener('keydown', escapeKeyListener);
+
+        // Attach click event listeners to close triggers
+        attachCloseEvents(modal);
+    }
+
+    function attachCloseEvents(modal) {
+        // Get all elements that can close the modal (overlay and close button)
+        const closeElements = modal.querySelectorAll('[data-modal-close]');
+
+        closeElements.forEach(el => {
+            el.addEventListener('click', function handleClose() {
+                closeModal(modal);
+                // Remove this event listener once closed (cleanup)
+                el.removeEventListener('click', handleClose);
+            });
+        });
+    }
+
+    // Function to close the modal
+    function closeModal(modal) {
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('is-open');
+    }
+</script>
+
+
+
+<link href="/pagefindindex/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefindindex/pagefind-ui.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        new PagefindUI({
+            element: "#pagefindsearch",
+            showSubResults: true,
+            translations: {
+                placeholder: "Search the bnd manual",
+            },
+            openFilters: ['pagetype']
+
+        });
+    });
+</script>
+
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/7.2.0/">Home</a>
+			</ul>
+	</ul>
+
+	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', () => {
+			const headers = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+
+			headers.forEach(header => {
+				const iconLink = document.createElement('a');
+				iconLink.href = `#${header.id}`;
+				iconLink.innerHTML = '#';
+				iconLink.className = 'header-link';
+
+				// Wrap the icon inside a span to control visibility with CSS
+				const wrapper = document.createElement('span');
+				wrapper.className = 'header-link-wrapper';
+				wrapper.appendChild(iconLink);
+
+				// Append the wrapper to the header
+				header.appendChild(wrapper);
+			});
+		});
+
+
+		// copy to clipboard buttons
+
+		const copyButtonLabel = "Copy";
+		let blocks = document.querySelectorAll("pre.highlight");
+
+		blocks.forEach((block) => {
+		// only add button if browser supports Clipboard API
+		if (navigator.clipboard) {
+			let button = document.createElement("button");
+			button.classList.add("copycodebtn");
+
+			button.innerText = copyButtonLabel;
+			block.appendChild(button);
+
+			button.addEventListener("click", async () => {
+			await copyCode(block, button);
+			});
+
+		}
+		});
+
+		async function copyCode(block, button) {
+		let code = block.querySelector("code");
+		let text = code.innerText;
+
+		await navigator.clipboard.writeText(text);
+
+		button.innerText = "Copied";
+
+			setTimeout(()=> {
+				button.innerText = copyButtonLabel;
+			},2000)
+		}
+	</script>
+
+</footer>
+
+</body>
+</html>
