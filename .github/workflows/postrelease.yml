@@ -75,8 +75,8 @@ jobs:
   create-workspace-template:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
-      WORKSPACE_REPO: https://${{ secrets.PAT_WORKSPACE_REPO }}@github.com/bndtools/workspace.git
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WORKSPACE_REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/bndtools/workspace.git
       V1: ${{ github.event.inputs.V1 }}
 
     steps:
@@ -104,7 +104,7 @@ jobs:
     needs: [release-doc-generate, create-workspace-template]
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: checkout master
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
