@@ -17,8 +17,8 @@
 	org.antlr:ST4:jar:complete;maven-scope=provided,\
 	com.github.spullara.mustache.java:compiler;maven-scope=provided,\
 	com.google.guava;version="[33.4.8,33.4.9)";maven-scope=provided,\
-	org.jspecify.jspecify;version='[1.0.0,2.0.0)';maven-scope=provided
-
+	com.google.guava.failureaccess;version=latest;maven-scope=provided
+	
 -testpath: \
 	slf4j.api,\
 	slf4j.simple,\
@@ -32,7 +32,7 @@
 	aQute.libg.*,\
 	com.github.mustachejava.*,\
 	com.google.common.*,\
-	org.jspecify.*
+	
 	
 Bundle-ActivationPolicy: lazy
 
@@ -41,6 +41,8 @@ Import-Package: \
  com.google.appengine.*;resolution:=optional,\
  com.google.apphosting.*;resolution:=optional,\
  android.os.*;resolution:=optional,\
+ !org.jspecify.*,\
+ !com.google.errorprone.annotations.*,\
  ${eclipse.importpackage},\
  *
 
