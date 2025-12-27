@@ -350,7 +350,7 @@ public class IndexerMojo extends AbstractMojo {
 					}
 					throw new FileNotFoundException(
 						"Unable to index artifact " + artifact + ". The repository " + artifactResult.getRepository()
-							.getId() + " is not known to this resolver");
+							.getId() + " is not known to this resolver and local URLs are currently not allowed!");
 				}
 
 				String baseUrl = repo.getUrl();
