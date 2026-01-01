@@ -48,7 +48,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final Map<Revision, Promise<POM>>	poms			= new WeakHashMap<>();
 	private final Reporter						reporter;
 	private SonatypeMode						sonatypeMode	= SonatypeMode.NONE;
-	private String								sonatypeUrl     = null;
+	private String								sonatypeReleaseUrl	= null;
+	private String								sonatypeSnapshotUrl	= null;
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
@@ -418,11 +419,20 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return sonatypeMode;
 	}
 
-	public void setSonatypePublisherUrl(String sonatypeUrl) {
-		this.sonatypeUrl = sonatypeUrl;
+	public void setSonatypePublisherUrl(String sonatypeReleaseUrl) {
+		this.sonatypeReleaseUrl = sonatypeReleaseUrl;
 	}
 
 	public String getSonatypePublisherUrl() {
-		return sonatypeUrl;
+		return sonatypeReleaseUrl;
 	}
+
+	public void setSonatypePublishSnapshotUrl(String sonatypeSnapshotUrl) {
+		this.sonatypeSnapshotUrl = sonatypeSnapshotUrl;
+	}
+
+	public String getSonatypePublishSnapshotUrl() {
+		return sonatypeSnapshotUrl;
+	}
+
 }

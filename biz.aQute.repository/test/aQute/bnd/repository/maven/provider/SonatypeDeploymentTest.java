@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Project;
@@ -41,9 +40,8 @@ public class SonatypeDeploymentTest {
 
 	File				sonatypeRepoFile				= new File(wsDir, "cnf/ext/sonatype_release.bnd");
 	File				releasedVersionFile				= new File(wsDir, "cnf/ext/gav_30_sonatype.mvn");
-	File				deploymentIDFile				= new File(wsDir,
-		MavenBndRepository.SONATYPE_RELEASE_DIR + "/" + "biz_aQute_eval_"
-			+ MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE);
+	File				deploymentIDFile				= new File(wsDir, MavenBndRepository.SONATYPE_RELEASE_DIR + "/"
+		+ "biz_aQute_eval_" + MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE);
 	boolean				remoteTest						= true;
 
 	@BeforeAll
@@ -108,7 +106,6 @@ public class SonatypeDeploymentTest {
 	}
 
 	@Test
-	@Disabled("Sonatype Snapshots needs debbugging")
 	public void testReleaseUrlSnapshot() throws Exception {
 		try (Workspace ws = Workspace.findWorkspace(wsDir)) {
 			new File(wsDir, "cnf/ext/sonatype_release.bnd_").renameTo(sonatypeRepoFile);
@@ -119,13 +116,13 @@ public class SonatypeDeploymentTest {
 	}
 
 	@Test
-	@Disabled("Sonatype Snapshots needs debbugging")
 	public void testStagingUrlSnapshot() throws Exception {
 		try (Workspace ws = Workspace.findWorkspace(wsDir)) {
 			new File(wsDir, "cnf/ext/sonatype_staging.bnd_").renameTo(sonatypeRepoFile);
 			assertTrue(sonatypeRepoFile.exists());
 		}
 		commentSnapshotLine();
+		testDeployment(true);
 	}
 
 	@Test

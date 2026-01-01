@@ -1,4 +1,4 @@
-# sonatype credentials from environment variables
+# sonatype credential from environment variables
 sonatype_bearer: '${env;SONATYPE_BEARER;}'
 
 # internet maven repo server
@@ -9,9 +9,6 @@ sonatype_snapshots:  https://central.sonatype.com/repository/maven-snapshots
 
 -connection-settings.sonatype:\
    server;    id = ${sonatype_release};\
-        password = ${sonatype_bearer};\
-          verify = false,\
-   server;    id = ${sonatype_snapshots};\
         password = ${sonatype_bearer};\
           verify = false
 

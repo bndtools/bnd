@@ -102,6 +102,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 
 	public static final String					SONATYPE_RELEASE_DIR			= "cnf/cache/sonatype-release";
+	public static final String					SONATYPE_SNAPSHOT_DIR		= "cnf/cache/sonatype-snapshot";
 	public static final String					SONATYPE_DEPLOYMENTID_FILE		= "deploymendID.txt";
 
 	final static Pattern						PREPROCESS_P					= Pattern
@@ -264,9 +265,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					}
 
 					doExtra(options, instructions, pom, releaser);
-				}
-				if (configuration.noupdateOnRelease() == false) {
-					index.add(binaryArchive);
+					if (configuration.noupdateOnRelease() == false) {
+						index.add(binaryArchive);
+					}
 				}
 			}
 			return result;
@@ -655,30 +656,42 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		try {
 			List<MavenBackingRepository> release = new ArrayList<MavenBackingRepository>();
 			MavenBackingRepository staging = null;
+			List<MavenBackingRepository> snapshot = new ArrayList<MavenBackingRepository>();
 
 			String releaseUrl = configuration.releaseUrl();
 			SonatypeMode sonatypeMode = configuration.sonatypeMode(SonatypeMode.NONE.name());
 
 			String stagingUrl = configuration.stagingUrl();
+			String snapshotUrl = configuration.snapshotUrl();
 
-			String sonatypeUrl = null;
+			String sonatypeReleaseUrl = null;
+			String sonatypeSnapshotUrl = null;
 			switch (sonatypeMode) {
 				case MANUAL, AUTOPUBLISH -> {
 					logger.info("deployment via Sonatype Central Portal configured in {} mode", sonatypeMode);
 					File releaseDir = registry.getPlugin(Workspace.class)
 						.getFile(SONATYPE_RELEASE_DIR);
+					File snapshotDir = registry.getPlugin(Workspace.class)
+						.getFile(SONATYPE_SNAPSHOT_DIR);
 					if (stagingUrl == null) {
 						logger.debug("deployment via relase url to Sonatype Portal configured");
 						List<MavenBackingRepository> releaseLocal = MavenBackingRepository.create(releaseDir.toURI()
 							.toString(), reporter, localRepo, client);
 						release.addAll(releaseLocal);
-						sonatypeUrl = releaseUrl;
+						sonatypeReleaseUrl = releaseUrl;
 					} else {
 						logger.debug("deployment via staging url to Sonatype Portal configured");
 						release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, client);
 						staging = MavenBackingRepository.getBackingRepository(releaseDir.toURI()
 							.toString(), reporter, localRepo, client);
-						sonatypeUrl = stagingUrl;
+						sonatypeReleaseUrl = stagingUrl;
+					}
+					if (snapshotUrl != null) {
+						logger.debug("deployment via snapshot url to Sonatype Portal configured");
+						List<MavenBackingRepository> snapshotLocal = MavenBackingRepository.create(snapshotDir.toURI()
+							.toString(), reporter, localRepo, client);
+						snapshot.addAll(snapshotLocal);
+						sonatypeSnapshotUrl = snapshotUrl;
 					}
 				}
 				case NONE -> {
@@ -686,14 +699,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, client);
 					} else {
 						release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, client);
-						staging = MavenBackingRepository.getBackingRepository(configuration.stagingUrl(), reporter,
-							localRepo, client);
+						staging = MavenBackingRepository.getBackingRepository(stagingUrl, reporter, localRepo, client);
+					}
+					if (snapshotUrl != null) {
+						snapshot = MavenBackingRepository.create(snapshotUrl, reporter, localRepo, client);
 					}
 				}
 			}
 
-			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
-				localRepo, client);
 
 			for (MavenBackingRepository mbr : release) {
 				if (mbr.isRemote()) {
@@ -713,8 +726,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				.executor(), reporter);
 			MavenRepository storageMvn = (MavenRepository) storage;
 			storageMvn.setSonatypeMode(sonatypeMode);
-			if (sonatypeUrl != null) {
-				storageMvn.setSonatypePublisherUrl(sonatypeUrl);
+			if (sonatypeReleaseUrl != null) {
+				storageMvn.setSonatypePublisherUrl(sonatypeReleaseUrl);
+				storageMvn.setSonatypePublishSnapshotUrl(sonatypeSnapshotUrl);
 			}
 
 			File indexFile = getIndexFile();
