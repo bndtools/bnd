@@ -164,7 +164,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | `releaseUrl`     | `URI` |         | Comma separated list of URLs to the repositories of released artifacts.|
 | `snapshotUrl`    | `URI` |         | Comma separated list of URLs to the repositories of snapshot artifacts.|
 | `stagingUrl`    | `URI` |         | A single URL to the repositories staging repository. This is required, e.g. for a release to maven central, which usually goes through a staging repository.|
-| `sonatypeMode`   | `none`\|`manual`\|`autopublish` | `none` | Controls how artifacts are published to Maven Central via the Sonatype Central Portal. `none`: standard Maven repository behavior; `manual`: upload for validation but requires manual publishing approval; `autopublish`: automatically publish after validation. Requires Bearer Token authentication via [-connection-settings]. |
+| `sonatypeMode`   | enum `none` `manual` `autopublish` | `none` | Controls how artifacts are published to Maven Central via the Sonatype Central Portal. `none`: standard Maven repository behavior; `manual`: upload for validation but requires manual publishing approval; `autopublish`: automatically publish after validation. Requires Bearer Token authentication via [-connection-settings]. |
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
 |                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
 |                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
