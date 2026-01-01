@@ -60,8 +60,10 @@ import java.lang.annotation.Target;
  * this interface" for @noimplement marked interfaces.
  * </p>
  * Deprecated because replaced by OSGi annotations
+ *
+ * @deprecated forRemoval since = "7.0.0"
  */
-@Deprecated(forRemoval = true, since = "7.0.0")
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
