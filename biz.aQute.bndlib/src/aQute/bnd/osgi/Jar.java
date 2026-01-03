@@ -786,7 +786,8 @@ public class Jar implements Closeable {
 			.entrySet()) {
 			String nice = clean((String) entry.getValue());
 			Object key = entry.getKey();
-			if (Constants.OSGI_SYNTAX_HEADERS.contains(key.toString())) {
+			if (Constants.OSGI_SYNTAX_HEADERS.contains(key.toString())
+				&& !Constants.BUNDLE_NATIVECODE.equals(key.toString())) {
 				nice = reorderClause(nice, collator);
 			}
 			mainAttributes.put(key, nice);
