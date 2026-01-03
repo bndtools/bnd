@@ -8,8 +8,10 @@ import java.lang.annotation.Target;
 
 /**
  * Deprecated because made superfluous by OSGi annotations
+ *
+ * @deprecated forRemoval since = "7.0.0"
  */
-@Deprecated(forRemoval = true, since = "7.0.0")
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({
