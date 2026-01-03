@@ -1,8 +1,10 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+# Deprecated for removal in 8.0.0
+
 Bundle-Description: \
-	A bnd tester. If this bundle is used as the tester (previously aQute.junit) then \
+	Deprecated for removal in 8.0.0: A bnd tester. If this bundle is used as the tester (previously aQute.junit) then \
 	it will add itself to the -runbundles at the end. At startup, this bundle will then \
 	run the tests. This bundle does NOT contain JUnit itself. It will import JUnit just \
 	like any other bundle.
