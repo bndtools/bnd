@@ -121,6 +121,7 @@ jobs:
       id: publish
       if: ${{ matrix.canonical }}
       run: |
+        env | sort
         ./.github/scripts/ci-publish.sh
       env:
         CANONICAL: ${{ matrix.canonical }}
