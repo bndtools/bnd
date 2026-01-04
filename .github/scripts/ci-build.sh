@@ -19,6 +19,11 @@ fi
 # build
 ./gradlew --no-daemon --version
 ./mvnw --version
-./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :build "$@"
+./gradlew \
+    --no-daemon \
+    -Dmaven.repo.local=dist/m2 \
+    -Dbnd.sonatype.release.description=${GITHUB_JOB}_${GITHUB_RUN_NUMBER} \
+    --continue \
+    :build "$@"
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :gradle-plugins:build
 ./mvnw -Dmaven.repo.local=dist/m2 --batch-mode --no-transfer-progress install
