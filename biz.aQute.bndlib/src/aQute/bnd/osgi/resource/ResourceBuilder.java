@@ -23,6 +23,7 @@ import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
+import java.util.zip.ZipException;
 
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Constants;
@@ -1034,7 +1035,21 @@ public class ResourceBuilder {
 				file.length(), mime);
 
 			return rb.build();
-		} catch (Exception rt) {
+		} catch (ZipException rt) {
+			// can happen if the file is not a JAR file (e.g. a dynamic libray,
+			// .so, .dylib)
+			ResourceBuilder rb = new ResourceBuilder();
+			// placeholder for "any file"
+			String mime = "application/octet-stream";
+			rb.addContentCapability(uri,
+				new DeferredComparableValue<String>(String.class,
+					SupplierWithException.asSupplier(() -> SHA256.digest(file)
+						.asHex()),
+					file.hashCode()),
+				file.length(), mime);
+			return rb.build();
+		}
+		catch (Exception rt) {
 			throw new IllegalArgumentException("illegal format " + file.getAbsolutePath(), rt);
 		}
 	}

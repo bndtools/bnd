@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import java.util.zip.ZipException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,6 +230,10 @@ public class ProjectBuilder extends Builder {
 							try (Jar jar = new Jar(file)) {
 								fillDependencies(dependencies, jar, containerAttributes);
 							}
+							catch (ZipException e) {
+								// not a jar file (can happen if a
+								// ${repo}-reference a non-jar (.dylib, .so)
+							}
 						}
 					}
 				}
@@ -284,6 +289,10 @@ public class ProjectBuilder extends Builder {
 			dependencies.add(key.toString(), attrs);
 		} else {
 			// fall back to pom.properties in jar
+			if (jar == null) {
+				return;
+			}
+
 			jar.getResources(pomPropertiesFilter)
 				.forEachOrdered(r -> {
 					UTF8Properties pomProperties = new UTF8Properties();

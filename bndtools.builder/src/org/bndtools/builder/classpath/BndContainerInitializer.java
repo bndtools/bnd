@@ -616,6 +616,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 		private void addLibraryEntry(IPath path, File file, List<IAccessRule> accessRules,
 			List<IClasspathAttribute> extraAttrs, IPath sourceAttachmentPath, IPath sourceAttachmentRootPath) {
+
+			if (file.isFile() && !file.getName()
+				.toLowerCase()
+				.endsWith(".jar")) {
+				// non .jar files are no library entries (it is possible that
+				// the ${repo} macro references non jar files which could end up
+				// here
+				return;
+			}
+
 			IClasspathEntry libraryEntry = JavaCore.newLibraryEntry(path, sourceAttachmentPath,
 				sourceAttachmentRootPath, toAccessRulesArray(accessRules), toClasspathAttributesArray(extraAttrs),
 				false);

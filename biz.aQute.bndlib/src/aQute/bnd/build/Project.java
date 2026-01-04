@@ -1498,7 +1498,7 @@ public class Project extends Processor {
 		}
 		Container container;
 		if (f.getName()
-			.endsWith("lib"))
+			.endsWith(".lib"))
 			container = new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs, db);
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
