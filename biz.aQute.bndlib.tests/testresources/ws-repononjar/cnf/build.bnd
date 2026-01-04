@@ -1,0 +1,7 @@
+-plugin: \
+		 aQute.bnd.repository.maven.provider.MavenBndRepository;\
+            releaseUrl="https://repo.maven.apache.org/maven2";\
+            index=${.}/central.mvn;\
+            name='Maven Central';\
+            local=${.}/cache;\
+            readOnly=true

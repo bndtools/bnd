@@ -871,6 +871,59 @@ public class ProjectTest {
 	}
 
 	@Test
+	public void testRepoCollectorNonJar() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-repononjar"));
+			Project project = ws.getProject("org.example.impl");
+			RepoCollector rc = new RepoCollector(project);
+		) {
+
+			List<RepositoryPlugin> repositories = project.getRepositories();
+			RepositoryPlugin repo = ws.getRepository("Maven Central");
+			assertNotNull(repo);
+
+			Collection<Container> repoRefs = rc.repoRefs();
+			System.out.println(repoRefs);
+			assertThat(repoRefs).hasSize(3);
+			assertThat(IO.normalizePath(repoRefs.toString()))
+				.contains(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-aarch64.so",
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-x86-64.so",
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-macosx-aarch64.dylib");
+
+			ProjectBuilder builder = project.getBuilder(null);
+			Jar jar = builder.build();
+
+			assertTrue(IO.normalizePath(jar.getDirectory("linux-aarch64")
+				.get("linux-aarch64/libopencv_java.so")
+				.toString())
+				.endsWith(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-aarch64.so"));
+			assertEquals("a", IO.collect(jar.getDirectory("linux-aarch64")
+				.get("linux-aarch64/libopencv_java.so")
+				.openInputStream()));
+
+			assertTrue(IO.normalizePath(jar.getDirectory("linux-x86-64")
+				.get("linux-x86-64/libopencv_java.so")
+				.toString())
+				.endsWith(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-x86-64.so"));
+			assertEquals("b", IO.collect(jar.getDirectory("linux-x86-64")
+				.get("linux-x86-64/libopencv_java.so")
+				.openInputStream()));
+
+			assertTrue(IO.normalizePath(jar.getDirectory("macos-aarch64")
+				.get("macos-aarch64/libopencv_java.so")
+				.toString())
+				.endsWith(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-macosx-aarch64.dylib"));
+			assertEquals("c", IO.collect(jar.getDirectory("macos-aarch64")
+				.get("macos-aarch64/libopencv_java.so")
+				.openInputStream()));
+
+		}
+	}
+
+	@Test
 	public void testClasspath() throws Exception {
 		File project = new File("").getAbsoluteFile();
 		File workspace = project.getParentFile();
