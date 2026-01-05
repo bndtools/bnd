@@ -359,7 +359,8 @@ class Releaser implements Release {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss.SSS");
 			String msg = String.format("uploaded from bnd on %s", LocalDateTime.now()
 				.format(dtf));
-			String encodedMsg = URLEncoder.encode(msg, StandardCharsets.UTF_8)
+			String sonatypeDesc = System.getProperty("bnd.sonatype.release.description", msg);
+			String encodedMsg = URLEncoder.encode(sonatypeDesc, StandardCharsets.UTF_8)
 				.replace("+", "%20");
 			String paramName = !encodedMsg.isEmpty() ? "name=" + encodedMsg : "";
 			urlQueryParamJoiner.add(paramName);

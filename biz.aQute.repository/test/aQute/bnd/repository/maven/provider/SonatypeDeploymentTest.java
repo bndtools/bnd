@@ -319,6 +319,13 @@ public class SonatypeDeploymentTest {
 		for (String var : vars) {
 			existing = existing && ensureEnvVar(var);
 		}
+		if ("true".equals(System.getenv("GITHUB_ACTIONS"))) {
+			// Running in GitHub Actions
+			if ("false".equals(System.getenv("CANONICAL"))) {
+				System.out.println("skipping tests cause in GITHUB but NOT in CANONICAL");
+				existing = false;
+			}
+		}
 		return existing;
 	}
 
