@@ -102,8 +102,8 @@
 
 
 
-<link href="/pagefindindex/pagefind-ui.css" rel="stylesheet">
-<script src="/pagefindindex/pagefind-ui.js"></script>
+<link href="{{ '/pagefindindex/pagefind-ui.css' | prepend:site.baseurl }}" rel="stylesheet">
+<script src="{{ '/pagefindindex/pagefind-ui.js' | prepend:site.baseurl }}"></script>
 <script>
     window.addEventListener('DOMContentLoaded', (event) => {
         new PagefindUI({

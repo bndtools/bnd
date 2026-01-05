@@ -11,11 +11,13 @@ BSN is be a comma-separated list of bundle symbolic names. If the artifact
 is not a bundle, then the synthetic bundle symbolic names of groupId:artifactId
 can be used. Normally only a single bundle symbolic name is used since the remainder of the options apply to all the bundle symbolic names.
 
-VERSION is a version range for the artifact. Special values supported are:
+VERSION is a OSGi version-**range** for the artifact. Special values supported are:
 * `project` - This return the built artifact from a project in the Bnd workspace.
 * `snapshot` - Synonym for `project`.
 * `latest` - The highest version available in a project in the Bnd workspace or the repositories. The built artifact from a project in the Bnd workspace is always used if it exists under the assumption the Bnd workspace is always building the latest version of the artifact.
 If the version range is not specified, the version range `[0,∞)` is used.
+
+Note about version-range: It is important to know that this is needs to be a version range according to [OSGi version semantics](https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i2655136) (not Maven! version). That means for example, to refer to the maven version `4.6.0-dcm` you have to write `4.6.0.-dcm` which then internally will be translated to the maven equivalent if you are using e.g. MavenBndRepository.
 
 STRATEGY is the selection strategy to be used when multiple artifacts with the bundle symbolic name exist within the version range. The strategies supported are:
 * `HIGHEST` - The highest version for the artifact which is included by the version range. This is the default strategy and is the strategy always used by the special version range `latest`.

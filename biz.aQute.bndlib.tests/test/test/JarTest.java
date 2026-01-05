@@ -645,6 +645,91 @@ public class JarTest {
 		assertEquals(customHeader, writtenCustomHeader);
 	}
 
+	/**
+	 * Test Bundle-NativeCode is untouched from Jar.reorderClause() for now,
+	 * because this header is special and needs to be parsed differently than
+	 * normal OSGi headers. In the future we could evaluate how to build a
+	 * special reordering for this header.
+	 */
+	@Test
+	public void testWriteManifestBundleNativeCodeNoReordering() throws Exception {
+		Manifest manifest = new Manifest();
+
+		String customHeader = """
+			   natives/linux-amd64/libgluegen_rt.so;
+			   natives/linux-amd64/libjocl.so;
+			   natives/linux-amd64/libnativewindow_awt.so;
+			   natives/linux-amd64/libnewt_drm.so;
+			   natives/linux-amd64/libnativewindow_x11.so;
+			   natives/linux-amd64/libnativewindow_drm.so;
+			   natives/linux-amd64/libnewt_head.so;
+			   natives/linux-amd64/libjogl_mobile.so;
+			   natives/linux-amd64/libjogl_desktop.so;
+			   processor=x86-64; osname=Linux
+			""";
+		manifest.getMainAttributes()
+			.putValue(Constants.BUNDLE_NATIVECODE, customHeader);
+
+		try (ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
+			Jar.writeManifest(manifest, bout);
+
+			Manifest writtenManifest = new Manifest(new ByteArrayInputStream(bout.toByteArray()));
+			String writtenCustomHeader = writtenManifest.getMainAttributes()
+				.getValue(Constants.BUNDLE_NATIVECODE);
+
+			assertEquals(customHeader.replaceAll("\n", "")
+				.replace(" ", ""),
+				writtenCustomHeader.replaceAll("\n", "")
+					.replace(" ", ""));
+		}
+	}
+
+	/**
+	 * Test Bundle-NativeCode is untouched from Jar.reorderClause() for now,
+	 * because this header is special and needs to be parsed differently than
+	 * normal OSGi headers. In the future we could evaluate how to build a
+	 * special reordering for this header.
+	 */
+	@Test
+	public void testWriteManifestBundleNativeCodeNoReordering2() throws Exception {
+		Manifest manifest = new Manifest();
+
+		String customHeader = """
+			f1;\
+			  osname=Windows95;
+			  processor=x86;
+			  selection-filter='(com.acme.windowing=win32)';
+			  language=en;
+			  osname=Windows98;
+			  language=se,
+			lib/solaris/libhttp.so;
+			  osname=Solaris;
+			  osname = SunOS ;
+			  processor = sparc,
+			lib/linux/libhttp.so;
+			  osname = Linux ;
+			  osversion = 3.1.4;
+			  processor = mips;
+			  selection-filter = '(com.acme.windowing=gtk)',
+			*""";
+		manifest.getMainAttributes()
+			.putValue(Constants.BUNDLE_NATIVECODE, customHeader);
+
+		try (ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
+			Jar.writeManifest(manifest, bout);
+
+			Manifest writtenManifest = new Manifest(new ByteArrayInputStream(bout.toByteArray()));
+			String writtenCustomHeader = writtenManifest.getMainAttributes()
+				.getValue(Constants.BUNDLE_NATIVECODE);
+
+			assertEquals(customHeader.replaceAll("\n", "")
+				.replace(" ", ""),
+				writtenCustomHeader.replaceAll("\n", "")
+					.replace(" ", ""));
+		}
+	}
+
+
 	@Test
 	public void testWriteManifestComprehensiveAttributeDirectiveOrdering() throws Exception {
 		Manifest manifest = new Manifest();

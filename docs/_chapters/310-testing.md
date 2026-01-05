@@ -5,6 +5,14 @@ layout: default
 version: 3.0
 ---
 
+<hr />
+
+**Deprecation:** Note, that the default test `biz.aQute.tester` is deprecated as of bnd 7.2.0 and will be removed in 8.0.0.
+Please use and migrate your tests to JUnit 5 and use `biz.aQute.tester.junit-platform` going forward.
+The documentation below will be adjusted in the future.
+
+<hr />
+
 This section describes how bnd implements a pluggable testing framework. With most tools that use bnd this information is hidden behind a pleasant GUI (sometimes). However, in certain cases it is necessary to understand how bnd handles testing. 
 
 ## Model
