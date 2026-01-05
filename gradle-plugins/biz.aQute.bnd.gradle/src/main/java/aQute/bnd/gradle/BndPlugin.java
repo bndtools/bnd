@@ -611,8 +611,8 @@ public class BndPlugin implements Plugin<Project> {
 						.count();
 
 					// helpful while you validate:
-					project.getLogger()
-						.lifecycle("bnd: release tasks in execution graph = {}", count);
+					//project.getLogger()
+					//	.lifecycle("bnd: release tasks in execution graph = {}", count);
 
 					releaseCounter.get()
 						.setInitialCount((int) count);
@@ -645,13 +645,13 @@ public class BndPlugin implements Plugin<Project> {
 
 							if (!isLastBundle) {
 								tt.getLogger()
-									.lifecycle("bnd: Release bundle ({}) {}", count, jar.getName());
+									.lifecycle("bnd: Release bundle ({}) {}", count, bndProject.getName());
 								bndProject.release();
 							} else {
 								// releasing last bundle in workspace (special
 								// case for sonatype release)
 								tt.getLogger()
-									.lifecycle("bnd: Last release bundle ({}) {}", count, jar.getName());
+									.lifecycle("bnd: Last release bundle ({}) {}", count, bndProject.getName());
 								bndProject.release(new ReleaseParameter(null, false, true));
 							}
 						} catch (Exception e) {
