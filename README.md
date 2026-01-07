@@ -1,6 +1,8 @@
 [![bnd](https://user-images.githubusercontent.com/200494/226292967-963bd722-96d9-4a46-9658-4699962032b0.png)](https://bnd.bndtools.org/)
 
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/bndtools/bnd)](https://github.com/bndtools/bnd/wiki/Changes-in-7.0.0) 
+[![GitHub release](https://img.shields.io/github/v/release/bndtools/bnd)](
+https://github.com/bndtools/bnd/releases/latest
+)
 [![Rebuild](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml) 
 [![CodeQL](https://github.com/bndtools/bnd/actions/workflows/codeql.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/codeql.yml) 
 [![GitHub issues](https://img.shields.io/github/issues/bndtools/bnd)](https://github.com/bndtools/bnd/issues) 
@@ -73,21 +75,103 @@ We try to have a release every 3-6 months and plan these with [milestones](https
 
 Actions trigger workflows depending on the branch. PR's for verification require approval when not from a known contributor. We verify the code quality with CodeQL and the [contribution](CONTRIBUTING.md) rules are also checked.
 
-### Using the latest development SNAPSHOT build of Bnd/Bndtools
 
-All our artifacts are in the [`biz.aQute.bnd`](https://repo.maven.apache.org/maven2/biz/aQute/bnd) group id.
+## Installation (Stable Releases)
 
-* Stable releases 	 – https://repo.maven.apache.org/maven2
-* Release candidates – https://bndtools.jfrog.io/bndtools/libs-release/
-* Snapshots          – https://bndtools.jfrog.io/bndtools/libs-snapshot/
+Use the latest **stable release** for normal development.
 
-[Bnd Gradle Plugins](gradle-plugins/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins) are finally released to the Gradle default repository as well. [Bnd Maven Plugins](maven/README.md#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins) are stored in the listed repos.
+- Maven Central (group id: [`biz.aQute.bnd`](https://repo.maven.apache.org/maven2/biz/aQute/bnd)) - [https://repo.maven.apache.org/maven2](https://repo.maven.apache.org/maven2)
+- Bndtools Eclipse Plugin p2 update site - [https://bndtools.jfrog.io/bndtools/update-latest](https://bndtools.jfrog.io/bndtools/update-latest)
 
-Bndtools requires a p2 repository and is therefore _special_:
+### Bnd Maven Plugin (stable)
 
-* Latest stable release 	– https://bndtools.jfrog.io/bndtools/update-latest
-* Latest release candidate 	– https://bndtools.jfrog.io/bndtools/update-rc
-* Latest build snapshot 	– https://bndtools.jfrog.io/bndtools/update-snapshot
+```xml
+<plugin>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>bnd-maven-plugin</artifactId>
+  <version>7.2.0</version>
+</plugin>
+```
+
+### Bnd Gradle Plugin (stable)
+
+```gradle
+plugins {
+  id "biz.aQute.bnd.builder" version "7.2.0"
+}
+```
+
+
+## Installation (Release Candidates)
+
+Release Candidates are **pre-release builds** published for testing.
+
+- RC artifacts - [https://bndtools.jfrog.io/bndtools/libs-release/](https://bndtools.jfrog.io/bndtools/libs-release/)
+- Bndtools Eclipse Plugin RC update site - [https://bndtools.jfrog.io/bndtools/update-rc](https://bndtools.jfrog.io/bndtools/update-rc)
+
+```gradle
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    maven { url "https://bndtools.jfrog.io/bndtools/libs-release/" }
+  }
+}
+
+plugins {
+  id "biz.aQute.bnd.builder" version "X.Y.Z.RC1"
+}
+```
+
+```xml
+<pluginRepositories>
+  <pluginRepository>
+    <id>bnd-rc</id>
+    <url>https://bndtools.jfrog.io/bndtools/libs-release/</url>
+  </pluginRepository>
+</pluginRepositories>
+
+<plugin>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>bnd-maven-plugin</artifactId>
+  <version>X.Y.Z.RC1</version>
+</plugin>
+```
+
+
+## Installation (Development Snapshot Builds — master branch)
+
+Snapshot builds are produced from the **current master branch** and may be unstable.
+
+- Snapshot artifacts - [https://bndtools.jfrog.io/bndtools/libs-snapshot/](https://bndtools.jfrog.io/bndtools/libs-snapshot/)
+- Bndtools Eclipse Plugin snapshot update site - [https://bndtools.jfrog.io/bndtools/update-snapshot](https://bndtools.jfrog.io/bndtools/update-snapshot)
+
+```gradle
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    maven { url "https://bndtools.jfrog.io/bndtools/libs-snapshot/" }
+  }
+}
+
+plugins {
+  id "biz.aQute.bnd.builder" version "X.Y.Z-SNAPSHOT"
+}
+```
+
+```xml
+<pluginRepositories>
+  <pluginRepository>
+    <id>bnd-snapshots</id>
+    <url>https://bndtools.jfrog.io/bndtools/libs-snapshot/</url>
+  </pluginRepository>
+</pluginRepositories>
+
+<plugin>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>bnd-maven-plugin</artifactId>
+  <version>X.Y.Z-SNAPSHOT</version>
+</plugin>
+```
 
 ## Building
 
