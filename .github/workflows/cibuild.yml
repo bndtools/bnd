@@ -11,6 +11,7 @@ on:
     - '.github/**/*ci*'
     - '!CONTRIBUTING.md'
     - '!DEV_README.md'
+    - '!README.md'
   pull_request:
     paths:
     - '**'
@@ -19,6 +20,7 @@ on:
     - '.github/**/*ci*'
     - '!CONTRIBUTING.md'
     - '!DEV_README.md'
+    - '!README.md'
 
 env:
   LC_ALL: en_US.UTF-8
