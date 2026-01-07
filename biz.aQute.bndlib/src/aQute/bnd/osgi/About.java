@@ -74,8 +74,12 @@ public class About {
 	public static final Version					_7_0		= new Version(7, 0, 0);
 	public static final Version					_7_1		= new Version(7, 1, 0);
 	public static final Version					_7_2		= new Version(7, 2, 0);
-	public static final Version					CURRENT		= _7_2;
+	public static final Version					_7_2_1			= new Version(7, 2, 1);
+	public static final Version					CURRENT			= _7_2_1;
 
+	public static final String[]				CHANGES_7_2_1	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.2.1 for a list of changes."
+	};
 	public static final String[]				CHANGES_7_2	= {
 		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.2.0 for a list of changes."
 	};
@@ -289,6 +293,7 @@ public class About {
 
 	public static final Map<Version, String[]>	CHANGES		= Maps.ofEntries(
 		// In decreasing order
+		Maps.entry(_7_2_1, CHANGES_7_2_1),																																						//
 		Maps.entry(_7_2, CHANGES_7_2),																																							//
 		Maps.entry(_7_1, CHANGES_7_1),																																							//
 		Maps.entry(_7_0, CHANGES_7_0),																																							//
