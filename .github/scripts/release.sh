@@ -421,8 +421,9 @@ update_about_java_patch() {
     if ! grep -q "public static final Version.*${version_const}[[:space:]]*=" "$file"; then
         # Find the line with CURRENT and add the new version before it
         # First, find the last version constant line (the one before CURRENT)
+        # Match both 2-component and 3-component version patterns
         local last_version_line
-        last_version_line=$(grep -n "public static final Version.*_[0-9]*_[0-9]*" "$file" | grep -v "CURRENT" | tail -1 | cut -d: -f1)
+        last_version_line=$(grep -n "public static final Version.*_[0-9]*_[0-9]*\(_[0-9]*\)\?[[:space:]]*=" "$file" | grep -v "CURRENT" | tail -1 | cut -d: -f1)
 
         if [[ -n "$last_version_line" ]]; then
             # Insert the new version after the last version constant
@@ -442,8 +443,9 @@ update_about_java_patch() {
         local changes_const="CHANGES_${NEW_MAJOR}_${NEW_MINOR}_${NEW_PATCH}"
         if ! grep -q "public static final String\[\].*${changes_const}[[:space:]]*=" "$file"; then
             # Find the first CHANGES line and add the new one before it
+            # Match both 2-component and 3-component CHANGES patterns
             local first_changes_line
-            first_changes_line=$(grep -n "public static final String\[\].*CHANGES_[0-9]*_[0-9]*" "$file" | head -1 | cut -d: -f1)
+            first_changes_line=$(grep -n "public static final String\[\].*CHANGES_[0-9]*_[0-9]*\(_[0-9]*\)\?[[:space:]]*=" "$file" | head -1 | cut -d: -f1)
 
             if [[ -n "$first_changes_line" ]]; then
                 # Use a temp file approach for portability
