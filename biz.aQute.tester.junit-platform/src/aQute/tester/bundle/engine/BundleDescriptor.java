@@ -3,8 +3,6 @@ package aQute.tester.bundle.engine;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.platform.engine.ConfigurationParameters;
-import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.ExecutionRequest;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
@@ -42,12 +40,10 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 		addChild(descriptor);
 	}
 
-	public void executeChild(TestDescriptor descriptor, EngineExecutionListener listener,
-		ConfigurationParameters params) {
+	public void executeChild(TestDescriptor descriptor, ExecutionRequest parentRequest) {
 		TestEngine engine = engineMap.get(descriptor);
-		ExecutionRequest er = new ExecutionRequest(descriptor, listener, params);
-		engine.execute(er);
-
+		ExecutionRequest childRequest = ExecutionRequestFactory.createChildRequest(descriptor, parentRequest);
+		engine.execute(childRequest);
 	}
 
 	@Override

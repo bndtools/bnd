@@ -124,7 +124,7 @@ public class BundleSelectorResolver {
 		methodSelectors = request.getSelectorsByType(MethodSelector.class)
 			.stream()
 			.map(selector -> DiscoverySelectors.selectMethod(selector.getClassName(), selector.getMethodName(),
-				selector.getMethodParameterTypes()))
+				selector.getParameterTypeNames()))
 			.collect(toList());
 
 		bundleSelectors = request.getSelectorsByType(BundleSelector.class);
@@ -436,7 +436,7 @@ public class BundleSelectorResolver {
 	}
 
 	private static MethodSelector selectMethod(Class<?> testClass, MethodSelector selector) {
-		return findMethod(testClass, selector.getMethodName(), selector.getMethodParameterTypes())
+		return findMethod(testClass, selector.getMethodName(), selector.getParameterTypeNames())
 			.map(method -> DiscoverySelectors.selectMethod(testClass, method))
 			.orElse(null);
 	}
