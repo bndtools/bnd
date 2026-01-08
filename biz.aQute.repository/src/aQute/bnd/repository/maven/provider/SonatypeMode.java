@@ -1,5 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
+@Deprecated(forRemoval = true, since = "7.3.0")
 public enum SonatypeMode {
 
 	/*
@@ -23,6 +24,7 @@ public enum SonatypeMode {
 		this.value = value;
 	}
 
+	@Deprecated
 	@Override
 	public String toString() {
 		return value;

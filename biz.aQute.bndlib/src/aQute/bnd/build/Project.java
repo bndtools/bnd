@@ -1217,11 +1217,16 @@ public class Project extends Processor {
 		release(new ReleaseParameter(name, test, false));
 	}
 
+	@Deprecated(forRemoval = true, since = "7.3.0")
 	public static class ReleaseParameter {
+		@Deprecated
 		public String	name;
+		@Deprecated
 		public boolean	test;
+		@Deprecated
 		public boolean	lastBundleInWorkspace;
 
+		@Deprecated(forRemoval = true, since = "7.3.0")
 		public ReleaseParameter(String name, boolean test, boolean lastBundleInWorkspace) {
 			this.name = name;
 			this.test = test;
@@ -1229,6 +1234,10 @@ public class Project extends Processor {
 		}
 	}
 
+	/**
+	 * Do not use this method.
+	 */
+	@Deprecated(forRemoval = true, since = "7.3.0")
 	public void release(ReleaseParameter relParam) throws Exception, IOException {
 		List<RepositoryPlugin> releaseRepos = getReleaseRepos(relParam.name);
 		if (releaseRepos.isEmpty()) {
