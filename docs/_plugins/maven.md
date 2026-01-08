@@ -33,7 +33,7 @@ A configuration can look like this:
 			index=${.}/release.maven; \
 			name="Release"
 
-#### Release to Maven Central via Sonatype Central Portal
+#### Release to Maven Central via Sonatype Central Portal (deprecated for removal in 7.3.0)
 
 Maven Central now offers publishing through the [Sonatype Central Portal](https://central.sonatype.com/), which provides a streamlined publishing process. The MavenBndRepository plugin supports this with the `sonatypeMode` configuration property.
 
