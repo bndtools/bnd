@@ -61,7 +61,7 @@ We generally do not use other branches. Issues and features are handled through 
 
 [Open issues](https://github.com/bndtools/bnd/issues) are the one _actively scheduled_ to go into the next milestone(s). 
 
-_All other issues will be closed_. However, some issues we close because we just lack people that are interested in working on them. We explicitly mark those issues with [`abeyance`](https://github.com/bndtools/bnd/issues?q=is%3Aissue+label%3Aabeyance+). If you got time to spare, do not hesitate to open them and indicate you're willing to work on them. We will then properly schedule and track them. If you need to find them, use this filter: `is:issue label:abeyance`, make sure `is:open` is not in the filter.
+_All other issues will be closed_. However, some issues we close because we just lack people that are interested in working on them. We explicitly mark those issues with [`help wanted`](https://github.com/bndtools/bnd/issues?q=is%3Aissue%20state%3Aclosed%20label%3A"help%20wanted"). If you got time to spare, do not hesitate to open them and indicate you're willing to work on them. We will then properly schedule and track them. If you need to find them, use this filter: `is:issue state:closed label:"help wanted"`.
 
 ### Milestones
 
