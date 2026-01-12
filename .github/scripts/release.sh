@@ -50,17 +50,17 @@ Usage: $(basename "$0") [OPTIONS]
 Automate bnd release preparation.
 
 Options:
-  -m, --mode MODE           Release mode: first-rc, prepare-next, next-rc, or release (required)
-  -v, --release-version VER Version to release (V1), e.g., 7.2.0 (required)
-  -n, --next-version VER    Next development version (V2), e.g., 7.3.0 (required for first-rc and prepare-next)
-  -r, --rc NUMBER           Release candidate number, e.g., 1, 2 (required for first-rc, prepare-next, and next-rc)
+  -m, --mode MODE           Release mode: first-rc, prepare-next, next-rc, release, patch-first-rc, or patch-next-rc (required)
+  -v, --release-version VER Version to release (V1), e.g., 7.2.0 or 7.2.1 (required)
+  -n, --next-version VER    Next development version (V2), e.g., 7.3.0 (required for first-rc, prepare-next, and patch-first-rc)
+  -r, --rc NUMBER           Release candidate number, e.g., 1, 2 (required for first-rc, prepare-next, next-rc, patch-first-rc, and patch-next-rc)
   --dry-run                 Show what would be changed without making changes
   -h, --help                Show this help message
 
 Modes:
   first-rc      Prepare master branch for V2 (next development version)
                 Requires: --release-version, --next-version, --rc
-                Run this on the master branch first.
+                Run this on the master branch first for a MINOR version release.
 
   prepare-next  Prepare next branch for first release candidate (V1.RC1)
                 Requires: --release-version, --next-version, --rc
@@ -72,7 +72,17 @@ Modes:
   release       Update next branch from RC to final release
                 Requires: --release-version
 
+  patch-first-rc  Prepare next branch for first patch release candidate (V1.RC1)
+                  Requires: --release-version, --next-version, --rc
+                  Use for MICRO version releases (e.g., 7.2.1). Does NOT update master branch.
+                  RC1 builds with the previous release version.
+
+  patch-next-rc   Update next branch from current patch RC to next patch RC
+                  Requires: --release-version, --next-version, --rc (the NEW rc number)
+                  Use for subsequent patch RCs (RC2+). Builds with previous RC.
+
 Examples:
+  # Regular MINOR version release workflow:
   # Step 1: On master, prepare for 7.3.0 development stream
   $(basename "$0") --mode first-rc --release-version 7.2.0 --next-version 7.3.0 --rc 1
 
@@ -84,6 +94,16 @@ Examples:
 
   # Final release of 7.2.0
   $(basename "$0") --mode release --release-version 7.2.0
+
+  # Patch MICRO version release workflow (e.g., 7.2.1 after 7.2.0 is released):
+  # Step 1: On next (still on 7.2.0), prepare for 7.2.1-RC1 (cherry-pick fixes from master)
+  $(basename "$0") --mode patch-first-rc --release-version 7.2.1 --next-version 7.3.0 --rc 1
+
+  # Step 2: On next, update to 7.2.1-RC2
+  $(basename "$0") --mode patch-next-rc --release-version 7.2.1 --next-version 7.3.0 --rc 2
+
+  # Step 3: Final patch release of 7.2.1
+  $(basename "$0") --mode release --release-version 7.2.1
 
 Note: JFROG configuration updates must be done manually after running this script.
 EOF
@@ -196,11 +216,55 @@ validate_args() {
                 exit 1
             fi
             ;;
+        patch-first-rc)
+            if [[ -z "$NEXT_VERSION" ]]; then
+                log_error "Next version is required for patch-first-rc mode"
+                usage
+                exit 1
+            fi
+            if ! [[ "$NEXT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                log_error "Invalid next version format. Expected: X.Y.Z (e.g., 7.3.0)"
+                exit 1
+            fi
+            if [[ -z "$RC_NUMBER" ]]; then
+                log_error "RC number is required for patch-first-rc mode"
+                usage
+                exit 1
+            fi
+            # Validate that release version is a patch (MICRO version != 0)
+            parse_version "$RELEASE_VERSION" "REL"
+            if [[ "$REL_PATCH" == "0" ]]; then
+                log_error "patch-first-rc mode requires a MICRO version > 0 (e.g., 7.2.1, not 7.2.0)"
+                exit 1
+            fi
+            ;;
+        patch-next-rc)
+            if [[ -z "$NEXT_VERSION" ]]; then
+                log_error "Next version is required for patch-next-rc mode"
+                usage
+                exit 1
+            fi
+            if ! [[ "$NEXT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                log_error "Invalid next version format. Expected: X.Y.Z (e.g., 7.3.0)"
+                exit 1
+            fi
+            if [[ -z "$RC_NUMBER" ]]; then
+                log_error "RC number is required for patch-next-rc mode"
+                usage
+                exit 1
+            fi
+            # Validate that release version is a patch (MICRO version != 0)
+            parse_version "$RELEASE_VERSION" "REL"
+            if [[ "$REL_PATCH" == "0" ]]; then
+                log_error "patch-next-rc mode requires a MICRO version > 0 (e.g., 7.2.1, not 7.2.0)"
+                exit 1
+            fi
+            ;;
         release)
             # No additional requirements
             ;;
         *)
-            log_error "Invalid mode: $MODE. Must be: first-rc, prepare-next, next-rc, or release"
+            log_error "Invalid mode: $MODE. Must be: first-rc, prepare-next, next-rc, release, patch-first-rc, or patch-next-rc"
             usage
             exit 1
             ;;
@@ -301,6 +365,87 @@ update_about_java() {
             # Find the first CHANGES line and add the new one before it
             local first_changes_line
             first_changes_line=$(grep -n "public static final String\[\].*CHANGES_[0-9]*_[0-9]*[[:space:]]*=" "$file" | head -1 | cut -d: -f1)
+
+            if [[ -n "$first_changes_line" ]]; then
+                # Use a temp file approach for portability
+                local tmpfile
+                tmpfile=$(mktemp)
+                {
+                    head -n $((first_changes_line - 1)) "$file"
+                    echo "	public static final String[]				${changes_const}	= {"
+                    echo "		\"See https://github.com/bndtools/bnd/wiki/Changes-in-${new_version} for a list of changes.\""
+                    echo "	};"
+                    tail -n +"$first_changes_line" "$file"
+                } > "$tmpfile" && mv "$tmpfile" "$file"
+            fi
+        fi
+
+        # Update CHANGES map to include the new version (add at the beginning after the comment)
+        # The format is: Maps.ofEntries( followed by // In decreasing order comment, then entries
+        if ! grep -q "Maps.entry(${version_const}, ${changes_const})" "$file"; then
+            # Find the line with "In decreasing order" comment
+            local comment_line
+            comment_line=$(grep -n "// In decreasing order" "$file" | head -1 | cut -d: -f1)
+            if [[ -n "$comment_line" ]]; then
+                # Add the new entry after the comment line using awk
+                local new_entry="		Maps.entry(${version_const}, ${changes_const}),																																							//"
+                local tmpfile
+                tmpfile=$(mktemp)
+                awk -v line="$comment_line" -v text="$new_entry" 'NR==line {print; print text; next} 1' "$file" > "$tmpfile" && mv "$tmpfile" "$file"
+            fi
+        fi
+    fi
+}
+
+# Update About.java for patch releases (with MICRO version component)
+update_about_java_patch() {
+    local file="${REPO_ROOT}/biz.aQute.bndlib/src/aQute/bnd/osgi/About.java"
+    local new_version=$1
+    local update_current=$2  # true or false
+
+    log_info "Updating ${file} for patch release"
+
+    # Parse version components
+    parse_version "$new_version" "NEW"
+
+    if [[ "$DRY_RUN" == true ]]; then
+        log_info "  Would add version constant: _${NEW_MAJOR}_${NEW_MINOR}_${NEW_PATCH}"
+        if [[ "$update_current" == true ]]; then
+            log_info "  Would update CURRENT to: _${NEW_MAJOR}_${NEW_MINOR}_${NEW_PATCH}"
+        fi
+        return
+    fi
+
+    # Check if version constant already exists
+    local version_const="_${NEW_MAJOR}_${NEW_MINOR}_${NEW_PATCH}"
+    if ! grep -q "public static final Version.*${version_const}[[:space:]]*=" "$file"; then
+        # Find the line with CURRENT and add the new version before it
+        # First, find the last version constant line (the one before CURRENT)
+        # Match both 2-component and 3-component version patterns
+        local last_version_line
+        last_version_line=$(grep -n "public static final Version.*_[0-9]*_[0-9]*\(_[0-9]*\)\?[[:space:]]*=" "$file" | grep -v "CURRENT" | tail -1 | cut -d: -f1)
+
+        if [[ -n "$last_version_line" ]]; then
+            # Insert the new version after the last version constant
+            # Use a temp file approach for portability across GNU and BSD sed
+            local new_line="	public static final Version					${version_const}		= new Version(${NEW_MAJOR}, ${NEW_MINOR}, ${NEW_PATCH});"
+            local tmpfile
+            tmpfile=$(mktemp)
+            awk -v line="$last_version_line" -v text="$new_line" 'NR==line {print; print text; next} 1' "$file" > "$tmpfile" && mv "$tmpfile" "$file"
+        fi
+    fi
+
+    if [[ "$update_current" == true ]]; then
+        # Update CURRENT to point to the new version
+        "${SED_INPLACE[@]}" "s/public static final Version[[:space:]]*CURRENT[[:space:]]*=.*/public static final Version					CURRENT		= ${version_const};/" "$file"
+
+        # Check if CHANGES constant exists, if not add it
+        local changes_const="CHANGES_${NEW_MAJOR}_${NEW_MINOR}_${NEW_PATCH}"
+        if ! grep -q "public static final String\[\].*${changes_const}[[:space:]]*=" "$file"; then
+            # Find the first CHANGES line and add the new one before it
+            # Match both 2-component and 3-component CHANGES patterns
+            local first_changes_line
+            first_changes_line=$(grep -n "public static final String\[\].*CHANGES_[0-9]*_[0-9]*\(_[0-9]*\)\?[[:space:]]*=" "$file" | head -1 | cut -d: -f1)
 
             if [[ -n "$first_changes_line" ]]; then
                 # Use a temp file approach for portability
@@ -605,6 +750,117 @@ do_release() {
     log_info "After the push, the release will be built and released into libs-release-local."
 }
 
+# Mode: patch-first-rc
+# Prepare next branch for first patch release candidate (V1.RC1)
+# This is used for MICRO version releases (e.g., 7.2.1 after 7.2.0)
+do_patch_first_rc() {
+    log_info "=========================================="
+    log_info "Mode: First Patch Release Candidate"
+    log_info "Release Version (V1): $RELEASE_VERSION"
+    log_info "Next Version (V2): $NEXT_VERSION"
+    log_info "RC Number: $RC_NUMBER"
+    log_info "=========================================="
+
+    echo ""
+    log_info "Preparing next branch for patch V1.RC$RC_NUMBER ($RELEASE_VERSION-RC$RC_NUMBER)"
+    log_info "------------------------------------------"
+
+    # Parse version to get the base version (previous final release)
+    parse_version "$RELEASE_VERSION" "REL"
+    local base_version="${REL_MAJOR}.${REL_MINOR}.0"
+    
+    log_info "Base version for RC1: $base_version"
+
+    # Update root gradle.properties with version range starting from base version
+    # For RC1 of a patch release, we use the previous final release (e.g., 7.2.0 for 7.2.1-RC1)
+    update_root_gradle_properties "[$base_version,$NEXT_VERSION)"
+
+    # Update -snapshot in build.bnd
+    update_build_bnd "$RELEASE_VERSION" "RC$RC_NUMBER"
+
+    # Update About.java with patch version constant
+    update_about_java_patch "$RELEASE_VERSION" true
+
+    # Update package-info.java
+    update_package_info "$RELEASE_VERSION"
+
+    # Update maven pom
+    update_maven_pom "${RELEASE_VERSION}-RC$RC_NUMBER"
+
+    # Update gradle-plugins/gradle.properties
+    update_gradle_plugins_properties "${RELEASE_VERSION}-RC$RC_NUMBER"
+
+    # Get the current version in the README
+    local readme_current_version
+    readme_current_version=$(grep -o '"biz.aQute.bnd.builder" version "[^"]*"' "${REPO_ROOT}/gradle-plugins/README.md" | head -1 | sed 's/.*version "\([^"]*\)".*/\1/')
+
+    # Update gradle README if base version is different from current
+    if [[ "$readme_current_version" != "$RELEASE_VERSION" ]]; then
+        update_gradle_readme "$readme_current_version" "$RELEASE_VERSION"
+    fi
+
+    # Create version defaults .bnd file
+    create_version_bnd "$RELEASE_VERSION"
+
+    echo ""
+    log_info "Changes complete."
+    log_info ""
+    log_info "Next steps:"
+    log_info "  1. Review changes with: git diff"
+    log_info "  2. Commit: git add . && git commit -m 'build: Build Release ${RELEASE_VERSION}.RC$RC_NUMBER'"
+    log_info "  3. Tag: git tag -s ${RELEASE_VERSION}.RC$RC_NUMBER"
+    log_info "  4. Push: git push --force origin next ${RELEASE_VERSION}.RC$RC_NUMBER"
+    log_info ""
+    log_info "After pushing, update JFROG manually (see release process documentation)."
+    log_info ""
+    log_info "IMPORTANT: For patch RC1, gradle.properties uses [$base_version,$NEXT_VERSION) to build with the previous release."
+    log_info "           For subsequent RCs (RC2+), use patch-next-rc mode which will update to [${RELEASE_VERSION}-RC,$NEXT_VERSION)."
+}
+
+# Mode: patch-next-rc
+# Update next branch from RCx to RC(x+1) for patch releases
+do_patch_next_rc() {
+    log_info "=========================================="
+    log_info "Mode: Next Patch Release Candidate"
+    log_info "Release Version: $RELEASE_VERSION"
+    log_info "Next Version: $NEXT_VERSION"
+    log_info "New RC Number: $RC_NUMBER"
+    log_info "=========================================="
+
+    local prev_rc=$((RC_NUMBER - 1))
+
+    echo ""
+    log_info "Updating next branch from RC$prev_rc to RC$RC_NUMBER for patch release"
+    log_info "------------------------------------------"
+
+    # Update root gradle.properties with version range
+    # For RC2+, we use the RC range to pick up previous RCs
+    update_root_gradle_properties "[${RELEASE_VERSION}-RC,${NEXT_VERSION})"
+
+    # Update -snapshot in build.bnd
+    update_build_bnd "$RELEASE_VERSION" "RC$RC_NUMBER"
+
+    # Update maven pom
+    update_maven_pom "${RELEASE_VERSION}-RC$RC_NUMBER"
+
+    # Update gradle-plugins/gradle.properties
+    update_gradle_plugins_properties "${RELEASE_VERSION}-RC$RC_NUMBER"
+
+    echo ""
+    log_info "Changes complete."
+    log_info ""
+    log_info "Next steps:"
+    log_info "  1. Review changes with: git diff"
+    log_info "  2. Commit: git add . && git commit -m 'build: Build Release ${RELEASE_VERSION}.RC$RC_NUMBER'"
+    log_info "  3. Tag: git tag -s ${RELEASE_VERSION}.RC$RC_NUMBER"
+    log_info "  4. Push: git push origin next ${RELEASE_VERSION}.RC$RC_NUMBER"
+    log_info ""
+    log_info "After pushing, update JFROG manually (see release process documentation)."
+    log_info ""
+    log_info "To see changes since last release:"
+    log_info "  git shortlog ${RELEASE_VERSION}.DEV..next --no-merges"
+}
+
 # Main
 main() {
     validate_args
@@ -623,6 +879,12 @@ main() {
             ;;
         release)
             do_release
+            ;;
+        patch-first-rc)
+            do_patch_first_rc
+            ;;
+        patch-next-rc)
+            do_patch_next_rc
             ;;
     esac
 
