@@ -17,7 +17,7 @@ Git-Descriptor:         ${system-allow-fail;git describe --dirty --always --abbr
 Git-SHA:                ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
 
 # This is the version to baseline this build against. See cnf/ext/baseline.mvn.
-baseline.version:       7.2.0
+baseline.version:       7.2.1
 # biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
 base.version:           7.3.0
 Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
