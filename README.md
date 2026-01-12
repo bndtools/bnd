@@ -89,7 +89,7 @@ Use the latest **stable release** for normal development.
 <plugin>
   <groupId>biz.aQute.bnd</groupId>
   <artifactId>bnd-maven-plugin</artifactId>
-  <version>7.2.0</version>
+  <version>7.2.1</version>
 </plugin>
 ```
 
@@ -97,7 +97,7 @@ Use the latest **stable release** for normal development.
 
 ```gradle
 plugins {
-  id "biz.aQute.bnd.builder" version "7.2.0"
+  id "biz.aQute.bnd.builder" version "7.2.1"
 }
 ```
 
