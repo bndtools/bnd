@@ -16,7 +16,7 @@ Import-Package: \
 	aQute.*;resolution:=optional,\
 	junit.*;version="${range;[==,5);${junit3.version}}";resolution:=optional,\
 	org.apache.felix.service.command;resolution:=optional,\
-	org.junit.platform.*;version="${range;[==,+);${junit.platform.tester.version}}",\
+	org.junit.platform.*;version="${range;[==,7);${junit.platform.tester.version}}",\
 	org.junit.*;version="${range;[==,+);${junit4.tester.version}}";resolution:=optional,\
 	*
 
