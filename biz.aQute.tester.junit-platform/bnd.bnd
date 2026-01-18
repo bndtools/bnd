@@ -12,10 +12,17 @@ Bundle-Description: \
 # The dependency on aQute packages is only for the
 # launcher side. When launched, those dependencies
 # are not necessary
+# with the line 
+# org.junit.platform.commons.util;status=INTERNAL;version="[6,7)";resolution:=optional, \
+# more ActivatorJUnitPlatformLatestTest work with JUni6, but 
+# ActivatorJUnitPlatformEarliestTest all tests fail
+# TODO We need to find a new solution how to support JUnit6.
+# I doubt that  biz.aQute.tester.junit-platform can support JUnit5 and JUnit6
 Import-Package: \
 	aQute.*;resolution:=optional,\
 	junit.*;version="${range;[==,5);${junit3.version}}";resolution:=optional,\
 	org.apache.felix.service.command;resolution:=optional,\
+	org.junit.platform.commons.util;status=INTERNAL;version="[6,7)";resolution:=optional, \
 	org.junit.platform.*;version="${range;[==,7);${junit.platform.tester.version}}",\
 	org.junit.*;version="${range;[==,+);${junit4.tester.version}}";resolution:=optional,\
 	*
