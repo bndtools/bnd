@@ -348,6 +348,9 @@
 							<bndVersion>${project.version}</bndVersion>
 							<projectsDirectory>${basedir}/src/it</projectsDirectory>
 						</scriptVariables>
+						<environmentVariables>
+							<GPG_KEY_ID />
+						</environmentVariables>
 						<mavenOpts>${mavenOpts}</mavenOpts>
 						<pomIncludes>
 							<pomInclude>*/pom.xml</pomInclude>
