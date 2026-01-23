@@ -10,8 +10,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 import org.osgi.util.promise.PromiseFactory;
 
@@ -77,51 +75,55 @@ public class ExecutorGroup {
 		executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60L, TimeUnit.SECONDS,
 			new SynchronousQueue<>(), new ExecutorThreadFactory(defaultThreadFactory, "Bnd-Executor,"),
 			rejectedExecutionHandler);
+		
 		scheduledExecutor = new ScheduledThreadPoolExecutor(corePoolSize,
 			new ExecutorThreadFactory(defaultThreadFactory, "Bnd-ScheduledExecutor,"), rejectedExecutionHandler);
+		// Configure scheduled executor to prevent unbounded thread growth
+		scheduledExecutor.setMaximumPoolSize(Math.max(corePoolSize, 4));
+		scheduledExecutor.setKeepAliveTime(60L, TimeUnit.SECONDS);
+		scheduledExecutor.allowCoreThreadTimeOut(false);
+		
 		// Use dedicated ScheduledThreadPoolExecutor for the promise factory
 		promiseScheduledExecutor = new ScheduledThreadPoolExecutor(corePoolSize,
 			new ExecutorThreadFactory(defaultThreadFactory, "Bnd-PromiseScheduledExecutor,"), rejectedExecutionHandler);
+		// Configure promise scheduled executor to prevent unbounded thread growth
+		promiseScheduledExecutor.setMaximumPoolSize(Math.max(corePoolSize, 4));
+		promiseScheduledExecutor.setKeepAliveTime(60L, TimeUnit.SECONDS);
+		promiseScheduledExecutor.allowCoreThreadTimeOut(false);
+		
 		promiseFactory = new PromiseFactory(executor, promiseScheduledExecutor);
 
 		List<ThreadPoolExecutor> executors = Lists.of(scheduledExecutor, promiseScheduledExecutor, executor);
 
-		// Handle shutting down executors via shutdown hook
-		AtomicBoolean shutdownHookInstalled = new AtomicBoolean();
-		Function<ThreadPoolExecutor, ThreadFactory> shutdownHookInstaller = threadPoolExecutor -> {
-			ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
-			return (Runnable r) -> {
-				threadPoolExecutor.setThreadFactory(threadFactory);
-				if (shutdownHookInstalled.compareAndSet(false, true)) {
-					Thread shutdownThread = new Thread(() -> {
-						executors.forEach(executor -> {
-							executor.shutdown();
-							try {
-								executor.awaitTermination(20, TimeUnit.SECONDS);
-							} catch (InterruptedException e) {
-								Thread.currentThread()
-									.interrupt();
-							}
-						});
-					}, "Bnd-ExecutorShutdownHook");
-					try {
-						Runtime.getRuntime()
-							.addShutdownHook(shutdownThread);
-					} catch (IllegalStateException e) {
-						// VM is already shutting down...
-						executors.forEach(ThreadPoolExecutor::shutdown);
-					}
-				}
-				return threadFactory.newThread(r);
-			};
-		};
-		executors.forEach(executor -> {
-			executor.setThreadFactory(shutdownHookInstaller.apply(executor));
-			if (executor instanceof ScheduledThreadPoolExecutor scheduledExecutor) {
-				scheduledExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-				scheduledExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+		// Configure shutdown policies for scheduled executors
+		executors.forEach(exec -> {
+			if (exec instanceof ScheduledThreadPoolExecutor scheduledExec) {
+				scheduledExec.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+				scheduledExec.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+				scheduledExec.setRemoveOnCancelPolicy(true);
 			}
 		});
+
+		// Install shutdown hook eagerly to avoid thread factory complications
+		Thread shutdownThread = new Thread(() -> {
+			executors.forEach(exec -> {
+				exec.shutdown();
+				try {
+					exec.awaitTermination(20, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {
+					Thread.currentThread()
+						.interrupt();
+				}
+			});
+		}, "Bnd-ExecutorShutdownHook");
+		shutdownThread.setDaemon(false);
+		try {
+			Runtime.getRuntime()
+				.addShutdownHook(shutdownThread);
+		} catch (IllegalStateException e) {
+			// VM is already shutting down...
+			executors.forEach(ThreadPoolExecutor::shutdown);
+		}
 	}
 
 	public Executor getExecutor() {
