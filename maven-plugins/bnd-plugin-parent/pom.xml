@@ -24,7 +24,7 @@
 		<maven.target.version>3.3.9</maven.target.version>
 		<aether.version>1.0.2.v20150114</aether.version>
 		<!-- The following versions should match those in cnf/ext/junit.bnd -->
-		<junit.jupiter.version>5.14.2</junit.jupiter.version>
+		<junit.jupiter.version>6.0.2</junit.jupiter.version>
 		<assertj.version>3.27.6</assertj.version>
 	</properties>
 
