@@ -25,7 +25,7 @@
 		<aether.version>1.0.2.v20150114</aether.version>
 		<!-- The following versions should match those in cnf/ext/junit.bnd -->
 		<junit.jupiter.version>5.14.2</junit.jupiter.version>
-		<assertj.version>3.27.6</assertj.version>
+		<assertj.version>3.27.7</assertj.version>
 	</properties>
 
 	<url>https://bnd.bndtools.org/</url>
