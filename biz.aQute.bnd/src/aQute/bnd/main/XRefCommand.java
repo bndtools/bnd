@@ -17,9 +17,12 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.header.Parameters;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
 import aQute.lib.getopt.Arguments;
@@ -59,6 +62,9 @@ public class XRefCommand {
 
 		@Description("Include java.* packages")
 		boolean java();
+
+		@Description("Analyze nested JARs referenced via Bundle-ClassPath")
+		boolean nested();
 	}
 
 	static public class All {
@@ -86,46 +92,13 @@ public class XRefCommand {
 			try {
 				File file = bnd.getFile(arg);
 				try (Jar jar = new Jar(file.getName(), file)) {
-					for (Map.Entry<String, Resource> entry : jar.getResources()
-						.entrySet()) {
-						String key = entry.getKey();
-						Resource r = entry.getValue();
-						if (key.endsWith(".class")) {
-							TypeRef ref = analyzer.getTypeRefFromPath(key);
-							String fqn = ref.getFQN();
+					// Analyze the main jar
+					analyzeJarResources(jar, "", analyzer, filter, source, destination, options, table, packages,
+						set);
 
-							if (filter.matches(fqn) && source.matches(fqn)) {
-								bnd.getLogger()
-									.info("# include {}", fqn);
-								set.add(ref);
-
-								try (InputStream in = r.openInputStream()) {
-									Clazz clazz = new Clazz(analyzer, key, r);
-
-									// TODO use the proper bcp instead
-									// of using the default layout
-
-									Set<TypeRef> s = clazz.parseClassFile();
-									for (Iterator<TypeRef> t = s.iterator(); t.hasNext();) {
-										TypeRef tr = t.next();
-										while (tr.isArray())
-											tr = tr.getComponentTypeRef();
-
-										boolean skipJava = !options.java() && tr.isJava();
-
-										if (!destination.matches(tr.getFQN()) || skipJava || tr.isPrimitive())
-											t.remove();
-										else {
-											packages.add(ref.getPackageRef(), tr.getPackageRef());
-										}
-									}
-									if (!s.isEmpty()) {
-										table.addAll(ref, s);
-										set.addAll(s);
-									}
-								}
-							}
-						}
+					// Analyze nested JARs if requested
+					if (options.nested()) {
+						analyzeNestedJars(jar, analyzer, filter, source, destination, options, table, packages, set);
 					}
 				}
 			} catch (Exception e) {
@@ -155,6 +128,123 @@ public class XRefCommand {
 				printxref(packages, ">");
 			if (from)
 				printxref(packages.transpose(), "<");
+		}
+	}
+
+	/**
+	 * Analyzes nested JARs referenced via Bundle-ClassPath
+	 */
+	private void analyzeNestedJars(Jar jar, Analyzer analyzer, Instructions filter, Instructions source,
+		Instructions destination, xrefOptions options, MultiMap<TypeRef, TypeRef> table,
+		MultiMap<PackageRef, PackageRef> packages, Set<TypeRef> set) {
+		try {
+			// Get the Bundle-ClassPath from manifest
+			Domain domain = Domain.domain(jar.getManifest());
+			if (domain == null)
+				return;
+
+			Parameters bcp = domain.getBundleClasspath();
+			if (bcp.isEmpty())
+				return;
+
+			bnd.getLogger()
+				.info("Found Bundle-ClassPath entries: {}", bcp.keySet());
+
+			for (String path : bcp.keySet()) {
+				// Skip the main jar entry
+				if (path.equals(".") || path.equals("/"))
+					continue;
+
+				// Try to get the embedded JAR resource
+				Resource resource = jar.getResource(path);
+				if (resource != null) {
+					try {
+						// Extract nested JAR from resource
+						Jar nestedJar = Jar.fromResource(path, resource);
+						bnd.getLogger()
+							.info("Analyzing nested JAR: {}", path);
+
+						// Analyze the nested JAR's resources
+						analyzeJarResources(nestedJar, "", analyzer, filter, source, destination, options, table,
+							packages, set);
+
+						// Don't want to close Jar from JarResource
+						if (!(resource instanceof JarResource)) {
+							nestedJar.close();
+						}
+					} catch (Exception e) {
+						bnd.getLogger()
+							.warn("Failed to analyze nested JAR {}: {}", path, e.getMessage());
+					}
+				} else if (jar.hasDirectory(path)) {
+					// Handle directories in Bundle-ClassPath
+					String prefix = path.endsWith("/") ? path : path + "/";
+					bnd.getLogger()
+						.info("Analyzing Bundle-ClassPath directory: {}", path);
+					analyzeJarResources(jar, prefix, analyzer, filter, source, destination, options, table, packages,
+						set);
+				}
+			}
+		} catch (Exception e) {
+			bnd.getLogger()
+				.warn("Failed to analyze nested JARs: {}", e.getMessage());
+		}
+	}
+
+	/**
+	 * Analyzes class files in a JAR with an optional path prefix
+	 */
+	private void analyzeJarResources(Jar jar, String prefix, Analyzer analyzer, Instructions filter,
+		Instructions source, Instructions destination, xrefOptions options, MultiMap<TypeRef, TypeRef> table,
+		MultiMap<PackageRef, PackageRef> packages, Set<TypeRef> set) {
+		for (Map.Entry<String, Resource> entry : jar.getResources()
+			.entrySet()) {
+			String key = entry.getKey();
+			Resource r = entry.getValue();
+
+			// Apply prefix filter if specified
+			if (!key.startsWith(prefix))
+				continue;
+
+			if (key.endsWith(".class")) {
+				String relativePath = key.substring(prefix.length());
+				try {
+					TypeRef ref = analyzer.getTypeRefFromPath(relativePath);
+					String fqn = ref.getFQN();
+
+					if (filter.matches(fqn) && source.matches(fqn)) {
+						bnd.getLogger()
+							.info("# include {}", fqn);
+						set.add(ref);
+
+						try (InputStream in = r.openInputStream()) {
+							Clazz clazz = new Clazz(analyzer, relativePath, r);
+
+							Set<TypeRef> s = clazz.parseClassFile();
+							for (Iterator<TypeRef> t = s.iterator(); t.hasNext();) {
+								TypeRef tr = t.next();
+								while (tr.isArray())
+									tr = tr.getComponentTypeRef();
+
+								boolean skipJava = !options.java() && tr.isJava();
+
+								if (!destination.matches(tr.getFQN()) || skipJava || tr.isPrimitive())
+									t.remove();
+								else {
+									packages.add(ref.getPackageRef(), tr.getPackageRef());
+								}
+							}
+							if (!s.isEmpty()) {
+								table.addAll(ref, s);
+								set.addAll(s);
+							}
+						}
+					}
+				} catch (Exception e) {
+					bnd.getLogger()
+						.warn("Failed to analyze class {}: {}", key, e.getMessage());
+				}
+			}
 		}
 	}
 
