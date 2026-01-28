@@ -826,7 +826,7 @@
 			helpUrl="https://bnd.bndtools.org/plugins/filerepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
-			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details. 'compile' for compilation. See -buildpath and -testpath for details). If any other tag like &lt;&lt;EMPTY&gt;&gt;  is used, then this repo is excluded from resolution and compilation." options="resolve,compile,&lt;&lt;EMPTY&gt;&gt;"  />
 			<property name="location" type="string"
 				description="Local directory path" />
 			<property name="readonly" type="boolean" default="false" />
@@ -837,7 +837,7 @@
 			helpUrl="https://bnd.bndtools.org/plugins/osgirepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
-			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />	
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details. 'compile' for compilation. See -buildpath and -testpath for details). If any other tag like &lt;&lt;EMPTY&gt;&gt;  is used, then this repo is excluded from resolution and compilation." options="resolve,compile,&lt;&lt;EMPTY&gt;&gt;"  />	
 			<property name="locations" type="string"
 				description="Index locations (comma-separated list of URLs)" />
 			<property name="cache" type="string"
@@ -850,7 +850,7 @@
 			helpUrl="https://bnd.bndtools.org/plugins/localindexrepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
-			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details. 'compile' for compilation. See -buildpath and -testpath for details). If any other tag like &lt;&lt;EMPTY&gt;&gt;  is used, then this repo is excluded from resolution and compilation." options="resolve,compile,&lt;&lt;EMPTY&gt;&gt;"  />
 			<property name="local" type="string"
 				description="Local directory path" />
 			<property name="phase" type="string"
@@ -889,7 +889,7 @@
 			helpUrl="https://bnd.bndtools.org/plugins/maven.html"
 			rank="10">
 		    <property name="name" type="string" description="The name of this repository" default="Maven Repository" />
-			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details. 'compile' for compilation. See -buildpath and -testpath for details). If any other tag like &lt;&lt;EMPTY&gt;&gt;  is used, then this repo is excluded from resolution and compilation." options="resolve,compile,&lt;&lt;EMPTY&gt;&gt;"  />
 			<property name="releaseUrl" type="string" description="The urls to the remote release repository." default="https://repo.maven.apache.org/maven2/" />
 		    <property name="stagingUrl" type="string" description="The url of the staging release repository." />
 		    <property name="snapshotUrl" type="string" description="The urls to the remote snapshot repository." default="https://repository.apache.org/snapshots/" />
@@ -909,7 +909,7 @@
 			name="P2Repository"
 			helpUrl="https://bnd.bndtools.org/plugins/p2repo.html">
 		    <property name="name" type="string" description="The name of this repository" default="P2Repository" />
-		    <property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+		    <property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details. 'compile' for compilation. See -buildpath and -testpath for details). If any other tag like &lt;&lt;EMPTY&gt;&gt;  is used, then this repo is excluded from resolution and compilation." options="resolve,compile,&lt;&lt;EMPTY&gt;&gt;"  />
 			<property name="url" type="string" description="The URL to either the P2 repository (a directory) or an Eclipse target platform. Required." />
 		    <property name="location" type="string" description="The location to store the index file. Default: 'cnf/cache/p2-index-reponame/index.xml.gz'" />
 		</plugin>
@@ -919,7 +919,7 @@
 			name="Maven POM Repository"
 			helpUrl="https://bnd.bndtools.org/plugins/pomrepo.html">
 		    <property name="name" type="string" description="The name of the repo. Required." default="Maven POM Repository" />
-		    <property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+		    <property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details. 'compile' for compilation. See -buildpath and -testpath for details). If any other tag like &lt;&lt;EMPTY&gt;&gt;  is used, then this repo is excluded from resolution and compilation." options="resolve,compile,&lt;&lt;EMPTY&gt;&gt;"  />
 		    <property name="releaseUrl" type="string" description="The url to the remote release repository. Can be a comma separated list of urls." default="https://repo.maven.apache.org/maven2/" />
 		    <property name="snapshotUrl" type="string" description="The url to the remote snapshot repository. If this is not specified, it falls back to the release repository or just local if this is also not specified. Can be a comma separated list of urls." default="https://repository.apache.org/snapshots/" />
 		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />

@@ -265,12 +265,16 @@ public interface Constants {
 
 	String		REMOTEWORKSPACE								= "-remoteworkspace";
 
+	String		ACTIVETAGS									= "-activetags";
 	/**
-	 * tag for repos which should be used for Resolving bundles. This is also
+	 * tags for repos which should be used for Resolving bundles. This is also
 	 * the default tag for all repos which not have specified tags (also for bc
 	 * reasons)
 	 */
 	String		REPOTAGS_RESOLVE							= "resolve";
+	String		REPOTAGS_COMPILE							= "compile";
+	String		REPOTAGS_TEST								= "test";
+	String		REPOTAGS_DEBUG								= "debug";
 
 	String		RUNBLACKLIST								= "-runblacklist";
 	String		RUNREQUIRES									= "-runrequires";

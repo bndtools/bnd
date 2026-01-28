@@ -637,6 +637,8 @@ public class Project extends Processor {
 			decorator.decorate(bundles, true);
 		}
 
+		List<RepositoryPlugin> repos = getRepositories(repoTagsBySource(source));
+
 		List<Container> result = new ArrayList<>();
 		try {
 			for (Entry<String, Attrs> entry : bundles.entrySet()) {
@@ -649,12 +651,12 @@ public class Project extends Processor {
 				boolean triedGetBundle = false;
 
 				if (bsn.indexOf('*') >= 0) {
-					return getBundlesWildcard(bsn, versionRange, strategyx, attrs);
+					return getBundlesWildcard(bsn, versionRange, strategyx, attrs, repos);
 				}
 
 				if (versionRange != null) {
 					if (versionRange.equals(VERSION_ATTR_LATEST) || versionRange.equals(VERSION_ATTR_SNAPSHOT)) {
-						found = getBundle(bsn, versionRange, strategyx, attrs);
+						found = getBundle(bsn, versionRange, strategyx, attrs, repos);
 						triedGetBundle = true;
 					}
 				}
@@ -693,7 +695,7 @@ public class Project extends Processor {
 							found = new Container(this, bsn, "file", Container.TYPE.EXTERNAL, f, error, attrs, null);
 						}
 					} else if (!triedGetBundle) {
-						found = getBundle(bsn, versionRange, strategyx, attrs);
+						found = getBundle(bsn, versionRange, strategyx, attrs, repos);
 					}
 				}
 
@@ -727,6 +729,25 @@ public class Project extends Processor {
 		return result;
 	}
 
+	private String[] repoTagsBySource(String source) {
+
+		if (source == null) {
+			return null;
+		}
+
+		if (Constants.BUILDPATH.equals(source)) {
+			return new String[] {
+				Constants.REPOTAGS_COMPILE
+			};
+		} else if (Constants.TESTPATH.equals(source)) {
+			return new String[] {
+				Constants.REPOTAGS_COMPILE, Constants.REPOTAGS_TEST
+			};
+		}
+		// TODO how to determine tag "debug"
+		return null;
+	}
+
 	/**
 	 * Just calls a new method with a default parm.
 	 *
@@ -749,6 +770,13 @@ public class Project extends Processor {
 	 */
 	public List<Container> getBundlesWildcard(String bsnPattern, String range, Strategy strategyx,
 		Map<String, String> attrs) throws Exception {
+
+		List<RepositoryPlugin> plugins = getRepositories();
+		return getBundlesWildcard(bsnPattern, range, strategyx, attrs, plugins);
+	}
+
+	private List<Container> getBundlesWildcard(String bsnPattern, String range, Strategy strategyx,
+		Map<String, String> attrs, List<RepositoryPlugin> repos) throws Exception {
 
 		if (VERSION_ATTR_SNAPSHOT.equals(range) || VERSION_ATTR_PROJECT.equals(range))
 			return Collections.singletonList(new Container(this, bsnPattern, range, TYPE.ERROR, null,
@@ -773,8 +801,7 @@ public class Project extends Processor {
 
 		SortedMap<String, Pair<Version, RepositoryPlugin>> providerMap = new TreeMap<>();
 
-		List<RepositoryPlugin> plugins = getRepositories();
-		for (RepositoryPlugin plugin : plugins) {
+		for (RepositoryPlugin plugin : repos) {
 
 			if (repoFilter != null && !repoFilter.match(plugin))
 				continue;
@@ -822,11 +849,13 @@ public class Project extends Processor {
 
 			DownloadBlocker downloadBlocker = new DownloadBlocker(this);
 			File bundle = repo.get(bsn, version, attrs, downloadBlocker);
+
 			if (bundle != null && !bundle.getName()
 				.endsWith(".lib")) {
 				containers
 					.add(new Container(this, bsn, range, Container.TYPE.REPO, bundle, null, attrs, downloadBlocker));
 			}
+
 		}
 
 		return containers;
@@ -1290,6 +1319,14 @@ public class Project extends Processor {
 	public Container getBundle(String bsn, String range, Strategy strategy, Map<String, String> attrs)
 		throws Exception {
 
+		List<RepositoryPlugin> plugins = getRepositories();
+		return getBundle(bsn, range, strategy, attrs, plugins);
+
+	}
+
+	private Container getBundle(String bsn, String range, Strategy strategy, Map<String, String> attrs,
+		List<RepositoryPlugin> repos) throws Exception {
+
 		if (range == null)
 			range = "0";
 		if (attrs == null) {
@@ -1315,7 +1352,7 @@ public class Project extends Processor {
 		useStrategy = overrideStrategy(attrs, useStrategy);
 		RepoFilter repoFilter = parseRepoFilter(attrs);
 
-		List<RepositoryPlugin> plugins = getRepositories();
+
 
 		if (useStrategy == Strategy.EXACT) {
 			if (!Verifier.isVersion(range))
@@ -1325,7 +1362,8 @@ public class Project extends Processor {
 			// For an exact range we just iterate over the repos
 			// and return the first we find.
 			Version version = new Version(range);
-			for (RepositoryPlugin plugin : plugins) {
+
+			for (RepositoryPlugin plugin : repos) {
 				DownloadBlocker blocker = new DownloadBlocker(this);
 				File result = plugin.get(bsn, version, attrs, blocker);
 				if (result != null)
@@ -1341,7 +1379,8 @@ public class Project extends Processor {
 			// multiple repos we take the first
 
 			SortedMap<Version, RepositoryPlugin> versions = new TreeMap<>();
-			for (RepositoryPlugin plugin : plugins) {
+
+			for (RepositoryPlugin plugin : repos) {
 
 				if (repoFilter != null && !repoFilter.match(plugin))
 					continue;
@@ -1419,8 +1458,7 @@ public class Project extends Processor {
 		//
 
 		return new Container(this, bsn, range, Container.TYPE.ERROR, null,
-			bsn + ";version=" + range + " Not found in " + plugins, attrs, null);
-
+			bsn + ";version=" + range + " Not found in " + repos, attrs, null);
 	}
 
 	/**
@@ -1431,8 +1469,8 @@ public class Project extends Processor {
 	 *
 	 * @return a list of relevant repositories used by various methods.
 	 */
-	public List<RepositoryPlugin> getRepositories() {
-		return workspace.getRepositories();
+	public List<RepositoryPlugin> getRepositories(String... tags) {
+		return workspace.getRepositories(tags);
 	}
 
 	/**
