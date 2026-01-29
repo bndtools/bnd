@@ -143,7 +143,7 @@ jobs:
           gradle-plugins/*/build/test-results/*/TEST-*.xml
           gradle-plugins/build/reports/*
     - name: Publish PR p2 repo
-      if: ${{ github.event_name }} == 'pull_request' && ${{ matrix.java }} == '17'  && ${{ matrix.os }}== 'ubuntu'
+      if: ${{ github.event_name == 'pull_request' && matrix.java == '17'  && matrix.os == 'ubuntu' }}
       run: |
         ls -laR org.bndtools.p2/*
         env | sort
