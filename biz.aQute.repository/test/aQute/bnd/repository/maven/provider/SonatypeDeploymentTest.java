@@ -251,9 +251,50 @@ public class SonatypeDeploymentTest {
 			e.printStackTrace();
 		}
 
-		// Drop the deployment after successful status check
+		// Wait for validation before dropping
 		if (statusOk) {
+			waitForValidation(client, deploymentId);
 			dropDeployment(client, deploymentId);
+		}
+	}
+
+	private void waitForValidation(HttpClient client, String deploymentId) throws Exception {
+		String statusUrl = CENTRAL_SONATYPE_PUBLISHER_URL + "/status?id=" + deploymentId;
+		System.out.println("Waiting for deployment validation at: " + statusUrl);
+
+		long startTime = System.currentTimeMillis();
+		long maxWaitTime = 30 * 1000; // 30 seconds
+		boolean validated = false;
+
+		while (System.currentTimeMillis() - startTime < maxWaitTime) {
+			try {
+				TaggedData taggedData = client.build()
+					.post()
+					.asTag()
+					.go(new URI(statusUrl).toURL());
+
+				if (taggedData.isOk()) {
+					String responseBody = aQute.lib.io.IO.collect(taggedData.getInputStream());
+					System.out.println("Deployment status response: " + responseBody);
+
+					if (responseBody.contains("\"deploymentState\":\"VALIDATED\"")) {
+						System.out.println("Deployment validated successfully");
+						validated = true;
+						break;
+					}
+				}
+
+				// Wait 1 second before next check
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				System.err.println("Error checking validation status: " + e.getMessage());
+				e.printStackTrace();
+				break;
+			}
+		}
+
+		if (!validated) {
+			System.out.printf("Deployment validation not confirmed within %d seconds%n", maxWaitTime / 1000);
 		}
 	}
 
