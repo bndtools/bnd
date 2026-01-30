@@ -33,12 +33,10 @@
 				<div class="tab-buttons">
 					<button class="tab-button" onclick="openTab(event, 'tab-install-cli')">Install bnd CLI</button>
 					<button class="tab-button active" onclick="openTab(event, 'tab-wrap')">bnd CLI JAR wrapping</button>
-					<button class="tab-button" onclick="openTab(event, 'tab-cli')">bnd CLI JAR wrapping
-						advanced</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-cli')">bnd CLI JAR wrapping advanced</button>
+					<button class="tab-button" onclick="openTab(event, 'tab-workspace')">bnd CLI Workspace/Projects</button>
 					<button class="tab-button" onclick="openTab(event, 'tab-maven')">Maven</button>
 					<button class="tab-button" onclick="openTab(event, 'tab-gradle')">Gradle</button>
-					<button class="tab-button" onclick="openTab(event, 'tab-workspace')">Build Workspace and
-						Projects</button>
 					<button class="tab-button" onclick="openTab(event, 'tab-eclipse')">Eclipse plugin</button>
 				</div>
 
@@ -46,9 +44,14 @@
 					<div class="language-shell highlighter-rouge">
 						<div class="highlight">
 							<pre class="highlight"><code># Install bnd CLI (precondition for the other examples)
-$ curl -L -o biz.aQute.bnd-7.1.0.jar \
-	https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/7.1.0/biz.aQute.bnd-7.1.0.jar
-$ alias bnd='java -jar "$PWD/biz.aQute.bnd-7.1.0.jar"'
+curl -Lk -o ~/biz.aQute.bnd.jar \
+	https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/7.2.1/biz.aQute.bnd-7.2.1.jar
+
+# create alias for easy use via 'bnd'
+alias bnd='java -jar ~/biz.aQute.bnd.jar'
+
+# display bnd version to verify installation
+bnd version
 </code></pre>
 						</div>
 						This installs the bnd CLI and makes the 'bnd' command available in your shell.
@@ -65,9 +68,10 @@ $ alias bnd='java -jar "$PWD/biz.aQute.bnd-7.1.0.jar"'
 						<div class="highlight">
 							<pre class="highlight"><code># Quick wrap - automatically generates OSGi metadata
 # download an example jar to wrap
-$ curl -L -o activation.jar \
+curl -L -o activation.jar \
 	https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
-$ bnd wrap activation.jar
+# run bnd to wrap as bundle with OSGi metadata
+bnd wrap activation.jar
 </code></pre>
 						</div>
 						The result is a new jar file with OSGi metadata (<i>META-INF/MANIFEST.MF</i>).
@@ -83,18 +87,18 @@ $ bnd wrap activation.jar
 						<div class="highlight">
 							<pre class="highlight"><code># Use a bnd file for more control
 # download an example jar to wrap
-$ curl -L -o activation.jar \
+curl -L -o activation.jar \
 	https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
 
 # a activation.bnd file to specify OSGi metadata
-$ cat > activation.bnd &lt;&lt;EOF
+cat > activation.bnd &lt;&lt;EOF
 -classpath: activation.jar
 Export-Package: *;version=1.1.1
 Bundle-Version: 1.1.1
 EOF
 
 # Generate the OSGi bundle
-$ bnd activation.bnd
+bnd activation.bnd
 </code></pre>
 						</div>
 						The result is a new jar file with OSGi metadata (<i>META-INF/MANIFEST.MF</i>).
@@ -177,17 +181,17 @@ jar {
 					<div class="language-shell highlighter-rouge">
 						<div class="highlight">
 							<pre class="highlight"><code># Create a new workspace with templates
-$ bnd add workspace -f demo-webapp -f osgi myworkspace
+bnd add workspace -f demo-webapp -f osgi myworkspace
 
 # Navigate to the workspace
-$ cd myworkspace
+cd myworkspace
 
 # Start a live-coding / hot reload dev server to run the application during development in an editor
-$ bnd dev launch.bndrun
+bnd dev launch.bndrun
 
 # or alternatively just build and run the application without hot-reloading:
-$ bnd build
-$ bnd run launch.bndrun
+bnd build
+bnd run launch.bndrun
 </code></pre>
 						</div>
 					</div>
