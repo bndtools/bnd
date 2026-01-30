@@ -11,6 +11,7 @@ on:
     paths:
     - 'docs/**'
     - '.github/**/*docs*'
+  workflow_dispatch:
 
 env:
   LC_ALL: en_US.UTF-8
