@@ -1,0 +1,31 @@
+maven_central:        'https://repo.maven.apache.org/maven2/'
+sonatype_release:     'https://central.sonatype.com/api/v1/publisher/upload/'
+sonatype_snapshots:   'https://central.sonatype.com/repository/maven-snapshots/'
+
+sonatype_bearer: ${global;sonatype.bearer;${env;SONATYPE_BEARER;unset}}
+
+-connection-settings:\
+	server;   id = ${sonatype_release};\
+        password = ${sonatype_bearer};\
+          verify = false
+
+version_biz.aQute.bnd=7.3.0-SNAPSHOT
+
+# solr is only available on released artifacts
+-plugin.91.query_biz.aQute.bnd = \
+    aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+        releaseUrl = ${maven_central}; \
+        query      = 'q=g:%22biz.aQute.bnd%22'; \
+        name       = 'DBG query # sonatype release # solr groupid:biz.aQute.bnd'
+
+-plugin.92.query_org.bndtools = \
+    aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+        releaseUrl = ${maven_central}; \
+        query      = 'q=g:%22org.bndtools%22'; \
+        name       = 'DBG query # sonatype release # solr groupid:org.bndtools'
+
+-plugin.93.sonatype_snapshots:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl  = ${sonatype_snapshots}; \
+        index        = ${.}/DBG_sonatype.mvn; \
+        name         = 'DBG bnd sonatype snapshots'
