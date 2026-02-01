@@ -3286,9 +3286,10 @@ public class Project extends Processor {
 			// Skip the first argument (javac executable path)
 			for (int i = 1; i < args.size(); i++) {
 				String arg = args.get(i);
-				// Escape special characters for argument file
-				// According to javac docs, we need to escape spaces and quotes
-				if (arg.contains(" ") || arg.contains("\"") || arg.contains("\\")) {
+				// Quote arguments that contain spaces or special characters
+				// This follows javac argument file specification
+				if (arg.contains(" ") || arg.contains("\t")) {
+					// Escape backslashes and quotes within the quoted string
 					arg = "\"" + arg.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
 				}
 				writer.println(arg);
