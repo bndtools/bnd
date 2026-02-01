@@ -3240,13 +3240,62 @@ public class Project extends Processor {
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
 
-		int n = javac.execute(stdout, stderr);
-		logger.debug("javac stdout: {}", stdout);
-		logger.debug("javac stderr: {}", stderr);
-
-		if (n != 0) {
-			error("javac failed %s", stderr);
+		// On Windows, use argument file to avoid command line length limitations
+		File argFile = null;
+		if (IO.isWindows()) {
+			// Estimate command line length
+			int cmdLineLength = javac.getArguments()
+				.stream()
+				.mapToInt(String::length)
+				.sum();
+			
+			// Windows command line limit is ~8191 characters
+			// Use arg file if we're getting close (allow some margin)
+			if (cmdLineLength > 6000) {
+				argFile = createJavacArgumentFile(javac);
+				// Create new command with just javac executable and @argfile
+				Command newJavac = new Command();
+				newJavac.add(javac.getArguments().get(0)); // javac executable
+				newJavac.add("@" + argFile.getAbsolutePath());
+				javac = newJavac;
+				logger.debug("Using argument file for javac: {}", argFile);
+			}
 		}
+
+		try {
+			int n = javac.execute(stdout, stderr);
+			logger.debug("javac stdout: {}", stdout);
+			logger.debug("javac stderr: {}", stderr);
+
+			if (n != 0) {
+				error("javac failed %s", stderr);
+			}
+		} finally {
+			// Clean up argument file
+			if (argFile != null && argFile.exists()) {
+				IO.delete(argFile);
+			}
+		}
+	}
+
+	private File createJavacArgumentFile(Command javac) throws Exception {
+		File argFile = IO.createTempFile(getTarget(), "javac-args", ".txt");
+		List<String> args = javac.getArguments();
+		
+		try (PrintWriter writer = new PrintWriter(argFile, "UTF-8")) {
+			// Skip the first argument (javac executable path)
+			for (int i = 1; i < args.size(); i++) {
+				String arg = args.get(i);
+				// Escape special characters for argument file
+				// According to javac docs, we need to escape spaces and quotes
+				if (arg.contains(" ") || arg.contains("\"") || arg.contains("\\")) {
+					arg = "\"" + arg.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+				}
+				writer.println(arg);
+			}
+		}
+		
+		return argFile;
 	}
 
 	private Command getCommonJavac(boolean test) throws Exception {
