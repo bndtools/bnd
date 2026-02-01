@@ -3243,10 +3243,11 @@ public class Project extends Processor {
 		// On Windows, use argument file to avoid command line length limitations
 		File argFile = null;
 		if (IO.isWindows()) {
-			// Estimate command line length
+			// Estimate command line length including spaces between arguments
+			// and potential quoting overhead
 			int cmdLineLength = javac.getArguments()
 				.stream()
-				.mapToInt(String::length)
+				.mapToInt(arg -> arg.length() + 3) // +1 for space, +2 for potential quotes
 				.sum();
 			
 			// Windows command line limit is ~8191 characters
