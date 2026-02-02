@@ -32,6 +32,7 @@
 	bcutil;version='[1.77.0,1.77.1)';startlevel=3,\
 	biz.aQute.bnd.embedded-repo;version=snapshot;startlevel=3,\
 	biz.aQute.bnd.util;version=snapshot;startlevel=3,\
+	biz.aQute.bndlib;version='[7.0.0,7.0.1)';startlevel=3,\
 	biz.aQute.bndlib;version=snapshot;startlevel=3,\
 	biz.aQute.repository;version=snapshot;startlevel=3,\
 	biz.aQute.resolve;version=snapshot;startlevel=3,\
@@ -42,7 +43,6 @@
 	bndtools.core.services;version=snapshot;startlevel=1,\
 	bndtools.core.test.launch;version=snapshot;startlevel=2,\
 	bndtools.core.test.tests;version=snapshot;startlevel=5,\
-	com.google.errorprone.annotations;version='[2.38.0,2.38.1)';startlevel=3,\
 	com.google.gson;version='[2.10.1,2.10.2)';startlevel=3,\
 	com.google.guava;version='[33.4.8,33.4.9)';startlevel=3,\
 	com.google.guava.failureaccess;version='[1.0.3,1.0.4)';startlevel=3,\
@@ -326,3 +326,4 @@
 	org.sat4j.pb;version='[2.3.6,2.3.7)';startlevel=3,\
 	org.tukaani.xz;version='[1.9.0,1.9.1)';startlevel=3
 
+-resolve: auto
