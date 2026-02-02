@@ -118,6 +118,7 @@ public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
 	private final static Version					frameworkR7				= new Version("1.9");
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
+	private int highestMajorJavaVersion			=	0;
 
 	// Bundle parameters
 	private Jar										dot;
@@ -231,8 +232,14 @@ public class Analyzer extends Processor {
 			classspace.values()
 				.stream()
 				.filter(c -> !c.isModule())
-				.map(Clazz::getFormat)
-				.forEach(ees::add);
+				.forEach(c -> {
+					ees.add(c.getFormat());
+					int majorVersion = c.getMajorVersion();
+					if(majorVersion > highestMajorJavaVersion) {
+						highestMajorJavaVersion = majorVersion;
+					}
+
+				});
 
 			try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
 				List<ClassParser> parsers = getPlugins(ClassParser.class);
@@ -1301,9 +1308,17 @@ public class Analyzer extends Processor {
 	 * highest found profile is added. This only works for java packages.
 	 */
 	private String doEEProfiles(JAVA highest) throws IOException {
+
+		String highestFilter;
+		if (highest == aQute.bnd.osgi.Clazz.JAVA.UNKNOWN) {
+			highestFilter = aQute.bnd.osgi.Clazz.JAVA.buildEEFilterLenient(highestMajorJavaVersion);
+		} else {
+			highestFilter = highest.getFilter();
+		}
+
 		String ee = getProperty(EEPROFILE);
 		if (ee == null)
-			return highest.getFilter();
+			return highestFilter;
 
 		ee = ee.trim();
 
@@ -1312,7 +1327,7 @@ public class Analyzer extends Processor {
 		if (ee.equals(EEPROFILE_AUTO_ATTRIBUTE)) {
 			profiles = highest.getProfiles();
 			if (profiles == null)
-				return highest.getFilter();
+				return highestFilter;
 		} else {
 			profiles = OSGiHeader.parseProperties(ee)
 				.stream()
@@ -1349,11 +1364,11 @@ public class Analyzer extends Processor {
 				//
 				// Ouch, outside any profile
 				//
-				return highest.getFilter();
+				return highestFilter;
 			}
 		}
 
-		String filter = highest.getFilter();
+		String filter = highestFilter;
 		if (!found.isEmpty())
 			filter = filter.replaceAll("JavaSE", "JavaSE/" + found.last());
 		// TODO a more elegant way to build the filter, we now assume JavaSE
