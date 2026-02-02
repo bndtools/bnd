@@ -124,6 +124,7 @@ public interface Constants {
 	String		DIFFIGNORE									= "-diffignore";
 	String		DIFFPACKAGES								= "-diffpackages";
 	String		DIFFPACKAGES_THRESHOLD						= "threshold";
+	String		DIFFPACKAGES_INCLUDE_ZERO_MAJOR				= "includezeromajor";
 	String		DEPENDSON									= "-dependson";
 	String		DEPLOY										= "-deploy";
 	String		DEPLOYREPO									= "-deployrepo";

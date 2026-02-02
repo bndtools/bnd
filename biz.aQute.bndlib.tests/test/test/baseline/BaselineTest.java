@@ -263,6 +263,34 @@ public class BaselineTest {
 		}
 	}
 
+	@Test
+	public void testMismatchForZeroMajorWhenIncludeZeroMajorEnabled() throws Exception {
+		try (Builder older = new Builder(); Builder newer = new Builder();) {
+			older.addClasspath(IO.getFile("java8/older/bin"));
+			older.setExportPackage("*;version=0.1");
+			newer.addClasspath(IO.getFile("java8/newer/bin"));
+			newer.setExportPackage("*;version=0.1");
+			try (Jar o = older.build(); Jar n = newer.build();) {
+				assertTrue(older.check());
+				assertTrue(newer.check());
+
+				DiffPluginImpl differ = new DiffPluginImpl();
+				Baseline baseline = new Baseline(older, differ);
+
+				// Enable includezeromajor via diffpackages instruction
+				Instructions packageFilters = new Instructions("*;includezeromajor=true");
+				Set<Info> infoSet = baseline.baseline(n, o, packageFilters);
+				assertEquals(1, infoSet.size());
+				for (Info info : infoSet) {
+					// With includezeromajor enabled, mismatch should be true for 0.x versions
+					assertTrue(info.mismatch, "Expected mismatch for 0.x version when includezeromajor is enabled");
+					assertEquals(new Version(0, 2, 0), info.suggestedVersion);
+					assertEquals(info.packageName, "api_default_methods");
+				}
+			}
+		}
+	}
+
 	/**
 	 * Check if we can ignore resources in the baseline. First build two jars
 	 * that are identical except for the b/b resource. Then do baseline on them.

@@ -558,9 +558,18 @@ public class ProjectBuilder extends Builder {
 
 		if (versions.isEmpty()) {
 			// We have a repo
-			// Baselining 0.x is uninteresting
+			// Baselining 0.x is uninteresting (unless includezeromajor is enabled)
 			// x.0.0 is a new major version so maybe there is no baseline
-			if ((version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0))) {
+			
+			// Check if includezeromajor is enabled in diffpackages
+			boolean includeZeroMajor = isIncludeZeroMajorEnabled();
+			
+			boolean shouldWarn = (version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0));
+			if (!shouldWarn && includeZeroMajor && version.getMajor() == 0 && (version.getMinor() > 0 || version.getMicro() > 0)) {
+				shouldWarn = true;
+			}
+			
+			if (shouldWarn) {
 				warning(
 					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than %s which suggests that there should be a prior version.",
 					getBsn(), repo, version.getWithoutQualifier(), new Version(version.getMajor()));
@@ -647,6 +656,24 @@ public class ProjectBuilder extends Builder {
 
 		// Ignore, nothing matched
 		return null;
+	}
+
+	private boolean isIncludeZeroMajorEnabled() {
+		String diffpackagesStr = project.getProperty(Constants.DIFFPACKAGES);
+		if (diffpackagesStr == null || diffpackagesStr.isEmpty()) {
+			return false;
+		}
+		Parameters diffpackages = new Parameters(diffpackagesStr, this);
+		for (var entry : diffpackages.entrySet()) {
+			var attrs = entry.getValue();
+			if (attrs != null) {
+				var value = attrs.get(Constants.DIFFPACKAGES_INCLUDE_ZERO_MAJOR);
+				if (value != null && "true".equalsIgnoreCase(value)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

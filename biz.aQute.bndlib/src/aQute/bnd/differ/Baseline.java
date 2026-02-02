@@ -77,6 +77,7 @@ public class Baseline {
 	Version				olderVersion;
 	Version				suggestedVersion;
 	String				releaseRepository;
+	boolean				includeZeroMajor;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
@@ -115,6 +116,9 @@ public class Baseline {
 
 		newerVersion = getVersion(n);
 		olderVersion = getVersion(o);
+
+		// Parse includeZeroMajor configuration from packageFilters
+		includeZeroMajor = getIncludeZeroMajor(packageFilters);
 
 		final boolean binfoMismatch = mismatch(olderVersion, newerVersion);
 
@@ -300,6 +304,22 @@ public class Baseline {
 		return infos;
 	}
 
+	private boolean getIncludeZeroMajor(Instructions packageFilters) {
+		if (packageFilters == null || packageFilters.isEmpty())
+			return false;
+		// Check if any instruction has includezeromajor attribute set to true
+		for (var entry : packageFilters.entrySet()) {
+			var attrs = entry.getValue();
+			if (attrs != null) {
+				var value = attrs.get(Constants.DIFFPACKAGES_INCLUDE_ZERO_MAJOR);
+				if (value != null && "true".equalsIgnoreCase(value)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	private Delta getThreshold(Instructions packageFilters, Instruction matcher) {
 		if (matcher == null)
 			return null;
@@ -319,10 +339,19 @@ public class Baseline {
 	/**
 	 * "Major version zero (0.y.z) is for initial development. Anything may
 	 * change at any time. The public API should not be considered stable."
+	 * <p>
+	 * This method returns {@code true} if baselining should report mismatches
+	 * for the given versions. By default, it returns {@code false} for versions
+	 * with major version 0 (unless {@code includeZeroMajor} is enabled).
 	 *
 	 * @see <a href="https://semver.org/#spec-item-4">SemVer</a>
 	 */
 	private boolean mismatch(Version older, Version newer) {
+		if (includeZeroMajor) {
+			// When includeZeroMajor is enabled, only exclude versions where both are 0.0.x
+			return !(older.getMajor() == 0 && older.getMinor() == 0 && newer.getMajor() == 0 && newer.getMinor() == 0);
+		}
+		// Default behavior: exclude all versions with major version 0
 		return older.getMajor() > 0 && newer.getMajor() > 0;
 	}
 
