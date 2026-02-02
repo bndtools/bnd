@@ -419,6 +419,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 				break;
 			}
 			case CONSTRUCTOR : {
+				if (!((MethodDef)member).getContainingClass().getFQN().equals(clazz.getFQN())) {
+					// Ignore constructors from super classes as cannot be called directly
+					break;
+				}
 				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 					member.getName(), memberDescriptor, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR);
 				if (component.init != null) {
