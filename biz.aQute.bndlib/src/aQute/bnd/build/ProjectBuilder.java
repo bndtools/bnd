@@ -558,9 +558,18 @@ public class ProjectBuilder extends Builder {
 
 		if (versions.isEmpty()) {
 			// We have a repo
-			// Baselining 0.x is uninteresting
+			// Baselining 0.x is uninteresting (unless baselineincludezeromajor is enabled)
 			// x.0.0 is a new major version so maybe there is no baseline
-			if ((version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0))) {
+
+			// Check if baselineincludezeromajor is enabled in diffpackages
+			boolean includeZeroMajor = isIncludeZeroMajorEnabled();
+
+			boolean shouldWarn = (version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0));
+			if (!shouldWarn && includeZeroMajor && version.getMajor() == 0 && (version.getMinor() > 0 || version.getMicro() > 0)) {
+				shouldWarn = true;
+			}
+
+			if (shouldWarn) {
 				warning(
 					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than %s which suggests that there should be a prior version.",
 					getBsn(), repo, version.getWithoutQualifier(), new Version(version.getMajor()));
@@ -647,6 +656,10 @@ public class ProjectBuilder extends Builder {
 
 		// Ignore, nothing matched
 		return null;
+	}
+
+	private boolean isIncludeZeroMajorEnabled() {
+		return project.is(Constants.BASELINEINCLUDEZEROMAJOR);
 	}
 
 	/**
