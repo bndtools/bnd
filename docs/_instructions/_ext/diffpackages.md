@@ -32,6 +32,20 @@ Example:
 
     -diffpackages: *;includezeromajor=true
 
-## Example
+## Examples
 
-    -diffpackages: !*.internal.*, *;threshold=MINOR;includezeromajor=true
+Exclude internal packages from baselining:
+
+    -diffpackages: !*.internal.*, *
+
+Enable baselining for 0.x versions:
+
+    -diffpackages: *;includezeromajor=true
+
+Set threshold for changes and enable 0.x baselining:
+
+    -diffpackages: *;threshold=MINOR;includezeromajor=true
+
+Combine exclusions with attributes (note: attributes only apply to their selector):
+
+    -diffpackages: !*.internal.*, *;threshold=MAJOR;includezeromajor=true

@@ -348,8 +348,8 @@ public class Baseline {
 	 */
 	private boolean mismatch(Version older, Version newer) {
 		if (includeZeroMajor) {
-			// When includeZeroMajor is enabled, only exclude versions where both are 0.0.x
-			return !(older.getMajor() == 0 && older.getMinor() == 0 && newer.getMajor() == 0 && newer.getMinor() == 0);
+			// When includeZeroMajor is enabled, only exclude 0.0.x versions
+			return !(newer.getMajor() == 0 && newer.getMinor() == 0);
 		}
 		// Default behavior: exclude all versions with major version 0
 		return older.getMajor() > 0 && newer.getMajor() > 0;
