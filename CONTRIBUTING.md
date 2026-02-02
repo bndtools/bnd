@@ -51,7 +51,11 @@ If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketpla
 
 Assuming you have Gradle (version 1.11 or better) installed, you can build bndtools from the command line by changing to the root of your checkout and typing:
 
-`./gradlew :build` (or `./gradlew build -x test -x testOSGi` to skip tests for faster local builds).
+	./gradlew :build
+
+or skip test execution for faster local builds
+
+	./gradlew build -x test -x testOSGi
 
 After a a short while the directory - `org.bndtools.p2/generated/p2` appears. It contains an Eclipse P2 Update Site that you can use to install bndtools from the code you have just built.
 
@@ -66,8 +70,17 @@ We recommend the section [Build Environment](#build-environment) below to learn 
 
 Sometimes it can be useful to run a single testcase without running a full build. 
 
-- Running only a specific Test `./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest"` (runs the test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`)
-- Running single test method `./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest.testTester"` (runs the method `testTester()` in test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`)
+- Running only a specific Test - e.g. runs the test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`
+
+	```bash
+	./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest"
+ 	```
+
+- Running single test method - e.g. runs the method `testTester()` in test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`
+
+	```bash
+	./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest.testTester"
+ 	```
 
 ### Importing Into Eclipse
 
@@ -88,36 +101,37 @@ You should now have all the bndtools projects in your workspace, ready to begin 
 
 The only thing you need to build Bnd/Bndtools is Java.
 - We require at least Java 17 locally installed in path.
+- For a complete log file attach to the commands below `2>&1 | tee "build_$(date +%Y%m%d_%H%M%S).log"`
 - We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` wrappers with the necessary versions.
 
 - assembles and tests the Bnd Workspace projects
   ```bash
-  ./gradlew build 2>&1 | tee "build_$(date +%Y%m%d_%H%M%S).log"
+  ./gradlew build
   ```
 - alternative skip tests for faster local builds 
   ```bash
-  ./gradlew build -x test -x testOSGi 2>&1 | tee "build_skipTests_$(date +%Y%m%d_%H%M%S).log"
+  ./gradlew build -x test -x testOSGi
   ```
 **MIND: Above step is pre-requisite for following build of Bnd Maven and Gradle plugin.**
 - assembles and tests the Bnd Gradle plugins
   ```bash
-  ./gradlew :gradle-plugins:build 2>&1 | tee "build_gradle-plguns_$(date +%Y%m%d_%H%M%S).log"
+  ./gradlew :gradle-plugins:build
   ```
 - assembles and tests the Bnd Maven plugins
   ```bash
-  ./mvnw install 2>&1 | tee "build_mvn_$(date +%Y%m%d_%H%M%S).log"
+  ./mvnw install
   ```
 - assembles and publishes the Bnd Workspace projects into `dist/bundles`
   ```bash
-  ./gradlew publish 2>&1 | tee "build_publish_$(date +%Y%m%d_%H%M%S).log"
+  ./gradlew publish
   ```
 - assembles and publishes the Bnd Gradle plugins into `dist/bundles`
   ```bash
-  ./gradlew :gradle-plugins:publish 2>&1 | tee "build_gradle-plugins_publish_$(date +%Y%m%d_%H%M%S).log"
+  ./gradlew :gradle-plugins:publish
   ```
 - assembles and publishes the Bnd Maven plugins into `dist/bundles`
   ```bash
-  ./mvnw -Pdist deploy 2>&1 | tee "build_mvn_deploy_$(date +%Y%m%d_%H%M%S).log"
+  ./mvnw -Pdist deploy
   ```
 
 Rebuilding: bnd is built with bnd. For that reason we rebuild and retest bnd with the build we just built.
