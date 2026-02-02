@@ -1537,6 +1537,79 @@ public class DSAnnotationTest {
 
 	}
 
+	@Component(name="top")
+	public static class TopConstructorInjection {
+
+		@Activate
+		public TopConstructorInjection(@SuppressWarnings("unused") BundleContext context) {
+			
+		}
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService l) {}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+
+		}
+
+		@Reference
+		protected void setPrivateLogService(@SuppressWarnings("unused") LogService l) {
+
+		}
+
+		@SuppressWarnings("unused")
+		private void updatedPrivateLogService(ServiceReference<?> ref) {
+
+		}
+	}
+
+	@Component(name = "bottom")
+	public static class BottomConstructorInjection extends TopConstructorInjection {
+
+		@Activate
+		public BottomConstructorInjection(@SuppressWarnings("unused") BundleContext context) {
+			super(context);
+		}
+		void unsetLogService(@SuppressWarnings("unused") LogService l,
+			@SuppressWarnings("unused") Map<Object, Object> map) {
+
+		}
+
+		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+
+		}
+	}
+
+	@Test
+	public void testInheritanceWithActivateConstructors() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*BottomConstructorInjection");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "inherit");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertOk(b);
+		Attributes a = getAttr(jar);
+		checkProvides(a);
+
+		Resource r = jar.getResource("OSGI-INF/bottom.xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+
+		xt.assertAttribute("1", "scr:component/@init");
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
+
+		xt.assertAttribute("PrivateLogService", "scr:component/reference[2]/@name");
+		xt.assertAttribute("setPrivateLogService", "scr:component/reference[2]/@bind");
+		xt.assertAttribute("unsetPrivateLogService", "scr:component/reference[2]/@unbind");
+		// is private in super class
+		xt.assertAttribute("", "scr:component/reference[2]/@updated");
+	}
+
 	@Test
 	public void testBadFlag() throws Exception {
 		Builder b = new Builder();
