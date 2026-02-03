@@ -217,7 +217,7 @@ The export scripts use Python to process HTML files. You can customize:
 ## Output Examples
 
 ### Single HTML File
-- **Size:** Typically 2-5 MB (varies by version)
+- **Size:** Typically 1-3 MB (varies by version)
 - **Format:** Self-contained HTML with embedded CSS
 - **Use cases:**
   - Offline documentation viewing
@@ -225,14 +225,26 @@ The export scripts use Python to process HTML files. You can customize:
   - Archiving documentation snapshots
   - Sharing documentation as a single file
 
+**Example output** (version 7.0.0):
+- File size: 1.7 MB
+- Total sections: 443 pages
+- Includes: Table of contents, all chapters, commands, instructions, macros, and headers
+- Features: Print-friendly styles, clickable TOC, responsive layout
+
 ### PDF File
-- **Size:** Typically 1-3 MB (varies by version and PDF tool)
-- **Format:** Standard PDF with table of contents
+- **Size:** Typically 0.5-2 MB (varies by version and PDF tool)
+- **Format:** Standard PDF with table of contents bookmarks
 - **Use cases:**
   - Printing physical documentation
   - E-readers and tablets
   - Regulatory compliance (archival)
   - Annotating documentation
+
+**Example output** (version 7.0.0):
+- File size: 995 KB  
+- Total pages: Generated from 443 documentation pages
+- Includes: Complete documentation with formatted code blocks and tables
+- Features: Print-optimized layout, proper page breaks, searchable text
 
 ## Continuous Integration
 
