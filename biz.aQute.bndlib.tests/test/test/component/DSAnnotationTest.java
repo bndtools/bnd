@@ -3876,7 +3876,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class VolatileField {
+	public static class VolatileField {
 		@Reference
 		private volatile LogService	log1;
 		@Reference
@@ -3915,7 +3915,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class FinalDynamicCollectionField {
+	public static class FinalDynamicCollectionField {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
 		private final List<LogService>					logs1	= new CopyOnWriteArrayList<>();
 
@@ -3977,7 +3977,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class FieldCardinality {
+	public static class FieldCardinality {
 		@Reference
 		private List<LogService>				log1;
 		@Reference
@@ -4043,7 +4043,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class MismatchedUnbind {
+	public static class MismatchedUnbind {
 		@Reference
 		void setLogService10(LogService ls) {}
 
@@ -4101,14 +4101,14 @@ public class DSAnnotationTest {
 	}
 
 	@Component(service = Map.class)
-	static class NotAMap1 {}
+	public static class NotAMap1 {}
 
 	@Component(service = HashMap.class)
-	static class NotAMap2 {}
+	public static class NotAMap2 {}
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class NotAMap3 extends TreeMap<String, String> {
+	public static class NotAMap3 extends TreeMap<String, String> {
 
 		/**
 		 *
@@ -4125,7 +4125,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap1 extends HashMap<String, String> {
+	public static class IsAMap1 extends HashMap<String, String> {
 
 		/**
 		 *
@@ -4134,7 +4134,7 @@ public class DSAnnotationTest {
 	}
 
 	@SuppressWarnings("serial")
-	static class MyHashMap1<K, V> extends HashMap<K, V> {
+	public static class MyHashMap1<K, V> extends HashMap<K, V> {
 
 		/**
 		 *
@@ -4144,7 +4144,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class IsAMap2 extends MyHashMap1<String, String> {
+	public static class IsAMap2 extends MyHashMap1<String, String> {
 
 		/**
 		 *
@@ -4165,7 +4165,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3 extends MyHashMap2<String, String> {
+	public static class IsAMap3 extends MyHashMap2<String, String> {
 
 		/**
 		 *
@@ -4177,7 +4177,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3a extends MyHashMap2<String, String> implements Marker {
+	public static class IsAMap3a extends MyHashMap2<String, String> implements Marker {
 
 		/**
 		 *
@@ -4186,7 +4186,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component(service = Map.class)
-	static class IsAMap4 implements MyMap<String, String> {
+	public static class IsAMap4 implements MyMap<String, String> {
 
 		@Override
 		public int size() {
@@ -4561,6 +4561,65 @@ public class DSAnnotationTest {
 			// generate the desired reference name from the parameter name.
 			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='log']/@interface");
 			xt.assertAttribute("1", "scr:component/reference[@name='log']/@parameter");
+
+		}
+	}
+
+	@Component
+	public static class ConstructorInjectionMissingDefaultNoArgConstructor {
+
+		public ConstructorInjectionMissingDefaultNoArgConstructor(BundleContext bundleContext) {
+
+		}
+	}
+
+	@Test
+	public void testConstructorInjectionErrorOnMissingDefaultNoArgConstructor() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			// expect error because class has no noArg constructor and
+			b.check(
+				"test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor] The DS component class test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor must declare a public no-arg constructor, or a public constructor annotated with @Activate.");
+		}
+	}
+
+	@Component
+	public static class ConstructorInjectionDefaultNoArgConstructor {
+
+		public ConstructorInjectionDefaultNoArgConstructor() {
+
+		}
+
+		public ConstructorInjectionDefaultNoArgConstructor(BundleContext bundleContext) {
+
+		}
+	}
+
+	@Test
+	public void testConstructorInjectionDefaultNoArgConstructor() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+
+			Resource r = jar.getResource(
+				"OSGI-INF/test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
+			xt.assertAttribute("test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor",
+				"scr:component/implementation/@class");
 
 		}
 	}
