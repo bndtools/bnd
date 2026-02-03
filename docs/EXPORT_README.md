@@ -2,6 +2,18 @@
 
 This directory contains scripts to export the Bnd documentation to single HTML or PDF files for offline viewing, archiving, or distribution.
 
+## Overview
+
+The export functionality provides two main options:
+- **Single HTML Export** - Combines all documentation pages into one self-contained HTML file
+- **PDF Export** - Creates a PDF document from the documentation
+
+Both formats are ideal for:
+- Offline documentation access
+- Archiving documentation snapshots for specific versions
+- Distributing documentation without requiring a web server
+- Creating searchable documentation archives
+
 ## Quick Start
 
 ### Prerequisites
@@ -71,7 +83,9 @@ If no PDF tool is installed, the script will create an HTML file with instructio
 
 ## Exporting Specific Versions
 
-To export documentation for a specific release version:
+### Current Branch/Tag Documentation
+
+To export documentation for a specific release version from the repository:
 
 1. **Switch to the release branch or tag:**
    ```bash
@@ -91,15 +105,28 @@ To export documentation for a specific release version:
    ./export-pdf.sh 7.0.0
    ```
 
-## Exporting Release Documentation
+### Archived Release Documentation
 
-For archived releases in the `releases/` folder:
+For archived releases in the `releases/` folder, use the `export-release.sh` script:
 
 ```bash
-# If you want to export a specific archived release
-# You need to adjust the scripts to point to releases/{version} folder
-# Or manually navigate to that folder's HTML
+# List available releases
+ls -1 releases/
+
+# Export a specific release to HTML
+./export-release.sh 7.0.0
+
+# Export a specific release to PDF
+./export-release.sh 7.0.0 pdf
+
+# Export another version
+./export-release.sh 6.4.0 html
 ```
+
+This script:
+- Works directly with pre-built release documentation in `releases/` folder
+- Doesn't require building the documentation
+- Supports both HTML and PDF output formats
 
 ## Manual PDF Generation
 
