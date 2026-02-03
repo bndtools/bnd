@@ -63,38 +63,29 @@ class ContentExtractor(HTMLParser):
         super().__init__()
         self.in_main = False
         self.in_title = False
-        self.in_nav = False
-        self.in_footer = False
         self.main_content = []
         self.title = ""
-        self.h1_title = ""
         self.depth = 0
+        self.found_main = False
         
     def handle_starttag(self, tag, attrs):
         attrs_dict = dict(attrs)
         
-        # Skip navigation and footer
-        if tag in ['nav', 'footer'] or attrs_dict.get('class', '').find('nav') >= 0:
-            self.in_nav = True
-            return
-        if attrs_dict.get('class', '').find('footer') >= 0:
-            self.in_footer = True
-            return
+        # Track main content - handle both _site structure and release structure
+        # Once we find the main content area, we'll capture everything inside it
+        if not self.found_main:
+            if (tag == 'main' or 
+                attrs_dict.get('data-pagefind-body') is not None or
+                (tag == 'div' and 'notes-margin' in attrs_dict.get('class', ''))):
+                self.in_main = True
+                self.found_main = True
+                self.depth = 0
             
-        # Track main content
-        if tag == 'main' or attrs_dict.get('data-pagefind-body') is not None:
-            self.in_main = True
-            self.depth = 0
-            
-        if tag == 'title':
+        if tag == 'title' and not self.found_main:
             self.in_title = True
             
         # Collect content from main section
-        if self.in_main and not self.in_nav and not self.in_footer:
-            # Track h1 for title
-            if tag == 'h1' and not self.h1_title:
-                pass  # We'll grab the text in handle_data
-            
+        if self.in_main:
             # Reconstruct tag with attributes
             attr_str = ''
             for key, value in attrs:
@@ -103,17 +94,10 @@ class ContentExtractor(HTMLParser):
             self.depth += 1
     
     def handle_endtag(self, tag):
-        if tag in ['nav'] and self.in_nav:
-            self.in_nav = False
-            return
-        if tag == 'footer' and self.in_footer:
-            self.in_footer = False
-            return
-            
         if tag == 'title':
             self.in_title = False
             
-        if self.in_main and not self.in_nav and not self.in_footer:
+        if self.in_main:
             self.main_content.append(f'</{tag}>')
             self.depth -= 1
             if self.depth == 0:
@@ -122,11 +106,11 @@ class ContentExtractor(HTMLParser):
     def handle_data(self, data):
         if self.in_title:
             self.title = data.strip()
-        elif self.in_main and not self.in_nav and not self.in_footer:
+        elif self.in_main:
             self.main_content.append(data)
     
     def handle_startendtag(self, tag, attrs):
-        if self.in_main and not self.in_nav and not self.in_footer:
+        if self.in_main:
             attr_str = ''
             for key, value in attrs:
                 attr_str += f' {key}="{value}"'
@@ -157,36 +141,49 @@ def collect_html_files(site_dir):
     html_files = []
     
     # Define the order of collections/sections
+    # Support both _site structure (with underscores) and release structure (without)
     ordered_sections = [
         'index.html',
         'introduction.html',
         '_chapters',
+        'chapters',
         '_instructions',
+        'instructions',
         '_macros',
+        'macros',
         '_commands',
+        'commands',
         '_heads',
+        'heads',
         '_tools',
+        'tools',
         '_plugins',
+        'plugins',
     ]
     
     site_path = Path(site_dir)
     
     # Collect files in order
     files_found = []
+    sections_seen = set()
     
     for section in ordered_sections:
         if section.endswith('.html'):
             # Direct file
             file_path = site_path / section
-            if file_path.exists():
+            if file_path.exists() and str(file_path) not in sections_seen:
                 files_found.append(str(file_path))
+                sections_seen.add(str(file_path))
         else:
             # Directory
             dir_path = site_path / section
             if dir_path.exists():
                 # Sort files within each directory
                 section_files = sorted(dir_path.glob('*.html'))
-                files_found.extend([str(f) for f in section_files])
+                for f in section_files:
+                    if str(f) not in sections_seen:
+                        files_found.append(str(f))
+                        sections_seen.add(str(f))
     
     return files_found
 
