@@ -46,6 +46,110 @@ The name of the component is also the implementation class (unless overridden by
 
 Annotations are only recognized on the component class, super classes are not inspected for the components.
 
+## Component Class Requirements
+
+For a class to be a valid DS component, it must meet the following requirements:
+
+### Constructor Requirements
+
+A DS component class must have **either**:
+- A public no-argument constructor (this is the default constructor if no other constructors are declared), **OR**
+- A public constructor annotated with `@Activate` for [constructor injection](https://docs.osgi.org/specification/osgi.cmpn/8.0.0/service.component.html#service.component-constructor.injection)
+
+If your component class has a constructor with parameters but no `@Activate` annotation, bnd will generate an error:
+
+```
+The DS component class {className} must declare a public no-arg constructor, or a public constructor annotated with @Activate.
+```
+
+**Examples of valid components:**
+
+```java
+// Valid: Implicit public no-arg constructor
+@Component
+public class MyComponent {
+    // Implicit public no-arg constructor
+}
+
+// Valid: Explicit public no-arg constructor
+@Component
+public class MyComponent {
+    public MyComponent() {
+        // initialization
+    }
+}
+
+// Valid: Constructor injection with @Activate
+@Component
+public class MyComponent {
+    private final BundleContext context;
+    
+    @Activate
+    public MyComponent(BundleContext context) {
+        this.context = context;
+    }
+}
+
+// Valid: Multiple constructors with public no-arg
+@Component
+public class MyComponent {
+    public MyComponent() {
+        // default constructor
+    }
+    
+    // This constructor is ignored by DS
+    public MyComponent(String config) {
+        // some other constructor
+    }
+}
+```
+
+**Examples of invalid components:**
+
+```java
+// Invalid: No public no-arg constructor and no @Activate
+@Component
+public class MyComponent {
+    public MyComponent(BundleContext context) {
+        // ERROR: needs @Activate annotation
+    }
+}
+
+// Invalid: Package-private class (constructor not public)
+@Component
+class MyComponent {
+    // ERROR: class must be public
+}
+```
+
+### Inner Class Requirements
+
+If you use inner classes as components, they **must be declared as `static`**. Non-static inner classes require an instance of the outer class to be instantiated, which DS cannot provide.
+
+**Valid:**
+```java
+@Component
+public class OuterComponent {
+    
+    @Component
+    public static class InnerComponent {
+        // Valid: static inner class
+    }
+}
+```
+
+**Invalid:**
+```java
+@Component
+public class OuterComponent {
+    
+    @Component
+    public class InnerComponent {
+        // ERROR: non-static inner class cannot be instantiated by DS
+    }
+}
+```
+
 The supported annotations in the `aQute.bnd.annotations.component` package are:
 
 ||!Component||
