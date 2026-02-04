@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -1542,7 +1543,7 @@ public class DSAnnotationTest {
 
 		@Activate
 		public TopConstructorInjection(@SuppressWarnings("unused") BundleContext context) {
-			
+
 		}
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService l) {}
@@ -4583,8 +4584,73 @@ public class DSAnnotationTest {
 
 			Jar jar = b.build();
 			// expect error because class has no noArg constructor and
-			b.check(
-				"test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor] The DS component class test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor must declare a public no-arg constructor, or a public constructor annotated with @Activate.");
+			if (!b.check(
+				Pattern.quote(
+					"test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor] The DS component class test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor must declare a public no-arg constructor, or a public constructor annotated with @Activate.")))
+				fail();
+		}
+	}
+
+
+	@Test
+	public void testConstructorInjectionErrorOnNonStaticInnerClassComponent() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.constructorinjection.ConstructorInjectionErrorOnNonStaticInnerClassComponent*");
+			b.setProperty("Private-Package", "test.component.constructorinjection");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			// expect error because a @Component on non-static inner class
+			// cannot be instantiated
+			if (!b.check(
+				Pattern.quote(
+					"The DS component class test.component.constructorinjection.ConstructorInjectionErrorOnNonStaticInnerClassComponent$ConstructorInjectionErrorOnNonStaticInnerClassComponentInner must declare a public no-arg constructor, or a public constructor annotated with @Activate")))
+				fail();
+		}
+	}
+
+	@Test
+	public void testConstructorInjectionStaticInnerClassComponent() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent*");
+			b.setProperty("Private-Package", "test.component.constructorinjection");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+
+			Resource r = jar.getResource(
+				"OSGI-INF/test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner.xml");
+
+			assertNotNull(r);
+			r.write(System.err);
+
+			/**
+			 * Expect:
+			 *
+			 * <pre>
+			 * <?xml version="1.0" encoding="UTF-8"?> \
+				<scr:component xmlns:scr=
+			"http://www.osgi.org/xmlns/scr/v1.3.0" name=
+			"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner">
+				  <service>
+				    <provide interface=
+			"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner"/>
+				  </service>
+				  <implementation class=
+			"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner"/>
+				</scr:component>
+			 * </pre>
+			 */
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
+			xt.assertAttribute(
+				"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner",
+				"scr:component/implementation/@class");
+
 		}
 	}
 
@@ -4615,6 +4681,19 @@ public class DSAnnotationTest {
 				"OSGI-INF/test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor.xml");
 			assertNotNull(r);
 			r.write(System.err);
+
+			/**
+			 * <pre>
+			 * <?xml version="1.0" encoding="UTF-8"?>
+			<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name
+			=
+			"test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor">
+			<implementation class=
+			"test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor"/>
+			</scr:component>
+			 * </pre>
+			 */
+
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 			xt.assertCount(0, "scr:component/properties");
 			xt.assertCount(0, "scr:component/property");
