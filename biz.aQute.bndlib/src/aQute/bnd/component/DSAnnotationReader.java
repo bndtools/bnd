@@ -117,6 +117,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 	MethodSignature											constructorSig;
 	int														parameter;
 	int														constructorArg;
+
+	private TypeRef											implementationClass;
+	private boolean											inImplementationClass;
+	private boolean											hasPublicNoArgConstructor;
 	TypeRef													className;
 	Analyzer												analyzer;
 	MultiMap<String, MethodDef>								methods						= new MultiMap<>();
@@ -171,6 +175,17 @@ public class DSAnnotationReader extends ClassDataCollector {
 		clazz.parseClassFileWithCollector(this);
 		if (component.implementation == null)
 			return null;
+
+		// Validate constructors for the component implementation class:
+		// - either it has a public no-arg constructor
+		// - or it uses constructor injection (public @Activate constructor)
+		if ((component.init == null || component.init.intValue() == 0) && !hasPublicNoArgConstructor) {
+			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(
+				implementationClass.getFQN(), null, null, ErrorType.INVALID_COMPONENT_TYPE);
+			details.addError(analyzer,
+				"[%s] The DS component class %s must declare a public no-arg constructor, or a public constructor annotated with @Activate.",
+				details.location(), implementationClass.getFQN());
+		}
 
 		if (options.contains(Options.inherit)) {
 			baseclass = false;
@@ -1508,6 +1523,14 @@ public class DSAnnotationReader extends ClassDataCollector {
 	@Override
 	public void classBegin(int access, TypeRef name) {
 		className = name;
+
+		// The first class we visit during parsing is the component implementation class.
+		// When scanning superclasses (inherit option), we do not want to change the
+		// constructor validation target.
+		if (implementationClass == null) {
+			implementationClass = name;
+		}
+		inImplementationClass = (implementationClass == name);
 	}
 
 	@Override
@@ -1583,6 +1606,15 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 		methods.add(method.getName(), method);
 		methodSig = getMethodSignature(method);
+
+		// Track whether the *implementation* class has a public no-arg ctor.
+		if (inImplementationClass && method.isConstructor() && method.isPublic()) {
+			// methodSig is available and based on signature/descriptor
+
+			if ((methodSig != null) && (methodSig.parameterTypes.length == 0)) {
+				hasPublicNoArgConstructor = true;
+			}
+		}
 	}
 
 	private MethodSignature getMethodSignature(MethodDef method) {
