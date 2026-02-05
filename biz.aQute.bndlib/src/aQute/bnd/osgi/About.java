@@ -47,6 +47,8 @@ import aQute.lib.utf8properties.UTF8Properties;
  * The namespace is maintained by {@link Descriptors}, which here is owned by
  * {@link Analyzer}. A special class, {@link Packages} maintains the attributes
  * that are found in the code. @version $Revision: 1.2 $
+ * <hr />
+ * Ensure you only add Major and minor versions (the 7.2.1 below was a mistake)
  */
 public class About {
 	private final static Logger					logger		= LoggerFactory.getLogger(About.class);
@@ -74,11 +76,15 @@ public class About {
 	public static final Version					_7_0		= new Version(7, 0, 0);
 	public static final Version					_7_1		= new Version(7, 1, 0);
 	public static final Version					_7_2		= new Version(7, 2, 0);
+	public static final Version					_7_2_1			= new Version(7, 2, 1);
 	public static final Version					_7_3		= new Version(7, 3, 0);
 	public static final Version					CURRENT		= _7_3;
 
 	public static final String[]				CHANGES_7_3	= {
 		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.3.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_7_2_1	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.2.1 for a list of changes."
 	};
 	public static final String[]				CHANGES_7_2	= {
 		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.2.0 for a list of changes."
