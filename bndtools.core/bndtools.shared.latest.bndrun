@@ -2,7 +2,7 @@
 
 # Do not run this, use the platform-specific bndrun files (which "-include" this)
 
--runfw: org.eclipse.osgi;version='[3.18,4)'
+-runfw: org.eclipse.osgi;version='[3.18.500.v20230801-1826,3.18.500.v20230801-1826]'
 
 -runvm: \
   -Xmx2g, \
@@ -22,7 +22,7 @@
 	eclipse.product=org.eclipse.sdk.ide,\
 	osgi.console=,\
 	osgi.instance.area.default=../bndtools.test/workspace,\
-	org.osgi.framework.bootdelegation='javax.*,org.xml.*',\
+	org.osgi.framework.bootdelegation='javax.net,javax.management,javax.net.ssl',\
 	logback.configurationFile=${fileuri;${.}/logback.xml}
 
 # Keep sorted so that we can diff
