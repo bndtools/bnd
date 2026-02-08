@@ -1,0 +1,7 @@
+-plugin.10.build: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
+        releaseUrl=https://repo.maven.apache.org/maven2/; \
+        index=${.}/osgi.r8.mvn; \
+        readOnly=true; \
+        name="OSGI R8 - Build"

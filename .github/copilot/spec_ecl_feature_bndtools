@@ -1,0 +1,128 @@
+# Bndtools Repository View - Eclipse P2 Feature Support
+
+## Objective
+Enhance the bndtools repository view to display Eclipse P2 features as synthetic/virtual entries with hierarchical structure.
+
+## Implementation Status
+
+### ✅ Completed
+
+#### Model Classes (bndtools.core/src/bndtools/model/repo/)
+- [x] **RepositoryFeature.java** - Main feature node extending RepositoryEntry, implements Actionable
+  - Wraps aQute.p2.api.Feature
+  - Provides title(), tooltip(), actions() methods
+  - Exposes included features, required features, and included bundles
+  
+- [x] **FeatureFolderNode.java** - Virtual folder node for grouping feature children
+  - Three folder types: INCLUDED_FEATURES, REQUIRED_FEATURES, INCLUDED_BUNDLES
+  - Each folder contains wrapped items as children
+  
+- [x] **IncludedFeatureItem.java** - Wrapper for Feature.IncludedFeature
+  - Displays: id, version, optional flag, platform filters (os/ws/arch)
+  
+- [x] **RequiredFeatureItem.java** - Wrapper for Feature.RequiredFeature
+  - Displays: id, version, match rule, optional flag
+  
+- [x] **IncludedBundleItem.java** - Wrapper for Feature.Plugin
+  - Displays: id, version, platform filters (os/ws/arch), fragment flag, unpack flag
+
+#### Content Provider (RepositoryTreeContentProvider.java)
+- [x] Enhanced `getChildren()` to handle RepositoryFeature and FeatureFolderNode
+- [x] Implemented `getFeatureChildren()` to build feature hierarchy with 3 folder nodes
+- [x] Enhanced `getParent()` to track parent relationships for all feature classes
+- [x] Enhanced `hasChildren()` to recognize RepositoryFeature and FeatureFolderNode
+- [x] Enhanced `getRepositoryBundles()` to fetch features from P2 repositories (FeatureProvider)
+
+#### Label Provider (RepositoryTreeLabelProvider.java)
+- [x] Added display logic for RepositoryFeature with repository qualifier
+- [x] Added display logic for FeatureFolderNode with folder icon
+- [x] Added display logic for IncludedFeatureItem with feature icon
+- [x] Added display logic for RequiredFeatureItem with feature icon
+- [x] Added display logic for IncludedBundleItem with bundle icon
+- [x] Enhanced `getText()` for all feature classes with exception handling
+- [x] Tooltip support via Actionable interface (description fallback to id+version)
+
+#### Drag-and-Drop Support (SelectionDragAdapter.java, RepositoryBundleSelectionPart.java)
+- [x] Enhanced `SelectionDragAdapter.dragSetData()` to handle RepositoryFeature
+  - Creates drag data as "feature:id:version" string
+- [x] Enhanced `RepositoryBundleSelectionPart.selectionIsDroppable()` to accept RepositoryFeature
+- [x] Enhanced `RepositoryBundleSelectionPart.handleSelectionDrop()` to process features
+  - Creates VersionedClause with "feature:id" BSN
+  - Adds "feature=true" attribute for resolver identification
+  - Preserves version information
+
+#### Icon Configuration (icons.properties)
+- [x] Added `icons.feature=icons/component.png` mapping
+- [x] Added `icons.fldr_obj=$IMG_OBJS_FOLDER` mapping for Eclipse standard folder icon
+
+#### P2 Repository Integration (P2Repository.java)
+- [x] Implemented FeatureProvider interface in P2Repository class
+- [x] Added `getFeatures()` method delegating to P2Indexer
+- [x] Added `getFeature(id, version)` method delegating to P2Indexer
+- [x] Updated package version to 1.6.0 (aQute.bnd.repository.p2.provider)
+
+### 🚧 Pending
+
+#### Drag-and-Drop Support
+- [x] Enhance selection transfer handlers to recognize RepositoryFeature (SelectionDragAdapter.java)
+- [x] Add feature drag data as "feature:id:version" format
+- [x] Update drop target validation to accept RepositoryFeature (RepositoryBundleSelectionPart.java)
+- [x] Implement feature-to-clause conversion with "feature:id" BSN and feature=true attribute
+- [ ] Implement recursive feature resolution (expand included features during resolve)
+- [ ] Ensure feature synthetic entries work correctly in bndrun requirements
+
+#### Feature Resolution
+- [ ] Implement feature expansion logic during bndrun resolution
+- [ ] Recursively collect bundles from included features
+- [ ] Handle optional features and bundles appropriately
+- [ ] Support platform filters (os/ws/arch) in bundle selection
+- [ ] Consider match rules for required features
+
+#### Icon Resources
+- [x] Add "feature" icon mapping (component.png) in icons.properties
+- [x] Add "fldr_obj" (folder) icon mapping ($IMG_OBJS_FOLDER) in icons.properties
+- [x] Ensure icons are properly used in label provider
+
+#### Testing
+- [ ] Manual testing in Eclipse with P2 repositories
+- [ ] Test feature hierarchy display
+- [ ] Test drag-and-drop to bndrun files
+- [ ] Test feature resolution during resolve operation
+- [ ] Test platform filter evaluation
+
+## Feature Display Structure
+
+```
+📦 P2 Repository
+  ├── 📦 bundle.a (1.0.0)
+  ├── 📦 bundle.b (2.0.0)
+  ├── ⭐ feature.example (1.0.0)
+  │   ├── 📁 Included Features
+  │   │   └── ⭐ feature.base 1.0.0
+  │   ├── 📁 Required Features
+  │   │   └── ⭐ feature.core 1.0.0 [compatible]
+  │   └── 📁 Included Bundles
+  │       ├── 📦 org.example.plugin 1.0.0
+  │       └── 📦 org.example.ui 1.0.0 [linux/gtk/x86_64]
+```
+
+## Design Notes
+
+### Feature as Macro-like Entry
+Features should be treated similarly to macros:
+- Appear in repository view as expandable synthetic entries
+- When dragged to bndrun, the feature reference is added (not individual bundles)
+- During resolution, the feature is expanded to its constituent bundles
+- Recursive expansion for included features
+
+### Platform Filtering
+Bundles and features may specify platform constraints (os/ws/arch):
+- Display platform filters in labels (e.g., "[linux/gtk/x86_64]")
+- Apply filters during resolution based on target environment
+- Only include matching bundles in final resolution
+
+### Optional Dependencies
+Both features and bundles can be marked as optional:
+- Display optional flag in labels (e.g., "optional")
+- During resolution, optional items may be skipped if not available
+- Required items must be present for successful resolution

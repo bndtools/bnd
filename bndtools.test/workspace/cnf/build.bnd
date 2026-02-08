@@ -1,0 +1,3 @@
+-plugin: aQute.bnd.repository.p2.provider.P2Repository;\
+		name                ='ECF';\
+		url                 ='https://download.eclipse.org/rt/ecf/3.16.5/site.p2/3.16.5.v20250914-0333/'

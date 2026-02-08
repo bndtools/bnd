@@ -151,7 +151,7 @@ class P2Indexer implements Closeable {
 		else
 			p2 = new P2Impl(processor, client, this.url, promiseFactory);
 
-		List<Artifact> artifacts = p2.getBundles();
+		List<Artifact> artifacts = p2.getAllArtifacts();
 		Set<ArtifactID> visitedArtifacts = new HashSet<>(artifacts.size());
 		Set<URI> visitedURIs = new HashSet<>(artifacts.size());
 
@@ -166,11 +166,7 @@ class P2Indexer implements Closeable {
 				}
 				Promise<SupportingResource> fetched = fetch(a, 2, 1000L)
 					.map(tag -> processor.unpackAndLinkIfNeeded(tag, null))
-					.map(file -> {
-						ResourceBuilder rb = new ResourceBuilder();
-						rb.addFile(file, a.uri);
-						return rb.build();
-					})
+					.map(file -> processArtifact(a, file))
 					.recover(failed -> {
 						logger.info("{}: Failed to create resource for {}", name, a.uri, failed.getFailure());
 						return RECOVERY;
@@ -239,6 +235,49 @@ class P2Indexer implements Closeable {
 					a.download_size));
 			}
 		}
+	}
+
+	/**
+	 * Process an artifact (bundle or feature) and convert it to an OSGi
+	 * Resource
+	 */
+	private SupportingResource processArtifact(Artifact artifact, File file) throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+
+		if (artifact.classifier == aQute.p2.api.Classifier.FEATURE) {
+			// Process feature: parse it and add capabilities/requirements
+			try (java.io.InputStream in = IO.stream(file)) {
+				aQute.p2.provider.Feature feature = new aQute.p2.provider.Feature(in);
+				feature.parse();
+				Resource featureResource = feature.toResource();
+
+				// Copy all capabilities and requirements from the feature resource
+				for (Capability cap : featureResource.getCapabilities(null)) {
+					aQute.bnd.osgi.resource.CapReqBuilder cb = new aQute.bnd.osgi.resource.CapReqBuilder(
+						cap.getNamespace());
+					cap.getAttributes()
+						.forEach(cb::addAttribute);
+					cap.getDirectives()
+						.forEach(cb::addDirective);
+					rb.addCapability(cb);
+				}
+
+				for (Requirement req : featureResource.getRequirements(null)) {
+					aQute.bnd.osgi.resource.CapReqBuilder crb = new aQute.bnd.osgi.resource.CapReqBuilder(
+						req.getNamespace());
+					req.getAttributes()
+						.forEach(crb::addAttribute);
+					req.getDirectives()
+						.forEach(crb::addDirective);
+					rb.addRequirement(crb);
+				}
+			}
+		}
+
+		// Add content capability for the artifact (bundle or feature JAR)
+		rb.addFile(file, artifact.uri);
+
+		return rb.build();
 	}
 
 	private ResourcesRepository save(ResourcesRepository repository) throws IOException, Exception {
