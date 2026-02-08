@@ -34,7 +34,7 @@ Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\
 	aQute.p2.api,\
 	aQute.p2.export;bnd-plugins=true,\
-    aQute.bnd.deployer.obr;bnd-plugins=true,\
+	aQute.bnd.deployer.obr;bnd-plugins=true,\
 	aQute.bnd.deployer.repository;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.api,\
 	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\
@@ -42,10 +42,10 @@ Export-Package: \
 	aQute.bnd.repository.maven.provider;bnd-plugins=true,\
 	aQute.bnd.repository.p2.provider;bnd-plugins=true,\
 	aQute.bnd.repository.maven.pom.provider;bnd-plugins=true,\
-	aQute.bnd.repository.osgi;bnd-plugins=true,  \
-	aQute.bnd.repository.fileset;bnd-plugins=true,  \
-	aQute.maven.*, \
-
+	aQute.bnd.repository.osgi;bnd-plugins=true,\
+	aQute.bnd.repository.fileset;bnd-plugins=true,\
+	aQute.maven.*,\
+	aQute.p2.provider
 -includepackage: \
 	aQute.p2.provider,\
 	aQute.p2.packed

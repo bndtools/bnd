@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -101,24 +102,70 @@ public class Feature extends XMLBase {
 	private List<Includes>		includes	= new ArrayList<>();
 	private List<Requires>		requires	= new ArrayList<>();
 
+	// Feature properties for resolving %key references
+	private Properties			properties	= new Properties();
+
 	public Feature(Document document) {
 		super(document);
 	}
 
-	public Feature(InputStream in) throws Exception {
-		this(toDoc(in));
+	public Feature(Document document, Properties properties) {
+		super(document);
+		this.properties = properties != null ? properties : new Properties();
 	}
 
-	private static Document toDoc(InputStream in) throws Exception {
+	public Feature(InputStream in) throws Exception {
+		this(loadFromJar(in));
+	}
+
+	private Feature(DocumentAndProperties docAndProps) {
+		super(docAndProps.document);
+		this.properties = docAndProps.properties;
+	}
+
+	private static class DocumentAndProperties {
+		Document document;
+		Properties properties;
+
+		DocumentAndProperties(Document document, Properties properties) {
+			this.document = document;
+			this.properties = properties != null ? properties : new Properties();
+		}
+	}
+
+	private static DocumentAndProperties loadFromJar(InputStream in) throws Exception {
 		try (Jar jar = new Jar("feature", in)) {
-			aQute.bnd.osgi.Resource resource = jar.getResource("feature.xml");
-			if (resource == null) {
+			// Load feature.xml
+			aQute.bnd.osgi.Resource featureXml = jar.getResource("feature.xml");
+			if (featureXml == null) {
 				throw new IllegalArgumentException("JAR does not contain proper 'feature.xml");
 			}
 			DocumentBuilder db = XMLBase.dbf.newDocumentBuilder();
-			Document doc = db.parse(resource.openInputStream());
-			return doc;
+			Document doc = db.parse(featureXml.openInputStream());
+
+			// Load feature.properties if present
+			Properties props = new Properties();
+			aQute.bnd.osgi.Resource featureProps = jar.getResource("feature.properties");
+			if (featureProps != null) {
+				try (InputStream propsIn = featureProps.openInputStream()) {
+					props.load(propsIn);
+				}
+			}
+
+			return new DocumentAndProperties(doc, props);
 		}
+	}
+
+	/**
+	 * Resolve property references in the form %key by looking up in feature.properties
+	 */
+	private String resolveProperty(String value) {
+		if (value != null && value.startsWith("%")) {
+			String key = value.substring(1);
+			String resolved = properties.getProperty(key);
+			return resolved != null ? resolved : value;
+		}
+		return value;
 	}
 
 	/**
@@ -129,9 +176,9 @@ public class Feature extends XMLBase {
 		Node featureNode = getNodes("/feature").item(0);
 		if (featureNode != null) {
 			id = getAttribute(featureNode, "id");
-			label = getAttribute(featureNode, "label");
+			label = resolveProperty(getAttribute(featureNode, "label"));
 			version = getAttribute(featureNode, "version");
-			providerName = getAttribute(featureNode, "provider-name");
+			providerName = resolveProperty(getAttribute(featureNode, "provider-name"));
 			plugin = getAttribute(featureNode, "plugin");
 			image = getAttribute(featureNode, "image");
 			application = getAttribute(featureNode, "application");

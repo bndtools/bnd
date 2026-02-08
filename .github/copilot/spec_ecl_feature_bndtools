@@ -28,13 +28,23 @@ Enhance the bndtools repository view to display Eclipse P2 features as synthetic
 
 #### Content Provider (RepositoryTreeContentProvider.java)
 - [x] Enhanced `getChildren()` to handle RepositoryFeature and FeatureFolderNode
+  - **CRITICAL**: RepositoryFeature check MUST come before RepositoryBundle check (both extend RepositoryEntry)
 - [x] Implemented `getFeatureChildren()` to build feature hierarchy with 3 folder nodes
 - [x] Enhanced `getParent()` to track parent relationships for all feature classes
 - [x] Enhanced `hasChildren()` to recognize RepositoryFeature and FeatureFolderNode
 - [x] Enhanced `getRepositoryBundles()` to fetch features from P2 repositories (FeatureProvider)
+  - **CRITICAL**: Features are collected FIRST and their IDs tracked in a Set
+  - Bundle creation loop excludes feature IDs to prevent duplicates
+  - This prevents features from being wrapped as RepositoryBundle objects
+
+#### Repositories View (RepositoriesView.java)
+- [x] Enhanced `getRepositoryPlugin()` helper method to handle RepositoryFeature
+  - **CRITICAL**: RepositoryFeature check MUST come before RepositoryBundle check (both extend RepositoryEntry)
+- [x] Added import for RepositoryFeature class
 
 #### Label Provider (RepositoryTreeLabelProvider.java)
 - [x] Added display logic for RepositoryFeature with repository qualifier
+  - **CRITICAL**: RepositoryFeature check MUST come before RepositoryBundle check (both extend RepositoryEntry)
 - [x] Added display logic for FeatureFolderNode with folder icon
 - [x] Added display logic for IncludedFeatureItem with feature icon
 - [x] Added display logic for RequiredFeatureItem with feature icon
@@ -52,43 +62,51 @@ Enhance the bndtools repository view to display Eclipse P2 features as synthetic
   - Preserves version information
 
 #### Icon Configuration (icons.properties)
-- [x] Added `icons.feature=icons/component.png` mapping
+- [x] Added `icons.feature=icons/plugin.png` mapping (using Eclipse plugin icon)
 - [x] Added `icons.fldr_obj=$IMG_OBJS_FOLDER` mapping for Eclipse standard folder icon
+- [x] Icons verified present in built JAR
 
 #### P2 Repository Integration (P2Repository.java)
 - [x] Implemented FeatureProvider interface in P2Repository class
 - [x] Added `getFeatures()` method delegating to P2Indexer
 - [x] Added `getFeature(id, version)` method delegating to P2Indexer
-- [x] Updated package version to 1.6.0 (aQute.bnd.repository.p2.provider)
+- [x] Created FeatureProvider interface in biz.aQute.bndlib
+
+#### P2Indexer Enhancement (P2Indexer.java)
+- [x] Implemented `getFeatures()` method to extract features from indexed resources
+  - Queries repository for all resources with `type=eclipse.feature` in identity capability
+  - Downloads and parses feature JAR files to create Feature objects
+  - Returns list of parsed features
+- [x] Implemented `getFeature(id, version)` method for single feature lookup
+- [x] Added `extractFeatureFromResource()` helper to download and extract features from resources
+  - Handles pack.gz compressed features using Unpack200 processor
+  - Gracefully skips non-JAR artifacts (e.g., .content files)
+- [x] Added `parseFeatureFromJar()` helper to parse feature.xml from feature JAR files
+  - Validates file format before attempting to parse
+  - Uses debug-level logging to avoid cluttering logs with expected failures
+  - Skips non-JAR files and files without feature.xml
+- [x] Features are automatically indexed during P2 repository processing (via `processArtifact()` in P2Indexer)
+- [x] Feature resources include identity capability with `type=eclipse.feature`
+
+#### FeatureFolderNode Enhancement
+- [x] Added `feature.parse()` call to ensure feature data is loaded before displaying children
+- [x] Gracefully handles parse errors by showing empty folders
 
 ### 🚧 Pending
 
-#### Drag-and-Drop Support
-- [x] Enhance selection transfer handlers to recognize RepositoryFeature (SelectionDragAdapter.java)
-- [x] Add feature drag data as "feature:id:version" format
-- [x] Update drop target validation to accept RepositoryFeature (RepositoryBundleSelectionPart.java)
-- [x] Implement feature-to-clause conversion with "feature:id" BSN and feature=true attribute
-- [ ] Implement recursive feature resolution (expand included features during resolve)
-- [ ] Ensure feature synthetic entries work correctly in bndrun requirements
-
-#### Feature Resolution
+#### Feature Resolution (Future Enhancement)
 - [ ] Implement feature expansion logic during bndrun resolution
 - [ ] Recursively collect bundles from included features
 - [ ] Handle optional features and bundles appropriately
 - [ ] Support platform filters (os/ws/arch) in bundle selection
 - [ ] Consider match rules for required features
 
-#### Icon Resources
-- [x] Add "feature" icon mapping (component.png) in icons.properties
-- [x] Add "fldr_obj" (folder) icon mapping ($IMG_OBJS_FOLDER) in icons.properties
-- [x] Ensure icons are properly used in label provider
-
 #### Testing
 - [ ] Manual testing in Eclipse with P2 repositories
 - [ ] Test feature hierarchy display
 - [ ] Test drag-and-drop to bndrun files
-- [ ] Test feature resolution during resolve operation
-- [ ] Test platform filter evaluation
+- [ ] Test feature resolution during resolve operation (once implemented)
+- [ ] Test platform filter evaluation (once implemented)
 
 ## Feature Display Structure
 

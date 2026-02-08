@@ -97,6 +97,14 @@ public class FeatureParserTest {
 						.isNotNull()
 						.isNotEmpty();
 
+					// Check if label or provider-name were property references
+					if (feature.getLabel() != null && !feature.getLabel().startsWith("%")) {
+						System.out.println("Label was resolved or direct: " + feature.getLabel());
+					}
+					if (feature.getProviderName() != null && !feature.getProviderName().startsWith("%")) {
+						System.out.println("Provider name was resolved or direct: " + feature.getProviderName());
+					}
+
 					System.out.println("Parsed feature: " + feature);
 					System.out.println("  ID: " + feature.getId());
 					System.out.println("  Version: " + feature.getVersion());
