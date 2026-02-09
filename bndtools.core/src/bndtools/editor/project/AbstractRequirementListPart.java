@@ -45,10 +45,12 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import bndtools.Plugin;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.DependencyPhase;
+import bndtools.model.repo.IncludedBundleItem;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryFeature;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.preferences.BndPreferences;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
@@ -264,7 +266,15 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		final String bsn;
 		String versionRange = null;
 
-		if (elem instanceof RepositoryBundle) {
+		if (elem instanceof RepositoryFeature) {
+			// Check RepositoryFeature BEFORE RepositoryBundle since both extend RepositoryEntry
+			RepositoryFeature rf = (RepositoryFeature) elem;
+			bsn = rf.getBsn();
+			String version = rf.getFeature().getVersion();
+			if (version != null && !version.equals("0.0.0")) {
+				versionRange = version;
+			}
+		} else if (elem instanceof RepositoryBundle) {
 			bsn = ((RepositoryBundle) elem).getBsn();
 		} else if (elem instanceof RepositoryBundleVersion) {
 			RepositoryBundleVersion rbv = (RepositoryBundleVersion) elem;
@@ -282,6 +292,12 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 			bsn = repositoryBundleVersion.getBsn();
 			versionRange = RepositoryBundleUtils.toVersionRangeUpToNextMajor(repositoryBundleVersion.getVersion())
 				.toString();
+		} else if (elem instanceof IncludedBundleItem ibi) {
+			bsn = ibi.getPlugin().id;
+			String version = ibi.getPlugin().version;
+			if (version != null && !version.equals("0.0.0")) {
+				versionRange = version;
+			}
 		} else {
 			throw new IllegalArgumentException("Unable to derive identity from an object of type " + elem.getClass()
 				.getSimpleName());
