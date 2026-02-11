@@ -77,11 +77,20 @@ public class Baseline {
 	Version				olderVersion;
 	Version				suggestedVersion;
 	String				releaseRepository;
-	boolean				includeZeroMajor;
+	final boolean		includeZeroMajor;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
 		this.bnd = bnd;
+
+		// Read includeZeroMajor from global property
+		// The Reporter interface doesn't have getProperty, but the actual
+		// instance is always a Processor
+		if (bnd instanceof Processor proc) {
+			includeZeroMajor = proc.is(Constants.BASELINEINCLUDEZEROMAJOR);
+		} else {
+			includeZeroMajor = false;
+		}
 	}
 
 	/**
@@ -116,14 +125,6 @@ public class Baseline {
 
 		newerVersion = getVersion(n);
 		olderVersion = getVersion(o);
-
-		// Read includeZeroMajor from global property
-		// The Reporter interface doesn't have getProperty, but the actual instance is always a Processor
-		if (bnd instanceof Processor) {
-			includeZeroMajor = Processor.isTrue(((Processor) bnd).getProperty(Constants.INCLUDEZEROMAJOR));
-		} else {
-			includeZeroMajor = false;
-		}
 
 		final boolean binfoMismatch = mismatch(olderVersion, newerVersion);
 

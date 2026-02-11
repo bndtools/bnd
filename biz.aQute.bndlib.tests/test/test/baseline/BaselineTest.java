@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +32,13 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
@@ -268,8 +274,8 @@ public class BaselineTest {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
 			older.setExportPackage("*;version=0.1");
-			// Enable includezeromajor via global property
-			older.setProperty(Constants.INCLUDEZEROMAJOR, "true");
+			// Enable baselineincludezeromajor via global property
+			older.setProperty(Constants.BASELINEINCLUDEZEROMAJOR, "true");
 			newer.addClasspath(IO.getFile("java8/newer/bin"));
 			newer.setExportPackage("*;version=0.1");
 			try (Jar o = older.build(); Jar n = newer.build();) {
@@ -282,8 +288,9 @@ public class BaselineTest {
 				Set<Info> infoSet = baseline.baseline(n, o, null);
 				assertEquals(1, infoSet.size());
 				for (Info info : infoSet) {
-					// With includezeromajor enabled, mismatch should be true for 0.x versions
-					assertTrue(info.mismatch, "Expected mismatch for 0.x version when includezeromajor is enabled");
+					// With -baselineincludezeromajor enabled, mismatch should
+					// be true for 0.x versions
+					assertTrue(info.mismatch, "Expected mismatch for 0.x version when baselineincludezeromajor is enabled");
 					assertEquals(new Version(0, 2, 0), info.suggestedVersion);
 					assertEquals(info.packageName, "api_default_methods");
 				}
@@ -296,8 +303,8 @@ public class BaselineTest {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
 			older.setExportPackage("*;version=0.0.1");
-			// Enable includezeromajor via global property
-			older.setProperty(Constants.INCLUDEZEROMAJOR, "true");
+			// Enable baselineincludezeromajor via global property
+			older.setProperty(Constants.BASELINEINCLUDEZEROMAJOR, "true");
 			newer.addClasspath(IO.getFile("java8/newer/bin"));
 			newer.setExportPackage("*;version=0.0.1");
 			try (Jar o = older.build(); Jar n = newer.build();) {
@@ -310,8 +317,8 @@ public class BaselineTest {
 				Set<Info> infoSet = baseline.baseline(n, o, null);
 				assertEquals(1, infoSet.size());
 				for (Info info : infoSet) {
-					// Even with includezeromajor enabled, 0.0.x versions should not report mismatch
-					assertFalse(info.mismatch, "Expected no mismatch for 0.0.x version even with includezeromajor");
+					// Even with baselineincludezeromajor enabled, 0.0.x versions should not report mismatch
+					assertFalse(info.mismatch, "Expected no mismatch for 0.0.x version even with baselineincludezeromajor");
 					// Note: The suggested version is 0.1.0 because there's a MINOR change in the test data
 					// The important thing is that mismatch is false, so no error is reported
 					assertEquals(new Version(0, 1, 0), info.suggestedVersion);

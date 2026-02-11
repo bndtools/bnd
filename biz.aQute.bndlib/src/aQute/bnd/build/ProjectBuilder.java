@@ -43,7 +43,6 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
@@ -559,17 +558,17 @@ public class ProjectBuilder extends Builder {
 
 		if (versions.isEmpty()) {
 			// We have a repo
-			// Baselining 0.x is uninteresting (unless includezeromajor is enabled)
+			// Baselining 0.x is uninteresting (unless baselineincludezeromajor is enabled)
 			// x.0.0 is a new major version so maybe there is no baseline
-			
-			// Check if includezeromajor is enabled in diffpackages
+
+			// Check if baselineincludezeromajor is enabled in diffpackages
 			boolean includeZeroMajor = isIncludeZeroMajorEnabled();
-			
+
 			boolean shouldWarn = (version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0));
 			if (!shouldWarn && includeZeroMajor && version.getMajor() == 0 && (version.getMinor() > 0 || version.getMicro() > 0)) {
 				shouldWarn = true;
 			}
-			
+
 			if (shouldWarn) {
 				warning(
 					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than %s which suggests that there should be a prior version.",
@@ -660,7 +659,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	private boolean isIncludeZeroMajorEnabled() {
-		return Processor.isTrue(project.getProperty(Constants.INCLUDEZEROMAJOR));
+		return project.is(Constants.BASELINEINCLUDEZEROMAJOR);
 	}
 
 	/**
