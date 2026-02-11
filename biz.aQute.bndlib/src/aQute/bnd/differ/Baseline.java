@@ -117,8 +117,13 @@ public class Baseline {
 		newerVersion = getVersion(n);
 		olderVersion = getVersion(o);
 
-		// Parse includeZeroMajor configuration from packageFilters
-		includeZeroMajor = getIncludeZeroMajor(packageFilters);
+		// Read includeZeroMajor from global property
+		// The Reporter interface doesn't have getProperty, but the actual instance is always a Processor
+		if (bnd instanceof Processor) {
+			includeZeroMajor = Processor.isTrue(((Processor) bnd).getProperty(Constants.INCLUDEZEROMAJOR));
+		} else {
+			includeZeroMajor = false;
+		}
 
 		final boolean binfoMismatch = mismatch(olderVersion, newerVersion);
 
@@ -302,22 +307,6 @@ public class Baseline {
 		}
 
 		return infos;
-	}
-
-	private boolean getIncludeZeroMajor(Instructions packageFilters) {
-		if (packageFilters == null || packageFilters.isEmpty())
-			return false;
-		// Check if any instruction has includezeromajor attribute set to true
-		for (var entry : packageFilters.entrySet()) {
-			var attrs = entry.getValue();
-			if (attrs != null) {
-				var value = attrs.get(Constants.DIFFPACKAGES_INCLUDE_ZERO_MAJOR);
-				if (value != null && "true".equalsIgnoreCase(value)) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	private Delta getThreshold(Instructions packageFilters, Instruction matcher) {

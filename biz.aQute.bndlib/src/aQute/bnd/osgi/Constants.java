@@ -124,7 +124,6 @@ public interface Constants {
 	String		DIFFIGNORE									= "-diffignore";
 	String		DIFFPACKAGES								= "-diffpackages";
 	String		DIFFPACKAGES_THRESHOLD						= "threshold";
-	String		DIFFPACKAGES_INCLUDE_ZERO_MAJOR				= "includezeromajor";
 	String		DEPENDSON									= "-dependson";
 	String		DEPLOY										= "-deploy";
 	String		DEPLOYREPO									= "-deployrepo";
@@ -159,6 +158,7 @@ public interface Constants {
 	String		GESTALT_SHELL								= "shell";
 	String		GROUPID										= "-groupid";
 	String		INCLUDE										= "-include";
+	String		INCLUDEZEROMAJOR							= "-includezeromajor";
 	String		INCLUDERESOURCE								= "-includeresource";
 	String		INCLUDEPACKAGE								= "-includepackage";
 	String		INVALIDFILENAMES							= "-invalidfilenames";
@@ -333,7 +333,7 @@ public interface Constants {
 
 	Set<String>	options										= Sets.of(BASELINE, BUILDPATH, BUMPPOLICY, CONDUIT,
 		CLASSPATH, COMPRESSION, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS, FAIL_OK, INCLUDE,
-		INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC, PLUGIN, POM, PROVIDER_POLICY,
+		INCLUDEZEROMAJOR, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC, PLUGIN, POM, PROVIDER_POLICY,
 		REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES,
 		RUNSYSTEMCAPABILITIES, RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, NOMANIFEST, DEPLOYREPO,
 		RELEASEREPO, SAVEMANIFEST, RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNKEEP, RUNTRACE,

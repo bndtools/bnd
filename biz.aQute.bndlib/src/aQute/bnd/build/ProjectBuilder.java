@@ -43,6 +43,7 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
@@ -659,21 +660,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	private boolean isIncludeZeroMajorEnabled() {
-		String diffpackagesStr = project.getProperty(Constants.DIFFPACKAGES);
-		if (diffpackagesStr == null || diffpackagesStr.isEmpty()) {
-			return false;
-		}
-		Parameters diffpackages = new Parameters(diffpackagesStr, this);
-		for (var entry : diffpackages.entrySet()) {
-			var attrs = entry.getValue();
-			if (attrs != null) {
-				var value = attrs.get(Constants.DIFFPACKAGES_INCLUDE_ZERO_MAJOR);
-				if (value != null && "true".equalsIgnoreCase(value)) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return Processor.isTrue(project.getProperty(Constants.INCLUDEZEROMAJOR));
 	}
 
 	/**

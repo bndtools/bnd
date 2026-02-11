@@ -268,6 +268,8 @@ public class BaselineTest {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
 			older.setExportPackage("*;version=0.1");
+			// Enable includezeromajor via global property
+			older.setProperty(Constants.INCLUDEZEROMAJOR, "true");
 			newer.addClasspath(IO.getFile("java8/newer/bin"));
 			newer.setExportPackage("*;version=0.1");
 			try (Jar o = older.build(); Jar n = newer.build();) {
@@ -277,9 +279,7 @@ public class BaselineTest {
 				DiffPluginImpl differ = new DiffPluginImpl();
 				Baseline baseline = new Baseline(older, differ);
 
-				// Enable includezeromajor via diffpackages instruction
-				Instructions packageFilters = new Instructions("*;includezeromajor=true");
-				Set<Info> infoSet = baseline.baseline(n, o, packageFilters);
+				Set<Info> infoSet = baseline.baseline(n, o, null);
 				assertEquals(1, infoSet.size());
 				for (Info info : infoSet) {
 					// With includezeromajor enabled, mismatch should be true for 0.x versions
@@ -296,6 +296,8 @@ public class BaselineTest {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
 			older.setExportPackage("*;version=0.0.1");
+			// Enable includezeromajor via global property
+			older.setProperty(Constants.INCLUDEZEROMAJOR, "true");
 			newer.addClasspath(IO.getFile("java8/newer/bin"));
 			newer.setExportPackage("*;version=0.0.1");
 			try (Jar o = older.build(); Jar n = newer.build();) {
@@ -305,9 +307,7 @@ public class BaselineTest {
 				DiffPluginImpl differ = new DiffPluginImpl();
 				Baseline baseline = new Baseline(older, differ);
 
-				// Enable includezeromajor via diffpackages instruction
-				Instructions packageFilters = new Instructions("*;includezeromajor=true");
-				Set<Info> infoSet = baseline.baseline(n, o, packageFilters);
+				Set<Info> infoSet = baseline.baseline(n, o, null);
 				assertEquals(1, infoSet.size());
 				for (Info info : infoSet) {
 					// Even with includezeromajor enabled, 0.0.x versions should not report mismatch
