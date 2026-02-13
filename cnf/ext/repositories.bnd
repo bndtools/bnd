@@ -54,8 +54,8 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
 # Eclipse Release repository
 #-plugin.1.Eclipse:\
 #	aQute.bnd.repository.p2.provider.P2Repository; \
-#	 	url = https://download.eclipse.org/releases/2023-12/; \
-#	 	name = "Eclipse-4_30-2023-12"       
+#	 	url = https://download.eclipse.org/releases/2025-12/; \
+#	 	name = "Eclipse-2025-12"       
 
 # How to update to a different Eclipse Version?
 # ---------------------------------------------

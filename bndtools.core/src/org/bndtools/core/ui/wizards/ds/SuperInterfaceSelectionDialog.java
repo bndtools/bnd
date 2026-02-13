@@ -229,7 +229,7 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
 
 	public static String getNameWithTypeParameters(IType type) {
 		String superName = type.getFullyQualifiedName('.');
-		if (!JavaModelUtil.is50OrHigher(type.getJavaProject())) {
+		if (!JavaModelUtil.is9OrHigher(type.getJavaProject())) {
 			return superName;
 		}
 		try {
