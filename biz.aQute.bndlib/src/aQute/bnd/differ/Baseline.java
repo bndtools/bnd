@@ -77,10 +77,20 @@ public class Baseline {
 	Version				olderVersion;
 	Version				suggestedVersion;
 	String				releaseRepository;
+	final boolean		includeZeroMajor;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
 		this.bnd = bnd;
+
+		// Read includeZeroMajor from global property
+		// The Reporter interface doesn't have getProperty, but the actual
+		// instance is always a Processor
+		if (bnd instanceof Processor proc) {
+			includeZeroMajor = proc.is(Constants.BASELINEINCLUDEZEROMAJOR);
+		} else {
+			includeZeroMajor = false;
+		}
 	}
 
 	/**
@@ -319,10 +329,19 @@ public class Baseline {
 	/**
 	 * "Major version zero (0.y.z) is for initial development. Anything may
 	 * change at any time. The public API should not be considered stable."
+	 * <p>
+	 * This method returns {@code true} if baselining should report mismatches
+	 * for the given versions. By default, it returns {@code false} for versions
+	 * with major version 0 (unless {@code includeZeroMajor} is enabled).
 	 *
 	 * @see <a href="https://semver.org/#spec-item-4">SemVer</a>
 	 */
 	private boolean mismatch(Version older, Version newer) {
+		if (includeZeroMajor) {
+			// When includeZeroMajor is enabled, only exclude 0.0.x versions
+			return !(newer.getMajor() == 0 && newer.getMinor() == 0);
+		}
+		// Default behavior: exclude all versions with major version 0
 		return older.getMajor() > 0 && newer.getMajor() > 0;
 	}
 
