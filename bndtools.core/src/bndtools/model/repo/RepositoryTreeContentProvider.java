@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,10 +36,12 @@ import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.service.FeatureProvider;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.version.Version;
+import aQute.p2.provider.Feature;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.EclipseWorkspaceRepository;
@@ -145,12 +148,21 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (parentElement instanceof RepositoryPlugin) {
 			RepositoryPlugin repo = (RepositoryPlugin) parentElement;
 			result = getRepositoryBundles(repo);
+		} else if (parentElement instanceof RepositoryFeature) {
+			// Check RepositoryFeature BEFORE RepositoryBundle since both extend
+			// RepositoryEntry
+			RepositoryFeature feature = (RepositoryFeature) parentElement;
+			result = getFeatureChildren(feature);
 		} else if (parentElement instanceof RepositoryBundle) {
 			RepositoryBundle bundle = (RepositoryBundle) parentElement;
 			result = getRepositoryBundleVersions(bundle);
 		} else if (parentElement instanceof Project) {
 			Project project = (Project) parentElement;
 			result = getProjectBundles(project);
+		} else if (parentElement instanceof FeatureFolderNode) {
+			FeatureFolderNode folder = (FeatureFolderNode) parentElement;
+			result = folder.getChildren()
+				.toArray();
 		}
 
 		return result;
@@ -164,12 +176,28 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (element instanceof RepositoryBundleVersion) {
 			return ((RepositoryBundleVersion) element).getParentBundle();
 		}
+		if (element instanceof RepositoryFeature) {
+			return ((RepositoryFeature) element).getRepo();
+		}
+		if (element instanceof FeatureFolderNode) {
+			return ((FeatureFolderNode) element).getParent();
+		}
+		if (element instanceof IncludedFeatureItem) {
+			return ((IncludedFeatureItem) element).getParent();
+		}
+		if (element instanceof RequiredFeatureItem) {
+			return ((RequiredFeatureItem) element).getParent();
+		}
+		if (element instanceof IncludedBundleItem) {
+			return ((IncludedBundleItem) element).getParent();
+		}
 		return null;
 	}
 
 	@Override
 	public boolean hasChildren(Object element) {
-		return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project;
+		return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project
+			|| element instanceof RepositoryFeature || element instanceof FeatureFolderNode;
 	}
 
 	private void addRepositoryPlugins(Collection<Object> result, Workspace workspace) {
@@ -267,6 +295,31 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		return null;
 	}
 
+	Object[] getFeatureChildren(RepositoryFeature feature) {
+		// Create three folder nodes for the feature hierarchy
+		List<FeatureFolderNode> folders = new ArrayList<>();
+
+		FeatureFolderNode includedFeaturesFolder = new FeatureFolderNode(feature,
+			FeatureFolderNode.FolderType.INCLUDED_FEATURES);
+		if (includedFeaturesFolder.hasChildren()) {
+			folders.add(includedFeaturesFolder);
+		}
+
+		FeatureFolderNode requiredFeaturesFolder = new FeatureFolderNode(feature,
+			FeatureFolderNode.FolderType.REQUIRED_FEATURES);
+		if (requiredFeaturesFolder.hasChildren()) {
+			folders.add(requiredFeaturesFolder);
+		}
+
+		FeatureFolderNode includedBundlesFolder = new FeatureFolderNode(feature,
+			FeatureFolderNode.FolderType.INCLUDED_BUNDLES);
+		if (includedBundlesFolder.hasChildren()) {
+			folders.add(includedBundlesFolder);
+		}
+
+		return folders.toArray();
+	}
+
 	Object[] getRepositoryBundles(final RepositoryPlugin repoPlugin) {
 		Object[] result = null;
 
@@ -316,11 +369,39 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					}
 					if (bsns != null) {
 						Collections.sort(bsns);
-						jobresult = new RepositoryBundle[bsns.size()];
-						int i = 0;
-						for (String bsn : bsns) {
-							jobresult[i++] = new RepositoryBundle(repoPlugin, bsn);
+
+						// Collect features first and track their IDs to exclude from bundles
+						Set<String> featureIds = new HashSet<>();
+						List<Object> items = new ArrayList<>();
+
+						if (repoPlugin instanceof FeatureProvider) {
+							try {
+								List<?> features = ((FeatureProvider) repoPlugin).getFeatures();
+								if (features != null) {
+									for (Object featureObj : features) {
+										if (featureObj instanceof Feature) {
+											Feature feature = (Feature) featureObj;
+											featureIds.add(feature.getId());
+											items.add(new RepositoryFeature(repoPlugin, feature));
+										}
+									}
+								}
+							} catch (Exception e) {
+								logger.logError(
+									MessageFormat.format("Error querying features from repository {0}.",
+										repoPlugin.getName()),
+									e);
+							}
 						}
+
+						// Collect bundles, excluding feature IDs
+						for (String bsn : bsns) {
+							if (!featureIds.contains(bsn)) {
+								items.add(new RepositoryBundle(repoPlugin, bsn));
+							}
+						}
+
+						jobresult = items.toArray();
 
 						Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin,
 							p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));

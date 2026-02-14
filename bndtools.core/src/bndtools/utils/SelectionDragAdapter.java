@@ -12,6 +12,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryFeature;
 import bndtools.model.repo.RepositoryResourceElement;
 
 public class SelectionDragAdapter implements DragSourceListener {
@@ -54,6 +55,13 @@ public class SelectionDragAdapter implements DragSourceListener {
 					RepositoryResourceElement rbe = (RepositoryResourceElement) item;
 					event.data = rbe.getResource()
 						.toString();
+					break;
+				} else if (item instanceof RepositoryFeature) {
+					RepositoryFeature rf = (RepositoryFeature) item;
+					// Create drag data as "feature:id:version" string
+					event.data = "feature:" + rf.getFeature()
+						.getId() + ":" + rf.getFeature()
+							.getVersion();
 					break;
 				}
 			}

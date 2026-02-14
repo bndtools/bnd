@@ -169,10 +169,13 @@ public class TargetImpl implements ArtifactProvider {
 				File file = processor.unpackAndLinkIfNeeded(tag, null);
 				try (InputStream in = IO.stream(file)) {
 					Feature f = new Feature(in);
+					f.parse();
 					logger.debug("Adding feature {}", f);
 
 					for (Plugin plugin : f.getPlugins()) {
-						plugins.add(plugin.id, plugin.version);
+						Version version = plugin.version != null ? Version.parseVersion(plugin.version)
+							: Version.emptyVersion;
+						plugins.add(plugin.id, version);
 					}
 				}
 			} catch (Exception e) {

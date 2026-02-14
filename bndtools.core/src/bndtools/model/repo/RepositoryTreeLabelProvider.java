@@ -2,7 +2,6 @@ package bndtools.model.repo;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.icons.Icons.IconBuilder;
-import org.bndtools.utils.jface.HyperlinkStyler;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -22,6 +21,8 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 	final Image				matchImg	= Icons.image("match");
 	final Image				projectImg	= Icons.image("project");
 	final Image				loadingImg	= Icons.image("loading");
+	final Image				featureImg	= Icons.image("feature");
+	final Image				folderImg	= Icons.image("fldr_obj");
 
 	private final boolean	showRepoId;
 
@@ -105,6 +106,18 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 					}
 					image = bundleImg;
 				}
+			} else if (element instanceof RepositoryFeature) {
+				// Check RepositoryFeature BEFORE RepositoryBundle since both extend RepositoryEntry
+				if (index == 0) {
+					RepositoryFeature feature = (RepositoryFeature) element;
+					label.append(feature.getText());
+					if (showRepoId) {
+						label.append(" ");
+						label.append("[" + feature.getRepo()
+							.getName() + "]", StyledString.QUALIFIER_STYLER);
+					}
+					image = featureImg;
+				}
 			} else if (element instanceof RepositoryBundle) {
 				if (index == 0) {
 					RepositoryBundle bundle = (RepositoryBundle) element;
@@ -130,17 +143,41 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 			} else if (element instanceof RepositoryResourceElement) {
 				RepositoryResourceElement resourceElem = (RepositoryResourceElement) element;
 
-				label.append(resourceElem.getIdentity())
-					.append(" ");
-				label.append(resourceElem.getVersionString(), StyledString.COUNTER_STYLER);
-
-				image = matchImg;
-			} else if (element instanceof ContinueSearchElement) {
-				label.append("Continue Search on repository...", new HyperlinkStyler());
-				image = null;
-			} else if (element instanceof LoadingContentElement) {
-				label.append(element.toString());
-				image = loadingImg;
+			} else if (element instanceof RepositoryFeature) {
+				if (index == 0) {
+					RepositoryFeature feature = (RepositoryFeature) element;
+					label.append(feature.getText());
+					if (showRepoId) {
+						label.append(" ");
+						label.append("[" + feature.getRepo()
+							.getName() + "]", StyledString.QUALIFIER_STYLER);
+					}
+					image = featureImg;
+				}
+			} else if (element instanceof FeatureFolderNode) {
+				if (index == 0) {
+					FeatureFolderNode folder = (FeatureFolderNode) element;
+					label.append(folder.getLabel());
+					image = folderImg;
+				}
+			} else if (element instanceof IncludedFeatureItem) {
+				if (index == 0) {
+					IncludedFeatureItem item = (IncludedFeatureItem) element;
+					label.append(item.getText());
+					image = featureImg;
+				}
+			} else if (element instanceof RequiredFeatureItem) {
+				if (index == 0) {
+					RequiredFeatureItem item = (RequiredFeatureItem) element;
+					label.append(item.getText());
+					image = featureImg;
+				}
+			} else if (element instanceof IncludedBundleItem) {
+				if (index == 0) {
+					IncludedBundleItem item = (IncludedBundleItem) element;
+					label.append(item.getText());
+					image = bundleImg;
+				}
 			} else if (element != null) {
 				label.append(element.toString());
 			}
@@ -200,6 +237,21 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 
 		if (element instanceof RepositoryResourceElement re)
 			return re.getIdentity();
+
+		if (element instanceof RepositoryFeature rf)
+			return rf.getText();
+
+		if (element instanceof FeatureFolderNode ffn)
+			return ffn.getLabel();
+
+		if (element instanceof IncludedFeatureItem ifi)
+			return ifi.getText();
+
+		if (element instanceof RequiredFeatureItem rfi)
+			return rfi.getText();
+
+		if (element instanceof IncludedBundleItem ibi)
+			return ibi.getText();
 
 		return element.toString();
 	}

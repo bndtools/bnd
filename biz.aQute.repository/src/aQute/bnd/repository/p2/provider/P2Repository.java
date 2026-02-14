@@ -22,6 +22,7 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.service.Actionable;
+import aQute.bnd.service.FeatureProvider;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
@@ -31,6 +32,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import aQute.p2.packed.Unpack200;
+import aQute.p2.provider.Feature;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -38,7 +40,7 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "P2 Repo", parameters = P2Config.class)
 public class P2Repository extends BaseRepository
-	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable, Actionable {
+	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable, Actionable, FeatureProvider {
 	private P2Config	config;
 	private Registry	registry;
 	private Workspace	workspace;
@@ -196,5 +198,14 @@ public class P2Repository extends BaseRepository
 		return null;
 	}
 
+	@Override
+	public List<Feature> getFeatures() throws Exception {
+		return getP2Index().getFeatures();
+	}
+
+	@Override
+	public Feature getFeature(String id, String version) throws Exception {
+		return getP2Index().getFeature(id, version);
+	}
 
 }
