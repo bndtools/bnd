@@ -120,7 +120,7 @@
 	bnd.identity;id='org.hamcrest';version='[3.0.0,4)'
 
 
--runee: JavaSE-17
+-runee: JavaSE-21
 
 # This will help us keep -runbundles sorted
 -runstartlevel: \
