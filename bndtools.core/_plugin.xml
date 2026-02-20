@@ -236,6 +236,14 @@
 	        class="org.bndtools.refactor.ai.OpenAIView"
 	        id="bndtools.openAIView">
  	    </view>
+		<view category="bndtools.viewCategory"
+			name="Graph"
+			icon="icons/bndtools-logo-16x16.png"
+			class="bndtools.views.bundlegraph.BundleGraphView"
+			id="bndtools.bundleGraphView"
+			restorable="true"
+			allowMultiple="true">
+		</view>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
 		<command id="bndtools.core.removeRepoResource"
@@ -247,6 +255,9 @@
 			name="Refresh Repositories" description="" />
 		<command id="bnd.wizard.generateIndex"
 			name="Generate OSGi Repo. Index" />
+		<command id="bndtools.commands.showBundleGraph"
+			name="Show Bundle Graph"
+			description="Open the Bundle Graph view for the selected .bndrun file or projects" />
 	</extension>
 	<extension point="org.eclipse.ui.commandImages">
 		<image commandId="bndtools.core.removeRepoResource"
@@ -320,6 +331,32 @@
 			locationURI="popup:org.eclipse.ui.popup.any">
 			<command commandId="bnd.wizard.generateIndex">
 				<visibleWhen checkEnabled="true" />
+			</command>
+		</menuContribution>
+
+		<menuContribution
+			locationURI="popup:org.eclipse.ui.popup.any">
+			<command commandId="bndtools.commands.showBundleGraph"
+				label="Show Bundle Graph">
+				<visibleWhen checkEnabled="false">
+					<or>
+						<with variable="selection">
+							<count value="+" />
+							<iterate operator="or">
+								<adapt type="org.eclipse.core.resources.IFile">
+									<test property="org.eclipse.core.resources.extension"
+										value="bndrun" />
+								</adapt>
+							</iterate>
+						</with>
+						<with variable="selection">
+							<count value="+" />
+							<iterate operator="and">
+								<adapt type="org.eclipse.core.resources.IProject" />
+							</iterate>
+						</with>
+					</or>
+				</visibleWhen>
 			</command>
 		</menuContribution>
 
