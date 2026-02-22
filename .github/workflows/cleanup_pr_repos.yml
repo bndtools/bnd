@@ -1,0 +1,129 @@
+name: Cleanup PR p2 Repos
+
+on:
+  pull_request:
+    types:
+    - closed
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'If true, only report paths that would be deleted'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  LC_ALL: en_US.UTF-8
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  cleanup:
+    name: Cleanup p2/pr for closed PRs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+    - name: Delete stale p2 PR repos from JFrog
+      env:
+        GH_TOKEN: ${{ github.token }}
+        JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
+        REPOSITORY: bndtools/bnd
+        DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "${JFROG_SNAPSHOT_TOKEN:-}" ]; then
+          echo "Missing secret JFROG_SNAPSHOT_TOKEN"
+          exit 1
+        fi
+
+        if [ -z "${GH_TOKEN:-}" ]; then
+          echo "Missing GitHub token"
+          exit 1
+        fi
+
+        page=1
+        closed_prs=()
+
+        while :; do
+          response="$(curl --fail --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            "https://api.github.com/repos/${REPOSITORY}/pulls?state=closed&per_page=100&page=${page}")"
+
+          count="$(echo "${response}" | jq 'length')"
+          if [ "${count}" -eq 0 ]; then
+            break
+          fi
+
+          while IFS= read -r pr_number; do
+            closed_prs+=("${pr_number}")
+          done < <(echo "${response}" | jq -r '.[].number')
+
+          page=$((page + 1))
+        done
+
+        if [ "${#closed_prs[@]}" -eq 0 ]; then
+          echo "No closed pull requests found. Nothing to clean."
+          exit 0
+        fi
+
+        failures=0
+        deleted=0
+        missing=0
+        planned=0
+
+        if [ "${DRY_RUN}" = "true" ]; then
+          echo "Dry-run mode is enabled. No deletions will be performed."
+        fi
+
+        for pr in "${closed_prs[@]}"; do
+          jfrog_url="https://bndtools.jfrog.io/artifactory/p2/pr/${pr}"
+
+          if [ "${DRY_RUN}" = "true" ]; then
+            echo "Would delete ${jfrog_url}"
+            planned=$((planned + 1))
+            continue
+          fi
+
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            -X DELETE \
+            -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+            "${jfrog_url}")"
+
+          case "${status}" in
+            200|202|204)
+              echo "Deleted ${jfrog_url}"
+              deleted=$((deleted + 1))
+              ;;
+            404)
+              echo "Not found ${jfrog_url}"
+              missing=$((missing + 1))
+              ;;
+            *)
+              echo "Failed to delete ${jfrog_url} (HTTP ${status})"
+              failures=$((failures + 1))
+              ;;
+          esac
+        done
+
+        echo "Dry-run planned: ${planned}"
+        echo "Deleted: ${deleted}"
+        echo "Missing: ${missing}"
+        echo "Failures: ${failures}"
+
+        if [ "${failures}" -gt 0 ]; then
+          exit 1
+        fi
