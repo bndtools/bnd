@@ -129,6 +129,7 @@ jobs:
         deleted=0
         missing=0
         planned=0
+        projected_remaining=()
 
         if [ "${DRY_RUN}" = "true" ]; then
           echo "Dry-run mode is enabled. No deletions will be performed."
@@ -136,6 +137,7 @@ jobs:
 
         for pr in "${repo_prs[@]}"; do
           if [[ "${open_set}" == *" ${pr} "* ]]; then
+            projected_remaining+=("${pr}")
             continue
           fi
 
@@ -176,6 +178,21 @@ jobs:
         echo "Deleted: ${deleted}"
         echo "Missing: ${missing}"
         echo "Failures: ${failures}"
+
+        if [ "${DRY_RUN}" = "true" ]; then
+          echo "Projected remaining p2/pr repos after dry-run deletion: ${#projected_remaining[@]}"
+          if [ "${#projected_remaining[@]}" -gt 0 ]; then
+            echo "Projected remaining repo list with PR links (up to first 200):"
+            mapfile -t projected_remaining_sorted < <(printf '%s\n' "${projected_remaining[@]}" | sort -n)
+            for pr in "${projected_remaining_sorted[@]:0:200}"; do
+              echo "${pr} https://github.com/${REPOSITORY}/pull/${pr}"
+            done
+            if [ "${#projected_remaining_sorted[@]}" -gt 200 ]; then
+              echo "... truncated, not showing $(( ${#projected_remaining_sorted[@]} - 200 )) additional entries"
+            fi
+          fi
+          exit 0
+        fi
 
         remaining_list="$(curl --fail --silent --show-error \
           -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
