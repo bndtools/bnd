@@ -177,6 +177,23 @@ jobs:
         echo "Missing: ${missing}"
         echo "Failures: ${failures}"
 
+        remaining_list="$(curl --fail --silent --show-error \
+          -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+          "https://bndtools.jfrog.io/artifactory/api/storage/p2/pr?list&deep=0&listFolders=1")"
+
+        mapfile -t remaining_prs < <(echo "${remaining_list}" | jq -r '.files[]? | select(.folder == true) | .uri | ltrimstr("/") | select(test("^[0-9]+$"))' | sort -n)
+
+        echo "Remaining p2/pr repos: ${#remaining_prs[@]}"
+        if [ "${#remaining_prs[@]}" -gt 0 ]; then
+          echo "Remaining repo list with PR links (up to first 200):"
+          for pr in "${remaining_prs[@]:0:200}"; do
+            echo "${pr} https://github.com/${REPOSITORY}/pull/${pr}"
+          done
+          if [ "${#remaining_prs[@]}" -gt 200 ]; then
+            echo "... truncated, not showing $(( ${#remaining_prs[@]} - 200 )) additional entries"
+          fi
+        fi
+
         if [ "${failures}" -gt 0 ]; then
           exit 1
         fi
