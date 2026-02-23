@@ -47,6 +47,89 @@ jobs:
       run: |
         set -euo pipefail
 
+        list_jfrog_pr_folders() {
+          local response_file status
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error --output "${response_file}" --write-out '%{http_code}' \
+            -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+            "https://bndtools.jfrog.io/artifactory/api/storage/p2/pr?list&deep=0&listFolders=1" || true)"
+
+          case "${status}" in
+            200)
+              jq -r '.files[]? | select(.folder == true) | .uri | ltrimstr("/") | select(test("^[0-9]+$"))' "${response_file}"
+              rm -f "${response_file}"
+              ;;
+            404)
+              rm -f "${response_file}"
+              return 2
+              ;;
+            *)
+              echo "Failed to list JFrog path p2/pr (HTTP ${status})" >&2
+              if [ -s "${response_file}" ]; then
+                head -c 1000 "${response_file}" >&2
+                echo >&2
+              fi
+              rm -f "${response_file}"
+              return 1
+              ;;
+          esac
+        }
+
+        fetch_github_open_prs_page() {
+          local page max_attempts attempt backoff response_file status url
+          page="$1"
+          max_attempts=4
+          backoff=2
+          url="https://api.github.com/repos/${REPOSITORY}/pulls?state=open&per_page=100&page=${page}"
+
+          for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+            response_file="$(mktemp)"
+            status="$(curl --silent --show-error \
+              --connect-timeout 10 \
+              --max-time 60 \
+              --output "${response_file}" \
+              --write-out '%{http_code}' \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              "${url}" || true)"
+
+            case "${status}" in
+              200)
+                cat "${response_file}"
+                rm -f "${response_file}"
+                return 0
+                ;;
+              429|500|502|503|504|000)
+                if [ "${attempt}" -lt "${max_attempts}" ]; then
+                  echo "GitHub API transient error on page ${page} (HTTP ${status}), retrying in ${backoff}s..." >&2
+                  rm -f "${response_file}"
+                  sleep "${backoff}"
+                  backoff=$((backoff * 2))
+                  continue
+                fi
+                echo "GitHub API transient error on page ${page} after ${max_attempts} attempts (HTTP ${status})" >&2
+                if [ -s "${response_file}" ]; then
+                  head -c 1000 "${response_file}" >&2
+                  echo >&2
+                fi
+                rm -f "${response_file}"
+                return 1
+                ;;
+              *)
+                echo "GitHub API request failed on page ${page} (HTTP ${status})" >&2
+                if [ -s "${response_file}" ]; then
+                  head -c 1000 "${response_file}" >&2
+                  echo >&2
+                fi
+                rm -f "${response_file}"
+                return 1
+                ;;
+            esac
+          done
+
+          return 1
+        }
+
         if [ -z "${JFROG_SNAPSHOT_TOKEN:-}" ]; then
           echo "Missing secret JFROG_SNAPSHOT_TOKEN"
           exit 1
@@ -92,11 +175,19 @@ jobs:
           fi
         fi
 
-        jfrog_list="$(curl --fail --silent --show-error \
-          -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
-          "https://bndtools.jfrog.io/artifactory/api/storage/p2/pr?list&deep=0&listFolders=1")"
-
-        mapfile -t repo_prs < <(echo "${jfrog_list}" | jq -r '.files[]? | select(.folder == true) | .uri | ltrimstr("/") | select(test("^[0-9]+$"))')
+        repo_prs=()
+        if repo_prs_output="$(list_jfrog_pr_folders)"; then
+          if [ -n "${repo_prs_output}" ]; then
+            mapfile -t repo_prs < <(printf '%s\n' "${repo_prs_output}")
+          fi
+        else
+          status="$?"
+          if [ "${status}" -eq 2 ]; then
+            echo "JFrog path p2/pr not found (HTTP 404). Nothing to clean."
+            exit 0
+          fi
+          exit 1
+        fi
 
         if [ "${#repo_prs[@]}" -eq 0 ]; then
           echo "No PR folders found in JFrog path p2/pr. Nothing to clean."
@@ -106,10 +197,9 @@ jobs:
         page=1
         open_prs=()
         while :; do
-          response="$(curl --fail --silent --show-error \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            "https://api.github.com/repos/${REPOSITORY}/pulls?state=open&per_page=100&page=${page}")"
+          if ! response="$(fetch_github_open_prs_page "${page}")"; then
+            exit 1
+          fi
 
           count="$(echo "${response}" | jq 'length')"
           if [ "${count}" -eq 0 ]; then
@@ -194,11 +284,19 @@ jobs:
           exit 0
         fi
 
-        remaining_list="$(curl --fail --silent --show-error \
-          -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
-          "https://bndtools.jfrog.io/artifactory/api/storage/p2/pr?list&deep=0&listFolders=1")"
-
-        mapfile -t remaining_prs < <(echo "${remaining_list}" | jq -r '.files[]? | select(.folder == true) | .uri | ltrimstr("/") | select(test("^[0-9]+$"))' | sort -n)
+        remaining_prs=()
+        if remaining_prs_output="$(list_jfrog_pr_folders)"; then
+          if [ -n "${remaining_prs_output}" ]; then
+            mapfile -t remaining_prs < <(printf '%s\n' "${remaining_prs_output}" | sort -n)
+          fi
+        else
+          status="$?"
+          if [ "${status}" -eq 2 ]; then
+            echo "Remaining p2/pr repos: 0"
+            exit 0
+          fi
+          exit 1
+        fi
 
         echo "Remaining p2/pr repos: ${#remaining_prs[@]}"
         if [ "${#remaining_prs[@]}" -gt 0 ]; then
