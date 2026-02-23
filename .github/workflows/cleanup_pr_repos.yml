@@ -1,0 +1,314 @@
+name: Cleanup PR p2 Repos
+
+on:
+  pull_request:
+    types:
+    - closed
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'If true, only report paths that would be deleted'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  LC_ALL: en_US.UTF-8
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  cleanup:
+    name: Cleanup p2/pr for closed PRs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+    - name: Delete stale p2 PR repos from JFrog
+      env:
+        GH_TOKEN: ${{ github.token }}
+        JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
+        REPOSITORY: bndtools/bnd
+        DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+        EVENT_NAME: ${{ github.event_name }}
+        EVENT_ACTION: ${{ github.event.action || '' }}
+        EVENT_PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+      run: |
+        set -euo pipefail
+
+        list_jfrog_pr_folders() {
+          local response_file status
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error --output "${response_file}" --write-out '%{http_code}' \
+            -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+            "https://bndtools.jfrog.io/artifactory/api/storage/p2/pr?list&deep=0&listFolders=1" || true)"
+
+          case "${status}" in
+            200)
+              jq -r '.files[]? | select(.folder == true) | .uri | ltrimstr("/") | select(test("^[0-9]+$"))' "${response_file}"
+              rm -f "${response_file}"
+              ;;
+            404)
+              rm -f "${response_file}"
+              return 2
+              ;;
+            *)
+              echo "Failed to list JFrog path p2/pr (HTTP ${status})" >&2
+              if [ -s "${response_file}" ]; then
+                head -c 1000 "${response_file}" >&2
+                echo >&2
+              fi
+              rm -f "${response_file}"
+              return 1
+              ;;
+          esac
+        }
+
+        fetch_github_open_prs_page() {
+          local page max_attempts attempt backoff response_file status url
+          page="$1"
+          max_attempts=4
+          backoff=2
+          url="https://api.github.com/repos/${REPOSITORY}/pulls?state=open&per_page=100&page=${page}"
+
+          for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+            response_file="$(mktemp)"
+            status="$(curl --silent --show-error \
+              --connect-timeout 10 \
+              --max-time 60 \
+              --output "${response_file}" \
+              --write-out '%{http_code}' \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              "${url}" || true)"
+
+            case "${status}" in
+              200)
+                cat "${response_file}"
+                rm -f "${response_file}"
+                return 0
+                ;;
+              429|500|502|503|504|000)
+                if [ "${attempt}" -lt "${max_attempts}" ]; then
+                  echo "GitHub API transient error on page ${page} (HTTP ${status}), retrying in ${backoff}s..." >&2
+                  rm -f "${response_file}"
+                  sleep "${backoff}"
+                  backoff=$((backoff * 2))
+                  continue
+                fi
+                echo "GitHub API transient error on page ${page} after ${max_attempts} attempts (HTTP ${status})" >&2
+                if [ -s "${response_file}" ]; then
+                  head -c 1000 "${response_file}" >&2
+                  echo >&2
+                fi
+                rm -f "${response_file}"
+                return 1
+                ;;
+              *)
+                echo "GitHub API request failed on page ${page} (HTTP ${status})" >&2
+                if [ -s "${response_file}" ]; then
+                  head -c 1000 "${response_file}" >&2
+                  echo >&2
+                fi
+                rm -f "${response_file}"
+                return 1
+                ;;
+            esac
+          done
+
+          return 1
+        }
+
+        if [ -z "${JFROG_SNAPSHOT_TOKEN:-}" ]; then
+          echo "Missing secret JFROG_SNAPSHOT_TOKEN"
+          exit 1
+        fi
+
+        if [ -z "${GH_TOKEN:-}" ]; then
+          echo "Missing GitHub token"
+          exit 1
+        fi
+
+        if [ "${EVENT_NAME}" = "pull_request" ] && [ "${EVENT_ACTION}" = "closed" ]; then
+          pr="${EVENT_PR_NUMBER}"
+          if [ -n "${pr}" ]; then
+            jfrog_url="https://bndtools.jfrog.io/artifactory/p2/pr/${pr}"
+            if [ "${DRY_RUN}" = "true" ]; then
+              echo "Dry-run mode is enabled."
+              echo "Would delete ${jfrog_url}"
+              echo "Dry-run planned: 1"
+              echo "Deleted: 0"
+              echo "Missing: 0"
+              echo "Failures: 0"
+              exit 0
+            fi
+
+            status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+              -X DELETE \
+              -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+              "${jfrog_url}")"
+
+            case "${status}" in
+              200|202|204)
+                echo "Deleted ${jfrog_url}"
+                ;;
+              404)
+                echo "Not found ${jfrog_url}"
+                ;;
+              *)
+                echo "Failed to delete ${jfrog_url} (HTTP ${status})"
+                exit 1
+                ;;
+            esac
+            exit 0
+          fi
+        fi
+
+        repo_prs=()
+        if repo_prs_output="$(list_jfrog_pr_folders)"; then
+          if [ -n "${repo_prs_output}" ]; then
+            mapfile -t repo_prs < <(printf '%s\n' "${repo_prs_output}")
+          fi
+        else
+          status="$?"
+          if [ "${status}" -eq 2 ]; then
+            echo "JFrog path p2/pr not found (HTTP 404). Nothing to clean."
+            exit 0
+          fi
+          exit 1
+        fi
+
+        if [ "${#repo_prs[@]}" -eq 0 ]; then
+          echo "No PR folders found in JFrog path p2/pr. Nothing to clean."
+          exit 0
+        fi
+
+        page=1
+        open_prs=()
+        while :; do
+          if ! response="$(fetch_github_open_prs_page "${page}")"; then
+            exit 1
+          fi
+
+          count="$(echo "${response}" | jq 'length')"
+          if [ "${count}" -eq 0 ]; then
+            break
+          fi
+
+          while IFS= read -r pr_number; do
+            open_prs+=("${pr_number}")
+          done < <(echo "${response}" | jq -r '.[].number')
+
+          page=$((page + 1))
+        done
+
+        open_set=" $(printf '%s ' "${open_prs[@]:-}") "
+
+        failures=0
+        deleted=0
+        missing=0
+        planned=0
+        projected_remaining=()
+
+        if [ "${DRY_RUN}" = "true" ]; then
+          echo "Dry-run mode is enabled. No deletions will be performed."
+        fi
+
+        for pr in "${repo_prs[@]}"; do
+          if [[ "${open_set}" == *" ${pr} "* ]]; then
+            projected_remaining+=("${pr}")
+            continue
+          fi
+
+          jfrog_url="https://bndtools.jfrog.io/artifactory/p2/pr/${pr}"
+
+          if [ "${DRY_RUN}" = "true" ]; then
+            if [ "${planned}" -lt 200 ]; then
+              echo "Would delete ${jfrog_url}"
+            fi
+            planned=$((planned + 1))
+            continue
+          fi
+
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            -X DELETE \
+            -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+            "${jfrog_url}")"
+
+          case "${status}" in
+            200|202|204)
+              echo "Deleted ${jfrog_url}"
+              deleted=$((deleted + 1))
+              ;;
+            404)
+              echo "Not found ${jfrog_url}"
+              missing=$((missing + 1))
+              ;;
+            *)
+              echo "Failed to delete ${jfrog_url} (HTTP ${status})"
+              failures=$((failures + 1))
+              ;;
+          esac
+        done
+
+          echo "Dry-run planned: ${planned}"
+          echo "Scanned JFrog PR folders: ${#repo_prs[@]}"
+          echo "Open PRs in GitHub: ${#open_prs[@]}"
+        echo "Deleted: ${deleted}"
+        echo "Missing: ${missing}"
+        echo "Failures: ${failures}"
+
+        if [ "${DRY_RUN}" = "true" ]; then
+          echo "Projected remaining p2/pr repos after dry-run deletion: ${#projected_remaining[@]}"
+          if [ "${#projected_remaining[@]}" -gt 0 ]; then
+            echo "Projected remaining repo list with PR links (up to first 200):"
+            mapfile -t projected_remaining_sorted < <(printf '%s\n' "${projected_remaining[@]}" | sort -n)
+            for pr in "${projected_remaining_sorted[@]:0:200}"; do
+              echo "${pr} https://github.com/${REPOSITORY}/pull/${pr}"
+            done
+            if [ "${#projected_remaining_sorted[@]}" -gt 200 ]; then
+              echo "... truncated, not showing $(( ${#projected_remaining_sorted[@]} - 200 )) additional entries"
+            fi
+          fi
+          exit 0
+        fi
+
+        remaining_prs=()
+        if remaining_prs_output="$(list_jfrog_pr_folders)"; then
+          if [ -n "${remaining_prs_output}" ]; then
+            mapfile -t remaining_prs < <(printf '%s\n' "${remaining_prs_output}" | sort -n)
+          fi
+        else
+          status="$?"
+          if [ "${status}" -eq 2 ]; then
+            echo "Remaining p2/pr repos: 0"
+            exit 0
+          fi
+          exit 1
+        fi
+
+        echo "Remaining p2/pr repos: ${#remaining_prs[@]}"
+        if [ "${#remaining_prs[@]}" -gt 0 ]; then
+          echo "Remaining repo list with PR links (up to first 200):"
+          for pr in "${remaining_prs[@]:0:200}"; do
+            echo "${pr} https://github.com/${REPOSITORY}/pull/${pr}"
+          done
+          if [ "${#remaining_prs[@]}" -gt 200 ]; then
+            echo "... truncated, not showing $(( ${#remaining_prs[@]} - 200 )) additional entries"
+          fi
+        fi
+
+        if [ "${failures}" -gt 0 ]; then
+          exit 1
+        fi
