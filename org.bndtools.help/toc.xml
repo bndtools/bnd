@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toc label="bnd Documentation" topic="docs/index.html">
+   <topic label="User Guide">
+      <topic label="Introduction" href="docs/chapters/110-introduction.html"/>
+      <topic label="How to Install bnd" href="docs/chapters/120-install.html"/>
+      <topic label="Tour: Workspace" href="docs/chapters/123-tour-workspace.html"/>
+      <topic label="Tour: Features" href="docs/chapters/125-tour-features.html"/>
+      <topic label="Concepts" href="docs/chapters/130-concepts.html"/>
+      <topic label="History" href="docs/chapters/135-history.html"/>
+      <topic label="Best Practices" href="docs/chapters/140-best-practices.html"/>
+      <topic label="Build" href="docs/chapters/150-build.html"/>
+      <topic label="Project Setup" href="docs/chapters/155-project-setup.html"/>
+      <topic label="JARs" href="docs/chapters/160-jars.html"/>
+      <topic label="Versioning" href="docs/chapters/170-versioning.html"/>
+      <topic label="Baselining" href="docs/chapters/180-baselining.html"/>
+      <topic label="Components" href="docs/chapters/200-components.html"/>
+      <topic label="Metatype" href="docs/chapters/210-metatype.html"/>
+      <topic label="Contracts" href="docs/chapters/220-contracts.html"/>
+      <topic label="Manifest Annotations" href="docs/chapters/230-manifest-annotations.html"/>
+      <topic label="Accessor Properties" href="docs/chapters/235-accessor-properties.html"/>
+      <topic label="SPI Annotations" href="docs/chapters/240-spi-annotations.html"/>
+      <topic label="Resolving" href="docs/chapters/250-resolving.html"/>
+      <topic label="Launching" href="docs/chapters/300-launching.html"/>
+      <topic label="Start Levels" href="docs/chapters/305-startlevels.html"/>
+      <topic label="Testing" href="docs/chapters/310-testing.html"/>
+      <topic label="Launchpad Testing" href="docs/chapters/315-launchpad-testing.html"/>
+      <topic label="Packaging" href="docs/chapters/320-packaging.html"/>
+      <topic label="JPMS" href="docs/chapters/330-jpms.html"/>
+      <topic label="Wrapping" href="docs/chapters/390-wrapping.html"/>
+      <topic label="Generating Documentation" href="docs/chapters/395-generating-documentation.html"/>
+      <topic label="Commands" href="docs/chapters/400-commands.html"/>
+      <topic label="Developer" href="docs/chapters/600-developer.html"/>
+      <topic label="Template Fragments" href="docs/chapters/620-template-fragments.html"/>
+      <topic label="Windows" href="docs/chapters/650-windows.html"/>
+      <topic label="Tools" href="docs/chapters/700-tools.html"/>
+      <topic label="Reference" href="docs/chapters/790-reference.html"/>
+      <topic label="Headers" href="docs/chapters/800-headers.html"/>
+      <topic label="Instructions" href="docs/chapters/820-instructions.html"/>
+      <topic label="Instructions Reference" href="docs/chapters/825-instructions-ref.html"/>
+      <topic label="Macros" href="docs/chapters/850-macros.html"/>
+      <topic label="Macros Reference" href="docs/chapters/855-macros-ref.html"/>
+      <topic label="Plugins" href="docs/chapters/870-plugins.html"/>
+      <topic label="External Plugins" href="docs/chapters/875-external-plugins.html"/>
+      <topic label="Settings" href="docs/chapters/880-settings.html"/>
+      <topic label="Errors" href="docs/chapters/900-errors.html"/>
+      <topic label="Warnings" href="docs/chapters/910-warnings.html"/>
+      <topic label="FAQ" href="docs/chapters/920-faq.html"/>
+   </topic>
+   <topic label="Instructions Reference" href="docs/instructions/index.html">
+      <topic label="-augment PARAMETER ( ',' PARAMETER ) *" href="docs/instructions/augment.html"/>
+      <topic label="-baseline selector" href="docs/instructions/baseline.html"/>
+      <topic label="-baselinerepo qname" href="docs/instructions/baselinerepo.html"/>
+      <topic label="-bnd-driver" href="docs/instructions/bnd_driver.html"/>
+      <topic label="-builderignore PATH-SPEC ( ',' PATH-SPEC ) *" href="docs/instructions/builderignore.html"/>
+      <topic label="-buildpath PATH" href="docs/instructions/buildpath.html"/>
+      <topic label="-buildrepo  repo ( ',' repo ) *" href="docs/instructions/buildrepo.html"/>
+      <topic label="-buildtool  toolspec  (EXPERIMENTAL!)" href="docs/instructions/buildtool.html"/>
+      <topic label="-bumppolicy" href="docs/instructions/bumppolicy.html"/>
+      <topic label="-bundleannotations SELECTORS" href="docs/instructions/bundleannotations.html"/>
+      <topic label="-cdiannotations SELECTORS" href="docs/instructions/cdiannotations.html"/>
+      <topic label="-check 'ALL' | ( 'IMPORTS' | 'EXPORTS' ) *" href="docs/instructions/check.html"/>
+      <topic label="-classpath  FILE (',' FILE) *" href="docs/instructions/classpath.html"/>
+      <topic label="-compression DEFLATE | STORE" href="docs/instructions/compression.html"/>
+      <topic label="-conditionalpackage PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *" href="docs/instructions/conditionalpackage.html"/>
+      <topic label="-conduit" href="docs/instructions/conduit.html"/>
+      <topic label="-connection-settings" href="docs/instructions/connection_settings.html"/>
+      <topic label="-consumer-policy VERSION-MASK" href="docs/instructions/consumer_policy.html"/>
+      <topic label="-contract" href="docs/instructions/contract.html"/>
+      <topic label="-define-contract" href="docs/instructions/define_contract.html"/>
+      <topic label="-dependson SELECTORS" href="docs/instructions/dependson.html"/>
+      <topic label="-deploy" href="docs/instructions/deploy.html"/>
+      <topic label="-deployrepo" href="docs/instructions/deployrepo.html"/>
+      <topic label="-diffignore SELECTORS" href="docs/instructions/diffignore.html"/>
+      <topic label="-diffpackages SELECTORS" href="docs/instructions/diffpackages.html"/>
+      <topic label="-digests DIGEST ( ',' DIGEST ) *" href="docs/instructions/digests.html"/>
+      <topic label="-distro REPO (',' REPO)" href="docs/instructions/distro.html"/>
+      <topic label="-donotcopy" href="docs/instructions/donotcopy.html"/>
+      <topic label="-dsannotations SELECTORS" href="docs/instructions/dsannotations.html"/>
+      <topic label="-dsannotations-options SELECTORS" href="docs/instructions/dsannotations_options.html"/>
+      <topic label="-eeprofile 'auto' | PROFILE +" href="docs/instructions/eeprofile.html"/>
+      <topic label="-executable ( rejar= STORE | DEFLATE ) ( ','  strip= matcher ( ',' matcher )* ) ( ',' location= FORMAT )" href="docs/instructions/executable.html"/>
+      <topic label="-export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*" href="docs/instructions/export.html"/>
+      <topic label="-export-apiguardian PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*" href="docs/instructions/export_apiguardian.html"/>
+      <topic label="-exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*" href="docs/instructions/exportcontents.html"/>
+      <topic label="-exportreport report-def ( ',' report-def )*" href="docs/instructions/exportreport.html"/>
+      <topic label="-exporttype" href="docs/instructions/exporttype.html"/>
+      <topic label="-extension" href="docs/instructions/extension.html"/>
+      <topic label="-failok ('true' | 'false')?" href="docs/instructions/failok.html"/>
+      <topic label="-fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ..." href="docs/instructions/fixupmessages.html"/>
+      <topic label="-generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ..." href="docs/instructions/generate.html"/>
+      <topic label="-gestalt" href="docs/instructions/gestalt.html"/>
+      <topic label="-groupid groupId" href="docs/instructions/groupid.html"/>
+      <topic label="-include PATH-SPEC ( ',' PATH-SPEC ) *" href="docs/instructions/include.html"/>
+      <topic label="-includepackage PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*" href="docs/instructions/includepackage.html"/>
+      <topic label="-includeresource iclause" href="docs/instructions/includeresource.html"/>
+      <topic label="-init ${MACRO} ( ',' ${MACRO}) *" href="docs/instructions/init.html"/>
+      <topic label="-invalidfilenames" href="docs/instructions/invalidfilenames.html"/>
+      <topic label="-javaagent BOOLEAN" href="docs/instructions/javaagent.html"/>
+      <topic label="-jpms-module-info modulename [; version=&lt;version&gt;] [; access=OPEN|SYNTHETIC|MANDATED]" href="docs/instructions/jpms_module_info.html"/>
+      <topic label="-jpms-module-info-options module-infos+" href="docs/instructions/jpms_module_info_options.html"/>
+      <topic label="-jpms-multi-release BOOLEAN" href="docs/instructions/jpms_multi_release.html"/>
+      <topic label="-launcher" href="docs/instructions/launcher.html"/>
+      <topic label="-library library ( ',' library )*" href="docs/instructions/library.html"/>
+      <topic label="-make" href="docs/instructions/make.html"/>
+      <topic label="-manifest FILE" href="docs/instructions/manifest.html"/>
+      <topic label="-manifest-name  RESOURCE" href="docs/instructions/manifest_name.html"/>
+      <topic label="-maven-dependencies* entry ( ',' entry )*" href="docs/instructions/maven_dependencies.html"/>
+      <topic label="-maven-release ('local'|'remote') ( ',' option )*" href="docs/instructions/maven_release.html"/>
+      <topic label="-maven-scope dependency-scope" href="docs/instructions/maven_scope.html"/>
+      <topic label="-metainf-services" href="docs/instructions/metainf_services.html"/>
+      <topic label="-metatypeannotations SELECTORS" href="docs/instructions/metatypeannotations.html"/>
+      <topic label="-metatypeannotations-options SELECTORS" href="docs/instructions/metatypeannotations_options.html"/>
+      <topic label="-namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *" href="docs/instructions/namesection.html"/>
+      <topic label="-nobuildincache BOOLEAN" href="docs/instructions/nobuildincache.html"/>
+      <topic label="-nobundles  BOOLEAN" href="docs/instructions/nobundles.html"/>
+      <topic label="-noclassforname BOOLEAN" href="docs/instructions/noclassforname.html"/>
+      <topic label="-nodefaultversion  BOOLEAN" href="docs/instructions/nodefaultversion.html"/>
+      <topic label="-noee  BOOLEAN" href="docs/instructions/noee.html"/>
+      <topic label="-noextraheaders  BOOLEAN" href="docs/instructions/noextraheaders.html"/>
+      <topic label="-noimportjava BOOLEAN" href="docs/instructions/noimportjava.html"/>
+      <topic label="-nojunit  BOOLEAN" href="docs/instructions/nojunit.html"/>
+      <topic label="-nojunitosgi  BOOLEAN" href="docs/instructions/nojunitosgi.html"/>
+      <topic label="-nomanifest  BOOLEAN" href="docs/instructions/nomanifest.html"/>
+      <topic label="-noparallel CATEGORY;task=TASKS" href="docs/instructions/noparallel.html"/>
+      <topic label="-noproxyinterfaces BOOLEAN" href="docs/instructions/noproxyinterfaces.html"/>
+      <topic label="-nosubstitution" href="docs/instructions/nosubstitution.html"/>
+      <topic label="-nouses  BOOLEAN" href="docs/instructions/nouses.html"/>
+      <topic label="-output  FILE" href="docs/instructions/output.html"/>
+      <topic label="-outputmask  TEMPLATE ?" href="docs/instructions/outputmask.html"/>
+      <topic label="-packageinfotype" href="docs/instructions/packageinfotype.html"/>
+      <topic label="-pedantic BOOLEAN" href="docs/instructions/pedantic.html"/>
+      <topic label="-plugin.* plugin-def ( ',' plugin-def )*" href="docs/instructions/plugin.html"/>
+      <topic label="-pluginpath* PARAMETERS" href="docs/instructions/pluginpath.html"/>
+      <topic label="-pom BOOLEAN | PROPERTIES" href="docs/instructions/pom.html"/>
+      <topic label="-prepare makespec ( ',' makespec )*" href="docs/instructions/prepare.html"/>
+      <topic label="-preprocessmatchers SELECTOR" href="docs/instructions/preprocessmatchers.html"/>
+      <topic label="-privatepackage PACKAGE-SPEC" href="docs/instructions/privatepackage.html"/>
+      <topic label="-profile KEY" href="docs/instructions/profile.html"/>
+      <topic label="-provider-policy VERSION-MASK" href="docs/instructions/provider_policy.html"/>
+      <topic label="-releaserepo* NAME ( ',' NAME ) *" href="docs/instructions/releaserepo.html"/>
+      <topic label="-remoteworkspace (true|false)" href="docs/instructions/remoteworkspace.html"/>
+      <topic label="-removeheaders KEY-SELECTOR ( '.' KEY-SELECTOR ) *" href="docs/instructions/removeheaders.html"/>
+      <topic label="-reportconfig plugin-def ( ',' plugin-def )*" href="docs/instructions/reportconfig.html"/>
+      <topic label="-reportnewer BOOLEAN" href="docs/instructions/reportnewer.html"/>
+      <topic label="-reproducible BOOLEAN | TIMESTAMP" href="docs/instructions/reproducible.html"/>
+      <topic label="-require-bnd  (FILTER ( ',' FILTER )* )?" href="docs/instructions/require_bnd.html"/>
+      <topic label="-resolve.effective qname (',' qname )" href="docs/instructions/resolve.effective.html"/>
+      <topic label="-resolve.excludesystem true|false" href="docs/instructions/resolve.excludesystem.html"/>
+      <topic label="-resolve (manual|auto|beforelaunch|batch|cache)" href="docs/instructions/resolve.html"/>
+      <topic label="-resolve.preferences qname ( ',' qname )" href="docs/instructions/resolve.preferences.html"/>
+      <topic label="-resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? )," href="docs/instructions/resolve.reject.html"/>
+      <topic label="-resolvedebug INTEGER" href="docs/instructions/resolvedebug.html"/>
+      <topic label="-resourceonly  BOOLEAN" href="docs/instructions/resourceonly.html"/>
+      <topic label="-runblacklist requirement (',' requirement)" href="docs/instructions/runblacklist.html"/>
+      <topic label="-runbuilds BOOLEAN" href="docs/instructions/runbuilds.html"/>
+      <topic label="-runbundles* REPO-ENTRY ( ',' REPO-ENTRY )*" href="docs/instructions/runbundles.html"/>
+      <topic label="-runee EE" href="docs/instructions/runee.html"/>
+      <topic label="-runenv PROPERTIES" href="docs/instructions/runenv.html"/>
+      <topic label="-runframework ( 'none' | 'services' | ANY )?" href="docs/instructions/runframework.html"/>
+      <topic label="-runframeworkrestart BOOLEAN" href="docs/instructions/runframeworkrestart.html"/>
+      <topic label="-runfw REPO-ENTRY" href="docs/instructions/runfw.html"/>
+      <topic label="-runjdb  ADDRESS" href="docs/instructions/runjdb.html"/>
+      <topic label="-runkeep true | false" href="docs/instructions/runkeep.html"/>
+      <topic label="-runnoreferences  BOOLEAN" href="docs/instructions/runnoreferences.html"/>
+      <topic label="-runoptions" href="docs/instructions/runoptions.html"/>
+      <topic label="-runpath REPO-ENTRY ( ',' REPO-ENTRY )" href="docs/instructions/runpath.html"/>
+      <topic label="-runprogramargs" href="docs/instructions/runprogramargs.html"/>
+      <topic label="-runproperties PROPERTIES" href="docs/instructions/runproperties.html"/>
+      <topic label="-runprovidedcapabilities" href="docs/instructions/runprovidedcapabilities.html"/>
+      <topic label="-runremote" href="docs/instructions/runremote.html"/>
+      <topic label="-runrepos REPO-NAME ( ',' REPO-NAME )*" href="docs/instructions/runrepos.html"/>
+      <topic label="-runrequires REQUIREMENT ( ',' REQUIREMENT )*" href="docs/instructions/runrequires.html"/>
+      <topic label="-runstartlevel ( order | begin | step )*" href="docs/instructions/runstartlevel.html"/>
+      <topic label="-runstorage FILE" href="docs/instructions/runstorage.html"/>
+      <topic label="-runsystemcapabilities* CAPABILITY (',' CAPABILITY )" href="docs/instructions/runsystemcapabilities.html"/>
+      <topic label="-runsystempackages* PARAMETERS" href="docs/instructions/runsystempackages.html"/>
+      <topic label="-runtimeout DURATION" href="docs/instructions/runtimeout.html"/>
+      <topic label="-runtrace BOOLEAN" href="docs/instructions/runtrace.html"/>
+      <topic label="-runvm KEYS" href="docs/instructions/runvm.html"/>
+      <topic label="-savemanifest FILE" href="docs/instructions/savemanifest.html"/>
+      <topic label="-sign PARAMETERS" href="docs/instructions/sign.html"/>
+      <topic label="-snapshot STRING" href="docs/instructions/snapshot.html"/>
+      <topic label="-sourcepath" href="docs/instructions/sourcepath.html"/>
+      <topic label="-sources  BOOLEAN" href="docs/instructions/sources.html"/>
+      <topic label="-stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* ..." href="docs/instructions/stalecheck.html"/>
+      <topic label="-standalone repo-spec (, repo-spec )" href="docs/instructions/standalone.html"/>
+      <topic label="-strict BOOLEAN" href="docs/instructions/strict.html"/>
+      <topic label="-sub FILE-SPEC ( ',' FILE-SPEC )*" href="docs/instructions/sub.html"/>
+      <topic label="-systemproperties PROPERTIES" href="docs/instructions/systemproperties.html"/>
+      <topic label="-testcontinuous BOOLEAN" href="docs/instructions/testcontinuous.html"/>
+      <topic label="-tester REPO-SPEC" href="docs/instructions/tester.html"/>
+      <topic label="-testpackages PACKAGE-SPEC ( ',' PACKAGE-SPEC )" href="docs/instructions/testpackages.html"/>
+      <topic label="-testpath REPO-SPEC ( ',' REPO-SPEC )" href="docs/instructions/testpath.html"/>
+      <topic label="-testsources REGEX ( ',' REGEX )*" href="docs/instructions/testsources.html"/>
+      <topic label="-testunresolved BOOLEAN" href="docs/instructions/testunresolved.html"/>
+      <topic label="-undertest true" href="docs/instructions/undertest.html"/>
+      <topic label="-upto VERSION" href="docs/instructions/upto.html"/>
+      <topic label="-wab FILE ( ',' FILE )*" href="docs/instructions/wab.html"/>
+      <topic label="-wablib FILE ( ',' FILE )*" href="docs/instructions/wablib.html"/>
+      <topic label="-workingset PARAMETER ( ',' PARAMETER ) *" href="docs/instructions/workingset.html"/>
+      <topic label="-workspace-templates" href="docs/instructions/workspace_templates.html"/>
+      <topic label="-x-overwritestrategy" href="docs/instructions/x_overwritestrategy.html"/>
+   </topic>
+   <topic label="Manifest Headers Reference" href="docs/heads/index.html">
+      <topic label=".bnd" href="docs/heads/.bnd.html"/>
+      <topic label="Automatic-Module-Name" href="docs/heads/automatic_module_name.html"/>
+      <topic label="bin" href="docs/heads/bin.html"/>
+      <topic label=".bnd" href="docs/heads/bnd.html"/>
+      <topic label="Bnd-AddXmlToTest RESOURCE ( ',' RESOURCE )" href="docs/heads/bnd_addxmltotest.html"/>
+      <topic label="Bnd-LastModified  LONG" href="docs/heads/bnd_lastmodified.html"/>
+      <topic label="Bundle-ActivationPolicy ::= policy ( ';' directive )*" href="docs/heads/bundle_activationpolicy.html"/>
+      <topic label="Bundle-Activator CLASS" href="docs/heads/bundle_activator.html"/>
+      <topic label="Bundle-Blueprint RESOURE (',' RESOURCE )" href="docs/heads/bundle_blueprint.html"/>
+      <topic label="Bundle-Category STRING (',' STRING )" href="docs/heads/bundle_category.html"/>
+      <topic label="Bundle-ClassPath ::= entry ( ',' entry )*" href="docs/heads/bundle_classpath.html"/>
+      <topic label="Bundle-ContactAddress" href="docs/heads/bundle_contactaddress.html"/>
+      <topic label="Bundle-Contributors ..." href="docs/heads/bundle_contributors.html"/>
+      <topic label="Bundle-Copyright STRING" href="docs/heads/bundle_copyright.html"/>
+      <topic label="Bundle-Description STRING" href="docs/heads/bundle_description.html"/>
+      <topic label="Bundle-Developers ..." href="docs/heads/bundle_developers.html"/>
+      <topic label="Bundle-DocURL STRING" href="docs/heads/bundle_docurl.html"/>
+      <topic label="Bundle-Icon" href="docs/heads/bundle_icon.html"/>
+      <topic label="Bundle-License ::= '&lt;&lt;[EXTERNAL]&gt;&gt;' | ( license ( ',' license ) * )" href="docs/heads/bundle_license.html"/>
+      <topic label="Bundle-Localization" href="docs/heads/bundle_localization.html"/>
+      <topic label="Bundle-ManifestVersion ::= 2" href="docs/heads/bundle_manifestversion.html"/>
+      <topic label="Bundle-Name STRING" href="docs/heads/bundle_name.html"/>
+      <topic label="Bundle-NativeCode   ::= nativecode  ( ',' nativecode )* ( ',' optional ) ?" href="docs/heads/bundle_nativecode.html"/>
+      <topic label="Bundle-RequiredExecutionEnvironment ::= ee-name ( ',' ee-name )*" href="docs/heads/bundle_requiredexecutionenvironment.html"/>
+      <topic label="Bundle-SCM" href="docs/heads/bundle_scm.html"/>
+      <topic label="Bundle-SymbolicName ::= symbolic-name ( ';' parameter ) *" href="docs/heads/bundle_symbolicname.html"/>
+      <topic label="Bundle-UpdateLocation" href="docs/heads/bundle_updatelocation.html"/>
+      <topic label="Bundle-Vendor" href="docs/heads/bundle_vendor.html"/>
+      <topic label="Bundle-Version ::= version" href="docs/heads/bundle_version.html"/>
+      <topic label="Conditional-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *" href="docs/heads/conditional_package.html"/>
+      <topic label="Created-By STRING" href="docs/heads/created_by.html"/>
+      <topic label="DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*" href="docs/heads/dynamicimport_package.html"/>
+      <topic label="Export-Package  ::= export ( ',' export)*" href="docs/heads/export_package.html"/>
+      <topic label="Export-Service" href="docs/heads/export_service.html"/>
+      <topic label="Fragment-Host       ::= bundle-description" href="docs/heads/fragment_host.html"/>
+      <topic label="Ignore-Package" href="docs/heads/ignore_package.html"/>
+      <topic label="Import-Package ::= import ( ',' import )*" href="docs/heads/import_package.html"/>
+      <topic label="javac.encoding" href="docs/heads/javac.encoding.html"/>
+      <topic label="javac" href="docs/heads/javac.html"/>
+      <topic label="javac.profile" href="docs/heads/javac.profile.html"/>
+      <topic label="javac.source" href="docs/heads/javac.source.html"/>
+      <topic label="javac.target" href="docs/heads/javac.target.html"/>
+      <topic label="Meta-Persistence ::= ( RESOURCE ( ',' RESOURCE )* )?" href="docs/heads/meta_persistence.html"/>
+      <topic label="Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )*" href="docs/heads/private_package.html"/>
+      <topic label="Provide-Capability  ::= capability (',' capability )*" href="docs/heads/provide_capability.html"/>
+      <topic label="Require-Bundle      ::= bundle-description ( ',' bundle-description )*" href="docs/heads/require_bundle.html"/>
+      <topic label="Require-Capability ::= requirement ( ',' requirement )*" href="docs/heads/require_capability.html"/>
+      <topic label="Service-Component ::= RESOURCE ( ',' RESOURCE )" href="docs/heads/service_component.html"/>
+      <topic label="src" href="docs/heads/src.html"/>
+      <topic label="target-dir" href="docs/heads/target_dir.html"/>
+      <topic label="Test-Cases CLASS ( ',' CLASS ) *" href="docs/heads/test_cases.html"/>
+      <topic label="testbin" href="docs/heads/testbin.html"/>
+      <topic label="Tester-Plugin" href="docs/heads/tester_plugin.html"/>
+      <topic label="testsrc" href="docs/heads/testsrc.html"/>
+      <topic label="Tool STRING" href="docs/heads/tool.html"/>
+   </topic>
+   <topic label="Macros Reference" href="docs/macros/index.html">
+      <topic label="apply ';' MACRO (';' LIST)*" href="docs/macros/apply.html"/>
+      <topic label="average (';' LIST )*" href="docs/macros/average.html"/>
+      <topic label="base64 ';' FILE [';' LONG ]" href="docs/macros/base64.html"/>
+      <topic label="basedir" href="docs/macros/basedir.html"/>
+      <topic label="basename ( ';' FILEPATH ) +" href="docs/macros/basename.html"/>
+      <topic label="basenameext ';' PATH ( ';' EXTENSION )" href="docs/macros/basenameext.html"/>
+      <topic label="bndversion" href="docs/macros/bndversion.html"/>
+      <topic label="bsn" href="docs/macros/bsn.html"/>
+      <topic label="bytes ( ';' LONG )*" href="docs/macros/bytes.html"/>
+      <topic label="cat ';' FILEPATH" href="docs/macros/cat.html"/>
+      <topic label="classes ( ; QUERY ( ; PATTERN )? )*" href="docs/macros/classes.html"/>
+      <topic label="compare STRING STRING" href="docs/macros/compare.html"/>
+      <topic label="currenttime" href="docs/macros/currenttime.html"/>
+      <topic label="decorated ';' NAME [ ';' BOOLEAN ]" href="docs/macros/decorated.html"/>
+      <topic label="def ';' KEY (';' STRING)?" href="docs/macros/def.html"/>
+      <topic label="digest ';' ALGORITHM ';' FILE" href="docs/macros/digest.html"/>
+      <topic label="dir ( ';' FILE )*" href="docs/macros/dir.html"/>
+      <topic label="driver ( ';' NAME )?" href="docs/macros/driver.html"/>
+      <topic label="ee" href="docs/macros/ee.html"/>
+      <topic label="endswith ';' STRING ';' SUFFIX" href="docs/macros/endswith.html"/>
+      <topic label="env ';' KEY (';' STRING)?" href="docs/macros/env.html"/>
+      <topic label="error ( ';' STRING )*" href="docs/macros/error.html"/>
+      <topic label="exporters ';' PACKAGE" href="docs/macros/exporters.html"/>
+      <topic label="exports" href="docs/macros/exports.html"/>
+      <topic label="extension ';' PATH" href="docs/macros/extension.html"/>
+      <topic label="fileuri ';' PATH" href="docs/macros/fileuri.html"/>
+      <topic label="filter ';' LIST ';' REGEX" href="docs/macros/filter.html"/>
+      <topic label="filterout ';' LIST ';' REGEX" href="docs/macros/filterout.html"/>
+      <topic label="find ';' VALUE ';' SEARCHED" href="docs/macros/find.html"/>
+      <topic label="findfile" href="docs/macros/findfile.html"/>
+      <topic label="findlast ';' VALUE ';' SEARCHED" href="docs/macros/findlast.html"/>
+      <topic label="findname" href="docs/macros/findname.html"/>
+      <topic label="findpath ';' REGEX ( ';' REPLACE )?" href="docs/macros/findpath.html"/>
+      <topic label="findproviders  ';' namespace ( ';' FILTER ( ';' STRATEGY)? )?" href="docs/macros/findproviders.html"/>
+      <topic label="first (';' LIST )*" href="docs/macros/first.html"/>
+      <topic label="fmodified ( ';' RESOURCE )+" href="docs/macros/fmodified.html"/>
+      <topic label="foreach ';' MACRO (';' LIST)*" href="docs/macros/foreach.html"/>
+      <topic label="format ';' STRING (';' ANY )*" href="docs/macros/format.html"/>
+      <topic label="frange ';' VERSION ( ';' BOOLEAN )?" href="docs/macros/frange.html"/>
+      <topic label="gestalt ';' NAME ( ';' NAME (';' ANY )? )?" href="docs/macros/gestalt.html"/>
+      <topic label="get ';' INDEX (';' LIST )*" href="docs/macros/get.html"/>
+      <topic label="githead" href="docs/macros/githead.html"/>
+      <topic label="glob ';' GLOBEXP" href="docs/macros/glob.html"/>
+      <topic label="global ';' KEY ( ';' DEFAULT )?" href="docs/macros/global.html"/>
+      <topic label="ide ';' ( 'javac.target' | 'javac.source' )" href="docs/macros/ide.html"/>
+      <topic label="if ';' STRING ';' STRING ( ';' STRING )?" href="docs/macros/if.html"/>
+      <topic label="imports" href="docs/macros/imports.html"/>
+      <topic label="indexof ';' STRING (';' LIST )*" href="docs/macros/indexof.html"/>
+      <topic label="is ( ';' ANY )*" href="docs/macros/is.html"/>
+      <topic label="isdir ( ';' FILE )+" href="docs/macros/isdir.html"/>
+      <topic label="isempty ( ';' STRING )*" href="docs/macros/isempty.html"/>
+      <topic label="isfile (';' FILE )+" href="docs/macros/isfile.html"/>
+      <topic label="isnumber ( ';' STRING )*" href="docs/macros/isnumber.html"/>
+      <topic label="join ( ';' LIST )+" href="docs/macros/join.html"/>
+      <topic label="js (';' JAVASCRIPT )*" href="docs/macros/js.html"/>
+      <topic label="last (';' LIST )*" href="docs/macros/last.html"/>
+      <topic label="lastindexof ';' STRING (';' LIST )*" href="docs/macros/lastindexof.html"/>
+      <topic label="length STRING" href="docs/macros/length.html"/>
+      <topic label="list (';' KEY)*" href="docs/macros/list.html"/>
+      <topic label="literal ';' STRING" href="docs/macros/literal.html"/>
+      <topic label="long2date" href="docs/macros/long2date.html"/>
+      <topic label="lsa ';' DIR (';' SELECTORS )" href="docs/macros/lsa.html"/>
+      <topic label="lsr ';' DIR (';' SELECTORS )" href="docs/macros/lsr.html"/>
+      <topic label="map ';' MACRO (';' LIST)*" href="docs/macros/map.html"/>
+      <topic label="matches STRING REGEX" href="docs/macros/matches.html"/>
+      <topic label="maven_version ';' MAVEN-VERSION" href="docs/macros/maven_version.html"/>
+      <topic label="max (';' LIST )*" href="docs/macros/max.html"/>
+      <topic label="md5 ';' RESOURCE" href="docs/macros/md5.html"/>
+      <topic label="min (';' LIST )*" href="docs/macros/min.html"/>
+      <topic label="native_capability ( ';' ( 'os.name' | 'os.version' | 'os.processor' ) '=' STRING )*" href="docs/macros/native_capability.html"/>
+      <topic label="ncompare NUMBER NUMBER" href="docs/macros/ncompare.html"/>
+      <topic label="nmax (';' LIST )*" href="docs/macros/nmax.html"/>
+      <topic label="nmin (';' LIST )*" href="docs/macros/nmin.html"/>
+      <topic label="now ( 'long' | DATEFORMAT )" href="docs/macros/now.html"/>
+      <topic label="nsort (';' LIST )+" href="docs/macros/nsort.html"/>
+      <topic label="osfile ';' DIR ';' NAME" href="docs/macros/osfile.html"/>
+      <topic label="p_allsourcepath" href="docs/macros/p_allsourcepath.html"/>
+      <topic label="p_bootclasspath" href="docs/macros/p_bootclasspath.html"/>
+      <topic label="p_buildpath" href="docs/macros/p_buildpath.html"/>
+      <topic label="p_dependson" href="docs/macros/p_dependson.html"/>
+      <topic label="p_output" href="docs/macros/p_output.html"/>
+      <topic label="p_sourcepath" href="docs/macros/p_sourcepath.html"/>
+      <topic label="p_testpath" href="docs/macros/p_testpath.html"/>
+      <topic label="packageattribute ';' PACKAGE (';' ATTRIBUTE)?" href="docs/macros/packageattribute.html"/>
+      <topic label="packages" href="docs/macros/packages.html"/>
+      <topic label="path ( ';' FILES )+" href="docs/macros/path.html"/>
+      <topic label="pathseparator" href="docs/macros/pathseparator.html"/>
+      <topic label="permissions (';' ( 'packages' | 'admin' | 'permissions' ) )+" href="docs/macros/permissions.html"/>
+      <topic label="propertiesdir" href="docs/macros/propertiesdir.html"/>
+      <topic label="propertiesname" href="docs/macros/propertiesname.html"/>
+      <topic label="rand (';' MIN ' (;' MAX )?)?" href="docs/macros/rand.html"/>
+      <topic label="random" href="docs/macros/random.html"/>
+      <topic label="range ';' RANGE_MASK ( ';' VERSION )" href="docs/macros/range.html"/>
+      <topic label="reject ';' LIST ';' REGEX" href="docs/macros/reject.html"/>
+      <topic label="removeall ';' LIST ';' LIST" href="docs/macros/removeall.html"/>
+      <topic label="replace ';' LIST ';' REGEX (';' STRING (';' STRING)? )?" href="docs/macros/replace.html"/>
+      <topic label="replacelist ';' LIST ';' REGEX (';' STRING (';' STRING)? )?" href="docs/macros/replacelist.html"/>
+      <topic label="replacestring ';' STRING ';' REGEX (';' STRING )?" href="docs/macros/replacestring.html"/>
+      <topic label="repo ';' BSN ( ';' VERSION ( ';' STRATEGY )? )?" href="docs/macros/repo.html"/>
+      <topic label="repodigests ( ';' NAME )*" href="docs/macros/repodigests.html"/>
+      <topic label="repos" href="docs/macros/repos.html"/>
+      <topic label="retainall ';' LIST ';' LIST" href="docs/macros/retainall.html"/>
+      <topic label="reverse (';' LIST )*" href="docs/macros/reverse.html"/>
+      <topic label="select ';' LIST ';' REGEX" href="docs/macros/select.html"/>
+      <topic label="separator" href="docs/macros/separator.html"/>
+      <topic label="sha1 ';' RESOURCE" href="docs/macros/sha1.html"/>
+      <topic label="size ( ';' LIST )*" href="docs/macros/size.html"/>
+      <topic label="sjoin ';' SEPARATOR ( ';' LIST )+" href="docs/macros/sjoin.html"/>
+      <topic label="sort (';' LIST )+" href="docs/macros/sort.html"/>
+      <topic label="split ';' REGEX (';' STRING )*" href="docs/macros/split.html"/>
+      <topic label="startswith ';' STRING ';' PREFIX" href="docs/macros/startswith.html"/>
+      <topic label="stem ';' STRING" href="docs/macros/stem.html"/>
+      <topic label="sublist ';' START ';' END (';' LIST )*" href="docs/macros/sublist.html"/>
+      <topic label="subst ';' STRING ';' REGEX (';' STRING (';' NUMBER )? )?" href="docs/macros/subst.html"/>
+      <topic label="substring ';' STRING ';' START ( ';' END )?" href="docs/macros/substring.html"/>
+      <topic label="sum (';' LIST )*" href="docs/macros/sum.html"/>
+      <topic label="system ';' STRING ( ';' STRING )?" href="docs/macros/system.html"/>
+      <topic label="system_allow_fail ';' STRING ( ';' STRING )?" href="docs/macros/system_allow_fail.html"/>
+      <topic label="template ';' NAME [ ';' template ]+" href="docs/macros/template.html"/>
+      <topic label="thisfile" href="docs/macros/thisfile.html"/>
+      <topic label="toclasspath ';' LIST ( ';' BOOLEAN )?" href="docs/macros/toclaspath.html"/>
+      <topic label="toclassname ';' FILES" href="docs/macros/toclassname.html"/>
+      <topic label="tolower STRING" href="docs/macros/tolower.html"/>
+      <topic label="toupper STRING" href="docs/macros/toupper.html"/>
+      <topic label="trim ';' STRING" href="docs/macros/trim.html"/>
+      <topic label="tstamp ( ';' DATEFORMAT ( ';' TIMEZONE ( ';' LONG )? )? )?" href="docs/macros/tstamp.html"/>
+      <topic label="unescape ( ';' STRING )*" href="docs/macros/unescape.html"/>
+      <topic label="uniq (';' LIST )*" href="docs/macros/uniq.html"/>
+      <topic label="uri ';' URI (';' URI)?" href="docs/macros/uri.html"/>
+      <topic label="user ';' KEY ( ';' DEFAULT )?" href="docs/macros/user.html"/>
+      <topic label="vcompare VERSION VERSION" href="docs/macros/vcompare.html"/>
+      <topic label="version MASK VERSION?" href="docs/macros/version.html"/>
+      <topic label="version_cleanup ';' VERSION" href="docs/macros/version_cleanup.html"/>
+      <topic label="versionmask MASK VERSION?" href="docs/macros/versionmask.html"/>
+      <topic label="vmax (';' LIST )*" href="docs/macros/vmax.html"/>
+      <topic label="vmin (';' LIST )*" href="docs/macros/vmin.html"/>
+      <topic label="warning ( ';' STRING )*" href="docs/macros/warning.html"/>
+      <topic label="workspace" href="docs/macros/workspace.html"/>
+   </topic>
+   <topic label="Commands Reference" href="docs/commands/index.html">
+      <topic label="action" href="docs/commands/action.html"/>
+      <topic label="add" href="docs/commands/add.html"/>
+      <topic label="baseline" href="docs/commands/baseline.html"/>
+      <topic label="bash" href="docs/commands/bash.html"/>
+      <topic label="bnd" href="docs/commands/bnd.html"/>
+      <topic label="bootstrap" href="docs/commands/bootstrap.html"/>
+      <topic label="bsn2url" href="docs/commands/bsn2url.html"/>
+      <topic label="build" href="docs/commands/build.html"/>
+      <topic label="buildtool" href="docs/commands/buildtool.html"/>
+      <topic label="buildx" href="docs/commands/buildx.html"/>
+      <topic label="bump" href="docs/commands/bump.html"/>
+      <topic label="changes" href="docs/commands/changes.html"/>
+      <topic label="classpath" href="docs/commands/classpath.html"/>
+      <topic label="classtoresource" href="docs/commands/classtoresource.html"/>
+      <topic label="clean" href="docs/commands/clean.html"/>
+      <topic label="collect" href="docs/commands/collect.html"/>
+      <topic label="com" href="docs/commands/com.html"/>
+      <topic label="compile" href="docs/commands/compile.html"/>
+      <topic label="convert" href="docs/commands/convert.html"/>
+      <topic label="copy" href="docs/commands/copy.html"/>
+      <topic label="create" href="docs/commands/create.html"/>
+      <topic label="debug" href="docs/commands/debug.html"/>
+      <topic label="defaults" href="docs/commands/defaults.html"/>
+      <topic label="deliverables" href="docs/commands/deliverables.html"/>
+      <topic label="dependencies" href="docs/commands/dependencies.html"/>
+      <topic label="dev" href="docs/commands/dev.html"/>
+      <topic label="diff" href="docs/commands/diff.html"/>
+      <topic label="digest" href="docs/commands/digest.html"/>
+      <topic label="do" href="docs/commands/do.html"/>
+      <topic label="eclipse" href="docs/commands/eclipse.html"/>
+      <topic label="ees" href="docs/commands/ees.html"/>
+      <topic label="export" href="docs/commands/export.html"/>
+      <topic label="exportreport" href="docs/commands/exportreport.html"/>
+      <topic label="extract" href="docs/commands/extract.html"/>
+      <topic label="find" href="docs/commands/find.html"/>
+      <topic label="flatten" href="docs/commands/flatten.html"/>
+      <topic label="generate" href="docs/commands/generate.html"/>
+      <topic label="generatemanual" href="docs/commands/generatemanual.html"/>
+      <topic label="gmd" href="docs/commands/gmd.html"/>
+      <topic label="graph" href="docs/commands/graph.html"/>
+      <topic label="grep" href="docs/commands/grep.html"/>
+      <topic label="info" href="docs/commands/info.html"/>
+      <topic label="junit" href="docs/commands/junit.html"/>
+      <topic label="macro" href="docs/commands/macro.html"/>
+      <topic label="maven ( 'settings' | 'bundle'" href="docs/commands/maven.html"/>
+      <topic label="mbr" href="docs/commands/mbr.html"/>
+      <topic label="nexus" href="docs/commands/nexus.html"/>
+      <topic label="package" href="docs/commands/package.html"/>
+      <topic label="packagetoresource" href="docs/commands/packagetoresource.html"/>
+      <topic label="plugins" href="docs/commands/plugins.html"/>
+      <topic label="print" href="docs/commands/print.html"/>
+      <topic label="profile" href="docs/commands/profile.html"/>
+      <topic label="project" href="docs/commands/project.html"/>
+      <topic label="properties" href="docs/commands/properties.html"/>
+      <topic label="release" href="docs/commands/release.html"/>
+      <topic label="remote" href="docs/commands/remote.html"/>
+      <topic label="remove" href="docs/commands/remove.html"/>
+      <topic label="repo" href="docs/commands/repo.html"/>
+      <topic label="resolve" href="docs/commands/resolve.html"/>
+      <topic label="run" href="docs/commands/run.html"/>
+      <topic label="runtests" href="docs/commands/runtests.html"/>
+      <topic label="schema" href="docs/commands/schema.html"/>
+      <topic label="select" href="docs/commands/select.html"/>
+      <topic label="settings" href="docs/commands/settings.html"/>
+      <topic label="shell [options]" href="docs/commands/shell.html"/>
+      <topic label="source" href="docs/commands/source.html"/>
+      <topic label="sync" href="docs/commands/sync.html"/>
+      <topic label="syntax" href="docs/commands/syntax.html"/>
+      <topic label="test" href="docs/commands/test.html"/>
+      <topic label="type" href="docs/commands/type.html"/>
+      <topic label="verify" href="docs/commands/verify.html"/>
+      <topic label="version" href="docs/commands/version.html"/>
+      <topic label="view" href="docs/commands/view.html"/>
+      <topic label="wrap" href="docs/commands/wrap.html"/>
+      <topic label="xmlrepodiff" href="docs/commands/xmlrepodiff.html"/>
+      <topic label="xref" href="docs/commands/xref.html"/>
+   </topic>
+</toc>

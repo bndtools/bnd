@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>p_testpath</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>p_testpath</h1>
+<hr />
+<p>layout: default
+class:  Project
+title:  p_testpath
+summary: Get the project's test runtime path</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>p_testpath</code> macro returns the test runtime path (JARs placed on the classpath for testing) as a comma-separated list of file paths.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${p_testpath}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns all JARs on the test runtime path</li>
+<li>Paths are absolute</li>
+<li>Results are comma-separated</li>
+<li>Includes all <code>-runpath</code> entries for testing</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get test path:</p>
+<div class="highlight"><pre><span></span><code>Test-Dependencies: ${p_testpath}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Listing test runtime dependencies</li>
+<li>Test configuration</li>
+<li>Dependency documentation</li>
+<li>Build metadata</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns absolute paths</li>
+<li>Includes <code>-runpath</code> entries</li>
+<li>Used for test execution</li>
+<li>See also: <code>${p_buildpath}</code> for compile dependencies</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-check 'ALL' | ( 'IMPORTS' | 'EXPORTS' ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-check 'ALL' | ( 'IMPORTS' | 'EXPORTS' ) *</h1>
+<ul>
+<li>
+<p>Example: <code>-check=EXPORTS</code></p>
+</li>
+<li>
+<p>Values: <code>(ALL|EXPORTS|IMPORTS)</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/check.md -->
+<p>Adding extra checks to bnd will break existing builds and some people get a tad upset about that. However, some checks are actually really valuable. So this instruction is a contract. New checks that can break build will add additional enums to this list. So in theory builds should not be broken. Currently we have the following values defined</p>
+<ul>
+<li><code>ALL</code> – Enable all checking, including checks that are added in the future. So for <code>ALL</code>, one day we might break your build. Your choice. Then again, this is the wisest choice since the checks we do are really useful to know if they are not satisfied.</li>
+<li><code>EXPORTS</code> – Enable checking for exports. This checks if an exported package has contents.</li>
+<li>
+<p><code>IMPORTS</code> – Enable checking of imports. If an import is not exported by any bundle on the <code>-buildpath</code> then we have a bit of a problem. Trying to resolve the current bundle on a framework will almost certainly fail. If you really need an import but have no export then you can get rid of the warning by explicitly importing it in Import-Package. For example:</p>
+<p>Import-Package: i.do.no.exist;version=@1.0.0, *</p>
+</li>
+</ul>
+<p><br /><br /></p>
+</body>
+</html>

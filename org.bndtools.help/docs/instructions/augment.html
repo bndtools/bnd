@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-augment PARAMETER ( ',' PARAMETER ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-augment PARAMETER ( ',' PARAMETER ) *</h1>
+<ul>
+<li>
+<p>Example: <code>-augment: com.example.prime; capability:='osgi.extender; osgi.extender=osgi.component; version:Version=1.2'</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="directives">Directives</h3>
+<ul>
+<li><code>capability:</code> This directive specifies a Provide-Capability instruction, this will therefore likely have to be quoted. Any number of clauses can be specified.</li>
+<li>
+<p>Example: <code>capability:=osgi.extender; osgi.extender=osgi.component; version:Version=1.2</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>requirement:</code> The directive specifies a Require-Capability instruction</p>
+</li>
+<li>
+<p>Example: <code>requirement:=osgi.identity;filter:="(osgi.identity=a.b.c)"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>version:</code>  A version range. If a single version is given it will be used as [<version>,∞). The version range can be prefixed with an ‘@’ for a consumer range (to the next major) or a provider range (to the next minor) when the ‘@’ is a suffix of the version. The range can restrict the augmentation to a limited set of bundles.</p>
+</li>
+<li>Pattern: <code>.*</code></li>
+</ul>
+<!-- Manual content from: ext/augment.md -->
+<p>The <code>-augment</code> instruction can be used to <em>augment</em> resources in the repositories. Augmenting is adding additional capabilities and requirements. When bnd resolves a project or bndrun file then, it will read this variable (it is a merge property so you can also use additional keys like <code>-augment.xyz</code>) and use it to <em>decorate</em> the repository entries.</p>
+<p>The key of the <code>PARAMETER</code> is for the bundle symbolic name. It can contain the * wildcard character to match multiple bundles. The bundle symbolic name must be allowed as a value in a filter it is therefore <strong>not</strong> a globbing expression. </p>
+<p>The following directives and attribute are architected:</p>
+<ul>
+<li><code>version</code> – A version range. If a single version is given it will be used as <code>[&lt;version&gt;,∞)</code>. The version range can be prefixed with an '@' for a consumer range (to the next major) or a provider range (to the next minor) when the '@' is a suffix of the version. The range can restrict the augmentation to a limited set of bundles. </li>
+<li><code>capability:</code> – The <code>capability:</code> directive specifies a <code>Provide-Capability</code> instruction, this will therefore likely have to be quoted. Any number of clauses can be specified.</li>
+<li><code>requirement:</code> – The <code>requirement:</code> directive specifies a <code>Require-Capability</code> instruction.</li>
+</ul>
+<p>To augment the repositories during a resolve, bnd will find all bundles that match the bundle symbolic name and fall within the defined range. If no range is given, only the bundle symbolic name will constrain the search. Each found bundle will then be decorated with the capabilities and requirements defined in the <code>capability:</code> and <code>requirement:</code> directive.</p>
+<p>For example, we need to provide an extender capability to a bundle with the bundle symbolic name <code>com.example.prime</code>.</p>
+<div class="highlight"><pre><span></span><code>-augment.prime = \
+    com.example.prime; \
+        capability:=&#39;osgi.extender; \
+            osgi.extender=osgi.component; \
+            version:Version=1.2&#39;
+</code></pre></div>
+
+<p>The <code>capability:</code> and <code>requirement:</code> directives follow all the rules of the Provide-Capability and Require-Capability headers respectively. For the resolver, it is as if these headers were specified in their manifests. There is one exception, the <code>cap:</code> and <code>req:</code> directives also support capabilities from the <code>osgi.wiring.*</code> name spaces.</p>
+<h2 id="caveats">Caveats</h2>
+<p>It should be realized that the augmentation is <em>only</em> used during resolving. These requirements &amp; capabilities are <strong>not</strong> added to the actual bundles during runtime. The primary purpose is to ensure that the resolve can properly assemble a system; great care should be taken to not create assemblies that cannot be resolved by the framework.</p>
+<p><br /><br /></p>
+</body>
+</html>
