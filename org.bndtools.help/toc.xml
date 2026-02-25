@@ -476,4 +476,15 @@
       <topic label="xmlrepodiff" href="docs/commands/xmlrepodiff.html"/>
       <topic label="xref" href="docs/commands/xref.html"/>
    </topic>
+   <topic label="Bndtools UI Manual" href="docs/manual/index.html">
+      <topic label="Introduction" href="docs/manual/about.html"/>
+      <topic label="Bndtools Explorer" href="docs/manual/packageexplorer.html"/>
+      <topic label="Bnd Editor" href="docs/manual/bndeditor.html"/>
+      <topic label="JAR Viewer" href="docs/manual/jareditor.html"/>
+      <topic label="Repositories View" href="docs/manual/repositories-view.html"/>
+      <topic label="Resolution View" href="docs/manual/resolution-view.html"/>
+      <topic label="Project Templates" href="docs/manual/templates.html">
+         <topic label="Java OSGi Service" href="docs/manual/templates-osgi-service.html"/>
+      </topic>
+   </topic>
 </toc>
