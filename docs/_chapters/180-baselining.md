@@ -10,7 +10,13 @@ APIs are compared for backward compatibility using the semantic versioning rules
 
 ## Setting Up a Project for Baselining
 
-During the build, bnd will check the [`-baseline` instruction](../instructions/baseline.html) at the end of the build when the JAR is ready. This instruction is a selector on the symbolic name of the building bundle. If it matches, the baselining is started with one exception: the bundle/package version must be 1.0.0 or above. If the version is less (i.e. major version being `0`) no baselining is possible, the purpose is to allow the [primordial baseline to be established without errors](https://semver.org/#spec-item-4).
+During the build, bnd will check the [`-baseline` instruction](../instructions/baseline.html) at the end of the build when the JAR is ready. This instruction is a selector on the symbolic name of the building bundle. If it matches, the baselining is started with one exception: by default, the bundle/package version must be 1.0.0 or above. If the version is less (i.e. major version being `0`) no baselining errors are reported, the purpose is to allow the [primordial baseline to be established without errors](https://semver.org/#spec-item-4).
+
+To enable baselining for versions in the range `[0.1.0, 1.0.0)`, use the [`-baselineincludezeromajor` instruction](../instructions/baselineincludezeromajor.html):
+
+	-baselineincludezeromajor: true
+
+This will enable baseline error reporting for packages with major version `0` (except for `0.0.x` versions which are still excluded).
 
 By default the baseline is a bundle from one of the repositories with the same symbolic name as the building bundle and the highest possible version. However, it is possible to specify the version or to baseline against a file.
 
