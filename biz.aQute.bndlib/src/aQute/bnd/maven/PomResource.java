@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
@@ -141,6 +142,12 @@ public class PomResource extends WriteResource {
 		}
 		if (version == null) {
 			version = "0";
+		}
+
+		// Apply -snapshot instruction transformation to the version
+		String snapshot = processor.getProperty(Constants.SNAPSHOT);
+		if ((snapshot != null) && (version.contains("SNAPSHOT"))) {
+			version = Builder.doSnapshot(version, snapshot);
 		}
 
 		this.groupId = groupId;

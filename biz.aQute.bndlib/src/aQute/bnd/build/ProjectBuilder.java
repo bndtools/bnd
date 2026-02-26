@@ -848,7 +848,26 @@ public class ProjectBuilder extends Builder {
 						run.setProperty(BUNDLE_VERSION, attrs.get(Constants.EXPORT_VERSION));
 					}
 
+					if (run.getProperty(Constants.POM) == null) {
+						String pom = getProperty(Constants.POM);
+						if (pom != null) {
+							run.setProperty(Constants.POM, pom);
+						}
+					}
+
 					attrs.forEach(run::setProperty);
+
+					String runBundleVersion = run.getProperty(BUNDLE_VERSION);
+					String snapshot = run.getProperty(Constants.SNAPSHOT);
+					if ((runBundleVersion != null) && (snapshot != null)) {
+						if (snapshot.isEmpty()) {
+							runBundleVersion = Version.parseVersion(runBundleVersion)
+								.toStringWithoutQualifier();
+						} else if (runBundleVersion.contains("SNAPSHOT")) {
+							runBundleVersion = Builder.doSnapshot(runBundleVersion, snapshot);
+						}
+						run.setProperty(BUNDLE_VERSION, runBundleVersion);
+					}
 
 					Entry<String, Resource> export = run.export(null, attrs);
 					getInfo(run);

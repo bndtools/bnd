@@ -15,4 +15,4 @@ Archive
 .flattened-pom.xml
 target/
 *.code-workspace
-_log/
+bndtools.test/workspace/

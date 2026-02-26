@@ -1,0 +1,20 @@
+# internet maven repo server
+mavencentral:        https://repo.maven.apache.org/maven2/
+releaserepo:         ${workspace}/dist/bundles
+
+-buildrepo: local
+
+# one of Rel_Local, Rel_Reposilite, Rel_Sonatype
+-releaserepo: Rel_Local
+
+-plugin.0.Main:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name="local";\
+        noupdateOnRelease=true
+
+-plugin.90.LocalRelease:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        releaseUrl  = "${fileuri;${releaserepo}}";\
+        snapshotUrl = "${fileuri;${releaserepo}}";\
+        name        = "Rel_Local";\
+        noupdateOnRelease=true

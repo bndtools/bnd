@@ -1273,6 +1273,38 @@ public class ProjectTest {
 		}
 	}
 
+	@Test
+	public void testExportVersionUsesSnapshotInstructionFromWorkspace() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/export"));
+			Project project = ws.getProject("mvn.deploy.bnd")) {
+			File[] files = project.build();
+			assertTrue(project.getErrors()
+				.isEmpty(), "Errors: " + project.getErrors() + " Warnings: " + project.getWarnings());
+			assertNotNull(files);
+
+			File projectJarFile = IO.getFile(project.getBase(), "generated/mvn.deploy.bnd.jar");
+			File exportedJarFile = IO.getFile(project.getBase(), "generated/mvn.deploy.bnd.executable.jar");
+			assertTrue(projectJarFile.isFile(), "project jar should be generated");
+			assertTrue(exportedJarFile.isFile(), "exported executable jar should be generated");
+
+			try (Jar projectJar = new Jar(projectJarFile); Jar exportedJar = new Jar(exportedJarFile)) {
+				String projectVersion = projectJar.getManifest()
+					.getMainAttributes()
+					.getValue(Constants.BUNDLE_VERSION);
+				String exportedVersion = exportedJar.getManifest()
+					.getMainAttributes()
+					.getValue(Constants.BUNDLE_VERSION);
+
+				assertTrue(Pattern.matches("0\\.1\\.2\\.\\d+", projectVersion),
+					"project bundle should keep timestamp qualifier without SNAPSHOT: " + projectVersion);
+				assertEquals("0.1.2", exportedVersion,
+					"exported executable bundle should apply empty -snapshot and remove qualifier");
+				assertFalse(projectVersion.contains("SNAPSHOT"));
+				assertFalse(exportedVersion.contains("SNAPSHOT"));
+			}
+		}
+	}
+
 	private Workspace getWorkspace(File file) throws Exception {
 		IO.copy(file, tmp);
 		return new Workspace(tmp);
