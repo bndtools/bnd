@@ -1,0 +1,14 @@
+-buildpath: \
+	osgi.core,\
+	osgi.enterprise
+
+javac.source:           1.8
+javac.target:           1.8
+javac.compliance:       1.8
+
+Private-Package: io.klib.mvn.deploy.bnd
+
+-export: \
+	mvn-deploy-bnd.bndrun; \
+	name=mvn.deploy.bnd.executable.jar; \
+	bsn=mvn.deploy.bnd.executable
