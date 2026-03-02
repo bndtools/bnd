@@ -116,6 +116,110 @@ This configuration disables Sonatype Portal integration:
 	        name         = "Local Release"; \
 	        sonatypeMode = none
 
+#### Standalone Sonatype Upload (recommended for CI/CD)
+
+For CI/CD pipelines, the recommended approach is to separate building and Sonatype deployment
+using the standalone upload scripts. This avoids the "last artifact" problem inherent in the
+bnd-internal mechanism and works across mixed build systems (bnd workspace, Gradle plugins, Maven plugins).
+
+The workflow is:
+
+1. All builds publish artifacts to a shared local directory (e.g. `dist/bundles`)
+2. A standalone script uploads the entire directory to Sonatype as a single deployment
+3. A status check script verifies the deployment and optionally cleans up
+
+##### Workspace Fragments
+
+Use the provided workspace fragment for configuration:
+
+* `cnf/ext/maven-gav.bnd` – Maven GAV coordinates, Bundle-Vendor, Bundle-Developers, GPG signing
+
+##### Release Upload
+
+Upload release artifacts to Sonatype Central Portal:
+
+	SONATYPE_BEARER=<token> \
+	  ./.github/scripts/sonatype-upload.sh [--publishing-type AUTOMATIC] dist/bundles
+
+GPG signing is handled by the bnd build (via `-maven-release` in `cnf/ext/maven-gav.bnd`)
+and validated by Sonatype during deployment processing.
+
+The script:
+1. Creates a ZIP bundle from the release directory (using `jar cMf`)
+2. Uploads via `POST /api/v1/publisher/upload`
+3. Stores the deployment ID in `<release-dir>_DEPLOYMENTID.txt`
+
+##### Snapshot Upload
+
+Deploy snapshot artifacts to the Sonatype snapshot repository:
+
+	SONATYPE_BEARER=<token> \
+	  ./.github/scripts/sonatype-upload.sh --snapshot dist/bundles
+
+Snapshot deployments use `PUT` requests to upload each artifact individually to
+`https://central.sonatype.com/repository/maven-snapshots/`.
+
+The bnd workspace uses snapshot builds when the `-snapshot:` instruction is commented out
+(prefixed with `#`) in `cnf/build.bnd`. When `-snapshot:` is active (not commented), the
+build produces release versions instead.
+
+##### Deployment Status Check
+
+After uploading, verify the deployment status and optionally clean up:
+
+	# Check release deployment status (reads DEPLOYMENTID from file)
+	SONATYPE_BEARER=<token> \
+	  ./.github/scripts/sonatype-status.sh [--clean] dist/bundles
+
+	# Check snapshot deployment (verifies all jar files are available)
+	SONATYPE_BEARER=<token> \
+	  ./.github/scripts/sonatype-status.sh --snapshot [--clean] dist/bundles
+
+For release deployments, the status script reads the deployment ID from
+`<release-dir>_DEPLOYMENTID.txt` and queries `/api/v1/publisher/status`.
+
+For snapshot deployments, the status script compares all jar files in the
+deployment folder against the snapshot repository URL.
+
+The `--clean` flag removes the release directory after a successful status check,
+preparing it for the next deployment cycle.
+
+##### Gradle Integration
+
+To call the Sonatype upload after a successful Gradle publish, add a task to your `build.gradle`
+(adjust the script path to match your project structure):
+
+	tasks.register('sonatypeUpload', Exec) {
+	    dependsOn ':publish'
+	    group = 'publishing'
+	    description = 'Upload artifacts to Sonatype Central Portal'
+	    commandLine './.github/scripts/sonatype-upload.sh', 'dist/bundles'
+	    environment 'SONATYPE_BEARER', System.getenv('SONATYPE_BEARER') ?: ''
+	}
+
+##### Maven Integration
+
+To call the Sonatype upload after a successful Maven deploy, use the `exec-maven-plugin`
+(adjust the script path to match your project structure):
+
+	<plugin>
+	    <groupId>org.codehaus.mojo</groupId>
+	    <artifactId>exec-maven-plugin</artifactId>
+	    <executions>
+	        <execution>
+	            <id>sonatype-upload</id>
+	            <phase>deploy</phase>
+	            <goals><goal>exec</goal></goals>
+	            <configuration>
+	                <executable>./.github/scripts/sonatype-upload.sh</executable>
+	                <arguments>
+	                    <argument>dist/bundles</argument>
+	                </arguments>
+	            </configuration>
+	        </execution>
+	    </executions>
+	</plugin>
+
 
 
 ### Use of .m2 Local Repository

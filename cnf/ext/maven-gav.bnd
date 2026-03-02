@@ -1,0 +1,87 @@
+# ---- Maven GAV & Bundle Metadata ----------------------------------------
+# This workspace fragment provides Maven coordinate configuration,
+# bundle vendor information, and developer metadata.
+#
+# These settings are used by the MavenBndRepository plugin for POM
+# generation and by the OSGi bundle manifest headers.
+#
+# Place this file in cnf/ext/ to have it automatically loaded by the
+# bnd workspace.
+# -------------------------------------------------------------------------
+
+# Maven groupId – defaults to Bundle-SymbolicName for artifactId
+-groupid:               biz.aQute.bnd
+
+# Maven POM version mapping:
+#   - If -snapshot is set: <major>.<minor>.<micro>-<snapshot> (e.g. 7.3.0-RC1)
+#   - If -snapshot is unset: <major>.<minor>.<micro>.<qualifier> (e.g. 7.3.0.202601011200)
+-pom: version=${if;${def;-snapshot};${versionmask;===;${@version}}-${def;-snapshot};${versionmask;===s;${@version}}}
+
+# Maven release configuration: generates POM, javadoc, and GPG signatures
+# GPG signing is only active when GPG_KEY_ID and GPG_PASSPHRASE are set
+-maven-release:         \
+    pom;path=JAR,\
+	javadoc;-classpath="${project.buildpath}",\
+	sign;keyname=${env;GPG_KEY_ID};passphrase=${env;GPG_PASSPHRASE}
+
+# Suppress the warning if keyname/passphrase is empty (needed to avoid failing the build when not signing)
+-fixupmessages.releasesign: "No value after '=' sign for attribute (passphrase|keyname)"
+
+# GPG binary configuration
+gpg: gpg --homedir ${def;USERHOME;~}/.gnupg --pinentry-mode loopback
+
+# ---- Bundle Metadata ----------------------------------------------------
+
+Bundle-Vendor:          Bndtools https://bndtools.org/
+Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-DocURL:          https://bnd.bndtools.org/
+
+SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)
+Bundle-License:         "${SPDX-License-Identifier}";\
+                        description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0, or the Eclipse Public License 2.0.";\
+                        link="https://opensource.org/licenses/Apache-2.0,https://opensource.org/licenses/EPL-2.0"
+
+Bundle-SCM:             url=https://github.com/bndtools/bnd,\
+                        connection=scm:git:https://github.com/bndtools/bnd.git,\
+                        developerConnection=scm:git:git@github.com:bndtools/bnd.git,\
+                        tag=${base.version}${if;${def;-snapshot;SNAPSHOT};-${def;-snapshot;SNAPSHOT}}
+
+Bundle-Developers: \
+    pkriens; \
+        email=Peter.Kriens@aQute.biz; \
+        name="Peter Kriens"; \
+        organization=Bndtools; \
+        organizationUrl=https://github.com/bndtools; \
+        roles="architect,developer"; \
+        timezone=1, \
+    bjhargrave; \
+        name="BJ Hargrave"; \
+        email="bj@hargrave.dev"; \
+        url="https://github.com/bjhargrave"; \
+        organization="IBM"; \
+        organizationUrl="https://developer.ibm.com"; \
+        roles="developer"; \
+        timezone="America/New_York", \
+    rotty3000; \
+        name="Ray Augé"; \
+        email="raymond.auge@liferay.com"; \
+        url="https://rotty3000.github.io"; \
+        organization="Liferay Inc."; \
+        organizationUrl="https://www.liferay.com"; \
+        roles="developer"; \
+        timezone="America/New_York",\
+    chrisrueger; \
+        name="Christoph Rueger"; \
+        email="chrisrueger@gmail.com"; \
+        organization="Synesty GmbH"; \
+        organizationUrl="https://synesty.com/"; \
+        roles="developer"; \
+        timezone="Europe/Berlin",\
+    peterkir; \
+        name="Peter Kirschner"; \
+        email="peter@klib.io"; \
+        url="https://peterkir.github.io"; \
+        organization="Kirschners GmbH"; \
+        organizationUrl="https://peterkir.github.io/"; \
+        roles="developer"; \
+        timezone="Europe/Berlin"

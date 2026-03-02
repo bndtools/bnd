@@ -79,7 +79,7 @@ jobs:
       run: |
         ./.github/scripts/rebuild-build.sh
     - name: Upload dist/bundles
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
       with:
         name: Dist_Bundles_JDK${{ matrix.java }}_${{ matrix.os }}
         if-no-files-found: error
@@ -118,7 +118,7 @@ jobs:
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
     - name: Download dist/bundles
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+      uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
       with:
         name: ${{ needs.build.outputs.dist-bundles }}
         path: dist/bundles
@@ -128,7 +128,7 @@ jobs:
         ${{ format(matrix.runner, './.github/scripts/rebuild-test.sh') }}
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
       with:
         name: Rebuild_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
         path: |
@@ -138,9 +138,40 @@ jobs:
           gradle-plugins/build/reports/*
     - name: Upload Rebuild P2 Repo artifact
       if: ${{ github.event_name == 'pull_request' }}
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
       with:
         name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
         path: |
           org.bndtools.p2/generated/org.bndtools.p2.jar
         retention-days: 7   # keep for 7 days
+    - name: Publish PR p2 repo
+      if: ${{ github.event_name == 'pull_request' && matrix.java == '17' }}
+      run: |
+        ls -laR org.bndtools.p2/*
+        env | sort
+        PR=${{ github.event.pull_request.number }}
+        ARTIFACT_PATH="org.bndtools.p2/generated/org.bndtools.p2.jar"
+        if [ -f "$ARTIFACT_PATH" ] && [ "$PR" != "" ]; then
+          echo "artifact found - start upload check"
+          if curl --silent --head --fail "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}" > /dev/null; then
+          echo "URL already existing - delete previous deployment"
+          curl -s -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
+            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
+          fi
+          echo "upload p2 repo to https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
+            -H "X-Explode-Archive: true" \
+            -T "$ARTIFACT_PATH" \
+            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}/org.bndtools.p2.zip"
+          if [ $? -eq 0 ]; then
+            echo "upload successful"
+          else
+            echo "upload failed"
+          fi
+        else
+          echo "Artifact $ARTIFACT_PATH not found, skipping upload."
+        fi
+      env:
+        JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
