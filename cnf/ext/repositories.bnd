@@ -95,4 +95,4 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
 -releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
 -releaserepo.sonatype: ${if;${env;CANONICAL};${if;${env;SONATYPE};Sonatype}}
 
--baselinerepo: Baseline
+#-baselinerepo: Baseline

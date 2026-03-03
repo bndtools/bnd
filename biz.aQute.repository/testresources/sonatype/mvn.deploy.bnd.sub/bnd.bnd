@@ -1,4 +1,0 @@
--sub: *.bnd
--buildpath: \
-	osgi.core,\
-	osgi.enterprise

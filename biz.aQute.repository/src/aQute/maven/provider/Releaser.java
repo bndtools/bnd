@@ -4,25 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.StringJoiner;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
-import aQute.bnd.repository.maven.provider.MavenBndRepository;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
@@ -46,13 +33,6 @@ class Releaser implements Release {
 	private Properties					context;
 	private String						keyname;
 	private String						passphrase;
-	private HttpClient					client;
-	private String						deploymentId;
-	private final static Logger			logger			= LoggerFactory.getLogger(Releaser.class);
-
-	private static final String			UPLOAD_ENDPOINT	= "/upload";
-	private static final String			STATUS_ENDPOINT	= "/status";
-	private String						publisherUrl;
 
 	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo, Properties context)
 		throws Exception {
@@ -61,11 +41,6 @@ class Releaser implements Release {
 		this.repo = repo;
 		this.context = context;
 		this.dir = home.toLocalFile(revision.path);
-
-		// Get HttpClient from the repo if it's a remote repository
-		if (repo instanceof MavenRemoteRepository) {
-			this.client = ((MavenRemoteRepository) repo).client;
-		}
 
 		IO.delete(this.dir);
 		check();
@@ -84,16 +59,8 @@ class Releaser implements Release {
 				IO.store(localMetadata.toString(), metafile);
 
 				if (!localOnly) {
-					Iterator<Archive> iterator = upload.iterator();
-					uploadAll(iterator);
+					uploadAll(upload.iterator());
 					updateMetadata();
-				}
-				String isStartSonatypePublish = context.getProperty("startSonatypePublish", "false");
-				if (Boolean.parseBoolean(isStartSonatypePublish)) {
-					switch (home.getSonatypeMode()) {
-						case NONE -> logger.info("Sonatype mode is 'none', nothing to do");
-						case MANUAL, AUTOPUBLISH -> prepareSonatypeUpload(localMetadata.version.isSnapshot());
-					}
 				}
 				home.clear(revision);
 			}
@@ -102,66 +69,6 @@ class Releaser implements Release {
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
-	}
-
-	private void prepareSonatypeUpload(boolean isSnapshot) throws IOException, Exception {
-		MavenBackingRepository mbr = null;
-
-		List<MavenBackingRepository> releaseRepositories = new ArrayList<MavenBackingRepository>();
-		if (isSnapshot) {
-			publisherUrl = normalize(home.getSonatypePublishSnapshotUrl());
-			releaseRepositories = home.getSnapshotRepositories();
-		} else {
-			publisherUrl = normalize(home.getSonatypePublisherUrl());
-			mbr = home.getStagingRepository();
-			if (mbr != null) {
-				releaseRepositories.add(mbr);
-			} else {
-				releaseRepositories = home.getReleaseRepositories();
-			}
-		}
-		if (releaseRepositories.isEmpty()) {
-			throw new IllegalStateException("No release/snapshot repository configured for Sonatype upload");
-		} else {
-			mbr = releaseRepositories.get(0);
-		}
-
-		logger.info("Creating and uploading deployment bundles for Sonatype Central Portal");
-		MavenFileRepository mfr = (MavenFileRepository) mbr;
-		client = mfr.getClient();
-
-		// Create archives for each groupId
-		List<MavenFileRepository.GroupIdArchive> archives = mfr.createZipArchive();
-		if (archives.isEmpty()) {
-			throw new IllegalStateException("No groupIds found in staging repository");
-		}
-
-		logger.info("Found {} groupId(s) to upload", archives.size());
-
-		// Upload each archive separately
-		for (MavenFileRepository.GroupIdArchive archive : archives) {
-			logger.info("Processing groupId: {}", archive.groupId);
-			uploadToPortal(archive.archiveFile);
-
-			// Store deployment ID file with groupId in filename
-			String sanitizedGroupId = archive.getSanitizedGroupId();
-			File deploymentIdFile = Files.createTempFile(sanitizedGroupId + "_deploymentid", ".txt")
-				.toFile();
-			Files.writeString(deploymentIdFile.toPath(), deploymentId, StandardOpenOption.CREATE);
-			deploymentIdFile.deleteOnExit();
-
-			String deploymentIdPath = sanitizedGroupId + "_" + MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE;
-			mbr.store(deploymentIdFile, deploymentIdPath);
-			logger.info("Completed upload for groupId: {} with deployment ID: {}", archive.groupId, deploymentId);
-		}
-	}
-
-	private String normalize(String sonatypePublisherUrl) {
-		String uploadUrl = sonatypePublisherUrl;
-		if (uploadUrl.endsWith("/")) {
-			uploadUrl = uploadUrl.substring(0, uploadUrl.length() - 1);
-		}
-		return uploadUrl;
 	}
 
 	protected RevisionMetadata localMetadata() {
@@ -260,7 +167,8 @@ class Releaser implements Release {
 			MavenRepository.logger.error("something went wrong during upload", e);
 			try {
 				repo.delete(archive.remotePath);
-			} catch (Exception ee) {}
+			} catch (Exception ee) {
+			}
 			throw e;
 		}
 	}
@@ -273,7 +181,9 @@ class Releaser implements Release {
 			.getAbsolutePath() + ".asc");
 		String key = (keyname != null) ? keyname : null;
 		String pass = passphrase.equals("DEFAULT") ? null : passphrase;
-		int result = Signer.sign(f, context.getProperty("gpg", "gpg"), key, pass, sign);
+		int result = Signer.sign(f, context.getProperty("gpg", "gpg"), key,
+			pass,
+			sign);
 		if (result == 0) {
 			repo.store(sign, archive.remotePath + ".asc");
 		} else {
@@ -342,118 +252,6 @@ class Releaser implements Release {
 	@Override
 	public void setPassphrase(String passphrase) {
 		this.passphrase = passphrase;
-	}
-
-	private void uploadToPortal(File deploymentBundle) throws Exception {
-		logger.info("Uploading deployment bundle to Sonatype Central Portal...");
-
-		try {
-			String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
-			File multipartForm = createMultipartForm(deploymentBundle, boundary);
-
-			logger.debug("Upload details: URL={}, Bundle size={} bytes, Multipart size={} bytes", publisherUrl,
-				deploymentBundle.length(), multipartForm.length());
-
-			StringJoiner urlQueryParamJoiner = new StringJoiner("&", "?", "");
-
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss.SSS");
-			String msg = String.format("uploaded from bnd on %s", LocalDateTime.now()
-				.format(dtf));
-			String sonatypeDesc = System.getProperty("bnd.sonatype.release.description", msg);
-			String encodedMsg = URLEncoder.encode(sonatypeDesc, StandardCharsets.UTF_8)
-				.replace("+", "%20");
-			String paramName = !encodedMsg.isEmpty() ? "name=" + encodedMsg : "";
-			urlQueryParamJoiner.add(paramName);
-
-			switch (home.getSonatypeMode()) {
-				case NONE -> throw new IllegalStateException("Sonatype mode is 'none', upload not intended");
-				case MANUAL -> urlQueryParamJoiner.add("publishingType=USER_MANAGED");
-				case AUTOPUBLISH -> urlQueryParamJoiner.add("publishingType=AUTOMATIC");
-			}
-
-			var taggedData = client.build()
-				.headers("Content-Type", "multipart/form-data; boundary=" + boundary)
-				.upload(multipartForm)
-				.post()
-				.asTag()
-				.go(new URI(publisherUrl + urlQueryParamJoiner.toString()).toURL());
-
-			if (taggedData.isOk()) {
-				deploymentId = IO.collect(taggedData.getInputStream());
-				logger.info("Successfully uploaded deployment bundle. Deployment ID: {}", deploymentId);
-				checkDeploymentStatus(deploymentId);
-			} else {
-				// Get error response details
-				String errorBody = "";
-				try {
-					errorBody = IO.collect(taggedData.getInputStream());
-				} catch (Exception e) {
-					logger.warn("Could not read error response body", e);
-				}
-
-				logger.error("Upload failed with HTTP {}: {}", taggedData.getResponseCode(), errorBody);
-				throw new IOException(
-					"Failed to upload deployment bundle. HTTP " + taggedData.getResponseCode() + ": " + errorBody);
-			}
-		} catch (Exception e) {
-			logger.error("Failed to upload to Sonatype Central Portal", e);
-			throw e;
-		}
-	}
-
-	/**
-	 * /** Create a multipart form data file for upload
-	 */
-	private File createMultipartForm(File deploymentBundle, String boundary) throws IOException {
-		File multipartFile = File.createTempFile("multipart-", ".form");
-
-		try (var out = Files.newOutputStream(multipartFile.toPath())) {
-			// Start boundary
-			out.write(("--" + boundary + "\r\n").getBytes());
-			out.write("Content-Disposition: form-data; name=\"bundle\"; filename=\"".getBytes());
-			out.write(deploymentBundle.getName()
-				.getBytes());
-			out.write("\"\r\n".getBytes());
-			out.write("Content-Type: application/zip\r\n\r\n".getBytes());
-
-			// File content
-			Files.copy(deploymentBundle.toPath(), out);
-
-			// End boundary
-			out.write(("\r\n--" + boundary + "--\r\n").getBytes());
-		}
-
-		return multipartFile;
-	}
-
-	private boolean checkDeploymentStatus(String deploymentId) throws Exception {
-
-		if (deploymentId == null || "unknown".equals(deploymentId)) {
-			logger.warn("Cannot check deployment status - deployment ID not available");
-			return false;
-		}
-
-		String statusEndpointUrl = publisherUrl.substring(0, publisherUrl.length() - UPLOAD_ENDPOINT.length())
-			+ STATUS_ENDPOINT;
-		String statusUrl = statusEndpointUrl + "?id=" + deploymentId;
-
-		try {
-			var taggedData = client.build()
-				.post()
-				.asTag()
-				.go(new URI(statusUrl).toURL());
-
-			if (taggedData.isOk()) {
-				String responseBody = IO.collect(taggedData.getInputStream());
-				logger.info("Deployment status check successful. Response: {}", responseBody);
-				return true;
-			} else {
-				logger.warn("Failed to check deployment status. HTTP {}", taggedData.getResponseCode());
-			}
-		} catch (Exception e) {
-			logger.warn("Failed to check deployment status", e);
-		}
-		return false;
 	}
 
 	@Override
