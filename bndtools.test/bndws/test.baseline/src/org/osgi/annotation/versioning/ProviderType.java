@@ -42,7 +42,6 @@ import java.lang.annotation.Target;
  * 
  * @see <a href="http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf"
  *      > Semantic Versioning</a>
- * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)

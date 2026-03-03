@@ -73,7 +73,6 @@ import java.lang.annotation.Target;
  * and used to contribute to a Meta Type Resource document for the bundle.
  *
  * @see "The AD element of a Meta Type Resource."
- * @author $Id$
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)

@@ -42,7 +42,6 @@ import org.osgi.namespace.extender.ExtenderNamespace;
  * and used to generate a Meta Type Resource document for the bundle.
  *
  * @see "The OCD element of a Meta Type Resource."
- * @author $Id$
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)

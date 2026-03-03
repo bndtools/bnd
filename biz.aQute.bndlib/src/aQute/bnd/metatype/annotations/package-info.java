@@ -19,8 +19,6 @@
  * <p>
  * This package is not used at runtime. Annotated classes are processed by tools
  * to generate Meta Type Resources which are used at runtime.
- *
- * @author $Id$
  */
 
 @Version(METATYPE_SPECIFICATION_VERSION)

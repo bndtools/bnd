@@ -42,7 +42,6 @@ import java.lang.annotation.Target;
  * bundle.
  * 
  * @see "Component Property Types."
- * @author $Id$
  * @since 1.4
  */
 @Documented

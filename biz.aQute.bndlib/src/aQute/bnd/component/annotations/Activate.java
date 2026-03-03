@@ -45,7 +45,6 @@ import java.lang.annotation.Target;
  * bundle.
  * 
  * @see "The init, activate, and activation-fields attributes of the component element of a Component Description."
- * @author $Id$
  * @since 1.1
  */
 @Retention(RetentionPolicy.CLASS)

@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
  * {@code Option} information for an {@link AttributeDefinition}.
  *
  * @see AttributeDefinition#options()
- * @author $Id$
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({})

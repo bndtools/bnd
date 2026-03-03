@@ -18,8 +18,6 @@
  * OSGi Bundle Annotations Package Version 1.0.
  * <p>
  * This package is not used at runtime.
- *
- * @author $Id$
  */
 @Version("1.0")
 package aQute.bnd.bundle.annotations;
