@@ -1,6 +1,6 @@
 /**
  */
-@Version("4.7.1")
+@Version("5.0.0")
 package aQute.bnd.build;
 
 import org.osgi.annotation.versioning.Version;
