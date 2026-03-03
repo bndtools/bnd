@@ -1,15 +1,9 @@
 releaserepo:            ${workspace}/dist/bundles
 mavencentral:           https://repo.maven.apache.org/maven2
-ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
-
-sonatype_release:    https://central.sonatype.com/api/v1/publisher/upload/
 sonatype_snapshots:  https://central.sonatype.com/repository/maven-snapshots/
 sonatype_bearer: '${env;SONATYPE_BEARER}'
 
 -connection-settings:\
-   server;    id = ${sonatype_release};\
-        password = ${sonatype_bearer};\
-          verify = false,\
    server;    id = ${sonatype_snapshots};\
         password = ${sonatype_bearer};\
           verify = false,\
@@ -23,7 +17,7 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
     	tags  = 'resolve'; \
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
-        snapshotUrl="${ossrh}";\
+        snapshotUrl="${sonatype_snapshots}";\
         index="${.}/central.mvn";\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
@@ -41,14 +35,6 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
-        noupdateOnRelease=true,\
-    aQute.bnd.repository.maven.provider.MavenBndRepository; \
-    	tags         = '-'; \
-        releaseUrl   = ${sonatype_release}; \
-        snapshotUrl  = ${sonatype_snapshots}; \
-        index        = ${.}/release.maven; \
-        name         = "Sonatype"; \
-        sonatypeMode = manual;\
         noupdateOnRelease=true
 
 # Eclipse Release repository
@@ -93,6 +79,5 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
 -buildrepo: Local
 -releaserepo: Release
 -releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
--releaserepo.sonatype: ${if;${env;CANONICAL};${if;${env;SONATYPE};Sonatype}}
 
 -baselinerepo: Baseline
