@@ -34,13 +34,14 @@ import bndtools.editor.common.BndEditorPart;
 import bndtools.jface.util.FilteredTree;
 import bndtools.jface.util.TreeFilter;
 import bndtools.model.repo.RepositoryBundle;
-import bndtools.model.repo.RepositoryTreeContentProvider;
+import bndtools.model.repo.RepositoryFeature;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
+import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.utils.SelectionDragAdapter;
 
 public class AvailableBundlesPart extends BndEditorPart implements RepositoriesViewRefresher.RefreshModel {
 
-	private final RepositoryTreeContentProvider	contentProvider		= new RepositoryTreeContentProvider(
+	private final SearchableRepositoryTreeContentProvider	contentProvider		= new SearchableRepositoryTreeContentProvider(
 		ResolutionPhase.runtime);
 	private TreeViewer							viewer;
 
@@ -64,6 +65,22 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 																				} else {
 																					select = includedRepos
 																						.contains(repoBundle.getRepo()
+																							.getName());
+																				}
+																			} else if (element instanceof RepositoryFeature) {
+																				// Check RepositoryFeature since both RepositoryBundle and RepositoryFeature extend RepositoryEntry
+																				RepositoryFeature repoFeature = (RepositoryFeature) element;
+																				RepositoryPlugin repo = repoFeature
+																					.getRepo();
+
+																				if (includedRepos == null) {
+																					select = true;
+																				} else if (repo instanceof WorkspaceRepository) {
+																					select = includedRepos
+																						.contains("Workspace");
+																				} else {
+																					select = includedRepos
+																						.contains(repoFeature.getRepo()
 																							.getName());
 																				}
 																			} else {
@@ -102,12 +119,13 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 		FilteredTree ftree = new FilteredTree(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, new TreeFilter() {
 			@Override
 			public boolean isElementSelectable(Object element) {
-				return element instanceof RepositoryBundle || element instanceof Project;
+				return element instanceof RepositoryBundle || element instanceof RepositoryFeature
+					|| element instanceof Project;
 			}
 
 			@Override
 			public boolean isElementVisible(Viewer viewer, Object element) {
-				if (element instanceof RepositoryBundle) {
+				if (element instanceof RepositoryBundle || element instanceof RepositoryFeature) {
 					return super.isLeafMatch(viewer, element);
 				}
 				return true;

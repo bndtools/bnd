@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -26,8 +27,10 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Project;
@@ -35,34 +38,36 @@ import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.service.FeatureProvider;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.version.Version;
+import aQute.p2.provider.Feature;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.EclipseWorkspaceRepository;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
-	private static final String									CACHE_REPOSITORY		= "cache";
-	private static final ILogger								logger					= Logger
+	private static final String									CACHE_REPOSITORY			= "cache";
+	private static final ILogger								logger						= Logger
 		.getLogger(RepositoryTreeContentProvider.class);
 
 	private final EnumSet<ResolutionPhase>						phases;
 
-	private String												rawFilter				= null;
-	private String												wildcardFilter			= null;
+	private String												rawFilter					= null;
+	private String												wildcardFilter				= null;
 	/**
 	 * Number of filter results to keep per repo. This is to avoid memory leaks
 	 * if you search with lots of different filter strings.
 	 */
 	private static final int									MAX_CACHED_FILTER_RESULTS	= 10;
-	private boolean												showRepos				= true;
+	private boolean												showRepos					= true;
 
-	private Requirement											requirementFilter		= null;
+	private Requirement											requirementFilter			= null;
 
-	private final Map<RepositoryPlugin, Map<String, Object[]>>	repoPluginListResults	= new HashMap<>();
+	private final Map<RepositoryPlugin, Map<String, Object[]>>	repoPluginListResults		= new HashMap<>();
 	private StructuredViewer									structuredViewer;
 
 	public RepositoryTreeContentProvider() {
@@ -145,12 +150,32 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (parentElement instanceof RepositoryPlugin) {
 			RepositoryPlugin repo = (RepositoryPlugin) parentElement;
 			result = getRepositoryBundles(repo);
+		} else if (parentElement instanceof RepositoryFeatureResource) {
+			// Handle RepositoryFeatureResource - for now, features from search
+			// have no children
+			// In the future, we could lazy-load the full Feature and show its
+			// children
+			result = new Object[0];
+		} else if (parentElement instanceof RepositoryFeature) {
+			// Check RepositoryFeature BEFORE RepositoryBundle since both extend
+			// RepositoryEntry
+			RepositoryFeature feature = (RepositoryFeature) parentElement;
+			result = new Object[] {
+				new FeatureVersionNode(feature)
+			};
+		} else if (parentElement instanceof FeatureVersionNode) {
+			FeatureVersionNode versionNode = (FeatureVersionNode) parentElement;
+			result = getFeatureChildren(versionNode);
 		} else if (parentElement instanceof RepositoryBundle) {
 			RepositoryBundle bundle = (RepositoryBundle) parentElement;
 			result = getRepositoryBundleVersions(bundle);
 		} else if (parentElement instanceof Project) {
 			Project project = (Project) parentElement;
 			result = getProjectBundles(project);
+		} else if (parentElement instanceof FeatureFolderNode) {
+			FeatureFolderNode folder = (FeatureFolderNode) parentElement;
+			result = folder.getChildren()
+				.toArray();
 		}
 
 		return result;
@@ -164,12 +189,32 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (element instanceof RepositoryBundleVersion) {
 			return ((RepositoryBundleVersion) element).getParentBundle();
 		}
+		if (element instanceof RepositoryFeature) {
+			return ((RepositoryFeature) element).getRepo();
+		}
+		if (element instanceof FeatureVersionNode) {
+			return ((FeatureVersionNode) element).getParent();
+		}
+		if (element instanceof FeatureFolderNode) {
+			return ((FeatureFolderNode) element).getParent();
+		}
+		if (element instanceof IncludedFeatureItem) {
+			return ((IncludedFeatureItem) element).getParent();
+		}
+		if (element instanceof RequiredFeatureItem) {
+			return ((RequiredFeatureItem) element).getParent();
+		}
+		if (element instanceof IncludedBundleItem) {
+			return ((IncludedBundleItem) element).getParent();
+		}
 		return null;
 	}
 
 	@Override
 	public boolean hasChildren(Object element) {
-		return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project;
+		return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project
+			|| element instanceof RepositoryFeature || element instanceof FeatureVersionNode
+			|| element instanceof FeatureFolderNode;
 	}
 
 	private void addRepositoryPlugins(Collection<Object> result, Workspace workspace) {
@@ -267,6 +312,31 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		return null;
 	}
 
+	Object[] getFeatureChildren(FeatureVersionNode versionNode) {
+		// Create three folder nodes for the feature hierarchy
+		List<FeatureFolderNode> folders = new ArrayList<>();
+
+		FeatureFolderNode includedFeaturesFolder = new FeatureFolderNode(versionNode,
+			FeatureFolderNode.FolderType.INCLUDED_FEATURES);
+		if (includedFeaturesFolder.hasChildren()) {
+			folders.add(includedFeaturesFolder);
+		}
+
+		FeatureFolderNode requiredFeaturesFolder = new FeatureFolderNode(versionNode,
+			FeatureFolderNode.FolderType.REQUIRED_FEATURES);
+		if (requiredFeaturesFolder.hasChildren()) {
+			folders.add(requiredFeaturesFolder);
+		}
+
+		FeatureFolderNode includedBundlesFolder = new FeatureFolderNode(versionNode,
+			FeatureFolderNode.FolderType.INCLUDED_BUNDLES);
+		if (includedBundlesFolder.hasChildren()) {
+			folders.add(includedBundlesFolder);
+		}
+
+		return folders.toArray();
+	}
+
 	Object[] getRepositoryBundles(final RepositoryPlugin repoPlugin) {
 		Object[] result = null;
 
@@ -316,11 +386,49 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					}
 					if (bsns != null) {
 						Collections.sort(bsns);
-						jobresult = new RepositoryBundle[bsns.size()];
-						int i = 0;
-						for (String bsn : bsns) {
-							jobresult[i++] = new RepositoryBundle(repoPlugin, bsn);
+
+						// Collect features first
+						List<Object> items = new ArrayList<>();
+
+						if (repoPlugin instanceof FeatureProvider) {
+							try {
+								List<?> features = ((FeatureProvider) repoPlugin).getFeatures();
+								if (features != null) {
+									List<Feature> sortedFeatures = new ArrayList<>();
+									for (Object featureObj : features) {
+										if (featureObj instanceof Feature) {
+											sortedFeatures.add((Feature) featureObj);
+										}
+									}
+									sortedFeatures.sort(Comparator
+										.comparing(Feature::getId, Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
+										.thenComparing(Feature::getVersion,
+											Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER)));
+									for (Feature feature : sortedFeatures) {
+										// Apply wildcardFilter to features,
+										// same as for bundles
+										if (wildcardFilter == null
+											|| matchesWildcard(feature.getId(), wildcardFilter)) {
+											items.add(new RepositoryFeature(repoPlugin, feature));
+										}
+									}
+								}
+							} catch (Exception e) {
+								logger.logError(MessageFormat.format("Error querying features from repository {0}.",
+									repoPlugin.getName()), e);
+							}
 						}
+
+						// Collect bundles. Do not exclude bundles that share an
+						// ID with a
+						// feature (for example org.eclipse.platform can be both
+						// a bundle and
+						// a feature in p2 repositories).
+						for (String bsn : bsns) {
+							items.add(new RepositoryBundle(repoPlugin, bsn));
+						}
+
+						jobresult = items.toArray();
 
 						Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin,
 							p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
@@ -366,19 +474,42 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 	private Object[] searchR5Repository(RepositoryPlugin repoPlugin, Repository osgiRepo) {
 		Object[] result;
-		Set<RepositoryResourceElement> resultSet = new LinkedHashSet<>();
+		Set<Object> resultSet = new LinkedHashSet<>();
 		Map<Requirement, Collection<Capability>> providers = osgiRepo
 			.findProviders(Collections.singleton(requirementFilter));
 
 		for (Entry<Requirement, Collection<Capability>> providersEntry : providers.entrySet()) {
-			for (Capability providerCap : providersEntry.getValue())
-				resultSet.add(new RepositoryResourceElement(repoPlugin, providerCap.getResource()));
+			for (Capability providerCap : providersEntry.getValue()) {
+				Resource resource = providerCap.getResource();
+				// Separate features from bundles
+				if (isFeatureResource(resource)) {
+					resultSet.add(new RepositoryFeatureResource(repoPlugin, resource));
+				} else {
+					resultSet.add(new RepositoryResourceElement(repoPlugin, resource));
+				}
+			}
 		}
 
 		result = resultSet.toArray();
 		return result;
 	}
 
+	/**
+	 * Check if a resource represents an Eclipse feature rather than a bundle.
+	 * Features have type="org.eclipse.update.feature" in their identity
+	 * capability.
+	 */
+	private boolean isFeatureResource(Resource resource) {
+		List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+		for (Capability identity : identities) {
+			Object type = identity.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
+			if ("org.eclipse.update.feature".equals(type)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	// Define a LRU-like inner map (max n entries)
 	private static Map<String, Object[]> createLRUMap(int n) {
@@ -386,11 +517,30 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-	        protected boolean removeEldestEntry(Map.Entry<String, Object[]> eldest) {
+			protected boolean removeEldestEntry(Map.Entry<String, Object[]> eldest) {
 				// Auto-remove oldest when size > n
 				// but always keep the 'null' key which is '*'
 				return size() > n && eldest.getKey() != null;
-	        }
-	    };
+			}
+		};
+	}
+
+	/**
+	 * Simple wildcard matcher for feature ID filtering. Converts wildcard
+	 * pattern to regex and matches against the provided string.
+	 *
+	 * @param str the string to match (e.g., feature ID)
+	 * @param wildcardPattern the pattern with wildcards (e.g., "*feature*")
+	 * @return true if the string matches the pattern
+	 */
+	private boolean matchesWildcard(String str, String wildcardPattern) {
+		if (str == null || wildcardPattern == null) {
+			return false;
+		}
+		// Convert wildcard pattern to regex: escape special chars except *
+		String regex = wildcardPattern.replace(".", "\\.")
+			.replace("*", ".*");
+		return str.toLowerCase()
+			.matches(regex.toLowerCase());
 	}
 }

@@ -70,6 +70,34 @@ public class CapReqBuilderTest {
 	}
 
 	@Test
+	public void testAliasedFeatureRequirementWithTypeAndExactVersion() throws Exception {
+		Parameters params = OSGiHeader.parseHeader(
+			"bnd.identity; id=org.eclipse.rcp; type=org.eclipse.update.feature; version=4.37.0.v20250905-0730");
+		Requirement req = CapReqBuilder.getRequirementsFrom(params)
+			.get(0);
+
+		assertEquals("osgi.identity", req.getNamespace());
+		assertEquals(
+			"(&(osgi.identity=org.eclipse.rcp)(type=org.eclipse.update.feature)(version>=4.37.0.v20250905-0730))",
+			req.getDirectives()
+				.get("filter"));
+	}
+
+	@Test
+	public void testAliasedFeatureRequirementWithTypeAndVersionRange() throws Exception {
+		Parameters params = OSGiHeader.parseHeader(
+			"bnd.identity; id=org.eclipse.rcp; type=org.eclipse.update.feature; version='[4.37.0.v20250905-0730,4.38.0)'");
+		Requirement req = CapReqBuilder.getRequirementsFrom(params)
+			.get(0);
+
+		assertEquals("osgi.identity", req.getNamespace());
+		assertEquals(
+			"(&(osgi.identity=org.eclipse.rcp)(type=org.eclipse.update.feature)(version>=4.37.0.v20250905-0730)(!(version>=4.38.0)))",
+			req.getDirectives()
+				.get("filter"));
+	}
+
+	@Test
 	public void testCopyingAttributeWithVersionLists() throws Exception {
 		Version b123 = new Version("1.2.3");
 		Version b234 = new Version("2.3.4");
