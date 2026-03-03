@@ -80,4 +80,4 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
 -releaserepo: Release
 -releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
 
--baselinerepo: Baseline
+#-baselinerepo: Baseline

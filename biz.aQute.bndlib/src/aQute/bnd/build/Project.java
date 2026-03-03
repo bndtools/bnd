@@ -1142,17 +1142,16 @@ public class Project extends Processor {
 			RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only
 																// first
 			// release repo
-			return releaseRepo(releaseRepo, builder, jarName, jarStream, false);
+			return releaseRepo(releaseRepo, builder, jarName, jarStream);
 		}
 	}
 
-	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream,
-		boolean lastBundleInWorkspace) throws Exception {
+	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream)
+		throws Exception {
 		logger.debug("release to {}", releaseRepo.getName());
 		try {
 			PutOptions putOptions = new RepositoryPlugin.PutOptions();
 			// TODO find sub bnd that is associated with this thing
-			context.set("startSonatypePublish", Boolean.toString(lastBundleInWorkspace));
 			putOptions.context = context;
 			PutResult r = releaseRepo.put(jarStream, putOptions);
 			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, releaseRepo);
@@ -1214,39 +1213,14 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void release(String name, boolean test) throws Exception {
-		release(new ReleaseParameter(name, test, false));
-	}
-
-	@Deprecated(forRemoval = true, since = "7.3.0")
-	public static class ReleaseParameter {
-		@Deprecated
-		public String	name;
-		@Deprecated
-		public boolean	test;
-		@Deprecated
-		public boolean	lastBundleInWorkspace;
-
-		@Deprecated(forRemoval = true, since = "7.3.0")
-		public ReleaseParameter(String name, boolean test, boolean lastBundleInWorkspace) {
-			this.name = name;
-			this.test = test;
-			this.lastBundleInWorkspace = lastBundleInWorkspace;
-		}
-	}
-
-	/**
-	 * Do not use this method.
-	 */
-	@Deprecated(forRemoval = true, since = "7.3.0")
-	public void release(ReleaseParameter relParam) throws Exception, IOException {
-		List<RepositoryPlugin> releaseRepos = getReleaseRepos(relParam.name);
+		List<RepositoryPlugin> releaseRepos = getReleaseRepos(name);
 		if (releaseRepos.isEmpty()) {
 			return;
 		}
 		logger.debug("release");
 		File[] jars = getBuildFiles(false);
 		if (jars == null) {
-			jars = build(relParam.test);
+			jars = build(test);
 			// If build fails jars will be null
 			if (jars == null) {
 				logger.debug("no jars built");
@@ -1258,17 +1232,9 @@ public class Project extends Processor {
 		try (ProjectBuilder builder = getBuilder(null)) {
 			builder.init();
 			for (RepositoryPlugin releaseRepo : releaseRepos) {
-				for (int i = 0; i < jars.length; i++) {
-					File jar = jars[i];
+				for (File jar : jars) {
 					try (InputStream jarStream = new BufferedInputStream(IO.stream(jar))) {
-						if (relParam.lastBundleInWorkspace && i == jars.length - 1) {
-							// this is the last jar builded inside bnd workspace
-							// and if appropriate "-sub" - the last of builded
-							// sub-bundles
-							releaseRepo(releaseRepo, builder, jar.getName(), jarStream, true);
-						} else {
-							releaseRepo(releaseRepo, builder, jar.getName(), jarStream, false);
-						}
+						releaseRepo(releaseRepo, builder, jar.getName(), jarStream);
 					}
 				}
 			}
