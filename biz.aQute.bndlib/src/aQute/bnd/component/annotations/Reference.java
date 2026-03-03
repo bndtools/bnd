@@ -45,7 +45,6 @@ import java.lang.annotation.Target;
  * ) of the reference {@link #name() name}s.
  *
  * @see "The reference element of a Component Description."
- * @author $Id$
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
