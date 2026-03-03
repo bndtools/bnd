@@ -22,7 +22,6 @@
  * This package is not used at runtime. Annotated classes are processed by tools
  * to generate Component Descriptions which are used at runtime.
  *
- * @author $Id$
  */
 
 @Version(COMPONENT_SPECIFICATION_VERSION)

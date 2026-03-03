@@ -35,7 +35,6 @@ import java.lang.annotation.Target;
  * bundle.
  * 
  * @see "The component element of a Component Description."
- * @author $Id$
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)

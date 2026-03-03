@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
  * {@code Icon} information for an {@link ObjectClassDefinition}.
  *
  * @see ObjectClassDefinition#icon()
- * @author $Id$
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({})

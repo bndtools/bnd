@@ -18,7 +18,6 @@ import java.util.Map;
  * signatures can be string compared and match even if the type variable names
  * differ.
  *
- * @version $Id$
  */
 public class Signatures {
 

@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.Version;
  * This annotation is not retained at runtime. It is for use by tools to
  * generate bundle manifests or otherwise process the package.
  *
- * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)

@@ -30,7 +30,6 @@ package aQute.bnd.metatype.annotations;
  * {@code MetaTypeProvider} objects.
  *
  * @ThreadSafe
- * @author $Id$
  * @since 1.1
  */
 class MetaTypeConstants {

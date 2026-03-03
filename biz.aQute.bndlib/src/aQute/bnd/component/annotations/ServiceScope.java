@@ -21,7 +21,6 @@ package aQute.bnd.component.annotations;
 /**
  * Service scope for the {@link Component} annotation.
  * 
- * @author $Id$
  * @since 1.3
  */
 public enum ServiceScope {

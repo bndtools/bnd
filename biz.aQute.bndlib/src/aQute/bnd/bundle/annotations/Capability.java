@@ -38,7 +38,6 @@ import java.lang.annotation.Target;
  * <p>
  * This annotation can be used to annotate an annotation
  *
- * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)

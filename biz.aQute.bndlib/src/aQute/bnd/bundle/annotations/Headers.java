@@ -25,7 +25,6 @@ import java.lang.annotation.Target;
 /**
  * Container annotation for repeated {@link Header} annotations.
  *
- * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)
