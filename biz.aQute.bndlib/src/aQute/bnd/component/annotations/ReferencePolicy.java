@@ -20,7 +20,6 @@ package aQute.bnd.component.annotations;
 
 /**
  * Policy for the {@link Reference} annotation.
- * 
  */
 public enum ReferencePolicy {
 	/**

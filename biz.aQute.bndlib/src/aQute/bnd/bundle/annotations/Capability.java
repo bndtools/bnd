@@ -37,7 +37,6 @@ import java.lang.annotation.Target;
  * generate bundle manifests or otherwise process the type or package.
  * <p>
  * This annotation can be used to annotate an annotation
- *
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)

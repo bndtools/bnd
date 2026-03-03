@@ -22,7 +22,6 @@ import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Defines standard names for Service Component constants.
- * 
  */
 @ProviderType
 public interface ComponentConstants {

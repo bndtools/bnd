@@ -24,7 +24,6 @@ package aQute.bnd.component.annotations;
  * <p>
  * Specifies if the reference is optional and if the component implementation
  * support a single bound service or multiple bound services.
- * 
  */
 public enum ReferenceCardinality {
 	/**
