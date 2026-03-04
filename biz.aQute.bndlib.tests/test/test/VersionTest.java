@@ -98,4 +98,29 @@ public class VersionTest {
 			return Version.parseVersion(source.toString());
 		}
 	}
+
+	@Test
+	public void isRangeMustUseValueEqualityNotReferenceIdentity() {
+		Version low = new Version("1.2.3");
+		Version high = new Version("1.2.3");
+
+		// Sanity check: equal by value, but not the same object instance.
+		assertTrue(low.equals(high), "Versions should be equal by value");
+		assertTrue(low != high, "Versions should be different object instances");
+
+		// Construct a "degenerate range" [1.2.3, 1.2.3]
+		VersionRange range = new VersionRange(true, low, high, true);
+
+		// Expected: not a range (single version), because endpoints are equal
+		// by value.
+		// Buggy implementation (getHigh() != getLow()) would incorrectly return
+		// true.
+		assertFalse(range.isRange(), "isRange() must be false when low/high are equal by value");
+	}
+
+	@Test
+	public void isRangeTrueWhenEndpointsDifferByValue() {
+		VersionRange range = new VersionRange("[1.2.3,1.2.4]");
+		assertTrue(range.isRange(), "isRange() must be true when low/high differ by value");
+	}
 }
