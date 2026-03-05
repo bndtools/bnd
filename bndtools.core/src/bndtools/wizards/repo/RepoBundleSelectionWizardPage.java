@@ -47,8 +47,8 @@ import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
+import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
 	private static final ILogger				logger					= Logger
@@ -122,7 +122,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false) {
 
 		});
-		availableViewer.setContentProvider(new RepositoryTreeContentProvider());
+		availableViewer.setContentProvider(new SearchableRepositoryTreeContentProvider());
 		availableViewer.setAutoExpandLevel(2);
 
 		availableViewer.setFilters(alreadySelectedFilter);

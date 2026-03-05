@@ -50,11 +50,32 @@ public class P2Impl implements ArtifactProvider {
 	}
 
 	private URI normalize(URI base) throws Exception {
+		base = normalizeOpaqueFileUri(base);
 		String path = base.getPath();
 		if (path == null || path.endsWith("/"))
 			return base;
 
 		return new URI(base.toString() + "/");
+	}
+
+	static URI normalizeOpaqueFileUri(URI uri) {
+		if (!uri.isOpaque() || !"file".equalsIgnoreCase(uri.getScheme())) {
+			return uri;
+		}
+		String schemeSpecificPart = uri.getSchemeSpecificPart();
+		if (schemeSpecificPart == null || schemeSpecificPart.isEmpty()) {
+			return uri;
+		}
+		return new File(schemeSpecificPart).toURI();
+	}
+
+	private static String path(URI uri) {
+		String path = uri.getPath();
+		if (path != null) {
+			return path;
+		}
+		String schemeSpecificPart = uri.getSchemeSpecificPart();
+		return (schemeSpecificPart != null) ? schemeSpecificPart : "";
 	}
 
 	@Override
@@ -73,12 +94,13 @@ public class P2Impl implements ArtifactProvider {
 	}
 
 	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, URI uri) {
+		uri = normalizeOpaqueFileUri(uri);
 		if (!cycles.add(uri)) {
 			return promiseFactory.resolved(Collections.emptyList());
 		}
 
 		try {
-			String type = uri.getPath();
+			String type = path(uri);
 			logger.info("getArtifacts type={}", uri);
 			if (type.endsWith("/compositeArtifacts.xml")) {
 				return parseCompositeArtifacts(cycles, hideAndSeek(uri), uri);
@@ -151,7 +173,8 @@ public class P2Impl implements ArtifactProvider {
 	}
 
 	private InputStream hideAndSeek(URI uri) throws Exception {
-		if (uri.getPath()
+		String path = path(uri);
+		if (path
 			.endsWith(".xz")) {
 			File f = getFile(uri);
 			if (f != null)
@@ -167,7 +190,7 @@ public class P2Impl implements ArtifactProvider {
 
 		f = getFile(replace(uri, ".xml$", ".jar"));
 		if (f != null)
-			return jarStream(f, Strings.getLastSegment(uri.getPath(), '/'));
+			return jarStream(f, Strings.getLastSegment(path, '/'));
 
 		f = getFile(uri);
 		if (f != null)
@@ -203,6 +226,12 @@ public class P2Impl implements ArtifactProvider {
 
 	private URI replace(URI uri, String where, String replacement) {
 		String path = uri.getRawPath();
+		if (path == null) {
+			path = path(uri);
+		}
+		if (path == null || path.isEmpty()) {
+			return uri;
+		}
 		return uri.resolve(path.replaceAll(where, replacement));
 	}
 
@@ -241,7 +270,7 @@ public class P2Impl implements ArtifactProvider {
 			return;
 
 		for (URI uri : new ArrayList<>(artifacts)) {
-			if (uri.getPath()
+			if (path(uri)
 				.endsWith(".xml"))
 				artifacts.remove(new URI(uri.toString() + ".xz"));
 		}

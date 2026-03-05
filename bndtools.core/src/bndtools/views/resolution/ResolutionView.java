@@ -50,6 +50,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.Clipboard;
@@ -86,6 +87,8 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -95,12 +98,22 @@ import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.service.FeatureProvider;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.p2.provider.Feature;
 import bndtools.Plugin;
 import bndtools.editor.common.HelpButtons;
+import bndtools.model.repo.IncludedBundleItem;
+import bndtools.model.repo.IncludedFeatureItem;
+import bndtools.model.repo.FeatureFolderNode;
+import bndtools.model.repo.FeatureVersionNode;
+import bndtools.model.repo.RepositoryBundle;
+import bndtools.model.repo.RepositoryFeature;
 import bndtools.model.repo.RepositoryResourceElement;
+import bndtools.model.repo.RequiredFeatureItem;
 import bndtools.model.resolution.CapReqMapContentProvider;
 import bndtools.model.resolution.CapabilityLabelProvider;
 import bndtools.model.resolution.RequirementWrapper;
@@ -258,6 +271,19 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		reqsViewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
 		reqsContentProvider = new CapReqMapContentProvider();
 		reqsViewer.setContentProvider(reqsContentProvider);
+		reqsViewer.setComparator(new ViewerComparator() {
+			@Override
+			public int compare(Viewer viewer, Object e1, Object e2) {
+				if (e1 instanceof RequirementWrapper rw1 && e2 instanceof RequirementWrapper rw2) {
+					int g1 = requirementTypeRank(rw1.requirement);
+					int g2 = requirementTypeRank(rw2.requirement);
+					if (g1 != g2) {
+						return Integer.compare(g1, g2);
+					}
+				}
+				return super.compare(viewer, e1, e2);
+			}
+		});
 		reqsViewer.addDoubleClickListener(event -> handleReqsViewerDoubleClickEvent(event));
 
 		reqsViewer.getControl()
@@ -291,6 +317,19 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
 		capsContentProvider = new CapReqMapContentProvider();
 		capsViewer.setContentProvider(capsContentProvider);
+		capsViewer.setComparator(new ViewerComparator() {
+			@Override
+			public int compare(Viewer viewer, Object e1, Object e2) {
+				if (e1 instanceof Capability c1 && e2 instanceof Capability c2) {
+					int g1 = capabilityTypeRank(c1);
+					int g2 = capabilityTypeRank(c2);
+					if (g1 != g2) {
+						return Integer.compare(g1, g2);
+					}
+				}
+				return super.compare(viewer, e1, e2);
+			}
+		});
 		capsViewer.setFilters(new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parent, Object element) {
@@ -612,31 +651,69 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 			Object element = iter.next();
 			CapReqLoader loader = null;
 
-			File file = SelectionUtils.adaptObject(element, File.class);
-			if (file != null) {
-				loader = getLoaderForFile(file);
-			} else {
-				IResource eresource = SelectionUtils.adaptObject(element, IResource.class);
-				if (eresource != null) {
-					IPath location = eresource.getLocation();
-					if (location != null) {
-						loader = getLoaderForFile(location.toFile());
+			if (element instanceof FeatureFolderNode folderNode) {
+				for (Object child : folderNode.getChildren()) {
+					CapReqLoader childLoader = null;
+					if (child instanceof IncludedFeatureItem) {
+						childLoader = createIncludedFeatureLoader((IncludedFeatureItem) child);
+					} else if (child instanceof RequiredFeatureItem) {
+						childLoader = createRequiredFeatureLoader((RequiredFeatureItem) child);
+					} else if (child instanceof IncludedBundleItem) {
+						childLoader = createIncludedBundleLoader((IncludedBundleItem) child);
 					}
-				} else if (element instanceof Repository repo) {
-					ResourceUtils.getAllResources(repo)
-						.stream()
-						.filter(r -> {
-							try {
-								return ResourceUtils.getContentCapabilities(r) != null;
-							} catch (Exception e) {
-								return false;
-							}
-						})
-						.map(ResourceCapReqLoader::new)
-						.forEach(result::add);
-				} else if (element instanceof RepositoryResourceElement) {
-					Resource resource = ((RepositoryResourceElement) element).getResource();
-					loader = new ResourceCapReqLoader(resource);
+
+					if (childLoader != null) {
+						result.add(childLoader);
+					}
+				}
+				continue;
+			}
+
+			if (element instanceof FeatureVersionNode) {
+				FeatureVersionNode featureVersionNode = (FeatureVersionNode) element;
+				loader = createFeatureLoader(featureVersionNode.getParent());
+			}
+
+			// Check RepositoryFeature BEFORE trying to adapt to File, since
+			// features are synthetic entries without file backing
+			if (loader == null && element instanceof RepositoryFeature) {
+				// For features, load the feature resource itself so requirements show
+				// included features/bundles and required feature/plugin imports.
+				RepositoryFeature feature = (RepositoryFeature) element;
+				loader = createFeatureLoader(feature);
+			} else if (element instanceof IncludedFeatureItem) {
+				loader = createIncludedFeatureLoader((IncludedFeatureItem) element);
+			} else if (element instanceof RequiredFeatureItem) {
+				loader = createRequiredFeatureLoader((RequiredFeatureItem) element);
+			} else if (element instanceof IncludedBundleItem) {
+				loader = createIncludedBundleLoader((IncludedBundleItem) element);
+			} else {
+				File file = SelectionUtils.adaptObject(element, File.class);
+				if (file != null) {
+					loader = getLoaderForFile(file);
+				} else {
+					IResource eresource = SelectionUtils.adaptObject(element, IResource.class);
+					if (eresource != null) {
+						IPath location = eresource.getLocation();
+						if (location != null) {
+							loader = getLoaderForFile(location.toFile());
+						}
+					} else if (element instanceof Repository repo) {
+						ResourceUtils.getAllResources(repo)
+							.stream()
+							.filter(r -> {
+								try {
+									return ResourceUtils.getContentCapabilities(r) != null;
+								} catch (Exception e) {
+									return false;
+								}
+							})
+							.map(ResourceCapReqLoader::new)
+							.forEach(result::add);
+					} else if (element instanceof RepositoryResourceElement) {
+						Resource resource = ((RepositoryResourceElement) element).getResource();
+						loader = new ResourceCapReqLoader(resource);
+					}
 				}
 			}
 
@@ -645,6 +722,91 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		}
 
 		return result;
+	}
+
+	private CapReqLoader createFeatureLoader(RepositoryFeature feature) {
+		try {
+			Resource resource = feature.getResource();
+			if (resource == null) {
+				feature.getFeature().parse();
+				resource = feature.getFeature().toResource();
+			}
+			if (resource != null) {
+				return new ResourceCapReqLoader(resource);
+			}
+		} catch (Exception e) {
+			// Ignore parse errors
+		}
+		return null;
+	}
+
+	private CapReqLoader createIncludedFeatureLoader(IncludedFeatureItem featureItem) {
+		RepositoryPlugin repo = featureItem.getParent().getParent().getRepo();
+		Feature.Includes includes = featureItem.getIncludes();
+		try {
+			if (repo instanceof FeatureProvider) {
+				Object featureObj = ((FeatureProvider) repo).getFeature(includes.id, includes.version);
+				if (featureObj instanceof Feature) {
+					Feature feature = (Feature) featureObj;
+					Resource resource = new RepositoryFeature(repo, feature).getResource();
+					if (resource == null) {
+						feature.parse();
+						resource = feature.toResource();
+					}
+					if (resource != null) {
+						return new ResourceCapReqLoader(resource);
+					}
+				}
+			}
+		} catch (Exception e) {
+			// Ignore resolution errors
+		}
+		return null;
+	}
+
+	private CapReqLoader createRequiredFeatureLoader(RequiredFeatureItem requiredItem) {
+		RepositoryPlugin repo = requiredItem.getParent().getParent().getRepo();
+		Feature.Requires requires = requiredItem.getRequires();
+		try {
+			if (requires.feature != null && repo instanceof FeatureProvider) {
+				Object featureObj = ((FeatureProvider) repo).getFeature(requires.feature, requires.version);
+				if (featureObj instanceof Feature) {
+					Feature feature = (Feature) featureObj;
+					Resource resource = new RepositoryFeature(repo, feature).getResource();
+					if (resource == null) {
+						feature.parse();
+						resource = feature.toResource();
+					}
+					if (resource != null) {
+						return new ResourceCapReqLoader(resource);
+					}
+				}
+			} else if (requires.plugin != null) {
+				RepositoryBundle bundle = new RepositoryBundle(repo, requires.plugin);
+				Resource resource = bundle.getResource();
+				if (resource != null) {
+					return new ResourceCapReqLoader(resource);
+				}
+			}
+		} catch (Exception e) {
+			// Ignore resolution errors
+		}
+		return null;
+	}
+
+	private CapReqLoader createIncludedBundleLoader(IncludedBundleItem bundleItem) {
+		RepositoryPlugin repo = bundleItem.getParent().getParent().getRepo();
+		String bundleId = bundleItem.getPlugin().id;
+		try {
+			RepositoryBundle bundle = new RepositoryBundle(repo, bundleId);
+			Resource resource = bundle.getResource();
+			if (resource != null) {
+				return new ResourceCapReqLoader(resource);
+			}
+		} catch (Exception e) {
+			// Ignore resolution errors
+		}
+		return null;
 	}
 
 	void executeAnalysis() {
@@ -874,6 +1036,48 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		updateReqsLabel();
 		if (filterString != null)
 			reqsViewer.expandToLevel(1);
+	}
+
+	private int requirementTypeRank(Requirement req) {
+		String namespace = req.getNamespace();
+		if (IdentityNamespace.IDENTITY_NAMESPACE.equals(namespace)) {
+			String filter = req.getDirectives().get(org.osgi.resource.Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+			if (filter != null && filter.contains("type=org.eclipse.update.feature")) {
+				return 1;
+			}
+			return 2;
+		}
+
+		if (BundleNamespace.BUNDLE_NAMESPACE.equals(namespace) || HostNamespace.HOST_NAMESPACE.equals(namespace)) {
+			return 2;
+		}
+
+		if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace)) {
+			return 3;
+		}
+
+		return 4;
+	}
+
+	private int capabilityTypeRank(Capability cap) {
+		String namespace = cap.getNamespace();
+		if (IdentityNamespace.IDENTITY_NAMESPACE.equals(namespace)) {
+			Object type = cap.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
+			if ("org.eclipse.update.feature".equals(type)) {
+				return 1;
+			}
+			return 2;
+		}
+
+		if (BundleNamespace.BUNDLE_NAMESPACE.equals(namespace) || HostNamespace.HOST_NAMESPACE.equals(namespace)) {
+			return 2;
+		}
+
+		if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace)) {
+			return 3;
+		}
+
+		return 4;
 	}
 
 	private void updateCapsFilter(String filterString) {
