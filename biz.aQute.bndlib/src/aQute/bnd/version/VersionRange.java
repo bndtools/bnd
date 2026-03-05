@@ -118,7 +118,7 @@ public class VersionRange {
 	}
 
 	public boolean isRange() {
-		return getHigh() != getLow();
+		return !getHigh().equals(getLow());
 	}
 
 	public boolean includeLow() {
