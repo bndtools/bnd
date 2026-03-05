@@ -81,9 +81,4 @@ public interface Configuration {
 	 * @return a comma separated list of tags.
 	 */
 	String tags();
-
-	/**
-	 * @return SonatypeMode for this repository none, manual or autopublish
-	 */
-	SonatypeMode sonatypeMode(String deflt);
 }

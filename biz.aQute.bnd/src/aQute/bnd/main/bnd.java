@@ -69,7 +69,6 @@ import org.w3c.dom.Document;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Project.ReleaseParameter;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.LiveCoding;
@@ -1502,18 +1501,11 @@ public class bnd extends Processor {
 			}
 
 		}
-
-		for (Iterator<Project> iterator = projects.iterator(); iterator.hasNext();) {
-			Project p = iterator.next();
+		for (Project p : projects) {
 			if (repo != null) {
 				p.setProperty(Constants.RELEASEREPO, repo);
 			}
-			if (iterator.hasNext()) {
-				p.release(options.test());
-			} else {
-				// releasing last bundle in workspace
-				p.release(new ReleaseParameter(null, options.test(), true));
-			}
+			p.release(options.test());
 		}
 		if (project != null) {
 			getInfo(project);

@@ -4,10 +4,10 @@ set -ev
 # Prepare GPG arguments for Maven and Gradle if environment variables are set
 GPG_ARGS=""
 GRADLE_GPG_ARGS=""
-if [[ -n "${GPG_KEY_ID:-}" ]]; then
+if [[ -n "${GPG_KEY_ID}" ]]; then
 	GPG_ARGS="-Dgpg.keyname=${GPG_KEY_ID}"
 	GRADLE_GPG_ARGS="-Psigning.gnupg.keyName=${GPG_KEY_ID}"
-	if [[ -n "${GPG_PASSPHRASE:-}" ]]; then
+	if [[ -n "${GPG_PASSPHRASE}" ]]; then
 		GRADLE_GPG_ARGS="${GRADLE_GPG_ARGS} -Psigning.gnupg.passphrase=${GPG_PASSPHRASE}"
 	fi
 fi
