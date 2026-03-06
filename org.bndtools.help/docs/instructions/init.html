@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-init ${MACRO} ( ',' ${MACRO}) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-init ${MACRO} ( ',' ${MACRO}) *</h1>
+<ul>
+<li>
+<p>Example: <code>-init: ${my_macro}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/init.md -->
+<h1 id="-init">-init</h1>
+<p>The <code>-init</code> instruction specifies one or more macros to execute when initializing the project for building. This ensures that certain setup steps are always performed before the build starts.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-init: ${my_macro}, ${my_macro2}
+</code></pre></div>
+
+<p>Macros are usually resolved and executed on demand, but those listed in <code>-init</code> are always executed during project initialization.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

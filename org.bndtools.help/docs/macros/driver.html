@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>driver ( ';' NAME )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>driver ( ';' NAME )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>driver</code> macro identifies the build environment (driver) that is running bnd, such as Gradle, Ant, Eclipse, or IntelliJ. It can be used to return the driver name or check if the current driver matches specific names.</p>
+<p>The driver should be set when bnd is started by the build tool and can be overridden with the <code>-bnd-driver</code> property. This is useful for <a href="/chapters/150-build.html#avoiding-target-dir-conflicts-between-different-build-tools">avoiding target-dir conflicts between different build tools</a>.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${driver[;&lt;name&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>name</code> (optional) - One or more driver names to check against. If provided, returns the driver name only if it matches one of the arguments; otherwise returns empty string.</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Without arguments: Returns the driver name (e.g., "gradle", "eclipse")</li>
+<li>With arguments: Returns driver name if it matches any argument (case-insensitive), empty string otherwise</li>
+<li>Driver can be set via <code>Workspace.setDriver()</code> or <code>-bnd-driver</code> property</li>
+<li>Returns "unset" if no driver is configured</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get current driver:</p>
+<div class="highlight"><pre><span></span><code>${driver}
+# Returns: &quot;gradle&quot; (if running under Gradle)
+</code></pre></div>
+
+<p>Check if running under Gradle:</p>
+<div class="highlight"><pre><span></span><code>${if;${driver;gradle};gradle-specific-config;}
+</code></pre></div>
+
+<p>Check multiple drivers:</p>
+<div class="highlight"><pre><span></span><code>${driver;gradle;maven}
+# Returns: &quot;gradle&quot; if gradle, or &quot;maven&quot; if maven, otherwise &quot;&quot;
+</code></pre></div>
+
+<p>Conditional configuration:</p>
+<div class="highlight"><pre><span></span><code>-target-dir: ${if;${driver;gradle};gradle-build;${if;${driver;eclipse};eclipse-build;build}}
+</code></pre></div>
+
+<p>Set via property:</p>
+<div class="highlight"><pre><span></span><code>-bnd-driver: custom-driver
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Tool-specific configuration</li>
+<li>Avoiding build tool conflicts</li>
+<li>Different output directories per tool</li>
+<li>Build environment detection</li>
+<li>Tool-specific optimizations</li>
+<li>IDE vs command-line differences</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Driver names are case-insensitive for matching</li>
+<li>Can be overridden with <code>-bnd-driver</code> property</li>
+<li>Returns empty string (falsy) if no match</li>
+<li>Default is "unset" if not configured</li>
+<li>Commonly used values: gradle, maven, ant, eclipse, intellij, cli</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

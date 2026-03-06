@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>wrap</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>wrap</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   wrap [options]  &lt;&lt;jar-file&gt;&gt; &lt;[...]&gt;
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -b --bsn &lt;string&gt; ]</code> Set the bundle symbolic name to use</li>
+<li><code>[ -c --classpath &lt;string&gt;* ]</code> A classpath specification</li>
+<li><code>[ -f --force ]</code> Allow override of an existing file</li>
+<li><code>[ -o --output &lt;string&gt; ]</code> Path to the output, default the name of the input jar with the '.bar' extension. If this is a directory, the output is place there.</li>
+<li><code>[ -p --properties &lt;string&gt; ]</code> A file with properties in bnd format.</li>
+<li><code>[ -v --version &lt;version&gt; ]</code> Set the version to use</li>
+</ul>
+<!-- Manual content from: ext/wrap.md -->
+<p>The wrap command takes an existing JAR file and guesses the manifest headers that will make this JAR useful for an OSGi Service Platform. If the output file is not overridden, the name of the input file is used with a .bar extension. The default bnd file for the header calculation is:</p>
+<div class="highlight"><pre><span></span><code>Export-Package: * 
+Import-Package: &lt;packages inside the target jar&gt;
+</code></pre></div>
+
+<p>If the target bundle has a manifest, the headers are merged with the properties.</p>
+<p>The defaults can be overridden with a specific properties file.</p>
+<h2 id="examples">Examples</h2>
+<p><code>bnd wrap -classpath osgi.jar *.jar</code></p>
+<p><br /><br /></p>
+</body>
+</html>

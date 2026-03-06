@@ -1,0 +1,12 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/bndtools.bnd
+
+Bundle-SymbolicName: ${p};singleton:=true
+Bundle-Name: Bndtools Help Documentation
+
+-resourceonly: true
+
+-includeresource: \
+	{plugin.xml=_plugin.xml},\
+	toc.xml=toc.xml,\
+	docs/=docs/

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>currenttime</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>currenttime</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>currenttime</code> macro returns the current system time as a long integer representing milliseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC). This provides a precise timestamp for build-time operations.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${currenttime}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the current system time in milliseconds</li>
+<li>Uses <code>System.currentTimeMillis()</code> internally</li>
+<li>The value represents milliseconds since January 1, 1970, 00:00:00 UTC</li>
+<li>The timestamp is captured at the time the macro is evaluated</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Capture build time:</p>
+<div class="highlight"><pre><span></span><code>Build-Time: ${currenttime}
+</code></pre></div>
+
+<p>Use as a unique identifier component:</p>
+<div class="highlight"><pre><span></span><code>Build-Id: ${bsn}-${currenttime}
+</code></pre></div>
+
+<p>Create timestamped filenames:</p>
+<div class="highlight"><pre><span></span><code>output.file=bundle-${currenttime}.jar
+</code></pre></div>
+
+<p>Calculate elapsed time (with another timestamp):</p>
+<div class="highlight"><pre><span></span><code># In combination with other macros for time calculations
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Recording precise build timestamps</li>
+<li>Creating unique build identifiers</li>
+<li>Timestamping artifacts</li>
+<li>Calculating build durations</li>
+<li>Versioning based on build time</li>
+<li>Creating time-based unique values</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The value is in milliseconds, not seconds</li>
+<li>To convert to a readable date format, use the <code>${long2date}</code> macro</li>
+<li>The timestamp represents UTC time</li>
+<li>For formatted timestamps, use <code>${tstamp}</code> macro instead</li>
+<li>This is different from <code>${now}</code> which returns seconds since epoch</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

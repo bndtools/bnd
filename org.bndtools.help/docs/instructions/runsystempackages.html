@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runsystempackages* PARAMETERS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runsystempackages* PARAMETERS</h1>
+<ul>
+<li>
+<p>Example: <code>-runsystempackages=com.acme.foo,javax.management</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runsystempackages.md -->
+<p>The resolver will analyse the <code>-runpath</code> and <code>-runfw</code> JARs for any exported packages and make these available as system packages to the bundles. However, in certain cases this automatic analysis does not suffice. In that case extra packages can be added. These packages must, of course, be available on the class path.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-runsystempackages: \
+    com.sun.misc
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

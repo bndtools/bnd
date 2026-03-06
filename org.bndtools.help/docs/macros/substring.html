@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>substring ';' STRING ';' START ( ';' END )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>substring ';' STRING ';' START ( ';' END )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>substring</code> macro extracts a portion of a string between start and end positions. It supports negative indices to count from the end of the string.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${substring;&lt;string&gt;;&lt;start&gt;[;&lt;end&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The source string</li>
+<li><code>start</code> - Starting index (0-based, negative counts from end)</li>
+<li><code>end</code> (optional) - Ending index (exclusive, negative counts from end, default: end of string)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Extracts substring from start (inclusive) to end (exclusive)</li>
+<li>Negative indices count from the end (-1 = last character)</li>
+<li>If start &gt; end, they are automatically swapped</li>
+<li>Default end is the string length</li>
+<li>Returns the extracted substring</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get first 5 characters:</p>
+<div class="highlight"><pre><span></span><code>${substring;hello world;0;5}
+# Returns: &quot;hello&quot;
+</code></pre></div>
+
+<p>Get last 5 characters:</p>
+<div class="highlight"><pre><span></span><code>${substring;hello world;-5}
+# Returns: &quot;world&quot;
+</code></pre></div>
+
+<p>Remove first 2 characters:</p>
+<div class="highlight"><pre><span></span><code>${substring;hello;2}
+# Returns: &quot;llo&quot;
+</code></pre></div>
+
+<p>Extract middle portion:</p>
+<div class="highlight"><pre><span></span><code>${substring;hello world;6;11}
+# Returns: &quot;world&quot;
+</code></pre></div>
+
+<p>Use negative indices:</p>
+<div class="highlight"><pre><span></span><code>${substring;hello world;-5;-1}
+# Returns: &quot;worl&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Extracting prefixes or suffixes</li>
+<li>Removing fixed-length headers</li>
+<li>Parsing formatted strings</li>
+<li>Getting file extensions</li>
+<li>Truncating strings</li>
+<li>String manipulation in templates</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Indices are 0-based (first character is 0)</li>
+<li>Negative indices count backwards from end</li>
+<li>End index is exclusive (not included in result)</li>
+<li>Start and end are swapped if start &gt; end</li>
+<li>Throws exception if indices are out of bounds</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>
