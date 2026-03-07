@@ -1245,7 +1245,7 @@ public class Project extends Processor {
 		}
 		logger.debug("release");
 		File[] jars = getBuildFiles(false);
-		if (jars == null) {
+		if ((jars == null) || (jars.length == 0)) {
 			jars = build(relParam.test);
 			// If build fails jars will be null
 			if (jars == null) {

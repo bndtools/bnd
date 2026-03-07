@@ -20,6 +20,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 import aQute.bnd.unmodifiable.Lists;
@@ -144,9 +145,12 @@ public class PomResource extends WriteResource {
 			version = "0";
 		}
 
-		// Apply -snapshot instruction transformation to the version
+		// Apply -snapshot instruction transformation to OSGi version syntax.
+		// Some -pom configurations can produce Maven-style versions like
+		// "1.2.3-SNAPSHOT" which are not parseable as OSGi versions.
 		String snapshot = processor.getProperty(Constants.SNAPSHOT);
-		if ((snapshot != null) && (version.contains("SNAPSHOT"))) {
+		if ((snapshot != null) && (version.contains("SNAPSHOT")) && Version.VERSION.matcher(version)
+			.matches()) {
 			version = Builder.doSnapshot(version, snapshot);
 		}
 

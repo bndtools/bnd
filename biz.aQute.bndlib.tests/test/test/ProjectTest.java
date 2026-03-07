@@ -1409,6 +1409,28 @@ public class ProjectTest {
 		assertTrue(ws.check());
 	}
 
+	@Test
+	public void testReleaseBuildsWhenBuildFilesCacheIsEmpty() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws")); Project project = ws.getProject("p6")) {
+			project.clean();
+			File target = project.getTarget();
+			IO.mkdirs(target);
+			IO.store("", new File(target, Constants.BUILDFILES));
+
+			File[] initial = project.getBuildFiles(false);
+			assertNotNull(initial);
+			assertEquals(0, initial.length);
+
+			project.release(false);
+
+			assertTrue(project.getErrors()
+				.isEmpty(), "Errors: " + project.getErrors() + " Warnings: " + project.getWarnings());
+			File[] released = project.getBuildFiles(false);
+			assertNotNull(released);
+			assertTrue(released.length > 0);
+		}
+	}
+
 
 	@Test
 	public void testWarnOnDuplicateProperties(SoftAssertions softly) throws Exception {

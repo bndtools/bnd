@@ -403,6 +403,33 @@ public class MavenTest {
 	}
 
 	@Test
+	public void testPomResourceWithMavenSnapshotVersionAndEmptySnapshotInstruction() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-pom", "true,version=2.0.0-SNAPSHOT");
+		b.setBundleSymbolicName("com.example.test");
+		b.setBundleVersion("1.2.3.SNAPSHOT");
+		b.setProperty("-snapshot", "");
+		b.setProperty("-resourceonly", "true");
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		Resource r = jar.getResource("pom.xml");
+		assertNotNull(r);
+
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(r.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+
+		assertEquals("2.0.0-SNAPSHOT", xpath.evaluate("/project/version", d));
+
+		jar.close();
+		b.close();
+	}
+
+	@Test
 	public void testPomResourceWithSnapshotHyphen() throws Exception {
 		// Test -snapshot with qualifier ending in -SNAPSHOT (like RC1-SNAPSHOT)
 		Builder b = new Builder();
