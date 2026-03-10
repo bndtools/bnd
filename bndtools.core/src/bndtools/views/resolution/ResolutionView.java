@@ -98,7 +98,7 @@ import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.service.FeatureProvider;
+import aQute.bnd.repository.p2.provider.P2Repository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
@@ -744,8 +744,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		RepositoryPlugin repo = featureItem.getParent().getParent().getRepo();
 		Feature.Includes includes = featureItem.getIncludes();
 		try {
-			if (repo instanceof FeatureProvider) {
-				Object featureObj = ((FeatureProvider) repo).getFeature(includes.id, includes.version);
+			if (repo instanceof P2Repository) {
+				Object featureObj = ((P2Repository) repo).getFeature(includes.id, includes.version);
 				if (featureObj instanceof Feature) {
 					Feature feature = (Feature) featureObj;
 					Resource resource = new RepositoryFeature(repo, feature).getResource();
@@ -768,8 +768,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		RepositoryPlugin repo = requiredItem.getParent().getParent().getRepo();
 		Feature.Requires requires = requiredItem.getRequires();
 		try {
-			if (requires.feature != null && repo instanceof FeatureProvider) {
-				Object featureObj = ((FeatureProvider) repo).getFeature(requires.feature, requires.version);
+			if (requires.feature != null && repo instanceof P2Repository) {
+				Object featureObj = ((P2Repository) repo).getFeature(requires.feature, requires.version);
 				if (featureObj instanceof Feature) {
 					Feature feature = (Feature) featureObj;
 					Resource resource = new RepositoryFeature(repo, feature).getResource();

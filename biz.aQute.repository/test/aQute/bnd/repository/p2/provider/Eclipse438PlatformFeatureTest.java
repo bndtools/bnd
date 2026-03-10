@@ -56,7 +56,7 @@ public class Eclipse438PlatformFeatureTest {
 			P2Indexer indexer = new P2Indexer(processor, proc, indexLocation, client, new URI(ECLIPSE_438_PLATFORM_REPO),
 				"Eclipse 4.38 Platform Test");
 
-			// Get features using the FeatureProvider interface
+			// Get features from the P2Indexer
 			List<Feature> features = indexer.getFeatures();
 
 			softly.assertThat(features)

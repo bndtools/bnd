@@ -22,7 +22,6 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.service.Actionable;
-import aQute.bnd.service.FeatureProvider;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
@@ -40,7 +39,7 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "P2 Repo", parameters = P2Config.class)
 public class P2Repository extends BaseRepository
-	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable, Actionable, FeatureProvider {
+	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable, Actionable {
 	private P2Config	config;
 	private Registry	registry;
 	private Workspace	workspace;
@@ -198,12 +197,24 @@ public class P2Repository extends BaseRepository
 		return null;
 	}
 
-	@Override
+	/**
+	 * Get all features available in this P2 repository.
+	 *
+	 * @return a list of features, or empty list if none available
+	 * @throws Exception if an error occurs while fetching features
+	 */
 	public List<Feature> getFeatures() throws Exception {
 		return getP2Index().getFeatures();
 	}
 
-	@Override
+	/**
+	 * Get a specific feature by ID and version.
+	 *
+	 * @param id the feature ID
+	 * @param version the feature version
+	 * @return the feature, or null if not found
+	 * @throws Exception if an error occurs while fetching the feature
+	 */
 	public Feature getFeature(String id, String version) throws Exception {
 		return getP2Index().getFeature(id, version);
 	}

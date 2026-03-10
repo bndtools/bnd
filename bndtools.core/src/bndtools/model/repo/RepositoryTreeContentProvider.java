@@ -38,7 +38,7 @@ import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.service.FeatureProvider;
+import aQute.bnd.repository.p2.provider.P2Repository;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
@@ -390,9 +390,9 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 						// Collect features first
 						List<Object> items = new ArrayList<>();
 
-						if (repoPlugin instanceof FeatureProvider) {
+						if (repoPlugin instanceof P2Repository) {
 							try {
-								List<?> features = ((FeatureProvider) repoPlugin).getFeatures();
+								List<?> features = ((P2Repository) repoPlugin).getFeatures();
 								if (features != null) {
 									List<Feature> sortedFeatures = new ArrayList<>();
 									for (Object featureObj : features) {

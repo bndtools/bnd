@@ -100,7 +100,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Actionable;
-import aQute.bnd.service.FeatureProvider;
+import aQute.bnd.repository.p2.provider.P2Repository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RemoteRepositoryPlugin;
@@ -476,8 +476,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 					Feature.Includes includes = featureItem.getIncludes();
 					String featureId = includes.id;
 					try {
-						if (repo instanceof FeatureProvider) {
-							Object featureObj = ((FeatureProvider) repo).getFeature(includes.id, includes.version);
+						if (repo instanceof P2Repository) {
+							Object featureObj = ((P2Repository) repo).getFeature(includes.id, includes.version);
 							if (featureObj instanceof Feature) {
 								Feature feature = (Feature) featureObj;
 								// Try to get the feature JAR file
