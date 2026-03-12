@@ -70,6 +70,23 @@ public final class XML {
 					e);
 			}
 		}
+
+		try {
+			// Enable secure-processing mode. This instructs the parser to apply
+			// implementation-
+			// defined limits intended to prevent denial-of-service attacks such
+			// as excessive
+			// entity expansion ("Billion Laughs") and other resource exhaustion
+			// scenarios.
+			// While DOCTYPE and external entities are already disabled above,
+			// this provides
+			// an additional layer of defense-in-depth.
+			instance.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		} catch (ParserConfigurationException e) {
+			logger.info("Unable to enable secure XML processing limits: potential resource exhaustion or XML DoS risk",
+				e);
+		}
+
 		return instance;
 	}
 
