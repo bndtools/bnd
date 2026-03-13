@@ -7,7 +7,11 @@ import static java.util.stream.Collectors.toSet;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
@@ -74,6 +78,7 @@ class IndexFile {
 	final IMavenRepo							repo;
 	private final Processor						domain;
 	private final Macro							replacer;
+	private final boolean						isPom;
 
 	final Reporter								reporter;
 	final PromiseFactory						promiseFactory;
@@ -101,6 +106,7 @@ class IndexFile {
 		this.repo = repo;
 		this.promiseFactory = promiseFactory;
 		this.multi = multi;
+		this.isPom = looksLikePomXml(indexFile);
 		this.updateSerializer = promiseFactory.resolved(Boolean.TRUE);
 		this.bridge = Memoize.supplier(BridgeRepository::new);
 	}
@@ -412,8 +418,24 @@ class IndexFile {
 			this.status = "Not an index file: " + file;
 			return Collections.emptySet();
 		}
+		if (isPom) {
+			try {
+				return POMIndexFile.readFromPom(file, msg -> {
+					if (this.status == null) {
+						this.status = msg;
+					}
+				});
+			} catch (Exception e) {
+				this.status = "Failed to read pom.xml index: " + e.getMessage();
+				logger.debug("Failed to read pom.xml index {}", file, e);
+				return Collections.emptySet();
+			}
+		}
 		return read(IO.collect(file), true);
 	}
+
+
+
 
 	private Set<Archive> read(String source, boolean macro) {
 		Set<Archive> archives = Strings.splitLinesAsStream(source)
@@ -434,6 +456,15 @@ class IndexFile {
 	}
 
 	private void save(Set<Archive> add, Set<Archive> remove) throws Exception {
+		if (isPom) {
+			POMIndexFile.savePom(indexFile, archives);
+		} else {
+			saveText(add, remove);
+		}
+		lastModified = indexFile.lastModified();
+	}
+
+	private void saveText(Set<Archive> add, Set<Archive> remove) throws Exception {
 		try (Formatter f = new Formatter()) {
 			if (indexFile.isFile()) {
 				String content = IO.collect(indexFile);
@@ -454,8 +485,28 @@ class IndexFile {
 				IO.mkdirs(indexFile.getParentFile());
 			IO.store(f.toString(), indexFile);
 		}
+	}
 
-		lastModified = indexFile.lastModified();
+
+	/**
+	 * Replace an archive in the index with an updated version (e.g. after a
+	 * version upgrade). The replacement is persisted to the index file in its
+	 * native format (text or pom.xml). This method is thread-safe: it goes
+	 * through the same {@link #serialize(SupplierWithException) serializer}
+	 * used by {@link #add(Archive)} and {@link #remove(Archive)}, ensuring
+	 * that concurrent index modifications are ordered correctly.
+	 *
+	 * @param oldArchive the archive currently in the index
+	 * @param updatedArchive the archive with the new version to replace it
+	 */
+	void replaceArchive(Archive oldArchive, Archive updatedArchive) throws Exception {
+		Promise<Boolean> serializer = serialize(() -> {
+			removeWithDerived(oldArchive);
+			Set<Archive> toAdd = Collections.singleton(updatedArchive);
+			Set<Archive> toRemove = Collections.singleton(oldArchive);
+			return update(toAdd).thenAccept(b -> save(toAdd, toRemove));
+		});
+		sync(serializer);
 	}
 
 	private Archive toArchive(String s, boolean macro) {
@@ -625,4 +676,40 @@ class IndexFile {
 		return null;
 	}
 
+	/**
+	 * A simple check if we are dealing with an XML file. If yes, then we assume
+	 * a pom.xml
+	 *
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	private static boolean looksLikePomXml(File file) throws IOException {
+		Path path = file.toPath();
+		if (!Files.isRegularFile(path)) {
+			return false;
+		}
+
+		byte[] buffer = new byte[4096];
+		int n;
+
+		try (InputStream in = Files.newInputStream(path)) {
+			n = in.read(buffer);
+		}
+
+		if (n <= 0) {
+			return false;
+		}
+
+		String content = new String(buffer, 0, n, StandardCharsets.UTF_8);
+
+		// remove UTF-8 BOM if present
+		if (!content.isEmpty() && content.charAt(0) == '\uFEFF') {
+			content = content.substring(1);
+		}
+
+		content = content.trim();
+
+		return content.startsWith("<?xml") || content.startsWith("<project");
+	}
 }
