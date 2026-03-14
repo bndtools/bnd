@@ -41,7 +41,8 @@ public class MermaidRendererTest {
 	@Test
 	public void emptySubsetProducesMinimalGraph() {
 		BundleGraphModel model = graph(Collections.emptySet(), Collections.emptyMap());
-		String result = MermaidRenderer.toMermaid(model, Collections.emptySet());
+		String result = MermaidRenderer.toMermaid(model, Collections.emptySet(), Collections.emptySet(), EdgeFilter.ALL,
+			false);
 		assertTrue(result.startsWith("graph LR\n"), "Should start with graph LR header");
 	}
 
@@ -51,7 +52,7 @@ public class MermaidRendererTest {
 		Set<BundleNode> nodes = Collections.singleton(a);
 		BundleGraphModel model = graph(nodes, Collections.emptyMap());
 
-		String result = MermaidRenderer.toMermaid(model, nodes);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
 
 		assertTrue(result.contains("com_example_bundle"), "Node id should replace dots with underscores");
 		assertTrue(result.contains("com.example.bundle"), "Node label should contain original BSN");
@@ -70,7 +71,7 @@ public class MermaidRendererTest {
 		deps.put(a, Collections.singleton(b)); // a depends on b
 
 		BundleGraphModel model = graph(nodes, deps);
-		String result = MermaidRenderer.toMermaid(model, nodes);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
 
 		// Edge should be: b --> a (b exports something a imports)
 		assertTrue(result.contains("bundle_b --> bundle_a"), "Should have solid edge from b to a");
@@ -91,7 +92,7 @@ public class MermaidRendererTest {
 		BundleGraphModel model = graph(all, deps);
 		// Subset contains only 'a', not 'b'
 		Set<BundleNode> subset = Collections.singleton(a);
-		String result = MermaidRenderer.toMermaid(model, subset);
+		String result = MermaidRenderer.toMermaid(model, subset, Collections.emptySet(), EdgeFilter.ALL, false);
 
 		assertFalse(result.contains("-->") || result.contains(".->"),
 			"No edges when dependency endpoint not in subset");
@@ -106,7 +107,7 @@ public class MermaidRendererTest {
 		BundleGraphModel model = graph(nodes, Collections.emptyMap());
 
 		// subset == primary: no secondary nodes → no classDef emitted
-		String result = MermaidRenderer.toMermaid(model, nodes, nodes);
+		String result = MermaidRenderer.toMermaid(model, nodes, nodes, EdgeFilter.ALL, false);
 		assertFalse(result.contains("classDef"), "No classDef when all nodes are primary");
 		assertFalse(result.contains(":::"), "No class assignment when all nodes are primary");
 	}
@@ -122,7 +123,7 @@ public class MermaidRendererTest {
 		BundleGraphModel model = graph(allNodes, Collections.emptyMap());
 
 		Set<BundleNode> primarySet = Collections.singleton(primary);
-		String result = MermaidRenderer.toMermaid(model, allNodes, primarySet);
+		String result = MermaidRenderer.toMermaid(model, allNodes, primarySet, EdgeFilter.ALL, false);
 
 		assertTrue(result.contains("classDef primary"), "Primary classDef should be declared");
 		assertTrue(result.contains("classDef secondary"), "Secondary classDef should be declared");
@@ -138,7 +139,7 @@ public class MermaidRendererTest {
 		BundleGraphModel model = graph(nodes, Collections.emptyMap());
 
 		// Empty primary set → nothing to distinguish, no styling
-		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet());
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
 		assertFalse(result.contains("classDef"), "No classDef when primary set is empty");
 	}
 
@@ -157,7 +158,7 @@ public class MermaidRendererTest {
 		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, false));
 		BundleGraphModel model = graphWithEdges(nodes, edges);
 
-		String result = MermaidRenderer.toMermaid(model, nodes);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
 		assertTrue(result.contains("bundle_b --> bundle_a"), "Mandatory edge should use solid --> arrow");
 		assertFalse(result.contains(".->"), "Mandatory edge should not use dotted arrow");
 	}
@@ -175,7 +176,7 @@ public class MermaidRendererTest {
 		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, true));
 		BundleGraphModel model = graphWithEdges(nodes, edges);
 
-		String result = MermaidRenderer.toMermaid(model, nodes);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
 		assertTrue(result.contains("bundle_b .-> bundle_a"), "Optional edge should use dotted .-> arrow");
 		assertFalse(result.contains("-->"), "Optional edge should not use solid arrow");
 	}
@@ -194,7 +195,8 @@ public class MermaidRendererTest {
 		BundleGraphModel model = graphWithEdges(nodes, edges);
 
 		// includeOptional=false → dotted arrow should be suppressed, and both nodes hidden (no connected edges)
-		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY,
+			false);
 		assertFalse(result.contains("bundle_b .-> bundle_a"), "Optional edge should be hidden with EdgeFilter.ONLY_MANDATORY");
 		assertFalse(result.contains("-->"), "No solid arrow either");
 		assertFalse(result.contains("bundle_a"), "Disconnected node a should be hidden");
@@ -215,7 +217,8 @@ public class MermaidRendererTest {
 		BundleGraphModel model = graphWithEdges(nodes, edges);
 
 		// mandatory edge must still appear when ONLY_MANDATORY filter is active
-		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY,
+			false);
 		assertTrue(result.contains("bundle_b --> bundle_a"), "Mandatory edge must still be shown");
 	}
 
@@ -235,7 +238,8 @@ public class MermaidRendererTest {
 		edges.add(new BundleEdge(a, c, true));  // a→c optional-only
 
 		BundleGraphModel model = graphWithEdges(nodes, edges);
-		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY,
+			false);
 
 		// mandatory edge must be present
 		assertTrue(result.contains("bundle_b --> bundle_a"), "Mandatory edge should still be shown");
@@ -259,7 +263,7 @@ public class MermaidRendererTest {
 		edges.add(new BundleEdge(a, c, true));  // a→c optional
 
 		BundleGraphModel model = graphWithEdges(nodes, edges);
-		String result = MermaidRenderer.toMermaid(model, nodes);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
 
 		assertTrue(result.contains("bundle_b --> bundle_a"), "Mandatory edge b→a should use solid arrow");
 		assertTrue(result.contains("bundle_c .-> bundle_a"), "Optional edge c→a should use dotted arrow");
@@ -281,7 +285,8 @@ public class MermaidRendererTest {
 		edges.add(new BundleEdge(a, c, true));  // a→c optional-only
 
 		BundleGraphModel model = graphWithEdges(nodes, edges);
-		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_OPTIONAL);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_OPTIONAL,
+			false);
 
 		// optional edge must be present, mandatory edge must be hidden
 		assertTrue(result.contains("bundle_c .-> bundle_a"), "Optional-only edge should be shown");
@@ -304,7 +309,8 @@ public class MermaidRendererTest {
 		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, false)); // a→b mandatory
 		BundleGraphModel model = graphWithEdges(nodes, edges);
 
-		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ONLY_MANDATORY,
+			false);
 		assertTrue(result.contains("bundle_b --> bundle_a"), "Mandatory edge should appear");
 		assertFalse(result.contains("bundle_c"), "Isolated node c must not appear");
 	}
@@ -337,7 +343,7 @@ public class MermaidRendererTest {
 		BundleGraphModel model = graphWithEdges(nodes, edges);
 		Set<BundleNode> primarySet = Collections.singleton(assertjCore);
 
-		String result = MermaidRenderer.toMermaid(model, nodes, primarySet, EdgeFilter.ONLY_MANDATORY);
+		String result = MermaidRenderer.toMermaid(model, nodes, primarySet, EdgeFilter.ONLY_MANDATORY, false);
 
 		// The edge touching the primary node must appear
 		assertTrue(result.contains("assertj_core --> net_bytebuddy_byte_buddy")
@@ -362,7 +368,83 @@ public class MermaidRendererTest {
 		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, false));
 		BundleGraphModel model = graphWithEdges(nodes, edges);
 
-		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL);
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
 		assertTrue(result.contains("bundle_c"), "Isolated node c must still appear under ALL filter");
+	}
+
+	// ---- Tests for showFirstPackage / contributingPackage ----
+
+	@Test
+	public void contributingPackageShownOnEdgeWhenShowFirstPackageIsTrue() {
+		BundleNode a = node("bundle.a");
+		BundleNode b = node("bundle.b");
+
+		Set<BundleNode> nodes = new LinkedHashSet<>();
+		nodes.add(a);
+		nodes.add(b);
+
+		// a depends on b via a mandatory edge with a known contributing package
+		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, false, "com.example.api"));
+		BundleGraphModel model = graphWithEdges(nodes, edges);
+
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, true);
+		assertTrue(result.contains("|com.example.api|"),
+			"Contributing package should appear as edge label when showFirstPackage=true");
+	}
+
+	@Test
+	public void contributingPackageHiddenOnEdgeWhenShowFirstPackageIsFalse() {
+		BundleNode a = node("bundle.a");
+		BundleNode b = node("bundle.b");
+
+		Set<BundleNode> nodes = new LinkedHashSet<>();
+		nodes.add(a);
+		nodes.add(b);
+
+		// a depends on b via a mandatory edge with a known contributing package
+		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, false, "com.example.api"));
+		BundleGraphModel model = graphWithEdges(nodes, edges);
+
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, false);
+		assertFalse(result.contains("|com.example.api|"),
+			"Contributing package should not appear when showFirstPackage=false");
+		assertTrue(result.contains("bundle_b --> bundle_a"), "Mandatory edge should still appear");
+	}
+
+	@Test
+	public void emptyContributingPackageNotShownEvenWhenShowFirstPackageIsTrue() {
+		BundleNode a = node("bundle.a");
+		BundleNode b = node("bundle.b");
+
+		Set<BundleNode> nodes = new LinkedHashSet<>();
+		nodes.add(a);
+		nodes.add(b);
+
+		// a depends on b with no contributing package (empty string)
+		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, false));
+		BundleGraphModel model = graphWithEdges(nodes, edges);
+
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, true);
+		assertFalse(result.contains("||"), "No empty edge label should be rendered");
+		assertTrue(result.contains("bundle_b --> bundle_a"), "Mandatory edge should still appear");
+	}
+
+	@Test
+	public void contributingPackageShownOnOptionalEdgeWhenShowFirstPackageIsTrue() {
+		BundleNode a = node("bundle.a");
+		BundleNode b = node("bundle.b");
+
+		Set<BundleNode> nodes = new LinkedHashSet<>();
+		nodes.add(a);
+		nodes.add(b);
+
+		// a depends on b via an optional edge with a contributing package
+		Set<BundleEdge> edges = Collections.singleton(new BundleEdge(a, b, true, "com.example.optional"));
+		BundleGraphModel model = graphWithEdges(nodes, edges);
+
+		String result = MermaidRenderer.toMermaid(model, nodes, Collections.emptySet(), EdgeFilter.ALL, true);
+		assertTrue(result.contains("|com.example.optional|"),
+			"Contributing package should appear on optional edge when showFirstPackage=true");
+		assertTrue(result.contains(".->"), "Optional edge should use dotted arrow");
 	}
 }
