@@ -274,7 +274,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 |                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
 | `readOnly`       | `true`|`false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
-| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.|
+| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_ (text with one GAV per line or pom.xml).|
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
@@ -285,7 +285,13 @@ If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _loc
 
 For finding archives, both URLs are used. For releasing, only the first or the `stagingUrl` is used.
 
-The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories.
+The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories. 
+The index file supports two formats: 
+
+- a) text file with one GAV per line or
+- b) Maven _pom.xml_ content (note that not the full maven pom.xml features are supported. Mainly the `<dependency>` entries are relevant.
+
+Note on auto-detection of index format: If bnd detects xml it assumes `pom.xml`, otherwise the text-file format is assumed.
 
 Alternative, the GAV's can be specified in the file where the repository is defined with the  `source` configuration property. This is a string separated by either whitespace, commas, semicolons, or any combination thereof.
 
