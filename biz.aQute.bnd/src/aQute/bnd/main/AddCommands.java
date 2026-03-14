@@ -167,9 +167,7 @@ public class AddCommands {
 	}
 
 	private void showTemplatesFragments(List<TemplateInfo> availableTemplates) {
-		availableTemplates.forEach(ti -> bnd.out.format("%s - %s%n  - Organisation: %s%n  - Repo: %s %n", ti.name(),
-			ti.description(), ti.id()
-				.organisation(),
+		availableTemplates.forEach(ti -> bnd.out.format("%s - %s%n  - Repo: %s %n", ti.name(), ti.description(),
 			ti.id()
 				.repoUrl()));
 	}
@@ -195,12 +193,15 @@ public class AddCommands {
 			return;
 		}
 
-		List<TemplateInfo> thirdParty = selectedTemplates.stream()
+		List<TemplateInfo> selectedAndRequired = engine.resolveRequirements(selectedTemplates);
+		List<TemplateInfo> thirdParty = selectedAndRequired
+			.stream()
 			.filter(t -> !t.isOfficial())
 			.toList();
 
 		if (!thirdParty.isEmpty()) {
-			bnd.out.format("You have selected " + thirdParty.size() + " fragments from 3rd-party authors: %n");
+			bnd.out.format("Your selection would install " + thirdParty.size()
+				+ " fragments from 3rd-party authors (including required dependency fragments): %n");
 			showTemplatesFragments(thirdParty);
 
 			boolean confirmed = showConfirmation(
