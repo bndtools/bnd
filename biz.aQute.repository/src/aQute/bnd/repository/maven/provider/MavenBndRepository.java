@@ -916,6 +916,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							.size());
 						f.format("Storage                      : %s\n", localRepo);
 						f.format("Index                        : %s\n", index.indexFile);
+						f.format("Format                        : %s\n", index.isPom ? "pom.xml" : "text");
 						f.format("Release repos                : \n    %s\n", storage.getReleaseRepositories()
 							.stream()
 							.filter(Objects::nonNull)

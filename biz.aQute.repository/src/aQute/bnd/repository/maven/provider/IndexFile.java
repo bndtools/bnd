@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,7 +79,7 @@ class IndexFile {
 	final IMavenRepo							repo;
 	private final Processor						domain;
 	private final Macro							replacer;
-	private final boolean						isPom;
+	final boolean								isPom;
 
 	final Reporter								reporter;
 	final PromiseFactory						promiseFactory;
@@ -457,7 +458,7 @@ class IndexFile {
 
 	private void save(Set<Archive> add, Set<Archive> remove) throws Exception {
 		if (isPom) {
-			POMIndexFile.savePom(indexFile, archives);
+			POMIndexFile.savePom(indexFile, sort(archives.keySet()));
 		} else {
 			saveText(add, remove);
 		}
@@ -507,6 +508,38 @@ class IndexFile {
 			return update(toAdd).thenAccept(b -> save(toAdd, toRemove));
 		});
 		sync(serializer);
+	}
+
+	void convertTextXml() {
+		Promise<Boolean> serializer = serialize(() -> {
+
+			if (isPom) {
+				try (Formatter f = new Formatter()) {
+					sort(archives.keySet()).forEach(archive -> f.format("%s\n", archive));
+					IO.store(f.toString(), indexFile);
+				}
+
+			} else {
+				POMIndexFile.savePom(indexFile, sort(archives.keySet()));
+			}
+			lastModified = indexFile.lastModified();
+			return null;
+		});
+		sync(serializer);
+
+	}
+
+	private static List<Archive> sort(Set<Archive> archives) {
+
+		// Compute archives from current state (update() already applied
+		// changes)
+		return archives.stream()
+			.sorted(Comparator.comparing((Archive a) -> a.revision.program.group)
+				.thenComparing(a -> a.revision.program.artifact)
+				.thenComparing(Comparator.comparing(a -> a.extension))
+				.thenComparing(Comparator.comparing(a -> a.classifier))
+				.thenComparing(a -> a.revision.version.toString()))
+			.collect(toList());
 	}
 
 	private Archive toArchive(String s, boolean macro) {
