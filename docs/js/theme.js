@@ -3,7 +3,11 @@ function toggleTheme() {
   var isDark = html.getAttribute('data-theme') === 'dark';
   var newTheme = isDark ? 'light' : 'dark';
   html.setAttribute('data-theme', newTheme);
-  try { localStorage.setItem('theme', newTheme); } catch (e) { console.warn('Failed to save theme preference:', e); }
+  try {
+    localStorage.setItem('theme', newTheme);
+  } catch (e) {
+    console.warn('Failed to save theme preference:', e);
+  }
   updateThemeToggle();
 }
 

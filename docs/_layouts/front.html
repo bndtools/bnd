@@ -8,7 +8,8 @@
 	{% include nav.htm %}
 
 	<div class=container12>
-		<img span=12 src="{{ '/img/front-page.png' | prepend:site.baseurl }}">
+		<img span=12 class="light-only" src="{{ '/img/front-page.png' | prepend:site.baseurl }}">
+		<img span=12 class="dark-only" src="{{ '/img/front-page-dark.png' | prepend:site.baseurl }}">
 	</div>
 
 	<div class=container12>
@@ -361,6 +362,27 @@ bnd run launch.bndrun
 
 	.tab-content.active {
 		display: block;
+	}
+
+	/* Dark mode overrides for code tabs */
+	html[data-theme="dark"] .tab-buttons {
+		border-bottom-color: #30363d;
+	}
+
+	html[data-theme="dark"] .tab-button {
+		background-color: #21262d;
+		color: #c9d1d9;
+		border-color: #30363d;
+	}
+
+	html[data-theme="dark"] .tab-button:hover {
+		background-color: #30363d;
+	}
+
+	html[data-theme="dark"] .tab-button.active {
+		background-color: #0d1117;
+		border-bottom-color: #0d1117;
+		color: #c9d1d9;
 	}
 </style>
 

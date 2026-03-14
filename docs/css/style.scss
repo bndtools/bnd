@@ -281,6 +281,9 @@ div[class*="language-"] button{
   background-color: #aaaaaa;
 }
 
+/* Light/dark image swap helpers */
+.dark-only { display: none; }
+
 /* Dark mode toggle button */
 #theme-toggle {
   float: right;
@@ -391,4 +394,25 @@ html[data-theme="dark"] {
     background: #30363d;
     color: #c9d1d9;
   }
+
+  /* Copy-code buttons inside language blocks */
+  div[class*="language-"] button {
+    background: #30363d;
+    color: #c9d1d9;
+    border: 1px solid #444c56;
+  }
+
+  /* Page-since / pageclass badges */
+  .pageclass.page-since-tag {
+    background-color: #444c56;
+  }
+
+  /* Footer border */
+  footer.container12 {
+    border-top-color: #30363d;
+  }
+
+  /* Light/dark image swap */
+  .light-only { display: none; }
+  .dark-only { display: inline-block; }
 }
