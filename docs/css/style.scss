@@ -280,3 +280,115 @@ div[class*="language-"] button{
 .pageclass.page-since-tag{
   background-color: #aaaaaa;
 }
+
+/* Dark mode toggle button */
+#theme-toggle {
+  float: right;
+  padding: 6px 10px;
+  margin-top: 8px;
+  margin-right: 4px;
+  background: #ddd;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333;
+}
+
+/* Dark mode overrides — applied when html[data-theme="dark"] */
+html[data-theme="dark"] {
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #f08080;
+  }
+
+  a {
+    color: #f08080;
+    &:visited { color: #d9a0a0; }
+  }
+
+  pre {
+    background-color: #161b22;
+    border-color: #30363d;
+  }
+
+  .menu-bar {
+    background: #2d333b;
+    background-image: none;
+  }
+
+  .dropdown-content {
+    background-color: #21262d;
+  }
+
+  .dropdown-content a {
+    color: #c9d1d9;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #30363d;
+  }
+
+  .side-nav {
+    background-color: #161b22;
+  }
+
+  .selected {
+    color: #f08080;
+  }
+
+  ul .side-nav-section {
+    color: #f08080;
+  }
+
+  .next-prev a {
+    color: #8b949e;
+  }
+
+  .next-prev a:hover,
+  .next-prev a:focus {
+    color: #c9d1d9;
+  }
+
+  input {
+    background-color: #161b22;
+    color: #c9d1d9;
+    border-color: #30363d;
+  }
+
+  textarea {
+    background-color: #161b22;
+    color: #c9d1d9;
+    border-color: #30363d;
+  }
+
+  table.bordered {
+    border-color: #30363d;
+    td, th {
+      border-color: #30363d;
+    }
+  }
+
+  menu.tabs {
+    border-color: #30363d;
+    li {
+      border-color: #30363d;
+    }
+    li:not([active=true]) {
+      background: #21262d;
+    }
+  }
+
+  .search-container button {
+    background: #30363d;
+    color: #c9d1d9;
+  }
+
+  #theme-toggle {
+    background: #30363d;
+    color: #c9d1d9;
+  }
+}
