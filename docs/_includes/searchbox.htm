@@ -54,6 +54,14 @@
     }
 
     /* Dark mode overrides for search modal */
+    html[data-theme="dark"] {
+    --pagefind-ui-primary: #eeeeee;
+    --pagefind-ui-text: #eeeeee;
+    --pagefind-ui-background: #152028;
+    --pagefind-ui-border: #152028;
+    --pagefind-ui-tag: #152028;
+    }
+
     html[data-theme="dark"] .modal_container {
         background: #1c2128;
         color: #c9d1d9;
@@ -73,11 +81,9 @@
         border-color: #30363d;
     }
 
-    html[data-theme="dark"] .pagefind-ui__result-title,
-    html[data-theme="dark"] .pagefind-ui__result-excerpt {
-        color: #c9d1d9;
-    }
+   
 </style>
+
 
 <script type="text/javascript">
     // Function to open the modal

@@ -282,7 +282,7 @@ div[class*="language-"] button{
 }
 
 /* Light/dark image swap helpers */
-.dark-only { display: none; }
+.dark-only { display: none !important; }
 
 /* Dark mode toggle button */
 #theme-toggle {
@@ -295,6 +295,7 @@ div[class*="language-"] button{
   border-radius: 4px;
   cursor: pointer;
   color: #333;
+  height: 24px;
 }
 
 /* Dark mode overrides — applied when html[data-theme="dark"] */
@@ -414,5 +415,5 @@ html[data-theme="dark"] {
 
   /* Light/dark image swap */
   .light-only { display: none; }
-  .dark-only { display: inline-block; }
+  .dark-only { display: inline-block !important; }
 }
