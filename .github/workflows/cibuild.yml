@@ -132,6 +132,45 @@ jobs:
         SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+    - name: Upload Rebuild P2 Repo artifact
+      if: ${{ matrix.canonical }}
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      with:
+        name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
+        path: |
+          org.bndtools.p2/generated/org.bndtools.p2.jar
+        retention-days: 7   # keep for 7 days
+    - name: Publish PR p2 repo
+      if: ${{ matrix.canonical }}
+      run: |
+        ls -laR org.bndtools.p2/*
+        env | sort
+        PR=${{ github.event.pull_request.number }}
+        ARTIFACT_PATH="org.bndtools.p2/generated/org.bndtools.p2.jar"
+        if [ -f "$ARTIFACT_PATH" ] && [ "$PR" != "" ]; then
+          echo "artifact found - start upload check"
+          if curl --silent --head --fail "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}" > /dev/null; then
+          echo "URL already existing - delete previous deployment"
+          curl -s -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
+            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
+          fi
+          echo "upload p2 repo to https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
+            -H "X-Explode-Archive: true" \
+            -T "$ARTIFACT_PATH" \
+            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}/org.bndtools.p2.zip"
+          if [ $? -eq 0 ]; then
+            echo "upload successful"
+          else
+            echo "upload failed"
+          fi
+        else
+          echo "Artifact $ARTIFACT_PATH not found, skipping upload."
+        fi
+      env:
+        JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
