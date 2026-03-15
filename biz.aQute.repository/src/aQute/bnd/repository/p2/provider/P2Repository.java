@@ -31,6 +31,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import aQute.p2.packed.Unpack200;
+import aQute.p2.provider.Feature;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -196,5 +197,26 @@ public class P2Repository extends BaseRepository
 		return null;
 	}
 
+	/**
+	 * Get all features available in this P2 repository.
+	 *
+	 * @return a list of features, or empty list if none available
+	 * @throws Exception if an error occurs while fetching features
+	 */
+	public List<Feature> getFeatures() throws Exception {
+		return getP2Index().getFeatures();
+	}
+
+	/**
+	 * Get a specific feature by ID and version.
+	 *
+	 * @param id the feature ID
+	 * @param version the feature version
+	 * @return the feature, or null if not found
+	 * @throws Exception if an error occurs while fetching the feature
+	 */
+	public Feature getFeature(String id, String version) throws Exception {
+		return getP2Index().getFeature(id, version);
+	}
 
 }

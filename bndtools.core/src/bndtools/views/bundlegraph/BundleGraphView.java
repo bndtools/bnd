@@ -101,7 +101,7 @@ public class BundleGraphView extends ViewPart {
 	private Supplier<BundleGraphModel>			modelSupplier		= null;
 	private final Set<BundleNode>		selected		= new LinkedHashSet<>();
 	private ExpansionMode				mode			= ExpansionMode.ONLY_SELECTED;
-	private boolean						showFirstPackage	= false;
+	private boolean						autoRender				= true;
 	private EdgeFilter					edgeFilter				= EdgeFilter.ALL;
 
 	// UI
@@ -109,7 +109,7 @@ public class BundleGraphView extends ViewPart {
 	private TableViewer					selectedViewer;
 	private Text						filterText;
 	private Combo						modeCombo;
-	private Button						showFirstPackageCheck;
+	private Button						autoRenderCheck;
 	private Browser						browser;
 	private boolean						browserReady;
 	private SashForm					sash;
@@ -395,20 +395,19 @@ public class BundleGraphView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				mode = ExpansionMode.values()[modeCombo.getSelectionIndex()];
-				rerender();
+				if (autoRender) {
+					rerender();
+				}
 			}
 		});
 
-		showFirstPackageCheck = new Button(optRow, SWT.CHECK);
-		showFirstPackageCheck.setText("Show edge package");
-		showFirstPackageCheck.setToolTipText(
-			"Shows the first contributing package on an edge. This is helpful for debugging why two bundles are connected.");
-		showFirstPackageCheck.setSelection(false);
-		showFirstPackageCheck.addSelectionListener(new SelectionAdapter() {
+		autoRenderCheck = new Button(optRow, SWT.CHECK);
+		autoRenderCheck.setText("Auto-render");
+		autoRenderCheck.setSelection(true);
+		autoRenderCheck.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				showFirstPackage = showFirstPackageCheck.getSelection();
-				rerender();
+				autoRender = autoRenderCheck.getSelection();
 			}
 		});
 
@@ -504,7 +503,9 @@ public class BundleGraphView extends ViewPart {
 				@Override
 				public void completed(org.eclipse.swt.browser.ProgressEvent event) {
 					browserReady = true;
-					rerender();
+					if (autoRender) {
+						rerender();
+					}
 					applyZoom(currentZoomPercent); // ensures JS scale matches
 					// UI state
 				}
@@ -651,7 +652,9 @@ public class BundleGraphView extends ViewPart {
 		}
 		refreshAvailable();
 		selectedViewer.setInput(new ArrayList<>(selected));
-		rerender();
+		if (autoRender) {
+			rerender();
+		}
 	}
 
 	// ---- Private helpers ----
@@ -684,7 +687,9 @@ public class BundleGraphView extends ViewPart {
 		}
 		if (changed) {
 			selectedViewer.setInput(new ArrayList<>(selected));
-			rerender();
+			if (autoRender) {
+				rerender();
+			}
 		}
 	}
 
@@ -698,7 +703,9 @@ public class BundleGraphView extends ViewPart {
 		}
 		if (changed) {
 			selectedViewer.setInput(new ArrayList<>(selected));
-			rerender();
+			if (autoRender) {
+				rerender();
+			}
 		}
 	}
 
@@ -735,7 +742,9 @@ public class BundleGraphView extends ViewPart {
 		this.model = new SimpleBundleGraphModel(newNodes, newEdges, newJarMap);
 		refreshAvailable();
 		selectedViewer.setInput(new ArrayList<>(selected));
-		rerender();
+		if (autoRender) {
+			rerender();
+		}
 	}
 
 	private void addDependencies() {
@@ -743,7 +752,9 @@ public class BundleGraphView extends ViewPart {
 		boolean changed = selected.addAll(closure);
 		if (changed) {
 			selectedViewer.setInput(new ArrayList<>(selected));
-			rerender();
+			if (autoRender) {
+				rerender();
+			}
 		}
 	}
 
@@ -752,7 +763,9 @@ public class BundleGraphView extends ViewPart {
 		boolean changed = selected.addAll(closure);
 		if (changed) {
 			selectedViewer.setInput(new ArrayList<>(selected));
-			rerender();
+			if (autoRender) {
+				rerender();
+			}
 		}
 	}
 
@@ -774,8 +787,7 @@ public class BundleGraphView extends ViewPart {
 				break;
 		}
 		// Pass the user-selected (primary) set so the renderer can style them differently
-		lastMermaidDef = MermaidRenderer.toMermaid(model, subset, new LinkedHashSet<>(selected), edgeFilter,
-			showFirstPackage);
+		lastMermaidDef = MermaidRenderer.toMermaid(model, subset, new LinkedHashSet<>(selected), edgeFilter);
 		// Escape backticks for JS template literal
 		String escaped = lastMermaidDef.replace("\\", "\\\\")
 			.replace("`", "\\`");
@@ -801,7 +813,9 @@ public class BundleGraphView extends ViewPart {
 		selected.retainAll(newModel.nodes());
 		refreshAvailable();
 		selectedViewer.setInput(new ArrayList<>(selected));
-		rerender();
+		if (autoRender) {
+			rerender();
+		}
 	}
 
 	/**
@@ -867,7 +881,9 @@ public class BundleGraphView extends ViewPart {
 		Set<BundleEdge> recomputedEdges = ManifestDependencyCalculator.calculateEdges(mergedJarMap);
 		this.model = new SimpleBundleGraphModel(mergedNodes, recomputedEdges, mergedJarMap);
 		refreshAvailable();
-		rerender();
+		if (autoRender) {
+			rerender();
+		}
 	}
 
 	/**
@@ -879,7 +895,9 @@ public class BundleGraphView extends ViewPart {
 		boolean changed = selected.addAll(incoming.nodes());
 		if (changed) {
 			selectedViewer.setInput(new ArrayList<>(selected));
-			rerender();
+			if (autoRender) {
+				rerender();
+			}
 		}
 	}
 

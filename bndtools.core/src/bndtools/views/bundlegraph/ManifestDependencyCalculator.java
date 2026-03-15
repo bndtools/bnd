@@ -112,9 +112,6 @@ public final class ManifestDependencyCalculator {
 		// we emit an edge to each exporter.
 		// (importer, exporter) → list of per-package optional flags
 		Map<BundleNode, Map<BundleNode, List<Boolean>>> edgeOptionals = new LinkedHashMap<>();
-		// (importer, exporter) → first contributing package name
-		Map<BundleNode, Map<BundleNode, String>> edgeFirstPackage = new LinkedHashMap<>();
-
 		for (Map.Entry<BundleNode, Map<String, Boolean>> entry : importsWithOptional.entrySet()) {
 			BundleNode importer = entry.getKey();
 			for (Map.Entry<String, Boolean> pkgEntry : entry.getValue().entrySet()) {
@@ -125,10 +122,6 @@ public final class ManifestDependencyCalculator {
 						edgeOptionals.computeIfAbsent(importer, k -> new LinkedHashMap<>())
 							.computeIfAbsent(exporter, k -> new ArrayList<>())
 							.add(isOptional);
-						// Record the first package that established this
-						// (importer, exporter) edge
-						edgeFirstPackage.computeIfAbsent(importer, k -> new LinkedHashMap<>())
-							.putIfAbsent(exporter, pkg);
 					}
 				}
 			}
@@ -143,9 +136,7 @@ public final class ManifestDependencyCalculator {
 				List<Boolean> flags = toEntry.getValue();
 				boolean edgeIsOptional = flags.stream()
 					.allMatch(b -> b);
-				String firstPkg = edgeFirstPackage.getOrDefault(from, Collections.emptyMap())
-					.getOrDefault(to, "");
-				edges.add(new BundleEdge(from, to, edgeIsOptional, firstPkg));
+				edges.add(new BundleEdge(from, to, edgeIsOptional));
 			}
 		}
 		return edges;

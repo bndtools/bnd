@@ -58,10 +58,12 @@ import bndtools.Plugin;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
+import bndtools.model.repo.IncludedBundleItem;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryFeature;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
@@ -200,7 +202,8 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
 			private boolean selectionIsDroppable(Object element) {
 				return element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion
-					|| element instanceof ProjectBundle || element instanceof RepositoryResourceElement;
+					|| element instanceof ProjectBundle || element instanceof RepositoryResourceElement
+					|| element instanceof RepositoryFeature || element instanceof IncludedBundleItem;
 			}
 
 			@Override
@@ -291,6 +294,30 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 						RepositoryResourceElement elt = (RepositoryResourceElement) item;
 						VersionedClause newClause = RepositoryBundleUtils
 							.convertRepoBundleVersion(elt.getRepositoryBundleVersion(), phase);
+						adding.add(newClause);
+					} else if (item instanceof RepositoryFeature) {
+						RepositoryFeature feature = (RepositoryFeature) item;
+						// Create VersionedClause with "feature:id" BSN and feature=true attribute
+						VersionedClause newClause = new VersionedClause("feature:" + feature.getFeature()
+							.getId(), new Attrs());
+						// Set version if available
+						if (feature.getFeature()
+							.getVersion() != null) {
+							newClause.setVersionRange(feature.getFeature()
+								.getVersion());
+						}
+						// Add feature=true attribute for resolver identification
+						newClause.getAttribs()
+							.put("feature", "true");
+						adding.add(newClause);
+					} else if (item instanceof IncludedBundleItem) {
+						IncludedBundleItem bundleItem = (IncludedBundleItem) item;
+						VersionedClause newClause = new VersionedClause(bundleItem.getPlugin().id, new Attrs());
+						// Set version if available and not default
+						String version = bundleItem.getPlugin().version;
+						if (version != null && !version.equals("0.0.0")) {
+							newClause.setVersionRange(version);
+						}
 						adding.add(newClause);
 					}
 				}

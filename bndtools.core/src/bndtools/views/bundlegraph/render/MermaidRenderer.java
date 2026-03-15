@@ -1,5 +1,6 @@
 package bndtools.views.bundlegraph.render;
 
+import java.util.Collections;
 import java.util.Set;
 
 import bndtools.views.bundlegraph.model.BundleEdge;
@@ -13,38 +14,59 @@ public final class MermaidRenderer {
 
 	private MermaidRenderer() {}
 
-
+	/**
+	 * Produces a Mermaid {@code graph LR} definition for the given node subset. All nodes are rendered with the same
+	 * style. Only edges where both endpoints are in the subset are included.
+	 *
+	 * @param model the full graph model
+	 * @param subset the nodes to include in the diagram
+	 * @return Mermaid graph definition string
+	 */
+	public static String toMermaid(BundleGraphModel model, Set<BundleNode> subset) {
+		return toMermaid(model, subset, Collections.emptySet(), EdgeFilter.ALL);
+	}
 
 	/**
-	 * Produces a Mermaid {@code graph LR} definition for the given node subset,
-	 * visually distinguishing "primary" (user-selected seed) nodes from
-	 * "secondary" (closure) nodes, and filtering edges according to
+	 * Produces a Mermaid {@code graph LR} definition for the given node subset, visually distinguishing "primary"
+	 * (user-selected seed) nodes from "secondary" (closure) nodes.
+	 * <p>
+	 * Primary nodes get a solid, highlighted border; secondary nodes get a dashed, muted border. Mandatory dependency
+	 * edges are rendered as solid arrows ({@code -->}); optional-only edges (where every contributing
+	 * {@code Import-Package} entry carried {@code resolution:=optional}) are rendered as dotted arrows ({@code -.->}).
+	 * Only edges where both endpoints are in the subset are included.
+	 *
+	 * @param model the full graph model
+	 * @param subset all nodes to include in the diagram (primary ∪ secondary)
+	 * @param primaryNodes the user-selected seed nodes (subset of {@code subset})
+	 * @return Mermaid graph definition string
+	 */
+	public static String toMermaid(BundleGraphModel model, Set<BundleNode> subset, Set<BundleNode> primaryNodes) {
+		return toMermaid(model, subset, primaryNodes, EdgeFilter.ALL);
+	}
+
+	/**
+	 * Produces a Mermaid {@code graph LR} definition for the given node subset, visually distinguishing "primary"
+	 * (user-selected seed) nodes from "secondary" (closure) nodes, and filtering edges according to
 	 * {@code edgeFilter}.
 	 * <p>
-	 * Primary nodes get a solid, highlighted border; secondary nodes get a
-	 * dashed, muted border. Mandatory dependency edges are rendered as solid
-	 * arrows ({@code -->}); optional-only edges are rendered as dotted arrows
+	 * Primary nodes get a solid, highlighted border; secondary nodes get a dashed, muted border. Mandatory dependency
+	 * edges are rendered as solid arrows ({@code -->}); optional-only edges are rendered as dotted arrows
 	 * ({@code -.->}). The {@code edgeFilter} controls which edges are included:
 	 * <ul>
 	 * <li>{@link EdgeFilter#ALL} – all edges (mandatory and optional)</li>
-	 * <li>{@link EdgeFilter#ONLY_MANDATORY} – only edges that are not
-	 * all-optional</li>
-	 * <li>{@link EdgeFilter#ONLY_OPTIONAL} – only edges that are
-	 * all-optional</li>
+	 * <li>{@link EdgeFilter#ONLY_MANDATORY} – only edges that are not all-optional</li>
+	 * <li>{@link EdgeFilter#ONLY_OPTIONAL} – only edges that are all-optional</li>
 	 * </ul>
 	 * Only edges where both endpoints are in the subset are included.
 	 *
 	 * @param model the full graph model
 	 * @param subset all nodes to include in the diagram (primary ∪ secondary)
-	 * @param primaryNodes the user-selected seed nodes (subset of
-	 *            {@code subset})
+	 * @param primaryNodes the user-selected seed nodes (subset of {@code subset})
 	 * @param edgeFilter controls which dependency edges to include
-	 * @param showFirstPackage if <code>true</code> the first contributing
-	 *            package on an edge is shown
 	 * @return Mermaid graph definition string
 	 */
 	public static String toMermaid(BundleGraphModel model, Set<BundleNode> subset, Set<BundleNode> primaryNodes,
-		EdgeFilter edgeFilter, boolean showFirstPackage) {
+		EdgeFilter edgeFilter) {
 
 		// Collect active edges (filtered by edgeFilter, both endpoints in subset)
 		java.util.List<BundleEdge> activeEdges = new java.util.ArrayList<>();
@@ -106,20 +128,13 @@ public final class MermaidRenderer {
 		}
 
 		for (BundleEdge edge : activeEdges) {
-			// Arrow direction: 'to' exports something that 'from' imports →
-			// arrow points to --> from
+			// Arrow direction: 'to' exports something that 'from' imports → arrow points to --> from
 			String arrow = edge.optional() ? ".->" : "-->";
-			String firstPkg = edge.contributingPackage();
 			sb.append("    ")
 				.append(nodeId(edge.to()))
 				.append(" ")
-				.append(arrow);
-			if (showFirstPackage && firstPkg != null && !firstPkg.isEmpty()) {
-				sb.append("|")
-					.append(escape(firstPkg))
-					.append("|");
-			}
-			sb.append(" ")
+				.append(arrow)
+				.append(" ")
 				.append(nodeId(edge.from()))
 				.append("\n");
 		}

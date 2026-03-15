@@ -1,9 +1,13 @@
 package aQute.bnd.repository.maven.provider;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -11,6 +15,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.osgi.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -84,7 +89,7 @@ abstract class POMIndexFile {
 		return text != null ? text.trim() : null;
 	}
 
-	static void savePom(File indexFile, List<Archive> sortedArchives)
+	static void savePom(File indexFile, Map<Archive, Resource> archives)
 		throws Exception {
 		// Read existing project-level metadata to preserve user values
 		String projectGroupId = "bnd.index";
@@ -115,6 +120,17 @@ abstract class POMIndexFile {
 				logger.debug("Could not read existing pom.xml metadata, using defaults", e);
 			}
 		}
+
+		// Compute archives from current state (update() already applied
+		// changes)
+		List<Archive> sortedArchives = archives.keySet()
+			.stream()
+			.sorted(Comparator.comparing((Archive a) -> a.revision.program.group)
+				.thenComparing(a -> a.revision.program.artifact)
+				.thenComparing(Comparator.comparing(a -> a.extension))
+				.thenComparing(Comparator.comparing(a -> a.classifier))
+				.thenComparing(a -> a.revision.version.toString()))
+			.collect(toList());
 
 		// Ensure parent directory exists
 		File parent = indexFile.getParentFile();
