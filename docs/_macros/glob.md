@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: glob ';' GLOBEXP
 summary: Convert a glob pattern to a regular expression
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `glob` macro converts a glob pattern (shell-style wildcard pattern) into a Java regular expression. This is useful when you need regex patterns but want to write simpler glob syntax.

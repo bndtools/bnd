@@ -1,9 +1,9 @@
 ---
 title: Guided Tour Workspace & Projects
-layout: default
+layout: bnd
+parent: Getting Started
+nav_order: 3
 ---
-
-
 The bnd workspace is a foundational concept in bnd, providing the structure and context in which OSGi projects are developed and built.
 
 In the introduction we mentioned this as the second part of bnd:

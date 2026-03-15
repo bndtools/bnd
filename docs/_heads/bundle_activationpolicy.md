@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-ActivationPolicy ::= policy ( ';' directive )*
 class: Header
 summary: |
    The Bundle-ActivationPolicy specifies how the framework should activate the bundle once started.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Headers
 ---
-
 - Example: `Bundle-ActivationPolicy: lazy`
 
 - Values: `lazy`

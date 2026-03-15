@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: _merge
 summary: |
    Merge a number of jar files into a new jar file. The used manifest is that of the firstgiven JAR file. The order of the JAR file is the class path order. I.e. earlier resourcesare preferred over later resources with the same name.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   _merge [options]  <jarfile...>
 

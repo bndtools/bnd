@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: base64 ';' FILE [';' LONG ]
 summary: Encode a file's contents as Base64 text
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `base64` macro reads a file and returns its contents encoded as a Base64 string. This is useful for embedding binary content or file data directly in text-based configuration files.

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -nojunit  BOOLEAN
 class: Ant
 summary: |
    Indicate that this project does not have JUnit tests
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-nojunit=true`
 
 - Values: `true,false`

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: sha1 ';' RESOURCE
 summary: Calculate SHA-1 digest of a resource in the bundle
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `sha1` macro calculates the SHA-1 hash of a resource that exists within the current bundle JAR. The result can be returned as either Base64 (default) or hexadecimal encoding.

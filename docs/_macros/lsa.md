@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: lsa ';' DIR (';' SELECTORS )
 summary: List files with absolute paths, optionally filtered
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `lsa` macro returns a comma-separated list of absolute file paths from a directory, with optional filtering using selectors.

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: retainall ';' LIST ';' LIST
 summary: Return the first list where items not in the second list are removed
+parent: Macro Reference
 ---
-
 ## Summary
 
 Keep only elements from the first list that are also present in the second list, effectively computing the intersection of two lists.

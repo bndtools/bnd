@@ -1,8 +1,10 @@
 ---
 title: Headers
-layout: default
+layout: bnd
+parent: Reference Material
+nav_order: 2
+has_children: true
 ---
-
 Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html) page. 
 
 <div>

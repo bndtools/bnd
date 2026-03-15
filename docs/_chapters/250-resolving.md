@@ -1,9 +1,9 @@
 ---
-order: 210
 title: Resolving Dependencies
-layout: default
+layout: bnd
+parent: Dependency and Launching
+nav_order: 1
 ---
-
 ## OSGi's Best Kept Secret
 
 This Application Note is about _resolving_ in OSGi. The OSGi Framework has always used a _resolver_ to _wire_ a given set of bundles together, ensuring that only valid wires are made. However, the same OSGi resolver can also be used to select a set of bundles from a much larger set. This application note discusses this secondary usage.

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -diffpackages SELECTORS
 class: Project
 summary: |
    The names of exported packages to baseline.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-diffpackages=!*.internal.*, *`
 
 - Pattern: `.*`

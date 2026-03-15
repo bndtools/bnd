@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: 	Project
 title: 	p_allsourcepath
 summary: Get paths to all source directories
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `p_allsourcepath` macro returns all source directories for the project, including those from dependencies, as a comma-separated list.

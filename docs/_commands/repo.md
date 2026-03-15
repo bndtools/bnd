@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: repo
 summary: |
    Access to the repositories. Provides a number of sub commands to manipulate the repository (see repo help) that provide access to the installed repos for the current project.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   repo [options]  <sub-cmd> ...
 

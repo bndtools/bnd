@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -removeheaders KEY-SELECTOR ( '.' KEY-SELECTOR ) *
 class: Project
 summary: |
    Remove matching headers from the manifest.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-removeheaders=FOO_.*,Proprietary`
 
 - Pattern: `.*`

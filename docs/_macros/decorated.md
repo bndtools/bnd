@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: decorated ';' NAME [ ';' BOOLEAN ]
 summary: The merged and decorated Parameters object
+parent: Macro Reference
 ---
-
 ## Summary
 
 Get a merged and decorated Parameters object, where decoration allows pattern-based attribute addition to parameter entries.

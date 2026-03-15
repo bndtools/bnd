@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...
 class: Project
 summary: |
    Fixup errors and warnings.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-fixupmessages: 'Version mismatch';replace:='************* ${@}';restrict:=error`
 
 - Pattern: `.*`

@@ -1,8 +1,9 @@
 ---
 title: Templates for Workspaces
-layout: default
+layout: bnd
+parent: Documentation and Tools
+nav_order: 4
 ---
-
 A good workspace setup makes all the difference in the development cycle. Since a workspace can
 contain many projects, creating new workspaces is relatively rare. However, a workspace tends
 to consist of many aspects. There is the _gradle setup_, the _OSGi release_, maybe the _maven

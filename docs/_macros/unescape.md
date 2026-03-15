@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: unescape ( ';' STRING )*
 summary: Convert escape sequences to their control characters
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `unescape` macro converts escape sequences in strings to their corresponding control characters. It concatenates all input arguments and processes escape sequences.

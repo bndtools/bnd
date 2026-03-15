@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: ee
 summary: Get the highest Java Execution Environment (EE) required by the bundle
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `ee` macro returns the name of the highest Java Execution Environment (EE) required by the classes in the current bundle being analyzed. This is determined by analyzing the bytecode version of all classes in the JAR.

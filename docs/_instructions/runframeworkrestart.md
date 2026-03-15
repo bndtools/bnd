@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -runframeworkrestart BOOLEAN
 class: Project
 summary: |
    Restart the framework in the same VM if the framework is stopped or updated.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-runframeworkrestart: true`
 
 - Pattern: `.*`

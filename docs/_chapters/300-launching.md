@@ -1,9 +1,9 @@
 ---
-order: 300
 title: Launching
-layout: default
+layout: bnd
+parent: Dependency and Launching
+nav_order: 2
 ---
-
 bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a _bndrun_ file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile.
 
 The launching environment is described with a number of instructions that start with `-run`.

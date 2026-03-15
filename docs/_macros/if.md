@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: if ';' STRING ';' STRING ( ';' STRING )?
 summary: Conditional macro that depending on a condition returns either a value for true or optionally for false.
+parent: Macro Reference
 ---
-
 	if         ::= 'if' ';' condition ';' expansion ( ';' expansion )?
 	condition  ::= true | false
 	false      ::= 'false' | ''

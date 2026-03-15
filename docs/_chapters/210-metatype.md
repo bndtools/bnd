@@ -1,10 +1,9 @@
 ---
-order: 210
 title: Metatype
-layout: default
+layout: bnd
+parent: Build and Development
+nav_order: 7
 ---
-
-
 The [OSGi Metatype specification][2] provides a language to describe configuration information in an XML file. However, XML is cumbersome to use and eXtreMeLy error prone, and refactoring often finds it hard to change references in XML text files. Especially with DS components managing the relations can be complex, see [Components][1]
 
 For this reason, bnd provides annotations to define the XML based on a ''configuration'' interface. For example, the following interface defines a simple metatype:

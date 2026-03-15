@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: macro
 summary: |
    Show macro value. Macro can contain the ${ and } parentheses but it is also ok without. You can use the ':' instead of the ';' in a macro
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   macro [options]  <<macro>> <[...]>
 

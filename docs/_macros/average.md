@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: average (';' LIST )*
 summary: Calculate the arithmetic mean (average) of numeric values in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `average` macro calculates the arithmetic mean of all numeric values provided in one or more semicolon-separated lists. Each list element is parsed as a double-precision floating-point number, and the result is the sum of all values divided by the count.

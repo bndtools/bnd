@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: nmax (';' LIST )*
 summary: Find the maximum number in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `nmax` macro compares numeric values using floating-point comparison and returns the maximum (highest) number.

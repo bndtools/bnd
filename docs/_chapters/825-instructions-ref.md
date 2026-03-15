@@ -1,8 +1,9 @@
 ---
 title: Instruction Index
-layout: default
+layout: bnd
+parent: Reference Material
+nav_order: 4
 ---
-
 Learn the basics of bnd instructions in the [Instruction reference](/chapters/820-instructions.html).
 
 <div>

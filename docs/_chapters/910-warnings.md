@@ -1,8 +1,9 @@
 ---
 title: Warnings
-layout: default
+layout: bnd
+parent: Configuration and Troubleshooting
+nav_order: 3
 ---
-
 ## Java source version inconsistency: bnd has '1.5' while Eclipse has '1.8'. Set the bnd 'javac.source' property or change the Eclipse project setup.
 
 First to explain the message. In a Bndtools project, the Java version is configured in two places. For the offline bnd build with Gradle/Ant, we set it directly from the `javac.source` and `javac.target` properties that you find in `cnf/build.bnd`. But in the internal Eclipse build, the configuration of the Eclipse project contains the JRE settings. Unfortunately we cannot force Eclipse to use the same settings as the offline build, but we can detect when they are inconsistent, and so we generate the warning you have seen.

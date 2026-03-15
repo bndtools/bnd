@@ -1,9 +1,9 @@
 ---
-order: 120
 title: How to install bnd
-layout: default
+layout: bnd
+parent: Getting Started
+nav_order: 2
 ---
-
 bnd is not a single product, it is a library (bndlib) used in many different software build environments. It runs inside Maven, ant, gradle, Eclipse, sbt, and maybe one day in Intellij. To install bnd, you will have to install these tools. 
 
 <div>

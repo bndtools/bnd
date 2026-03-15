@@ -1,9 +1,9 @@
 ---
-order: 150
 title: Build
-layout: default
+layout: bnd
+parent: Build and Development
+nav_order: 1
 ---
-
 This chapter lays out the rules of the file system for bnd projects. It discusses the workspace layout and the projects layout as well as the properties.
 
 ## Workspace

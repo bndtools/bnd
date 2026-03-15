@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Builder
 title: githead
 summary: Get the Git commit SHA of the current HEAD
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `githead` macro returns the SHA-1 hash of the current Git HEAD commit. It searches for a `.git` directory starting from the project base directory and walking up the file hierarchy, then resolves symbolic references to find the actual commit hash.

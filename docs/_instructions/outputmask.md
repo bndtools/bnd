@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -outputmask  TEMPLATE ?
 class: Project
 summary: |
    If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + ".jar".
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-outputmask=my_file.zip`
 
 - Pattern: `.*`

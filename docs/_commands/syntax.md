@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: syntax
 summary: |
    Access the internal bnd database of keywords and options
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   syntax [options]  <header|instruction> ...
 

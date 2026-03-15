@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: bndversion
 summary: Returns the current running bnd version as full major.minor.micro
+parent: Macro Reference
 ---
-
 ## Summary
 
 Returns the version number of the bnd tool currently being used to process the build.

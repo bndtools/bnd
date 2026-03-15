@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: 	Project
 title:  p_output
 summary: Get the absolute path to the project's output directory
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `p_output` macro returns the absolute path to the project's output/target directory where compiled classes and built artifacts are placed.

@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: project
 summary: |
    Execute a Project action, or if no params given, show information about the project
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   project [options]  ...
 

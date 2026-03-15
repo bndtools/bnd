@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -sign PARAMETERS
 class: Project
 summary: |
    Report any entries that were added to the build since the last JAR was made.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-sign=alias`
 
 - Values: `<alias> [ ';' 'password:=' <password> ] [ ';'* 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*`

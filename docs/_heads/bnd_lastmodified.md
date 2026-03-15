@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Bnd-LastModified  LONG
 class: Header
 summary: |
    Timestamp from bnd, aggregated last modified time of its resources
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Headers
 ---
-
 - Pattern: `.*`
 
 <!-- Manual content from: ext/bnd_lastmodified.md --><br /><br />

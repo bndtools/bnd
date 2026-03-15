@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: sort (';' LIST )+
 summary: Sort lists alphabetically
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `sort` macro combines one or more lists and sorts their contents alphabetically (lexicographically). The sorting is case-sensitive with uppercase letters before lowercase.

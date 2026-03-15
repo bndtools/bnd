@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -prepare makespec ( ',' makespec )*
 class: Project
 summary: |
    Execute a number of shell commands before every build (might not work on Windows)
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Pattern: `.*`
 
 <!-- Manual content from: ext/prepare.md --><br /><br />

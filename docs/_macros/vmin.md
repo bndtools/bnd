@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: vmin (';' LIST )*
 summary: Find the minimum version in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `vmin` macro compares version strings using OSGi semantic versioning rules and returns the minimum (lowest) version.

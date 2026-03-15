@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: Concepts
+parent: Concepts and Practices
+nav_order: 1
 ---
-
 One of the more surprising things we've learned about modularity in the last decade is how much of a fractal pattern it actually is. All the way from CPU machine instructions all the way up to a large distributed system you can see the pattern of encapsulation to keep as much details as possible confined to the internals of the module. Strangely enough, as an industry we seem to have a hard time learning the lessons from the lower layers where we over time learned the rules to the layers above.
 
 Java was developed the early 90's as a state of the art language based on Object Oriented concepts. It did apply the rules of modularity on the method and class level and pioneered with providing a higher level module with their concept of _packages_. However, our software industry did their utmost to ignore this concept, helped by the fact that it did have some real shortcomings.

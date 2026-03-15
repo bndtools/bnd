@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -nobuildincache BOOLEAN
 class: Builder
 summary: |
    Do not use a build in cache for the launcher and JUnit.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-nobuildincache=true`
 
 - Values: `true,false`

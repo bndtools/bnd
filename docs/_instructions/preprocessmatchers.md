@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -preprocessmatchers SELECTOR
 class: Builder
 summary: |
    Specify which files can be preprocessed
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-preprocessmatchers=!OSGI-INF/*,* `
 
 - Pattern: `.*`

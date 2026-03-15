@@ -1,9 +1,9 @@
 ---
-order: 140
 title: Best practices
-layout: default
+layout: bnd
+parent: Concepts and Practices
+nav_order: 3
 ---
-
 ## Workspaces
 
 The idea of a workspace is that it is cohesive. It contains a set of shared bundles and some of those bundles are exported to a repository. Other bundles are imported from repositories. This is the basic model of modularity.

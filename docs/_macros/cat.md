@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: cat ';' FILEPATH
 summary: Read and return the contents of a file or URL
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `cat` macro reads the contents of a file, directory, or URL and returns it as a string. It's similar to the Unix `cat` command, allowing you to embed file contents directly in your configuration.

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -tester REPO-SPEC
 class: Project
 summary: |
    Species the tester (bundle) that is supposed to test the code. The default is biz.aQute.tester
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-tester=biz.aQute.tester;version=latest`
 
 - Pattern: `.*`

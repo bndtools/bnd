@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -define-contract
 class: Project
 summary: |
    Define a contract when one cannot be added to the buildpath.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-define-contract:\
   osgi.contract;\
     osgi.contract=JavaServlet;\

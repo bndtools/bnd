@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -runfw REPO-ENTRY
 class: Launcher
 summary: |
    Specify the framework JAR's entry in a repository.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-runfw: org.eclipse.osgi; version=3.10`
 
 - Pattern: `.*`

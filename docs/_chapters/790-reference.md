@@ -1,8 +1,9 @@
 ---
 title: Reference
-layout: default
+layout: bnd
+parent: Reference Material
+nav_order: 1
 ---
-
 The subsequent sections provide the reference part of the manual. This consists of the following:
 
 * [headers](800-headers.html) – OSGi & bnd Manifest headers

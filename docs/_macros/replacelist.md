@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: replacelist ';' LIST ';' REGEX (';' STRING (';' STRING)? )?
 summary: Replace parts of list elements using regex with quoted section support
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `replacelist` macro applies regex-based replacement to each element in a list. Unlike `${replace}`, it uses a sophisticated splitter that handles quoted sections, preserving commas within quotes.

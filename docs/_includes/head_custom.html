@@ -1,0 +1,7 @@
+<!-- bnd custom head additions -->
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/sitemap.xml">
+<link rel="shortcut icon" type="image/x-icon" href="{{ '/favicon.ico' | prepend: site.baseurl }}">
+
+{% if page.class %}
+<meta name="bnd-page-class" content="{{ page.class }}">
+{% endif %}

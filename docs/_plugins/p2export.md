@@ -1,10 +1,10 @@
 ---
 title: P2 Exporter
-layout: default
+layout: bnd
 class: Project
 summary: An exporter to export features from a bnd build
+parent: Plugins
 ---
-
 The Bnd Export plugin is a powerful tool that enables the export of a p2 repository. This manual will guide you through the process of using the plugin effectively. 
 
 The plugin is activated by adding it to the `-plugin` clauses of the `build.bnd`. It takes no configuration. In the Bndtools, there is a context menu to help.

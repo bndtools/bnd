@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -nojunitosgi  BOOLEAN
 class: Ant
 summary: |
    Indicate that this project does not have JUnit OSGi tests
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-nojunitosgi=true`
 
 - Values: `true,false`

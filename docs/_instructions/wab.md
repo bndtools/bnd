@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -wab FILE ( ',' FILE )*
 class: Builder
 summary: |
    Create a Web Archive Bundle (WAB) or a WAR
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-wab=static-pages/`
 
 - Pattern: `.*`

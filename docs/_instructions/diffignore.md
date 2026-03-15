@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -diffignore SELECTORS
 class: Project
 summary: |
    Manifest header names and resource paths to ignore during baseline comparison.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-diffignore=Bundle-Version`
 
 - Pattern: `.*`

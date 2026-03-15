@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -plugin.* plugin-def ( ',' plugin-def )*
 class: Processor
 summary: |
    Load plugins and their parameters.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-plugin=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}`
 
 - Pattern: `.*`

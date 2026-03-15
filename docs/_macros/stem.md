@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: stem ';' STRING 
 summary: Extract the portion of a string before the first dot
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `stem` macro returns the portion of a string up to (but not including) the first dot character. If no dot is found, returns the entire string.

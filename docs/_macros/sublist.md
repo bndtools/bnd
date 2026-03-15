@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: sublist ';' START ';' END (';' LIST )*
 summary: Extract a portion of a list with support for negative indices
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `sublist` macro extracts elements from a list between start and end positions. It supports negative indices to count from the end of the list.

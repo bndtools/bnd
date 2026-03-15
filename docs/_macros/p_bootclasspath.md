@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: 	Project
 title: 	p_bootclasspath
 summary: Get the project's boot classpath
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `p_bootclasspath` macro returns the project's boot classpath (Java runtime libraries) as a comma-separated list of paths.

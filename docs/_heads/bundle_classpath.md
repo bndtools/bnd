@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-ClassPath ::= entry ( ',' entry )*
 class: Header
 summary: |
    The Bundle-ClassPath header defines a comma-separated list of JAR file path names or directories (inside the bundle) containing classes and resources. The full stop ('.' \u002E) specifies the root di- rectory of the bundle's JAR. The full stop is also the default
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Headers
 ---
-
 - Example: `Bundle-ClassPath: /lib/libnewgen.so, .`
 
 - Pattern: `.*`

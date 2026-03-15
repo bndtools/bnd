@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: bytes ( ';' LONG )*
 summary: Format byte a count into human-readable size unit
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `bytes` macro converts a byte count (as long integer) into human-readable format with appropriate size units (b, Kb, Mb, Gb, etc.). It automatically selects the most appropriate unit by dividing by 1024 until the value is less than 1024. 

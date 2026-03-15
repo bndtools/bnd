@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: -connection-settings
 summary: |
    Setting up the communications for bnd
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-connection-settings= ~/.bnd/connection-settings.xml`
 
 - Pattern: `.*`

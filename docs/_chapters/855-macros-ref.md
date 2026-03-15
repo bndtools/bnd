@@ -1,8 +1,9 @@
 ---
 title: Macro Index
-layout: default
+layout: bnd
+parent: Reference Material
+nav_order: 6
 ---
-
 Learn the basics of bnd macros in the [Macro reference](/chapters/850-macros.html) and our [bnd cheatsheet](https://github.com/bndtools/workspace-templates/blob/master/cheatsheet/org.bndtools.cheatsheet/bnd.bnd). Also check out [the corresponding unit tests](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java) for the macros on this page.
 
 <div>

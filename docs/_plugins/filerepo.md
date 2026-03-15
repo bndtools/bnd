@@ -1,9 +1,9 @@
 ---
 title: FileRepo Plugin
-layout: default
+layout: bnd
 summary: Provides a bnd repository stored on the local file system  
+parent: Plugins
 ---
-
 This type of repository is based on a very simple file system directory structure. It is editable from within Bndtools. **NB:** it does not support indexing, so repositories of this type cannot participate in resolution of Run Requirements.
 
 The following properties are supported:

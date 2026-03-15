@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -baseline selector
 class: Project
 summary: |
    Control what bundles are enabled for baselining and optionally specify the baseline version or file.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-baseline: com.example.*`
 
 - Pattern: `.*`

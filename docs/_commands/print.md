@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: print
 summary: |
    Provides detailed view of the JAR / bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   print [options]  <jar-file...>
 

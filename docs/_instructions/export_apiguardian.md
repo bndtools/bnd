@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -export-apiguardian PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*
 class: Project
 summary: |
    Exports the given packages where the the `@API` annotation is found on contained classes.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-export-apiguardian=!*impl*,*;version=3.0`
 
 - Pattern: `.*`

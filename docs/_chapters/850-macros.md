@@ -1,9 +1,10 @@
 ---
 title: Macro Reference
-layout: default
+layout: bnd
+parent: Reference Material
+nav_order: 5
+has_children: true
 ---
-
-
 Bnd has a simple macro processor for the header processing. Variables allow a single definition of a value, and the use of derivations. Each header is a macro that can be expanded. Notice that headers that do not start with an upper case character will not be copied to the manifest, so they can be used as working variables. Variables are expanded by enclosing the name of the variable in `${<name>}` (curly braces) or `$(<name>)` (parenthesis). Additionally, square brackets \[\], angled brackets <>, double guillemets «», and single guillemets ‹› are also allowed for brackets. If brackets are nested, that is `$[replace;acaca;a(.*)a;[$1]]` will return `[cac]`.
 
 There are also a number of macros that perform basic functions. All these functions have the following basic syntax:

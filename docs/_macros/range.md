@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: range ';' RANGE_MASK ( ';' VERSION )
 summary: Create a semantic version range out of a version using a mask to control the bump of the ceiling
+parent: Macro Reference
 ---
-
 The `range` macro takes a version range mask/template and uses it calculate a range from a given version. The primary reason for the `${range}` macro is to be used in the [version policy][1]. With the version policy we have a version of an exported package and we need to calculate the range for that. The rules come from the [consumer][2] or [provider][3] policy. However, this policy can be overridden on the Import-Package header by specifying the version as a range macro:
 
 	Import-Package: com.example.myownpolicy; version="${range;[==,=+)}", *

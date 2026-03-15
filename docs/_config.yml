@@ -1,3 +1,5 @@
+theme: just-the-docs
+
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
@@ -8,6 +10,48 @@ kramdown:
   syntax_highlighter_opts:
     default_lang: shell
     css_class   : 'highlight' ## see https://github.com/rouge-ruby/rouge/wiki/List-of-supported-languages-and-lexers
+
+# Site title and description
+title: bnd
+description: "bnd - the Swiss army knife of OSGi"
+
+# just-the-docs configuration
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s\-/]+/
+  rel_url: true
+  button: false
+
+# Auxiliary links in the top nav
+aux_links:
+  "GitHub":
+    - "https://github.com/bndtools/bnd"
+  "bndtools.org":
+    - "https://bndtools.org"
+
+aux_links_new_tab: true
+
+# Navigation
+nav_sort: case_insensitive
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Footer content
+footer_content: "Copyright &copy; 2009 - present bndtools contributors. Distributed under the <a href=\"https://www.apache.org/licenses/LICENSE-2.0\">Apache License 2.0</a>."
+
+# GitHub edit link
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_repository: "https://github.com/bndtools/bnd"
+gh_edit_branch: "master"
+gh_edit_source: docs
+gh_edit_view_mode: "edit"
 
 collections:
   chapters:
@@ -37,7 +81,7 @@ defaults:
     scope:
       path: ""
     values:
-      layout: default
+      layout: bnd
   # exclude all the files from `/releases/` in the sitemap
   - scope:
       path:            releases/**
@@ -63,3 +107,28 @@ exclude:
   - '/.settings'
   - 'pagefind'
 
+# just-the-docs collections configuration
+# Tells just-the-docs which collections to include in the navigation
+just_the_docs:
+  collections:
+    chapters:
+      name: ""
+      nav_exclude: false
+    commands:
+      name: ""
+      nav_exclude: true
+    instructions:
+      name: ""
+      nav_exclude: true
+    macros:
+      name: ""
+      nav_exclude: true
+    heads:
+      name: ""
+      nav_exclude: true
+    plugins:
+      name: ""
+      nav_exclude: true
+    tools:
+      name: ""
+      nav_exclude: true

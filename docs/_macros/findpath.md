@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Project
 title: findpath ';' REGEX ( ';' REPLACE )?
 summary: Find bundle resources by full path with optional regex replacement
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `findpath` macro finds resources in the current bundle by matching full resource paths against a regular expression, with optional replacement to transform the results.

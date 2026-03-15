@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -remoteworkspace (true|false)
 class: Project
 summary: |
    Enable the workspace to server remote requests from the local system, needed for Launchpad
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-remoteworkspace: true`
 
 - Values: `true,false`

@@ -1,8 +1,10 @@
 ---
 title: Plugins
-layout: default
+layout: bnd
+parent: Reference Material
+nav_order: 7
+has_children: true
 ---
-
 ## Plugins
 Plugins are objects that can extend the functionality of bnd. They are called from inside bnd when a certain action should take place. For example, bnd uses a repository and plugins provide the actual repository implementations. Or for example, the SpringComponent analyzes the Spring files and adds references found in that XML to the imports.
 

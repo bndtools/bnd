@@ -1,0 +1,53 @@
+// Custom styles for bnd documentation (just-the-docs theme override)
+
+// Summary block shown at the top of reference pages (commands, instructions, macros, headers)
+.bnd-summary {
+  background: var(--sidebar-color, #f5f6fa);
+  border-left: 4px solid var(--link-color, #7253ed);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0 4px 4px 0;
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Page class badge (e.g. "Header", "Instruction", "Macro")
+.bnd-page-class {
+  display: inline-block;
+  background: var(--link-color, #7253ed);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15em 0.5em;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  margin-left: 0.5em;
+}
+
+// Code copy button
+.copycodebtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ccc;
+  font-size: 0.75rem;
+  padding: 0.2em 0.5em;
+  border-radius: 3px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+}
+
+// Ensure pre blocks are position:relative for copy button
+pre.highlight {
+  position: relative;
+}

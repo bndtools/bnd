@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -buildrepo  repo ( ',' repo ) *
 class: Project
 summary: |
    After building a JAR, release the JAR to the given repositories.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-buildrepo=Local`
 
 - Pattern: `.*`

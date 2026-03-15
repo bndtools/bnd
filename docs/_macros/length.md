@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: length STRING
 summary: Get the length of a string in characters
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `length` macro returns the number of characters in a string. Returns 0 if no argument is provided.
