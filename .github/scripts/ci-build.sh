@@ -46,7 +46,7 @@ echo -e "#\n# build bnd and bndtools\n#\n"
     -Dmaven.repo.local=dist/m2 \
     -Dbnd.sonatype.release.description=${GITHUB_JOB}_${GITHUB_RUN_NUMBER} \
     --continue \
-    :build "$@"
+    build "$@"
 
 echo -e "#\n# build gradle plugins\n#\n"
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --continue :gradle-plugins:build
