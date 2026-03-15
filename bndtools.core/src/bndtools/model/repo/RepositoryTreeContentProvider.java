@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.bndtools.api.ILogger;
@@ -527,7 +528,9 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 	/**
 	 * Simple wildcard matcher for feature ID filtering. Converts wildcard
-	 * pattern to regex and matches against the provided string.
+	 * pattern to regex and matches against the provided string. All regex
+	 * metacharacters in the pattern are escaped; only '*' is treated as a
+	 * wildcard (matching any sequence of characters).
 	 *
 	 * @param str the string to match (e.g., feature ID)
 	 * @param wildcardPattern the pattern with wildcards (e.g., "*feature*")
@@ -537,10 +540,17 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (str == null || wildcardPattern == null) {
 			return false;
 		}
-		// Convert wildcard pattern to regex: escape special chars except *
-		String regex = wildcardPattern.replace(".", "\\.")
-			.replace("*", ".*");
-		return str.toLowerCase()
-			.matches(regex.toLowerCase());
+		// Split on '*', quote each segment, then join with '.*'
+		String[] segments = wildcardPattern.split("\\*", -1);
+		StringBuilder regex = new StringBuilder();
+		for (int i = 0; i < segments.length; i++) {
+			if (i > 0) {
+				regex.append(".*");
+			}
+			regex.append(Pattern.quote(segments[i]));
+		}
+		return Pattern.compile(regex.toString(), Pattern.CASE_INSENSITIVE)
+			.matcher(str)
+			.matches();
 	}
 }
