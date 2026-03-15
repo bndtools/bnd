@@ -46,8 +46,9 @@ public class FeatureFolderNode {
 		// Populate children based on type
 		Feature feature = parent.getFeature();
 		try {
-			// Ensure feature is parsed before accessing children
-			feature.parse();
+			// Ensure feature is parsed (cached in FeatureVersionNode to avoid
+			// repeated parsing when multiple folder nodes are created)
+			parent.ensureParsed();
 
 			switch (type) {
 				case INCLUDED_FEATURES :
