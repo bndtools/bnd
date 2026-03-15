@@ -168,10 +168,10 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  jekyll (~> 4.3)
+  jekyll (~> 4.4)
   jekyll-seo-tag
   jekyll-sitemap
-  just-the-docs (~> 0.10)
+  just-the-docs (~> 0.12)
   webrick (~> 1.9)
 
 CHECKSUMS
