@@ -2,6 +2,7 @@ package bndtools.model.repo;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.icons.Icons.IconBuilder;
+import org.bndtools.utils.jface.HyperlinkStyler;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -149,6 +150,17 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 			} else if (element instanceof RepositoryResourceElement) {
 				RepositoryResourceElement resourceElem = (RepositoryResourceElement) element;
 
+				label.append(resourceElem.getIdentity())
+					.append(" ");
+				label.append(resourceElem.getVersionString(), StyledString.COUNTER_STYLER);
+
+				image = matchImg;
+			} else if (element instanceof ContinueSearchElement) {
+				label.append("Continue Search on repository...", new HyperlinkStyler());
+				image = null;
+			} else if (element instanceof LoadingContentElement) {
+				label.append(element.toString());
+				image = loadingImg;
 			} else if (element instanceof RepositoryFeatureResource) {
 				if (index == 0) {
 					RepositoryFeatureResource featureResource = (RepositoryFeatureResource) element;
