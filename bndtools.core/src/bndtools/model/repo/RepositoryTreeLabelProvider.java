@@ -162,17 +162,6 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 					}
 					image = featureImg;
 				}
-			} else if (element instanceof RepositoryFeature) {
-				if (index == 0) {
-					RepositoryFeature feature = (RepositoryFeature) element;
-					label.append(feature.getText());
-					if (showRepoId) {
-						label.append(" ");
-						label.append("[" + feature.getRepo()
-							.getName() + "]", StyledString.QUALIFIER_STYLER);
-					}
-					image = featureImg;
-				}
 			} else if (element instanceof FeatureFolderNode) {
 				if (index == 0) {
 					FeatureFolderNode folder = (FeatureFolderNode) element;
