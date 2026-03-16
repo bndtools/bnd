@@ -68,6 +68,7 @@ jobs:
           java: '17'
           runner: '{0}' # 'xvfb-run --auto-servernum {0}'
           canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
+          reference: true
           fetch-depth: '0'
         - os: 'windows-latest'
           java: '17'
@@ -132,8 +133,8 @@ jobs:
         SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-    - name: Upload Rebuild P2 Repo artifact
-      if: ${{ matrix.canonical }}
+    - name: Upload P2 Repo artifact
+      if: ${{ matrix.reference && github.event_name == 'pull_request' }}
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
       with:
         name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
@@ -141,10 +142,8 @@ jobs:
           org.bndtools.p2/generated/org.bndtools.p2.jar
         retention-days: 7   # keep for 7 days
     - name: Publish PR p2 repo
-      if: ${{ matrix.canonical }}
+      if: ${{ matrix.reference && github.event_name == 'pull_request' }}
       run: |
-        ls -laR org.bndtools.p2/*
-        env | sort
         PR=${{ github.event.pull_request.number }}
         ARTIFACT_PATH="org.bndtools.p2/generated/org.bndtools.p2.jar"
         if [ -f "$ARTIFACT_PATH" ] && [ "$PR" != "" ]; then
