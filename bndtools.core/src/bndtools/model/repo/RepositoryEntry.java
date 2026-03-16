@@ -6,6 +6,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -117,7 +118,7 @@ public abstract class RepositoryEntry implements IAdaptable, ResourceProvider {
 		try {
 			if (repo instanceof RemoteRepositoryPlugin) {
 				ResourceHandle handle = ((RemoteRepositoryPlugin) repo).getHandle(bsn, versionFinder.versionSpec,
-					versionFinder.strategy, Collections.emptyMap());
+					versionFinder.strategy, getProperties());
 
 				switch (handle.getLocation()) {
 					case local :
@@ -131,7 +132,7 @@ public abstract class RepositoryEntry implements IAdaptable, ResourceProvider {
 			if (version == null) {
 				return null;
 			}
-			return repo.get(bsn, version, Collections.emptyMap());
+			return repo.get(bsn, version, getProperties());
 		} catch (Exception e) {
 			logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.",
 				repo.getName(), bsn, versionFinder), Exceptions.unrollCause(e, InvocationTargetException.class));
@@ -167,6 +168,7 @@ public abstract class RepositoryEntry implements IAdaptable, ResourceProvider {
 
 				return promise.getValue()
 					.stream()
+					.filter(this::acceptResourceType)
 					.findFirst()
 					.orElse(null);
 			}
@@ -182,6 +184,25 @@ public abstract class RepositoryEntry implements IAdaptable, ResourceProvider {
 			throw Exceptions.duck(e);
 		}
 		return null;
+	}
+
+	/**
+	 * Hook for subclasses to pass repository-specific properties when retrieving
+	 * files/handles.
+	 */
+	protected Map<String, String> getProperties() {
+		return Collections.emptyMap();
+	}
+
+	/**
+	 * Hook for subclasses to filter resources by type. By default accepts all
+	 * resources.
+	 * 
+	 * @param resource the resource to check
+	 * @return true to accept this resource, false to reject it
+	 */
+	protected boolean acceptResourceType(Resource resource) {
+		return true;
 	}
 
 }
