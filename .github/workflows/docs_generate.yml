@@ -8,6 +8,8 @@ name: Generate Docs
 on:
   workflow_run:
     workflows: ["CI Build"]  # Name of the workflow to listen to
+    branches:
+      - master
     types:
       - completed
   push:
