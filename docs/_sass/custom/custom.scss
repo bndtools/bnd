@@ -76,7 +76,10 @@ pre.highlight {
   }
 
   // All state labels hidden by default; JS shows exactly one
-  .icon-auto,
+  .icon-auto {
+    display: inline;
+  }
+
   .icon-light,
   .icon-dark {
     display: none;

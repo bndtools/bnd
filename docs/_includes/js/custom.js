@@ -27,9 +27,9 @@ jtd.onReady(function () {
   }
 
   function updateButton(pref) {
-    btn.querySelector('.icon-auto').style.display  = pref === 'auto'  ? '' : 'none';
-    btn.querySelector('.icon-light').style.display = pref === 'light' ? '' : 'none';
-    btn.querySelector('.icon-dark').style.display  = pref === 'dark'  ? '' : 'none';
+    btn.querySelector('.icon-auto').style.display  = pref === 'auto'  ? 'inline' : 'none';
+    btn.querySelector('.icon-light').style.display = pref === 'light' ? 'inline' : 'none';
+    btn.querySelector('.icon-dark').style.display  = pref === 'dark'  ? 'inline' : 'none';
   }
 
   // Initialise button label (theme already applied by inline head script)
