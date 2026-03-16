@@ -8,7 +8,7 @@ The [OSGi Metatype specification][2] provides a language to describe configurati
 
 For this reason, bnd provides annotations to define the XML based on a ''configuration'' interface. For example, the following interface defines a simple metatype:
 
-```
+```java
   package com.acme;
   import aQute.bnd.annotation.metatype.*;
 

@@ -38,8 +38,7 @@ menu entry for this.)
         aQute.bnd.aspectj.plugin.AspectJ
 
 The following code defines an aspect with the annotation model in a bundle called 'aspect':
-```
-
+```java
     @Aspect
     public class AspectHandler {
         @Before("execution(void *.start(org.osgi.framework.BundleContext))")

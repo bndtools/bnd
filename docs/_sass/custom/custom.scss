@@ -2,15 +2,22 @@
 
 // Summary block shown at the top of reference pages (commands, instructions, macros, headers)
 .bnd-summary {
-  background: var(--sidebar-color, #f5f6fa);
+  background: var(--body-background-color, #ffffff);
+  border: 1px solid var(--border-color, #5c5962);
   border-left: 4px solid var(--link-color, #7253ed);
+  color: var(--body-text-color, #1f2328);
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
-  border-radius: 0 4px 4px 0;
+  border-radius: 4px;
 
   p:last-child {
     margin-bottom: 0;
   }
+}
+
+html[data-color-scheme="dark"] .bnd-summary {
+  background: var(--code-background-color, #2f2d36);
+  color: var(--body-text-color, #e6e1e8);
 }
 
 // Page class badge (e.g. "Header", "Instruction", "Macro")
@@ -53,35 +60,132 @@ pre.highlight {
 }
 
 // ── Color-scheme toggle button ───────────────────────────────────────────────
-// Three-state cycle: Auto → Light → Dark → Auto
-// Mirrors the pattern used in klibio/apps/_doc/_layouts/default.html
+// Two-state toggle: Light ↔ Dark
 .bnd-theme-toggle {
   background: rgba(128, 128, 128, 0.1);
   border: 1px solid rgba(128, 128, 128, 0.25);
   border-radius: 6px;
-  padding: 0.25rem 0.625rem;
+  padding: 0.25rem;
   cursor: pointer;
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  white-space: nowrap;
-  color: $body-heading-color;
+  justify-content: center;
   transition: background 0.15s, border-color 0.15s;
   flex-shrink: 0;
 
   &:hover {
     background: rgba(128, 128, 128, 0.2);
   }
+}
 
-  // All state labels hidden by default; JS shows exactly one
-  .icon-auto {
-    display: inline;
-  }
+.bnd-theme-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: block;
+  transition: filter 0.15s;
+}
 
-  .icon-light,
-  .icon-dark {
-    display: none;
+.bnd-theme-toggle[data-theme-mode="dark"] .bnd-theme-icon {
+  filter: invert(1);
+}
+
+.aux-nav-list-item.bnd-theme-toggle-item {
+  display: flex;
+  align-items: center;
+
+  .bnd-theme-toggle {
+    margin-top: 0.125rem;
   }
+}
+
+.bnd-tabs {
+  margin-top: 1rem;
+}
+
+.bnd-tab-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--border-color, #d0d7de);
+  margin-bottom: 1rem;
+}
+
+.bnd-tab-button {
+  background: var(--sidebar-color, #f6f8fa);
+  border: 1px solid var(--border-color, #d0d7de);
+  border-bottom: 0;
+  margin-bottom: -1px;
+  padding: 0.5rem 0.875rem;
+  color: var(--body-text-color, #24292f);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.bnd-tab-button:hover {
+  background: var(--body-background-color, #ffffff);
+}
+
+.bnd-tab-button.is-active {
+  background: var(--body-background-color, #ffffff);
+  color: var(--link-color, #7253ed);
+  border-bottom: 1px solid var(--body-background-color, #ffffff);
+  font-weight: 600;
+}
+
+.bnd-tab-button:focus-visible {
+  outline: 2px solid var(--link-color, #7253ed);
+  outline-offset: 2px;
+}
+
+html[data-color-scheme="dark"] .bnd-tab-buttons {
+  border-bottom: 1px solid var(--border-color, #5c5962);
+}
+
+html[data-color-scheme="dark"] .bnd-tab-button {
+  background: var(--code-background-color, #1e1e1e);
+  border: 1px solid var(--border-color, #5c5962);
+  color: var(--body-text-color, #e6e1e8);
+}
+
+html[data-color-scheme="dark"] .bnd-tab-button:hover {
+  background: var(--sidebar-color, #2a2a2a);
+}
+
+html[data-color-scheme="dark"] .bnd-tab-button.is-active {
+  background: var(--body-background-color, #111111);
+  color: var(--link-color, #8ab4f8);
+  border-bottom: 1px solid var(--body-background-color, #111111);
+}
+
+html[data-color-scheme="dark"] .bnd-tab-button:focus-visible {
+  outline: 2px solid var(--link-color, #8ab4f8);
+}
+
+.bnd-tab-panel {
+  display: none;
+}
+
+.bnd-tab-panel.is-active {
+  display: block;
+}
+
+div.highlighter-rouge[class*="language-"] {
+  position: relative;
+}
+
+div.highlighter-rouge[class*="language-"] .bnd-code-language {
+  position: absolute;
+  top: 0.375rem;
+  left: 0.75rem;
+  z-index: 1;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--search-result-preview-color, #a29ea8);
+}
+
+div.highlighter-rouge[class*="language-"] pre.highlight {
+  padding-top: 1.5rem;
 }

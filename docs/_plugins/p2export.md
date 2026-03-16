@@ -9,8 +9,10 @@ The Bnd Export plugin is a powerful tool that enables the export of a p2 reposit
 
 The plugin is activated by adding it to the `-plugin` clauses of the `build.bnd`. It takes no configuration. In the Bndtools, there is a context menu to help.
 
+```properties
     -plugin \
         aQute.p2.export.P2Exporter
+```
 
 If this plugin is present in your workspace, a project can define an _export_ instruction. The export instruction
 looks as follows:

@@ -23,7 +23,7 @@ You can also run bnd command as executable jar, which can be downloaded from [JF
 ```bash
 # Install bnd CLI
 curl -Lk -o ~/biz.aQute.bnd.jar \
-	https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/7.2.1/biz.aQute.bnd-7.2.1.jar
+	https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/{{ site.data.bnd_version.baseline_version }}/biz.aQute.bnd-{{ site.data.bnd_version.baseline_version }}.jar
 
 # create alias for easy use via 'bnd'
 alias bnd='java -jar ~/biz.aQute.bnd.jar'

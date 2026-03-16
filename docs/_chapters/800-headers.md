@@ -8,10 +8,6 @@ has_children: true
 Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html) page. 
 
 <div>
-
-<dl class="property-index">
-
-<div>
 <table class="property-index">
     <thead>
         <th>page</th>
@@ -28,7 +24,4 @@ Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html
         {% endfor %}
     </tbody>
 </table>
-</div>
-
-</dl>
 </div>

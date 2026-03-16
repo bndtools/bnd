@@ -6,26 +6,23 @@
 <meta name="bnd-page-class" content="{{ page.class }}">
 {% endif %}
 
-<!-- Prevent flash of wrong color scheme: apply stored preference before CSS renders.
-     Mirrors the technique used in klibio/apps/_doc/_layouts/default.html -->
+<!-- Prevent flash of wrong color scheme: apply saved light/dark preference before CSS renders,
+     otherwise use OS/browser preference on page load. -->
 <script>
   (function () {
     try {
-      var pref = localStorage.getItem('theme-preference');
+      var stored = localStorage.getItem('theme-preference');
+      var pref = (stored === 'light' || stored === 'dark') ? stored : null;
       var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var useDark = pref === 'dark' || (pref !== 'light' && prefersDark);
+      var useDark = pref ? pref === 'dark' : prefersDark;
       if (useDark) {
-        var cssFile = document.querySelector('link[href*="just-the-docs-"]');
+        var cssFile = document.querySelector('link[href*="just-the-docs-default.css"], link[href*="just-the-docs-light.css"], link[href*="just-the-docs-dark.css"]');
         if (cssFile) {
           cssFile.setAttribute('href',
-            cssFile.getAttribute('href').replace(/just-the-docs-(light|default)\.css/, 'just-the-docs-dark.css'));
+            cssFile.getAttribute('href').replace(/just-the-docs-(default|light|dark)\.css/, 'just-the-docs-dark.css'));
         }
-        document.documentElement.setAttribute('data-color-scheme', 'dark');
       }
+      document.documentElement.setAttribute('data-color-scheme', useDark ? 'dark' : 'light');
     } catch (e) {}
   }());
-</script>
-
-<script>
-{% include js/custom.js %}
 </script>

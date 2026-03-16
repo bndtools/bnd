@@ -47,16 +47,6 @@ jobs:
         bundler-cache: true
         working-directory: docs
 
-    # Download and install the Pagefind binary
-    # see releases: https://github.com/CloudCannon/pagefind/releases
-    - name: Install Pagefind for Search
-      run: |
-        cd docs
-        curl -L https://github.com/Pagefind/pagefind/releases/download/v1.4.0/pagefind-v1.4.0-x86_64-unknown-linux-musl.tar.gz \
-          -o pagefind.tar.gz
-        tar xzf pagefind.tar.gz
-        chmod +x pagefind
-
     - name: Build
       run: |
         ./.github/scripts/docs.sh

@@ -1,5 +1,5 @@
 ---
-title: Testing
+title: Testing Framework
 layout: bnd
 version: 3.0
 parent: Testing

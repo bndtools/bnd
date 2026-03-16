@@ -8,7 +8,7 @@ highlighter: rouge
 kramdown:
   input: GFM
   syntax_highlighter_opts:
-    default_lang: shell
+    default_lang: properties
     css_class   : 'highlight' ## see https://github.com/rouge-ruby/rouge/wiki/List-of-supported-languages-and-lexers
 
 # Site title and description
@@ -105,7 +105,6 @@ exclude:
   - '/releases/*/sitemap.xml'
   - '/vendor'
   - '/.settings'
-  - 'pagefind'
 
 # just-the-docs collections configuration
 # Tells just-the-docs which collections to include in the navigation
@@ -115,20 +114,20 @@ just_the_docs:
       name: ""
       nav_exclude: false
     commands:
-      name: ""
-      nav_exclude: true
+      name: "CLI COMMANDS"
+      nav_exclude: false
     instructions:
-      name: ""
-      nav_exclude: true
+      name: "INSTRUCTIONS"
+      nav_exclude: false
     macros:
-      name: ""
-      nav_exclude: true
+      name: "MACROS"
+      nav_exclude: false
     heads:
       name: ""
       nav_exclude: true
     plugins:
-      name: ""
-      nav_exclude: true
+      name: "PLUGINS"
+      nav_exclude: false
     tools:
       name: ""
       nav_exclude: true
