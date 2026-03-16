@@ -61,6 +61,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 	private String												rawFilter					= null;
 	private String												wildcardFilter				= null;
+	private Glob												wildcardGlob				= null;
 	/**
 	 * Number of filter results to keep per repo. This is to avoid memory leaks
 	 * if you search with lots of different filter strings.
@@ -92,10 +93,13 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	public void setFilter(String filter) {
 		this.rawFilter = filter;
 		if (filter == null || filter.length() == 0 || filter.trim()
-			.equals("*"))
+			.equals("*")) {
 			wildcardFilter = null;
-		else
+			wildcardGlob = null;
+		} else {
 			wildcardFilter = "*" + filter.trim() + "*";
+			wildcardGlob = new Glob(wildcardFilter, Pattern.CASE_INSENSITIVE);
+		}
 	}
 
 	public void setRequirementFilter(Requirement requirement) {
@@ -529,8 +533,9 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	}
 
 	/**
-	 * Simple wildcard matcher for feature ID filtering. Uses
-	 * {@link aQute.libg.glob.Glob} for case-insensitive wildcard matching.
+	 * Simple wildcard matcher for feature ID filtering. Uses a cached
+	 * {@link aQute.libg.glob.Glob} instance for case-insensitive wildcard
+	 * matching.
 	 *
 	 * @param str the string to match (e.g., feature ID)
 	 * @param wildcardPattern the pattern with wildcards (e.g., "*feature*")
@@ -540,6 +545,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (str == null || wildcardPattern == null) {
 			return false;
 		}
-		return new Glob(wildcardPattern, Pattern.CASE_INSENSITIVE).matches(str);
+		Glob glob = wildcardPattern.equals(wildcardFilter) && wildcardGlob != null ? wildcardGlob
+			: new Glob(wildcardPattern, Pattern.CASE_INSENSITIVE);
+		return glob.matches(str);
 	}
 }
