@@ -18,6 +18,8 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import aQute.libg.glob.Glob;
+
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -527,10 +529,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	}
 
 	/**
-	 * Simple wildcard matcher for feature ID filtering. Converts wildcard
-	 * pattern to regex and matches against the provided string. All regex
-	 * metacharacters in the pattern are escaped; only '*' is treated as a
-	 * wildcard (matching any sequence of characters).
+	 * Simple wildcard matcher for feature ID filtering. Uses
+	 * {@link aQute.libg.glob.Glob} for case-insensitive wildcard matching.
 	 *
 	 * @param str the string to match (e.g., feature ID)
 	 * @param wildcardPattern the pattern with wildcards (e.g., "*feature*")
@@ -540,17 +540,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (str == null || wildcardPattern == null) {
 			return false;
 		}
-		// Split on '*', quote each segment, then join with '.*'
-		String[] segments = wildcardPattern.split("\\*", -1);
-		StringBuilder regex = new StringBuilder();
-		for (int i = 0; i < segments.length; i++) {
-			if (i > 0) {
-				regex.append(".*");
-			}
-			regex.append(Pattern.quote(segments[i]));
-		}
-		return Pattern.compile(regex.toString(), Pattern.CASE_INSENSITIVE)
-			.matcher(str)
-			.matches();
+		return new Glob(wildcardPattern, Pattern.CASE_INSENSITIVE).matches(str);
 	}
 }
