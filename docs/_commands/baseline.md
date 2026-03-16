@@ -16,6 +16,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 - `[ -p --packages <string> ]` Packages to baseline (comma delimited)
 - `[ -q --quiet ]` Be quiet, only report errors
 - `[ -v --verbose ]` On changed, list API changes
+- `[ -w --workspace <string> ]` Baseline all projects in the workspace at the given path
 
 <!-- Manual content from: ext/baseline.md --><br /><br />
 
