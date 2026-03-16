@@ -249,4 +249,22 @@ jtd.onReady(function () {
     var initialButton = tabsContainer.querySelector('.bnd-tab-button.is-active') || buttons[0];
     activate(initialButton.getAttribute('data-bnd-tab-target'));
   });
+
+  // fetch older releases and populate the release selector dropdown
+  fetch("/releases/index.json")
+    .then(response => response.json())
+    .then(data => {
+      const container = document.querySelector(".releases .dropdown-content");
+
+      data.forEach(release => {
+        const a = document.createElement("a");
+        a.href = release.url;
+        a.textContent = release.name;
+
+        container.appendChild(a);
+      });
+    })
+    .catch(err => console.error(err));
+
+
 });

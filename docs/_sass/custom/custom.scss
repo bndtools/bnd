@@ -189,3 +189,51 @@ div.highlighter-rouge[class*="language-"] .bnd-code-language {
 div.highlighter-rouge[class*="language-"] pre.highlight {
   padding-top: 1.5rem;
 }
+
+
+/***** Releases Dropdown *****/
+
+.releases {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background-color: #333;
+  color: white;
+  padding: 10px 14px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropbtn:hover {
+  background-color: #444;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 10px 14px;
+  text-decoration: none;
+  color: #333;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+/* Show dropdown on hover */
+.releases:hover .dropdown-content {
+  display: block;
+}
+
+/***** End Releases Dropdown *****/
