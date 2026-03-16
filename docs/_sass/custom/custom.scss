@@ -195,7 +195,20 @@ div.highlighter-rouge[class*="language-"] pre.highlight {
 
 .releases {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+}
+
+.aux-nav-list-item.releases-nav-item {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.aux-nav,
+.aux-nav-list,
+.releases {
+  overflow: visible;
 }
 
 .dropbtn {
@@ -205,6 +218,8 @@ div.highlighter-rouge[class*="language-"] pre.highlight {
   font-size: 16px;
   border: none;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }
 
 .dropbtn:hover {
@@ -214,10 +229,13 @@ div.highlighter-rouge[class*="language-"] pre.highlight {
 .dropdown-content {
   display: none;
   position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  left: auto;
   background-color: white;
   min-width: 200px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  z-index: 1;
+  z-index: 1000;
 }
 
 .dropdown-content a {

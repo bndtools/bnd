@@ -35,11 +35,12 @@
         >{{ link_text }}</a>
       </li>
     {%- endfor -%}
+    <li class="aux-nav-list-item releases-nav-item">
+      <div class="releases">
+        <button class="dropbtn"><span class="fa fa-bars"></span> {{ site.releasename }}</button>
+        <div class="dropdown-content"></div>
+      </div>
+    </li>
   </ul>
 </nav>
 {%- endif -%}
-
-<div class="releases">
-  <button class="dropbtn"><span class="fa fa-bars"></span> {{ site.releasename }}</button>
-  <div class="dropdown-content"></div>
-</div>

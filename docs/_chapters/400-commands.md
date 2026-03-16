@@ -27,10 +27,18 @@ In this text `bnd` is used as if it is a command line program. This should be se
 
 ### General Options
 
-||General Option ||Description ||
-||--debug ||Show log debug output||
-||--failok ||Turns errors into warnings so command always succeeds ||
-||--exceptions ||Will print the exception when the software has ran into a bad exception and bails out. Normally only a message is printed. For debugging or diagnostic reasons, the exception stack trace can be very helpful. ||
+| General Option | Description |
+|---|---|
+| `-b, --base <string>` | Use as base directory |
+| `-d, --debug` | Show log debug output |
+| `-e, --exceptions` | Print out stack traces when there is an unexpected exception |
+| `-f, --failok` | Turns errors into warnings so command always succeeds |
+| `-i, --ignore <string;>` | Error/Warning ignore patterns |
+| `-o, --output <file>` | Redirect output |
+| `-p, --pedantic` | Report errors pedantically |
+| `-s, --secret <[c>` | Provide a settings password |
+| `-t, --trace` | Trace progress |
+| `-w, --workspace` | Use the workspace related to the default directory as parent for bnd |
 
 Show [list of all options](/commands/bnd.html) for the bnd CLI.
 
