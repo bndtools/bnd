@@ -1,7 +1,27 @@
 <!-- bnd custom head additions -->
-<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/sitemap.xml">
-<link rel="shortcut icon" type="image/x-icon" href="{{ '/favicon.ico' | prepend: site.baseurl }}">
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="{{ '/sitemap.xml' | relative_url }}">
+<link rel="shortcut icon" type="image/x-icon" href="{{ '/favicon.ico' | relative_url }}">
 
 {% if page.class %}
 <meta name="bnd-page-class" content="{{ page.class }}">
 {% endif %}
+
+<!-- Prevent flash of wrong color scheme: apply stored preference before CSS renders.
+     Mirrors the technique used in klibio/apps/_doc/_layouts/default.html -->
+<script>
+  (function () {
+    try {
+      var pref = localStorage.getItem('theme-preference');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var useDark = pref === 'dark' || (pref !== 'light' && prefersDark);
+      if (useDark) {
+        var cssFile = document.querySelector('link[href*="just-the-docs-"]');
+        if (cssFile) {
+          cssFile.setAttribute('href',
+            cssFile.getAttribute('href').replace(/just-the-docs-(light|default)\.css/, 'just-the-docs-dark.css'));
+        }
+        document.documentElement.setAttribute('data-color-scheme', 'dark');
+      }
+    } catch (e) {}
+  }());
+</script>

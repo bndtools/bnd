@@ -51,3 +51,34 @@
 pre.highlight {
   position: relative;
 }
+
+// ── Color-scheme toggle button ───────────────────────────────────────────────
+// Three-state cycle: Auto → Light → Dark → Auto
+// Mirrors the pattern used in klibio/apps/_doc/_layouts/default.html
+.bnd-theme-toggle {
+  background: rgba(128, 128, 128, 0.1);
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 6px;
+  padding: 0.25rem 0.625rem;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  color: $body-heading-color;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(128, 128, 128, 0.2);
+  }
+
+  // All state labels hidden by default; JS shows exactly one
+  .icon-auto,
+  .icon-light,
+  .icon-dark {
+    display: none;
+  }
+}
