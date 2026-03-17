@@ -26,7 +26,7 @@ The purpose therefore of the `-conditionalpackage` instruction is to pick cohesi
 
 The packages that are copied cannot be exported, they must be private. This makes it possible to rely on the exact version that the bundle is compiled against. It also ensures that no information is leaked between bundles when statics are used. 
 
-The given `PACKAGE-SPEC` follows the format outlined in [Selector](../chapters/820-instructions.html#selector).
+The given `PACKAGE-SPEC` follows the format outlined in [Selector](/instructions/#selector).
 
 For example:
 

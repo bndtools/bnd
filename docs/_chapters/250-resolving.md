@@ -293,7 +293,7 @@ Another tool for diagnosing potential issues in your OSGI framework (bundle, pac
 
 So far this App Note only visited the _graphic user interface_ (GUI). However, bnd always keeps all information in simple properties files that can also edited as text. In the Run editor (that edits `bndrun` files) you can also select the `Source` view. Not all features of a `bndrun` file can be manipulated through the GUI. This section therefore shows what is in the source and it can be manipulated.
 
-Notice that most instructions are [_merge properties_](820-instructions.html). That is, bnd will first find all properties that start with the instruction name and merge their values together. For example, if you set `-runrequires`, `-runrequires.foo`, and `-runrequires.bar` bnd will use the combination of these properties. The order is the sorting order of the names used.
+Notice that most instructions are [_merge properties_](/instructions/#merged-instructions). That is, bnd will first find all properties that start with the instruction name and merge their values together. For example, if you set `-runrequires`, `-runrequires.foo`, and `-runrequires.bar` bnd will use the combination of these properties. The order is the sorting order of the names used.
 
 * [-runfw](/instructions/runfw.html) – Defines the framework to use
 * [-runbundles](/instructions/runbundles.html) – List of the bundles to run, calculated by the resolver.

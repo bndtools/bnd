@@ -143,7 +143,7 @@ results in the manifest header:
 
 ### Macros
 
-You'll note the string `${@class}` used in the above example. String fields in *bundle annotations* are processed through bnd's macro processor. This macro processor provides access to all default and builder macros. *More info on bnd macros can be found in the [macros chapter](/chapters/850-macros.html).*
+You'll note the string `${@class}` used in the above example. String fields in *bundle annotations* are processed through bnd's macro processor. This macro processor provides access to all default and builder macros. *More info on bnd macros can be found in the [macros chapter](/macros/).*
 
 Bnd also provides access to certain key properties of the current processing state.
 

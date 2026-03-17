@@ -64,7 +64,7 @@ On the same root level in the workspace as the `cnf` directory, bndlib expects t
 
 ## Configuration
 
-Bnd uses Java properties files (often with extension `.bnd`) for configuration purposes. Those usually contain [headers](800-headers.html) or [instructions](825-instructions-ref.html). The files are read with [`java.util.Properties.load(Reader)`](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Properties.html#load(java.io.Reader)) with `UTF-8` encoding and therefore support either of the following key value separators
+Bnd uses Java properties files (often with extension `.bnd`) for configuration purposes. Those usually contain [headers](/headers/) or [instructions](/instructions/). The files are read with [`java.util.Properties.load(Reader)`](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Properties.html#load(java.io.Reader)) with `UTF-8` encoding and therefore support either of the following key value separators
 
 1. `=` (default separator)
 2. `:` (separator also used in MANIFEST.MF files)

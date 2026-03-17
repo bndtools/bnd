@@ -124,6 +124,6 @@ For example you can directly point to a Github URL like:
 `https://raw.githubusercontent.com/bndtools/workspace-templates/567648ff425693b27b191bd38ace7c9c10539c2d/index.bnd`
 
 
-[2]: /chapters/820-instructions.html#merged-instructions
+[2]: /instructions/#merged-instructions
 [3]: /instructions/library.html
 [4]: /instructions/workspace_templates.html

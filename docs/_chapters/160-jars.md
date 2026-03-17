@@ -158,4 +158,4 @@ creates a `/generated/websocket.jar` and `/generated/someotherlib.jar`.
 
 # All headers
 
-All headers are listed on the [Headers index](/chapters/800-headers.html)
+All headers are listed on the [Headers index](/headers/)

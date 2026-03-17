@@ -8,7 +8,7 @@ When working with _custom bundle annotations_ one may find that `@Attribute` and
 
 ## Accessor Properties
 
-When an annotation is meta-annotated with a _bundle annotation_ the values and defaults of the host are loaded as properties, prefixed with `#`, into the macro processing scope. The effect is that these values are accessible using a [macro pattern](/chapters/850-macros.html#macro-patterns) (like `${}`).
+When an annotation is meta-annotated with a _bundle annotation_ the values and defaults of the host are loaded as properties, prefixed with `#`, into the macro processing scope. The effect is that these values are accessible using a [macro pattern](/macros/#macro-patterns) (like `${}`).
 
 ```java
 @Capability(

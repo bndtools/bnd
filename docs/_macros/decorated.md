@@ -95,7 +95,7 @@ ${decorated;deps}
 - Multiple decorators can apply to the same entry (attributes merged)
 - If `include-literals` is false (default), only matched patterns contribute
 - If `include-literals` is true, all decorator entries are included
-- See [instructions](/chapters/820-instructions.html) for more on decorated parameters
+- See [instructions](/instructions/) for more on decorated parameters
 
 ## Related Macros
 

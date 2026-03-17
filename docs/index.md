@@ -2,6 +2,7 @@
 layout: bnd
 title: Home
 nav_order: 0
+has_children: true
 description: "bnd - the Swiss army knife of OSGi. Used for creating and working with OSGi bundles."
 permalink: /
 ---

@@ -5,6 +5,10 @@ plugins:
   - jekyll-sitemap
 markdown: kramdown
 highlighter: rouge
+sass:
+  quiet_deps: true
+  silence_deprecations:
+    - import
 kramdown:
   input: GFM
   syntax_highlighter_opts:
@@ -54,19 +58,19 @@ gh_edit_source: docs
 gh_edit_view_mode: "edit"
 
 collections:
-  chapters:
-    output: true
-  macros:
-    output: true
   heads:
     output: true
-  tools:
+  instructions:
+    output: true
+  macros:
     output: true
   commands:
     output: true
   plugins:
     output: true
-  instructions:
+  chapters:
+    output: true
+  tools:
     output: true
 
 ## The release name. Must be equal to the version or `master`.
@@ -113,8 +117,8 @@ just_the_docs:
     chapters:
       name: ""
       nav_exclude: false
-    commands:
-      name: "CLI COMMANDS"
+    heads:
+      name: "HEADERS"
       nav_exclude: false
     instructions:
       name: "INSTRUCTIONS"
@@ -122,9 +126,9 @@ just_the_docs:
     macros:
       name: "MACROS"
       nav_exclude: false
-    heads:
-      name: ""
-      nav_exclude: true
+    commands:
+      name: "CLI COMMANDS"
+      nav_exclude: false
     plugins:
       name: "PLUGINS"
       nav_exclude: false

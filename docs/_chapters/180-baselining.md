@@ -13,7 +13,7 @@ APIs are compared for backward compatibility using the semantic versioning rules
 
 During the build, bnd will check the [`-baseline` instruction](../instructions/baseline.html) at the end of the build when the JAR is ready. This instruction is a selector on the symbolic name of the building bundle. If it matches, the baselining is started with one exception: by default, the bundle/package version must be 1.0.0 or above. If the version is less (i.e. major version being `0`) no baselining errors are reported, the purpose is to allow the [primordial baseline to be established without errors](https://semver.org/#spec-item-4).
 
-To enable baselining for versions in the range `[0.1.0, 1.0.0)`, use the [`-baselineincludezeromajor` instruction](../instructions/baselineincludezeromajor.html):
+To enable baselining for versions in the range `[0.1.0, 1.0.0)`, use the [`-baseline` instruction](../instructions/baseline.html):
 
 	-baselineincludezeromajor: true
 
@@ -39,7 +39,7 @@ By default the bundle and baseline are compared (_diffed_) and then analyzed for
 
 ### Maven Support
 
-There is a dedicated [Maven plugin for baselining](../../maven-plugins/bnd-baseline-maven-plugin/README.md).
+There is a dedicated [Maven plugin for baselining](https://github.com/bndtools/bnd/tree/master/maven-plugins/bnd-baseline-maven-plugin).
 
 ## Example baselining Project Instructions
 

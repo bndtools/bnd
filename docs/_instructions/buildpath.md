@@ -41,4 +41,4 @@ An example of the `-buildpath` could be the following, where three dependencies 
 * [-maven-dependencies] for how to configure maven dependency information.
 
 [-testpath]: testpath.html
-[-maven-dependencies]: maven-dependencies.html
+[-maven-dependencies]: maven_dependencies.html

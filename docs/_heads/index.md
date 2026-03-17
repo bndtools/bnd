@@ -1,9 +1,9 @@
 ---
 title: Headers
 layout: bnd
-parent: Reference Material
-nav_order: 2
+nav_order: 1
 has_children: true
+permalink: /headers/
 ---
 Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html) page. 
 
