@@ -393,8 +393,8 @@ public class Feature extends XMLBase {
 	 * Build a version filter based on Eclipse match rules.
 	 * Eclipse match rules are:
 	 * - perfect: exact version match
-	 * - equivalent: same major.minor.micro, any qualifier
-	 * - compatible: same major.minor, micro >= specified  
+	 * - equivalent: same major.minor, micro/qualifier may differ
+	 * - compatible: same major, minor/micro/qualifier may differ
 	 * - greaterOrEqual: version >= specified (default if no match specified)
 	 * 
 	 * @param version the version string
@@ -420,17 +420,17 @@ public class Feature extends XMLBase {
 					return String.format("(version=%s)", version);
 					
 				case "equivalent":
-					// Same major.minor.micro, any qualifier
-					// Range: [major.minor.micro, major.minor.(micro+1))
+					// Same major.minor, micro/qualifier may differ
+					// Range: [major.minor.micro, major.(minor+1).0)
 					Version lower = v;
-					Version upper = new Version(v.getMajor(), v.getMinor(), v.getMicro() + 1);
+					Version upper = new Version(v.getMajor(), v.getMinor() + 1, 0);
 					return String.format("(version>=%s)(!(version>=%s))", lower, upper);
 					
 				case "compatible":
-					// Same major.minor, micro >= specified
-					// Range: [major.minor.micro, major.(minor+1).0)
+					// Same major, minor/micro/qualifier may differ
+					// Range: [major.minor.micro, (major+1).0.0)
 					Version lowerCompat = v;
-					Version upperCompat = new Version(v.getMajor(), v.getMinor() + 1, 0);
+					Version upperCompat = new Version(v.getMajor() + 1, 0, 0);
 					return String.format("(version>=%s)(!(version>=%s))", lowerCompat, upperCompat);
 					
 				case "greaterorequal":
