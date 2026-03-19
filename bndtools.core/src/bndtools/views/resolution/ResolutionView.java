@@ -851,6 +851,13 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				analysisJob.schedule(500);
 			} else {
 				analysisJob = null;
+				if (display != null && !display.isDisposed()) {
+					display.asyncExec(() -> {
+						if (reqsTree != null && !reqsTree.isDisposed() && capsTable != null && !capsTable.isDisposed()) {
+							setInput(Collections.emptySet(), Collections.emptyMap(), Collections.emptyMap());
+						}
+					});
+				}
 			}
 		}
 	}
