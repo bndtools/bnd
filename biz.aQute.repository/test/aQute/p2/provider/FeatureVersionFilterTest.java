@@ -119,20 +119,20 @@ public class FeatureVersionFilterTest {
 		System.out.println("\nEquivalent match:");
 		System.out.println("  Filter: " + equivalentFilter);
 		softly.assertThat(equivalentFilter)
-			.as("Equivalent match should create range [1.2.3, 1.2.4)")
+			.as("Equivalent match should create range [1.2.3, 1.3.0)")
 			.contains("osgi.identity=plugin.equivalent")
 			.contains("(version>=1.2.3)")
-			.contains("(!(version>=1.2.4))");
+			.contains("(!(version>=1.3.0))");
 
 		// Test compatible match
 		String compatibleFilter = findFilterContaining(requirements, "plugin.compatible");
 		System.out.println("\nCompatible match:");
 		System.out.println("  Filter: " + compatibleFilter);
 		softly.assertThat(compatibleFilter)
-			.as("Compatible match should create range [1.2.0, 1.3.0)")
+			.as("Compatible match should create range [1.2.0, 2.0.0)")
 			.contains("osgi.identity=plugin.compatible")
 			.contains("(version>=1.2.0)")
-			.contains("(!(version>=1.3.0))");
+			.contains("(!(version>=2.0.0))");
 
 		// Test greaterOrEqual match
 		String greaterOrEqualFilter = findFilterContaining(requirements, "plugin.greaterOrEqual");
@@ -169,7 +169,7 @@ public class FeatureVersionFilterTest {
 			.contains("osgi.identity=feature.compatible")
 			.contains("type=org.eclipse.update.feature")
 			.contains("(version>=1.5.0)")
-			.contains("(!(version>=1.6.0))");
+			.contains("(!(version>=2.0.0))");
 
 		// Test feature without version
 		String featureNoVersionFilter = findFilterContaining(requirements, "feature.noversion");
@@ -251,7 +251,7 @@ public class FeatureVersionFilterTest {
 		softly.assertThat(largeFilter)
 			.as("Large version should create proper range")
 			.contains("(version>=99.99.99)")
-			.contains("(!(version>=99.100.0))");
+			.contains("(!(version>=100.0.0))");
 
 		// Test empty match
 		String emptyMatchFilter = findFilterContaining(requirements, "plugin.emptymatch");
