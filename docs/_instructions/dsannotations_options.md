@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -dsannotations-options SELECTORS
 class: Builder
 summary: |
    Options for controlling DS annotation processing.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-dsannotations-options: version;minimum=1.2.0`
 
 - Values: `(inherit|felixExtensions|extender|nocapabilities|norequirements|version)`

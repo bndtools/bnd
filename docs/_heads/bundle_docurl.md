@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-DocURL STRING
 class: Header
 summary: |
    The Bundle-DocURL headers must contain a URL pointing to documentation about this bundle.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Headers
 ---
-
 - Example: `Bundle-DocURL: http://www.aQute.biz/Code/Bnd`
 
 - Pattern: `.*`

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -snapshot STRING
 class: Project
 summary: |
    String to substitute for "SNAPSHOT" in the bundle version's qualifier
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-snapshot=${tstamp}`
 
 - Pattern: `.*`

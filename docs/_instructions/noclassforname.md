@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -noclassforname BOOLEAN
 class: Builder
 summary: |
    Do not add package reference to classes loaded with Class.forName(String).
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-noclassforname=true`
 
 - Values: `true,false`

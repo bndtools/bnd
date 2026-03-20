@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-Description STRING
 class: Header
 summary: |
    The Bundle-Description header defines a short description of this bundle..
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Headers
 ---
-
 - Example: `Bundle-Description: Ceci ce n'est pas une bundle`
 
 - Pattern: `.*`

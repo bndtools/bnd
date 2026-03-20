@@ -1,13 +1,10 @@
 ---
 title: Reference
-layout: default
+layout: bnd
+parent: Reference Material
+nav_order: 1
 ---
-
 The subsequent sections provide the reference part of the manual. This consists of the following:
-
-* [headers](800-headers.html) – OSGi & bnd Manifest headers
-* [instructions](820-instructions.html) – Instructions of bnd, instructions start with a `-` (minus sign).
-* [macros](850-macros.html) – Macros in bnd
 
 Since bnd is a library, it gets used in many different places. This makes some of the headers, instructions, and/or
 macros only applicable in a specific context. This is generally indicated on a page with a _class_ button on the right

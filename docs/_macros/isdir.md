@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: isdir ( ';' FILE )+
 summary: Check if all specified paths are directories
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `isdir` macro checks whether all specified file paths are directories. It returns "true" only if all paths exist and are directories; otherwise, it returns "false".

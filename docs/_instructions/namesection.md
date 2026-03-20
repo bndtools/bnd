@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *
 class: Builder
 summary: |
    Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-namesection=*;baz=true, abc/def/bar/X.class;bar=3`
 
 - Pattern: `.*`

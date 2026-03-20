@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: dev
 summary: |
    Experimental: Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   dev [options]  <[bndrun...]>
 

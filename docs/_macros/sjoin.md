@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: sjoin ';' SEPARATOR ( ';' LIST )+
 summary: Join lists with a custom separator
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `sjoin` macro combines one or more lists into a single string using a custom separator. Unlike `${join}` which always uses commas, this allows you to specify any separator.

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -releaserepo* NAME ( ',' NAME ) *
 class: Project
 summary: |
    Define the names of the repositories to use for a release
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-releaserepo=cnf`
 
 - Values: `${repos}`

@@ -1,13 +1,13 @@
 ---
-layout: default
+layout: bnd
 title: -noproxyinterfaces BOOLEAN
 class: Builder
 summary: |
    Do not calculate Import-Package references for 'Proxy.newProxyInstance' usage found in method bodies during class processing.
 since: 7.2.0
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-noproxyinterfaces=true`
 
 - Values: `true,false`

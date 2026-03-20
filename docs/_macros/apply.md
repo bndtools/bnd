@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: apply ';' MACRO (';' LIST)* 
 summary: Convert a list to an invocation with arguments 
+parent: Macro Reference
 ---
-
 ## Summary
 
 Convert comma-separated lists into semicolon-separated macro arguments, effectively "applying" list elements as individual macro parameters.

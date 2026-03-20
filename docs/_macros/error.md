@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: error ( ';' STRING )*
 summary: Generate a build error with a custom message
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `error` macro generates one or more build errors with custom messages. Each message argument is processed (macros are expanded) and then added to the build error list. This causes the build to fail.

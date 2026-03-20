@@ -1,9 +1,9 @@
 ---
 title: Bnd Pom Repository
-layout: default
+layout: bnd
 summary: A plugin to use a Maven POM as a repository
+parent: Plugins
 ---
-
 A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository / BndPomRepository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.
 
 The pom can be a file on the local file system, a URL, a group, artifact, version (GAV) coordinate, or a query expression on maven central.
@@ -102,7 +102,7 @@ Notice that the id must match the scheme, the host, and the port if not the defa
 
 ## Tagging
 
-This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.
 
 ## IDEs
 
@@ -116,4 +116,4 @@ The repository view in the IDE will show detailed information when you hover the
 * The parser ignores repositories in POMs and restricts the repositories to the ones listes in the `releaseUrl` and `snapshotUrl` configuration parameters. This is for security reasons.
 * The parser ignores any restrictions on dependencies because the intention of these restrictions is to handle unicity of the class path. The primary purpose of the Bnd Pom Repository is to be used in assembling. Since this is not an issue for the resolver we ignore this. You can always override this with the `-runblacklist` instruction.
 
-[-connection-settings]: /instructions/connection-settings
+[-connection-settings]: /instructions/connection_settings.html

@@ -1,8 +1,9 @@
 ---
 title: bnd / bndlib Features and JAR Wrapping Techniques
-layout: default
+layout: bnd
+parent: Getting Started
+nav_order: 4
 ---
-
 This guide is about the first part of bnd mentioned in the introduction:
 
 >  Its primary function is generating OSGi meta data by analyzing Java classes.

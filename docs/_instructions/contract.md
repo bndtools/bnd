@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -contract
 class: Project
 summary: |
    Establishes a link to a contract and handles the low level details.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-contract!Servlet,*`
 
 - Pattern: `.*`

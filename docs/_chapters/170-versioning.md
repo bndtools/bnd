@@ -1,10 +1,10 @@
 ---
 title: Versioning
-layout: default
+layout: bnd
 requires: 1.15
+parent: Build and Development
+nav_order: 4
 ---
-
-
 Versioning is probably the most painful part of developing real software. Where toys and prototypes can be developed ignoring evolution, real software requires a migration path to an unknown future.
 
 The OSGi has defined a versioning policy that is described in the [Semantic Versioning whitepaper](https://docs.osgi.org/whitepaper/semantic-versioning/). bnd fully supports this model and provides many shortcuts. The goal of bnd is remove any manual work from versioning bundles as well as packages.

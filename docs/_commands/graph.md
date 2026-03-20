@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: graph
 summary: |
    Commands to inspect a dependency graph of a set of bundles
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   graph  ...
 

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: last (';' LIST )*
 summary: Get the last element from one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `last` macro returns the last element from one or more comma-separated lists. If multiple lists are provided, it returns the last element from the combined lists.

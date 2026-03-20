@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -nobundles  BOOLEAN
 class: Project
 summary: |
    Do not build the project.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-nobundles=true`
 
 - Values: `true,false`

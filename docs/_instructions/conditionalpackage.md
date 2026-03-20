@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -conditionalpackage PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *
 class: Project
 summary: |
    Recursively add packages from the class path when referred and when they match one of the package specifications.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-conditionalpackage: com.*`
 
 - Values: `${packages}`
@@ -26,7 +26,7 @@ The purpose therefore of the `-conditionalpackage` instruction is to pick cohesi
 
 The packages that are copied cannot be exported, they must be private. This makes it possible to rely on the exact version that the bundle is compiled against. It also ensures that no information is leaked between bundles when statics are used. 
 
-The given `PACKAGE-SPEC` follows the format outlined in [Selector](../chapters/820-instructions.html#selector).
+The given `PACKAGE-SPEC` follows the format outlined in [Selector](/instructions/#selector).
 
 For example:
 

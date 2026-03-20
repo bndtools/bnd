@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Workspace
 title: global ';' KEY ( ';' DEFAULT )? 
 summary: Access user settings from the ~/.bnd/settings.json file
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `global` macro provides access to user-specific settings stored in the `~/.bnd/settings.json` file. This allows builds to use machine-specific configuration like credentials, API tokens, or user preferences without storing them in project files.

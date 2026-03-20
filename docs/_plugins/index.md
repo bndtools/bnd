@@ -1,6 +1,9 @@
 ---
+layout: bnd
 title: Plugins
-layout: default
+nav_order: 5
+has_children: true
+permalink: /plugins/
 ---
 
 ## Plugins
@@ -8,11 +11,13 @@ Plugins are objects that can extend the functionality of bnd. They are called fr
 
 A plugin is defined as:
 
-	PLUGIN ::= FQN ( ';' \<directive\|attribute\> )*
+    PLUGIN ::= FQN ( ';' \<directive\|attribute\> )*
 
 The following directive is defined for all plugin:
 
-||`path:` ||A path to the jar file that contains the plugin. The directory/jar at that location is placed on your classpath for that plugin.||
+| Directive | Description |
+| --- | --- |
+| `path:` | A path to the jar file that contains the plugin. The directory/jar at that location is placed on your classpath for that plugin. |
 
 ## Tagging of repository plugins
 
@@ -31,4 +36,3 @@ For example the [-runrepos](/instructions/runrepos.html) instruction in `.bndrun
 
 </dl>
 </div>
-

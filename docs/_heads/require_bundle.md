@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Require-Bundle      ::= bundle-description ( ',' bundle-description )*
 class: Header
 summary: |
    The Require-Bundle header specifies that all exported packages from another bundle must be im- ported, effectively requiring the public interface of another bundle.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Headers
 ---
-
 - Example: `Require-Bundle: com.acme.chess`
 
 - Pattern: `.*`

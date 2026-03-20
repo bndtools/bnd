@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: reverse (';' LIST )*
 summary: Reverse the order of elements in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `reverse` macro reverses the order of elements from one or more combined lists. The last element becomes first, and the first becomes last.

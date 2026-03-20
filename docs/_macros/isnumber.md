@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: isnumber ( ';' STRING )* 
 summary: Check if all given strings are valid numbers
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `isnumber` macro checks if all provided arguments are valid numeric values. Returns true only if all arguments are numbers, false otherwise.

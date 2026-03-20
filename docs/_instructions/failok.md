@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -failok ('true' | 'false')?
 class: Project
 summary: |
    Will ignore any error during building and assume all went ok.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-failok=true`
 
 - Values: `true,false`

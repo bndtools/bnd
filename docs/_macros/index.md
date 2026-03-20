@@ -1,9 +1,10 @@
 ---
+layout: bnd
 title: Macro Reference
-layout: default
+nav_order: 3
+has_children: true
+permalink: /macros/
 ---
-
-
 Bnd has a simple macro processor for the header processing. Variables allow a single definition of a value, and the use of derivations. Each header is a macro that can be expanded. Notice that headers that do not start with an upper case character will not be copied to the manifest, so they can be used as working variables. Variables are expanded by enclosing the name of the variable in `${<name>}` (curly braces) or `$(<name>)` (parenthesis). Additionally, square brackets \[\], angled brackets <>, double guillemets «», and single guillemets ‹› are also allowed for brackets. If brackets are nested, that is `$[replace;acaca;a(.*)a;[$1]]` will return `[cac]`.
 
 There are also a number of macros that perform basic functions. All these functions have the following basic syntax:
@@ -22,7 +23,7 @@ For example:
     Bundle-Description= This bundle has version ${version}
 
 
-All macros are listed on the [Macro index](/chapters/855-macros-ref.html)
+All macros are listed in the index at the bottom of this page.
 
 ## Macro patterns
 The default macro pattern is the `${...}` pattern, a dollar sign ('$') followed by a left curly bracket ('{') and closed by a right curly bracket ('}'). However, since bndlib is often used inside other systems it also supports alternative macro patterns:
@@ -68,7 +69,7 @@ Alternatively there are a couple of macros that return the given value when call
 In many places a header is used to indicate false or true. In those cases we use some heuristics. The header/macro or whatever is false when:
 
 *	not set
-*   empty string
+*	empty string
 *	'false'
 *	'!'
 *	'off'
@@ -78,9 +79,24 @@ If the value starts with `!` and text follows, the `!` is removed and the remain
 
 In other cases, the value is considered `true`.
 
-## Types
-@TODO
+## Macro Index
 
-
-
+<div>
+<table class="property-index">
+    <thead>
+        <th>page</th>
+        <th>Description</th>
+        <th>Class</th>
+    </thead>
+    <tbody>
+        {% for page in site.macros %}
+        <tr>
+            <td><a href="{{ page.url | prepend: site.baseurl }}">{{page.title | escape}}</a></td>
+            <td>{{page.summary | escape}}</td>
+            <td>{{page.class}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
 

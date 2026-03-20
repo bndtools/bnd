@@ -1,9 +1,9 @@
 ---
-order: 160
 title: Generating JARs
-layout: default
+layout: bnd
+parent: Build and Development
+nav_order: 3
 ---
-
 This is about generating OSGi JARs - one of the main tasks of bnd.
 
 This is a simple example of [wrapping a jar with bnd](/chapters/390-wrapping.html) (wrapping means: taking a non-OSGi jar and use `bnd` to add OSGi meta data to its MANIFEST.MF to get a proper OSGi `.jar`). 
@@ -158,4 +158,4 @@ creates a `/generated/websocket.jar` and `/generated/someotherlib.jar`.
 
 # All headers
 
-All headers are listed on the [Headers index](/chapters/800-headers.html)
+All headers are listed on the [Headers index](/headers/)

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -runrequires REQUIREMENT ( ',' REQUIREMENT )*
 class: Resolve
 summary: |
    The root requirements for a resolve intended to create a constellation for the -runbundles.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-runrequires=osgi.identity;filter:='(osgi.identity=<bsn>)', ...`
 
 - Pattern: `.*`

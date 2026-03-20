@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -compression DEFLATE | STORE
 class: Builder
 summary: |
    Set the compression level for the generated JAR, the default is DEFLATE
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-compression: STORE`
 
 - Values: `DEFLATE,STORE`

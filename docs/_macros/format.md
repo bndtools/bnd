@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: format ';' STRING (';' ANY )*
 summary: Print a formatted string using Locale.ROOT, automatically converting variables to the specified format if possible.
+parent: Macro Reference
 ---
-
 ## Summary
 
 Format a string using printf-style format specifiers with provided arguments, similar to Java's `String.format()`.

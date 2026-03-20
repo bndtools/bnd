@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: find ';' VALUE ';' SEARCHED
 summary: Find the index position of a substring in a string
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `find` macro returns the starting index position of a substring within a target string, or -1 if not found. This is a simple string search, not a regex pattern match.

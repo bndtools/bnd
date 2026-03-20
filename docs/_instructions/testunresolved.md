@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -testunresolved BOOLEAN
 class: Project
 summary: |
    Will execute a JUnit testcase ahead of any other test case that will abort if there are any unresolved bundles.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-testunresolved=true`
 
 - Values: `true,false`

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: select ';' LIST ';' REGEX
 summary: Selects entries in a list that matching a regular expression
+parent: Macro Reference
 ---
-
 ## Summary
 
 Filter a list to include only elements that match a regular expression. This macro is an alias for the [filter](filter.html) macro.

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -dsannotations SELECTORS
 class: Builder
 summary: |
    Selects the packages that need processing for standard OSGi DS annotations.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-dsannotations: *`
 
 - Pattern: `.*`

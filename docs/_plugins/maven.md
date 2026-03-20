@@ -1,9 +1,9 @@
 ---
 title: Maven Bnd Repository Plugin
-layout: default
+layout: bnd
 summary: A plugin to use and release to Maven repositories
+parent: Plugins
 ---
-
 The Maven Bnd Repository / MavenBndRepository plugin provides a full interface to the Maven local repository in `~/.m2/repository` and remote repositories like [Nexus] or [Artifactory]. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.
 
 ### Maven Central
@@ -347,7 +347,7 @@ The Maven Bnd Repository uses the bnd Http Client. See the [-connection-settings
 
 ## Tagging
 
-This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.
 
 ## IDEs
 

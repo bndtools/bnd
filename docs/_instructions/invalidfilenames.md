@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -invalidfilenames
 class: Project
 summary: |
    Specify file/directory names that should not be used because they are not portable.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-invalidfilenames:CON(\..+)?|PRN(\..+)?|AUX(\..+)?|CLOCK\$|NUL(\..+)?|COM[1-9](\..+)?|LPT[1-9](\..+)?|\$Mft|\$MftMirr|\$LogFile|\$Volume|\$AttrDef|\$Bitmap|\$Boot|\$BadClus|\$Secure|\$Upcase|\$Extend|\$Quota|\$ObjId|\$Reparse`
 
 - Pattern: `.*`

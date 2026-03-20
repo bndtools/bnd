@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Processor
 title: native_capability ( ';' ( 'os.name' | 'os.version' | 'os.processor' ) '=' STRING )*
 summary: Generate OSGi native capability string for current or specified platform
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `native_capability` macro generates an OSGi native capability string in the format specified for Provide-Capability or Require-Capability headers. It represents the native platform according to OSGi RFC 188, automatically detecting the current platform or using explicit overrides.

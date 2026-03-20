@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-NativeCode   ::= nativecode  ( ',' nativecode )* ( ',' optional ) ?
 class: Header
 summary: |
    The Bundle-NativeCode header contains a specification of native code libraries contained in this bundle.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Headers
 ---
-
 - Example: `Bundle-NativeCode: /lib/http.DLL; osname = QNX; osversion = 3.1`
 
 - Pattern: `.*`

@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -dependson SELECTORS
 class: Project
 summary: |
    Add dependencies from the current project to other projects, before this project is built, any project this project depends on will be built first.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-dependson=org.acme.cm`
 
 - Values: `${projects}`

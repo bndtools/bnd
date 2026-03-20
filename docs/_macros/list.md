@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: list (';' KEY)*
 summary: Returns a list of the values of the named properties with escaped semicolons.
+parent: Macro Reference
 ---
-
 ## Summary
 
 Merge multiple property values into a single comma-separated list with automatic semicolon escaping, useful for combining list-valued properties that contain semicolons.

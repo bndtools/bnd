@@ -1,10 +1,13 @@
 ---
+layout: bnd
 title: Instruction Reference
-layout: default
+nav_order: 2
+has_children: true
+permalink: /instructions/
 ---
 A bnd instruction is a property that starts with a minus sign ('-'). An instruction instructs bndlib to do something, in general providing parameters to the code. All instructions in bndlib are listed later in this page.
 
-All instructions are listed on the [Instruction index](/chapters/825-instructions-ref.html)
+All instructions are listed on the [Instruction index](#instruction-index)
 
 ## Syntax
 
@@ -330,3 +333,24 @@ Some examples:
 | `{foo}` | `(?:foo)` |
 | `[\p{Lower}]` | `[\p{Lower}]` |
 | `[a-z&&[^bc]]` | `[a-z&&[^bc]]` |
+
+## Instruction Index
+
+<div>
+<table class="property-index">
+    <thead>
+        <th>Instruction</th>
+        <th>Description</th>
+        <th>Class</th>
+    </thead>
+    <tbody>
+        {% for instruction in site.instructions %}
+        <tr>
+            <td><a href="{{ instruction.url | prepend: site.baseurl }}">{{instruction.title | escape}}</a></td>
+            <td>{{instruction.summary | escape}}</td>
+            <td>{{instruction.class}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>

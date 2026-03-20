@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -output  FILE
 class: Analyzer
 summary: |
    Specify the output directory or file.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-output=my_directory`
 
 - Pattern: `.*`

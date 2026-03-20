@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: run
 summary: |
    Run a project in the OSGi launcher.  If no bndrun is specified, the current project is used for the run specification
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   run [options]  <[bndrun]>
 

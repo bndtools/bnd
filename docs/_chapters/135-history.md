@@ -1,8 +1,9 @@
 ---
 title: Background
-layout: default
+layout: bnd
+parent: Concepts and Practices
+nav_order: 2
 ---
-
 OSGi is arguably one of the best specifications in the Java world. It is a no compromise specification for a component framework that is based on what we today know are the best practices. It extends the type safety first model of Java to hold true over time when the modules morph into sometimes unrecognizable shapes. It provides a solid foundation to build applications that can run anywhere, the original promise of Java; offering these impressive features while remaining as simple as possible, albeit no simpler.
 
 For some, the previous paragraph may come as a surprise because OSGi has had its share of people complaining about it. Surprisingly, the biggest complaint is often the Class Not Found Exception, which is always a perfect sign that people try to push a round peg in a too small square hole, and with all their might. You only see those exceptions when you're not doing engineering but when you are hacking. If you run head on into the walls that OSGi installs and it is giving you a headache, then just look around and find the elegant and easy to use doors: services.

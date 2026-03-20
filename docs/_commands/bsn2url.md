@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: bnd
 title: bsn2url
 summary: |
    From a set of bsns, create a list of urls if found in the repo
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
+parent: bnd CLI Commands
 ---
-
 ### Synopsis: 
 	   bsn2url [options]  ...
 

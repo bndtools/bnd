@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: min (';' LIST )*
 summary: Find the minimum string in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `min` macro compares strings lexicographically using Java's `String.compareTo()` and returns the minimum (lowest) value.

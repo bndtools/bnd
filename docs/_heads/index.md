@@ -1,13 +1,11 @@
 ---
 title: Headers
-layout: default
+layout: bnd
+nav_order: 1
+has_children: true
+permalink: /headers/
 ---
-
 Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html) page. 
-
-<div>
-
-<dl class="property-index">
 
 <div>
 <table class="property-index">
@@ -26,7 +24,4 @@ Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html
         {% endfor %}
     </tbody>
 </table>
-</div>
-
-</dl>
 </div>

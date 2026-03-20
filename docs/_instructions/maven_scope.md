@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -maven-scope dependency-scope
 class: Project
 summary: |
    Set the default Maven dependency scope to use when generating dependency information in the generated pom
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Example: `-maven-scope: compile`
 
 - Values: `(compile|provided)`

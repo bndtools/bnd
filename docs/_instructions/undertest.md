@@ -1,12 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: -undertest true
 class: Project
 summary: |
    Will be set by the project when it builds a JAR in test mode, intended to be used by plugins.
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
+parent: Instruction Reference
 ---
-
 - Pattern: `true|false`
 
 <!-- Manual content from: ext/undertest.md --><br /><br />

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: ncompare NUMBER NUMBER
 summary: Compare two numbers by using the Double.compare method.
+parent: Macro Reference
 ---
-
 ## Summary
 
 Compare two numbers numerically using Java's `Double.compare()` method, returning -1, 0, or 1.

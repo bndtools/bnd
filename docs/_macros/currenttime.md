@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: currenttime
 summary: Get the current system time as milliseconds since epoch
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `currenttime` macro returns the current system time as a long integer representing milliseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC). This provides a precise timestamp for build-time operations.
