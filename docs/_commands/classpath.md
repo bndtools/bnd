@@ -3,9 +3,10 @@ layout: bnd
 title: classpath
 summary: |
    Show the classpath with all the current -buildpath and optional -testpath dependencies
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
+
 ### Synopsis: 
 	   classpath [options] 
 

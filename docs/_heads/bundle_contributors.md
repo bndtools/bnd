@@ -4,9 +4,10 @@ title: Bundle-Contributors ...
 class: Header
 summary: |
    Lists the bundle contributors according to the Maven bundle-contributors pom entry
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Bundle-Contributors: Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1`
 
 - Pattern: `.*`

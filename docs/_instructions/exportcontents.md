@@ -4,9 +4,10 @@ title: -exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*
 class: Project
 summary: |
    Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-exportcontents=!*impl*,*;version=3.0`
 
 - Pattern: `.*`

@@ -4,9 +4,10 @@ title: -digests DIGEST ( ',' DIGEST ) *
 class: Project
 summary: |
    Set the digest algorithms to use
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-digests: SHA-1 `
 
 - Pattern: `.*`

@@ -4,9 +4,10 @@ title: -distro REPO (',' REPO)
 class: Workspace
 summary: |
    Resolve against pre-defined system capabilities
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-distro: karaf-4.1.jar;version=file`
 
 - Pattern: `.*`

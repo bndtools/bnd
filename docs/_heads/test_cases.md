@@ -4,9 +4,10 @@ title: Test-Cases CLASS ( ',' CLASS ) *
 class: Header
 summary: |
    Header to automatically execute tests in the bnd JUnit tester
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Test-Cases: com.foo.bar.MyTest`
 
 - Pattern: `.*`

@@ -4,9 +4,10 @@ title: -manifest-name  RESOURCE
 class: Ant
 summary: |
    Set the resource path to the manifest, for certain standards the manifest has a different name.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Pattern: `.*`
 
 <!-- Manual content from: ext/manifest_name.md --><br /><br />

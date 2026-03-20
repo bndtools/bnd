@@ -4,10 +4,11 @@ title: -noee  BOOLEAN
 class: Ant
 summary: |
    Donot add an automatic requirement on an EE capability based on the class format.
+parent: Instruction Reference
 since: 2.3.0
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
-parent: Instruction Reference
 ---
+
 - Example: `-noee=true`
 
 - Values: `true,false`

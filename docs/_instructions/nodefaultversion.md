@@ -4,9 +4,10 @@ title: -nodefaultversion  BOOLEAN
 class: Builder
 summary: |
    Do not add a default version to exported packages when no version is present.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-nodefaultversion=true`
 
 - Values: `true,false`

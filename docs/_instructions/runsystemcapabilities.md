@@ -4,9 +4,10 @@ title: -runsystemcapabilities* CAPABILITY (',' CAPABILITY )
 class: Launcher
 summary: |
    Define extra capabilities for the remote VM.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runsystemcapabilities=some.namespace; some.namespace=foo`
 
 - Pattern: `.*`

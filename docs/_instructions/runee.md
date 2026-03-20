@@ -4,9 +4,10 @@ title: -runee EE
 class: Builder
 summary: |
    Define the  runtime Execution Environment capabilities, default Java 6.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runee=JavaSE-1.8`
 
 - Pattern: `.*`

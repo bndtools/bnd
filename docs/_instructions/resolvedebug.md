@@ -4,9 +4,10 @@ title: -resolvedebug INTEGER
 class: Workspace
 summary: |
    Display debugging information for a resolve operation
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-resolvedebug: 1`
 
 - Values: `0,1,2,3`

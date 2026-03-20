@@ -4,9 +4,10 @@ title: -metatypeannotations-options SELECTORS
 class: Builder
 summary: |
    Restricts the use of Metatype Annotation to a minimum version.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-metatypeannotations-options: version;minimum=1.2.0`
 
 - Values: `(inherit|felixExtensions|extender|nocapabilities|norequirements|version)`

@@ -4,9 +4,10 @@ title: -metatypeannotations SELECTORS
 class: Builder
 summary: |
    Selects the packages that need processing for standard OSGi Metatype annotations.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-metatypeannotations: *`
 
 - Pattern: `.*`

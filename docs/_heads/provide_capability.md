@@ -4,9 +4,10 @@ title: Provide-Capability  ::= capability (',' capability )*
 class: Header
 summary: |
    Specifies that a bundle provides a set of Capabilities,
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Provide-Capability: com.acme.dictionary; from:String=nl; to=de; version:Version=3.4`
 
 - Pattern: `.*`

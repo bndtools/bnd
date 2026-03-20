@@ -4,9 +4,10 @@ title: -sources  BOOLEAN
 class: Builder
 summary: |
    Include the source code (if available on the -sourcepath) in the bundle at OSGI-OPT/src
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-sources=true`
 
 - Values: `true,false`

@@ -4,9 +4,10 @@ title: -noparallel CATEGORY;task=TASKS
 class: Workspace
 summary: |
    Prevent Gradle tasks in the same category from executing in parallel.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-noparallel=true`
 
 - Values: `true,false`

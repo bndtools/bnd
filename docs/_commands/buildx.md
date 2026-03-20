@@ -3,9 +3,10 @@ layout: bnd
 title: buildx
 summary: |
    Build project, is deprecated but here for backward compatibility
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
+
 ### Synopsis: 
 	   buildx [options]  ...
 
