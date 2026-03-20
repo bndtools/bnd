@@ -4,9 +4,10 @@ title: Bnd-AddXmlToTest RESOURCE ( ',' RESOURCE )
 class: Macro
 summary: |
    Add XML resources from the tested bundle to the output of a test report.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Bnd-AddXMLToTest: a.xml`
 
 - Pattern: `.*`

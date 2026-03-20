@@ -4,9 +4,10 @@ title: -runstartlevel ( order | begin | step )*
 class: Project
 summary: |
    Assign a start level to each run-bundle after resolving
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runstartlevel: '-runstartlevel order=leastdependenciesfirst, begin=1, step=1`
 
 - Pattern: `.*`

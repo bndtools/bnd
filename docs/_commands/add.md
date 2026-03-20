@@ -3,9 +3,10 @@ layout: bnd
 title: add
 summary: |
    Add a project, workspace, plugin or template fragment to the workspace
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
+
 ### Synopsis: 
 	   add  <what> ...
 

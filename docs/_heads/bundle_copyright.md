@@ -4,9 +4,10 @@ title: Bundle-Copyright STRING
 class: Header
 summary: |
    The Bundle-Copyright header contains the copyright specification for this bundle. Can be set with the BundleCopyright annotation.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Bundle-Copyright: OSGi (c) 2002`
 
 - Pattern: `.*`

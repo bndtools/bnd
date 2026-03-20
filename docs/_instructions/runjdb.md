@@ -4,9 +4,10 @@ title: -runjdb  ADDRESS
 class: Project
 summary: |
    Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runjdb: localhost:10001`
 
 - Pattern: `.*`

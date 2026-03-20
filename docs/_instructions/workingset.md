@@ -4,9 +4,10 @@ title: -workingset PARAMETER ( ',' PARAMETER ) *
 class: Workspace
 summary: |
    Group the workspace into different working sets
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-workingset=Implementations, Drivers`
 
 - Pattern: `.*`

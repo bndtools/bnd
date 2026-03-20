@@ -4,9 +4,10 @@ title: -runtrace BOOLEAN
 class: Launcher
 summary: |
    Trace the launched process in detail
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runtrace: true`
 
 - Values: `true,false`

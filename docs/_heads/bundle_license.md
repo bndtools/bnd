@@ -4,9 +4,10 @@ title: Bundle-License ::= '<<[EXTERNAL]>>' | ( license ( ',' license ) * )
 class: Header
 summary: |
    The Bundle-License header provides an optional machine readable form of license information.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Bundle-License: http://www.opensource.org/licenses/jabberpl.php`
 
 - Values: `http://www.apache.org/licenses/LICENSE-2.0,<<EXTERNAL>>`

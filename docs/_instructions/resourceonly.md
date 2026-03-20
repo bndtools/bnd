@@ -4,9 +4,10 @@ title: -resourceonly  BOOLEAN
 class: Project
 summary: |
    Ignores warning if the bundle only contains resources and no classes.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-resourceonly=true`
 
 - Values: `true,false`

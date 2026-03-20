@@ -4,9 +4,10 @@ title: Require-Capability ::= requirement ( ',' requirement )*
 class: Header
 summary: |
    Specifies that a bundle requires other bundles to provide a capability
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Require-Capability: com.microsoft; filter:='(&(api=win32)(version=7))'`
 
 - Pattern: `.*`

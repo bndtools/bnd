@@ -4,9 +4,10 @@ title: -eeprofile 'auto' | PROFILE +
 class: Project
 summary: |
    Provides control over what Java 8 profile to use.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-eeprofile: name="a,b,c"`
 
 - Values: `name="a,b,c", auto`

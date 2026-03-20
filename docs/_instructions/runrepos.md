@@ -4,9 +4,10 @@ title: -runrepos REPO-NAME ( ',' REPO-NAME )*
 class: Resolve
 summary: |
    Order and select the repository for resolving against. The default order is all repositories in their plugin creation order.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runrepos=Maven Central, Main, Distro, ...`
 
 - Pattern: `.*`

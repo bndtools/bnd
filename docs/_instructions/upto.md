@@ -4,9 +4,10 @@ title: -upto VERSION
 class: Project
 summary: |
    Specify the highest compatibility version, will disable any incompatible features added after this version.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-upto: 2.3.1`
 
 - Pattern: `(\d{1,10})(\.(\d{1,10})(\.(\d{1,10})(\.([-\w]+))?)?)?`

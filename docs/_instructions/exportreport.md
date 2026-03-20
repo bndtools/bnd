@@ -4,9 +4,10 @@ title: -exportreport report-def ( ',' report-def )*
 class: Workspace & Project
 summary: |
    Configure a list of reports to be exported.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-exportreport: metadata.json`
 
 - Pattern: `.*`

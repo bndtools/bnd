@@ -4,9 +4,10 @@ title: -wab FILE ( ',' FILE )*
 class: Builder
 summary: |
    Create a Web Archive Bundle (WAB) or a WAR
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-wab=static-pages/`
 
 - Pattern: `.*`

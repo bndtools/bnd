@@ -4,9 +4,10 @@ title: -runproperties PROPERTIES
 class: Launcher
 summary: |
    Define system properties for the remote VM.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runproperties= foo=3, bar=4`
 
 - Pattern: `.*`

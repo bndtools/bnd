@@ -4,9 +4,10 @@ title: -resolve.excludesystem true|false
 class: Runtime
 summary: |
    A property used by the resolver, if set to true (default) it excludes the system resource
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Values: `true|false`
 
 - Pattern: `.*`

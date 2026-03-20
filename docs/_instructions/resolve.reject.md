@@ -4,9 +4,10 @@ title: -resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? ),
 class: Workspace
 summary: |
    Controls rejection of capabilities during resolving.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-resolve.reject foo;filter:='(foo=3)``
 
 - Pattern: `.*`

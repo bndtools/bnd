@@ -4,9 +4,10 @@ title: -runpath REPO-ENTRY ( ',' REPO-ENTRY )
 class: Project
 summary: |
    Additional JARs for the remote VM path, should include the framework.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runpath=org.eclipse.osgi;version=3.5`
 
 - Pattern: `.*`

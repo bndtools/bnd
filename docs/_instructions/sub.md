@@ -4,9 +4,10 @@ title: -sub FILE-SPEC ( ',' FILE-SPEC )*
 class: Builder
 summary: |
    Enable sub-bundles to build a set of .bnd files that use bnd.bnd file as a basis. The list of bnd files can be specified with wildcards.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-sub=com.acme.*.bnd`
 
 - Pattern: `.*`

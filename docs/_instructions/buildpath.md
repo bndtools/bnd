@@ -4,9 +4,10 @@ title: -buildpath PATH
 class: Project
 summary: |
    Provides the class path for building the jar, the entries are references to the repositories.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-buildpath=osgi;version=4.1`
 
 - Values: `${repo;bsns}`
@@ -41,4 +42,4 @@ An example of the `-buildpath` could be the following, where three dependencies 
 * [-maven-dependencies] for how to configure maven dependency information.
 
 [-testpath]: testpath.html
-[-maven-dependencies]: maven_dependencies.html
+[-maven-dependencies]: maven-dependencies.html
