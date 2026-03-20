@@ -4,9 +4,10 @@ title: -library library ( ',' library )*
 class: Workspace or Project
 summary: |
    Apply a bnd library to the workspace, project, or bndrun file
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-library: foo;version=1.2.3`
 
 - Pattern: `.*`

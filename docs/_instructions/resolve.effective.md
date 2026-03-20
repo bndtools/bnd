@@ -4,9 +4,10 @@ title: -resolve.effective qname (',' qname )
 class: Workspace
 summary: |
    Set the use effectives for the resolver
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-resolve.effective=resolve,active`
 
 - Values: `qname (',' qname )`

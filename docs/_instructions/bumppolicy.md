@@ -4,9 +4,10 @@ title: -bumppolicy
 class: Macro
 summary: |
    The policy for the bump command
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-bumppolicy==+0`
 
 - Values: `==+,=+0,+00`

@@ -3,9 +3,10 @@ layout: bnd
 title: find
 summary: |
    Go through the exports and/or imports and match the given exports/imports globs. If thet match print the file, package and version.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
+
 ### Synopsis: 
 	   find [options]  <[file]...>
 

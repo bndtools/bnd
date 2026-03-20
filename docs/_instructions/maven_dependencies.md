@@ -4,9 +4,10 @@ title: -maven-dependencies* entry ( ',' entry )*
 class: Project
 summary: |
    Configure maven dependency information for the generated pom
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Pattern: `.*`
 
 <!-- Manual content from: ext/maven_dependencies.md --><br /><br />

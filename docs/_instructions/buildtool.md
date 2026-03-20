@@ -4,9 +4,10 @@ title: -buildtool  toolspec  (EXPERIMENTAL!)
 class: bnd
 summary: |
    A specification for the bnd CLI to install a build tool, like gradle, in the workspace
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-buildtool \
         gradle; version=7.3.0; \
         bnd_version = 6.1.0

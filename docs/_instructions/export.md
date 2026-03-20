@@ -4,9 +4,10 @@ title: -export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*
 class: Project
 summary: |
    Turns a bndrun file into its deployable format
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-export: launcher.jar`
 
 - Values: `FILE ( ';' PARAMETER )* ( ',' FILE ( ';' PARAMETER )* )*`

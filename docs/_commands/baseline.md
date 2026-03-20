@@ -3,9 +3,10 @@ layout: bnd
 title: baseline
 summary: |
    Compare a newer bundle to a baselined bundle and provide versioning advice
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
+
 ### Synopsis: 
 	   baseline [options]  <[newer jar]> <[older jar]>
 
@@ -16,6 +17,7 @@ parent: bnd CLI Commands
 - `[ -p --packages <string> ]` Packages to baseline (comma delimited)
 - `[ -q --quiet ]` Be quiet, only report errors
 - `[ -v --verbose ]` On changed, list API changes
+- `[ -w --workspace <string> ]` Baseline all projects in the workspace at the given path
 
 <!-- Manual content from: ext/baseline.md --><br /><br />
 

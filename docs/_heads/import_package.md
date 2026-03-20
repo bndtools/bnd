@@ -4,9 +4,10 @@ title: Import-Package ::= import ( ',' import )*
 class: Header
 summary: |
    The Import-Package header declares the imported packages for this bundle.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `Import-Package: !com.exotic.*, com.acme.foo;vendor=ACME, *`
 
 - Values: `${exported_packages}`

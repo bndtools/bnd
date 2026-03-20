@@ -4,9 +4,10 @@ title: -runstorage FILE
 class: Project
 summary: |
    Define the directory to use for the framework's work area.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-runstorage= foo`
 
 - Pattern: `.*`

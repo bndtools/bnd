@@ -4,9 +4,10 @@ title: -metainf-services
 class: Analyzer
 summary: |
    Controls how META-INF/services files are processed.
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-metainf-services: auto`
 
 - Values: `(annotation|auto|none)`

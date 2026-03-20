@@ -4,9 +4,10 @@ title: -profile KEY
 class: Builder
 summary: |
    Sets a prefix that is used when a variable is not found, it is then re-searched under "[<[profile]>]<[key]>".
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
 - Example: `-profile: "[<[profile]>]<[key]>`
 
 - Pattern: `.*`
