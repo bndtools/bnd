@@ -302,6 +302,10 @@ public interface Constants {
 	String		TESTPACKAGES								= "-testpackages";
 	String		TESTPATH									= "-testpath";
 	String		TESTCONTINUOUS								= "-testcontinuous";
+	/**
+	 * @deprecated forRemoval since = "8.0.0"
+	 */
+	@Deprecated
 	String		TESTTERMINATE								= "-testterminate";
 	String		TESTSOURCES									= "-testsources";
 	String		TESTUNRESOLVED								= "-testunresolved";
