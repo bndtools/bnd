@@ -452,5 +452,55 @@ jtd.onReady(function () {
       console.error(err);
     });
 
+  // ── Collapsible sidebar ──────────────────────────────────────────────────────
+  // Injects a collapse/expand toggle button into the sidebar header.
+  // State is persisted in localStorage under 'sidebar-collapsed'.
+  (function initSidebarToggle() {
+    var siteHeader = document.querySelector('.side-bar .site-header');
+    if (!siteHeader) {
+      return;
+    }
+
+    var SIDEBAR_KEY = 'sidebar-collapsed';
+
+    // Build the toggle button with a simple double-chevron SVG icon.
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-reset bnd-sidebar-toggle';
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<polyline points="15 18 9 12 15 6" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>' +
+      '</svg>';
+    siteHeader.appendChild(btn);
+
+    function applyCollapsed(collapsed, persist) {
+      document.body.classList.toggle('nav-collapsed', collapsed);
+      if (collapsed) {
+        btn.setAttribute('aria-label', 'Expand sidebar');
+        btn.setAttribute('title', 'Expand sidebar');
+        btn.querySelector('svg').style.transform = 'rotate(180deg)';
+      } else {
+        btn.setAttribute('aria-label', 'Collapse sidebar');
+        btn.setAttribute('title', 'Collapse sidebar');
+        btn.querySelector('svg').style.transform = '';
+      }
+      if (persist) {
+        try {
+          localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
+        } catch (e) {}
+      }
+    }
+
+    // Restore saved state on page load.
+    var saved;
+    try {
+      saved = localStorage.getItem(SIDEBAR_KEY);
+    } catch (e) {}
+    applyCollapsed(saved === '1', false);
+
+    btn.addEventListener('click', function () {
+      applyCollapsed(!document.body.classList.contains('nav-collapsed'), true);
+    });
+  }());
 
 });

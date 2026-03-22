@@ -255,3 +255,72 @@ div.highlighter-rouge[class*="language-"] pre.highlight {
 }
 
 /***** End Releases Dropdown *****/
+
+/***** Collapsible Sidebar *****/
+
+// Width of the collapsed sidebar (just the toggle button strip)
+$nav-collapsed-width: 2.5rem;
+
+// Toggle button injected by JS into .site-header
+.bnd-sidebar-toggle {
+  display: none; // hidden on mobile (sidebar is already a drawer)
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  border-radius: 4px;
+  color: var(--body-text-color, inherit);
+  opacity: 0.6;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(128, 128, 128, 0.15);
+  }
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    display: block;
+  }
+
+  @media (min-width: 50rem) {
+    display: inline-flex;
+  }
+}
+
+// Collapsed state: applied to <body> when the sidebar is collapsed
+body.nav-collapsed {
+  @media (min-width: 50rem) {
+    // Shrink sidebar to a narrow strip
+    .side-bar {
+      width: $nav-collapsed-width !important;
+      min-width: $nav-collapsed-width !important;
+      overflow: hidden;
+
+      // Hide the nav tree and footer text
+      .site-nav,
+      .site-footer {
+        display: none;
+      }
+
+      // Hide the site title link
+      .site-title {
+        display: none;
+      }
+
+      // Centre the toggle button in the narrow strip
+      .site-header {
+        justify-content: center;
+        padding: 0;
+      }
+    }
+
+    // Push main content to start right after the narrow strip
+    .side-bar + .main {
+      margin-left: $nav-collapsed-width !important;
+    }
+  }
+}
+
+/***** End Collapsible Sidebar *****/
