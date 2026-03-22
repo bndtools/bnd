@@ -1183,6 +1183,15 @@ public class BndEditModel {
 		doSetObject(Constants.RUNEE, old, ee, eeFormatter);
 	}
 
+	public String getRunEE() {
+		return doGetObject(Constants.RUNEE, stringConverter);
+	}
+
+	public void setRunEE(String eeString) {
+		String old = doGetObject(Constants.RUNEE, stringConverter);
+		doSetObject(Constants.RUNEE, old, eeString, newlineEscapeFormatter);
+	}
+
 	public void setRunFramework(String clause) {
 		assert (Constants.RUNFRAMEWORK_SERVICES.equalsIgnoreCase(clause.trim())
 			|| Constants.RUNFRAMEWORK_NONE.equalsIgnoreCase(clause.trim()));

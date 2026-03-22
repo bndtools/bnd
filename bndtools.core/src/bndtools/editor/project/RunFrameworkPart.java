@@ -9,7 +9,6 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -38,7 +37,7 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 	private final OSGiFrameworkContentProvider	fwkContentProvider	= new OSGiFrameworkContentProvider();
 
 	private String								selectedFramework	= null;
-	private EE									selectedEE			= null;
+	private String								selectedEE			= null;
 
 	private Combo								cmbFramework;
 	private Combo								cmbExecEnv;
@@ -83,7 +82,7 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 		frameworkViewer.setContentProvider(fwkContentProvider);
 
 		Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
-		cmbExecEnv = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
+		cmbExecEnv = new Combo(composite, SWT.DROP_DOWN);
 		ControlDecoration eeDecor = new ControlDecoration(cmbExecEnv, SWT.LEFT | SWT.TOP, composite);
 		eeDecor.setImage(FieldDecorationRegistry.getDefault()
 			.getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
@@ -121,9 +120,10 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 			else
 				selectedFramework = element.toString();
 		}));
-		eeViewer.addSelectionChangedListener(event -> lock.ifNotModifying(() -> {
+		cmbExecEnv.addModifyListener(e -> lock.ifNotModifying(() -> {
+			String text = cmbExecEnv.getText();
 			markDirty();
-			selectedEE = (EE) ((IStructuredSelection) event.getSelection()).getFirstElement();
+			selectedEE = (text != null && !text.isBlank()) ? text : null;
 		}));
 
 		GridLayout layout = new GridLayout(2, false);
@@ -156,8 +156,9 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 			if (selectedFramework != null)
 				cmbFramework.setText(selectedFramework);
 
-			selectedEE = model.getEE();
-			eeViewer.setSelection(selectedEE != null ? new StructuredSelection(selectedEE) : StructuredSelection.EMPTY);
+			EE ee = model.getEE();
+			selectedEE = (ee != null) ? ee.getEEName() : model.getRunEE();
+			cmbExecEnv.setText(selectedEE != null ? selectedEE : "");
 		});
 	}
 
@@ -168,7 +169,7 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 			model.setRunFw(selectedFramework == null ? null
 				: selectedFramework.trim()
 					.length() > 0 ? selectedFramework.trim() : null);
-			model.setEE(selectedEE);
+			model.setRunEE(selectedEE);
 		} finally {
 			committing = false;
 		}
