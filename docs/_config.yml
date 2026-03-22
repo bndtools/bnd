@@ -118,19 +118,19 @@ just_the_docs:
       name: ""
       nav_exclude: false
     heads:
-      name: "HEADERS"
+      name: ""
       nav_exclude: false
     instructions:
-      name: "INSTRUCTIONS"
+      name: ""
       nav_exclude: false
     macros:
-      name: "MACROS"
+      name: ""
       nav_exclude: false
     commands:
-      name: "CLI COMMANDS"
+      name: ""
       nav_exclude: false
     plugins:
-      name: "PLUGINS"
+      name: ""
       nav_exclude: false
     tools:
       name: ""
