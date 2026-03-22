@@ -1,7 +1,7 @@
 ---
 title:  External Plugins
 layout: bnd
-parent: Reference Material
+parent: Documentation and Tools
 nav_order: 8
 ---
 ## External Plugins
