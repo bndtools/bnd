@@ -155,5 +155,9 @@ public class LaunchToBndrunTest {
 		softly.assertThat(model.getEE())
 			.as("ee")
 			.isEqualTo(EE.JavaSE_11);
+
+		softly.assertThat(model.getRunEE())
+			.as("ee")
+			.isEqualTo(EE.JavaSE_11.getEEName());
 	}
 }

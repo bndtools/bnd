@@ -43,8 +43,6 @@ import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.DefaultBooleanFormatter;
 import aQute.bnd.build.model.conversions.DefaultFormatter;
-import aQute.bnd.build.model.conversions.EEConverter;
-import aQute.bnd.build.model.conversions.EEFormatter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.build.model.conversions.HeaderClauseListConverter;
 import aQute.bnd.build.model.conversions.MapFormatter;
@@ -224,7 +222,6 @@ public class BndEditModel {
 	private final static Converter<Map<String, String>, String>					propertiesConverter					= new PropertiesConverter();
 
 	private final static Converter<List<Requirement>, String>					requirementListConverter			= new RequirementListConverter();
-	private final static Converter<EE, String>									eeConverter							= new EEConverter();
 
 	// Converter<ResolveMode, String> resolveModeConverter =
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
@@ -253,7 +250,6 @@ public class BndEditModel {
 	private final static Converter<String, Collection<? extends HeaderClause>>	standaloneLinkListFormatter			= new CollectionFormatter<>(
 		LIST_SEPARATOR, new HeaderClauseFormatter(), "");
 
-	private final static Converter<String, EE>									eeFormatter							= new EEFormatter();
 	private final static Converter<String, Collection<? extends String>>		runReposFormatter					= new CollectionFormatter<>(
 		LIST_SEPARATOR, Constants.EMPTY_HEADER);
 
@@ -307,7 +303,7 @@ public class BndEditModel {
 		// converters.put(BndConstants.RUNVMARGS, stringConverter);
 		converters.put(Constants.TESTCASES, listConverter);
 		converters.put(Constants.RUNREQUIRES, requirementListConverter);
-		converters.put(Constants.RUNEE, eeConverter);
+		converters.put(Constants.RUNEE, stringConverter);
 		converters.put(Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 		converters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
@@ -349,7 +345,7 @@ public class BndEditModel {
 		// formatters.put(BndConstants.TESTSUITES, stringListFormatter);
 		formatters.put(Constants.TESTCASES, stringListFormatter);
 		formatters.put(Constants.RUNREQUIRES, requirementListFormatter);
-		formatters.put(Constants.RUNEE, eeFormatter);
+		formatters.put(Constants.RUNEE, newlineEscapeFormatter);
 		formatters.put(Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
@@ -1174,19 +1170,42 @@ public class BndEditModel {
 		return doGetObject(Constants.RUNFW, stringConverter);
 	}
 
+	/**
+	 * @return the an EE from the known enum values. If null, callers should
+	 *         call {@link #getRunEE()} too for the String value, which could be
+	 *         for newer JDKs which are not (yet) in the enum.
+	 */
 	public EE getEE() {
-		return doGetObject(Constants.RUNEE, eeConverter);
+		String old = doGetObject(Constants.RUNEE, stringConverter);
+		if (old == null) {
+			return null;
+		}
+		return EE.parse(old);
+
 	}
 
 	public void setEE(EE ee) {
 		EE old = getEE();
-		doSetObject(Constants.RUNEE, old, ee, eeFormatter);
+		String oldStr = old == null ? null : old.getEEName();
+		String newStr = ee == null ? null : ee.getEEName();
+		doSetObject(Constants.RUNEE, oldStr, newStr, newlineEscapeFormatter);
 	}
 
+	/**
+	 * @return the an EE as a String. This could also return values for e.g.
+	 *         newer JDKs which are not (yet) in the {@link EE} enum. Should be
+	 *         used by callers preferring more lenient behavior towards unknowwn
+	 *         JDKs.
+	 */
 	public String getRunEE() {
 		return doGetObject(Constants.RUNEE, stringConverter);
 	}
 
+	/**
+	 * @param the the EE as a free-text. Value is not validated. Callers are
+	 *            responsible for ensuring a valid value (e.g. by using
+	 *            {@link EE#parse(String)}
+	 */
 	public void setRunEE(String eeString) {
 		String old = doGetObject(Constants.RUNEE, stringConverter);
 		doSetObject(Constants.RUNEE, old, eeString, newlineEscapeFormatter);
