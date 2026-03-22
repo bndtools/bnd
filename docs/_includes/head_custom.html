@@ -2,6 +2,10 @@
 <link rel="sitemap" type="application/xml" title="bnd Sitemap" href="{{ '/sitemap.xml' | relative_url }}">
 <link rel="shortcut icon" type="image/x-icon" href="{{ '/favicon.ico' | relative_url }}">
 
+<!-- Tocbot: right-side sticky "On this page" TOC -->
+<link rel="stylesheet" href="{{ '/css/tocbot.css' | relative_url }}">
+<script src="{{ '/js/tocbot.min.js' | relative_url }}"></script>
+
 {% if page.class %}
 <meta name="bnd-page-class" content="{{ page.class }}">
 {% endif %}

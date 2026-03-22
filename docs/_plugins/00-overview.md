@@ -4,6 +4,7 @@ title: Plugins
 nav_order: 5
 has_children: true
 permalink: /plugins/
+has_toc: false
 ---
 
 ## Plugins
@@ -29,10 +30,25 @@ For example the [-runrepos](/instructions/runrepos.html) instruction in `.bndrun
 ## Index
 
 <div>
-<dl class="property-index">
 
-{% for c in site.plugins %}<dt><a href="{{ c.url | prepend: site.baseurl }}">{{c.title}}</a></dt><dd>{{c.summary}}</dd>
-{% endfor %}
+<div>
+<table class="property-index">
+    <thead>
+        <th>page</th>
+        <th>Description</th>
+        <th>Class</th>
+    </thead>
+    <tbody>
+        {% for page in site.plugins %}
+        <tr>
+            <td><a href="{{ page.url | prepend: site.baseurl }}">{{page.title | escape}}</a></td>
+            <td>{{page.summary | escape}}</td>
+            <td>{{page.class}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
 
-</dl>
+
 </div>

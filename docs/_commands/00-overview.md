@@ -4,6 +4,7 @@ title: bnd CLI Commands
 nav_order: 4
 has_children: true
 permalink: /commands/overview.html
+has_toc: false
 ---
 The command line interface (bnd CLI) provides various tools to invoke bnd functions and features. It is using bndlib under the hood just like other tooling like bndtools, maven or gradle plugins do too.
 

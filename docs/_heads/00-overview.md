@@ -4,6 +4,7 @@ layout: bnd
 nav_order: 1
 has_children: true
 permalink: /headers/
+has_toc: false
 ---
 Learn the basics of bnd headers on the [Generating JARs](/chapters/160-jars.html) page. 
 

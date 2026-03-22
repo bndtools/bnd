@@ -452,5 +452,47 @@ jtd.onReady(function () {
       console.error(err);
     });
 
+  // ── Tocbot sticky right-side "On this page" TOC ──────────────────────────
+  // Only initialised when tocbot is loaded and the page has at least 2 headings.
+  (function () {
+    if (typeof tocbot === 'undefined') {
+      return;
+    }
+
+    var mainContent = document.querySelector('.main-content');
+    if (!mainContent) {
+      return;
+    }
+
+    var headings = mainContent.querySelectorAll('h2, h3');
+    if (headings.length < 2) {
+      return;
+    }
+
+    // Build the container that will hold the generated TOC links.
+    var wrapper = document.createElement('nav');
+    wrapper.id = 'bnd-toc';
+    wrapper.setAttribute('aria-label', 'On this page');
+
+    var title = document.createElement('p');
+    title.className = 'bnd-toc-title';
+    title.textContent = 'On this page';
+    wrapper.appendChild(title);
+
+    document.body.appendChild(wrapper);
+
+    tocbot.init({
+      tocSelector: '#bnd-toc',
+      contentSelector: '.main-content',
+      headingSelector: 'h2, h3',
+      orderedList: false,
+      scrollSmooth: false,
+      scrollSmoothDuration: 420,
+      headingsOffset: 80,
+      scrollSmoothOffset: -80,
+      collapseDepth: 6,
+      activeLinkClass: 'is-active-link',
+    });
+  }());
 
 });
