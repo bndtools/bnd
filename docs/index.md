@@ -1,6 +1,6 @@
 ---
 layout: bnd
-title: Home
+title: bnd – OSGi Bundle Tooling for Java
 nav_order: 0
 has_children: true
 description: "bnd - the Swiss army knife of OSGi. Used for creating and working with OSGi bundles."
