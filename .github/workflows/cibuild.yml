@@ -93,7 +93,7 @@ jobs:
           8
           ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+      uses: gradle/actions/setup-gradle@0f4528296b4bc09e8ae0fc7be30185a4ab435545
 
     #- name: Cache cnf cache and ~/.bnd/urlcache/
     #  id: cache-cnf-cache
