@@ -7,9 +7,8 @@
 # combination of Gradle / Maven / bnd builds have populated a shared
 # release directory.
 #
-# Supports both release and snapshot deployments:
+# Supports only release deployments:
 #   - Release: uploads via /api/v1/publisher/upload
-#   - Snapshot: deploys via Maven-style PUT to /repository/maven-snapshots/
 #
 # Note: uses `jar cMf` (from JDK) instead of `zip` for git bash compatibility.
 #
@@ -17,11 +16,9 @@
 #   SONATYPE_BEARER=<token> ./.github/scripts/sonatype-upload.sh [options] <release-dir>
 #
 # Options:
-#   --snapshot                                   Deploy as snapshot (to maven-snapshots repo)
 #   --publishing-type <AUTOMATIC|USER_MANAGED>   (default: USER_MANAGED, release only)
 #   --name <deployment-name>                     (default: auto-generated)
 #   --upload-url <url>                           (default: Sonatype Central Portal release URL)
-#   --snapshot-url <url>                         (default: Sonatype Central snapshot repo)
 #
 # Environment:
 #   SONATYPE_BEARER   – Bearer token for authentication (required)
@@ -31,10 +28,8 @@ set -euo pipefail
 
 # ---- defaults -----------------------------------------------------------
 UPLOAD_URL="https://central.sonatype.com/api/v1/publisher/upload"
-SNAPSHOT_URL="https://central.sonatype.com/repository/maven-snapshots/"
 PUBLISHING_TYPE="USER_MANAGED"   # USER_MANAGED (manual) or AUTOMATIC
 DEPLOYMENT_NAME=""
-SNAPSHOT=false
 RELEASE_DIR=""
 # -------------------------------------------------------------------------
 
@@ -75,11 +70,9 @@ usage() {
 	Upload a local Maven repository folder to Sonatype Central Portal.
 
 	Options:
-	  --snapshot                                   Deploy as snapshot
 	  --publishing-type <AUTOMATIC|USER_MANAGED>  Publishing type (default: USER_MANAGED)
 	  --name <name>                               Deployment name (default: auto-generated)
 	  --upload-url <url>                           Release upload endpoint URL
-	  --snapshot-url <url>                         Snapshot repository URL
 	  -h, --help                                  Show this help message
 
 	Environment:
@@ -91,11 +84,9 @@ usage() {
 # ---- parse arguments ----------------------------------------------------
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--snapshot)        SNAPSHOT=true; shift ;;
 		--publishing-type) PUBLISHING_TYPE="$2"; shift 2 ;;
 		--name)            DEPLOYMENT_NAME="$2"; shift 2 ;;
 		--upload-url)      UPLOAD_URL="$2"; shift 2 ;;
-		--snapshot-url)    SNAPSHOT_URL="$2"; shift 2 ;;
 		-h|--help)         usage 0 ;;
 		-*)                echo "Unknown option: $1" >&2; usage 1 ;;
 		*)                 RELEASE_DIR="$1"; shift ;;
@@ -120,42 +111,9 @@ DEPLOYMENTID_FILE="${RELEASE_DIR%/}_DEPLOYMENTID.txt"
 # ---- build deployment name ----------------------------------------------
 if [[ -z "${DEPLOYMENT_NAME}" ]]; then
 	GROUP_ID=$(detect_groupid)
-	if [[ "${SNAPSHOT}" == "true" ]]; then
-		DEPLOYMENT_NAME="uploaded ${GROUP_ID} on $(date '+%Y%m%d-%H%M%S')"
-	else
-		DEPLOYMENT_NAME="uploaded ${GROUP_ID} on $(date '+%Y%m%d-%H%M%S')"
-	fi
+	DEPLOYMENT_NAME="uploaded ${GROUP_ID} on $(date '+%Y%m%d-%H%M%S')"
 fi
 
-# ---- snapshot deployment ------------------------------------------------
-if [[ "${SNAPSHOT}" == "true" ]]; then
-	echo "Deploying snapshots to ${SNAPSHOT_URL} ..."
-
-	# Ensure trailing slash
-	SNAPSHOT_BASE="${SNAPSHOT_URL%/}/"
-
-	find "${RELEASE_DIR}" -type f | while IFS= read -r file; do
-		# Compute the relative path within the release dir
-		REL_PATH="${file#"${RELEASE_DIR}"}"
-		REL_PATH="${REL_PATH#/}"
-
-		TARGET_URL="${SNAPSHOT_BASE}${REL_PATH}"
-
-		echo "  PUT ${REL_PATH}"
-		HTTP_CODE=$(curl -sS -w '%{http_code}' -o /dev/null \
-			-H "Authorization: Bearer ${SONATYPE_BEARER}" \
-			--upload-file "${file}" \
-			"${TARGET_URL}")
-
-		if [[ "${HTTP_CODE}" -lt 200 || "${HTTP_CODE}" -ge 300 ]]; then
-			echo "Error: Upload of ${REL_PATH} failed with HTTP ${HTTP_CODE}" >&2
-			exit 1
-		fi
-	done
-
-	echo "Snapshot deployment completed successfully."
-	exit 0
-fi
 
 # ---- release deployment: create bundle zip ------------------------------
 BUNDLE_ZIP="${TMPDIR:-/tmp}/sonatype-bundle-$$.zip"

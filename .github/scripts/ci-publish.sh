@@ -12,11 +12,12 @@ if [[ -n "${GPG_KEY_ID:-}" ]]; then
 	fi
 fi
 
-# Detect snapshot build: if #-snapshot is commented out in cnf/build.bnd,
-# the build produces SNAPSHOT versions
-IS_SNAPSHOT=false
-if grep -qE '^#-snapshot:' cnf/build.bnd 2>/dev/null; then
-	IS_SNAPSHOT=true
+# Detect release/RC build: if -snapshot: is not commented out in cnf/build.bnd,
+# the build produces RELEASE versions (could also be RC1,2,3...).
+# If it is commented out (e.g. #-snapshot) then it is a snapshot build.
+IS_RELEASE=false
+if grep -qE '^-snapshot:' cnf/build.bnd 2>/dev/null; then
+	IS_RELEASE=true
 fi
 
 # 1. publish gradle-plugins to dist/bundles
@@ -30,14 +31,18 @@ fi
 # 3. publish bnd workspace to dist/bundles (and JFrog if CANONICAL)
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :publish "$@"
 
-# 4. Upload to Sonatype Central Portal (separate from building)
-if [[ -n "${SONATYPE_BEARER:-}" ]]; then
-	SONATYPE_OPTS=""
-	if [[ -n "${SONATYPE_PUBLISHING_TYPE:-}" ]]; then
-		SONATYPE_OPTS="--publishing-type ${SONATYPE_PUBLISHING_TYPE}"
+# 4. Upload only releases / RCs to Sonatype Central Portal (separate from building)
+if [[ "${IS_RELEASE}" == "true" ]]; then
+	if [[ -n "${SONATYPE_BEARER:-}" ]]; then
+		SONATYPE_OPTS=""
+		if [[ -n "${SONATYPE_PUBLISHING_TYPE:-}" ]]; then
+			SONATYPE_OPTS="--publishing-type ${SONATYPE_PUBLISHING_TYPE}"
+		else 
+			SONATYPE_OPTS="--publishing-type USER_MANAGED"
+		fi
+		
+		./.github/scripts/sonatype-upload.sh ${SONATYPE_OPTS} dist/bundles
+	else
+		echo "Skipping Sonatype deployment due to missing SONATYPE_BEARER"
 	fi
-	if [[ "${IS_SNAPSHOT}" == "true" ]]; then
-		SONATYPE_OPTS="${SONATYPE_OPTS} --snapshot"
-	fi
-	./.github/scripts/sonatype-upload.sh ${SONATYPE_OPTS} dist/bundles
 fi
