@@ -18,109 +18,103 @@ To access Maven Central use the following configuration:
 
 You can add `Group:Artifact:Version` coordinates in the `central.maven` file. The file can contain comments, empty lines, and can use macros per line. That is, you cannot create a macro with a load of GAV's.
 
-#### Release to Maven Central/Sonatype Upload (recommended for CI/CD)
+#### Release to Maven Central
 
-For CI/CD pipelines, the recommended approach is to separate building and Sonatype deployment
-using the standalone upload scripts. This avoids the "last artifact" problem inherent in the
-bnd-internal mechanism and works across mixed build systems (bnd workspace, Gradle plugins, Maven plugins).
+Releasing to Maven Central requires usually a couple of steps. For one you usually go through a staging repository like the staging nexus of Sonatype. They perform a couple of checks and you manually have to clear the release via their web frontend. 
 
-The workflow is:
+In case you version your bundles individually, e.g. Sonatype will not complain if a Version of one Artifact in your staging repo already exists. The release will simply not work. Thus you can define a staging repository. The Release process will check against the releaseUrl if something already exists, but will upload to the staging URL. 
 
-1. All builds publish artifacts to a shared local directory (e.g. `dist/bundles`)
-2. A standalone script uploads the entire directory to Sonatype as a single deployment
-3. A status check script verifies the deployment and optionally cleans up
+A configuration can look like this:
 
-##### Workspace Fragments
+	-plugin.release = \
+		aQute.bnd.repository.maven.provider.MavenBndRepository; \
+			releaseUrl=https://repo.maven.apache.org/maven2/; \
+			stagingUrl=https://oss.sonatype.org/service/local/staging/deploy/maven2/; \
+			index=${.}/release.maven; \
+			name="Release"
 
-Use the provided workspace fragment for configuration:
+#### Release to Maven Central via Sonatype Central Portal (deprecated for removal in 7.3.0)
 
-* `cnf/ext/maven-gav.bnd` – Maven GAV coordinates, Bundle-Vendor, Bundle-Developers, GPG signing
+Maven Central now offers publishing through the [Sonatype Central Portal](https://central.sonatype.com/), which provides a streamlined publishing process. The MavenBndRepository plugin supports this with the `sonatypeMode` configuration property.
 
-##### Release Upload
+The `sonatypeMode` property controls how artifacts are published to Maven Central through the Sonatype Central Portal API:
 
-Upload release artifacts to Sonatype Central Portal:
+* **`none`** (default) - Standard Maven repository behavior without special Sonatype Portal handling
+* **`manual`** - Artifacts are uploaded to Sonatype Central Portal for validation, but publishing must be done manually via the Sonatype web interface
+* **`autopublish`** - Artifacts are automatically published to Maven Central after successful upload and validation
 
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-upload.sh [--publishing-type AUTOMATIC] dist/bundles
+##### Authentication
 
-GPG signing is handled by the bnd build (via `-maven-release` in `cnf/ext/maven-gav.bnd`)
-and validated by Sonatype during deployment processing.
+Publishing to Sonatype Central Portal requires authentication using a Bearer Token. Configure this in the [-connection-settings] instruction:
 
-The script:
-1. Creates a ZIP bundle from the release directory (using `jar cMf`)
-2. Uploads via `POST /api/v1/publisher/upload`
-3. Stores the deployment ID in `<release-dir>_DEPLOYMENTID.txt`
+	# Define your Bearer Token (typically from environment variable)
+	sonatype_bearer: '${env;SONATYPE_BEARER;}'
+	
+	# Configure connection settings
+	-connection-settings.sonatype:\
+	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
+	        password = ${sonatype_bearer};\
+	          verify = false
 
-##### Snapshot Upload
+The Bearer Token can be obtained from your [Sonatype Central Portal account](https://central.sonatype.org/publish/generate-portal-token/).
 
-Deploy snapshot artifacts to the Sonatype snapshot repository:
+##### Configuration Examples
 
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-upload.sh --snapshot dist/bundles
+**Example 1: Automatic Publishing**
 
-Snapshot deployments use `PUT` requests to upload each artifact individually to
-`https://central.sonatype.com/repository/maven-snapshots/`.
+This configuration automatically publishes artifacts to Maven Central after upload and validation:
 
-The bnd workspace uses snapshot builds when the `-snapshot:` instruction is commented out
-(prefixed with `#`) in `cnf/build.bnd`. When `-snapshot:` is active (not commented), the
-build produces release versions instead.
+	sonatype_bearer: '${env;SONATYPE_BEARER;}'
+	
+	-connection-settings.sonatype:\
+	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
+	        password = ${sonatype_bearer};\
+	          verify = false
+	
+	-plugin.release = \
+	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+	        releaseUrl   = https://central.sonatype.com/api/v1/publisher/upload; \
+	        snapshotUrl  = https://central.sonatype.com/repository/maven-snapshots; \
+	        index        = ${.}/release.maven; \
+	        name         = "Maven Central"; \
+	        sonatypeMode = autopublish
 
-##### Deployment Status Check
+**Example 2: Manual Publishing with Staging**
 
-After uploading, verify the deployment status and optionally clean up:
+This configuration uses a staging URL and requires manual publishing approval:
 
-	# Check release deployment status (reads DEPLOYMENTID from file)
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-status.sh [--clean] dist/bundles
+	sonatype_bearer: '${env;SONATYPE_BEARER;}'
+	maven_central: https://repo.maven.apache.org/maven2/
+	
+	-connection-settings.sonatype:\
+	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
+	        password = ${sonatype_bearer};\
+	          verify = false
+	
+	-plugin.release = \
+	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+	        releaseUrl   = ${maven_central}; \
+	        stagingUrl   = https://central.sonatype.com/api/v1/publisher/upload; \
+	        snapshotUrl  = https://central.sonatype.com/repository/maven-snapshots; \
+	        index        = ${.}/release.maven; \
+	        name         = "Maven Central Staging"; \
+	        sonatypeMode = manual
 
-	# Check snapshot deployment (verifies all jar files are available)
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-status.sh --snapshot [--clean] dist/bundles
+When `stagingUrl` is specified with `sonatypeMode`, the plugin:
+1. Checks the `releaseUrl` (Maven Central) to verify the artifact doesn't already exist
+2. Uploads to the `stagingUrl` (Sonatype Portal) for validation
+3. In `manual` mode, waits for manual approval via the [Sonatype web interface](https://central.sonatype.com/publishing)
 
-For release deployments, the status script reads the deployment ID from
-`<release-dir>_DEPLOYMENTID.txt` and queries `/api/v1/publisher/status`.
+**Example 3: Local Repository Only**
 
-For snapshot deployments, the status script compares all jar files in the
-deployment folder against the snapshot repository URL.
+This configuration disables Sonatype Portal integration:
 
-The `--clean` flag removes the release directory after a successful status check,
-preparing it for the next deployment cycle.
-
-##### Gradle Integration
-
-To call the Sonatype upload after a successful Gradle publish, add a task to your `build.gradle`
-(adjust the script path to match your project structure):
-
-	tasks.register('sonatypeUpload', Exec) {
-	    dependsOn ':publish'
-	    group = 'publishing'
-	    description = 'Upload artifacts to Sonatype Central Portal'
-	    commandLine './.github/scripts/sonatype-upload.sh', 'dist/bundles'
-	    environment 'SONATYPE_BEARER', System.getenv('SONATYPE_BEARER') ?: ''
-	}
-
-##### Maven Integration
-
-To call the Sonatype upload after a successful Maven deploy, use the `exec-maven-plugin`
-(adjust the script path to match your project structure):
-
-	<plugin>
-	    <groupId>org.codehaus.mojo</groupId>
-	    <artifactId>exec-maven-plugin</artifactId>
-	    <executions>
-	        <execution>
-	            <id>sonatype-upload</id>
-	            <phase>deploy</phase>
-	            <goals><goal>exec</goal></goals>
-	            <configuration>
-	                <executable>./.github/scripts/sonatype-upload.sh</executable>
-	                <arguments>
-	                    <argument>dist/bundles</argument>
-	                </arguments>
-	            </configuration>
-	        </execution>
-	    </executions>
-	</plugin>
+	-plugin.release = \
+	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+	        releaseUrl   = file:///path/to/local/repo; \
+	        index        = ${.}/release.maven; \
+	        name         = "Local Release"; \
+	        sonatypeMode = none
 
 
 
