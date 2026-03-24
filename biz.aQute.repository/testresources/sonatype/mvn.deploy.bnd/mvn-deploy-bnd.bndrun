@@ -1,0 +1,9 @@
+-runfw: org.apache.felix.framework;version='[7.0.5,7.0.5]'
+-runee: JavaSE-17
+-runrequires: bnd.identity;id='mvn.deploy.bnd'
+-runbundles: \
+	org.apache.felix.scr;version='[2.2.6,2.2.7)',\
+	org.osgi.service.component;version='[1.5.1,1.5.2)',\
+	osgi.promise;version='[8.1.0,8.1.1)',\
+	mvn.deploy.bnd;version=latest
+

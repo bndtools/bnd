@@ -29,6 +29,7 @@ import java.util.stream.StreamSupport;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Project.ReleaseParameter;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
@@ -55,7 +56,6 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePluginExtension;
@@ -590,19 +590,70 @@ public class BndPlugin implements Plugin<Project> {
 				t.dependsOn(getDependents(JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME));
 			});
 
+			Provider<ReleaseCounterService> releaseCounter =
+			    project.getGradle().getSharedServices().registerIfAbsent(
+			        "bndReleaseCounter",
+			        ReleaseCounterService.class,
+						spec -> {
+							spec.getMaxParallelUsages()
+								.set(1);
+						}
+			    );
+
+			project.getGradle()
+				.getTaskGraph()
+				.whenReady(graph -> {
+					long count = graph.getAllTasks()
+						.stream()
+						.filter(t -> t.getName()
+							.equals("release"))
+						.filter(Task::getEnabled)
+						.count();
+
+					// helpful while you validate:
+					//project.getLogger()
+					//	.lifecycle("bnd: release tasks in execution graph = {}", count);
+
+					releaseCounter.get()
+						.setInitialCount((int) count);
+				});
+
 			TaskProvider<Task> release = tasks.register("release", t -> {
 				t.setDescription("Release this project to the release repository.");
 				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
-				t.setEnabled(!bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset")
-					.isEmpty());
+
+				boolean enabled = !bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset")
+					.isEmpty();
+				t.setEnabled(enabled);
 				t.getInputs()
 					.files(jar)
 					.withPropertyName(jar.getName());
+
+			    // Declare the service usage for correctness w/ parallel execution + configuration cache
+			    t.usesService(releaseCounter);
+
+
 				t.doLast("release", new Action<>() {
 					@Override
 					public void execute(Task tt) {
 						try {
-							bndProject.release();
+
+							int count = releaseCounter.get()
+								.getRemaining();
+							boolean isLastBundle = releaseCounter.get()
+								.isLastReleaseTask();
+
+							if (!isLastBundle) {
+								tt.getLogger()
+									.lifecycle("bnd: Release bundle ({}) {}", count, bndProject.getName());
+								bndProject.release();
+							} else {
+								// releasing last bundle in workspace (special
+								// case for sonatype release)
+								tt.getLogger()
+									.lifecycle("bnd: Last release bundle ({}) {}", count, bndProject.getName());
+								bndProject.release(new ReleaseParameter(null, false, true));
+							}
 						} catch (Exception e) {
 							throw new GradleException(
 								String.format("Project %s failed to release", bndProject.getName()), e);
