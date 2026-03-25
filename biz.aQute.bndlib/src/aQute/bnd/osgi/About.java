@@ -77,6 +77,8 @@ public class About {
 	public static final Version					_7_1		= new Version(7, 1, 0);
 	public static final Version					_7_2		= new Version(7, 2, 0);
 	public static final Version					_7_2_1			= new Version(7, 2, 1);
+	public static final Version					_7_2_2			= new Version(7, 2, 2);
+	public static final Version					_7_2_3			= new Version(7, 2, 3);
 	public static final Version					_7_3		= new Version(7, 3, 0);
 	public static final Version					CURRENT		= _7_3;
 
