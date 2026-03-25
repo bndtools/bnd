@@ -668,6 +668,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			String sonatypeSnapshotUrl = null;
 			switch (sonatypeMode) {
 				case MANUAL, AUTOPUBLISH -> {
+					reporter.warning("Deprecated Sonatype Publishing. This feature will be removed.");
 					logger.info("deployment via Sonatype Central Portal configured in {} mode", sonatypeMode);
 					File releaseDir = registry.getPlugin(Workspace.class)
 						.getFile(SONATYPE_RELEASE_DIR);
