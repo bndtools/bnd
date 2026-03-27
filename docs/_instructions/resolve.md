@@ -16,37 +16,37 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 ### Directives 
 
-- `manual` Resolve is manually with the Resolve button
+- `manual` Bundles are resolved manually using the Resolve button. The -runbundles list is never modified automatically.
   - Values: `manual`
 
   - Pattern: `\Qmanual\E`
 
 
-- `auto` A resolve will take place before saving
+- `auto` The resolver runs automatically on every save, replacing -runbundles with the resolved result. Manual edits to -runbundles will be overwritten.
   - Values: `auto`
 
   - Pattern: `\Qauto\E`
 
 
-- `beforelaunch` A resolve will take place before launching
+- `beforelaunch` The resolver runs automatically before each launch, updating -runbundles with the resolved result.
   - Values: `beforelaunch`
 
   - Pattern: `\Qbeforelaunch\E`
 
 
-- `batch` A resolve will take place before launching when in batch mode (e.g. Gradle) but not in IDE mode (e.g. Eclipse)
+- `batch` The resolver runs before launching in batch mode (e.g. Gradle) but not in IDE mode (e.g. Eclipse). In IDE mode the -runbundles list must be managed manually.
   - Values: `batch`
 
   - Pattern: `\Qbatch\E`
 
 
-- `cache` Resolve when the runbundles are needed unless there is a cache file that is newer than the bndrun/project & workspace. The cache file has the same name as the project/bndrun file but starts with a '.'
+- `cache` The resolver runs when -runbundles are needed, unless a cache file (same name prefixed with '.') is newer than the project and workspace.
   - Values: `cache`
 
   - Pattern: `\Qcache\E`
 
 
-- `never` A Resolve will never take place. Manually resolve will result in error.
+- `never` Resolving never takes place automatically. The -runbundles list must be managed manually. Attempting to resolve manually will result in an error.
   - Values: `never`
 
   - Pattern: `\Qnever\E`
