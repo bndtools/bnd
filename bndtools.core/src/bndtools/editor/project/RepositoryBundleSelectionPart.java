@@ -77,7 +77,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 	private Table					table;
 	protected TableViewer			viewer;
 
-	private BndEditModel			model;
+	protected BndEditModel			model;
 	protected List<VersionedClause>	bundles;
 	protected ToolItem				removeItemTool;
 
