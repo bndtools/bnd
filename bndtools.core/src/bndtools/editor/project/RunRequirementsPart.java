@@ -45,10 +45,11 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		RUNREQUIRE, Constants.RUNREQUIRES, Constants.RESOLVE
 	};
 
-	private final static Image		resolveIcon		= Icons.image("resolve");
+	private final static Image		resolveIcon				= Icons.image("resolve");
 	private Button					btnResolveNow;
 	private JobChangeAdapter		resolveJobListener;
 	private Combo					comboResolveMode;
+	private Label					lblResolveModeDescription;
 
 	public RunRequirementsPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -94,6 +95,7 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 				return;
 			}
 			model.setResolveMode(selected);
+			updateResolveModeDescription();
 		}));
 		Syntax syntax = Syntax.HELP.get(Constants.RESOLVE);
 		if (syntax != null) {
@@ -128,6 +130,8 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		Job.getJobManager()
 			.addJobChangeListener(resolveJobListener);
 
+		lblResolveModeDescription = tk.createLabel(composite, "", SWT.WRAP);
+
 		// Layout
 		GridLayout layout;
 		GridData gd;
@@ -147,6 +151,9 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 
 		gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
 		btnResolveNow.setLayoutData(gd);
+
+		gd = new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1);
+		lblResolveModeDescription.setLayoutData(gd);
 	}
 
 	@Override
@@ -181,8 +188,32 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	public List<Requirement> doRefreshFromModel() {
 		comboResolveMode.select(model.getResolveMode()
 			.ordinal());
+		updateResolveModeDescription();
 
 		return model.getRunRequires();
+	}
+
+	private void updateResolveModeDescription() {
+		if (lblResolveModeDescription == null || lblResolveModeDescription.isDisposed())
+			return;
+		ResolveMode mode = model.getResolveMode();
+		String description = getResolveModeDescription(mode);
+		lblResolveModeDescription.setText(description != null ? description : "");
+		lblResolveModeDescription.getParent()
+			.layout();
+	}
+
+	private static String getResolveModeDescription(ResolveMode mode) {
+		Syntax resolveSyntax = Syntax.HELP.get(Constants.RESOLVE);
+		if (resolveSyntax != null) {
+			for (Syntax child : resolveSyntax.getChildren()) {
+				if (mode.name()
+					.equals(child.getHeader())) {
+					return child.getLead();
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override

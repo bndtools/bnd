@@ -7,6 +7,12 @@ public class Messages extends NLS {
 	public static String		RunBundlesPart_addWizardDescription;
 	public static String		RunBundlesPart_addWizardTitle;
 	public static String		RunBundlesPart_description;
+	public static String		RunBundlesPart_descriptionAutoResolve;
+	public static String		RunBundlesPart_descriptionBatch;
+	public static String		RunBundlesPart_descriptionBeforeLaunch;
+	public static String		RunBundlesPart_descriptionCache;
+	public static String		RunBundlesPart_descriptionManual;
+	public static String		RunBundlesPart_descriptionNever;
 	public static String		RunBundlesPart_errorGettingBuilders;
 	public static String		RunBundlesPart_title;
 	static {
