@@ -71,12 +71,32 @@ class ContentExtractor(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs_dict = dict(attrs)
         
-        # Track main content - handle both _site structure and release structure
-        # Once we find the main content area, we'll capture everything inside it
+        # Track main content - handle multiple documentation structures
+        # Priority order (most specific first):
+        # 1. <main id="main-content"> (Just-the-docs specific)
+        # 2. <main> with data-pagefind-body (legacy _site)
+        # 3. <div class="notes-margin"> (release structure)
+        # 4. <div id="main-content"> (alternative Just-the-docs)
         if not self.found_main:
-            if (tag == 'main' or 
-                attrs_dict.get('data-pagefind-body') is not None or
-                (tag == 'div' and 'notes-margin' in attrs_dict.get('class', ''))):
+            is_main_content = False
+            
+            # Check for main tag with id="main-content" (highest priority)
+            if tag == 'main' and attrs_dict.get('id') == 'main-content':
+                is_main_content = True
+            # Check for main tag with data-pagefind-body
+            elif tag == 'main' and attrs_dict.get('data-pagefind-body') is not None:
+                is_main_content = True
+            # Check for generic main tag
+            elif tag == 'main':
+                is_main_content = True
+            # Check for div with notes-margin class (legacy)
+            elif tag == 'div' and 'notes-margin' in attrs_dict.get('class', ''):
+                is_main_content = True
+            # Check for div with id="main-content" (fallback for Just-the-docs)
+            elif tag == 'div' and attrs_dict.get('id') == 'main-content':
+                is_main_content = True
+                
+            if is_main_content:
                 self.in_main = True
                 self.found_main = True
                 self.depth = 0
