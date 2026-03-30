@@ -109,11 +109,19 @@ Added section linking to export functionality and providing quick examples.
 
 The most complex part was extracting main content from different HTML structures:
 
-1. **_site structure**: Uses `<main data-pagefind-body>` tags
-2. **Release structure**: Uses `<div class="notes-margin">` for content
-3. **Navigation/menus**: Different structures need to be filtered out
+1. **Just-the-docs theme** (current): Uses `<main id="main-content">` tags
+2. **Legacy _site structure**: Uses `<main data-pagefind-body>` tags
+3. **Release structure**: Uses `<div class="notes-margin">` for content
+4. **Navigation/menus**: Different structures need to be filtered out
 
-Solution: Simplified parser that looks for main content markers and captures everything within, using depth tracking to properly close tags.
+Solution: Implemented a priority-based parser that looks for main content markers in order of specificity:
+- `<main id="main-content">` (highest priority - Just-the-docs specific)
+- `<main>` with `data-pagefind-body` attribute
+- Generic `<main>` tags
+- `<div class="notes-margin">` (legacy releases)
+- `<div id="main-content">` (fallback for Just-the-docs)
+
+The parser uses depth tracking to properly capture nested content and close tags correctly.
 
 ### Directory Structure Handling
 

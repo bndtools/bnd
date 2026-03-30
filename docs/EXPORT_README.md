@@ -14,6 +14,11 @@ Both formats are ideal for:
 - Distributing documentation without requiring a web server
 - Creating searchable documentation archives
 
+**Compatibility:** The export scripts support multiple documentation structures:
+- Just-the-docs Jekyll theme (current)
+- Legacy custom Jekyll templates
+- Archived release documentation
+
 ## Quick Start
 
 ### Prerequisites
