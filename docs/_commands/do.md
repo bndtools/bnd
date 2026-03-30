@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: do
 summary: |
    Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)
+parent: bnd CLI Commands
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 

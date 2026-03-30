@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -require-bnd  (FILTER ( ',' FILTER )* )?
 class: Project
 summary: |
    The filter can test against 'version', which will contain the Bnd version. If it does not match, Bnd will generate an error.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

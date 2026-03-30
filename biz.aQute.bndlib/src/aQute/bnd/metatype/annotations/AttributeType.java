@@ -20,7 +20,6 @@ package aQute.bnd.metatype.annotations;
  * Attribute types for the {@link AttributeDefinition} annotation.
  *
  * @see AttributeDefinition#type()
- * @author $Id$
  */
 public enum AttributeType {
 	/**

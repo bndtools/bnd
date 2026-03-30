@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -wablib FILE ( ',' FILE )*
 class: Builder
 summary: |
    Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

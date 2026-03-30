@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: version_cleanup ';' VERSION
 summary: Cleanup a potential maven version to make it match the OSGi Version syntax.
+parent: Macro Reference
 ---
-
 The `version_cleanup` macro takes a version-ish string and cleans it up, producing the OSGi Version syntax. 
 
 For example, a Maven version can be turned into the OSGi Version syntax:

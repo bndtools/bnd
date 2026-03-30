@@ -2108,6 +2108,10 @@ public class Analyzer extends Processor {
 					if (Strings.nonNullOrTrimmedEmpty(importRange)) {
 						importAttributes.put(VERSION_ATTRIBUTE, importRange);
 					}
+
+					// Notify analysis plugins about the version decision
+					String reason = buildVersionReason(provider, importAttributes, exportAttributes);
+					reportImportVersion(packageRef, importRange, reason);
 				}
 
 				//
@@ -2216,6 +2220,30 @@ public class Analyzer extends Processor {
 			unsetProperty(CURRENT_VERSION);
 		}
 		return importRange;
+	}
+
+	/**
+	 * Build a human-readable reason for why a version range was chosen.
+	 */
+	private String buildVersionReason(boolean provider, Attrs importAttributes, Attrs exportAttributes) {
+		if (importAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+			return "explicit provide directive: " + importAttributes.get(PROVIDE_DIRECTIVE);
+		} else if (exportAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+			return "export provide directive: " + exportAttributes.get(PROVIDE_DIRECTIVE);
+		} else if (provider) {
+			return "provider type detected";
+		} else {
+			return "consumer type (default)";
+		}
+	}
+
+	/**
+	 * Report import version decision to analysis plugins.
+	 */
+	private void reportImportVersion(PackageRef packageRef, String version, String reason) {
+		doPlugins(aQute.bnd.service.AnalysisPlugin.class, (plugin) -> {
+			plugin.reportImportVersion(this, packageRef, version, reason);
+		});
 	}
 
 	/**

@@ -1280,4 +1280,244 @@ public class MavenBndRepoTest {
 			.isFile());
 	}
 
+	@Test
+	public void testPomXmlIndexRead() throws Exception {
+		File pomIndex = IO.getFile(tmp, "index.pom.xml");
+		IO.copy(IO.getFile("testresources/mavenrepo/index.pom.xml"), pomIndex);
+
+		Map<String, String> map = Map.of("index", pomIndex.getAbsolutePath());
+		config(map);
+
+		assertThat(repo.getStatus()).isNull();
+		List<String> list = repo.list(null);
+		assertThat(list).contains("commons-cli:commons-cli");
+		SortedSet<Version> versions = repo.versions("commons-cli:commons-cli");
+		assertThat(versions).contains(new Version("1.0.0"), new Version("1.2.0"));
+
+		// Verify the pom.xml structure via DOM/XPath
+		Document doc = dbf.newDocumentBuilder()
+			.parse(pomIndex);
+		XPath xp = xpf.newXPath();
+
+		// commons-cli 1.0 dependency block must be complete
+		assertThat(xp.evaluate("//dependency[artifactId='commons-cli' and version='1.0']/groupId", doc)
+			.trim()).as("commons-cli 1.0 must have <groupId>commons-cli</groupId>")
+				.isEqualTo("commons-cli");
+		assertThat(xp.evaluate("//dependency[artifactId='commons-cli' and version='1.0']/artifactId", doc)
+			.trim()).as("commons-cli 1.0 must have <artifactId>commons-cli</artifactId>")
+				.isEqualTo("commons-cli");
+		assertThat(xp.evaluate("//dependency[artifactId='commons-cli' and version='1.0']/version", doc)
+			.trim()).as("commons-cli 1.0 must have <version>1.0</version>")
+				.isEqualTo("1.0");
+
+		// commons-cli 1.2 dependency block must be complete
+		assertThat(xp.evaluate("//dependency[artifactId='commons-cli' and version='1.2']/groupId", doc)
+			.trim()).as("commons-cli 1.2 must have <groupId>commons-cli</groupId>")
+				.isEqualTo("commons-cli");
+		assertThat(xp.evaluate("//dependency[artifactId='commons-cli' and version='1.2']/version", doc)
+			.trim()).as("commons-cli 1.2 must have <version>1.2</version>")
+				.isEqualTo("1.2");
+	}
+
+	@Test
+	public void testPomXmlIndexAdd() throws Exception {
+		File pomIndex = IO.getFile(tmp, "index.pom.xml");
+		IO.copy(IO.getFile("testresources/mavenrepo/index.pom.xml"), pomIndex);
+		config(Map.of("index", pomIndex.getAbsolutePath()));
+
+		assertThat(repo.list("org.osgi.service.log")).isEmpty();
+		repo.index.add(Archive.valueOf("org.osgi:org.osgi.service.log:1.3.0"));
+		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
+
+		// Verify the added dependency block is fully and correctly written
+		Document doc = dbf.newDocumentBuilder()
+			.parse(pomIndex);
+		XPath xp = xpf.newXPath();
+
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.service.log']/groupId", doc)
+			.trim()).as("added dependency must have <groupId>org.osgi</groupId>")
+				.isEqualTo("org.osgi");
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.service.log']/artifactId", doc)
+			.trim()).as("added dependency must have <artifactId>org.osgi.service.log</artifactId>")
+				.isEqualTo("org.osgi.service.log");
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.service.log']/version", doc)
+			.trim()).as("added dependency must have <version>1.3.0</version>")
+				.isEqualTo("1.3.0");
+
+		// check there is exactly one entry
+		assertThat((Double) xp.evaluate(
+			"count(//dependency[groupId='org.osgi' and artifactId='org.osgi.service.log' and version='1.3.0'])",
+		    doc, javax.xml.xpath.XPathConstants.NUMBER)).isEqualTo(1.0);
+
+		// plain jar add must NOT have a <type> element
+		double typeCount = (double) xp.evaluate("count(//dependency[artifactId='org.osgi.service.log']/type)", doc,
+			javax.xml.xpath.XPathConstants.NUMBER);
+		assertThat(typeCount).as("plain jar added dependency must NOT have a <type> element")
+			.isEqualTo(0.0);
+	}
+
+	@Test
+	public void testPomXmlIndexRemove() throws Exception {
+		File pomIndex = IO.getFile(tmp, "index.pom.xml");
+		IO.copy(IO.getFile("testresources/mavenrepo/index.pom.xml"), pomIndex);
+		config(Map.of("index", pomIndex.getAbsolutePath()));
+
+		assertThat(repo.getStatus()).isNull();
+		assertNotNull(repo.get("org.osgi.dto", new Version("1.0.0.201505202023"), null));
+
+		// Verify org.osgi.dto is present before removal
+		Document docBefore = dbf.newDocumentBuilder()
+			.parse(pomIndex);
+		XPath xp = xpf.newXPath();
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto']/artifactId", docBefore)
+			.trim()).as("org.osgi.dto must be present in the pom.xml before removal")
+				.isEqualTo("org.osgi.dto");
+
+		repo.index.remove(Archive.valueOf("org.osgi:org.osgi.dto:1.0.0"));
+		assertThat(repo.list("org.osgi.dto")).isEmpty();
+
+		// Verify the entire org.osgi.dto dependency block is gone
+		Document docAfter = dbf.newDocumentBuilder()
+			.parse(pomIndex);
+		double dtoCount = (double) xp.evaluate("count(//dependency[artifactId='org.osgi.dto'])", docAfter,
+			javax.xml.xpath.XPathConstants.NUMBER);
+		assertThat(dtoCount).as("org.osgi.dto dependency block must be fully removed from pom.xml")
+			.isEqualTo(0.0);
+	}
+
+	@Test
+	public void testPomXmlIndexReplaceArchive() throws Exception {
+		File pomIndex = IO.getFile(tmp, "index.pom.xml");
+		IO.copy(IO.getFile("testresources/mavenrepo/index.pom.xml"), pomIndex);
+		config(Map.of("index", pomIndex.getAbsolutePath()));
+
+		// trigger init()
+		assertThat(repo.list(null)).isNotNull();
+
+		Archive oldArchive = Archive.valueOf("org.osgi:org.osgi.dto:1.0.0");
+		Archive newArchive = Archive.valueOf("org.osgi:org.osgi.dto:2.0.0");
+		repo.index.replaceArchive(oldArchive, newArchive);
+
+		// Verify the full replaced dependency block via DOM/XPath
+		Document doc = dbf.newDocumentBuilder()
+			.parse(pomIndex);
+		XPath xp = xpf.newXPath();
+
+		// new version block must exist with correct groupId, artifactId,
+		// version
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto' and version='2.0.0']/groupId", doc)
+			.trim()).as("replaced dependency must have <groupId>org.osgi</groupId>")
+				.isEqualTo("org.osgi");
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto' and version='2.0.0']/artifactId", doc)
+			.trim()).as("replaced dependency must have <artifactId>org.osgi.dto</artifactId>")
+				.isEqualTo("org.osgi.dto");
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto' and version='2.0.0']/version", doc)
+			.trim()).as("replaced dependency must have <version>2.0.0</version>")
+				.isEqualTo("2.0.0");
+
+		// old version block must be gone entirely
+		double oldCount = (double) xp.evaluate("count(//dependency[artifactId='org.osgi.dto' and version='1.0.0'])",
+			doc, javax.xml.xpath.XPathConstants.NUMBER);
+		assertThat(oldCount).as("old org.osgi.dto 1.0.0 dependency block must be gone after replace")
+			.isEqualTo(0.0);
+
+		// replaced plain jar must NOT have a <type> element
+		double typeCount = (double) xp.evaluate(
+			"count(//dependency[artifactId='org.osgi.dto' and version='2.0.0']/type)", doc,
+			javax.xml.xpath.XPathConstants.NUMBER);
+		assertThat(typeCount).as("replaced plain jar dependency must NOT have a <type> element")
+			.isEqualTo(0.0);
+
+		// assert if repo reflects the changes
+		assertThat(repo.versions("org.osgi:org.osgi.dto")).contains(new Version("2.0.0"));
+		assertThat(repo.versions("org.osgi:org.osgi.dto")).doesNotContain(new Version("1.0.0"));
+	}
+
+	@Test
+	public void testPomXmlPreservesProjectMetadata() throws Exception {
+		File pomIndex = IO.getFile(tmp, "index.pom.xml");
+		IO.copy(IO.getFile("testresources/mavenrepo/index.pom.xml"), pomIndex);
+		config(Map.of("index", pomIndex.getAbsolutePath()));
+
+		// trigger init()
+		assertThat(repo.list(null)).isNotNull();
+
+		repo.index.add(Archive.valueOf("org.osgi:org.osgi.service.log:1.3.0"));
+
+		// Verify project-level metadata is preserved via DOM/XPath (not just
+		// string contains)
+		Document doc = dbf.newDocumentBuilder()
+			.parse(pomIndex);
+		XPath xp = xpf.newXPath();
+
+		assertThat(xp.evaluate("/project/groupId", doc)
+			.trim()).as("project <groupId> must be preserved as 'test'")
+				.isEqualTo("test");
+		assertThat(xp.evaluate("/project/artifactId", doc)
+			.trim()).as("project <artifactId> must be preserved as 'index'")
+				.isEqualTo("index");
+		assertThat(xp.evaluate("/project/version", doc)
+			.trim()).as("project <version> must be preserved as '1.0-SNAPSHOT'")
+				.isEqualTo("1.0-SNAPSHOT");
+	}
+
+	@Test
+	public void testPomXmlIndexTypeAndClassifier() throws Exception {
+	    File pomIndex = IO.getFile(tmp, "index.pom.xml");
+	    IO.copy(IO.getFile("testresources/mavenrepo/index.pom.xml"), pomIndex);
+		config(Map.of("index", pomIndex.getAbsolutePath()));
+
+	    // Verify that org.osgi.dto is listed
+	    assertThat(repo.list("org.osgi.dto")).isNotEmpty();
+
+	    // Add an archive with a non-jar type and a sources classifier
+	    Archive withClassifier = Archive.valueOf("org.osgi:org.osgi.dto:jar:sources:1.0.0");
+	    Archive withType = Archive.valueOf("org.osgi:org.osgi.dto:zip:1.0.0");
+	    repo.index.add(withClassifier);
+	    repo.index.add(withType);
+
+	    // Parse the saved pom.xml with DOM/XPath for structural assertions
+	    Document doc = dbf.newDocumentBuilder().parse(pomIndex);
+	    XPath xp = xpf.newXPath();
+
+	    // 1. The sources classifier entry MUST have <classifier>sources</classifier>
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto' and classifier='sources']/classifier", doc)
+			.trim())
+	        .as("sources dependency must have <classifier>sources</classifier>")
+	        .isEqualTo("sources");
+
+		// 2. The sources classifier entry MUST have the correct <artifactId>
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto' and classifier='sources']/artifactId", doc)
+			.trim())
+	        .as("sources dependency must have <artifactId>org.osgi.dto</artifactId>")
+	        .isEqualTo("org.osgi.dto");
+
+	    // 3. The zip type entry MUST have <type>zip</type>
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto' and type='zip']/type", doc)
+			.trim())
+	        .as("zip dependency must have <type>zip</type>")
+	        .isEqualTo("zip");
+
+		// 4. The zip type entry MUST have the correct <artifactId>
+		assertThat(xp.evaluate("//dependency[artifactId='org.osgi.dto' and type='zip']/artifactId", doc)
+			.trim())
+	        .as("zip dependency must have <artifactId>org.osgi.dto</artifactId>")
+	        .isEqualTo("org.osgi.dto");
+
+		// 5. The plain jar entry must NOT have a <type> element
+	    double plainJarTypeCount = (double) xp.evaluate(
+	        "count(//dependency[artifactId='org.osgi.dto' and not(classifier) and not(type)]/type)",
+	        doc, javax.xml.xpath.XPathConstants.NUMBER);
+	    assertThat(plainJarTypeCount)
+	        .as("plain jar org.osgi.dto dependency must NOT have a <type> element")
+	        .isEqualTo(0.0);
+
+		// 6. The plain jar entry must exist (sanity check)
+		assertThat(
+			xp.evaluate("//dependency[artifactId='org.osgi.dto' and not(classifier) and not(type)]/artifactId", doc)
+				.trim())
+	        .as("plain jar dependency for org.osgi.dto must exist without <type> or <classifier>")
+	        .isEqualTo("org.osgi.dto");
+	}
+
 }

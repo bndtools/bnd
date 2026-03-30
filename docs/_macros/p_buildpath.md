@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: 	Project
 title: 	p_buildpath
 summary: Get the project's buildpath as a list
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `p_buildpath` macro returns the project's buildpath (compile-time dependencies) as a comma-separated list of file paths.

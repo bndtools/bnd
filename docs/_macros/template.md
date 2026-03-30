@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: template ';' NAME [ ';' template ]+
 summary: Expand the entries of a merged and decorated Parameters object using a template that can refer to the key and attributes
+parent: Macro Reference
 ---
-
 The `template` macro is intended to make it very simple to generate new information based on a _Parameters_. Parameters 
 are the Bnd workhorse to store information. The macro takes the following arguments:
 

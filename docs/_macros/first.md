@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: first (';' LIST )*
 summary: Get the first element from one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `first` macro returns the first element from one or more comma-separated lists. If multiple lists are provided, it returns the first element from the combined lists.

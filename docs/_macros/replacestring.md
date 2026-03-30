@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: replacestring ';' STRING ';' REGEX (';' STRING )?
 summary: Replace parts of a string using regex patterns
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `replacestring` macro applies regex-based replacement to a single string, supporting back-references for captured groups.

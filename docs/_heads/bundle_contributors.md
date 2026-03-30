@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-Contributors ...
 class: Header
 summary: |
    Lists the bundle contributors according to the Maven bundle-contributors pom entry
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

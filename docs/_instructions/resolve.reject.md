@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? ),
 class: Workspace
 summary: |
    Controls rejection of capabilities during resolving.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

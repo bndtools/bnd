@@ -340,7 +340,7 @@ public class HttpClientTest {
 			// First try a public HTTPS
 			//
 
-			String PUBLIC_OK_HTTPS = "https://github.com/bndtools/bnd/blob/master/biz.aQute.bndall.tests/bnd.bnd";
+			String PUBLIC_OK_HTTPS = "https://raw.githubusercontent.com/bndtools/bnd/refs/heads/master/biz.aQute.bndall.tests/bnd.bnd";
 
 			TaggedData go1 = client.build()
 				.asTag()

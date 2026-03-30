@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -testpath REPO-SPEC ( ',' REPO-SPEC )
 class: Project
 summary: |
    The specified JARs from a repository are added to the remote JVM's classpath if the JVM is started in test mode in addition to the -runpath JARs.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

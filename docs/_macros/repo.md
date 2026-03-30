@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Project
 title: repo ';' BSN ( ';' VERSION ( ';' STRATEGY )? )?
 summary: Provides the file paths to artifact in the repositories
+parent: Macro Reference
 ---
-
 Returns the absolute file system paths to the specified artifacts in the repositories.
 
 BSN is be a comma-separated list of bundle symbolic names. If the artifact

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -dsannotations-options SELECTORS
 class: Builder
 summary: |
    Options for controlling DS annotation processing.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

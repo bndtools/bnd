@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: bnd
 summary: |
    The swiss army tool for OSGi
+parent: bnd CLI Commands
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 

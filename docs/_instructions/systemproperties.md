@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -systemproperties PROPERTIES
 class: Workspace
 summary: |
    These system properties are set in the local JVM when a workspace is started. This was mainly added to allow one to set JVM options via system properties.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

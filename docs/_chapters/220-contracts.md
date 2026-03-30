@@ -1,9 +1,9 @@
 ---
-order: 210
 title: Contracts
-layout: default
+layout: bnd
+parent: Build and Development
+nav_order: 8
 ---
-
 The OSGi has a very elegant package version model there are still many that think this is too much work. They do not want to be bothered by the niceties of semantic versions and just want to use, let's say, Servlet 3.0. For those people (seemingly not interested in minimizing dependencies) the OSGi Alliance came up with [Portable Java Contracts][1]. A contract allows you to: 
 
 * Declare that a bundle provides the API of the given specification

@@ -1,8 +1,9 @@
 ---
 title:  External Plugins
-layout: default
+layout: bnd
+parent: Documentation and Tools
+nav_order: 8
 ---
-
 ## External Plugins
 
 External Plugins are external code to bnd code but that can be executed from within bnd. The JARs for this code are coming from the Workspace repository. The External Plugin Namespace defines the namespace (`bnd.external.plugin`)  and the following attributes:

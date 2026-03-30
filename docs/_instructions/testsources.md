@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -testsources REGEX ( ',' REGEX )*
 class: Project
 summary: |
    Specification to find JUnit test cases by traversing the test src directory and looking for java classes. The default is (.*).java.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

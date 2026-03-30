@@ -450,25 +450,25 @@ public class FragmentTemplateEngine {
 	 * Resolve all required templates recursively. This method processes the
 	 * 'require' field of each template and includes all transitively required
 	 * templates.
-	 * 
+	 *
 	 * @param templates the initial list of templates
 	 * @return a list containing the original templates plus all required
 	 *         templates, with duplicates removed
 	 */
-	List<TemplateInfo> resolveRequirements(List<TemplateInfo> templates) {
+	public List<TemplateInfo> resolveRequirements(List<TemplateInfo> templates) {
 		Set<TemplateID> seen = new HashSet<>();
 		List<TemplateInfo> result = new ArrayList<>();
-		
+
 		for (TemplateInfo template : templates) {
 			resolveRequirements(template, seen, result);
 		}
-		
+
 		return result;
 	}
 
 	/**
 	 * Recursively resolve requirements for a single template.
-	 * 
+	 *
 	 * @param template the template to resolve
 	 * @param seen set of already processed template IDs to prevent circular
 	 *            dependencies
@@ -479,20 +479,20 @@ public class FragmentTemplateEngine {
 		if (seen.contains(template.id())) {
 			return;
 		}
-		
+
 		seen.add(template.id());
-		
+
 		// First, recursively resolve all required templates
 		if (template.require() != null && template.require().length > 0) {
 			for (String requiredId : template.require()) {
 				TemplateID reqId = TemplateID.from(requiredId.trim());
-				
+
 				// Find the required template in our available templates
 				TemplateInfo requiredTemplate = templates.stream()
 					.filter(t -> t.id().equals(reqId))
 					.findFirst()
 					.orElse(null);
-				
+
 				if (requiredTemplate != null) {
 					// Recursively resolve this required template
 					resolveRequirements(requiredTemplate, seen, result);
@@ -502,7 +502,7 @@ public class FragmentTemplateEngine {
 				}
 			}
 		}
-		
+
 		// Add the current template after its dependencies
 		result.add(template);
 	}

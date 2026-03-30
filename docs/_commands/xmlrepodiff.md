@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: xmlrepodiff
 summary: |
    Shows the differences between two XML resource repositories
+parent: bnd CLI Commands
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 

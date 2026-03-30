@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: 	Project
 title: 	p_testpath
 summary: Get the project's test runtime path
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `p_testpath` macro returns the test runtime path (JARs placed on the classpath for testing) as a comma-separated list of file paths.

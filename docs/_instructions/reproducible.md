@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -reproducible BOOLEAN | TIMESTAMP
 class: Builder
 summary: |
    Ensure the bundle can be built in a reproducible manner.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

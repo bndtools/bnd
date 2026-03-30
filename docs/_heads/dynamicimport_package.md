@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*
 class: Header
 summary: |
    The DynamicImport-Package header contains a comma-separated list of package names that should be dynamically imported when needed.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

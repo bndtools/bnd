@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-SCM
 class: Header
 summary: |
    Defines the information about the source code of the bundle
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

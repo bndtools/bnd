@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Builder
 title: maven_version ';' MAVEN-VERSION
 summary: Cleanup a potential maven version to make it match an OSGi Version syntax.
+parent: Macro Reference
 ---
-
 ## Summary
 
 Convert a Maven-style version string to OSGi version format. **Note:** Use [version_cleanup](version_cleanup.html) instead, which can be used in more contexts.

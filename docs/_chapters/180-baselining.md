@@ -1,16 +1,23 @@
 ---
 title: Baselining
-layout: default
+layout: bnd
 requires: 2.2.0
+parent: Build and Development
+nav_order: 5
 ---
-
 Baselining compares a bundle with another bundle, the _baseline_, to find mistakes in the [semantic versioning](https://docs.osgi.org/whitepaper/semantic-versioning/). For example, there is a binary incompatible change in the new bundle but the version has not been bumped. Baselining can be run from the command line (see `bnd help baseline`) or it can be run as part of a project build. 
 
 APIs are compared for backward compatibility using the semantic versioning rules defined in this chapter. Baselining is aware of the `@ConsumerType` and `@ProviderType` rules. Proper versions are calculated and suggested.
 
 ## Setting Up a Project for Baselining
 
-During the build, bnd will check the [`-baseline` instruction](../instructions/baseline.html) at the end of the build when the JAR is ready. This instruction is a selector on the symbolic name of the building bundle. If it matches, the baselining is started with one exception: the bundle/package version must be 1.0.0 or above. If the version is less (i.e. major version being `0`) no baselining is possible, the purpose is to allow the [primordial baseline to be established without errors](https://semver.org/#spec-item-4).
+During the build, bnd will check the [`-baseline` instruction](../instructions/baseline.html) at the end of the build when the JAR is ready. This instruction is a selector on the symbolic name of the building bundle. If it matches, the baselining is started with one exception: by default, the bundle/package version must be 1.0.0 or above. If the version is less (i.e. major version being `0`) no baselining errors are reported, the purpose is to allow the [primordial baseline to be established without errors](https://semver.org/#spec-item-4).
+
+To enable baselining for versions in the range `[0.1.0, 1.0.0)`, use the [`-baseline` instruction](../instructions/baseline.html):
+
+	-baselineincludezeromajor: true
+
+This will enable baseline error reporting for packages with major version `0` (except for `0.0.x` versions which are still excluded).
 
 By default the baseline is a bundle from one of the repositories with the same symbolic name as the building bundle and the highest possible version. However, it is possible to specify the version or to baseline against a file.
 
@@ -32,7 +39,7 @@ By default the bundle and baseline are compared (_diffed_) and then analyzed for
 
 ### Maven Support
 
-There is a dedicated [Maven plugin for baselining](../../maven-plugins/bnd-baseline-maven-plugin/README.md).
+There is a dedicated [Maven plugin for baselining](https://github.com/bndtools/bnd/tree/master/maven-plugins/bnd-baseline-maven-plugin).
 
 ## Example baselining Project Instructions
 

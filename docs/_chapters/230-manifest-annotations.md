@@ -1,9 +1,9 @@
 ---
-order: 230
 title: Bundle Annotations
-layout: default
+layout: bnd
+parent: Build and Development
+nav_order: 9
 ---
-
 Manifest headers are challenging to keep in sync with the code in the bundle. It often takes several attempts to get all the details correct.
 
 One of the goals of bnd is to eliminate such issues by relying on Java's type system to express the semantics of OSGi metadata.
@@ -143,7 +143,7 @@ results in the manifest header:
 
 ### Macros
 
-You'll note the string `${@class}` used in the above example. String fields in *bundle annotations* are processed through bnd's macro processor. This macro processor provides access to all default and builder macros. *More info on bnd macros can be found in the [macros chapter](/chapters/850-macros.html).*
+You'll note the string `${@class}` used in the above example. String fields in *bundle annotations* are processed through bnd's macro processor. This macro processor provides access to all default and builder macros. *More info on bnd macros can be found in the [macros chapter](/macros/).*
 
 Bnd also provides access to certain key properties of the current processing state.
 

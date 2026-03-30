@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: foreach ';' MACRO (';' LIST)* 
 summary: Iterate over a list, calling a macro for each element with value and index
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `foreach` macro iterates over one or more lists and invokes a specified macro for each element, passing both the element value and its index (0-based) as arguments. The results are collected and returned as a comma-separated list.

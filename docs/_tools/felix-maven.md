@@ -1,10 +1,10 @@
 ---
 title: Apache Felix Maven Bundle Plugin
-layout: default
+layout: bnd
 summary: The Apache Felix Maven Bundle Plugin.
 version: 2.4
+parent: Tools bound to bnd
 ---
-
 One set of developers comes from the Maven world and is generally happy with the “Maven Way”; they do not want it to change significantly. We feel that these users are already well served by the Apache Felix Maven Bundle Plugin, m2eclipse and even other IDEs such as NetBeans.  We call the above a “Maven first” approach. bndlib supports this approach with the Apache Felix Maven Bundle plugin. This plugin is maintained by the Apache Felix project the plugin is [well documented there][1]. This document shamelessly copies some of this information.
 
 The Apache Felix Maven Bundle plugin uses bndlib only to create a manifest; it does not support the bndlib's workspace and project model. This means that not all instructions and macros are relevant. 

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -maven-dependencies* entry ( ',' entry )*
 class: Project
 summary: |
    Configure maven dependency information for the generated pom
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
@@ -78,6 +79,6 @@ Change the dependency scope for the artifact. The default dependency scope is sp
 [-maven-scope]: maven_scope.html
 [MavenBndRepository]: ../plugins/maven.html
 [BndPomRepository]: ../plugins/pomrepo.html
-[merged instruction]: ../chapters/820-instructions.html#merged-instructions
+[merged instruction]: /instructions/#merged-instructions
 [pom.properties]: https://maven.apache.org/shared/maven-archiver/#pom-properties-content
 [dependency scope]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: dir ( ';' FILE )*
 summary: Extract the directory path from one or more file paths
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `dir` macro extracts and returns the parent directory path from one or more file paths. It returns the absolute path to each file's containing directory, filtering out non-existent files.

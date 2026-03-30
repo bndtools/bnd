@@ -34,7 +34,6 @@ import aQute.bnd.component.ComponentConstants;
  * process Declarative Services components. It can be used directly, or as a
  * meta-annotation.
  * 
- * @author $Id$
  * @since 1.4
  */
 @Documented

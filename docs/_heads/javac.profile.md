@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: javac.profile
 class: Header
 summary: |
    When using compact profiles, this option specifies the profile name when compiling.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

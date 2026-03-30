@@ -116,7 +116,7 @@
 	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
 	bnd.identity;id='osgi.*',\
 	bnd.identity;id='org.osgi.*.annotations',\
-	bnd.identity;id='biz.aQute.bndlib';version='[7.0.0,7.0.1)',\
+	bnd.identity;id='biz.aQute.bndlib';version='[7.0.0,${baseline.version})',\
 	bnd.identity;id='org.hamcrest';version='[3.0.0,4)'
 
 

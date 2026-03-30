@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-SymbolicName ::= symbolic-name ( ';' parameter ) *
 class: Header
 summary: |
    The Bundle-SymbolicName header specifies a non-localizable name for this bundle. The bundle symbolic name together with a version must identify a unique bundle though it can be installed multiple times in a framework. The bundle symbolic name should be based on the reverse domain name convention, s
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

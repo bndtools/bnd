@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: bsn
 summary: Get the Bundle Symbolic Name (BSN) of the current bundle being built
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `bsn` macro returns the Bundle Symbolic Name (BSN) of the bundle currently being analyzed or built. This is particularly useful in sub-bundle scenarios where the BSN may differ from the project's main BSN.

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -removeheaders KEY-SELECTOR ( '.' KEY-SELECTOR ) *
 class: Project
 summary: |
    Remove matching headers from the manifest.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

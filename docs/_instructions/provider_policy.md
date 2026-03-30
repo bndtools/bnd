@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -provider-policy VERSION-MASK
 class: Project
 summary: |
    Specify the default version bump policy for a provider when a binary incompatible change is detected.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

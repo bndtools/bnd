@@ -34,28 +34,18 @@ jobs:
       BUNDLE_PATH: vendor/bundle
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9
+      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Git Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
     - name: Set up Ruby
-      uses: ruby/setup-ruby@8d27f39a5e7ad39aebbcbd1324f7af020229645c
+      uses: ruby/setup-ruby@3ff19f5e2baf30647122352b96108b1fbe250c64
       with:
         ruby-version: 3.4.5
         bundler-cache: true
         working-directory: docs
-
-    # Download and install the Pagefind binary
-    # see releases: https://github.com/CloudCannon/pagefind/releases
-    - name: Install Pagefind for Search
-      run: |
-        cd docs
-        curl -L https://github.com/Pagefind/pagefind/releases/download/v1.4.0/pagefind-v1.4.0-x86_64-unknown-linux-musl.tar.gz \
-          -o pagefind.tar.gz
-        tar xzf pagefind.tar.gz
-        chmod +x pagefind
 
     - name: Build
       run: |
@@ -79,4 +69,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

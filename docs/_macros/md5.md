@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: md5 ';' RESOURCE
 summary: Calculate MD5 digest of a resource in the bundle
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `md5` macro calculates the MD5 hash of a resource that exists within the current bundle JAR. The result can be returned as either Base64 (default) or hexadecimal encoding.

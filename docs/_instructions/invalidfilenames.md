@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -invalidfilenames
 class: Project
 summary: |
    Specify file/directory names that should not be used because they are not portable.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

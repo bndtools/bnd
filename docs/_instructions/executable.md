@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -executable ( rejar= STORE | DEFLATE ) ( ','  strip= matcher ( ',' matcher )* ) ( ',' location= FORMAT )
 class: Project
 summary: |
    Process an executable jar to strip optional directories of the contained bundles, and/or change their compression. The location string can also be calculated from bsn and version
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

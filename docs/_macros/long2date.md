@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: long2date
 summary: Convert a millisecond timestamp to a readable date string
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `long2date` macro converts a long integer representing milliseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC) into a human-readable date string.

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runbundles* REPO-ENTRY ( ',' REPO-ENTRY )*
 class: Project
 summary: |
    Add additional bundles, specified with their bsn and version like in -buildpath, that are installed and started before the project is run.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

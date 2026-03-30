@@ -68,6 +68,7 @@ jobs:
           java: '17'
           runner: '{0}' # 'xvfb-run --auto-servernum {0}'
           canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
+          reference: true
           fetch-depth: '0'
         - os: 'windows-latest'
           java: '17'
@@ -76,7 +77,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9
+      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
@@ -92,7 +93,7 @@ jobs:
           8
           ${{ matrix.java }}
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884
+      uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f
 
     #- name: Cache cnf cache and ~/.bnd/urlcache/
     #  id: cache-cnf-cache
@@ -132,21 +133,17 @@ jobs:
         SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-    - name: Upload Test Reports
-      if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+    - name: Upload P2 Repo artifact
+      if: ${{ matrix.reference && github.event_name == 'pull_request' }}
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
       with:
-        name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
+        name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
         path: |
-          */generated/test-reports/*/TEST-*.xml
-          maven/*/target/surefire-reports/TEST-*.xml
-          gradle-plugins/*/build/test-results/*/TEST-*.xml
-          gradle-plugins/build/reports/*
+          org.bndtools.p2/generated/org.bndtools.p2.jar
+        retention-days: 7   # keep for 7 days
     - name: Publish PR p2 repo
-      if: ${{ github.event_name == 'pull_request' && matrix.java == '17'  && matrix.os == 'ubuntu' }}
+      if: ${{ matrix.reference && github.event_name == 'pull_request' }}
       run: |
-        ls -laR org.bndtools.p2/*
-        env | sort
         PR=${{ github.event.pull_request.number }}
         ARTIFACT_PATH="org.bndtools.p2/generated/org.bndtools.p2.jar"
         if [ -f "$ARTIFACT_PATH" ] && [ "$PR" != "" ]; then
@@ -173,3 +170,13 @@ jobs:
         fi
       env:
         JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
+    - name: Upload Test Reports
+      if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      with:
+        name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
+        path: |
+          */generated/test-reports/*/TEST-*.xml
+          maven/*/target/surefire-reports/TEST-*.xml
+          gradle-plugins/*/build/test-results/*/TEST-*.xml
+          gradle-plugins/build/reports/*

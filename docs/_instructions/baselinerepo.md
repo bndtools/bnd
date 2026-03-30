@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -baselinerepo qname
 class: Workspace
 summary: |
    Define the repository to calculate baselining against
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Import-Package ::= import ( ',' import )*
 class: Header
 summary: |
    The Import-Package header declares the imported packages for this bundle.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

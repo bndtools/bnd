@@ -46,7 +46,6 @@
 	bndtools.m2e.debug.fragment;version=snapshot,\
 	bndtools.pde;version=snapshot,\
 	bndtools.release;version=snapshot,\
-	com.google.errorprone.annotations;version='[2.38.0,2.38.1)',\
 	com.google.gson;version='[2.10.1,2.10.2)',\
 	com.google.guava;version='[33.4.8,33.4.9)',\
 	com.google.guava.failureaccess;version='[1.0.3,1.0.4)',\

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runproperties PROPERTIES
 class: Launcher
 summary: |
    Define system properties for the remote VM.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: nmin (';' LIST )*
 summary: Find the minimum number in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `nmin` macro compares numeric values using floating-point comparison and returns the minimum (lowest) number.

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -library library ( ',' library )*
 class: Workspace or Project
 summary: |
    Apply a bnd library to the workspace, project, or bndrun file
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

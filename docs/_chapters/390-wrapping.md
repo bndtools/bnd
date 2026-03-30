@@ -1,11 +1,11 @@
 ---
-order: 390
 title: Wrapping Libraries to OSGi Bundles
 summary: Discusses wrapping libraries into bundles
-layout: default
+layout: bnd
 author: Neil Bartlett (edited/updated by Peter Kriens)
+parent: Packaging and Distribution
+nav_order: 3
 ---
-
 OSGi developers face a challenge when using third-party libraries that
 are not supplied as OSGi bundles. Though an increasing number of
 libraries are available from their original sources as OSGi bundles, and

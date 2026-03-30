@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -bumppolicy
 class: Macro
 summary: |
    The policy for the bump command
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

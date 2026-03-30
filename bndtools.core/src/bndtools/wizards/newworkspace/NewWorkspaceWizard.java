@@ -1,12 +1,14 @@
 package bndtools.wizards.newworkspace;
 
 import static aQute.bnd.wstemplates.FragmentTemplateEngine.DEFAULT_INDEX;
-import static org.eclipse.jface.dialogs.MessageDialog.openConfirm;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Formatter;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bndtools.core.ui.icons.Icons;
@@ -17,6 +19,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -58,6 +61,7 @@ import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.shared.ConfirmDialogWithTextarea;
 import bndtools.util.ui.UI;
 
 /**
@@ -125,13 +129,26 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 		// show a confirmation dialog
 		// if there is at least one 3rd-party template selected
-		long num3rdParty = model.selectedTemplates.stream()
-			.filter(t -> !t.isOfficial())
-			.count();
 
-		boolean confirmed = num3rdParty == 0 || openConfirm(getShell(), "Install 3rd-Party templates",
-			"You have selected " + num3rdParty + " templates from 3rd-party authors. "
-				+ "Are you sure you trust the authors and want to continue fetching the content?");
+		List<TemplateInfo> selectedAndRequired = templates.resolveRequirements(model.selectedTemplates);
+		List<TemplateInfo> thirdParty = selectedAndRequired.stream()
+			.filter(t -> !t.isOfficial())
+			.toList();
+		long num3rdParty = thirdParty.size();
+
+		String title = "Install 3rd-Party templates";
+		String message = String.format("Your selection would install %s"
+			+ " templates from 3rd-party authors (including required dependency fragments): %n"
+			+ "%nAre you sure you trust the authors and want to continue fetching the content?", num3rdParty);
+		StringBuilder details = new StringBuilder();
+		try (Formatter f = new Formatter(details);) {
+			thirdParty.forEach(ti -> f.format("%n%s - %s (Repo: %s) %n", ti.name(), ti.description(),
+				ti.id()
+					.repoUrl()));
+		}
+
+		boolean confirmed = num3rdParty == 0
+			|| ConfirmDialogWithTextarea.open(getShell(), title, message, details.toString());
 
 		if (!confirmed) {
 			// not confirmed. cancel selected
@@ -148,6 +165,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			return false;
 
 	}
+
 
 	class NewWorkspaceWizardPage extends WizardPage {
 		NewWorkspaceWizardPage() {
@@ -188,6 +206,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			CheckboxTableViewer selectedTemplates = CheckboxTableViewer.newCheckList(container,
 				SWT.BORDER | SWT.FULL_SELECTION);
+			ColumnViewerToolTipSupport.enableFor(selectedTemplates);
 			selectedTemplates.setContentProvider(ArrayContentProvider.getInstance());
 			Table table = selectedTemplates.getTable();
 			table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 6, 10));
@@ -267,9 +286,49 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			});
 
+			TableViewerColumn requiresColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
+			requiresColumn.getColumn()
+				.setText("Requires");
+			requiresColumn.setLabelProvider(new ColumnLabelProvider() {
+
+				@Override
+				public String getText(Object element) {
+					if (element instanceof TemplateInfo ti) {
+						List<TemplateInfo> reqs = NewWorkspaceWizard.this.templates
+							.resolveRequirements(Collections.singletonList(ti));
+
+						long num3rdParty = reqs != null && reqs.size() > 1 ? reqs.stream()
+							.filter(rti -> !rti.isOfficial())
+							.count() : 0;
+
+						return reqs != null && reqs.size() > 1
+							? String.valueOf(reqs.size() - 1)
+								+ (num3rdParty > 0 ? " (" + num3rdParty + " 3rd Party)" : "")
+							: "0";
+					}
+					return super.getText(element);
+				}
+
+				@Override
+				public String getToolTipText(Object element) {
+					if (element instanceof TemplateInfo ti) {
+
+						List<TemplateInfo> reqs = NewWorkspaceWizard.this.templates
+							.resolveRequirements(Collections.singletonList(ti));
+						return reqs != null && reqs.size() > 1 ? "will be also installed: " + reqs.stream()
+							.filter(rti -> !rti.equals(ti))
+							.map(rti -> rti.name())
+							.collect(Collectors.joining(", "))
+							: "No dependencies";
+					}
+					return super.getToolTipText(element);
+				}
+			});
+
 			tableLayout.addColumnData(new ColumnWeightData(1, 200, false));
 			tableLayout.addColumnData(new ColumnWeightData(10, 460, true));
 			tableLayout.addColumnData(new ColumnWeightData(20, 100, true));
+			tableLayout.addColumnData(new ColumnWeightData(30, 50, true));
 
 			Button addButton = new Button(container, SWT.PUSH);
 			addButton.setText("+");

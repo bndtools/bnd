@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: is ( ';' ANY )* 
 summary: Check if all given values are equal
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `is` macro checks if all provided arguments are equal to each other. Returns true if all values match, false otherwise.

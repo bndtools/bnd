@@ -1,0 +1,32 @@
+<!-- bnd custom head additions -->
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="{{ '/sitemap.xml' | relative_url }}">
+<link rel="shortcut icon" type="image/x-icon" href="{{ '/favicon.ico' | relative_url }}">
+
+<!-- Tocbot: right-side sticky "On this page" TOC -->
+<link rel="stylesheet" href="{{ '/css/tocbot.css' | relative_url }}">
+<script src="{{ '/js/tocbot.min.js' | relative_url }}"></script>
+
+{% if page.class %}
+<meta name="bnd-page-class" content="{{ page.class }}">
+{% endif %}
+
+<!-- Prevent flash of wrong color scheme: apply saved light/dark preference before CSS renders,
+     otherwise use OS/browser preference on page load. -->
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme-preference');
+      var pref = (stored === 'light' || stored === 'dark') ? stored : null;
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var useDark = pref ? pref === 'dark' : prefersDark;
+      if (useDark) {
+        var cssFile = document.querySelector('link[href*="just-the-docs-default.css"], link[href*="just-the-docs-light.css"], link[href*="just-the-docs-dark.css"]');
+        if (cssFile) {
+          cssFile.setAttribute('href',
+            cssFile.getAttribute('href').replace(/just-the-docs-(default|light|dark)\.css/, 'just-the-docs-dark.css'));
+        }
+      }
+      document.documentElement.setAttribute('data-color-scheme', useDark ? 'dark' : 'light');
+    } catch (e) {}
+  }());
+</script>

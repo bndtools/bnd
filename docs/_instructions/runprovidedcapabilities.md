@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runprovidedcapabilities
 class: Workspace
 summary: |
    Extra capabilities for a distro resolve
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Export-Package  ::= export ( ',' export)*
 class: Header
 summary: |
    The Export-Package header contains a declaration of exported packages
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

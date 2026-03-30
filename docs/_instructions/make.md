@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -make
 class: Project
 summary: |
    If a resource is not found, specify a recipe to make it.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

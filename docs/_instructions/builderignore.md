@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -builderignore PATH-SPEC ( ',' PATH-SPEC ) *
 class: Project
 summary: |
    List of project-relative directories to be ignored by the builder.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -17,7 +17,6 @@
  * @see <a href="http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf"
  *      > Semantic Versioning</a>
  * @version 1.0
- * @author $Id$
  */
 @Version("1.0")
 package org.osgi.annotation.versioning;

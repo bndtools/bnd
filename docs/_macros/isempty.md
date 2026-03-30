@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: isempty ( ';' STRING )* 
 summary: Check if all given strings are empty
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `isempty` macro checks if all provided arguments are empty strings. Returns true only if all values are empty, false otherwise.

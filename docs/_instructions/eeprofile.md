@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -eeprofile 'auto' | PROFILE +
 class: Project
 summary: |
    Provides control over what Java 8 profile to use.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

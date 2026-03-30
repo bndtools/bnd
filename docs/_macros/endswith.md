@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: endswith ';' STRING ';' SUFFIX
 summary: Check if a string ends with a specific suffix
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `endswith` macro checks if a given string ends with a specified suffix. If the string ends with the suffix, it returns the string; otherwise, it returns an empty string (which evaluates to false in conditional contexts).

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -define-contract
 class: Project
 summary: |
    Define a contract when one cannot be added to the buildpath.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

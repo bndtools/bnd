@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: toupper STRING
 summary: Convert a string to uppercase
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `toupper` macro converts a string to uppercase using the default locale.

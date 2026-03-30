@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,6 +28,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.PomParser;
 import aQute.bnd.maven.support.CachedPom;
 import aQute.bnd.maven.support.Maven;
@@ -41,7 +43,9 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.repository.maven.provider.MavenBndRepository;
 import aQute.bnd.service.Strategy;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.lib.xml.XML;
 
@@ -339,5 +343,305 @@ public class MavenTest {
 		assertEquals("2.0.0", xpath.evaluate("/project/dependencies/dependency[2]/version", d));
 	}
 
+	@Test
+	public void testPomResourceWithSnapshot() throws Exception {
+		// Test that -snapshot instruction is applied when creating POM
+		Builder b = new Builder();
+		b.setProperty("-pom", "true");
+		b.setBundleSymbolicName("com.example.test");
+		b.setBundleVersion("1.2.3.SNAPSHOT");
+		b.setProperty("-snapshot", "20210101-120000"); // Set snapshot replacement
+		b.setProperty("-resourceonly", "true");
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		Resource r = jar.getResource("pom.xml");
+		assertNotNull(r);
+
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(r.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+
+		// Version should be transformed from "1.2.3.SNAPSHOT" to "1.2.3.20210101-120000"
+		assertEquals("1.2.3.20210101-120000", xpath.evaluate("/project/version", d));
+
+		jar.close();
+		b.close();
+	}
+
+	@Test
+	public void testPomResourceWithSnapshotAndPomVersion() throws Exception {
+		// Test that -pom version property takes precedence and -snapshot is still applied
+		Builder b = new Builder();
+		b.setProperty("-pom", "true,version=2.0.0.SNAPSHOT");
+		b.setBundleSymbolicName("com.example.test");
+		b.setBundleVersion("1.2.3.BUILD"); // This should be overridden by -pom version
+		b.setProperty("-snapshot", "RC1");
+		b.setProperty("-resourceonly", "true");
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		Resource r = jar.getResource("pom.xml");
+		assertNotNull(r);
+
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(r.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+
+		// Version from -pom should be used with -snapshot transformation applied
+		// "2.0.0.SNAPSHOT" -> "2.0.0.RC1"
+		assertEquals("2.0.0.RC1", xpath.evaluate("/project/version", d));
+
+		jar.close();
+		b.close();
+	}
+
+	@Test
+	public void testPomResourceWithSnapshotHyphen() throws Exception {
+		// Test -snapshot with qualifier ending in -SNAPSHOT (like RC1-SNAPSHOT)
+		Builder b = new Builder();
+		b.setProperty("-pom", "true");
+		b.setBundleSymbolicName("com.example.test");
+		b.setBundleVersion("1.2.3.RC1-SNAPSHOT");
+		b.setProperty("-snapshot", "RELEASE"); 
+		b.setProperty("-resourceonly", "true");
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		Resource r = jar.getResource("pom.xml");
+		assertNotNull(r);
+
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(r.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+
+		// Version should be transformed from "1.2.3.RC1-SNAPSHOT" to "1.2.3.RC1-RELEASE"
+		assertEquals("1.2.3.RC1-RELEASE", xpath.evaluate("/project/version", d));
+
+		jar.close();
+		b.close();
+	}
+
+	@Test
+	public void testPomResourceWithEmptySnapshot() throws Exception {
+		// Test -snapshot with empty value removes SNAPSHOT
+		Builder b = new Builder();
+		b.setProperty("-pom", "true");
+		b.setBundleSymbolicName("com.example.test");
+		b.setBundleVersion("1.2.3.SNAPSHOT");
+		b.setProperty("-snapshot", ""); // Empty value should remove SNAPSHOT
+		b.setProperty("-resourceonly", "true");
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		Resource r = jar.getResource("pom.xml");
+		assertNotNull(r);
+
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(r.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+
+		// Empty -snapshot should remove ".SNAPSHOT" leaving "1.2.3"
+		assertEquals("1.2.3", xpath.evaluate("/project/version", d));
+
+		jar.close();
+		b.close();
+	}
+
+	@Test
+	public void testExportWithSnapshotToMavenRepo(@InjectTemporaryDirectory File tmp) throws Exception {
+		// Integration test: Export a bundle with SNAPSHOT version to a Maven repository
+		// and verify that the -snapshot instruction transformation is applied to the POM
+		
+		File localRepo = new File(tmp, "localrepo");
+		localRepo.mkdirs();
+		
+		// Create a bundle with SNAPSHOT version
+		Builder b = new Builder();
+		b.setProperty("-pom", "groupid=com.example.test,artifactid=test-bundle");
+		b.setBundleSymbolicName("com.example.test.bundle");
+		b.setBundleVersion("2.5.0.SNAPSHOT");
+		b.setProperty("-snapshot", "RC2-20260217"); // Timestamp-like snapshot
+		b.setProperty("-resourceonly", "true");
+		b.setBase(tmp);
+		
+		Jar jar = b.build();
+		assertTrue(b.check());
+		
+		// Verify the POM resource in the JAR has the transformed version
+		Resource pomResource = jar.getResource("META-INF/maven/com.example.test/test-bundle/pom.xml");
+		assertNotNull(pomResource, "POM should be generated in the jar");
+		
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(pomResource.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+		
+		// Verify the POM contains the transformed version (not SNAPSHOT)
+		String pomVersion = xpath.evaluate("/project/version", d);
+		assertEquals("2.5.0.RC2-20260217", pomVersion, 
+			"POM version should be transformed from 2.5.0.SNAPSHOT to 2.5.0.RC2-20260217");
+		
+		// Verify groupId and artifactId are correct
+		assertEquals("com.example.test", xpath.evaluate("/project/groupId", d));
+		assertEquals("test-bundle", xpath.evaluate("/project/artifactId", d));
+		
+		jar.close();
+		b.close();
+	}
+
+	@Test
+	public void testExportWithEmptySnapshotToMavenRepo(@InjectTemporaryDirectory File tmp) throws Exception {
+		// Test that empty -snapshot removes the SNAPSHOT qualifier entirely
+		
+		Builder b = new Builder();
+		b.setProperty("-pom", "groupid=com.example,artifactid=release-bundle");
+		b.setBundleSymbolicName("com.example.release");
+		b.setBundleVersion("3.0.0.SNAPSHOT");
+		b.setProperty("-snapshot", ""); // Empty snapshot should remove SNAPSHOT
+		b.setProperty("-resourceonly", "true");
+		b.setBase(tmp);
+		
+		Jar jar = b.build();
+		assertTrue(b.check());
+		
+		Resource pomResource = jar.getResource("META-INF/maven/com.example/release-bundle/pom.xml");
+		assertNotNull(pomResource, "POM should be generated");
+		
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(pomResource.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+		
+		// Empty snapshot should convert "3.0.0.SNAPSHOT" to "3.0.0"
+		String pomVersion = xpath.evaluate("/project/version", d);
+		assertEquals("3.0.0", pomVersion,
+			"Empty -snapshot should remove SNAPSHOT qualifier, leaving 3.0.0");
+		
+		jar.close();
+		b.close();
+	}
+
+	@Test
+	public void testPublishWithSnapshotToLocalMavenRepoVersionAndBundleVersion(@InjectTemporaryDirectory File tmp)
+		throws Exception {
+		File publishRepo = new File(tmp, "publish-repo");
+		publishRepo.mkdirs();
+
+		Builder b = new Builder();
+		b.setProperty("-pom", "groupid=com.example.test,artifactid=test-bundle");
+		b.setBundleSymbolicName("com.example.test.bundle");
+		b.setBundleVersion("2.5.0.SNAPSHOT");
+		b.setProperty("-snapshot", "RC2-20260217");
+		b.setProperty("-resourceonly", "true");
+		b.setBase(tmp);
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		File builtJar = new File(tmp, "test-bundle.jar");
+		jar.write(builtJar);
+
+		try (Jar source = new Jar(builtJar)) {
+			assertEquals("2.5.0.RC2-20260217", source.getManifest()
+				.getMainAttributes()
+				.getValue(Constants.BUNDLE_VERSION));
+		}
+
+		Processor repoProcessor = new Processor();
+		HttpClient client = new HttpClient();
+		client.setRegistry(repoProcessor);
+		repoProcessor.addBasicPlugin(client);
+		MavenBndRepository repo = new MavenBndRepository();
+		Map<String, String> repoConfig = new HashMap<>();
+		repoConfig.put("local", new File(tmp, "repo-cache").getAbsolutePath());
+		repoConfig.put("index", new File(tmp, "repo-index").getAbsolutePath());
+		repoConfig.put("releaseUrl", publishRepo.toURI()
+			.toString());
+		repoConfig.put("snapshotUrl", publishRepo.toURI()
+			.toString());
+
+		repo.setReporter(repoProcessor);
+		repo.setRegistry(repoProcessor);
+		repo.setProperties(repoConfig);
+
+		try (FileInputStream in = new FileInputStream(builtJar)) {
+			repo.put(in, null);
+		}
+
+		File deployedJar = IO.getFile(publishRepo,
+			"com/example/test/test-bundle/2.5.0.RC2-20260217/test-bundle-2.5.0.RC2-20260217.jar");
+		File deployedPom = IO.getFile(publishRepo,
+			"com/example/test/test-bundle/2.5.0.RC2-20260217/test-bundle-2.5.0.RC2-20260217.pom");
+
+		assertTrue(deployedJar.isFile(), "Published jar should use transformed Maven version");
+		assertTrue(deployedPom.isFile(), "Published pom should use transformed Maven version");
+
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(deployedPom);
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+		assertEquals("2.5.0.RC2-20260217", xpath.evaluate("/project/version", d));
+
+		try (Jar deployed = new Jar(deployedJar)) {
+			assertEquals("2.5.0.RC2-20260217", deployed.getManifest()
+				.getMainAttributes()
+				.getValue(Constants.BUNDLE_VERSION));
+		}
+
+		repo.close();
+		repoProcessor.close();
+		jar.close();
+		b.close();
+	}
+
+	@Test
+	public void testExportWithQualifierSnapshotToMavenRepo(@InjectTemporaryDirectory File tmp) throws Exception {
+		// Test with a qualifier that ends in -SNAPSHOT (like BUILD-SNAPSHOT)
+		
+		Builder b = new Builder();
+		b.setProperty("-pom", "groupid=org.example,artifactid=qual-bundle");
+		b.setBundleSymbolicName("org.example.qual");
+		b.setBundleVersion("1.5.0.BUILD-SNAPSHOT");
+		b.setProperty("-snapshot", "FINAL");
+		b.setProperty("-resourceonly", "true");
+		b.setBase(tmp);
+		
+		Jar jar = b.build();
+		assertTrue(b.check());
+		
+		Resource pomResource = jar.getResource("META-INF/maven/org.example/qual-bundle/pom.xml");
+		assertNotNull(pomResource, "POM should be generated");
+		
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(pomResource.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+		
+		// Should transform "1.5.0.BUILD-SNAPSHOT" to "1.5.0.BUILD-FINAL"
+		String pomVersion = xpath.evaluate("/project/version", d);
+		assertEquals("1.5.0.BUILD-FINAL", pomVersion,
+			"Should replace -SNAPSHOT with -FINAL in qualifier");
+		
+		jar.close();
+		b.close();
+	}
 
 }
+

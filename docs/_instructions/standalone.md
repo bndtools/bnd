@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -standalone repo-spec (, repo-spec )
 class: Run
 summary: |
    Disconnects the bndrun file from the workspace and defines its on repositories
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 from: 3.0.1
 

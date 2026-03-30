@@ -53,6 +53,9 @@ class RepoActions {
 		map.put("Update Revisions :: To higher MAJOR revision", () -> {
 			upgradeRevisions(major);
 		});
+		map.put("Convert :: Text <--> pom.xml", () -> {
+			convertTextXmlRevisions();
+		});
 
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MICRO revision", () -> {
 			clipboard.copy(preview(micro));
@@ -261,6 +264,15 @@ class RepoActions {
 				repo.refresh();
 			}
 
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	private void convertTextXmlRevisions() {
+		try {
+			mbr.convertTextXml();
+			repo.refresh();
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}

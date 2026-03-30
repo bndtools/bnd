@@ -41,7 +41,7 @@ jobs:
       with:
         ref: next
     - name: Set up Ruby
-      uses: ruby/setup-ruby@8d27f39a5e7ad39aebbcbd1324f7af020229645c
+      uses: ruby/setup-ruby@3ff19f5e2baf30647122352b96108b1fbe250c64
       with:
         ruby-version: 3.4.5
         bundler-cache: true
@@ -61,7 +61,7 @@ jobs:
         rm -rf _site/releases
         find _site -type f ! -name "*.html" -exec rm -f {} +
 
-    - uses: actions/upload-artifact@v6.0.0
+    - uses: actions/upload-artifact@v7.0.0
       with:
         name: releasedocs
         path: docs/_site/
@@ -112,7 +112,7 @@ jobs:
         ref: master
 
     - name: download docs/releases/${{ github.event.inputs.V1 }}
-      uses: actions/download-artifact@v7.0.0
+      uses: actions/download-artifact@v8.0.1
       with:
         name: releasedocs
         path: docs/releases/${{ github.event.inputs.V1 }}/

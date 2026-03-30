@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runbuilds BOOLEAN
 class: Project
 summary: |
    Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

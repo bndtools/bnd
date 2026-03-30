@@ -26,6 +26,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import bndtools.central.Central;
@@ -40,6 +41,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	private final Image				projectImg		= PlatformUI.getWorkbench()
 		.getSharedImages()
 		.getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+	private FormText				sectionDescription;
 
 	public RunBundlesPart(Composite parent, FormToolkit toolkit, int style) {
 		super(Constants.RUNBUNDLES, DependencyPhase.Run, parent, toolkit, style);
@@ -48,6 +50,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	public void initialize(IManagedForm form) {
 		super.initialize(form);
+		model.addPropertyChangeListener(Constants.RESOLVE, this);
 
 		IFormPage page = (IFormPage) form.getContainer();
 		IFile file = ResourceUtil.getFile(page.getEditorInput());
@@ -113,9 +116,9 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	void createSection(Section section, FormToolkit toolkit) {
 		section.setText(Messages.RunBundlesPart_title);
-		FormText description = new FormText(section, SWT.READ_ONLY | SWT.WRAP);
-		description.setText(Messages.RunBundlesPart_description, true, false);
-		section.setDescriptionControl(description);
+		sectionDescription = new FormText(section, SWT.READ_ONLY | SWT.WRAP);
+		sectionDescription.setText(Messages.RunBundlesPart_description, true, false);
+		section.setDescriptionControl(sectionDescription);
 		super.createSection(section, toolkit);
 
 		Composite composite = (Composite) section.getClient();
@@ -127,6 +130,32 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	@Override
 	protected int getTableHeightHint() {
 		return 50;
+	}
+
+	@Override
+	public void dispose() {
+		if (model != null)
+			model.removePropertyChangeListener(Constants.RESOLVE, this);
+		super.dispose();
+	}
+
+	@Override
+	public void refreshFromModel() {
+		super.refreshFromModel();
+		updateSectionDescription();
+	}
+
+	private void updateSectionDescription() {
+		if (sectionDescription == null || sectionDescription.isDisposed())
+			return;
+		String text;
+		if (model != null) {
+			text = getResolveModeDescription(model.getResolveMode());
+		} else {
+			text = Messages.RunBundlesPart_description;
+		}
+		sectionDescription.setText(text, true, false);
+		getSection().layout();
 	}
 
 	@Override
@@ -143,6 +172,18 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 	protected void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard) {
 		wizard.setSelectionPageTitle(Messages.RunBundlesPart_addWizardTitle);
 		wizard.setSelectionPageDescription(Messages.RunBundlesPart_addWizardDescription);
+	}
+
+	private static String getResolveModeDescription(ResolveMode resolveMode) {
+		return switch (resolveMode) {
+			case auto -> Messages.RunBundlesPart_descriptionAutoResolve;
+			case beforelaunch -> Messages.RunBundlesPart_descriptionBeforeLaunch;
+			case batch -> Messages.RunBundlesPart_descriptionBatch;
+			case cache -> Messages.RunBundlesPart_descriptionCache;
+			case never -> Messages.RunBundlesPart_descriptionNever;
+			case manual -> Messages.RunBundlesPart_descriptionManual;
+			default -> Messages.RunBundlesPart_descriptionManual;
+		};
 	}
 
 }

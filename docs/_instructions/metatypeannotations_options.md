@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -metatypeannotations-options SELECTORS
 class: Builder
 summary: |
    Restricts the use of Metatype Annotation to a minimum version.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

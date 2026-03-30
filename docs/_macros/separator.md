@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: separator
 summary: Get the operating system's file separator character
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `separator` macro returns the operating system's file separator character used in file paths.

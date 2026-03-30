@@ -3,7 +3,6 @@ package aQute.bnd.repository.maven.provider;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,6 @@ import java.util.regex.Pattern;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
 import aQute.maven.api.Archive;
 
@@ -121,63 +119,25 @@ public class MbrUpdater {
 	 * @throws IOException
 	 */
 	public boolean update(Map<Archive, MavenVersionResult> map) throws IOException {
-		StringBuilder sb = new StringBuilder();
-		boolean changes = buildGAVString(sb, map);
-		if (!changes)
-			return false;
-
-		repo.getIndexFile()
-			.getParentFile()
-			.mkdirs();
-		IO.store(sb.toString(), repo.getIndexFile());
+		boolean changes = false;
+		for (Map.Entry<Archive, MavenVersionResult> e : map.entrySet()) {
+			Archive old = e.getKey();
+			MavenVersionResult result = e.getValue();
+			if (result.mavenVersionAvailable() && !old.revision.version.equals(result.mavenVersion())) {
+				Archive updated = old.update(result.mavenVersion());
+				try {
+					repo.index.replaceArchive(old, updated);
+				} catch (Exception ex) {
+					throw new IOException("Failed to update " + old + " to " + result.mavenVersion(), ex);
+				}
+				changes = true;
+			}
+		}
 		return changes;
 	}
 
-	/**
-	 * @param sb will be written with a list of Maven GAVs like in a central.mvn
-	 *            file
-	 * @param repo
-	 * @param translations
-	 * @return <code>true</code> when there were changes / updates, otherwise
-	 *         <code>false</code>
-	 * @throws IOException
-	 */
-	private boolean buildGAVString(StringBuilder sb, Map<Archive, MavenVersionResult> translations) throws IOException {
-		boolean changes = false;
-		Iterator<String> lc;
-		if (repo.getIndexFile()
-			.isFile()) {
-			lc = IO.reader(repo.getIndexFile())
-				.lines()
-				.iterator();
-		} else {
-			lc = Collections.emptyIterator();
-		}
-
-		for (Iterator<String> i = lc; i.hasNext();) {
-			String line = i.next()
-				.trim();
-			if (!line.startsWith("#") && !line.isEmpty()) {
-
-				Archive archive = Archive.valueOf(line);
-				if (archive != null) {
-					MavenVersion version = translations.get(archive)
-						.mavenVersion();
-					if (version != null) {
-						if (!archive.revision.version.equals(version)) {
-							Archive updated = archive.update(version);
-							sb.append(updated)
-								.append("\n");
-							changes = true;
-							continue;
-						}
-					}
-				}
-			}
-			sb.append(line)
-				.append("\n");
-		}
-		return changes;
+	void convertTextXml() throws Exception {
+		repo.index.convertTextXml();
 	}
 
 	private String format(MultiMap<Archive, MavenVersion> overlap) {

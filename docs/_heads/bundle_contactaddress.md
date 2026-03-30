@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-ContactAddress
 class: Header
 summary: |
    The Bundle-ContactAddress header provides the contact address of the vendor.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

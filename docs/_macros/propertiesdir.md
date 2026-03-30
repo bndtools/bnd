@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: 	propertiesdir 
 class: 	Processor
 summary: Get the directory containing the current properties file
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `propertiesdir` macro returns the absolute path to the directory containing the current properties file being processed.

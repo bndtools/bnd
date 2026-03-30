@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -conduit
 class: Project
 summary: |
    This project is a front to one or more JARs in the file system
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

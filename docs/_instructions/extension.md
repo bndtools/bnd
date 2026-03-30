@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -extension
 class: Project
 summary: |
    A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

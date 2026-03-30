@@ -22,7 +22,6 @@ package aQute.bnd.component.annotations;
  * Field options for the {@link Reference} annotation.
  * 
  * @since 1.3
- * @author $Id$
  */
 public enum FieldOption {
 	

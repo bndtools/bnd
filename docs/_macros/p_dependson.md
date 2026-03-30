@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: 	Project
 title: 	p_dependson
 summary: Get list of project names this project depends on
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `p_dependson` macro returns a comma-separated list of project names that the current project depends on (as specified in the `-dependson` directive).

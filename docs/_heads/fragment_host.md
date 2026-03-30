@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Fragment-Host       ::= bundle-description
 class: Header
 summary: |
    The Fragment-Host header defines the host bundles for this fragment.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
