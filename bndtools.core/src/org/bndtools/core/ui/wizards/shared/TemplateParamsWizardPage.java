@@ -97,7 +97,14 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 					String attrib = ad.getID();
 					if (!fixedAttribs.contains(attrib)) {
 						Label label = new Label(panel, SWT.NONE);
-						String labelText = ad.getID();
+						// Use the ad.getName() for the labelText. If
+						// no valid name, then use the ad.getID();
+						String labelText = ad.getName();
+						if (labelText == null || "".equals(labelText.trim())) {
+							labelText = ad.getID();
+						} else {
+							labelText = labelText.trim();
+						}
 						if (requiredIds.contains(ad.getID())) {
 							label.setFont(JFaceResources.getFontRegistry()
 								.getBold(JFaceResources.DEFAULT_FONT));
