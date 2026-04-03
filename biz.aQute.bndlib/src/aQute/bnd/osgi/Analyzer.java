@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.Export;
 import aQute.bnd.apiguardian.api.API;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.exceptions.Exceptions;
@@ -136,6 +137,7 @@ public class Analyzer extends Processor {
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
 	private final Map<TypeRef, Clazz>				classspace				= map();
+	private final Map<TypeRef, Clazz>				lookAsideClasses		= map();
 	private final Map<TypeRef, Clazz>				importedClassesCache	= map();
 	private boolean									analyzed				= false;
 	private boolean									diagnostics				= false;
@@ -147,6 +149,8 @@ public class Analyzer extends Processor {
 	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
 	private final Map<TypeRef, String>				bcpTypes				= map();
+	final TypeRef									providerType			= getTypeRef(
+		"org/osgi/annotation/versioning/ProviderType");
 
 	public enum Check {
 		ALL,
@@ -202,12 +206,24 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	public void analyze() throws Exception {
+		bracketed(this::analyze0);
+	}
+
+	private void analyze0() throws Exception {
 
 		if (!analyzed) {
 			analyzed = true;
 			analyzeContent();
 
+			Instructions instructions = new Instructions(
+				OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
+			annotationHeaders = new AnnotationHeaders(this, instructions);
+
 			doPlugins();
+
+			// Conditional packages
+
+			doConditionalPackages();
 
 			//
 			// calculate class versions in use
@@ -228,9 +244,7 @@ public class Analyzer extends Processor {
 				// built ins
 				//
 
-				Instructions instructions = new Instructions(
-					OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
-				cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
+				cds.add(annotationHeaders);
 
 				for (Clazz c : classspace.values()) {
 					cds.parse(c);
@@ -467,9 +481,6 @@ public class Analyzer extends Processor {
 			logger.debug("activator {} {}", s, activator);
 		}
 
-		// Conditional packages
-
-		doConditionalPackages();
 	}
 
 	/**
@@ -1034,6 +1045,10 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	public Manifest calcManifest() throws Exception {
+		return bracketed(this::calcManifest0);
+	}
+
+	private Manifest calcManifest0() throws Exception {
 		try {
 			analyze();
 			Manifest manifest = new Manifest();
@@ -1872,6 +1887,14 @@ public class Analyzer extends Processor {
 	 * Not clear anymore ...
 	 */
 	Packages doExportsToImports(Packages exports) {
+
+		if (is(Constants.NOSUBSTITUTION)) {
+			// package substitution disabled completely
+			// means: we do not import at all, any package we export
+			// this is equivalent to Export-Package:*;-noimport:=true
+			return new Packages();
+		}
+
 		// private packages = contained - exported.
 		Set<PackageRef> privatePackages = new HashSet<>(contained.keySet());
 		privatePackages.removeAll(exports.keySet());
@@ -1910,6 +1933,22 @@ public class Analyzer extends Processor {
 				String noimport = parameters.get(NO_IMPORT_DIRECTIVE);
 				return !Boolean.parseBoolean(noimport);
 			})
+			// Remove packages without a version range
+			// because this would lead imports without a version.
+			// and this can cause to surprising resolver problems
+			// because the resolver has too many options in case multiple
+			// provideers of that package
+			.filter(p -> {
+				Attrs parameters = exports.get(p);
+				if (parameters == null) {
+					return true;
+				}
+				// check only for presence of version (not validity, because
+				// this done by #check())
+				// (see also test.VerifierTest.testStrict())
+				return parameters.getVersion() != null;
+			})
+
 			// Clean up attributes and generate result map
 			.collect(toMap(p -> p, p -> new Attrs(), (a1, a2) -> a1, Packages::new));
 		return result;
@@ -1981,6 +2020,7 @@ public class Analyzer extends Processor {
 	void augmentImports(Packages imports, Packages exports) throws Exception {
 		List<PackageRef> noimports = Create.list();
 		Set<PackageRef> provided = findProvidedPackages();
+		EE ee = getEEFromReqsOrHighest();
 
 		for (PackageRef packageRef : imports.keySet()) {
 			String packageName = packageRef.getFQN();
@@ -2068,6 +2108,10 @@ public class Analyzer extends Processor {
 					if (Strings.nonNullOrTrimmedEmpty(importRange)) {
 						importAttributes.put(VERSION_ATTRIBUTE, importRange);
 					}
+
+					// Notify analysis plugins about the version decision
+					String reason = buildVersionReason(provider, importAttributes, exportAttributes);
+					reportImportVersion(packageRef, importRange, reason);
 				}
 
 				//
@@ -2084,8 +2128,10 @@ public class Analyzer extends Processor {
 				removeAttributes(importAttributes);
 
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
-				if (result == null || !Verifier.isVersionRange(result))
+				if ((result == null || !Verifier.isVersionRange(result))
+					&& complainAboutMissingVersionRange(packageRef, ee)) {
 					noimports.add(packageRef);
+				}
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 				unsetProperty(CURRENT_BUNDLESYMBOLICNAME);
@@ -2094,8 +2140,51 @@ public class Analyzer extends Processor {
 		}
 
 		if (isPedantic() && noimports.size() != 0) {
-			warning("Imports that lack version ranges: %s", noimports);
+			warning(
+				"Imports that lack version ranges due to not being found in any bundle on the -buildpath: %s (These could stem from transitive dependencies of the jars on your buildpath (e.g. by wrapping non-OSGi jars via -includeresource or if Require-Bundle is involved)."
+					+ "Explicitly adding these dependencies to your -buildpath could help bnd find the correct version information.)",
+				noimports);
 		}
+	}
+
+	private EE getEEFromReqsOrHighest() {
+		SortedSet<EE> eesFromRequirement = EE.getEEsFromRequirement(get(Constants.REQUIRE_CAPABILITY));
+		if (!eesFromRequirement.isEmpty()) {
+			// return lowest (minimum required EE)
+			return eesFromRequirement.first();
+		}
+		return EE.parse(getHighestEE().getEE());
+	}
+
+	/**
+	 * If <code>false</code> then this means this package probably does not
+	 * provide a version and we are fine and do not complain about it (e.g. JDK
+	 * packages). <code>true</code> means, we will complain about a missing or
+	 * invalid version-range.
+	 *
+	 * @param pck
+	 * @return <code>true</code> if should complain about missing version
+	 *         <code>false</code> otherwise.
+	 */
+	private boolean complainAboutMissingVersionRange(PackageRef pck, EE ee) {
+
+		if (pck.isJava() || isJDK(pck, ee)) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * @return <code>true</code> if this package is part of the JDK for the
+	 *         given ee.
+	 */
+	private boolean isJDK(PackageRef pck, EE ee) {
+		if (ee == null) {
+			return false;
+		}
+
+		return ee.getPackages()
+			.containsKey(pck.fqn);
 	}
 
 	Pair<Packages, Parameters> divideRegularAndDynamicImports() {
@@ -2134,6 +2223,30 @@ public class Analyzer extends Processor {
 	}
 
 	/**
+	 * Build a human-readable reason for why a version range was chosen.
+	 */
+	private String buildVersionReason(boolean provider, Attrs importAttributes, Attrs exportAttributes) {
+		if (importAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+			return "explicit provide directive: " + importAttributes.get(PROVIDE_DIRECTIVE);
+		} else if (exportAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+			return "export provide directive: " + exportAttributes.get(PROVIDE_DIRECTIVE);
+		} else if (provider) {
+			return "provider type detected";
+		} else {
+			return "consumer type (default)";
+		}
+	}
+
+	/**
+	 * Report import version decision to analysis plugins.
+	 */
+	private void reportImportVersion(PackageRef packageRef, String version, String reason) {
+		doPlugins(aQute.bnd.service.AnalysisPlugin.class, (plugin) -> {
+			plugin.reportImportVersion(this, packageRef, version, reason);
+		});
+	}
+
+	/**
 	 * Find the packages we depend on, where we implement an interface that is a
 	 * Provider Type. These packages, when we import them, must use the provider
 	 * policy.
@@ -2160,18 +2273,30 @@ public class Analyzer extends Processor {
 		return providers;
 	}
 
-	private boolean isProvider(TypeRef t) {
-		Clazz c;
+	boolean isProvider(TypeRef t) {
+		if (t == null || t.isJava())
+			return false;
+
 		try {
-			c = findClass(t);
+
+			if (isProvider(t.getPackageRef()))
+				return true;
+
+			Clazz c = findClass(t);
+
+			return c.annotations()
+				.contains(providerType) || isProvider(c.superClass);
 		} catch (Exception e) {
 			return false;
 		}
-		if (c == null)
-			return false;
+	}
 
-		TypeRef providerType = getTypeRef("org/osgi/annotation/versioning/ProviderType");
-		return c.annotations()
+	boolean isProvider(PackageRef packageRef) throws Exception {
+		if (packageRef == null)
+			return false;
+		TypeRef packageInfo = getTypeRef(packageRef.binaryName.concat("/package-info"));
+		Clazz c = findClass(packageInfo);
+		return c != null && c.annotations()
 			.contains(providerType);
 	}
 
@@ -2750,6 +2875,7 @@ public class Analyzer extends Processor {
 		if (version == null)
 			return "0";
 
+		version = Strings.trim(version);
 		Matcher m = Verifier.VERSIONRANGE.matcher(version);
 
 		if (m.matches()) {
@@ -3069,6 +3195,10 @@ public class Analyzer extends Processor {
 		if (c != null)
 			return c;
 
+		c = lookAsideClasses.get(typeRef);
+		if (c != null)
+			return c;
+
 		Resource r = findResource(typeRef.getPath());
 		if (r == null) {
 			getClass().getClassLoader();
@@ -3181,9 +3311,16 @@ public class Analyzer extends Processor {
 				throw new FileNotFoundException("From sha1, not found " + args[1]);
 
 			IO.copy(r.openInputStream(), digester);
+
+			boolean hex = args.length > 2 && args[2].equals("hex");
+			if (hex)
+				return Hex.toHexString(digester.digest()
+					.digest());
+
 			return Base64.encodeBase64(digester.digest()
 				.digest());
 		}
+
 	}
 
 	public Descriptor getDescriptor(String descriptor) {
@@ -3196,6 +3333,10 @@ public class Analyzer extends Processor {
 
 	public PackageRef getPackageRef(String binaryName) {
 		return descriptors.getPackageRef(binaryName);
+	}
+
+	public TypeRef getTypeRefFrom(Class<?> clazz) {
+		return descriptors.getTypeRefFromFQN(clazz.getName());
 	}
 
 	public TypeRef getTypeRefFromFQN(String fqn) {
@@ -3847,6 +3988,52 @@ public class Analyzer extends Processor {
 			analyzed = false;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Useful to reuse the annotation processing. The Annotation can be created
+	 * from other sources than Java code. This is mostly useful for the
+	 * annotations that generate Manifest headers.
+	 */
+	public void addAnnotation(Annotation ann, TypeRef c) throws Exception {
+		Clazz clazz = findClass(c);
+		if (clazz == null) {
+                       error("analyzer processing annotation %s but the associated class is not found in the JAR", c);
+			return;
+		}
+		annotationHeaders.classStart(clazz);
+		annotationHeaders.annotation(ann);
+		annotationHeaders.classEnd();
+	}
+
+	/**
+	 * Get a class from our own class path
+	 *
+	 * @param type a local type on the bnd classpath
+	 */
+	public void addClasspathDefault(Class<?> type) {
+		assert type != null : "type must be given";
+
+		try {
+			TypeRef ref = getTypeRefFrom(type);
+			URL resource = type.getClassLoader()
+				.getResource(ref.getPath());
+			if (resource == null) {
+				error("analyzer.addclasspathdefault expected class %s to be on the classpath since we have a type",
+					type);
+			} else {
+
+				Resource r = new URLResource(resource, null);
+				Clazz c = new Clazz(this, ref.getFQN(), r);
+				if (c != null) {
+					c.parseClassFile();
+					// we don't want that class in our classspace
+					lookAsideClasses.putIfAbsent(ref, c);
+				}
+			}
+		} catch (Exception e) {
+			error("analyzer.findclassorlocal Failed to read a class from the bnd classpath");
 		}
 	}
 

@@ -26,6 +26,9 @@ public class PropertiesLineReader {
 	}
 
 	public LineType next() throws Exception {
+		lastKey = null;
+		lastRegion = null;
+		lastValue = null;
 		int index = 0;
 		char[] chars = null;
 
@@ -58,11 +61,19 @@ public class PropertiesLineReader {
 				continue mainLoop;
 			}
 
-			if (c == '=' || c == ':')
+			if (c == '=' || c == ':') {
 				currentBuffer = valueData;
+				index++;
+				continue mainLoop;
+			}
 
-			if (!started && (c == '#' || c == '!'))
+			if (!started && (c == '#' || c == '!')) {
+				lastValue = new String(chars, index + 1, chars.length - index - 1).trim();
+				lastKey = new String(new char[] {
+					c
+				});
 				return comment;
+			}
 
 			if (Character.isWhitespace(c)) {
 				if (started) {
@@ -81,6 +92,7 @@ public class PropertiesLineReader {
 			return blank;
 
 		lastKey = keyData.toString();
+		lastValue = valueData.toString();
 		return entry;
 	}
 

@@ -84,6 +84,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.BadLocationException;
 import biz.aQute.resolve.Bndrun;
 import bndtools.Plugin;
@@ -108,6 +109,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	public static final String					WORKSPACE_EDITOR	= "bndtools.bndWorkspaceConfigEditor";
 
 	public static final String					SOURCE_PAGE			= "__source_page";
+	public static final String					SOURCE_PAGE_EFFECTIVE	= "__source_page_effective";
 
 	public static final String					CONTENT_PAGE		= "__content_page";
 	public static final String					WORKSPACE_PAGE		= "__workspace_page";
@@ -125,6 +127,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	private final static Image					buildFileImg		= Icons.image("icons/bndtools-logo-16x16.png");
 
 	private BndSourceEditorPage					sourcePage;
+	private BndSourceEffectivePage				sourcePageEffective;
 	private Promise<Workspace>					modelReady;
 
 	private IResource							inputResource;
@@ -148,6 +151,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		} else {
 			requiredPageIds.addAll(getPagesBnd(path));
 		}
+		requiredPageIds.add(SOURCE_PAGE_EFFECTIVE);
 		requiredPageIds.add(SOURCE_PAGE);
 
 		// Remove pages no longer required and remember the rest in a map
@@ -166,8 +170,13 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		// Cache new pages
 		for (String pageId : requiredPageIds) {
 			if (!pageCache.containsKey(pageId)) {
-				IFormPage page = SOURCE_PAGE.equals(pageId) ? sourcePage
-					: pageFactories.get(pageId)
+				IFormPage page;
+				if (SOURCE_PAGE.equals(pageId))
+					page = sourcePage;
+				else if (SOURCE_PAGE_EFFECTIVE.equals(pageId))
+					page = sourcePageEffective;
+				else
+					page = pageFactories.get(pageId)
 						.createPage(this, model, pageId);
 				pageCache.put(pageId, page);
 			}
@@ -183,6 +192,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 				if (existingPointer >= getPageCount()) {
 					if (SOURCE_PAGE.equals(requiredId))
 						addPage(sourcePage, getEditorInput());
+					else if (SOURCE_PAGE_EFFECTIVE.equals(requiredId))
+						addPage(sourcePageEffective, getEditorInput());
 					else
 						addPage(pageCache.get(requiredId));
 				} else {
@@ -190,6 +201,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					if (!requiredId.equals(existingPage.getId())) {
 						if (SOURCE_PAGE.equals(requiredId))
 							addPage(existingPointer, sourcePage, getEditorInput());
+						else if (SOURCE_PAGE_EFFECTIVE.equals(requiredId))
+							addPage(existingPointer, sourcePageEffective, getEditorInput());
 						else
 							addPage(existingPointer, pageCache.get(requiredId));
 					}
@@ -203,6 +216,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 		// Set the source page title
 		setPageText(sourcePage.getIndex(), "Source");
+		setPageText(sourcePageEffective.getIndex(), "Effective");
 
 	}
 
@@ -224,8 +238,11 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	private IHandlerActivation	resolveHandlerActivation;
 	private JobChangeAdapter	resolveJobListener;
 
-	/* (non-Javadoc)
-	 * @see bndtools.editor.IBndEditor#doSave(org.eclipse.core.runtime.IProgressMonitor)
+
+	/*
+	 * (non-Javadoc)
+	 * @see bndtools.editor.IBndEditor#doSave(org.eclipse.core.runtime.
+	 * IProgressMonitor)
 	 */
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -244,20 +261,22 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see bndtools.editor.IBndEditor#commitDirtyPages()
 	 */
 	@Override
 	public void commitDirtyPages() {
 		if (sourcePage.isActive() && sourcePage.isDirty()) {
 			sourcePage.commit(true);
+			sourcePageEffective.setInput(this.model);
 		} else {
 			commitPages(true);
 			sourcePage.refresh();
 		}
 	}
 
-	private void reallySave(IProgressMonitor monitor) {
+	public void reallySave(IProgressMonitor monitor) {
 		// Actually save, via the source editor
 		try {
 			boolean saveLocked = this.saving.compareAndSet(false, true);
@@ -266,7 +285,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 				return;
 			}
 			sourcePage.doSave(monitor);
-			loadEditModel();
+			loadEditModel(inputFile, model);
 			updateIncludedPages();
 		} catch (Exception e) {
 			ErrorDialog.openError(getEditorSite().getShell(), "Error", null,
@@ -386,6 +405,11 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 									return button;
 								}
 							};
+
+							// non-modal means, that we can open multi resolve
+							// result windows and e.g. compare results
+							dialog.setModal(false);
+
 							if (dialog.open() == Window.OK && !dirtyBeforeResolve) {
 								// save changes immediately if there were no
 								// unsaved changes before the resolve
@@ -532,14 +556,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					.addResourceChangeListener(this);
 				inputFile = inputResource.getLocation()
 					.toFile();
-				model.setBndResourceName(inputResource.getName());
 			} else {
 				if (input instanceof FileStoreEditorInput) {
 					URI uri = ((FileStoreEditorInput) input).getURI();
 					if (uri != null && uri.getScheme()
 						.equalsIgnoreCase("file")) {
 						this.inputFile = new File(uri);
-						model.setBndResourceName(this.inputFile.getName());
 					}
 				}
 			}
@@ -549,27 +571,20 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					"The bnd editor can only edit files inside the workspace"));
 			}
 
-			// Initialize pages and title
+			model.setBndResourceName(this.inputFile.getName());
+
 			initPages(site, input);
 			setSourcePage(sourcePage);
 			setPartNameForInput(input);
 
 			IDocumentProvider docProvider = sourcePage.getDocumentProvider();
-			// #1625: Ensure the IDocumentProvider is not null.
 			if (docProvider != null) {
 				docProvider.addElementStateListener(new ElementStateListener());
-				if (!Central.hasWorkspaceDirectory()) { // default ws will be
-														// created we can load
-														// immediately
-					modelReady = loadEditModel();
-				} else { // a real ws will be resolved so we need to load async
-					modelReady = Central.onAnyWorkspace(workspace -> loadEditModel());
-				}
+				modelReady = loadEditModel(inputFile, model);
 			} else {
 				modelReady = Central.promiseFactory()
-					.failed(new Exception("Model unavailable"));
+					.failed(new Exception("Model unavailable because there is no doc provider"));
 			}
-
 			setupActions();
 
 		} catch (Exception e1) {
@@ -611,57 +626,73 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 	}
 
-	private Promise<Workspace> loadEditModel() throws Exception {
-		// Create the bnd edit model and workspace
-		Project bndProject;
-		if (inputResource != null) {
-			bndProject = LaunchUtils.createRun(inputResource, RunMode.EDIT);
-		} else {
-			bndProject = Bndrun.createBndrun(null, this.inputFile);
-		}
-		model.setWorkspace(bndProject.getWorkspace());
-		model.setProject(bndProject);
-
-		// Load content into the edit model
+	private Promise<Workspace> loadEditModel(File inputFile, BndEditModel model) throws Exception {
 		Deferred<Workspace> completed = Central.promiseFactory()
 			.deferred();
-		Display.getDefault()
-			.asyncExec(() -> {
-				final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
-				// #1625: Ensure the IDocumentProvider is not null.
-				if (docProvider != null) {
+
+		Central.onAnyWorkspace(workspace -> {
+
+			Processor p = workspace.readLocked(() -> workspace.findProcessor(inputFile)
+				.orElseGet(() -> {
 					try {
-						IDocument document = docProvider.getDocument(getEditorInput());
-						model.loadFrom(new IDocumentWrapper(document));
-						model.setBndResource(inputFile);
-						model.setDirty(false);
-						completed.resolve(model.getWorkspace());
-					} catch (IOException e) {
-						logger.logError("Unable to load edit model", e);
-						completed.fail(e);
+						Run run;
+						if (inputResource == null)
+							run = Bndrun.createBndrun(workspace, inputFile);
+						else
+							run = LaunchUtils.createRun(inputResource, RunMode.EDIT);
+						return run;
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
 					}
+				}));
+			model.setWorkspace(workspace);
+			model.setOwner(p);
 
-					for (int i = 0; i < getPageCount(); i++) {
-						Control control = getControl(i);
-
-						if (control instanceof ScrolledForm) {
-							ScrolledForm form = (ScrolledForm) control;
-
-							if (SYNC_MESSAGE.equals(form.getMessage())) {
-								form.setMessage(null, IMessageProvider.NONE);
+			Display.getDefault()
+				.asyncExec(() -> {
+					try {
+						final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
+						if (docProvider != null) {
+							try {
+								IDocument document = docProvider.getDocument(getEditorInput());
+								model.loadFrom(new IDocumentWrapper(document));
+								model.setDirty(false);
+							} catch (IOException e) {
+								logger.logError("Unable to load edit model", e);
+								completed.fail(e);
 							}
+
+							for (int i = 0; i < getPageCount(); i++) {
+								Control control = getControl(i);
+
+								if (control instanceof ScrolledForm) {
+									ScrolledForm form = (ScrolledForm) control;
+
+									if (SYNC_MESSAGE.equals(form.getMessage())) {
+										form.setMessage(null, IMessageProvider.NONE);
+									}
+								}
+							}
+						} else {
+							completed.fail(new Exception("Model unavailable"));
+						}
+					} finally {
+						if (!completed.getPromise()
+							.isDone()) {
+							completed.resolve(workspace);
 						}
 					}
-				} else {
-					completed.fail(new Exception("Model unavailable"));
-				}
-			});
+				});
+
+		});
+
 		return completed.getPromise();
 	}
 
 	private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {
 		// Initialise pages
 		sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+		sourcePageEffective = new BndSourceEffectivePage(this, SOURCE_PAGE_EFFECTIVE, "Effective");
 		pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
 		pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
 		pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
@@ -685,6 +716,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 			}
 		sourcePage.init(site, input);
 		sourcePage.initialize(this);
+		sourcePageEffective.init(site, input);
+		sourcePageEffective.initialize(this);
 	}
 
 	private void setPartNameForInput(IEditorInput input) {
@@ -721,7 +754,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 				.removeResourceChangeListener(this);
 		}
 
-		LaunchUtils.endRun((Run) model.getProject());
+		if (model.getOwner() instanceof Run run) {
+			LaunchUtils.endRun(run);
+		}
 
 		if (resolveHandlerActivation != null) {
 			resolveHandlerActivation.getHandlerService()
@@ -767,6 +802,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					SWTConcurrencyUtil.execForDisplay(display, true, () -> {
 						setPartNameForInput(newInput);
 						sourcePage.setInput(newInput);
+						sourcePageEffective.setInput(this.model);
 					});
 				}
 			} else {
@@ -873,7 +909,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see bndtools.editor.IBndEditor#getModel()
 	 */
 	@Override

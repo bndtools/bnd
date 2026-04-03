@@ -1,9 +1,9 @@
 ---
-order: 305
 title: Startlevels
-layout: default
+layout: bnd
+parent: Dependency and Launching
+nav_order: 3
 ---
-
 One of the primary authors of bnd has always objected to startlevels. His motivation was twofold:
 
 * A dynamic OSGi system should be able to startup in any order. Startlevels are often abused to hide bundles
@@ -97,8 +97,8 @@ A quick way to disable the start level handling by the launch is to set the prop
 start level, `launch.startlevel.default` to 0. This will disable the complete start level handling regardless
 of other settings.
 
-[1]: https://osgi.org/specification/osgi.cmpn/7.0.0/service.configurator.html 
+[1]: https://osgi.org/specification/osgi.cmpn/8.0.0/service.configurator.html 
 [-launcher]: /instructions/launcher.html
 [-runbundles]: /instructions/runbundles.html
 [-runstartlevel]: /instructions/runstartlevel.html
-[launcher]: /chapters/launching.html
+[launcher]: /chapters/300-launching.html

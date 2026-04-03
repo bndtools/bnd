@@ -1,9 +1,29 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -buildpath PATH
-summary: Provides the class path for building the jar, the entries are references to the repositories.
+class: Project
+summary: |
+   Provides the class path for building the jar, the entries are references to the repositories.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-buildpath=osgi;version=4.1`
+
+- Values: `${repo;bsns}`
+
+- Pattern: `[-\w]+(:?\.[-\w]+)*`
+
+### Directives 
+
+- `version` Specifies the range in the repository, project or file.
+  - Example: `version=project`
+
+  - Values: `project,type`
+
+  - Pattern: `project|type|((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+<!-- Manual content from: ext/buildpath.md --><br /><br />
 
 The `-buildpath` instruction is the main mechanism to add build-time dependencies to a project. A dependency is either another project in the workspace, or a bundle in a repository. The `-buildpath` is only used during compile and build time; it is never used to run projects.  Because `-buildpath` dependencies are only used compile time it's recommended to add bundles containing only APIs; you don't need bundles containing implementations.
 

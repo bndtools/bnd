@@ -13,6 +13,6 @@ Test-Cases: test.simple.Test,test.simple.FailingTest
 -runbundles: \
 	osgi.enroute.junit.wrapper
 
--runproperties:
+-runproperties: testprojectname=${project.name}
 
 -runtrace: true

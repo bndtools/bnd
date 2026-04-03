@@ -1,9 +1,20 @@
 ---
-layout: default
+layout: bnd
+title: -conditionalpackage PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *
 class: Project
-title: -conditionalpackage PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *  
-summary: Recursively add packages from the class path when referred and when they match one of the package specifications. 
+summary: |
+   Recursively add packages from the class path when referred and when they match one of the package specifications.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-conditionalpackage: com.*`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/conditionalpackage.md --><br /><br />
 The `-conditionalpackage` instruction implements a feature that is either looked up in awe (when understood) or regarded with disgust. Though one has to be very careful with its use, it is a feature that can significantly reduce runtime dependencies. So what does it do? Well, it copies the content of packages from the current class path into your bundle that:
 
 * Are currently referenced inside the bundle, and
@@ -16,7 +27,7 @@ The purpose therefore of the `-conditionalpackage` instruction is to pick cohesi
 
 The packages that are copied cannot be exported, they must be private. This makes it possible to rely on the exact version that the bundle is compiled against. It also ensures that no information is leaked between bundles when statics are used. 
 
-The given `PACKAGE-SPEC` follows the format outlined in [Selector](../chapters/820-instructions.html#selector).
+The given `PACKAGE-SPEC` follows the format outlined in [Selector](/instructions/#selector).
 
 For example:
 

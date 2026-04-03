@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.bnd.service.tags.Tags.parse;
 
 import java.io.Closeable;
 import java.io.File;
@@ -11,14 +12,17 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.osgi.resource.Capability;
@@ -50,10 +56,12 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.PreprocessResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.repository.maven.provider.ReleaseDTO.ExtraDTO;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.JavadocPackages;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.ReleaseType;
 import aQute.bnd.service.Actionable;
@@ -62,6 +70,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
@@ -92,29 +101,38 @@ import aQute.service.reporter.Reporter;
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 
-	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
-	private static final int	DEFAULT_POLL_TIME	= 5;
+	public static final String					SONATYPE_RELEASE_DIR			= "cnf/cache/sonatype-release";
+	public static final String					SONATYPE_SNAPSHOT_DIR		= "cnf/cache/sonatype-snapshot";
+	public static final String					SONATYPE_DEPLOYMENTID_FILE		= "deploymendID.txt";
 
-	private static final String	NONE				= "NONE";
-	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
-	private Configuration		configuration;
-	private Registry			registry;
-	private File				localRepo;
-	private Reporter			reporter;
-	IMavenRepo					storage;
-	private boolean				inited;
-	IndexFile					index;
-	private ScheduledFuture<?>	indexPoller;
-	private RepoActions			actions				= new RepoActions(this);
-	private String				name;
-	private HttpClient			client;
-	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
-	private File				base				= IO.work;
-	private String				status				= null;
-	private boolean				remote;
-	private final AtomicReference<Throwable>	open				= new AtomicReference<>();
-	Optional<Workspace>			workspace;
-	private AtomicBoolean		polling				= new AtomicBoolean(false);
+	final static Pattern						PREPROCESS_P					= Pattern
+		.compile("\\{\\s*(?<core>[^}]+)\\s*\\}");
+
+	private final static Logger					logger							= LoggerFactory
+		.getLogger(MavenBndRepository.class);
+	private static final int					DEFAULT_POLL_TIME				= 5;
+
+	private static final String					NONE							= "NONE";
+	private static final String					MAVEN_REPO_LOCAL				= System.getProperty("maven.repo.local",
+		"~/.m2/repository");
+	private Configuration						configuration;
+	private Registry							registry;
+	private File								localRepo;
+	Reporter									reporter;
+	IMavenRepo									storage;
+	private boolean								inited;
+	IndexFile									index;
+	private ScheduledFuture<?>					indexPoller;
+	private RepoActions							actions							= new RepoActions(this);
+	private String								name;
+	private HttpClient							client;
+	private ReleasePluginImpl					releasePlugin					= new ReleasePluginImpl(this, null);
+	private File								base							= IO.work;
+	private String								status							= null;
+	private boolean								remote;
+	private final AtomicReference<Throwable>	open							= new AtomicReference<>();
+	Optional<Workspace>							workspace;
+	private AtomicBoolean						polling							= new AtomicBoolean(false);
 
 	/**
 	 * Put result
@@ -205,6 +223,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						.isEmpty()) {
 						releaser.setPassphrase(instructions.passphrase);
 					}
+					if (instructions.keyname != null && !instructions.keyname.trim()
+						.isEmpty()) {
+						releaser.setKeyname(instructions.keyname);
+					}
 					if (instructions.snapshot >= 0)
 						releaser.setBuild(instructions.snapshot, null);
 
@@ -241,9 +263,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							}
 						}
 					}
-				}
-				if (configuration.noupdateOnRelease() == false) {
-					index.add(binaryArchive);
+
+					doExtra(options, instructions, pom, releaser);
+					if (configuration.noupdateOnRelease() == false) {
+						index.add(binaryArchive);
+					}
 				}
 			}
 			return result;
@@ -255,6 +279,34 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			IO.delete(pomFile);
 		}
 
+	}
+
+	private void doExtra(PutOptions options, ReleaseDTO instructions, IPom pom, Release releaser)
+		throws Exception, IOException {
+		for (ExtraDTO extra : instructions.extra) {
+			String path = extra.path;
+			String parts[] = Strings.extension(path);
+			String ext = parts == null ? ".unknown" : parts[1];
+			String clazz = extra.clazz;
+			File file = new File(path);
+			if (!file.isFile())
+				reporter.error("-release-maven archive contains a path to a file that does not exist: %s", file);
+			else {
+				try (Resource r = new FileResource(file)) {
+					Resource what;
+					if (extra.preprocess) {
+						what = new PreprocessResource(options.context, r);
+					} else
+						what = r;
+
+					Archive archive = pom.getRevision()
+						.archive(ext, clazz);
+					try (InputStream in = what.openInputStream()) {
+						releaser.add(archive, in);
+					}
+				}
+			}
+		}
 	}
 
 	private Resource getPom(PutOptions options, ReleaseDTO instructions, Jar binary) throws Exception, IOException {
@@ -438,13 +490,51 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Attrs sign = p.remove("sign");
 		if (sign != null) {
+			release.keyname = sign.get("keyname");
 			release.passphrase = sign.get("passphrase");
 		}
 
-		if (!p.isEmpty()) {
-			reporter.warning("The -maven-release instruction contains unrecognized options: %s", p);
-		}
+		int clazz = 0;
 
+		for (Iterator<Entry<String, Attrs>> it = p.entrySet()
+			.iterator(); it.hasNext();) {
+
+			Entry<String, Attrs> e = it.next();
+			String key = Processor.removeDuplicateMarker(e.getKey());
+			switch (key) {
+				case Constants.MAVEN_RELEASE_ARCHIVE -> {
+					ExtraDTO extra = new ExtraDTO();
+					extra.clazz = e.getValue()
+						.getOrDefault(Constants.MAVEN_RELEASE_CLASSIFIER, "classifier-" + clazz++);
+					String path = e.getValue()
+						.get(Constants.MAVEN_RELEASE_PATH);
+
+					boolean preprocess = false;
+
+					if (path != null) {
+						Matcher matcher = PREPROCESS_P.matcher(path);
+						if (matcher.matches()) {
+							preprocess = true;
+							path = matcher.group("core");
+						}
+						path = context.getFile(path)
+							.getAbsolutePath();
+					} else {
+						reporter.warning(
+							"The -maven-release instruction has an 'archive' without the path attribute: %s", e);
+						continue;
+					}
+					extra.path = path;
+					extra.preprocess = preprocess;
+					extra.options.putAll(e.getValue());
+					release.extra.add(extra);
+				}
+
+				default -> {
+					reporter.warning("Unknown option in the -maven-release instruction: %s", e);
+				}
+			}
+		}
 		return release;
 	}
 
@@ -502,9 +592,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 
 		File f = storage.toLocalFile(archive);
-		File withSources = new File(f.getParentFile(), "+" + f.getName());
-		if (withSources.isFile() && withSources.lastModified() > f.lastModified())
-			f = withSources;
 
 		if (listeners.length == 0) {
 			return f;
@@ -550,9 +637,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	synchronized boolean init() {
 
-		if (open.get() != null)
-			throw new IllegalStateException("Already closed " + this + "\n" + Exceptions.toString(open.get()),
-				open.get());
+		if (open.get() != null) {
+			// closing can happen e.g. on Reload Workspace
+			// but init() is called by polling and other threads
+			logger.warn("Already closed " + this + "\n" + Exceptions.toString(open.get()));
+			return false;
+
+		}
 
 		if (status != null)
 			return false;
@@ -563,10 +654,60 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		inited = true;
 
 		try {
-			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
-				localRepo, client);
-			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
-				localRepo, client);
+			List<MavenBackingRepository> release = new ArrayList<MavenBackingRepository>();
+			MavenBackingRepository staging = null;
+			List<MavenBackingRepository> snapshot = new ArrayList<MavenBackingRepository>();
+
+			String releaseUrl = configuration.releaseUrl();
+			SonatypeMode sonatypeMode = configuration.sonatypeMode(SonatypeMode.NONE.name());
+
+			String stagingUrl = configuration.stagingUrl();
+			String snapshotUrl = configuration.snapshotUrl();
+
+			String sonatypeReleaseUrl = null;
+			String sonatypeSnapshotUrl = null;
+			switch (sonatypeMode) {
+				case MANUAL, AUTOPUBLISH -> {
+					reporter.warning("Deprecated Sonatype Publishing. This feature will be removed.");
+					logger.info("deployment via Sonatype Central Portal configured in {} mode", sonatypeMode);
+					File releaseDir = registry.getPlugin(Workspace.class)
+						.getFile(SONATYPE_RELEASE_DIR);
+					File snapshotDir = registry.getPlugin(Workspace.class)
+						.getFile(SONATYPE_SNAPSHOT_DIR);
+					if (stagingUrl == null) {
+						logger.debug("deployment via relase url to Sonatype Portal configured");
+						List<MavenBackingRepository> releaseLocal = MavenBackingRepository.create(releaseDir.toURI()
+							.toString(), reporter, localRepo, client);
+						release.addAll(releaseLocal);
+						sonatypeReleaseUrl = releaseUrl;
+					} else {
+						logger.debug("deployment via staging url to Sonatype Portal configured");
+						release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, client);
+						staging = MavenBackingRepository.getBackingRepository(releaseDir.toURI()
+							.toString(), reporter, localRepo, client);
+						sonatypeReleaseUrl = stagingUrl;
+					}
+					if (snapshotUrl != null) {
+						logger.debug("deployment via snapshot url to Sonatype Portal configured");
+						List<MavenBackingRepository> snapshotLocal = MavenBackingRepository.create(snapshotDir.toURI()
+							.toString(), reporter, localRepo, client);
+						snapshot.addAll(snapshotLocal);
+						sonatypeSnapshotUrl = snapshotUrl;
+					}
+				}
+				case NONE -> {
+					if (stagingUrl == null) {
+						release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, client);
+					} else {
+						release = MavenBackingRepository.create(releaseUrl, reporter, localRepo, client);
+						staging = MavenBackingRepository.getBackingRepository(stagingUrl, reporter, localRepo, client);
+					}
+					if (snapshotUrl != null) {
+						snapshot = MavenBackingRepository.create(snapshotUrl, reporter, localRepo, client);
+					}
+				}
+			}
+
 
 			for (MavenBackingRepository mbr : release) {
 				if (mbr.isRemote()) {
@@ -582,8 +723,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					}
 				}
 
-			storage = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
+			storage = new MavenRepository(localRepo, name, release, staging, snapshot, client.promiseFactory()
 				.executor(), reporter);
+			MavenRepository storageMvn = (MavenRepository) storage;
+			storageMvn.setSonatypeMode(sonatypeMode);
+			if (sonatypeReleaseUrl != null) {
+				storageMvn.setSonatypePublisherUrl(sonatypeReleaseUrl);
+				storageMvn.setSonatypePublishSnapshotUrl(sonatypeSnapshotUrl);
+			}
 
 			File indexFile = getIndexFile();
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
@@ -686,6 +833,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		configuration = Converter.cnv(Configuration.class, map);
 		name = configuration.name("Maven");
 		localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
+		super.setTags(parse(configuration.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -703,8 +851,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	@Override
-	public void close() throws IOException {
+	public synchronized void close() throws IOException {
 		if (open.getAndSet(new Exception(this + " closed")) == null) {
+			polling.set(false);
 			if (indexPoller != null)
 				indexPoller.cancel(true);
 			IO.close(storage);
@@ -740,12 +889,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		switch (target.length) {
 			case 0 :
-				return null;
+				return actions.getRepoActions(registry.getPlugin(Clipboard.class));
 			case 1 :
 				return actions.getProgramActions((String) target[0]);
 			case 2 :
 				Archive archive = getArchive(target);
-				return actions.getRevisionActions(archive);
+				return actions.getRevisionActions(archive, registry.getPlugin(Clipboard.class));
 			default :
 		}
 		return null;
@@ -763,10 +912,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						f.format("STATUS = %s", status);
 					else {
 						f.format("MavenBndRepository           : %s\n", getName());
+						f.format("Tags                         : %s\n", getTags());
 						f.format("Revisions                    : %s\n", index.getArchives()
 							.size());
 						f.format("Storage                      : %s\n", localRepo);
 						f.format("Index                        : %s\n", index.indexFile);
+						f.format("Format                        : %s\n", index.isPom ? "pom.xml" : "text");
 						f.format("Release repos                : \n    %s\n", storage.getReleaseRepositories()
 							.stream()
 							.filter(Objects::nonNull)
@@ -987,4 +1138,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	public boolean isRemote() {
 		return remote;
 	}
+
+	public HttpClient getClient() {
+		return client;
+	}
+
 }

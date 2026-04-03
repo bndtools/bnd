@@ -1,17 +1,18 @@
 ---
-layout: default
-title: create 
-summary: Create a JAR                                 
+layout: bnd
+title: action
+summary: |
+   Execute an action on a repo, or if no name is give, list the actions
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   action [options]  ...
 
-{{page.summary}}
 
-## Synopsis
+#### Options: 
+- `[ -f --filter <glob> ]` 
+- `[ -p --project <string> ]` Identify another project
+- `[ -t --tooltip ]` 
 
-{{page.title}}
-
-## Options
-
-## Examples

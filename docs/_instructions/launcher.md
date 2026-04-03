@@ -1,9 +1,18 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -launcher
-summary: Options for the runtime launcher
+class: Project
+summary: |
+   Options for the runtime launcher
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-launcher manage = all`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/launcher.md --><br /><br />
 
 This instruction has as purpose to collect options and special settings for the launcher. The
 following options are architected:
@@ -28,4 +37,3 @@ This instruction was primarily designed to handle start levels. Originally the l
 _narrowly_ managing only the bundles that were in its scope. However, this was inadvertently
 changed and not discovered for several reasons. The option to narrowly manage was therefore
 introduced with the default being the latest behavior.
-

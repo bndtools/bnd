@@ -28,6 +28,11 @@
 	aQute.launcher.plugin
 -includeresource: \
 	${p}.pre.jar=pre.jar
+	
+Import-Package: \
+		!aQute.launcher.agent,\
+		!aQute.launcher.pre,\
+		*;version="${range;[==,+)}"
 
 -builderignore: testresources
 

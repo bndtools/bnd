@@ -1,6 +1,11 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+# Deprecated for removal in 8.0.0
+Bundle-Description: Deprecated for removal in 8.0.0: \
+	The junit project is a plugin that extends the ProjectTester.java class \
+	to run OSGi tests inside a framework.
+
 -maven-scope: provided
 
 -buildpath: \

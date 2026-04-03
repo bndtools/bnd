@@ -1,11 +1,22 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -buildrepo  repo ( ',' repo ) *
-summary:  After building a JAR, release the JAR to the given repositories.  
+class: Project
+summary: |
+   After building a JAR, release the JAR to the given repositories.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-After bnd has build a project it creates 0 or more JARs. If the `-buildrepo` is set, the JARs are `put` into the given repositories. The syntax is as follows:
+- Example: `-buildrepo=Local`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/buildrepo.md --><br /><br />
+
+The `-buildrepo` instruction allows you to automatically release JARs built by a project to one or more specified repositories. After building, if `-buildrepo` is set, the resulting JARs are placed into the named repositories, which must already exist in the workspace. You can also provide additional properties to control the release context for each repository.
+
+The syntax is as follows:
 
 	 -buildrepo   ::= repo ( ',' repo )*
 	 repo			::= NAME ( ';' NAME ('=' VALUE)? )*
@@ -24,3 +35,5 @@ For example:
 
 The install process is taking place in-line with the build process. It is therefore recommended to only use this for local (i.e. file system based) installs.
 
+<hr />
+TODO Needs review - AI Generated content

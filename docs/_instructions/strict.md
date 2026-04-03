@@ -1,16 +1,34 @@
 ---
-layout: default
-class: Processor
+layout: bnd
 title: -strict BOOLEAN
-summary:  If strict is true, then extra verification is done.
+class: Processor
+summary: |
+   If strict is true, then extra verification is done.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-	/**
-	 * If strict is true, then extra verification is done.
-	 */
-	boolean isStrict() {
-		if (strict == null)
-			strict = isTrue(getProperty(STRICT)); // Used in property access
-		return strict;
-	}
+- Example: `-strict=true`
 
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/strict.md --><br /><br />
+
+
+# -strict
+
+The `-strict` instruction enables extra verification during the build process. When set to `true`, bnd performs additional checks and validation to ensure the highest quality and correctness of the bundle.
+
+Example:
+
+```
+-strict: true
+```
+
+This is useful for enforcing stricter build requirements and catching potential issues early.
+
+
+<hr />
+TODO Needs review - AI Generated content

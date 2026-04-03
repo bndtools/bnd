@@ -1,8 +1,8 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
-p2.version: ${base.version}.${first;${def;-snapshot;DEV};REL}
-timestamp: ${tstamp}
+Bundle-SymbolicName: org.bndtools.p2
+-fixupmessages: The Bundle Symbolic org.bndtools.p2 starts with the project name org.bndtools.p2 but then continues while it is not a sub-bundle
 
 # Plugins to be included in the Bndtools p2 update repository
 -dependson: \
@@ -31,7 +31,7 @@ timestamp: ${tstamp}
     biz.aQute.resolve
 
 pluginnames: ${-dependson},\
-	org.slf4j.api,\
+	slf4j.api,\
 	org.osgi.service.coordinator,\
 	org.osgi.service.repository,\
 	org.osgi.util.function,\
@@ -39,9 +39,26 @@ pluginnames: ${-dependson},\
 
 plugins: ${map;repo;${template;pluginnames;${@};latest}}
 
--includeresource: ${target}/p2
 -resourceonly: true
-#
-# The p2 tasks must be run from the gradle build
-#
--fixupmessages.p2: "Input file does not exist*${target}/p2";is:=warning;replace:="The ${target}/p2 directory must be created with the gradle build."
+
+# P2 signing:
+# key (name of the key), 
+# passphrase (optional)
+# pubkey (read publickey file e.g. from ~./bnd/ folder)
+# below 
+# The idea is to first check global variables in ~./bnd/settings.json
+# and fallback to environment variables.  
+# For Github Actions you would set the environment variables.
+# fallback is "false" if none is set. 
+sign=${global;p2.sign;${env;P2_SIGN;false}}
+key=${global;p2.sign_key;${env;P2_SIGN_KEY}}
+passphrase=${global;p2.sign_passphrase;${env;P2_SIGN_PASSPHRASE}}
+pubkey="${global;p2.pub_key;${env;P2_PUB_KEY}}"
+ 
+-export features.bnd; \
+    type=p2; \
+    name=org.bndtools.p2.jar;\
+    sign=${sign};\
+    sign_key=${key};\
+    sign_passphrase=${passphrase};\
+    sign_pubkey=${pubkey};\

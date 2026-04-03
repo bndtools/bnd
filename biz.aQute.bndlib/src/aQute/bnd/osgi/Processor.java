@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -26,25 +26,32 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -57,6 +64,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -97,16 +105,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		log = reporterAdapter;
 	}
 
-	static final int									BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
+	static final int							BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
-	final static ThreadLocal<Processor>					current		= new ThreadLocal<>();
-
+	final static ThreadLocal<Processor>			current				= new ThreadLocal<>();
 	private static final Memoize<ExecutorGroup>	executors			= Memoize.supplier(ExecutorGroup::new);
-
 	private static final Memoize<Random>		random				= Memoize.supplier(Random::new);
-	public final static String					LIST_SPLITTER	= "\\s*,\\s*";
-	final List<String>							errors			= new ArrayList<>();
-	final List<String>							warnings		= new ArrayList<>();
+	public final static String					LIST_SPLITTER		= "\\s*,\\s*";
+
+	final ThreadLocal<Bracket>					bracket				= new ThreadLocal<>();
 	private final Set<Object>					basicPlugins		= Collections
 		.newSetFromMap(new ConcurrentHashMap<>());
 	private final Set<AutoCloseable>			toBeClosed			= Collections
@@ -115,26 +121,26 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private volatile CloseableMemoize<CL>		pluginLoader		= newPluginLoader();
 	private volatile Memoize<PluginsContainer>	pluginsContainer	= newPluginsContainer();
 
-	boolean										pedantic;
-	boolean										trace;
-	boolean										exceptions;
-	boolean										fileMustExist	= true;
+	final MessageReporter						reporter			= new MessageReporter(this);
+	boolean										fileMustExist		= true;
 
-	private File								base			= new File("").getAbsoluteFile();
-	private URI									baseURI			= base.toURI();
+	private File								base				= new File("").getAbsoluteFile();
+	private URI									baseURI				= base.toURI();
 
 	Properties									properties;
 	String										profile;
 	private Macro								replacer;
 	private long								lastModified;
 	private File								propertiesFile;
-	private boolean								fixup			= true;
+	private boolean								fixup				= true;
 	private Processor							parent;
-	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<File>	included			= new CopyOnWriteArrayList<>();
 
 	Collection<String>							filter;
 	Boolean										strict;
-	boolean										fixupMessages;
+	boolean										trace;
+	boolean										pedantic;
+	boolean										exceptions;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -171,7 +177,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public Processor(Processor parent) {
-		this(parent, parent.getProperties0(), true);
+		this(parent, parent.getRawProperties(), true);
 	}
 
 	public Processor(Properties props, boolean wrap) {
@@ -188,8 +194,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setParent(Processor parent) {
 		this.parent = parent;
-		Properties updated = (parent != null) ? new UTF8Properties(parent.getProperties0()) : new UTF8Properties();
-		updated.putAll(getProperties0());
+		Properties updated = (parent != null) ? new UTF8Properties(parent.getRawProperties()) : new UTF8Properties();
+		updated.putAll(getRawProperties());
 		properties = updated;
 		propertiesChanged();
 	}
@@ -205,92 +211,43 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void getInfo(Reporter processor, String prefix) {
-		if (prefix == null)
-			prefix = getBase() + " :";
-		if (isFailOk())
-			addAll(warnings, processor.getErrors(), prefix, processor);
-		else
-			addAll(errors, processor.getErrors(), prefix, processor);
-		addAll(warnings, processor.getWarnings(), prefix, processor);
-
-		processor.getErrors()
-			.clear();
-		processor.getWarnings()
-			.clear();
-
+		reporter.getInfo(processor, prefix);
 	}
 
 	public void getInfo(Reporter processor) {
 		getInfo(processor, "");
 	}
 
-	private void addAll(List<String> to, List<String> from, String prefix, Reporter reporter) {
-		try {
-			for (String message : from) {
-				String newMessage = prefix.isEmpty() ? message : prefix + message;
-				to.add(newMessage);
-
-				Location location = reporter.getLocation(message);
-				if (location != null) {
-					SetLocation newer = location(newMessage);
-					for (Field f : newer.getClass()
-						.getFields()) {
-						if (!"message".equals(f.getName())) {
-							f.set(newer, f.get(location));
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
-	}
-
 	/**
 	 * A processor can mark itself current for a thread.
 	 */
-	private Processor current() {
+	Processor current() {
 		Processor p = current.get();
 		if (p == null)
 			return this;
 		return p;
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public SetLocation warning(String string, Object... args) {
-		fixupMessages = false;
-		Processor p = current();
-		String s = formatArrays(string, args);
-		if (!p.warnings.contains(s))
-			p.warnings.add(s);
-		p.signal();
-		return p.location(s);
+		SetLocation warning = current().reporter.warning(string, args);
+		File propertiesFile = getPropertiesFile();
+		if (propertiesFile != null) {
+			warning.file(propertiesFile.getAbsolutePath());
+		}
+		return warning;
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public SetLocation error(String string, Object... args) {
-		fixupMessages = false;
-		Processor p = current();
-		try {
-
-			//
-			// Make Throwables into a string that shows their causes
-			//
-
-			for (int i = 0; i < args.length; i++) {
-				if (args[i] instanceof Throwable t) {
-					args[i] = Exceptions.causes(t);
-				}
-			}
-			if (p.isFailOk())
-				return p.warning(string, args);
-			String s = formatArrays(string, args);
-			if (!p.errors.contains(s))
-				p.errors.add(s);
-			return p.location(s);
-		} finally {
-			p.signal();
+		SetLocation error = current().reporter.error(string, args);
+		File propertiesFile = getPropertiesFile();
+		if (propertiesFile != null) {
+			error.file(propertiesFile.getAbsolutePath());
 		}
+		return error;
 	}
 
 	/**
@@ -330,15 +287,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (p.exceptions) {
 			printExceptionSummary(t, System.err);
 		}
-		// unroll InvocationTargetException
+
 		t = Exceptions.unrollCause(t, InvocationTargetException.class);
+
 		String s = formatArrays("Exception: %s", Exceptions.toString(t));
-		if (p.isFailOk()) {
-			p.warnings.add(s);
-		} else {
-			p.errors.add(s);
-		}
-		return error(format, args);
+		reporter.error(s);
+
+		return reporter.error(format, args);
 	}
 
 	public int printExceptionSummary(Throwable e, PrintStream out) {
@@ -369,14 +324,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public List<String> getWarnings() {
-		fixupMessages();
-		return warnings;
+		return reporter.getWarnings();
 	}
 
 	@Override
 	public List<String> getErrors() {
-		fixupMessages();
-		return errors;
+		return reporter.getErrors();
 	}
 
 	/**
@@ -397,20 +350,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.add(closeable);
 	}
 
-
 	public void removeClose(AutoCloseable closeable) {
 		assert closeable != null;
 		toBeClosed.remove(closeable);
-	}
-
-	@Override
-	public boolean isPedantic() {
-		Processor p = current();
-		return p.pedantic;
-	}
-
-	public void setPedantic(boolean pedantic) {
-		this.pedantic = pedantic;
 	}
 
 	public void use(Processor reporter) {
@@ -562,10 +504,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void clear() {
-		errors.clear();
-		warnings.clear();
-		locations.clear();
-		fixupMessages = false;
+		reporter.clear();
 	}
 
 	public Logger getLogger() {
@@ -577,7 +516,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public void trace(String msg, Object... parms) {
-
 		Processor p = current();
 		if (p.trace) {
 			String s = formatArrays(msg, parms);
@@ -631,7 +569,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		IO.close(outgoingPluginLoader);
 	}
 
-	public String _basedir(@SuppressWarnings("unused") String args[]) {
+	public String _basedir(@SuppressWarnings("unused")
+	String args[]) {
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
@@ -698,24 +637,21 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			fixup = false;
 			begin();
 		}
-		fixupMessages = false;
-		return getProperties0();
+		return getRawProperties();
 	}
 
-	private Properties getProperties0() {
+	/**
+	 * This is the primary place where we get the local Properties. No code in
+	 * this class should use this variable directory.
+	 *
+	 * @return the local properties
+	 */
+	protected Properties getRawProperties() {
 		return properties;
 	}
 
 	public String getProperty(String key) {
 		return getProperty(key, null);
-	}
-
-	public String getUnexpandedProperty(String key) {
-		if (filter != null && filter.contains(key)) {
-			Object raw = getProperties().get(key);
-			return (raw instanceof String string) ? string : null;
-		}
-		return getProperties().getProperty(key);
 	}
 
 	public void mergeProperties(File file, boolean overwrite) {
@@ -746,11 +682,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setProperties(getBase(), properties);
 	}
 
+	public void setProperties(InputStream properties) throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		p.load(properties);
+		setProperties(getBase(), p);
+	}
+
 	public void setProperties(File base, Properties properties) {
 		doIncludes(base, properties);
-		getProperties0().putAll(properties);
+		getRawProperties().putAll(properties);
 		mergeProperties(Constants.INIT); // execute macros in -init
-		getProperties0().remove(Constants.INIT);
+		getRawProperties().remove(Constants.INIT);
 		propertiesChanged();
 	}
 
@@ -871,28 +813,131 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return;
 		}
 		updateModified(file.lastModified(), file.toString());
-		Properties sub;
-		if (Strings.endsWithIgnoreCase(file.getName(), ".mf")) {
-			try (InputStream in = IO.stream(file)) {
-				sub = getManifestAsProperties(in);
-			}
-		} else
-			sub = loadProperties(file);
+		Properties sub = magicBnd(file);
 
 		doIncludes(file.getParentFile(), sub);
+
+		BiFunction<String, String, SetterResult> set = getSetterWithProvenance(file, target, sub);
+
 		// take care regarding overwriting properties
 		for (Map.Entry<?, ?> entry : sub.entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
 
 			if (overwrite || !target.containsKey(key)) {
-				target.setProperty(key, value);
+				SetterResult res = set.apply(key, value);
+				if (overwrite && res.provenance() != null && res.prevValue() != null && !res.prevValue()
+					.equals(value)) {
+					// log warning if overwrite=true and value different than
+					// current value
+					warnOverwriteByInclude(key, res.provenance());
+				}
 			} else if (extensionName != null) {
 				String extensionKey = key + "." + extensionName;
 				if (!target.containsKey(extensionKey))
-					target.setProperty(extensionKey, value);
+					set.apply(extensionKey, value);
 			}
 		}
+	}
+
+	private record SetterResult(Object prevValue, String provenance) {}
+
+	private BiFunction<String, String, SetterResult> getSetterWithProvenance(File file, Properties target,
+		Properties sub) {
+		int n = target instanceof UTF8Properties ? 1 : 0;
+		n += sub instanceof UTF8Properties ? 2 : 0;
+		return switch (n) {
+			case 1 -> {
+				UTF8Properties t = (UTF8Properties) target;
+				yield (k, v) -> {
+					String provenance = file.getAbsolutePath();
+					return new SetterResult(t.setProperty(k, v, provenance), provenance);
+
+				};
+			}
+			case 3 -> {
+				UTF8Properties t = (UTF8Properties) target;
+				UTF8Properties s = (UTF8Properties) sub;
+				yield (k, v) -> {
+					String provenance = s.getProvenance(k)
+					.orElse(file.getAbsolutePath());
+					return new SetterResult(t.setProperty(k, v, provenance), provenance);
+				};
+			}
+			default -> (k, v) -> {
+				return new SetterResult(target.setProperty(k, v), null);
+			};
+		};
+	}
+
+	/**
+	 * Logs a warning for rather "counter-intuitive" overwrite-behavior of the
+	 * -include instruction, which can overwrite a value although the -include
+	 * instruction is before the instruction in the current file.
+	 * <p>
+	 * e.g. <code>
+	 *  <br />
+	 *  -include: a.bnd<br />
+	 *  SomeHeader: willBeOverridden
+	 *  </code>
+	 * </p>
+	 * This is due to how -include works, but it was leading to confusion and
+	 * hard to trace bugs, because users did not expect that behavior. Thus we
+	 * now warn when this happens.
+	 *
+	 * @param key they overridden key
+	 * @param provenance from where it was overridden (must not be
+	 *            <code>null</code>)
+	 */
+	private void warnOverwriteByInclude(String key, String provenance) {
+		String normalizeProvenance = normalizeProvenance(provenance);
+		SetLocation loc = warning(
+			"[Include Override]: `%s` declaration is overridden by -include: %s and thus ignored (consider using -include: ~%s).",
+			key,
+			normalizeProvenance,
+			normalizeProvenance);
+		try {
+			// try putting the warning on the "first loser" key
+			// whose value gets overridden by the include
+			FileLine header = getHeader(key);
+			header.set(loc);
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
+	private String normalizeProvenance(String provenance) {
+		String path = provenance;
+		if (path == null || path.isBlank()) {
+			return "";
+		}
+
+		File file = new File(path);
+		if (!file.isFile())
+			return path;
+
+		return normalize(file);
+	}
+
+	/**
+	 * This method allows a sub Processor to override recognized included files.
+	 * In general we treat files as bnd files but a sub processor can override
+	 * this method to provide additional types. It is a rquirement that the file
+	 * must be able to be mapped to a Properties. These properties will be added
+	 * to this processor's properties. The default includes bnd, bndrun and
+	 * manifest files.
+	 *
+	 * @param file the file with the information
+	 * @return the Properties to include
+	 */
+
+	protected Properties magicBnd(File file) throws IOException {
+		if (Strings.endsWithIgnoreCase(file.getName(), ".mf")) {
+			try (InputStream in = IO.stream(file)) {
+				return getManifestAsProperties(in, file.getAbsolutePath());
+			}
+		} else
+			return loadProperties(file);
 	}
 
 	public void unsetProperty(String string) {
@@ -935,7 +980,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void forceRefresh() {
 		included.clear();
 		Processor p = getParent();
-		properties = (p != null) ? new UTF8Properties(p.getProperties0()) : new UTF8Properties();
+		properties = (p != null) ? new UTF8Properties(p.getRawProperties()) : new UTF8Properties();
 
 		setProperties(propertiesFile, base);
 	}
@@ -982,6 +1027,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
+	public void setProperties(Reader reader) throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		p.load(reader);
+		setProperties(p);
+	}
+
 	protected void begin() {
 		if (isTrue(getProperty(PEDANTIC)))
 			setPedantic(true);
@@ -1015,18 +1066,28 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Get a property without preprocessing it with a proper default
+	 * Get a property without preprocessing it with a proper default. This is
+	 * the ONLY place where we access the properties.
 	 *
 	 * @param key
 	 * @param deflt
 	 */
 
+	@Deprecated
 	public String getUnprocessedProperty(String key, String deflt) {
+		String v = getUnexpandedProperty(key);
+		if (v == null)
+			return deflt;
+		else
+			return v;
+	}
+
+	public String getUnexpandedProperty(String key) {
 		if (filter != null && filter.contains(key)) {
 			Object raw = getProperties().get(key);
-			return (raw instanceof String string) ? string : deflt;
+			return (raw instanceof String string) ? string : null;
 		}
-		return getProperties().getProperty(key, deflt);
+		return getProperties().getProperty(key, null);
 	}
 
 	/**
@@ -1052,6 +1113,123 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		return getWildcardProperty(deflt, separator, inherit, ins);
+	}
+
+	/**
+	 * A Property Key is the pair of a Processor and a key it defines. It also
+	 * defines if this is the firsts definition viewed from this Processor. The
+	 * floor indicates where the property is defined relative to its parents.
+	 * Zero is in the current processor, 1, is its parents, and so on.
+	 */
+	public record PropertyKey(Processor processor, String key, int floor)
+		implements Comparable<PropertyKey> {
+
+		/**
+		 * Check if this PropertyKey belongs to the given processor
+		 *
+		 * @param p the processor to check
+		 * @return true if our processor is the same as p
+		 */
+		public boolean isLocalTo(Processor p) {
+			return processor == p;
+		}
+
+		/**
+		 * Get the value of the property key
+		 *
+		 * @return a processed value
+		 */
+		public String getValue() {
+			return processor.getProperty(key);
+		}
+
+		/**
+		 * Return the provenance of this key. This is generally the absolute
+		 * path to the source file but can be a logical name as well.
+		 */
+		public Optional<String> getProvenance() {
+			Properties properties = processor.getProperties();
+			if (properties != null && properties instanceof UTF8Properties p) {
+				return p.getProvenance(key);
+			} else
+				return Optional.empty();
+		}
+		/**
+		 * Get the raw value of the property key
+		 *
+		 * @return a raw value
+		 */
+		public String getRawValue() {
+			return processor.getProperties()
+				.getProperty(key);
+		}
+
+		@Override
+		public int compareTo(PropertyKey o) {
+			int n = key.compareTo(o.key);
+			if (n != 0)
+				return n;
+			return Integer.compare(floor, o.floor);
+		}
+
+		/**
+		 * Find visible property keys. "Visible" in this context means that
+		 * among the {@code PropertyKey} objects with the same key, only the one
+		 * with the lowest floor number is included in the result.
+		 *
+		 * @param keys
+		 * @return only unique keys which are visible (lowest floor value)
+		 */
+		public static List<PropertyKey> findVisible(Collection<PropertyKey> keys) {
+			List<PropertyKey> l = new ArrayList<>(keys);
+			Collections.sort(l);
+			String rover = null;
+			Iterator<PropertyKey> it = l.iterator();
+			while (it.hasNext()) {
+				PropertyKey candidate = it.next();
+				if (!candidate.key.equals(rover)) {
+					rover = candidate.key;
+				} else
+					it.remove();
+			}
+			return l;
+		}
+	}
+
+	/**
+	 * Return a list of sorted PropertyKey that match the predicate and includes
+	 * the inheritance chain. The intention is to capture the processor that
+	 * defines a key.
+	 *
+	 * @param predicate the predicate to filter the key
+	 * @return new modifiable sorted list of PropertyKey
+	 */
+	@SuppressWarnings("resource")
+	public List<PropertyKey> getPropertyKeys(Predicate<String> predicate) {
+		List<PropertyKey> keys = new ArrayList<>();
+		Processor rover = this;
+		int level = 0;
+		while (rover != null) {
+			Processor localRover = rover;
+			int localLevel = level;
+			rover.stream(false) // local only
+				.filter(predicate)
+				.map(k -> new PropertyKey(localRover, k, localLevel))
+				.forEach(keys::add);
+			rover = rover.getParent();
+			level++;
+		}
+		Collections.sort(keys);
+		return keys;
+
+	}
+
+	/**
+	 * Return the merge property keys
+	 */
+	public List<PropertyKey> getMergePropertyKeys(String stem) {
+		String prefix = stem + ".";
+		return getPropertyKeys(k -> k.equals(stem) || k.startsWith(prefix));
 	}
 
 	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
@@ -1161,8 +1339,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map<?, ? extends Map<?, ?>> exports,
-		@SuppressWarnings("unused") boolean checkMultipleVersions) throws IOException {
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports, @SuppressWarnings("unused")
+	boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Entry<?, ? extends Map<?, ?>> entry : exports.entrySet()) {
@@ -1211,7 +1389,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 		}
 	}
-
 
 	/**
 	 * @param sb
@@ -1267,7 +1444,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				result.removeAll(filter);
 			}
 		}
-		for (Object o : getProperties0().keySet()) {
+		for (Object o : getRawProperties().keySet()) {
 			result.add(o.toString());
 		}
 		return result;
@@ -1296,30 +1473,57 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
+	 * Add or overwrite a new property.
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void setProperty(String key, String value, String provenance) {
+		Properties properties2 = getProperties();
+		if (properties2 instanceof UTF8Properties utf8p) {
+			utf8p.setProperty(key, value, provenance);
+		} else
+			properties2.setProperty(key, value);
+	}
+
+	/**
 	 * Read a manifest but return a properties object.
 	 *
 	 * @param in
 	 * @throws IOException
 	 */
-	public static Properties getManifestAsProperties(InputStream in) throws IOException {
-		Properties p = new UTF8Properties();
+	public static Properties getManifestAsProperties(InputStream in, String provenance) throws IOException {
+		UTF8Properties p = new UTF8Properties();
 		Manifest manifest = new Manifest(in);
 		for (Object object : manifest.getMainAttributes()
 			.keySet()) {
 			Attributes.Name key = (Attributes.Name) object;
 			String value = manifest.getMainAttributes()
 				.getValue(key);
-			p.put(key.toString(), value);
+			p.setProperty(key.toString(), value, provenance);
 		}
 		return p;
+	}
+
+	// {@linkplain #getManifestAsProperties(InputStream, String)}
+	@Deprecated()
+	public static Properties getManifestAsProperties(InputStream in) throws IOException {
+		return getManifestAsProperties(in, null);
 	}
 
 	public File getPropertiesFile() {
 		return propertiesFile;
 	}
 
+	/**
+	 * Marks if the given Properties File really must exist.
+	 */
 	public void setFileMustExist(boolean mustexist) {
 		fileMustExist = mustexist;
+	}
+
+	public boolean mustFileExist() {
+		return fileMustExist;
 	}
 
 	static public String read(InputStream in) throws Exception {
@@ -1404,14 +1608,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return join(result);
 	}
 
-	public boolean isExceptions() {
-		return exceptions;
-	}
-
-	public void setExceptions(boolean exceptions) {
-		this.exceptions = exceptions;
-	}
-
 	/**
 	 * Make the file short if it is inside our base directory, otherwise long.
 	 *
@@ -1443,10 +1639,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return key.indexOf(DUPLICATE_MARKER, key.length() - 1) >= 0;
 	}
 
-	public void setTrace(boolean x) {
-		trace = x;
-	}
-
 	public static class CL extends ActivelyClosingClassLoader {
 		static {
 			ClassLoader.registerAsParallelCapable();
@@ -1474,7 +1666,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return pluginLoader.get();
 	}
 
-
 	private CloseableMemoize<CL> newPluginLoader() {
 		return CloseableMemoize.closeableSupplier(() -> {
 			CL pluginLoader = new CL(this);
@@ -1484,6 +1675,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return pluginLoader;
 		});
 	}
+
 	/*
 	 * Check if this is a valid project.
 	 */
@@ -1496,91 +1688,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return isFailOk() || getErrors().isEmpty();
 	}
 
-	/**
-	 * Move errors and warnings to their proper place by scanning the fixup
-	 * messages property.
-	 */
-	private void fixupMessages() {
-		if (fixupMessages)
-			return;
-		fixupMessages = true;
-		Parameters fixup = getMergedParameters(Constants.FIXUPMESSAGES);
-		if (fixup.isEmpty())
-			return;
-
-		Instructions instrs = new Instructions();
-		fixup.forEach((k, v) -> instrs.put(Instruction.legacy(k), v));
-
-		doFixup(instrs, errors, warnings, FIXUPMESSAGES_IS_ERROR);
-		doFixup(instrs, warnings, errors, FIXUPMESSAGES_IS_WARNING);
-	}
-
-	private void doFixup(Instructions instrs, List<String> messages, List<String> other, String type) {
-		for (int i = 0; i < messages.size(); i++) {
-			String message = messages.get(i);
-			Instruction matcher = instrs.finder(message);
-			if (matcher == null || matcher.isNegated())
-				continue;
-
-			Attrs attrs = instrs.get(matcher);
-
-			//
-			// Default the pattern applies to the errors and warnings
-			// but we can restrict it: e.g. restrict:=error
-			//
-
-			String restrict = attrs.get(FIXUPMESSAGES_RESTRICT_DIRECTIVE);
-			if (restrict != null && !restrict.equals(type))
-				continue;
-
-			//
-			// We can optionally replace the message with another text. E.g.
-			// replace:"hello world". This can use macro expansion, the ${@}
-			// macro is set to the old message.
-			//
-			String replace = attrs.get(FIXUPMESSAGES_REPLACE_DIRECTIVE);
-			if (replace != null) {
-				logger.debug("replacing {} with {}", message, replace);
-				setProperty("@", message);
-				message = getReplacer().process(replace);
-				messages.set(i, message);
-				unsetProperty("@");
-			}
-
-			//
-			//
-			String is = attrs.get(FIXUPMESSAGES_IS_DIRECTIVE);
-
-			if (attrs.isEmpty() || FIXUPMESSAGES_IS_IGNORE.equals(is)) {
-				messages.remove(i--);
-			} else {
-				if (is != null && !type.equals(is)) {
-					messages.remove(i--);
-					other.add(message);
-				}
-			}
-		}
-	}
-
 	public boolean check(String... pattern) throws IOException {
 		Set<String> missed = Create.set();
+		List<String> errors = getErrors();
+		List<String> warnings = getWarnings();
 
 		if (pattern != null) {
 			for (String p : pattern) {
 				boolean match = false;
 				Pattern pat = Pattern.compile(p);
 				for (Iterator<String> i = errors.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next())
+					String next = i.next();
+					if (pat.matcher(next)
 						.find()) {
 						i.remove();
 						match = true;
+						reporter.remove(next);
 					}
 				}
 				for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next())
+					String next = i.next();
+					if (pat.matcher(next)
 						.find()) {
 						i.remove();
 						match = true;
+						reporter.remove(next);
 					}
 				}
 				if (!match)
@@ -1588,7 +1720,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 			}
 		}
-		if (missed.isEmpty() && isPerfect())
+		if (missed.isEmpty() && errors.isEmpty() && warnings.isEmpty())
 			return true;
 
 		if (!missed.isEmpty())
@@ -1599,6 +1731,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	protected void report(Appendable out) throws IOException {
+		List<String> errors = getErrors();
+		List<String> warnings = getWarnings();
+
 		if (errors.size() > 0) {
 			out.append(String.format("-----------------%nErrors%n"));
 			for (int i = 0; i < errors.size(); i++) {
@@ -1754,11 +1889,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		CL cl = getLoader();
 		cl.add(jar);
 		return cl.loadClass(type);
-	}
-
-	public boolean isTrace() {
-		Processor p = current();
-		return p.trace;
 	}
 
 	private static final Pattern DURATION_P = Pattern
@@ -1933,7 +2063,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private Iterable<String> iterable(boolean inherit, Predicate<String> keyFilter) {
-		Set<Object> first = getProperties0().keySet();
+		Set<Object> first = getRawProperties().keySet();
 		Iterable<? extends Object> second;
 		if (getParent() == null || !inherit) {
 			second = Collections.emptyList();
@@ -1979,11 +2109,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		return s + newExtension;
 	}
-
-	/**
-	 * Create a location object and add it to the locations
-	 */
-	List<Location> locations = new ArrayList<>();
 
 	static class SetLocationImpl extends Location implements SetLocation {
 		public SetLocationImpl(String s) {
@@ -2060,20 +2185,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return setLocation;
 	}
 
-	private SetLocation location(String s) {
-		SetLocationImpl loc = new SetLocationImpl(s);
-		locations.add(loc);
-		return loc;
-	}
-
 	@Override
 	public Location getLocation(String msg) {
-		assert msg != null : "Must provide message";
-		for (Location l : locations)
-			if ((l.message != null) && msg.equals(l.message))
-				return l;
-
-		return null;
+		return reporter.getLocation(msg);
 	}
 
 	/**
@@ -2259,7 +2373,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void report(Map<String, Object> table) throws Exception {
 		table.put("Included Files", getIncluded());
 		table.put("Base", getBase());
-		table.put("Properties", getProperties0().entrySet());
+		table.put("Properties", getRawProperties().entrySet());
 	}
 
 	/**
@@ -2283,18 +2397,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public String mergeLocalProperties(String key) {
-		if (since(About._3_3)) {
-			return getProperty(makeWildcard(key), null, ",", false);
-		} else
-			return mergeProperties(key);
+		return getProperty(makeWildcard(key), null, ",", false);
 	}
 
 	public String mergeProperties(String key, String separator) {
-		if (since(About._2_4))
-			return getProperty(makeWildcard(key), null, separator, true);
-		else
-			return getProperty(key);
-
+		return getProperty(makeWildcard(key), null, separator, true);
 	}
 
 	private String makeWildcard(String key) {
@@ -2383,15 +2490,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		return IO.absolutePath(propertiesFile);
-	}
-
-	/**
-	 * Copy the settings of another processor
-	 */
-	public void getSettings(Processor p) {
-		this.trace = p.isTrace();
-		this.pedantic = p.isPedantic();
-		this.exceptions = p.isExceptions();
 	}
 
 	static final String _frangeHelp = "${frange;<version>[;true|false]}";
@@ -2646,5 +2744,247 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return true;
 		}
 		return false;
+	}
+
+	static class Bracket {
+		final List<RunnableWithException>	atEnds	= new ArrayList<>();
+		final Map<Class<?>, Object>			data	= new HashMap<>();
+
+	}
+
+	/**
+	 * Can be called by Processors to bracket an operation. A bracketed
+	 * operation allows the called methods to register a Runnable for execution
+	 * at the end of the bracket. Brackets can be nested to any depth.
+	 *
+	 * @param call the Callable to execute inside the bracket
+	 * @throws Exception thrown by the callable
+	 */
+	protected <T> T bracketed(Callable<T> call) throws Exception {
+		Bracket old = bracket.get();
+		bracket.set(new Bracket());
+		try {
+			return call.call();
+		} finally {
+			bracket.get().atEnds.forEach(this::runit);
+			bracket.set(old);
+		}
+	}
+
+	/**
+	 * Can be called by Processors to bracket an operation. A bracketed
+	 * operation allows the called methods to register a Runnable for execution
+	 * at the end of the bracket. Brackets can be nested to any depth.
+	 *
+	 * @param runnable the runnable to execute inside the bracket
+	 * @throws Exception thrown by the runnable
+	 */
+	protected void bracketed(RunnableWithException runnable) throws Exception {
+		bracketed(() -> {
+			runnable.run();
+			return null;
+		});
+	}
+
+	/**
+	 * This method is intended to coalesce multiple values. Typical use case is
+	 * if you have an error that can happen multiple times over a bracket but
+	 * you want to report it once. To keep plugins stateless, they should not
+	 * store data in a bracket nor do they have a callback mechanism at the end
+	 * of a bracket.
+	 * <p>
+	 * This method provides a unique type for the coalescing, this is best a
+	 * class inside a method for uniqueness. The work method, takes an instance
+	 * of the type and can do some work, for example, a name that should be
+	 * reported at the end as a list instead for each occurrence. The factory is
+	 * used to create the instance when the type is used for the first time in
+	 * the bracket.
+	 *
+	 * <pre>
+	 * void dosomething(Processor p, String name) {
+	 * 	class Foo extends AutoCloseable {
+	 * 		final Set<String> names = new TreeSet<>();
+	 *
+	 * 		public void close() {
+	 * 			p.error("names too long: %s", names);
+	 * 		}
+	 * 	}
+	 * 	if (name.size() > 10) {
+	 * 		p.atEnd(Foo.class, foo -> foo.names.add(name), Foo::new);
+	 * 	}
+	 * }
+	 * </pre>
+	 *
+	 * @param <X> the type of the worker
+	 * @param type the worker type
+	 * @param work the work to do
+	 * @param factory the factory
+	 */
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	public <X extends AutoCloseable> void atEndOfBracket(Class<X> type, Consumer<X> work, Supplier<X> factory) {
+		Bracket b = bracket.get();
+
+		if (b == null) {
+			runit(() -> {
+				X x = factory.get();
+				work.accept(x);
+				x.close();
+			});
+		} else {
+			X data = (X) b.data.computeIfAbsent(type, t -> {
+				X newData = factory.get();
+				b.atEnds.add(newData::close);
+				return newData;
+			});
+			work.accept(data);
+		}
+	}
+
+	private void runit(RunnableWithException r) {
+		try {
+			r.run();
+		} catch (Exception e) {
+			exception(e, "failed to run a runnable at the end of a bracket: %s", e.getMessage());
+		}
+	}
+
+	/**
+	 * Copy the settings of another processor
+	 */
+	public void getSettings(Processor p) {
+		this.trace = p.isTrace();
+		this.pedantic = p.isPedantic();
+		this.exceptions = p.isExceptions();
+	}
+
+	public boolean isExceptions() {
+		return this.exceptions;
+	}
+
+	public void setExceptions(boolean exceptions) {
+		this.exceptions = exceptions;
+	}
+
+	public void setTrace(boolean x) {
+		trace = x;
+	}
+
+	public boolean isTrace() {
+		Processor p = current();
+		return p.trace;
+	}
+
+	@Override
+	public boolean isPedantic() {
+		return this.pedantic;
+	}
+
+	public void setPedantic(boolean pedantic) {
+		this.pedantic = pedantic;
+	}
+
+	/**
+	 * Enum used in getMacroReferences() to filter the properties by reason.
+	 */
+	public enum MacroReference {
+		/**
+		 * Property is neither a COMMAND nor EXISTS.
+		 */
+		UNKNOWN,
+		/**
+		 * Exists as a property
+		 */
+		EXISTS,
+		/**
+		 * Is a built in command
+		 */
+		COMMAND,
+
+		/**
+		 * return all property keys
+		 */
+		ALL
+	}
+
+	/**
+	 * Find all the macro references in the properties defined in this processor
+	 * or its ancestors. A reference can exist as property, be a command, or
+	 * unknown. If no {@link MacroReference}'s are given, all references are
+	 * returned.
+	 *
+	 * @param what specifies requested reference type
+	 * @return the set of property keys that match what
+	 */
+	public Set<String> getMacroReferences(MacroReference... what) {
+
+		Set<String> propertyKeys = getPropertyKeys(true);
+		Set<String> result = new LinkedHashSet<>();
+		class EMacro extends Macro {
+			boolean	exists	= false;
+			boolean	unknown	= false;
+			boolean	command	= false;
+			boolean	all		= false;
+
+			public EMacro() {
+				super(Processor.this, getMacroDomains());
+				for (MacroReference w : what) {
+					switch (w) {
+						case UNKNOWN -> unknown = true;
+						case EXISTS -> exists = true;
+						case COMMAND -> command = true;
+						default -> all = true;
+					}
+				}
+				all |= exists == unknown && unknown == command;
+			}
+
+			@Override
+			protected String replace(String invocation, List<String> args, Link link, char begin, char end) {
+				if (args != null && !args.isEmpty()) {
+					String key = args.remove(0);
+					reference(key, args);
+					for (String arg : args) {
+						process(arg, link);
+					}
+				}
+				return "";
+			}
+
+			private void reference(String key, List<String> args) {
+				if (all) {
+					result.add(key);
+				} else {
+					boolean x = propertyKeys.contains(key);
+					if (x) {
+						if (exists)
+							result.add(key);
+					} else {
+						BiFunction<Object, String[], Object> function = getFunction(key);
+						if (function == null) {
+							if (unknown)
+								result.add(key);
+						} else {
+							switch (key) {
+								case "def", "template", "foreach" -> {
+									if (args.size() > 1) {
+										reference(args.get(0), Collections.emptyList());
+									}
+								}
+							}
+							if (command)
+								result.add(key);
+						}
+					}
+				}
+			}
+		}
+		EMacro macro = new EMacro();
+		for (String key : propertyKeys) {
+			String unexpandedProperty = getUnexpandedProperty(key);
+			macro.process(unexpandedProperty);
+		}
+		return result;
 	}
 }

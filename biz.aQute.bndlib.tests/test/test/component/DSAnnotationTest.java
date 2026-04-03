@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -198,6 +199,27 @@ public class DSAnnotationTest {
 	// #2876
 	@Test
 	public void testExportComponentImplPackage() throws Exception {
+		// exports with version should be added to imports
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
+			b.setProperty("Export-Package", "test.component.ds14;version=1.1.0");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Domain domain = Domain.domain(jar.getManifest());
+			Parameters exportPackages = domain.getExportPackage();
+			assertThat(exportPackages).containsOnlyKeys("test.component.ds14");
+			Parameters importPackages = domain.getImportPackage();
+			assertThat(importPackages).containsKeys("test.component.ds14");
+		}
+	}
+
+	// #2876
+	@Test
+	public void testExportComponentImplPackage2() throws Exception {
+		// exports without version should not be added to imports
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
 			b.setProperty("Export-Package", "test.component.ds14");
@@ -210,7 +232,7 @@ public class DSAnnotationTest {
 			Parameters exportPackages = domain.getExportPackage();
 			assertThat(exportPackages).containsOnlyKeys("test.component.ds14");
 			Parameters importPackages = domain.getImportPackage();
-			assertThat(importPackages).containsKeys("test.component.ds14");
+			assertThat(importPackages).doesNotContainKeys("test.component.ds14");
 		}
 	}
 
@@ -263,6 +285,114 @@ public class DSAnnotationTest {
 		xt.assertAttribute("Float", "scr:component/property[@name='float']/@type");
 		xt.assertAttribute("Double", "scr:component/property[@name='double']/@type");
 		xt.assertAttribute("Integer", "scr:component/property[@name='\u0343\u0344\u0345\u0346']/@type");
+	}
+
+	/**
+	 * Property test (missing properties files)
+	 */
+
+	@Component(properties = {
+		"some.missing.file.prop"
+	})
+	public static class PropertiesTestMissingFile {
+
+	}
+
+	@Test
+	public void testProperties_missingFile_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$PropertiesTestMissingFile");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("properties")
+				.contains(PropertiesTestMissingFile.class.getName())
+				.contains("not found")
+				.contains("some.missing.file.prop")
+				.doesNotMatch(".*mean.*property.*[?]");
+	}
+
+	@Component(factoryProperties = {
+		"some.missing.file.prop"
+	})
+	public static class FactoryPropertiesTestMissingFile {
+
+	}
+
+	@Test
+	public void testFactoryProperties_missingFile_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$FactoryPropertiesTestMissingFile");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("factoryProperties")
+				.contains(FactoryPropertiesTestMissingFile.class.getName())
+				.contains("not found")
+				.contains("some.missing.file.prop")
+				.doesNotMatch(".*mean.*factoryProperty.*[?]");
+	}
+
+	@Component(properties = {
+		"some=value"
+	})
+	public static class PropertiesTestMisconfiguredProperty {
+
+	}
+
+	@Test
+	public void testProperties_misconfiguredProperty_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$PropertiesTestMisconfiguredProperty");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("properties")
+				.contains(PropertiesTestMisconfiguredProperty.class.getName())
+				.contains("not found")
+				.contains("some=value")
+				.matches(".*mean.*property.*[?]");
+	}
+
+	@Component(factoryProperties = {
+		"some=value"
+	})
+	public static class FactoryPropertiesTestMisconfiguredProperty {
+
+	}
+
+	@Test
+	public void testFactoryProperties_misconfiguredProperty_warnings() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*$FactoryPropertiesTestMisconfiguredProperty");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertThat(b.getWarnings()).as("size")
+			.hasSize(1);
+		assertThat(b.getWarnings()
+			.get(0)).as("warning")
+				.contains("factoryProperties")
+				.contains(FactoryPropertiesTestMisconfiguredProperty.class.getName())
+				.contains("not found")
+				.contains("some=value")
+				.matches(".*mean.*factoryProperty.*[?]");
 	}
 
 	/**
@@ -1406,6 +1536,79 @@ public class DSAnnotationTest {
 		// is private in super class
 		xt.assertAttribute("", "scr:component/reference[2]/@updated");
 
+	}
+
+	@Component(name="top")
+	public static class TopConstructorInjection {
+
+		@Activate
+		public TopConstructorInjection(@SuppressWarnings("unused") BundleContext context) {
+
+		}
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService l) {}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+
+		}
+
+		@Reference
+		protected void setPrivateLogService(@SuppressWarnings("unused") LogService l) {
+
+		}
+
+		@SuppressWarnings("unused")
+		private void updatedPrivateLogService(ServiceReference<?> ref) {
+
+		}
+	}
+
+	@Component(name = "bottom")
+	public static class BottomConstructorInjection extends TopConstructorInjection {
+
+		@Activate
+		public BottomConstructorInjection(@SuppressWarnings("unused") BundleContext context) {
+			super(context);
+		}
+		void unsetLogService(@SuppressWarnings("unused") LogService l,
+			@SuppressWarnings("unused") Map<Object, Object> map) {
+
+		}
+
+		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+
+		}
+	}
+
+	@Test
+	public void testInheritanceWithActivateConstructors() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*BottomConstructorInjection");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "inherit");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+
+		Jar jar = b.build();
+		assertOk(b);
+		Attributes a = getAttr(jar);
+		checkProvides(a);
+
+		Resource r = jar.getResource("OSGI-INF/bottom.xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+
+		xt.assertAttribute("1", "scr:component/@init");
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
+
+		xt.assertAttribute("PrivateLogService", "scr:component/reference[2]/@name");
+		xt.assertAttribute("setPrivateLogService", "scr:component/reference[2]/@bind");
+		xt.assertAttribute("unsetPrivateLogService", "scr:component/reference[2]/@unbind");
+		// is private in super class
+		xt.assertAttribute("", "scr:component/reference[2]/@updated");
 	}
 
 	@Test
@@ -3674,7 +3877,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class VolatileField {
+	public static class VolatileField {
 		@Reference
 		private volatile LogService	log1;
 		@Reference
@@ -3713,7 +3916,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class FinalDynamicCollectionField {
+	public static class FinalDynamicCollectionField {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
 		private final List<LogService>					logs1	= new CopyOnWriteArrayList<>();
 
@@ -3775,7 +3978,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class FieldCardinality {
+	public static class FieldCardinality {
 		@Reference
 		private List<LogService>				log1;
 		@Reference
@@ -3841,7 +4044,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component
-	static class MismatchedUnbind {
+	public static class MismatchedUnbind {
 		@Reference
 		void setLogService10(LogService ls) {}
 
@@ -3899,14 +4102,14 @@ public class DSAnnotationTest {
 	}
 
 	@Component(service = Map.class)
-	static class NotAMap1 {}
+	public static class NotAMap1 {}
 
 	@Component(service = HashMap.class)
-	static class NotAMap2 {}
+	public static class NotAMap2 {}
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class NotAMap3 extends TreeMap<String, String> {
+	public static class NotAMap3 extends TreeMap<String, String> {
 
 		/**
 		 *
@@ -3923,7 +4126,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap1 extends HashMap<String, String> {
+	public static class IsAMap1 extends HashMap<String, String> {
 
 		/**
 		 *
@@ -3932,7 +4135,7 @@ public class DSAnnotationTest {
 	}
 
 	@SuppressWarnings("serial")
-	static class MyHashMap1<K, V> extends HashMap<K, V> {
+	public static class MyHashMap1<K, V> extends HashMap<K, V> {
 
 		/**
 		 *
@@ -3942,7 +4145,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class IsAMap2 extends MyHashMap1<String, String> {
+	public static class IsAMap2 extends MyHashMap1<String, String> {
 
 		/**
 		 *
@@ -3963,7 +4166,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3 extends MyHashMap2<String, String> {
+	public static class IsAMap3 extends MyHashMap2<String, String> {
 
 		/**
 		 *
@@ -3975,7 +4178,7 @@ public class DSAnnotationTest {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3a extends MyHashMap2<String, String> implements Marker {
+	public static class IsAMap3a extends MyHashMap2<String, String> implements Marker {
 
 		/**
 		 *
@@ -3984,7 +4187,7 @@ public class DSAnnotationTest {
 	}
 
 	@Component(service = Map.class)
-	static class IsAMap4 implements MyMap<String, String> {
+	public static class IsAMap4 implements MyMap<String, String> {
 
 		@Override
 		public int size() {
@@ -4363,6 +4566,143 @@ public class DSAnnotationTest {
 		}
 	}
 
+	@Component
+	public static class ConstructorInjectionMissingDefaultNoArgConstructor {
+
+		public ConstructorInjectionMissingDefaultNoArgConstructor(BundleContext bundleContext) {
+
+		}
+	}
+
+	@Test
+	public void testConstructorInjectionErrorOnMissingDefaultNoArgConstructor() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			// expect error because class has no noArg constructor and
+			if (!b.check(
+				Pattern.quote(
+					"test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor] The DS component class test.component.DSAnnotationTest$ConstructorInjectionMissingDefaultNoArgConstructor must be publicly accessible and have either a public no-arg constructor or a public constructor annotated with @Activate. Non-public classes, including public inner classes enclosed in non-public classes, are not supported.")))
+				fail();
+		}
+	}
+
+
+	@Test
+	public void testConstructorInjectionErrorOnNonStaticInnerClassComponent() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.constructorinjection.ConstructorInjectionErrorOnNonStaticInnerClassComponent*");
+			b.setProperty("Private-Package", "test.component.constructorinjection");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			// expect error because a @Component on non-static inner class
+			// cannot be instantiated
+			if (!b.check(
+				Pattern.quote(
+					"The DS component class test.component.constructorinjection.ConstructorInjectionErrorOnNonStaticInnerClassComponent$ConstructorInjectionErrorOnNonStaticInnerClassComponentInner must be publicly accessible and have either a public no-arg constructor or a public constructor annotated with @Activate. Non-public classes, including public inner classes enclosed in non-public classes, are not supported.")))
+				fail();
+		}
+	}
+
+	@Test
+	public void testConstructorInjectionStaticInnerClassComponent() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent*");
+			b.setProperty("Private-Package", "test.component.constructorinjection");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+
+			Resource r = jar.getResource(
+				"OSGI-INF/test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner.xml");
+
+			assertNotNull(r);
+			r.write(System.err);
+
+			/**
+			 * Expect:
+			 *
+			 * <pre>
+			 * <?xml version="1.0" encoding="UTF-8"?> \
+				<scr:component xmlns:scr=
+			"http://www.osgi.org/xmlns/scr/v1.3.0" name=
+			"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner">
+				  <service>
+				    <provide interface=
+			"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner"/>
+				  </service>
+				  <implementation class=
+			"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner"/>
+				</scr:component>
+			 * </pre>
+			 */
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
+			xt.assertAttribute(
+				"test.component.constructorinjection.ConstructorInjectionStaticInnerClassComponent$ConstructorInjectionStaticInnerClassComponentInner",
+				"scr:component/implementation/@class");
+
+		}
+	}
+
+	@Component
+	public static class ConstructorInjectionDefaultNoArgConstructor {
+
+		public ConstructorInjectionDefaultNoArgConstructor() {
+
+		}
+
+		public ConstructorInjectionDefaultNoArgConstructor(BundleContext bundleContext) {
+
+		}
+	}
+
+	@Test
+	public void testConstructorInjectionDefaultNoArgConstructor() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+
+			Resource r = jar.getResource(
+				"OSGI-INF/test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor.xml");
+			assertNotNull(r);
+			r.write(System.err);
+
+			/**
+			 * <pre>
+			 * <?xml version="1.0" encoding="UTF-8"?>
+			<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name
+			=
+			"test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor">
+			<implementation class=
+			"test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor"/>
+			</scr:component>
+			 * </pre>
+			 */
+
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
+			xt.assertAttribute("test.component.DSAnnotationTest$ConstructorInjectionDefaultNoArgConstructor",
+				"scr:component/implementation/@class");
+
+		}
+	}
+
 	@Component(reference = {
 		@Reference(name = "component", service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
 	})
@@ -4395,7 +4735,6 @@ public class DSAnnotationTest {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, AnyService.class.getName());
 
 			//
 			// Test all the defaults
@@ -4441,6 +4780,25 @@ public class DSAnnotationTest {
 			xt.assertAttribute("1", "scr:component/reference[@name='extensionsParam']/@parameter");
 			xt.assertAttribute("0..n", "scr:component/reference[@name='extensionsParam']/@cardinality");
 
+		}
+	}
+
+	@Test
+	public void anyserviceNoServiceRequirement() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUse");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+
+			jar.getManifest()
+				.write(System.out);
+
+			assertThat(a.getValue(Constants.REQUIRE_CAPABILITY)).doesNotContain(AnyService.class.getName());
 		}
 	}
 

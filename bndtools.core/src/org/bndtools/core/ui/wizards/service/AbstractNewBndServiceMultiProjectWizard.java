@@ -24,17 +24,25 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizard;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -142,14 +150,6 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 		return (IJavaProject) getCreatedElement();
 	}
 
-	protected void configureImplProject(IJavaProject implJavaProject, Map<String, String> templateParams) {
-		// by default do nothing
-	}
-
-	protected void configureConsumerProject(IJavaProject implJavaProject, Map<String, String> templateParams) {
-		// by default do nothing
-	}
-
 	protected abstract Map<String, String> getServiceTemplateParams();
 
 	protected abstract Template getServiceApiTemplate();
@@ -207,34 +207,73 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 		return result;
 	}
 
-	protected void configureBndProject(IJavaProject javaProject, Map<String, String> templateParams) {
-
+	protected IEditorPart openEditor(IJavaProject javaProject, String packageName, String className) {
+		// Find and then open the type given by the packageName + the className
+		try {
+			if (packageName != null && className != null) {
+				IType type = javaProject.findType(packageName, className);
+				if (type != null) {
+					IResource r = type.getResource();
+					if (r.exists() && r instanceof IFile) {
+						return IDE.openEditor(getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage(), (IFile) r);
+					}
+				}
+			}
+		} catch (JavaModelException | PartInitException e) {
+			// Ignore
+		}
+		return null;
 	}
 
-	protected void configureServiceApiProject(IJavaProject serviceJavaProject, Map<String, String> templateParams) {
+	protected void checkForMissingWorkspace(IJavaProject bndProject) {
 		// get bnd.bnd file
-		IFile bndFile = serviceJavaProject.getProject()
+		IFile bndFile = bndProject.getProject()
 			.getFile(Project.BNDFILE);
-
-		// check to see if we need to add marker about missing workspace
 		try {
 			if (!Central.hasWorkspaceDirectory()) {
 				IResource markerTarget = bndFile;
 				if (markerTarget == null || markerTarget.getType() != IResource.FILE || !markerTarget.exists())
-					markerTarget = serviceJavaProject.getProject();
+					markerTarget = bndProject.getProject();
 				IMarker marker = markerTarget.createMarker(BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 				marker.setAttribute(IMarker.MESSAGE,
 					"Missing Bnd Workspace. Create a new workspace with the 'New Bnd OSGi Workspace' wizard.");
 				marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, true);
 				marker.setAttribute("$bndType", BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE);
-			} else {
-				Central.getWorkspace()
-					.refreshProjects();
 			}
+			// check to see if we need to add marker about missing workspace
 		} catch (Exception e1) {
 			// ignore exceptions, this is best effort to help new users
 		}
+	}
+
+	protected IEditorPart configureServiceApiProject(IJavaProject serviceJavaProject,
+		Map<String, String> templateParams) {
+		checkForMissingWorkspace(serviceJavaProject);
+		return openEditor(serviceJavaProject, templateParams.get(ProjectTemplateParam.BASE_PACKAGE_NAME.getString()),
+			ServiceTemplateConstants
+				.getApiClassName(templateParams.get(ServiceProjectTemplateParam.SERVICE_NAME.getString())));
+	}
+
+	protected IEditorPart configureImplProject(IJavaProject implJavaProject, Map<String, String> templateParams) {
+		checkForMissingWorkspace(implJavaProject);
+		return openEditor(implJavaProject, templateParams.get(ProjectTemplateParam.BASE_PACKAGE_NAME.getString()),
+			ServiceTemplateConstants
+				.getImplClassName(templateParams.get(ServiceProjectTemplateParam.SERVICE_NAME.getString())));
+	}
+
+	protected IEditorPart configureConsumerProject(IJavaProject consumerJavaProject,
+		Map<String, String> templateParams) {
+		checkForMissingWorkspace(consumerJavaProject);
+		return openEditor(consumerJavaProject, templateParams.get(ProjectTemplateParam.BASE_PACKAGE_NAME.getString()),
+			ServiceTemplateConstants
+				.getConsumerClassName(templateParams.get(ServiceProjectTemplateParam.SERVICE_NAME.getString())));
+	}
+
+	@Override
+	protected boolean canRunForked() {
+		return false;
 	}
 
 	@Override
@@ -244,9 +283,10 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 			final Map<String, String> templateParams = getServiceTemplateParams();
 			final IJavaProject serviceJavaProject = getServiceApiJavaProject();
 			// api project
+			IEditorPart serviceApiEditor = null;
 			result = generateProjectContent(serviceJavaProject, getServiceApiTemplate(), templateParams);
 			if (result) {
-				configureServiceApiProject(serviceJavaProject, templateParams);
+				serviceApiEditor = configureServiceApiProject(serviceJavaProject, templateParams);
 				// impl project
 				IJavaProject implJavaProject = getServiceImplJavaProject();
 				result = generateProjectContent(implJavaProject, getServiceImplTemplate(), templateParams);
@@ -256,10 +296,29 @@ public abstract class AbstractNewBndServiceMultiProjectWizard extends JavaProjec
 					IJavaProject consumerJavaProject = getServiceConsumerJavaProject();
 					result = generateProjectContent(consumerJavaProject, getServiceConsumerTemplate(), templateParams);
 					if (result) {
-						configureImplProject(consumerJavaProject, templateParams);
+						configureConsumerProject(consumerJavaProject, templateParams);
 					}
 				}
 			}
+
+			if (serviceApiEditor != null) {
+				getWorkbench().getActiveWorkbenchWindow()
+					.getActivePage()
+					.activate(serviceApiEditor);
+			}
+
+			Job job = Job.create("refresh workspace", monitor -> {
+				Workspace workspace;
+				try {
+					workspace = Central.getWorkspace();
+					workspace.writeLocked(workspace::forceRefresh);
+				} catch (Exception e) {
+					throw new CoreException(Status.error("failed to refresh the workspace", e));
+				}
+			});
+			job.setRule(ResourcesPlugin.getWorkspace()
+					.getRoot());
+			job.schedule();
 		}
 		return result;
 	}

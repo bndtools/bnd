@@ -45,9 +45,14 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import bndtools.Plugin;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.DependencyPhase;
+import bndtools.model.repo.FeatureVersionNode;
+import bndtools.model.repo.IncludedBundleItem;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
+import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryFeature;
+import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.preferences.BndPreferences;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
@@ -166,7 +171,7 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 	private void doAddBundle() {
 		try {
 			RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(new ArrayList<VersionedClause>(),
-				DependencyPhase.Run);
+				DependencyPhase.Req);
 			wizard.setSelectionPageTitle(getAddButtonLabel());
 			WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
 
@@ -215,10 +220,15 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 
 	@Override
 	protected final void refreshFromModel() {
-		this.requires.clear();
 		List<Requirement> loadedReqs = doRefreshFromModel();
-		if (loadedReqs != null)
-			this.requires.addAll(loadedReqs);
+		if (loadedReqs == null)
+			loadedReqs = Collections.emptyList();
+
+		if (loadedReqs.equals(this.requires))
+			return;
+
+		this.requires.clear();
+		this.requires.addAll(loadedReqs);
 		viewer.setInput(this.requires);
 	}
 
@@ -256,13 +266,31 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 	private Requirement createRequirement(Object elem) throws Exception {
 		final String bsn;
 		String versionRange = null;
+		boolean isFeature = false;
 
-		if (elem instanceof RepositoryBundle) {
+		if (elem instanceof RepositoryFeature) {
+			// Check RepositoryFeature BEFORE RepositoryBundle since both extend RepositoryEntry
+			RepositoryFeature rf = (RepositoryFeature) elem;
+			bsn = rf.getBsn();
+			String version = rf.getFeature().getVersion();
+			if (version != null && !version.equals("0.0.0")) {
+				versionRange = version;
+			}
+			isFeature = true;
+		} else if (elem instanceof FeatureVersionNode) {
+			FeatureVersionNode versionNode = (FeatureVersionNode) elem;
+			bsn = versionNode.getFeature().getId();
+			String version = versionNode.getVersion();
+			if (version != null && !version.equals("0.0.0")) {
+				versionRange = version;
+			}
+			isFeature = true;
+		} else if (elem instanceof RepositoryBundle) {
 			bsn = ((RepositoryBundle) elem).getBsn();
 		} else if (elem instanceof RepositoryBundleVersion) {
 			RepositoryBundleVersion rbv = (RepositoryBundleVersion) elem;
 			bsn = rbv.getBsn();
-			versionRange = rbv.getVersion()
+			versionRange = RepositoryBundleUtils.toVersionRangeUpToNextMajor(rbv.getVersion())
 				.toString();
 		} else if (elem instanceof ProjectBundle) {
 			bsn = ((ProjectBundle) elem).getBsn();
@@ -270,6 +298,17 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 			VersionedClause clause = (VersionedClause) elem;
 			bsn = clause.getName();
 			versionRange = clause.getVersionRange();
+		} else if (elem instanceof RepositoryResourceElement rre) {
+			RepositoryBundleVersion repositoryBundleVersion = rre.getRepositoryBundleVersion();
+			bsn = repositoryBundleVersion.getBsn();
+			versionRange = RepositoryBundleUtils.toVersionRangeUpToNextMajor(repositoryBundleVersion.getVersion())
+				.toString();
+		} else if (elem instanceof IncludedBundleItem ibi) {
+			bsn = ibi.getPlugin().id;
+			String version = ibi.getPlugin().version;
+			if (version != null && !version.equals("0.0.0")) {
+				versionRange = version;
+			}
 		} else {
 			throw new IllegalArgumentException("Unable to derive identity from an object of type " + elem.getClass()
 				.getSimpleName());
@@ -280,6 +319,8 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 			reqBuilder = new CapReqBuilder("bnd.identity").addAttribute("id", bsn);
 			if (versionRange != null)
 				reqBuilder.addAttribute("version", versionRange);
+			if (isFeature)
+				reqBuilder.addAttribute("type", "org.eclipse.update.feature");
 		} else {
 			reqBuilder = CapReqBuilder.createBundleRequirement(bsn, versionRange);
 		}

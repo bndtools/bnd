@@ -1,5 +1,6 @@
 package test;
 
+import static aQute.bnd.osgi.resource.ResourceUtils.getSubstitutionPackages;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,15 +30,19 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.annotation.Resolution;
+import aQute.bnd.build.model.clauses.ImportPattern;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
+import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -288,6 +293,78 @@ public class ResourceTest {
 		StringBuilder sb = new StringBuilder();
 		versionClause.formatTo(sb);
 		assertEquals("demo-fragment;version=snapshot", sb.toString());
+	}
+
+	@Test
+	public void testResourceSubstitutionPackages1() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Parameters exports = new Parameters("com.foo;version=1.0");
+		rb.addExportPackages(exports, "bundleA", new Version("1.2.3"));
+		Parameters imports = new Parameters("com.foo");
+		rb.addImportPackages(imports);
+		Resource r = rb.build();
+
+		Collection<PackageExpression> substitutionPackages = getSubstitutionPackages(r);
+		assertThat(substitutionPackages).hasSize(1);
+		assertEquals("[com.foo]", substitutionPackages.toString());
+
+	}
+
+	@Test
+	public void testResourceSubstitutionPackages2() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Parameters exports = new Parameters("com.foo;version=1.0");
+		rb.addExportPackages(exports, "bundleA", new Version("1.2.3"));
+		Parameters imports = new Parameters("com.foo;version='[1.0.1,1.3.2)'");
+		rb.addImportPackages(imports);
+		Resource r = rb.build();
+
+		Collection<PackageExpression> substitutionPackages = getSubstitutionPackages(r);
+		assertThat(substitutionPackages).hasSize(1);
+		assertEquals("[com.foo; version=[1.0.1,1.3.2)]", substitutionPackages.toString());
+
+	}
+
+	@Test
+	public void testResourceHasNoSubstitutionPackages() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Parameters exports = new Parameters("com.foo;version=1.0");
+		rb.addExportPackages(exports, "bundleA", new Version("1.2.3"));
+		Parameters imports = new Parameters("com.bar;version='[1.0.1,1.3.2)'");
+		rb.addImportPackages(imports);
+		Resource r = rb.build();
+
+		Collection<PackageExpression> substitutionPackages = getSubstitutionPackages(r);
+		assertThat(substitutionPackages).isEmpty();
+
+	}
+
+	@Test
+	public void testDirectiveWithoutQuotes() {
+
+		Attrs attrs = new Attrs();
+		attrs.put(Constants.VERSION_ATTRIBUTE, "[1.0.0,2.0.0)");
+		attrs.put(Constants.RESOLUTION_DIRECTIVE, Resolution.OPTIONAL);
+
+		ImportPattern importPattern = new ImportPattern("com.foo.*", attrs);
+		StringBuilder sb = new StringBuilder();
+		importPattern.formatTo(sb);
+		assertEquals("com.foo.*;version='[1.0.0,2.0.0)';resolution:=optional", sb.toString());
+	}
+
+	@Test
+	public void testAttributeWithQuotes() {
+
+		Attrs attrs = new Attrs();
+		attrs.put(Constants.VERSION_ATTRIBUTE, "[1.0.0,2.0.0)");
+		attrs.put("attribute with spaces", "and value which both needs quoting because of spaces");
+
+		ImportPattern importPattern = new ImportPattern("com.foo.*", attrs);
+		StringBuilder sb = new StringBuilder();
+		importPattern.formatTo(sb);
+		assertEquals(
+			"com.foo.*;version='[1.0.0,2.0.0)';'attribute with spaces'='and value which both needs quoting because of spaces'",
+			sb.toString());
 	}
 
 	private Set<Resource> getResources(String locations) throws Exception {

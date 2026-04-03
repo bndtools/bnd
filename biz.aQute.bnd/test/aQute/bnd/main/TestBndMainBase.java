@@ -1,5 +1,7 @@
 package aQute.bnd.main;
 
+import static aQute.libg.re.Catalog.caseInsenstive;
+import static aQute.libg.re.Catalog.lit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -8,6 +10,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,10 +24,10 @@ import aQute.bnd.main.testrules.WatchedFolder.FileStatus;
 import aQute.bnd.main.testrules.WatchedTemporaryFolder;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Jar;
+import aQute.lib.strings.Strings;
+import aQute.libg.re.RE;
 
 public class TestBndMainBase {
-
-	private static final String						WARNING_LINE			= "(?m)^WARNING: .*$";
 
 	@Rule
 	public WatchedFolder							folder					= new WatchedTemporaryFolder();
@@ -130,26 +134,52 @@ public class TestBndMainBase {
 			.containsPattern(regex);
 	}
 
+	final static RE	WARNINGS_P	= caseInsenstive(lit("Warnings"));
+	final static RE	ERRORS_P	= caseInsenstive(lit("Errors"));
+	final static RE	SEPARATOR_P	= caseInsenstive(lit("-------"));
+
 	protected void expectNoError(boolean ignoreWarnings, String... expects) {
 		String errors = capturedStdIO.getSystemErrContent();
-
-		if (ignoreWarnings) {
-			errors = errors.replaceAll(WARNING_LINE, "")
-				.trim();
-		}
-		if (expects != null) {
-			for (String expect : expects) {
-				assertThat(capturedStdIO.getSystemErrContent()).as("missing error")
-					.contains(expect);
-				errors = errors.replaceAll(expect, "")
-					.trim();
+		List<String> lines = Strings.split("\\R", errors);
+		boolean skip = false;
+		line: for (Iterator<String> it = lines.iterator(); it.hasNext();) {
+			String line = it.next();
+			if (Strings.nonNullOrEmpty(Strings.trim(line))) {
+				it.remove();
+				continue;
 			}
+
+			if (SEPARATOR_P.lookingAt(line)
+				.isPresent()) {
+				it.remove();
+				continue;
+			}
+			if (WARNINGS_P.lookingAt(line)
+				.isPresent()) {
+				skip = ignoreWarnings;
+				it.remove();
+				continue;
+			} else if (ERRORS_P.lookingAt(line)
+				.isPresent()) {
+				skip = false;
+				it.remove();
+				continue;
+			}
+			if (expects != null) {
+				for (String expect : expects) {
+					if (skip)
+						continue line;
+					skip = line.contains(expect);
+				}
+			}
+			if (skip)
+				it.remove();
 		}
-		assertEquals("non-empty error output", "", errors);
+		assertThat(lines).isEmpty();
 	}
 
 	protected void expectNoError() {
-		expectNoError(false);
+		expectNoError(true);
 	}
 
 	protected void expectJarEntry(Jar jar, String path) {

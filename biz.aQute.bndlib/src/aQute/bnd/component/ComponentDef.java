@@ -18,6 +18,8 @@ import java.util.stream.Stream;
 
 import aQute.bnd.component.annotations.ConfigurationPolicy;
 import aQute.bnd.component.annotations.ServiceScope;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.Version;
@@ -130,11 +132,32 @@ class ComponentDef extends ExtensionDef {
 		properties.stream()
 			.filter(p -> !analyzer.getJar()
 				.exists(p))
-			.forEach(p -> analyzer.warning("The properties entry \"%s\" is not found in the jar", p));
+			.forEach(p -> {
+				String msg = "[%s] The properties entry \"%s\" is not found in the jar";
+				if (p.indexOf('=') >= 0) {
+					msg += " - did you mean to use the \"property\" attribute?";
+				}
+				final DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(name, null,
+					null, ErrorType.MISSING_PROPERTIES_FILE);
+
+				analyzer.warning(msg, details.location(), p)
+					.details(details);
+			});
+
 		factoryProperties.stream()
 			.filter(p -> !analyzer.getJar()
 				.exists(p))
-			.forEach(p -> analyzer.warning("The factoryProperties entry \"%s\" is not found in the jar", p));
+			.forEach(p -> {
+				String msg = "[%s] The factoryProperties entry \"%s\" is not found in the jar";
+				if (p.indexOf('=') >= 0) {
+					msg += " - did you mean to use the \"factoryProperty\" attribute?";
+				}
+				final DeclarativeServicesAnnotationError factoryDetails = new DeclarativeServicesAnnotationError(name,
+					null, null, ErrorType.MISSING_FACTORYPROPERTIES_FILE);
+
+				analyzer.warning(msg, factoryDetails.location(), p)
+					.details(factoryDetails);
+			});
 	}
 
 	private void prepareVersion(Analyzer analyzer) throws Exception {

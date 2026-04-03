@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,14 +42,18 @@ import java.util.zip.ZipOutputStream;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -62,8 +68,11 @@ import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.osgi.resource.FilterBuilder;
+import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.FileTree;
@@ -73,7 +82,36 @@ import aQute.lib.zip.ZipUtil;
 import aQute.service.reporter.Report.Location;
 
 @SuppressWarnings("resource")
+@ExtendWith(SoftAssertionsExtension.class)
 public class BuilderTest {
+
+	@InjectSoftAssertions
+	SoftAssertions softly;
+
+	/**
+	 * Test version with space
+	 *
+	 * @throws Exception
+	 */
+
+	@Test
+	public void testVersionWithSpace() throws Exception {
+		try (Builder outer = new Builder()) {
+			try (Builder inner = new Builder()) {
+				inner.addClasspath(IO.getFile("jar/osgi.core-4.3.0.jar"));
+				inner.setProperty("Export-Package", "org.osgi.framework;version=\"1.6.0 \"");
+				inner.setProperty("-includepackage", "org.osgi.framework");
+				Jar jar = inner.build();
+				assertThat(inner.check()).isTrue();
+
+				outer.addClasspath(jar);
+				outer.addClasspath(IO.getFile("jar/osgi.core-4.3.0.jar"));
+				outer.setProperty("-includepackage", "org.osgi.service.packageadmin");
+				outer.build();
+				assertThat(outer.check()).isTrue();
+			}
+		}
+	}
 
 	/**
 	 * [builder] Access to information generated during doExpand() #5130
@@ -149,7 +187,28 @@ public class BuilderTest {
 			b.setProperty("Require-Capability", "ns;filter:='(foo=1)',ns;filter:='(foo=2)',ns;filter:='(foo=1)'");
 			b.setProperty("Provide-Capability", "ns;foo=1,ns;foo=2");
 			Jar build = b.build();
-			b.check();
+			assertTrue(b.check());
+		}
+	}
+
+	/**
+	 * the opposite of
+	 * {@link #testNoDuplicateWarningForHeadersThatAllowDuplicates()} where we
+	 * want the duplicate warning.
+	 */
+	@Test
+	public void testDuplicateWarningForHeadersThatDoNotAllowDuplicates() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setProperty("Import-Package", "a;version=1,a;version=2");
+			Jar build = b.build();
+			softly.assertThat(b.check())
+				.isFalse();
+			softly.assertThat(b.getWarnings())
+				.contains(
+					"Duplicate name a used in header: 'a;version=1,a;version=2'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).");
+
 		}
 	}
 
@@ -356,6 +415,8 @@ public class BuilderTest {
 		B.setExportPackage("org.osgi.service.wireadmin");
 		B.setPrivatePackage("org.osgi.service.event");
 		B.setIncludeResource("org/osgi/service/event/packageinfo;literal='version 2.0.0'");
+		B.setProperty("-fixupmessages.duplicates",
+			"includeresource.duplicates");
 		B.build();
 		assertTrue(B.check());
 
@@ -427,9 +488,11 @@ public class BuilderTest {
 
 	@Test
 	public void testNoImportForUsedExport_971() throws Exception {
+		// exports with version should be added to imports
 		Builder b = new Builder();
 		b.addClasspath(new File("bin_test"));
-		b.setExportPackage("test.missingimports_971.p1,test.missingimports_971.p2,test.missingimports_971.p4");
+		b.setExportPackage(
+			"test.missingimports_971.p1;version=1.1.0,test.missingimports_971.p2;version=1.1.0,test.missingimports_971.p4;version=1.1.0");
 		b.setPrivatePackage("test.missingimports_971.p3");
 		b.build();
 		assertTrue(b.check());
@@ -448,6 +511,39 @@ public class BuilderTest {
 			.getManifest()
 			.write(System.out);
 	}
+
+
+	/**
+	 * Counterpart of {@link #testNoImportForUsedExport_971()}
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testEnsureNoImportForUsedExport_971_WithMissingExportVersion() throws Exception {
+		// exports without version should not be added to imports
+		Builder b = new Builder();
+		b.addClasspath(new File("bin_test"));
+		b.setExportPackage(
+			"test.missingimports_971.p1,test.missingimports_971.p2,test.missingimports_971.p4");
+		b.setPrivatePackage("test.missingimports_971.p3");
+		b.build();
+		assertTrue(b.check());
+
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p1"));
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p2"));
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p4"));
+		assertFalse(b.getImports()
+			.containsFQN("test.missingimports_971.p1"));
+		assertFalse(b.getImports()
+			.containsFQN("test.missingimports_971.p2"));
+		b.getJar()
+			.getManifest()
+			.write(System.out);
+	}
+
 	/*
 	 * Private package header doesn't allow the use of negation (!) #840
 	 */
@@ -637,7 +733,6 @@ public class BuilderTest {
 			b.setProperty("Require-Bundle", "osgi.core");
 			b.setProperty("-noimportjava", "true");
 			b.build();
-			assertTrue(b.check("Imports that lack version ranges: \\[javax.swing\\]"));
 			assertThat(b.getImports()
 				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("javax.swing"));
 
@@ -1624,6 +1719,102 @@ public class BuilderTest {
 	}
 
 	@Test
+	public void testSubstitutionEnabled() throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "false");
+			b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;");
+			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.osgi.service.http"));
+			assertTrue(imports.contains("org.osgi.service.http"));
+		}
+
+	}
+
+	@Test
+	public void testSubstitutionDisabled() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "true");
+			b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;");
+			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.osgi.service.http"));
+			assertFalse(imports.contains("org.osgi.service.http"));
+		}
+
+	}
+
+	@Test
+	public void testSubstitutionEnabled2() throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "false");
+			b.setProperty("Export-Package", "org.apache.felix.*");
+			b.addClasspath(IO.getFile(
+				"testresources/ws/cnf/repo2/org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar"));
+			b.addClasspath(new File("bin_test"));
+			b.setProperty("Private-Package", "org.apache.felix.cm.impl");
+			b.setProperty("-fixupmessages.export",
+				"The annotation aQute.bnd.annotation.Export");
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.apache.felix.cm;"));
+			assertTrue(imports.contains("org.apache.felix.cm;"));
+		}
+
+	}
+
+	@Test
+	public void testSubstitutionDisabled2() throws Exception {
+
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.NOSUBSTITUTION, "true");
+			b.setProperty("Export-Package", "org.apache.felix.*");
+			b.addClasspath(IO.getFile(
+				"testresources/ws/cnf/repo2/org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar"));
+			b.addClasspath(new File("bin_test"));
+			b.setProperty("Private-Package", "org.apache.felix.cm.impl");
+			b.setProperty("-fixupmessages.export", "The annotation aQute.bnd.annotation.Export");
+			Jar jar = b.build();
+			assertTrue(b.check());
+
+			Manifest m = jar.getManifest();
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
+			String exports = m.getMainAttributes()
+				.getValue("Export-Package");
+			assertTrue(exports.contains("org.apache.felix.cm;"));
+			assertFalse(imports.contains("org.apache.felix.cm;"));
+		}
+
+	}
+
+	@Test
 	public void testNoImportDirective() throws Exception {
 		Builder b = new Builder();
 		try {
@@ -2508,7 +2699,7 @@ public class BuilderTest {
 	public void testExportContents() throws Exception {
 		Builder builder = new Builder();
 		try {
-			builder.setProperty(Constants.INCLUDE_RESOURCE, "test/activator/inherits=test/test/activator/inherits");
+			builder.setProperty(Constants.INCLUDERESOURCE, "test/activator/inherits=test/test/activator/inherits");
 			builder.setProperty("-exportcontents", "*;x=true;version=1");
 			builder.build();
 			assertTrue(builder.check());
@@ -2675,7 +2866,7 @@ public class BuilderTest {
 	public void testResourceNotFound() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.EXPORT_PACKAGE, "*;x-test:=true");
-		base.put(Constants.INCLUDE_RESOURCE, "does_not_exist");
+		base.put(Constants.INCLUDERESOURCE, "does_not_exist");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2696,7 +2887,7 @@ public class BuilderTest {
 	@Test
 	public void testFindPathInBundleClasspath() throws Exception {
 		Properties base = new Properties();
-		base.put(Constants.INCLUDE_RESOURCE, "jar=jar");
+		base.put(Constants.INCLUDERESOURCE, "jar=jar");
 		base.put(Constants.BUNDLE_CLASSPATH, "${findpath;jar/.{1,4}\\.jar}");
 		Builder analyzer = new Builder();
 		try {
@@ -2991,6 +3182,86 @@ public class BuilderTest {
 				.size());
 			assertEquals(0, bmaker.getWarnings()
 				.size());
+		} finally {
+			bmaker.close();
+		}
+	}
+
+	/**
+	 * Check that the defined activator is found, and not concatenated by the
+	 * Bundle-Activator annotation in TypeInVersionedPackage
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testBundleActivatorShouldNotBeConcatenated() throws Exception {
+		Builder bmaker = new Builder();
+		try {
+			bmaker.setProperty("Bundle-Activator", "test.activator.Activator");
+			bmaker.setProperty("build", "xyz"); // for @Version annotation
+			bmaker.setProperty("Private-Package", "test.*");
+			bmaker.setProperty("-bundleannotations",
+				"test.annotationheaders.attrs.std.activator.TypeInVersionedPackage");
+			// bmaker.setProperty("-dsannotations", "!*");
+			// bmaker.setProperty("-metatypeannotations", "!*");
+			bmaker.setClasspath(new File[] {
+				new File("bin_test")
+			});
+			bmaker.setProperty("-fixupmessages.export",
+				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+			bmaker.setProperty("-fixupmessages.directive",
+				"Unknown directive foobar: in Export-Package, allowed directives are uses:,mandatory:,include:,exclude:,-import:, and 'x-*'");
+
+			Jar jar = bmaker.build();
+			report("testBundleActivatorShouldNotBeConcatenated", bmaker, jar);
+
+			Attributes main = jar.getManifest()
+				.getMainAttributes();
+			assertEquals("test.activator.Activator", main.getValue(Constants.BUNDLE_ACTIVATOR));
+			assertFalse(
+				bmaker
+					.check(
+						"The Bundle-Activator header only supports a single type. The following types were found: test.activator.Activator,test.annotationheaders.attrs.std.activator.TypeInVersionedPackage. This usually happens when a macro resolves to multiple types"));
+		} finally {
+			bmaker.close();
+		}
+	}
+
+	/**
+	 * Check that the Bundle-Activator annotation in TypeInVersionedPackage
+	 * defines the Bundle-Activator of our bundle.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testBundleActivatorFromAnnotation() throws Exception {
+		Builder bmaker = new Builder();
+		try {
+			// bmaker.setProperty("Bundle-Activator",
+			// "test.activator.Activator");
+			bmaker.setProperty("build", "xyz"); // for @Version annotation
+			bmaker.setProperty("Private-Package", "test.*");
+			bmaker.setProperty("-bundleannotations",
+				"test.annotationheaders.attrs.std.activator.TypeInVersionedPackage,*");
+			bmaker.setClasspath(new File[] {
+				new File("bin_test")
+			});
+			bmaker.setProperty("-fixupmessages.export",
+				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+			bmaker.setProperty("-fixupmessages.directive",
+				"Unknown directive foobar: in Export-Package, allowed directives are uses:,mandatory:,include:,exclude:,-import:, and 'x-*'");
+
+			Jar jar = bmaker.build();
+			// assertTrue(bmaker.check());
+			report("testBundleActivatorFromAnnotation", bmaker, jar);
+
+			Attributes main = jar.getManifest()
+				.getMainAttributes();
+			assertEquals("test.annotationheaders.attrs.std.activator.TypeInVersionedPackage",
+				main.getValue(Constants.BUNDLE_ACTIVATOR));
+
+			assertFalse(bmaker.check(
+				"The Bundle-Activator header only supports a single type*"));
 		} finally {
 			bmaker.close();
 		}
@@ -3628,4 +3899,102 @@ public class BuilderTest {
 		}
 	}
 
+	/**
+	 * Tests that an Import-Package without a version-range creates a warning in
+	 * pedantic mode.
+	 */
+	@Test
+	public void testWarningImportsThatLackVersionRanges() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+			b.setProperty("Import-Package", "foo.bar");
+			b.build();
+			softly.assertThat(b.check(
+				"Imports that lack version ranges due to not being found in any bundle on the -buildpath: \\[foo.bar\\]",
+				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
+				.isTrue();
+			softly.assertThat(b.getImports()
+				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("foo.bar"));
+
+		}
+	}
+
+	/**
+	 * Tests that an Import-Package without a version-range for a JDK package
+	 * creates NO warning in pedantic mode. This test requires Java 1.6 which
+	 * contains a package, so we expect NO warning
+	 */
+	@Test
+	public void testNoWarningImportsThatLackVersionRangesJDKPackages() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+
+			RequirementBuilder rqb = new RequirementBuilder(EXECUTION_ENVIRONMENT_NAMESPACE);
+
+			FilterBuilder fb = new FilterBuilder();
+			EE ee = EE.JavaSE_1_6;
+			fb.and()
+				.eq(EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName())
+				.in(CAPABILITY_VERSION_ATTRIBUTE, new VersionRange(ee.getCapabilityVersion()))
+				.endAnd();
+			rqb.addFilter(fb);
+
+			// Require-Capability:
+			// osgi.ee;filter:='(&(osgi.ee=JavaSE)(version>=1.6.0))'
+			b.setProperty(Constants.REQUIRE_CAPABILITY, rqb.buildSyntheticRequirement()
+				.toString());
+			b.setProperty("Import-Package", "javax.xml.transform.stax");
+			b.build();
+			// there should be NO warning: Imports that lack version ranges:
+			// [javax.xml.transform.stax]
+			softly.assertThat(b.check(
+				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
+				.isTrue();
+			softly.assertThat(b.getImports()
+				.keySet())
+				.containsExactlyInAnyOrder(b.getPackageRef("javax.xml.transform.stax"));
+
+		}
+	}
+
+	/**
+	 * Tests that an Import-Package without a version-range for a JDK package
+	 * creates 1 warning in pedantic mode. This test requires Java 1.5 which
+	 * does NOT contains a package, so we expect 1 warning
+	 */
+	@Test
+	public void testWarningImportsThatLackVersionRangesNotInJDK() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+
+			RequirementBuilder rqb = new RequirementBuilder(EXECUTION_ENVIRONMENT_NAMESPACE);
+
+			FilterBuilder fb = new FilterBuilder();
+			EE ee = EE.J2SE_1_5;
+			fb.and()
+				.eq(EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName())
+				.in(CAPABILITY_VERSION_ATTRIBUTE, new VersionRange(ee.getCapabilityVersion()))
+				.endAnd();
+			rqb.addFilter(fb);
+
+			// Require-Capability:
+			// osgi.ee;filter:='(&(osgi.ee=JavaSE)(version>=1.5.0))'
+			// NOTE: Java 1.5. does not contain 'javax.xml.transform.stax' so we
+			// expect a warning
+			b.setProperty(Constants.REQUIRE_CAPABILITY, rqb.buildSyntheticRequirement()
+				.toString());
+			b.setProperty("Import-Package", "javax.xml.transform.stax");
+			b.build();
+			// there should be NO warning: Imports that lack version ranges:
+			// [javax.xml.transform.stax]
+			softly.assertThat(b.check(
+				"Imports that lack version ranges due to not being found in any bundle on the -buildpath: \\[javax.xml.transform.stax\\]",
+				"The JAR is empty: The instructions for the JAR named biz.aQute.bndlib.tests did not cause any content to be included, this is likely wrong"))
+				.isTrue();
+			softly.assertThat(b.getImports()
+				.keySet())
+				.containsExactlyInAnyOrder(b.getPackageRef("javax.xml.transform.stax"));
+
+		}
+	}
 }

@@ -5,7 +5,7 @@ import org.osgi.resource.Resource;
 public class SyntheticBuilder extends ResourceBuilder {
 
 	public SyntheticBuilder(Resource source) throws Exception {
-		super(source);
+		addResource(source);
 	}
 
 	public SyntheticBuilder() {

@@ -22,7 +22,6 @@ package aQute.bnd.component.annotations;
  * Collection types for the {@link Reference} annotation.
  * 
  * @since 1.4
- * @author $Id$
  */
 public enum CollectionType {
 	/**

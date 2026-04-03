@@ -14,6 +14,7 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PlatformUI;
@@ -24,10 +25,17 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 
 	@Override
 	public void start() {
-		NewSearchUI.addQueryListener(this);
-		createBndtoolsJavaWorkingSet();
+		Display current = Display.getCurrent();
+		if (current != null) {
+			current
+			.syncExec(() -> {
+				NewSearchUI.addQueryListener(this);
+				createBndtoolsJavaWorkingSet();
+			});
+		} else {
+			// do nothing, because we do not have a display (e.g. unit test)
+		}
 	}
-
 	private void createBndtoolsJavaWorkingSet() {
 		IWorkingSetManager workingSetManager = PlatformUI.getWorkbench()
 			.getWorkingSetManager();
@@ -43,7 +51,13 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 
 	@Override
 	public void stop() {
-		NewSearchUI.removeQueryListener(this);
+		Display current = Display.getCurrent();
+		if (current != null) {
+			current.syncExec(() -> {
+				NewSearchUI.removeQueryListener(this);
+			});
+		}
+
 	}
 
 	@Override

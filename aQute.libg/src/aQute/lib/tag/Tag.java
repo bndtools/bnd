@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -744,4 +745,30 @@ public class Tag {
 		else
 			return parent.getPath() + "/" + name;
 	}
+
+	public Tag nameValue(String name, Object value) {
+		addAttribute("name", name);
+		addAttribute("value", value);
+		return this;
+	}
+
+	public Tag nameValue(String name, Object... value) {
+		addAttribute("name", name);
+		for (Object o : value) {
+			if (o != null) {
+				addAttribute("value", value);
+				return this;
+			}
+		}
+		return this;
+	}
+
+	public byte[] toBytes() {
+		return toString().getBytes(StandardCharsets.UTF_8);
+	}
+
+	public void remove() {
+		parent.content.removeIf(x -> x == null || x.equals(this));
+	}
+
 }

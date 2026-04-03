@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -235,11 +236,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 		if (definition.version.compareTo(settings.maxVersion) > 0) {
 			DeclarativeServicesAnnotationError dse = new DeclarativeServicesAnnotationError(
 				definition.implementation.getFQN(), null, ErrorType.VERSION_MISMATCH);
-			analyzer
-				.error(
-					"[%s] component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
-					dse.location(), definition.name, definition.version, settings.maxVersion, definition.versionReason)
-				.details(dse);
+			dse.addError(analyzer,
+				"[%s] component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
+				dse.location(), definition.name, definition.version, settings.maxVersion, definition.versionReason);
 		}
 
 	}
@@ -289,6 +288,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 		String objectClass = Arrays.stream(services)
 			.map(TypeRef::getFQN)
+			.filter(fqn -> !Objects.equals(fqn, "org.osgi.service.component.AnyService"))
 			.sorted()
 			.collect(joining());
 		if (objectClass.isEmpty()) {
@@ -316,6 +316,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	private void addServiceRequirement(ReferenceDef ref, MergedRequirement requires) {
 		String objectClass = ref.service;
+		if ("org.osgi.service.component.AnyService".equals(objectClass)) {
+			return;
+		}
 		ReferenceCardinality cardinality = ref.cardinality;
 		boolean optional = cardinality == ReferenceCardinality.OPTIONAL || cardinality == ReferenceCardinality.MULTIPLE;
 		boolean multiple = cardinality == ReferenceCardinality.MULTIPLE

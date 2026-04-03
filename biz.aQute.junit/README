@@ -1,3 +1,6 @@
+Deprecated: This bundle is marked as deprecated in bnd 7.2.0 for remove in 8.0.0
+Please migrate to biz.aQute.tester.junit-platform
+
 The junit project is a plugin that extends the ProjectTester.java class to run OSGi tests
 inside a framework.
 

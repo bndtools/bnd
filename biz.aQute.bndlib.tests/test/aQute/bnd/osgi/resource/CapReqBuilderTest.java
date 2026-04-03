@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.header.Attrs;
@@ -17,6 +19,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.ExtList;
 
 public class CapReqBuilderTest {
+
 
 	@Test
 	public void testSimple() throws Exception {
@@ -64,6 +67,34 @@ public class CapReqBuilderTest {
 		assertEquals("osgi.identity", req.getNamespace());
 		assertEquals("(&(osgi.identity=org.example.foo)(version>=1.2.0)(!(version>=1.3.0)))", req.getDirectives()
 			.get("filter"));
+	}
+
+	@Test
+	public void testAliasedFeatureRequirementWithTypeAndExactVersion() throws Exception {
+		Parameters params = OSGiHeader.parseHeader(
+			"bnd.identity; id=org.eclipse.rcp; type=org.eclipse.update.feature; version=4.37.0.v20250905-0730");
+		Requirement req = CapReqBuilder.getRequirementsFrom(params)
+			.get(0);
+
+		assertEquals("osgi.identity", req.getNamespace());
+		assertEquals(
+			"(&(osgi.identity=org.eclipse.rcp)(type=org.eclipse.update.feature)(version>=4.37.0.v20250905-0730))",
+			req.getDirectives()
+				.get("filter"));
+	}
+
+	@Test
+	public void testAliasedFeatureRequirementWithTypeAndVersionRange() throws Exception {
+		Parameters params = OSGiHeader.parseHeader(
+			"bnd.identity; id=org.eclipse.rcp; type=org.eclipse.update.feature; version='[4.37.0.v20250905-0730,4.38.0)'");
+		Requirement req = CapReqBuilder.getRequirementsFrom(params)
+			.get(0);
+
+		assertEquals("osgi.identity", req.getNamespace());
+		assertEquals(
+			"(&(osgi.identity=org.eclipse.rcp)(type=org.eclipse.update.feature)(version>=4.37.0.v20250905-0730)(!(version>=4.38.0)))",
+			req.getDirectives()
+				.get("filter"));
 	}
 
 	@Test
@@ -171,6 +202,89 @@ public class CapReqBuilderTest {
 			.get(0);
 		Requirement unaliased = CapReqBuilder.unalias(original);
 		assertTrue(original == unaliased, "unaliasing a normal requirement should return the original object");
+	}
+
+	@Test
+	public void testCapabilityToRequirementWithFilter() throws Exception {
+		CapReqBuilder cr = new CapReqBuilder("osgi.wiring.package");
+		Attrs attrs = new Attrs();
+		attrs.putTyped("bundle-symbolic-name", "org.example");
+		attrs.putTyped("bundle-version", "1.7.23");
+		attrs.putTyped("osgi.wiring.package", "org.example.foo");
+		attrs.putTyped("version", "1.7.23");
+		attrs.putTyped("bnd.hashes", "123, 456, 789");
+		cr.addAttributes(attrs);
+
+		Capability cap = cr.buildSyntheticCapability();
+
+		Requirement req = CapReqBuilder.createRequirementFromCapability(cap)
+			.buildSyntheticRequirement();
+
+		assertEquals("osgi.wiring.package", req.getNamespace());
+		assertEquals(
+			"(&(bundle-symbolic-name=org.example)(bundle-version>=1.7.23)(osgi.wiring.package=org.example.foo)(version>=1.7.23)(bnd.hashes=123, 456, 789))",
+			req.getDirectives()
+				.get("filter"));
+
+		Requirement reqFiltered = CapReqBuilder.createRequirementFromCapability(cap, (name) -> {
+			if (name.equals("bundle-symbolic-name") || name.equals("bundle-version") || name.equals("bnd.hashes")) {
+				return false;
+			}
+
+			return true;
+		})
+			.buildSyntheticRequirement();
+
+		assertEquals("osgi.wiring.package", reqFiltered.getNamespace());
+		assertEquals("(&(osgi.wiring.package=org.example.foo)(version>=1.7.23))",
+			reqFiltered.getDirectives()
+			.get("filter"));
+	}
+
+	@Test
+	public void testDetectDuplicateExports() throws Exception {
+
+		// finding packages that have the same name but differ in their
+		// class.
+		// Sinces the "hashes" attribute contains the hashes of each class,
+		// we'd see differences. The problem was that there were two
+		// exporters with different packages with the same name.
+
+		Capability cap1 = createCap("org.bundleA", "org.example.foo", "1.7.23", "123", "456", "789");
+
+		// same package but differences in the hashes (missing one hash) -> this
+		// is a problem
+		Capability cap2 = createCap("org.bundleB", "org.example.foo", "1.7.23", "456", "789");
+
+		// some other OK cap
+		Capability cap3 = createCap("org.bundleC", "org.example.bar", "1.7.23", "789,910");
+
+
+		List<Capability> culprits = ResourceUtils.detectDuplicateCapabilitiesWithDifferentHashes("osgi.wiring.package",
+			Arrays.asList(cap1, cap2, cap3));
+
+		System.out.println(
+			"Culprits: the following capabilities provide the same package but with different package content");
+		for (Capability c : culprits) {
+			System.out.println(c);
+		}
+
+		assertEquals(2, culprits.size());
+		assertThat(culprits).containsExactly(cap1, cap2);
+	}
+
+
+
+	private CapabilityImpl createCap(String bundleSymName, String pck, String version, String... hashes) {
+		CapReqBuilder cr = new CapReqBuilder("osgi.wiring.package");
+		Attrs attrs1 = new Attrs();
+		attrs1.putTyped("bundle-symbolic-name", bundleSymName);
+		attrs1.putTyped("osgi.wiring.package", pck);
+		attrs1.putTyped("version", version);
+		attrs1.putTyped("bnd.hashes", hashes);
+		cr.addAttributes(attrs1);
+
+		return cr.buildSyntheticCapability();
 	}
 
 }

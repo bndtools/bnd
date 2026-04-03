@@ -24,6 +24,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
+import aQute.libg.command.Command;
 import aQute.remote.embedded.activator.EmbeddedActivator;
 import aQute.remote.util.JMXBundleDeployer;
 
@@ -190,6 +191,11 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		}
 
 		return 0;
+	}
+
+	@Override
+	public Command getCommand() throws Exception {
+		return new Command();
 	}
 
 	/**

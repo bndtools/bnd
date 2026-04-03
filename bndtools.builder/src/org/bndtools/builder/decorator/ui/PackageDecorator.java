@@ -1,6 +1,9 @@
 package org.bndtools.builder.decorator.ui;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -18,6 +21,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
@@ -46,24 +50,43 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 	@Override
 	public void decorate(Object element, IDecoration decoration) {
 		try {
-			IPackageFragment pkg = (IPackageFragment) element;
-			if (pkg.getKind() != IPackageFragmentRoot.K_SOURCE) {
+
+			if (element instanceof IJavaProject) {
+				IProject project = ((IJavaProject) element).getProject();
+				if (!project.isAccessible()) {
+					return; // project is closed or deleted
+				}
+				String text = project.getPersistentProperty(packageDecoratorKey);
+				if (text == null)
+					return;
+
+				if (excluded.equals(text)) {
+					decoration.addOverlay(excludedIcon);
+				}
 				return;
 			}
-			IResource pkgResource = pkg.getCorrespondingResource();
-			if (pkgResource == null) {
-				return;
+
+			if (element instanceof IPackageFragment pkg) {
+				if (pkg.getKind() != IPackageFragmentRoot.K_SOURCE) {
+					return;
+				}
+				IResource pkgResource = pkg.getCorrespondingResource();
+				if (pkgResource == null) {
+					return;
+				}
+				String text = pkgResource.getPersistentProperty(packageDecoratorKey);
+				if (text == null) {
+					return;
+				}
+				if (excluded.equals(text)) {
+					decoration.addOverlay(excludedIcon);
+					decoration.addSuffix(text + " from bundle export");
+					return;
+				} else {
+					decoration.addOverlay(exportedIcon);
+				}
+				decoration.addSuffix(text);
 			}
-			String text = pkgResource.getPersistentProperty(packageDecoratorKey);
-			if (text == null) {
-				return;
-			}
-			if (excluded.equals(text)) {
-				decoration.addOverlay(excludedIcon);
-			} else {
-				decoration.addOverlay(exportedIcon);
-			}
-			decoration.addSuffix(text);
 		} catch (CoreException e) {
 			logger.logError("Package Decorator error", e);
 		}
@@ -78,7 +101,15 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 			return; // project is not a java project
 		}
 		boolean changed = false;
-		for (IClasspathEntry cpe : javaProject.getRawClasspath()) {
+
+		IClasspathEntry[] cpes = new IClasspathEntry[0];
+		try {
+			cpes = javaProject.getRawClasspath();
+		} catch (JavaModelException jme) {
+			// project maybe a maven project with no Java nature
+		}
+
+		for (IClasspathEntry cpe : cpes) {
 			if (cpe.getEntryKind() != IClasspathEntry.CPE_SOURCE) {
 				continue;
 			}
@@ -153,11 +184,64 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
 		// If decoration change, update display
 		if (changed) {
+
 			Display display = PlatformUI.getWorkbench()
 				.getDisplay();
 			SWTConcurrencyUtil.execForDisplay(display, true, () -> PlatformUI.getWorkbench()
 				.getDecoratorManager()
 				.update(packageDecoratorId));
 		}
+		syncMarkersFromProperties(project);
 	}
+
+
+	private static void syncMarkersFromProperties(IProject project) throws CoreException {
+		if (project == null || !project.isAccessible())
+			return;
+
+		List<String> offendingPackages = offendingPackages(project);
+
+		if (offendingPackages.isEmpty()) {
+			// reset project decorator
+			project.setPersistentProperty(packageDecoratorKey, null);
+			return;
+		}
+
+		project.setPersistentProperty(packageDecoratorKey, excluded);
+		Display display = PlatformUI.getWorkbench()
+			.getDisplay();
+		SWTConcurrencyUtil.execForDisplay(display, true, () -> PlatformUI.getWorkbench()
+			.getDecoratorManager()
+			.update(packageDecoratorId));
+
+	}
+
+	private static List<String> offendingPackages(IProject project) throws CoreException {
+		List<String> result = new ArrayList<>();
+
+		project.accept(res -> {
+			if (!(res instanceof IResource) || !res.isAccessible())
+				return true;
+
+			IJavaElement je = JavaCore.create(res);
+			if (je instanceof IPackageFragment pkg) {
+				String val = null;
+				try {
+					val = res.getPersistentProperty(packageDecoratorKey);
+				} catch (CoreException ignored) { /* skip */ }
+
+				if (excluded.equals(val)) {
+					String pkgName = pkg.getElementName();
+					result.add(pkgName);
+				}
+
+			}
+
+			return true; // keep visiting
+		});
+
+		Collections.sort(result);
+		return result;
+	}
+
 }

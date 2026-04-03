@@ -1,9 +1,9 @@
 ---
 title: OBR Index Exporter Plugin
-layout: default
+layout: bnd
 summary: Exports OBR Index XML from a specific Bndrun file
+parent: Plugins
 ---
-
 The OBR repository file is an XML-based representation of bundle meta-data.
 
 The `biz.aQute.resolve.obr.plugin.ObrExporter` plugin allows you to export the OBR index XML file from a bndrun definition. It provides a new export type:

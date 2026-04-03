@@ -1,9 +1,21 @@
 ---
-layout: default
-class: bnd
+layout: bnd
 title: -buildtool  toolspec  (EXPERIMENTAL!)
-summary:  A specification for the bnd CLI to install a build tool, like gradle, in the workspace
+class: bnd
+summary: |
+   A specification for the bnd CLI to install a build tool, like gradle, in the workspace
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-buildtool \
+        gradle; version=7.3.0; \
+        bnd_version = 6.1.0
+        bnd_snapshot=https://bndtools.jfrog.io/bndtools/libs-snapshot-local`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/buildtool.md --><br /><br />
 
 In many projects, the workspace carries the files to build it with an external tool. Gradle is the most
 popular but it is also possible to use other tools. An advantage of the workspace is that there are

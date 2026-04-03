@@ -119,6 +119,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			case IProblem.IsClassPathCorrect :
 				// System.out.println("IsClassPathCorrect");
 				return true;
+			case IProblem.IsClassPathCorrectWithReferencingType :
+				// System.out.println("IsClassPathCorrectWithReferencingType");
+				return true;
 			case IProblem.ImportNotFound :
 				// System.out.println("ImportNotFound");
 				return true;
@@ -501,6 +504,8 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					}
 					case IProblem.UndefinedMethod : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						if (node == null)
+							continue;
 						ASTNode parent = node.getParent();
 						UNDEFINED_METHOD: while (parent != null) {
 							switch (parent.getNodeType()) {
@@ -602,6 +607,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						}
 						continue;
 					}
+					case IProblem.IsClassPathCorrectWithReferencingType :
 					case IProblem.IsClassPathCorrect : {
 						String partialClassName = null;
 						// The original implementation used to query the AST

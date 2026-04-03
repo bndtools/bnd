@@ -86,8 +86,6 @@ public class SynchronizeWorkspaceWithEclipse {
 			return;
 		}
 
-		// No need to turn off autobuild as the lock will take care of it
-
 		Job sync = Job.create("sync workspace", (IProgressMonitor monitor) -> {
 
 			Map<String, IProject> projects = Stream.of(root.getProjects())

@@ -1,9 +1,34 @@
 ---
-layout: default
+layout: bnd
+title: Conditional-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *
 class: Header
-title: Conditional-Package  PACKAGE-SPEC (',' PACKAGE-SPEC) *
-summary: Recursively add packages from the class path when referred and when they match one of the package specifications.
+summary: |
+   Recursively add packages from the class path when referred and when they match one of the package specifications.
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Conditional-Package: com.*`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/conditional_package.md --><br /><br />
+
+# Conditional-Package
+
+This instruction is equal to using [-conditionalpackage](/instructions/conditionalpackage.html) except for the fact that the header in addition will be copied into the generated bundle manifest (like all headers beginning with a capital letter).
+
+The `Conditional-Package` header allows you to specify package patterns that, when referred to by your code, will be included in the bundle if they match the given specifications. This is useful for conditionally including packages from the classpath based on actual usage.
+
+Example:
+
+```
+Conditional-Package: com.example.optional.*
+```
+
+bnd will recursively add matching packages until no more additions are found. This header is useful for advanced packaging scenarios.
 
 	/**
 	 * Answer extra packages. In this case we implement conditional package. Any
@@ -41,3 +66,8 @@ summary: Recursively add packages from the class path when referred and when the
 		}
 		return jar;
 	}
+
+
+
+<hr />
+TODO Needs review - AI Generated content

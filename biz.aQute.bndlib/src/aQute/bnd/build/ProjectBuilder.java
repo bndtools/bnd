@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import java.util.zip.ZipException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,9 +215,33 @@ public class ProjectBuilder extends Builder {
 				for (File file : project.getAllsourcepath()) {
 					addSourcepath(file);
 				}
+
+				// add ${repo} references (important for sub-bundles)
+				if (dependencies != null) {
+
+					for (Container c : RepoCollector.collectRepoReferences(this)) {
+
+						File file = c.getFile();
+						if ((c.getType() == TYPE.PROJECT) && !file.exists()) {
+							continue;
+						}
+						Map<String, String> containerAttributes = c.getAttributes();
+						if (!Boolean.parseBoolean(containerAttributes.getOrDefault("maven-optional", "false"))) {
+							try (Jar jar = new Jar(file)) {
+								fillDependencies(dependencies, jar, containerAttributes);
+							}
+							catch (ZipException e) {
+								// not a jar file (can happen if a
+								// ${repo}-reference a non-jar (.dylib, .so)
+							}
+						}
+					}
+				}
+
 				if ((dependencies != null) && !dependencies.isEmpty()) {
 					setProperty(MAVEN_DEPENDENCIES, dependencies.toString());
 				}
+
 			}
 		} catch (Exception e) {
 			msgs.Unexpected_Error_("ProjectBuilder init", e);
@@ -234,59 +259,67 @@ public class ProjectBuilder extends Builder {
 		Map<String, String> containerAttributes = c.getAttributes();
 		if ((dependencies != null)
 			&& !Boolean.parseBoolean(containerAttributes.getOrDefault("maven-optional", "false"))) {
-			String depGroupId = containerAttributes.get("maven-groupId");
-			String depArtifactId = containerAttributes.get("maven-artifactId");
-			String depVersion = containerAttributes.get("maven-version");
-			String scope = containerAttributes.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile"));
-			if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
-				// the repo provided maven attributes to the container
-				Attrs attrs = new Attrs();
-				attrs.put("groupId", depGroupId);
-				attrs.put("artifactId", depArtifactId);
-				attrs.put("version", depVersion);
-				attrs.put("scope", scope);
-				StringBuilder key = new StringBuilder().append(depGroupId)
-					.append(':')
-					.append(depArtifactId)
-					.append(':')
-					.append(depVersion);
-				String depClassifier = containerAttributes.get("maven-classifier");
-				if ((depClassifier != null) && !depClassifier.isEmpty()) {
-					attrs.put("classifier", depClassifier);
-					key.append(":jar:")
-						.append(depClassifier);
-				}
-				dependencies.add(key.toString(), attrs);
-			} else {
-				// fall back to pom.properties in jar
-				jar.getResources(pomPropertiesFilter)
-					.forEachOrdered(r -> {
-						UTF8Properties pomProperties = new UTF8Properties();
-						try (InputStream in = r.openInputStream()) {
-							pomProperties.load(in);
-						} catch (Exception e) {
-							logger.debug("unable to read pom.properties resource {}", r, e);
-							return;
-						}
-						String pomGroupId = pomProperties.getProperty("groupId");
-						String pomArtifactId = pomProperties.getProperty("artifactId");
-						String pomVersion = pomProperties.getProperty("version");
-						if ((pomGroupId != null) && (pomArtifactId != null) && (pomVersion != null)) {
-							Attrs attrs = new Attrs();
-							attrs.put("groupId", pomGroupId);
-							attrs.put("artifactId", pomArtifactId);
-							attrs.put("version", pomVersion);
-							attrs.put("scope", scope);
-							String key = new StringBuilder().append(pomGroupId)
-								.append(':')
-								.append(pomArtifactId)
-								.append(':')
-								.append(pomVersion)
-								.toString();
-							dependencies.add(key, attrs);
-						}
-					});
+			fillDependencies(dependencies, jar, containerAttributes);
+		}
+	}
+
+	private void fillDependencies(Parameters dependencies, Jar jar, Map<String, String> containerAttributes) {
+		String depGroupId = containerAttributes.get("maven-groupId");
+		String depArtifactId = containerAttributes.get("maven-artifactId");
+		String depVersion = containerAttributes.get("maven-version");
+		String scope = containerAttributes.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile"));
+		if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
+			// the repo provided maven attributes to the container
+			Attrs attrs = new Attrs();
+			attrs.put("groupId", depGroupId);
+			attrs.put("artifactId", depArtifactId);
+			attrs.put("version", depVersion);
+			attrs.put("scope", scope);
+			StringBuilder key = new StringBuilder().append(depGroupId)
+				.append(':')
+				.append(depArtifactId)
+				.append(':')
+				.append(depVersion);
+			String depClassifier = containerAttributes.get("maven-classifier");
+			if ((depClassifier != null) && !depClassifier.isEmpty()) {
+				attrs.put("classifier", depClassifier);
+				key.append(":jar:")
+					.append(depClassifier);
 			}
+			dependencies.add(key.toString(), attrs);
+		} else {
+			// fall back to pom.properties in jar
+			if (jar == null) {
+				return;
+			}
+
+			jar.getResources(pomPropertiesFilter)
+				.forEachOrdered(r -> {
+					UTF8Properties pomProperties = new UTF8Properties();
+					try (InputStream in = r.openInputStream()) {
+						pomProperties.load(in);
+					} catch (Exception e) {
+						logger.debug("unable to read pom.properties resource {}", r, e);
+						return;
+					}
+					String pomGroupId = pomProperties.getProperty("groupId");
+					String pomArtifactId = pomProperties.getProperty("artifactId");
+					String pomVersion = pomProperties.getProperty("version");
+					if ((pomGroupId != null) && (pomArtifactId != null) && (pomVersion != null)) {
+						Attrs attrs = new Attrs();
+						attrs.put("groupId", pomGroupId);
+						attrs.put("artifactId", pomArtifactId);
+						attrs.put("version", pomVersion);
+						attrs.put("scope", scope);
+						String key = new StringBuilder().append(pomGroupId)
+							.append(':')
+							.append(pomArtifactId)
+							.append(':')
+							.append(pomVersion)
+							.toString();
+						dependencies.add(key, attrs);
+					}
+				});
 		}
 	}
 
@@ -525,9 +558,18 @@ public class ProjectBuilder extends Builder {
 
 		if (versions.isEmpty()) {
 			// We have a repo
-			// Baselining 0.x is uninteresting
+			// Baselining 0.x is uninteresting (unless baselineincludezeromajor is enabled)
 			// x.0.0 is a new major version so maybe there is no baseline
-			if ((version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0))) {
+
+			// Check if baselineincludezeromajor is enabled in diffpackages
+			boolean includeZeroMajor = isIncludeZeroMajorEnabled();
+
+			boolean shouldWarn = (version.getMajor() > 0) && ((version.getMinor() > 0) || (version.getMicro() > 0));
+			if (!shouldWarn && includeZeroMajor && version.getMajor() == 0 && (version.getMinor() > 0 || version.getMicro() > 0)) {
+				shouldWarn = true;
+			}
+
+			if (shouldWarn) {
 				warning(
 					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than %s which suggests that there should be a prior version.",
 					getBsn(), repo, version.getWithoutQualifier(), new Version(version.getMajor()));
@@ -614,6 +656,10 @@ public class ProjectBuilder extends Builder {
 
 		// Ignore, nothing matched
 		return null;
+	}
+
+	private boolean isIncludeZeroMajorEnabled() {
+		return project.is(Constants.BASELINEINCLUDEZEROMAJOR);
 	}
 
 	/**
@@ -802,7 +848,26 @@ public class ProjectBuilder extends Builder {
 						run.setProperty(BUNDLE_VERSION, attrs.get(Constants.EXPORT_VERSION));
 					}
 
+					if (run.getProperty(Constants.POM) == null) {
+						String pom = getProperty(Constants.POM);
+						if (pom != null) {
+							run.setProperty(Constants.POM, pom);
+						}
+					}
+
 					attrs.forEach(run::setProperty);
+
+					String runBundleVersion = run.getProperty(BUNDLE_VERSION);
+					String snapshot = run.getProperty(Constants.SNAPSHOT);
+					if ((runBundleVersion != null) && (snapshot != null)) {
+						if (snapshot.isEmpty()) {
+							runBundleVersion = Version.parseVersion(runBundleVersion)
+								.toStringWithoutQualifier();
+						} else if (runBundleVersion.contains("SNAPSHOT")) {
+							runBundleVersion = Builder.doSnapshot(runBundleVersion, snapshot);
+						}
+						run.setProperty(BUNDLE_VERSION, runBundleVersion);
+					}
 
 					Entry<String, Resource> export = run.export(null, attrs);
 					getInfo(run);

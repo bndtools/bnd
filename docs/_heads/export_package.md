@@ -1,26 +1,115 @@
 ---
-layout: default
+layout: bnd
+title: Export-Package  ::= export ( ',' export)*
 class: Header
-title: Export-Package  ::= export ( ',' export)* 
-summary: The Export-Package header contains a declaration of exported packages
+summary: |
+   The Export-Package header contains a declaration of exported packages
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
-The bnd definition allows the specification to be done using ''patterns'', a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. The following examples copies everything on the class path except for packages starting with `com`. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses.
 
-  Export-Package= !com.*, *
+- Example: `Export-Package: org.osgi.util.tracker;version=1.3`
+
+- Values: `${packages}`
+
+- Pattern: `.*`
+
+### Options 
+
+- `-noimport:` By default, bnd makes all exports also imports. Adding a -noimport: to an exported package will make it export only.
+  - Example: `-noimport:=true`
+
+  - Values: `true,false`
+
+  - Pattern: `true|false|TRUE|FALSE`
+
+
+- `uses:` Calculated by bnd: It is a comma-separated list of package names that are used by the exported package.
+  - Example: `Is calculated by bnd`
+
+  - Pattern: `.*`
+
+
+- `mandatory:` A comma-separated list of attribute names. Note that the use of a comma in the value requires it to be enclosed in double quotes. A bundle importing the package must specify the mandatory attributes, with a value that matches, to resolve to the exported package.
+  - Example: `mandatory:="bar,foo"`
+
+  - Pattern: `.*`
+
+
+- `include:` A comma-separated list of class names that must be visible to an importer.
+  - Example: `include:="Qux*"`
+
+  - Pattern: `.*`
+
+
+- `exclude:` A comma-separated list of class names that must not be visible to an importer.
+  - Example: `exclude:="QuxImpl*,BarImpl"`
+
+  - Pattern: `.*`
+
+
+- `-import:` Experimental.
+  - Example: ``
+
+  - Pattern: `.*`
+
+<!-- Manual content from: ext/export_package.md --><br /><br />
+
+# Export-Package
+
+The `Export-Package` header declares which Java packages in the bundle are made available to other bundles. You can use patterns, wildcards, and directives to control which packages are exported and how.
+
+Example:
+
+```
+Export-Package: !com.*, *
+```
+
+This example exports all packages except those starting with `com`. 
+
+**Note:** By default bnd automatically calculates `Import-Package` references for exported packages. This is called [package substitution](/chapters/170-versioning.html#substitution)
+You can use the `-noimport:=true` directive which instructs bnd to **not** calculate `Import-Package` references for exported packages.
+
+Example:
+
+````
+Export-Package: com.*;-noimport:=true
+```
+
+With the [-nosubstitution: true](/instructions/nosubstitution.html) instruction, this substitution behavior can be disabled globally.
+
+See also: [`-exportcontents`](/instructions/exportcontents.html).
+
+The bnd definition allows the specification to be done using ''patterns'', a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. 
+
+Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. 
+
+
+## Examples 
+
+The following examples copies everything on the class path except for packages starting with `com`. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses.
+
+	Export-Package= !com.*, *
 
 Exports are automatically imported. This features can be disabled with a special directive on the export instruction: `-noimport:=true`. For example:
   
-  Export-Package= com.acme.impl.*;-noimport:=true, *
+	Export-Package= com.acme.impl.*;-noimport:=true, *
 
 Bnd will automatically calculate the `uses:` directive. This directive is used by the OSGi framework to create a consistent class space for a bundle. The Export-Package statement allows this directive to be overridden on a package basis by specifying the directive in an Export-Package instruction. 
 
-  Export-package = com.acme.impl.*;uses="my.special.import"
+	Export-package = com.acme.impl.*;uses="my.special.import"
 
 However, in certain cases it is necessary to augment the uses clause. It is therefore possible to use the special name `<<USES>>` in the clause. Bnd will replace this special name with the calculated uses set. Bnd will remove any extraneous commas when the `<<USES>>` is empty.
 
-  Export-package = com.acme.impl.*;uses:="my.special.import,<<USES>>"
+	Export-package = com.acme.impl.*;uses:="my.special.import,<<USES>>"
 
 Directives that are not part of the OSGi specification will give a warning unless they are prefixed with a 'x-'.
+
+## Attribute and Directive Ordering
+
+When bnd processes the `Export-Package` header, it automatically ensures consistent ordering of attributes and directives within each package clause. Attributes (keys without a trailing colon) are placed before directives (keys with a trailing colon), and both groups are sorted alphabetically. This ensures reproducible builds and easier comparison of manifest files.
+
+For more details, see [OSGi Header Attribute and Directive Ordering](/chapters/160-jars.html#osgi-header-attribute-and-directive-ordering).
 
 
 			//
@@ -146,4 +235,7 @@ Directives that are not part of the OSGi specification will give a warning unles
 		}
 	}
 
-	
+
+
+<hr />
+TODO Needs review - AI Generated content

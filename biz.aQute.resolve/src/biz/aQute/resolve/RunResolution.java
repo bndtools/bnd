@@ -1,5 +1,8 @@
 package biz.aQute.resolve;
 
+import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -26,11 +29,15 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.help.instructions.ResolutionInstructions.RunStartLevel;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -93,9 +100,17 @@ public class RunResolution {
 	 */
 	public static RunResolution resolve(Project project, Processor actualProperties,
 		Collection<ResolutionCallback> callbacks, ResolverLogger resolverLogger) {
+		if (ResolveMode.never.toString()
+			.equals(project.get(Constants.RESOLVE))) {
+			return new RunResolution(project, actualProperties, new UnsupportedOperationException(String
+				.format("Resolve is forbidden here, as %s is set to %s", Constants.RESOLVE,
+					ResolveMode.never.toString())),
+				null);
+		}
 		if (callbacks == null)
 			callbacks = Collections.emptyList();
-		ResolverLogger logger = resolverLogger == null ? new ResolverLogger() : resolverLogger;
+		ResolverLogger logger = resolverLogger == null ? ResolverLogger.newLogger(actualProperties, false)
+			: resolverLogger;
 		try {
 			try {
 				ResolveProcess resolve = new ResolveProcess();
@@ -181,6 +196,17 @@ public class RunResolution {
 
 		List<VersionedClause> newer = new ArrayList<>(nonNull(getRunBundles()));
 		List<VersionedClause> older = new ArrayList<>(nonNull(model.getRunBundles()));
+
+		// Apply the -runbundles decorator on the computed RunBundles
+		Parameters bundles = HeaderClause.toParameters(newer);
+		Instructions decorator = new Instructions(project.mergeProperties(Constants.RUNBUNDLES_DECORATOR));
+		decorator.decorate(bundles);
+
+
+		newer = bundles.entrySet()
+			.stream()
+			.map(entry -> new VersionedClause(removeDuplicateMarker(entry.getKey()), entry.getValue()))
+			.collect(Collectors.toList());
 
 		if (newer.equals(older))
 			return false;
@@ -278,6 +304,19 @@ public class RunResolution {
 			}
 		}
 		return versionedClauses;
+	}
+
+	/**
+	 * Gets the resolution result as a list of bundle ids that represent the new
+	 * -runbundles
+	 *
+	 * @return the BundleIds of the bundles in the resolution
+	 */
+	public List<BundleId> getResolvedRunBundles() {
+		return getOrderedResources().stream()
+			.filter(this::isBundle)
+			.map(ResourceUtils::getBundleId)
+			.collect(toList());
 	}
 
 	/**

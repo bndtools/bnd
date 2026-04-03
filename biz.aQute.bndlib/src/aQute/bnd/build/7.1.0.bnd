@@ -1,0 +1,3 @@
+__versiondefaults__                 7.1.0
+-launcher                           manage = all
+-jpms-multi-release                 true

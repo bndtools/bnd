@@ -1,14 +1,19 @@
-![bnd](https://user-images.githubusercontent.com/200494/226292967-963bd722-96d9-4a46-9658-4699962032b0.png)
+[![bnd](https://user-images.githubusercontent.com/200494/226292967-963bd722-96d9-4a46-9658-4699962032b0.png)](https://bnd.bndtools.org/)
 
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/bndtools/bnd) [![Rebuild](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml) [![CodeQL](https://github.com/bndtools/bnd/actions/workflows/codeql.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/codeql.yml)  ![GitHub issues](https://img.shields.io/github/issues/bndtools/bnd) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bndtools/bnd) 
-
+[![GitHub release](https://img.shields.io/github/v/release/bndtools/bnd)](
+https://github.com/bndtools/bnd/releases/latest
+)
+[![Rebuild](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/rebuild.yml) 
+[![CodeQL](https://github.com/bndtools/bnd/actions/workflows/codeql.yml/badge.svg)](https://github.com/bndtools/bnd/actions/workflows/codeql.yml) 
+[![GitHub issues](https://img.shields.io/github/issues/bndtools/bnd)](https://github.com/bndtools/bnd/issues) 
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bndtools/bnd)](https://github.com/bndtools/bnd/commits/)
 
 # bnd & bndtools 
 
 Bnd/Bndtools is a swiss army knife for OSGi. It creates manifest headers for you based on analyzing the class code, it verifies your settings, it manages project dependencies, diffs jars, and much more. At the core is a library with all the functions. The library is then used in a myriad of subsystems to provide the core functionality to the rest of the world.
 
 * [bndlib and friends](https://bnd.bndtools.org) – The core library plus repository, resolve, etc.
-* [maven plugins](maven/README.md) – A full set of maven plugins that make bnd useful for maven users
+* [maven plugins](maven-plugins/README.md) – A full set of maven plugins that make bnd useful for maven users
 * [eclipse](https://bndtools.org) – Bndtools is the plugin for Eclipse that provides full GUI support for bnd. This is a p2 repository.
 * [bnd](biz.aQute.bnd) – a command line utility with a hodgepodge of sometimes extremely useful functions. Can even be used instead of a build tool. is available through [Homebrew formula](https://formulae.brew.sh/formula/bnd).
 * [gradle plugin(s)](gradle-plugins/README.md) – A bnd workspace plugin that builds identical to Eclipse's bndtool as well as a gradle plugin that provides bnd support for non-workspace projects
@@ -38,6 +43,8 @@ The master branch is release 7 currently and the Java release version is 17. Sin
 
 Want to work on Bnd/Bndtools? There are [instructions](CONTRIBUTING.md) to get you started. Please let us know if anything feels wrong or incomplete.
 
+Some more instructions how to get started with bndtools development can be found [here](https://bndtools.org/development.html)
+
 ## Repo Structure
 
 ### Branches 
@@ -54,7 +61,7 @@ We generally do not use other branches. Issues and features are handled through 
 
 [Open issues](https://github.com/bndtools/bnd/issues) are the one _actively scheduled_ to go into the next milestone(s). 
 
-_All other issues will be closed_. However, some issues we close because we just lack people that are interested in working on them. We explicitly mark those issues with [`abeyance`](https://github.com/bndtools/bnd/issues?q=is%3Aissue+label%3Aabeyance+). If you got time to spare, do not hesitate to open them and indicate you're willing to work on them. We will then properly schedule and track them. If you need to find them, use this filter: `is:issue label:abeyance`, make sure `is:open` is not in the filter.
+_All other issues will be closed_. However, some issues we close because we just lack people that are interested in working on them. We explicitly mark those issues with [`help wanted`](https://github.com/bndtools/bnd/issues?q=is%3Aissue%20state%3Aclosed%20label%3A"help%20wanted"). If you got time to spare, do not hesitate to open them and indicate you're willing to work on them. We will then properly schedule and track them. If you need to find them, use this filter: `is:issue state:closed label:"help wanted"`.
 
 ### Milestones
 
@@ -68,21 +75,103 @@ We try to have a release every 3-6 months and plan these with [milestones](https
 
 Actions trigger workflows depending on the branch. PR's for verification require approval when not from a known contributor. We verify the code quality with CodeQL and the [contribution](CONTRIBUTING.md) rules are also checked.
 
-### Using the latest development SNAPSHOT build of Bnd/Bndtools
 
-All our artifacts are in the [`biz.aQute.bnd`](https://repo.maven.apache.org/maven2/biz/aQute/bnd) group id.
+## Installation (Stable Releases)
 
-* Stable releases 	 – https://repo.maven.apache.org/maven2
-* Release candidates – https://bndtools.jfrog.io/bndtools/libs-release/
-* Snapshots          – https://bndtools.jfrog.io/bndtools/libs-snapshot/
+Use the latest **stable release** for normal development.
 
-[Bnd Gradle Plugins](gradle-plugins/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins) are finally released to the Gradle default repository as well. [Bnd Maven Plugins](maven/README.md#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins) are stored in the listed repos.
+- Maven Central (group id: [`biz.aQute.bnd`](https://repo.maven.apache.org/maven2/biz/aQute/bnd)) - [https://repo.maven.apache.org/maven2](https://repo.maven.apache.org/maven2)
+- Bndtools Eclipse Plugin p2 update site - [https://bndtools.jfrog.io/bndtools/update-latest](https://bndtools.jfrog.io/bndtools/update-latest)
 
-Bndtools requires a p2 repository and is therefore _special_:
+### Bnd Maven Plugin (stable)
 
-* Latest stable release 	– https://bndtools.jfrog.io/bndtools/update-latest
-* Latest release candidate 	– https://bndtools.jfrog.io/bndtools/update-rc
-* Latest build snapshot 	– https://bndtools.jfrog.io/bndtools/update-snapshot
+```xml
+<plugin>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>bnd-maven-plugin</artifactId>
+  <version>7.2.1</version>
+</plugin>
+```
+
+### Bnd Gradle Plugin (stable)
+
+```gradle
+plugins {
+  id "biz.aQute.bnd.builder" version "7.2.1"
+}
+```
+
+
+## Installation (Release Candidates)
+
+Release Candidates are **pre-release builds** published for testing.
+
+- RC artifacts - [https://bndtools.jfrog.io/bndtools/libs-release/](https://bndtools.jfrog.io/bndtools/libs-release/)
+- Bndtools Eclipse Plugin RC update site - [https://bndtools.jfrog.io/bndtools/update-rc](https://bndtools.jfrog.io/bndtools/update-rc)
+
+```gradle
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    maven { url "https://bndtools.jfrog.io/bndtools/libs-release/" }
+  }
+}
+
+plugins {
+  id "biz.aQute.bnd.builder" version "X.Y.Z.RC1"
+}
+```
+
+```xml
+<pluginRepositories>
+  <pluginRepository>
+    <id>bnd-rc</id>
+    <url>https://bndtools.jfrog.io/bndtools/libs-release/</url>
+  </pluginRepository>
+</pluginRepositories>
+
+<plugin>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>bnd-maven-plugin</artifactId>
+  <version>X.Y.Z.RC1</version>
+</plugin>
+```
+
+
+## Installation (Development Snapshot Builds — master branch)
+
+Snapshot builds are produced from the **current master branch** and may be unstable.
+
+- Snapshot artifacts - [https://bndtools.jfrog.io/bndtools/libs-snapshot/](https://bndtools.jfrog.io/bndtools/libs-snapshot/)
+- Bndtools Eclipse Plugin snapshot update site - [https://bndtools.jfrog.io/bndtools/update-snapshot](https://bndtools.jfrog.io/bndtools/update-snapshot)
+
+```gradle
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    maven { url "https://bndtools.jfrog.io/bndtools/libs-snapshot/" }
+  }
+}
+
+plugins {
+  id "biz.aQute.bnd.builder" version "X.Y.Z-SNAPSHOT"
+}
+```
+
+```xml
+<pluginRepositories>
+  <pluginRepository>
+    <id>bnd-snapshots</id>
+    <url>https://bndtools.jfrog.io/bndtools/libs-snapshot/</url>
+  </pluginRepository>
+</pluginRepositories>
+
+<plugin>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>bnd-maven-plugin</artifactId>
+  <version>X.Y.Z-SNAPSHOT</version>
+</plugin>
+```
 
 ## Building
 
@@ -104,5 +193,7 @@ YourKit supports open source projects with its full-featured Java Profiler. Your
 ![Powered by Artifactory](https://github.com/bndtools/bnd/raw/master/docs/img/Powered-by-artifactory_04.png)
 
 [![YourKit](https://www.yourkit.com/images/yklogo.png)](https://www.yourkit.com/)
+
+[icons8](https://icons8.com/) – For some of the icons
 
 [1]: https://bnd.bndtools.org/chapters/180-baselining.html

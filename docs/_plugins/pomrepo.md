@@ -1,10 +1,10 @@
 ---
 title: Bnd Pom Repository
-layout: default
+layout: bnd
 summary: A plugin to use a Maven POM as a repository
+parent: Plugins
 ---
-
-A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.
+A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository / BndPomRepository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.
 
 The pom can be a file on the local file system, a URL, a group, artifact, version (GAV) coordinate, or a query expression on maven central.
 
@@ -39,6 +39,10 @@ Opening the `Run` tab of the bndrun editor on this file will show you all transi
 
 ## Searching
 
+
+**DEPRECATION:** The searching feature below will be deprecated in bnd 7.2.0 for removal in bnd 8.0. 
+The reason is that this search is considered "legacy" (see https://status.maven.org/), and also is often instable recently.
+
 Maven Central supports a [searching facility](https://blog.sonatype.com/2011/06/you-dont-need-a-browser-to-use-maven-central/) based on Solr. For example, you want all the artifacts of a given group id. In that case you could use the following Bnd Pom Repository plugin:
 
     -standalone: true
@@ -69,6 +73,7 @@ The query must return a JSON response.
 | `transitive`     | `true|false` | `true` | If set to _truthy_ then dependencies are transitive.|
 | `poll.time`      | `integer`| 5 minutes | Number of seconds between checks for changes to POM files referenced by `pom` or `revision`. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
 | `dependencyManagement` | `boolean`| false | If set to `true`, dependencies in the `dependencyManagement` section will be handled as actual dependencies.|
+| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.
 
 
 One, and only one, of the `pom`, `revision`, or `query` configurations can be set. If multiple are set then the first in `[pom, revision, query]` is used and the remainders are ignored.
@@ -95,6 +100,10 @@ If you use a remote repository then you must configure the credentials. This is 
 
 Notice that the id must match the scheme, the host, and the port if not the default port for the scheme.
 
+## Tagging
+
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.
+
 ## IDEs
 
 The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.
@@ -107,4 +116,4 @@ The repository view in the IDE will show detailed information when you hover the
 * The parser ignores repositories in POMs and restricts the repositories to the ones listes in the `releaseUrl` and `snapshotUrl` configuration parameters. This is for security reasons.
 * The parser ignores any restrictions on dependencies because the intention of these restrictions is to handle unicity of the class path. The primary purpose of the Bnd Pom Repository is to be used in assembling. Since this is not an issue for the resolver we ignore this. You can always override this with the `-runblacklist` instruction.
 
-[-connection-settings]: /instructions/connection-settings
+[-connection-settings]: /instructions/connection_settings.html

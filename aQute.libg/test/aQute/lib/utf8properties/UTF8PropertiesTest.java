@@ -296,6 +296,11 @@ public class UTF8PropertiesTest {
 			+ "a;b=9", "a;b", 7, "Invalid property key: `a;b`:");
 		assertError("\n" //
 			+ "a=\\ \n     a;v=4", "a", 1, "Found \\\\<whitespace>", "Invalid property key: `a;v`");
+		assertError("\n" //
+			+ "a=\\abc\n", "a", 1, "Found odd number of backslashes before");
+		assertError("\n" //
+			+ "a=\\u12G4", "a", 1, "Invalid unicode string");
+
 		assertError("\n\n\n\n\n\n\n" //
 			+ "a", "a", 7, "No value specified for key");
 		assertError("\npropertyName=property\0Value\n", "propertyName", 1,
@@ -403,6 +408,41 @@ public class UTF8PropertiesTest {
 		UTF8Properties p1 = new UTF8Properties();
 		p1.load(props, null);
 		assertThat(p1).containsExactlyInAnyOrderEntriesOf(p);
+	}
+
+	@Test
+	public void testProvenance() throws IOException {
+		UTF8Properties a = new UTF8Properties();
+		a.load("""
+			a.a = 1
+			a.b = 2
+			x = 0
+			""", null, null, null, "from_a");
+		UTF8Properties b = new UTF8Properties();
+		b.load("""
+			b.a = 1
+			b.c = 3
+			x = 0
+			""", null, null, null, "from_b");
+
+		assertThat(a.getProvenance("x")).isPresent()
+			.get()
+			.isEqualTo("from_a");
+		assertThat(b.getProvenance("x")).isPresent()
+			.get()
+			.isEqualTo("from_b");
+		assertThat(a.getProvenance("y")).isNotPresent();
+
+		a.load(b, true);
+		assertThat(a.getProvenance("x")).isPresent()
+			.get()
+			.isEqualTo("from_b");
+		assertThat(a.getProvenance("a.a")).isPresent()
+			.get()
+			.isEqualTo("from_a");
+		assertThat(a.getProvenance("b.a")).isPresent()
+			.get()
+			.isEqualTo("from_b");
 	}
 
 	private void testProperty(String content, String key, String value) throws IOException {

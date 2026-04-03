@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
@@ -355,34 +356,49 @@ public class Converter {
 		}
 
 		if (o instanceof Map<?, ?> map) {
+
 			String key = null;
 			try {
-				MethodHandle mh = publicLookup().findConstructor(resultType, methodType(void.class));
-				Object instance = mh.invoke();
-				for (Map.Entry e : map.entrySet()) {
-					key = (String) e.getKey();
-					try {
-						Field f = resultType.getField(key);
-						Object value = convert(f.getGenericType(), e.getValue());
-						mh = publicLookup().unreflectSetter(f);
-						if (isStatic(f)) {
-							mh.invoke(value);
-						} else {
-							mh.invoke(instance, value);
-						}
-					} catch (Exception ee) {
-						// We cannot find the key, so try the __extra field
-						mh = publicLookup().findGetter(resultType, "__extra", Map.class);
-						Map<String, Object> extra = (Map<String, Object>) mh.invoke(instance);
-						if (extra == null) {
-							extra = new HashMap<>();
-							mh = publicLookup().findSetter(resultType, "__extra", Map.class);
-							mh.invoke(instance, extra);
-						}
-						extra.put(key, convert(Object.class, e.getValue()));
+				if (resultType.isRecord()) {
+					int length = resultType.getRecordComponents().length;
+					Object[] arguments = new Object[length];
+					MethodType constructorType = methodType(void.class);
+					for (int i = 0; i < length; i++) {
+						RecordComponent c = resultType.getRecordComponents()[i];
+						Object value = map.get(c.getName());
+						arguments[i] = cnv(c.getGenericType(), value);
+						constructorType = constructorType.appendParameterTypes(c.getType());
 					}
+					MethodHandle mh = publicLookup().findConstructor(resultType, constructorType);
+					return mh.invokeWithArguments(arguments);
+				} else {
+					MethodHandle mh = publicLookup().findConstructor(resultType, methodType(void.class));
+					Object instance = mh.invoke();
+					for (Map.Entry e : map.entrySet()) {
+						key = (String) e.getKey();
+						try {
+							Field f = resultType.getField(key);
+							Object value = convert(f.getGenericType(), e.getValue());
+							mh = publicLookup().unreflectSetter(f);
+							if (isStatic(f)) {
+								mh.invoke(value);
+							} else {
+								mh.invoke(instance, value);
+							}
+						} catch (Exception ee) {
+							// We cannot find the key, so try the __extra field
+							mh = publicLookup().findGetter(resultType, "__extra", Map.class);
+							Map<String, Object> extra = (Map<String, Object>) mh.invoke(instance);
+							if (extra == null) {
+								extra = new HashMap<>();
+								mh = publicLookup().findSetter(resultType, "__extra", Map.class);
+								mh.invoke(instance, extra);
+							}
+							extra.put(key, convert(Object.class, e.getValue()));
+						}
+					}
+					return instance;
 				}
-				return instance;
 			} catch (Error e) {
 				throw e;
 			} catch (Throwable e) {

@@ -1,10 +1,52 @@
 ---
-layout: default
+layout: bnd
+title: DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*
 class: Header
-title: DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )* 
-summary: The DynamicImport-Package header contains a comma-separated list of package names that should be dynamically imported when needed.
+summary: |
+   The DynamicImport-Package header contains a comma-separated list of package names that should be dynamically imported when needed.
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
-	
+
+- Example: `DynamicImport-Package: com.acme.plugin.*`
+
+- Values: ``
+
+- Pattern: `.*`
+
+### Options 
+
+- `version` A version range to select the version of an export definition. The default value is 0.0.0.
+  - Example: `version="[1.2,3.0)"`
+
+  - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+
+- `bundle-symbolic-name` The bundle symbolic name of the exporting bundle.
+  - Example: `bundle-symbolic-name=com.acme.foo.daffy`
+
+  - Pattern: `[-\w]+(:?\.[-\w]+)*`
+
+
+- `bundle-version` A version range to select the bundle version of the exporting bundle. The default value is 0.0.0.
+  - Example: `bundle-version=1.3`
+
+  - Pattern: `((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?`
+
+<!-- Manual content from: ext/dynamicimport_package.md --><br /><br />
+
+# DynamicImport-Package
+
+The `DynamicImport-Package` header allows a bundle to declare packages that should be imported dynamically at runtime, rather than being resolved at deployment time. This is useful for cases where the set of required packages is not known in advance.
+
+The header contains a comma-separated list of package names, which can include wildcards and directives. For example:
+
+```
+DynamicImport-Package: com.example.*, org.osgi.service.*
+```
+
+Packages listed here will be resolved by the OSGi framework when they are first referenced by the bundle. Use this feature sparingly, as it can make dependency management less predictable.
+
 	/**
 	 * <pre>
 	 *          DynamicImport-Package ::= dynamic-description
@@ -37,4 +79,7 @@ summary: The DynamicImport-Package header contains a comma-separated list of pac
 		}
 	}
 
-	
+
+
+<hr />
+TODO Needs review - AI Generated content

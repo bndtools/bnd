@@ -1,9 +1,18 @@
 ---
-layout: default
+layout: bnd
+title: -reportconfig plugin-def ( ',' plugin-def )*
 class: Workspace & Project
-title: -reportconfig plugin-def ( ',' plugin-def )*  
-summary: Configure a the content of report.
+summary: |
+   Configure a the content of report.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-exportreport: metadata.json;configName=blueprint`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/reportconfig.md --><br /><br />
 
 The purpose of the `-reportconfig` instruction is to configure the content of the reports exported with the `-exportreport` instruction.
 

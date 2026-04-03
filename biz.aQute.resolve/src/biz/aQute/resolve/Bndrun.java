@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.osgi.resource.Requirement;
@@ -56,8 +57,7 @@ public class Bndrun extends Run {
 		Processor processor;
 		if (workspace != null) {
 			Bndrun run = new Bndrun(workspace, file);
-			if (run.getProperties()
-				.get(STANDALONE) == null) {
+			if (!run.isStandAlone()) {
 				return run;
 			}
 			// -standalone specified
@@ -73,17 +73,17 @@ public class Bndrun extends Run {
 	}
 
 	public Bndrun(BndEditModel model) throws Exception {
-		super(model.getWorkspace(), model.getProject()
+		super(model.getWorkspace(), model.getOwner()
 			.getPropertiesFile());
 		this.model = model;
-		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
+		this.resolutionInstructions = Syntax.getInstructions(model.getOwner(), ResolutionInstructions.class);
 
 	}
 
 	public Bndrun(Workspace workspace, File propertiesFile) throws Exception {
 		super(workspace, propertiesFile);
 		this.model = new BndEditModel(this);
-		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
+		this.resolutionInstructions = Syntax.getInstructions(model.getOwner(), ResolutionInstructions.class);
 	}
 
 	/**
@@ -143,12 +143,20 @@ public class Bndrun extends Run {
 				error("Fail on changes set to true (--xchange,-x) and there are changes");
 				error("   Existing runbundles   %s", runBundlesBeforeUpdate);
 				error("   Calculated runbundles %s", resolution.getRunBundles());
+
+				String diff = Utils.printHumanReadableDifference(new LinkedHashSet<>(runBundlesBeforeUpdate),
+					new LinkedHashSet<>(resolution.getRunBundles()), "existing runbundles", "calculated runbundles");
+
+				if (diff != null) {
+					error("   Diff %s", diff);
+				}
+
 			} else {
 				if (writeOnChanges) {
 					try {
 						model.saveChanges();
 					} catch (Exception e) {
-						error("Could not save runbundles in their properties file %s. %s", model.getProject(),
+						error("Could not save runbundles in their properties file %s. %s", model.getOwner(),
 							e.getMessage());
 					}
 				}
@@ -176,6 +184,7 @@ public class Bndrun extends Run {
 		switch (resolve) {
 			case auto :
 			case manual :
+			case never :
 			default :
 				break;
 

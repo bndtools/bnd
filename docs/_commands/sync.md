@@ -1,17 +1,16 @@
 ---
-layout: default
-title:   sync [options]
-summary: Execute a Project action, or if no parms given, show information about the project 
+layout: bnd
+title: sync
+summary: |
+   Force a cache update of the workspace
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   sync [options]  ...
 
-{{page.summary}}
 
-## Synopsis
+#### Options: 
+- `[ -p --project <string> ]` Identify another project
 
-## Options
-
-    [ -p, --project <string> ] - Identify another project
-
-## Examples

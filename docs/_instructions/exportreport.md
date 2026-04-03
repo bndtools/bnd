@@ -1,9 +1,18 @@
 ---
-layout: default
+layout: bnd
+title: -exportreport report-def ( ',' report-def )*
 class: Workspace & Project
-title: -exportreport report-def ( ',' report-def )* 
-summary: Configure a list of reports to be exported.
+summary: |
+   Configure a list of reports to be exported.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-exportreport: metadata.json`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/exportreport.md --><br /><br />
 
 The purpose of the `-exportreport` instruction is to configure a list of reports of the current state of the workspace and/or its projects, which can then be exported by the build tool. The primary usage is to automate the documentation of projects. An introduction to this feature can be found [here](../chapters/395-generating-documentation.html).
 

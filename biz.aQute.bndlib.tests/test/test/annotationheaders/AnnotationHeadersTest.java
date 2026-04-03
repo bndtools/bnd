@@ -332,7 +332,7 @@ public class AnnotationHeadersTest {
 		assertTrue(dv.contains("v=1.2.3"));
 		assertTrue(dv.contains("p=test.annotationheaders"));
 		assertTrue(dv.contains("c=test.annotationheaders.AnnotationHeadersTest$C"));
-		assertTrue(dv.contains("s=AnnotationHeadersTest$C"));
+		assertTrue(dv.contains("s=C"));
 
 		dv = manifest.getMainAttributes()
 			.getValue(Constants.BUNDLE_DOCURL);

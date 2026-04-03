@@ -1,3 +1,10 @@
+import groovy.lang.GroovySystem
+import org.gradle.util.internal.VersionNumber
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 import java.util.*
 
 plugins {
@@ -5,6 +12,7 @@ plugins {
 	`kotlin-dsl`
 	id("com.gradle.plugin-publish")
 	id("dev.hargrave.addmavendescriptor")
+	signing
 }
 
 interface Injected {
@@ -19,9 +27,16 @@ val bnd_distrepo: String by project
 group = bnd_group
 version = bnd_version
 
+val groovyVersion = GroovySystem.getVersion()
+val isGroovy4 = VersionNumber.parse(groovyVersion).major >= 4
+val spockVersion = if (isGroovy4) "2.3-groovy-4.0" else "2.3-groovy-3.0"
+
+val javaVersion = JavaVersion.VERSION_17 // Bnd target language level
+val kotlinVersion = KotlinVersion.KOTLIN_2_0 // Supported in Gradle 8
+
 java {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = javaVersion
+	targetCompatibility = javaVersion
 	withJavadocJar()
 	withSourcesJar()
 }
@@ -41,26 +56,26 @@ repositories {
 }
 
 // SourceSet for Kotlin DSL code so that it can be built after the main SourceSet
-val dsl by sourceSets.registering
+val dsl: SourceSet by sourceSets.creating
 sourceSets {
-	dsl {
+	dsl.apply {
 		compileClasspath += main.get().output
 		runtimeClasspath += main.get().output
 	}
 	test {
-		compileClasspath += dsl.get().output
-		runtimeClasspath += dsl.get().output
+		compileClasspath += dsl.output
+		runtimeClasspath += dsl.output
 	}
 }
 
 configurations {
-	val dslCompileOnly by existing {
+	dsl.compileOnlyConfigurationName {
 		extendsFrom(compileOnly.get())
 	}
-	val dslImplementation by existing {
+	dsl.implementationConfigurationName {
 		extendsFrom(implementation.get())
 	}
-	val dslRuntimeOnly by existing {
+	dsl.runtimeOnlyConfigurationName {
 		extendsFrom(runtimeOnly.get())
 	}
 }
@@ -72,39 +87,40 @@ dependencies {
 	implementation("biz.aQute.bnd:biz.aQute.repository:${version}")
 	implementation("biz.aQute.bnd:biz.aQute.resolve:${version}")
 	runtimeOnly("biz.aQute.bnd:biz.aQute.bnd.embedded-repo:${version}")
-	testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+	// keep in sync with cnf/junit.bnd e.g. 'junit.jupiter.version'
+	testImplementation(enforcedPlatform("org.junit:junit-bom:5.14.2"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("org.spockframework:spock-core:${spockVersion}")
 }
 
 // Gradle plugin descriptions
 gradlePlugin {
+	website.set("https://github.com/bndtools/bnd")
+	vcsUrl.set("https://github.com/bndtools/bnd.git")
 	plugins {
 		create("Bnd") {
 			id = "biz.aQute.bnd"
 			implementationClass = "aQute.bnd.gradle.BndPlugin"
 			displayName = "Bnd Gradle Plugin for Bnd Workspace Projects"
 			description = "Gradle Plugin for developing OSGi bundles with Bnd using the Bnd Workspace build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${version}/gradle-plugins/README.md for information on using in a Bnd Workspace build."
+			tags.set(listOf("osgi", "bnd"))
 		}
 		create("BndBuilder") {
 			id = "biz.aQute.bnd.builder"
 			implementationClass = "aQute.bnd.gradle.BndBuilderPlugin"
 			displayName = "Bnd Gradle Plugin for Gradle Projects"
 			description = "Gradle Plugin for developing OSGi bundles with Bnd in a typical Gradle build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd. See https://github.com/bndtools/bnd/blob/${version}/gradle-plugins/README.md for information on using in a typical Gradle build."
+			tags.set(listOf("osgi", "bnd"))
 		}
 		create("BndWorkspace") {
 			id = "biz.aQute.bnd.workspace"
 			implementationClass = "aQute.bnd.gradle.BndWorkspacePlugin"
 			displayName = "Bnd Gradle Plugin for the Bnd Workspace"
 			description = "Gradle Plugin for developing OSGi bundles with Bnd using the Bnd Workspace build. Bnd is the premiere tool for creating OSGi bundles. This Gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${version}/gradle-plugins/README.md for information on using on a Bnd Workspace."
+			tags.set(listOf("osgi", "bnd"))
 		}
 	}
-}
-
-// Gradle plugin bundle description
-pluginBundle {
-	website = "https://github.com/bndtools/bnd"
-	vcsUrl = "https://github.com/bndtools/bnd.git"
-	description = "Gradle Plugins for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd. See https://github.com/bndtools/bnd/blob/master/gradle-plugins/README.md."
-	tags = listOf("osgi", "bnd")
 }
 
 publishing {
@@ -172,6 +188,35 @@ publishing {
 	}
 }
 
+// Signing configuration
+signing {
+	// Only sign if GPG_KEY_ID environment variable is present
+	val gpgKeyId: String? = System.getenv("GPG_KEY_ID")
+	
+	isRequired = gpgKeyId != null
+	
+	if (isRequired) {
+		// Use GPG command since key is imported into GPG keyring by ci-build.sh
+		// The passphrase is handled by gpg-agent which was configured in ci-build.sh
+		useGpgCmd()
+		sign(publishing.publications)
+	}
+}
+
+// Java compiler options
+tasks.withType<JavaCompile>() {
+	options.compilerArgs.add("-Xlint:deprecation")
+	options.compilerArgs.add("-Xlint:unchecked")
+}
+
+tasks.withType<KotlinCompilationTask<KotlinJvmCompilerOptions>>().configureEach {
+	compilerOptions {
+		jvmTarget = JvmTarget.fromTarget(javaVersion.toString())
+		apiVersion = kotlinVersion
+		languageVersion = kotlinVersion
+	}
+}
+
 // Disable gradle module metadata
 tasks.withType<GenerateModuleMetadata>().configureEach {
 	enabled = false
@@ -193,17 +238,17 @@ tasks.withType<Javadoc>().configureEach {
 
 tasks.pluginUnderTestMetadata {
 	// Include dsl SourceSet
-	pluginClasspath.from(dsl.get().output)
+	pluginClasspath.from(dsl.output)
 }
 
 tasks.jar {
 	// Include dsl SourceSet
-	from(dsl.get().output)
+	from(dsl.output)
 }
 
 tasks.named<Jar>("sourcesJar") {
 	// Include dsl SourceSet
-	from(dsl.get().allSource)
+	from(dsl.allSource)
 }
 
 val testresourcesOutput = layout.buildDirectory.dir("testresources")
@@ -226,7 +271,7 @@ tasks.test {
 	val testresourcesSource = layout.projectDirectory.dir("testresources")
 	inputs.files(testresourcesSource).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
 	systemProperty("bnd_version", bnd_version)
-	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name.toLowerCase(Locale.ROOT))
+	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name.lowercase(Locale.ROOT))
 	maven_repo_local?.let {
 		systemProperty("maven.repo.local", it)
 	}

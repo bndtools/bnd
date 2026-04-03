@@ -1,41 +1,80 @@
 releaserepo:            ${workspace}/dist/bundles
 mavencentral:           https://repo.maven.apache.org/maven2
-ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
+sonatype_snapshots:  https://central.sonatype.com/repository/maven-snapshots/
+sonatype_bearer: '${env;SONATYPE_BEARER}'
+
+-connection-settings:\
+   server;    id = ${sonatype_snapshots};\
+        password = ${sonatype_bearer};\
+          verify = false,\
+   server;    id = bndtools.jfrog.io;\
+        username = ${env;JFROG_USERNAME};\
+        password = ${env;JFROG_PASSWORD};\
+          verify = false
 
 -plugin.0.Main:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = 'resolve'; \
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
-        snapshotUrl="${ossrh}";\
+        snapshotUrl="${sonatype_snapshots}";\
         index="${.}/central.mvn";\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        tags  = '-'; \
         name="Local";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = '-'; \
         name="Release";\
         releaseUrl="${fileuri;${releaserepo}}";\
         snapshotUrl="${fileuri;${releaserepo}}";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
+    	tags  = '-'; \
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
         noupdateOnRelease=true
 
--plugin.1.Eclipse:\
-    aQute.bnd.repository.osgi.OSGiRepository;\
-        name="Eclipse 4.25 (2022-09)";\
-        locations="https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.25/index.xml.gz";\
-        poll.time=-1;\
-        cache="${workspace}/cnf/cache/stable/Eclipse-4.25"
+# Eclipse Release repository
+#-plugin.1.Eclipse:\
+#	aQute.bnd.repository.p2.provider.P2Repository; \
+#	 	url = https://download.eclipse.org/releases/2023-12/; \
+#	 	name = "Eclipse-4_30-2023-12"       
+
+# How to update to a different Eclipse Version?
+# ---------------------------------------------
+# 1. Uncomment '-plugin.1.Eclipse' above and refresh the Workspace 
+#    to build the index.xml.gz of the P2 repo. This will download the P2 Repo and build the index. 
+#    Wait (some minutes) until a file cnf/cache/Eclipse-4_30-2023-12/index.xml.gz appears
+# 2. then unzip the index.xml.gz into /cnf/ext
+# 3. rename index.xml to eclipse.p2.xml.pobr
+# 4. open eclipse.p2.xml.pobr and change the 'name' attribute inside <repository name='XZY'> 
+#    into something readable like above 'Eclipse-4_30-2023-12' which becomes the repo name
+# 5. Refresh the workspace -> a new Repo will appear in the Repository browser
+# 6. comment the repo '-plugin.1.Eclipse' above again, so that only 
+#    the new Repo eclipse.p2.xml.pobr is used.
+# 7. check the file eclipse.p2-helper.xml.pobr which contains a few manually added dependencies
+#    from previous / older Eclipse version which are still needed, but dropped in more recent
+#    Eclipse versions. Those are mostly non-OSGi libs for which no OSGi-bundle exists on Maven Central
+#    but were OSGified by Eclipse team. 
+# TODO we hope to simplify this process in the future
+
 
 -plugin.9.Baseline:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name="Baseline";\
-        releaseUrl="${mavencentral}";\
-        index="${.}/baseline.mvn";\
-        readOnly=true
+       tags  = '-'; \
+       name="Baseline";\
+       releaseUrl="${mavencentral}";\
+       index="${.}/baseline.mvn";\
+       readOnly=true
+
+-plugin.4.ECFRSSDK: \
+ 	aQute.bnd.repository.p2.provider.P2Repository; \
+	 	tags  = '-'; \
+	 	url = https://download.eclipse.org/rt/ecf/3.16.5/site.p2; \
+	 	name = ECF Remote Services SDK
 
 -buildrepo: Local
 -releaserepo: Release

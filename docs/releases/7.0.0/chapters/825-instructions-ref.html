@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/css/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Instruction Index | bnd</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="Instruction Index" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Instruction Description Class -augment PARAMETER ( &#39;,&#39; PARAMETER ) * Add requirements and capabilities to the resources during resolving. Workspace -baseline selector Control what bundles are enabled for baselining and optionally specify the baseline version or file. Project -baselinerepo qname Define the repository to calculate baselining against Workspace -builderignore PATH-SPEC ( &#39;,&#39; PATH-SPEC ) * List of project-relative directories to be ignored by the builder. Project -buildpath PATH Provides the class path for building the jar, the entries are references to the repositories. Project -buildrepo repo ( &#39;,&#39; repo ) * After building a JAR, release the JAR to the given repositories. Project -buildtool toolspec (EXPERIMENTAL!) A specification for the bnd CLI to install a build tool, like gradle, in the workspace bnd -bumppolicy The policy for the bump command Macro -bundleannotations SELECTORS Selects the classes that need processing for standard OSGi Bundle annotations. Project -cdiannotations SELECTORS Selects the packages that need processing for CDI annotations. Project -check &#39;ALL&#39; | ( &#39;IMPORTS&#39; | &#39;EXPORTS&#39; ) * Enable additional checking Analyzer -classpath FILE (&#39;,&#39; FILE) * Specify additional file based entries (either directories or JAR files) to add to the used classpath. Analyzer -compression DEFLATE | STORE Set the compression level for the generated JAR, the default is DEFLATE Builder Conditional-Package PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) * Recursively add packages from the class path when referred and when they match one of the package specifications. Project -conditionalpackage PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) * Recursively add packages from the class path when referred and when they match one of the package specifications. Project -conduit This project is a front to one or more JARs in the file system Project -connection-settings Setting up the communications for bnd -consumer-policy VERSION-MASK Specify the default version bump policy for a consumer when a binary incompatible change is detected. Project -contract Establishes a link to a contract and handles the low level details. Project -define-contract Define a contract when one cannot be added to the buildpath. Project -dependson SELECTORS Add dependencies from the current project to other projects, before this project is built, any project this project depends on will be built first. Project -deploy Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work Project -deployrepo Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work Project -diffignore SELECTORS Manifest header names and resource paths to ignore during baseline comparison. Project -diffpackages SELECTORS The names of exported packages to baseline. Project -digests DIGEST ( &#39;,&#39; DIGEST ) * Set the digest algorithms to use Project -distro REPO (&#39;,&#39; REPO) Resolve against pre-defined system capabilities Workspace -donotcopy Set the default filters for file resources that should not be copied. Project -dsannotations-options SELECTORS Options for controlling DS annotation processing. Builder -dsannotations SELECTORS Selects the packages that need processing for standard OSGi DS annotations. Builder -eeprofile &#39;auto&#39; | PROFILE + Provides control over what Java 8 profile to use. Project -executable ( rejar= STORE | DEFLATE ) ( &#39;,&#39; strip= matcher ( &#39;,&#39; matcher )* ) ( &#39;,&#39; location= FORMAT ) Process an executable jar to strip optional directories of the contained bundles, and/or change their compression. The location string can also be calculated from bsn and version Project -export-apiguardian PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Exports the given packages where the the `@API` annotation is found on contained classes. Project -export PATH ( &#39;;&#39; PARAMETER )* ( &#39;,&#39; PATH ( &#39;;&#39; PARAMETER )* )* Turns a bndrun file into its deployable format Project -exportcontents PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. Project -exportreport report-def ( &#39;,&#39; report-def )* Configure a list of reports to be exported. Workspace &amp; Project -extension A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin. Project -failok (&#39;true&#39; | &#39;false&#39;)? Will ignore any error during building and assume all went ok. Project -fixupmessages SELECTOR ( &#39;;&#39; ( is | replace | restrict ) )* ... Fixup errors and warnings. Project -generate srcs &#39;;output=&#39; DIR ( &#39;;&#39; ( system | generate | classpath))* ... Generate sources Project -groupid groupId Set the default Maven groupId Project -include PATH-SPEC ( &#39;,&#39; PATH-SPEC ) * Include a number of files from the file system Project -includepackage PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Include a number of packages from the class path Builder -includeresource iclause Include resources from the file system Builder &amp; Executable -invalidfilenames Specify file/directory names that should not be used because they are not portable. Project -javaagent BOOLEAN Specify if classpath jars with Premain-Class headers are to be used as java agents Project -jpms-module-info-options module-infos+ Used to generate the `module-info.class` JPMS -jpms-module-info modulename [; version=&lt;version&gt;] [; access=OPEN|SYNTHETIC|MANDATED] Used to generate the `module-info.class` JPMS -jpms-multi-release BOOLEAN Enables generating manifests and module infos for multi release JARs. JPMS -launcher Options for the runtime launcher Project -library library ( &#39;,&#39; library )* Apply a bnd library to the workspace, project, or bndrun file Workspace or Project -make If a resource is not found, specify a recipe to make it. Project -manifest FILE Override manifest calculation and set fixed manifest Builder -manifest-name RESOURCE Set the resource path to the manifest, for certain standards the manifest has a different name. Ant -maven-dependencies* entry ( &#39;,&#39; entry )* Configure maven dependency information for the generated pom Project -maven-release (&#39;local&#39;|&#39;remote&#39;) ( &#39;,&#39; option )* Set the Maven release options for the Maven Bnd Repository Project -maven-scope dependency-scope Set the default Maven dependency scope to use when generating dependency information in the generated pom Project -metatypeannotations-options SELECTORS Restricts the use of Metatype Annotation to a minimum version. Builder -metatypeannotations SELECTORS Selects the packages that need processing for standard OSGi Metatype annotations. Builder -namesection RESOURCE-SPEC ( &#39;,&#39; RESOURCE-SPEC ) * Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \&quot;/\&quot; target resources. Those ending with \&quot;/\&quot; target packages. Builder -nobuildincache BOOLEAN Do not use a build in cache for the launcher and JUnit. Builder -nobundles BOOLEAN Do not build the project. Builder -noclassforname BOOLEAN Do not add package reference to classes loaded with Class.forName(String). Builder -nodefaultversion BOOLEAN Do not add a default version to exported packages when no version is present. Builder -noee BOOLEAN Donot add an automatic requirement on an EE capability based on the class format. Ant -noextraheaders BOOLEAN Do not add a any extra headers specific for bnd. Builder -noimportjava BOOLEAN Do not import java.* packages. Analyzer -nojunit BOOLEAN Indicate that this project does not have JUnit tests Ant -nojunitosgi BOOLEAN Indicate that this project does not have JUnit OSGi tests Ant -nomanifest BOOLEAN Do not safe the manifest in the JAR. Ant -noparallel CATEGORY;task=TASKS Prevent Gradle tasks in the same category from executing in parallel. Workspace -nouses BOOLEAN Do not calculate uses directives on package exports or on capabilities. Project -output FILE Specify the output directory or file. Analyzer -outputmask TEMPLATE ? If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + &quot;.jar&quot;. Project -package Packaging options Project -pedantic BOOLEAN Warn about things that are not really wrong but still not right. Processor -plugin.* plugin-def ( &#39;,&#39; plugin-def )* Load plugins and their parameters. Processor -pluginpath* PARAMETERS Define JARs to be loaded in the local classloader for plugins. Processor -pom BOOLEAN | PROPERTIES Generate a maven pom in the JAR Processor -prepare makespec ( &#39;,&#39; makespec )* Execute a number of shell commands before every build (might not work on Windows) Project -preprocessmatchers SELECTOR Specify which files can be preprocessed Builder -privatepackage PACKAGE-SPEC Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest. Builder -profile KEY Sets a prefix that is used when a variable is not found, it is then re-searched under &quot;[&lt;[profile]&gt;]&lt;[key]&gt;&quot;. Builder -provider-policy VERSION-MASK Specify the default version bump policy for a provider when a binary incompatible change is detected. Project -releaserepo* NAME ( &#39;,&#39; NAME ) * Define the names of the repositories to use for a release Project -remoteworkspace (true|false) Enable the workspace to server remote requests from the local system, needed for Launchpad Project -removeheaders KEY-SELECTOR ( &#39;.&#39; KEY-SELECTOR ) * Remove matching headers from the manifest. Project -reportconfig plugin-def ( &#39;,&#39; plugin-def )* Configure a the content of report. Workspace &amp; Project -reportnewer BOOLEAN Report any entries that were added to the build since the last JAR was made. Project -reproducible BOOLEAN | TIMESTAMP Ensure the bundle can be built in a reproducible manner. Builder -require-bnd (FILTER ( &#39;,&#39; FILTER )* )? The filter can test against &#39;version&#39;, which will contain the Bnd version. If it does not match, Bnd will generate an error. Project -resolve.effective qname (&#39;,&#39; qname ) Set the use effectives for the resolver Workspace -resolve.excludesystem true|false A property used by the resolver, if set to true (default) it excludes the system resource Runtime -resolve (manual|auto|beforelaunch|batch|cache) Defines when/how resolving is done to calculate the -runbundles Workspace -resolve.preferences qname ( &#39;,&#39; qname ) Override the default order and selection of repositories Workspace -resolve.reject ( &#39;@&#39;? namespace ( &#39;;filter:=&#39; FILTER )? ), Controls rejection of capabilities during resolving. Workspace -resolvedebug INTEGER Display debugging information for a resolve operation Workspace -resourceonly BOOLEAN Ignores warning if the bundle only contains resources and no classes. Project -runblacklist requirement (&#39;,&#39; requirement) Blacklist a set of bundles for a resolve operation Workspace -runbuilds BOOLEAN Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true. Project -runbundles* REPO-ENTRY ( &#39;,&#39; REPO-ENTRY )* Add additional bundles, specified with their bsn and version like in -buildpath, that are installed and started before the project is run. Project -runee EE Define the runtime Execution Environment capabilities, default Java 6. Builder -runenv PROPERTIES Specify a JDB port on invocation when launched outside a debugger so the debugger can attach later. Project -runframework ( &#39;none&#39; | &#39;services&#39; | ANY )? Sets the type of framework to run. If &#39;none&#39;, an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name. Launcher -runframeworkrestart BOOLEAN Restart the framework in the same VM if the framework is stopped or updated. Project -runfw REPO-ENTRY Specify the framework JAR&#39;s entry in a repository. Launcher -runjdb ADDRESS Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later. Project -runkeep true | false Decides to keep the framework storage directory between launching Project -runnoreferences BOOLEAN Do not use the `reference:` URL scheme for installing a bundle in the installer. Launcher -runpath REPO-ENTRY ( &#39;,&#39; REPO-ENTRY ) Additional JARs for the remote VM path, should include the framework. Project -runprogramargs Additional arguments for the program invokation. Project -runproperties PROPERTIES Define system properties for the remote VM. Launcher -runprovidedcapabilities Extra capabilities for a distro resolve Workspace -runrepos REPO-NAME ( &#39;,&#39; REPO-NAME )* Order and select the repository for resolving against. The default order is all repositories in their plugin creation order. Resolve -runrequires REQUIREMENT ( &#39;,&#39; REQUIREMENT )* The root requirements for a resolve intended to create a constellation for the -runbundles. Resolve -runstartlevel ( order | begin | step )* Assign a start level to each run-bundle after resolving Project -runstorage FILE Define the directory to use for the framework&#39;s work area. Project -runsystemcapabilities* CAPABILITY (&#39;,&#39; CAPABILITY ) Define extra capabilities for the remote VM. Launcher -runsystempackages* PARAMETERS Define extra system packages (packages exported from the remote VM -runpath). Launcher -runtimeout DURATION Project -runtrace BOOLEAN Trace the launched process in detail Launcher -runvm KEYS Additional arguments for the VM invocation. Arguments are added as-is. Project -savemanifest FILE Write out the manifest to a separate file after it has been calculated. Builder -sign PARAMETERS Report any entries that were added to the build since the last JAR was made. Project -snapshot STRING String to substitute for &quot;SNAPSHOT&quot; in the bundle version&#39;s qualifier Project -sourcepath List of directory names that used to find sources. Builder -sources BOOLEAN Include the source code (if available on the -sourcepath) in the bundle at OSGI-OPT/src Builder -stalecheck srcs &#39;;newer=&#39; depends ( &#39;;&#39; ( warning | error | command ))* ... Perform a stale check of files and directories before building a jar Project -standalone repo-spec (, repo-spec ) Disconnects the bndrun file from the workspace and defines its on repositories Run -strict BOOLEAN If strict is true, then extra verification is done. Processor -sub FILE-SPEC ( &#39;,&#39; FILE-SPEC )* Build a set of bnd files that use this bnd file as a basis. The list of bnd file can be specified with wildcards. Builder -systemproperties PROPERTIES These system properties are set in the local JVM when a workspace is started. This was mainly added to allow one to set JVM options via system properties. Workspace -testcontinuous BOOLEAN Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated. Test -tester REPO-SPEC Species the tester (bundle) that is supposed to test the code. The default is biz.aQute.tester Project -testpackages PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) Project -testpath REPO-SPEC ( &#39;,&#39; REPO-SPEC ) The specified JARs from a repository are added to the remote JVM&#39;s classpath if the JVM is started in test mode in addition to the -runpath JARs. Project -testsources REGEX ( &#39;,&#39; REGEX )* Specification to find JUnit test cases by traversing the test src directory and looking for java classes. The default is (.*).java. Project -testunresolved BOOLEAN Will execute a JUnit testcase ahead of any other test case that will abort if there are any unresolved bundles. Project -undertest true Will be set by the project when it builds a JAR in test mode, intended to be used by plugins. Project -upto VERSION Specify the highest compatibility version, will disable any incompatible features added after this version. Project -wab FILE ( &#39;,&#39; FILE )* Create a Web Archive Bundle (WAB) or a WAR Builder -wablib FILE ( &#39;,&#39; FILE )* Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR. Builder -workingset PARAMETER ( &#39;,&#39; PARAMETER ) * Group the workspace into different working sets Workspace" />
+<meta property="og:description" content="Instruction Description Class -augment PARAMETER ( &#39;,&#39; PARAMETER ) * Add requirements and capabilities to the resources during resolving. Workspace -baseline selector Control what bundles are enabled for baselining and optionally specify the baseline version or file. Project -baselinerepo qname Define the repository to calculate baselining against Workspace -builderignore PATH-SPEC ( &#39;,&#39; PATH-SPEC ) * List of project-relative directories to be ignored by the builder. Project -buildpath PATH Provides the class path for building the jar, the entries are references to the repositories. Project -buildrepo repo ( &#39;,&#39; repo ) * After building a JAR, release the JAR to the given repositories. Project -buildtool toolspec (EXPERIMENTAL!) A specification for the bnd CLI to install a build tool, like gradle, in the workspace bnd -bumppolicy The policy for the bump command Macro -bundleannotations SELECTORS Selects the classes that need processing for standard OSGi Bundle annotations. Project -cdiannotations SELECTORS Selects the packages that need processing for CDI annotations. Project -check &#39;ALL&#39; | ( &#39;IMPORTS&#39; | &#39;EXPORTS&#39; ) * Enable additional checking Analyzer -classpath FILE (&#39;,&#39; FILE) * Specify additional file based entries (either directories or JAR files) to add to the used classpath. Analyzer -compression DEFLATE | STORE Set the compression level for the generated JAR, the default is DEFLATE Builder Conditional-Package PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) * Recursively add packages from the class path when referred and when they match one of the package specifications. Project -conditionalpackage PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) * Recursively add packages from the class path when referred and when they match one of the package specifications. Project -conduit This project is a front to one or more JARs in the file system Project -connection-settings Setting up the communications for bnd -consumer-policy VERSION-MASK Specify the default version bump policy for a consumer when a binary incompatible change is detected. Project -contract Establishes a link to a contract and handles the low level details. Project -define-contract Define a contract when one cannot be added to the buildpath. Project -dependson SELECTORS Add dependencies from the current project to other projects, before this project is built, any project this project depends on will be built first. Project -deploy Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work Project -deployrepo Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work Project -diffignore SELECTORS Manifest header names and resource paths to ignore during baseline comparison. Project -diffpackages SELECTORS The names of exported packages to baseline. Project -digests DIGEST ( &#39;,&#39; DIGEST ) * Set the digest algorithms to use Project -distro REPO (&#39;,&#39; REPO) Resolve against pre-defined system capabilities Workspace -donotcopy Set the default filters for file resources that should not be copied. Project -dsannotations-options SELECTORS Options for controlling DS annotation processing. Builder -dsannotations SELECTORS Selects the packages that need processing for standard OSGi DS annotations. Builder -eeprofile &#39;auto&#39; | PROFILE + Provides control over what Java 8 profile to use. Project -executable ( rejar= STORE | DEFLATE ) ( &#39;,&#39; strip= matcher ( &#39;,&#39; matcher )* ) ( &#39;,&#39; location= FORMAT ) Process an executable jar to strip optional directories of the contained bundles, and/or change their compression. The location string can also be calculated from bsn and version Project -export-apiguardian PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Exports the given packages where the the `@API` annotation is found on contained classes. Project -export PATH ( &#39;;&#39; PARAMETER )* ( &#39;,&#39; PATH ( &#39;;&#39; PARAMETER )* )* Turns a bndrun file into its deployable format Project -exportcontents PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. Project -exportreport report-def ( &#39;,&#39; report-def )* Configure a list of reports to be exported. Workspace &amp; Project -extension A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin. Project -failok (&#39;true&#39; | &#39;false&#39;)? Will ignore any error during building and assume all went ok. Project -fixupmessages SELECTOR ( &#39;;&#39; ( is | replace | restrict ) )* ... Fixup errors and warnings. Project -generate srcs &#39;;output=&#39; DIR ( &#39;;&#39; ( system | generate | classpath))* ... Generate sources Project -groupid groupId Set the default Maven groupId Project -include PATH-SPEC ( &#39;,&#39; PATH-SPEC ) * Include a number of files from the file system Project -includepackage PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Include a number of packages from the class path Builder -includeresource iclause Include resources from the file system Builder &amp; Executable -invalidfilenames Specify file/directory names that should not be used because they are not portable. Project -javaagent BOOLEAN Specify if classpath jars with Premain-Class headers are to be used as java agents Project -jpms-module-info-options module-infos+ Used to generate the `module-info.class` JPMS -jpms-module-info modulename [; version=&lt;version&gt;] [; access=OPEN|SYNTHETIC|MANDATED] Used to generate the `module-info.class` JPMS -jpms-multi-release BOOLEAN Enables generating manifests and module infos for multi release JARs. JPMS -launcher Options for the runtime launcher Project -library library ( &#39;,&#39; library )* Apply a bnd library to the workspace, project, or bndrun file Workspace or Project -make If a resource is not found, specify a recipe to make it. Project -manifest FILE Override manifest calculation and set fixed manifest Builder -manifest-name RESOURCE Set the resource path to the manifest, for certain standards the manifest has a different name. Ant -maven-dependencies* entry ( &#39;,&#39; entry )* Configure maven dependency information for the generated pom Project -maven-release (&#39;local&#39;|&#39;remote&#39;) ( &#39;,&#39; option )* Set the Maven release options for the Maven Bnd Repository Project -maven-scope dependency-scope Set the default Maven dependency scope to use when generating dependency information in the generated pom Project -metatypeannotations-options SELECTORS Restricts the use of Metatype Annotation to a minimum version. Builder -metatypeannotations SELECTORS Selects the packages that need processing for standard OSGi Metatype annotations. Builder -namesection RESOURCE-SPEC ( &#39;,&#39; RESOURCE-SPEC ) * Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \&quot;/\&quot; target resources. Those ending with \&quot;/\&quot; target packages. Builder -nobuildincache BOOLEAN Do not use a build in cache for the launcher and JUnit. Builder -nobundles BOOLEAN Do not build the project. Builder -noclassforname BOOLEAN Do not add package reference to classes loaded with Class.forName(String). Builder -nodefaultversion BOOLEAN Do not add a default version to exported packages when no version is present. Builder -noee BOOLEAN Donot add an automatic requirement on an EE capability based on the class format. Ant -noextraheaders BOOLEAN Do not add a any extra headers specific for bnd. Builder -noimportjava BOOLEAN Do not import java.* packages. Analyzer -nojunit BOOLEAN Indicate that this project does not have JUnit tests Ant -nojunitosgi BOOLEAN Indicate that this project does not have JUnit OSGi tests Ant -nomanifest BOOLEAN Do not safe the manifest in the JAR. Ant -noparallel CATEGORY;task=TASKS Prevent Gradle tasks in the same category from executing in parallel. Workspace -nouses BOOLEAN Do not calculate uses directives on package exports or on capabilities. Project -output FILE Specify the output directory or file. Analyzer -outputmask TEMPLATE ? If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + &quot;.jar&quot;. Project -package Packaging options Project -pedantic BOOLEAN Warn about things that are not really wrong but still not right. Processor -plugin.* plugin-def ( &#39;,&#39; plugin-def )* Load plugins and their parameters. Processor -pluginpath* PARAMETERS Define JARs to be loaded in the local classloader for plugins. Processor -pom BOOLEAN | PROPERTIES Generate a maven pom in the JAR Processor -prepare makespec ( &#39;,&#39; makespec )* Execute a number of shell commands before every build (might not work on Windows) Project -preprocessmatchers SELECTOR Specify which files can be preprocessed Builder -privatepackage PACKAGE-SPEC Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest. Builder -profile KEY Sets a prefix that is used when a variable is not found, it is then re-searched under &quot;[&lt;[profile]&gt;]&lt;[key]&gt;&quot;. Builder -provider-policy VERSION-MASK Specify the default version bump policy for a provider when a binary incompatible change is detected. Project -releaserepo* NAME ( &#39;,&#39; NAME ) * Define the names of the repositories to use for a release Project -remoteworkspace (true|false) Enable the workspace to server remote requests from the local system, needed for Launchpad Project -removeheaders KEY-SELECTOR ( &#39;.&#39; KEY-SELECTOR ) * Remove matching headers from the manifest. Project -reportconfig plugin-def ( &#39;,&#39; plugin-def )* Configure a the content of report. Workspace &amp; Project -reportnewer BOOLEAN Report any entries that were added to the build since the last JAR was made. Project -reproducible BOOLEAN | TIMESTAMP Ensure the bundle can be built in a reproducible manner. Builder -require-bnd (FILTER ( &#39;,&#39; FILTER )* )? The filter can test against &#39;version&#39;, which will contain the Bnd version. If it does not match, Bnd will generate an error. Project -resolve.effective qname (&#39;,&#39; qname ) Set the use effectives for the resolver Workspace -resolve.excludesystem true|false A property used by the resolver, if set to true (default) it excludes the system resource Runtime -resolve (manual|auto|beforelaunch|batch|cache) Defines when/how resolving is done to calculate the -runbundles Workspace -resolve.preferences qname ( &#39;,&#39; qname ) Override the default order and selection of repositories Workspace -resolve.reject ( &#39;@&#39;? namespace ( &#39;;filter:=&#39; FILTER )? ), Controls rejection of capabilities during resolving. Workspace -resolvedebug INTEGER Display debugging information for a resolve operation Workspace -resourceonly BOOLEAN Ignores warning if the bundle only contains resources and no classes. Project -runblacklist requirement (&#39;,&#39; requirement) Blacklist a set of bundles for a resolve operation Workspace -runbuilds BOOLEAN Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true. Project -runbundles* REPO-ENTRY ( &#39;,&#39; REPO-ENTRY )* Add additional bundles, specified with their bsn and version like in -buildpath, that are installed and started before the project is run. Project -runee EE Define the runtime Execution Environment capabilities, default Java 6. Builder -runenv PROPERTIES Specify a JDB port on invocation when launched outside a debugger so the debugger can attach later. Project -runframework ( &#39;none&#39; | &#39;services&#39; | ANY )? Sets the type of framework to run. If &#39;none&#39;, an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name. Launcher -runframeworkrestart BOOLEAN Restart the framework in the same VM if the framework is stopped or updated. Project -runfw REPO-ENTRY Specify the framework JAR&#39;s entry in a repository. Launcher -runjdb ADDRESS Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later. Project -runkeep true | false Decides to keep the framework storage directory between launching Project -runnoreferences BOOLEAN Do not use the `reference:` URL scheme for installing a bundle in the installer. Launcher -runpath REPO-ENTRY ( &#39;,&#39; REPO-ENTRY ) Additional JARs for the remote VM path, should include the framework. Project -runprogramargs Additional arguments for the program invokation. Project -runproperties PROPERTIES Define system properties for the remote VM. Launcher -runprovidedcapabilities Extra capabilities for a distro resolve Workspace -runrepos REPO-NAME ( &#39;,&#39; REPO-NAME )* Order and select the repository for resolving against. The default order is all repositories in their plugin creation order. Resolve -runrequires REQUIREMENT ( &#39;,&#39; REQUIREMENT )* The root requirements for a resolve intended to create a constellation for the -runbundles. Resolve -runstartlevel ( order | begin | step )* Assign a start level to each run-bundle after resolving Project -runstorage FILE Define the directory to use for the framework&#39;s work area. Project -runsystemcapabilities* CAPABILITY (&#39;,&#39; CAPABILITY ) Define extra capabilities for the remote VM. Launcher -runsystempackages* PARAMETERS Define extra system packages (packages exported from the remote VM -runpath). Launcher -runtimeout DURATION Project -runtrace BOOLEAN Trace the launched process in detail Launcher -runvm KEYS Additional arguments for the VM invocation. Arguments are added as-is. Project -savemanifest FILE Write out the manifest to a separate file after it has been calculated. Builder -sign PARAMETERS Report any entries that were added to the build since the last JAR was made. Project -snapshot STRING String to substitute for &quot;SNAPSHOT&quot; in the bundle version&#39;s qualifier Project -sourcepath List of directory names that used to find sources. Builder -sources BOOLEAN Include the source code (if available on the -sourcepath) in the bundle at OSGI-OPT/src Builder -stalecheck srcs &#39;;newer=&#39; depends ( &#39;;&#39; ( warning | error | command ))* ... Perform a stale check of files and directories before building a jar Project -standalone repo-spec (, repo-spec ) Disconnects the bndrun file from the workspace and defines its on repositories Run -strict BOOLEAN If strict is true, then extra verification is done. Processor -sub FILE-SPEC ( &#39;,&#39; FILE-SPEC )* Build a set of bnd files that use this bnd file as a basis. The list of bnd file can be specified with wildcards. Builder -systemproperties PROPERTIES These system properties are set in the local JVM when a workspace is started. This was mainly added to allow one to set JVM options via system properties. Workspace -testcontinuous BOOLEAN Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated. Test -tester REPO-SPEC Species the tester (bundle) that is supposed to test the code. The default is biz.aQute.tester Project -testpackages PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) Project -testpath REPO-SPEC ( &#39;,&#39; REPO-SPEC ) The specified JARs from a repository are added to the remote JVM&#39;s classpath if the JVM is started in test mode in addition to the -runpath JARs. Project -testsources REGEX ( &#39;,&#39; REGEX )* Specification to find JUnit test cases by traversing the test src directory and looking for java classes. The default is (.*).java. Project -testunresolved BOOLEAN Will execute a JUnit testcase ahead of any other test case that will abort if there are any unresolved bundles. Project -undertest true Will be set by the project when it builds a JAR in test mode, intended to be used by plugins. Project -upto VERSION Specify the highest compatibility version, will disable any incompatible features added after this version. Project -wab FILE ( &#39;,&#39; FILE )* Create a Web Archive Bundle (WAB) or a WAR Builder -wablib FILE ( &#39;,&#39; FILE )* Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR. Builder -workingset PARAMETER ( &#39;,&#39; PARAMETER ) * Group the workspace into different working sets Workspace" />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Instruction Index" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Instruction Description Class -augment PARAMETER ( &#39;,&#39; PARAMETER ) * Add requirements and capabilities to the resources during resolving. Workspace -baseline selector Control what bundles are enabled for baselining and optionally specify the baseline version or file. Project -baselinerepo qname Define the repository to calculate baselining against Workspace -builderignore PATH-SPEC ( &#39;,&#39; PATH-SPEC ) * List of project-relative directories to be ignored by the builder. Project -buildpath PATH Provides the class path for building the jar, the entries are references to the repositories. Project -buildrepo repo ( &#39;,&#39; repo ) * After building a JAR, release the JAR to the given repositories. Project -buildtool toolspec (EXPERIMENTAL!) A specification for the bnd CLI to install a build tool, like gradle, in the workspace bnd -bumppolicy The policy for the bump command Macro -bundleannotations SELECTORS Selects the classes that need processing for standard OSGi Bundle annotations. Project -cdiannotations SELECTORS Selects the packages that need processing for CDI annotations. Project -check &#39;ALL&#39; | ( &#39;IMPORTS&#39; | &#39;EXPORTS&#39; ) * Enable additional checking Analyzer -classpath FILE (&#39;,&#39; FILE) * Specify additional file based entries (either directories or JAR files) to add to the used classpath. Analyzer -compression DEFLATE | STORE Set the compression level for the generated JAR, the default is DEFLATE Builder Conditional-Package PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) * Recursively add packages from the class path when referred and when they match one of the package specifications. Project -conditionalpackage PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) * Recursively add packages from the class path when referred and when they match one of the package specifications. Project -conduit This project is a front to one or more JARs in the file system Project -connection-settings Setting up the communications for bnd -consumer-policy VERSION-MASK Specify the default version bump policy for a consumer when a binary incompatible change is detected. Project -contract Establishes a link to a contract and handles the low level details. Project -define-contract Define a contract when one cannot be added to the buildpath. Project -dependson SELECTORS Add dependencies from the current project to other projects, before this project is built, any project this project depends on will be built first. Project -deploy Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work Project -deployrepo Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work Project -diffignore SELECTORS Manifest header names and resource paths to ignore during baseline comparison. Project -diffpackages SELECTORS The names of exported packages to baseline. Project -digests DIGEST ( &#39;,&#39; DIGEST ) * Set the digest algorithms to use Project -distro REPO (&#39;,&#39; REPO) Resolve against pre-defined system capabilities Workspace -donotcopy Set the default filters for file resources that should not be copied. Project -dsannotations-options SELECTORS Options for controlling DS annotation processing. Builder -dsannotations SELECTORS Selects the packages that need processing for standard OSGi DS annotations. Builder -eeprofile &#39;auto&#39; | PROFILE + Provides control over what Java 8 profile to use. Project -executable ( rejar= STORE | DEFLATE ) ( &#39;,&#39; strip= matcher ( &#39;,&#39; matcher )* ) ( &#39;,&#39; location= FORMAT ) Process an executable jar to strip optional directories of the contained bundles, and/or change their compression. The location string can also be calculated from bsn and version Project -export-apiguardian PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Exports the given packages where the the `@API` annotation is found on contained classes. Project -export PATH ( &#39;;&#39; PARAMETER )* ( &#39;,&#39; PATH ( &#39;;&#39; PARAMETER )* )* Turns a bndrun file into its deployable format Project -exportcontents PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. Project -exportreport report-def ( &#39;,&#39; report-def )* Configure a list of reports to be exported. Workspace &amp; Project -extension A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin. Project -failok (&#39;true&#39; | &#39;false&#39;)? Will ignore any error during building and assume all went ok. Project -fixupmessages SELECTOR ( &#39;;&#39; ( is | replace | restrict ) )* ... Fixup errors and warnings. Project -generate srcs &#39;;output=&#39; DIR ( &#39;;&#39; ( system | generate | classpath))* ... Generate sources Project -groupid groupId Set the default Maven groupId Project -include PATH-SPEC ( &#39;,&#39; PATH-SPEC ) * Include a number of files from the file system Project -includepackage PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )* Include a number of packages from the class path Builder -includeresource iclause Include resources from the file system Builder &amp; Executable -invalidfilenames Specify file/directory names that should not be used because they are not portable. Project -javaagent BOOLEAN Specify if classpath jars with Premain-Class headers are to be used as java agents Project -jpms-module-info-options module-infos+ Used to generate the `module-info.class` JPMS -jpms-module-info modulename [; version=&lt;version&gt;] [; access=OPEN|SYNTHETIC|MANDATED] Used to generate the `module-info.class` JPMS -jpms-multi-release BOOLEAN Enables generating manifests and module infos for multi release JARs. JPMS -launcher Options for the runtime launcher Project -library library ( &#39;,&#39; library )* Apply a bnd library to the workspace, project, or bndrun file Workspace or Project -make If a resource is not found, specify a recipe to make it. Project -manifest FILE Override manifest calculation and set fixed manifest Builder -manifest-name RESOURCE Set the resource path to the manifest, for certain standards the manifest has a different name. Ant -maven-dependencies* entry ( &#39;,&#39; entry )* Configure maven dependency information for the generated pom Project -maven-release (&#39;local&#39;|&#39;remote&#39;) ( &#39;,&#39; option )* Set the Maven release options for the Maven Bnd Repository Project -maven-scope dependency-scope Set the default Maven dependency scope to use when generating dependency information in the generated pom Project -metatypeannotations-options SELECTORS Restricts the use of Metatype Annotation to a minimum version. Builder -metatypeannotations SELECTORS Selects the packages that need processing for standard OSGi Metatype annotations. Builder -namesection RESOURCE-SPEC ( &#39;,&#39; RESOURCE-SPEC ) * Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \\&quot;/\\&quot; target resources. Those ending with \\&quot;/\\&quot; target packages. Builder -nobuildincache BOOLEAN Do not use a build in cache for the launcher and JUnit. Builder -nobundles BOOLEAN Do not build the project. Builder -noclassforname BOOLEAN Do not add package reference to classes loaded with Class.forName(String). Builder -nodefaultversion BOOLEAN Do not add a default version to exported packages when no version is present. Builder -noee BOOLEAN Donot add an automatic requirement on an EE capability based on the class format. Ant -noextraheaders BOOLEAN Do not add a any extra headers specific for bnd. Builder -noimportjava BOOLEAN Do not import java.* packages. Analyzer -nojunit BOOLEAN Indicate that this project does not have JUnit tests Ant -nojunitosgi BOOLEAN Indicate that this project does not have JUnit OSGi tests Ant -nomanifest BOOLEAN Do not safe the manifest in the JAR. Ant -noparallel CATEGORY;task=TASKS Prevent Gradle tasks in the same category from executing in parallel. Workspace -nouses BOOLEAN Do not calculate uses directives on package exports or on capabilities. Project -output FILE Specify the output directory or file. Analyzer -outputmask TEMPLATE ? If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + &quot;.jar&quot;. Project -package Packaging options Project -pedantic BOOLEAN Warn about things that are not really wrong but still not right. Processor -plugin.* plugin-def ( &#39;,&#39; plugin-def )* Load plugins and their parameters. Processor -pluginpath* PARAMETERS Define JARs to be loaded in the local classloader for plugins. Processor -pom BOOLEAN | PROPERTIES Generate a maven pom in the JAR Processor -prepare makespec ( &#39;,&#39; makespec )* Execute a number of shell commands before every build (might not work on Windows) Project -preprocessmatchers SELECTOR Specify which files can be preprocessed Builder -privatepackage PACKAGE-SPEC Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest. Builder -profile KEY Sets a prefix that is used when a variable is not found, it is then re-searched under &quot;[&lt;[profile]&gt;]&lt;[key]&gt;&quot;. Builder -provider-policy VERSION-MASK Specify the default version bump policy for a provider when a binary incompatible change is detected. Project -releaserepo* NAME ( &#39;,&#39; NAME ) * Define the names of the repositories to use for a release Project -remoteworkspace (true|false) Enable the workspace to server remote requests from the local system, needed for Launchpad Project -removeheaders KEY-SELECTOR ( &#39;.&#39; KEY-SELECTOR ) * Remove matching headers from the manifest. Project -reportconfig plugin-def ( &#39;,&#39; plugin-def )* Configure a the content of report. Workspace &amp; Project -reportnewer BOOLEAN Report any entries that were added to the build since the last JAR was made. Project -reproducible BOOLEAN | TIMESTAMP Ensure the bundle can be built in a reproducible manner. Builder -require-bnd (FILTER ( &#39;,&#39; FILTER )* )? The filter can test against &#39;version&#39;, which will contain the Bnd version. If it does not match, Bnd will generate an error. Project -resolve.effective qname (&#39;,&#39; qname ) Set the use effectives for the resolver Workspace -resolve.excludesystem true|false A property used by the resolver, if set to true (default) it excludes the system resource Runtime -resolve (manual|auto|beforelaunch|batch|cache) Defines when/how resolving is done to calculate the -runbundles Workspace -resolve.preferences qname ( &#39;,&#39; qname ) Override the default order and selection of repositories Workspace -resolve.reject ( &#39;@&#39;? namespace ( &#39;;filter:=&#39; FILTER )? ), Controls rejection of capabilities during resolving. Workspace -resolvedebug INTEGER Display debugging information for a resolve operation Workspace -resourceonly BOOLEAN Ignores warning if the bundle only contains resources and no classes. Project -runblacklist requirement (&#39;,&#39; requirement) Blacklist a set of bundles for a resolve operation Workspace -runbuilds BOOLEAN Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true. Project -runbundles* REPO-ENTRY ( &#39;,&#39; REPO-ENTRY )* Add additional bundles, specified with their bsn and version like in -buildpath, that are installed and started before the project is run. Project -runee EE Define the runtime Execution Environment capabilities, default Java 6. Builder -runenv PROPERTIES Specify a JDB port on invocation when launched outside a debugger so the debugger can attach later. Project -runframework ( &#39;none&#39; | &#39;services&#39; | ANY )? Sets the type of framework to run. If &#39;none&#39;, an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name. Launcher -runframeworkrestart BOOLEAN Restart the framework in the same VM if the framework is stopped or updated. Project -runfw REPO-ENTRY Specify the framework JAR&#39;s entry in a repository. Launcher -runjdb ADDRESS Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later. Project -runkeep true | false Decides to keep the framework storage directory between launching Project -runnoreferences BOOLEAN Do not use the `reference:` URL scheme for installing a bundle in the installer. Launcher -runpath REPO-ENTRY ( &#39;,&#39; REPO-ENTRY ) Additional JARs for the remote VM path, should include the framework. Project -runprogramargs Additional arguments for the program invokation. Project -runproperties PROPERTIES Define system properties for the remote VM. Launcher -runprovidedcapabilities Extra capabilities for a distro resolve Workspace -runrepos REPO-NAME ( &#39;,&#39; REPO-NAME )* Order and select the repository for resolving against. The default order is all repositories in their plugin creation order. Resolve -runrequires REQUIREMENT ( &#39;,&#39; REQUIREMENT )* The root requirements for a resolve intended to create a constellation for the -runbundles. Resolve -runstartlevel ( order | begin | step )* Assign a start level to each run-bundle after resolving Project -runstorage FILE Define the directory to use for the framework&#39;s work area. Project -runsystemcapabilities* CAPABILITY (&#39;,&#39; CAPABILITY ) Define extra capabilities for the remote VM. Launcher -runsystempackages* PARAMETERS Define extra system packages (packages exported from the remote VM -runpath). Launcher -runtimeout DURATION Project -runtrace BOOLEAN Trace the launched process in detail Launcher -runvm KEYS Additional arguments for the VM invocation. Arguments are added as-is. Project -savemanifest FILE Write out the manifest to a separate file after it has been calculated. Builder -sign PARAMETERS Report any entries that were added to the build since the last JAR was made. Project -snapshot STRING String to substitute for &quot;SNAPSHOT&quot; in the bundle version&#39;s qualifier Project -sourcepath List of directory names that used to find sources. Builder -sources BOOLEAN Include the source code (if available on the -sourcepath) in the bundle at OSGI-OPT/src Builder -stalecheck srcs &#39;;newer=&#39; depends ( &#39;;&#39; ( warning | error | command ))* ... Perform a stale check of files and directories before building a jar Project -standalone repo-spec (, repo-spec ) Disconnects the bndrun file from the workspace and defines its on repositories Run -strict BOOLEAN If strict is true, then extra verification is done. Processor -sub FILE-SPEC ( &#39;,&#39; FILE-SPEC )* Build a set of bnd files that use this bnd file as a basis. The list of bnd file can be specified with wildcards. Builder -systemproperties PROPERTIES These system properties are set in the local JVM when a workspace is started. This was mainly added to allow one to set JVM options via system properties. Workspace -testcontinuous BOOLEAN Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated. Test -tester REPO-SPEC Species the tester (bundle) that is supposed to test the code. The default is biz.aQute.tester Project -testpackages PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) Project -testpath REPO-SPEC ( &#39;,&#39; REPO-SPEC ) The specified JARs from a repository are added to the remote JVM&#39;s classpath if the JVM is started in test mode in addition to the -runpath JARs. Project -testsources REGEX ( &#39;,&#39; REGEX )* Specification to find JUnit test cases by traversing the test src directory and looking for java classes. The default is (.*).java. Project -testunresolved BOOLEAN Will execute a JUnit testcase ahead of any other test case that will abort if there are any unresolved bundles. Project -undertest true Will be set by the project when it builds a JAR in test mode, intended to be used by plugins. Project -upto VERSION Specify the highest compatibility version, will disable any incompatible features added after this version. Project -wab FILE ( &#39;,&#39; FILE )* Create a Web Archive Bundle (WAB) or a WAR Builder -wablib FILE ( &#39;,&#39; FILE )* Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR. Builder -workingset PARAMETER ( &#39;,&#39; PARAMETER ) * Group the workspace into different working sets Workspace","headline":"Instruction Index","url":"/chapters/825-instructions-ref.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+		<style>
+			 body {
+				counter-reset: h1 34;
+			}
+		</style>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar" style="display:flex;align-items:center">
+	<li span=8><a class=menu-link href="/"><img
+			class=menu-logo src="/img/bnd-80x40-white.png"></a>
+			<a href="/chapters/110-introduction.html">Intro
+			</a><a href="/chapters/800-headers.html">Headers
+			</a><a href="/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/chapters/855-macros-ref.html">Macros
+			</a><a href="/chapters/400-commands.html">Commands
+			</a><div class="releases">
+			         <button class="dropbtn"><span class="fa fa-bars"></span> master</button>
+			         <div class="dropdown-content"></div>
+			   </div>
+    <li span=4>     
+        <div class="search-container">
+			<form method="get" id="search" action="https://google.com/search" target="_blank">
+			    <input type="hidden" name="as_q" value="site:bndtools.org OR site:bnd.discourse.group"/>
+			    <input type="text" name="q" placeholder="Search…" aria-label="Search https://google.com for bnd specific"/>
+			    <button type="submit" class="fa fa-search"></button>
+            </form>
+       </div>
+</ul>
+<div class=menu-link span=0><script>
+    window.onload = function() {
+      var currentURL = window.location.href;
+      var regex = /https:\/\/bnd.bndtools.org\/(.*\.html)/;
+      var matches = currentURL.match(regex);
+      var filePath = matches[1];
+	  if (filePath.includes("/")) 
+		  filePath = "_" + filePath;
+      var markdownFileURL = 'https://github.com/bndtools/bnd/blob/master/docs/' + filePath.replace(".html", ".md");
+      var repoLink = document.getElementById('repo-link');
+      repoLink.href = markdownFileURL;		
+    };
+</script>
+
+<a id="repo-link" href="https://github.com/bndtools/bnd/docs/" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</div>
+
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/chapters/790-reference.html">Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li class=selected>Instruction Index
+	  	
+  	
+		
+			<li><a href="/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+			
+				<h1> Instruction Index                    
+				</h1>
+				<div>
+<table class="property-index">
+    <thead>
+        <th>Instruction</th>
+        <th>Description</th>
+        <th>Class</th>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><a href="/instructions/augment.html">-augment PARAMETER ( &#39;,&#39; PARAMETER ) *</a></td>
+            <td>Add requirements and capabilities to the resources during resolving.</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/baseline.html">-baseline selector</a></td>
+            <td>Control what bundles are enabled for baselining and optionally specify the baseline version or file.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/baselinerepo.html">-baselinerepo qname</a></td>
+            <td>Define the repository to calculate baselining against</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/builderignore.html">-builderignore PATH-SPEC ( &#39;,&#39; PATH-SPEC ) *</a></td>
+            <td>List of project-relative directories to be ignored by the builder.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/buildpath.html">-buildpath PATH</a></td>
+            <td>Provides the class path for building the jar, the entries are references to the repositories.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/buildrepo.html">-buildrepo  repo ( &#39;,&#39; repo ) *</a></td>
+            <td>After building a JAR, release the JAR to the given repositories.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/buildtool.html">-buildtool  toolspec  (EXPERIMENTAL!)</a></td>
+            <td>A specification for the bnd CLI to install a build tool, like gradle, in the workspace</td>
+            <td>bnd</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/bumpolicy.html">-bumppolicy</a></td>
+            <td>The policy for the bump command</td>
+            <td>Macro</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/bundleannotations.html">-bundleannotations SELECTORS</a></td>
+            <td>Selects the classes that need processing for standard OSGi Bundle annotations.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/cdiannotations.html">-cdiannotations SELECTORS</a></td>
+            <td>Selects the packages that need processing for CDI annotations.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/check.html">-check &#39;ALL&#39; | ( &#39;IMPORTS&#39; | &#39;EXPORTS&#39; ) *</a></td>
+            <td>Enable additional checking</td>
+            <td>Analyzer</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/classpath.html">-classpath  FILE (&#39;,&#39; FILE) *</a></td>
+            <td>Specify additional file based entries (either directories or JAR files) to add to the used classpath.</td>
+            <td>Analyzer</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/compression.html">-compression DEFLATE | STORE</a></td>
+            <td>Set the compression level for the generated JAR, the default is DEFLATE</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/conditional-package.html">Conditional-Package PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) *</a></td>
+            <td>Recursively add packages from the class path when referred and when they match one of the package specifications.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/conditionalpackage.html">-conditionalpackage PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC ) *</a></td>
+            <td>Recursively add packages from the class path when referred and when they match one of the package specifications.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/conduit.html">-conduit</a></td>
+            <td>This project is a front to one or more JARs in the file system</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/connection-settings.html">-connection-settings</a></td>
+            <td>Setting up the communications for bnd</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/consumer_policy.html">-consumer-policy VERSION-MASK</a></td>
+            <td>Specify the default version bump policy for a consumer when a binary incompatible change is detected.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/contract.html">-contract</a></td>
+            <td>Establishes a link to a contract and handles the low level details.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/define-contract.html">-define-contract</a></td>
+            <td>Define a contract when one cannot be added to the buildpath.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/dependson.html">-dependson SELECTORS</a></td>
+            <td>Add dependencies from the current project to other projects, before this project is built, any project this project depends on will be built first.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/deploy.html">-deploy</a></td>
+            <td>Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/deployrepo.html">-deployrepo</a></td>
+            <td>Deploy this project through Deploy plugins (MavenDeploy plugin). Needs work</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/diffignore.html">-diffignore SELECTORS</a></td>
+            <td>Manifest header names and resource paths to ignore during baseline comparison.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/diffpackages.html">-diffpackages SELECTORS</a></td>
+            <td>The names of exported packages to baseline.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/digests.html">-digests DIGEST ( &#39;,&#39; DIGEST ) *</a></td>
+            <td>Set the digest algorithms to use</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/distro.html">-distro REPO (&#39;,&#39; REPO)</a></td>
+            <td>Resolve against pre-defined system capabilities</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/donotcopy.html">-donotcopy</a></td>
+            <td>Set the default filters for file resources that should not be copied.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/dsannotations-options.html">-dsannotations-options SELECTORS</a></td>
+            <td>Options for controlling DS annotation processing.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/dsannotations.html">-dsannotations SELECTORS</a></td>
+            <td>Selects the packages that need processing for standard OSGi DS annotations.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/eeprofile.html">-eeprofile &#39;auto&#39; | PROFILE +</a></td>
+            <td>Provides control over what Java 8 profile to use.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/executable.html">-executable ( rejar= STORE | DEFLATE ) ( &#39;,&#39;  strip= matcher ( &#39;,&#39; matcher )* ) ( &#39;,&#39; location= FORMAT )</a></td>
+            <td>Process an executable jar to strip optional directories of the contained bundles, and/or change their compression. The location string can also be calculated from bsn and version</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/export-apiguardian.html">-export-apiguardian PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )*</a></td>
+            <td>Exports the given packages where the the `@API` annotation is found on contained classes.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/export.html">-export PATH ( &#39;;&#39; PARAMETER )* ( &#39;,&#39; PATH ( &#39;;&#39; PARAMETER )* )*</a></td>
+            <td>Turns a bndrun file into its deployable format</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/exportcontents.html">-exportcontents PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )*</a></td>
+            <td>Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/exportreport.html">-exportreport report-def ( &#39;,&#39; report-def )*</a></td>
+            <td>Configure a list of reports to be exported.</td>
+            <td>Workspace &amp; Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/extension.html">-extension</a></td>
+            <td>A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/failok.html">-failok (&#39;true&#39; | &#39;false&#39;)?</a></td>
+            <td>Will ignore any error during building and assume all went ok.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/fixupmessages.html">-fixupmessages SELECTOR ( &#39;;&#39; ( is | replace | restrict ) )* ...</a></td>
+            <td>Fixup errors and warnings.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/generate.html">-generate srcs &#39;;output=&#39; DIR ( &#39;;&#39; ( system | generate | classpath))* ...</a></td>
+            <td>Generate sources</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/groupid.html">-groupid groupId</a></td>
+            <td>Set the default Maven groupId</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/include.html">-include PATH-SPEC ( &#39;,&#39; PATH-SPEC ) *</a></td>
+            <td>Include a number of files from the file system</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/includepackage.html">-includepackage PACKAGE-SPEC, ( &#39;,&#39; PACKAGE-SPEC )*</a></td>
+            <td>Include a number of packages from the class path</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/includeresource.html">-includeresource iclause</a></td>
+            <td>Include resources from the file system</td>
+            <td>Builder &amp; Executable</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/invalidfilenames.html">-invalidfilenames</a></td>
+            <td>Specify file/directory names that should not be used because they are not portable.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/javaagent.html">-javaagent BOOLEAN</a></td>
+            <td>Specify if classpath jars with Premain-Class headers are to be used as java agents</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/jpms-module-info-options.html">-jpms-module-info-options module-infos+</a></td>
+            <td>Used to generate the `module-info.class`</td>
+            <td>JPMS</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/jpms-module-info.html">-jpms-module-info modulename [; version=&lt;version&gt;] [; access=OPEN|SYNTHETIC|MANDATED]</a></td>
+            <td>Used to generate the `module-info.class`</td>
+            <td>JPMS</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/jpms-multi-release.html">-jpms-multi-release BOOLEAN</a></td>
+            <td>Enables generating manifests and module infos for multi release JARs.</td>
+            <td>JPMS</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/launcher.html">-launcher</a></td>
+            <td>Options for the runtime launcher</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/library.html">-library library ( &#39;,&#39; library )*</a></td>
+            <td>Apply a bnd library to the workspace, project, or bndrun file</td>
+            <td>Workspace or Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/make.html">-make</a></td>
+            <td>If a resource is not found, specify a recipe to make it.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/manifest.html">-manifest FILE</a></td>
+            <td>Override manifest calculation and set fixed manifest</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/manifest_name.html">-manifest-name  RESOURCE</a></td>
+            <td>Set the resource path to the manifest, for certain standards the manifest has a different name.</td>
+            <td>Ant</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/maven-dependencies.html">-maven-dependencies* entry ( &#39;,&#39; entry )*</a></td>
+            <td>Configure maven dependency information for the generated pom</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/maven-release.html">-maven-release (&#39;local&#39;|&#39;remote&#39;) ( &#39;,&#39; option )*</a></td>
+            <td>Set the Maven release options for the Maven Bnd Repository</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/maven-scope.html">-maven-scope dependency-scope</a></td>
+            <td>Set the default Maven dependency scope to use when generating dependency information in the generated pom</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/metatypeannotations-options.html">-metatypeannotations-options SELECTORS</a></td>
+            <td>Restricts the use of Metatype Annotation to a minimum version.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/metatypeannotations.html">-metatypeannotations SELECTORS</a></td>
+            <td>Selects the packages that need processing for standard OSGi Metatype annotations.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/namesection.html">-namesection RESOURCE-SPEC ( &#39;,&#39; RESOURCE-SPEC ) *</a></td>
+            <td>Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \&quot;/\&quot; target resources. Those ending with \&quot;/\&quot; target packages.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/nobuildincache.html">-nobuildincache BOOLEAN</a></td>
+            <td>Do not use a build in cache for the launcher and JUnit.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/nobundles.html">-nobundles  BOOLEAN</a></td>
+            <td>Do not build the project.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/noclassforname.html">-noclassforname BOOLEAN</a></td>
+            <td>Do not add package reference to classes loaded with Class.forName(String).</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/nodefaultversion.html">-nodefaultversion  BOOLEAN</a></td>
+            <td>Do not add a default version to exported packages when no version is present.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/noee.html">-noee  BOOLEAN</a></td>
+            <td>Donot add an automatic requirement on an EE capability based on the class format.</td>
+            <td>Ant</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/noextraheaders.html">-noextraheaders  BOOLEAN</a></td>
+            <td>Do not add a any extra headers specific for bnd.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/noimportjava.html">-noimportjava BOOLEAN</a></td>
+            <td>Do not import java.* packages.</td>
+            <td>Analyzer</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/nojunit.html">-nojunit  BOOLEAN</a></td>
+            <td>Indicate that this project does not have JUnit tests</td>
+            <td>Ant</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/nojunitosgi.html">-nojunitosgi  BOOLEAN</a></td>
+            <td>Indicate that this project does not have JUnit OSGi tests</td>
+            <td>Ant</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/nomanifest.html">-nomanifest  BOOLEAN</a></td>
+            <td>Do not safe the manifest in the JAR.</td>
+            <td>Ant</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/noparallel.html">-noparallel CATEGORY;task=TASKS</a></td>
+            <td>Prevent Gradle tasks in the same category from executing in parallel.</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/nouses.html">-nouses  BOOLEAN</a></td>
+            <td>Do not calculate uses directives on package exports or on capabilities.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/output.html">-output  FILE</a></td>
+            <td>Specify the output directory or file.</td>
+            <td>Analyzer</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/outputmask.html">-outputmask  TEMPLATE ?</a></td>
+            <td>If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + &quot;.jar&quot;.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/package.html">-package</a></td>
+            <td>Packaging options</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/pedantic.html">-pedantic BOOLEAN</a></td>
+            <td>Warn about things that are not really wrong but still not right.</td>
+            <td>Processor</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/plugin.html">-plugin.* plugin-def ( &#39;,&#39; plugin-def )*</a></td>
+            <td>Load plugins and their parameters.</td>
+            <td>Processor</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/pluginpath.html">-pluginpath* PARAMETERS</a></td>
+            <td>Define JARs to be loaded in the local classloader for plugins.</td>
+            <td>Processor</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/pom.html">-pom BOOLEAN | PROPERTIES</a></td>
+            <td>Generate a maven pom in the JAR</td>
+            <td>Processor</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/prepare.html">-prepare makespec ( &#39;,&#39; makespec )*</a></td>
+            <td>Execute a number of shell commands before every build (might not work on Windows)</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/preprocessmatchers.html">-preprocessmatchers SELECTOR</a></td>
+            <td>Specify which files can be preprocessed</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/privatepackage.html">-privatepackage PACKAGE-SPEC</a></td>
+            <td>Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/profile.html">-profile KEY</a></td>
+            <td>Sets a prefix that is used when a variable is not found, it is then re-searched under &quot;[&lt;[profile]&gt;]&lt;[key]&gt;&quot;.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/provider_policy.html">-provider-policy VERSION-MASK</a></td>
+            <td>Specify the default version bump policy for a provider when a binary incompatible change is detected.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/releaserepo.html">-releaserepo* NAME ( &#39;,&#39; NAME ) *</a></td>
+            <td>Define the names of the repositories to use for a release</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/remoteworkspace.html">-remoteworkspace (true|false)</a></td>
+            <td>Enable the workspace to server remote requests from the local system, needed for Launchpad</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/removeheaders.html">-removeheaders KEY-SELECTOR ( &#39;.&#39; KEY-SELECTOR ) *</a></td>
+            <td>Remove matching headers from the manifest.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/reportconfig.html">-reportconfig plugin-def ( &#39;,&#39; plugin-def )*</a></td>
+            <td>Configure a the content of report.</td>
+            <td>Workspace &amp; Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/reportnewer.html">-reportnewer BOOLEAN</a></td>
+            <td>Report any entries that were added to the build since the last JAR was made.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/reproducible.html">-reproducible BOOLEAN | TIMESTAMP</a></td>
+            <td>Ensure the bundle can be built in a reproducible manner.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/require_bnd.html">-require-bnd  (FILTER ( &#39;,&#39; FILTER )* )?</a></td>
+            <td>The filter can test against &#39;version&#39;, which will contain the Bnd version. If it does not match, Bnd will generate an error.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/resolve.effective.html">-resolve.effective qname (&#39;,&#39; qname )</a></td>
+            <td>Set the use effectives for the resolver</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/resolve.excludesystem.html">-resolve.excludesystem true|false</a></td>
+            <td>A property used by the resolver, if set to true (default) it excludes the system resource</td>
+            <td>Runtime</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/resolve.html">-resolve (manual|auto|beforelaunch|batch|cache)</a></td>
+            <td>Defines when/how resolving is done to calculate the -runbundles</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/resolve.preferences.html">-resolve.preferences qname ( &#39;,&#39; qname )</a></td>
+            <td>Override the default order and selection of repositories</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/resolve.reject.html">-resolve.reject ( &#39;@&#39;? namespace ( &#39;;filter:=&#39; FILTER )? ),</a></td>
+            <td>Controls rejection of capabilities during resolving.</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/resolvedebug.html">-resolvedebug INTEGER</a></td>
+            <td>Display debugging information for a resolve operation</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/resourceonly.html">-resourceonly  BOOLEAN</a></td>
+            <td>Ignores warning if the bundle only contains resources and no classes.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runblacklist.html">-runblacklist requirement (&#39;,&#39; requirement)</a></td>
+            <td>Blacklist a set of bundles for a resolve operation</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runbuilds.html">-runbuilds BOOLEAN</a></td>
+            <td>Defines if this should add the bundles build by this project to the -runbundles. For a bndrun file this is default false, for a bnd file this is default true.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runbundles.html">-runbundles* REPO-ENTRY ( &#39;,&#39; REPO-ENTRY )*</a></td>
+            <td>Add additional bundles, specified with their bsn and version like in -buildpath, that are installed and started before the project is run.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runee.html">-runee EE</a></td>
+            <td>Define the  runtime Execution Environment capabilities, default Java 6.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runenv.html">-runenv PROPERTIES</a></td>
+            <td>Specify a JDB port on invocation when launched outside a debugger so the debugger can attach later.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runframework.html">-runframework ( &#39;none&#39; | &#39;services&#39; | ANY )?</a></td>
+            <td>Sets the type of framework to run. If &#39;none&#39;, an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name.</td>
+            <td>Launcher</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runframeworkrestart.html">-runframeworkrestart BOOLEAN</a></td>
+            <td>Restart the framework in the same VM if the framework is stopped or updated.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runfw.html">-runfw REPO-ENTRY</a></td>
+            <td>Specify the framework JAR&#39;s entry in a repository.</td>
+            <td>Launcher</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runjdb.html">-runjdb  ADDRESS</a></td>
+            <td>Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runkeep.html">-runkeep true | false</a></td>
+            <td>Decides to keep the framework storage directory between launching</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runnoreferences.html">-runnoreferences  BOOLEAN</a></td>
+            <td>Do not use the `reference:` URL scheme for installing a bundle in the installer.</td>
+            <td>Launcher</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runpath.html">-runpath REPO-ENTRY ( &#39;,&#39; REPO-ENTRY )</a></td>
+            <td>Additional JARs for the remote VM path, should include the framework.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runprogramargs.html">-runprogramargs</a></td>
+            <td>Additional arguments for the program invokation.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runproperties.html">-runproperties PROPERTIES</a></td>
+            <td>Define system properties for the remote VM.</td>
+            <td>Launcher</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runprovidedcapabilities.html">-runprovidedcapabilities</a></td>
+            <td>Extra capabilities for a distro resolve</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runrepos.html">-runrepos REPO-NAME ( &#39;,&#39; REPO-NAME )*</a></td>
+            <td>Order and select the repository for resolving against. The default order is all repositories in their plugin creation order.</td>
+            <td>Resolve</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runrequires.html">-runrequires REQUIREMENT ( &#39;,&#39; REQUIREMENT )*</a></td>
+            <td>The root requirements for a resolve intended to create a constellation for the -runbundles.</td>
+            <td>Resolve</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runstartlevel.html">-runstartlevel ( order | begin | step )*</a></td>
+            <td>Assign a start level to each run-bundle after resolving</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runstorage.html">-runstorage FILE</a></td>
+            <td>Define the directory to use for the framework&#39;s work area.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runsystemcapabilities.html">-runsystemcapabilities* CAPABILITY (&#39;,&#39; CAPABILITY )</a></td>
+            <td>Define extra capabilities for the remote VM.</td>
+            <td>Launcher</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runsystempackages.html">-runsystempackages* PARAMETERS</a></td>
+            <td>Define extra system packages (packages exported from the remote VM -runpath).</td>
+            <td>Launcher</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runtimeout.html">-runtimeout DURATION</a></td>
+            <td></td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runtrace.html">-runtrace BOOLEAN</a></td>
+            <td>Trace the launched process in detail</td>
+            <td>Launcher</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/runvm.html">-runvm KEYS</a></td>
+            <td>Additional arguments for the VM invocation. Arguments are added as-is.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/savemanifest.html">-savemanifest FILE</a></td>
+            <td>Write out the manifest to a separate file after it has been calculated.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/sign.html">-sign PARAMETERS</a></td>
+            <td>Report any entries that were added to the build since the last JAR was made.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/snapshot.html">-snapshot STRING</a></td>
+            <td>String to substitute for &quot;SNAPSHOT&quot; in the bundle version&#39;s qualifier</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/sourcepath.html">-sourcepath</a></td>
+            <td>List of directory names that used to find sources.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/sources.html">-sources  BOOLEAN</a></td>
+            <td>Include the source code (if available on the -sourcepath) in the bundle at OSGI-OPT/src</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/stalecheck.html">-stalecheck srcs &#39;;newer=&#39; depends ( &#39;;&#39; ( warning | error | command ))* ...</a></td>
+            <td>Perform a stale check of files and directories before building a jar</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/standalone.html">-standalone repo-spec (, repo-spec )</a></td>
+            <td>Disconnects the bndrun file from the workspace and defines its on repositories</td>
+            <td>Run</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/strict.html">-strict BOOLEAN</a></td>
+            <td>If strict is true, then extra verification is done.</td>
+            <td>Processor</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/sub.html">-sub FILE-SPEC ( &#39;,&#39; FILE-SPEC )*</a></td>
+            <td>Build a set of bnd files that use this bnd file as a basis. The list of bnd file can be specified with wildcards.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/systemproperties.html">-systemproperties PROPERTIES</a></td>
+            <td>These system properties are set in the local JVM when a workspace is started. This was mainly added to allow one to set JVM options via system properties.</td>
+            <td>Workspace</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/testcontinuous.html">-testcontinuous BOOLEAN</a></td>
+            <td>Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated.</td>
+            <td>Test</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/tester.html">-tester REPO-SPEC</a></td>
+            <td>Species the tester (bundle) that is supposed to test the code. The default is biz.aQute.tester</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/testpackages.html">-testpackages PACKAGE-SPEC ( &#39;,&#39; PACKAGE-SPEC )</a></td>
+            <td></td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/testpath.html">-testpath REPO-SPEC ( &#39;,&#39; REPO-SPEC )</a></td>
+            <td>The specified JARs from a repository are added to the remote JVM&#39;s classpath if the JVM is started in test mode in addition to the -runpath JARs.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/testsources.html">-testsources REGEX ( &#39;,&#39; REGEX )*</a></td>
+            <td>Specification to find JUnit test cases by traversing the test src directory and looking for java classes. The default is (.*).java.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/testunresolved.html">-testunresolved BOOLEAN</a></td>
+            <td>Will execute a JUnit testcase ahead of any other test case that will abort if there are any unresolved bundles.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/undertest.html">-undertest true</a></td>
+            <td>Will be set by the project when it builds a JAR in test mode, intended to be used by plugins.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/upto.html">-upto VERSION</a></td>
+            <td>Specify the highest compatibility version, will disable any incompatible features added after this version.</td>
+            <td>Project</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/wab.html">-wab FILE ( &#39;,&#39; FILE )*</a></td>
+            <td>Create a Web Archive Bundle (WAB) or a WAR</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/wablib.html">-wablib FILE ( &#39;,&#39; FILE )*</a></td>
+            <td>Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.</td>
+            <td>Builder</td>
+        </tr>
+        
+        <tr>
+            <td><a href="/instructions/workingset.html">-workingset PARAMETER ( &#39;,&#39; PARAMETER ) *</a></td>
+            <td>Group the workspace into different working sets</td>
+            <td>Workspace</td>
+        </tr>
+        
+    </tbody>
+</table>
+</div>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/chapters/820-instructions.html'></a> <a href='/chapters/850-macros.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

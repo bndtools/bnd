@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 public class JUnit5ContainerFailure {
 
 	@BeforeAll
-	void beforeAll() {
+	static void beforeAll() {
 		throw new AssertionError();
 	}
 

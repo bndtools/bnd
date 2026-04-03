@@ -25,6 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -99,6 +100,7 @@ import aQute.bnd.classfile.TypeAnnotationsAttribute;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.Descriptor;
+import aQute.bnd.osgi.Descriptors.NamedDescriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.signatures.FieldSignature;
@@ -158,6 +160,32 @@ public class Clazz {
 		Java_22,
 		Java_23,
 		Java_24,
+		Java_25,
+		Java_26,
+		Java_27,
+		Java_28,
+		Java_29,
+		Java_30,
+		Java_31,
+		Java_32,
+		Java_33,
+		Java_34,
+		Java_35,
+		Java_36,
+		Java_37,
+		Java_38,
+		Java_39,
+		Java_40,
+		Java_41,
+		Java_42,
+		Java_43,
+		Java_44,
+		Java_45,
+		Java_46,
+		Java_47,
+		Java_48,
+		Java_49,
+		Java_50,
 		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
 		private final int		major;
@@ -550,6 +578,11 @@ public class Clazz {
 		public abstract Object getConstant();
 
 		public abstract String getGenericReturnType();
+
+		public NamedDescriptor getNamedDescriptor() {
+			return new NamedDescriptor(getName(), getDescriptor());
+		}
+
 	}
 
 	public class FieldDef extends MemberDef {
@@ -619,6 +652,10 @@ public class Clazz {
 		@Override
 		public boolean isFinal() {
 			return super.isFinal() || Clazz.this.isFinal();
+		}
+
+		public boolean isDefault() {
+			return Clazz.this.isInterface() && !isStatic() && !isAbstract();
 		}
 
 		public TypeRef[] getPrototype() {
@@ -691,6 +728,17 @@ public class Clazz {
 		ElementType elementType() {
 			return getName().equals("<init>") ? ElementType.CONSTRUCTOR : ElementType.METHOD;
 		}
+
+		/**
+		 * Return the set of thrown types in this method. Not that if these
+		 * exceptions contain generics, you should definitely use the signature.
+		 */
+		public TypeRef[] getThrows() {
+			return attribute(ExceptionsAttribute.class).map(ea -> Stream.of(ea.exceptions)
+				.map(analyzer::getTypeRefFromFQN)
+				.toArray(TypeRef[]::new))
+				.orElse(new TypeRef[0]);
+		}
 	}
 
 	public class TypeDef extends Def {
@@ -736,6 +784,7 @@ public class Clazz {
 	private Set<TypeRef>					annotations;
 	private int								forName							= 0;
 	private int								class$							= 0;
+	private int								newProxyInstance				= 0;
 	private Set<PackageRef>					api;
 
 	private ClassFile						classFile						= null;
@@ -868,6 +917,23 @@ public class Clazz {
 		forName = analyzer.is(Constants.NOCLASSFORNAME) ? -1
 			: findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 		class$ = findMethodReference(classFile.this_class, "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
+
+		// We also look for Proxy.newProxyInstance calls to detect dynamic proxy creation:
+		//
+		// anewarray #n // class java/lang/Class
+		// ldc(_w) <class constant>  // interface classes
+		// aastore
+		// ...
+		// invokestatic Proxy.newProxyInstance(ClassLoader, Class[], InvocationHandler)
+		//
+		// Note: We only detect interfaces when the Class[] array is created inline
+		// (the anewarray pattern above). We cannot detect interfaces when the array
+		// comes from a field, local variable, or parameter, as we cannot reliably
+		// determine the array contents from bytecode alone in those cases.
+		//
+		newProxyInstance = analyzer.is(Constants.NOPROXYINTERFACES) ? -1
+			: findMethodReference("java/lang/reflect/Proxy", "newProxyInstance",
+				"(Ljava/lang/ClassLoader;[Ljava/lang/Class;Ljava/lang/reflect/InvocationHandler;)Ljava/lang/Object;");
 
 		for (MethodInfo methodInfo : classFile.methods) {
 			referTo(methodInfo.descriptor, methodInfo.access);
@@ -1193,6 +1259,12 @@ public class Clazz {
 		ByteBuffer code = attribute.code.duplicate();
 		code.rewind();
 		int lastReference = -1;
+		// Track interface class constants for Proxy.newProxyInstance
+		// Note: We only track interfaces when the Class[] array is created inline
+		// (anewarray + ldc + aastore pattern). We cannot reliably detect interfaces
+		// when the array comes from a field, variable, or parameter.
+		List<Integer> proxyInterfaces = null; // Lazy initialization
+		boolean inProxyArray = false; // Track if we're building a Class[] for proxy
 		while (code.hasRemaining()) {
 			int instruction = Byte.toUnsignedInt(code.get());
 			switch (instruction) {
@@ -1206,13 +1278,40 @@ public class Clazz {
 					classConstRef(lastReference);
 					break;
 				}
-				case OpCodes.anewarray :
+				case OpCodes.anewarray : {
+					int class_index = Short.toUnsignedInt(code.getShort());
+					classConstRef(class_index);
+					// Check if this is creating a Class[] array (potential Proxy.newProxyInstance pattern)
+					if (newProxyInstance != -1 && constantPool.tag(class_index) == CONSTANT_Class) {
+						String className = constantPool.className(class_index);
+						if ("java/lang/Class".equals(className)) {
+							inProxyArray = true;
+							if (proxyInterfaces == null) {
+								proxyInterfaces = new ArrayList<>();
+							} else {
+								proxyInterfaces.clear();
+							}
+						}
+					}
+					lastReference = -1;
+					break;
+				}
+				case OpCodes.aastore : {
+					// Store into array - if we're in proxy array building and have a class reference, collect it
+					if (inProxyArray && proxyInterfaces != null && lastReference != -1 && constantPool.tag(lastReference) == CONSTANT_Class) {
+						proxyInterfaces.add(lastReference);
+					}
+					lastReference = -1;
+					break;
+				}
 				case OpCodes.checkcast :
 				case OpCodes.instanceof_ :
 				case OpCodes.new_ : {
 					int class_index = Short.toUnsignedInt(code.getShort());
 					classConstRef(class_index);
 					lastReference = -1;
+					// Reset proxy tracking if we see unrelated instructions
+					inProxyArray = false;
 					break;
 				}
 				case OpCodes.multianewarray : {
@@ -1233,7 +1332,47 @@ public class Clazz {
 							}
 						}
 					}
+					// Handle Proxy.newProxyInstance - process collected proxy interfaces
+					if (method_ref_index == newProxyInstance && proxyInterfaces != null && !proxyInterfaces.isEmpty()) {
+						for (int classIndex : proxyInterfaces) {
+							processProxyInterface(classIndex);
+						}
+						proxyInterfaces.clear();
+						inProxyArray = false;
+					}
 					lastReference = -1;
+					break;
+				}
+				case OpCodes.astore :
+				case OpCodes.astore_0 :
+				case OpCodes.astore_1 :
+				case OpCodes.astore_2 :
+				case OpCodes.astore_3 :
+				case OpCodes.putstatic :
+				case OpCodes.putfield : {
+					// These instructions store/pop values and break the inline array pattern
+					// If we were building a proxy array, it's been stored away and won't be
+					// passed directly to newProxyInstance
+					code.position(code.position() + OpCodes.OFFSETS[instruction]);
+					lastReference = -1;
+					inProxyArray = false;
+					if (proxyInterfaces != null) {
+						proxyInterfaces.clear();
+					}
+					break;
+				}
+				case OpCodes.invokespecial :
+				case OpCodes.invokevirtual :
+				case OpCodes.invokeinterface : {
+					// These invoke instructions (except invokedynamic) break the pattern
+					// Note: invokedynamic is allowed because it's used for the InvocationHandler lambda
+					// which is a parameter to newProxyInstance
+					code.position(code.position() + OpCodes.OFFSETS[instruction]);
+					lastReference = -1;
+					inProxyArray = false;
+					if (proxyInterfaces != null) {
+						proxyInterfaces.clear();
+					}
 					break;
 				}
 				case OpCodes.wide : {
@@ -2038,6 +2177,38 @@ public class Clazz {
 		if (name != null) {
 			TypeRef typeRef = analyzer.getTypeRef(name);
 			referTo(typeRef, 0);
+		}
+	}
+
+	/**
+	 * Process a proxy interface - treat it as if the class implements the
+	 * interface, which means we need to reference all types from the
+	 * interface's method signatures (parameters and return types).
+	 */
+	private void processProxyInterface(int classIndex) {
+		String interfaceName = constantPool.className(classIndex);
+		if (interfaceName == null) {
+			return;
+		}
+
+		TypeRef interfaceType = analyzer.getTypeRef(interfaceName);
+		referTo(interfaceType, 0);
+
+		// Load the interface class to analyze its methods
+		try {
+			Clazz interfaceClazz = analyzer.findClass(interfaceType);
+			if (interfaceClazz != null) {
+				// Process all methods in the interface
+				interfaceClazz.parseClassFile();
+				interfaceClazz.methods().forEach(method -> {
+					// Reference all types in the method descriptor (parameters and return type)
+					String descriptor = method.descriptor();
+					referTo(descriptor, 0);
+				});
+			}
+		} catch (Exception e) {
+			// If we can't load the interface, just reference the interface type itself
+			logger.debug("Unable to load proxy interface {} for detailed analysis: {}", interfaceName, e.getMessage());
 		}
 	}
 

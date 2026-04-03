@@ -1,11 +1,14 @@
 package aQute.bnd.repository.p2.provider;
 
+import static aQute.bnd.service.tags.Tags.parse;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -15,8 +18,10 @@ import org.osgi.resource.Requirement;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.repository.BaseRepository;
+import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
@@ -24,9 +29,9 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.p2.packed.Unpack200;
+import aQute.p2.provider.Feature;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -34,7 +39,7 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "P2 Repo", parameters = P2Config.class)
 public class P2Repository extends BaseRepository
-	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable {
+	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable, Actionable {
 	private P2Config	config;
 	private Registry	registry;
 	private Workspace	workspace;
@@ -106,6 +111,7 @@ public class P2Repository extends BaseRepository
 	public void setProperties(Map<String, String> map) throws Exception {
 		this.config = Converter.cnv(P2Config.class, map);
 		this.name = this.config.name("p2-" + config.url());
+		super.setTags(parse(config.tags(), DEFAULT_REPO_TAGS));
 	}
 
 	@Override
@@ -150,6 +156,67 @@ public class P2Repository extends BaseRepository
 	@Override
 	public String toString() {
 		return "P2Repository [" + getName() + "]";
+	}
+
+	@Override
+	public Map<String, Runnable> actions(Object... target) throws Exception {
+		if (target.length == 0) {
+			if (p2Index.indexFile.isFile()) {
+				Map<String, Runnable> menu = new LinkedHashMap<>();
+				menu.put("Refresh from " + p2Index.url, () -> {
+					try {
+						workspace.writeLocked(() -> {
+							p2Index.reread();
+							workspace.refresh();
+							return null;
+						});
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+				});
+				return menu;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String tooltip(Object... target) throws Exception {
+		if (target.length == 0) {
+
+			return "P2: " + name + "\n" //
+				+ "index      " + p2Index.indexFile.getAbsolutePath() + "\n" //
+				+ "uri        " + p2Index.url + "\n" //
+				+ "hash       " + p2Index.urlHash;
+		}
+		return null;
+	}
+
+	@Override
+	public String title(Object... target) throws Exception {
+		return null;
+	}
+
+	/**
+	 * Get all features available in this P2 repository.
+	 *
+	 * @return a list of features, or empty list if none available
+	 * @throws Exception if an error occurs while fetching features
+	 */
+	public List<Feature> getFeatures() throws Exception {
+		return getP2Index().getFeatures();
+	}
+
+	/**
+	 * Get a specific feature by ID and version.
+	 *
+	 * @param id the feature ID
+	 * @param version the feature version
+	 * @return the feature, or null if not found
+	 * @throws Exception if an error occurs while fetching the feature
+	 */
+	public Feature getFeature(String id, String version) throws Exception {
+		return getP2Index().getFeature(id, version);
 	}
 
 }

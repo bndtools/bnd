@@ -10,10 +10,18 @@ import java.io.RandomAccessFile;
 
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 
 public class ResolverLogger implements LogService, AutoCloseable {
+
+	private static final Logger	logger			= LoggerFactory.getLogger(ResolverLogger.class);
 
 	public static final int		DEFAULT_LEVEL	= 4;
 
@@ -52,6 +60,7 @@ public class ResolverLogger implements LogService, AutoCloseable {
 		printer = IO.writer(out, UTF_8);
 	}
 
+
 	@Override
 	public void log(int level, String msg, Throwable throwable) {
 		switch (level) {
@@ -64,6 +73,7 @@ public class ResolverLogger implements LogService, AutoCloseable {
 				printLog(msg, throwable);
 				if (throwable != null) {
 					throwable.printStackTrace(printer);
+					logger.debug("", throwable);
 				}
 				break;
 			case LOG_INFO :
@@ -87,10 +97,13 @@ public class ResolverLogger implements LogService, AutoCloseable {
 
 	private void printLog(String msg, Throwable throwable) {
 		printer.print(msg);
+		logger.debug(msg);
 		if (throwable != null) {
 			printer.print(" (");
 			printer.print(throwable);
 			printer.print(")");
+
+			logger.debug("({})", String.valueOf(throwable));
 		}
 		printer.println();
 	}
@@ -106,6 +119,9 @@ public class ResolverLogger implements LogService, AutoCloseable {
 				} else {
 					StringBuilder sb = new StringBuilder(10000);
 
+					sb.append("Log level:")
+						.append(getLogLevel())
+						.append(" ");
 					sb.append("Log too large. Split from ")
 						.append(file.getAbsolutePath())
 						.append("\nsize ")
@@ -140,6 +156,17 @@ public class ResolverLogger implements LogService, AutoCloseable {
 		}
 	}
 
+	/**
+	 * like {@link #close()} but it deletes the logfile regardless of
+	 * {@link #keepLogFile}
+	 */
+	public void closeAndDeleteLogfile() {
+		IO.close(printer);
+		if (file != null) {
+			IO.delete(file);
+		}
+	}
+
 	public void setKeepLogFileTillExit(boolean keep) {
 		this.keepLogFile = keep;
 	}
@@ -161,5 +188,36 @@ public class ResolverLogger implements LogService, AutoCloseable {
 	@Override
 	public void log(ServiceReference sr, int level, String message, Throwable exception) {
 		log(level, message, exception);
+	}
+
+	/**
+	 * @param processor
+	 * @param keepLogFileTillJvmExit if <code>true</code> the logfile is kept
+	 *            until JVM exit, otherwise deleted immediately after resolve
+	 *            finishes
+	 * @return a new logger
+	 */
+	public static ResolverLogger newLogger(Processor processor, boolean keepLogFileTillJvmExit) {
+		if (processor == null) {
+			ResolverLogger logger = new ResolverLogger();
+			logger.setKeepLogFileTillExit(keepLogFileTillJvmExit);
+			return logger;
+		}
+
+		try {
+			Integer level = Converter.cnv(Integer.class,
+				processor.getProperty(Constants.RESOLVEDEBUG, Integer.toString(DEFAULT_LEVEL)));
+			if (level != null) {
+				ResolverLogger logger = new ResolverLogger(level);
+				logger.setKeepLogFileTillExit(keepLogFileTillJvmExit);
+				return logger;
+			}
+			ResolverLogger logger = new ResolverLogger(DEFAULT_LEVEL);
+			logger.setKeepLogFileTillExit(keepLogFileTillJvmExit);
+			return logger;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
 	}
 }

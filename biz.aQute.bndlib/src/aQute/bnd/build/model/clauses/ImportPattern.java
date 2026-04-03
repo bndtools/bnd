@@ -28,7 +28,6 @@ public class ImportPattern extends VersionedClause implements Cloneable {
 	}
 
 	public static ImportPattern error(String msg) {
-		Attrs a = new Attrs();
 		return new ImportPattern(msg, null);
 	}
 

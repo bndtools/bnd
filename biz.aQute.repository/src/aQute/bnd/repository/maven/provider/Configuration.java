@@ -11,6 +11,11 @@ public interface Configuration {
 	String releaseUrl();
 
 	/**
+	 * The url of the staging release repository.
+	 */
+	String stagingUrl();
+
+	/**
 	 * The urls to the remote snapshot repository.
 	 */
 	String snapshotUrl();
@@ -71,4 +76,14 @@ public interface Configuration {
 	 * Extensions for files that contain multiple JARs
 	 */
 	String multi();
+
+	/**
+	 * @return a comma separated list of tags.
+	 */
+	String tags();
+
+	/**
+	 * @return SonatypeMode for this repository none, manual or autopublish
+	 */
+	SonatypeMode sonatypeMode(String deflt);
 }

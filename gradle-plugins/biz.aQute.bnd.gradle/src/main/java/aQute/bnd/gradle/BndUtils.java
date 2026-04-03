@@ -2,7 +2,6 @@ package aQute.bnd.gradle;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
@@ -11,11 +10,14 @@ import aQute.service.reporter.Report.Location;
 import org.gradle.api.Buildable;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.ArtifactView;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.BasePluginExtension;
@@ -149,32 +151,35 @@ public class BndUtils {
 	}
 
 	/**
-	 * Set the Library Element Attribute of the specified configuration's
-	 * attributes to Jar.
+	 * Return a {@link FileCollection} for the specified configuration that will explicitly request the default {@code jar}
+	 * variant of the specified configuration possessing the {@link LibraryElements#JAR} attribute.
+	 * <p>
+	 * This ensures that even if Gradle uses the {@code classes} variant of the configuration which uses the {@link LibraryElements#CLASSES}
+	 * attribute, the {@code jar} variant will also be available, making any resources packaged in the jar
+	 * visible.  The provided configuration itself will <strong>NOT</strong> be modified.
 	 *
 	 * @param task The Task.
 	 * @param configurationName The configuration name.
+	 * @return A {@link FileCollection} of the {@code jar} variants of the specified configuration.
 	 */
-	public static void jarLibraryElements(Task task, String configurationName) {
+	public static FileCollection jarLibraryElements(Task task, String configurationName) {
 		Project project = task.getProject();
-		AttributeContainer attributes = project.getConfigurations()
-			.getByName(configurationName)
-			.getAttributes();
-		LibraryElements attribute = attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE);
-		if ((attribute == null) || !Objects.equals(attribute.getName(), LibraryElements.JAR)) {
-			try {
-				attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects()
-					.named(LibraryElements.class, LibraryElements.JAR));
-				task.getLogger()
-					.info("Set {}:{} configuration attribute {} to {}", project.getPath(), configurationName,
-						LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
-						attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE));
-			} catch (IllegalArgumentException e) {
-				task.getLogger()
-					.info("Unable to set {}:{} configuration attribute {} to {}", project.getPath(), configurationName,
-						LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e);
-			}
-		}
+		Configuration configuration = project.getConfigurations()
+			.getByName(configurationName);
+		ArtifactView artifactView = configuration.getIncoming()
+			.artifactView(viewConfiguration -> {
+				AttributeContainer attributes = viewConfiguration.getAttributes();
+				try {
+					attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects()
+						.named(LibraryElements.class, LibraryElements.JAR));
+					task.getLogger()
+						.info("Using jars for configuration {}:{}", project.getPath(), configurationName);
+				} catch (IllegalArgumentException e) {
+					task.getLogger()
+						.info("Unable to use jars for configuration {}:{}", project.getPath(), configurationName, e);
+				}
+			});
+		return artifactView.getFiles();
 	}
 
 	/**

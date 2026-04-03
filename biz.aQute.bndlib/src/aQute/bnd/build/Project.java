@@ -162,6 +162,7 @@ public class Project extends Processor {
 	final Collection<Container>									runbundles						= new LinkedHashSet<>();
 	final Collection<Container>									runfw							= new LinkedHashSet<>();
 	File														runstorage;
+	private final RepoCollector									repoCollector;
 	final Map<File, Attrs>										sourcepath						= new LinkedHashMap<>();
 	final Collection<File>										allsourcepath					= new LinkedHashSet<>();
 	final Collection<Container>									bootclasspath					= new LinkedHashSet<>();
@@ -195,6 +196,8 @@ public class Project extends Processor {
 
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
+		repoCollector = new RepoCollector(this);
+		addClose(repoCollector);
 	}
 
 	public Project(Workspace workspace, File buildDir) {
@@ -232,7 +235,7 @@ public class Project extends Processor {
 		if (getBase() == null || !getBase().isDirectory())
 			return false;
 
-		return getPropertiesFile() == null || getPropertiesFile().isFile();
+		return getPropertiesFile() == null || (!mustFileExist() || getPropertiesFile().isFile());
 	}
 
 	/**
@@ -321,7 +324,7 @@ public class Project extends Processor {
 
 				// We use a builder to construct all the properties for
 				// use.
-				setProperty("basedir", basePath);
+				setProperty("basedir", basePath, "[project]");
 
 				// If a bnd.bnd file exists, we read it.
 				// Otherwise, we just do the build properties.
@@ -498,19 +501,19 @@ public class Project extends Processor {
 	}
 
 	public File getSrcOutput() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_BIN_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_BIN_DIR);
 	}
 
 	public File getTestSrc() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_TESTSRC_DIR);
 	}
 
 	public File getTestOutput() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_TESTBIN_DIR);
 	}
 
 	public File getTargetDir() {
-		return getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
+		return getSingleFile(Constants.DEFAULT_PROP_TARGET_DIR);
 	}
 
 	private void traverse(Set<Project> dependencies, Project dependent, Set<Project> visited) throws Exception {
@@ -522,6 +525,17 @@ public class Project extends Processor {
 		}
 
 		dependents.add(dependent);
+	}
+
+	private File getSingleFile(String key) {
+		String value = getProperty(key);
+		if (value == null) {
+			error("project.%s expected value for property %s but got null", key, key);
+			value = key;
+		} else if (value.indexOf(',') >= 0) {
+			error("project.%s expected one file path for property %s but got multiple: %s", key, key, value);
+		}
+		return getFile(value);
 	}
 
 	/**
@@ -759,7 +773,7 @@ public class Project extends Processor {
 
 		SortedMap<String, Pair<Version, RepositoryPlugin>> providerMap = new TreeMap<>();
 
-		List<RepositoryPlugin> plugins = workspace.getRepositories();
+		List<RepositoryPlugin> plugins = getRepositories();
 		for (RepositoryPlugin plugin : plugins) {
 
 			if (repoFilter != null && !repoFilter.match(plugin))
@@ -872,6 +886,9 @@ public class Project extends Processor {
 			for (Pom sub : dependencies) {
 				File artifact = sub.getArtifact();
 				Container container = new Container(artifact, null);
+				container.putAttribute("maven-groupId", sub.getGroupId());
+				container.putAttribute("maven-artifactId", sub.getArtifactId());
+				container.putAttribute("maven-version", sub.getVersion());
 				result.add(container);
 			}
 		}
@@ -1125,16 +1142,17 @@ public class Project extends Processor {
 			RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only
 																// first
 			// release repo
-			return releaseRepo(releaseRepo, builder, jarName, jarStream);
+			return releaseRepo(releaseRepo, builder, jarName, jarStream, false);
 		}
 	}
 
-	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream)
-		throws Exception {
+	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream,
+		boolean lastBundleInWorkspace) throws Exception {
 		logger.debug("release to {}", releaseRepo.getName());
 		try {
 			PutOptions putOptions = new RepositoryPlugin.PutOptions();
 			// TODO find sub bnd that is associated with this thing
+			context.set("startSonatypePublish", Boolean.toString(lastBundleInWorkspace));
 			putOptions.context = context;
 			PutResult r = releaseRepo.put(jarStream, putOptions);
 			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, releaseRepo);
@@ -1196,14 +1214,39 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void release(String name, boolean test) throws Exception {
-		List<RepositoryPlugin> releaseRepos = getReleaseRepos(name);
+		release(new ReleaseParameter(name, test, false));
+	}
+
+	@Deprecated(forRemoval = true, since = "7.3.0")
+	public static class ReleaseParameter {
+		@Deprecated
+		public String	name;
+		@Deprecated
+		public boolean	test;
+		@Deprecated
+		public boolean	lastBundleInWorkspace;
+
+		@Deprecated(forRemoval = true, since = "7.3.0")
+		public ReleaseParameter(String name, boolean test, boolean lastBundleInWorkspace) {
+			this.name = name;
+			this.test = test;
+			this.lastBundleInWorkspace = lastBundleInWorkspace;
+		}
+	}
+
+	/**
+	 * Do not use this method.
+	 */
+	@Deprecated(forRemoval = true, since = "7.3.0")
+	public void release(ReleaseParameter relParam) throws Exception, IOException {
+		List<RepositoryPlugin> releaseRepos = getReleaseRepos(relParam.name);
 		if (releaseRepos.isEmpty()) {
 			return;
 		}
 		logger.debug("release");
 		File[] jars = getBuildFiles(false);
 		if (jars == null) {
-			jars = build(test);
+			jars = build(relParam.test);
 			// If build fails jars will be null
 			if (jars == null) {
 				logger.debug("no jars built");
@@ -1215,9 +1258,17 @@ public class Project extends Processor {
 		try (ProjectBuilder builder = getBuilder(null)) {
 			builder.init();
 			for (RepositoryPlugin releaseRepo : releaseRepos) {
-				for (File jar : jars) {
+				for (int i = 0; i < jars.length; i++) {
+					File jar = jars[i];
 					try (InputStream jarStream = new BufferedInputStream(IO.stream(jar))) {
-						releaseRepo(releaseRepo, builder, jar.getName(), jarStream);
+						if (relParam.lastBundleInWorkspace && i == jars.length - 1) {
+							// this is the last jar builded inside bnd workspace
+							// and if appropriate "-sub" - the last of builded
+							// sub-bundles
+							releaseRepo(releaseRepo, builder, jar.getName(), jarStream, true);
+						} else {
+							releaseRepo(releaseRepo, builder, jar.getName(), jarStream, false);
+						}
 					}
 				}
 			}
@@ -1232,7 +1283,7 @@ public class Project extends Processor {
 	 * @param bsn The bundle symbolic name
 	 * @param range The version range
 	 * @param strategy set to LOWEST or HIGHEST
-	 * @return the file object that points to the bundle or null if not found
+	 * @return the Container that points to the bundle what might be {code}Container.TYPE.ERROR{code} in case it can not be found.
 	 * @throws Exception when something goes wrong
 	 */
 
@@ -1264,7 +1315,7 @@ public class Project extends Processor {
 		useStrategy = overrideStrategy(attrs, useStrategy);
 		RepoFilter repoFilter = parseRepoFilter(attrs);
 
-		List<RepositoryPlugin> plugins = workspace.getRepositories();
+		List<RepositoryPlugin> plugins = getRepositories();
 
 		if (useStrategy == Strategy.EXACT) {
 			if (!Verifier.isVersion(range))
@@ -1373,6 +1424,18 @@ public class Project extends Processor {
 	}
 
 	/**
+	 * Provides relevant repositories used by some other methods. By default it
+	 * returns all Repositories of the Workspace. Subclasses can override it to
+	 * provide different or additional repositories. Subclasses should make sure
+	 * this method is efficient, as it might be called at high frequency.
+	 *
+	 * @return a list of relevant repositories used by various methods.
+	 */
+	public List<RepositoryPlugin> getRepositories() {
+		return workspace.getRepositories();
+	}
+
+	/**
 	 * @param attrs
 	 * @param useStrategy
 	 */
@@ -1444,7 +1507,7 @@ public class Project extends Processor {
 		}
 		Container container;
 		if (f.getName()
-			.endsWith("lib"))
+			.endsWith(".lib"))
 			container = new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs, db);
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
@@ -1488,7 +1551,7 @@ public class Project extends Processor {
 			hash = (colonIndex < hashStr.length()) ? hashStr.substring(afterColon) : "";
 		}
 
-		for (RepositoryPlugin plugin : workspace.getRepositories()) {
+		for (RepositoryPlugin plugin : getRepositories()) {
 			// The plugin *may* understand version=hash directly
 			DownloadBlocker blocker = new DownloadBlocker(this);
 			File result = plugin.get(bsn, Version.LOWEST, Collections.unmodifiableMap(attrs), blocker);
@@ -1619,59 +1682,12 @@ public class Project extends Processor {
 			return null;
 		}
 
-		String spec = args[1];
-		String version = null;
-		Strategy strategy = Strategy.HIGHEST;
-
-		if (args.length > 2) {
-			version = args[2];
-			if (args.length == 4) {
-				if (args[3].equalsIgnoreCase("HIGHEST"))
-					strategy = Strategy.HIGHEST;
-				else if (args[3].equalsIgnoreCase("LOWEST"))
-					strategy = Strategy.LOWEST;
-				else if (args[3].equalsIgnoreCase("EXACT"))
-					strategy = Strategy.EXACT;
-				else
-					msgs.InvalidStrategy(_repoHelp, args);
-			}
+		Collection<Container> containers = repoCollector.repoContainers(args);
+		if (containers == null) {
+			return null;
 		}
 
-		Parameters bsns = new Parameters(spec, this);
-		List<String> paths = new ArrayList<>();
-
-		for (Entry<String, Attrs> entry : bsns.entrySet()) {
-			String bsn = removeDuplicateMarker(entry.getKey());
-			Map<String, String> attrs = entry.getValue();
-			Container container = getBundle(bsn, version, strategy, attrs);
-			if (container.getError() != null) {
-				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy,
-					container.getError());
-			} else
-				add(paths, container);
-		}
-		return join(paths);
-	}
-
-	private void add(List<String> paths, Container container) throws Exception {
-		if (container.getType() == Container.TYPE.LIBRARY) {
-			List<Container> members = container.getMembers();
-			for (Container sub : members) {
-				add(paths, sub);
-			}
-		} else {
-			if (container.getError() == null)
-				paths.add(IO.absolutePath(container.getFile()));
-			else {
-				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-" + container.getVersion() + " : "
-					+ container.getError() + ">>");
-
-				if (isPedantic()) {
-					warning("Could not expand repo path request: %s ", container);
-				}
-			}
-
-		}
+		return repoCollector.repoPaths(containers);
 	}
 
 	public File getTarget() throws Exception {
@@ -1727,6 +1743,7 @@ public class Project extends Processor {
 
 	private void install(RepositoryPlugin repo, Processor context, File f, Attrs value) throws Exception {
 		try (Processor p = new Processor(context)) {
+			p.setBase(context.getBase());
 			p.getProperties()
 				.putAll(value);
 			PutOptions options = new PutOptions();
@@ -1736,6 +1753,7 @@ public class Project extends Processor {
 			} catch (Exception e) {
 				exception(e, "Cannot install %s into %s because %s", f, repo.getName(), e);
 			}
+			context.getInfo(p, f.getName() + ":");
 		}
 	}
 
@@ -1919,8 +1937,7 @@ public class Project extends Processor {
 							if (lastModified < jar.lastModified()) {
 								lastModified = jar.lastModified();
 							}
-							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar,
-								file.toURI(),
+							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar, file.toURI(),
 								getName());
 							if (indexer != null) {
 								resourceBuilders.add(indexer);
@@ -1984,7 +2001,6 @@ public class Project extends Processor {
 						}
 					}
 				}
-
 
 				boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
 				if (buildfiles != null) {
@@ -2901,7 +2917,7 @@ public class Project extends Processor {
 			for (Builder b : pb.getSubBuilders()) {
 				if (b.getBsn()
 					.equals(bsn)) {
-					String version = b.getVersion();
+					String version = getVersion(bsn).toString();
 					Container c = new Container(this, bsn, version, Container.TYPE.PROJECT, getOutputFile(bsn, version),
 						null, attrs, null);
 					return c;
@@ -3224,13 +3240,64 @@ public class Project extends Processor {
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
 
-		int n = javac.execute(stdout, stderr);
-		logger.debug("javac stdout: {}", stdout);
-		logger.debug("javac stderr: {}", stderr);
-
-		if (n != 0) {
-			error("javac failed %s", stderr);
+		// On Windows, use argument file to avoid command line length limitations
+		File argFile = null;
+		if (IO.isWindows()) {
+			// Estimate command line length including spaces between arguments
+			// and potential quoting overhead
+			int cmdLineLength = javac.getArguments()
+				.stream()
+				.mapToInt(arg -> arg.length() + 3) // +1 for space, +2 for potential quotes
+				.sum();
+			
+			// Windows command line limit is ~8191 characters
+			// Use arg file if we're getting close (allow some margin)
+			if (cmdLineLength > 6000) {
+				argFile = createJavacArgumentFile(javac);
+				// Create new command with just javac executable and @argfile
+				Command newJavac = new Command();
+				newJavac.add(javac.getArguments().get(0)); // javac executable
+				newJavac.add("@" + argFile.getAbsolutePath());
+				javac = newJavac;
+				logger.debug("Using argument file for javac: {}", argFile);
+			}
 		}
+
+		try {
+			int n = javac.execute(stdout, stderr);
+			logger.debug("javac stdout: {}", stdout);
+			logger.debug("javac stderr: {}", stderr);
+
+			if (n != 0) {
+				error("javac failed %s", stderr);
+			}
+		} finally {
+			// Clean up argument file
+			if (argFile != null && argFile.exists()) {
+				IO.delete(argFile);
+			}
+		}
+	}
+
+	private File createJavacArgumentFile(Command javac) throws Exception {
+		File argFile = IO.createTempFile(getTarget(), "javac-args", ".txt");
+		List<String> args = javac.getArguments();
+		
+		try (PrintWriter writer = new PrintWriter(argFile, "UTF-8")) {
+			// Skip the first argument (javac executable path)
+			for (int i = 1; i < args.size(); i++) {
+				String arg = args.get(i);
+				// Quote arguments that contain spaces or special characters
+				// This follows javac argument file specification
+				if (arg.contains(" ") || arg.contains("\t")) {
+					// Escape backslashes and quotes within the quoted string
+					arg = "\"" + arg.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+				}
+				writer.println(arg);
+			}
+		}
+		
+		return argFile;
 	}
 
 	private Command getCommonJavac(boolean test) throws Exception {
@@ -3645,4 +3712,84 @@ public class Project extends Processor {
 		}
 		return result;
 	}
+
+	/**
+	 * Find a processor that is inheriting from a project. This is either the
+	 * bnd.bnd file or a sub bnd.
+	 *
+	 * @param file the file that contains the properties
+	 * @return a processor properly setup for the Workspace inheritance or empty
+	 */
+	public Optional<Processor> findProcessor(File file) {
+
+		if (file.equals(getPropertiesFile()))
+			return Optional.of(this);
+
+		File projectDir = file.getParentFile();
+		if (!projectDir.equals(getBase()))
+			return Optional.empty();
+
+		try {
+			if (file.getName()
+				.endsWith(".bndrun"))
+				return Optional.of(Run.createRun(getWorkspace(), file));
+
+			for (SubProject sub : getSubProjects()) {
+				if (file.equals(sub.getPropertiesFile())) {
+					return Optional.of(sub);
+				}
+			}
+			return Optional.empty();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Return a list of sub projects.
+	 */
+
+	@SuppressWarnings("resource")
+	public List<SubProject> getSubProjects() {
+
+		String sub = getProperty(SUB);
+		if (sub == null || sub.trim()
+			.length() == 0 || EMPTY_HEADER.equals(sub)) {
+			return Collections.emptyList();
+		}
+
+		if (isTrue(getProperty(NOBUNDLES)))
+			return Collections.emptyList();
+
+		Set<File> parentFiles = new HashSet<>();
+		Processor rover = this;
+		while (rover != null) {
+			parentFiles.add(rover.getPropertiesFile());
+			rover = rover.getParent();
+		}
+
+		List<SubProject> subProjects = new ArrayList<>();
+		Instructions instructions = new Instructions(sub);
+		List<File> members = IO.listFiles(getBase());
+		nextFile: while (!members.isEmpty()) {
+
+			File file = members.remove(0);
+			if (!file.isFile() || file.getName()
+				.startsWith(".") || parentFiles.contains(file))
+				continue nextFile;
+
+			for (Instruction instruction : instructions.keySet()) {
+				if (instruction.matches(file.getName())) {
+
+					if (!instruction.isNegated()) {
+						subProjects.add(new SubProject(this, file));
+					}
+					continue nextFile;
+				}
+			}
+		}
+		return subProjects;
+
+	}
+
 }

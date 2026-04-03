@@ -1,9 +1,35 @@
 ---
-layout: default
+layout: bnd
+title: -make
 class: Project
-title: -make   
-summary:  If a resource is not found, specify a recipe to make it.
+summary: |
+   If a resource is not found, specify a recipe to make it.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-make: (*).jar;type=bnd; recipe="bnd/$1.bnd"`
+
+- Pattern: `.*`
+
+### Directives 
+
+- `type` Type name for plugin.
+  - Example: `type=bnd`
+
+  - Values: `bnd`
+
+  - Pattern: `.*`
+
+
+- `recipe` Recipe for the plugin, can use back references.
+  - Example: `recipe="bnd/$1.bnd"`
+
+  - Values: `bnd`
+
+  - Pattern: `.*`
+
+<!-- Manual content from: ext/make.md --><br /><br />
 
 		package aQute.bnd.make;
 		

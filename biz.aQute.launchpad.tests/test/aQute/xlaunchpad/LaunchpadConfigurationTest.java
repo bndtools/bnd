@@ -22,6 +22,7 @@ import aQute.launchpad.junit.LaunchpadRunner;
 public class LaunchpadConfigurationTest {
 	static File				tmp		= new File("generated/snapshot");
 
+	@SuppressWarnings("resource")
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
 		.set("snapshot.dir", tmp.getAbsolutePath())
 		.bndrun("runsystempackages.bndrun")

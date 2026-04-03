@@ -38,12 +38,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
@@ -71,6 +69,7 @@ import org.w3c.dom.Document;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Project.ReleaseParameter;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.LiveCoding;
@@ -128,6 +127,7 @@ import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.getopt.SubCommands;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
@@ -142,7 +142,6 @@ import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.cryptography.SHA512;
-import aQute.libg.forker.Forker;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
@@ -159,7 +158,7 @@ public class bnd extends Processor {
 	private final static Pattern				ASSIGNMENT				= Pattern.compile(							//
 		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings									settings				= new Settings(
-		Home.getUserHomeBnd() + "/settings.json");
+		Home.getUserHomeBnd("settings.json"));
 	final PrintStream							err						= System.err;
 	final public PrintStream					out						= System.out;
 	Justif										justif					= new Justif(80, 40, 42, 70);
@@ -194,7 +193,7 @@ public class bnd extends Processor {
 	 * Project command, executes actions.
 	 */
 
-	@Description("Execute a Project action, or if no parms given, show information about the project")
+	@Description("Execute a Project action, or if no params given, show information about the project")
 	interface projectOptions extends Options {
 		@Description("Identify another project")
 		String project();
@@ -514,8 +513,8 @@ public class bnd extends Processor {
 		@Description("No compression (0 option)")
 		boolean nocompression();
 
-		@Description("No manifest (M option)")
-		boolean Manifest();
+		@Description("No manifest.")
+		boolean skipmanifest();
 
 		@Description("Use manifest (m option)")
 		String manifest();
@@ -581,7 +580,7 @@ public class bnd extends Processor {
 			jar.setManifest(getFile(manifest));
 		}
 
-		if (options.Manifest()) {
+		if (options.skipmanifest()) {
 			jar.setManifest((Manifest) null);
 		} else {
 			if (options.wrap()) {
@@ -776,7 +775,8 @@ public class bnd extends Processor {
 					}
 				}
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
-				doRun(Lists.of(path), false, null);
+				Project run = getRuns(Lists.of(path), null).get(0);
+				doRun(run, false);
 			} else
 				messages.UnrecognizedFileType_(path);
 		}
@@ -812,7 +812,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	@Description("Execute a Project action, or if no parms given, show information about the project")
+	@Description("Execute a Project action, or if no params given, show information about the project")
 	public void _project(projectOptions options) throws Exception {
 		Project project = getProject(options.project());
 		if (project == null) {
@@ -873,7 +873,7 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-	@Description("Bumps the version of a project")
+	@Description("Bumps the version of a project. Will take the current version and then increment with a major, minor, or micro increment. The default bump is minor.")
 	public void _bump(bumpoptions options) throws Exception {
 		Project project = getProject(options.project());
 
@@ -922,29 +922,35 @@ public class bnd extends Processor {
 		final Set<Project> projectsWellDone = new HashSet<>();
 
 		for (Project p : projects) {
-			if (manageDeps) {
-				final Collection<Project> projectDeps = p.getDependson(); // ordered
-				if (opts.verbose()) {
-					out.println("Project dependencies for: " + p.getName());
-					projectDeps.forEach(pr -> out.println(
-						" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
-				}
-
-				projectDeps.removeAll(projectsWellDone);
-
-				for (Project dep : projectDeps) {
-					run.doit(dep);
-					projectsWellDone.add(dep);
-				}
-			}
-
-			run.doit(p);
-
-			getInfo(p, p + ": ");
+			perProject(p, opts.verbose(), run, manageDeps, projectsWellDone);
 		}
 	}
 
-	private List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
+	void perProject(Project p, boolean verbose, PerProject run, boolean manageDeps,
+		final Set<Project> projectsWellDone) throws Exception {
+		if (manageDeps) {
+			final Collection<Project> projectDeps = p.getDependson(); // ordered
+			if (verbose) {
+				out.println("Project dependencies for: " + p.getName());
+				projectDeps.forEach(pr -> out.println(
+					" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
+			}
+
+			projectDeps.removeAll(projectsWellDone);
+
+			for (Project dep : projectDeps) {
+				run.doit(dep);
+				projectsWellDone.add(dep);
+			}
+		}
+
+		run.doit(p);
+
+		getInfo(p, p + ": ");
+	}
+
+
+	List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
 		List<Project> projects = new ArrayList<>();
 
 		HandledProjectWorkspaceOptions hpw = handleOptions(opts, "**/bnd.bnd");
@@ -971,21 +977,34 @@ public class bnd extends Processor {
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
-	interface buildoptions extends ProjectWorkspaceOptions {
+	interface buildBaseOptions extends ProjectWorkspaceOptions {
 
 		@Description("Build for test")
 		boolean test();
 
 		@Description("Force non-incremental")
 		boolean force();
+
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
-	public void _build(final buildoptions opts) throws Exception {
+	interface buildoptions extends ParallelBuildOptions {
 
-		perProject(opts, p -> p.build(opts.test()));
+		@Description("Continuous incremental build")
+		boolean watch();
+
+		@Description("Build in parallel (Experimental)")
+		boolean parallel();
 	}
 
+	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders. Adding the -w option allows live code / continous compile-build-loop which automatically watches for changes.")
+	public void _build(final buildoptions opts) throws Exception {
+		BuildCommands cmd = new BuildCommands(this);
+		cmd._build(opts);
+	}
+
+
+	@Description("Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.")
 	interface CompileOptions extends ProjectWorkspaceOptions {
 
 		@Description("Compile for test")
@@ -993,8 +1012,10 @@ public class bnd extends Processor {
 
 	}
 
-	@Description("Compile a project or the workspace")
+	@Description("Compile a project or the workspace. DEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.")
+	@Deprecated(forRemoval = true, since = "7.2.0")
 	public void _compile(final CompileOptions opts) throws Exception {
+		out.format("%nDEPRECATED: This command will be removed in bnd 8.0. Use 'bnd build' for compile and build.");
 		perProject(opts, p -> p.compile(opts.test()));
 	}
 
@@ -1069,7 +1090,7 @@ public class bnd extends Processor {
 		return false;
 	}
 
-	@Description("Run a project in the OSGi launcher. If not bndrun is specified, the current project is used for the run specification")
+	@Description("Run a project in the OSGi launcher. If no bndrun is specified, the current project is used for the run specification")
 	@Arguments(arg = "[bndrun]")
 	interface runOptions extends Options {
 		@Description("Path to another project than the current project. Only valid if no bndrun is specified")
@@ -1079,33 +1100,38 @@ public class bnd extends Processor {
 		boolean verify();
 	}
 
-	@Description("Run a project in the OSGi launcher")
+	@Description("Run a project in the OSGi launcher.  If no bndrun is specified, the current project is used for the run specification")
 	public void _run(runOptions opts) throws Exception {
-		doRun(opts._arguments(), opts.verify(), opts.project());
+		Project run = getRuns(opts._arguments(), opts.project()).get(0);
+		doRun(run, opts.verify());
 	}
 
-	private void doRun(List<String> args, boolean verify, String project) throws Exception {
-		Project run = null;
+	@Description("Experimental: Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.")
+	@Arguments(arg = "[bndrun...]")
+	interface devOptions extends ParallelBuildOptions, runOptions, verboseOptions {
 
-		if (args.isEmpty()) {
-			run = getProject(project);
-			if (run == null) {
-				messages.NoProject();
-				return;
-			}
-		} else {
-			File f = getFile(args.get(0));
+		@Override
+		@Description("Build for test")
+		boolean test();
 
-			File dir = f.getParentFile();
-			File wsdir = dir.getParentFile();
+		@Description("Do the initial full build in parallel (Experimental)")
+		boolean parallel();
 
-			if (wsdir == null) {
-				// We are in the filesystem root?? Create a standalone run.
-				run = Run.createRun(null, f);
-			} else {
-				Workspace workspace = Workspace.getWorkspaceWithoutException(wsdir);
-				run = Run.createRun(workspace, f);
-			}
+
+	}
+
+	@Description("Experimental: Live coding. Run 1..n .bndrun files in the OSGi launcher, and continously rebuild all projects in the workspace when changes are detected. If no bndrun is specified, the current project is used for the run specification. An initial full build is done when one project not built is detected.")
+	public void _dev(devOptions opts) throws Exception {
+		BuildCommands cmd = new BuildCommands(this);
+		cmd._dev(opts);
+	}
+
+
+
+	void doRun(Project run, boolean verify) throws Exception {
+		if (run == null) {
+			messages.NoProject();
+			return;
 		}
 		verifyDependencies(run, verify, false);
 		ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -1120,6 +1146,44 @@ public class bnd extends Processor {
 		}
 		getInfo(run);
 		getInfo(run.getWorkspace());
+	}
+
+	List<Project> getRuns(List<String> args, String project) throws Exception {
+
+		if (args.isEmpty()) {
+			Project p = getProject(project);
+			if(p == null) {
+				throw new IllegalArgumentException("Project not found");
+			}
+			return Collections.singletonList(p);
+		} else {
+			return args.stream()
+				.map(arg -> {
+					try {
+
+						File f = getFile(arg);
+						if (!f.exists()) {
+							throw new IllegalArgumentException(String.format("File not found: %s", arg));
+						}
+
+						File dir = f.getParentFile();
+						File wsdir = dir.getParentFile();
+
+						if (wsdir == null) {
+							// We are in the filesystem root?? Create a
+							// standalone
+							// run.
+							return (Project) Run.createRun(null, f);
+						} else {
+							Workspace workspace = Workspace.getWorkspaceWithoutException(wsdir);
+							return (Project) Run.createRun(workspace, f);
+						}
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+				})
+				.toList();
+		}
 	}
 
 	@Description("Clean a project")
@@ -1162,6 +1226,34 @@ public class bnd extends Processor {
 		err.println(sb);
 	}
 
+	@Arguments(arg = "path")
+	@Description("Generate markdown files for bnd manual e.g. for all headers / instructions / commands defined in Syntax.java and bnd.java. "
+		+ "You can point it the the /docs folder of the bnd manual, to add or regenerate pages.")
+	interface generateSyntaxOptions extends Options {}
+
+	@Description("Generate markdown files for bnd manual e.g. for all headers / instructions / commands defined in Syntax.java and bnd.java. "
+		+ "You can point it the the /docs folder of the bnd manual, to add or regenerate pages.")
+	public void _generatemanual(generateSyntaxOptions opts) throws Exception {
+
+		ManualGenerator gen = new ManualGenerator();
+		File base = new File(opts._arguments()
+			.get(0));
+		if (!base.exists()) {
+			base.mkdirs();
+		}
+
+		// heads & instructions
+		gen.generateSyntaxFiles(base, Syntax.HELP.values());
+
+		// commands
+		gen.generateCommandsFiles(base, this);
+
+		out.println("Generated files in: " + base.getAbsolutePath());
+
+	}
+
+
+
 	private void print(Formatter f, Syntax sx, String indent) {
 		if (sx == null)
 			return;
@@ -1202,7 +1294,7 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar")
+	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar. The JAR contains all dependencies, including the framework and the launcher. A profile can be specified which will be used to find properties. If a property is not found, a property with the name [<profile>]NAME will be looked up. This allows you to make different profiles for testing and runtime.")
 	public void _package(packageOptions opts) throws Exception {
 		List<String> cmdline = opts._arguments();
 		File output = null;
@@ -1323,7 +1415,7 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-	@Description("Show macro value")
+	@Description("Show macro value. Macro can contain the ${ and } parentheses but it is also ok without. You can use the ':' instead of the ';' in a macro")
 	public void _macro(macroOptions options) throws Exception {
 		Processor project = getProject(options.project());
 
@@ -1410,11 +1502,18 @@ public class bnd extends Processor {
 			}
 
 		}
-		for (Project p : projects) {
+
+		for (Iterator<Project> iterator = projects.iterator(); iterator.hasNext();) {
+			Project p = iterator.next();
 			if (repo != null) {
 				p.setProperty(Constants.RELEASEREPO, repo);
 			}
-			p.release(options.test());
+			if (iterator.hasNext()) {
+				p.release(options.test());
+			} else {
+				// releasing last bundle in workspace
+				p.release(new ReleaseParameter(null, options.test(), true));
+			}
 		}
 		if (project != null) {
 			getInfo(project);
@@ -1427,14 +1526,11 @@ public class bnd extends Processor {
 		cx.xref(options);
 	}
 
-	@Description("Show info about the current directory's eclipse project")
-	interface eclipseOptions extends workspaceOptions {
-		@Description("Path to the project")
-		String dir();
-	}
 
-	@Description("Eclipse")
-	public void _eclipse(eclipseOptions options) throws Exception {
+
+	@Description("Show info about the current directory's eclipse project")
+	@SubCommands(EclipseCommand.class)
+	public void _eclipse(EclipseCommand.eclipseOptions options) throws Exception {
 
 		List<String> arguments = options._arguments();
 
@@ -1604,7 +1700,7 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-	@Description("View a resource from a JAR file.")
+	@Description("View a resource from a JAR file. Manifest will be pretty printed and class files are shown disassembled.")
 	public void _view(viewOptions options) throws Exception {
 		Charset charset = UTF_8;
 		if (options.charset() != null)
@@ -1681,7 +1777,10 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-	@Description("Wrap a jar")
+	@Description("Wrap a jar into a bundle. This is a poor man's facility to "
+		+ "quickly turn a non-OSGi JAR into an OSGi bundle. "
+		+ "It is usually better to write a bnd file and use the bnd <file>.bnd "
+		+ "command because that has greater control. Even better is to wrap in bndtools.")
 	public void _wrap(wrapOptions options) throws Exception {
 		List<File> classpath = Create.list();
 		File properties = getBase();
@@ -1869,7 +1968,9 @@ public class bnd extends Processor {
 	 * </pre>
 	 */
 
-	@Description("Manage the repositories")
+	@Description("Access to the repositories. Provides a number of sub commands to manipulate the repository "
+		+ "(see repo help) that provide access to the installed repos for the current project.")
+	@SubCommands(RepoCommand.class)
 	public void _repo(repoOptions opts) throws Exception {
 		new RepoCommand(this, opts);
 	}
@@ -1921,7 +2022,7 @@ public class bnd extends Processor {
 		boolean capabilities();
 	}
 
-	@Description("Printout the JAR")
+	@Description("Provides detailed view of the JAR / bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.")
 	public void _print(printOptions options) throws Exception {
 		for (String s : options._arguments()) {
 			int opts = 0;
@@ -2360,7 +2461,7 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-	@Description("Diff jars")
+	@Description("Compares two jars. Without specifying the JARs (and when there is a current project) the jars of this project are diffed against their baseline in the baseline repository, using the sub-builder's options (these can be overridden). If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are then compared to eachother.")
 	public void _diff(diffOptions opts) throws Exception {
 		DiffCommand diff = new DiffCommand(this);
 		diff.diff(opts);
@@ -2384,7 +2485,7 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	@Description("Highly specialized function to create an overview of package deltas in ees")
+	@Description("Highly specialized function to create an overview of package deltas in ees. Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema ee.j2se-1.6.0 ee.j2se-1.5.0 ee.j2ee-1.4.0")
 	public void _schema(schemaOptions opts) throws Exception {
 		BaselineCommands baseliner = new BaselineCommands(this);
 		baseliner._schema(opts);
@@ -2822,6 +2923,10 @@ public class bnd extends Processor {
 					});
 				}
 				Manifest m = in.getManifest();
+				if (m == null) {
+					warning("no manifest in %s", file);
+					continue;
+				}
 				for (Object header : m.getMainAttributes()
 					.keySet()) {
 					Attributes.Name name = (Name) header;
@@ -2848,6 +2953,8 @@ public class bnd extends Processor {
 						}
 					}
 				}
+			} catch (Exception e) {
+				error("faild to load file %s : %s", file, e);
 			}
 		}
 	}
@@ -2886,7 +2993,7 @@ public class bnd extends Processor {
 
 	}
 
-	@Description("Set bnd global variables")
+	@Description("Set bnd global variables. The key can be wildcard.")
 	public void _settings(settingOptions opts) throws Exception {
 		try {
 			Settings settings = this.settings;
@@ -3232,6 +3339,7 @@ public class bnd extends Processor {
 	private final static Pattern	BUG_P			= Pattern.compile("#(\\d+)");
 	private final static Pattern	BND_COMMAND_P	= Pattern.compile("\\[bnd\\s+(\\w+)\\s*\\]");
 
+	@Description("Show the changes in this release of bnd")
 	public void _changes(ChangesOptions options) {
 		boolean first = true;
 		Justif j = new Justif(80, 10);
@@ -3279,6 +3387,8 @@ public class bnd extends Processor {
 		Glob[] exports();
 	}
 
+	@Description("Go through the exports and/or imports and match the given "
+		+ "exports/imports globs. If thet match print the file, package and version.")
 	public void _find(FindOptions options) throws Exception {
 		List<File> files = new ArrayList<>();
 
@@ -3417,7 +3527,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("experimental - parallel build")
-	interface ParallelBuildOptions extends buildoptions {
+	interface ParallelBuildOptions extends buildBaseOptions {
 		long synctime();
 	}
 
@@ -3426,52 +3536,25 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
+	@Description("Lets see if we can build in parallel")
 	public void __par(final ParallelBuildOptions options) throws Exception {
-		ExecutorService pool = Executors.newCachedThreadPool();
-		final AtomicBoolean quit = new AtomicBoolean();
+		List<Project> projects = getFilteredProjects(options);
+		boolean force = options.force();
+		boolean test = options.test();
+		long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
 
-		try {
-			final Forker<Project> forker = new Forker<>(pool);
-
-			List<Project> projects = getFilteredProjects(options);
-
-			for (final Project proj : projects) {
-				forker.doWhen(proj.getDependson(), proj, () -> {
-					if (!quit.get()) {
-
-						try {
-							proj.getGenerate()
-								.generate(options.force());
-							if (!quit.get())
-								proj.compile(options.test());
-							if (!quit.get())
-								proj.build(options.test());
-
-							if (!proj.isOk()) {
-								quit.set(true);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					getInfo(proj, proj + ": ");
-				});
-			}
-			err.flush();
-
-			long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
-			forker.start(syncms);
-		} finally {
-			pool.shutdownNow();
-		}
+		BuildCommands cmd = new BuildCommands(this);
+		cmd.buildParallelInternal(projects, force, test, syncms);
 	}
+
+
 
 	/**
 	 * Force a cache update of the workspace
 	 *
 	 * @throws Exception
 	 */
-
+	@Description("Force a cache update of the workspace")
 	public void _sync(projectOptions options) throws Exception {
 		Workspace ws = getWorkspace((File) null);
 
@@ -3494,6 +3577,7 @@ public class bnd extends Processor {
 
 	private final static Pattern LINE_P = Pattern.compile("\\s*((\\S#|[^#])+)(\\s*#.*)?");
 
+	@Description("From a set of bsns, create a list of urls if found in the repo")
 	public void _bsn2url(Bsn2UrlOptions opts) throws Exception {
 		Project p = getProject(opts.project());
 
@@ -3577,7 +3661,7 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-
+	@Description("Show the loaded workspace plugins")
 	public void _plugins(projectOptions opts) throws Exception {
 		Workspace ws = getWorkspace(opts.project());
 
@@ -3653,6 +3737,7 @@ public class bnd extends Processor {
 
 	}
 
+	@Description("Interactive gogo shell")
 	public void _bootstrap(BootstrapOptions options) throws Exception {
 		Workspace ws = getWorkspace(getBase());
 		File buildDir = ws.getBuildDir();
@@ -3672,7 +3757,7 @@ public class bnd extends Processor {
 	/**
 	 * Show all the defaults in bnd
 	 */
-
+	@Description("Show all the defaults in bnd")
 	public void _defaults(Options o) {
 		Processor defaults = Workspace.getDefaults();
 		out.println(Strings.join("\n", defaults.getProperties()
@@ -3680,7 +3765,7 @@ public class bnd extends Processor {
 	}
 
 	/*
-	 * Cop a bundle, potentially stripping it
+	 * Copy a bundle, potentially stripping it
 	 */
 
 	@Arguments(arg = {
@@ -3698,6 +3783,7 @@ public class bnd extends Processor {
 		boolean optional();
 	}
 
+	@Description("Copy a bundle, potentially stripping it")
 	public void _copy(CopyOptions options) throws Exception {
 		List<String> files = options._arguments();
 		if (files.size() < 2) {
@@ -3785,76 +3871,42 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Add a project, workspace, or plugin
+	 * Add a project, workspace, plugin or templates
 	 */
 
 	@Arguments(arg = {
-		"what", "name..."
+		"what", "..."
 	})
+	@Description("Add a project, workspace, plugin or template fragment to the workspace")
 	interface AddOptions extends Options {
 
 	}
 
-	@Description("Add a workspace, or a project or a plugin to the workspace")
+	@Description("Add a project, workspace, plugin or template fragment to the workspace")
+	@SubCommands(AddCommands.class)
 	public void _add(AddOptions opts) throws Exception {
-		List<String> args = opts._arguments();
 
+		CommandLine cl = new CommandLine(this);
+		List<String> args = opts._arguments();
 		String what = args.remove(0);
 
-		if ("project".equals(what)) {
-			Workspace ws = Workspace.findWorkspace(getBase());
-			if (ws == null) {
-				error("No workspace found from %s", getBase());
-				return;
-			}
+		String help = cl.execute(new AddCommands(this), what, new ExtList<>(args));
+		if (help != null)
+			out.println(help);
+		return;
 
-			for (String pname : args) {
-				ws.createProject(pname);
-			}
 
-			getInfo(ws);
-			return;
-		}
-
-		if ("workspace".equals(what)) {
-			for (String pname : args) {
-				File wsdir = getFile(pname);
-				ws = Workspace.createWorkspace(wsdir);
-				if (ws == null) {
-					error("Could not create workspace");
-				}
-			}
-			getInfo(ws);
-			return;
-		}
-
-		if ("plugin".equals(what)) {
-			Workspace ws = getWorkspace(getBase());
-			if (ws == null) {
-				error("No workspace found from %s", getBase());
-				return;
-			}
-
-			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this, ws), "add", new ExtList<>(args));
-			if (help != null)
-				out.println(help);
-			getInfo(ws);
-			return;
-		}
 
 	}
 
 	@Arguments(arg = {
-		"what", "name..."
+		"what", "[name]..."
 	})
 	interface RemoveOptions extends Options {}
 
 	@Description("Remove a project or a plugin from the workspace")
+	@SubCommands(RemoveCommands.class)
 	public void _remove(RemoveOptions opts) throws Exception {
-		List<String> args = opts._arguments();
-
-		String what = args.remove(0);
 
 		Workspace ws = Workspace.findWorkspace(getBase());
 		if (ws == null) {
@@ -3862,31 +3914,17 @@ public class bnd extends Processor {
 			return;
 		}
 
-		if ("project".equals(what)) {
-			for (String pname : args) {
-				Project project = ws.getProject(pname);
-				if (project == null) {
-					error("No such project %s", pname);
-				} else
-					project.remove();
-			}
+		CommandLine cl = new CommandLine(this);
+		List<String> args = opts._arguments();
+		String what = args.remove(0);
 
-			getInfo(ws);
-			return;
-		}
+		String help = cl.execute(new RemoveCommands(this), what, new ExtList<>(args));
+		if (help != null)
+			out.println(help);
 
-		if ("workspace".equals(what)) {
-			error("To delete a workspace, delete the directory");
-			return;
-		}
+		getInfo(ws);
+		return;
 
-		if ("plugin".equals(what)) {
-			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this, ws), "remove", new ExtList<>(args));
-			if (help != null)
-				out.println(help);
-			return;
-		}
 	}
 
 	/**
@@ -3902,6 +3940,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Profile management. A profile is a JAR that only contains packages and capabilities")
+	@SubCommands(Profiles.class)
 	public void _profile(ProfileOptions options) throws Exception {
 		Profiles profiles = new Profiles(this, options);
 		CommandLine cmd = options._command();
@@ -3915,6 +3954,8 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
+	@Description("Resolve a number of bndrun files (either standalone or based on the workspace) and print the bundles ")
+	@SubCommands(ResolveCommand.class)
 	public void _resolve(ResolveCommand.ResolveOptions options) throws Exception {
 		ResolveCommand rc = new ResolveCommand(this);
 		String help = options._command()
@@ -3930,7 +3971,8 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-
+	@Description("Communicates with the remote agent")
+	@SubCommands(RemoteCommand.class)
 	public void _remote(RemoteCommand.RemoteOptions options) throws Exception {
 		RemoteCommand rc = new RemoteCommand(this, options);
 		String help = options._command()
@@ -3946,7 +3988,8 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
-
+	@Description("Nexus repository command. Provides a number of sub commands to manipulate a Nexus repository.")
+	@SubCommands(NexusCommand.class)
 	public void _nexus(NexusCommand.NexusOptions options) throws Exception {
 		NexusCommand rc = new NexusCommand(this, options);
 		String help = options._command()
@@ -3971,6 +4014,7 @@ public class bnd extends Processor {
 		String output();
 	}
 
+	@Description("Export a bndrun file")
 	public void _export(ExportOptions options) throws Exception {
 
 		HandledProjectWorkspaceOptions ho = handleOptions(options, BNDRUN_ALL);
@@ -4385,7 +4429,8 @@ public class bnd extends Processor {
 		ic.close();
 	}
 
-	@Description("Commands to verify the bnd communications setup")
+	@Description("Commands to verify and check the communications settings for the http client.")
+	@SubCommands(CommunicationCommands.class)
 	public void _com(CommunicationCommands.CommunicationOptions options) throws Exception {
 		try (CommunicationCommands cc = new CommunicationCommands(this, options)) {
 			if (cc.isOk() && isWorkspaceOk()) {
@@ -4403,6 +4448,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Commands to inspect a dependency graph of a set of bundles")
+	@SubCommands(GraphCommand.class)
 	public void _graph(GraphCommand.GraphOptions options) throws Exception {
 		try (GraphCommand cc = new GraphCommand(this, options)) {
 			String help = options._command()
@@ -4468,6 +4514,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Generate and export reports of a workspace, a project or of a jar.")
+	@SubCommands(ExportReportCommand.class)
 	public void _exportreport(ExportReportCommand.ReporterOptions options) throws Exception {
 		ExportReportCommand mc = new ExportReportCommand(this);
 		mc.run(options);
@@ -4475,6 +4522,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Maintain Maven Bnd Repository GAV files")
+	@SubCommands(MbrCommand.class)
 	public void _mbr(MbrCommand.MrOptions options) throws Exception {
 		MbrCommand c = new MbrCommand(this, options);
 		CommandLine cl = new CommandLine(this);
@@ -4578,6 +4626,7 @@ public class bnd extends Processor {
 		boolean force();
 	}
 
+	@Description("Install the build tool")
 	public void _buildtool(BuildtoolOptions options) throws Exception {
 
 		Workspace ws = getWorkspace(options.workspace());
@@ -4628,4 +4677,18 @@ public class bnd extends Processor {
 			err.println(message);
 		}
 	}
+
+	@Description("Generate markdown documentation for jpm")
+	interface MarkdownOptions extends Options {}
+
+	@Description("Generate markdown documentation for all bnd CLI commands")
+	public void _gmd(MarkdownOptions opts) {
+		CommandLine cl = new CommandLine(this);
+		cl.generateDocumentation(this, out);
+
+	}
+
+
+
+
 }

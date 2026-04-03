@@ -40,6 +40,7 @@
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\
 	org.apiguardian:apiguardian-api;version=latest,\
+	jar/javax.servlet-api-4.0.1.jar;version=file, \
 	${junit},\
 	${mockito}
 

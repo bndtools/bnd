@@ -21,7 +21,7 @@ public class SnapshotTest {
 	static final String	org_apache_felix_scr			= "org.apache.felix.scr;version='[2.1.12,2.1.13)'";
 	static final String	org_apache_felix_log			= "org.apache.felix.log;version='[1.2.0,1.2.1)'";
 	static final String	org_apache_felix_configadmin	= "org.apache.felix.configadmin;version='[1.9.10,1.9.11)'";
-	static final String	org_apache_felix_gogo_runtime	= "org.apache.felix.gogo.runtime;version='[1.1.0,1.1.0]'";
+	static final String	org_apache_felix_gogo_runtime	= "org.apache.felix.gogo.runtime;version='[1.1.6,1.1.6]'";
 	@InjectTemporaryDirectory
 	File				tmp;
 	LaunchpadBuilder	builder;

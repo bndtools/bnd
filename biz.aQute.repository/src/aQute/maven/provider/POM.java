@@ -317,12 +317,15 @@ public class POM implements IPom {
 		return "true".equalsIgnoreCase(other);
 	}
 
-	private String get(Element dependency, String name, String deflt) throws XPathExpressionException {
-		String value = xp.evaluate(name, dependency);
-		if (value == null || value.isEmpty())
-			return Strings.trim(deflt);
+	private String get(Element dependency, String name, String deflt) {
+		var matchingElements = dependency.getElementsByTagName(name);
+		if (matchingElements.getLength() > 0) {
+			var value = matchingElements.item(0).getTextContent();
+			if (value != null && !value.isEmpty())
+				return Strings.trim(replaceMacros(value));
+		}
 
-		return Strings.trim(replaceMacros(value));
+		return Strings.trim(deflt);
 	}
 
 	private String getOrSet(String key, String deflt) {

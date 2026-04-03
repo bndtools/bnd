@@ -330,17 +330,18 @@ public class SetsTest {
 		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 			oos.writeObject(set);
 		}
-		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
-		@SuppressWarnings("unchecked")
-		Set<String> deser = (Set<String>) ois.readObject();
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()))) {
+			@SuppressWarnings("unchecked")
+			Set<String> deser = (Set<String>) ois.readObject();
 
-		assertThat(deser).isEqualTo(set)
-			.isNotSameAs(set)
-			.containsExactlyElementsOf(set);
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("e1"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+			assertThat(deser).isEqualTo(set)
+				.isNotSameAs(set)
+				.containsExactlyElementsOf(set);
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("e1"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+		}
 	}
 
 	@Test
@@ -350,14 +351,15 @@ public class SetsTest {
 		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 			oos.writeObject(set);
 		}
-		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
-		@SuppressWarnings("unchecked")
-		Set<String> deser = (Set<String>) ois.readObject();
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()))) {
+			@SuppressWarnings("unchecked")
+			Set<String> deser = (Set<String>) ois.readObject();
 
-		assertThat(deser).isSameAs(set);
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+			assertThat(deser).isSameAs(set);
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+		}
 	}
 
 	@Test

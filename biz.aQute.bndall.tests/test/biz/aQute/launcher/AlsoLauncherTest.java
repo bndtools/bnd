@@ -35,6 +35,7 @@ import org.assertj.core.util.Files;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -1163,7 +1164,20 @@ public class AlsoLauncherTest {
 		}
 	}
 
+	/**
+	 * Disabled because in Java24 the security manager is disabled but the old
+	 * Launcher still calls java.security.Policy.setPolicy(new AllPolicy());
+	 * which throws an exception and breaks the test.
+	 *
+	 * <pre>
+	 * isJava24OrAbove
+	 * </pre>
+	 * 
+	 * refers to a static helper method in this class (see
+	 * https://junit.org/junit5/docs/5.9.2/api/org.junit.jupiter.api/org/junit/jupiter/api/condition/DisabledIf.html#value())
+	 */
 	@Test
+	@DisabledIf("isJava24OrAbove")
 	public void testOlderLauncherOnRunpath() throws Exception {
 		try (Run run = new Run(project.getWorkspace(), project.getFile("old-launcher.bndrun"))) {
 			run.setProperty(Constants.RUNTRACE, "true");
@@ -1206,4 +1220,13 @@ public class AlsoLauncherTest {
 		return new String(bout.toByteArray(), StandardCharsets.UTF_8);
 	}
 
+	/**
+	 * Workaround for Jupiter < 5.12.x which does not allow to
+	 * use @DisableForJRERange with int values for min max
+	 */
+	@SuppressWarnings("unused")
+	private static boolean isJava24OrAbove() {
+		return Runtime.version()
+			.feature() >= 24;
+	}
 }

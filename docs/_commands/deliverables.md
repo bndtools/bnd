@@ -1,19 +1,20 @@
 ---
-layout: default
-title:    deliverables [options]
-summary:  Show all deliverables from this workspace. with their current version and path.
+layout: bnd
+title: deliverables
+summary: |
+   Show all deliverables from this workspace. with their current version and path.
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   deliverables [options] 
 
-{{page.summary}}
+#### Options: 
+- `[ -l --limit ]` Only provide deliverables of this project
+- `[ -p --project <string> ]` Path to project, default current directory
 
-## Synopsis
-
-## Options
-
-	[ -l, --limit ]            - Only provide deliverables of this project
-	[ -p, --project <string> ] - Path to project, default current directory
+<!-- Manual content from: ext/deliverables.md --><br /><br />
 
 ## Example 
 

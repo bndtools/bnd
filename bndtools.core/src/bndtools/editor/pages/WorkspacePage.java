@@ -2,6 +2,7 @@ package bndtools.editor.pages;
 
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -16,6 +17,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
+import bndtools.editor.common.HelpButtons;
 import bndtools.editor.workspace.PluginPathPart;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;
@@ -74,6 +76,12 @@ public class WorkspacePage extends FormPage {
 		tk.decorateFormHeading(form.getForm());
 		form.getForm()
 			.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+
+		// buttons top of form
+		IToolBarManager toolbar = form.getForm()
+			.getToolBarManager();
+		toolbar.add(HelpButtons.HELP_BTN_BND_EDITOR_WORKSPACE);
+		toolbar.update(false);
 
 		// Create controls
 		Composite body = form.getBody();

@@ -29,6 +29,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -52,15 +53,17 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 	private final AtomicReference<State>						state	= new AtomicReference<>(State.IDLE);
 	private final ServiceRegistration<RepositoryListenerPlugin>	registration;
 	private final Map<TreeViewer, RefreshModel>					viewers	= new ConcurrentHashMap<>();
+	private final BundleContext									context;
 
 	RepositoriesViewRefresher() {
 		ServiceRegistration<RepositoryListenerPlugin> reg = null;
 		Bundle bundle = FrameworkUtil.getBundle(RepositoriesViewRefresher.class);
 		if (bundle != null) {
-			BundleContext context = bundle.getBundleContext();
+			context = bundle.getBundleContext();
 			if (context != null)
 				reg = context.registerService(RepositoryListenerPlugin.class, this, null);
-		}
+		} else
+			context = null;
 		this.registration = reg;
 	}
 
@@ -90,8 +93,6 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
 					ensureLoaded(monitor, repos, ws);
 
-					// get repositories first, then do UI thread work
-
 					final Map<Entry<TreeViewer, RefreshModel>, List<RepositoryPlugin>> entryRepos = new HashMap<>();
 
 					for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
@@ -99,28 +100,42 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 							.getRepositories());
 					}
 
-					//
-					// And now back to the UI thread
-					//
+					state.set(State.BUSY);
 
-					getDisplay().asyncExec(() -> {
-						state.set(State.BUSY);
+					for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
 
-						for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
+						TreeViewer viewer = entry.getKey();
+						viewer.getControl()
+							.getDisplay()
+							.asyncExec(() -> {
+								TreePath[] expandedTreePaths = viewer.getExpandedTreePaths();
 
-							TreePath[] expandedTreePaths = entry.getKey()
-								.getExpandedTreePaths();
-
-							entry.getKey()
-								.setInput(entryRepos.get(entry));
+								viewer.setInput(entryRepos.get(entry));
 							if (expandedTreePaths != null && expandedTreePaths.length > 0)
-								entry.getKey()
-									.setExpandedTreePaths(expandedTreePaths);
+									viewer.setExpandedTreePaths(expandedTreePaths);
+							});
+
+					}
+
+					if (target instanceof WorkspaceRepository) {
+						// e.g. new project / project template project was
+						// added.
+						// refresh the EclipseWorkspaceRepository so that new
+						// added project templates show up
+						// in the "New Project" wizard (see
+						// AbstractNewBndProjectWizard)
+						try {
+							monitor.subTask("Refresh EclipseWorkspaceRepository to detect new or changed projects");
+							Central.getEclipseWorkspaceRepository()
+								.refresh();
+						} catch (Exception e) {
+							// swallow to not interrupt the rest
 						}
-						if (state.getAndSet(State.IDLE) == State.REDO) {
-							refreshRepositories(null);
-						}
-					});
+					}
+
+					if (state.getAndSet(State.IDLE) == State.REDO) {
+						refreshRepositories(null);
+					}
 					return Status.OK_STATUS;
 				}
 			}.schedule(1000);
@@ -195,13 +210,6 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 	public void close() {
 		if (registration != null)
 			registration.unregister();
-	}
-
-	public static Display getDisplay() {
-		Display display = Display.getCurrent();
-		if (display == null)
-			display = Display.getDefault();
-		return display;
 	}
 
 	public void setRepositories(final TreeViewer viewer, final RefreshModel refresh) {

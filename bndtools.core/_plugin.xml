@@ -1,21 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
 
-	<extension
-		point="org.eclipse.ui.console.consolePatternMatchListeners">
-		<consolePatternMatchListener
-			id="bndtools.core.console.ansi" regex="\u001B\[[^A-Za-z]*[A-Za-z]"
-			class="bndtools.core.console.AnsiHandler">
-			<enablement>
-				<or>
-					<test property="org.eclipse.debug.ui.processTypeTest"
-						value="java" />
-				</or>
-			</enablement>
-		</consolePatternMatchListener>
-	</extension>
-
-
 	<!-- Extension Points -->
 	<!-- DEPRECATED -->
 	<extension-point id="cnfTemplates"
@@ -55,25 +40,29 @@
 		<startupParticipant
 			class="bndtools.javasearch.JavaSearchStartupParticipant" />
 	</extension>
+    <extension point="org.eclipse.ui.startup">
+        <startup
+            class="bndtools.central.Starter" />
+    </extension>
 
 	<!-- EDITORS -->
 	<extension point="org.eclipse.ui.editors">
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			extensions="bnd" icon="${icons.bundle}" id="bndtools.bndEditor"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			name="Bnd Bundle Editor">
 		</editor>
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			filenames="bnd.bnd" icon="icons/bricks.png"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			id="bndtools.bndProjectEditor" name="Bnd Project Editor">
 		</editor>
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			extensions="bndrun" icon="${icons.bndrun}" id="bndtools.bndRunEditor"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			name="Bnd Run File Editor">
 		</editor>
-		<editor class="bndtools.editor.BndEditor" default="false"
+		<editor class="bndtools.editor.BndEditor" default="true"
 			filenames="build.bnd,ext/*.bnd" icon="icons/bndtools-logo-16x16.png"
 			id="bndtools.bndWorkspaceConfigEditor"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
@@ -102,12 +91,21 @@
 			icon="icons/blueprint.png" name="OSGi Blueprint Descriptor"
 			project="false">
 		</wizard>
+        <wizard id="bndtools.newPackageInfo"
+            category="bndtools.wizardCategory"
+            class="org.bndtools.core.ui.wizards.packge.NewPackageInfoWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/package_folder_impexp.gif" name="package-info.java"
+            project="false">
+        </wizard>
 		<wizard id="bndtools.newIndexWizard"
 			category="bndtools.wizardCategory"
 			class="org.bndtools.core.ui.wizards.index.NewIndexWizard"
 			icon="icons/repoindex.png" name="OSGi Repository Index"
 			project="false">
 		</wizard>
+		
 		<wizard name="OSGi Declarative Services Component"
 			icon="${icons.component}" category="bndtools.wizardCategory"
 			id="bndtools.newDsComponentWizard">
@@ -134,20 +132,37 @@
 			preferredPerspectives="bndtools.perspective" icon="icons/bricks.png"
 			name="Bnd OSGi Project" project="true">
 		</wizard>
-		<wizard id="bndtools.workspaceWizard"
+        <wizard id="bndtools.workspaceFragmentWizard"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.newworkspace.NewWorkspaceWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/bndtools-logo-16x16.png" 
+            name="Bnd Workspace (Fragments)"
+            project="true">
+			<description>
+			Create a new bnd/eclipse workspace using template fragments
+			</description>
+        </wizard>
+        <wizard id="bndtools.workspaceWizard"
 			category="bndtools.wizardCategory"
 			class="bndtools.wizards.workspace.WorkspaceSetupWizard"
 			finalPerspective="bndtools.perspective"
 			preferredPerspectives="bndtools.perspective"
-			icon="icons/bndtools-logo-16x16.png" name="Bnd OSGi Workspace"
-			project="true">
+			icon="icons/bndtools-logo-16x16.png" 
+			name="Bnd OSGi Workspace"
+            project="true">
+			<description>
+			Create a new bnd workspace
+			</description>
 		</wizard>
+        
 		<category id="bndtools.serviceWizardCategory" name="OSGi Services" />
 		<wizard id="bndtools.newServiceWiz"
 			category="bndtools.serviceWizardCategory"
 			class="org.bndtools.core.ui.wizards.service.java.NewBndJavaServiceWizardFactory"
 			finalPerspective="bndtools.perspective"
-			preferredPerspectives="bndtools.perspective" icon="icons/bricks.png"
+			preferredPerspectives="bndtools.perspective" icon="icons/service.png"
 			name="Java OSGi Service (api, impl, consumer)" project="false">
 		</wizard>
 	</extension>
@@ -215,6 +230,20 @@
 			icon="icons/database.png" id="bndtools.repositoriesView"
 			name="Repositories" restorable="true">
 		</view>
+        <view category="bndtools.viewCategory"
+	        name="OpenAI"
+	        icon="icons/openai.png"
+	        class="org.bndtools.refactor.ai.OpenAIView"
+	        id="bndtools.openAIView">
+ 	    </view>
+		<view category="bndtools.viewCategory"
+			name="Graph"
+			icon="icons/bndtools-logo-16x16.png"
+			class="bndtools.views.bundlegraph.BundleGraphView"
+			id="bndtools.bundleGraphView"
+			restorable="true"
+			allowMultiple="true">
+		</view>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
 		<command id="bndtools.core.removeRepoResource"
@@ -226,6 +255,9 @@
 			name="Refresh Repositories" description="" />
 		<command id="bnd.wizard.generateIndex"
 			name="Generate OSGi Repo. Index" />
+		<command id="bndtools.commands.showBundleGraph"
+			name="Show Bundle Graph"
+			description="Open the Bundle Graph view for the selected .bndrun file or projects" />
 	</extension>
 	<extension point="org.eclipse.ui.commandImages">
 		<image commandId="bndtools.core.removeRepoResource"
@@ -299,6 +331,32 @@
 			locationURI="popup:org.eclipse.ui.popup.any">
 			<command commandId="bnd.wizard.generateIndex">
 				<visibleWhen checkEnabled="true" />
+			</command>
+		</menuContribution>
+
+		<menuContribution
+			locationURI="popup:org.eclipse.ui.popup.any">
+			<command commandId="bndtools.commands.showBundleGraph"
+				label="Show Bundle Graph">
+				<visibleWhen checkEnabled="false">
+					<or>
+						<with variable="selection">
+							<count value="+" />
+							<iterate operator="or">
+								<adapt type="org.eclipse.core.resources.IFile">
+									<test property="org.eclipse.core.resources.extension"
+										value="bndrun" />
+								</adapt>
+							</iterate>
+						</with>
+						<with variable="selection">
+							<count value="+" />
+							<iterate operator="and">
+								<adapt type="org.eclipse.core.resources.IProject" />
+							</iterate>
+						</with>
+					</or>
+				</visibleWhen>
 			</command>
 		</menuContribution>
 
@@ -800,19 +858,23 @@
 
 	<!-- BND PLUGINS -->
 	<extension point="bndtools.core.bndPlugins">
-		<plugin class="aQute.lib.deployer.FileRepo" rank="10"
-			icon="icons/bundlefolder.png" name="File Repository">
+		<plugin class="aQute.lib.deployer.FileRepo" rank="9"
+			icon="icons/bundlefolder.png" name="File Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/filerepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
 			<property name="location" type="string"
 				description="Local directory path" />
 			<property name="readonly" type="boolean" default="false" />
 		</plugin>
 
 		<plugin class="aQute.bnd.repository.osgi.OSGiRepository"
-			icon="icons/database.png" name="Indexed Repository (read-only)">
+			icon="icons/database.png" name="Indexed Repository (read-only)"
+			helpUrl="https://bnd.bndtools.org/plugins/osgirepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />	
 			<property name="locations" type="string"
 				description="Index locations (comma-separated list of URLs)" />
 			<property name="cache" type="string"
@@ -821,9 +883,11 @@
 
 		<plugin class="aQute.bnd.deployer.repository.LocalIndexedRepo"
 			icon="icons/database.png"
-			name="Locally Indexed Repository (read/write)">
+			name="Locally Indexed Repository (read/write)"
+			helpUrl="https://bnd.bndtools.org/plugins/localindexrepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
 			<property name="local" type="string"
 				description="Local directory path" />
 			<property name="phase" type="string"
@@ -856,6 +920,56 @@
 				description="Disable verification of server's X509 certificate (insecure, for testing only!)" />
 		</plugin>
 
+		<plugin class="aQute.bnd.repository.maven.provider.MavenBndRepository"
+			icon="icons/database.png"
+			name="Maven Bnd Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/maven.html"
+			rank="10">
+		    <property name="name" type="string" description="The name of this repository" default="Maven Repository" />
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+			<property name="releaseUrl" type="string" description="The urls to the remote release repository." default="https://repo.maven.apache.org/maven2/" />
+		    <property name="stagingUrl" type="string" description="The url of the staging release repository." />
+		    <property name="snapshotUrl" type="string" description="The urls to the remote snapshot repository." default="https://repository.apache.org/snapshots/" />
+		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />
+		    <property name="readOnly" type="boolean" description="" default="false" />
+		    <property name="index" type="string" description="The path to the index file (relative to build.bnd, or an absolute path)" default="${.}/central.maven" />
+		    <property name="source" type="string" description="Content added to the index file. Content maybe one line without CR/LF as long as there is a comma or whitespace separating the GAVs. Further same format as the index file." />
+		    <property name="noupdateOnRelease" type="boolean" description="Do not update the index when a file is released" />
+		    <property name="poll_time" type="int" description="Sets the time in seconds when to check for changes in the pom-files" default="5" />
+		    <property name="redeploy" type="boolean" description="Allow redeploy" />
+		    <property name="ignore_metainf_maven" type="boolean" description="Ignore maven information in META-INF/maven/...." />
+		    <property name="multi" type="string" description="Extensions for files that contain multiple JARs" />
+		</plugin>
+
+		<plugin class="aQute.bnd.repository.p2.provider.P2Repository"
+			icon="icons/database.png"
+			name="P2Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/p2repo.html">
+		    <property name="name" type="string" description="The name of this repository" default="P2Repository" />
+		    <property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+			<property name="url" type="string" description="The URL to either the P2 repository (a directory) or an Eclipse target platform. Required." />
+		    <property name="location" type="string" description="The location to store the index file. Default: 'cnf/cache/p2-index-reponame/index.xml.gz'" />
+		</plugin>
+
+		<plugin class="aQute.bnd.repository.maven.pom.provider.BndPomRepository"
+			icon="icons/database.png"
+			name="Maven POM Repository"
+			helpUrl="https://bnd.bndtools.org/plugins/pomrepo.html">
+		    <property name="name" type="string" description="The name of the repo. Required." default="Maven POM Repository" />
+		    <property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
+		    <property name="releaseUrl" type="string" description="The url to the remote release repository. Can be a comma separated list of urls." default="https://repo.maven.apache.org/maven2/" />
+		    <property name="snapshotUrl" type="string" description="The url to the remote snapshot repository. If this is not specified, it falls back to the release repository or just local if this is also not specified. Can be a comma separated list of urls." default="https://repository.apache.org/snapshots/" />
+		    <property name="local" type="string" description="The path to the local repository" default="~/.m2/repository" />
+		    <property name="revision" type="string" description="Coordinates of a maven revision. I.e. group:artifactid[:c]:version. Can be a comma separated list of GAVs." />
+		    <property name="location" type="string" description="Points to a file that is used as the cache. It will be in OSGi format." />
+		    <property name="pom" type="string" description="Points to a pom.xml file. This is exclusive with revision. Can be a comma separated list of files. (relative to build.bnd, or an absolute path)" default="${.}/pom.xml" />
+		    <property name="query" type="string" description="The query used to search Maven Central Search." />
+		    <property name="queryUrl" type="string" description="The url of the Maven Central Search."  />
+		    <property name="transitive" type="boolean" description="Allow transitive dependencies" />
+		    <property name="poll_time" type="int" description="Sets the time in seconds when to check for changes in the pom-files" default="300" />
+		    <property name="dependencyManagement" type="boolean" description="Also considers the dependency management section of a POM. Default is false." default="false" />
+		</plugin>
+		
 	</extension>
 
 	<extension point="org.eclipse.ui.intro.configExtension">
@@ -882,6 +996,38 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.popupMenus">
+	  <objectContribution
+            adaptable="false"
+            id="bndtools.launchtobndrun"
+            nameFilter="*.launch"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="org.bndtools.facade.ExtensionFacade"
+               enablesFor="+"
+               id="org.bndtools.pde.launchtobndrun.LaunchToBndrunAction"
+               icon="icons/lorry.png"
+               label="Generate bndrun..."
+               menubarPath="additions"
+               tooltip="Generates a bndrun file corresponding to this launch file">
+         </action>
+      </objectContribution>
+
+	  <objectContribution
+            adaptable="false"
+            id="bndtools.bndrunanalyze"
+            nameFilter="*.bndrun"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="org.bndtools.facade.ExtensionFacade"
+               enablesFor="+"
+               id="org.bndtools.core.editors.actions.BndRunAnalyzerAction"
+               icon="icons/lorry.png"
+               label="Analyze bndrun..."
+               menubarPath="additions"
+               tooltip="Analyzes a .bndrun file e.g. for unused bundles in repositories and other aspects.">
+         </action>
+      </objectContribution>
+	
 		<objectContribution adaptable="true"
 			id="bndtools.nonBndProjectContribution"
 			objectClass="org.eclipse.core.resources.IProject">

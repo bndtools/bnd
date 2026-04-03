@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Workspace
 title: findproviders  ';' namespace ( ';' FILTER ( ';' STRATEGY)? )?
 summary: find resources in the workspace repository matching the given namespace and optional filter. Intended for use in bndrun files. STRATEGY can one of ALL, REPOS or WORKSPACE.
+parent: Macro Reference
 ---
-
 The `findproviders` macro gives access to the resources in the Workspace repositories, including the projects itself. Its semantics match the OSGi `Repository.findProviders()` method.
 
 It was added to support the use case of including a set of plugins in a resolve to create an executable. Since it is impossible to add a requirement that will add all matching resources, the `findproviders` macro can be used to find these resources and then turn them into initial requirements. However, this macro will likely find many other use cases since it is quite versatile. If used outside of `bndrun` files, it can cause circular builds because it might want to search the project that is used in. Use the REPOS Strategy in this case.

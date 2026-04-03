@@ -37,7 +37,7 @@ public class ResolutionTreeLabelProvider extends StyledCellLabelProvider {
 
 			// Get the icon from the capability namespace
 			icon = Icons.image(R5LabelFormatter.getNamespaceImagePath(item.getCapability()
-				.getNamespace()), true);
+				.getNamespace()));
 		} else if (element instanceof Requirement) {
 			Requirement requirement = (Requirement) element;
 			if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()

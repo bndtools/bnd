@@ -823,17 +823,18 @@ public class MapsTest {
 		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 			oos.writeObject(map);
 		}
-		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
-		@SuppressWarnings("unchecked")
-		Map<String, String> deser = (Map<String, String>) ois.readObject();
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()))) {
+			@SuppressWarnings("unchecked")
+			Map<String, String> deser = (Map<String, String>) ois.readObject();
 
-		assertThat(deser).isEqualTo(map)
-			.isNotSameAs(map)
-			.containsExactlyEntriesOf(map);
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.put("a", "b"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("k1"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+			assertThat(deser).isEqualTo(map)
+				.isNotSameAs(map)
+				.containsExactlyEntriesOf(map);
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.put("a", "b"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("k1"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+		}
 	}
 
 	@Test
@@ -843,14 +844,15 @@ public class MapsTest {
 		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 			oos.writeObject(map);
 		}
-		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
-		@SuppressWarnings("unchecked")
-		Map<String, String> deser = (Map<String, String>) ois.readObject();
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()))) {
+			@SuppressWarnings("unchecked")
+			Map<String, String> deser = (Map<String, String>) ois.readObject();
 
-		assertThat(deser).isSameAs(map);
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.put("a", "b"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+			assertThat(deser).isSameAs(map);
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.put("a", "b"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+		}
 	}
 
 }

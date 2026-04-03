@@ -321,6 +321,7 @@ public class SpecMetatypeTest {
 
 	}
 
+	// this is allowed (no duplicate)
 	@ObjectClassDefinition(pid = {
 		"3"
 	}, factoryPid = {
@@ -330,6 +331,7 @@ public class SpecMetatypeTest {
 
 	}
 
+	// this is allowed (no duplicate)
 	@ObjectClassDefinition(pid = {
 		"4"
 	})
@@ -337,6 +339,7 @@ public class SpecMetatypeTest {
 
 	}
 
+	// this is allowed (no duplicate)
 	@ObjectClassDefinition(factoryPid = {
 		"4"
 	})
@@ -354,7 +357,7 @@ public class SpecMetatypeTest {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "1".length()) + "*");
 		b.build();
 		System.err.println(b.getErrors());
-		assertEquals(4, b.getErrors()
+		assertEquals(2, b.getErrors()
 			.size());
 	}
 

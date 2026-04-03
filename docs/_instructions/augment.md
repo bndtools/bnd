@@ -1,9 +1,35 @@
 ---
-layout: default
-class: Workspace
+layout: bnd
 title: -augment PARAMETER ( ',' PARAMETER ) *
-summary: Add requirements and capabilities to the resources during resolving.
+class: Workspace
+summary: |
+   Add requirements and capabilities to the resources during resolving.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-augment: com.example.prime; capability:='osgi.extender; osgi.extender=osgi.component; version:Version=1.2'`
+
+- Pattern: `.*`
+
+### Directives 
+
+- `capability:` This directive specifies a Provide-Capability instruction, this will therefore likely have to be quoted. Any number of clauses can be specified.
+  - Example: `capability:=osgi.extender; osgi.extender=osgi.component; version:Version=1.2`
+
+  - Pattern: `.*`
+
+
+- `requirement:` The directive specifies a Require-Capability instruction
+  - Example: `requirement:=osgi.identity;filter:="(osgi.identity=a.b.c)"`
+
+  - Pattern: `.*`
+
+
+- `version:`  A version range. If a single version is given it will be used as [<version>,∞). The version range can be prefixed with an ‘@’ for a consumer range (to the next major) or a provider range (to the next minor) when the ‘@’ is a suffix of the version. The range can restrict the augmentation to a limited set of bundles.
+  - Pattern: `.*`
+
+<!-- Manual content from: ext/augment.md --><br /><br />
 
 The `-augment` instruction can be used to _augment_ resources in the repositories. Augmenting is adding additional capabilities and requirements. When bnd resolves a project or bndrun file then, it will read this variable (it is a merge property so you can also use additional keys like `-augment.xyz`) and use it to _decorate_ the repository entries.
 

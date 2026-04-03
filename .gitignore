@@ -5,7 +5,14 @@ Archive
 .DS_Store
 .*.swp
 /.gradle/
+/build/
 /reports/
 /generated/
 /install-jdk.sh
 .to
+.idea
+.settings
+.flattened-pom.xml
+target/
+*.code-workspace
+bndtools.test/workspace/

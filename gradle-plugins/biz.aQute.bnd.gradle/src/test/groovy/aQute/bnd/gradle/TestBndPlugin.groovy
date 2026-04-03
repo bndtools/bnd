@@ -158,7 +158,7 @@ class TestBndPlugin extends Specification {
 		props.getProperty("-runbundles") =~ /osgi\.enroute\.junit\.wrapper/
 
 		when:
-		bndrun = new File(testProjectDir, "test.simple/resolve2.bndrun")
+		bndrun = new File(testProjectDir, "test.simple/resolve2.bndrunx")
 		props = new UTF8Properties()
 
 		then:
@@ -446,6 +446,16 @@ class TestBndPlugin extends Specification {
 		result = TestHelper.getGradleRunner()
 				.withProjectDir(testProjectDir)
 				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--parallel", "--stacktrace", "--debug", "testrun.testOSGi2", "--tests=test.simple.Test")
+				.forwardOutput()
+				.build()
+
+		then:
+		result.task(":test.simple:testrun.testOSGi2").outcome == SUCCESS
+
+		when:
+		result = TestHelper.getGradleRunner()
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--parallel", "--stacktrace", "--debug", "testrun.testOSGi2", "--tests=test.simple.ProjectNameTest")
 				.forwardOutput()
 				.build()
 

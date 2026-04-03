@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -382,15 +383,47 @@ public class CapReqBuilder {
 					.get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
 				String versionRange = Objects.toString(requirement.getAttributes()
 					.get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB), null);
-				if (name == null) {
-					throw new IllegalArgumentException(
-						String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
-							REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
+			String type = Objects.toString(requirement.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE), null);
+			if (name == null) {
+				throw new IllegalArgumentException(
+					String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
+						REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
+			}
+			CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).from(requirement)
+				.removeAttribute(REQ_ALIAS_IDENTITY_NAME_ATTRIB)
+				.removeAttribute(REQ_ALIAS_IDENTITY_VERSION_ATTRIB)
+				.removeAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
+			
+			// Build filter with identity, optional type, and optional version
+			StringBuilder filter = new StringBuilder();
+			boolean needsAnd = (type != null || versionRange != null);
+			if (needsAnd) {
+				filter.append("(&");
+			}
+			filter.append('(').append(IdentityNamespace.IDENTITY_NAMESPACE).append('=').append(name).append(')');
+			
+			// Add type filter if present
+			if (type != null) {
+				filter.append('(').append(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE).append('=').append(type).append(')');
+			}
+			
+			// Add version range filter if present
+			if (versionRange != null && VersionRange.isOSGiVersionRange(versionRange)) {
+				String versionFilter = VersionRange.parseOSGiVersionRange(versionRange).toFilter(Constants.VERSION_ATTRIBUTE);
+				// versionFilter is already wrapped in (&...) for ranges, so extract inner parts
+				if (versionFilter.length() > 1 && versionFilter.charAt(0) == '(' && versionFilter.charAt(1) == '&') {
+					filter.append(versionFilter, 2, versionFilter.length() - 1);
+				} else {
+					filter.append(versionFilter);
 				}
-				CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).from(requirement)
-					.removeAttribute(REQ_ALIAS_IDENTITY_NAME_ATTRIB)
-					.removeAttribute(REQ_ALIAS_IDENTITY_VERSION_ATTRIB);
-				builder.addFilter(IdentityNamespace.IDENTITY_NAMESPACE, name, versionRange, null);
+			}
+			
+			if (needsAnd) {
+				filter.append(')');
+			}
+			
+			builder.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 				return builder.buildSyntheticRequirement();
 			}
 			default : {
@@ -709,6 +742,18 @@ public class CapReqBuilder {
 	}
 
 	public static RequirementBuilder createRequirementFromCapability(Capability capability) {
+		return createRequirementFromCapability(capability, null);
+	}
+
+	/**
+	 * @param capability the capability to convert
+	 * @param includeAttributesFilter predicate to control from the caller which
+	 *            attributes to include. if <code>null</code> all attributes are
+	 *            included.
+	 * @return a RequirementBuilder from the capability
+	 */
+	public static RequirementBuilder createRequirementFromCapability(Capability capability,
+		Predicate<String> includeAttributesFilter) {
 		final String namespace = capability.getNamespace();
 		RequirementBuilder builder = new RequirementBuilder(namespace);
 		final String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
@@ -720,6 +765,12 @@ public class CapReqBuilder {
 				.append('&');
 		}
 		capAttributes.forEach((name, v) -> {
+
+			if (includeAttributesFilter != null && !includeAttributesFilter.test(name)) {
+				// skip this attribute
+				return;
+			}
+
 			if (v instanceof Version || name.equals(versionAttrName)
 				|| (namespace.equals(PackageNamespace.PACKAGE_NAMESPACE)
 					&& name.equals(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE))) {

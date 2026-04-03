@@ -53,7 +53,10 @@ public class JUnitLauncher extends ProjectLauncher {
 	}
 
 	@Override
-	public int launch() throws Exception {
+	public Command getCommand() throws Exception {
+		if (java != null) {
+			return java;
+		}
 		java = new Command();
 		java.add(getJavaExecutable("java"));
 
@@ -65,17 +68,7 @@ public class JUnitLauncher extends ProjectLauncher {
 		if (getTimeout() != 0L)
 			java.setTimeout(getTimeout() + 1000L, TimeUnit.MILLISECONDS);
 
-		logger.debug("cmd line {}", java);
-		try {
-			int result = java.execute(System.in, System.err, System.err);
-			if (result == Integer.MIN_VALUE)
-				return TIMEDOUT;
-			reportResult(result);
-			return result;
-		} finally {
-			cleanup();
-		}
-
+		return java;
 	}
 
 	private boolean traverse(List<String> fqns, File testSrc, String prefix, Pattern filter) {

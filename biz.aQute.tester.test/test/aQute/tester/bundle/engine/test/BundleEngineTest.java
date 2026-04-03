@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
@@ -61,6 +60,7 @@ import aQute.lib.io.IO;
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.BundleEngineDescriptor;
+import aQute.tester.bundle.engine.ExecutionRequestFactory;
 import aQute.tester.bundle.engine.StaticFailureDescriptor;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.bundle.engine.discovery.BundleSelectorResolver;
@@ -81,6 +81,7 @@ import aQute.tester.testclasses.bundle.engine.TestWithField;
 
 @SuppressWarnings("restriction")
 public class BundleEngineTest {
+	@SuppressWarnings("resource")
 	private LaunchpadBuilder	builder				= new LaunchpadBuilder().bndrun("bundleenginetest.bndrun")
 		.excludeExport("aQute.tester.bundle.engine")
 		.excludeExport("aQute.tester.bundle.engine.discovery")
@@ -147,15 +148,6 @@ public class BundleEngineTest {
 	public void tearDown() {
 		IO.close(launchpad);
 		IO.close(builder);
-	}
-
-	public static class EngineStarter implements Supplier<TestEngine> {
-
-		@Override
-		public TestEngine get() {
-			return new BundleEngine();
-		}
-
 	}
 
 	static String descriptionOf(Bundle b) {
@@ -301,6 +293,46 @@ public class BundleEngineTest {
 			.haveExactly(1, event(test("customTest"), finishedWithFailure()));
 	}
 
+	public static class FailingEngine implements TestEngine {
+
+		@Override
+		public String getId() {
+			return "failing-engine";
+		}
+
+		@Override
+		public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+			throw new RuntimeException("Something went wrong with discovery");
+		}
+
+		@Override
+		public void execute(ExecutionRequest request) {
+			throw new RuntimeException("Something went wrong with execution");
+		}
+
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void withEngineThatFails_reportsEngineFailure() throws Exception {
+		startLaunchpadNoEngines();
+		Bundle engineBundle = testBundler.bundleWithEE()
+			.includeResource("META-INF/services/" + TestEngine.class.getName())
+			.literal("# Include a comment\n \t " + FailingEngine.class.getName()
+				+ " # another comment\n\n#The above was a blank line")
+			.addResourceWithCopy(FailingEngine.class)
+			.start();
+		Bundle testBundle = startTestBundle(JUnit4Test.class);
+
+		engineInFramework().execute()
+			.allEvents()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(test("misconfiguredEngines"), test("sub-engine", "failing-engine"),
+				finishedWithFailure(instanceOf(RuntimeException.class),
+					message("Something went wrong with discovery"))));
+	}
+
 	public static boolean lastSegmentMatches(UniqueId uId, String type, String contains) {
 		final List<UniqueId.Segment> segments = uId.getSegments();
 		UniqueId.Segment last = segments.get(segments.size() - 1);
@@ -367,8 +399,10 @@ public class BundleEngineTest {
 					.addResourceWithCopy(StaticFailureDescriptor.class)
 					.addResourceWithCopy(BundleSelector.class)
 					.addResourceWithCopy(BundleUtils.class)
-					.addResourceWithCopy(BundleSelectorResolver.class)
-					.addResourceWithCopy(BundleSelectorResolver.SubDiscoveryRequest.class)
+					.addResourceWithRecursiveCopy(BundleSelectorResolver.class)
+					// Add ExecutionRequestFactory - needed for JUnit Platform
+					// 1.13+ support
+					.addResourceWithCopy(ExecutionRequestFactory.class)
 					.exportPackage(BundleEngine.class.getPackage()
 						.getName())
 					.exportPackage(BundleSelector.class.getPackage()

@@ -23,11 +23,11 @@ dependencies {
 	testImplementation 'junit:junit:4.9'
 }
 
-jar {
+def jarTask = tasks.named('jar', Jar) {
 	ext.taskprop = 'prop.task'
 	manifest {
-		attributes('Implementation-Title': project.archivesBaseName,
-		'Implementation-Version': project.version,
+		attributes('Implementation-Title': base.archivesName,
+		'Implementation-Version': '${project.version}',
 		'-includeresource': '{${.}/bar.txt}',
 		'-include': '${.}/other.bnd',
 		'Override': 'This should be overridden by the bnd file'
@@ -35,10 +35,10 @@ jar {
 	}
 }
 
-task bundle(type: Bundle) {
+def bundleTask = tasks.register('bundle', Bundle) {
 	description = 'Bundle'
 	from sourceSets.test.output
-	archiveBaseName = "${project.archivesBaseName}_bundle"
+	archiveBaseName = base.archivesName.map { "${it}_bundle" }
 	bundle {
 		bnd = '''
 -exportcontents: doubler.impl
@@ -56,20 +56,23 @@ Project-Buildpath: ${project.buildpath}
 		bnd '-includeresource.lib': 'commons-lang-2.6.jar;lib:=true'
 		sourceSet = sourceSets.test
 		classpath = configurations.compileClasspath
-		classpath jar
+		classpath jarTask
 	}
 	archiveVersion = '1.1.0'
 }
 
-artifacts {
-	runtimeOnly bundle
-	archives bundle
+tasks.named('assemble') {
+	dependsOn bundleTask
 }
 
-task indexer(type: Index) {
+artifacts {
+	runtimeOnly bundleTask
+}
+
+tasks.register('indexer', Index) {
 	description = 'Indexer'
 	repositoryName = project.name
-	bundles fileTree(destinationDirectory.dir(libsDirName)) {
+	bundles fileTree(destinationDirectory.dir('libs')) {
 		include '**/*.jar'
 		exclude '**/*-latest.jar'
 		exclude '**/*-sources.jar'
@@ -80,16 +83,16 @@ task indexer(type: Index) {
 
 def indexDir = objects.directoryProperty().convention(layout.buildDirectory.dir('index'))
 
-task copybundles(type: Copy) {
-	from jar
+def copybundlesTask = tasks.register('copybundles', Copy) {
+	from jarTask
 	into indexDir.dir('bundles')
 }
 
-task indexer2(type: Index) {
+tasks.register('indexer2', Index) {
 	description = 'Indexer'
 	indexName = 'index2.xml'
 	gzip = true
 	destinationDirectory = indexDir
 	base = indexDir.map({ it.asFile.toURI() })
-	bundles = objects.fileCollection().from(copybundles).asFileTree
+	bundles = objects.fileCollection().from(copybundlesTask).asFileTree
 }

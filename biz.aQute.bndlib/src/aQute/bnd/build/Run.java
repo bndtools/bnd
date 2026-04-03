@@ -8,8 +8,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Map;
 
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.osgi.Processor;
 
 public class Run extends Project {
 
@@ -57,11 +57,9 @@ public class Run extends Project {
 		Processor processor;
 		if (workspace != null) {
 			Run run = new Run(workspace, file);
-			if (run.getProperties()
-				.get(STANDALONE) == null) {
+			if (!run.isStandAlone()) {
 				return run;
 			}
-			// -standalone specified
 			processor = run;
 		} else {
 			processor = new Processor();
@@ -71,6 +69,14 @@ public class Run extends Project {
 		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(processor, file.toURI());
 		Run run = new Run(standaloneWorkspace, file);
 		return run;
+	}
+
+	/**
+	 * Answer true if this file defines a -standalone. This is only the main
+	 * header, no check for merged properties.
+	 */
+	public boolean isStandAlone() {
+		return getProperty(STANDALONE) != null;
 	}
 
 	public Run(Workspace workspace, File projectDir, File propertiesFile) throws Exception {

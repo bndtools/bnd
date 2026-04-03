@@ -18,8 +18,10 @@ import java.lang.annotation.Target;
  * For an elaborate and simple explanation, see {@link ProviderType}.
  * </p>
  * Deprecated because being replaced by OSGi annotations
+ *
+ * @deprecated forRemoval since = "7.0.0"
  */
-@Deprecated(forRemoval = true, since = "7.0.0")
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)

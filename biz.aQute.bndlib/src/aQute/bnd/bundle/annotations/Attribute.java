@@ -59,8 +59,6 @@ import java.lang.annotation.Target;
  * <p>
  * This annotation is not retained at runtime. It is for use by tools to
  * generate bundle manifests.
- *
- * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)

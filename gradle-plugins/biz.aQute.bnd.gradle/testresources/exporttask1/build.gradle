@@ -25,20 +25,20 @@ ext {
 	osgiIdentity = 'org.apache.felix.eventadmin'
 }
 
-task export(type: Export) {
+tasks.register('export', Export) {
 	description = "Export ${name}.bndrun"
 	bndrun = layout.projectDirectory.file("${name}.bndrun")
 	bundles = configurations.bundles
 }
 
-task exporter(type: Export) {
+tasks.register('exporter', Export) {
 	description = "Exporter for ${name}.bndrun"
 	bndrun = objects.fileProperty().value(layout.projectDirectory.file("${name}.bndrun"))
 	bundles = configurations.bundles
 	exporter = 'bnd.runbundles'
 }
 
-task runbundles(type: Export) {
+tasks.register('runbundles', Export) {
 	description = "Export ${name}.bndrun"
 	bndrun = file("${name}.bndrun")
 	exporter = 'bnd.runbundles'

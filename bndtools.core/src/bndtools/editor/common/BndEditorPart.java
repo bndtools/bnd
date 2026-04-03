@@ -79,8 +79,8 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
 	@Override
 	public final void commit(boolean onSave) {
 		committing.compareAndSet(false, true);
-		super.commit(onSave);
 		commitToModel(onSave);
+		super.commit(onSave);
 		committing.compareAndSet(true, false);
 	}
 

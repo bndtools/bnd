@@ -1,17 +1,13 @@
 ---
-layout: default
-title: defaults 
-summary: 
+layout: bnd
+title: defaults
+summary: |
+   Show all the defaults in bnd
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   defaults  ...
 
-{{page.summary}}
 
-## Synopsis
-
-{{page.title}}
-
-## Options
-
-## Examples

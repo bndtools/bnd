@@ -9,28 +9,35 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
@@ -42,6 +49,7 @@ import aQute.lib.io.IO;
 @SuppressWarnings({
 	"resource", "restriction"
 })
+@ExtendWith(SoftAssertionsExtension.class)
 public class ProjectTest {
 	@InjectTemporaryDirectory
 	File tmp;
@@ -647,6 +655,125 @@ public class ProjectTest {
 	}
 
 	@Test
+	public void testPomXmlWithDeps() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-repo-test"));
+		Project project = ws.getProject("p7-pom");
+		File[] files = project.build();
+
+		System.err.println(Processor.join(project.getErrors(), "\n"));
+		System.err.println(Processor.join(project.getWarnings(), "\n"));
+
+		assertEquals(0, project.getErrors()
+			.size());
+		assertEquals(0, project.getWarnings()
+			.size());
+
+		try (Jar a = new Jar(files[0])) {
+			Resource pom = a.getPomXmlResources()
+				.findFirst()
+				.orElse(null);
+			Resource pomResource = a.getResource("META-INF/maven/p7pom/a/pom.xml");
+
+			assertEquals(pom, pomResource);
+
+			// DocumentBuilder db = dbf.newDocumentBuilder();
+			try (InputStream is = pom.openInputStream()) {
+				// Document doc = db.parse(openInputStream);
+				String xml = IO.collect(is);
+
+				assertEquals(
+					"""
+						<?xml version="1.0" encoding="UTF-8"?>
+						<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+						  <modelVersion>4.0.0</modelVersion>
+						  <groupId>p7pom</groupId>
+						  <artifactId>a</artifactId>
+						  <version>1.0.0</version>
+						  <description>p7-pom</description>
+						  <name>p7-pom</name>
+						  <dependencies>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.ipojo.ant</artifactId>
+						      <version>0.8.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.configadmin</artifactId>
+						      <version>1.0.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						  </dependencies>
+						</project>
+						""",
+					xml);
+			}
+
+		}
+	}
+
+	@Test
+	public void testSubPomXmlWithDeps() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-repo-test"));
+		Project project = ws.getProject("p6-sub-pom");
+		File[] files = project.build();
+		Arrays.sort(files);
+
+		System.err.println(Processor.join(project.getErrors(), "\n"));
+		System.err.println(Processor.join(project.getWarnings(), "\n"));
+
+		assertEquals(0, project.getErrors()
+			.size());
+		assertEquals(0, project.getWarnings()
+			.size());
+
+		try (Jar a = new Jar(files[0])) {
+			Resource pom = a.getPomXmlResources()
+				.findFirst()
+				.orElse(null);
+			Resource pomResource = a.getResource("META-INF/maven/p6subpom/a/pom.xml");
+
+			assertEquals(pom, pomResource);
+
+			// DocumentBuilder db = dbf.newDocumentBuilder();
+			try (InputStream is = pom.openInputStream()) {
+				// Document doc = db.parse(openInputStream);
+				String xml = IO.collect(is);
+
+				assertEquals(
+					"""
+						<?xml version="1.0" encoding="UTF-8"?>
+						<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+						  <modelVersion>4.0.0</modelVersion>
+						  <groupId>p6subpom</groupId>
+						  <artifactId>a</artifactId>
+						  <version>0</version>
+						  <description>p6-sub-pom.a</description>
+						  <name>p6-sub-pom.a</name>
+						  <dependencies>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.configadmin</artifactId>
+						      <version>1.0.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						    <dependency>
+						      <groupId>org.apache.felix</groupId>
+						      <artifactId>org.apache.felix.ipojo.ant</artifactId>
+						      <version>0.8.1</version>
+						      <scope>compile</scope>
+						    </dependency>
+						  </dependencies>
+						</project>
+						""",
+					xml);
+			}
+
+		}
+	}
+
+	@Test
 	public void testOutofDate() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p3");
@@ -710,6 +837,89 @@ public class ProjectTest {
 			s = project.getReplacer()
 				.process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
 			assertThat(s).endsWith("org.apache.felix.configadmin-1.0.1.jar");
+		}
+	}
+
+	@Test
+	public void testRepoCollector() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+			Project project = ws.getProject("p2");
+			RepoCollector rc = new RepoCollector(project);) {
+
+			System.err.println(project.getPlugins(FileRepo.class));
+			String s = project.getReplacer()
+				.process(("${repo;libtest}"));
+			System.err.println(s);
+			assertThat(s).contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8",
+				"org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar");
+
+			// we expect to see the following two repo references extracted by
+			// the RepoCollector
+			project.setProperty("-includeresource",
+				"${repo;org.apache.felix.configadmin;latest},${repo;org.apache.felix.ipojo;latest}");
+
+			// test RepoCollector
+			Collection<Container> repoRefs = rc.repoRefs();
+			assertThat(repoRefs).hasSize(2);
+			Iterator<Container> iterator = repoRefs.iterator();
+			Container one = iterator.next();
+			assertThat(one.toString()).endsWith("org.apache.felix.configadmin-1.8.8.jar");
+			Container two = iterator.next();
+			assertThat(two.toString()).endsWith("org.apache.felix.ipojo-1.0.0.jar");
+
+		}
+	}
+
+	@Test
+	public void testRepoCollectorNonJar() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-repononjar"));
+			Project project = ws.getProject("org.example.impl");
+			RepoCollector rc = new RepoCollector(project);
+		) {
+
+			List<RepositoryPlugin> repositories = project.getRepositories();
+			RepositoryPlugin repo = ws.getRepository("Maven Central");
+			assertNotNull(repo);
+
+			Collection<Container> repoRefs = rc.repoRefs();
+			System.out.println(repoRefs);
+			assertThat(repoRefs).hasSize(3);
+			assertThat(IO.normalizePath(repoRefs.toString()))
+				.contains(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-aarch64.so",
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-x86-64.so",
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-macosx-aarch64.dylib");
+
+			ProjectBuilder builder = project.getBuilder(null);
+			Jar jar = builder.build();
+
+			assertTrue(IO.normalizePath(jar.getDirectory("linux-aarch64")
+				.get("linux-aarch64/libopencv_java.so")
+				.toString())
+				.endsWith(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-aarch64.so"));
+			assertEquals("a", IO.collect(jar.getDirectory("linux-aarch64")
+				.get("linux-aarch64/libopencv_java.so")
+				.openInputStream()));
+
+			assertTrue(IO.normalizePath(jar.getDirectory("linux-x86-64")
+				.get("linux-x86-64/libopencv_java.so")
+				.toString())
+				.endsWith(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-linux-x86-64.so"));
+			assertEquals("b", IO.collect(jar.getDirectory("linux-x86-64")
+				.get("linux-x86-64/libopencv_java.so")
+				.openInputStream()));
+
+			assertTrue(IO.normalizePath(jar.getDirectory("macos-aarch64")
+				.get("macos-aarch64/libopencv_java.so")
+				.toString())
+				.endsWith(
+					"cnf/cache/org/weasis/thirdparty/org/opencv/libopencv_java/4.6.0-dcm/libopencv_java-4.6.0-dcm-macosx-aarch64.dylib"));
+			assertEquals("c", IO.collect(jar.getDirectory("macos-aarch64")
+				.get("macos-aarch64/libopencv_java.so")
+				.openInputStream()));
+
 		}
 	}
 
@@ -1063,6 +1273,38 @@ public class ProjectTest {
 		}
 	}
 
+	@Test
+	public void testExportVersionUsesSnapshotInstructionFromWorkspace() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/export"));
+			Project project = ws.getProject("mvn.deploy.bnd")) {
+			File[] files = project.build();
+			assertTrue(project.getErrors()
+				.isEmpty(), "Errors: " + project.getErrors() + " Warnings: " + project.getWarnings());
+			assertNotNull(files);
+
+			File projectJarFile = IO.getFile(project.getBase(), "generated/mvn.deploy.bnd.jar");
+			File exportedJarFile = IO.getFile(project.getBase(), "generated/mvn.deploy.bnd.executable.jar");
+			assertTrue(projectJarFile.isFile(), "project jar should be generated");
+			assertTrue(exportedJarFile.isFile(), "exported executable jar should be generated");
+
+			try (Jar projectJar = new Jar(projectJarFile); Jar exportedJar = new Jar(exportedJarFile)) {
+				String projectVersion = projectJar.getManifest()
+					.getMainAttributes()
+					.getValue(Constants.BUNDLE_VERSION);
+				String exportedVersion = exportedJar.getManifest()
+					.getMainAttributes()
+					.getValue(Constants.BUNDLE_VERSION);
+
+				assertTrue(Pattern.matches("0\\.1\\.2\\.\\d+", projectVersion),
+					"project bundle should keep timestamp qualifier without SNAPSHOT: " + projectVersion);
+				assertEquals("0.1.2", exportedVersion,
+					"exported executable bundle should apply empty -snapshot and remove qualifier");
+				assertFalse(projectVersion.contains("SNAPSHOT"));
+				assertFalse(exportedVersion.contains("SNAPSHOT"));
+			}
+		}
+	}
+
 	private Workspace getWorkspace(File file) throws Exception {
 		IO.copy(file, tmp);
 		return new Workspace(tmp);
@@ -1165,5 +1407,41 @@ public class ProjectTest {
 		project.copy(repo, (String) null, release);
 		assertTrue(project.check());
 		assertTrue(ws.check());
+	}
+
+
+	@Test
+	public void testWarnOnDuplicateProperties(SoftAssertions softly) throws Exception {
+		File base = tmp;
+		File bnd = new File(base, "bnd.bnd");
+		IO.store("""
+			Header-1: a\n
+			Header-1: b
+			""", bnd);
+
+		// pedantic=true tests
+		try (Processor a = new Processor()) {
+			a.setPedantic(true);
+			a.loadProperties(bnd);
+
+			softly.assertThat(a.getWarnings())
+				.as("pedantic warnings")
+				.containsExactly("Duplicate property key: `Header-1`: <<Header-1: b>>");
+			softly.assertThat(a.getErrors()).as("pedantic errors").isEmpty();
+
+		}
+
+		// now test the opposite, with pedantic=false
+		try (Processor a = new Processor()) {
+			a.setPedantic(false);
+			a.loadProperties(bnd);
+
+			softly.assertThat(a.getWarnings())
+				.as("non-pedantic warnings")
+				.isEmpty();
+			softly.assertThat(a.getErrors())
+				.as("non-pedantic errors")
+				.isEmpty();
+		}
 	}
 }

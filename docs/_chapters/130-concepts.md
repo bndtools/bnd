@@ -1,11 +1,12 @@
 ---
-layout: default
+layout: bnd
 title: Concepts
+parent: Concepts and Practices
+nav_order: 1
 ---
-
 One of the more surprising things we've learned about modularity in the last decade is how much of a fractal pattern it actually is. All the way from CPU machine instructions all the way up to a large distributed system you can see the pattern of encapsulation to keep as much details as possible confined to the internals of the module. Strangely enough, as an industry we seem to have a hard time learning the lessons from the lower layers where we over time learned the rules to the layers above.
 
-Java was developed the early 90's as a state of the art language based on Object Oriented concepts. It did apply the rules of modularity on the method and class level and to pioneered with providing a higher level module with their concept of _packages_. However, our software industry did their utmost to ignore this concept, helped by the fact that it did have some real shortcomings.
+Java was developed the early 90's as a state of the art language based on Object Oriented concepts. It did apply the rules of modularity on the method and class level and pioneered with providing a higher level module with their concept of _packages_. However, our software industry did their utmost to ignore this concept, helped by the fact that it did have some real shortcomings.
 
 The key shortcoming was that it was hard to keep classes private since they required public visibility when they crossed the package boundary. This collided with the granularity of the package, in general you needed to break an application in many different packages to stay sane as a developer; with the consequence that a lot of private code was forced to become public.
 
@@ -13,7 +14,7 @@ Java did provide a higher level module: the JAR. However, this was a concept out
 
 In search for a model that would allow the management of hundreds of thousands of devices running Java the OSGi decided to leverage the JAR but turn it in to a proper module by adding encapsulation. Since in modularity a module tends to export/import entities that have a lower granularity (classes export/import methods, packages import/export classes), the OSGi solution was to export/import packages.
 
-Package imports/export was a much maligned choice because the maligners did not understand that some of the lessons learned from object oriented programming, where the class is the module, also applied to the other kinds of modules. The greatest problem with Object Oriented was that direct object references created highly coupled systems that were very brittle. Direct references aggregate many constraints that are only important for a specific implementation. This problem was not fully solved until we got Java _interfaces_. Java interfaces allow a user of that interface and an implementer of that interface to only couple on the relevant details necessary for the collaboration; any implementation details on either side of the interface are not constraining the other side in any way. 
+Package imports/exports was a much maligned choice because the maligners did not understand that some of the lessons learned from object oriented programming, where the class is the module, also applied to the other kinds of modules. The greatest problem with Object Oriented was that direct object references created highly coupled systems that were very brittle. Direct references aggregate many constraints that are only important for a specific implementation. This problem was not fully solved until we got Java _interfaces_. Java interfaces allow a user of that interface and an implementer of that interface to only couple on the relevant details necessary for the collaboration; any implementation details on either side of the interface are not constraining the other side in any way. 
 
 What the maligners do not see is that we face the exact same problem when we turn JAR into modules. The maven model only supports direct references between modules and they aggregate implementation constraints in the same way as object references did. The solution the OSGi came up with is to treat a package as a _specification_, just like a Java interface specifies the behavior of an implementation class. 
 
@@ -45,11 +46,11 @@ In a perfect OSGi world, packages are just a minor detail. Until then, we also n
 
 ## Components
 
-There is often a confusion of terminology, like, is a bundle a component? We are guilty of not always using the terminology consistent. However, in the past few years it has become very clear that the OSGi declarative services provides a programming model that should have been incorporated in the OSGi framework from the beginning. DS allows you to make any object _active_ with a simple annotation. This object can automatically be registered as a service. If there are dependencies on other services then you can easily specify those dependencies with an annotation on a set method.
+There is often a confusion of terminology, like, is a bundle a component? We are guilty of not always using the terminology consistent. However, in the past few years it has become very clear that the OSGi declarative services provide a programming model that should have been incorporated in the OSGi framework from the beginning. DS allows you to make any object _active_ with a simple annotation. This object can automatically be registered as a service. If there are dependencies on other services then you can easily specify those dependencies with an annotation on a set method.
 
 In DS, the implementation class is called the _component_ and in this document we follow this lead. Therefore, in general a bundle consists of a number of components. 
 
-# The Workspace
+## The Workspace
 
 The bndlib _workspace_ is an encapsulation of a set of cohesive _projects_, where a project exports zero or more bundles via _repositories_. A repository provides access to set of bundles exported by some means, likely from other workspaces. A repository can be on the local file system or a remote system like Maven central. 
 
@@ -60,3 +61,13 @@ Projects can depend on other projects in the workspace or import bundles from th
 A workspace is a single directory, just like a git workspace it encompasses all its sub directories. Though the name of the workspace directory is free to choose, it is highly recommended to use a naming strategy. In practice you will create many different workspaces and having a naming strategy will significantly simplify the handling of these workspaces.
 
 On the same root level in the workspace as the `cnf` directory, bndlib expects the projects. Yes, projects *must* reside in the root level. The reason is again, simplicity. We will later discuss how the bundle's symbolic name is derived from the project's directory name. Since projects can depend on each other, bndlib maintains a workspace repository of projects that it derives from the top level directories. Some people desperately want to use hierarchies of projects (often because that is how they used to work before). However, even people patching bndlib to make it hierarchical admit that the simple linear model is actually working quite well. The reason it works so well is that a workspace is not supposed to hold every single bundle that your organization produces. It is intended to be a cohesive set of between 10-20 up to a couple of hundred projects.
+
+## Configuration
+
+Bnd uses Java properties files (often with extension `.bnd`) for configuration purposes. Those usually contain [headers](/headers/) or [instructions](/instructions/). The files are read with [`java.util.Properties.load(Reader)`](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Properties.html#load(java.io.Reader)) with `UTF-8` encoding and therefore support either of the following key value separators
+
+1. `=` (default separator)
+2. `:` (separator also used in MANIFEST.MF files)
+3. `<white space character>`
+
+In general any `<white space>` characters directly preceding or succeeding the separator are stripped.

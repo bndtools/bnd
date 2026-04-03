@@ -10,10 +10,10 @@ import static org.osgi.framework.namespace.ExecutionEnvironmentNamespace.EXECUTI
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,6 +23,7 @@ import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
+import java.util.zip.ZipException;
 
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Constants;
@@ -76,24 +77,36 @@ import aQute.service.reporter.Reporter;
 public class ResourceBuilder {
 	public static final String						SYNTHETIC			= "bnd.synthetic";
 	private static final FileResourceCache			cache				= FileResourceCache.getInstance();
-	private final ResourceImpl						resource			= new ResourceImpl();
+	private final ResourceImpl						resource;
 	private final MultiMap<String, CapabilityImpl>	capabilities		= new MultiMap<>();
 	private final MultiMap<String, RequirementImpl>	requirements		= new MultiMap<>();
 	private final List<Resource>					supportingResources	= new ArrayList<>();
 	private ReporterAdapter							reporter			= new ReporterAdapter();
-
 	private boolean									built				= false;
+	private SupportingResource						parent				= null;
 
 	/**
 	 * Constructs a new `ResourceBuilder`.
 	 */
-	public ResourceBuilder() {}
+	public ResourceBuilder() {
+		this.resource = new ResourceImpl(null);
+	}
+
+	/**
+	 * Constructs a new `ResourceBuilder`.
+	 */
+	public ResourceBuilder(SupportingResource parent) {
+		this.resource = new ResourceImpl(parent);
+		this.parent = parent;
+
+	}
 
 	/**
 	 * Constructs a new `ResourceBuilder` with the given source resource.
 	 *
 	 * @param source the source resource to add to this builder
 	 */
+	@Deprecated
 	public ResourceBuilder(Resource source) {
 		this();
 		addResource(source);
@@ -262,7 +275,7 @@ public class ResourceBuilder {
 			throw new IllegalStateException("Resource already built");
 		built = true;
 
-		return resource.build(capabilities, requirements, supportingResources);
+		return resource.build(capabilities, requirements, supportingResources, parent);
 	}
 
 	/**
@@ -512,7 +525,6 @@ public class ResourceBuilder {
 			return null;
 
 		boolean optional = false;
-		List<String> options = new LinkedList<>();
 
 		RequirementBuilder rb = new RequirementBuilder(NativeNamespace.NATIVE_NAMESPACE);
 		FilterBuilder sb = new FilterBuilder();
@@ -1011,8 +1023,8 @@ public class ResourceBuilder {
 
 		try (Jar jar = new Jar(file)) {
 			ResourceBuilder rb = new ResourceBuilder();
-			boolean hasIdentity = rb.addJar(jar);
 
+			boolean hasIdentity = rb.addJar(jar);
 			String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
 
 			rb.addContentCapability(uri,
@@ -1023,7 +1035,21 @@ public class ResourceBuilder {
 				file.length(), mime);
 
 			return rb.build();
-		} catch (Exception rt) {
+		} catch (ZipException rt) {
+			// can happen if the file is not a JAR file (e.g. a dynamic libray,
+			// .so, .dylib)
+			ResourceBuilder rb = new ResourceBuilder();
+			// placeholder for "any file"
+			String mime = "application/octet-stream";
+			rb.addContentCapability(uri,
+				new DeferredComparableValue<String>(String.class,
+					SupplierWithException.asSupplier(() -> SHA256.digest(file)
+						.asHex()),
+					file.hashCode()),
+				file.length(), mime);
+			return rb.build();
+		}
+		catch (Exception rt) {
 			throw new IllegalArgumentException("illegal format " + file.getAbsolutePath(), rt);
 		}
 	}
@@ -1075,16 +1101,17 @@ public class ResourceBuilder {
 		int base = ees.first()
 			.getRelease();
 
-		addSupportingResource(buildSupportingResource(jpms, bsn, version, base));
+		addSupportingResource(buildSupportingResource(jpms, bsn, version, base, manifest, resource));
 
 		for (int release : jpms.getVersions()) {
-			SupportingResource build = buildSupportingResource(jpms, bsn, version, release);
+			SupportingResource build = buildSupportingResource(jpms, bsn, version, release, manifest, resource);
 			addSupportingResource(build);
 		}
 	}
 
-	static SupportingResource buildSupportingResource(JPMSModule jpms, String bsn, Version version, int release) {
-		ResourceBuilder builder = new ResourceBuilder();
+	static SupportingResource buildSupportingResource(JPMSModule jpms, String bsn, Version version, int release,
+		Domain manifest, ResourceImpl parent) {
+		ResourceBuilder builder = new ResourceBuilder(parent);
 		Domain m = Domain.domain(jpms.getManifest(release));
 
 		CapabilityBuilder cb = new CapabilityBuilder(MultiReleaseNamespace.MULTI_RELEASE_NAMESPACE);
@@ -1098,8 +1125,10 @@ public class ResourceBuilder {
 		id.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, SYNTHETIC);
 		builder.addCapability(id);
 
-		builder.addImportPackages(m.getImportPackage());
-		builder.addRequireCapabilities(m.getRequireCapability());
+		builder.addImportPackages(m.getImportPackage()
+			.removeAll(manifest.getImportPackage()));
+		builder.addRequireCapabilities(m.getRequireCapability()
+			.removeAll(manifest.getRequireCapability()));
 		builder.requirements.remove(EXECUTION_ENVIRONMENT_NAMESPACE);
 
 		RequirementBuilder rqb = new RequirementBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
@@ -1120,7 +1149,22 @@ public class ResourceBuilder {
 		rqb.addFilter(fb);
 		builder.addRequirement(rqb);
 
+		builder.addSyntheticContentCapability("urn:osgi-bnd-mrj:" + bsn + ":" + version + ":" + release);
 		return builder.build();
+	}
+
+	/*
+	 * Pass a urn that is unique for this resource.
+	 */
+	private void addSyntheticContentCapability(String urn) {
+		try {
+			URI uri = URI.create(urn);
+			String sha = SHA256.digest(urn.getBytes(StandardCharsets.UTF_8))
+				.asHex();
+			addContentCapability(uri, sha, 0, "application/octetstream");
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	public boolean addManifest(Manifest m) {

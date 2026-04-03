@@ -1,9 +1,30 @@
 ---
-layout: default
-class: Header
+layout: bnd
 title: Test-Cases CLASS ( ',' CLASS ) *
-summary: Header to automatically execute tests in the bnd JUnit tester 
+class: Header
+summary: |
+   Header to automatically execute tests in the bnd JUnit tester
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Test-Cases: com.foo.bar.MyTest`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/test_cases.md --><br /><br />
+
+# Test-Cases
+
+The `Test-Cases` header specifies one or more test classes to be automatically executed by the bnd JUnit tester. This header is used to configure which tests should run when the bundle is tested in an OSGi environment.
+
+Example:
+
+```
+Test-Cases: com.example.MyTest, com.example.AnotherTest
+```
+
+This header is typically set by build tooling or annotations and is required for automatic test execution with bnd's JUnit integration.
 
 
 	private void checkForTesting(Project project, Properties properties) throws Exception {
@@ -153,4 +174,7 @@ summary: Header to automatically execute tests in the bnd JUnit tester
 			catch (IOException e) {
 				// ignore
 			}
-	
+
+
+<hr />
+TODO Needs review - AI Generated content

@@ -71,11 +71,12 @@ public class MethodParametersAttribute implements Attribute {
 		static MethodParameter read(DataInput in, ConstantPool constant_pool) throws IOException {
 			int name_index = in.readUnsignedShort();
 			int access_flags = in.readUnsignedShort();
-			return new MethodParameter(constant_pool.utf8(name_index), access_flags);
+			String name = (name_index == 0) ? null : constant_pool.utf8(name_index);
+			return new MethodParameter(name, access_flags);
 		}
 
 		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
-			int name_index = constant_pool.utf8Info(name);
+			int name_index = (name == null) ? 0 : constant_pool.utf8Info(name);
 			out.writeShort(name_index);
 			out.writeShort(access_flags);
 		}

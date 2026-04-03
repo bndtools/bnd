@@ -5,10 +5,6 @@
 import aQute.bnd.osgi.About
 import aQute.lib.io.IO
 
-plugins {
-	id "org.gradle.test-retry" apply false
-}
-
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	ext.jpmsOptions = [
 		"--add-opens=java.base/java.lang=ALL-UNNAMED",
@@ -49,9 +45,6 @@ subprojects {
 				"GuardedBy:mf:\"Guarded By:\""
 			]
 			options.noTimestamp = true
-		}
-		if (isCI) {
-			pluginManager.apply("org.gradle.test-retry")
 		}
 		tasks.named("test") {
 			useJUnitPlatform()
@@ -124,12 +117,24 @@ subprojects {
 				}
 			}).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testFolders")
 			systemProperty("org.slf4j.simpleLogger.defaultLogLevel", gradle.getStartParameter().getLogLevel().name())
+
+			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_24)){
+				systemProperty('jdk.xml.totalEntitySizeLimit', '0')
+				systemProperty('jdk.xml.maxGeneralEntitySizeLimit', '0')
+				systemProperty('jdk.xml.entityExpansionLimit', '0')
+			}
+
 			if (System.getProperty("maven.repo.local")) {
 				systemProperty("maven.repo.local", IO.getFile(gradle.getStartParameter().getCurrentDir(), System.getProperty("maven.repo.local")))
 			}
-			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
-				systemProperty("java.security.manager", "allow")
+			
+			// Forward all bnd.* system properties to test JVM
+			System.properties.each { key, value ->
+				if (key.startsWith("bnd.")) {
+					systemProperty(key, value)
+				}
 			}
+			
 		}
 	}
 }

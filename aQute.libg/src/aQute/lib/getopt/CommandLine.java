@@ -69,8 +69,10 @@ public class CommandLine {
 		if (cmd.equals("help")) {
 			StringBuilder sb = new StringBuilder();
 			Formatter f = new Formatter(sb);
-			if (input.isEmpty())
+			if (input.isEmpty()) {
 				help(f, target);
+				f.format("More help at: https://bnd.bndtools.org/chapters/400-commands.html");
+			}
 			else {
 				for (String s : input) {
 					help(f, target, s);
@@ -184,41 +186,100 @@ public class CommandLine {
 
 		Map<String, Method> commands = getCommands(target);
 		for (String command : commands.keySet()) {
-			Class<? extends Options> specification = (Class<? extends Options>) commands.get(command)
-				.getParameterTypes()[0];
-			Map<String, Method> options = getOptions(specification);
-			Arguments patterns = specification.getAnnotation(Arguments.class);
-
+			Method method = commands.get(command);
 			f.h2(command);
 
-			Description descr = specification.getAnnotation(Description.class);
+			Class<? extends Options> specification = (Class<? extends Options>) method.getParameterTypes()[0];
+			Description descr = method.getAnnotation(Description.class);
+
 			if (descr != null) {
 				f.format("%s%n%n", descr.value());
 			}
 
-			f.h3("Synopsis:");
-			f.code(getSynopsis(command, options, patterns));
-
-			if (!options.isEmpty()) {
-				f.h3("Options:");
-				for (Entry<String, Method> entry : options.entrySet()) {
-					Option option = getOption(entry.getKey(), entry.getValue());
-
-					f.inlineCode("%s -%s --%s %s%s", option.required ? " " : "[", //
-						option.shortcut, //
-						option.name, option.paramType, //
-						option.required ? " " : "]");
-
-					if (option.description != null) {
-						f.format("%s", option.description);
-						f.endP();
-					}
-
-				}
-				f.format("%n");
-			}
+			generateDocumentationForCommand(f, command, method, 0);
 		}
 		f.flush();
+	}
+
+	public void generateDocumentationForCommand(MarkdownFormatter f, String command, Method method, int level) {
+
+		Class<? extends Options> specification = (Class<? extends Options>) method.getParameterTypes()[0];
+		Map<String, Method> options = getOptions(specification);
+		Arguments patterns = specification.getAnnotation(Arguments.class);
+
+		f.h(3 + level, "Synopsis:");
+		f.code(getSynopsis(command, options, patterns));
+
+		if (!options.isEmpty()) {
+			f.h(4 + level, "Options:");
+			for (Entry<String, Method> entry : options.entrySet()) {
+				Option option = getOption(entry.getKey(), entry.getValue());
+
+				f.format("- ");
+				f.inlineCode("%s -%s --%s %s%s", option.required ? " " : "[", //
+					option.shortcut, //
+					option.name, option.paramType, //
+					option.required ? " " : "]");
+
+				if (option.description != null) {
+					f.format(" %s", option.description);
+				}
+				f.format("%n");
+
+			}
+			f.format("%n");
+
+		}
+
+		// sub-commands
+		SubCommands subCmds = method.getAnnotation(SubCommands.class);
+		if (subCmds != null) {
+			Map<String, Method> subCommands = getCommands(subCmds.value());
+			if (!subCommands.isEmpty()) {
+
+				f.h(2 + level, "Available sub-commands");
+
+				for (Entry<String, Method> e : subCommands.entrySet()) {
+					if (e.getValue()
+						.getName()
+						.startsWith("__"))
+						continue;
+
+					Description d = e.getValue()
+						.getAnnotation(Description.class);
+					String desc = " ";
+					if (d != null)
+						desc = d.value();
+
+					f.format("-  `%s` - %s %n", e.getKey(), desc);
+				}
+				f.format("%n");
+
+				for (Entry<String, Method> e : subCommands.entrySet()) {
+					Method submethod = e.getValue();
+					if (submethod.getName()
+						.startsWith("__"))
+						continue;
+
+					String subcommand = submethod.getName()
+						.substring(1);
+
+					f.h(3 + level, subcommand);
+
+					Class<? extends Options> specificationSub = (Class<? extends Options>) submethod
+						.getParameterTypes()[0];
+					Description descr = specificationSub.getAnnotation(Description.class);
+
+					if (descr != null) {
+						f.format("%s%n%n", descr.value());
+					}
+
+					generateDocumentationForCommand(f, subcommand, submethod, level + 1);
+				}
+
+			}
+
+		}
 	}
 
 	private String help(Object target, String cmd, Class<? extends Options> type) throws Exception {
@@ -442,6 +503,7 @@ public class CommandLine {
 		f.format(getSynopsis(cmd, options, patterns));
 
 		help(f, specification, "OPTIONS");
+
 	}
 
 	private void help(Formatter f, Class<? extends Options> specification, String title) {
@@ -513,7 +575,7 @@ public class CommandLine {
 	/**
 	 * Show all commands in a target
 	 */
-	public void help(Formatter f, Object target) throws Exception {
+	public void help(Formatter f, Object target) {
 		f.format("%n");
 		Description descr = target.getClass()
 			.getAnnotation(Description.class);
@@ -559,6 +621,13 @@ public class CommandLine {
 		else {
 			Class<? extends Options> options = (Class<? extends Options>) m.getParameterTypes()[0];
 			help(f, target, cmd, options);
+
+			SubCommands subCmds = m.getAnnotation(SubCommands.class);
+			if (subCmds != null) {
+				help(f, subCmds.value());
+			}
+
+			f.format("More help at: https://bnd.bndtools.org/commands/%s.html", cmd);
 		}
 	}
 
@@ -571,7 +640,9 @@ public class CommandLine {
 	public Map<String, Method> getCommands(Object target) {
 		Map<String, Method> map = new TreeMap<>();
 
-		for (Method m : target.getClass()
+		Class<? extends Object> targetClass = target instanceof Class clazz0 ? clazz0 : target.getClass();
+
+		for (Method m : targetClass
 			.getMethods()) {
 
 			if (m.getParameterTypes().length == 1 && m.getName()
@@ -645,4 +716,6 @@ public class CommandLine {
 			return execute(target, cmd, arguments);
 		}
 	}
+
+
 }

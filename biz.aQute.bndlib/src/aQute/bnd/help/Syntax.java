@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.help.instructions.BuilderInstructions;
 import aQute.bnd.help.instructions.LauncherInstructions;
 import aQute.bnd.help.instructions.ResolutionInstructions;
@@ -33,6 +34,7 @@ public class Syntax implements Constants {
 	final Pattern							pattern;
 	final String							values;
 	final Syntax[]							children;
+	final String							helpurl;
 
 	static Syntax							version					= new Syntax(VERSION_ATTRIBUTE,
 		"A version range to select the version of an export definition. The default value is 0.0.0.",
@@ -56,10 +58,11 @@ public class Syntax implements Constants {
 					+ "among this. The files in this directory must be fully versioned",
 				"~/.bnd/biz.aQute.bnd-2.2.0.jar", null, null),
 			new Syntax("settings.json",
-				"Contains the settings used by bnd in json format. These settings are maintained by "
-					+ "bnd command line (bnd help settings). These settings can be used through macros "
-					+ "and can provide passwords, user ids, and platform specific settings. Names starting with"
-					+ "a dot (.) are considered protected",
+				"""
+					Contains the settings used by bnd in json format. These settings are maintained by \
+					bnd command line (bnd help settings). These settings can be used through macros \
+					and can provide passwords, user ids, and platform specific settings. Names starting with\
+					a dot (.) are considered protected""",
 				"{\"id\":\"30...001\",\"map\":{\".github.secret\":\"xxxxxx\",\"github.user\":\"minime\","
 					+ "\"email\":\"Peter.Kriens@aQute.biz\"},\"secret\":\"308...CC56\"}",
 				null, null, new Syntax("email", "The user's email address", null, null, null),
@@ -135,6 +138,11 @@ public class Syntax implements Constants {
 			BUNDLE_ICON + ": /icons/bnd.png;size=64", "/icons/bundle.png", Verifier.URLPATTERN,
 			new Syntax("size", "Icons size in pixels, e.g. 64.", "size=64", "16,32,48,64,128", Verifier.NUMBERPATTERN)),
 
+		new Syntax(BND_LASTMODIFIED,
+			"Timestamp from bnd, aggregated last modified time of its resources. Will automatically set by bnd.", null,
+			null,
+			null),
+
 		new Syntax(BUNDLE_LICENSE, "The " + BUNDLE_LICENSE
 			+ " header provides an optional machine readable form of license information. The purpose of this header is to automate some of the license processing required by many organizations.",
 			BUNDLE_LICENSE + ": http://www.opensource.org/licenses/jabberpl.php",
@@ -200,6 +208,8 @@ public class Syntax implements Constants {
 
 		new Syntax(COMPRESSION, "Set the compression for writing JARs. Default is deflate", COMPRESSION + "=store",
 			"deflate,store", Pattern.compile("deflate|store")),
+
+		new Syntax(CREATED_BY, "Java version used in build. Will be automatically set by bnd.", null, null, null),
 
 		new Syntax(DYNAMICIMPORT_PACKAGE, "The " + DYNAMICIMPORT_PACKAGE
 			+ " header contains a comma-separated list of package names that should be dynamically imported when needed.",
@@ -269,12 +279,12 @@ public class Syntax implements Constants {
 
 			), version, bundle_symbolic_name, bundle_version),
 
-		new Syntax(LIBRARY, "The " + LIBRARY
-			+ " instruction includes a library. A library is included in a bundle in a repository. "
-			+ "It is identified by a capability, a bundle can contain multiple libraries. When used in a "
-			+ "workspace, it will include the `workspace.bnd` file from the library by default. For a project, "
-			+ "this is `project.bnd`. The `include` attribute can identify a file in the library. Libraries are "
-			+ "versioned independently from the bundle. The library can contain additional files, also binary.",
+		new Syntax(LIBRARY,
+			"The " + LIBRARY + " instruction includes a library. A library is included in a bundle in a repository. "
+				+ "It is identified by a capability, a bundle can contain multiple libraries. When used in a "
+				+ "workspace, it will include the `workspace.bnd` file from the library by default. For a project, "
+				+ "this is `project.bnd`. The `include` attribute can identify a file in the library. Libraries are "
+				+ "versioned independently from the bundle. The library can contain additional files, also binary.",
 			LIBRARY + ": foo;version=1.2.3", null, null),
 		new Syntax(REQUIRE_BUNDLE,
 			"The " + REQUIRE_BUNDLE + " header specifies the required exports from another bundle.",
@@ -345,9 +355,16 @@ public class Syntax implements Constants {
 				null, null, null)),
 		new Syntax(BUILDPATH,
 			"Provides the class path for building the jar. The entries are references to the repository.",
-			BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME, path_version),
+			BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME,
+			"https://bnd.bndtools.org/instructions/buildpath.html", path_version),
 		new Syntax(BUILDREPO, "After building a JAR, release the JAR to the given repositories.", BUILDREPO + "=Local",
 			null, null),
+		new Syntax(BUILDTOOL, "A specification for the bnd CLI to install a build tool, like gradle, in the workspace",
+			"""
+				-buildtool \\
+				        gradle; version=7.3.0; \\
+				        bnd_version = 6.1.0
+				        bnd_snapshot=https://bndtools.jfrog.io/bndtools/libs-snapshot-local""", null, null),
 		new Syntax(BUILDERIGNORE,
 			"List of project-relative directories to be ignored by the builder. This is processed by the Bndtools builder in Eclipse and the Bnd Gradle plugin for workspace model builds.",
 			BUILDERIGNORE + "=${if;${driver;gradle};bin,bin_test,generated;build}", null, null),
@@ -368,10 +385,10 @@ public class Syntax implements Constants {
 			CONTRACT + "!Servlet,*", null, Verifier.WILDCARDNAMEPATTERN),
 		new Syntax(CONSUMER_POLICY,
 			"Specify the default version bump policy for a consumer when a binary incompatible change is detected.",
-			CONSUMER_POLICY + "${range;[==,+)}", null, null),
+			CONSUMER_POLICY + ": ${range;[==,+)}", null, null),
 		new Syntax(PROVIDER_POLICY,
 			"Specify the default version bump policy for a provider when a binary incompatible change is detected.",
-			PROVIDER_POLICY + "${range;[==,=+)}", null, null),
+			PROVIDER_POLICY + ": ${range;[==,=+)}", null, null),
 
 		new Syntax(CDIANNOTATIONS, "The " + CDIANNOTATIONS
 			+ " instruction tells bnd which bundle classes, if any, to search for OSGI CDI Integration (or plain CDI) annotation.",
@@ -393,8 +410,19 @@ public class Syntax implements Constants {
 			"List of project names that this project directly depends on. These projects are always build ahead of this project.",
 			DEPENDSON + "=org.acme.cm", "${projects}", null),
 
+		new Syntax(DEPLOY,
+			"Deploy the current project to a repository through Deploy plugins (e.g. MavenDeploy plugin)",
+			DEPLOY + "=mavenrepo", "${repos}", null),
+
 		new Syntax(DEPLOYREPO, "Specifies to which repo the project should be deployed.", DEPLOYREPO + "=cnf",
 			"${repos}", null),
+
+		new Syntax(DEFINE_CONTRACT, "Define a contract when one cannot be added to the buildpath. ", """
+			-define-contract:\\
+			  osgi.contract;\\
+			    osgi.contract=JavaServlet;\\
+			    uses:="javax.servlet,javax.servlet.annotation,javax.servlet.descriptor,javax.servlet.http";\\
+			    version:Version="3.0\"""", null, null),
 
 		new Syntax(DIFFIGNORE, "Manifest header names and resource paths to ignore during baseline comparison.",
 			DIFFIGNORE + "=Bundle-Version", null, null),
@@ -445,6 +473,10 @@ public class Syntax implements Constants {
 		new Syntax(EXPORT, "The " + EXPORT + " instruction turns a bndrun file into its deployable format.",
 			EXPORT + ": launcher.jar", "FILE ( ';' PARAMETER )* ( ',' FILE ( ';' PARAMETER )* )*", null),
 
+		new Syntax(EXPORTREPORT,
+			"Configure a list of reports to be exported to automate the documentation of projects by the build tool.",
+			"-exportreport: metadata.json", null, null),
+
 		new Syntax(METATYPE_ANNOTATIONS, "The " + METATYPE_ANNOTATIONS
 			+ " instruction tells bnd which bundle classes, if any, to search for Metatype annotations. bnd will then process those classes into Metatype XML descriptors.",
 			METATYPE_ANNOTATIONS + ": *", null, Verifier.FQNPATTERN),
@@ -484,21 +516,27 @@ public class Syntax implements Constants {
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(FIXUPMESSAGES,
 			"Rearrange and/or replace errors and warnings. Errors that should be ignore or be warnings (and vice versa for warnings) can be moved or rewritten by specifying a globbing pattern for the message.",
-			FIXUPMESSAGES + "='Version mismatch';replace:='************* ${@}';restrict:=error", null, null),
+			FIXUPMESSAGES + ": 'Version mismatch';replace:='************* ${@}';restrict:=error", null, null),
 		new Syntax(GESTALT, "provides access to the gestalt properties that describe the environment",
 			GESTALT + "=interactive",
 			"(" + GESTALT_INTERACTIVE + "|" + GESTALT_BATCH + "|" + GESTALT_CI + "|" + GESTALT_OFFLINE + "|"
 				+ GESTALT_SHELL + ")",
 			null),
+		new Syntax(GENERATE, "Generate source code before the compiler is called.", """
+			-generate:   \\
+			        gen/**.java; \\\s
+			            output='src-gen/' ; \\\s
+			            generate='javagen -o src-gen gen/'""", null, null),
 		new Syntax(GROUPID, "Specifies the Maven Group ID to be used for bundles", GROUPID + "=com.foo.bar", null,
 			null),
 		new Syntax(INCLUDE,
 			"Include files. If an entry starts with '-', it does not have to exist. If it starts with '~', it must not overwrite any existing properties.",
 			INCLUDE + ": -${java.user}/.bnd", null, null),
 		new Syntax(INVALIDFILENAMES,
-			"Specify a regular expressions to match against file or directory names. This is the segment, not the whole path."
-				+ " The intention is to provide a check for files and directories that cannot be used on Windows. However, it can also be used "
-				+ "on other platforms. You can specify the ${@} macro to refer to the default regular expressions used for this.",
+			"""
+				Specify a regular expressions to match against file or directory names. This is the segment, not the whole path.\
+				 The intention is to provide a check for files and directories that cannot be used on Windows. However, it can also be used \
+				on other platforms. You can specify the ${@} macro to refer to the default regular expressions used for this.""",
 			INVALIDFILENAMES + ":" + Verifier.ReservedFileNames, null, null),
 		new Syntax(INCLUDEPACKAGE, "Include a number of packages from the class path.",
 			INCLUDEPACKAGE + ": !com.foo.bar, com.foo.* ", null, Verifier.WILDCARDNAMEPATTERN),
@@ -506,9 +544,9 @@ public class Syntax implements Constants {
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
 			INCLUDERESOURCE + ": lib/=jar/, {preprocess.txt}, license.txt;literal:='ASL 2.0, -doesnotexit.txt'", null,
 			null),
-		new Syntax(INCLUDE_RESOURCE,
+		new Syntax(INCLUDERESOURCE,
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
-			INCLUDE_RESOURCE + ": lib/=jar/, {preprocess.txt}, 'literal';literal;=true,", null, null),
+			INCLUDERESOURCE + ": lib/=jar/, {preprocess.txt}, 'literal';literal;=true,", null, null),
 		new Syntax(INIT, "Executes macros while initializing the project for building", INIT + ": ${my_macro} ", null,
 			null),
 		new Syntax(JAVAAGENT, "Specify if classpath jars with Premain-Class headers are to be used as java agents.",
@@ -520,12 +558,29 @@ public class Syntax implements Constants {
 			JAVAC_PROFILE + ": compact1", null, null),
 		new Syntax(JAVAC_TARGET, "Sets the Java target compatibility version.", JAVAC_TARGET + ": 1.8", null, null),
 
+		new Syntax(JPMS_MODULE_INFO, "Used to generate the module-info.class",
+			"-jpms-module-info: foo.module;version=5.4.1; access=\"OPEN,SYNTHETIC\"", null, null),
+		new Syntax(JPMS_MODULE_INFO_OPTIONS, "Used to generate the module-info.class",
+			"-jpms-module-info-options: java.enterprise;transitive=\"true\"", null, null),
+		new Syntax(JPMS_MULTI_RELEASE, "Enables generating manifests and module infos for multi release JARs.",
+			"-jpms-multi-release: true", "true,false", Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(LAUNCHER, "Options for the runtime launcher", "-launcher manage = all", null, null),
+
 		new Syntax(MAKE,
 			"Set patterns for make plugins. These patterns are used to find a plugin that can make a resource that can not be found.",
 			MAKE + ": (*).jar;type=bnd; recipe=\"bnd/$1.bnd\"", null, null,
 			new Syntax("type", "Type name for plugin.", "type=bnd", "bnd", null),
 			new Syntax("recipe", "Recipe for the plugin, can use back references.", "recipe=\"bnd/$1.bnd\"", "bnd",
 				null)),
+
+		new Syntax(MANIFEST_NAME,
+			"Set the resource path to the manifest, for certain standards the manifest has a different name.", null,
+			null, null),
+
+		new Syntax(MAVEN_DEPENDENCIES,
+			"Configure maven dependency information for the generated pom. Related to -pom instruction.", null, null,
+			null),
 
 		new Syntax(MAVEN_RELEASE, "Set the Maven release options for the Maven Bnd Repository.",
 			MAVEN_RELEASE + ": local", "(local|remote)", null),
@@ -563,11 +618,21 @@ public class Syntax implements Constants {
 		new Syntax(NOCLASSFORNAME, "Do not calculate " + IMPORT_PACKAGE
 			+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
 			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOPROXYINTERFACES,
+			"Do not calculate " + IMPORT_PACKAGE
+				+ " references for 'Proxy.newProxyInstance' usage found in method bodies during class processing.",
+			NOPROXYINTERFACES + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NOIMPORTJAVA, "Do not calculate " + IMPORT_PACKAGE + " references for java.* packages.",
 			NOIMPORTJAVA + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOSUBSTITUTION,
+			"Setting this to true disables package substitution globally (default is false). That means, that bnd does not calculate "
+				+ IMPORT_PACKAGE + " references for packages exported by the current bundle.",
+			NOSUBSTITUTION + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
 			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOPARALLEL, "Prevent Gradle tasks in the same category from executing in parallel.",
+			NOPARALLEL + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NAMESECTION,
 			"Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages.",
 			NAMESECTION + "=*;baz=true, abc/def/bar/X.class;bar=3", null, null),
@@ -576,7 +641,9 @@ public class Syntax implements Constants {
 			"If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + \".jar\".",
 			OUTPUTMASK + "=my_file.zip", null, null),
 		new Syntax(PACKAGEINFOTYPE, "Sets the different types of package info.", PACKAGEINFOTYPE + "=osgi", null, null),
-		new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right.", PEDANTIC + "=true",
+		new Syntax(PEDANTIC,
+			"Warn about things that are not really wrong but still not right. Note: Currently a change to this instruction requires a restart of Eclipse.",
+			PEDANTIC + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(PLUGIN, "Define the plugins.",
@@ -585,6 +652,9 @@ public class Syntax implements Constants {
 			PLUGINPATH + "=${workspace}/cnf/cache/plugins-2.2.0.jar", null, null,
 			new Syntax(PLUGINPATH_URL_ATTR, "Specify a URL to download this file from if it does not exist",
 				"url=http://example.com/download/plugins-2.2.0.jar", null, null)),
+		new Syntax(PREPARE,
+			"Execute a number of shell commands before every build (e.g. generation of CSS files from a `less` or `sccs` specification).",
+			null, null, null),
 		new Syntax(PREPROCESSMATCHERS, "Specify which files can be preprocessed.",
 			PREPROCESSMATCHERS + "=!OSGI-INF/*,* ", null, null),
 
@@ -592,6 +662,9 @@ public class Syntax implements Constants {
 			SERVICE_COMPONENT + "=com.acme.Foo?;activate='start'", null, null),
 
 		new Syntax(POM, "Generate a maven pom.", POM + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(PROFILE,
+			"Sets a prefix that is used when a variable is not found, it is then re-searched under \"[<[profile]>]<[key]>",
+			"-profile: \"[<[profile]>]<[key]>", null, null),
 
 		new Syntax(RELEASEREPO, "Specifies to which repo the project should be released.", RELEASEREPO + "=cnf",
 			"${repos}", null),
@@ -599,15 +672,29 @@ public class Syntax implements Constants {
 		new Syntax(REMOVEHEADERS, "Remove all headers that match the regular expressions.",
 			REMOVEHEADERS + "=FOO_.*,Proprietary", null, null),
 
+		new Syntax(REPORTCONFIG, "Configure a the content of report exported with the `-exportreport` instruction.",
+			"-exportreport: metadata.json;configName=blueprint", null, null),
+
 		new Syntax(REPRODUCIBLE, "Use a fixed timestamp for all jar entries.", REPRODUCIBLE + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(RESOLVEDEBUG,
+			"Display debugging information for a resolve operation to System.out. The values `1`, `2`, and `3` display progressively more debug information.",
+			"-resolvedebug: 1", "0,1,2,3", null),
 
 		new Syntax(RESOLVE_EFFECTIVE,
 			"Each requirement and capability has an effective or is effective=resolve. An effective of resolve is always processed by the resolver.",
 			RESOLVE_EFFECTIVE + "=resolve,active", "qname (',' qname )", null),
 
+		new Syntax(RESOLVE_EXCLUDESYSTEM,
+			"A property used by the resolver, if set to true (default) it excludes the system resource", null,
+			"true|false", null),
+
 		new Syntax(RESOLVE_PREFERENCES, "Override the default order and selection of repositories.",
 			RESOLVE_PREFERENCES + "=com.example.bundle.most.priority", "${packages}", null),
+
+		new Syntax(RESOLVE_REJECT, "Controls rejection of capabilities during resolving.",
+			"-resolve.reject foo;filter:='(foo=3)`", null, null),
 
 		new Syntax(RUNTIMEOUT, "Specifies the test execution timeout.", RUNTIMEOUT + "=10000", null, null),
 		new Syntax(REQUIRE_BND, "Require a specific version of bnd.", REQUIRE_BND + "=\"(version>=4.1)\"",
@@ -616,6 +703,16 @@ public class Syntax implements Constants {
 		new Syntax(RESOURCEONLY,
 			"Normally bnd warns when the JAR does not contain any classes, this option suppresses this warning.",
 			RESOURCEONLY + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(RUNFRAMEWORKRESTART, "Restart the framework in the same VM if the framework is stopped or updated. ",
+			"-runframeworkrestart: true", null, null),
+
+		new Syntax(STALECHECK, "Perform a stale check of files and directories before building a jar ", """
+			-stalecheck:   \\
+			        specs/**.md; \\\s
+			            newer='doc/**.doc' ; \\\s
+			            error='Markdown needs to be generated'""", null, null),
+
 		new Syntax(SAVEMANIFEST, "Write out the manifest to a separate file after it has been calculated.",
 			SAVEMANIFEST + "=file.txt", null, null),
 		new Syntax(SOURCES, "Include sources in the jar.", SOURCES + "=true", "true,false",
@@ -631,6 +728,7 @@ public class Syntax implements Constants {
 		new Syntax(TESTER_PLUGIN,
 			"It points to a class that must extend the aQute.bnd.build.ProjectTester class. This class is loaded in the bnd environment and not in the target environment. This ProjectTester plugin then gets a chance to configure the launcher as it sees fit. It can get properties from the project and set these in the Project Launcher so they can be picked up in the target environment.",
 			TESTER_PLUGIN + "= a.b.c.MyTester", null, Verifier.FQNPATTERN),
+		new Syntax(TOOL, "Bnd version used to build this bundle. Will be automatically set by bnd.", null, null, null),
 		new Syntax(SUB,
 			"Build a set of bnd files that use this bnd file as a basis. The list of bnd file can be specified with wildcards.",
 			SUB + "=com.acme.*.bnd", null, null),
@@ -703,7 +801,7 @@ public class Syntax implements Constants {
 			"When the bundle version’s qualifier equals 'SNAPSHOT' or ends with '-SNAPSHOT', the STRING value of the -snapshot instruction is substituted for 'SNAPSHOT'.",
 			SNAPSHOT + "=${tstamp}", null, null),
 		new Syntax(STANDALONE,
-			"Used in bndrun files. Disconnects the bndrun file from the workspace and defines its own Capabilities repositories.",
+			"Used in bndrun files. Disconnects the bndrun file from the workspace and defines its own Capabilities repositories. This is a merged instruction although be careful that the exact header must be set to treat a bndrun file as standalone.",
 			STANDALONE + "=index.html;name=..., ...", null, null),
 		new Syntax(STRICT, "If set to true, then extra verification is done.", STRICT + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
@@ -734,9 +832,15 @@ public class Syntax implements Constants {
 			WABLIB + "=lib/a.jar, lib/b.jar", null, null),
 		new Syntax(WORKINGSET, "Groups the workspace into different working sets.",
 			WORKINGSET + "=Implementations, Drivers", null, null),
+		new Syntax(WORKSPACE_TEMPLATES, "Define workspace template fragments for a new workspace.",
+			null, null, null),
 		new Syntax("-x-overwritestrategy",
 			"On windows we sometimes cannot delete a file because someone holds a lock in our or another process. So if we set the -overwritestrategy flag we use an avoiding strategy.",
-			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null)
+			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null),
+		new Syntax(METAINF_SERVICES, "Controls how META-INF/services files are processed.", METAINF_SERVICES + ": auto",
+			"(" + METAINF_SERVICES_STRATEGY_ANNOTATION + "|" + METAINF_SERVICES_STRATEGY_AUTO + "|"
+				+ METAINF_SERVICES_STRATEGY_NONE + ")",
+			Pattern.compile("auto|annotation|none"))
 	};
 
 	final static Map<Class<?>, Pattern>		BASE_PATTERNS			= Maps.ofEntries(
@@ -772,7 +876,10 @@ public class Syntax implements Constants {
 
 	private static Syntax[] create(Class<?> class1, Function<Method, String> naming, boolean instruction) {
 		List<Syntax> syntaxes = new ArrayList<>();
-		for (Method m : class1.getMethods()) {
+		// getDeclaredMethods() is important, to suppress inherited Object
+		// methods like
+		// toString, equals, hashCode
+		for (Method m : class1.getDeclaredMethods()) {
 
 			if (Modifier.isStatic(m.getModifiers()))
 				continue;
@@ -787,6 +894,7 @@ public class Syntax implements Constants {
 			String example = null;
 			Pattern pattern = null;
 			String values = null;
+			String helpurl = null;
 
 			if (ann != null) {
 				if (!ann.lead()
@@ -804,6 +912,11 @@ public class Syntax implements Constants {
 				if (!ann.pattern()
 					.isEmpty())
 					pattern = Pattern.compile(ann.pattern());
+
+				if (!ann.helpurl()
+					.isBlank()) {
+					helpurl = ann.helpurl();
+				}
 			}
 
 			Class<?> rtype = m.getReturnType();
@@ -831,16 +944,16 @@ public class Syntax implements Constants {
 				assert valueType instanceof Class : "The type of the value of a parameters must be a class, not a generic type";
 
 				Syntax[] clauses = create((Class<?>) valueType, Syntax::toProperty, false);
-				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl, clauses));
 			} else if (Iterable.class.isAssignableFrom(rtype)) {
 				// list
-				syntaxes.add(new Syntax(name, lead, example, values, pattern));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl));
 			} else if (rtype.isInterface()) {
 				// properties
 				Syntax[] clauses = create(rtype, Syntax::toProperty, false);
-				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl, clauses));
 			}
-			if (rtype.isEnum()) {
+			else if (rtype.isEnum()) {
 				Field[] enumConstants = rtype.getFields();
 				Syntax[] fields = new Syntax[enumConstants.length];
 
@@ -848,11 +961,11 @@ public class Syntax implements Constants {
 					Field e = enumConstants[i];
 					fields[i] = createEnumField(e);
 				}
-				Syntax syntax = new Syntax(name, lead, example, values, pattern, fields);
+				Syntax syntax = new Syntax(name, lead, example, values, pattern, helpurl, fields);
 				syntaxes.add(syntax);
 			} else {
 				// simple value
-				syntaxes.add(new Syntax(name, lead, example, values, pattern));
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, helpurl));
 			}
 
 		}
@@ -915,6 +1028,18 @@ public class Syntax implements Constants {
 		this.example = example;
 		this.values = values;
 		this.pattern = pattern;
+		this.helpurl = null;
+	}
+
+	public Syntax(String header, String lead, String example, String values, Pattern pattern, String helpUrl,
+		Syntax... children) {
+		this.header = header;
+		this.children = children;
+		this.lead = lead;
+		this.example = example;
+		this.values = values;
+		this.pattern = pattern;
+		this.helpurl = helpUrl;
 	}
 
 	public String getLead() {
@@ -942,6 +1067,10 @@ public class Syntax implements Constants {
 
 	public String getHeader() {
 		return header;
+	}
+
+	public String getHelpUrl() {
+		return this.helpurl;
 	}
 
 	@Override
@@ -972,4 +1101,45 @@ public class Syntax implements Constants {
 		return header + ":";
 	}
 
+	/**
+	 * helper to automatically construct a helpurl based on a heuristic. It
+	 * might now work in all cases. We then need to set the helpUrl explicitly
+	 * in Syntax class for cases where this heuristic does not work. But that
+	 * way we get at least lots some more bnd manual links which makes it
+	 * useful.
+	 */
+	public String autoHelpUrl() {
+
+		if (helpurl == null) {
+			// auto-detect / heuristig
+			if (header.startsWith("-")) {
+				// instruction most use dash (-) instead of underscore in
+				// filenames)
+				return "https://bnd.bndtools.org/instructions/" + normalizeFilename(header.substring(1)) + ".html";
+			}
+			else if (Attrs.isDirective(header)) {
+				// directive - have no url
+				return null;
+			} else {
+				// assume header (headers use underscore in filenames)
+				return "https://bnd.bndtools.org/heads/" + normalizeFilename(header) + ".html";
+			}
+		}
+
+		return helpurl;
+	}
+
+	public static String normalizeFilename(String filename) {
+		String ret = filename;
+		if (filename.startsWith(".")) {
+			ret = filename.substring(1);
+		}
+
+		return ret.toLowerCase()
+			.replace("-", "_");
+	}
+
+	public static boolean isInstruction(String key) {
+		return key.startsWith("-");
+	}
 }

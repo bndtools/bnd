@@ -1,6 +1,3 @@
-#-runfw: org.apache.felix.framework;version=5
-#-runee: JavaSE-1.8
-
 -runprovidedcapabilities: \${native_capability}
 
 -resolve.effective: active;skip:="osgi.service"

@@ -9,26 +9,32 @@
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
-    org.osgi.service.metatype.annotations,\
+	org.osgi.service.metatype.annotations,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg,\
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
-	slf4j.api;version=latest,\
+	slf4j.api;version='[1.7.25,2)',\
 	org.tukaani.xz;version=latest;maven-scope=provided
-
+	
 -testpath: \
-	biz.aQute.bnd.test;version=project,\
-	${junit},\
-	${mockito},\
-	biz.aQute.http.testservers;version=latest,\
-	slf4j.simple;version=latest
+        biz.aQute.bnd.test;version=project,\
+        ${junit},\
+        ${mockito},\
+        biz.aQute.http.testservers;version=latest,\
+        slf4j.simple;version=latest
+
+-runpath: \
+        slf4j.api;version='[1.7.25,2)',\
+        slf4j.simple;version=latest
 
 Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\
 	aQute.p2.api,\
+	aQute.p2.export;bnd-plugins=true,\
+	aQute.p2.provider,\
 	aQute.bnd.deployer.obr;bnd-plugins=true,\
 	aQute.bnd.deployer.repository;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.api,\
@@ -37,9 +43,9 @@ Export-Package: \
 	aQute.bnd.repository.maven.provider;bnd-plugins=true,\
 	aQute.bnd.repository.p2.provider;bnd-plugins=true,\
 	aQute.bnd.repository.maven.pom.provider;bnd-plugins=true,\
-	aQute.bnd.repository.osgi;bnd-plugins=true,  \
-	aQute.bnd.repository.fileset;bnd-plugins=true,  \
-	aQute.maven.*, \
+	aQute.bnd.repository.osgi;bnd-plugins=true,\
+	aQute.bnd.repository.fileset;bnd-plugins=true,\
+	aQute.maven.*
 
 -includepackage: \
 	aQute.p2.provider,\
@@ -54,8 +60,9 @@ Export-Package: \
 -builderignore: testresources, testdata
 
 -fixupmessages.tag: "Export aQute.maven.provider,* private references \\[aQute.lib.tag\\]"
--fixupmessages.getopts: "Export aQute.bnd.repository.maven.provider,* private references \\[aQute.lib.getopt\\]"
+-fixupmessages.lib: "Export aQute.bnd.repository.maven.provider,* private references \\[aQute.lib.collections, aQute.lib.getopt\\]"
 -fixupmessages.configurable: "Export aQute.bnd.repository.osgi,* private references \\[aQute.configurable\\]"
 
 -baseline: *
 -metatypeannotations: *
+Private-Package: aQute.bnd.repository.maven.util

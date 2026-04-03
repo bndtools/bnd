@@ -1,19 +1,16 @@
 ---
-layout: default
-title:    convert [options] <[from]> <[to]> 
-summary: Converter to different formats                                 
+layout: bnd
+title: convert
+summary: |
+   Converter to different formats
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   convert [options]  <from> <to>
 
-{{page.summary}}
-
-## Synopsis
-
-## Options
-
-    [ -m, --m2p ]              - Convert a manifest to a properties files
-    [ -x, --xml ]              - Save as xml
-
-## Examples
+#### Options: 
+- `[ -m --m2p ]` Convert a manifest to a properties files
+- `[ -x --xml ]` Save as xml
 

@@ -30,6 +30,7 @@ Import-Package: \
 
 -buildpath: \
     osgi.annotation,\
+    org.osgi.framework;version=1.10,\
     osgi.core,\
     org.osgi.service.component;version='[1.4,1.5)',\
     aQute.libg,\

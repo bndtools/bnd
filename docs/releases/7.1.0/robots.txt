@@ -1,0 +1,1 @@
+Sitemap: /releases/7.1.0/sitemap.xml

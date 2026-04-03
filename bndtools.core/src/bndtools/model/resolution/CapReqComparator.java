@@ -1,14 +1,14 @@
 package bndtools.model.resolution;
 
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.bndtools.core.ui.resource.R5LabelFormatter;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
+
+import aQute.bnd.osgi.resource.ResourceUtils;
 
 public class CapReqComparator implements Comparator<Object> {
 
@@ -71,41 +71,36 @@ public class CapReqComparator implements Comparator<Object> {
 		String versionAttribName = R5LabelFormatter.getVersionAttributeName(ns1);
 		if (versionAttribName == null)
 			return 0;
-		Version v1 = (Version) c1.getAttributes()
-			.get(versionAttribName);
-		if (v1 == null)
-			v1 = Version.emptyVersion;
-		Version v2 = (Version) c2.getAttributes()
-			.get(versionAttribName);
-		if (v2 == null)
-			v2 = Version.emptyVersion;
+
+		Version v1 = highestVersion(c1.getAttributes()
+			.get(versionAttribName));
+		Version v2 = highestVersion(c2.getAttributes()
+			.get(versionAttribName));
+
 		return v1.compareTo(v2);
 	}
 
-	private int compareReqToReq(Requirement r1, Requirement r2) {
-		// Compare namespaces
-		String ns1 = r1.getNamespace();
-		String ns2 = r2.getNamespace();
-		int nsDiff = ns1.compareTo(ns2);
-		if (nsDiff != 0)
-			return nsDiff;
+	private static Version highestVersion(Object attr) {
 
-		// Get the main attribute
-		Pattern filterPattern = R5LabelFormatter.getFilterPattern(ns1);
-		if (filterPattern == null)
-			return 0;
-		String filter1 = r1.getDirectives()
-			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		Matcher m1 = filterPattern.matcher(filter1);
-		String filter2 = r2.getDirectives()
-			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		Matcher m2 = filterPattern.matcher(filter2);
-		if (!m1.find() || !m2.find())
-			return 0;
-		String attrib1 = m1.group(1);
-		String attrib2 = m2.group(1);
-		if (attrib1 == null || attrib2 == null)
-			return 0;
-		return attrib1.compareTo(attrib2);
+		if (attr instanceof Version v) {
+			return v;
+		}
+
+		if (attr instanceof Collection<?> col) {
+			// e.g. namespace 'osgi.ee' can contain List<Version>
+			// see
+			// https://osgi.github.io/osgi/core/framework.namespaces.html#framework.namespaces-ee.namespace
+			// so we compare the highest versions
+			return col.stream()
+				.filter(Version.class::isInstance)
+				.map(Version.class::cast)
+				.max(Version::compareTo)
+				.orElse(Version.emptyVersion);
+		}
+		return Version.emptyVersion; // null or wrong type
+	}
+
+	private int compareReqToReq(Requirement r1, Requirement r2) {
+		return ResourceUtils.REQUIREMENT_COMPARATOR.compare(r1, r2);
 	}
 }

@@ -1,24 +1,25 @@
 ---
-layout: default
-title:  info [options] 
-summary: Show key project variables
+layout: bnd
+title: info
+summary: |
+   Show key project variables
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   info [options] 
 
-{{page.summary}}
+#### Options: 
+- `[ -b --buildpath ]` 
+- `[ -c --classpath ]` 
+- `[ -d --dependsOn ]` 
+- `[ -p --project <string> ]` 
+- `[ -r --runbundles ]` 
+- `[ -s --sourcepath ]` 
+- `[ -v --vmpath ]` 
 
-## Synopsis
-
-## Options
-
-	[ -b, --buildpath ]        - 
-	[ -c, --classpath ]        - 
-	[ -d, --dependsOn ]        - 
-	[ -p, --project <string> ] - 
-	[ -r, --runbundles ]       - 
-	[ -s, --sourcepath ]       - 
-	[ -v, --vmpath ]           - 
+<!-- Manual content from: ext/info.md --><br /><br />
 
 ## Examples
 

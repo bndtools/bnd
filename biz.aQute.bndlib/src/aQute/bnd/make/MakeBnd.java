@@ -12,6 +12,7 @@ import aQute.bnd.service.MakePlugin;
 
 public class MakeBnd implements MakePlugin, Constants {
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Resource make(Builder builder, String destination, Map<String, String> argumentsOnMake) throws Exception {
 		String type = argumentsOnMake.get("type");

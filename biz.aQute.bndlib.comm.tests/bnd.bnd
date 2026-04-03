@@ -21,4 +21,5 @@
 	org.apache.commons.codec;version=latest,\
 	com.google.guava;version='[19.0,20)',\
 	bcpkix;version=latest,\
-	bcprov;version=latest
+	bcprov;version=latest,\
+	bcutil;version=latest

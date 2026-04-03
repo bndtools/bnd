@@ -1,20 +1,22 @@
 ---
-layout: default
-title:   extract [options] ... 
-summary:  Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)
+layout: bnd
+title: extract
+summary: |
+   Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   extract [options]  ...
 
-{{page.summary}}
 
-## Synopsis
+#### Options: 
+- `[ -c --cdir <string> ]` Directory where to store
+- `[ -f --file <string> ]` Jar file (f option)
+- `[ -v --verbose ]` Verbose (v option)
 
-## Options
-
-    [ -c, --cdir <string> ]    - Directory where to store
-    [ -f, --file <string> ]    - Jar file (f option)
-    [ -v, --verbose ]          - Verbose (v option)
+<!-- Manual content from: ext/extract.md --><br /><br />
 
 ## Examples
 

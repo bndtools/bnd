@@ -1,9 +1,20 @@
 ---
-layout: default
-class: Processor
+layout: bnd
 title: -pom BOOLEAN | PROPERTIES
-summary: Generate a maven pom in the JAR
+class: Processor
+summary: |
+   Generate a maven pom in the JAR
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-pom=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/pom.md --><br /><br />
 
 The `-pom` instruction can generate a pom derived from the manifest and store it in the
 bundle. The groupId can be specified by the `groupid` key which defaults to the value of
@@ -19,6 +30,8 @@ The following properties are supported:
 |`artifactid`     |bundle symbolic name|The artifactId to use. Will default to bsn suffix if no groupid is set.|
 |`version`        |bundle version   |The version to use.                 |
 |`where`          |`META-INF/maven/<groupid>/<artifactid>/pom.xml`|The location of the pom.xml file. Will default to `pom.xml` if no groupid is set.|
+
+**Note:** When `-pom` is defined, then existing `META-INF/maven/` subfolders will be removed, before the `pom.xml` is generated. This might remove folders which existed previously e.g. by [unrolling jar](/instructions/includeresource.html#rolling) files.
 
 The `-pom` instruction can use any macro but the `${@bsn}` and `${@version}` macros
 refer to the current JAR being built. 
@@ -121,4 +134,3 @@ Generates the following pom in `META-INF/maven/pom.xml`:
                     </developer>
                 </developers>
     </project>
-

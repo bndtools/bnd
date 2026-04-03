@@ -64,7 +64,6 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Bundle-ClassPath") =~ /commons-lang-2\.6\.jar/
 		jartask_manifest.getValue("Gradle-Project-Prop") == "prop.project"
 		jartask_manifest.getValue("Gradle-Task-Prop") == "prop.task"
-		jartask_manifest.getValue("Gradle-Task-Project-Prop") == "prop.project"
 		jartask_manifest.getValue("Gradle-Missing-Prop") == "\${task.projectprop}"
 		jartask_manifest.getValue("Here") == testProjectDir.absolutePath.replace(File.separatorChar, (char)'/')
 		jartask_jar.getEntry("doubler/Doubler.class")
@@ -214,7 +213,6 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Bundle-ClassPath") =~ /commons-lang-2\.6\.jar/
 		jartask_manifest.getValue("Gradle-Project-Prop") == "prop.project"
 		jartask_manifest.getValue("Gradle-Task-Prop") == "prop.task"
-		jartask_manifest.getValue("Gradle-Task-Project-Prop") == "prop.project"
 		jartask_manifest.getValue("Gradle-Missing-Prop") == "\${task.projectprop}"
 		jartask_manifest.getValue("Here") == testProjectDir.absolutePath.replace(File.separatorChar, (char)'/')
 		jartask_jar.getEntry("doubler/Doubler.class")
@@ -321,8 +319,7 @@ class TestBundlePlugin extends Specification {
 		jartask_manifest.getValue("Project-Sourcepath")
 		jartask_manifest.getValue("Project-Buildpath")
 		jartask_manifest.getValue("Gradle-Project-Prop") == "prop.project"
-		jartask_manifest.getValue("Gradle-Task-Prop") == "prop.task"
-		jartask_manifest.getValue("Gradle-Task-Project-Prop") == "prop.project"
+		jartask_manifest.getValue("Gradle-Task-Prop") == "jar"
 		jartask_manifest.getValue("Gradle-Missing-Prop") == "\${task.projectprop}"
 		jartask_manifest.getValue("Here") == testProjectDir.absolutePath.replace(File.separatorChar, (char)'/')
 		jartask_manifest.getValue("Test-Cases") == "doubler.impl.DoublerImplOSGiTest"
@@ -408,5 +405,28 @@ class TestBundlePlugin extends Specification {
 		result.task(":bundle").outcome == UP_TO_DATE
 		result.task(":jar").outcome == UP_TO_DATE
 		result.task(":testOSGi").outcome == UP_TO_DATE
+	}
+
+	def "Bundle Extension added to Jar Task with Local Project Dependency receives jar file"() {
+		given:
+		String testProject = "builderplugin5"
+		File testProjectDir = new File(testResources, testProject).canonicalFile
+		assert testProjectDir.isDirectory()
+		File compileClasspath = new File(testProjectDir,"util/build/classes/java/main")
+		File bundleExtensionClasspath = new File(testProjectDir,"util/build/libs/util-1.7.8.jar")
+
+		when:
+		def result = TestHelper.getGradleRunner()
+				.withProjectDir(testProjectDir)
+				.withArguments("--parallel", "--stacktrace", "--debug", "--configuration-cache", "jarlibraryelements")
+				.withPluginClasspath()
+				.forwardOutput()
+				.build()
+
+		then:
+		result.task(":jar") == null // Jar tasks never run
+		result.task(":jarlibraryelements").outcome == SUCCESS
+		result.output =~ Pattern.quote("### compileClasspath: ${compileClasspath.absolutePath}")
+		result.output =~ Pattern.quote("### bundleExtensionClasspath: ${bundleExtensionClasspath.absolutePath}")
 	}
 }

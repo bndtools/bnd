@@ -1,38 +1,21 @@
 ---
-layout: default
-class: Builder
+layout: bnd
 title: -wablib FILE ( ',' FILE )*
-summary: Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.
+class: Builder
+summary: |
+   Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-	/**
-	 * Turn this normal bundle in a web and add any resources.
-	 *
-	 * @throws Exception
-	 */
-	private Jar doWab(Jar dot) throws Exception {
-		String wab = getProperty(WAB);
-		String wablib = getProperty(WABLIB);
-		if (wab == null && wablib == null)
-			return dot;
+- Example: `-wablib=lib/a.jar, lib/b.jar`
 
-		trace("wab %s %s", wab, wablib);
-		setBundleClasspath(append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
+- Pattern: `.*`
 
-		Set<String> paths = new HashSet<String>(dot.getResources().keySet());
+<!-- Manual content from: ext/wablib.md --><br /><br />
 
-		for (String path : paths) {
-			if (path.indexOf('/') > 0 && !Character.isUpperCase(path.charAt(0))) {
-				trace("wab: moving: %s", path);
-				dot.rename(path, "WEB-INF/classes/" + path);
-			}
-		}
+The `-wablib` instruction specifies additional libraries (JAR files) that should be included in a Web Archive Bundle (WAB) or WAR. These libraries are added to the `WEB-INF/lib` directory of the resulting archive, making them available to the web application at runtime.
 
-		Parameters clauses = parseHeader(getProperty(WABLIB));
-		for (String key : clauses.keySet()) {
-			File f = getFile(key);
-			addWabLib(dot, f);
-		}
-		doIncludeResource(dot, wab);
-		return dot;
-	}
+This instruction is useful when you need to package extra dependencies with your web bundle, ensuring that all required libraries are present in the deployed artifact.
+
+	

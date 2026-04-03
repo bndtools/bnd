@@ -72,7 +72,15 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false")
 	private boolean					continueOnError;
 
-	@Parameter
+	/**
+	 * The Maven coordinates of the base artifact in the format
+	 * {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}. If
+	 * set, takes precedence over {@link #base}.
+	 */
+	@Parameter(property = "bnd.baseline.base.coordinates")
+	private String					baseCoordinates;
+
+	@Parameter(required = false)
 	private Base					base;
 
 	@Parameter(required = false, property = "bnd.baseline.diffignores")
@@ -119,20 +127,21 @@ public class BaselineMojo extends AbstractMojo {
 				.isEmpty()) {
 
 				ArtifactResult artifactResult = locateBaseJar(aetherRepos);
-
-				baselineAction(artifact.getFile(), artifactResult.getArtifact()
-					.getFile());
-			} else {
-				if (failOnMissing) {
-					throw new MojoFailureException("Unable to locate a previous version of the artifact");
-				} else {
-					logger.warn("No previous version of {} could be found to baseline against", artifact);
+				if ( !artifactResult.isMissing() ) {
+					baselineAction(artifact.getFile(), artifactResult.getArtifact()
+						.getFile());
+					return;
 				}
 			}
 		} catch (RepositoryException re) {
-			throw new MojoFailureException("Unable to locate a previous version of the artifact", re);
+			// fall through
 		} catch (Exception e) {
 			throw new MojoExecutionException("An error occurred while calculating the baseline", e);
+		}
+		if (failOnMissing) {
+			throw new MojoFailureException("Unable to locate a previous version of the artifact");
+		} else {
+			logger.warn("No previous version of {} could be found to baseline against", artifact);
 		}
 	}
 
@@ -163,6 +172,9 @@ public class BaselineMojo extends AbstractMojo {
 	private void setupBase(Artifact artifact) {
 		if (base == null) {
 			base = new Base();
+		}
+		if (baseCoordinates != null && !baseCoordinates.isBlank()) {
+			base.setFromCoordinates(baseCoordinates);
 		}
 		if (base.getGroupId() == null || base.getGroupId()
 			.isEmpty()) {

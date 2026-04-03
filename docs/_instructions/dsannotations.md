@@ -1,16 +1,32 @@
 ---
-layout: default
-class: Builder
+layout: bnd
 title: -dsannotations SELECTORS
-summary: Selects the packages that need processing for standard OSGi DS annotations.
+class: Builder
+summary: |
+   Selects the packages that need processing for standard OSGi DS annotations.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-The `-dsannotations` instruction tells **bnd** which bundle classes, if any, to search for [Declarative Services (DS)](https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html) annotations. **bnd** will then process those classes into DS XML descriptors.
+- Example: `-dsannotations: *`
 
-The value of this instruction is a comma delimited list of fully qualified class names.
+- Pattern: `.*`
 
-The default value of this instruction is `*`, which means that by default **bnd** will process all bundle classes looking for DS annotations.
+<!-- Manual content from: ext/dsannotations.md --><br /><br />
 
-The behavior of DS annotation processing can be further configured using the [-dsannotations-options](dsannotations-options.html) instruction.
+The `-dsannotations` instruction tells bnd which classes in your bundle should be scanned for Declarative Services (DS) annotations. bnd will process these classes and generate the necessary DS XML descriptors automatically.
+
+You provide a comma-separated list of fully qualified class names or use `*` to process all classes. This makes it easy to enable DS annotation processing for your entire bundle or for specific classes only.
+
+You can further configure DS annotation processing using the `-dsannotations-options` instruction.
+
+## Component Class Requirements
+
+When bnd processes DS annotations, it validates that component classes meet the DS specification requirements. Starting with bnd 7.3.0, component classes must have either a public no-argument constructor or a public `@Activate`-annotated constructor. Inner classes must be declared as `static`.
+
+If validation fails, bnd will generate an error and stop the build. See [Component Class Requirements](/chapters/200-components.html#component-class-requirements) for detailed requirements and examples.
 
 [source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java)
+
+<hr />
+TODO Needs review - AI Generated content

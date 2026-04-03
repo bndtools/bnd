@@ -1,26 +1,26 @@
 ---
-layout: default
-title:       diff [options] <[newer file]> <[older file]>
-summary:  Compares two jars. Without specifying the JARs (and when there is a current project) the jars of this project are diffed against their baseline in the baseline repository, using the sub-builder's options (these can be overridden). If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are then compared to each other.
+layout: bnd
+title: diff
+summary: |
+   Compares two jars. Without specifying the JARs (and when there is a current project) the jars of this project are diffed against their baseline in the baseline repository, using the sub-builder's options (these can be overridden). If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are then compared to eachother.
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
+### Synopsis: 
+	   diff [options]  <[newer file]> <[older file]>
 
-## Description
+#### Options: 
+- `[ -a --api ]` Print the API
+- `[ -f --full ]` Show full tree
+- `[ -i --ignore <string>* ]` Ignore headers
+- `[ -m --manifest ]` Print the Manifest
+- `[ -o --output <file> ]` Where to send the output
+- `[ -p --pack <string>* ]` Limit to these packages (can have wildcards)
+- `[ -r --resources ]` Print the Resources
+- `[ -x --xml ]` Print difference as valid XML
 
-{{page.summary}}
-
-## Synopsis
-
-## Options
-
-    [ -a, --api ]              - Print the API
-    [ -f, --full ]             - Show full tree
-    [ -i, --ignore <string>* ] - Ignore headers
-    [ -m, --manifest ]         - Print the Manifest
-    [ -o, --output <file> ]    - Where to send the output
-    [ -p, --pack <string>* ]   - Limit to these packages (can have wildcards)
-    [ -r, --resources ]        - Print the Resources
-    [ -x, --xml ]              - Print difference as valid XML
+<!-- Manual content from: ext/diff.md --><br /><br />
 
 
 ## Examples

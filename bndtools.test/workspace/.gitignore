@@ -1,4 +1,16 @@
+*.bak
+/.metadata/
+/.recommenders/
+Archive
 .DS_Store
+.*.swp
 /.gradle/
+/bin/
 /generated/
-/.metadata*
+/reports/
+/install-jdk.sh
+.to
+.idea
+.settings
+.flattened-pom.xml
+target/

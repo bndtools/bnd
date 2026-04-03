@@ -29,7 +29,6 @@ import org.osgi.namespace.extender.ExtenderNamespace;
  * This annotation can be used to require the Meta Type extender to process
  * metatype resources. It can be used directly, or as a meta-annotation.
  *
- * @author $Id$
  * @since 1.4
  */
 @Documented

@@ -2,8 +2,6 @@ package bndtools.views.repository;
 
 import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -22,6 +20,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistable;
+import org.eclipse.ui.XMLMemento;
 import org.osgi.resource.Requirement;
 
 public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistable {
@@ -54,7 +53,6 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
 
 		PropertyChangeListener changeListener = evt -> updateFromPanel();
 
-		final List<Image> images = new LinkedList<>();
 
 		for (Entry<String, SearchPanel> panelEntry : panelMap.entrySet()) {
 			String title = panelEntry.getKey();
@@ -75,19 +73,11 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
 
 			Image image = panel.createImage(tabFolder.getDisplay());
 			if (image != null) {
-				images.add(image);
 				item.setImage(image);
 			}
 
 			panel.addPropertyChangeListener(changeListener);
 		}
-
-		tabFolder.addDisposeListener(e -> {
-			for (Image image : images) {
-				if (!image.isDisposed())
-					image.dispose();
-			}
-		});
 
 		tabFolder.setSelection(activeTabIndex);
 		SearchPanel currentPanel = (SearchPanel) tabFolder.getItem(activeTabIndex)
@@ -154,6 +144,21 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
 			if (panel != null)
 				panel.restoreState(childMemento);
 		}
+	}
+
+	/**
+	 * @param req a requirement
+	 * @return a state object for the given requirement to open advancedSearch
+	 *         prefilled in the "Other" tab.
+	 */
+	public static IMemento toNamespaceSearchPanelMemento(Requirement req) {
+		XMLMemento memento = XMLMemento.createWriteRoot("search");
+		memento.putInteger("tabIndex", 2);
+		IMemento other = memento.createChild("tab", "Other");
+		other.putString("namespace", req.getNamespace());
+		other.putString("filter", req.getDirectives()
+			.get("filter"));
+		return memento;
 	}
 
 }

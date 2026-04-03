@@ -28,7 +28,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin;
  * </pre>
  */
 @CacheableTask
-public class Bundle extends Jar {
+public abstract class Bundle extends Jar {
 	/**
 	 * Create a Bundle task.
 	 * <p>

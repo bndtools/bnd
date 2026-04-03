@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -118,11 +119,12 @@ import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
 	final static Logger			logger					= LoggerFactory.getLogger(Workspace.class);
-	public static final File	BND_DEFAULT_WS			= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
+	public static final File	BND_DEFAULT_WS			= Home.getUserHomeBnd("default-ws");
 	public static final String	BND_CACHE_REPONAME		= "bnd-cache";
 	public static final String	EXT						= "ext";
 	public static final String	BUILDFILE				= "build.bnd";
 	public static final String	CNFDIR					= "cnf";
+	public static final String	CNF_BUILD_BND			= CNFDIR + "/" + BUILDFILE;
 	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
 	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.repository.osgi.OSGiRepository";
 
@@ -168,7 +170,7 @@ public class Workspace extends Processor {
 		}
 	}
 
-	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
+	private final static Map<File, WeakReference<Workspace>>	cache	= newHashMap();
 	private static final Memoize<Processor>						defaults;
 	static {
 		defaults = Memoize.supplier(() -> {
@@ -176,6 +178,7 @@ public class Workspace extends Processor {
 			try (InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd")) {
 				if (propStream != null) {
 					props.load(propStream);
+					props.setProvenance("[defaults.bnd]");
 				} else {
 					System.err.println("Cannot load defaults");
 				}
@@ -185,31 +188,31 @@ public class Workspace extends Processor {
 			return new Processor(props, false);
 		});
 	}
-	final Map<String, Action>									commands			= newMap();
-	final Maven													maven;
-	private final AtomicBoolean									offline				= new AtomicBoolean();
-	Settings													settings			= new Settings(
-		Home.getUserHomeBnd() + "/settings.json");
-	WorkspaceRepository											workspaceRepo		= new WorkspaceRepository(this);
-	static String												overallDriver		= "unset";
-	static Parameters											overallGestalt		= new Parameters();
+	final Map<String, Action>		commands							= newMap();
+	final Maven						maven;
+	private final AtomicBoolean		offline								= new AtomicBoolean();
+	Settings						settings							= new Settings(
+		Home.getUserHomeBnd("settings.json"));
+	WorkspaceRepository				workspaceRepo						= new WorkspaceRepository(this);
+	static String					overallDriver						= "unset";
+	static Parameters				overallGestalt						= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>									signalBusy			= new ThreadLocal<>();
-	ResourceRepositoryImpl										resourceRepositoryImpl;
-	private String												driver;
-	private final WorkspaceLayout								layout;
-	final Set<Project>											trail				= Collections
+	final ThreadLocal<Reporter>		signalBusy							= new ThreadLocal<>();
+	ResourceRepositoryImpl			resourceRepositoryImpl;
+	private String					driver;
+	private final WorkspaceLayout	layout;
+	final Set<Project>				trail								= Collections
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
-	private volatile WorkspaceData								data				= new WorkspaceData();
-	private File												buildDir;
-	private final ProjectTracker								projects			= new ProjectTracker(this);
+	private volatile WorkspaceData	data								= new WorkspaceData();
+	private File					buildDir;
+	private final ProjectTracker	projects							= new ProjectTracker(this);
 	private final WorkspaceLock		workspaceLock						= new WorkspaceLock(true);
 	private static final long		WORKSPACE_LOCK_DEFAULT_TIMEOUTMS	= 120_000L;
-	final WorkspaceNotifier										notifier			= new WorkspaceNotifier(this);
+	final WorkspaceNotifier			notifier							= new WorkspaceNotifier(this);
 
-	public static boolean										remoteWorkspaces	= false;
+	public static boolean			remoteWorkspaces					= false;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -391,7 +394,11 @@ public class Workspace extends Processor {
 			assert url != null : "We must have a specific defaults resource";
 		}
 		try (InputStream in = url.openStream()) {
-			props.load(in);
+			if (props instanceof UTF8Properties utf8) {
+				String source = IO.collect(in);
+				utf8.load(source, null, null, null, "[version-defaults]");
+			} else
+				props.load(in);
 		}
 	}
 
@@ -490,21 +497,14 @@ public class Workspace extends Processor {
 		projects.forceRefresh();
 	}
 
+	final static Set<String> INCLUDE_EXTS = Set.of("bnd", "mf", "pmvn", "pobr");
+
 	@Override
 	public void propertiesChanged() {
 		try {
 			writeLocked(() -> {
 				refreshData();
-				File extDir = new File(getBuildDir(), EXT);
-				for (File extension : IO.listFiles(extDir, (dir, name) -> name.endsWith(".bnd"))) {
-					String extensionName = extension.getName();
-					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
-					try {
-						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
-					} catch (Exception e) {
-						exception(e, "PropertiesChanged: %s", e);
-					}
-				}
+				doExtDir();
 				super.propertiesChanged();
 				if (doExtend(this)) {
 					super.propertiesChanged();
@@ -512,8 +512,25 @@ public class Workspace extends Processor {
 				forceInitialization();
 				return null;
 			});
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			throw Exceptions.duck(e);
+		}
+	}
+
+	void doExtDir() {
+		File extDir = new File(getBuildDir(), EXT);
+		for (File extension : IO.listFiles(extDir)) {
+			String parts[] = Strings.extension(extension.getName());
+			if (parts == null || !INCLUDE_EXTS.contains(parts[1]))
+				continue;
+
+			try {
+				doIncludeFile(extension, false, getProperties(), "ext." + extension.getName());
+			} catch (Exception e) {
+				exception(e, "PropertiesChanged: %s", e);
+			}
 		}
 	}
 
@@ -621,11 +638,25 @@ public class Workspace extends Processor {
 	}
 
 	class CachedFileRepo extends FileRepo {
+
 		final Lock	lock	= new ReentrantLock();
 		boolean		inited;
 
 		CachedFileRepo() {
 			super(BND_CACHE_REPONAME, getCache(BND_CACHE_REPONAME), false);
+		}
+
+		@Override
+		public String tooltip(Object... target) throws Exception {
+
+			if (target == null || target.length == 0) {
+				String statustext = isTrue(getProperty(NOBUILDINCACHE)) ? "Disabled by -nobuildincache"
+					: "Enabled - Use -nobuildincache to disable this cache";
+				return String.format("%s (%s)%n%s", getName(), statustext, root);
+			}
+
+			return super.tooltip(target);
+
 		}
 
 		@Override
@@ -691,6 +722,7 @@ public class Workspace extends Processor {
 				}
 			}
 		}
+
 	}
 
 	public void syncCache() throws Exception {
@@ -783,7 +815,12 @@ public class Workspace extends Processor {
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
-			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, Home.getUserHomeBnd() + "/caches/shas")));
+			String cachedir = getProperty(CACHEDIR);
+			if (cachedir == null) {
+				resourceRepositoryImpl.setCache(Home.getUserHomeBnd("caches/shas"));
+			} else {
+				resourceRepositoryImpl.setCache(IO.getFile(cachedir));
+			}
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(getBuildDir(), "repo.json"));
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(pluginsContainer));
@@ -1337,7 +1374,7 @@ public class Workspace extends Processor {
 		AtomicBoolean copyAll = new AtomicBoolean(false);
 		AtomicInteger counter = new AtomicInteger();
 
-		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
+		Parameters standalone = run.getMergedParameters(STANDALONE);
 		standalone.stream()
 			.filterKey(locationStr -> {
 				if ("true".equalsIgnoreCase(locationStr)) {
@@ -1370,7 +1407,12 @@ public class Workspace extends Processor {
 		}
 		Properties wsProperties = ws.getProperties();
 		runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
-			.forEachOrdered(wsProperties::put);
+			.forEachOrdered((k, v) -> {
+				if (wsProperties instanceof UTF8Properties utf8) {
+					utf8.setProperty(k, (String) v, "[standalone]");
+				} else
+					wsProperties.put(k, v);
+			});
 
 		ws.fixupVersionDefaults();
 		ws.open();
@@ -1522,6 +1564,13 @@ public class Workspace extends Processor {
 		return workspaceLock.locked(workspaceLock.writeLock(), timeoutInMs, callable, () -> false);
 	}
 
+	public <T> void writeLocked(Runnable runnable) throws Exception {
+		writeLocked(() -> {
+			runnable.run();
+			return null;
+		});
+	}
+
 	public <T> T writeLocked(Callable<T> callable) throws Exception {
 		return workspaceLock.locked(workspaceLock.writeLock(), WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, callable, () -> false);
 	}
@@ -1544,13 +1593,13 @@ public class Workspace extends Processor {
 	 *             obtain the lock.
 	 * @throws Exception If the callable or function throws an exception.
 	 */
-	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead,
-		BooleanSupplier canceled, long timeoutInMs) throws Exception {
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead, BooleanSupplier canceled,
+		long timeoutInMs) throws Exception {
 		return workspaceLock.writeReadLocked(timeoutInMs, underWrite, underRead, canceled);
 	}
 
-	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead,
-		BooleanSupplier canceled) throws Exception {
+	public <T, U> T writeLocked(Callable<U> underWrite, FunctionWithException<U, T> underRead, BooleanSupplier canceled)
+		throws Exception {
 		return workspaceLock.writeReadLocked(WORKSPACE_LOCK_DEFAULT_TIMEOUTMS, underWrite, underRead, canceled);
 	}
 
@@ -1965,5 +2014,49 @@ public class Workspace extends Processor {
 		} catch (Exception e) {
 			return Result.err("Failed to expand %s into %s: %s", file, cache, e);
 		}
+	}
+
+	/**
+	 * Add "mvn" files. They are mapped to a MavenBndRepository. The .mvn file
+	 * can in the the first lines define repositories to add with #repo=<repo
+	 * url> If no repositories are specified, maven central is used
+	 */
+	@Override
+	protected Properties magicBnd(File file) throws IOException {
+		Result<Properties> result = MagicBnd.map(this, file);
+		if (result.isOk()) {
+			if (result.unwrap() == null)
+				return super.magicBnd(file);
+			else
+				return result.unwrap();
+		} else {
+			error("failed to convert %s to properties in an include: %s", file, result.error()
+				.get());
+			return super.magicBnd(file);
+		}
+	}
+
+	/**
+	 * Find the Processor that has the give file as properties.
+	 *
+	 * @param file the file that should match the Project or Workspace
+	 * @return an optional Processor
+	 */
+	public Optional<Processor> findProcessor(File file) {
+		File cnf = getFile(CNF_BUILD_BND);
+		if (cnf.equals(file))
+			return Optional.of(this);
+
+		File projectDir = file.getParentFile();
+		if (projectDir.isDirectory()) {
+			File wsDir = projectDir.getParentFile();
+			if (wsDir.equals(getBase())) {
+				Project project = getProject(projectDir.getName());
+				if (project != null) {
+					return project.findProcessor(file);
+				}
+			}
+		}
+		return Optional.empty();
 	}
 }

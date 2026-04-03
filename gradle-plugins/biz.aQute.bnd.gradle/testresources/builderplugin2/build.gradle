@@ -30,7 +30,7 @@ def jarTask = tasks.named('jar', Jar) {
 	}
 }
 
-task bundle(type: Bundle) {
+def bundleTask = tasks.register('bundle', Bundle) {
 	description = 'Bundle'
 	from jarTask.map { zipTree(it.archiveFile) }
 	archiveClassifier = 'bundle'
@@ -53,7 +53,10 @@ Bundle-Name: ${project.group}:${task.archiveBaseName}-${task.archiveClassifier}
 	}
 }
 
+tasks.named('assemble') {
+	dependsOn bundleTask
+}
+
 artifacts {
-	runtimeOnly bundle
-	archives bundle
+	runtimeOnly bundleTask
 }

@@ -1,5 +1,6 @@
 package aQute.lib.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -84,6 +85,134 @@ public class JSONTest {
 		public static Version	DEFAULT_VERSION	= new Version("1.2.3.static");
 
 		public Version			v				= new Version("1.2.3.foo");
+	}
+
+	@Test
+	public void testBadJsonBoolean() throws Exception {
+		JSONCodec codec = new JSONCodec();
+		try {
+			codec.dec()
+				.from("False")
+				.get(Boolean.class);
+			fail("expected failure");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		try {
+			codec.dec()
+				.from("NULL")
+				.get();
+			fail("expected failure");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		try {
+			codec.dec()
+				.from("TRUE")
+				.get();
+			fail("expected failure");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		codec.promiscuous();
+		assertThat(codec.dec()
+			.from("FALSE")
+			.get(Boolean.class)).isFalse();
+		assertThat(codec.dec()
+			.from("True")
+			.get(Boolean.class)).isTrue();
+		assertThat(codec.dec()
+			.from("tRUE")
+			.get(Boolean.class)).isTrue();
+		assertThat(codec.dec()
+			.from("NULL")
+			.get(Object.class)).isNull();
+
+	}
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	@Test
+	public void testBadJsonSingleQuotes() throws Exception {
+		JSONCodec codec = new JSONCodec().promiscuous();
+		String s = codec.dec()
+			.from(
+				"""
+				'hello world'
+				""")
+			.get(String.class);
+		assertThat(s).isEqualTo("hello world");
+		Map map = codec.dec()
+			.from("""
+				{
+					'single_key_single_value' : 'value',
+					'single_key_double_value' : "value",
+					"double_key_single_value" : 'value',
+					"double_key_double_value" : "value"
+				}
+				""")
+			.get(Map.class);
+		assertThat(map).containsEntry("single_key_single_value", "value");
+		assertThat(map).containsEntry("single_key_double_value", "value");
+		assertThat(map).containsEntry("double_key_single_value", "value");
+		assertThat(map).containsEntry("double_key_double_value", "value");
+	}
+
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	@Test
+	public void testBadJsonSingleQuotesFail() throws Exception {
+		JSONCodec codec = new JSONCodec();
+		try {
+			String s = codec.dec()
+				.from("""
+					'hello world'
+					""")
+				.get(String.class);
+			fail("expected failure");
+		} catch (IllegalArgumentException e) {
+			System.out.println(e.getMessage());
+		}
+		try {
+			Map s = codec.dec()
+				.from("""
+					{
+						'single_key_single_value':"value"
+					}
+					""")
+				.get(Map.class);
+			fail("expected failure");
+		} catch (IllegalArgumentException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	@Test
+	public void testBadJsonEscapedNewlinFail() throws Exception {
+		JSONCodec codec = new JSONCodec();
+		try {
+			String s = codec.dec()
+				.from("""
+					"hello world\\
+					"
+					""")
+				.get(String.class);
+			fail("expected failure");
+		} catch (IllegalArgumentException e) {
+			System.out.println(e.getMessage());
+		}
+		codec.promiscuous();
+		String s = codec.dec()
+			.from("""
+				"hello \\
+				world"
+				""")
+			.get(String.class);
+		assertThat(s).isEqualTo("hello world");
 	}
 
 	/**
@@ -709,13 +838,13 @@ public class JSONTest {
 			.get(Float.class));
 		assertEquals((Character) '0', dec.from("48")
 			.get(Character.class));
-		assertEquals((Boolean) true, dec.from("48")
+		assertEquals(true, dec.from("48")
 			.get(Boolean.class));
-		assertEquals((Boolean) false, dec.from("0")
+		assertEquals(false, dec.from("0")
 			.get(Boolean.class));
-		assertEquals((Boolean) true, dec.from("48")
+		assertEquals(true, dec.from("48")
 			.get(boolean.class));
-		assertEquals((Boolean) false, dec.from("0")
+		assertEquals(false, dec.from("0")
 			.get(boolean.class));
 
 		// String based
@@ -918,7 +1047,7 @@ public class JSONTest {
 		Data1A d = dec
 			.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
 			.get(Data1A.class);
-		assertEquals((Boolean) false, d.b);
+		assertEquals(false, d.b);
 		assertEquals((Byte) (byte) (-1), d.by);
 		assertEquals((Character) '1', d.ch);
 		assertEquals(3.0d, d.d);
@@ -1225,5 +1354,61 @@ public class JSONTest {
 			.put(d)
 			.toString();
 		assertEquals("{'foo':'bar'}".replace('\'', '"'), s);
+	}
+
+	@Test
+	public void testRecord() throws Exception {
+		record ARecord(int a, String b, long c) {}
+		ARecord a = new ARecord(1, "1", 1L);
+		assertThat(new JSONCodec().enc()
+			.put(a)
+			.toString()).isEqualTo("{\"a\":1,\"b\":\"1\",\"c\":1}");
+
+		ARecord x = new JSONCodec().dec()
+			.from("{\"a\":1,\"b\":\"1\",\"c\":1}")
+			.get(ARecord.class);
+		assertThat(x.a).isEqualTo(1);
+		assertThat(x.b).isEqualTo("1");
+		assertThat(x.c).isEqualTo(1L);
+	}
+
+	@Test
+	public void testRecordWithKeywordName() throws Exception {
+		record ARecord(int if__, String while__, long ___) {}
+		ARecord a = new ARecord(1, "1", 1L);
+		assertThat(new JSONCodec().enc()
+			.put(a)
+			.toString()).isEqualTo("{\"_\":1,\"if\":1,\"while\":\"1\"}");
+
+		ARecord x = new JSONCodec().dec()
+			.from("{\"_\":1,\"if\":1,\"while\":\"1\"}")
+			.get(ARecord.class);
+		assertThat(x.if__).isEqualTo(1);
+		assertThat(x.while__).isEqualTo("1");
+		assertThat(x.___).isEqualTo(1L);
+	}
+
+	public static class KeywordDTO {
+		public Integer	if__;
+		public long		___;
+		public String	while__;
+	}
+
+	@Test
+	public void testDTOWithKeywords() throws Exception {
+		KeywordDTO a = new KeywordDTO();
+		a.___ = 1L;
+		a.while__ = "1";
+		a.if__ = 1;
+		assertThat(new JSONCodec().enc()
+			.put(a)
+			.toString()).isEqualTo("{\"_\":1,\"if\":1,\"while\":\"1\"}");
+
+		KeywordDTO x = new JSONCodec().dec()
+			.from("{\"_\":1,\"if\":1,\"while\":\"1\"}")
+			.get(KeywordDTO.class);
+		assertThat(x.if__).isEqualTo(1);
+		assertThat(x.while__).isEqualTo("1");
+		assertThat(x.___).isEqualTo(1L);
 	}
 }

@@ -279,11 +279,13 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		List<IAdaptable> errors = new ArrayList<>();
 
 		for (IProject project : projects) {
-			SubMonitor iterationMonitor = loopMonitor.split(1);
-			String message = MessageFormat.format(LaunchConfigurationDelegate_7, project.getName());
-			iterationMonitor.subTask(message);
-			if (existsProblems(project)) {
-				errors.add(project);
+			if (project.isOpen()) {
+				SubMonitor iterationMonitor = loopMonitor.split(1);
+				String message = MessageFormat.format(LaunchConfigurationDelegate_7, project.getName());
+				iterationMonitor.subTask(message);
+				if (existsProblems(project)) {
+					errors.add(project);
+				}
 			}
 		}
 

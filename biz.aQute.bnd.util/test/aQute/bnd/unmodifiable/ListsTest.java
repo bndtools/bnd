@@ -513,17 +513,18 @@ public class ListsTest {
 		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 			oos.writeObject(list);
 		}
-		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
-		@SuppressWarnings("unchecked")
-		List<String> deser = (List<String>) ois.readObject();
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()))) {
+			@SuppressWarnings("unchecked")
+			List<String> deser = (List<String>) ois.readObject();
 
-		assertThat(deser).isEqualTo(list)
-			.isNotSameAs(list)
-			.containsExactlyElementsOf(list);
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("e1"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+			assertThat(deser).isEqualTo(list)
+				.isNotSameAs(list)
+				.containsExactlyElementsOf(list);
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("e1"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+		}
 	}
 
 	@Test
@@ -533,14 +534,15 @@ public class ListsTest {
 		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 			oos.writeObject(list);
 		}
-		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
-		@SuppressWarnings("unchecked")
-		List<String> deser = (List<String>) ois.readObject();
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()))) {
+			@SuppressWarnings("unchecked")
+			List<String> deser = (List<String>) ois.readObject();
 
-		assertThat(deser).isSameAs(list);
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+			assertThat(deser).isSameAs(list);
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+		}
 	}
 
 	@Test

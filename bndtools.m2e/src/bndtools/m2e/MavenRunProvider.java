@@ -121,6 +121,7 @@ public class MavenRunProvider implements RunProvider {
 		switch (mode) {
 			case LAUNCH :
 			case EDIT :
+			case EXPORT :
 			case SOURCES :
 				if ((mojoExecution = getBndResolverMojoExecution(maven, projectFacade, bndrunMatchs,
 					monitor)) != null) {
@@ -138,8 +139,10 @@ public class MavenRunProvider implements RunProvider {
 
 					return mavenBndrunContainer.init(bndrunFile, mode.name(), new File(mavenProject.getBuild()
 						.getDirectory()));
+				} else {
+					throw new IllegalStateException(String
+						.format("Cannot find a resolver configuration for '%s' in pom.xml.", targetResource.getName()));
 				}
-				break;
 			case TEST :
 				if ((mojoExecution = getBndTestingMojoExecution(maven, projectFacade, bndrunMatchs, monitor)) != null) {
 

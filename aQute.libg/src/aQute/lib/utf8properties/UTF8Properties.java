@@ -17,9 +17,12 @@ import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +49,10 @@ public class UTF8Properties extends Properties {
 	private static final List<ThreadLocal<CharsetDecoder>>	decoders			= Collections.unmodifiableList(
 		Arrays.asList(ThreadLocal.withInitial(UTF_8::newDecoder), ThreadLocal.withInitial(ISO_8859_1::newDecoder)));
 
+	record Provenance(String source) {}
+
+	private final Map<String, Provenance>	provenance	= new HashMap<>();
+
 	public UTF8Properties(Properties p) {
 		super(p);
 	}
@@ -66,7 +73,8 @@ public class UTF8Properties extends Properties {
 		load(file, reporter, (Collection<String>) null);
 	}
 
-	public UTF8Properties() {}
+	public UTF8Properties() {
+	}
 
 	private static Collection<String> fromArray(String[] array) {
 		return (array != null) ? Arrays.asList(array) : null;
@@ -95,8 +103,13 @@ public class UTF8Properties extends Properties {
 	}
 
 	public void load(String source, File file, Reporter reporter, Collection<String> syntaxHeaders) throws IOException {
+		load(source, file, reporter, syntaxHeaders, file == null ? "" : file.getAbsolutePath());
+	}
+
+	public void load(String source, File file, Reporter reporter, Collection<String> syntaxHeaders, String provenance)
+		throws IOException {
 		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
-			this, syntaxHeaders);
+			this, syntaxHeaders, provenance);
 		parser.parse();
 	}
 
@@ -201,7 +214,7 @@ public class UTF8Properties extends Properties {
 			String value = (String) entry.getValue();
 			value = regex.matcher(value)
 				.replaceAll(replacement);
-			result.put(key, value);
+			result.setProperty(key, value, getProvenance(key).orElse(null));
 		}
 		return result;
 	}
@@ -220,5 +233,86 @@ public class UTF8Properties extends Properties {
 			here += ".";
 		}
 		return replaceAll(HERE_PATTERN, Matcher.quoteReplacement(here));
+	}
+
+	public synchronized Object setProperty(String key, String value, String provenance) {
+		if (provenance != null)
+			getProvenance().put(key, new Provenance(provenance));
+		return super.setProperty(key, value);
+	}
+
+	@Override
+	public synchronized Object remove(Object key) {
+		getProvenance().remove(key);
+		return super.remove(key);
+	}
+
+	/**
+	 * Get the provenance of the given key if set
+	 *
+	 * @param key the key
+	 */
+
+	public Optional<String> getProvenance(String key) {
+		Provenance provenance = getProvenance().get(key);
+		return Optional.ofNullable(provenance)
+			.map(Provenance::source);
+	}
+
+	/**
+	 * Set the provenance of the given key
+	 *
+	 * @param key the key
+	 * @param provenance the provenance, maybe null to remove
+	 */
+
+	public UTF8Properties setProvenance(String key, String provenance) {
+		if (provenance == null)
+			getProvenance().remove(key);
+		else
+			getProvenance().put(key, new Provenance(provenance));
+		return this;
+	}
+
+	/**
+	 * Load the properties from a properties. If the properties is a
+	 * UTF8Properties, we also copy the provenance.
+	 *
+	 * @param properties the properties
+	 * @param overwriteIfPresent overwrite an exissting value in this properties
+	 */
+	public void load(Properties properties, boolean overwriteIfPresent) {
+		BiConsumer<String, String> set = properties instanceof UTF8Properties p
+			? (k, v) -> setProperty(k, v, p.getProvenance(k)
+				.orElse(null))
+			: (k, v) -> setProperty(k, v);
+
+		properties.forEach((k, v) -> {
+			String key = (String) k;
+			String value = (String) v;
+			if (overwriteIfPresent || !contains(key))
+				set.accept(key, value);
+		});
+	}
+
+	Map<String, Provenance> getProvenance() {
+		return provenance;
+	}
+
+	@Override
+	public synchronized void putAll(Map<?, ?> t) {
+		if (t instanceof Properties p) {
+			load(p, true);
+		} else
+			super.putAll(t);
+	}
+
+	/**
+	 * Set the provenance on all current keys
+	 *
+	 * @param provenance
+	 */
+	public void setProvenance(String provenance) {
+		keySet().forEach(k -> setProvenance((String) k, provenance));
 	}
 }

@@ -40,13 +40,14 @@ org.osgi:org.osgi.service.wireadmin:1.0.2
 org.osgi:org.osgi.util.function:1.2.0
 org.osgi:org.osgi.util.measurement:1.0.2
 org.osgi:org.osgi.util.position:1.0.1
-org.osgi:org.osgi.util.promise:1.2.0
+org.osgi:org.osgi.util.promise:1.3.0
 org.osgi:org.osgi.util.pushstream:1.0.2
 org.osgi:org.osgi.util.xml:1.0.2
 org.osgi:org.osgi.util.tracker:1.5.4
 
-org.bouncycastle:bcpkix-jdk15on:1.54
-org.bouncycastle:bcprov-jdk15on:1.54
+org.bouncycastle:bcpkix-jdk18on:1.72
+org.bouncycastle:bcprov-jdk18on:1.72
+org.bouncycastle:bcutil-jdk18on:1.72
 
 org.apache.commons:commons-lang3:3.4
 commons-codec:commons-codec:1.10
@@ -56,10 +57,11 @@ org.apache.aries.spifly:org.apache.aries.spifly.dynamic.framework.extension:1.2.
 org.apache.felix:org.apache.felix.configadmin:1.9.10
 org.apache.felix:org.apache.felix.log:1.2.0
 org.apache.felix:org.apache.felix.framework:6.0.5
+org.apache.felix:org.apache.felix.framework:7.0.5
 org.apache.felix:org.apache.felix.gogo.command:1.0.2
-org.apache.felix:org.apache.felix.gogo.runtime:1.1.0
+org.apache.felix:org.apache.felix.gogo.runtime:1.1.6
 org.apache.felix:org.apache.felix.gogo.shell:1.1.0
-org.apache.felix:org.apache.felix.resolver:2.0.0
+org.apache.felix:org.apache.felix.resolver:2.0.4
 org.apache.felix:org.apache.felix.scr:2.1.12
 org.apache.felix:org.apache.felix.inventory:1.0.6
 org.apache.felix:org.apache.felix.logback:1.0.6
@@ -77,11 +79,17 @@ org.apache.ant:ant-testutil:1.10.12
 
 junit:junit:${junit4.tester.version}
 junit:junit:${junit4.version}
-org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.13.2_1
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:${junit4.tester.version}_1
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:${junit.vintage.tester.junit4.version}_1
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:${junit4.version}_1
+org.junit.jupiter:junit-jupiter-api:${junit.jupiter.version}
+org.junit.jupiter:junit-jupiter-engine:${junit.jupiter.tester.version}
+org.junit.jupiter:junit-jupiter-params:${junit.jupiter.tester.version}
+org.junit.vintage:junit-vintage-engine:${junit.jupiter.tester.version}
 org.junit.platform:junit-platform-commons:${junit.platform.tester.version}
 org.junit.platform:junit-platform-engine:${junit.platform.tester.version}
 org.junit.platform:junit-platform-launcher:${junit.platform.tester.version}
-org.junit.platform:junit-platform-testkit:${junit.platform.eclipse.version}
+org.junit.platform:junit-platform-testkit:${junit.platform.tester.version}
 org.junit.jupiter:junit-jupiter-api:${junit.jupiter.version}
 org.junit.jupiter:junit-jupiter-engine:${junit.jupiter.version}
 org.junit.jupiter:junit-jupiter-params:${junit.jupiter.version}
@@ -90,7 +98,7 @@ org.junit.platform:junit-platform-commons:${junit.platform.version}
 org.junit.platform:junit-platform-engine:${junit.platform.version}
 org.junit.platform:junit-platform-launcher:${junit.platform.version}
 org.opentest4j:opentest4j:${opentest4j.tester.version}
-org.opentest4j:opentest4j:1.2.0
+org.opentest4j:opentest4j:${opentest4j.version}
 org.apiguardian:apiguardian-api:1.1.2
 org.assertj:assertj-core:${assertj.version}
 org.awaitility:awaitility:${awaitility.version}
@@ -106,6 +114,7 @@ org.osgi:org.osgi.test.junit5:${osgi-test.version}
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
 
+
 args4j:args4j:2.0.26
 
 org.slf4j:slf4j-api:1.7.25
@@ -118,7 +127,11 @@ org.littleshoot:littleproxy:1.1.2
 
 io.netty:netty-all:4.1.0.Final
 
-com.google.guava:guava:19.0
+com.google.guava:guava:19.0 # only required for biz.aQute.bndlib.comm.tests
+com.google.guava:guava:33.4.8-jre
+com.google.guava:failureaccess:1.0.3
+com.google.errorprone:error_prone_annotations:2.38.0
+org.jspecify:jspecify:1.0.0
 
 org.nanohttpd:nanohttpd:2.2.0
 
@@ -130,7 +143,6 @@ jline:jline:2.14.6
 
 # Bndtools
 com.github.spullara.mustache.java:compiler:0.8.18
-com.google.guava:guava:16.0.1
 org.antlr:ST4:jar:complete:4.0.8
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.kxml2:2.3.0_3
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.xmlpull:1.1.3.4a_1
@@ -140,14 +152,15 @@ org.apache.servicemix.bundles:org.apache.servicemix.bundles.xmlpull:1.1.3.4a_1
 #
 org.jtwig:jtwig-core:5.86.1.RELEASE
 org.jtwig:jtwig-reflection:5.86.1.RELEASE
-com.google.guava:guava:18.0
 com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2
-org.parboiled:parboiled-java:1.1.7
-org.parboiled:parboiled-core:jar:1.1.7
-org.ow2.asm:asm:jar:5.0.3
-org.ow2.asm:asm-tree:jar:5.0.3
-org.ow2.asm:asm-analysis:jar:5.0.3
-org.ow2.asm:asm-util:jar:5.0.3
+org.parboiled:parboiled-java:1.4.1
+org.parboiled:parboiled-core:jar:1.4.1
+
+org.ow2.asm:asm:jar:9.2
+org.ow2.asm:asm-analysis:jar:9.3
+org.ow2.asm:asm-util:jar:9.3
+org.ow2.asm:asm-tree:jar:9.3
+
 com.github.javaparser:javaparser-core:3.13.10
 
 javax.json:javax.json-api:1.1.2
@@ -161,6 +174,11 @@ org.apache.maven:maven-plugin-api:${maven.target.version}
 org.apache.maven:maven-repository-metadata:${maven.target.version}
 org.apache.maven:maven-settings:${maven.target.version}
 org.eclipse.aether:aether-api:${aether.version}
-org.sonatype.plexus:plexus-build-api:0.0.7
-org.codehaus.plexus:plexus-utils:3.0.22
+org.codehaus.plexus:plexus-build-api:1.2.0
+org.codehaus.plexus:plexus-utils:3.0.24
 org.codehaus.plexus:plexus-classworlds:2.5.2
+
+## higher SWT version required because of SWT bug with MacOS Sonoma 
+org.eclipse.platform:org.eclipse.swt.cocoa.macosx.aarch64:jar:3.126.0
+org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:jar:3.126.0
+org.eclipse.platform:org.eclipse.swt:jar:3.126.0

@@ -5,10 +5,8 @@ A typical Gradle build is a non-Bnd workspace build.
 A Bnd Workspace build uses the information specified in the Bnd Workspace's `cnf/build.bnd` file and each project's `bnd.bnd` file to configure the Gradle projects and tasks.
 
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
-These plugins require Java 17 and
-at least Gradle 7.3 for Java 17,
-at least Gradle 7.5 for Java 18,
-and at least Gradle 7.6 for Java 19.
+These plugins require Java 17 and at least Gradle 8.0.
+More recent Java versions will require more recent Gradle versions.
 
 This README represents the capabilities and features of the Bnd Gradle Plugins in the branch containing this README.
 So for the `master` branch, this will be the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins).
@@ -35,7 +33,7 @@ To make the Bnd Builder Gradle Plugin available to your build, use the following
 ```groovy
 pluginManagement {
   plugins {
-    id "biz.aQute.bnd.builder" version "7.0.0"
+    id "biz.aQute.bnd.builder" version "7.3.0"
   }
 }
 ```
@@ -652,7 +650,7 @@ The main approach is to edit `settings.gradle` as follows:
 
 ```groovy
 plugins {
-  id "biz.aQute.bnd.workspace" version "7.0.0"
+  id "biz.aQute.bnd.workspace" version "7.3.0"
 }
 ```
 The Gradle marker plugins for the Bnd Gradle plugins are also in Maven Central.
@@ -675,7 +673,7 @@ The second approach, for when you already have a `settings.gradle` file which in
 
 ```groovy
 plugins {
-  id "biz.aQute.bnd.workspace" version "7.0.0"
+  id "biz.aQute.bnd.workspace" version "7.3.0"
 }
 ```
 

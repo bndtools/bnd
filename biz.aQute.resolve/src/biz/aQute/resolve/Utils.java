@@ -2,8 +2,10 @@ package biz.aQute.resolve;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -88,6 +90,46 @@ public class Utils {
 			result.add(rt);
 		}
 		return result;
+	}
+
+	/**
+	 * Compares two non-null sets and print their differnce in a human readable
+	 * sentence.
+	 *
+	 * @param set1
+	 * @param set2
+	 * @param setName1
+	 * @param setName2
+	 * @return a sentence if set1 is different than set2. Otherwise
+	 *         <code>null</code>.
+	 */
+	public static <T> String printHumanReadableDifference(Set<T> set1, Set<T> set2, String setName1, String setName2) {
+
+		Set<T> difference1 = set1.stream()
+			.filter(e -> !set2.contains(e))
+			.collect(Collectors.toSet());
+		Set<T> difference2 = set2.stream()
+			.filter(e -> !set1.contains(e))
+			.collect(Collectors.toSet());
+
+		if (difference1.isEmpty() && difference2.isEmpty()) {
+			// Both sets are identical
+			return null;
+		} else {
+			List<String> diffs = new ArrayList<>(2);
+			if (!difference1.isEmpty()) {
+				diffs.add(difference1 + " exist in " + setName1 + " but missing in " + setName2);
+			}
+			if (!difference2.isEmpty()) {
+				diffs.add(difference2 + " exist in " + setName2 + " but missing in " + setName1);
+			}
+
+			if (!diffs.isEmpty()) {
+				return diffs.stream()
+					.collect(Collectors.joining(", "));
+			}
+		}
+		return null;
 	}
 
 }

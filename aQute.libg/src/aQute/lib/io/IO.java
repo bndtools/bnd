@@ -2,6 +2,7 @@ package aQute.lib.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.regex.Matcher.quoteReplacement;
 import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;
@@ -55,18 +56,19 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -75,10 +77,10 @@ import aQute.lib.stringrover.StringRover;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	private static final Pattern						WINDOWS_MACROS			= Pattern.compile("%([^%]+)%");
+	final static EnvironmentCalculator					hc						= new EnvironmentCalculator();
+	private static final Pattern						WINDOWS_MACROS			= Pattern.compile("%(?<key>[^%]+)%");
 	private static final int							BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
-	private static final boolean						isWindows				= File.separatorChar == '\\';
 	static final public File							work					= new File(
 		System.getProperty("user.dir"));
 	static final public File							home;
@@ -86,11 +88,60 @@ public class IO {
 	private static final EnumSet<StandardOpenOption>	writeOptions			= EnumSet.of(StandardOpenOption.WRITE,
 		StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
+	final static Path									DOTDOT					= Path.of("..");
+
+	interface OS {
+		/**
+		 * Resolve the subPath from the absolute file base. The subPath must not
+		 * resolve to a path that is not in the subtree of files from base. it
+		 * may contain .. as long as this does not end up at the start when
+		 * normalized. It (surprisingly) can handle absolute files since `new
+		 * File(base,"/foo") resolves not to "/foo" ... I.e. except for the ..,
+		 * it can never escape base
+		 *
+		 * @param base the absolute base directory
+		 * @param subPath the sub path
+		 * @return the absolute file resolved from base with relativePath
+		 * @throws IOException
+		 */
+
+		File getBasedFile(File base, String subPath) throws IOException;
+
+		/**
+		 * Get an environment variable. Windows is special ...
+		 *
+		 * @param variableName the variable name
+		 * @return the env variable or null
+		 */
+		String getenv(String variableName);
+
+		/**
+		 * Convert to a safe name on the current platform. This is the _name_
+		 * part only, not a path!
+		 *
+		 * @param name the file name
+		 * @return a safe file name
+		 */
+		String toSafeFileName(String name);
+
+		/**
+		 * Return a file from a base. The file must use forward slash but may
+		 * start on windows with c:/... or /c:/ to indicate a drive.
+		 *
+		 * @param base the base to resolve the file from
+		 * @param file the path
+		 * @return a file
+		 */
+		File getFile(File base, String file);
+	}
+
+	final static OS os = File.separatorChar == '\\' ? new Windows() : new Other();
 
 	static {
-		EnvironmentCalculator hc = new EnvironmentCalculator(isWindows);
-		home = hc.getHome();
-		JAVA_HOME = hc.getJavaHome();
+		home = hc.getDirLocation(os.getenv("HOME"), System.getProperty("user.home"));
+		String javaHome = System.getProperty("java.home")
+			.replaceAll("(/|\\\\)jre$", "");
+		JAVA_HOME = hc.getDirLocation(os.getenv("JAVA_HOME"), javaHome);
 	}
 
 	public static String getExtension(String fileName, String deflt) {
@@ -651,7 +702,8 @@ public class IO {
 	public static ByteBuffer read(Path path) throws IOException {
 		try (FileChannel in = readChannel(path)) {
 			long size = in.size();
-			if (!isWindows && (size > DIRECT_MAP_THRESHOLD)) {
+
+			if (!isWindows() && (size > DIRECT_MAP_THRESHOLD)) {
 				return in.map(MapMode.READ_ONLY, 0, size);
 			}
 			ByteBuffer bb = ByteBuffer.allocate((int) size);
@@ -798,58 +850,29 @@ public class IO {
 	}
 
 	public static File getFile(File base, String file) {
-		StringRover rover = new StringRover(file);
-		if (rover.startsWith("~/")) {
-			rover.increment(2);
-			if (!rover.startsWith("~/")) {
-				return getFile(home, rover.substring(0));
-			}
-		}
-		if (rover.startsWith("~")) {
-			return getFile(home.getParentFile(), rover.substring(1));
-		}
-
-		File f = new File(rover.substring(0));
-		if (f.isAbsolute()) {
-			return f;
-		}
-
-		if (base == null) {
-			base = work;
-		}
-
-		for (f = base.getAbsoluteFile(); !rover.isEmpty();) {
-			int n = rover.indexOf('/');
-			if (n < 0) {
-				n = rover.length();
-			}
-			if ((n == 0) || ((n == 1) && (rover.charAt(0) == '.'))) {
-				// case "" or "."
-			} else if ((n == 2) && (rover.charAt(0) == '.') && (rover.charAt(1) == '.')) {
-				// case ".."
-				File parent = f.getParentFile();
-				if (parent != null) {
-					f = parent;
-				}
-			} else {
-				String segment = rover.substring(0, n);
-				f = new File(f, segment);
-			}
-			rover.increment(n + 1);
-		}
-
-		return f.getAbsoluteFile();
+		return os.getFile(base, file);
 	}
 
-	public static File getBasedFile(File base, String file) throws IOException {
-		base = base.getCanonicalFile();
-		File child = getFile(base, file);
-		if (child.getCanonicalPath()
-			.startsWith(base.getCanonicalPath()
-				.concat(File.separator))) {
-			return child;
-		}
-		throw new IOException("The file " + child + " is outside of the base " + base);
+	/**
+	 * Resolve the subPath from the absolute file base. The subPath must not
+	 * resolve to a path that is not in the subtree of files from base. it may
+	 * contain .. as long as this does not end up at the start when normalized.
+	 * It (surprisingly) can handle absolute files since `new File(base,"/foo")
+	 * resolves not to "/foo" ... I.e. except for the .., it can never escape
+	 * base.
+	 * <p>
+	 * If the subPath is null or empty, this will return the base
+	 *
+	 * @param base the absolute base directory
+	 * @param subPath the sub path or null
+	 * @return the absolute file resolved from base with relativePath
+	 * @throws IOException
+	 */
+	public static File getBasedFile(File base, String subPath) throws IOException {
+		assert base != null : "base must not be null or the result could be anywhere on the fs";
+		if (subPath == null || subPath.isEmpty())
+			return base;
+		return os.getBasedFile(base, subPath);
 	}
 
 	public static Path getPath(String file) {
@@ -1520,7 +1543,7 @@ public class IO {
 	 */
 	public static boolean createSymbolicLinkOrCopy(Path link, Path target) {
 		try {
-			if (isWindows || !createSymbolicLink(link, target)) {
+			if (isWindows() || !createSymbolicLink(link, target)) {
 				// only copy if target length and timestamp differ
 				BasicFileAttributes targetAttrs = Files.readAttributes(target, BasicFileAttributes.class);
 				try {
@@ -1600,116 +1623,81 @@ public class IO {
 		};
 
 	public static String toSafeFileName(String string) {
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < string.length(); i++) {
-			char c = string.charAt(i);
-			if (c < ' ')
-				continue;
-
-			if (isWindows) {
-				sb.append(switch (c) {
-					case '<', '>', '"', '/', '\\', '|', '*', ':' -> '%';
-					default -> c;
-				});
-			} else {
-				sb.append(switch (c) {
-					case '/', ':' -> '%';
-					default -> c;
-				});
-			}
-		}
-		if (sb.length() == 0 || (isWindows && RESERVED_WINDOWS_P.matcher(sb)
-			.matches()))
-			sb.append("_");
-
-		return sb.toString();
+		return os.toSafeFileName(string);
 	}
 
-	private final static Pattern RESERVED_WINDOWS_P = Pattern.compile("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
-
 	public static boolean isWindows() {
-		return isWindows;
+		return os instanceof Windows;
 	}
 
 	/*
-	 * This class calculates the home path. This class uses environment
-	 * variables so that makes it hard to test. For this reason tests can
-	 * override the #getenv method.
+	 * This class calculates environment variables so that makes it hard to
+	 * test. For this reason tests can override the #getenv method.
 	 */
 	static class EnvironmentCalculator {
-		private boolean iswindows;
-
-		public EnvironmentCalculator(boolean iswindows) {
-			this.iswindows = iswindows;
+		File getDirLocation(String... path) {
+			for (String p : path) {
+				if (p == null)
+					continue;
+				File dir = new File(p);
+				dir.mkdirs();
+				return dir;
+			}
+			return null;
 		}
 
-		/**
-		 * Get the value of a system environment variable. Expand any macros
-		 * (%...%) if run on windows. Generally, on Linux et. al. environment
-		 * variables are already expanded.
-		 *
-		 * @param key the environment variable name
-		 * @return the value with expanded macros if on windows.
-		 */
-		String getSystemEnv(String key) {
-			return getSystemEnv(key, null);
+		String getEnv(String key) {
+			return getSystemEnv(key, new TreeSet<>());
 		}
 
-		private String getSystemEnv(String key, Set<String> visited) {
-			String value = getenv(key);
-			if (value == null || !iswindows) {
-				return value;
-			}
-			if (visited == null) {
-				visited = new HashSet<>();
-			}
-			if (!visited.add(key)) {
-				return key;
-			}
+		String getSystemEnv(String key, Set<String> visited) {
+			try {
+				if (!visited.add(key)) {
+					return visited.stream()
+						.collect(Collectors.joining(",", "%", "%"));
+				}
 
-			StringBuilder sb = new StringBuilder();
-			Matcher matcher = WINDOWS_MACROS.matcher(value);
-			int start = 0;
-			for (; matcher.find(); start = matcher.end()) {
-				String name = matcher.group(1);
-				String replacement = getSystemEnv(name, visited);
-				sb.append(value, start, matcher.start())
-					.append(replacement);
+				String value = getenv(key);
+				if (value == null)
+					return null;
+
+				Matcher matcher = WINDOWS_MACROS.matcher(value);
+				boolean found = matcher.find();
+				if (!found)
+					return value;
+
+				StringBuffer sb = new StringBuffer();
+				do {
+					String macroKey = matcher.group("key");
+					String macroValue = getSystemEnv(macroKey, visited);
+					if (macroValue == null)
+						macroValue = '%' + macroKey + '%';
+					matcher.appendReplacement(sb, quoteReplacement(macroValue));
+				} while (matcher.find());
+				matcher.appendTail(sb);
+				return sb.toString();
+			} finally {
+				visited.remove(key);
 			}
-			return (start == 0) ? value
-				: sb.append(value, start, value.length())
-					.toString();
 		}
 
-		String getenv(String key) {
+		protected String getenv(String key) {
 			return System.getenv(key);
 		}
+	}
 
-		File getHome() {
-			File home = testFile(getSystemEnv("HOME"));
-			if ((home == null) || !home.isDirectory()) {
-				home = testFile(System.getProperty("user.home"));
-			}
-			assert home != null;
-			return home;
-		}
-
-		File getJavaHome() {
-			File javaHome = testFile(getSystemEnv("JAVA_HOME"));
-			if ((javaHome == null) || !javaHome.isDirectory()) {
-				javaHome = testFile(System.getProperty("java.home"));
-			}
-			assert javaHome != null;
-			return javaHome;
-		}
-
-		private File testFile(String path) {
-			if (path == null)
-				return null;
-
-			return new File(path);
-		}
+	/**
+	 * Return the environment variables. On windows, macros in these variables
+	 * will be expanded. On other OS'es, macro expansion is done by the os. If
+	 * during expansion a key cannot be found, it will be included as %key%` for
+	 * diagnostics.
+	 *
+	 * @param key the environment variable name
+	 * @return a string with the (expanded) value of the environment variable or
+	 *         null if not found
+	 */
+	public static String getenv(String key) {
+		return os.getenv(key);
 	}
 
 	public static String readUTF(DataInput in) throws IOException {
@@ -1774,6 +1762,25 @@ public class IO {
 			}
 		}
 		return name;
+	}
+
+	/**
+	 * Create a new unique file name in the given folder
+	 *
+	 * @param folder the folder to create a File in
+	 * @param stem the name stem, "untitled-" if null
+	 * @return a file in the folder that does not exist
+	 */
+	public static File unique(File folder, String stem) {
+		if (stem == null)
+			stem = "untitled-";
+		int n = 0;
+		while (true) {
+			File f = new File(folder, stem + n);
+			if (!f.exists())
+				return f;
+			n++;
+		}
 	}
 
 }

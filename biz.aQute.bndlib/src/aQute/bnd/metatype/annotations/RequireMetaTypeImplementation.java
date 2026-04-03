@@ -29,7 +29,6 @@ import org.osgi.namespace.implementation.ImplementationNamespace;
  * This annotation can be used to require the Meta Type implementation. It can
  * be used directly, or as a meta-annotation.
  *
- * @author $Id$
  * @since 1.4
  */
 @Documented

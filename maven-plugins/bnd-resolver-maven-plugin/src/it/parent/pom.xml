@@ -7,6 +7,10 @@
 	<version>0.0.1</version>
 	<packaging>pom</packaging>
 
+	<properties>
+		<it.resolve.skip>false</it.resolve.skip>
+	</properties>
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -55,6 +59,9 @@
 							<goals>
 								<goal>resolve</goal>
 							</goals>
+							<configuration>
+								<skip>${it.resolve.skip}</skip>
+							</configuration>
 						</execution>
 					</executions>
 				</plugin>

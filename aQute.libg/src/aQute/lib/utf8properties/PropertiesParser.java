@@ -2,7 +2,6 @@ package aQute.lib.utf8properties;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 
 import aQute.lib.hex.Hex;
 import aQute.lib.strings.Strings;
@@ -40,18 +39,20 @@ final class PropertiesParser {
 		INFO['\\'] = NOKEY;
 	}
 
-	private int			n				= 0;
-	private int			line			= 0;
-	private int			pos				= -1;
-	private int			marker			= 0;
-	private char		current;
-	private Properties	properties;
-	private boolean		validKey;
-	private boolean		continuation	= true;
+	private int							n				= 0;
+	private int							line			= 0;
+	private int							pos				= -1;
+	private int							marker			= 0;
+	private char						current;
+	private UTF8Properties				properties;
+	private boolean						validKey;
+	private boolean						continuation	= true;
 	private final Collection<String>	syntaxHeaders;
+	private final String				provenance;
 
-	PropertiesParser(String source, String file, Reporter reporter, Properties properties,
-		Collection<String> syntaxHeaders) {
+	PropertiesParser(String source, String file, Reporter reporter, UTF8Properties properties,
+		Collection<String> syntaxHeaders, String provenance) {
+		this.provenance = provenance;
 		this.source = source.toCharArray();
 		this.file = file;
 		this.reporter = reporter;
@@ -106,7 +107,7 @@ final class PropertiesParser {
 
 				default :
 					if (current < ' ') {
-						error("Invalid character in properties: %x at pos %s", Integer.valueOf(current), pos);
+						warning("Invalid character in properties: %x at pos %s", Integer.valueOf(current), pos);
 						return current = '?';
 					}
 					return current;
@@ -145,7 +146,11 @@ final class PropertiesParser {
 			String key = key();
 
 			if (!validKey) {
-				error("Invalid property key: `%s`", key);
+				warning("Invalid property key: `%s`", key);
+			}
+
+			if (reporter != null && reporter.isPedantic() && properties.containsKey(key)) {
+				warning("Duplicate property key: `%s`", key);
 			}
 
 			skipWhitespace();
@@ -154,7 +159,7 @@ final class PropertiesParser {
 				next();
 				skipWhitespace();
 				if (current == '\n') {
-					properties.put(key, "");
+					properties.setProperty(key, "", provenance);
 					continue;
 				}
 			}
@@ -162,11 +167,10 @@ final class PropertiesParser {
 			if (current != '\n') {
 
 				String value = token(LINE, isSyntaxHeader(key));
-				properties.put(key, value);
-
+				properties.setProperty(key, value, provenance);
 			} else {
-				error("No value specified for key: %s. An empty value should be specified as '%<s:' or '%<s='", key);
-				properties.put(key, "");
+				warning("No value specified for key: %s. An empty value should be specified as '%<s:' or '%<s='", key);
+				properties.setProperty(key, "", provenance);
 				continue;
 			}
 			assert current == '\n';
@@ -218,7 +222,7 @@ final class PropertiesParser {
 					break;
 
 				if (check && quote != 0 && tmp != quote && isQuote(tmp)) {
-					error(
+					warning(
 						"Found backslash escaped quote character `\\%s` while quoted-string's quote character  is `%s`. This is not an error but easier to read when not escaped ",
 						"" + tmp, "" + (quote));
 				}
@@ -232,7 +236,7 @@ final class PropertiesParser {
 					case '"' :
 						if (quote == 0) {
 							if (expectDelimeter) {
-								error(
+								warning(
 									"Found a quote '%s' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes",
 									tmp);
 								expectDelimeter = false;
@@ -282,7 +286,8 @@ final class PropertiesParser {
 
 					default :
 						if (expectDelimeter) {
-							error("Expected a delimeter, like comma or semicolon, after a quoted string but found '%s'",
+							warning(
+								"Expected a delimeter, like comma or semicolon, after a quoted string but found '%s'",
 								tmp);
 							expectDelimeter = false;
 						}
@@ -317,7 +322,7 @@ final class PropertiesParser {
 
 	private void invalidWhitespace(int quote, String type) {
 		if (quote == 0)
-			error("Non breaking space found [%s] at (line=%s,pos=%s)", type, line, pos);
+			warning("Non breaking space found [%s] at (line=%s,pos=%s)", type, line, pos);
 	}
 
 	private String key() {
@@ -360,15 +365,12 @@ final class PropertiesParser {
 				}
 				String unicode = sb.toString();
 				if (!Hex.isHex(unicode)) {
-					error("Invalid unicode string \\u%s", sb);
+					warning("Invalid unicode string \\u%s", sb);
 					return '?';
 				} else {
 					return (char) Integer.parseInt(unicode, 16);
 				}
 
-			case ':' :
-			case '=' :
-				return c;
 			case 't' :
 				return '\t';
 			case 'f' :
@@ -379,19 +381,34 @@ final class PropertiesParser {
 				return '\n';
 			case '\\' :
 				return '\\';
+			case ':' :
+			case '=' :
+			case '#' :
+			case '!' :
+				return c;
 
-			case '\f' :
-			case '\t' :
 			case ' ' :
-				error("Found \\<whitespace>. This is allowed in a properties file but not in bnd to prevent mistakes");
+			case '\t' :
+				// whitespace immediately after backslash
+				warning(
+					"Found \\<whitespace>. This is allowed in a properties file but not in bnd to prevent mistakes");
 				return c;
 
 			default :
+				// any other character after backslash not forming a valid
+				// escape -> warning
+				if ("tnrf\\'\":=#!".indexOf(c) >= 0 || c == 'u') {
+					// valid escape -> no warning
+					return c;
+				}
+				warning(
+					"Found odd number of backslashes before '%s'. These are silently dropped by Java properties parsing and lead to confusing behavior",
+					c);
 				return c;
 		}
 	}
 
-	private void error(String msg, Object... args) {
+	private void warning(String msg, Object... args) {
 		if (reporter != null) {
 			int line = this.line;
 			String context = context();

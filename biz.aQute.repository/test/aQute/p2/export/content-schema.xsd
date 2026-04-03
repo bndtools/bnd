@@ -1,0 +1,200 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="repository">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="properties" type="Properties" />
+                <xs:element name="references" type="References" />
+                <xs:element name="units">
+                    <xs:complexType>
+                        <xs:sequence minOccurs="0">
+                            <xs:element name="unit" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence minOccurs="0">
+                                        <xs:element name="update" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:attribute name="id"
+                                                    type="xs:string"
+                                                    use="required" />
+                                                <xs:attribute name="range"
+                                                    type="xs:string"
+                                                    use="required" />
+                                                <xs:attribute name="severity"
+                                                    type="xs:decimal" />
+                                            </xs:complexType>
+
+                                        </xs:element>
+                                        <xs:element name="properties"
+                                            type="Properties" minOccurs="0" />
+                                        <xs:element name="provides"
+                                            type="Provides" minOccurs="0" />
+                                        <xs:element name="filter"
+                                            minOccurs="0" type="xs:string" />
+
+                                        <xs:element name="requires"
+                                            type="Requires" minOccurs="0" />
+                                        <xs:element name="artifacts"
+                                            type="Artifacts" minOccurs="0" />
+                                        <xs:element name="touchpoint"
+                                            type="Touchpoint" minOccurs="0" />
+                                        <xs:element name="touchpointData"
+                                            type="TouchpointData" minOccurs="0" />
+                                        <xs:element name="licenses"
+                                            type="Licenses" minOccurs="0" />
+                                        <xs:element name="copyright"
+                                            type="xs:string" minOccurs="0" />
+                                    </xs:sequence>
+                                    <xs:attribute name="id" type="xs:string"
+                                        use="required" />
+                                    <xs:attribute name="version"
+                                        type="xs:string" use="required" />
+                                    <xs:attribute name="singleton"
+                                        type="xs:string" />
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="size" type="xs:string"
+                            use="required" />
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="type" type="xs:string" use="required" />
+            <xs:attribute name="version" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="References">
+        <xs:sequence>
+            <xs:element name="repository" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="uri" type="xs:string" use="required" />
+                    <xs:attribute name="url" type="xs:string" use="required" />
+                    <xs:attribute name="type" type="xs:string" use="required" />
+                    <xs:attribute name="options" type="xs:string" use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="Properties">
+        <xs:sequence>
+            <xs:element name="property" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="value" type="xs:string"
+                        use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:decimal"
+            use="required" />
+    </xs:complexType>
+    <xs:complexType name="Provides">
+        <xs:sequence>
+            <xs:element name="provided" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="namespace" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="name" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="version" type="xs:string"
+                        use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:decimal"
+            use="required" />
+    </xs:complexType>
+    <xs:complexType name="Requires">
+        <xs:sequence>
+            <xs:element name="required" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="filter" minOccurs="0" maxOccurs="1"
+                            type="xs:string" />
+                    </xs:sequence>
+                    <xs:attribute name="namespace" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="name" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="range" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="optional" type="xs:boolean"
+                        use="optional" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:decimal"
+            use="required" />
+    </xs:complexType>
+    <xs:complexType name="Artifacts">
+        <xs:sequence minOccurs="0">
+            <xs:element name="artifact" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="classifier" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="id" type="xs:string"
+                        use="required" />
+                    <xs:attribute name="version" type="xs:string"
+                        use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:decimal"
+            use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="Touchpoint">
+        <xs:attribute name="id" type="xs:string"
+            use="required" />
+        <xs:attribute name="version" type="xs:string"
+            use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="TouchpointData">
+        <xs:sequence>
+            <xs:element name="instructions" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="instruction" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:simpleContent>
+                                    <xs:extension base="xs:string">
+                                        <xs:attribute name="key"
+                                            type="xs:string"
+                                            use="required" />
+                                    </xs:extension>
+                                </xs:simpleContent>
+
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="size" type="xs:decimal"
+                        use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:decimal"
+            use="required" />
+    </xs:complexType>
+    <xs:complexType name="Licenses">
+        <xs:sequence>
+            <xs:element name="license" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="uri" type="xs:anyURI"
+                                use="required" />
+                            <xs:attribute name="url" type="xs:anyURI"
+                                use="required" />
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:decimal"
+            use="required" />
+    </xs:complexType>
+</xs:schema>

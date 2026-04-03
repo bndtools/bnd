@@ -497,4 +497,89 @@ public class ClassParserTest {
 		c.parseClassFile(getClass().getResourceAsStream("classforname/ClassForName.class"));
 		assertThat(c.getReferred()).doesNotContain(a.getPackageRef("javax.swing"));
 	}
+
+	@Test
+	public void testProxyNewProxyInstance() throws Exception {
+		a.setProperty(Constants.NOPROXYINTERFACES, "false");
+		a.addClasspath(IO.getFile("jar/javax.servlet-api-4.0.1.jar"));
+		Clazz c = new Clazz(a, "test/proxy", null);
+		c.parseClassFile(getClass().getResourceAsStream("proxy/ProxyTest.class"));
+		// ServletContext has methods that reference types from javax.servlet.descriptor
+		// With proxy detection enabled, we should see javax.servlet.descriptor imported
+		assertThat(c.getReferred()).contains(a.getPackageRef("javax.servlet.descriptor"));
+	}
+
+	@Test
+	public void testNoProxyNewProxyInstance() throws Exception {
+		a.setProperty(Constants.NOPROXYINTERFACES, "true");
+		a.addClasspath(IO.getFile("jar/javax.servlet-api-4.0.1.jar"));
+		Clazz c = new Clazz(a, "test/proxy", null);
+		c.parseClassFile(getClass().getResourceAsStream("proxy/ProxyTest.class"));
+		// With -noclassforname=true, proxy detection should be disabled
+		// We should NOT see javax.servlet.descriptor imported
+		assertThat(c.getReferred()).doesNotContain(a.getPackageRef("javax.servlet.descriptor"));
+	}
+
+	@Test
+	public void testProxyFromFieldNotDetected() throws Exception {
+		a.setProperty(Constants.NOPROXYINTERFACES, "false");
+		a.addClasspath(IO.getFile("jar/javax.servlet-api-4.0.1.jar"));
+		Clazz c = new Clazz(a, "test/proxy", null);
+		c.parseClassFile(getClass().getResourceAsStream("proxy/ProxyFromField.class"));
+		// When the Class[] array comes from a field, we cannot reliably detect
+		// which interfaces are being proxied, so we should NOT add javax.servlet.descriptor
+		// The array is created in the static initializer, not inline with newProxyInstance
+		assertThat(c.getReferred()).doesNotContain(a.getPackageRef("javax.servlet.descriptor"));
+	}
+
+	@Test
+	public void testProxyFalsePositiveFixed() throws Exception {
+		a.setProperty(Constants.NOPROXYINTERFACES, "false");
+		a.addClasspath(IO.getFile("jar/javax.servlet-api-4.0.1.jar"));
+		Clazz c = new Clazz(a, "test/proxy", null);
+		c.parseClassFile(getClass().getResourceAsStream("proxy/ProxyFalsePositive.class"));
+		// This test verifies that a false positive has been fixed:
+		// - First, a Class[] array with ServletContext is created (triggers anewarray + ldc + aastore)
+		// - Then the array is stored via astore instruction
+		// - Later, newProxyInstance is called with an array from a field (Runnable)
+		//
+		// Before fix: ServletContext would be incorrectly processed because inProxyArray
+		// remained true and proxyInterfaces still contained ServletContext
+		//
+		// After fix: ServletContext is NOT detected because the astore instruction
+		// resets inProxyArray and clears proxyInterfaces (store and other invoke
+		// instructions break the inline array pattern)
+		//
+		// We should NOT see javax.servlet.descriptor imported because ServletContext
+		// is not actually being proxied (it's just in an unrelated array)
+		assertThat(c.getReferred()).doesNotContain(a.getPackageRef("javax.servlet.descriptor"));
+	}
+
+	@Test
+	public void testProxyFalsePositiveNotDetected() throws Exception {
+		// Enable class-for-name and proxy detection
+		a.setProperty(Constants.NOPROXYINTERFACES, "false");
+		a.setClasspath(new File[] {
+			IO.getFile("jar/javax.servlet-api-4.0.1.jar")
+		});
+
+		// Load the compiled class file that could cause a false positive
+		Clazz c = new Clazz(a, "test/proxy", null);
+		c.parseClassFile(getClass().getResourceAsStream("proxy/FalsePositiveProxyExample.class"));
+
+		// When a Proxy.newProxyInstance call occurs later but the Class[] array
+		// was created earlier for a different purpose, we should NOT treat
+		// those earlier ldc/aastore class constants (e.g.,
+		// ServletContext.class)
+		// as proxy interfaces.
+
+		assertThat(c.getReferred())
+			// Ensure we did NOT incorrectly add javax.servlet.descriptor as a
+			// proxy interface
+			.doesNotContain(a.getPackageRef("javax.servlet.descriptor"))
+			// For documentation: Proxy.newProxyInstance is still recognized,
+			// but its interface array (built in a separate method) isn't
+			// analyzed
+			.contains(a.getPackageRef("java.lang.reflect"));
+	}
 }

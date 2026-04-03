@@ -1,12 +1,70 @@
 
-<nav class=next-prev>
-	<a href='{{ page.previous.url | prepend: site.baseurl }}'></a> <a href='{{ page.next.url | prepend: site.baseurl }}'></a>
-</nav>
 <footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<div class="container-right">
+		{% include pagination.htm %}
+	</div>
+
 	<ul span=12 row>
 		<li span=12>
 			<ul>
-				<li><a href="{{ "/" | prepend:site.baseurl }}">GitHub</a>
+				<li><a href="{{ "/" | prepend:site.baseurl }}">Home</a>
 			</ul>
 	</ul>
+
+	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', () => {
+			const headers = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+
+			headers.forEach(header => {
+				const iconLink = document.createElement('a');
+				iconLink.href = `#${header.id}`;
+				iconLink.innerHTML = '#';
+				iconLink.className = 'header-link';
+
+				// Wrap the icon inside a span to control visibility with CSS
+				const wrapper = document.createElement('span');
+				wrapper.className = 'header-link-wrapper';
+				wrapper.appendChild(iconLink);
+
+				// Append the wrapper to the header
+				header.appendChild(wrapper);
+			});
+		});
+
+
+		// copy to clipboard buttons
+
+		const copyButtonLabel = "Copy";
+		let blocks = document.querySelectorAll("pre.highlight");
+
+		blocks.forEach((block) => {
+		// only add button if browser supports Clipboard API
+		if (navigator.clipboard) {
+			let button = document.createElement("button");
+			button.classList.add("copycodebtn");
+
+			button.innerText = copyButtonLabel;
+			block.appendChild(button);
+
+			button.addEventListener("click", async () => {
+			await copyCode(block, button);
+			});
+
+		}
+		});
+
+		async function copyCode(block, button) {
+		let code = block.querySelector("code");
+		let text = code.innerText;
+
+		await navigator.clipboard.writeText(text);
+
+		button.innerText = "Copied";
+
+			setTimeout(()=> {
+				button.innerText = copyButtonLabel;
+			},2000)
+		}
+	</script>
+
 </footer>

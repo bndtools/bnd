@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: versionmask MASK VERSION?
 summary: Modify a version using a template
+parent: Macro Reference
 ---
-
 The `versionmask` macro takes a template (MASK) and a version. It then uses the template
 to modify the version. This is useful to get rid of parts of the version. For example,
 to get rid of the qualifier the following macro is useful:

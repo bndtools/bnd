@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.RandomAccess;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.IntConsumer;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.Assert;
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.wiring.BundleWiring;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -50,6 +50,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	static final String					BND_TEST_THREAD		= "bnd Runtime Test Bundle";
 	protected final String				activatorClass;
 	protected final String				tester;
+	protected final String				bndrun;
 	protected TestBundler				testBundler;
 	protected boolean					DEBUG				= true;
 	protected LaunchpadBuilder			builder;
@@ -175,12 +176,39 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 			}
 		}
 
+		final ClassLoader cl = Thread.currentThread()
+			.getContextClassLoader();
 		try {
+			setTesterClassLoader();
 			r.run();
 			throw new AssertionError("Expecting run() to call System.exit(), but it didn't");
-		} catch (ExitCode e) {
-			return e;
+		} catch (Throwable e) {
+			Throwable t = BndSystem.convert(e, ExitCode::new);
+			if (t instanceof ExitCode ec)
+				return ec;
+
+			throw Exceptions.duck(t);
+		} finally {
+			Thread.currentThread()
+				.setContextClassLoader(cl);
 		}
+	}
+
+	protected void setTesterClassLoader() {
+		setTesterClassLoader(Thread.currentThread());
+	}
+
+	protected void setTesterClassLoader(Thread thread) {
+		// It is necessary to set the context class loader because
+		// JUnit Platform Launcher uses the TCCL passed to the
+		// ServiceLoader to load implementation classes. If we don't
+		// set it to the tester bundle, then it will be the system
+		// classloader (which has visibility to the version of
+		// junit-platform-launcher that launched the test and may
+		// be incompatible with the version installed in the system-
+		// under-test. Refer Bndtools issue #6640
+		thread.setContextClassLoader(testerBundle.adapt(BundleWiring.class)
+			.getClassLoader());
 	}
 
 	public void runTesterAndWait() {
@@ -206,7 +234,8 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		final Runnable r = oR.get();
 
 		runThread = new Thread(r, name);
-		runThread.setUncaughtExceptionHandler((t, x) -> uncaught.set(x));
+		runThread.setUncaughtExceptionHandler((t, x) -> uncaught.set(BndSystem.convert(x, ExitCode::new)));
+		setTesterClassLoader(runThread);
 		runThread.start();
 	}
 
@@ -220,13 +249,17 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	public void waitForTesterToWait() {
+		waitForThreadToWait(runThread);
+	}
+
+	public void waitForThreadToWait(Thread thread) {
 		final long waitTime = 10000;
 		final long endTime = System.currentTimeMillis() + waitTime;
 		int waitCount = 0;
 		try {
 			OUTER: while (true) {
 				Thread.sleep(100);
-				final Thread.State state = runThread.getState();
+				final Thread.State state = thread.getState();
 				switch (state) {
 					case TERMINATED :
 					case TIMED_WAITING :
@@ -247,7 +280,7 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 			throw Exceptions.duck(e);
 		}
 		// Check that it hasn't terminated.
-		assertThat(runThread.getState()).as("runThread")
+		assertThat(thread.getState()).as(thread.getName())
 			.isIn(Thread.State.WAITING, Thread.State.TIMED_WAITING);
 	}
 
@@ -354,8 +387,13 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	public AbstractActivatorTest(String activatorClass, String tester) {
+		this(activatorClass, tester, tester);
+	}
+
+	public AbstractActivatorTest(String activatorClass, String tester, String bndrun) {
 		this.activatorClass = activatorClass;
 		this.tester = tester;
+		this.bndrun = bndrun + ".bndrun";
 	}
 
 	protected void createLP() {
@@ -435,15 +473,6 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	protected AutoCloseable setExitToThrowExitCode() {
-		IntConsumer target = code -> {
-			throw new ExitCode(code);
-		};
-		IntConsumer prev = BndSystem.exit.getAndSet(target);
-		return () -> {
-			boolean success = BndSystem.exit.compareAndSet(prev, target);
-			if (!success)
-				throw new Error(
-					"Overrode BndSystem exit function and tried to restore it. However, someone changed it in the mean time");
-		};
+		return BndSystem.throwErrorOnExit();
 	}
 }

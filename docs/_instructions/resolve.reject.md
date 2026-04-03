@@ -1,9 +1,18 @@
 ---
-layout: default
+layout: bnd
+title: -resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? ),
 class: Workspace
-title: -resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? ), 
-summary: Controls rejection of capabilities during resolving.
+summary: |
+   Controls rejection of capabilities during resolving.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-resolve.reject foo;filter:='(foo=3)``
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/resolve.reject.md --><br /><br />
 
 The resolver will request capabilities from the resolve context. In bnd, the resolve hook can be
 used to reject some of these capabilities. The `-resolve.reject` instruction can control the default
@@ -49,7 +58,8 @@ This should normally not make a difference during resolving. However, in some ca
 situation. The following example restores the pre release 7 situation. 
 
     -resolve.reject     @osgi.identity;filter:='(!(|(type=osgi.bundle)(type=osgi.fragment)))'
-    
-    
 
-  
+
+
+<hr />
+TODO Needs review - AI Generated content

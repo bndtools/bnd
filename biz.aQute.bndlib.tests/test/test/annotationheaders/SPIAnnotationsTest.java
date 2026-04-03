@@ -72,6 +72,7 @@ public class SPIAnnotationsTest {
 				"META-INF/services/test.annotationheaders.spi.SPIService;literal='test.annotationheaders.spi.providerE.Provider'");
 			b.setProperty("Provide-Capability",
 				"osgi.serviceloader;osgi.serviceloader='test.annotationheaders.spi.SPIService';register:='test.annotationheaders.spi.providerE.Provider'");
+			b.setProperty(Constants.METAINF_SERVICES, Constants.METAINF_SERVICES_STRATEGY_ANNOTATION);
 			b.build();
 			b.getJar()
 				.getManifest()
@@ -89,6 +90,46 @@ public class SPIAnnotationsTest {
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
 			assertEquals(1, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNotNull(p.get("register:"));
+			assertEquals("test.annotationheaders.spi.providerE.Provider", p.get("register:"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"test.annotationheaders.spi.providerE.Provider");
+		}
+	}
+
+	@Test
+	public void testServiceProvider_existingdescriptorAuto() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerE");
+			b.setProperty("-includeresource",
+				"META-INF/services/test.annotationheaders.spi.SPIService;literal='test.annotationheaders.spi.providerE.Provider'");
+			b.setProperty("Provide-Capability",
+				"osgi.serviceloader;osgi.serviceloader='test.annotationheaders.spi.SPIService';register:='test.annotationheaders.spi.providerE.Provider'");
+			b.setProperty(Constants.METAINF_SERVICES, Constants.METAINF_SERVICES_STRATEGY_AUTO);
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(2, req.size());
+
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(3, cap.size());
 
 			Props p = cap.get("osgi.serviceloader");
 			assertNotNull(p);
@@ -144,9 +185,10 @@ public class SPIAnnotationsTest {
 			b.addClasspath(IO.getFile("bin_test"));
 			b.setPrivatePackage("test.annotationheaders.spi.providerE");
 			b.setProperty("-includeresource",
-				"META-INF/services/test.annotationheaders.spi.SPIService;literal='some.other.Provider'");
+				"META-INF/services/test.annotationheaders.spi.SPIService;literal='java.lang.String'");
 			b.setProperty("Provide-Capability",
 				"osgi.serviceloader;osgi.serviceloader=\"test.annotationheaders.spi.SPIService\"");
+			b.setProperty(Constants.METAINF_SERVICES, Constants.METAINF_SERVICES_STRATEGY_ANNOTATION);
 			b.build();
 			b.getJar()
 				.getManifest()
@@ -171,7 +213,47 @@ public class SPIAnnotationsTest {
 			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
 			assertNull(p.get("register:"));
 
-			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService", "some.other.Provider");
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService", "java.lang.String");
+			assertServiceMappingFileNotContains(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"another.provider.ProviderImpl");
+		}
+	}
+
+	@Test
+	public void testServiceProvider_nowarning_onexistingAuto() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerE");
+			b.setProperty("-includeresource",
+				"META-INF/services/test.annotationheaders.spi.SPIService;literal='java.lang.String'");
+			b.setProperty("Provide-Capability",
+				"osgi.serviceloader;osgi.serviceloader=\"test.annotationheaders.spi.SPIService\"");
+			b.setProperty(Constants.METAINF_SERVICES, Constants.METAINF_SERVICES_STRATEGY_AUTO);
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(2, req.size());
+
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(3, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNull(p.get("register:"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService", "java.lang.String");
 			assertServiceMappingFileNotContains(b.getJar(), "test.annotationheaders.spi.SPIService",
 				"another.provider.ProviderImpl");
 		}
@@ -184,6 +266,7 @@ public class SPIAnnotationsTest {
 			b.setPrivatePackage("test.annotationheaders.spi.providerD");
 			b.setProperty("-includeresource",
 				"META-INF/services/test.annotationheaders.spi.SPIService=testresources/services");
+			b.setProperty(Constants.METAINF_SERVICES, Constants.METAINF_SERVICES_STRATEGY_ANNOTATION);
 			b.build();
 			b.getJar()
 				.getManifest()
@@ -193,6 +276,57 @@ public class SPIAnnotationsTest {
 			Attributes mainAttributes = b.getJar()
 				.getManifest()
 				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(2, req.size());
+
+			assertExtender(req, "osgi.serviceloader.registrar");
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(2, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNotNull(p.get("register:"));
+			assertThat(p.get("register:")).isIn("test.annotationheaders.spi.providerD.Provider");
+			assertNotNull(p.get("foo"));
+			assertEquals("bar", p.get("foo"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"test.annotationheaders.spi.providerD.Provider");
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"another.provider.ProviderImpl");
+		}
+	}
+
+	@Test
+	public void testServiceProvider_mergeDescriptorAuto() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerD");
+			b.setProperty("-includeresource",
+				"META-INF/services/test.annotationheaders.spi.SPIService=testresources/services");
+			b.setProperty(Constants.METAINF_SERVICES, Constants.METAINF_SERVICES_STRATEGY_AUTO);
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertFalse(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			assertThat(b.getErrors()).hasSize(2);
+			assertThat(b.getErrors()
+				.get(0)).contains(
+					"analyzer processing annotation some.provider.Provider but the associated class is not found in the JAR");
+			assertThat(b.getErrors()
+				.get(1)).contains(
+					"analyzer processing annotation another.provider.ProviderImpl but the associated class is not found in the JAR");
 
 			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
 			assertEquals(2, req.size());

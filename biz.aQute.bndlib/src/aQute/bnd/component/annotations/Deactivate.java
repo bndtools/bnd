@@ -36,7 +36,6 @@ import java.lang.annotation.Target;
  * bundle.
  * 
  * @see "The deactivate attribute of the component element of a Component Description."
- * @author $Id$
  * @since 1.1
  */
 @Retention(RetentionPolicy.CLASS)

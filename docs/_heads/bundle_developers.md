@@ -1,9 +1,30 @@
 ---
-layout: default
+layout: bnd
+title: Bundle-Developers ...
 class: Header
-title: Bundle-Developers ... 
-summary: Lists the bundle developers according to the Maven bundle-developers pom entry
+summary: |
+   Lists the bundle developers according to the Maven bundle-developers pom entry
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bundle-Developers: Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/bundle_developers.md --><br /><br />
+
+# Bundle-Developers
+
+The `Bundle-Developers` header lists developers of the bundle, as defined in the Maven POM or via annotations. This header is not standardized by OSGi but is used for documentation and tracking purposes.
+
+Example:
+
+```
+Bundle-Developers: Jane Smith;roles='lead';organization='Example Corp.'
+```
+
+This header is optional and is mainly used for informational purposes.
 	
 	/*
 	 * Bundle-Developers header
@@ -101,4 +122,7 @@ summary: Lists the bundle developers according to the Maven bundle-developers po
 			 */
 			int timezone() default 0;
 		}
-			
+
+
+<hr />
+TODO Needs review - AI Generated content

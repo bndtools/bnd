@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.jar.Manifest;
 
-import aQute.lib.manifest.ManifestUtil;
-
 /**
  * Bnd Resource for Manifest with correct support for writing the manifest to an
  * output stream.
@@ -34,6 +32,6 @@ public class ManifestResource extends WriteResource {
 
 	@Override
 	public void write(OutputStream out) throws IOException {
-		ManifestUtil.write(manifest, out);
+		Jar.writeManifest(manifest, out);
 	}
 }

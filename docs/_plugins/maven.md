@@ -1,10 +1,10 @@
 ---
 title: Maven Bnd Repository Plugin
-layout: default
+layout: bnd
 summary: A plugin to use and release to Maven repositories
+parent: Plugins
 ---
-
-The Maven Bnd Repository plugin provides a full interface to the Maven local repository in `~/.m2/repository` and remote repositories like [Nexus] or [Artifactory]. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.
+The Maven Bnd Repository / MavenBndRepository plugin provides a full interface to the Maven local repository in `~/.m2/repository` and remote repositories like [Nexus] or [Artifactory]. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.
 
 ### Maven Central
 
@@ -17,6 +17,10 @@ To access Maven Central use the following configuration:
 			name="Central"
 
 You can add `Group:Artifact:Version` coordinates in the `central.maven` file. The file can contain comments, empty lines, and can use macros per line. That is, you cannot create a macro with a load of GAV's.
+
+#### Release to Maven Central
+
+The recommended approach is the standalone upload scripts described in [Sonatype Central Portal Publishing](/chapters/325-sonatype-central-portal.html).
 
 ### Use of .m2 Local Repository
 
@@ -63,12 +67,15 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 |------------------|-------|---------|-------------|
 | `releaseUrl`     | `URI` |         | Comma separated list of URLs to the repositories of released artifacts.|
 | `snapshotUrl`    | `URI` |         | Comma separated list of URLs to the repositories of snapshot artifacts.|
+| `stagingUrl`    | `URI` |         | A single URL to the repositories staging repository. This is required, e.g. for a release to maven central, which usually goes through a staging repository.|
+| `sonatypeMode`   | enum `none` `manual` `autopublish` | `none` | Controls how artifacts are published to Maven Central via the Sonatype Central Portal. `none`: standard Maven repository behavior; `manual`: upload for validation but requires manual publishing approval; `autopublish`: automatically publish after validation. Requires Bearer Token authentication via [-connection-settings]. |
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
 |                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
 |                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
-| `readOnly`       | `true|false` | `false` | If set to _truthy_ then this repository is read only.|
+| `readOnly`       | `true`|`false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
-| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.|
+| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_ (text with one GAV per line or pom.xml).|
+| `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
 | `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for changes to the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
@@ -76,9 +83,15 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 
 If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_. 
 
-For finding archives, both URLs are used, first `releaseUrl`.
+For finding archives, both URLs are used. For releasing, only the first or the `stagingUrl` is used.
 
-The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories.
+The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories. 
+The index file supports two formats: 
+
+- a) text file with one GAV per line or
+- b) Maven _pom.xml_ content (note that not the full maven pom.xml features are supported. Mainly the `<dependency>` entries are relevant.
+
+Note on auto-detection of index format: If bnd detects xml it assumes `pom.xml`, otherwise the text-file format is assumed.
 
 Alternative, the GAV's can be specified in the file where the repository is defined with the  `source` configuration property. This is a string separated by either whitespace, commas, semicolons, or any combination thereof.
 
@@ -132,6 +145,10 @@ In Maven, revisions that end in `-SNAPSHOT` are treated special in many places. 
 
 The Maven Bnd Repository uses the bnd Http Client. See the [-connection-settings] instruction for how to set the proxy and authentication information.
 
+## Tagging
+
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.
+
 ## IDEs
 
 The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.
@@ -145,8 +162,8 @@ You can add new entries by:
 
 [Nexus]: https://www.sonatype.com/products/repository-pro
 [Artifactory]: https://www.jfrog.com/open-source/
-[-maven-release]: /instructions/maven-release.html
+[-maven-release]: /instructions/maven_release.html
 [-snapshot]: /instructions/snapshot.html
 [-pom]: /instructions/pom.html
-[-connection-settings]: /instructions/connection-settings.html
+[-connection-settings]: /instructions/connection_settings.html
 [-buildrepo]: /instructions/buildrepo.html

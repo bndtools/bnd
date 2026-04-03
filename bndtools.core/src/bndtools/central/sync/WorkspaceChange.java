@@ -49,6 +49,12 @@ public class WorkspaceChange {
 			if (cancel || monitor.isCanceled())
 				return Status.CANCEL_STATUS;
 
+			if (!ResourcesPlugin.getWorkspace()
+				.isAutoBuilding()) {
+				return Status.warning(
+					"[cnf change] Skip FULL build, because 'Build Automatically' is disabled.");
+			}
+
 			workspace.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
 		} catch (CoreException e) {
 			return Status.error("trying to build", e);

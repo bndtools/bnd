@@ -1,9 +1,30 @@
 ---
-layout: default
+layout: bnd
+title: -snapshot STRING
 class: Project
-title: -snapshot STRING 
-summary: String to substitute for "SNAPSHOT" in the bundle version's qualifier
+summary: |
+   String to substitute for "SNAPSHOT" in the bundle version's qualifier
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-snapshot=${tstamp}`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/snapshot.md --><br /><br />
+
+# -snapshot
+
+The `-snapshot` instruction specifies a string to substitute for "SNAPSHOT" in the bundle version's qualifier. This is useful for customizing versioning schemes during the build process.
+
+Example:
+
+```
+-snapshot: 20250708
+```
+
+If the bundle version's qualifier is "SNAPSHOT" or ends with "-SNAPSHOT", the specified string will be used instead.
 
 When the bundle version's qualifier equals "SNAPSHOT" or ends with "-SNAPSHOT", the STRING
 value of the `-snapshot` instruction is substituted for "SNAPSHOT". The STRING value of
@@ -29,3 +50,7 @@ or some other meaningful value:
 
 Using "SNAPSHOT" in the bundle version's qualifier and the `-snapshot` instruction 
 are generally for bundles intended for maven builds.
+
+
+<hr />
+TODO Needs review - AI Generated content

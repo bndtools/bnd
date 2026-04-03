@@ -91,10 +91,18 @@ public abstract class ProjectTester {
 		launcher.setCwd(dir);
 	}
 
+	/**
+	 * @deprecated forRemoval since = "8.0.0"
+	 */
+	@Deprecated
 	public boolean getTerminate() {
 		return terminate;
 	}
 
+	/**
+	 * @deprecated forRemoval since = "8.0.0"
+	 */
+	@Deprecated
 	public void setTerminate(boolean terminate) {
 		this.terminate = terminate;
 	}

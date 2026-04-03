@@ -1,11 +1,21 @@
 ---
-order: 400
-title: Commands
-layout: default
+title: bnd CLI Commands
+layout: bnd
+parent: Documentation and Tools
+nav_order: 2
+has_children: true
 ---
+The command line interface (bnd CLI) provides various tools to invoke bnd functions and features. It is using bndlib under the hood just like other tooling like bndtools, maven or gradle plugins do too.
+
+Checkout the [tutorial](/chapters/123-tour-workspace.html) which makes use of the CLI.
+
+## Installation
+
+See here to [install the CLI](/chapters/120-install.html#command-line).
 
 ## Use
-The command line tool can be invoked in several different ways:
+
+The bnd CLI can be invoked in several different ways:
 
 * bnd ''general-options'' ''cmd'' ''cmd-options''
 * bnd ''general-options'' ''<file>.jar''
@@ -17,17 +27,20 @@ In this text `bnd` is used as if it is a command line program. This should be se
 
 ### General Options
 
-||!General Option ||!Description ||
-||-failok ||Same as the property -failok. The current run will create a JAR file even if there were errors. ||
-||-exceptions ||Will print the exception when the software has ran into a bad exception and bails out. Normally only a message is printed. For debugging or diagnostic reasons, the exception stack trace can be very helpful. ||
+| General Option | Description |
+|---|---|
+| `-b, --base <string>` | Use as base directory |
+| `-d, --debug` | Show log debug output |
+| `-e, --exceptions` | Print out stack traces when there is an unexpected exception |
+| `-f, --failok` | Turns errors into warnings so command always succeeds |
+| `-i, --ignore <string;>` | Error/Warning ignore patterns |
+| `-o, --output <file>` | Redirect output |
+| `-p, --pedantic` | Report errors pedantically |
+| `-s, --secret <[c>` | Provide a settings password |
+| `-t, --trace` | Trace progress |
+| `-w, --workspace` | Use the workspace related to the default directory as parent for bnd |
 
-### Main options
-
-    [ -f, --full ]             - Do full
-    [ -p, --project <string> ] - Identify another project
-    [ -t, --test ]             - Build for test
-    [ -o, --output <string> ]  - Specify the output file path. The default is
-                                output.jar in the current directory
+Show [list of all options](/commands/bnd.html) for the bnd CLI.
 
 
 ### Reference

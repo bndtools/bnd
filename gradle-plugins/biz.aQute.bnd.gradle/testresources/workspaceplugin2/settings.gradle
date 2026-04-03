@@ -12,11 +12,6 @@ buildscript {
 	dependencies {
 		classpath files(bnd_plugin.tokenize(File.pathSeparatorChar))
 	}
-	/* Pass bnd gradle plugin classpath to rootProject once created */
-	def bndPlugin = files(configurations.classpath.files)
-	gradle.rootProject { rootProject ->
-		rootProject.ext.bndPlugin = bndPlugin
-	}
 }
 
 /* Initialize the bnd workspace */

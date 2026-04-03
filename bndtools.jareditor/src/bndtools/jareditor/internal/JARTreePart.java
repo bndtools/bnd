@@ -58,7 +58,7 @@ public class JARTreePart extends AbstractFormPart {
 		Section section = toolkit.createSection(parent, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
 
 		section.setText("Content Tree");
-		tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE);
+		tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE | SWT.V_SCROLL);
 		tree.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
 
 		section.setClient(tree);
@@ -157,14 +157,32 @@ public class JARTreePart extends AbstractFormPart {
 	@Override
 	public boolean setFormInput(Object input) {
 		String[] selectedPath = getSelectedPath();
-		if (selectedPath == null)
-			selectedPath = new String[] {
-				"META-INF", "MANIFEST.MF"
-			};
+		if (selectedPath == null && input instanceof IContainer) {
+			selectedPath = getDefaultSelectionPath((IContainer) input);
+		}
 
 		viewer.setInput(input);
+
 		setSelectedPath(selectedPath);
 		return false;
+	}
+
+	private String[] getDefaultSelectionPath(IContainer input) {
+		IResource featureXml = input.findMember("feature.xml");
+		if (featureXml instanceof IFile) {
+			return new String[] {
+				"feature.xml"
+			};
+		}
+
+		IResource manifest = input.findMember("META-INF/MANIFEST.MF");
+		if (manifest instanceof IFile) {
+			return new String[] {
+				"META-INF", "MANIFEST.MF"
+			};
+		}
+
+		return null;
 	}
 
 	@Override

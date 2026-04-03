@@ -1,70 +1,34 @@
 ---
-layout: default
+layout: bnd
+title: -privatepackage PACKAGE-SPEC
 class: Builder
-title: -privatepackage PACKAGE-SPEC 
-summary: Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest.
+summary: |
+   Specify the private packages, these packages are included from the class path. Alternative to Private-Package, this version is not included in the manifest.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
+- Example: `-privatepackage: com.example.*, foo.bar`
 
-	/**
-	 * Allow any local initialization by subclasses before we build.
-	 */
-	public void init() throws Exception {
-		begin();
-		doRequireBnd();
+- Values: `${packages}`
 
-		// Check if we have sensible setup
+- Pattern: `.*`
 
-		if (getClasspath().size() == 0
-				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
-			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + " (-privatepackage) and " + EXPORT_PACKAGE + " can only expand from the classpath when there is one");
+<!-- Manual content from: ext/privatepackage.md --><br /><br />
 
-	}
+# -privatepackage
 
-	
-		/**
-	 * Check if the given resource is in scope of this bundle. That is, it
-	 * checks if the Include-Resource includes this resource or if it is a class
-	 * file it is on the class path and the Export-Package or Private-Package
-	 * include this resource.
-	 *
-	 * @param f
-	 * @return
-	 */
-	public boolean isInScope(Collection<File> resources) throws Exception {
-		Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
-		clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
-		clauses.putAll(parseHeader(getProperty(Constants.PRIVATEPACKAGE)));
-		if (isTrue(getProperty(Constants.UNDERTEST))) {
-			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES, "test;presence:=optional")));
-		}
+The `-privatepackage` instruction specifies packages to include from the class path as private packages. Unlike the `Private-Package` header, this instruction is not included in the manifest. It is used to control which packages are bundled privately in the output JAR.
 
-		Collection<String> ir = getIncludedResourcePrefixes();
+Example:
 
-		Instructions instructions = new Instructions(clauses);
+```
+-privatepackage: com.example.internal.*
+```
 
-		for (File r : resources) {
-			String cpEntry = getClasspathEntrySuffix(r);
+This instruction is useful for fine-grained control over bundle contents during the build process.
 
-			if (cpEntry != null) {
 
-				if (cpEntry.equals("")) // Meaning we actually have a CPE
-					return true;
 
-				String pack = Descriptors.getPackage(cpEntry);
-				Instruction i = matches(instructions, pack, null, r.getName());
-				if (i != null)
-					return !i.isNegated();
-			}
-
-			// Check if this resource starts with one of the I-C header
-			// paths.
-			String path = r.getAbsolutePath();
-			for (String p : ir) {
-				if (path.startsWith(p))
-					return true;
-			}
-		}
-		return false;
-	}
-	
+<hr />
+TODO Needs review - AI Generated content

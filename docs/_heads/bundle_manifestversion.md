@@ -1,8 +1,32 @@
 ---
-layout: default
-class: Header
+layout: bnd
 title: Bundle-ManifestVersion ::= 2
-summary: The Bundle-ManifestVersion is always set to 2, there is no way to override this.
+class: Header
+summary: |
+   The Bundle-ManifestVersion is always set to 2, there is no way to override this.
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
-	
- Works as private package but will only include the packages when they are imported. When this header is used, bnd will recursively add packages that match the patterns until there are no more additions
+
+- Example: `# Bundle-ManifestVersion: 2`
+
+- Values: `2`
+
+- Pattern: `\d+`
+
+<!-- Manual content from: ext/bundle_manifestversion.md --><br /><br />
+
+# Bundle-ManifestVersion
+
+The `Bundle-ManifestVersion` header is always set to `2` for OSGi R4 and later bundles. This value is required by the OSGi specification and cannot be changed or omitted. It ensures compatibility with the OSGi framework.
+
+Example:
+
+```
+Bundle-ManifestVersion: 2
+```
+
+This header is automatically set by bnd and should not be modified manually.
+
+<hr />
+TODO Needs review - AI Generated content

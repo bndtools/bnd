@@ -1,11 +1,11 @@
 ---
-order: 320
 title: Testing with Launchpad
-layout: default
+layout: bnd
 class : Project
 version: 4.3.0
+parent: Testing
+nav_order: 2
 ---
-
 _note_ This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage.
 
 An OSGi framework poses special challenges to testing because it is necessary to start a framework instance for each 
@@ -541,4 +541,4 @@ The service will remain hidden until you close the `Closeable`.
 
 
 
-[Service Hooks]: https://osgi.org/specification/osgi.core/7.0.0/framework.servicehooks.html
+[Service Hooks]: https://osgi.org/specification/osgi.core/8.0.0/framework.servicehooks.html

@@ -1,3 +1,19 @@
+a#bndtools-overview img {
+	background-image: url(../images/bndtools.gif);
+}
+
+a#bndtools-overview:hover img {
+	background-image: url(../images/bndtools-glow.gif);
+}
+
+a#bndtools-tutorials img {
+	background-image: url(../images/bndtools.gif);
+}
+
+a#bndtools-tutorials:hover img {
+	background-image: url(../images/bndtools-glow.gif);
+}
+
 a#bndtools-noteworthy img {
 	background-image: url(../images/bndtools.gif);
 }

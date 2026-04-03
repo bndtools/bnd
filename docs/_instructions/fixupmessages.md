@@ -1,9 +1,18 @@
 ---
-layout: default
+layout: bnd
+title: -fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...
 class: Project
-title: -fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ... 
-summary: Fixup errors and warnings. 
+summary: |
+   Fixup errors and warnings.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-fixupmessages: 'Version mismatch';replace:='************* ${@}';restrict:=error`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/fixupmessages.md --><br /><br />
 
 The `-fixupmessages` instruction is intended to _fixup_ the errors and warnings. It allows you to remove errors and/or warnings, turn errors into warnings, and turn warnings into errors. With this instruction you can fail a build based on a warning or succeed a build that runs into errors.
 
@@ -46,21 +55,21 @@ The `-fixupmessages` instruction is a _merged property_. This means that you can
 ## Examples
 
 	# Turn an error into a warning
-	-fixupmessages
-	  "Invalid character'; \
+	-fixupmessages:
+	  'Invalid character'; \
 	    restrict:=error;
 	    is:=warning
   
 	# Replace a message
-	-fixupmessages \
+	-fixupmessages: \
 	  "split";replace:=broken
 	  
 	# Ignore case by appending :i
-	-fixupmessages \
+	-fixupmessages: \
 	  "case insensitive:i"
 	
 	# Wildcards
-	-fixupmessages \
+	-fixupmessages: \
 	  "prefix*suffix"
 
 	# Turn properties parser messages into warnings
@@ -72,4 +81,4 @@ The `-fixupmessages` instruction is a _merged property_. This means that you can
 	  "Found \\<whitespace>";
 	    is:=warning
 	    
-[1]: /chapters/820-instructions.html#selector
+[1]: /instructions/#selector

@@ -1,9 +1,15 @@
 package bndtools.utils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Supplier;
 
+import org.bndtools.core.ui.icons.Icons;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.forms.IFormPart;
@@ -35,5 +41,63 @@ public class EditorUtils {
 				return part;
 		}
 		return null;
+	}
+
+	/**
+	 * Creates a help button with icon and tool-tip.
+	 *
+	 * @param url
+	 * @param tooltipText
+	 */
+	public static final Action createHelpButton(String url, String tooltipText) {
+		return createHelpButton(() -> url, () -> tooltipText);
+	}
+
+	/**
+	 * Alternative to {@link #createHelpButton(String, String)} but if you need
+	 * to pass parameters lazy.
+	 *
+	 * @param urlSupplier
+	 * @param tooltipTextSupplier
+	 */
+	public static final Action createHelpButton(Supplier<String> urlSupplier, Supplier<String> tooltipTextSupplier) {
+		Action btn = new Action("Help", IAction.AS_PUSH_BUTTON) {
+			@Override
+			public void run() {
+				String url = urlSupplier.get();
+				if (url != null) {
+					Program.launch(url);
+				}
+			}
+
+			@Override
+			public String getToolTipText() {
+				return tooltipTextSupplier.get();
+			}
+		};
+		btn.setEnabled(true);
+		btn.setImageDescriptor(Icons.desc("help"));
+
+		return btn;
+	}
+
+
+	/**
+	 * Creates a help button with help-icon, text and tool-tip.
+	 *
+	 * @param url
+	 * @param buttonText
+	 * @param tooltipText
+	 */
+	public static final ActionContributionItem createHelpButtonWithText(String url, String buttonText, String tooltipText) {
+		Action btn = createHelpButton(url, tooltipText);
+		btn.setText(buttonText);
+
+		// the ActionContributionItem is required to display text below the icon
+		// of the button
+		ActionContributionItem helpContrib = new ActionContributionItem(btn);
+		helpContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+
+		return helpContrib;
 	}
 }

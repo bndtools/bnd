@@ -10,11 +10,13 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 public class MapHandler extends Handler {
-	final Class<?>	rawClass;
-	final Type		keyType;
-	final Type		valueType;
+	final Class<?>		rawClass;
+	final Type			keyType;
+	final Type			valueType;
+	final Supplier<?>	factory;
 
 	MapHandler(Class<?> rawClass, Type keyType, Type valueType) {
 
@@ -42,6 +44,7 @@ public class MapHandler extends Handler {
 				throw new IllegalArgumentException("Unknown map interface: " + rawClass);
 		}
 		this.rawClass = rawClass;
+		this.factory = newInstanceFunction(rawClass);
 	}
 
 	private Type resolve(Type type) {
@@ -109,10 +112,10 @@ public class MapHandler extends Handler {
 		assert r.current() == '{';
 
 		@SuppressWarnings("unchecked")
-		Map<Object, Object> map = (Map<Object, Object>) newInstance(rawClass);
+		Map<Object, Object> map = (Map<Object, Object>) factory.get();
 
 		int c = r.next();
-		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
+		while (r.codec.isStartCharacter(c)) {
 			Object key = r.codec.parseString(r);
 			if (!(keyType == null || keyType == Object.class)) {
 				Handler h = r.codec.getHandler(keyType, null);
@@ -138,10 +141,17 @@ public class MapHandler extends Handler {
 				continue;
 			}
 
+			if (r.codec.promiscuous && r.isEof()) {
+				r.codec.fishy.incrementAndGet();
+				return map;
+			}
+
 			throw new IllegalArgumentException(
-				"Invalid character in parsing list, expected } or , but found " + (char) c);
+				"Invalid character in parsing map, expected } or , but found " + (char) c);
 		}
-		assert r.current() == '}';
+		if (c != '}') {
+			r.fatal("Expected } but got " + (char) c);
+		}
 		r.read(); // skip closing
 		return map;
 	}

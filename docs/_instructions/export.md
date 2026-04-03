@@ -1,9 +1,20 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*
-summary: Turns a bndrun file into its deployable format 
+class: Project
+summary: |
+   Turns a bndrun file into its deployable format
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-export: launcher.jar`
+
+- Values: `FILE ( ';' PARAMETER )* ( ',' FILE ( ';' PARAMETER )* )*`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/export.md --><br /><br />
 
 The `-export` instruction can be used to export a `bndrun` or `bnd` file to an executable JAR during the build process. In contrast to the export functions, this `-export` instruction is supported in all drivers, including Eclipse. It can be used to continously build executable JARs or other supported exporters. It can only be used in the top level bnd.bnd file.
 
@@ -34,6 +45,7 @@ The Exporters use a plugin mechanism and therefore the list is not closed. The f
 * `osgi.subsystem.application` – Export into an application subsystem
 * `osgi.subsystem.feature` – Export into a feature subsystem 
 * `osgi.subsystem.composite` – Export into a composite subsystem
+* `p2` – Export a P2 repository
 
 ## Example
 

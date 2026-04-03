@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.pde.core.target.ITargetDefinition;
 import org.eclipse.pde.core.target.ITargetLocation;
@@ -61,8 +62,9 @@ public class RepositoryTargetLocation extends BndTargetLocation {
 		return repositoryName;
 	}
 
+
 	@Override
-	public IWizard getEditWizard(ITargetDefinition target, ITargetLocation targetLocation) {
+	public IWizard getEditWizard(ITargetDefinition target, TreePath treePath) {
 		RepositoryTargetLocationWizard wizard = new RepositoryTargetLocationWizard();
 		wizard.setTarget(target);
 		wizard.setTargetLocation(this);
@@ -82,13 +84,17 @@ public class RepositoryTargetLocation extends BndTargetLocation {
 
 			int i = 0;
 			for (String bsn : bsns) {
+				if (bsn.contains(":")) {
+					continue;
+				}
 				Version version = repository.versions(bsn)
 					.last();
+
 				File download = repository.get(bsn, version, new HashMap<String, String>());
 				try {
 					bundles.add(new TargetBundle(download));
 				} catch (Exception e) {
-					throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID,
+					throw new CoreException(new Status(IStatus.WARNING, PLUGIN_ID,
 						"Invalid plugin in repository: " + bsn + " @ " + getLocation(false), e));
 				}
 

@@ -3,8 +3,10 @@ package biz.aQute.resolve;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,25 +14,38 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 
 import aQute.bnd.build.Container;
+import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.build.model.conversions.NoopConverter;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.result.Result;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Strategy;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.Bndrun.CacheReason;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class RunResolutionTest {
 
 	Workspace	workspace;
@@ -398,12 +413,232 @@ public class RunResolutionTest {
 		bndrun.getModel()
 			.setRunBundles(Collections.emptyList());
 		resolution = bndrun.resolve(true, false);
-		assertThat(bndrun.check("Fail on changes set to ", "Existing runbundles   \\[\\]", "Calculated runbundles"))
-			.isTrue();
+		assertThat(bndrun.check("Fail on changes set to ", "Existing runbundles   \\[\\]", "Calculated runbundles",
+
+			"Diff .* exist in calculated runbundles but missing in existing runbundles"))
+				.isTrue();
+
 
 		// Now succeed because there are no changes
 		resolution = bndrun.resolve(false, false);
 		assertThat(bndrun.check()).isTrue();
 
 	}
+
+	@Test
+	public void testPrintHumanReadableDifference() throws Exception {
+		assertThat(Utils.printHumanReadableDifference(Set.of(1, 2, 3), Set.of(3, 4, 5), "set1", "set2"))
+			.isEqualTo("[1, 2] exist in set1 but missing in set2, [4, 5] exist in set2 but missing in set1");
+
+		assertThat(Utils.printHumanReadableDifference(Set.of(1, 2, 3), Set.of(1, 2, 3), "set1", "set2")).isNull();
+		assertThat(Utils.printHumanReadableDifference(Set.of(), Set.of(1, 2, 3), "set1", "set2"))
+			.isEqualTo("[1, 2, 3] exist in set2 but missing in set1");
+		assertThat(Utils.printHumanReadableDifference(Set.of(1, 2, 3), Set.of(), "set1", "set2"))
+			.isEqualTo("[1, 2, 3] exist in set1 but missing in set2");
+
+		Set<String> set1 = Set.of("com.fasterxml.jackson.core.jackson-annotations;version='[2.16.1,2.16.2)'",
+			"com.fasterxml.jackson.core.jackson-core;version='[2.16.1,2.16.2)'",
+			"com.fasterxml.jackson.core.jackson-databind;version='[2.16.1,2.16.2)'",
+			"io.dropwizard.metrics.core;version='[4.2.19,4.2.20)'", "junit-jupiter-api;version='[5.9.0,5.9.1)'",
+			"junit-jupiter-engine;version='[5.9.0,5.9.1)'", "junit-jupiter-params;version='[5.9.0,5.9.1)'",
+			"junit-platform-commons;version='[1.9.0,1.9.1)'", "junit-platform-engine;version='[1.9.0,1.9.1)'",
+			"junit-platform-launcher;version='[1.9.0,1.9.1)'",
+			"org.apache.aries.component-dsl.component-dsl;version='[1.2.2,1.2.3)'",
+			"org.apache.aries.typedevent.bus;version='[0.0.2,0.0.3)'",
+			"org.apache.commons.commons-csv;version='[1.9.0,1.9.1)'",
+			"org.apache.felix.configadmin;version='[1.9.24,1.9.25)'",
+			"org.apache.felix.http.servlet-api;version='[2.1.0,2.1.1)'", "org.apache.felix.scr;version='[2.2.2,2.2.3)'",
+			"org.eclipse.emf.common;version='[2.28.0,2.28.1)'", "org.eclipse.emf.ecore;version='[2.33.0,2.33.1)'",
+			"org.eclipse.emf.ecore.xmi;version='[2.18.0,2.18.1)'",
+			"org.eclipse.jetty.alpn.client;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.client;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.http;version='[11.0.13,11.0.14)'", "org.eclipse.jetty.io;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.security;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.server;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.util;version='[11.0.13,11.0.14)'",
+			"org.eclipse.sensinact.gateway.core.annotation;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.api;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.emf-api;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.geo-json;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.impl;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.models.metadata;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.models.provider;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.device-factory.device-factory-core;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.device-factory.parser-csv;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.http.http-device-factory;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.http.http-device-factory-tests;version='[0.0.2,0.0.3)'",
+			"org.gecko.emf.osgi.component;version='[5.0.0,5.0.1)'", "org.opentest4j;version='[1.2.0,1.2.1)'",
+			"org.osgi.service.cm;version='[1.6.1,1.6.2)'", "org.osgi.service.component;version='[1.5.0,1.5.1)'",
+			"org.osgi.service.typedevent;version='[1.0.0,1.0.1)'", "org.osgi.test.common;version='[1.2.1,1.2.2)'",
+			"org.osgi.test.junit5;version='[1.2.1,1.2.2)'", "org.osgi.util.converter;version='[1.0.9,1.0.10)'",
+			"org.osgi.util.function;version='[1.1.0,1.1.1)'", "org.osgi.util.promise;version='[1.3.0,1.3.1)'",
+			"org.osgi.util.pushstream;version='[1.0.2,1.0.3)'", "slf4j.api;version='[1.7.36,1.7.37)'",
+			"slf4j.simple;version='[1.7.36,1.7.37)'");
+		Set<String> set2 = Set.of("com.fasterxml.jackson.core.jackson-annotations;version='[2.16.1,2.16.2)'",
+			"com.fasterxml.jackson.core.jackson-core;version='[2.16.1,2.16.2)'",
+			"com.fasterxml.jackson.core.jackson-databind;version='[2.16.1,2.16.2)'",
+			"io.dropwizard.metrics.core;version='[4.2.19,4.2.20)'", "junit-jupiter-api;version='[5.9.0,5.9.1)'",
+			"junit-jupiter-engine;version='[5.9.0,5.9.1)'", "junit-jupiter-params;version='[5.9.0,5.9.1)'",
+			"junit-platform-commons;version='[1.9.0,1.9.1)'", "junit-platform-engine;version='[1.9.0,1.9.1)'",
+			"junit-platform-launcher;version='[1.9.0,1.9.1)'",
+			"org.apache.aries.component-dsl.component-dsl;version='[1.2.2,1.2.3)'",
+			"org.apache.aries.typedevent.bus;version='[0.0.2,0.0.3)'",
+			"org.apache.commons.commons-csv;version='[1.9.0,1.9.1)'",
+			"org.apache.felix.configadmin;version='[1.9.24,1.9.25)'",
+			"org.apache.felix.http.servlet-api;version='[2.1.0,2.1.1)'", "org.apache.felix.scr;version='[2.2.2,2.2.3)'",
+			"org.eclipse.emf.common;version='[2.28.0,2.28.1)'", "org.eclipse.emf.ecore;version='[2.33.0,2.33.1)'",
+			"org.eclipse.emf.ecore.xmi;version='[2.18.0,2.18.1)'",
+			"org.eclipse.jetty.alpn.client;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.client;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.http;version='[11.0.13,11.0.14)'", "org.eclipse.jetty.io;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.security;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.server;version='[11.0.13,11.0.14)'",
+			"org.eclipse.jetty.util;version='[11.0.13,11.0.14)'",
+			"org.eclipse.sensinact.gateway.core.annotation;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.api;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.emf-api;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.geo-json;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.impl;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.models.metadata;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.core.models.provider;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.device-factory.device-factory-core;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.device-factory.parser-csv;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.http.http-device-factory;version='[0.0.2,0.0.3)'",
+			"org.eclipse.sensinact.gateway.southbound.http.http-device-factory-tests;version='[0.0.2,0.0.3)'",
+			"org.gecko.emf.osgi.component;version='[5.0.0,5.0.1)'", "org.opentest4j;version='[1.2.0,1.2.1)'",
+			"org.osgi.service.component;version='[1.5.0,1.5.1)'", "org.osgi.service.typedevent;version='[1.0.0,1.0.1)'",
+			"org.osgi.test.common;version='[1.2.1,1.2.2)'", "org.osgi.test.junit5;version='[1.2.1,1.2.2)'",
+			"org.osgi.util.converter;version='[1.0.9,1.0.10)'", "org.osgi.util.function;version='[1.1.0,1.1.1)'",
+			"org.osgi.util.promise;version='[1.3.0,1.3.1)'", "org.osgi.util.pushstream;version='[1.0.2,1.0.3)'",
+			"slf4j.api;version='[1.7.36,1.7.37)'", "slf4j.simple;version='[1.7.36,1.7.37)'");
+
+		assertThat(Utils.printHumanReadableDifference(set1, set2, "set1", "set2"))
+			.isEqualTo("[org.osgi.service.cm;version='[1.6.1,1.6.2)'] exist in set1 but missing in set2");
+
+	}
+
+	@Test
+	public void testStartLevelDecoration(SoftAssertions softly) throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolveduplicates.bndrun"));
+		bndrun.setProperty("-runstartlevel", "order=sortbynameversion,begin=100,step=10");
+
+		// Decorate test.simple to get startlevel 90 (which would otherwise be 110 within the assigned runstartlevel).
+		bndrun.setProperty("-runbundles+", "test.simple;startlevel=90");
+
+		List<? extends HeaderClause> runBundles = List.copyOf(bndrun.resolve(false, false, new NoopConverter<>()));
+
+		softly.assertThat(runBundles.stream()
+			.map(rb -> rb.toString()))
+			.containsExactlyInAnyOrder("org.apache.felix.gogo.runtime;version='[0.10.0,0.10.1)';startlevel=100",
+				"org.apache.felix.gogo.runtime;version='[0.12.0,0.12.1)';startlevel=110",
+				"osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)';startlevel=120",
+				"test.simple;version=snapshot;startlevel=90");
+
+		// check that HeaderClause.toParameters does not remove duplicates
+		// this kind of happens inside bndrun.resolve() let's test explicitly
+		// again
+		Parameters params = HeaderClause.toParameters(runBundles);
+		softly.assertThat(params.toString())
+			.isEqualTo(
+				"org.apache.felix.gogo.runtime;version=\"[0.10.0,0.10.1)\";startlevel=100,org.apache.felix.gogo.runtime;version=\"[0.12.0,0.12.1)\";startlevel=110,osgi.enroute.junit.wrapper;version=\"[4.12.0,4.12.1)\";startlevel=120,test.simple;version=snapshot;startlevel=90");
+
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	public void testBndRunPluginGetBundle(SoftAssertions softly) {
+		try {
+
+			Workspace workspace = Workspace.createDefaultWorkspace();
+
+			// try with a normal Bndrun, which only considers Workspace bundles
+			Bndrun bndrun = Bndrun.createBndrun(workspace, null);
+			bndrun.addBasicPlugin(new MyPlugin());
+			System.out.println("Bndrun: " + bndrun.getPlugin(MyPlugin.class));
+			System.out.println("Workspace: " + workspace.getPlugin(MyPlugin.class));
+			workspace.refresh();
+			System.out.println("Workspace after refresh: " + workspace.getPlugin(MyPlugin.class));
+
+			softly.assertThat(bndrun.getPlugin(MyPlugin.class))
+				.isNotNull();
+			Container bundle = bndrun.getBundle("testBndRunPluginGetBundle", "[1.0.0,2.0.0)", Strategy.HIGHEST, Map.of());
+			softly.assertThat(bundle.getType())
+				.isEqualTo(TYPE.ERROR);
+
+			// now repeat with a custom MyBndrun class which overrides
+			// getRepositories()
+			MyBndrun bndrun2 = new MyBndrun(workspace, null);
+			bndrun2.addBasicPlugin(new MyPlugin());
+			softly.assertThat(bndrun2.getPlugin(MyPlugin.class))
+				.isNotNull();
+			Container bundle2 = bndrun2.getBundle("testBndRunPluginGetBundle", "[1.0.0,2.0.0)", Strategy.HIGHEST,
+				Map.of());
+			softly.assertThat(bundle2.getType())
+				.isEqualTo(TYPE.REPO);
+			softly.assertThat(bundle2.getBundleSymbolicName())
+				.isEqualTo("testBndRunPluginGetBundle");
+
+
+		} catch (Exception e) {
+			fail();
+		}
+	}
+
+	private static class MyBndrun extends Bndrun {
+
+		public MyBndrun(Workspace workspace, File propertiesFile) throws Exception {
+			super(workspace, propertiesFile);
+		}
+
+		@Override
+		public List<RepositoryPlugin> getRepositories() {
+			return getPlugins(RepositoryPlugin.class);
+		}
+
+	}
+
+	private final class MyPlugin implements RepositoryPlugin {
+
+		@Override
+		public PutResult put(InputStream stream, PutOptions options) throws Exception {
+			return null;
+		}
+
+		@Override
+		public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+			throws Exception {
+			if("testBndRunPluginGetBundle".equals(bsn)) {
+				return IO.getFile(RunResolutionTest.this.ws.toFile(),
+					"testdata/jar/org.apache.felix.http.servlet-api-1.2.0.jar");
+			}
+			return null;
+		}
+
+		@Override
+		public boolean canWrite() {
+			return false;
+		}
+
+		@Override
+		public List<String> list(String pattern) throws Exception {
+			return null;
+		}
+
+		@Override
+		public SortedSet<Version> versions(String bsn) throws Exception {
+			return new TreeSet<Version>(Set.of(Version.ONE));
+		}
+
+		@Override
+		public String getName() {
+			return null;
+		}
+
+		@Override
+		public String getLocation() {
+			return null;
+		}
+
+	}
+
 }

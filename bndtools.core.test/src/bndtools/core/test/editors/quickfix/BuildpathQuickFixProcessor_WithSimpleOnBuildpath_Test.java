@@ -106,7 +106,7 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 		String header = "package test; class ";
 		String source = header + DEFAULT_CLASS_NAME + " extends simple.pkg.ClassExtendingClassFromAnotherBundle {}";
 
-		// IsClassPathCorrect occurs at [0, 1]
+		// IsClassPathCorrectWithReferencingType occurs at [0, 1]
 		assertThatProposals(proposalsFor(0, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
 		// HierarchyHasProblems is on the type name
@@ -187,7 +187,7 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  simple.pkg.ClassExtendingClassFromAnotherBundle var;\n"
 			+ "  void myMethod() {" + "    var.bMethod();" + "  }" + "}";
 
-		// IsClassPathCorrect occurs at [104, 116]
+		// IsClassPathCorrectWithReferencingType occurs at [104, 116]
 		assertThatProposals(proposalsFor(104, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
 		// UnknownMethod is on the method at [108,114]
@@ -245,7 +245,7 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  simple.pkg.ClassExtendingClassFromAnotherBundle var;\n"
 			+ "  void myMethod() {" + "    String s = var.bField;" + "  }" + "}";
 
-		// IsClassPathCorrect occurs at [115, 125]
+		// IsClassPathCorrectWithReferencingType occurs at [115, 125]
 		assertThatProposals(proposalsFor(116, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
 		// UnknownField is on the method at [119,125]

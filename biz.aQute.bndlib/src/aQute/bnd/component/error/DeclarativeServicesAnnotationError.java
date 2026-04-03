@@ -1,5 +1,12 @@
 package aQute.bnd.component.error;
 
+import java.io.File;
+import java.util.Collection;
+
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.service.reporter.Reporter.SetLocation;
+
 public class DeclarativeServicesAnnotationError {
 
 	public enum ErrorType {
@@ -29,7 +36,9 @@ public class DeclarativeServicesAnnotationError {
 		CONSTRUCTOR_SIGNATURE_ERROR,
 		VERSION_MISMATCH,
 		ANYSERVICE_NO_TARGET,
-		OPTIONAL_FIELD_WITH_MULTIPLE;
+		OPTIONAL_FIELD_WITH_MULTIPLE,
+		MISSING_PROPERTIES_FILE,
+		MISSING_FACTORYPROPERTIES_FILE;
 	}
 
 	public final String		className;
@@ -68,5 +77,21 @@ public class DeclarativeServicesAnnotationError {
 	@Override
 	public String toString() {
 		return location() + " " + errorType;
+	}
+
+	public void addError(Analyzer analyzer, String message, Object... params) {
+		SetLocation location = analyzer.error(message, params)
+			.details(this);
+		if (className != null && analyzer instanceof Builder builder) {
+			Collection<File> sourcePath = builder.getSourcePath();
+			String source = className.replace('.', '/') + ".java";
+			for (File sp : sourcePath) {
+				File file = new File(sp, source);
+				if (file.exists()) {
+					location.file(file.getAbsolutePath());
+				}
+			}
+		}
+
 	}
 }

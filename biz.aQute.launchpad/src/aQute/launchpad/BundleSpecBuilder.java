@@ -917,6 +917,29 @@ public interface BundleSpecBuilder {
 		return this;
 	}
 
+	/**
+	 * Actually add the specified class and all nested classes into the bundle.
+	 * This contrasts with {@link #addResourceWithCopy(Class)}, which copies
+	 * only the root class.
+	 *
+	 * @param class1 the class to add as a resource
+	 */
+	default BundleSpecBuilder addResourceWithRecursiveCopy(Class<?> class1) {
+		String className = class1.getName();
+		String path = className.replace('.', '/') + ".class";
+		URL url = class1.getClassLoader()
+			.getResource(path);
+		if (url == null) {
+			throw new IllegalArgumentException(
+				"Couldn't find class file for " + className + ", possibly a synthetic class");
+		}
+		addResource(path, url);
+		for (Class<?> inner : class1.getDeclaredClasses()) {
+			addResourceWithRecursiveCopy(inner);
+		}
+		return this;
+	}
+
 	default BundleSpecBuilder addResource(String path, URL url) {
 		try {
 			File f;

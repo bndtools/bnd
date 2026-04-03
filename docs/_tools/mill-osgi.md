@@ -1,10 +1,10 @@
 ---
 title: Mill OSGi Plugin
-layout: default
+layout: bnd
 summary: A Mill Plugin to create OSGi Bundles.
 version: 0.2.0
+parent: Tools bound to bnd
 ---
-
 Plugin to build OSGi bundles with the [mill build tool][1].
 
 ## Quickstart

@@ -1,15 +1,11 @@
 package aQute.bnd.main;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,13 +15,14 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
+import aQute.bnd.repository.maven.provider.MbrUpdater;
+import aQute.bnd.repository.maven.provider.MbrUpdater.MavenVersionResult;
+import aQute.bnd.repository.maven.provider.MbrUpdater.Scope;
 import aQute.bnd.version.MavenVersion;
-import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
-import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.lib.justif.Justif;
 import aQute.maven.api.Archive;
@@ -114,13 +111,6 @@ public class MbrCommand extends Processor {
 		format("Multiple archives for a single program", revisions);
 	}
 
-	enum Scope {
-		micro,
-		minor,
-		major,
-		all
-	}
-
 	@Description("For each archive in the index, show the available higher versions")
 	@Arguments(arg = {
 		"archive-glob..."
@@ -139,8 +129,8 @@ public class MbrCommand extends Processor {
 		List<MavenBndRepository> repos = getRepositories(options.repo());
 		List<Archive> archives = getArchives(repos, options._arguments());
 
-		MultiMap<Archive, MavenVersion> overlap = getUpdates(options.scope(Scope.all), repos, archives,
-			options.snapshotlike());
+		MultiMap<Archive, MavenVersion> overlap = MbrUpdater.getUpdates(options.scope(Scope.all), repos,
+			archives, options.snapshotlike());
 		format("Updates available", overlap);
 	}
 
@@ -157,79 +147,29 @@ public class MbrCommand extends Processor {
 		List<MavenBndRepository> repos = getRepositories(options.repo());
 		List<Archive> archives = getArchives(repos, options._arguments());
 
-		MultiMap<Archive, MavenVersion> updates = getUpdates(options.scope(Scope.all), repos, archives,
-			options.snapshotlike());
+		MultiMap<Archive, MavenVersion> updates = MbrUpdater.getUpdates(options.scope(Scope.all), repos,
+			archives, options.snapshotlike());
 
 		for (MavenBndRepository repo : repos) {
 			bnd.trace("repo %s", repo.getName());
-			Map<Archive, MavenVersion> content = new HashMap<>();
 
-			for (Archive archive : new TreeSet<>(repo.getArchives())) {
-				List<MavenVersion> list = updates.get(archive);
-				if (list == null || list.isEmpty()) {
-					content.put(archive, archive.revision.version);
-				} else {
-					MavenVersion version = list.get(list.size() - 1);
-					bnd.out.format("  %-70s   %20s -> %s%n", archive.getRevision().program,
-						archive.getRevision().version, version);
-					content.put(archive, version);
-				}
-			}
+			MbrUpdater mbr = new MbrUpdater(repo);
+			Map<Archive, MavenVersionResult> content = mbr.calculateUpdateRevisions(updates);
+			logMavenUpdates(content);
 
 			if (!options.dry()) {
-				if (update(repo, content)) {
+				if (repo.getIndexFile()
+					.isFile()) {
+					bnd.trace("reading %s", repo.getIndexFile());
+				}
+				if (mbr.update(content)) {
+					bnd.trace("writing %s", repo.getIndexFile());
 					repo.refresh();
 				}
 			}
 		}
 	}
 
-	private boolean update(MavenBndRepository repo, Map<Archive, MavenVersion> translations) throws IOException {
-		boolean changes = false;
-		StringBuilder sb = new StringBuilder();
-		Iterator<String> lc;
-		if (repo.getIndexFile()
-			.isFile()) {
-			lc = IO.reader(repo.getIndexFile())
-				.lines()
-				.iterator();
-			bnd.trace("reading %s", repo.getIndexFile());
-		} else {
-			lc = Collections.emptyIterator();
-		}
-
-		for (Iterator<String> i = lc; i.hasNext();) {
-			String line = i.next()
-				.trim();
-			if (!line.startsWith("#") && !line.isEmpty()) {
-
-				Archive archive = Archive.valueOf(line);
-				if (archive != null) {
-					MavenVersion version = translations.get(archive);
-					if (version != null) {
-						if (!archive.revision.version.equals(version)) {
-							Archive updated = archive.update(version);
-							sb.append(updated)
-								.append("\n");
-							changes = true;
-							continue;
-						}
-					}
-				}
-			}
-			sb.append(line)
-				.append("\n");
-		}
-		if (!changes)
-			return false;
-
-		repo.getIndexFile()
-			.getParentFile()
-			.mkdirs();
-		bnd.trace("writing %s", repo.getIndexFile());
-		IO.store(sb.toString(), repo.getIndexFile());
-		return changes;
-	}
 
 	private List<MavenBndRepository> getRepositories(int[] repo) {
 		if (repo == null)
@@ -289,76 +229,18 @@ public class MbrCommand extends Processor {
 			.collect(Collectors.toList());
 	}
 
-	private MultiMap<Archive, MavenVersion> getUpdates(Scope scope, List<MavenBndRepository> repos,
-		List<Archive> archives, boolean snapshotlike) throws Exception {
-		MultiMap<Archive, MavenVersion> overlap = new MultiMap<>();
 
-		for (Archive archive : archives) {
-			for (MavenBndRepository r : repos) {
-				if (r.getArchives()
-					.contains(archive)) {
-					MavenVersion version = archive.revision.version;
-					r.getRevisions(archive.revision.program)
-						.stream()
-						.map(revision -> revision.version)
-						.filter(snapshotlike ? x -> true : notSnapshotlikePredicate)
-						.filter(v -> v.compareTo(version) > 0)
-						.forEach(v -> {
-							overlap.add(archive, v);
-						});
-				}
-			}
-		}
-		overlap.entrySet()
+	private void logMavenUpdates(Map<Archive, MavenVersionResult> content) {
+		content.entrySet()
 			.forEach(e -> {
-				List<MavenVersion> filtered = filter(e.getValue(), e.getKey().revision.version.getOSGiVersion(), scope);
-				e.setValue(filtered);
-			});
-		return overlap;
-	}
+				Archive archive = e.getKey();
+				MavenVersionResult versionResult = e.getValue();
 
-	private List<MavenVersion> filter(List<MavenVersion> versions, Version current, Scope show) {
-
-		if (versions.isEmpty())
-			return versions;
-
-		MavenVersion major = null;
-		MavenVersion minor = null;
-		MavenVersion micro = null;
-
-		for (MavenVersion v : versions) {
-			major = v;
-			if (v.getOSGiVersion()
-				.getMajor() == current.getMajor()) {
-				minor = v;
-				if (v.getOSGiVersion()
-					.getMinor() == current.getMinor()) {
-					micro = v;
+				if (versionResult.mavenVersionAvailable()) {
+					bnd.out.format(" %-70s %20s -> %s%n", archive.getRevision().program, archive.getRevision().version,
+						versionResult.mavenVersion());
 				}
-			}
-		}
 
-		switch (show) {
-			default :
-			case all :
-				return versions;
-
-			case major :
-				return Collections.singletonList(major);
-
-			case minor :
-				if (minor == null)
-					return Collections.emptyList();
-				else
-					return Collections.singletonList(minor);
-
-			case micro :
-				if (micro == null)
-					return Collections.emptyList();
-				else
-					return Collections.singletonList(micro);
-
-		}
+			});
 	}
-
 }

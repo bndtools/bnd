@@ -1,7 +1,6 @@
 ---
-order: 210
 title: Packaging Applications
-layout: default
+layout: bnd
+parent: Packaging and Distribution
+nav_order: 1
 ---
-
-

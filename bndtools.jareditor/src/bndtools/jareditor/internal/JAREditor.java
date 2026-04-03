@@ -73,7 +73,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 			name = ((IFileEditorInput) input).getFile()
 				.getName();
 		} else if (input instanceof IURIEditorInput) {
-			name = ((IURIEditorInput) input).getName();
+			name = input.getName();
 		}
 		setPartName(name);
 		setInput(retrieveFileURI(input));

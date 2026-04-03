@@ -105,6 +105,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard, ISkippingWiz
 		}
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.workbench = workbench;

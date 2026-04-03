@@ -7,9 +7,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
@@ -71,7 +73,7 @@ public class MultiReleaseTest {
 
 		assertThat(v17.check()).isTrue();
 		assertThat(v9.check()).isTrue();
-		assertThat(main.check()).isTrue();
+		assertThat(main.check("jpms.jarname")).isTrue();
 
 		assertThat(main.getFile("generated/multirelease.main.jar")).isNotNull();
 
@@ -214,43 +216,47 @@ public class MultiReleaseTest {
 		ResourceBuilder rb = new ResourceBuilder();
 		boolean identity = rb.addFile(file);
 		assertThat(identity).isTrue();
-		SupportingResource r = rb.build();
-		assertThat(r.hasIdentity()).isTrue();
+		SupportingResource original = rb.build();
+		assertThat(original.hasIdentity()).isTrue();
 
-		testResource(r, "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))",
-			null, false);
-		assertThat(r.getSupportingResources()).hasSize(4);
-		testResource(r.getSupportingResources()
-			.get(0), "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))",
-			"(&(osgi.ee=JavaSE)(&(version>=1.8.0)(!(version>=9.0.0))))", true);
+		testResource(original, "(&(osgi.wiring.package=org.osgi.framework)(version>=1.5.0)(!(version>=2.0.0)))", null, false);
+		assertThat(original.getSupportingResources()).hasSize(4);
+		testResource(original.getSupportingResources()
+			.get(0), null, "(&(osgi.ee=JavaSE)(&(version>=1.8.0)(!(version>=9.0.0))))", true);
 
-		testResource(r.getSupportingResources()
+		testResource(original.getSupportingResources()
 			.get(1), null, "(&(osgi.ee=JavaSE)(&(version>=9.0.0)(!(version>=12.0.0))))", true);
-		testResource(r.getSupportingResources()
+		testResource(original.getSupportingResources()
 			.get(2), "(&(osgi.wiring.package=org.osgi.service.url)(version>=1.0.0)(!(version>=2.0.0)))",
 			"(&(osgi.ee=JavaSE)(&(version>=12.0.0)(!(version>=17.0.0))))", true);
-		testResource(r.getSupportingResources()
+		testResource(original.getSupportingResources()
 			.get(3),
 			"(&(osgi.wiring.package=org.osgi.service.startlevel)(version>=1.1.0)(!(version>=2.0.0))),(&(osgi.wiring.package=org.osgi.service.url)(version>=1.0.0)(!(version>=2.0.0)))",
 			"(&(osgi.ee=JavaSE)(version>=17.0.0))", true);
 
 		// check the expansion of the SupportingResources
 		ResourcesRepository repo = new ResourcesRepository();
-		repo.add(r);
+		repo.add(original);
 		assertThat(repo.getResources()).hasSize(5);
 
 		// check the expansion of the SupportingResource & roundtrip through XML
 
 		XMLResourceGenerator xg = new XMLResourceGenerator();
-		xg.resource(r);
+		xg.resource(original);
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		xg.save(bout);
 		String s = new String(bout.toByteArray(), StandardCharsets.UTF_8);
 		System.out.println(s);
-		List<org.osgi.resource.Resource> l = XMLResourceParser
+		List<org.osgi.resource.Resource> parsedResources = XMLResourceParser
 			.getResources(new ByteArrayInputStream(bout.toByteArray()), new URI(""));
-		assertThat(l).hasSize(5);
+		assertThat(parsedResources).hasSize(5);
 
+		// Check if the equals works, when we add the originals and the parsed
+		// to a set we should have still 5 resources.
+
+		Set<org.osgi.resource.Resource> duplicatesCheck = new LinkedHashSet<>(repo.getResources());
+		duplicatesCheck.addAll(parsedResources);
+		assertThat(duplicatesCheck).hasSize(5);
 	}
 
 	final static org.osgi.framework.Version lowest = new org.osgi.framework.Version("0");
@@ -297,12 +303,15 @@ public class MultiReleaseTest {
 	public void testPlainBuilder() throws Exception {
 		try (Builder builder = new Builder()) {
 			builder.setProperty(Constants.JPMS_MODULE_INFO, "");
+
+			// mainly check LTS JDK releases
 			builder.setProperty("-includeresource", """
 				sun_1_8/=compilerversions/src/sun_1_8/, \
 				META-INF/versions/9/jdk_9_0/=compilerversions/src/jdk_9_0/, \
 				META-INF/versions/11/jdk_11_0/=compilerversions/src/jdk_11_0/, \
 				META-INF/versions/17/jdk_17/=compilerversions/src/jdk_17/, \
-				META-INF/versions/19/jdk_19/=compilerversions/src/jdk_19/, \
+				META-INF/versions/21/jdk_21/=compilerversions/src/jdk_21/, \
+				META-INF/versions/24/jdk_24/=compilerversions/src/jdk_24/, \
 				""");
 
 			Jar jar = builder.build();
@@ -317,8 +326,11 @@ public class MultiReleaseTest {
 			assertThat(jar.getResource("META-INF/versions/17/OSGI-INF/MANIFEST.MF")).isNotNull();
 			assertThat(jar.getResource("META-INF/versions/17/module-info.class")).isNotNull();
 
-			assertThat(jar.getResource("META-INF/versions/19/OSGI-INF/MANIFEST.MF")).isNotNull();
-			assertThat(jar.getResource("META-INF/versions/19/module-info.class")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/21/OSGI-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/21/module-info.class")).isNotNull();
+
+			assertThat(jar.getResource("META-INF/versions/24/OSGI-INF/MANIFEST.MF")).isNotNull();
+			assertThat(jar.getResource("META-INF/versions/24/module-info.class")).isNotNull();
 
 		}
 	}

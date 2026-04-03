@@ -1,9 +1,16 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -prepare makespec ( ',' makespec )*
-summary: Execute a number of shell commands before every build (might not work on Windows)
+class: Project
+summary: |
+   Execute a number of shell commands before every build (might not work on Windows)
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/prepare.md --><br /><br />
 
 An typical use case for the `-prepare` instruction is the generation of CSS files from a `less` or `sccs` specification. The prepare instruction will execute a number of commands in the shell before it starts the build process.
 

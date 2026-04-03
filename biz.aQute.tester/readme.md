@@ -1,5 +1,9 @@
 # Tester
 
+Deprecated: This bundle is marked as deprecated in bnd 7.2.0 for remove in 8.0.0
+Please migrate to biz.aQute.tester.junit-platform
+
+
 The `biz.aQute.junit` jar placed itself \
 	on the `-runpath`. This implied that the -runpath also contained the JUnit \
 	libraries. This constrained the users (what JUnit to use) and it also \

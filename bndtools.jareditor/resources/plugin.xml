@@ -26,7 +26,7 @@
 				</instanceof>
 				<test
 					property="org.eclipse.core.resources.name"
-					value="BndtoolsJAREditorTempFiles">
+					value=".BndtoolsJAREditorTempFiles">
 				</test>
 			</filterExpression>
 		</commonFilter>

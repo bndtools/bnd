@@ -62,11 +62,21 @@
 		<decorator
 			id="bndtools.packageDecorator"
 			label="Bndtools OSGi Package Decorations"
-			objectClass="org.eclipse.jdt.core.IPackageFragment" state="true"
+			state="true"
 			adaptable="true"
 			lightweight="true"
 			class="org.bndtools.builder.decorator.ui.PackageDecorator"
 			location="TOP_LEFT">
+			<enablement>
+		      <or>
+		        <!-- Packages -->
+		        <objectClass
+						name="org.eclipse.jdt.core.IPackageFragment"/>
+		        <!-- Projects -->
+		        <objectClass
+						name="org.eclipse.jdt.core.IJavaProject"/>
+		      </or>
+		    </enablement>
 			<description>Marks exported packages with a '+' decoration, and
 				excluded packages with a strike-through.</description>
 		</decorator>

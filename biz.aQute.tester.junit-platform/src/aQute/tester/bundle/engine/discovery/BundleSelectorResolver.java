@@ -8,7 +8,9 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,8 +30,6 @@ import java.util.stream.StreamSupport;
 
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.support.ReflectionSupport;
-import org.junit.platform.engine.ConfigurationParameters;
-import org.junit.platform.engine.DiscoveryFilter;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.TestDescriptor;
@@ -124,7 +124,7 @@ public class BundleSelectorResolver {
 		methodSelectors = request.getSelectorsByType(MethodSelector.class)
 			.stream()
 			.map(selector -> DiscoverySelectors.selectMethod(selector.getClassName(), selector.getMethodName(),
-				selector.getMethodParameterTypes()))
+				selector.getParameterTypeNames()))
 			.collect(toList());
 
 		bundleSelectors = request.getSelectorsByType(BundleSelector.class);
@@ -436,7 +436,7 @@ public class BundleSelectorResolver {
 	}
 
 	private static MethodSelector selectMethod(Class<?> testClass, MethodSelector selector) {
-		return findMethod(testClass, selector.getMethodName(), selector.getMethodParameterTypes())
+		return findMethod(testClass, selector.getMethodName(), selector.getParameterTypeNames())
 			.map(method -> DiscoverySelectors.selectMethod(testClass, method))
 			.orElse(null);
 	}
@@ -541,38 +541,39 @@ public class BundleSelectorResolver {
 		return selectors;
 	}
 
-	public class SubDiscoveryRequest implements EngineDiscoveryRequest {
-		private final List<DiscoverySelector> selectors;
+	class SubDiscoveryRequest implements InvocationHandler {
+		final List<DiscoverySelector> selectors;
 
 		SubDiscoveryRequest(List<DiscoverySelector> selectors) {
 			this.selectors = selectors;
 		}
 
 		@Override
-		public <T extends DiscoverySelector> List<T> getSelectorsByType(Class<T> selectorType) {
-			info(() -> "Getting selectors from sub-request for: " + selectorType);
-			return Stream.concat( //
-				request.getSelectorsByType(selectorType)
-					.stream()
-					.filter(selector -> !(selector instanceof ClassSelector
-						|| selector instanceof MethodSelector || selector instanceof BundleSelector)),
-				selectors.stream()
-					.filter(selectorType::isInstance))
-				.map(selectorType::cast)
-				.collect(toList());
-		}
-
-		@Override
-		public <T extends DiscoveryFilter<?>> List<T> getFiltersByType(Class<T> filterType) {
-			return request.getFiltersByType(filterType);
-		}
-
-		@Override
-		public ConfigurationParameters getConfigurationParameters() {
-			return request.getConfigurationParameters();
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			if (method.getName()
+				.equals("getSelectorsByType")) {
+				@SuppressWarnings("unchecked")
+				Class<? extends DiscoverySelector> selectorType = (Class<? extends DiscoverySelector>) args[0];
+				info(() -> "Getting selectors from sub-request for: " + selectorType);
+				return Stream.concat( //
+					request.getSelectorsByType(selectorType)
+						.stream()
+						.filter(selector -> !(selector instanceof ClassSelector
+							|| selector instanceof MethodSelector || selector instanceof BundleSelector)),
+					selectors.stream()
+						.filter(selectorType::isInstance))
+					.map(selectorType::cast)
+					.collect(toList());
+			}
+			return method.invoke(request, args);
 		}
 	}
 
+	EngineDiscoveryRequest buildSubRequest(List<DiscoverySelector> selectors) {
+		return (EngineDiscoveryRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {
+			EngineDiscoveryRequest.class
+		}, new SubDiscoveryRequest(selectors));
+	}
 	private boolean computeChildren(BundleDescriptor bd) {
 		final Bundle bundle = bd.getBundle();
 		final List<DiscoverySelector> selectors;
@@ -588,7 +589,7 @@ public class BundleSelectorResolver {
 			.size() == 0) {
 			return false;
 		}
-		SubDiscoveryRequest subRequest = new SubDiscoveryRequest(selectors);
+		EngineDiscoveryRequest subRequest = buildSubRequest(selectors);
 		engines.forEach(engine -> {
 			info(() -> "Processing engine: " + engine.getId() + " for bundle " + bundle);
 			try {
@@ -599,6 +600,11 @@ public class BundleSelectorResolver {
 			} catch (Exception e) {
 				info(() -> "Error processing tests for engine: " + engine.getId() + " for bundle " + bundle + ": "
 					+ e.getMessage(), e);
+				StaticFailureDescriptor failedEngine = new StaticFailureDescriptor(
+					misconfiguredEnginesDescriptor.getUniqueId()
+						.append("sub-engine", engine.getId()),
+					engine.getId(), e);
+				misconfiguredEnginesDescriptor.addChild(failedEngine);
 			}
 		});
 		return true;

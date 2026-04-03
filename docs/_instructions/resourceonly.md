@@ -1,18 +1,33 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -resourceonly  BOOLEAN
-summary: Ignores warning if the bundle only contains resources and no classes. 
+class: Project
+summary: |
+   Ignores warning if the bundle only contains resources and no classes.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-	public boolean isNoBundle() {
-		return isTrue(getProperty(RESOURCEONLY)) || isTrue(getProperty(NOMANIFEST));
-	}
+- Example: `-resourceonly=true`
 
-	/**
-	 * @return
-	 */
-	boolean isResourceOnly() {
-		return isTrue(getProperty(RESOURCEONLY));
-	}
+- Values: `true,false`
 
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/resourceonly.md --><br /><br />
+
+# -resourceonly
+
+The `-resourceonly` instruction tells bnd to ignore warnings if the bundle contains only resources and no classes. This is useful for bundles that are intended to provide configuration files, images, or other non-code assets.
+
+Example:
+
+```
+-resourceonly: true
+```
+
+When set, bnd will not warn about the absence of classes in the bundle.
+
+
+<hr />
+TODO Needs review - AI Generated content

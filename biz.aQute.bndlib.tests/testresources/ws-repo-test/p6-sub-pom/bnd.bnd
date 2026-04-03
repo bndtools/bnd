@@ -1,0 +1,5 @@
+Base-Header: base
+-pom: groupid=p6subpom, \
+	artifactid=a, \
+  where=META-INF/maven/p6subpom/a/pom.xml
+-sub: *.bnd

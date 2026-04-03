@@ -21,9 +21,10 @@ import aQute.launchpad.junit.LaunchpadRunner;
 public class FO {
 	static File				tmp		= new File("generated/snapshot");
 
+	@SuppressWarnings("resource")
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
 		.set("snapshot.dir", tmp.getAbsolutePath())
-		.runfw("jar/org.apache.felix.framework-6.0.2.jar;version=file")
+		.runfw("org.apache.felix.framework;version='[7.0.5,7.0.5]'")
 		.bundles(
 			"org.osgi.util.promise, org.osgi.util.function, jar/org.apache.felix.scr-2.1.16.jar;version=file, assertj-core, net.bytebuddy.byte-buddy, org.apache.servicemix.bundles.junit")
 		.debug();

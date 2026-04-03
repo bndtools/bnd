@@ -1,9 +1,61 @@
 ---
-layout: default
+layout: bnd
+title: Bundle-Contributors ...
 class: Header
-title: Bundle-Contributors ... 
-summary: Lists the bundle contributors according to the Maven bundle-contributors pom entry
+summary: |
+   Lists the bundle contributors according to the Maven bundle-contributors pom entry
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `Bundle-Contributors: Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1`
+
+- Pattern: `.*`
+
+### Options 
+
+- `name` The display name of the developer
+  - Example: `name='Peter Kriens'`
+
+  - Pattern: `.*`
+
+
+- `organization` The display name of organization that employs the developer
+  - Example: `organization='aQute'`
+
+  - Pattern: `.*`
+
+
+- `roles` Roles played by the developer in this bundle's project (see Maven)
+  - Example: `roles=ceo`
+
+  - Pattern: `.*`
+
+
+- `timezone` Timezone in offset of UTC this developer usually resides in
+  - Example: `timezone+2`
+
+  - Pattern: `.*`
+
+
+- `organizationUrl` The URL of the developer's organization
+  - Example: `organizationURL='http://www.aQute.biz'`
+
+  - Pattern: `.*`
+
+<!-- Manual content from: ext/bundle_contributors.md --><br /><br />
+
+# Bundle-Contributors
+
+The `Bundle-Contributors` header lists contributors to the bundle, as defined in the Maven POM or via annotations. This header is not standardized by OSGi but is used for documentation and tracking purposes.
+
+Example:
+
+```
+Bundle-Contributors: John Doe;roles='developer';organization='Example Corp.'
+```
+
+This header is optional and is mainly used for informational purposes.
 	
 	/*
 	 * Bundle-Contributors header
@@ -99,3 +151,6 @@ summary: Lists the bundle contributors according to the Maven bundle-contributor
 			 */
 			int timezone() default 0;
 		}
+
+<hr />
+TODO Needs review - AI Generated content		

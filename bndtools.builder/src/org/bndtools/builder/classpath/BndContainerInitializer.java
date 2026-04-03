@@ -5,7 +5,9 @@ import static org.bndtools.builder.classpath.BndContainer.TEST;
 import static org.bndtools.builder.classpath.BndContainer.hasAttribute;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,7 +25,6 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
-import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.builder.BuildLogger;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.PseudoJar;
@@ -42,12 +43,15 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.eclipse.jdt.internal.core.index.DiskIndex;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.RepoCollector;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -200,12 +204,66 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			.toFile(), p.getName() + ".container");
 	}
 
+	/**
+	 * This is a hack to prevent duplicate results in the Open Type dialog in
+	 * Eclipse.
+	 * <p>
+	 * </p>
+	 * This creates a (per project) projectname-empty.index file at
+	 * /eclipseworkspace/.metadata/.plugins/bndtools.builder/empty.index and
+	 * writes the version of your current running Eclipse into it. See
+	 * {@link DiskIndex#SIGNATURE} The reason for this "hack" is that this
+	 * version can change with newer Eclipse versions. The reason we need to
+	 * create this file per project is, that the Eclipse indexer is heavily
+	 * parallelized and keeps track which index is in use. Thus every project
+	 * needs to have its own empty.index, even though this is kinda redundant.
+	 * <p>
+	 * See the comment in this file where {@link Updater#EMPTY_INDEX} is added
+	 * to
+	 *
+	 * <pre>
+	 * extraAttrs.add(EMPTY_INDEX)
+	 * </pre>
+	 *
+	 * @param empty_index_file
+	 */
+	private static void writeDummyEmptyIndexFile(File empty_index_file) {
+		// see the file 'example-empty.index' in this package for why we are
+		// writing what we write here.
+
+		byte[] prefix = {
+			0x00, 0x13
+		}; // ^@ ^S
+		byte[] suffix = {
+			(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF
+		};
+
+		try (FileOutputStream out = new FileOutputStream(empty_index_file)) {
+
+			// get the SIGNATURE constant via reflection, because we need to
+			// avoid that it is baked in at compile time: we need the version
+			// from the runtime eclipse instance
+			String version = (String) DiskIndex.class.getField("SIGNATURE")
+				.get(null);
+
+			if (version == null) {
+				return;
+			}
+			byte[] versionBytes = version.getBytes(StandardCharsets.US_ASCII);
+
+			out.write(prefix);
+			out.write(versionBytes);
+			out.write(suffix);
+			out.flush();
+		} catch (Exception e) {
+			logger.logError("Error writing empty.index", e);
+		}
+	}
+
 	private static class Updater {
 		private static final IAccessRule			DISCOURAGED			= JavaCore.newAccessRule(new Path("**"),
 			IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
-		private static final IClasspathAttribute	EMPTY_INDEX			= JavaCore.newClasspathAttribute(
-			IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
-			"platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
+
 		private static final IClasspathAttribute	WITHOUT_TEST_CODE	= JavaCore
 			.newClasspathAttribute("without_test_code", Boolean.TRUE.toString());
 		private static final Pattern				packagePattern		= Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
@@ -217,6 +275,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		private final IWorkspaceRoot				root;
 		private final Project						model;
 		private final BndContainer.Builder			builder;
+
+		private final File							empty_index_file;
+		private final IClasspathAttribute			EMPTY_INDEX;
 
 		Updater(IProject project, IJavaProject javaProject) {
 			assert project != null;
@@ -235,6 +296,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 				logger.logInfo("Unable to get bnd project for project " + project.getName(), e);
 			}
 			this.model = p;
+
+			empty_index_file = IO.getFile(BuilderPlugin.getInstance()
+				.getStateLocation()
+				.toFile(), "empty-" + project.getName() + ".index");
+			EMPTY_INDEX = JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
+				"file://" + empty_index_file.getAbsolutePath());
+			writeDummyEmptyIndexFile(empty_index_file);
 		}
 
 		void updateClasspathContainer(boolean init) throws CoreException {
@@ -315,6 +383,26 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 				containers = model.getBootclasspath();
 				calculateContainersClasspath(Constants.BUILDPATH, containers);
+
+				// handle ${repo} reference. This is especially needed for
+				// sub-bundles (bundles which wrap other (non-osgi) jars
+				// and were we want to have source attachments for Eclipse
+				containers = RepoCollector.collectRepoReferences(model);
+				calculateContainersClasspath(Constants.BUILDPATH, containers);
+				containers = model.getSubProjects()
+					.stream()
+					.map(sp -> {
+
+						try {
+							return RepoCollector.collectRepoReferences(sp);
+						} catch (IOException e) {
+							throw Exceptions.duck(e);
+						}
+					})
+					.flatMap(Collection::stream)
+					.toList();
+				calculateContainersClasspath(Constants.BUILDPATH, containers);
+
 			} catch (CircularDependencyException e) {
 				error("Circular dependency during classpath calculation: %s", e, e.getMessage());
 				builder.entries(Collections.emptyList());
@@ -410,7 +498,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 							 * Supply an empty index for the generated JAR of a
 							 * workspace project dependency. This prevents the
 							 * non-editable source files in the generated jar
-							 * from appearing in the Open Type dialog.
+							 * from appearing in the Open Type dialog. Also see
+							 * method writeDummyEmptyIndexFile()
 							 */
 							extraAttrs.add(EMPTY_INDEX);
 							/*
@@ -527,6 +616,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 		private void addLibraryEntry(IPath path, File file, List<IAccessRule> accessRules,
 			List<IClasspathAttribute> extraAttrs, IPath sourceAttachmentPath, IPath sourceAttachmentRootPath) {
+
+			if (file.isFile() && !file.getName()
+				.toLowerCase()
+				.endsWith(".jar")) {
+				// non .jar files are no library entries (it is possible that
+				// the ${repo} macro references non jar files which could end up
+				// here
+				return;
+			}
+
 			IClasspathEntry libraryEntry = JavaCore.newLibraryEntry(path, sourceAttachmentPath,
 				sourceAttachmentRootPath, toAccessRulesArray(accessRules), toClasspathAttributesArray(extraAttrs),
 				false);
@@ -546,6 +645,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 				.get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				attrs.add(JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE, version));
+			}
+			else {
+				version = c.getVersion();
+
+				if (version != null) {
+					attrs.add(JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE, version));
+				}
 			}
 
 			String packages = c.getAttributes()
@@ -727,6 +833,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 					.getAbsolutePath());
 		}
 	}
+
+
 
 	private static class JarInfo {
 		boolean		hasSource;

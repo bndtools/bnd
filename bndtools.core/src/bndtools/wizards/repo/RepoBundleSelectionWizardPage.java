@@ -47,8 +47,8 @@ import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
+import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
 	private static final ILogger				logger					= Logger
@@ -122,7 +122,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false) {
 
 		});
-		availableViewer.setContentProvider(new RepositoryTreeContentProvider());
+		availableViewer.setContentProvider(new SearchableRepositoryTreeContentProvider());
 		availableViewer.setAutoExpandLevel(2);
 
 		availableViewer.setFilters(alreadySelectedFilter);
@@ -263,7 +263,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 	protected void refreshBundleList() throws Exception {
 		Workspace workspace = Central.getWorkspace();
-		workspace.refresh();
+		// workspace.refresh();
 		availableViewer.setInput(RepositoryUtils.listRepositories(workspace, true));
 	}
 
@@ -288,7 +288,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
 			Object item = iter.next();
 			if (item instanceof RepositoryBundle) {
-				adding.add(RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item));
+				adding.add(RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item, phase));
 			} else if (item instanceof RepositoryBundleVersion) {
 				adding.add(RepositoryBundleUtils.convertRepoBundleVersion((RepositoryBundleVersion) item, phase));
 			} else if (item instanceof ProjectBundle) {

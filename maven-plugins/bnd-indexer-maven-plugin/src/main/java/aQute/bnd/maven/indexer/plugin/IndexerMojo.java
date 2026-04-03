@@ -178,6 +178,12 @@ public class IndexerMojo extends AbstractMojo {
 			IO.mkdirs(outputFile.getParentFile());
 			for (Entry<File, ArtifactResult> entry : dependencies.entrySet()) {
 				File file = entry.getKey();
+
+				if (!"jar".equals(entry.getValue().getArtifact().getExtension())) {
+					logger.debug("Skipping: {}", file);
+					continue;
+				}
+
 				ResourceBuilder resourceBuilder = new ResourceBuilder();
 				resourceBuilder.addFile(entry.getKey(), repositoryURLResolver.resolver(file, entry.getValue()));
 

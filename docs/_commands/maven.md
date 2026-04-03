@@ -1,14 +1,17 @@
 ---
-layout: default
-title:     maven ( 'settings' | 'bundle'
-summary:  Special maven commands
+layout: bnd
+title: maven ( 'settings' | 'bundle'
+summary: |
+   Special maven commands
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   maven  ...
 
-{{page.summary}}
 
-## Synopsis
+<!-- Manual content from: ext/maven.md --><br /><br />
 
 	maven 
 	[-temp <dir>]            use as temp directory

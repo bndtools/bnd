@@ -25,7 +25,7 @@ public class PreprocessTest {
 	@Test
 	public void testPreProcessDefaultExclusion() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.INCLUDE_RESOURCE, "{test/test/tb1.jar}     ");
+		b.setProperty(Constants.INCLUDERESOURCE, "{test/test/tb1.jar}     ");
 		b.build();
 		assertTrue(b.check());
 
@@ -51,7 +51,7 @@ public class PreprocessTest {
 	public void testPreProcessExcludeExtensionGlobal() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.PREPROCESSMATCHERS, "!*.TXT:i,*");
-		b.setProperty(Constants.INCLUDE_RESOURCE,
+		b.setProperty(Constants.INCLUDERESOURCE,
 			"{test/test/builder-preprocess.txt},{test/test/builder-preprocess.txt2}");
 		b.setProperty("var", "Yes!");
 
@@ -80,7 +80,7 @@ public class PreprocessTest {
 	@Test
 	public void testPreProcessExcludeExtensionLocal() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.INCLUDE_RESOURCE,
+		b.setProperty(Constants.INCLUDERESOURCE,
 			"{test/test/builder-preprocess.txt};-preprocessmatchers='!*.TXT:i,*'");
 		b.setProperty("var", "Yes!");
 
@@ -105,7 +105,7 @@ public class PreprocessTest {
 	@Test
 	public void testPreProcess() throws Exception {
 		Properties base = new Properties();
-		base.put(Constants.INCLUDE_RESOURCE, "{test/test/top.mf}     ");
+		base.put(Constants.INCLUDERESOURCE, "{test/test/top.mf}     ");
 		Builder analyzer = new Builder();
 		analyzer.setProperties(base);
 		analyzer.build();

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import aQute.bnd.exceptions.BiFunctionWithException;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO.EnvironmentCalculator;
 
@@ -34,23 +36,18 @@ public class IOTest {
 	public void testEnvVarsForHome() throws Exception {
 		Map<String, String> map = new HashMap<>();
 
-		EnvironmentCalculator ec = new IO.EnvironmentCalculator(false) {
+		EnvironmentCalculator ec = new IO.EnvironmentCalculator() {
 			@Override
-			String getenv(String key) {
+			protected String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
 			}
 		};
 
-		assertEquals(new File(System.getProperty("user.home")), ec.getHome());
 		assertEquals(new File(System.getProperty("user.home")), IO.home);
 
-		File dir = IO.getFile("generated");
-		map.put("HOME", dir.getAbsolutePath());
-		assertEquals(dir, ec.getHome());
-
-		EnvironmentCalculator ec2 = new IO.EnvironmentCalculator(true) {
+		EnvironmentCalculator ec2 = new IO.EnvironmentCalculator() {
 			@Override
-			String getenv(String key) {
+			protected String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
 			}
 		};
@@ -58,9 +55,22 @@ public class IOTest {
 		map.put("username", "foobar");
 		map.put("userprofile", "%SystemDrive%\\Documents and Settings\\%username%");
 		map.put("HOME", "%userprofile%");
+		map.put("refers_null", "-%i_do_no_exist%-");
+		map.put("cycle", "-%cycle%-");
+		map.put("c1", "-%c3%-");
+		map.put("c2", "-%c1%-");
+		map.put("c3", "-%c2%-");
+		map.put("c", "C");
+		map.put("sequential_refs", "-%c%%c%%c%-");
 
 		// cannot use file system since this might not be windows
-		assertEquals("C:\\Documents and Settings\\foobar", ec2.getSystemEnv("HOME"));
+		assertEquals("C:\\Documents and Settings\\foobar", ec2.getEnv("HOME"));
+
+		assertThat(ec2.getEnv("i_do_no_exist")).isNull();
+		assertThat(ec2.getEnv("refers_null")).isEqualTo("-%i_do_no_exist%-");
+		assertThat(ec2.getEnv("cycle")).isEqualTo("-%cycle%-");
+		assertThat(ec2.getEnv("c1")).isEqualTo("---%c1,c2,c3%---");
+		assertThat(ec2.getEnv("sequential_refs")).isEqualTo("-CCC-");
 	}
 
 	@Test
@@ -78,6 +88,17 @@ public class IOTest {
 		assertEquals("LPT1_", IO.toSafeFileName("LPT1"));
 		assertEquals("COM2_", IO.toSafeFileName("COM2"));
 	}
+
+	@Test
+	@EnabledOnOs(WINDOWS)
+	public void testGetFileOnWindows() {
+		assertThat(IO.getFile("f:/abc")).isEqualTo(new File("f:\\abc"));
+		assertThat(IO.getFile("/f:/abc")).isEqualTo(new File("f:\\abc"));
+
+		File f = new File("f:");
+		assertThat(IO.getFile(f, "abc")).isEqualTo(new File("f:\\abc"));
+	}
+
 
 	@Test
 	public void testFilesetCopy(@InjectTemporaryDirectory
@@ -542,4 +563,79 @@ public class IOTest {
 
 		assertThat(Files.getPosixFilePermissions(target.toPath())).contains(PosixFilePermission.OWNER_EXECUTE);
 	}
+
+	@Test
+	public void testGetBasedFile() throws IOException {
+		assertThat("foo/💩../bar".contains("..")).isTrue();
+		assertThat("foo/.💩./bar".contains("..")).isFalse();
+		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "/foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "/foo").getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "")).isEqualTo(base);
+		assertThat(new File(base, "./").getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "/bar").getParentFile()).isEqualTo(base);
+		assertThat(IO.getBasedFile(base, "META-INF/versions/11/OSGI-INF/MANIFEST.MF")
+			.getName()).isEqualTo("MANIFEST.MF");
+		assertThat(IO.getBasedFile(base, "")).isEqualTo(base);
+		assertThat(IO.getBasedFile(base, "foo/../bar")).isEqualTo(new File(base, "bar"));
+		assertThat(IO.getBasedFile(base, ".💩.")).isEqualTo(new File(base, ".💩."));
+		assertThat(except(() -> IO.getBasedFile(base, ".."))).contains("io.sub.up");
+		assertThat(except(() -> IO.getBasedFile(base, "bar/../../.."))).contains("io.sub.up");
+		assertThat(new File(base, "/foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "/foo").getParentFile()).isEqualTo(base);
+	}
+
+	@EnabledOnOs(WINDOWS)
+	@Test
+	public void testOnWindowsOnly() {
+		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "c:\\foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "c:\\foo").getParentFile().getName()).isEqualTo("c:");
+		assertThat(new File(base, "c:\\foo").getParentFile().getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "\\\\sys\\foo").getName()).isEqualTo("foo");
+		assertThat(new File(base, "\\\\sys\\foo").getParentFile()
+			.getName()).isEqualTo("sys");
+		assertThat(new File(base, "\\\\sys\\foo").getParentFile()
+			.getParentFile()).isEqualTo(base);
+	}
+
+	@DisabledOnOs(WINDOWS)
+	@Test
+	public void testOnOtherOnly() {
+		File base = new File("base").getAbsoluteFile();
+		assertThat(new File(base, "c:\\foo").getName()).isEqualTo("c:\\foo");
+		assertThat(new File(base, "c:\\foo").getParentFile()).isEqualTo(base);
+		assertThat(new File(base, "\\\\sys\\foo").getName()).isEqualTo("\\\\sys\\foo");
+		assertThat(new File(base, "\\\\sys\\foo").getParentFile()).isEqualTo(base);
+	}
+
+	@Test
+	public void testWindows() throws IOException {
+		Windows os = new Windows();
+		File base = new File("base").getAbsoluteFile();
+		assertThat(os.getBasedFile(base, "META-INF/versions/11/OSGI-INF/MANIFEST.MF")
+			.getName()).isEqualTo("MANIFEST.MF");
+		assertThat(except(() -> os.getBasedFile(base, "bar/LPT1"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/<bla"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/>bla/foo"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/bla\nfoo"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/bla:foo"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/COM²"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/NUL"))).contains("io.win.sub.invalid");
+		assertThat(except(() -> os.getBasedFile(base, "bar/nul"))).contains("io.win.sub.invalid");
+		assertThat(os.getBasedFile(base, "bar/xLPT1")
+			.getName()).contains("LPT1");
+		assertThat(os.getBasedFile(base, "bar/COM²²")
+			.getName()).contains("COM²²");
+	}
+
+	private String except(RunnableWithException run) {
+		try {
+			run.run();
+			return null;
+		} catch (Exception e) {
+			return e.toString();
+		}
+	}
+
 }

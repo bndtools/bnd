@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- 
+This repository contains a few manually added dependencies 
+from previous / older Eclipse version which are still needed, but dropped in more recent
+Eclipse versions. Those are mostly non-OSGi libs for which no OSGi-bundle exists on Maven Central
+but were OSGified by Eclipse team.
+-->
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="Eclipse_2022-12-Legacy" increment="1759431158054">
+<resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="org.hamcrest.core"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.3.0.v20180420-1519" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="org.hamcrest.core,org.hamcrest.internal"/>
+      <directive name="mandatory" value="core"/>
+      <attribute name="core" value="split"/>
+      <attribute name="bundle-symbolic-name" value="org.hamcrest.core"/>
+      <attribute name="bundle-version" value="1.3.0.v20180420-1519" type="Version"/>
+      <attribute name="osgi.wiring.package" value="org.hamcrest"/>
+      <attribute name="version" value="1.3.0" type="Version"/>
+      <attribute name="bnd.hashes" value="-366206901,515220737,-1789452028,1600917233,2587372,1142656251,-269945248,-1637731231,-1106348678,1980707797,-56677412,-606507625,572770538,2071941500,-1789452014,-748688648,819664212,-1774319861,977265264,447226155" type="List&lt;Long&gt;"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="org.hamcrest"/>
+      <attribute name="bundle-symbolic-name" value="org.hamcrest.core"/>
+      <attribute name="bundle-version" value="1.3.0.v20180420-1519" type="Version"/>
+      <attribute name="osgi.wiring.package" value="org.hamcrest.core"/>
+      <attribute name="version" value="1.3.0" type="Version"/>
+      <attribute name="bnd.hashes" value="63352632,63424707,16449521,103005741,-756275534,-70059797,67339003,2378,869720556,-2135792586,-572150774,-1057350090,70921513,-2096394767,-2096265008,-1050048887,1313826160,-670536913,-1834239032,-500995647" type="List&lt;Long&gt;"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="x-internal" value="true"/>
+      <directive name="uses" value="org.hamcrest"/>
+      <attribute name="bundle-symbolic-name" value="org.hamcrest.core"/>
+      <attribute name="bundle-version" value="1.3.0.v20180420-1519" type="Version"/>
+      <attribute name="osgi.wiring.package" value="org.hamcrest.internal"/>
+      <attribute name="version" value="1.3.0" type="Version"/>
+      <attribute name="bnd.hashes" value="951756231,-271425669,-1979006851,-485793781" type="List&lt;Long&gt;"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="1.3.0.v20180420-1519" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="org.hamcrest.core"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.3.0.v20180420-1519" type="Version"/>
+      <attribute name="osgi.wiring.host" value="org.hamcrest.core"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="66997" type="Long"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="url" value="https://download.eclipse.org/releases/2022-12/202212071000/plugins/org.hamcrest.core_1.3.0.v20180420-1519.jar"/>
+      <attribute name="osgi.content" value="9DBEEC98D90D589B3BDFDEA604EAA484007A42572F7437C90C06B823063CD00A"/>
+    </capability>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.5))"/>
+    </requirement>
+  </resource>
+  </repository>

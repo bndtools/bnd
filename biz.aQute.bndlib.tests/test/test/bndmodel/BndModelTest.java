@@ -1,5 +1,6 @@
 package test.bndmodel;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +15,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -109,15 +111,35 @@ public class BndModelTest {
 	@Test
 	public void testParent() throws Exception {
 
-		BndEditModel model = new BndEditModel();
-		model.setRunFw("${fw}"); // set changes
 		File f = IO.getFile("testresources/bndmodel/test-01.bndrun");
+		BndEditModel model = new BndEditModel();
 		model.setBndResource(f);
-
+		model.load();
+		model.setRunFw("${fw}"); // set changes
 		Processor p = model.getProperties();
 
 		assertEquals("a, b, c", p.getProperty(Constants.RUNBUNDLES), "Set in file, refers to macro");
 		assertEquals("framework", p.getProperty(Constants.RUNFW), "Changes, refers to macro");
 
+	}
+
+	/**
+	 * Check if we can get a processor of the model and verify that we get the
+	 * proper properties.
+	 */
+	@Test
+	public void testTypes() throws Exception {
+
+		File f = IO.getFile("testresources/bndmodel/test-01.bndrun");
+		BndEditModel model = new BndEditModel();
+		model.setBndResource(f);
+		model.load();
+		model.add("Export-Package", "foo;version=1,bar;version=2;xyz=1");
+
+		List<ExportedPackage> exportedPackages = model.getExportedPackages();
+		assertThat(exportedPackages).hasSize(2);
+		model.add("Export-Package", "foo2;version=2,bar2;version=2;xyz=2");
+		exportedPackages = model.getExportedPackages();
+		assertThat(exportedPackages).hasSize(4);
 	}
 }

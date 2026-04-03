@@ -1,5 +1,7 @@
 package aQute.lib.deployer;
 
+import static aQute.bnd.service.tags.Tags.parse;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,8 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.service.tags.Tagged;
+import aQute.bnd.service.tags.Tags;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
@@ -75,7 +79,7 @@ import aQute.service.reporter.Reporter;
  */
 
 @aQute.bnd.annotation.plugin.BndPlugin(name = "Filerepo", parameters = FileRepo.Config.class)
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable, Tagged {
 	private final static Logger logger = LoggerFactory.getLogger(FileRepo.class);
 
 	interface Config {
@@ -142,6 +146,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Set the name of this repository (optional)
 	 */
 	public final static String				NAME				= "name";
+
+	/**
+	 * A comma-separated list of tags.
+	 */
+	public final static String				TAGS				= "tags";
 
 	/**
 	 * Should this file repo have an index? Either true or false (absent)
@@ -252,6 +261,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String									name;
 	boolean									inited;
 	boolean									trace;
+	Tags									tags				= DEFAULT_REPO_TAGS;
 	PersistentMap<ResourceDescriptor>		index;
 
 	private boolean							hasIndex;
@@ -336,6 +346,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		action = map.get(CMD_AFTER_ACTION);
 
 		trace = Boolean.parseBoolean(map.get(TRACE));
+		tags = parse(map.get(TAGS), DEFAULT_REPO_TAGS);
 	}
 
 	/**
@@ -1047,5 +1058,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public void setIndex(boolean b) {
 		hasIndex = b;
+	}
+
+	@Override
+	public Tags getTags() {
+		return this.tags;
 	}
 }

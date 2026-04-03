@@ -1,0 +1,8 @@
+#
+# org.example.impl PROVIDER BUNDLE
+#
+
+-includeresource: \
+  linux-aarch64/libopencv_java.so=${repo;org.weasis.thirdparty.org.opencv:libopencv_java:so:linux-aarch64;4.6.0.-dcm},\
+  linux-x86-64/libopencv_java.so=${repo;org.weasis.thirdparty.org.opencv:libopencv_java:so:linux-x86-64;4.6.0.-dcm},\
+  macos-aarch64/libopencv_java.so=${repo;org.weasis.thirdparty.org.opencv:libopencv_java:dylib:macosx-aarch64;4.6.0.-dcm}

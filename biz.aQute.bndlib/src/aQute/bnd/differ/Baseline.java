@@ -22,6 +22,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -33,7 +34,7 @@ import aQute.bnd.service.diff.Type;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.libg.generics.Create;
-import aQute.service.reporter.Reporter;
+import aQute.service.reporter.Reporter;;
 
 /**
  * This class maintains
@@ -76,10 +77,20 @@ public class Baseline {
 	Version				olderVersion;
 	Version				suggestedVersion;
 	String				releaseRepository;
+	final boolean		includeZeroMajor;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
 		this.bnd = bnd;
+
+		// Read includeZeroMajor from global property
+		// The Reporter interface doesn't have getProperty, but the actual
+		// instance is always a Processor
+		if (bnd instanceof Processor proc) {
+			includeZeroMajor = proc.is(Constants.BASELINEINCLUDEZEROMAJOR);
+		} else {
+			includeZeroMajor = false;
+		}
 	}
 
 	/**
@@ -133,8 +144,11 @@ public class Baseline {
 				.startsWith("java."))
 				continue;
 
-			if (!packageFilters.matches(pdiff.getName()))
+			var matcher = packageFilters.matcher(pdiff.getName());
+			if (!packageFilters.isEmpty() && (matcher == null || matcher.isNegated()))
 				continue;
+
+			var threshold = getThreshold(packageFilters, matcher);
 
 			final Info info = new Info();
 			infos.add(info);
@@ -170,6 +184,11 @@ public class Baseline {
 						default :
 							break;
 					}
+
+					if (threshold != null && diff.getDelta().compareTo(threshold) < 0) {
+						return true;
+					}
+
 					switch (diff.getType()) {
 						case PACKAGE :
 						case INTERFACE :
@@ -244,6 +263,12 @@ public class Baseline {
 				case REMOVED -> MAJOR;
 				default -> MAJOR;
 			};
+
+
+			if (threshold != null && content.compareTo(threshold) < 0) {
+				content = UNCHANGED;
+			}
+
 			if (content.compareTo(highestDelta) > 0) {
 				highestDelta = content;
 			}
@@ -285,13 +310,38 @@ public class Baseline {
 		return infos;
 	}
 
+	private Delta getThreshold(Instructions packageFilters, Instruction matcher) {
+		if (matcher == null)
+			return null;
+		var attrs = packageFilters.get(matcher);
+		assert attrs != null : "guaranteed by the matcher != null";
+		var threshold = attrs.getOrDefault(Constants.DIFFPACKAGES_THRESHOLD, "MICRO")
+			.toUpperCase();
+		try {
+			return Delta.valueOf(threshold);
+		}
+		catch (IllegalArgumentException e) {
+			bnd.error("baseline.threshold baseline threshold specified as [%s] but does not correspond to a Delta enum - ignoring", threshold);
+		}
+		return null;
+	}
+
 	/**
 	 * "Major version zero (0.y.z) is for initial development. Anything may
 	 * change at any time. The public API should not be considered stable."
+	 * <p>
+	 * This method returns {@code true} if baselining should report mismatches
+	 * for the given versions. By default, it returns {@code false} for versions
+	 * with major version 0 (unless {@code includeZeroMajor} is enabled).
 	 *
 	 * @see <a href="https://semver.org/#spec-item-4">SemVer</a>
 	 */
 	private boolean mismatch(Version older, Version newer) {
+		if (includeZeroMajor) {
+			// When includeZeroMajor is enabled, only exclude 0.0.x versions
+			return !(newer.getMajor() == 0 && newer.getMinor() == 0);
+		}
+		// Default behavior: exclude all versions with major version 0
 		return older.getMajor() > 0 && newer.getMajor() > 0;
 	}
 
@@ -367,7 +417,7 @@ public class Baseline {
 
 	private Version bump(Delta delta, Version last, int offset, int base) {
 		return switch (delta) {
-			case UNCHANGED -> last;
+			case UNCHANGED, IGNORED -> last;
 			case MINOR -> new Version(last.getMajor(), last.getMinor() + offset, base);
 			case MAJOR -> new Version(last.getMajor() + 1, base, base);
 			case ADDED -> last;

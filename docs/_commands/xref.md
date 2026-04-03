@@ -1,21 +1,27 @@
 ---
-layout: default
-title:  xref [options] <[jar path]> <[...]> 
-summary: Show a cross references for all classes in a set of jars.
+layout: bnd
+title: xref
+summary: |
+   Show a cross references for all classes in a set of jars.
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   xref [options]  <<jar path>> <[...]>
 
-{{page.summary}}
+#### Options: 
+- `[ -c --classes ]` Show classes instead of packages
+- `[ -d --destination <string>* ]` Match destination types
+- `[ -f --from ]` Show references from other classes/packages (<)
+- `[ -j --java ]` Include java.* packages
+- `[ -m --match <string>* ]` Filter for class names, a globbing expression
+- `[ -n --nested ]` Analyze nested JARs referenced via Bundle-ClassPath
+- `[ -r --referrredTo <string> ]` Output list of package/class names that have been referred to
+- `[ -s --source <string>* ]` Match source types
+- `[ -t --to ]` Show references to other classes/packages (>)
 
-## Synopsis
-
-## Options
-
-	[ -c, --classes ]          - Show classes instead of packages
-	[ -f, --from ]             - Show references from other classes/packages (<)
-	[ -m, --match <string>* ]  - Filter for class names, a globbing expression
-	[ -t, --to ]               - Show references to other classes/packages (>)
+<!-- Manual content from: ext/xref.md --><br /><br />
 
 ## Examples
    
@@ -125,3 +131,27 @@ summary: Show a cross references for all classes in a set of jars.
 	                                                     aQute.lib.collections
 	                                    aQute.bnd.help > aQute.bnd.osgi
 	   
+
+## Nested JARs
+
+By default, `xref` only analyzes classes directly contained in the provided JAR files. Many OSGi bundles contain nested JARs that are referenced via the `Bundle-ClassPath` manifest header. To analyze these nested JARs as well, use the `--nested` option:
+
+	   bnd xref --nested mybundle.jar
+
+This will:
+1. Parse the `Bundle-ClassPath` manifest header
+2. Extract and analyze any embedded JAR files
+3. Analyze directories referenced in the Bundle-ClassPath
+4. Include cross-references from all sources in the output
+
+For example, given a bundle with the following structure:
+
+```
+mybundle.jar
+├── META-INF/MANIFEST.MF (Bundle-ClassPath: .,lib/internal.jar)
+├── com/example/Main.class
+└── lib/internal.jar
+    └── com/example/internal/Helper.class
+```
+
+Without `--nested`, only `com.example.Main` would be analyzed. With `--nested`, both `com.example.Main` and `com.example.internal.Helper` classes are included in the cross-reference analysis.

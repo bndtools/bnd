@@ -23,7 +23,9 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
-import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -34,7 +36,6 @@ import org.osgi.service.metatype.AttributeDefinition;
 import org.osgi.service.metatype.ObjectClassDefinition;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.wizards.project.ProjectTemplateParam;
@@ -222,29 +223,59 @@ public class NewBndServiceWizardPageOne extends NewJavaProjectWizardPageOne {
 
 	@Override
 	public void setVisible(boolean visible) {
-		if (visible && this.templateName != null) {
-			try {
-				// load templates here
-				this.templateLoadingJob.loadTemplates(getContainer(), getShell().getDisplay());
-			} catch (InvocationTargetException e) {
-				ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-					"Error loading templates", Exceptions.unrollCause(e, InvocationTargetException.class)));
+		boolean failed = false;
+		if (visible) {
+			if (this.templateName != null) {
+				try {
+					// load templates here
+					this.templateLoadingJob.loadTemplates(getContainer(), getShell().getDisplay());
+				} catch (InvocationTargetException e) {
+					failed = true;
+				}
+				// then check to make sure that service api, impl and consumer
+				// template types are all non-null/found.
+				Template template = getServiceApiTemplate();
+				if (template == null) {
+					failed = true;
+				} else {
+					template = getServiceImplTemplate();
+					if (template == null) {
+						failed = true;
+					} else {
+						template = getServiceConsumerTemplate();
+						if (template == null) {
+							failed = true;
+						}
+					}
+				}
 			}
-			// then check to make sure that service-api template type (with name
-			// templateName) was found.
-			Template apiTemplate = getServiceApiTemplate();
-			if (apiTemplate == null) {
-				String errorMsg = "Error loading service-api template '" + this.templateName + "'";
-				ErrorDialog.openError(getShell(), "Error loading template", null,
-					new Status(IStatus.ERROR, Plugin.PLUGIN_ID, errorMsg));
+		}
+		if (failed) {
+			MessageDialog.open(ERROR, getShell(), "Error loading service template",
+				"Could not load service template named '" + this.templateName + "'\n\n" + "This results from \n\n"
+					+ "a) Attempting to create Bnd OSGi projects before creating a Bnd OSGi workspace\n\n"
+					+ "    To fix, create a Bnd OSGi workspace before using this wizard.\n\n"
+					+ "b) Attempting to create remote service projects without using the ECF \n"
+					+ "     Remote Services Workspace template\n\n"
+					+ "     To fix, use the ECF Remote Services Workspace template\n"
+					+ "     at https://github.com/ECF/bndtools.workspace. This workspace template\n"
+					+ "     provides all of the remote service Bnd OSGi Project templates.",
+				ERROR, new String[] {
+					"Ok", "Cancel"
+				});
+			// Now close dialog
+			IWizardContainer wizardContainer = getWizard().getContainer();
+			if (wizardContainer instanceof WizardDialog) {
+				WizardDialog wizardDialog = (WizardDialog) wizardContainer;
+				wizardDialog.close();
 			}
 		} else {
 			// Everything ok, show
 			super.setVisible(visible);
+			setMessage("Enter a project name and then a service name.");
 			if (visible) {
 				nameControl.setFocus();
 			}
-			setMessage("Enter a project name and then a service name.");
 		}
 	}
 

@@ -68,6 +68,7 @@ public interface Constants {
 
 	String		PRIVATE_PACKAGE								= "Private-Package";
 	String		IGNORE_PACKAGE								= "Ignore-Package";
+	@Deprecated
 	String		INCLUDE_RESOURCE							= "Include-Resource";
 	String		CONDITIONAL_PACKAGE							= "Conditional-Package";
 	String		BND_LASTMODIFIED							= "Bnd-LastModified";
@@ -92,6 +93,7 @@ public interface Constants {
 		REQUIRE_CAPABILITY, SERVICE_COMPONENT, PRIVATE_PACKAGE, IGNORE_PACKAGE, TESTCASES);
 
 	String		BASELINE									= "-baseline";
+	String		BASELINEINCLUDEZEROMAJOR					= "-baselineincludezeromajor";
 	String		BASELINEREPO								= "-baselinerepo";
 
 	String		BNDDRIVER									= "-bnd-driver";
@@ -107,6 +109,7 @@ public interface Constants {
 
 	String		BUILDERIGNORE								= "-builderignore";
 	String		BUILDPATH									= "-buildpath";
+	String		BUILDTOOL									= "-buildtool";
 	String		BUMPPOLICY									= "-bumppolicy";
 	String		BUNDLEANNOTATIONS							= "-bundleannotations";
 	String		CDIANNOTATIONS								= "-cdiannotations";
@@ -121,6 +124,7 @@ public interface Constants {
 	String		COMPRESSION									= "-compression";
 	String		DIFFIGNORE									= "-diffignore";
 	String		DIFFPACKAGES								= "-diffpackages";
+	String		DIFFPACKAGES_THRESHOLD						= "threshold";
 	String		DEPENDSON									= "-dependson";
 	String		DEPLOY										= "-deploy";
 	String		DEPLOYREPO									= "-deployrepo";
@@ -138,6 +142,7 @@ public interface Constants {
 	String		EXPORT_TYPE									= "type";
 	String		EXPORT_BSN									= "bsn";
 	String		EXPORT_NAME									= "name";
+	String		EXPORTREPORT								= "-exportreport";
 	String		EXPORT_VERSION								= "version";
 
 	String		EXPORTTYPE									= "-exporttype";
@@ -174,6 +179,9 @@ public interface Constants {
 	String		METATYPE_ANNOTATIONS_OPTIONS				= "-metatypeannotations-options";
 	String		MANIFEST									= "-manifest";
 	String		MAVEN_RELEASE								= "-maven-release";
+	String		MAVEN_RELEASE_CLASSIFIER					= "classifier";
+	String		MAVEN_RELEASE_ARCHIVE						= "archive";
+	String		MAVEN_RELEASE_PATH							= "path";
 	String		MAVEN_DEPENDENCIES							= "-maven-dependencies";
 	String		MAVEN_SCOPE									= "-maven-scope";
 	String		PROFILE										= "-profile";
@@ -190,8 +198,11 @@ public interface Constants {
 	String		MANIFEST_NAME								= "-manifest-name";
 	String		NOUSES										= "-nouses";
 	String		NOCLASSFORNAME								= "-noclassforname";
+	String		NOPROXYINTERFACES							= "-noproxyinterfaces";
 	String		NOIMPORTJAVA								= "-noimportjava";
+	String		NOSUBSTITUTION								= "-nosubstitution";
 	String		NOBUNDLES									= "-nobundles";
+	String		NOPARALLEL									= "-noparallel";
 	String		OUTPUTMASK									= "-outputmask";																																						// default
 																																																									// ${@bsn}.jar
 
@@ -202,9 +213,11 @@ public interface Constants {
 	String		PLUGINPATH_URL_ATTR							= "url";
 	String		PLUGINPATH_SHA1_ATTR						= "sha1";
 	String		POM											= "-pom";
+	String		PREPARE										= "-prepare";
 	String		PREPROCESSMATCHERS							= "-preprocessmatchers";
 	String		PRIVATEPACKAGE								= "-privatepackage";
 	String		RELEASEREPO									= "-releaserepo";
+	String		REPORTCONFIG								= "-reportconfig";
 	String		DISTRO										= "-distro";
 	String		REMOVEHEADERS								= "-removeheaders";
 	String		RESOURCEONLY								= "-resourceonly";
@@ -238,6 +251,7 @@ public interface Constants {
 	String		RUNPROVIDEDCAPABILITIES						= "-runprovidedcapabilities";
 
 	String		RUNBUNDLES									= "-runbundles";
+	String		RUNBUNDLES_DECORATOR						= RUNBUNDLES + "+";
 	String		RUNBUNDLES_STARTLEVEL_ATTRIBUTE				= "startlevel";
 
 	String		RUNSTARTLEVEL								= "-runstartlevel";
@@ -251,6 +265,13 @@ public interface Constants {
 	String		AUGMENT_REQUIREMENT_DIRECTIVE				= "requirement:";
 
 	String		REMOTEWORKSPACE								= "-remoteworkspace";
+
+	/**
+	 * tag for repos which should be used for Resolving bundles. This is also
+	 * the default tag for all repos which not have specified tags (also for bc
+	 * reasons)
+	 */
+	String		REPOTAGS_RESOLVE							= "resolve";
 
 	String		RUNBLACKLIST								= "-runblacklist";
 	String		RUNREQUIRES									= "-runrequires";
@@ -281,6 +302,10 @@ public interface Constants {
 	String		TESTPACKAGES								= "-testpackages";
 	String		TESTPATH									= "-testpath";
 	String		TESTCONTINUOUS								= "-testcontinuous";
+	/**
+	 * @deprecated forRemoval since = "8.0.0"
+	 */
+	@Deprecated
 	String		TESTTERMINATE								= "-testterminate";
 	String		TESTSOURCES									= "-testsources";
 	String		TESTUNRESOLVED								= "-testunresolved";
@@ -294,7 +319,17 @@ public interface Constants {
 	String		WABLIB										= "-wablib";
 	String		WORKINGSET									= "-workingset";
 	String		WORKINGSET_MEMBER							= "member";
+	String		WORKSPACE_TEMPLATES							= "-workspace-templates";
+
 	String		REQUIRE_BND									= "-require-bnd";
+
+	/*
+	 * processing of META-INF/services folder section.
+	 */
+	String		METAINF_SERVICES							= "-metainf-services";
+	String		METAINF_SERVICES_STRATEGY_ANNOTATION		= "annotation";
+	String		METAINF_SERVICES_STRATEGY_AUTO				= "auto";
+	String		METAINF_SERVICES_STRATEGY_NONE				= "none";
 
 	// Deprecated
 	String		CLASSPATH									= "-classpath";
@@ -302,7 +337,7 @@ public interface Constants {
 
 	Set<String>	options										= Sets.of(BASELINE, BUILDPATH, BUMPPOLICY, CONDUIT,
 		CLASSPATH, COMPRESSION, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS, FAIL_OK, INCLUDE,
-		INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC, PLUGIN, POM, PROVIDER_POLICY,
+		BASELINEINCLUDEZEROMAJOR, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC, PLUGIN, POM, PROVIDER_POLICY,
 		REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES,
 		RUNSYSTEMCAPABILITIES, RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, NOMANIFEST, DEPLOYREPO,
 		RELEASEREPO, SAVEMANIFEST, RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNKEEP, RUNTRACE,
@@ -315,8 +350,9 @@ public interface Constants {
 		TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE, RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO,
 		CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPRODUCIBLE, INCLUDEPACKAGE,
 		CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK, MAVEN_SCOPE, RUNSTARTLEVEL,
-		RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE, RUNFRAMEWORKRESTART,
-		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY);
+		RUNOPTIONS, NOCLASSFORNAME, NOPROXYINTERFACES, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE,
+		RUNFRAMEWORKRESTART,
+		NOIMPORTJAVA, NOSUBSTITUTION, VERSIONDEFAULTS, LIBRARY, METAINF_SERVICES);
 
 	// Ignore bundle specific headers. These headers do not make a lot of sense
 	// to inherit
@@ -395,6 +431,11 @@ public interface Constants {
 	String		EEPROFILE_AUTO_ATTRIBUTE					= "auto";
 	String		NONE										= "none";
 
+	/*
+	 * -includeresource directives for duplicate handling strategy
+	 */
+	String		DUP_STRATEGY								= "onduplicate:";
+
 	Set<String>	directives									= Sets.of(SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE,
 		IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE, INCLUDE_DIRECTIVE, USES_DIRECTIVE, EXCLUDE_DIRECTIVE,
 		KEYSTORE_LOCATION_DIRECTIVE, KEYSTORE_PROVIDER_DIRECTIVE, KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE,
@@ -402,7 +443,7 @@ public interface Constants {
 		EFFECTIVE_DIRECTIVE, FILTER_DIRECTIVE, FIXUPMESSAGES_RESTRICT_DIRECTIVE, FIXUPMESSAGES_REPLACE_DIRECTIVE,
 		FIXUPMESSAGES_IS_DIRECTIVE, BNDDRIVER_GRADLE, BNDDRIVER_GRADLE_NATIVE, BNDDRIVER_ANT, BNDDRIVER_ECLIPSE,
 		BNDDRIVER_MAVEN, BNDDRIVER_INTELLIJ, BNDDRIVER_SBT, BNDDRIVER_OSMORC, AUGMENT_CAPABILITY_DIRECTIVE,
-		AUGMENT_REQUIREMENT_DIRECTIVE);
+		AUGMENT_REQUIREMENT_DIRECTIVE, DUP_STRATEGY);
 
 	String		USES_USES									= "<<USES>>";
 	String		CURRENT_USES								= "@uses";
@@ -497,15 +538,13 @@ public interface Constants {
 	 * Headers that if **all** are absent will trigger the -includepackage
 	 * `*;from:=project` (include all packages from the project's output.
 	 */
-	Set<String>	EXPAND_HEADERS							= Sets.of(
-		Constants.RESOURCEONLY, Constants.INCLUDEPACKAGE, Constants.PRIVATE_PACKAGE, Constants.PRIVATEPACKAGE,
-		Constants.EXPORT_PACKAGE
-	);
+	Set<String>	EXPAND_HEADERS								= Sets.of(Constants.RESOURCEONLY, Constants.INCLUDEPACKAGE,
+		Constants.PRIVATE_PACKAGE, Constants.PRIVATEPACKAGE, Constants.EXPORT_PACKAGE);
 
 	/**
 	 * Marker resource set by the ProjectBuilder to mark a JAR as the project
-	 * output's entry in the classpath. Used for the
-	 * {@link #EXPAND_HEADERS} processing.
+	 * output's entry in the classpath. Used for the {@link #EXPAND_HEADERS}
+	 * processing.
 	 */
 	String		PROJECT_MARKER								= "META-INF/.project";
 
@@ -574,6 +613,58 @@ public interface Constants {
 	String		LAUNCH_ACTIVATION_EAGER						= "launch.activation.eager";
 
 	/**
+	 * A list of headers that use merged properties
+	 */
+	Set<String>	MERGED_HEADERS								= Set.of(																																								//
+		AUGMENT,																																																					//
+		BUILDERIGNORE,																																																				//
+		BUILDREPO,																																																					//
+		BUILDPATH,																																																					//
+		CONDITIONAL_PACKAGE,																																																		//
+		CONNECTION_SETTINGS,																																																		//
+		DEFINE_CONTRACT,																																																			//
+		DEFAULT_PROP_SRC_DIR,																																																		//
+		DEPENDSON,																																																					//
+		DONOTCOPY,																																																					//
+		DSANNOTATIONS_OPTIONS,																																																		//
+		EXPORT_PACKAGE,																																																				//
+		EXTENSION,																																																					//
+		FIXUPMESSAGES,																																																				//
+		GESTALT,																																																					//
+		IMPORT_PACKAGE,																																																				//
+		INCLUDERESOURCE,																																																			//
+		MAKE,																																																						//
+		MAVEN_DEPENDENCIES,																																																			//
+		PLUGIN,																																																						//
+		PLUGINPATH,																																																					//
+		PREPROCESSMATCHERS,																																																			//
+		PRIVATE_PACKAGE,																																																			//
+		PROVIDE_CAPABILITY,																																																			//
+		RELEASEREPO,																																																				//
+		REMOVEHEADERS,																																																				//
+		REQUIRE_CAPABILITY,																																																			//
+		RESOLVE_REJECT,																																																				//
+		RUNBLACKLIST,																																																				//
+		RUNBUNDLES,																																																					//
+		RUNBUNDLES_DECORATOR,																																																		//
+		RUNPATH,																																																					//
+		RUNPROGRAMARGS,																																																				//
+		RUNPROPERTIES,																																																				//
+		RUNPROVIDEDCAPABILITIES,																																																	//
+		RUNREPOS,																																																					//
+		RUNREQUIRES,																																																				//
+		RUNSYSTEMCAPABILITIES,																																																		//
+		RUNSYSTEMPACKAGES,																																																			//
+		RUNVM,																																																						//
+		SOURCEPATH,																																																					//
+		STANDALONE,																																																					//
+		SYSTEMPROPERTIES,																																																			//
+		TESTPACKAGES,																																																				//
+		TESTPATH,																																																					//
+		WORKINGSET,																																																					//
+		"-pomaugment");
+
+	/**
 	 * Any attributes that should be removed from the attributes before
 	 * printing.
 	 */
@@ -587,7 +678,6 @@ public interface Constants {
 	);
 
 	String		INTERNAL_PREFIX								= "-internal-";
-
 
 	/*
 	 * Deprecated Section

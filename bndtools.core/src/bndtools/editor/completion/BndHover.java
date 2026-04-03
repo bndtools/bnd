@@ -1,22 +1,32 @@
 package bndtools.editor.completion;
 
+import static aQute.bnd.help.Syntax.isInstruction;
+import static aQute.bnd.osgi.Constants.MERGED_HEADERS;
+
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bndtools.api.editor.IBndEditor;
+import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHoverExtension;
+import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
 
-import aQute.bnd.header.Parameters;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Processor;
 
-public class BndHover extends DefaultTextHover {
+public class BndHover extends DefaultTextHover implements ITextHoverExtension, ITextHoverExtension2 {
 
 	private final IBndEditor bndEditor;
 
@@ -25,70 +35,6 @@ public class BndHover extends DefaultTextHover {
 		this.bndEditor = bndEditor;
 	}
 
-	@Deprecated
-	@Override
-	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-
-		if (hoverRegion != null) {
-			IDocument doc = textViewer.getDocument();
-			try {
-				String key = doc.get(hoverRegion.getOffset(), hoverRegion.getLength())
-					.trim();
-				Processor properties = bndEditor.getModel()
-					.getProperties();
-
-				if (key.indexOf('$') >= 0) {
-
-					properties.setProperty(".", properties.getBase()
-						.getAbsolutePath());
-
-					String replaced = properties.getReplacer()
-						.process(key);
-					if (properties.isOk())
-						return replaced;
-
-					return properties.getErrors()
-						.stream()
-						.collect(Collectors.joining());
-				}
-
-				Syntax syntax = Syntax.HELP.get(key);
-				StringBuilder sb = new StringBuilder();
-				if (syntax == null) {
-					if (!key.startsWith("-"))
-						key = "-" + key;
-					syntax = Syntax.HELP.get("-" + key);
-				}
-
-				if (syntax != null) {
-
-					sb.append(syntax.getLead());
-					sb.append("\nE.g. ");
-					sb.append(syntax.getExample());
-				}
-				Parameters decorated = properties.decorated(key);
-				if (!decorated.isEmpty()) {
-					sb.append("\n")
-						.append(key)
-						.append("=")
-						.append(decorated);
-				}
-
-				String text = sb.toString();
-
-				if (text.length() > 30) {
-					text = wrap(text, 30);
-				}
-				if (!text.isEmpty())
-					return text;
-
-			} catch (Exception e) {
-				return e + "";
-			}
-		}
-		String info = super.getHoverInfo(textViewer, hoverRegion);
-		return info;
-	}
 
 	@Override
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
@@ -153,5 +99,112 @@ public class BndHover extends DefaultTextHover {
 		}
 		return sb.toString();
 	}
+
+	public static String syntaxHoverText(String key, Processor properties) {
+
+		Syntax syntax = lookupSyntax(key);
+		StringBuilder sb = new StringBuilder();
+
+		if (syntax != null) {
+			sb.append(syntax.getLead());
+			String values = syntax.getValues();
+			if (values != null && !values.isBlank()) {
+				sb.append("\nValues: ");
+				sb.append(syntax.getValues());
+			}
+			sb.append("\nExample: ");
+			sb.append(syntax.getExample());
+		}
+
+		String value = isInstruction(key) || MERGED_HEADERS.contains(key) ? properties.decorated(key)
+			.toString()
+			: properties.get(key);
+
+
+		if (value != null && !value.isEmpty()) {
+			String stem = BndEditModel.getStem(key);
+			String formatted = BndEditModel.format(stem, value);
+			sb.append("\n")
+				.append(key)
+				.append("=")
+				.append(formatted);
+		}
+
+		List<String> errors = properties.getErrors();
+		if (errors != null && !errors.isEmpty()) {
+			sb.append("\n\n");
+			sb.append("Errors: ");
+			sb.append(errors);
+		}
+
+		return sb.toString();
+	}
+
+	public static Syntax lookupSyntax(String key) {
+
+		String stem = BndEditModel.getStem(key);
+		Syntax syntax = Syntax.HELP.get(stem);
+
+		if (syntax == null) {
+			if (!key.startsWith("-"))
+				key = "-" + key;
+			syntax = Syntax.HELP.get("-" + key);
+		}
+		return syntax;
+	}
+
+	@Override
+	public IInformationControlCreator getHoverControlCreator() {
+		return new AbstractReusableInformationControlCreator() {
+			@Override
+			public IInformationControl doCreateInformationControl(Shell parent) {
+				return new CustomTooltip(parent); //
+			}
+		};
+	}
+
+
+	@Override
+	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+
+		if (hoverRegion != null) {
+			IDocument doc = textViewer.getDocument();
+			try {
+				String key = doc.get(hoverRegion.getOffset(), hoverRegion.getLength())
+					.trim();
+				Processor properties = bndEditor.getModel()
+					.getProperties();
+
+				if (key.indexOf('$') >= 0) {
+
+					properties.setProperty(".", properties.getBase()
+						.getAbsolutePath());
+
+					String replaced = properties.getReplacer()
+						.process(key);
+					if (properties.isOk())
+						return replaced;
+
+					return properties.getErrors()
+						.stream()
+						.collect(Collectors.joining());
+				}
+
+				String text = syntaxHoverText(key, properties);
+				if (!text.isEmpty()) {
+					Syntax syntax = lookupSyntax(key);
+					String helpUrl = syntax != null ? syntax.autoHelpUrl() : null;
+					return new TooltipInput(text, helpUrl);
+				}
+
+			} catch (Exception e) {
+				return e + "";
+			}
+		}
+
+		return null;
+	}
+
+
 
 }

@@ -1,30 +1,21 @@
 ---
-layout: default
+layout: bnd
+title: -testsources REGEX ( ',' REGEX )*
 class: Project
-title: -testsources REGEX ( ',' REGEX )* 
-summary:  Specification to find JUnit test cases by traversing the test src directory and looking for java classes. The default is (.*).java.
+summary: |
+   Specification to find JUnit test cases by traversing the test src directory and looking for java classes. The default is (.*).java.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-TODO this is not working yet
+- Example: `-testsources=*.java`
 
-	public void prepare() throws Exception {
-		Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, "(.*).java"));
+- Values: `REGEX ( ',' REGEX )*`
 
-		String testDirName = project.getProperty("testsrc", "test");
-		File testSrc = project.getFile(testDirName).getAbsoluteFile();
-		if (!testSrc.isDirectory()) {
-			project.trace("no test src directory");
-			return;
-		}
+- Pattern: `.*`
 
-		if (!traverse(fqns, testSrc, "", tests)) {
-			project.trace("no test files found in %s", testSrc);
-			return;
-		}
+<!-- Manual content from: ext/testsources.md --><br /><br />
 
-		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
-//		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
-		cp = new Classpath(project, "junit");
-		addClasspath(project.getTestpath());
-		addClasspath(project.getBuildpath());
-	}
+The `-testsources` instruction specifies how bnd should find JUnit test cases by searching the test source directory for Java classes. By default, it looks for all `.java` files, but you can provide a regular expression to customize which files are considered test sources.
+
+This instruction is useful for projects with non-standard test file naming or organization, allowing you to control which files are included as test cases during the build process.

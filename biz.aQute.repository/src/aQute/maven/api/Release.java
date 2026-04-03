@@ -62,4 +62,11 @@ public interface Release extends Closeable {
 	 * @param passphrase the passphrase
 	 */
 	void setPassphrase(String passphrase);
+
+	/**
+	 * Set the name / ID of the signing key.
+	 *
+	 * @param keyname the name / ID of the key (e.g. in the gpg keystore)
+	 */
+	void setKeyname(String keyname);
 }

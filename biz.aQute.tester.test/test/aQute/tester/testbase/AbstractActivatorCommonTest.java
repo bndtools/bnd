@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 
+import aQute.junit.system.BndSystem;
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.io.IO;
 import aQute.tester.junit.platform.test.ExitCode;
@@ -33,6 +34,10 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 
 	protected AbstractActivatorCommonTest(String activatorClass, String tester) {
 		super(activatorClass, tester);
+	}
+
+	protected AbstractActivatorCommonTest(String activatorClass, String tester, String bndrun) {
+		super(activatorClass, tester, bndrun);
 	}
 
 	@Test
@@ -58,6 +63,14 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 
 		final Thread bndThread = getBndTestThread();
 
+		// As in other tests, we need to set the TCCL before the Activator
+		// runs the test discovery, otherwise the ServiceLoader calls in
+		// JUnit Platform Launcher will find bundles on the classpath, which
+		// have a different and incompatible version of interfaces it is testing
+		// against.
+		waitForThreadToWait(bndThread);
+		setTesterClassLoader(bndThread);
+
 		// Don't assert softly, since if we can't find this thread we can't do
 		// the other tests.
 		Assertions.assertThat(bndThread)
@@ -71,7 +84,7 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		final AtomicReference<Throwable> exception = new AtomicReference<>();
 		final CountDownLatch latch = new CountDownLatch(1);
 		bndThread.setUncaughtExceptionHandler((thread, e) -> {
-			exception.set(e);
+			exception.set(BndSystem.convert(e, ExitCode::new));
 			latch.countDown();
 		});
 
@@ -194,7 +207,7 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		name = getClass().getName() + "/" + testMethod.getName();
 
 		builder = new LaunchpadBuilder();
-		builder.bndrun(tester + ".bndrun")
+		builder.bndrun(bndrun)
 			.excludeExport("aQute.tester.bundle.*")
 			.excludeExport("org.junit*")
 			.excludeExport("junit.*");

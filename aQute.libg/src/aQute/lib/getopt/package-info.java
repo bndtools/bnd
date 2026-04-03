@@ -1,2 +1,2 @@
-@org.osgi.annotation.versioning.Version("3.0.1")
+@org.osgi.annotation.versioning.Version("3.1.0")
 package aQute.lib.getopt;

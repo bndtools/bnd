@@ -1,10 +1,22 @@
 ---
-layout: default
+layout: bnd
+title: -generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ...
 class: Project
-title: "-generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ..."
-summary: Generate sources 
-since: 5.1
+summary: |
+   Generate sources
+parent: Instruction Reference
+since: 5.1.0
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-generate:   \
+        gen/**.java; \ 
+            output='src-gen/' ; \ 
+            generate='javagen -o src-gen gen/'`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/generate.md --><br /><br />
 
 Virtually all the work bnd is concerned about happens in generating the JAR file. The key idea is to _pull_ resources in the JAR, instead of the more traditional _push_ model of other builders. This works well, except for _generating source code_. This generating step must happen before the compiler is called, and the compiler is generally called before bnd becomes active. 
 
@@ -133,4 +145,3 @@ The code is expected to return an `Optional.empty()` when everything is ok. If s
 If you the plugin source code is in the same workspace as the project using this plugin, you must make sure that the external plugin project is build before the project that uses it. You can achieve this with [-dependson](dependson.html). 
 
 You can take a look at the [JavaGen](https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.javagen) project in the bnd build to see how an actual external plugin is made.
-

@@ -9,22 +9,164 @@ Also, please provide the `Git-SHA` and `Git-Descriptor` headers from the Bnd/Bnd
 Please include the steps required to reproduce the problem if possible and applicable.
 This information will help us review and fix your issue faster.
 
+
+## Development Setups
+
+We provide pre-configured setups using Eclipse oomph installer, which help you getting started quickly. 
+This way you get a dedicated Eclipse instance with pre-installed bndtools source code with a simple one-click installer.
+
+**Find our different setups and P2 Repositories at:**
+<https://bndtools.org/bndtools.p2.repo/>
+
+## Launching Bndtools from Eclipse
+
+To launch bndtools from Eclipse (e.g. to try out a change to debug), use one of the `.bndrun` files from the `bndtools.core` project. There are three launchers, one per architecture, i.e.:
+
+* `bndtools.cocoa.macosx.x86_64.bndrun` for running on MacOS (64-bit Intel x86)
+* `bndtools.cocoa.macosx.aarch64.bndrun` for running on MacOS (64-bit Apple Silicon / AArch64)
+* `bndtools.gtk.linux.x86_64.bndrun` for running on Linux (64-bit Intel x86).
+* `bndtools.gtk.linux.x86.bndrun` for running on Linux (32-bit Intel x86).
+* `bndtools.win32.x86.bndrun` for running on Win32 (XP, Vista etc).
+
+Right click on the file that matches your computer's architecture and select "Run As" > "Bnd OSGi Run Launcher". If none of these files matches the architecture you want to run on, then please create a new one and submit it back as a patch.
+
+## Manually Building Bndtools
+
+In addition to the way with the pre-configured development environments there is also the more manual way.
+
+Note: Bndtools is built with Bndtools! If you want to work on the bndtools source code, you have three options:
+
+* Install the a release of bndtools from the [Installation page](https://bndtools.org/installation.html) and start working straight away.
+* Build Bndtools from the command line, then install the build results into your Eclipse IDE.
+
+### Checking Out from GitHub
+
+First check out the source code from GitHub as follows:
+
+	git clone git://github.com/bndtools/bnd.git
+
+If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketplace) then skip to **Importing Into Eclipse** below. Otherwise read on...
+
+### Building from the command-line
+
+Assuming you have Gradle (version 1.11 or better) installed, you can build bndtools from the command line by changing to the root of your checkout and typing:
+
+	./gradlew :build
+
+or skip test execution for faster local builds
+
+	./gradlew build -x test -x testOSGi
+
+After a a short while the directory - `org.bndtools.p2/generated/p2` appears. It contains an Eclipse P2 Update Site that you can use to install bndtools from the code you have just built.
+
+
+To install from the generated Update Sites, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `org.bndtools.p2/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK".
+
+Back in the update dialog, Bndtools will appear in the category list. Place a check next to it and click Next. Drive the rest of the wizard to completion... congratulations, you have just built and installed bndtools!
+
+We recommend the section [Build Environment](#build-environment) below to learn more about how the build works.
+
+## Running single tests
+
+Sometimes it can be useful to run a single testcase without running a full build. 
+
+- Running only a specific Test - e.g. runs the test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`
+
+	```bash
+	./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest"
+ 	```
+
+- Running single test method - e.g. runs the method `testTester()` in test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`
+
+	```bash
+	./gradlew :biz.aQute.bndall.tests:test --tests "biz.aQute.launcher.AlsoLauncherTest.testTester"
+ 	```
+
+### Importing Into Eclipse
+
+Now you have Bndtools installed in your Eclipse IDE, you can import the bndtools projects into Eclipse to begin working on the source code.
+
+Open the File menu and select "Import" and then "Existing Projects into Workspace" (under the General category). Click "Next". Click the "Browse" button (top right) and select the root directory of the bndtools projects.
+
+Ensure that all projects (sub-directories) are checked.
+
+NB: These projects must all be in the same directory!
+
+Click "Finish"... Eclipse will start to import and build the projects. **If you see a dialog during the import prompting you to "Create a Bnd Configuration Project" click CANCEL.**
+
+You should now have all the bndtools projects in your workspace, ready to begin hacking!
+
+
 ## Build Environment
 
 The only thing you need to build Bnd/Bndtools is Java.
-We require at least Java 8.
-We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` at the necessary versions.
+- We require at least Java 17 locally installed in path.
+- For a complete log file attach to the commands below `2>&1 | tee "build_$(date +%Y%m%d_%H%M%S).log"`
+- We use Gradle and Maven to build and the repo includes `gradlew` and `mvnw` wrappers with the necessary versions.
 
-- `./gradlew :build` - Assembles and tests the Bnd Workspace projects. This must be run before building the Bnd Maven and Gradle plugins.
-- `./gradlew :gradle-plugins:build` - Assembles and tests the Bnd Gradle plugins.
-- `./mvnw install` - Assembles and tests the Bnd Maven plugins.
-- `./gradlew :publish` - Assembles and publishes the Bnd Workspace projects into `dist/bundles`.
-- `./gradlew :gradle-plugins:publish` - Assembles and publishes the Bnd Gradle plugins into `dist/bundles`.
-- `./mvnw -Pdist deploy` - Assembles and publishes the Bnd Maven plugins into `dist/bundles`.
+- assembles and tests the Bnd Workspace projects
+  ```bash
+  ./gradlew build
+  ```
+- alternative skip tests for faster local builds 
+  ```bash
+  ./gradlew build -x test -x testOSGi
+  ```
+**MIND: Above step is pre-requisite for following build of Bnd Maven and Gradle plugin.**
+- assembles and tests the Bnd Gradle plugins
+  ```bash
+  ./gradlew :gradle-plugins:build
+  ```
+- assembles and tests the Bnd Maven plugins
+  ```bash
+  ./mvnw install
+  ```
+- assembles and publishes the Bnd Workspace projects into `dist/bundles`
+  ```bash
+  ./gradlew publish
+  ```
+- assembles and publishes the Bnd Gradle plugins into `dist/bundles`
+  ```bash
+  ./gradlew :gradle-plugins:publish
+  ```
+- assembles and publishes the Bnd Maven plugins into `dist/bundles`
+  ```bash
+  ./mvnw -Pdist deploy
+  ```
+
+Rebuilding: bnd is built with bnd. For that reason we rebuild and retest bnd with the build we just built.
+To do a full build-rebuild cycle (like the github build), you can use the following command:
+
+```
+./gradlew build \
+  && ./gradlew :gradle-plugins:build \
+  && ./.github/scripts/rebuild-build.sh \
+  && ./.github/scripts/rebuild-test.sh \
+  2>&1 | tee "build_full_$(date +%Y%m%d_%H%M%S).log"
+```
 
 We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22) for continuous integration and the repo includes a `.github/workflows/cibuild.yml` file to build via GitHub Actions.
 
 We use [CodeQL](https://github.com/bndtools/bnd/security/code-scanning?query=tool%3ACodeQL) for continuous security analysis. Pull requests are automatically code scanned.
+
+### Gradle Wrapper
+
+bnd uses [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html).
+To update the gradle wrapper locally to a new gradle version (e.g. to test building on a higher JDK) just run the following command:
+
+`gradle wrapper --gradle-version X.XX` (replace X.XX with your gradle version)
+
+This generates new gradle wrapper files.
+Additionally consider adding the version to `gradle-plugins/biz.aQute.bnd.gradle/src/test/groovy/aQute/bnd/gradle/TestHelper.groovy` in the method `gradleVersion()`.
+
+If you think this new gradle wrapper might be worth a contribution to bnd, feel free to open a PR.
+
+## Running JUnit Tests
+
+
+The project `biz.aQute.tester.test` contains the unit tests for `biz.aQute.tester` and `biz.aQute.tester.junit-platform`.
+See this project's [README](https://github.com/bndtools/bnd/blob/master/biz.aQute.tester.test/readme.md) for instructions of how to execute tests in Eclipse.
+
 
 ## Workflow
 
@@ -90,6 +232,8 @@ If it does, it never hurts to add a quick "+1" or "I have this problem too".
 This will help prioritize the most common problems and requests.
 
 ### Conventions
+
+See [Bndtools Development: Tips and Tricks](DEV_README.md) for more detailed information, but the following are the basics.
 
 Fork the repo and make changes on your fork in a feature branch:
 

@@ -1,5 +1,6 @@
 package aQute.bnd.gradle;
 
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible;
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
@@ -28,6 +29,7 @@ import java.util.stream.StreamSupport;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.Project.ReleaseParameter;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
@@ -54,11 +56,9 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePluginExtension;
-import org.gradle.api.plugins.Convention;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.HelpTasksPlugin;
 import org.gradle.api.plugins.JavaBasePlugin;
@@ -166,18 +166,23 @@ public class BndPlugin implements Plugin<Project> {
 			configurations.getByName(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME)
 				.getArtifacts()
 				.clear();
-			configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
-				.getArtifacts()
-				.clear();
+			if (!isGradleCompatible("9.0")) { // only for pre 9.0
+				//@SuppressWarnings("deprecation")
+				configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
+					.getArtifacts()
+					.clear();
+			}
 			/* Set up deliverables */
 			ArtifactHandler artifacts = project.getArtifacts();
 			decontainer(bndProject.getDeliverables()).forEach(deliverable -> {
 				artifacts.add(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, deliverable,
 					cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
-				artifacts.add(Dependency.ARCHIVES_CONFIGURATION, deliverable,
-					cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
+				if (!isGradleCompatible("9.0")) { // only for pre 9.0
+					artifacts.add(Dependency.ARCHIVES_CONFIGURATION, deliverable,
+						cpa -> cpa.builtBy(JavaPlugin.JAR_TASK_NAME));
+				}
 			});
-			FileCollection deliverables = configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
+			FileCollection deliverables = configurations.getByName(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME)
 				.getArtifacts()
 				.getFiles();
 
@@ -255,7 +260,8 @@ public class BndPlugin implements Plugin<Project> {
 					AbstractCompile.class, t -> {
 						t.getDestinationDirectory()
 							.fileValue(destinationDir);
-						jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						FileCollection jarLibraryElements = jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						t.setClasspath(jarLibraryElements.plus(t.getClasspath()));
 					});
 				generateInputAction.ifPresent(compileTask::configure);
 				sourceSet.getOutput()
@@ -280,7 +286,8 @@ public class BndPlugin implements Plugin<Project> {
 					AbstractCompile.class, t -> {
 						t.getDestinationDirectory()
 							.fileValue(destinationDir);
-						jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						FileCollection jarLibraryElements = jarLibraryElements(t, sourceSet.getCompileClasspathConfigurationName());
+						t.setClasspath(jarLibraryElements.plus(t.getClasspath()));
 					});
 				sourceSet.getOutput()
 					.dir(Maps.of("builtBy", compileTask.getName()), destinationDir);
@@ -296,17 +303,6 @@ public class BndPlugin implements Plugin<Project> {
 							Object sds = extensions.getByName(name);
 							if (sds instanceof SourceDirectorySet sourceDirectorySet) {
 								sourceDirectorySets.put(name, sourceDirectorySet);
-							}
-						});
-					@SuppressWarnings("deprecation")
-					Convention sourceSetConvention = new DslObject(sourceSet).getConvention();
-					sourceSetConvention.getPlugins()
-						.forEach((name, plugin) -> {
-							if (!sourceDirectorySets.containsKey(name)) {
-								Object sds = getter(plugin, name);
-								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
-									sourceDirectorySets.put(name, sourceDirectorySet);
-								}
 							}
 						});
 					Provider<Directory> destinationDir = sourceSet.getJava()
@@ -343,17 +339,6 @@ public class BndPlugin implements Plugin<Project> {
 							Object sds = extensions.getByName(name);
 							if (sds instanceof SourceDirectorySet sourceDirectorySet) {
 								sourceDirectorySets.put(name, sourceDirectorySet);
-							}
-						});
-					@SuppressWarnings("deprecation")
-					Convention sourceSetConvention = new DslObject(sourceSet).getConvention();
-					sourceSetConvention.getPlugins()
-						.forEach((name, plugin) -> {
-							if (!sourceDirectorySets.containsKey(name)) {
-								Object sds = getter(plugin, name);
-								if (sds instanceof SourceDirectorySet sourceDirectorySet) {
-									sourceDirectorySets.put(name, sourceDirectorySet);
-								}
 							}
 						});
 					Provider<Directory> destinationDir = sourceSet.getJava()
@@ -535,8 +520,9 @@ public class BndPlugin implements Plugin<Project> {
 						.withPropertyName("projectFolder");
 					/* bnd can include from -buildpath */
 					t.getInputs()
-						.files(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-							.getCompileClasspath())
+						.files(tasks.named(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+								.getCompileJavaTaskName(), AbstractCompile.class)
+							.map(AbstractCompile::getClasspath))
 						.withNormalizer(ClasspathNormalizer.class)
 						.withPropertyName("buildpath");
 					/* bnd can include from -dependson */
@@ -604,19 +590,70 @@ public class BndPlugin implements Plugin<Project> {
 				t.dependsOn(getDependents(JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME));
 			});
 
+			Provider<ReleaseCounterService> releaseCounter =
+			    project.getGradle().getSharedServices().registerIfAbsent(
+			        "bndReleaseCounter",
+			        ReleaseCounterService.class,
+						spec -> {
+							spec.getMaxParallelUsages()
+								.set(1);
+						}
+			    );
+
+			project.getGradle()
+				.getTaskGraph()
+				.whenReady(graph -> {
+					long count = graph.getAllTasks()
+						.stream()
+						.filter(t -> t.getName()
+							.equals("release"))
+						.filter(Task::getEnabled)
+						.count();
+
+					// helpful while you validate:
+					//project.getLogger()
+					//	.lifecycle("bnd: release tasks in execution graph = {}", count);
+
+					releaseCounter.get()
+						.setInitialCount((int) count);
+				});
+
 			TaskProvider<Task> release = tasks.register("release", t -> {
 				t.setDescription("Release this project to the release repository.");
 				t.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
-				t.setEnabled(!bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset")
-					.isEmpty());
+
+				boolean enabled = !bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset")
+					.isEmpty();
+				t.setEnabled(enabled);
 				t.getInputs()
 					.files(jar)
 					.withPropertyName(jar.getName());
+
+			    // Declare the service usage for correctness w/ parallel execution + configuration cache
+			    t.usesService(releaseCounter);
+
+
 				t.doLast("release", new Action<>() {
 					@Override
 					public void execute(Task tt) {
 						try {
-							bndProject.release();
+
+							int count = releaseCounter.get()
+								.getRemaining();
+							boolean isLastBundle = releaseCounter.get()
+								.isLastReleaseTask();
+
+							if (!isLastBundle) {
+								tt.getLogger()
+									.lifecycle("bnd: Release bundle ({}) {}", count, bndProject.getName());
+								bndProject.release();
+							} else {
+								// releasing last bundle in workspace (special
+								// case for sonatype release)
+								tt.getLogger()
+									.lifecycle("bnd: Last release bundle ({}) {}", count, bndProject.getName());
+								bndProject.release(new ReleaseParameter(null, false, true));
+							}
 						} catch (Exception e) {
 							throw new GradleException(
 								String.format("Project %s failed to release", bndProject.getName()), e);
@@ -656,7 +693,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.setDescription(
 					"Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.");
 				t.setEnabled(
-					!bndProject.is(Constants.NOJUNITOSGI) && !bndProject.getUnprocessedProperty(Constants.TESTCASES, "")
+					!bndProject.is(Constants.NOJUNITOSGI) && !Optional.ofNullable(bndProject.getUnexpandedProperty(Constants.TESTCASES)).orElse("")
 						.isEmpty());
 				t.getInputs()
 					.files(jar)

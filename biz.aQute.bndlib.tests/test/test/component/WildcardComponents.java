@@ -22,7 +22,7 @@ import aQute.lib.io.IO;
  */
 public class WildcardComponents {
 	@Component
-	static class WildcardTestComponent {}
+	public static class WildcardTestComponent {}
 
 	/**
 	 * Test to see if we ignore scala.ScalaObject as interface

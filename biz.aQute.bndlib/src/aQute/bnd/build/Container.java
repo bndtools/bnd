@@ -2,12 +2,14 @@ package aQute.bnd.build;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -309,14 +311,26 @@ public class Container {
 	 */
 
 	public Manifest getManifest() throws Exception {
-		if (getError() != null || getFile() == null)
+		File file = getFile();
+		if (getError() != null || file == null)
 			return null;
-
-		if (manifestTime < getFile().lastModified()) {
-			try (JarInputStream jin = new JarInputStream(IO.stream(getFile()))) {
-				manifest = jin.getManifest();
+		if (file.isDirectory()) {
+			File manifestFile = IO.getFile(file, JarFile.MANIFEST_NAME);
+			if (manifestTime < manifestFile.lastModified()) {
+				Manifest manifest = new Manifest();
+				try (InputStream stream = IO.stream(manifestFile)) {
+					manifest.read(stream);
+				}
+				this.manifest = manifest;
+				manifestTime = manifestFile.lastModified();
 			}
-			manifestTime = getFile().lastModified();
+		} else {
+			if (manifestTime < file.lastModified()) {
+				try (JarInputStream jin = new JarInputStream(IO.stream(file))) {
+					manifest = jin.getManifest();
+				}
+				manifestTime = file.lastModified();
+			}
 		}
 		return manifest;
 	}

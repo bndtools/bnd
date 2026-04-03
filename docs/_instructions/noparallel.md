@@ -1,9 +1,20 @@
 ---
-layout: default
-class: Workspace
+layout: bnd
 title: -noparallel CATEGORY;task=TASKS
-summary: Prevent Gradle tasks in the same category from executing in parallel.
+class: Workspace
+summary: |
+   Prevent Gradle tasks in the same category from executing in parallel.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-noparallel=true`
+
+- Values: `true,false`
+
+- Pattern: `true|false|TRUE|FALSE`
+
+<!-- Manual content from: ext/noparallel.md --><br /><br />
 
 Gradle supports `--parallel` to run build tasks in parallel when possible. This can be a great speed improvement for a build. But sometimes, certain tasks cannot be run in parallel due to certain resource contention.
 

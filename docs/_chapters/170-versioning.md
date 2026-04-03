@@ -1,10 +1,10 @@
 ---
 title: Versioning
-layout: default
+layout: bnd
 requires: 1.15
+parent: Build and Development
+nav_order: 4
 ---
-
-
 Versioning is probably the most painful part of developing real software. Where toys and prototypes can be developed ignoring evolution, real software requires a migration path to an unknown future.
 
 The OSGi has defined a versioning policy that is described in the [Semantic Versioning whitepaper](https://docs.osgi.org/whitepaper/semantic-versioning/). bnd fully supports this model and provides many shortcuts. The goal of bnd is remove any manual work from versioning bundles as well as packages.
@@ -113,7 +113,7 @@ This asymmetry creates the need for two version policies:
     -provider-policy :    ${range;[==,=+)}
     -consumer-policy :    ${range;[==,+)}
 
-The given values are the defaults. The value of the version policy will be used calculate the import based on the exported package. The `${range}` macro provides a convenient shortcut to do this using a version mask.
+The given values are the defaults. The value of the version policy will be used calculate the import based on the exported package. The [`${range}`](../macros/range.html) macro provides a convenient shortcut to do this using a version mask.
 
 For example, a bundle that implements the OSGi Event Admin service can use the following bnd file:
 
@@ -126,9 +126,13 @@ The resulting manifest would look like:
         Import-Package:  org.osgi.service.event; version="[1.1,2)", ...
         ...
 
-How does bnd know if a bundle is a provider or a consumer of a specific package? Well, the default is the consumer policy but this can be overridden with the `provide:=true` directive that works on the `Import-Package` clauses as well as on the `Export-Package` clauses. 
+How does bnd know if a bundle is a provider or a consumer of a specific package? 
+
+Well, the default is the consumer policy but this can be overridden with the `provide:=true` directive that works on the `Import-Package` clauses as well as on the `Export-Package` clauses.
 
 The `provide:` directive indicates to bnd that the given package contains API that is provided by this bundle. The (strongly) recommended way is to put the `provide:=true` directive on the `Export-Package` header, even if the package comes from another bundle. This way the bundle contains a copy of the package that is by default imported with the proper provider policy range.
+
+Also see [-consumerpolicy](../instructions/consumer_policy.html), [-providerpolicy](../instructions/provider_policy.html) and [range](../macros/range.html).
 
 For example, an implementation of the OSGi Event Admin specification could use the following bnd file:
 
@@ -165,6 +169,8 @@ After the bundle has been created and analyzed bnd will see if an exported packa
 * The exported package does not have a `-noimport:` directive.
 
 If a package is imported it will use the version as defined by the version policy.
+
+With the [-nosubstitution: true](/instructions/nosubstitution.html) instruction, this behavior can be disabled globally.
 
 ## Versioning Bundles
 Versioning bundles usually requires bumping the version every time it is placed in a repository. When package versioning is used, the bundle version is only important for tracking an artifact.

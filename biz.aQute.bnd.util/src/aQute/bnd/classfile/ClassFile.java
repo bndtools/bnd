@@ -1,8 +1,11 @@
 package aQute.bnd.classfile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -151,5 +154,17 @@ public class ClassFile extends ElementInfo {
 		byte[] array = new byte[length];
 		in.readFully(array, 0, length);
 		return ByteBuffer.wrap(array, 0, length);
+	}
+
+	public void write(OutputStream out) throws IOException {
+		DataOutput dout = new DataOutputStream(out);
+		write(dout);
+	}
+
+	public byte[] write() throws IOException {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		DataOutput dout = new DataOutputStream(bout);
+		write(dout);
+		return bout.toByteArray();
 	}
 }

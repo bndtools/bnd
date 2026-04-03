@@ -54,8 +54,12 @@ public class Settings implements Map<String, String> {
 	}
 
 	public Settings(String where) {
+		this(IO.getFile(IO.work, where));
+	}
+
+	public Settings(File where) {
 		assert where != null;
-		this.where = IO.getFile(IO.work, where);
+		this.where = where;
 	}
 
 	public boolean load() {

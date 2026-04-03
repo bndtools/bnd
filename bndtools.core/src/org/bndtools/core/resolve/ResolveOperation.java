@@ -17,6 +17,7 @@ import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.RunnableWithException;
@@ -49,12 +50,17 @@ public class ResolveOperation implements IRunnableWithProgress {
 
 		try {
 			coordinate(() -> {
-				logger = new ResolverLogger();
+				Project run = model.getOwner(Project.class)
+					.orElse(null);
+
+				logger = ResolverLogger.newLogger(run, true);
 				List<ResolutionCallback> operationCallbacks = new ArrayList<>(callbacks.size() + 1);
 				operationCallbacks.addAll(callbacks);
 				operationCallbacks.add(new ResolutionProgressCallback(monitor));
 
-				RunResolution resolution = RunResolution.resolve(model.getProject(), model.getProperties(),
+
+				RunResolution resolution = RunResolution.resolve(run,
+					model.getProperties(),
 					operationCallbacks, logger);
 				if (resolution.isOK()) {
 					result = new ResolutionResult(Outcome.Resolved, resolution, status, logger);
@@ -109,5 +115,6 @@ public class ResolveOperation implements IRunnableWithProgress {
 			}
 		}
 	}
+
 
 }

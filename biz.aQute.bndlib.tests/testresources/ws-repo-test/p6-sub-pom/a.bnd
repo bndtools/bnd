@@ -1,0 +1,5 @@
+-classpath: \
+	${repo;org.apache.felix.org.apache.felix.ipojo.ant;0.8.1}
+
+-includeresource: \
+  ${repo;org.apache.felix.configadmin;1.0.1}    

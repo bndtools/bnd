@@ -13,13 +13,16 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.resource.Resource;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.version.Version;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -69,10 +72,36 @@ public enum EE {
 	JavaSE_22(22),
 	JavaSE_23(23),
 	JavaSE_24(24),
+	JavaSE_25(25),
+	JavaSE_26(26),
+	JavaSE_27(27),
+	JavaSE_28(28),
+	JavaSE_29(29),
+	JavaSE_30(30),
+	JavaSE_31(31),
+	JavaSE_32(32),
+	JavaSE_33(33),
+	JavaSE_34(34),
+	JavaSE_35(35),
+	JavaSE_36(36),
+	JavaSE_37(37),
+	JavaSE_38(38),
+	JavaSE_39(39),
+	JavaSE_40(40),
+	JavaSE_41(41),
+	JavaSE_42(42),
+	JavaSE_43(43),
+	JavaSE_44(44),
+	JavaSE_45(45),
+	JavaSE_46(46),
+	JavaSE_47(47),
+	JavaSE_48(48),
+	JavaSE_49(49),
+	JavaSE_50(50),
 
 	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0", 0);
 
-	final public static int			MAX_SUPPORTED_RELEASE	= 24;
+	final public static int			MAX_SUPPORTED_RELEASE	= 50;
 
 	private final String			eeName;
 	private final String			capabilityName;
@@ -84,6 +113,7 @@ public enum EE {
 	private transient Parameters	packages				= null;
 	private transient Parameters	modules					= null;
 
+	private Resource				resource;
 	/**
 	 * For use by JavaSE_9 and later.
 	 */
@@ -276,7 +306,6 @@ public enum EE {
 		Parameters reqs = new Parameters(requirement);
 		SortedSet<EE> result = new TreeSet<>();
 		FilterParser fp = new FilterParser();
-		SortedSet<EE> all = all();
 
 		for (Map.Entry<String, Attrs> e : reqs.entrySet()) {
 			Attrs attrs = reqs.get(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
@@ -299,7 +328,10 @@ public enum EE {
 	final static EE[] classFileVersionsMinus44 = {
 		UNKNOWN, JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, JavaSE_1_8, JavaSE_9,
 		JavaSE_10, JavaSE_11, JavaSE_12, JavaSE_13, JavaSE_14, JavaSE_15, JavaSE_16, JavaSE_17, JavaSE_18, JavaSE_19,
-		JavaSE_20, JavaSE_21, JavaSE_22, JavaSE_23, JavaSE_24
+		JavaSE_20, JavaSE_21, JavaSE_22, JavaSE_23, JavaSE_24, JavaSE_25, JavaSE_26, JavaSE_27, JavaSE_28, JavaSE_29,
+		JavaSE_30, JavaSE_31, JavaSE_32, JavaSE_33, JavaSE_34, JavaSE_35, JavaSE_36, JavaSE_37, JavaSE_38, JavaSE_39,
+		JavaSE_40, JavaSE_41, JavaSE_42, JavaSE_43, JavaSE_44, JavaSE_45, JavaSE_46, JavaSE_47, JavaSE_48, JavaSE_49,
+		JavaSE_50
 	};
 
 	/**
@@ -337,5 +369,23 @@ public enum EE {
 
 	public static SortedSet<EE> all() {
 		return all;
+	}
+
+	/**
+	 * Return a list of capabilities associated with this EE
+	 */
+	public Resource getResource() {
+		if (resource != null)
+			return resource;
+
+		ResourceBuilder rb = new ResourceBuilder();
+		getPackages()
+			.forEach((k, v) -> {
+				String name = Processor.removeDuplicateMarker(k);
+				rb.addExportPackage(name, v);
+			});
+
+		rb.addEE(this);
+		return resource = rb.build();
 	}
 }

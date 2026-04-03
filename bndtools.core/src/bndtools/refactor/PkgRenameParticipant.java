@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.internal.corext.refactoring.rename.RenamePackageProcessor;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -66,8 +65,6 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 		sb.append("Bndtools: rename package '");
 		sb.append(pkgFragment.getElementName());
 		sb.append("' ");
-		if (((RenamePackageProcessor) this.getProcessor()).getRenameSubpackages())
-			sb.append("and subpackages ");
 		sb.append("to '");
 		sb.append(args.getNewName());
 		sb.append("'");

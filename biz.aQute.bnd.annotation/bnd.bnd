@@ -1,5 +1,13 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/includes/jdt.bnd
+-include: ~${workspace}/cnf/includes/jdt.bnd
+
+# #7005: Keep this bundle compatible with Java 8 as long as possible. All other code is min. Java 17
+# It is because some libraries reference bnd annotations
+# like aQute.bnd.annotation.Cardinality, aQute.bnd.annotation.Resolution, aQute.bnd.annotation.spi.ServiceConsumer
+# directly in source code (e.g. https://github.com/apache/logging-log4j2/blob/752d023795fc518a38ecae73bb6455e2723cecea/log4j-api/src/main/java/org/apache/logging/log4j/util/PropertiesUtil.java)
+# but they need to stay compatible with java 8.
+javac.source = 8
+javac.target = 8
 
 Bundle-Description:     bnd Annotations Library
 

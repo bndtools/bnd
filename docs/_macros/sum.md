@@ -1,23 +1,73 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: sum (';' LIST )*
-summary: The sum of a list
+summary: Calculate the sum of numeric values in one or more lists
+parent: Macro Reference
+---
+## Summary
+
+The `sum` macro calculates the sum of all numeric values provided in one or more lists. Each element is parsed as a double-precision floating-point number.
+
+## Syntax
+
+```
+${sum;<list>[;<list>...]}
+```
+
+## Parameters
+
+- `list` - One or more semicolon-separated lists of numeric values
+
+## Behavior
+
+- Parses all elements as double-precision numbers
+- Calculates the sum of all values
+- Returns the total as a string
+- Throws exception if any value is not numeric
+
+## Examples
+
+Sum a simple list:
+```
+${sum;1,2,3,4,5}
+# Returns: "15"
+```
+
+Sum multiple lists:
+```
+${sum;10,20;30,40}
+# Returns: "100"
+```
+
+Sum decimal values:
+```
+${sum;1.5,2.5,3.5}
+# Returns: "7.5"
+```
+
+Calculate total from properties:
+```
+total=${sum;${value1};${value2};${value3}}
+```
+
+## Use Cases
+
+- Calculating totals and aggregates
+- Summing metric values
+- Computing combined sizes or counts
+- Mathematical calculations in builds
+- Aggregating numeric configuration
+
+## Notes
+
+- All values must be numeric
+- Returns double-precision result
+- See also: `${average}` for mean calculation
+- See also: `${max}` and `${min}` for extremes
+
+
+
 ---
 
-
-	static String	_sum	= "${sum;<list>[;<list>...]}";
-
-	public String _sum(String args[]) throws Exception {
-		verifyCommand(args, _sum, null, 2, Integer.MAX_VALUE);
-
-		List<String> list = toList(args, 1, args.length);
-		double d = 0;
-
-		for (String s : list) {
-			double v = Double.parseDouble(s);
-			d += v;
-		}
-		return toString(d);
-	}
-
+**See test cases in [MacroTestsForDocsExamples.java](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java)**

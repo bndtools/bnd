@@ -1,9 +1,9 @@
 ---
-order: 210
 title: Resolving Dependencies
-layout: default
+layout: bnd
+parent: Dependency and Launching
+nav_order: 1
 ---
-
 ## OSGi's Best Kept Secret
 
 This Application Note is about _resolving_ in OSGi. The OSGi Framework has always used a _resolver_ to _wire_ a given set of bundles together, ensuring that only valid wires are made. However, the same OSGi resolver can also be used to select a set of bundles from a much larger set. This application note discusses this secondary usage.
@@ -293,7 +293,7 @@ Another tool for diagnosing potential issues in your OSGI framework (bundle, pac
 
 So far this App Note only visited the _graphic user interface_ (GUI). However, bnd always keeps all information in simple properties files that can also edited as text. In the Run editor (that edits `bndrun` files) you can also select the `Source` view. Not all features of a `bndrun` file can be manipulated through the GUI. This section therefore shows what is in the source and it can be manipulated.
 
-Notice that most instructions are [_merge properties_](820-instructions.html). That is, bnd will first find all properties that start with the instruction name and merge their values together. For example, if you set `-runrequires`, `-runrequires.foo`, and `-runrequires.bar` bnd will use the combination of these properties. The order is the sorting order of the names used.
+Notice that most instructions are [_merge properties_](/instructions/#merged-instructions). That is, bnd will first find all properties that start with the instruction name and merge their values together. For example, if you set `-runrequires`, `-runrequires.foo`, and `-runrequires.bar` bnd will use the combination of these properties. The order is the sorting order of the names used.
 
 * [-runfw](/instructions/runfw.html) – Defines the framework to use
 * [-runbundles](/instructions/runbundles.html) – List of the bundles to run, calculated by the resolver.
@@ -304,7 +304,7 @@ Notice that most instructions are [_merge properties_](820-instructions.html). T
 * [-runblacklist](/instructions/runblacklist.html) – Requirements that select resources that should never be part of the resolution.
 * [-runee](/instructions/runee.html) – The execution environment
 * [-runpath](/instructions/runpath.html) – The JARs that should be on the classpath. Exports and provided capabilities defined in the manifests of these JARs are added to the system capabilities.
-* [-runrepos](/instructions/runpath.html) – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.
+* [-runrepos](/instructions/runrepos.html) – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.
 * [-augment](/instructions/augment.html) – Adds virtual capabilities and requirements to resources in the repository.
 * [-distro](/instructions/distro.html) – Directly provides the system capabilities in a JAR with Manifest. Is used when the resulotion is not used to create an executable JAR but to create a Java EE WAR or Karaf KAR where the application is running in a host environment.
 * [-resolve](/instructions/resolve.html) – Controls when the resolver runs
@@ -361,6 +361,47 @@ There are a number of (rudimentary) functions in the command line version of bnd
 With openliberty, WebSphere Liberty, Karaf, Liferay, etc. you are deploying into an existing container which already has a lot of capabilities. The crux of the issue becomes resolving only what you need to deploy. What you need at that point is a way to find out what the container already provides in a format which can be used during resolve time.
 
 Currently, the way to do that is to create a __distro__ of the target container. This __distro__ is a JAR file which provides all the capabilities that the target container provides at one point in time. It includes the capabilities of all currently installed bundles. It also contains all capabilities provided by the system bundle which may have been configured by framework properties. It is an aggregate view of all the capabilities available in the framework contained in a single JAR.
+
+## Resolving Multi-Release JAR files (MRJ)
+
+A Multi-Release JAR (MRJ) has directories in `META-INF/versions/<release>` (see [JAR File Specification](https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html#multi-release-jar-files)). When the JAR is deployed on a VM with a given release R, that VM will preferentially load file resource from its own release R and then down to the main area. This means that a JAR can have different content depending on the VM it is deployed. For OSGi, this means that a bundle resource can have different requirements based on the runtime VM. The capabilities are the same since the public API must not change.
+
+The problem is that this makes some requirements dependent on the VM. To model this, we introduced synthetic resource for each supported VM release that can only resolve on that release and when the release specific requirements of the bundle can be resolved.
+
+This is only about modeling a JAR as a resource in an OSGi repository. Nothing is changed in the original JAR.
+
+So we first treat the _multi release_ bundle as any other bundle when we turn it into a resource, the release directories are ignored. If there are none, we're actually done.
+
+Otherwise, we add a single requirement to a `bnd.multirelease` capability unique for this bundle. This namespace only has the properties `bnd.multirelease=<bsn>` and `version=<version>`. By requiring another resource, we can generate a synthetic resource for each VM release that the bundle supports. This is depicted here, where mrj is `bnd.multirelease`.
+
+<img style="width: 600px" src="{{ '/img/resolving-mrj.png' | prepend:site.baseurl }}">
+
+
+For the `osgi.identity` capability, we have to create a resource name that is unique. To keep it readable, the name is the `original-bsn + "__" + release`. The version is the original bundle's version. We introduced a new type for these synthetic resources: `bnd.synthetic`.
+
+A Bundle `x.y.z`, providing code for JDK 1.8, 9 and 11 will appear as `x.y.z__8`, `x.y.z__9` and `x.y.z__11` with the corresponding narrow version ranges for their respective Java version.
+
+We also add the requirements of the bundle if it would run on that release.
+The synthetic resources are added to the same repository of the original bundle
+
+For example the bundle `org.assertj:assertj-core:3.24.1` contains classes for Java 8 and Java 9. In the [Resolution View](https://bndtools.org/manual/resolution-view.html) of bndtools it is shown with the following two capabilities for each Java version:
+
+```
+FROM: assertj-core__8 version=3.24.1 type=bnd.synthetic
+bnd.multireleaseCapability from a supporting resource 0 part of Optional[assertj-core version=3.24.1]
+;
+	bnd.multirelease = assertj-core;
+	version = 3.24.1
+```
+
+```
+FROM: assertj-core__9 version=3.24.1 type=bnd.synthetic
+bnd.multireleaseCapability from a supporting resource 1 part of Optional[assertj-core version=3.24.1]
+;
+	bnd.multirelease = assertj-core;
+	version = 3.24.1
+```
+
 
 ### How do you create a distro?
 

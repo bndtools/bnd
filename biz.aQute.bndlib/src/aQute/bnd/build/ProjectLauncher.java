@@ -330,6 +330,25 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public int launch() throws Exception {
+		Command command = getCommand();
+
+		logger.debug("cmd line {}", command);
+		try {
+			int result = command.execute(in, out, err);
+			if (result == Integer.MIN_VALUE)
+				return TIMEDOUT;
+			reportResult(result);
+			return result;
+		} finally {
+			cleanup();
+			listeners.clear();
+		}
+	}
+
+	public Command getCommand() throws Exception {
+		if (java != null) {
+			return java;
+		}
 		prepare();
 		java = new Command();
 
@@ -375,18 +394,7 @@ public abstract class ProjectLauncher extends Processor {
 		File cwd = getCwd();
 		if (cwd != null)
 			java.setCwd(cwd);
-
-		logger.debug("cmd line {}", java);
-		try {
-			int result = java.execute(in, out, err);
-			if (result == Integer.MIN_VALUE)
-				return TIMEDOUT;
-			reportResult(result);
-			return result;
-		} finally {
-			cleanup();
-			listeners.clear();
-		}
+		return java;
 	}
 
 	/**
@@ -486,7 +494,7 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public void cancel() throws Exception {
-		java.cancel();
+		getCommand().cancel();
 	}
 
 	public Map<String, ? extends Map<String, String>> getSystemPackages() {

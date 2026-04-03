@@ -43,7 +43,7 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
 				for (Builder builder : pb.getSubBuilders()) {
 					if (builder.getBsn()
 						.equals(info.bsn)) {
-						String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, null);
+						String currentVersion = builder.getUnexpandedProperty(Constants.BUNDLE_VERSION);
 						FileLine loc = builder.getHeader(Constants.BUNDLE_VERSION, currentVersion);
 
 						Map<String, Object> attribs = new HashMap<>();

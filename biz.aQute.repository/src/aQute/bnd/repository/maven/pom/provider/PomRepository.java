@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
@@ -89,10 +90,19 @@ class PomRepository extends InnerRepository {
 
 	void save(Traverser traverser) throws Exception {
 		Promise<Map<Archive, Resource>> p = traverser.getResources();
-		Collection<Resource> resources = p.getValue()
-			.values();
+
+		Map<Archive, Resource> map = p.getValue();
+		setArchives(map.keySet());
+
+		Collection<Resource> resources = map.values();
 		set(resources);
+
 		save(getMavenRepository().getName(), resources, getLocation());
+	}
+
+	private void setArchives(Set<Archive> archives) {
+		this.archives.clear();
+		this.archives.addAll(archives);
 	}
 
 	void save(String name, Collection<? extends Resource> resources, File location) throws Exception, IOException {

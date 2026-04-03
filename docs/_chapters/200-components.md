@@ -1,9 +1,9 @@
 ---
-order: 200
 title: Service Components
-layout: default
+layout: bnd
+parent: Build and Development
+nav_order: 6
 ---
-
 The Service-Component header is compatible with the standard OSGi header syntax. Any element in the list that does not have attributes must have a resource in the JAR and is copied as is to the manifest. However, simple components can also be defined inline, and it is even possible to pickup annotations. 
 
 The syntax for these component definitions is:
@@ -45,6 +45,110 @@ If the name can be expanded to one or more classes that have component annotatio
 The name of the component is also the implementation class (unless overridden by the implementation: directive). It is then followed with a number of references and directives. A reference defines a name that can be used with the `locateService` method from the `ComponentContext` class. If the name starts with a lower case character, it is assume to be a bean property. In that case the reference is augmented with a `set<Name>` and `unset<Name>` method according to the standard bean rules. Bnd will interpret the header, read the annotations if possible, and create the corresponding resources in the output jar under the name `OSGI-INF/<id>.xml`. 
 
 Annotations are only recognized on the component class, super classes are not inspected for the components.
+
+## Component Class Requirements
+
+For a class to be a valid DS component, it must meet the following requirements:
+
+### Constructor Requirements
+
+A DS component class must have **either**:
+- A public no-argument constructor (this is the default constructor if no other constructors are declared), **OR**
+- A public constructor annotated with `@Activate` for [constructor injection](https://docs.osgi.org/specification/osgi.cmpn/8.0.0/service.component.html#service.component-constructor.injection)
+
+If your component class has a constructor with parameters but no `@Activate` annotation, bnd will generate an error:
+
+```
+The DS component class {className} must be publicly accessible and have either a public no-arg constructor or a public constructor annotated with @Activate. Non-public classes, including public inner classes enclosed in non-public classes, are not supported.
+```
+
+**Examples of valid components:**
+
+```java
+// Valid: Implicit public no-arg constructor
+@Component
+public class MyComponent {
+    // Implicit public no-arg constructor
+}
+
+// Valid: Explicit public no-arg constructor
+@Component
+public class MyComponent {
+    public MyComponent() {
+        // initialization
+    }
+}
+
+// Valid: Constructor injection with @Activate
+@Component
+public class MyComponent {
+    private final BundleContext context;
+    
+    @Activate
+    public MyComponent(BundleContext context) {
+        this.context = context;
+    }
+}
+
+// Valid: Multiple constructors with public no-arg
+@Component
+public class MyComponent {
+    public MyComponent() {
+        // default constructor
+    }
+    
+    // This constructor is ignored by DS
+    public MyComponent(String config) {
+        // some other constructor
+    }
+}
+```
+
+**Examples of invalid components:**
+
+```java
+// Invalid: No public no-arg constructor and no @Activate
+@Component
+public class MyComponent {
+    public MyComponent(BundleContext context) {
+        // ERROR: needs @Activate annotation
+    }
+}
+
+// Invalid: Package-private class (constructor not public)
+@Component
+class MyComponent {
+    // ERROR: class must be public
+}
+```
+
+### Inner Class Requirements
+
+If you use inner classes as components, they **must be declared as `static`**. Non-static inner classes require an instance of the outer class to be instantiated, which DS cannot provide.
+
+**Valid:**
+```java
+@Component
+public class OuterComponent {
+    
+    @Component
+    public static class InnerComponent {
+        // Valid: static inner class
+    }
+}
+```
+
+**Invalid:**
+```java
+@Component
+public class OuterComponent {
+    
+    @Component
+    public class InnerComponent {
+        // ERROR: non-static inner class cannot be instantiated by DS
+    }
+}
+```
 
 The supported annotations in the `aQute.bnd.annotations.component` package are:
 
@@ -248,5 +352,5 @@ If you change the message, you will see that the component is first deactivated 
 
 It is also possible to take advantage of the configuration factories. In this model 
 
-An example, that implements a simple socket server on a configurable port and returns a message when a telnet session is opened to that port can be found on [Github](https://github.com/bnd/aQute/blob/master/aQute.metatype/src/aQute/metatype/components/ServerSocketComponent.java).
+An example, that implements a simple socket server on a configurable port and returns a message when a telnet session is opened to that port can be found on [Github](https://github.com/bndtools/aQute/blob/master/aQute.metatype/src/aQute/metatype/components/ServerSocketComponent.java).
 

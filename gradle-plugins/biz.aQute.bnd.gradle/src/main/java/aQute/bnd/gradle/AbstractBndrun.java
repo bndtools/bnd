@@ -7,15 +7,16 @@ import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.gradle.BndUtils.unwrapOptional;
-import static org.gradle.api.tasks.PathSensitivity.NONE;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -25,7 +26,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.unmodifiable.Maps;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import org.gradle.api.DefaultTask;
@@ -35,14 +36,15 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
@@ -109,10 +111,26 @@ public abstract class AbstractBndrun extends DefaultTask {
 	 * @return The bundles to be added to a FileSetRepository for non-Bnd
 	 *         Workspace builds.
 	 */
-	@InputFiles
-	@PathSensitive(NONE)
+	@Internal
 	public ConfigurableFileCollection getBundles() {
 		return bundles;
+	}
+
+	/**
+	 * Wrapper of the {@link #getBundles()} method to allow <code>@Classpath</code> normalization and sorting.
+	 * <p>
+	 * This method is only relevant for Gradle task input fingerprinting and should not be used.
+	 *
+	 * @return The sorted bundles.
+	 */
+	@Classpath
+	Provider<List<File>> getBundlesSorted() {
+		return getBundles().getElements().map(
+			c -> c.stream()
+				.map(FileSystemLocation::getAsFile)
+				.sorted(IO.fileComparator(File::getAbsolutePath))
+				.collect(Collectors.toList())
+		);
 	}
 
 	/**
@@ -235,7 +253,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 		DirectoryProperty temporaryDirProperty = objects.directoryProperty()
 			.fileValue(getTemporaryDir());
 		workingDirectory = objects.directoryProperty()
-			.convention(temporaryDirProperty);
+			.convention(temporaryDirProperty.dir(projectName));
 		bundles = objects.fileCollection();
 		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 		targetVersion = project.getTasks()
@@ -271,8 +289,29 @@ public abstract class AbstractBndrun extends DefaultTask {
 		} else {
 			bundles(mainSourceSet.getRuntimeClasspath());
 			bundles(artifacts);
-			properties.convention(Maps.of("project", "__convention__"));
+			properties.convention(project.provider(this::getGradleProjectProperties));
 		}
+	}
+
+	private Map<String, String> getGradleProjectProperties() throws Exception {
+		Properties gradleProperties = new BeanProperties();
+		gradleProperties.put("project", getProject());
+		try (Processor processor = new Processor()) {
+			loadBndProperties(processor);
+			return MapStream.ofEntries(
+					processor.getMacroReferences(Processor.MacroReference.UNKNOWN)
+						.stream()
+						.filter(k -> k.startsWith("project.")),
+					k -> MapStream.entry(k, gradleProperties.getProperty(k))
+				)
+				.filterValue(Objects::nonNull)
+				.collect(MapStream.toMap());
+		}
+	}
+
+	private void loadBndProperties(Processor processor) throws Exception {
+		File bndrunFile = unwrapFile(getBndrun());
+		processor.setProperties(bndrunFile, unwrapFile(getProject().getLayout().getProjectDirectory()));
 	}
 
 	/**
@@ -324,7 +363,6 @@ public abstract class AbstractBndrun extends DefaultTask {
 			if (workspace.isEmpty()) {
 				Properties gradleProperties = new BeanProperties(runWorkspace.getProperties());
 				gradleProperties.putAll(unwrap(getProperties()));
-				gradleProperties.computeIfPresent("project", (k, v) -> "__convention__".equals(v) ? getProject() : v);
 				gradleProperties.putIfAbsent("task", this);
 				run.setParent(new Processor(runWorkspace, gradleProperties, false));
 				run.clear();

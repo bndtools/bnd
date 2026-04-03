@@ -65,8 +65,10 @@ A plugin to generate sources and resources.
 
 # Building the Maven Plugins
 
-You must first run `./gradlew :build` to build the Bnd artifacts and install them in your local maven repo.
-You can then run `./mvnw install` to build the Bnd Maven plugins.
+You must first run `./gradlew :build` (or `./gradlew build -x test` skip tests for faster local builds) to build the Bnd artifacts and install them in your local maven repo.
+You can then run `./mvnw install` to build the Bnd Maven plugins (or `mvn install -Dinvoker.skip=true` to skip tests for faster local builds).
+
+
 
 ---
 
@@ -74,8 +76,9 @@ You can then run `./mvnw install` to build the Bnd Maven plugins.
 
 If you want to try the latest development SNAPSHOT build of the
 Bnd Maven Plugins, you will need to adjust your pom to refer to the snapshot
-repository and select the latest version of the plugins. For example, edit the
-pom's `pluginManagement` section, to configure the repository:
+repository and select the latest version of the plugins. Edit the
+pom's [`pluginRepositories` section](https://maven.apache.org/pom.html#Plugin_Repositories)
+to configure the repository like this:
 
 ```xml
 <pluginRepositories>
@@ -93,8 +96,9 @@ pom's `pluginManagement` section, to configure the repository:
 
 If you want to try the latest milestone or release candidate build of the
 Bnd Maven Plugins, you will need to adjust your pom to refer to the release
-repository and select the desired version of the plugins. For example, edit the
-pom's `pluginManagement` section, to configure the repository:
+repository and select the desired version of the plugins. Edit the
+pom's [`pluginRepositories` section](https://maven.apache.org/pom.html#Plugin_Repositories)
+to configure the repository like this
 
 ```xml
 <pluginRepositories>

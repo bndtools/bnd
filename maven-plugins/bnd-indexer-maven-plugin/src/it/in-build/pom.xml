@@ -14,7 +14,6 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>../test-bnd</module>
 		<module>../test-snapshot</module>
 	</modules>
 

@@ -358,11 +358,19 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return get(0);
 	}
 
+	public T getFirst() {
+		return first();
+	}
+
 	@Override
 	public T last() {
 		if (isEmpty())
 			throw new NoSuchElementException("last");
 		return get(size() - 1);
+	}
+
+	public T getLast() {
+		return last();
 	}
 
 	@Override
@@ -392,9 +400,29 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Deprecated
+	public void addFirst(T e) {
+		throw new UnsupportedOperationException("Immutable");
+	}
+
+	@Deprecated
+	public void addLast(T e) {
+		throw new UnsupportedOperationException("Immutable");
+	}
+
 	@Override
 	@Deprecated
 	public T remove(int index) {
+		throw new UnsupportedOperationException("Immutable");
+	}
+
+	@Deprecated
+	public T removeFirst() {
+		throw new UnsupportedOperationException("Immutable");
+	}
+
+	@Deprecated
+	public T removeLast() {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
@@ -504,6 +532,13 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 	public static <T> SortedSet<T> empty() {
 		return (SortedSet<T>) EMPTY;
+	}
+
+	public SortedList<T> reversed() {
+		if (comparator == null) {
+			return new SortedList<>(list, start, end, (Comparator<? super T>) Comparator.reverseOrder());
+		}
+		return new SortedList<>(list, start, end, comparator.reversed());
 	}
 
 	@Override

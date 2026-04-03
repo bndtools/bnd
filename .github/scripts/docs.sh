@@ -4,4 +4,5 @@ cd docs
 ruby --version
 gem --version
 bundle --version
+bash ./scripts/sync-baseline-version.sh
 bundle exec jekyll build

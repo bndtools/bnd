@@ -1,17 +1,19 @@
 ---
-layout: default
-title: clean [options] ... 
-summary: Clean a project                                 
+layout: bnd
+title: clean
+summary: |
+   Clean a project or workspace
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   clean [options]  ...
 
-{{page.summary}}
 
-## Synopsis
+#### Options: 
+- `[ -e --exclude <string;> ]` Exclude files by pattern
+- `[ -p --project <string> ]` Identify another project
+- `[ -v --verbose ]` prints more processing information
+- `[ -w --workspace <string> ]` Use the following workspace
 
-## Options
-
-    [ -p, --project <string> ] - Path to another project than the current project
-
-## Examples

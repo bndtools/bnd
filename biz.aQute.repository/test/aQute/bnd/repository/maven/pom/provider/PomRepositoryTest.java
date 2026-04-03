@@ -40,6 +40,8 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.repository.maven.helpers.MavenRepoTestHelper;
+import aQute.bnd.repository.maven.provider.MavenBndRepoTest;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
@@ -265,6 +267,31 @@ public class PomRepositoryTest {
 			assertNotNull(list);
 			assertEquals(1, list.size());
 		}
+	}
+
+
+	/**
+	 * Commons CLI 1.2 is in there as GAV & as BSN Note: This test should be
+	 * kept in sync with {@link MavenBndRepoTest#testGetViaBSNAndGAV()}
+	 */
+	@Test
+	public void testGetViaBSNAndGAV() throws Exception {
+		try (BndPomRepository repo = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			repo.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom", "testdata/pomrepo/simpleGetViaBSNAndGAV.xml");
+			config.put("transitive", "false");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test2");
+			repo.setProperties(config);
+
+			MavenRepoTestHelper.assertMavenReposGetViaBSNAndGAV(repo);
+		}
+
 	}
 
 	@Test
@@ -531,6 +558,7 @@ public class PomRepositoryTest {
 		assertFalse(pom.isStale());
 	}
 
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0.")
 	@Test
 	public void testSearchRepoSimple() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
@@ -551,6 +579,7 @@ public class PomRepositoryTest {
 		}
 	}
 
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0.")
 	@Test
 	public void testSearchRepoMultipleConfigurationsDontBreak() throws Exception {
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -599,7 +628,7 @@ public class PomRepositoryTest {
 		}
 	}
 
-	@Disabled("This test is flaky because http://search.maven.org/solrsearch/select often returns 400")
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0. This test is flaky because http://search.maven.org/solrsearch/select often returns 400")
 	@Test
 	public void testSearchRepoAllVersions() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {
@@ -638,6 +667,7 @@ public class PomRepositoryTest {
 		}
 	}
 
+	@Disabled("Disabled because query feature is deprecated in bnd 7.2.0 for removal in bnd 8.0.")
 	@Test
 	public void testSearchRepoFailNoName() throws Exception {
 		try (BndPomRepository mcsr = new BndPomRepository()) {

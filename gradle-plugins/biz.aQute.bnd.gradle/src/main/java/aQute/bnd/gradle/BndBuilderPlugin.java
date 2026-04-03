@@ -7,7 +7,6 @@ import static aQute.bnd.gradle.BndUtils.unwrapOptional;
 
 import java.util.Objects;
 
-import aQute.bnd.unmodifiable.Maps;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -107,7 +106,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 				task.getLogger()
 					.debug("Searching for default baseline {}:{}:(0,{}[", group, archiveBaseName, archiveVersion);
 				Dependency baselineDep = project.getDependencies()
-					.create(Maps.of("group", group, "name", archiveBaseName));
+					.create(String.format("%s:%s", group, archiveBaseName));
 
 				((ExternalDependency) baselineDep)
 					.version(mvc -> mvc.strictly(String.format("(0,%s[", archiveVersion)));

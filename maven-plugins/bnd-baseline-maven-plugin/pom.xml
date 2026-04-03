@@ -51,6 +51,10 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>biz.aQute.bndlib</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>biz.aQute.bnd.maven</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

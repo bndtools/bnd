@@ -1,18 +1,21 @@
 ---
-layout: default
-title:    project [options]  
-summary: Execute a Project action, or if no parms given, show information about the project 
+layout: bnd
+title: project
+summary: |
+   Execute a Project action, or if no params given, show information about the project
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   project [options]  ...
 
-{{page.summary}}
 
-## Synopsis
+#### Options: 
+- `[ -p --project <string> ]` Identify another project
 
-## Options
+<!-- Manual content from: ext/project.md --><br /><br />
 
-	[ -p, --project <string> ] - Identify another project
 
 ## Examples
 

@@ -1,23 +1,22 @@
 ---
-layout: default
-title:   test [options] <testclass[:method]...>
-summary: Test a project according to an OSGi test 
+layout: bnd
+title: test
+summary: |
+   Test a project according to an OSGi test
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   test [options]  <testclass[:method]...>
 
-{{page.summary}}
+#### Options: 
+- `[ -c --continuous ]` Set the -testcontinuous flag
+- `[ -e --exclude <string;> ]` Exclude files by pattern
+- `[ -f --force ]` Launch the test even if this bundle does not contain Test-Cases
+- `[ -p --project <string> ]` Identify another project
+- `[ -t --trace ]` Set the -runtrace flag
+- `[ -v --verbose ]` prints more processing information
+- `[ -V --verify ]` Verify all the dependencies before launching (runpath, runbundles, testpath)
+- `[ -w --workspace <string> ]` Use the following workspace
 
-## Synopsis
-
-## Options
-
-    [ -c, --continuous ]       - Set the -testcontinuous flag
-    [ -f, --force ]            - Launch the test even if this bundle does not
-                                contain Test-Cases
-    [ -p, --project <string> ] - Path to another project than the current project
-    [ -t, --trace ]            - Set the -runtrace flag
-    [ -v, --verify ]           - Verify all the dependencies before launching
-                                (runpath, runbundles, testpath)
-
-## Examples

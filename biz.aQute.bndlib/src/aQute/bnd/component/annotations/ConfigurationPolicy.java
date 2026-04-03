@@ -27,7 +27,6 @@ package aQute.bnd.component.annotations;
  * Admin service. A corresponding configuration is a Configuration object where
  * the PID is the name of the component.
  * 
- * @author $Id$
  * @since 1.1
  */
 public enum ConfigurationPolicy {

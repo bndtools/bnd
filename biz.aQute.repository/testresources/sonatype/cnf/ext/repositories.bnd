@@ -1,0 +1,6 @@
+-buildrepo: Local
+
+-plugin.0.Main:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name="Local";\
+        noupdateOnRelease=true

@@ -14,7 +14,22 @@ import java.util.Map;
 public interface Actionable {
 	/**
 	 * Return a map with command names (potentially localized) and a Runnable.
-	 * The caller can execute the caller at will.
+	 * The caller can execute the caller at will. Note: The command names can be
+	 * hierarchical using
+	 *
+	 * <pre>
+	 *  ::
+	 * </pre>
+	 *
+	 * (space, double-colon, space) as the delimiter. This can be used by
+	 * callers to build hierarchical menues. The last part of such a
+	 * hierarchical label can be used as the actual label e.g. of a button.
+	 * <h2>Examples</h2>
+	 * <ul>
+	 * <li>Label 1</li>
+	 * <li>Sub Menu :: Label 1 in Submenu</li>
+	 * <li>Sub Menu :: Label 2 in Submenu</li>
+	 * </ul>
 	 *
 	 * @param target the target object, null if commands for the encompassing
 	 *            entity is sought (e.g. the repo itself).

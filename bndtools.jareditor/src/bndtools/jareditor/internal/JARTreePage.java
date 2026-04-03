@@ -1,6 +1,7 @@
 package bndtools.jareditor.internal;
 
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -25,8 +26,65 @@ public class JARTreePage extends FormPage {
 	private JARTreePart			tree;
 	private JARTreeEntryPart	entry;
 	private URI					uri;
-	private boolean				loading;
 	private IFolder				folder;
+	private boolean				closed;
+	private final Updater		updater	= new Updater();
+
+	class Updater {
+		final AtomicBoolean	loading	= new AtomicBoolean(false);
+		int					epoch	= 1000;
+		boolean				active	= false;
+
+		void activate(boolean active) {
+			assert JAREditor.isDisplayThread();
+			boolean prev = this.active;
+			this.active = active;
+
+			if (active && !prev)
+				refresh();
+		}
+
+		void refresh() {
+			if (uri == null)
+				return;
+			epoch++;
+
+			if (loading.getAndSet(true) == false) {
+				refresh0();
+			}
+		}
+
+		void refresh0() {
+			assert JAREditor.isDisplayThread();
+
+			URI loadingUri = uri;
+			int currentEpoch = this.epoch;
+
+			JAREditor.background("Reading jar/zip file", monitor -> {
+				return getFolder(loadingUri, monitor);
+			}, folder -> {
+
+				assert JAREditor.isDisplayThread();
+				if (!active || closed) {
+					System.out.println("closed");
+					TemporaryFile.dispose(folder);
+					return;
+				}
+
+				assert tree != null;
+
+				if (epoch != currentEpoch) {
+					TemporaryFile.dispose(folder);
+					refresh0();
+				} else {
+					loading.set(false);
+					setFolder(folder);
+					tree.setFormInput(folder);
+				}
+			});
+		}
+
+	}
 
 	public JARTreePage(JAREditor editor, String id, String title) {
 		super(editor, id, title);
@@ -76,30 +134,16 @@ public class JARTreePage extends FormPage {
 		assert JAREditor.isDisplayThread();
 
 		super.setActive(active);
-		if (active) {
-			update();
-		}
+		updater.activate(active);
 	}
 
 	@Override
 	public void dispose() {
+		this.closed = true;
+		updater.activate(false);
 		titleImg.dispose();
 		setFolder(null);
 		super.dispose();
-	}
-
-	private void update() {
-
-		assert JAREditor.isDisplayThread();
-
-		if (loading || tree == null || !isActive())
-			return;
-
-		loading = true;
-		JAREditor.background("Reading zip file", monitor -> getFolder(uri, monitor), folder -> {
-			setFolder(folder);
-			tree.setFormInput(folder);
-		});
 	}
 
 	private void setFolder(IFolder folder) {
@@ -108,16 +152,18 @@ public class JARTreePage extends FormPage {
 	}
 
 	void setInput(URI uri) {
-
 		assert JAREditor.isDisplayThread();
-
 		this.uri = uri;
-		this.loading = false;
-		update();
+		updater.refresh();
 	}
 
-	private IFolder getFolder(URI input, IProgressMonitor monitor) throws CoreException {
-
+	/*
+	 * Purely functional to read the JAR file.
+	 * @param input the input URL
+	 * @param monitor the monitor to use
+	 * @return a folder
+	 */
+	private static IFolder getFolder(URI input, IProgressMonitor monitor) throws CoreException {
 		URI full = JarFileSystem.jarf(input, "/")
 			.orElseThrow(IllegalArgumentException::new);
 		assert full.getPath() != null;

@@ -97,4 +97,11 @@ public class SnapshotReleaser extends Releaser {
 		// ignore
 	}
 
+	/*
+	 * Snapshots are never signed
+	 */
+	@Override
+	public void setKeyname(String keyname) {
+		// ignore
+	}
 }

@@ -1,0 +1,24 @@
+-include: ${workspace}/cnf/includes/bndtools.bnd
+Bundle-SymbolicName: org.bndtools.p2
+Bundle-License:  \
+    (ASL-2.0 or EPL-2.0);\
+        file="license.txt";\
+        link="https://raw.githubusercontent.com/bndtools/bnd/refs/heads/master/LICENSE"
+        
+Bundle-Vendor           bnd
+
+features        = \
+        bndtools.main.feature.bndrun, \
+        bndtools.m2e.feature.bndrun, \
+        bndtools.pde.feature.bndrun,\
+        bndtools.ecf.feature.bndrun
+        
+
+-categories \
+    bndtools; \
+        label = Bndtools; \
+        description = Bndtools, OSGi Development Tools for Eclipse based on bnd. You need to select this.,\
+    bndtools-optional; \
+        label = Bndtools - Optionals; \
+        description = Optional features for bndtools. Select them individually when needed.
+        

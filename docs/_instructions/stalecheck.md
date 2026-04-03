@@ -1,10 +1,22 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* ...
-summary: Perform a stale check of files and directories before building a jar 
-since: 4.3
+class: Project
+summary: |
+   Perform a stale check of files and directories before building a jar
+parent: Instruction Reference
+since: 4.3.0
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-stalecheck:   \
+        specs/**.md; \ 
+            newer='doc/**.doc' ; \ 
+            error='Markdown needs to be generated'`
+
+- Pattern: `.*`
+
+<!-- Manual content from: ext/stalecheck.md --><br /><br />
 
 If you work in Bndtools then there is normally little to worry about, bndtools keeps everything up to dated all the time. 
 Any file you save, and guaranteed in s short time all dependent bundles are updated. This comes with a crucial guarantee 
@@ -50,5 +62,3 @@ If no command is given, nor an error or warning then a default error is reported
         specs/**.md; \ 
             newer='doc/**.doc' ; \ 
             error='Markdown needs to be generated'
-
-

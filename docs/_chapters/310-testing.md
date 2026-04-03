@@ -1,9 +1,17 @@
 ---
-order: 310
-title: Testing
-layout: default
+title: Testing Framework
+layout: bnd
 version: 3.0
+parent: Testing
+nav_order: 1
 ---
+<hr />
+
+**Deprecation:** Note, that the default test `biz.aQute.tester` is deprecated as of bnd 7.2.0 and will be removed in 8.0.0.
+Please use and migrate your tests to JUnit 5 and use `biz.aQute.tester.junit-platform` going forward.
+The documentation below will be adjusted in the future.
+
+<hr />
 
 This section describes how bnd implements a pluggable testing framework. With most tools that use bnd this information is hidden behind a pleasant GUI (sometimes). However, in certain cases it is necessary to understand how bnd handles testing. 
 
@@ -68,7 +76,7 @@ To setup an environment to test continuously, the following launcher configurati
 
 The example setup creates a bundle containing the `org.example.tests` package and sets the `Test-Cases` header to all JUnit 3 test cases in that package. If you run this setup, it runs the project bundle with the `biz.aQute.junit` bundle. This tester bundle is parameterized with the `tester.*` properties to have trace on, continuous mode on, and to put the test reports in `./testdir`.
 
-You can find a bndtools project that shows this at [Github](https://github.com/bnd/aQute/tree/master/aQute.testing).
+You can find a bndtools project that shows this at [Github](https://github.com/bndtools/aQute/tree/master/aQute.testing).
 
 ## Testing With JUnit 5 - `biz.aQute.tester.junit-platform`
 

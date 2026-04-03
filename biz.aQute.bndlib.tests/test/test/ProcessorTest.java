@@ -9,12 +9,17 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.resource.Capability;
 
 import aQute.bnd.header.Attrs;
@@ -22,25 +27,203 @@ import aQute.bnd.osgi.AttributeClasses;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.MacroReference;
+import aQute.bnd.osgi.Processor.PropertyKey;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.collections.ExtList;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class ProcessorTest {
 
 	@Test
+	void testMacroReferences() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.ALL, "b", "c", "now");
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.UNKNOWN, "b");
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.COMMAND, "now");
+		testMacroReference("""
+			c
+			""", """
+			a ${b} ${c} ${now}
+			""", MacroReference.EXISTS, "c");
+	}
+
+	@Test
+	void testMacroReferencesWithArgs() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${foo;${bar;${baz}}}
+			""", MacroReference.UNKNOWN, "foo", "bar", "baz");
+	}
+
+	@Test
+	void testMacroReferencesCommandWithArgs() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${uniq;${bar};${baz};x}
+			""", MacroReference.UNKNOWN, "bar", "baz");
+		testMacroReference("""
+			c
+			""", """
+			a ${uniq;${bar};${baz};x,${c}}
+			""", MacroReference.EXISTS, "c");
+		testMacroReference("""
+			c
+			""", """
+			a ${uniq;${bar};${baz};x,${c}}
+			""", MacroReference.COMMAND, "uniq");
+	}
+
+	@Test
+	void testMacroReferencesDef() throws IOException {
+		testMacroReference("""
+			c
+			""", """
+			a ${def;foo;bar}
+			""", MacroReference.UNKNOWN, "foo");
+		testMacroReference("""
+			c
+			""", """
+			a ${def;c;bar}
+			""", MacroReference.UNKNOWN);
+		testMacroReference("""
+			c
+			""", """
+			a ${template;foo;bar}
+			""", MacroReference.UNKNOWN, "foo");
+	}
+
+	private void testMacroReference(String parentSource, String childSource, Processor.MacroReference macro,
+		String... references) throws IOException {
+		try (Processor parent = new Processor(); Processor child = new Processor(parent)) {
+			parent.setProperties(new StringReader(parentSource));
+			child.setProperties(new StringReader(childSource));
+			assertThat(child.getMacroReferences(macro)).containsExactly(references);
+		}
+	}
+
+	@Test
+	public void testFixup() throws IOException {
+		try (Processor p = new Processor()) {
+			p.setProperty("-fixupmessages.eclipserefactor",
+				"Unused Import-Package instructions: \\[org.eclipse.jdt.internal.corext.refactoring.*\\]");
+			p.warning(
+				"bndtools.core.test.launch: Unused Import-Package instructions: [org.eclipse.jdt.internal.corext.refactoring.*]");
+			assertThat(p.getWarnings()).isEmpty();
+
+		}
+	}
+
+	@Test
 	public void testFixupMerge() throws IOException {
-		Processor p = new Processor();
-		p.setProperty("-fixupmessages.foo", "foo");
-		p.setProperty("-fixupmessages.bar", "bar");
-		p.error("foo");
-		p.error("bar");
-		assertTrue(p.check());
-		p.close();
+		try (Processor p = new Processor()) {
+			p.setProperty("-fixupmessages.foo", "foo");
+			p.setProperty("-fixupmessages.bar", "bar");
+			p.error("foo");
+			p.error("bar");
+			assertTrue(p.check());
+
+			try (Processor p2 = new Processor()) {
+				p2.getInfo(p);
+				assertTrue(p2.check());
+			}
+
+		}
+	}
+
+	@Test
+	public void testGetInfo() throws IOException {
+		try (Processor a = new Processor(); Processor b = new Processor()) {
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+			a.getInfo(b);
+			assertThat(a.getErrors()).containsExactly("error-in-b");
+			assertThat(a.getWarnings()).containsExactly("warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor(); Processor b = new Processor()) {
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+			a.getInfo(b, "prefix ");
+			assertThat(a.getErrors()).containsExactly("prefix error-in-b");
+			assertThat(a.getWarnings()).containsExactly("prefix warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor(); Processor b = new Processor()) {
+			b.error("error-in-b");
+			b.setBase(new File("prefix"));
+			b.warning("warning-in-b");
+			a.getInfo(b, null);
+			assertThat(a.getErrors()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor()) {
+			Reporter b = new ReporterAdapter();
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+
+			a.getInfo(b, "");
+			assertThat(a.getErrors()
+				.get(0)).endsWith("error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor()) {
+			Reporter b = new ReporterAdapter();
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+
+			a.getInfo(b, "prefix ");
+			assertThat(a.getErrors()
+				.get(0)).endsWith("prefix error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("prefix warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
+		try (Processor a = new Processor()) {
+			Reporter b = new ReporterAdapter();
+			b.error("error-in-b");
+			b.warning("warning-in-b");
+
+			a.getInfo(b, null);
+			assertThat(a.getErrors()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :error-in-b");
+			assertThat(a.getWarnings()
+				.get(0)).endsWith("biz.aQute.bndlib.tests :warning-in-b");
+			assertThat(b.getErrors()).isEmpty();
+			assertThat(b.getWarnings()).isEmpty();
+		}
 	}
 
 	@Test
@@ -497,8 +680,7 @@ public class ProcessorTest {
 
 	@Test
 	public void isInternalTest() {
-		assertThat((Predicate<String>) AttributeClasses.MANIFEST)
-			.accepts("attribubte", "-foobar")
+		assertThat((Predicate<String>) AttributeClasses.MANIFEST).accepts("attribubte", "-foobar")
 			.rejects("-internal-key", Constants.SPLIT_PACKAGE_DIRECTIVE, Constants.FROM_DIRECTIVE);
 	}
 
@@ -532,6 +714,62 @@ public class ProcessorTest {
 	}
 
 	@Test
+	public void testPropertyKeys() throws IOException {
+		try (Processor top = new Processor()) {
+			top.setProperty("foo+.1", "x,y,z");
+			top.setProperty("foo+.2", "x,y,z");
+			top.setProperty("foo++", "d,e,f");
+			try (Processor bottom = new Processor(top)) {
+				bottom.setProperty("foo+", "a,b,c");
+				bottom.setProperty("foo+.2", "x,y,z");
+				List<PropertyKey> keys = bottom.getMergePropertyKeys("foo+");
+				assertThat(keys).hasSize(4);
+				assertThat(keys).containsExactly(//
+					new PropertyKey(bottom, "foo+", 0), //
+					new PropertyKey(top, "foo+.1", 1), //
+					new PropertyKey(bottom, "foo+.2", 0), //
+					new PropertyKey(top, "foo+.2", 1));
+			}
+		}
+
+	}
+
+	@Test
+	public void testPropertyKeysFindVisibles() throws IOException {
+		try (Processor top = new Processor()) {
+			top.setProperty("-plugin.a", "a1");
+			top.setProperty("-plugin.b", "b1");
+			try (Processor bottom = new Processor(top)) {
+				bottom.setProperty("-plugin.a", "a,b,c");
+				List<PropertyKey> keys = bottom.getMergePropertyKeys("-plugin");
+				assertThat(keys).hasSize(3);
+
+				assertThat(keys).containsExactly(//
+					new PropertyKey(bottom, "-plugin.a", 0), //
+					new PropertyKey(top, "-plugin.a", 1), //
+					new PropertyKey(top, "-plugin.b", 1));
+
+				Collection<PropertyKey> visibles = PropertyKey.findVisible(keys);
+				System.out.println(keys);
+				System.out.println(visibles);
+
+				assertThat(visibles).hasSize(2);
+				assertThat(visibles).containsExactly(//
+					new PropertyKey(bottom, "-plugin.a", 0), //
+					new PropertyKey(top, "-plugin.b", 1));
+
+				assertThat(List.copyOf(visibles)
+					.get(0)
+					.getValue()).isEqualTo("a,b,c");
+				assertThat(List.copyOf(visibles)
+					.get(1)
+					.getValue()).isEqualTo("b1");
+			}
+		}
+
+	}
+
+	@Test
 	public void testIncludeItself() throws IOException {
 		File foo = IO.getFile("generated/foo.bnd");
 		IO.store("-include ./foo.bnd\nfoo=1\n", foo);
@@ -540,6 +778,145 @@ public class ProcessorTest {
 			p.setProperties(foo);
 			assertTrue(p.check("Cyclic or multiple include of"));
 		}
+	}
+
+	@Test
+	public void testProvenance() throws IOException {
+		File base = IO.getFile("generated/provenance");
+		try {
+			base.mkdirs();
+			File bnd = new File(base, "bnd.bnd");
+			IO.store("""
+				-include sup.bnd, ~inf.bnd
+				in_top = top
+				in_sup = top
+				#in_inf = top
+				top = true
+				""", bnd);
+			File sup = new File(base, "sup.bnd");
+			IO.store("""
+				#in_top = sup
+				in_sup = sup
+				#in_inf = sup
+				sup = true
+				""", sup);
+			File inf = new File(base, "inf.bnd");
+			IO.store("""
+				-include sup.bnd, ~inf.bnd
+				in_top = inf
+				in_sup = inf
+				in_inf = inf
+				inf = true
+				sup = false
+				top = false
+				""", inf);
+
+			try (Processor a = new Processor(); Processor b = new Processor(a)) {
+				a.setProperty("a", "true");
+				b.setProperties(bnd);
+				UTF8Properties bp = (UTF8Properties) b.getProperties();
+				assertThat(b.getProperty("a")).isEqualTo("true");
+				assertThat(b.getProperty("in_top")).isEqualTo("top");
+				assertThat(b.getProperty("in_sup")).isEqualTo("sup");
+				assertThat(b.getProperty("in_inf")).isEqualTo("inf");
+				assertThat(b.getProperty("top")).isEqualTo("true");
+				assertThat(b.getProperty("sup")).isEqualTo("true");
+				assertThat(b.getProperty("inf")).isEqualTo("true");
+
+				assertThat(bp.getProvenance("in_top")).isPresent()
+					.get()
+					.isEqualTo(bnd.getAbsolutePath());
+				assertThat(bp.getProvenance("in_sup")).isPresent()
+					.get()
+					.isEqualTo(sup.getAbsolutePath());
+				assertThat(bp.getProvenance("in_inf")).isPresent()
+					.get()
+					.isEqualTo(inf.getAbsolutePath());
+				assertThat(bp.getProvenance("top")).isPresent()
+					.get()
+					.isEqualTo(bnd.getAbsolutePath());
+				assertThat(bp.getProvenance("sup")).isPresent()
+					.get()
+					.isEqualTo(sup.getAbsolutePath());
+
+				bp.remove("in_top");
+				assertThat(bp.getProvenance("in_top")).isNotPresent();
+
+				b.setProperty("in_top", "foo");
+				assertThat(bp.getProvenance("in_top")).isNotPresent();
+				b.setProperty("in_top", "bar", "xxx");
+				assertThat(bp.getProvenance("in_top")).isPresent()
+					.get()
+					.isEqualTo("xxx");
+			}
+		} finally {
+			IO.delete(base);
+		}
+
+	}
+
+	@Test
+	public void testWarningOnCounterIntuitiveInclude(@InjectTemporaryDirectory
+	File base, SoftAssertions softly) throws IOException {
+		final File bnd = new File(base, "bnd.bnd");
+		IO.store("""
+			-include a.bnd
+			Header1: i will lose
+			""", bnd);
+		File sup = new File(base, "a.bnd");
+		IO.store("""
+			Header1: i will win
+			""", sup);
+
+		try (Processor a = new Processor()) {
+			a.setProperties(bnd);
+
+			softly.assertThat(a.getProperty("Header1"))
+				.isEqualTo("i will win");
+			softly.assertThat(a.getWarnings())
+				.containsExactly(
+					"[Include Override]: `Header1` declaration is overridden by -include: a.bnd and thus ignored (consider using -include: ~a.bnd).");
+
+
+		}
+
+		// now prevent the overwrite by doing what the warning says, and use
+		// the '~' (tilde)
+
+		IO.store("""
+			-include: ~a.bnd
+			Header1: now i will win, and a.bnd will not overwrite
+			""", bnd);
+
+		try (Processor a = new Processor()) {
+			a.setProperties(bnd);
+
+			softly.assertThat(a.getProperty("Header1"))
+				.isEqualTo("now i will win, and a.bnd will not overwrite");
+			softly.assertThat(a.getWarnings())
+				.isEmpty();
+
+		}
+
+		// now test a case where an overwrite will happen,
+		// but no warning is logged, because the overwrite will overwrite
+		// with the same value
+
+		IO.store("""
+			-include: a.bnd
+			Header1: i will win
+			""", bnd);
+
+		try (Processor a = new Processor()) {
+			a.setProperties(bnd);
+
+			softly.assertThat(a.getProperty("Header1"))
+				.isEqualTo("i will win");
+			softly.assertThat(a.getWarnings())
+				.isEmpty();
+
+		}
+
 	}
 
 }

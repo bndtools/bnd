@@ -1,14 +1,25 @@
 ---
-layout: default
-class: Header
+layout: bnd
 title: Bnd-LastModified  LONG
-summary: Timestamp from bnd, aggregated last modified time of its resources 
+class: Header
+summary: |
+   Timestamp from bnd, aggregated last modified time of its resources
+parent: Headers
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
-			if (!noExtraHeaders) {
-				main.putValue(CREATED_BY, System.getProperty("java.version") + " (" + System.getProperty("java.vendor")
-						+ ")");
-				main.putValue(TOOL, "Bnd-" + getBndVersion());
-				main.putValue(BND_LASTMODIFIED, "" + System.currentTimeMillis());
-			}
+- Pattern: `.*`
 
+<!-- Manual content from: ext/bnd_lastmodified.md --><br /><br />
+
+# Bnd-LastModified
+
+The `Bnd-LastModified` header is automatically added by bnd to the bundle manifest. It contains a timestamp (in milliseconds since the epoch) that represents the aggregated last modified time of all resources included in the bundle. This value is useful for tracking when the bundle was last built or updated, and can help with cache invalidation or deployment automation.
+
+The timestamp is generated at build time and reflects the most recent modification among all files and resources that are part of the bundle. This ensures that any change to the bundle's contents will result in a new, updated timestamp in the manifest.
+
+This header is set by bnd and should not be manually modified. It is primarily intended for tooling and automation purposes.
+
+
+<hr />
+TODO Needs review - AI Generated content

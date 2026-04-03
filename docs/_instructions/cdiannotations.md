@@ -1,9 +1,35 @@
 ---
-layout: default
-class: Project
+layout: bnd
 title: -cdiannotations SELECTORS
-summary: Selects the packages that need processing for CDI annotations. 
+class: Project
+summary: |
+   Selects the packages that need processing for CDI annotations.
+parent: Instruction Reference
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
+
+- Example: `-cdiannotations: *;discover=all`
+
+- Pattern: `.*`
+
+### Directives 
+
+- `discover` Bean Discovery Mode.
+  - Example: `discover=all`
+
+  - Values: `(all|annotated|annotated_by_bean|none)`
+
+  - Pattern: `.*`
+
+
+- `noservicecapabilities` indicates that no service capabilities will be added for matches.
+  - Example: `noservicecapabilities=true`
+
+  - Values: `true, false`
+
+  - Pattern: `true|false`
+
+<!-- Manual content from: ext/cdiannotations.md --><br /><br />
 
 The `-cdiannotations` instruction tells **bnd** which bundle classes, if any, to search for OSGI CDI Integration (or plain CDI) annotations. **bnd** will then process those classes into requirements and capabilities.
 

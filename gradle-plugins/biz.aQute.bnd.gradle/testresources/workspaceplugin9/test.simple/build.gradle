@@ -1,3 +1,5 @@
-testOSGi {
+import aQute.bnd.gradle.TestOSGi
+
+tasks.named('testOSGi', TestOSGi) {
 	tests = ['test.simple.Test']
 }

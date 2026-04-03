@@ -64,7 +64,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin;
  *   baseline
  * }
  * dependencies {
- *     baseline("group": group, "name": jar.archiveBaseName) {
+ *     baseline("${group}:${jar.archiveBaseName.get()}") {
  *       version {
  *         strictly "(0,${jar.archiveVersion.get()}["
  *       }

@@ -6,8 +6,7 @@ import aQute.bnd.osgi.Constants
 
 pluginManagement {
 	plugins {
-		id "com.gradle.enterprise" version "3.11.1"
-		id "org.gradle.test-retry" version "1.4.1"
+		id "com.gradle.enterprise" version "3.13.4"
 	}
 }
 
@@ -24,20 +23,21 @@ buildscript {
 		}
 		mavenCentral()
 	}
-	var bndConfiguration = configurations.create("bnd") {
-		/* Since the files in the repository change with each build, we need to recheck for changes */
-		resolutionStrategy {
-			cacheChangingModulesFor(30, "minutes")
-			cacheDynamicVersionsFor(30, "minutes")
+	configurations {
+		classpath {
+			/* Since the files in the repository change with each build, we need to recheck for changes */
+			resolutionStrategy {
+				cacheChangingModulesFor(30, "minutes")
+				cacheDynamicVersionsFor(30, "minutes")
+			}
 		}
 	}
-	configurations.classpath.extendsFrom(bndConfiguration)
 	dependencies {
-		bnd("biz.aQute.bnd:biz.aQute.bnd.gradle") {
+		classpath("biz.aQute.bnd:biz.aQute.bnd.gradle") {
 			version {
 				require bnd_version
 				// Prefer RC over SNAPSHOT for next branch
-				prefer "latest.release" 
+				prefer "latest.release"
 			}
 		}
 		components {
@@ -45,15 +45,6 @@ buildscript {
 				if ((details.id.group == "biz.aQute.bnd") || (details.id.group == "biz.aQute.bnd.workspace")) {
 					details.changing = true
 				}
-			}
-		}
-	}
-	/* Add bnd gradle plugin to buildscript classpath of rootProject */
-	var bndPlugin = files(bndConfiguration.files)
-	gradle.rootProject {
-		buildscript {
-			dependencies {
-				classpath(bndPlugin)
 			}
 		}
 	}
@@ -77,7 +68,7 @@ rootProject.name = "bnd"
 
 gradle.ext.bndWorkspaceConfigure = { workspace ->
 	/*
-	 * Compute the build time stamp. 
+	 * Compute the build time stamp.
 	 * If the git workspace is clean, the build time is the time of the head commit.
 	 * If the git workspace is dirty, the build time is the current time.
 	 */

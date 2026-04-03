@@ -30,13 +30,14 @@
 	@${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.reporter;latest}!/!META-INF/*, \
  	@${repo;biz.aQute.launchpad;latest}!/!META-INF/*, \
-	@${repo;slf4j.api;latest}!/!META-INF/*, \
-	@${repo;slf4j.simple;latest}!/!META-INF/*, \
-	@${repo;jline}!/!META-INF/*
+ 	@${repo;slf4j.api;[1.7.25,2)}!/!META-INF/*, \
+	@${repo;slf4j.simple;[1.7.25,2)}!/!META-INF/*, \
+	@${repo;jline}!/!META-INF/*, \
+    @${repo;jline}!/META-INF/native/*, \
 
 
 Import-Package: \
- org.slf4j,\
+ org.slf4j;version='[1.0.0,2)',\
  !com.google.appengine.*,\
  !com.google.apphosting.*,\
  !com.cloudius.util.*,\
@@ -68,9 +69,9 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -maven-scope: provided
 
 -buildpath: \
+    org.osgi.framework;version='1.10',\
 	org.osgi.dto;version='1.0',\
 	org.osgi.resource;version='1.0',\
-	org.osgi.framework;version='1.8',\
 	org.osgi.util.tracker;version='1.5',\
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
@@ -89,15 +90,15 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
-	slf4j.api;version=latest,\
-	slf4j.simple;version=latest,\
-	jline
+	slf4j.api;version='1.7.25',\
+	slf4j.simple;version='1.7.25',\
+    jline
 
 -testpath: \
 	biz.aQute.bnd.test;version=project,\
 	${junit},\
 	org.osgi.namespace.extender,\
-	org.apache.felix.framework, \
+	org.apache.felix.framework;version="[6.0.5,6.0.5]", \
 	biz.aQute.bnd.embedded-repo; version=snapshot
 
 # Dependencies needed by the inclusion of biz.aQute.bnd.reporter in the jar.
@@ -109,12 +110,12 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     ${repo;org.parboiled:parboiled-java;latest},\
     ${repo;org.parboiled:parboiled-core;latest},\
     ${repo;org.apache.commons.lang3;[3.4,4.0)},\
-    ${repo;com.google.guava;[18.0,19.0)},\
+    ${repo;com.google.guava;[33.4.8,34.0.0)},\
     ${repo;com.googlecode.concurrentlinkedhashmap.lru;[1.4.2,2.0.0)},\
-    ${repo;org.objectweb.asm;[5.0.3,6.0.0)},\
-    ${repo;org.objectweb.asm.analysis;[5.0.3,6.0.0)},\
-    ${repo;org.objectweb.asm.tree;[5.0.3,6.0.0)},\
-    ${repo;org.objectweb.asm.util;[5.0.3,6.0.0)},\
+    ${repo;org.objectweb.asm},\
+    ${repo;org.objectweb.asm.tree.analysis},\
+    ${repo;org.objectweb.asm.tree},\
+    ${repo;org.objectweb.asm.util},\
 	${repo;com.github.javaparser.javaparser-core;3.13}
 
 
@@ -124,13 +125,14 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     org.parboiled:parboiled-java;version=latest,\
     org.parboiled:parboiled-core;version=latest,\
     org.apache.commons.lang3;version="[3.4,4.0)",\
-    com.google.guava;version="[18.0,19.0)",\
+    com.google.guava;version="[33.4.8,34.0.0)",\
+	com.google.guava.failureaccess,\
     com.googlecode.concurrentlinkedhashmap.lru;version="[1.4.2,2.0.0)",\
-    org.objectweb.asm;version="[5.0.3,6.0.0)",\
-    org.objectweb.asm.analysis;version="[5.0.3,6.0.0)",\
-    org.objectweb.asm.tree;version="[5.0.3,6.0.0)",\
-    org.objectweb.asm.util;version="[5.0.3,6.0.0)",\
-	com.github.javaparser.javaparser-core;version=3.13
+    org.objectweb.asm,\
+    org.objectweb.asm.tree.analysis,\
+    org.objectweb.asm.tree,\
+    org.objectweb.asm.util,\
+	com.github.javaparser.javaparser-core;version=3.13,\
 
 
 -builderignore: testdata, installers

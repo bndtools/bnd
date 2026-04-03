@@ -1,7 +1,6 @@
 ---
 ---
 
-@import url("//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700");
 
 $font-family: 		Trebuchet MS, Verdana, sans;
 $font-size:			9pt;
@@ -92,7 +91,7 @@ $color-vignette:	#F0F0F0;
 	.search-container {
         width: 100%;
         input[type=text] {
-          width: calc(100% - 40px);
+          width: calc(100% - 65px);
           padding: 6px;
           margin-top: 8px;
           border: none;
@@ -103,7 +102,7 @@ $color-vignette:	#F0F0F0;
               width: 32px;
               padding: 6px 10px;
               margin-top: 8px;
-              margin-right: 0px;
+              margin-right: 28px;
               background: #ddd;
               border: none;
               border-radius: 4px;
@@ -123,7 +122,6 @@ $color-vignette:	#F0F0F0;
 
 .selected {
 	&:before { content: "\25B7\00A0"; }
-	font-weight: bolder;
 	color: $secondary-color;
 }
 
@@ -178,7 +176,6 @@ embed.illustration {
     background-color: #99594b;
     color: white;
     width: 80px;
-    float: right;
     text-align: center;
     border-radius: 5px;
     padding:2px;
@@ -186,5 +183,100 @@ embed.illustration {
     font-weight: normal;
  }
  
+ul.side-nav{
+  list-style-type: none;
+}
 
- 
+ul .side-nav-section{
+  color: #720F10;
+  font-weight: bold;
+  font-size: 1.05em;
+}
+
+.side-nav{
+  padding-top: 1px !important;
+}
+
+pre.highlight {
+  overflow: auto;
+}
+
+.header-link-wrapper{
+  visibility: hidden;
+  margin-left: 2px;
+  padding-left: 2px;
+}
+/* Show the icon link on hover */
+h1:hover .header-link-wrapper,
+h2:hover .header-link-wrapper,
+h3:hover .header-link-wrapper,
+h4:hover .header-link-wrapper {
+  visibility: visible;
+}
+.header-link{
+  color:#ccc !important
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.container-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* aligns children to the right */
+}
+
+.next-prev a {
+  color: #555;
+  text-decoration: none;
+}
+
+.next-prev a:hover,
+.next-prev a:focus {
+  text-decoration: underline;
+  color: #333;
+}
+
+
+.highlight{
+  padding: 5px;
+}
+
+pre.highlight{
+  border: none;
+}
+
+code {
+  all: revert !important;
+}
+
+div[class*="language-"] {
+  position: relative;
+  margin: 5px 0 ;
+  padding: 1.75rem 0 1.75rem 1rem;
+}
+
+div[class*="language-"] button{
+  position: absolute;
+  top: 35px;
+  right: 5px;
+}
+
+.page-since-tag{
+  margin-top: 2px
+}
+
+.page-since-tag a {
+  color: white;
+}
+
+.pageclass.page-since-tag{
+  background-color: #aaaaaa;
+}

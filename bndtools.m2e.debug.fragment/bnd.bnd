@@ -6,7 +6,7 @@
 Bundle-SymbolicName: ${p};singleton:=true
 Fragment-Host: org.eclipse.m2e.maven.runtime
 
--buildpath: org.eclipse.m2e.maven.runtime
+-buildpath: org.eclipse.m2e.maven.runtime;maven-optional=true
 
 Import-Package: \
 	javax.crypto,\

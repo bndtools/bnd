@@ -97,7 +97,7 @@ public class BundleEngine implements TestEngine {
 						.getDisplayName());
 				childDescriptors.forEach(childDescriptor -> listener.executionSkipped(childDescriptor, reason));
 			} else {
-				childDescriptors.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params));
+				childDescriptors.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params, request));
 			}
 			listener.executionFinished(root, TestExecutionResult.successful());
 		} catch (Throwable t) {
@@ -108,7 +108,7 @@ public class BundleEngine implements TestEngine {
 	}
 
 	private static void executeBundle(BundleDescriptor descriptor, EngineExecutionListener listener,
-		ConfigurationParameters params) {
+		ConfigurationParameters params, ExecutionRequest parentRequest) {
 		listener.executionStarted(descriptor);
 		TestExecutionResult result;
 		if (descriptor.getException() == null) {
@@ -117,7 +117,7 @@ public class BundleEngine implements TestEngine {
 					.stream()
 					.filter(childDescriptor -> !(childDescriptor instanceof BundleDescriptor
 						|| childDescriptor instanceof StaticFailureDescriptor))
-					.forEach(childDescriptor -> descriptor.executeChild(childDescriptor, listener, params));
+					.forEach(childDescriptor -> descriptor.executeChild(childDescriptor, parentRequest));
 				result = TestExecutionResult.successful();
 			} catch (TestAbortedException abort) {
 				result = TestExecutionResult.aborted(abort);
@@ -130,7 +130,7 @@ public class BundleEngine implements TestEngine {
 				.stream()
 				.filter(BundleDescriptor.class::isInstance)
 				.map(BundleDescriptor.class::cast)
-				.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params));
+				.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params, parentRequest));
 			descriptor.getChildren()
 				.stream()
 				.filter(StaticFailureDescriptor.class::isInstance)

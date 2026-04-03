@@ -1,44 +1,38 @@
 ---
-layout: default
-title:   bash 
-summary:  Generate autocompletion file for bash
+layout: bnd
+title: bash
+summary: |
+   Generate autocompletion file for bash
+parent: bnd CLI Commands
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 
-## Description
+### Synopsis: 
+	   bash  ...
 
-{{page.summary}}
 
-## Synopsis
+<!-- Manual content from: ext/bash.md --><br /><br />
+## Bash Command Autocompletion
 
-## Options
+The `bash` command in bnd can generate an autocompletion script for the Bash shell, making it easier to use bnd commands interactively.
 
-## Examples
+When you run the bash autocompletion generator, bnd will create a temporary file containing the autocompletion script, populate it with the list of available commands, and output the result. This script can then be sourced in your shell to enable tab-completion for bnd commands.
 
-	@Description("Generate autocompletion file for bash")
-	public void _bash(Options options) throws Exception {
-		File tmp = File.createTempFile("bnd-completion", ".tmp");
-		tmp.deleteOnExit();
+**Example:**
 
-		try {
-			IO.copy(getClass().getResource("bnd-completion.bash"), tmp);
+To generate and use the autocompletion script for bash:
 
-			Sed sed = new Sed(tmp);
-			sed.setBackup(false);
+1. Run the following command to generate the script:
+   ```
+   bnd bash > bnd-completion.bash
+   ```
+2. Source the script in your shell:
+   ```
+   source bnd-completion.bash
+   ```
 
-			Reporter r = new ReporterAdapter();
-			CommandLine c = new CommandLine(r);
-			Map<String,Method> commands = c.getCommands(this);
-			StringBuilder sb = new StringBuilder();
-			for (String commandName : commands.keySet()) {
-				sb.append(" " + commandName);
-			}
-			sb.append(" help");
+This will enable tab-completion for all available bnd commands in your current shell session.
 
-			sed.replace("%listCommands%", sb.toString().substring(1));
-			sed.doIt();
-			IO.copy(tmp, out);
-		}
-		finally {
-			tmp.delete();
-		}
-	}
+
+<hr />
+TODO Needs review - AI Generated content

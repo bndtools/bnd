@@ -1,8 +1,10 @@
 ---
 title: Tools bound to bnd
-layout: default
+layout: bnd
+parent: Documentation and Tools
+nav_order: 6
+has_children: true
 ---
-
 ## Reference
 
 <div>
