@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</h1>
+<ul>
+<li>
+<p>Example: <code>-exportcontents=!*impl*,*;version=3.0</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/exportcontents.md -->
+<p>Exports the given packages but does not try to include them from the class path. The packages should be loaded with alternative means. The syntax is similar to the <a href="/heads/export_package.html"><code>Export-Package</code></a> header.</p>
+<p><code>Export-Package</code> = <a href="/instructions/includepackage.html"><code>-includepackage</code></a> + <code>-exportcontents</code> (<a href="https://bnd.discourse.group/t/more-information-about-exportcontent/214/2">source</a>). </p>
+<p>That is, <code>Export-Package</code> will add packages to the bundle, perhaps from (other) <code>.jar</code> files on the classpath, and also add those packages to the <code>Export-Package</code> manifest header. </p>
+<p><code>-exportcontents</code> will <em>only</em> add packages which are <em>already</em> part of the bundle to the <code>Export-Package</code> manifest header.</p>
+<div class="highlight"><pre><span></span><code>-exportcontents: com.example.api;
+</code></pre></div>
+
+<p>See the <a href="/macros/packages.html">packages</a> macro, which is useful in combination with <code>-exportcontents</code>.</p>
+<p><strong>Note:</strong> By default bnd automatically calculates <code>Import-Package</code> references for exported packages. This is called <a href="/chapters/170-versioning.html#substitution">package substitution</a>
+You can use the <code>-noimport:=true</code> directive which instructs bnd to <strong>not</strong> calculate <code>Import-Package</code> references for exported packages.</p>
+<p>Example:</p>
+<p><code>`
+-exportcontents: com.*;-noimport:=true</code></p>
+<p>With the <a href="/instructions/nosubstitution.html">-nosubstitution: true</a> instruction, this substitution behavior can be disabled globally.</p>
+<h2 id="use-cases">Use Cases</h2>
+<p>So <code>-exportcontent</code> is appropriate for Maven and Gradle (non-Bnd workspace) builds where the content of the bundle is being managed by normal Maven or Gradle means.</p>
+<p><br /><br /></p>
+</body>
+</html>

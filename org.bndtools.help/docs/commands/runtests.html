@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>runtests</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>runtests</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   runtests [options]  ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -d --dir &lt;string&gt; ]</code> Path to work directory</li>
+<li><code>[ -e --exclude &lt;string;&gt; ]</code> Exclude files by pattern</li>
+<li><code>[ -r --reportdir &lt;string&gt; ]</code> Report directory</li>
+<li><code>[ -t --tests &lt;string;&gt; ]</code> Test names to execute</li>
+<li><code>[ -T --title &lt;string&gt; ]</code> Title in the report</li>
+<li><code>[ -v --verbose ]</code> prints more processing information</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Use the following workspace</li>
+</ul>
+<!-- Manual content from: ext/runtests.md -->
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>bnd runtests --tests org.osgi.test.cases.tracker.junit.BundleTrackerTests:testSubclass,org.osgi.test.cases.tracker.junit.BundleTrackerTests:testModified org.osgi.test.cases.tracker.bnd
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

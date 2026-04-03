@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Test-Cases CLASS ( ',' CLASS ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Test-Cases CLASS ( ',' CLASS ) *</h1>
+<ul>
+<li>
+<p>Example: <code>Test-Cases: com.foo.bar.MyTest</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/test_cases.md -->
+<h1 id="test-cases">Test-Cases</h1>
+<p>The <code>Test-Cases</code> header specifies one or more test classes to be automatically executed by the bnd JUnit tester. This header is used to configure which tests should run when the bundle is tested in an OSGi environment.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Test-Cases: com.example.MyTest, com.example.AnotherTest
+</code></pre></div>
+
+<p>This header is typically set by build tooling or annotations and is required for automatic test execution with bnd's JUnit integration.</p>
+<div class="highlight"><pre><span></span><code>private void checkForTesting(Project project, Properties properties) throws Exception {
+
+    //
+    // Only run junit when we have a test src directory
+    //
+
+    boolean junit = project.getTestSrc().isDirectory() &amp;&amp; !Processor.isTrue(project.getProperty(Constants.NOJUNIT));
+    boolean junitOsgi = project.getProperties().getProperty(Constants.TESTCASES) != null
+            &amp;&amp; !Processor.isTrue(project.getProperty(Constants.NOJUNITOSGI));
+
+    if (junit)
+        properties.setProperty(&quot;project.junit&quot;, &quot;true&quot;);
+    if (junitOsgi)
+        properties.setProperty(&quot;project.osgi.junit&quot;, &quot;true&quot;);
+}
+
+public void test(List&lt;String&gt; tests) throws Exception {
+
+    String testcases = getProperties().getProperty(Constants.TESTCASES);
+    if (testcases == null) {
+        warning(&quot;No %s set&quot;, Constants.TESTCASES);
+        return;
+    }
+    clear();
+
+    ProjectTester tester = getProjectTester();
+    if ( tests != null) {
+        trace(&quot;Adding tests %s&quot;, tests);
+        for ( String test : tests) {
+            tester.addTest(test);
+        }
+    }
+    tester.setContinuous(isTrue(getProperty(Constants.TESTCONTINUOUS)));
+    tester.prepare();
+
+    if (!isOk()) {
+        return;
+    }
+    int errors = tester.test();
+    if (errors == 0) {
+        System.err.println(&quot;No Errors&quot;);
+    } else {
+        if (errors &gt; 0) {
+            System.err.println(errors + &quot; Error(s)&quot;);
+
+        } else
+            System.err.println(&quot;Error &quot; + errors);
+    }
+}
+
+    void automatic() throws IOException {
+    String testerDir = context.getProperty(TESTER_DIR);
+    if (testerDir == null)
+        testerDir = &quot;testdir&quot;;
+
+    final File reportDir = new File(testerDir);
+    final List&lt;Bundle&gt; queue = new Vector&lt;Bundle&gt;();
+    if (!reportDir.exists() &amp;&amp; !reportDir.mkdirs()) {
+        throw new IOException(&quot;Could not create directory &quot; + reportDir);
+    }
+    trace(&quot;using %s, needed creation %s&quot;, reportDir, reportDir.mkdirs());
+
+    trace(&quot;adding Bundle Listener for getting test bundle events&quot;);
+    context.addBundleListener(new SynchronousBundleListener() {
+        public void bundleChanged(BundleEvent event) {
+            if (event.getType() == BundleEvent.STARTED) {
+                checkBundle(queue, event.getBundle());
+            }
+
+        }
+    });
+
+    for (Bundle b : context.getBundles()) {
+        checkBundle(queue, b);
+    }
+
+    trace(&quot;starting queue&quot;);
+    int result = 0;
+    outer: while (active) {
+        Bundle bundle;
+        synchronized (queue) {
+            while (queue.isEmpty() &amp;&amp; active) {
+                try {
+                    queue.wait();
+                }
+                catch (InterruptedException e) {
+                    trace(&quot;tests bundle queue interrupted&quot;);
+                    thread.interrupt();
+                    break outer;
+                }
+            }
+        }
+        try {
+            bundle = queue.remove(0);
+            trace(&quot;received bundle to test: %s&quot;, bundle.getLocation());
+            Writer report = getReportWriter(reportDir, bundle);
+            try {
+                trace(&quot;test will run&quot;);
+                result += test(bundle, (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES), report);
+                trace(&quot;test ran&quot;);
+                if (queue.isEmpty() &amp;&amp; !continuous) {
+                    trace(&quot;queue &quot; + queue);
+                    System.exit(result);
+                }
+            }
+            finally {
+                if (report != null)
+                    report.close();
+            }
+        }
+        catch (Exception e) {
+            error(&quot;Not sure what happened anymore %s&quot;, e);
+            System.exit(254);
+        }
+    }
+}
+
+
+    void checkBundle(List&lt;Bundle&gt; queue, Bundle bundle) {
+    if (bundle.getState() == Bundle.ACTIVE) {
+        String testcases = (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES);
+        if (testcases != null) {
+            trace(&quot;found active bundle with test cases %s : %s&quot;, bundle, testcases);
+            synchronized (queue) {
+                queue.add(bundle);
+                queue.notifyAll();
+            }
+        }
+    }
+}
+
+
+
+
+    if (testcases == null) {
+</code></pre></div>
+
+<p>//          if ( !continuous) {
+//              System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
+//              System.exit(255);
+//          }</p>
+<div class="highlight"><pre><span></span><code>        trace(&quot;automatic testing of all bundles with &quot; + aQute.bnd.osgi.Constants.TESTCASES + &quot; header&quot;);
+        try {
+            automatic();
+        }
+        catch (IOException e) {
+            // ignore
+        }
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

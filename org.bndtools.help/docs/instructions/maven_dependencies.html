@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-maven-dependencies* entry ( ',' entry )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-maven-dependencies* entry ( ',' entry )*</h1>
+<ul>
+<li>Pattern: <code>.*</code></li>
+</ul>
+<!-- Manual content from: ext/maven_dependencies.md -->
+<p>The <a href="pom.html">-pom</a> instruction can be used to generate a pom in the bundle. The value of the <code>-maven-dependencies</code> instruction is used to generate the <code>&lt;dependencies&gt;</code> section in the generated pom.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>-maven-dependencies ::= entry ( &#39;,&#39; entry ) *
+ entry     ::= key ( &#39;;&#39; attribute ) *
+ attribute ::= groupId-attr | artifactId-attr | version-attr
+               | classifier-attr
+ groupId-attr    ::= &#39;groupId&#39; &#39;=&#39; groupId
+ artifactId-attr ::= &#39;artifactId&#39; &#39;=&#39; artifactId
+ version-attr    ::= &#39;version&#39; &#39;=&#39; version
+ classifier-attr ::= &#39;classifier&#39; &#39;=&#39; classifier
+ gavkey    ::= groupId &#39;:&#39; artifactId &#39;:&#39; version ( &#39;:jar:&#39; classifier)?
+</code></pre></div>
+
+<h2 id="description">Description</h2>
+<p>For Bnd Workspace builds, the <code>-maven-dependencies</code> instruction is automatically set, if not already set, by Bnd from the <a href="buildpath.html">-buildpath</a> entries of the project. Normally, you can allow Bnd to automatically set the <code>-maven-dependencies</code> instruction. But you can override the maven dependency information by explicitly setting the <code>-maven-dependencies</code> instruction. If set to the empty string, then no <code>&lt;dependencies&gt;</code> section will be added in the generated pom. Since the <code>-maven-dependencies</code> instruction is a <a href="../chapters/820-instructions.html#merged-instructions">merged instruction</a>, you can use suffixes to override the generated information for a dependency and to add additional dependencies to the maven dependency information.</p>
+<p>When Bnd automatically sets the <code>-maven-dependencies</code> instruction, it will generate the <code>key</code> value using the <code>gavkey</code> production with the groupId, artifactId, version, and classifier (if set) values of the artifact. Using a well defined <code>gavkey</code> value, allows the attributes of a specific artifact to be overriden by merged property value while allowing the other automatically set values to still be used. However any unique <code>key</code> value can be used if you don't care to override the automatically set value for a specific dependency.</p>
+<p>When an artifact come from a maven repository, such as <a href="../plugins/maven.html">MavenBndRepository</a> or <a href="../plugins/pomrepo.html">BndPomRepository</a>, the maven repository will supply the <code>groupId</code>, <code>artifactId</code>, <code>version</code>, and <code>classifier</code> (if the artifact has a non-empty classifier) attributes of the artifact. If the artifact does not come from a maven repository but does contain a <a href="https://maven.apache.org/shared/maven-archiver/#pom-properties-content">pom.properties</a> resource, then the <code>groupId</code>, <code>artifactId</code>, and <code>version</code> attributes are supplied by that resource.</p>
+<h2 id="buildpath-entries">Buildpath Entries</h2>
+<p>An attribute value can also be specified on a <a href="buildpath.html">-buildpath</a> entry, by prefixing the attribute name with <code>maven-</code>, which can then replace any such attribute value coming from the maven repository or a <a href="https://maven.apache.org/shared/maven-archiver/#pom-properties-content">pom.properties</a> resource.</p>
+<p>You can set the <code>maven-scope</code> attribute on a <a href="buildpath.html">-buildpath</a> entry to specify a different <a href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope">dependency scope</a> than the default dependency scope specified by the <a href="maven_scope.html">-maven-scope</a> instruction. The value of the <code>maven-scope</code> attribute must be a valid dependency scope.</p>
+<p>You can also set the <code>maven-optional</code> attribute on a <a href="buildpath.html">-buildpath</a> entry to <code>true</code> which will exclude the artifact from the generated dependencies information. The default value for <code>maven-optional</code> is <code>false</code>.</p>
+<h2 id="examples">Examples</h2>
+<p>Disable generating the <code>&lt;dependencies&gt;</code> section in the generated pom.</p>
+<div class="highlight"><pre><span></span><code>-maven-dependencies:
+</code></pre></div>
+
+<p>Override the automatically set dependency information for a specific artifact. You must use the matching <code>gavkey</code> of the actual artifact and then specify the <code>groupId</code>, <code>artifactId</code>, and <code>version</code> attributes to use for the artitact. This example replaces the version of the artifact to remove <code>-SNAPSHOT</code>.</p>
+<div class="highlight"><pre><span></span><code>-maven-dependencies.fix: org.osgi:osgi.annotation:8.0.0-SNAPSHOT;\
+ groupId=org.osgi;artifactId=osgi.annotation;version=8.0.0
+</code></pre></div>
+
+<p>This could also be done on the <a href="buildpath.html">-buildpath</a> entry for the artifact by specifying the <code>maven-version</code> attribute to override the maven version of the artifact.</p>
+<div class="highlight"><pre><span></span><code>-buildpath: osgi.annotation;version=8.0.0.SNAPSHOT;maven-version=8.0.0
+</code></pre></div>
+
+<p>Add an additional dependency. You must specify the <code>groupId</code>, <code>artifactId</code>, and <code>version</code> attributes to use for the artitact.</p>
+<div class="highlight"><pre><span></span><code>-maven-dependencies.log: log;groupId=org.osgi;\
+ artifactId=org.osgi.service.log;version=1.5.0
+</code></pre></div>
+
+<p>Don't generate a <code>&lt;dependency&gt;</code> element for a specific artifact. This is done by specifying the proper <code>gavkey</code> value and not specifying any attributes.</p>
+<div class="highlight"><pre><span></span><code>-maven-dependencies.nodependency: org.osgi:osgi.annotation:8.0.0
+</code></pre></div>
+
+<p>This could also be done on the <a href="buildpath.html">-buildpath</a> entry for the artifact by specifying the <code>maven-optional</code> attribute with the value <code>true</code>.</p>
+<div class="highlight"><pre><span></span><code>-buildpath: osgi.annotation;version=8.0.0;maven-optional=true
+</code></pre></div>
+
+<p>Change the dependency scope for the artifact. The default dependency scope is specified by the <a href="maven_scope.html">-maven-scope</a> instruction.</p>
+<div class="highlight"><pre><span></span><code>-buildpath: osgi.annotation;version=8.0.0;maven-scope=provided
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

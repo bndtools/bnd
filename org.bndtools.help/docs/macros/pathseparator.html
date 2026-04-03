@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>pathseparator</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>pathseparator</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>pathseparator</code> macro returns the operating system's path separator character used to separate entries in path lists like classpaths.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${pathseparator}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns <code>:</code> (colon) on Unix/Linux/Mac systems</li>
+<li>Returns <code>;</code> (semicolon) on Windows systems</li>
+<li>Returns the value of <code>File.pathSeparator</code> in Java</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get the path separator:</p>
+<div class="highlight"><pre><span></span><code>${pathseparator}
+# Returns: &quot;:&quot; on Unix, &quot;;&quot; on Windows
+</code></pre></div>
+
+<p>Build a path manually:</p>
+<div class="highlight"><pre><span></span><code>classpath=lib/a.jar${pathseparator}lib/b.jar${pathseparator}lib/c.jar
+</code></pre></div>
+
+<p>Use in conditionals:</p>
+<div class="highlight"><pre><span></span><code>${if;${equals;${pathseparator};:};unix;windows}
+</code></pre></div>
+
+<p>Split paths:</p>
+<div class="highlight"><pre><span></span><code>${split;${pathseparator};${some.path}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Determining the platform at build time</li>
+<li>Manual path construction</li>
+<li>Splitting path strings</li>
+<li>Platform-specific logic</li>
+<li>Cross-platform path handling</li>
+<li>Tool configuration</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns a single character: <code>:</code> or <code>;</code></li>
+<li>This is different from the file separator (<code>/</code> or <code>\</code>)</li>
+<li>Used for separating multiple paths (like in CLASSPATH)</li>
+<li>See also: <code>${separator}</code> for the file separator</li>
+<li>See also: <code>${path}</code> which automatically uses the correct separator</li>
+<li>The path separator is determined by the OS running the build</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

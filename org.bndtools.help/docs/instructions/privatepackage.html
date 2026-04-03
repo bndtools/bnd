@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-privatepackage PACKAGE-SPEC</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-privatepackage PACKAGE-SPEC</h1>
+<ul>
+<li>
+<p>Example: <code>-privatepackage: com.example.*, foo.bar</code></p>
+</li>
+<li>
+<p>Values: <code>${packages}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/privatepackage.md -->
+<h1 id="-privatepackage">-privatepackage</h1>
+<p>The <code>-privatepackage</code> instruction specifies packages to include from the class path as private packages. Unlike the <code>Private-Package</code> header, this instruction is not included in the manifest. It is used to control which packages are bundled privately in the output JAR.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-privatepackage: com.example.internal.*
+</code></pre></div>
+
+<p>This instruction is useful for fine-grained control over bundle contents during the build process.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

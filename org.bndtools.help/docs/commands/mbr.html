@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>mbr</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>mbr</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   mbr [options]  ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -j --json ]</code> Output to json instead of human readable when possible</li>
+</ul>
+<h2 id="available-sub-commands">Available sub-commands</h2>
+<ul>
+<li><code>check</code> - For each archive in the index, show the available higher versions </li>
+<li><code>repos</code> - List the repositories in this workspace </li>
+<li><code>update</code> - For each archive in the index, update to a higher version if available in the repository </li>
+<li><code>verify</code> - Verify the repositories, this checks if a GAV is defined in multiple repositories or if there are multiple revisions for the same program </li>
+</ul>
+<h3 id="check">check</h3>
+<p>For each archive in the index, show the available higher versions</p>
+<h4 id="synopsis_1">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   check [options]  &lt;archive-glob...&gt;
+</code></pre></div>
+
+<h5 id="options_1">Options:</h5>
+<ul>
+<li><code>[ -r --repo &lt;[i&gt; ]</code> Select the repositories by index (see list for getting the index)</li>
+<li><code>[ -s --scope &lt;scope&gt; ]</code> Specify the scope of the selected version: all, micro (max), minor (max), major (max)</li>
+<li><code>[ -S --snapshotlike ]</code> Include snapshot like versions like -SNAPSHOT, -rc1, -beta12. These are skipped for updated by default</li>
+</ul>
+<h3 id="repos">repos</h3>
+<p>List the repositories in this workspace</p>
+<h4 id="synopsis_2">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   repos
+</code></pre></div>
+
+<h3 id="update">update</h3>
+<p>For each archive in the index, update to a higher version if available in the repository</p>
+<h4 id="synopsis_3">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   update [options]  &lt;archive-glob...&gt;
+</code></pre></div>
+
+<h5 id="options_2">Options:</h5>
+<ul>
+<li><code>[ -d --dry ]</code> </li>
+<li><code>[ -r --repo &lt;[i&gt; ]</code> Select the repositories by index (see list for getting the index)</li>
+<li><code>[ -s --scope &lt;scope&gt; ]</code> Specify the scope of the selected version: all, micro (max), minor (max), major (max)</li>
+<li><code>[ -S --snapshotlike ]</code> Include snapshot like versions like -SNAPSHOT, -rc1, -beta12. These are skipped for updated by default</li>
+</ul>
+<h3 id="verify">verify</h3>
+<p>Verify the repositories, this checks if a GAV is defined in multiple repositories or if there are multiple revisions for the same program</p>
+<h4 id="synopsis_4">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   verify [options]  &lt;archive-glob...&gt;
+</code></pre></div>
+
+<h5 id="options_3">Options:</h5>
+<ul>
+<li><code>[ -r --repo &lt;[i&gt; ]</code> Select the repositories by index (see list for getting the index)</li>
+</ul>
+</body>
+</html>
