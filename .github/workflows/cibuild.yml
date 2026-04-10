@@ -135,7 +135,7 @@ jobs:
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload P2 Repo artifact
       if: ${{ matrix.reference && github.event_name == 'pull_request' }}
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
         path: |
@@ -172,7 +172,7 @@ jobs:
         JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
     - name: Upload Test Reports
       if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
         path: |
