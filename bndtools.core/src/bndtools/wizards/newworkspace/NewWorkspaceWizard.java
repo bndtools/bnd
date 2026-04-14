@@ -138,8 +138,10 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 		String title = "Install 3rd-Party templates";
 		String message = String.format("Your selection would install %s"
-			+ " templates from 3rd-party authors (including required dependency fragments): %n"
-			+ "%nAre you sure you trust the authors and want to continue fetching the content?", num3rdParty);
+			+ " template fragments from 3rd-party authors (including required dependency fragments): %n"
+			+ "%nThese fragments may contain build instructions (e.g., .bnd files) that are executed with the next build.%n"
+			+ "Only continue if you fully trust the authors and the content.%n%n" + "Do you want to proceed?",
+			num3rdParty);
 		StringBuilder details = new StringBuilder();
 		try (Formatter f = new Formatter(details);) {
 			thirdParty.forEach(ti -> f.format("%n%s - %s (Repo: %s) %n", ti.name(), ti.description(),
