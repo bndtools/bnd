@@ -27,10 +27,11 @@ Official templates from the [bndtools Github organisation](https://github.com/bn
 Non-official templates from 3rd-party authors are shown with a yellow exclamation mark. 
 
 
-> ##### Note: Check templates before installation
-> Make sure you carefully check templates beforehand, since this is content from potentially untrusted sources which is downloaded to your computer.
-> You should double click on an entry to open the Github repostory of that template in your browser. 
-> This allows you to examine the content which is about to be downloaded to your workspace when you press finish. If you select at least one 3rd-Party template a confirmatin popup asks you to confirm, if you trust the authors. 
+> ##### Security Note: Check templates before installation
+> Make sure you carefully check fragment templates (including `required` dependency fragments) beforehand, since this is content from potentially untrusted sources which is downloaded to your computer. These fragments may contain build instructions (e.g., `${system}` macro in `.bnd`, `.bndrun` files) that are executed with the next build.
+> Bnd CLI and bndtools will display a confirmation dialog before installing 3rd-party fragment temmplates.
+> You should double click on an template entry to open the Github repostory of that template in your browser.
+> This allows you to examine the content which is about to be downloaded to your workspace when you press finish.
 {: .block-warning }
 
 The [workspace](/chapters/123-tour-workspace.html) is already prepared for this model of fragments. The [merged instructions][2] mean that 

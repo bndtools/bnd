@@ -201,11 +201,12 @@ public class AddCommands {
 
 		if (!thirdParty.isEmpty()) {
 			bnd.out.format("Your selection would install " + thirdParty.size()
-				+ " fragments from 3rd-party authors (including required dependency fragments): %n");
+				+ " template fragments from 3rd-party authors (including required dependency fragments): %n");
 			showTemplatesFragments(thirdParty);
 
 			boolean confirmed = showConfirmation(
-				"Are you sure you trust the authors and want to continue fetching the content?");
+				"These fragments may contain build instructions (e.g., .bnd files) that are executed with the next build. "
+					+ "Only continue if you fully trust the authors and the content.");
 
 			if (!confirmed) {
 				// not confirmed. cancel selected
@@ -227,7 +228,7 @@ public class AddCommands {
 	private boolean showConfirmation(String question) {
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
-				bnd.out.format("%n%s (yes/no): ", question);
+				bnd.out.format("%n%s%nDo you want to proceed? (yes/no): ", question);
 				String input = scanner.nextLine()
 					.trim()
 					.toLowerCase();
