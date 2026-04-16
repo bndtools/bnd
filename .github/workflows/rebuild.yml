@@ -59,7 +59,7 @@ jobs:
       dist-bundles: Dist_Bundles_JDK${{ matrix.java }}_${{ matrix.os }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176
+      uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
@@ -102,7 +102,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176
+      uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
