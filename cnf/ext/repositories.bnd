@@ -73,7 +73,7 @@ sonatype_bearer: '${env;SONATYPE_BEARER}'
 -plugin.4.ECFRSSDK: \
  	aQute.bnd.repository.p2.provider.P2Repository; \
 	 	tags  = '-'; \
-	 	url = https://download.eclipse.org/rt/ecf/3.16.7/site.p2; \
+	 	url = https://download.eclipse.org/rt/ecf/3.16.8/site.p2; \
 	 	name = ECF Remote Services SDK
 
 -buildrepo: Local
