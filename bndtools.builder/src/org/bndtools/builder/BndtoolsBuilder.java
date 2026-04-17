@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.bndtools.api.BndtoolsConstants;
@@ -182,7 +183,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				if (quickDelta != null && quickDelta.getAffectedChildren().length == 0) {
 					buildLog.full("Quick check: no delta, skipping build");
 					perfLogger.debug("{}: skipped (no changes) in {}ms", myProject.getName(),
-						java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildStart));
+						TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildStart));
 					return null;
 				}
 			}
@@ -194,7 +195,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				Central.bndCall(ws::readLocked, after -> {
 					long lockAcquiredAt = System.nanoTime();
 					perfLogger.debug("{}: lock acquired in {}ms", myProject.getName(),
-						java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(lockAcquiredAt - lockWaitStart));
+						TimeUnit.NANOSECONDS.toMillis(lockAcquiredAt - lockWaitStart));
 
 					if (!model.isValid()) {
 						after.accept("Not a valid project" + model, () -> {
@@ -326,7 +327,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					long buildActionStart = System.nanoTime();
 					File buildFiles[] = model.build();
 					perfLogger.debug("{}: model.build() took {}ms", myProject.getName(),
-						java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildActionStart));
+						TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildActionStart));
 
 					// We can now decorate based on the build we just did.
 					BndProjectInfoAdapter adapter = new BndProjectInfoAdapter(model);
@@ -369,7 +370,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
 		} finally {
 			perfLogger.debug("{}: total build() took {}ms", myProject.getName(),
-				java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildStart));
+				TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildStart));
 			if (buildLog.isActive())
 				logger.logInfo(buildLog.format(), null);
 			listeners.release(myProject);

@@ -106,7 +106,7 @@ public class BuildLogger {
 			topper.format(" in %d.%03d sec", seconds, millis);
 
 			// Always log performance data for builds
-			perfLogger.debug("{} {} {} files={}  duration={}ms", kindStr, name,
+			perfLogger.debug("{} {} {} files={} duration={}ms", kindStr, name,
 				files > 0 ? "built" : "skipped", files, duration);
 		}
 

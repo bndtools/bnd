@@ -1,6 +1,8 @@
 package org.bndtools.builder;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -28,7 +30,7 @@ public class CnfWatcher implements IResourceChangeListener {
 	private static final CnfWatcher				INSTANCE			= new CnfWatcher();
 
 	// Debounce: track whether a cnf refresh job is already scheduled
-	private static final java.util.concurrent.atomic.AtomicBoolean	refreshScheduled	= new java.util.concurrent.atomic.AtomicBoolean();
+	private static final AtomicBoolean	refreshScheduled	= new AtomicBoolean();
 
 	static CnfWatcher install() {
 		ResourcesPlugin.getWorkspace()
@@ -99,7 +101,7 @@ public class CnfWatcher implements IResourceChangeListener {
 							// clear errors/warnings, to avoid re-adding
 							workspace.clear();
 							perfLogger.debug("cnf refresh completed in {}ms, marked {} projects dirty",
-								java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start),
+								TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start),
 								allProjects.size());
 						} catch (Exception e) {
 							return new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID,
