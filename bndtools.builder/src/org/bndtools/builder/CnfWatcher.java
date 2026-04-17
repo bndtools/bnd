@@ -22,8 +22,13 @@ import aQute.bnd.build.Workspace;
 import bndtools.central.Central;
 
 public class CnfWatcher implements IResourceChangeListener {
-	private static final ILogger	logger		= Logger.getLogger(CnfWatcher.class);
-	private static final CnfWatcher	INSTANCE	= new CnfWatcher();
+	private static final ILogger				logger				= Logger.getLogger(CnfWatcher.class);
+	private static final org.slf4j.Logger		perfLogger			= org.slf4j.LoggerFactory
+		.getLogger("bndtools.builder.perf");
+	private static final CnfWatcher				INSTANCE			= new CnfWatcher();
+
+	// Debounce: track whether a cnf refresh job is already scheduled
+	private static final java.util.concurrent.atomic.AtomicBoolean	refreshScheduled	= new java.util.concurrent.atomic.AtomicBoolean();
 
 	static CnfWatcher install() {
 		ResourcesPlugin.getWorkspace()
@@ -70,10 +75,22 @@ public class CnfWatcher implements IResourceChangeListener {
 				.next();
 			DeltaWrapper dw = new DeltaWrapper(p, delta, new BuildLogger(BuildLogger.LOG_NONE, "", 0));
 			if (dw.hasCnfChanged()) {
+				//
+				// Debounce: if a refresh job is already scheduled,
+				// don't schedule another one. This prevents
+				// redundant workspace refreshes when multiple cnf
+				// files change in rapid succession.
+				//
+				if (!refreshScheduled.compareAndSet(false, true)) {
+					perfLogger.debug("cnf change detected but refresh already scheduled, skipping");
+					return;
+				}
+				perfLogger.debug("cnf change detected, scheduling workspace refresh");
 				WorkspaceJob j = new WorkspaceJob("Refreshing workspace for cnf change") {
 					@Override
 					public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
 						try {
+							long start = System.nanoTime();
 							workspace.refresh();
 							BndtoolsBuilder.dirty.addAll(allProjects);
 							MarkerSupport ms = new MarkerSupport(cnfProject);
@@ -81,10 +98,15 @@ public class CnfWatcher implements IResourceChangeListener {
 							ms.setMarkers(workspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
 							// clear errors/warnings, to avoid re-adding
 							workspace.clear();
+							perfLogger.debug("cnf refresh completed in {}ms, marked {} projects dirty",
+								java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start),
+								allProjects.size());
 						} catch (Exception e) {
 							return new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID,
 								"error during workspace refresh",
 								e);
+						} finally {
+							refreshScheduled.set(false);
 						}
 						return Status.OK_STATUS;
 					}

@@ -9,6 +9,7 @@ public class BuildLogger {
 	public static final int		LOG_FULL	= 2;
 	public static final int		LOG_BASIC	= 1;
 	public static final int		LOG_NONE	= 0;
+	private static final org.slf4j.Logger	perfLogger	= org.slf4j.LoggerFactory.getLogger("bndtools.builder.perf");
 	private final int			level;
 	private final String		name;
 	private final int			kind;
@@ -70,24 +71,26 @@ public class BuildLogger {
 
 		StringBuilder top = new StringBuilder().append("BUILD ");
 		try (Formatter topper = new Formatter(top)) {
+			String kindStr;
 			switch (kind) {
 				case IncrementalProjectBuilder.FULL_BUILD :
-					top.append("FULL");
+					kindStr = "FULL";
 					break;
 				case IncrementalProjectBuilder.AUTO_BUILD :
-					top.append("AUTO");
+					kindStr = "AUTO";
 					break;
 				case IncrementalProjectBuilder.CLEAN_BUILD :
-					top.append("CLEAN");
+					kindStr = "CLEAN";
 					break;
 				case IncrementalProjectBuilder.INCREMENTAL_BUILD :
-					top.append("INCREMENTAL");
+					kindStr = "INCREMENTAL";
 					break;
 				default :
-					topper.format("%d", kind);
+					kindStr = Integer.toString(kind);
 					break;
 			}
-			top.append(' ')
+			top.append(kindStr)
+				.append(' ')
 				.append(name)
 				.append(' ');
 			if (files == 1) {
@@ -101,6 +104,10 @@ public class BuildLogger {
 			long seconds = TimeUnit.MILLISECONDS.toSeconds(duration);
 			long millis = duration % TimeUnit.SECONDS.toMillis(1L);
 			topper.format(" in %d.%03d sec", seconds, millis);
+
+			// Always log performance data for builds
+			perfLogger.debug("{} {} {} files={}  duration={}ms", kindStr, name,
+				files > 0 ? "built" : "skipped", files, duration);
 		}
 
 		return top.append('\n')

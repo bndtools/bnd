@@ -18,6 +18,7 @@ import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -70,6 +71,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	static final Set<Project>		dirty		= Collections.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
 	static BndPreferences			prefs		= new BndPreferences();
 
+	private static final org.slf4j.Logger	perfLogger	= org.slf4j.LoggerFactory.getLogger("bndtools.builder.perf");
+
 	static {
 		CnfWatcher.install();
 	}
@@ -93,6 +96,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 
+		long buildStart = System.nanoTime();
 		IProject myProject = getProject();
 		buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), kind);
 
@@ -162,10 +166,36 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 			final Project model = ourModel;
 
+			//
+			// Quick check: for incremental/auto builds, if there is
+			// no delta and the project is not in the dirty set and
+			// this is not a full build, we can skip acquiring the
+			// workspace lock entirely. This avoids lock contention
+			// when many projects are being built but only a few
+			// actually changed.
+			//
+			if (kind != FULL_BUILD && !postponed && !dirty.contains(model)) {
+				IResourceDelta quickDelta = getDelta(myProject);
+				// quickDelta == null means Eclipse doesn't have delta info
+				// and we must do a full build. Only skip when we have a
+				// delta and it shows no affected children.
+				if (quickDelta != null && quickDelta.getAffectedChildren().length == 0) {
+					buildLog.full("Quick check: no delta, skipping build");
+					perfLogger.debug("{}: skipped (no changes) in {}ms", myProject.getName(),
+						java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildStart));
+					return null;
+				}
+			}
+
 			try {
 				markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
 				Workspace ws = model.getWorkspace();
+				long lockWaitStart = System.nanoTime();
 				Central.bndCall(ws::readLocked, after -> {
+					long lockAcquiredAt = System.nanoTime();
+					perfLogger.debug("{}: lock acquired in {}ms", myProject.getName(),
+						java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(lockAcquiredAt - lockWaitStart));
+
 					if (!model.isValid()) {
 						after.accept("Not a valid project" + model, () -> {
 							markers.createMarker(null, IMarker.SEVERITY_ERROR, "Not a valid bnd project",
@@ -175,7 +205,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					}
 
 					boolean force = kind == FULL_BUILD;
-					model.clear();
 					DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
 
 					boolean setupChanged = false;
@@ -189,6 +218,16 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					if (dirty.remove(model) && !setupChanged) {
 						buildLog.basic("project was dirty from a workspace refresh postponed = " + postponed);
 						setupChanged = !postponed;
+					}
+
+					//
+					// Only clear the model's cached state when we know
+					// the setup has changed. Previously model.clear() was
+					// called unconditionally which threw away cached data
+					// even when nothing changed.
+					//
+					if (setupChanged) {
+						model.clear();
 					}
 
 					if (!force && !setupChanged && delta.hasEclipseChanged()) {
@@ -284,7 +323,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						});
 					}
 
+					long buildActionStart = System.nanoTime();
 					File buildFiles[] = model.build();
+					perfLogger.debug("{}: model.build() took {}ms", myProject.getName(),
+						java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildActionStart));
+
 					// We can now decorate based on the build we just did.
 					BndProjectInfoAdapter adapter = new BndProjectInfoAdapter(model);
 					File target = model.getTarget();
@@ -325,6 +368,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
 		} finally {
+			perfLogger.debug("{}: total build() took {}ms", myProject.getName(),
+				java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - buildStart));
 			if (buildLog.isActive())
 				logger.logInfo(buildLog.format(), null);
 			listeners.release(myProject);
