@@ -567,20 +567,25 @@ public class ProjectTest {
 		long firstTimestamp = jarFile.lastModified();
 
 		// Verify digest file was created
-		File digestFile = new File(jarFile.getParentFile(), jarFile.getName() + ".digest");
+		File digestFile = getDigestFile(jarFile);
 		assertTrue(digestFile.isFile(), "Digest file should be created after build");
 		String firstDigest = IO.collect(digestFile)
 			.trim();
 		assertFalse(firstDigest.isEmpty(), "Digest should not be empty");
 
-		// Wait to ensure timestamp would differ if file were rewritten
-		Thread.sleep(1500);
+		// Simulate time passing by adjusting the JAR timestamp backward,
+		// then mark the project as changed. If the optimization works
+		// correctly, the JAR's timestamp will be restored to this value
+		// since the content hasn't changed.
+		long adjustedTimestamp = firstTimestamp - 10000;
+		jarFile.setLastModified(adjustedTimestamp);
 
 		// Mark project as changed so it rebuilds
 		project.setChanged();
 		project.refresh();
 
-		// Second build - content is unchanged, JAR should NOT be rewritten
+		// Second build - content is unchanged, JAR timestamp should be
+		// preserved
 		File[] secondBuild = project.build();
 		assertNotNull(secondBuild);
 		assertTrue(secondBuild.length > 0);
@@ -589,7 +594,7 @@ public class ProjectTest {
 		assertTrue(jarFile2.isFile());
 
 		// The JAR timestamp should be preserved since content didn't change
-		assertEquals(firstTimestamp, jarFile2.lastModified(),
+		assertEquals(adjustedTimestamp, jarFile2.lastModified(),
 			"JAR timestamp should be preserved when content is unchanged");
 
 		// Digest file should still exist with the same content
@@ -613,13 +618,10 @@ public class ProjectTest {
 		File[] firstBuild = project.build();
 		assertNotNull(firstBuild);
 		File jarFile = firstBuild[0];
-		File digestFile = new File(jarFile.getParentFile(), jarFile.getName() + ".digest");
+		File digestFile = getDigestFile(jarFile);
 		assertTrue(digestFile.isFile());
 		String firstDigest = IO.collect(digestFile)
 			.trim();
-
-		// Wait to ensure timestamps differ
-		Thread.sleep(1500);
 
 		// Change the project content so the JAR will be different
 		project.setChanged();
@@ -637,6 +639,10 @@ public class ProjectTest {
 			.trim();
 		assertThat(secondDigest).as("Digest should change when content changes")
 			.isNotEqualTo(firstDigest);
+	}
+
+	private static File getDigestFile(File jarFile) {
+		return new File(jarFile.getParentFile(), jarFile.getName() + ".digest");
 	}
 
 	/**
