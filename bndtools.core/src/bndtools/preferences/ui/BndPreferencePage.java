@@ -24,6 +24,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	public BndPreferencePage() {}
 
 	public static final String		PAGE_ID				= "bndtools.prefPages.basic";
+	public static final String		PAGE_ID_BUILD		= "bndtools.prefPages.build";
 
 	private boolean					noCheckCnf			= false;
 	private boolean					warnExistingLaunch	= true;

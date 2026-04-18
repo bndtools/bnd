@@ -18,7 +18,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -39,6 +42,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.service.JarLifecycleListener;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
@@ -545,6 +549,72 @@ public class ProjectTest {
 		else
 			file.setLastModified(project.lastModified() + 10000);
 	}
+
+	/**
+	 * Verify that JarLifecycleListener plugins are called at the right times.
+	 */
+	@Test
+	public void testJarLifecycleListenerIntegration() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p-stale");
+		assertNotNull(project);
+
+		// Register a mock listener to verify it's called
+		AtomicBoolean beforeCalled = new AtomicBoolean();
+		AtomicBoolean afterCalled = new AtomicBoolean();
+
+		JarLifecycleListener mockListener = new JarLifecycleListener() {
+			@Override
+			public void beforeWrite(Project p, Jar jar, File outputFile, Map<String, Object> context) {
+				beforeCalled.set(true);
+			}
+
+			@Override
+			public void afterWrite(Project p, File outputFile, Jar jar, Map<String, Object> context) {
+				afterCalled.set(true);
+			}
+		};
+
+		ws.addBasicPlugin(mockListener);
+
+		// Build
+		File[] built = project.build();
+		assertNotNull(built);
+		assertThat(built.length).isGreaterThan(0);
+
+		// Verify listeners were called
+		assertThat(beforeCalled).isTrue();
+		assertThat(afterCalled).isTrue();
+	}
+
+	/**
+	 * Verify that the context map is passed correctly and allows data exchange.
+	 */
+	@Test
+	public void testJarArtifactWriteContextDataExchange() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p-stale");
+
+		AtomicReference<String> afterData = new AtomicReference<>();
+
+		JarLifecycleListener testListener = new JarLifecycleListener() {
+			@Override
+			public void beforeWrite(Project p, Jar jar, File outputFile, Map<String, Object> context) {
+				context.put("testKey", "testValue");
+			}
+
+			@Override
+			public void afterWrite(Project p, File outputFile, Jar jar, Map<String, Object> context) {
+				afterData.set((String) context.get("testKey"));
+			}
+		};
+
+		ws.addBasicPlugin(testListener);
+		project.build();
+
+		assertThat(afterData.get()).isEqualTo("testValue");
+	}
+
 
 	/**
 	 * Check multiple repos

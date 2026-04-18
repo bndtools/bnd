@@ -1,5 +1,8 @@
 package bndtools.preferences;
 
+import static bndtools.central.RebuildTriggerPolicy.REBUILDTRIGGERPOLICY_ALWAYS;
+import static bndtools.central.RebuildTriggerPolicy.REBUILDTRIGGERPOLICY_API;
+
 import java.io.Closeable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,6 +50,7 @@ public class BndPreferences {
 	private static final String		PREF_WORKSPACE_TEMPLATE_INDEXES	= "workspaceTemplateIndexes";
 	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
 	private static final String		PREF_PARALLEL					= "parallel";
+	private static final String		PREF_REBUILD_TRIGGER_POLICY		= "rebuildTriggerPolicy";
 
 	static final String				PREF_WORKSPACE_OFFLINE			= "workspaceIsOffline";
 
@@ -69,6 +73,7 @@ public class BndPreferences {
 		store.setDefault(PREF_WORKSPACE_TEMPLATE_INDEXES, FragmentTemplateEngine.DEFAULT_INDEX);
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
 		store.setDefault(PREF_PARALLEL, false);
+		store.setDefault(PREF_REBUILD_TRIGGER_POLICY, REBUILDTRIGGERPOLICY_ALWAYS);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
 		store.setDefault(QuickFixVersioning.PREFERENCE_KEY, QuickFixVersioning.DEFAULT.toString());
 		store.setDefault(PREF_EXPLORER_PROMPT, "");
@@ -332,6 +337,33 @@ public class BndPreferences {
 		return store.getBoolean(PREF_PARALLEL);
 	}
 
+	/**
+	 * Returns the stored rebuild trigger policy preference.
+	 *
+	 * @return the stored policy string; defaults to {@code "always"}.
+	 */
+	public String getRebuildTriggerPolicy() {
+		return store.getString(PREF_REBUILD_TRIGGER_POLICY);
+	}
+
+	/**
+	 * Sets the rebuild trigger policy.
+	 *
+	 * @param policy the policy to use; accepted values are {@code "always"}
+	 *            (rebuild on every change), {@code "api"} (skip rebuild when
+	 *            only non-API changes are detected), or Any other non-empty
+	 *            value is stored as-is but treated as {@code "always"} by the
+	 *            build infrastructure.
+	 */
+	public void setRebuildTriggerPolicy(String policy) {
+		String normalized = REBUILDTRIGGERPOLICY_API.equals(policy) ? policy : REBUILDTRIGGERPOLICY_ALWAYS;
+		store.setValue(PREF_REBUILD_TRIGGER_POLICY, normalized);
+
+		Workspace ws = Central.getWorkspaceIfPresent();
+		if (ws != null) {
+			Central.applyRebuildTriggerPolicy(ws);
+		}
+	}
 
 	public Closeable onString(String key, Consumer<String> listener) {
 		IPropertyChangeListener l = e -> {

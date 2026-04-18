@@ -95,6 +95,7 @@ import aQute.bnd.service.BndListener;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.Deploy;
+import aQute.bnd.service.JarLifecycleListener;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
@@ -2103,8 +2104,21 @@ public class Project extends Processor {
 	private File saveBuildWithoutClose(Jar jar) throws Exception {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
 
+		// Notify BEFORE listeners
+		List<JarLifecycleListener> listeners = getPlugins(JarLifecycleListener.class);
+		Map<String, Object> context = null;
+		if (!listeners.isEmpty()) {
+			context = new HashMap<String, Object>();
+			beforeJarWrite(jar, outputFile, context, listeners);
+		}
+
 		reportNewer(outputFile.lastModified(), jar);
 		File logicalFile = write(jar::write, outputFile);
+
+		// Notify AFTER listeners
+		if (!listeners.isEmpty()) {
+			afterJarWrite(this, outputFile, jar, context, listeners);
+		}
 
 		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
 			.size());
@@ -2133,6 +2147,31 @@ public class Project extends Processor {
 			getWorkspace().changedFile(canonical);
 		}
 		return logicalFile;
+	}
+
+	private void beforeJarWrite(Jar jar, File outputFile, Map<String, Object> context,
+		List<JarLifecycleListener> listeners) throws Exception {
+
+		for (JarLifecycleListener listener : listeners) {
+			try {
+				listener.beforeWrite(this, jar, outputFile, context);
+			} catch (Exception e) {
+				logger.debug("Exception in JarLifecycleListener.beforeWrite", e);
+			}
+		}
+	}
+
+	private void afterJarWrite(Project project, File outputFile, Jar jar, Map<String, Object> context,
+		List<JarLifecycleListener> listeners)
+		throws Exception {
+
+		for (JarLifecycleListener listener : listeners) {
+			try {
+				listener.afterWrite(project, outputFile, jar, context);
+			} catch (Exception e) {
+				logger.debug("Exception in JarArtifactLifecycleListener.afterJarWrite", e);
+			}
+		}
 	}
 
 	private File write(ConsumerWithException<File> jar, File outputFile)

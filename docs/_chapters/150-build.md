@@ -9,9 +9,9 @@ This chapter lays out the rules of the file system for bnd projects. It discusse
 ## Workspace
 A Workspace is a single directory with all its sub-directories and their files, similar to a git workspace. The core idea of the workspace is that it is easy to move around, that is, it allows the use of relative file names. It also prevents a lot of potential problems that occur when you allow projects to be anywhere on the file system. KISS!
 
-Workspaces should be named according to the bundle symbolic names of its projects. Using such a naming strategy will simplify finding the correct namespace given a bundle symbolic name. 
+Workspaces should be named according to the bundle symbolic names of its projects. Using such a naming strategy will simplify finding the correct namespace given a bundle symbolic name.
 
-A bndlib workspace is a _valid_ workspace when it contains a `cnf` file. If this is a text file, its content is read and interpreted as a path to the `cnf` directory (which can again be a path to a cnf directory, ad infinitum). The retrieved path is trimmed after which it is resolved relative to its parent directory.   
+A bndlib workspace is a _valid_ workspace when it contains a `cnf` file. If this is a text file, its content is read and interpreted as a path to the `cnf` directory (which can again be a path to a cnf directory, ad infinitum). The retrieved path is trimmed after which it is resolved relative to its parent directory.
 
 However, the advised model is to use a directory with a `cnf/build.bnd` file. The purpose of the `cnf` directory is to provide a place for shared information. Though this includes bndlib setup information, it also can be used to define for example shared licensing, copyright, and vendor headers for your organization.
 
@@ -21,7 +21,7 @@ The `cnf` directory can have an `ext` directory. Files in this directory are add
 of the workspace. They can have the following extensions:
 
 * `.bnd` – Contain bnd properties
-* `.pmvn` – An index file for a [Maven Bnd Repository](/plugins/maven.html). The first lines can contain properties for this plugin in the format of `# key = value`, e.g. `# name = OSGi R8`. 
+* `.pmvn` – An index file for a [Maven Bnd Repository](/plugins/maven.html). The first lines can contain properties for this plugin in the format of `# key = value`, e.g. `# name = OSGi R8`.
 * `.pobr` – An OSGi Repository file in XML.
 
 #### Automatically registering repositories
@@ -44,7 +44,7 @@ The `ext` directory is a convenient way to add add reusable components. See [tem
 
 ### The cnf/cache directory
 
-To cache some intermediate files, bndlib will create a `cnf/cache/` directory, this file should not be under source control. E.g. in Git it should be defined in the `.gitignore` file. 
+To cache some intermediate files, bndlib will create a `cnf/cache/` directory, this file should not be under source control. E.g. in Git it should be defined in the `.gitignore` file.
 
 ### Folder structure
 
@@ -57,7 +57,7 @@ Overall, this gives us the following layout for a workspace:
 	    build.bnd                       organization setup
 	    plugins/                        directory for plugins
 	    cache/                          bnd cache directory, should not be saved in an scm
-	  com.acme.prime.speaker/           project directory	  
+	  com.acme.prime.speaker/           project directory
 
 The root of the workspace is generally used to hold other files. For example the `.git` directory for Git, or gradle and ant files for continuous integration. However, designers that add functionality to the workspace should strive to minimize the clutter in the root. For example, the bnd gradle support adds a few files to the root but these link to a `cnf/gradle` directory for their actual content.
 
@@ -91,7 +91,7 @@ testbin                 ${target-dir}/test-classes
 This example configuration, placed in `cnf/build.bnd` means:
 
 - eclipse build puts the build output directly into  the `generated` folder of each project.
-- gradle build puts the build outputs in `generated/gradle`. 
+- gradle build puts the build outputs in `generated/gradle`.
 
 ### Extension Files
 
@@ -103,12 +103,12 @@ For example, the Maven plugin that is built-in to bndlib has an extension file c
 	# Plugin maven setup
 	#
 	-plugin.maven = aQute.bnd.plugin.maven.MavenPlugin
-	
-	
+
+
 	#
 	# Change disk layout to fit maven
 	#
-	
+
 	-outputmask = ${@bsn}-${versionmask;===S;${@version}}.jar
 	src=src/main/java
 	bin=target/classes
@@ -134,7 +134,7 @@ After reading the extension files, bndlib reads the `cnf/build.bnd` file, this f
 
 ### Workspace Plugins
 
-A _plugin_ is a piece of code that runs inside bnd. The workspace provides a number of standard built-in plugins like an Executor, a Randum number generator, itself, etc. Additional plugins can be added with the `-plugin.*` instructions.  
+A _plugin_ is a piece of code that runs inside bnd. The workspace provides a number of standard built-in plugins like an Executor, a Randum number generator, itself, etc. Additional plugins can be added with the `-plugin.*` instructions.
 
 ## Project Properties
 There are a number of built in properties that are set by bnd:
