@@ -10,7 +10,7 @@ https://github.com/bndtools/bnd/releases/latest
 
 # bnd & bndtools 
 
-Bnd/Bndtools is a swiss army knife for OSGi. It creates manifest headers for you based on analyzing the class code, it verifies your settings, it manages project dependencies, diffs jars, and much more. At the core is a library with all the functions. The library is then used in a myriad of subsystems to provide the core functionality to the rest of the world.
+Bnd/Bndtools is a swiss army knife for OSGi. It creates manifest headers for you based on analyzing the class code, it verifies your settings, it manages project dependencies, diffs jars, and much more. At the core is a library with all the functions (see our [bnd cheatsheet](https://github.com/bndtools/workspace-templates/blob/master/cheatsheet/org.bndtools.cheatsheet/bnd.bnd)). The library is then used in a myriad of subsystems to provide the core functionality to the rest of the world.
 
 * [bndlib and friends](https://bnd.bndtools.org) – The core library plus repository, resolve, etc.
 * [maven plugins](maven-plugins/README.md) – A full set of maven plugins that make bnd useful for maven users
