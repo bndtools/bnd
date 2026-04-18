@@ -3832,104 +3832,153 @@ public class Project extends Processor {
 
 	}
 
+	/**
+	 * Encapsulates the logic for determining whether a built artifact (JAR)
+	 * should retain its existing filesystem timestamp after a rebuild.
+	 * <p>
+	 * This is used to avoid unnecessary downstream rebuilds in systems that
+	 * rely on timestamp-based staleness checks. Instead of always updating the
+	 * output file timestamp, this policy compares digests of the newly built
+	 * artifact against previously stored values.
+	 * </p>
+	 * <h2>Supported policies</h2>
+	 * <ul>
+	 * <li><b>always</b> – Always treat the build as changed. The output file
+	 * receives a new timestamp.</li>
+	 * <li><b>api</b> – Preserve the timestamp when either:
+	 * <ul>
+	 * <li>The full content digest is unchanged (byte-identical JAR), or</li>
+	 * <li>The public API surface is unchanged, even if implementation details
+	 * differ.</li>
+	 * </ul>
+	 * </li>
+	 * </ul>
+	 * <p>
+	 * The API-based optimization helps prevent rebuild cascades in dependent
+	 * projects when only internal implementation changes occur.
+	 * </p>
+	 */
 	static class BuildChangePolicy {
 
+		private static final String ALWAYS = "always";
+
+		/**
+		 * Result of evaluating the build change policy.
+		 * <p>
+		 * This record contains both the decision (whether to preserve the
+		 * timestamp) and the computed digest values needed for persisting state
+		 * for future builds.
+		 * </p>
+		 *
+		 * @param preserveTimestamp The timestamp to restore on the output file,
+		 *            or {@code 0} if the file should receive a new timestamp.
+		 * @param contentDigestFile The file used to store the content digest,
+		 *            or {@code null} if not applicable.
+		 * @param newContentDigestHex The newly computed content digest
+		 *            (hex-encoded), or {@code null} if not computed.
+		 * @param apiDigestFile The file used to store the API digest, or
+		 *            {@code null} if not applicable.
+		 * @param newApiDigestHex The newly computed API digest (hex-encoded),
+		 *            or {@code null} if not computed.
+		 */
 		record BuildChangePolicyResult(long preserveTimestamp, File contentDigestFile, String newContentDigestHex,
-			File apiDigestFile, String newApiDigestHex) {}
+			File apiDigestFile, String newApiDigestHex) {
 
+			static final BuildChangePolicyResult REBUILD_ALWAYS = new BuildChangePolicyResult(0, null, null, null, null);
+		}
+
+		/**
+		 * Applies the configured build change policy to determine whether the
+		 * output file's timestamp should be preserved.
+		 * <p>
+		 * Depending on the selected policy, this method may compute one or both
+		 * of the following:
+		 * </p>
+		 * <ul>
+		 * <li>A <b>content digest</b> — a stable hash of the entire JAR
+		 * contents.</li>
+		 * <li>An <b>API digest</b> — a hash of the exported public/protected
+		 * API surface.</li>
+		 * </ul>
+		 * <p>
+		 * The method attempts to reuse previously stored digests (if present)
+		 * to detect whether the newly built artifact is equivalent to the
+		 * previous one, either byte-for-byte or at the API level.
+		 * </p>
+		 * <p>
+		 * The returned {@link BuildChangePolicyResult} contains both the
+		 * decision (timestamp preservation) and the newly computed digest
+		 * values, which callers are expected to persist for future comparisons.
+		 * </p>
+		 * <h3>Behavior summary</h3>
+		 * <ul>
+		 * <li>If policy is {@code "always"}, no comparison is performed and the
+		 * output is treated as changed.</li>
+		 * <li>If the output file does not yet exist, it is treated as a new
+		 * build.</li>
+		 * <li>If the content digest matches the previous build, the timestamp
+		 * is preserved.</li>
+		 * <li>If the policy allows API comparison and the API digest matches,
+		 * the timestamp is also preserved.</li>
+		 * <li>Otherwise, the output file receives a new timestamp.</li>
+		 * </ul>
+		 *
+		 * @param proc The processor providing configuration (notably the
+		 *            {@code -buildchangepolicy} setting).
+		 * @param jar The newly built JAR to analyze.
+		 * @param outputFile The output file whose timestamp may be preserved.
+		 * @return a {@link BuildChangePolicyResult} describing the preservation
+		 *         decision and the computed digest values
+		 */
 		BuildChangePolicyResult doBuildChangePolicy(Processor proc, Jar jar, File outputFile) {
-
-			//
-			// Timestamp preservation optimization: we compute two digests of
-			// the JAR and compare with previously stored values to decide
-			// whether to preserve the output file's timestamp.
-			//
-			// 1. Content digest — a timeless hash of all JAR content. If
-			// unchanged, the JAR is byte-identical and we always preserve
-			// the timestamp (e.g. only a comment in the source changed
-			// and the compiler produced the same bytecode).
-			//
-			// 2. API digest — a hash of the exported API surface
-			// (public/protected types and members in exported packages).
-			// If the content changed but the API didn't (e.g. a method
-			// body was modified without changing its signature), we still
-			// preserve the timestamp. This prevents unnecessary rebuild
-			// cascades in dependent projects whose staleness check is
-			// timestamp-based, since dependents only care about the
-			// public API contract.
-			//
-
-			// values
-			// always = always treat rebuild as changed
-			// api = preserve on identical content or unchanged API
-			String buildChangePolicy = proc.get(Constants.BUILDCHANGEPOLICY, "always");
-			if ("always".equals(buildChangePolicy)) {
-				// default behavior
-				return new BuildChangePolicyResult(0, null, null, null, null);
+			String buildChangePolicy = proc.get(Constants.BUILDCHANGEPOLICY, ALWAYS);
+			if (ALWAYS.equals(buildChangePolicy)) {
+				return BuildChangePolicyResult.REBUILD_ALWAYS;
 			}
 
 			File contentDigestFile = getContentDigestFile(outputFile);
-			File apiDigestFile = getApiDigestFile(outputFile);
 			String newContentDigestHex = calcContentDigest(jar);
-			String newApiDigestHex = calcApiDigest(jar);
-			long preserveTimestamp = calcPreserveTimestamp(outputFile, contentDigestFile, newContentDigestHex,
-				apiDigestFile, newApiDigestHex);
 
-			return new BuildChangePolicyResult(preserveTimestamp, contentDigestFile, newContentDigestHex, apiDigestFile,
+			// Fast path: no existing output means nothing to preserve.
+			if (!outputFile.isFile()) {
+				return new BuildChangePolicyResult(0, contentDigestFile, newContentDigestHex, null, null);
+			}
+
+			long existingTimestamp = outputFile.lastModified();
+
+			// Check 1: byte-identical content -> preserve immediately.
+			if (digestMatches(contentDigestFile, newContentDigestHex, outputFile, "stored content digest")) {
+				return new BuildChangePolicyResult(existingTimestamp, contentDigestFile, newContentDigestHex, null,
+					null);
+			}
+
+			// Check 2: compute API digest
+			File apiDigestFile = getApiDigestFile(outputFile);
+			String newApiDigestHex = calcApiDigest(jar);
+
+			if (digestMatches(apiDigestFile, newApiDigestHex, outputFile, "stored API digest")) {
+				logger.debug("Content changed but API unchanged for {} — preserving timestamp", outputFile.getName());
+				return new BuildChangePolicyResult(existingTimestamp, contentDigestFile, newContentDigestHex,
+					apiDigestFile, newApiDigestHex);
+			}
+
+			return new BuildChangePolicyResult(0, contentDigestFile, newContentDigestHex, apiDigestFile,
 				newApiDigestHex);
 
 		}
 
-		/**
-		 * Determine whether we should preserve the output file's existing
-		 * timestamp. We preserve it (return the old timestamp) when:
-		 * <ol>
-		 * <li>The full content digest is unchanged (byte-identical JAR),
-		 * or</li>
-		 * <li>The content changed but the exported API digest is unchanged
-		 * (only internal implementation details differ — dependents don't need
-		 * to rebuild).</li>
-		 * </ol>
-		 *
-		 * @return the timestamp to restore, or 0 if the file should get a new
-		 *         timestamp
-		 */
-		private long calcPreserveTimestamp(File outputFile, File digestFile, String newDigestHex, File apiDigestFile,
-			String newApiDigestHex) {
-			if (!outputFile.isFile()) {
-				return 0;
+		private boolean digestMatches(File digestFile, String newDigestHex, File outputFile, String digestDescription) {
+			if (newDigestHex == null || !digestFile.isFile()) {
+				return false;
 			}
-			long existingTimestamp = outputFile.lastModified();
-
-			// Check 1: full content digest unchanged -> preserve
-			if (newDigestHex != null && digestFile.isFile()) {
-				try {
-					String oldDigestHex = IO.collect(digestFile)
-						.trim();
-					if (newDigestHex.equals(oldDigestHex)) {
-						return existingTimestamp;
-					}
-				} catch (Exception e) {
-					logger.debug("Failed to read stored digest for {}", outputFile.getName(), e);
-				}
+			try {
+				String oldDigestHex = IO.collect(digestFile)
+					.trim();
+				return newDigestHex.equals(oldDigestHex);
+			} catch (Exception e) {
+				logger.debug("Failed to read {} for {}", digestDescription, outputFile.getName(), e);
+				return false;
 			}
-
-			// Check 2: content changed, but API surface unchanged -> preserve
-			if (newApiDigestHex != null && apiDigestFile.isFile()) {
-				try {
-					String oldApiDigestHex = IO.collect(apiDigestFile)
-						.trim();
-					if (newApiDigestHex.equals(oldApiDigestHex)) {
-						logger.debug("Content changed but API unchanged for {} — preserving timestamp",
-							outputFile.getName());
-						return existingTimestamp;
-					}
-				} catch (Exception e) {
-					logger.debug("Failed to read stored API digest for {}", outputFile.getName(), e);
-				}
-			}
-
-			return 0;
 		}
 
 		private String calcContentDigest(Jar jar) {
