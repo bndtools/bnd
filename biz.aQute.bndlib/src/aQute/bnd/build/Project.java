@@ -2086,29 +2086,8 @@ public class Project extends Processor {
 		// after writing. This prevents unnecessary rebuild cascades in
 		// dependent projects whose staleness check is timestamp-based.
 		//
-		String newDigestHex = null;
-		long preserveTimestamp = 0;
-		try {
-			byte[] digest = jar.getTimelessDigest();
-			if (digest != null) {
-				newDigestHex = Hex.toHexString(digest);
-			}
-		} catch (Exception e) {
-			logger.debug("Failed to compute timeless digest for {}", jar.getName(), e);
-		}
-
-		if (newDigestHex != null && outputFile.isFile() && digestFile.isFile()) {
-			try {
-				String oldDigestHex = IO.collect(digestFile)
-					.trim();
-				if (newDigestHex.equals(oldDigestHex)) {
-					// Content unchanged — record the old timestamp to restore
-					preserveTimestamp = outputFile.lastModified();
-				}
-			} catch (Exception e) {
-				logger.debug("Failed to read stored digest for {}, proceeding with write", outputFile.getName(), e);
-			}
-		}
+		String newDigestHex = calcDigest(jar);
+		long preserveTimestamp = calcPreserveTimestamp(outputFile, digestFile, newDigestHex);
 
 		reportNewer(outputFile.lastModified(), jar);
 		File logicalFile = write(jar::write, outputFile);
@@ -2157,6 +2136,36 @@ public class Project extends Processor {
 			getWorkspace().changedFile(canonical);
 		}
 		return logicalFile;
+	}
+
+	private long calcPreserveTimestamp(File outputFile, File digestFile, String newDigestHex) {
+		long preserveTimestamp = 0;
+		if (newDigestHex != null && outputFile.isFile() && digestFile.isFile()) {
+			try {
+				String oldDigestHex = IO.collect(digestFile)
+					.trim();
+				if (newDigestHex.equals(oldDigestHex)) {
+					// Content unchanged — record the old timestamp to restore
+					preserveTimestamp = outputFile.lastModified();
+				}
+			} catch (Exception e) {
+				logger.debug("Failed to read stored digest for {}, proceeding with write", outputFile.getName(), e);
+			}
+		}
+		return preserveTimestamp;
+	}
+
+	private String calcDigest(Jar jar) {
+		String newDigestHex = null;
+		try {
+			byte[] digest = jar.getTimelessDigest();
+			if (digest != null) {
+				newDigestHex = Hex.toHexString(digest);
+			}
+		} catch (Exception e) {
+			logger.debug("Failed to compute timeless digest for {}", jar.getName(), e);
+		}
+		return newDigestHex;
 	}
 
 	private File write(ConsumerWithException<File> jar, File outputFile)
@@ -3300,7 +3309,7 @@ public class Project extends Processor {
 				.stream()
 				.mapToInt(arg -> arg.length() + 3) // +1 for space, +2 for potential quotes
 				.sum();
-			
+
 			// Windows command line limit is ~8191 characters
 			// Use arg file if we're getting close (allow some margin)
 			if (cmdLineLength > 6000) {
@@ -3333,7 +3342,7 @@ public class Project extends Processor {
 	private File createJavacArgumentFile(Command javac) throws Exception {
 		File argFile = IO.createTempFile(getTarget(), "javac-args", ".txt");
 		List<String> args = javac.getArguments();
-		
+
 		try (PrintWriter writer = new PrintWriter(argFile, "UTF-8")) {
 			// Skip the first argument (javac executable path)
 			for (int i = 1; i < args.size(); i++) {
@@ -3347,7 +3356,7 @@ public class Project extends Processor {
 				writer.println(arg);
 			}
 		}
-		
+
 		return argFile;
 	}
 
