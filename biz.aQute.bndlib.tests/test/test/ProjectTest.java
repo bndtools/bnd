@@ -693,7 +693,7 @@ public class ProjectTest {
 		// but we can verify the infrastructure is correctly wired:
 		// the API digest file should remain from the first build if no
 		// new one is computed.
-		File apiDigestFile = Project.getApiDigestFile(jarFile);
+		File apiDigestFile = new File(jarFile.getParentFile(), jarFile.getName() + ".api-digest");
 
 		// Change the project content so the JAR will differ
 		project.setChanged();

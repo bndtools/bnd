@@ -104,10 +104,10 @@ import aQute.bnd.service.Scripter;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
+import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
-import aQute.bnd.service.diff.Tree;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -2014,7 +2014,7 @@ public class Project extends Processor {
 						removed.removeAll(buildFilesSet);
 						for (File remove : removed) {
 							IO.delete(remove);
-							IO.delete(new File(remove.getParentFile(), remove.getName() + ".digest"));
+							IO.delete(getDigestFile(remove));
 							IO.delete(getApiDigestFile(remove));
 							getWorkspace().changedFile(remove);
 						}
@@ -2081,7 +2081,7 @@ public class Project extends Processor {
 
 	private File saveBuildWithoutClose(Jar jar) throws Exception {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
-		File digestFile = new File(outputFile.getParentFile(), outputFile.getName() + ".digest");
+		File digestFile = getDigestFile(outputFile);
 		File apiDigestFile = getApiDigestFile(outputFile);
 
 		//
@@ -2165,6 +2165,8 @@ public class Project extends Processor {
 		}
 		return logicalFile;
 	}
+
+
 
 	/**
 	 * Determine whether we should preserve the output file's existing
@@ -2282,10 +2284,11 @@ public class Project extends Processor {
 		}
 	}
 
-	/**
-	 * Get the API digest file for a given build output file.
-	 */
-	public static File getApiDigestFile(File outputFile) {
+	private static File getDigestFile(File outputFile) {
+		return new File(outputFile.getParentFile(), outputFile.getName() + ".digest");
+	}
+
+	private static File getApiDigestFile(File outputFile) {
 		return new File(outputFile.getParentFile(), outputFile.getName() + ".api-digest");
 	}
 
