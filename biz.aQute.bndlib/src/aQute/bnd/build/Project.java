@@ -2121,12 +2121,18 @@ public class Project extends Processor {
 	}
 
 	private void persistBuildChangePolicyResult(File outputFile, RebuildTriggerPolicyResult result) {
+		if (RebuildTriggerPolicy.ALWAYS.equals(get(Constants.REBUILDTRIGGERPOLICY, RebuildTriggerPolicy.ALWAYS))) {
+			// do not store any .digest files by default
+			// to avoid polluting / confusing existing projects
+			return;
+		}
+
 		// Store the content digest for future comparisons
 		if (result.newContentDigestHex() != null) {
 			try {
 				IO.store(result.newContentDigestHex(), result.contentDigestFile());
 			} catch (Exception e) {
-				logger.debug("Failed to store digest for {}", outputFile.getName(), e);
+				logger.debug("Failed to store content digest for {}", outputFile.getName(), e);
 			}
 		}
 
@@ -2143,7 +2149,7 @@ public class Project extends Processor {
 		// to prevent downstream cascade rebuilds
 		if (result.preserveTimestamp() > 0) {
 			outputFile.setLastModified(result.preserveTimestamp());
-			logger.debug("Preserved timestamp of {} (digest {}, apiDigest {})", outputFile.getName(),
+			logger.debug("Preserved timestamp of {} (content digest {}, apiDigest {})", outputFile.getName(),
 				result.newContentDigestHex(), result.newApiDigestHex());
 		}
 	}
