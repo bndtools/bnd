@@ -16,6 +16,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.ProjectBuilder.ArtifactInfoImpl;
 import aQute.bnd.build.ProjectBuilder.BuildInfoImpl;
+import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
@@ -105,6 +107,8 @@ import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.diff.Type;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -1815,7 +1819,19 @@ public class Project extends Processor {
 			}
 			for (File f : deps) {
 				if (buildTime < f.lastModified()) {
-					return true;
+					//
+					// The dependency's build file is newer than our
+					// build, but check if its exported API actually
+					// changed. If the API is unchanged, we don't need
+					// to rebuild — only internal implementation
+					// details changed.
+					//
+					if (hasDependencyApiChanged(f)) {
+						return true;
+					}
+					logger.debug(
+						"Dependency {} is newer but API unchanged, skipping rebuild of {}",
+						f.getName(), getName());
 				}
 			}
 		}
@@ -2012,6 +2028,7 @@ public class Project extends Processor {
 						for (File remove : removed) {
 							IO.delete(remove);
 							IO.delete(new File(remove.getParentFile(), remove.getName() + ".digest"));
+							IO.delete(getApiDigestFile(remove));
 							getWorkspace().changedFile(remove);
 						}
 					}
@@ -2034,6 +2051,10 @@ public class Project extends Processor {
 				}
 				bfs = null; // avoid delete in finally block
 				builtFiles(buildFilesSet);
+
+				// Record the API digests of our dependencies so we can
+				// detect API-only changes in isStale()
+				saveDependencyApiDigests();
 
 				return files = buildFilesSet.toArray(new File[0]);
 			} finally {
@@ -2109,6 +2130,22 @@ public class Project extends Processor {
 				newDigestHex);
 		}
 
+		//
+		// API signature digest: compute a hash of just the exported API
+		// surface (public/protected types and members in exported
+		// packages). This allows dependent projects to skip rebuilding
+		// when only internal implementation details changed.
+		//
+		File apiDigestFile = getApiDigestFile(outputFile);
+		String newApiDigestHex = calcApiDigest(jar);
+		if (newApiDigestHex != null) {
+			try {
+				IO.store(newApiDigestHex, apiDigestFile);
+			} catch (Exception e) {
+				logger.debug("Failed to store API digest for {}", outputFile.getName(), e);
+			}
+		}
+
 		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
 			.size());
 		//
@@ -2166,6 +2203,134 @@ public class Project extends Processor {
 			logger.debug("Failed to compute timeless digest for {}", jar.getName(), e);
 		}
 		return newDigestHex;
+	}
+
+	/**
+	 * Compute a digest of the exported API surface of the JAR. This captures
+	 * the public/protected types, methods, and fields in exported packages.
+	 * Internal implementation changes that don't affect the exported API will
+	 * produce the same digest, allowing dependent projects to skip rebuilding.
+	 *
+	 * @param jar the built JAR to analyze
+	 * @return hex-encoded SHA-1 digest of the API surface, or null on failure
+	 */
+	private String calcApiDigest(Jar jar) {
+		try {
+			Manifest manifest = jar.getManifest();
+			if (manifest == null) {
+				return null;
+			}
+			String exportPackage = manifest.getMainAttributes()
+				.getValue(Constants.EXPORT_PACKAGE);
+			if (exportPackage == null || exportPackage.isEmpty()) {
+				return null;
+			}
+			Tree tree = new DiffPluginImpl().tree(jar);
+			Tree apiTree = tree.get("<api>");
+			if (apiTree == null) {
+				return null;
+			}
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			digestTree(md, apiTree);
+			return Hex.toHexString(md.digest());
+		} catch (Exception e) {
+			logger.debug("Failed to compute API digest for {}", jar.getName(), e);
+			return null;
+		}
+	}
+
+	/**
+	 * Recursively feed the tree's type and name into the digest. Children are
+	 * already sorted in the Element constructor, so the digest is
+	 * deterministic.
+	 */
+	private void digestTree(MessageDigest md, Tree tree) {
+		md.update(tree.getType()
+			.name()
+			.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+		md.update((byte) ':');
+		md.update(tree.getName()
+			.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+		md.update((byte) '\n');
+		for (Tree child : tree.getChildren()) {
+			digestTree(md, child);
+		}
+	}
+
+	/**
+	 * Get the API digest file for a given build output file.
+	 */
+	public static File getApiDigestFile(File outputFile) {
+		return new File(outputFile.getParentFile(), outputFile.getName() + ".api-digest");
+	}
+
+	private static final String DEPS_API_DIGESTS = "deps-api-digests";
+
+	/**
+	 * Save the current API digests of all dependency build files so we can
+	 * detect whether a dependency's exported API changed between builds.
+	 */
+	private void saveDependencyApiDigests() {
+		try {
+			Properties props = new Properties();
+			for (Project dependency : getDependson()) {
+				if (dependency == this || dependency.isNoBundles()) {
+					continue;
+				}
+				File[] deps = dependency.getBuildFiles(false);
+				if (deps == null) {
+					continue;
+				}
+				for (File f : deps) {
+					File apiDigestFile = getApiDigestFile(f);
+					if (apiDigestFile.isFile()) {
+						String apiDigest = IO.collect(apiDigestFile)
+							.trim();
+						props.setProperty(IO.absolutePath(f), apiDigest);
+					}
+				}
+			}
+			File depsFile = new File(getTarget(), DEPS_API_DIGESTS);
+			try (java.io.OutputStream out = IO.outputStream(depsFile)) {
+				props.store(out, null);
+			}
+		} catch (Exception e) {
+			logger.debug("Failed to save dependency API digests for {}", this, e);
+		}
+	}
+
+	/**
+	 * Check if a dependency's exported API has changed since our last build.
+	 * Returns true if the API changed or if we can't determine.
+	 *
+	 * @param depFile the dependency's build file
+	 * @return true if the API has changed or is unknown, false if unchanged
+	 */
+	private boolean hasDependencyApiChanged(File depFile) {
+		try {
+			File depsFile = new File(getTarget(), DEPS_API_DIGESTS);
+			if (!depsFile.isFile()) {
+				return true;
+			}
+			Properties props = new Properties();
+			try (InputStream in = IO.stream(depsFile)) {
+				props.load(in);
+			}
+			String savedDigest = props.getProperty(IO.absolutePath(depFile));
+			if (savedDigest == null) {
+				return true;
+			}
+			File apiDigestFile = getApiDigestFile(depFile);
+			if (!apiDigestFile.isFile()) {
+				return true;
+			}
+			String currentDigest = IO.collect(apiDigestFile)
+				.trim();
+			return !savedDigest.equals(currentDigest);
+		} catch (Exception e) {
+			logger.debug("Failed to check dependency API digest for {}", depFile, e);
+			return true;
+		}
 	}
 
 	private File write(ConsumerWithException<File> jar, File outputFile)

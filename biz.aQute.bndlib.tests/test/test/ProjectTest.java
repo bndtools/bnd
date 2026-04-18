@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -643,6 +645,66 @@ public class ProjectTest {
 
 	private static File getDigestFile(File jarFile) {
 		return new File(jarFile.getParentFile(), jarFile.getName() + ".digest");
+	}
+
+	/**
+	 * Check that isStale() skips rebuild of a dependent project when
+	 * a dependency's JAR is newer but its exported API digest is unchanged.
+	 * This is the Level 2 optimization: internal implementation changes
+	 * don't trigger cascading rebuilds of consumers.
+	 */
+	@Test
+	public void testApiDigestSkipsStaleDependency() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project top = ws.getProject("p-stale");
+		assertNotNull(top);
+		Project bottom = ws.getProject("p-stale-dep");
+		assertNotNull(bottom);
+
+		// Build both projects
+		bottom.build();
+		top.build();
+
+		// Make top's build files look up-to-date
+		stale(top, false);
+
+		// Make bottom's build files look newer (simulates dependency rebuild)
+		stale(bottom, false);
+		File depFile = bottom.getBuildFiles(false)[0];
+		// Make dep newer than top's build time
+		depFile.setLastModified(System.currentTimeMillis() + 20000);
+
+		// Without API digest files, top should be stale (conservative)
+		assertTrue(top.isStale(),
+			"Should be stale when dependency is newer and no API digest exists");
+
+		// Now simulate having API digest files: create matching ones
+		String fakeApiDigest = "abc123def456";
+
+		// Write the dependency's API digest sidecar
+		File apiDigestFile = Project.getApiDigestFile(depFile);
+		IO.store(fakeApiDigest, apiDigestFile);
+
+		// Write the saved dependency API digests file in top's target
+		// (this records what top saw from its deps at last build time)
+		Properties savedDigests = new Properties();
+		savedDigests.setProperty(IO.absolutePath(depFile), fakeApiDigest);
+		File depsApiDigestsFile = new File(top.getTarget(), "deps-api-digests");
+		try (OutputStream out = IO.outputStream(depsApiDigestsFile)) {
+			savedDigests.store(out, null);
+		}
+
+		// Now top should NOT be stale because the dependency's API
+		// hasn't changed (digest matches what we recorded)
+		assertFalse(top.isStale(),
+			"Should NOT be stale when dependency is newer but API digest unchanged");
+
+		// Now simulate an API change: update the dependency's API digest
+		IO.store("changed987654", apiDigestFile);
+
+		// Top should now be stale again because the API changed
+		assertTrue(top.isStale(),
+			"Should be stale when dependency's API digest has changed");
 	}
 
 	/**
