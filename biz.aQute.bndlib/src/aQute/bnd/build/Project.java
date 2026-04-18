@@ -108,7 +108,6 @@ import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.service.diff.Tree;
-import aQute.bnd.service.diff.Type;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -1819,19 +1818,7 @@ public class Project extends Processor {
 			}
 			for (File f : deps) {
 				if (buildTime < f.lastModified()) {
-					//
-					// The dependency's build file is newer than our
-					// build, but check if its exported API actually
-					// changed. If the API is unchanged, we don't need
-					// to rebuild — only internal implementation
-					// details changed.
-					//
-					if (hasDependencyApiChanged(f)) {
-						return true;
-					}
-					logger.debug(
-						"Dependency {} is newer but API unchanged, skipping rebuild of {}",
-						f.getName(), getName());
+					return true;
 				}
 			}
 		}
@@ -2052,10 +2039,6 @@ public class Project extends Processor {
 				bfs = null; // avoid delete in finally block
 				builtFiles(buildFilesSet);
 
-				// Record the API digests of our dependencies so we can
-				// detect API-only changes in isStale()
-				saveDependencyApiDigests();
-
 				return files = buildFilesSet.toArray(new File[0]);
 			} finally {
 				buildInfo.getInfo(this);
@@ -2099,16 +2082,31 @@ public class Project extends Processor {
 	private File saveBuildWithoutClose(Jar jar) throws Exception {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
 		File digestFile = new File(outputFile.getParentFile(), outputFile.getName() + ".digest");
+		File apiDigestFile = getApiDigestFile(outputFile);
 
 		//
-		// Content-hash optimization: compute a timeless digest of the
-		// JAR content and compare with the previously stored digest.
-		// If the content is unchanged, restore the old JAR's timestamp
-		// after writing. This prevents unnecessary rebuild cascades in
-		// dependent projects whose staleness check is timestamp-based.
+		// Timestamp preservation optimization: we compute two digests of
+		// the JAR and compare with previously stored values to decide
+		// whether to preserve the output file's timestamp.
+		//
+		// 1. Content digest — a timeless hash of all JAR content. If
+		//    unchanged, the JAR is byte-identical and we always preserve
+		//    the timestamp (e.g. only a comment in the source changed
+		//    and the compiler produced the same bytecode).
+		//
+		// 2. API digest — a hash of the exported API surface
+		//    (public/protected types and members in exported packages).
+		//    If the content changed but the API didn't (e.g. a method
+		//    body was modified without changing its signature), we still
+		//    preserve the timestamp. This prevents unnecessary rebuild
+		//    cascades in dependent projects whose staleness check is
+		//    timestamp-based, since dependents only care about the
+		//    public API contract.
 		//
 		String newDigestHex = calcDigest(jar);
-		long preserveTimestamp = calcPreserveTimestamp(outputFile, digestFile, newDigestHex);
+		String newApiDigestHex = calcApiDigest(jar);
+		long preserveTimestamp = calcPreserveTimestamp(outputFile, digestFile, newDigestHex,
+			apiDigestFile, newApiDigestHex);
 
 		reportNewer(outputFile.lastModified(), jar);
 		File logicalFile = write(jar::write, outputFile);
@@ -2122,28 +2120,21 @@ public class Project extends Processor {
 			}
 		}
 
-		// If the content was unchanged, restore the old timestamp to prevent
-		// downstream cascade rebuilds
-		if (preserveTimestamp > 0) {
-			outputFile.setLastModified(preserveTimestamp);
-			logger.debug("Preserved timestamp of {} - content unchanged (digest {})", outputFile.getName(),
-				newDigestHex);
-		}
-
-		//
-		// API signature digest: compute a hash of just the exported API
-		// surface (public/protected types and members in exported
-		// packages). This allows dependent projects to skip rebuilding
-		// when only internal implementation details changed.
-		//
-		File apiDigestFile = getApiDigestFile(outputFile);
-		String newApiDigestHex = calcApiDigest(jar);
+		// Store the API digest for future comparisons
 		if (newApiDigestHex != null) {
 			try {
 				IO.store(newApiDigestHex, apiDigestFile);
 			} catch (Exception e) {
 				logger.debug("Failed to store API digest for {}", outputFile.getName(), e);
 			}
+		}
+
+		// If the content or API was unchanged, restore the old timestamp
+		// to prevent downstream cascade rebuilds
+		if (preserveTimestamp > 0) {
+			outputFile.setLastModified(preserveTimestamp);
+			logger.debug("Preserved timestamp of {} (digest {}, apiDigest {})", outputFile.getName(),
+				newDigestHex, newApiDigestHex);
 		}
 
 		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
@@ -2175,21 +2166,55 @@ public class Project extends Processor {
 		return logicalFile;
 	}
 
-	private long calcPreserveTimestamp(File outputFile, File digestFile, String newDigestHex) {
-		long preserveTimestamp = 0;
-		if (newDigestHex != null && outputFile.isFile() && digestFile.isFile()) {
+	/**
+	 * Determine whether we should preserve the output file's existing
+	 * timestamp. We preserve it (return the old timestamp) when:
+	 * <ol>
+	 * <li>The full content digest is unchanged (byte-identical JAR), or</li>
+	 * <li>The content changed but the exported API digest is unchanged
+	 * (only internal implementation details differ — dependents don't
+	 * need to rebuild).</li>
+	 * </ol>
+	 *
+	 * @return the timestamp to restore, or 0 if the file should get a new
+	 *         timestamp
+	 */
+	private long calcPreserveTimestamp(File outputFile, File digestFile, String newDigestHex,
+		File apiDigestFile, String newApiDigestHex) {
+		if (!outputFile.isFile()) {
+			return 0;
+		}
+		long existingTimestamp = outputFile.lastModified();
+
+		// Check 1: full content digest unchanged → preserve
+		if (newDigestHex != null && digestFile.isFile()) {
 			try {
 				String oldDigestHex = IO.collect(digestFile)
 					.trim();
 				if (newDigestHex.equals(oldDigestHex)) {
-					// Content unchanged — record the old timestamp to restore
-					preserveTimestamp = outputFile.lastModified();
+					return existingTimestamp;
 				}
 			} catch (Exception e) {
-				logger.debug("Failed to read stored digest for {}, proceeding with write", outputFile.getName(), e);
+				logger.debug("Failed to read stored digest for {}", outputFile.getName(), e);
 			}
 		}
-		return preserveTimestamp;
+
+		// Check 2: content changed, but API surface unchanged → preserve
+		if (newApiDigestHex != null && apiDigestFile.isFile()) {
+			try {
+				String oldApiDigestHex = IO.collect(apiDigestFile)
+					.trim();
+				if (newApiDigestHex.equals(oldApiDigestHex)) {
+					logger.debug("Content changed but API unchanged for {} — preserving timestamp",
+						outputFile.getName());
+					return existingTimestamp;
+				}
+			} catch (Exception e) {
+				logger.debug("Failed to read stored API digest for {}", outputFile.getName(), e);
+			}
+		}
+
+		return 0;
 	}
 
 	private String calcDigest(Jar jar) {
@@ -2262,75 +2287,6 @@ public class Project extends Processor {
 	 */
 	public static File getApiDigestFile(File outputFile) {
 		return new File(outputFile.getParentFile(), outputFile.getName() + ".api-digest");
-	}
-
-	private static final String DEPS_API_DIGESTS = "deps-api-digests";
-
-	/**
-	 * Save the current API digests of all dependency build files so we can
-	 * detect whether a dependency's exported API changed between builds.
-	 */
-	private void saveDependencyApiDigests() {
-		try {
-			Properties props = new Properties();
-			for (Project dependency : getDependson()) {
-				if (dependency == this || dependency.isNoBundles()) {
-					continue;
-				}
-				File[] deps = dependency.getBuildFiles(false);
-				if (deps == null) {
-					continue;
-				}
-				for (File f : deps) {
-					File apiDigestFile = getApiDigestFile(f);
-					if (apiDigestFile.isFile()) {
-						String apiDigest = IO.collect(apiDigestFile)
-							.trim();
-						props.setProperty(IO.absolutePath(f), apiDigest);
-					}
-				}
-			}
-			File depsFile = new File(getTarget(), DEPS_API_DIGESTS);
-			try (java.io.OutputStream out = IO.outputStream(depsFile)) {
-				props.store(out, null);
-			}
-		} catch (Exception e) {
-			logger.debug("Failed to save dependency API digests for {}", this, e);
-		}
-	}
-
-	/**
-	 * Check if a dependency's exported API has changed since our last build.
-	 * Returns true if the API changed or if we can't determine.
-	 *
-	 * @param depFile the dependency's build file
-	 * @return true if the API has changed or is unknown, false if unchanged
-	 */
-	private boolean hasDependencyApiChanged(File depFile) {
-		try {
-			File depsFile = new File(getTarget(), DEPS_API_DIGESTS);
-			if (!depsFile.isFile()) {
-				return true;
-			}
-			Properties props = new Properties();
-			try (InputStream in = IO.stream(depsFile)) {
-				props.load(in);
-			}
-			String savedDigest = props.getProperty(IO.absolutePath(depFile));
-			if (savedDigest == null) {
-				return true;
-			}
-			File apiDigestFile = getApiDigestFile(depFile);
-			if (!apiDigestFile.isFile()) {
-				return true;
-			}
-			String currentDigest = IO.collect(apiDigestFile)
-				.trim();
-			return !savedDigest.equals(currentDigest);
-		} catch (Exception e) {
-			logger.debug("Failed to check dependency API digest for {}", depFile, e);
-			return true;
-		}
 	}
 
 	private File write(ConsumerWithException<File> jar, File outputFile)
