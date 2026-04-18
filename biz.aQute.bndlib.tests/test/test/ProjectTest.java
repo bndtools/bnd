@@ -554,6 +554,7 @@ public class ProjectTest {
 	@Test
 	public void testContentHashSkipsBuildWhenUnchanged() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		ws.set(Constants.REBUILDTRIGGERPOLICY, "api");
 		Project project = ws.getProject("p-stale");
 		assertNotNull(project);
 
@@ -611,6 +612,7 @@ public class ProjectTest {
 	@Test
 	public void testContentHashRewritesWhenChanged() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		ws.set(Constants.REBUILDTRIGGERPOLICY, "api");
 		Project project = ws.getProject("p-stale");
 		assertNotNull(project);
 
@@ -663,6 +665,7 @@ public class ProjectTest {
 	@Test
 	public void testApiDigestPreservesTimestampWhenApiUnchanged() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		ws.set(Constants.REBUILDTRIGGERPOLICY, "api");
 		Project project = ws.getProject("p-stale");
 		assertNotNull(project);
 
@@ -975,15 +978,10 @@ public class ProjectTest {
 
 			Thread.sleep(2000);
 
-			// After updateModified, the project is considered changed but
-			// the content-hash optimization preserves the JAR's timestamp
-			// because the JAR content is identical. This is intentional
-			// to avoid cascading rebuilds of dependent projects.
 			project.updateModified(System.currentTimeMillis(), "Testing");
 			files = project.build();
 			assertEquals(1, files.length);
-			assertTrue(files[0].lastModified() == lastTime,
-				"Timestamp should be preserved when JAR content is unchanged");
+			assertTrue(files[0].lastModified() > lastTime, "Must have newer files now");
 		} finally {
 			project.clean();
 		}
