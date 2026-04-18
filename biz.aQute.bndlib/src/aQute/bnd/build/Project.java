@@ -57,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
-import aQute.bnd.build.Project.BuildChangePolicy.BuildChangePolicyResult;
+import aQute.bnd.build.Project.RebuildTriggerPolicy.RebuildTriggerPolicyResult;
 import aQute.bnd.build.ProjectBuilder.ArtifactInfoImpl;
 import aQute.bnd.build.ProjectBuilder.BuildInfoImpl;
 import aQute.bnd.differ.DiffPluginImpl;
@@ -2016,8 +2016,8 @@ public class Project extends Processor {
 						removed.removeAll(buildFilesSet);
 						for (File remove : removed) {
 							IO.delete(remove);
-							IO.delete(BuildChangePolicy.getContentDigestFile(remove));
-							IO.delete(BuildChangePolicy.getApiDigestFile(remove));
+							IO.delete(RebuildTriggerPolicy.getContentDigestFile(remove));
+							IO.delete(RebuildTriggerPolicy.getApiDigestFile(remove));
 							getWorkspace().changedFile(remove);
 						}
 					}
@@ -2084,7 +2084,7 @@ public class Project extends Processor {
 	private File saveBuildWithoutClose(Jar jar) throws Exception {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
 
-		BuildChangePolicyResult buildChangePolicy = new BuildChangePolicy().doBuildChangePolicy(this, jar, outputFile);
+		RebuildTriggerPolicyResult buildChangePolicy = new RebuildTriggerPolicy().doRebuildTriggerPolicy(this, jar, outputFile);
 
 		reportNewer(outputFile.lastModified(), jar);
 		File logicalFile = write(jar::write, outputFile);
@@ -2120,7 +2120,7 @@ public class Project extends Processor {
 		return logicalFile;
 	}
 
-	private void persistBuildChangePolicyResult(File outputFile, BuildChangePolicyResult result) {
+	private void persistBuildChangePolicyResult(File outputFile, RebuildTriggerPolicyResult result) {
 		// Store the content digest for future comparisons
 		if (result.newContentDigestHex() != null) {
 			try {
@@ -3858,7 +3858,7 @@ public class Project extends Processor {
 	 * projects when only internal implementation changes occur.
 	 * </p>
 	 */
-	static class BuildChangePolicy {
+	static class RebuildTriggerPolicy {
 
 		private static final String ALWAYS = "always";
 
@@ -3881,10 +3881,10 @@ public class Project extends Processor {
 		 * @param newApiDigestHex The newly computed API digest (hex-encoded),
 		 *            or {@code null} if not computed.
 		 */
-		record BuildChangePolicyResult(long preserveTimestamp, File contentDigestFile, String newContentDigestHex,
+		record RebuildTriggerPolicyResult(long preserveTimestamp, File contentDigestFile, String newContentDigestHex,
 			File apiDigestFile, String newApiDigestHex) {
 
-			static final BuildChangePolicyResult REBUILD_ALWAYS = new BuildChangePolicyResult(0, null, null, null, null);
+			static final RebuildTriggerPolicyResult REBUILD_ALWAYS = new RebuildTriggerPolicyResult(0, null, null, null, null);
 		}
 
 		/**
@@ -3906,7 +3906,7 @@ public class Project extends Processor {
 		 * previous one, either byte-for-byte or at the API level.
 		 * </p>
 		 * <p>
-		 * The returned {@link BuildChangePolicyResult} contains both the
+		 * The returned {@link RebuildTriggerPolicyResult} contains both the
 		 * decision (timestamp preservation) and the newly computed digest
 		 * values, which callers are expected to persist for future comparisons.
 		 * </p>
@@ -3927,13 +3927,13 @@ public class Project extends Processor {
 		 *            {@code -buildchangepolicy} setting).
 		 * @param jar The newly built JAR to analyze.
 		 * @param outputFile The output file whose timestamp may be preserved.
-		 * @return a {@link BuildChangePolicyResult} describing the preservation
+		 * @return a {@link RebuildTriggerPolicyResult} describing the preservation
 		 *         decision and the computed digest values
 		 */
-		BuildChangePolicyResult doBuildChangePolicy(Processor proc, Jar jar, File outputFile) {
-			String buildChangePolicy = proc.get(Constants.BUILDCHANGEPOLICY, ALWAYS);
-			if (ALWAYS.equals(buildChangePolicy)) {
-				return BuildChangePolicyResult.REBUILD_ALWAYS;
+		RebuildTriggerPolicyResult doRebuildTriggerPolicy(Processor proc, Jar jar, File outputFile) {
+			String rebuildTriggerPolicy = proc.get(Constants.REBUILDTRIGGERPOLICY, ALWAYS);
+			if (ALWAYS.equals(rebuildTriggerPolicy)) {
+				return RebuildTriggerPolicyResult.REBUILD_ALWAYS;
 			}
 
 			File contentDigestFile = getContentDigestFile(outputFile);
@@ -3941,14 +3941,14 @@ public class Project extends Processor {
 
 			// Fast path: no existing output means nothing to preserve.
 			if (!outputFile.isFile()) {
-				return new BuildChangePolicyResult(0, contentDigestFile, newContentDigestHex, null, null);
+				return new RebuildTriggerPolicyResult(0, contentDigestFile, newContentDigestHex, null, null);
 			}
 
 			long existingTimestamp = outputFile.lastModified();
 
 			// Check 1: byte-identical content -> preserve immediately.
 			if (digestMatches(contentDigestFile, newContentDigestHex, outputFile, "stored content digest")) {
-				return new BuildChangePolicyResult(existingTimestamp, contentDigestFile, newContentDigestHex, null,
+				return new RebuildTriggerPolicyResult(existingTimestamp, contentDigestFile, newContentDigestHex, null,
 					null);
 			}
 
@@ -3958,11 +3958,11 @@ public class Project extends Processor {
 
 			if (digestMatches(apiDigestFile, newApiDigestHex, outputFile, "stored API digest")) {
 				logger.debug("Content changed but API unchanged for {} — preserving timestamp", outputFile.getName());
-				return new BuildChangePolicyResult(existingTimestamp, contentDigestFile, newContentDigestHex,
+				return new RebuildTriggerPolicyResult(existingTimestamp, contentDigestFile, newContentDigestHex,
 					apiDigestFile, newApiDigestHex);
 			}
 
-			return new BuildChangePolicyResult(0, contentDigestFile, newContentDigestHex, apiDigestFile,
+			return new RebuildTriggerPolicyResult(0, contentDigestFile, newContentDigestHex, apiDigestFile,
 				newApiDigestHex);
 
 		}
