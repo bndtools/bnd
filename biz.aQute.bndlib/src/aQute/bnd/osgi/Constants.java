@@ -110,6 +110,7 @@ public interface Constants {
 	String		BUILDERIGNORE								= "-builderignore";
 	String		BUILDPATH									= "-buildpath";
 	String		BUILDTOOL									= "-buildtool";
+	String		BUILDCHANGEPOLICY							= "-buildchangepolicy";
 	String		BUMPPOLICY									= "-bumppolicy";
 	String		BUNDLEANNOTATIONS							= "-bundleannotations";
 	String		CDIANNOTATIONS								= "-cdiannotations";
@@ -335,7 +336,8 @@ public interface Constants {
 	String		CLASSPATH									= "-classpath";
 	String		OUTPUT										= "-output";
 
-	Set<String>	options										= Sets.of(BASELINE, BUILDPATH, BUMPPOLICY, CONDUIT,
+	Set<String>	options										= Sets.of(BASELINE, BUILDPATH, BUILDCHANGEPOLICY,
+		BUMPPOLICY, CONDUIT,
 		CLASSPATH, COMPRESSION, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS, FAIL_OK, INCLUDE,
 		BASELINEINCLUDEZEROMAJOR, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC, PLUGIN, POM, PROVIDER_POLICY,
 		REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES,

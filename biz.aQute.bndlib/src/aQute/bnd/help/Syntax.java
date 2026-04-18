@@ -357,6 +357,16 @@ public class Syntax implements Constants {
 			"Provides the class path for building the jar. The entries are references to the repository.",
 			BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME,
 			"https://bnd.bndtools.org/instructions/buildpath.html", path_version),
+		new Syntax(BUILDCHANGEPOLICY,
+			"Controls when a rebuilt bundle is treated as changed for downstream build purposes. "
+				+ "The value always treats every rebuild as a change. "
+				+ "The value api preserves the previous build result when the rebuilt bundle has identical content, "
+				+ "or when its exported API is unchanged, reducing unnecessary rebuild cascades when only "
+				+ "non-API changes were made. Exported API means the public and protected types, methods, and "
+				+ "fields in exported packages; for example, changing a method body without changing its signature "
+				+ "is an unchanged API, while adding a public method to an exported package is an API change.",
+			BUILDCHANGEPOLICY + "=api", "(always|api)", null,
+			"https://bnd.bndtools.org/instructions/buildchangepolicy.html"),
 		new Syntax(BUILDREPO, "After building a JAR, release the JAR to the given repositories.", BUILDREPO + "=Local",
 			null, null),
 		new Syntax(BUILDTOOL, "A specification for the bnd CLI to install a build tool, like gradle, in the workspace",
