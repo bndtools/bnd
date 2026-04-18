@@ -2084,12 +2084,13 @@ public class Project extends Processor {
 	private File saveBuildWithoutClose(Jar jar) throws Exception {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
 
-		RebuildTriggerPolicyResult buildChangePolicy = new RebuildTriggerPolicy().doRebuildTriggerPolicy(this, jar, outputFile);
+		RebuildTriggerPolicyResult rebuildTriggerPolicy = new RebuildTriggerPolicy().doRebuildTriggerPolicy(this, jar,
+			outputFile);
 
 		reportNewer(outputFile.lastModified(), jar);
 		File logicalFile = write(jar::write, outputFile);
 
-		persistBuildChangePolicyResult(outputFile, buildChangePolicy);
+		persistRebuildTriggerPolicyResult(outputFile, rebuildTriggerPolicy);
 
 		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
 			.size());
@@ -2120,7 +2121,7 @@ public class Project extends Processor {
 		return logicalFile;
 	}
 
-	private void persistBuildChangePolicyResult(File outputFile, RebuildTriggerPolicyResult result) {
+	private void persistRebuildTriggerPolicyResult(File outputFile, RebuildTriggerPolicyResult result) {
 		if (RebuildTriggerPolicy.ALWAYS.equals(get(Constants.REBUILDTRIGGERPOLICY, RebuildTriggerPolicy.ALWAYS))) {
 			// do not store any .digest files by default
 			// to avoid polluting / confusing existing projects
