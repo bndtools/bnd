@@ -110,6 +110,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
+import aQute.lib.hex.Hex;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -2010,6 +2011,7 @@ public class Project extends Processor {
 						removed.removeAll(buildFilesSet);
 						for (File remove : removed) {
 							IO.delete(remove);
+							IO.delete(new File(remove.getParentFile(), remove.getName() + ".digest"));
 							getWorkspace().changedFile(remove);
 						}
 					}
@@ -2075,9 +2077,58 @@ public class Project extends Processor {
 
 	private File saveBuildWithoutClose(Jar jar) throws Exception {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
+		File digestFile = new File(outputFile.getParentFile(), outputFile.getName() + ".digest");
+
+		//
+		// Content-hash optimization: compute a timeless digest of the
+		// JAR content and compare with the previously stored digest.
+		// If the content is unchanged, restore the old JAR's timestamp
+		// after writing. This prevents unnecessary rebuild cascades in
+		// dependent projects whose staleness check is timestamp-based.
+		//
+		String newDigestHex = null;
+		long preserveTimestamp = 0;
+		try {
+			byte[] digest = jar.getTimelessDigest();
+			if (digest != null) {
+				newDigestHex = Hex.toHexString(digest);
+			}
+		} catch (Exception e) {
+			logger.debug("Failed to compute timeless digest for {}", jar.getName(), e);
+		}
+
+		if (newDigestHex != null && outputFile.isFile() && digestFile.isFile()) {
+			try {
+				String oldDigestHex = IO.collect(digestFile)
+					.trim();
+				if (newDigestHex.equals(oldDigestHex)) {
+					// Content unchanged — record the old timestamp to restore
+					preserveTimestamp = outputFile.lastModified();
+				}
+			} catch (Exception e) {
+				logger.debug("Failed to read stored digest for {}, proceeding with write", outputFile.getName(), e);
+			}
+		}
 
 		reportNewer(outputFile.lastModified(), jar);
 		File logicalFile = write(jar::write, outputFile);
+
+		// Store the content digest for future comparisons
+		if (newDigestHex != null) {
+			try {
+				IO.store(newDigestHex, digestFile);
+			} catch (Exception e) {
+				logger.debug("Failed to store digest for {}", outputFile.getName(), e);
+			}
+		}
+
+		// If the content was unchanged, restore the old timestamp to prevent
+		// downstream cascade rebuilds
+		if (preserveTimestamp > 0) {
+			outputFile.setLastModified(preserveTimestamp);
+			logger.debug("Preserved timestamp of {} - content unchanged (digest {})", outputFile.getName(),
+				newDigestHex);
+		}
 
 		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
 			.size());

@@ -547,6 +547,99 @@ public class ProjectTest {
 	}
 
 	/**
+	 * Check that the content-hash optimization prevents unnecessary JAR
+	 * rewrites when the JAR content is unchanged between builds. This avoids
+	 * cascading rebuilds of dependent projects.
+	 */
+	@Test
+	public void testContentHashSkipsBuildWhenUnchanged() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p-stale");
+		assertNotNull(project);
+
+		// First build - should create JAR and digest files
+		File[] firstBuild = project.build();
+		assertNotNull(firstBuild);
+		assertTrue(firstBuild.length > 0);
+
+		File jarFile = firstBuild[0];
+		assertTrue(jarFile.isFile());
+		long firstTimestamp = jarFile.lastModified();
+
+		// Verify digest file was created
+		File digestFile = new File(jarFile.getParentFile(), jarFile.getName() + ".digest");
+		assertTrue(digestFile.isFile(), "Digest file should be created after build");
+		String firstDigest = IO.collect(digestFile)
+			.trim();
+		assertFalse(firstDigest.isEmpty(), "Digest should not be empty");
+
+		// Wait to ensure timestamp would differ if file were rewritten
+		Thread.sleep(1500);
+
+		// Mark project as changed so it rebuilds
+		project.setChanged();
+		project.refresh();
+
+		// Second build - content is unchanged, JAR should NOT be rewritten
+		File[] secondBuild = project.build();
+		assertNotNull(secondBuild);
+		assertTrue(secondBuild.length > 0);
+
+		File jarFile2 = secondBuild[0];
+		assertTrue(jarFile2.isFile());
+
+		// The JAR timestamp should be preserved since content didn't change
+		assertEquals(firstTimestamp, jarFile2.lastModified(),
+			"JAR timestamp should be preserved when content is unchanged");
+
+		// Digest file should still exist with the same content
+		assertTrue(digestFile.isFile());
+		String secondDigest = IO.collect(digestFile)
+			.trim();
+		assertEquals(firstDigest, secondDigest, "Digest should be unchanged");
+	}
+
+	/**
+	 * Check that when JAR content actually changes, the JAR is rewritten and
+	 * the digest is updated.
+	 */
+	@Test
+	public void testContentHashRewritesWhenChanged() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p-stale");
+		assertNotNull(project);
+
+		// First build
+		File[] firstBuild = project.build();
+		assertNotNull(firstBuild);
+		File jarFile = firstBuild[0];
+		File digestFile = new File(jarFile.getParentFile(), jarFile.getName() + ".digest");
+		assertTrue(digestFile.isFile());
+		String firstDigest = IO.collect(digestFile)
+			.trim();
+
+		// Wait to ensure timestamps differ
+		Thread.sleep(1500);
+
+		// Change the project content so the JAR will be different
+		project.setChanged();
+		project.refresh();
+		project.setProperty("Include-Resource", "p;literal=\"changed content\"");
+
+		// Second build - content changed, JAR should be rewritten
+		File[] secondBuild = project.build();
+		assertNotNull(secondBuild);
+		File jarFile2 = secondBuild[0];
+
+		// Digest should have changed
+		assertTrue(digestFile.isFile());
+		String secondDigest = IO.collect(digestFile)
+			.trim();
+		assertThat(secondDigest).as("Digest should change when content changes")
+			.isNotEqualTo(firstDigest);
+	}
+
+	/**
 	 * Check multiple repos
 	 *
 	 * @throws Exception
@@ -802,10 +895,15 @@ public class ProjectTest {
 
 			Thread.sleep(2000);
 
+			// After updateModified, the project is considered changed but
+			// the content-hash optimization preserves the JAR's timestamp
+			// because the JAR content is identical. This is intentional
+			// to avoid cascading rebuilds of dependent projects.
 			project.updateModified(System.currentTimeMillis(), "Testing");
 			files = project.build();
 			assertEquals(1, files.length);
-			assertTrue(files[0].lastModified() > lastTime, "Must have newer files now");
+			assertTrue(files[0].lastModified() == lastTime,
+				"Timestamp should be preserved when JAR content is unchanged");
 		} finally {
 			project.clean();
 		}
