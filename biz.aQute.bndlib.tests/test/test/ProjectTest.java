@@ -805,7 +805,43 @@ public class ProjectTest {
 			project.updateModified(System.currentTimeMillis(), "Testing");
 			files = project.build();
 			assertEquals(1, files.length);
-			assertTrue(files[0].lastModified() > lastTime, "Must have newer files now");
+			assertEquals(lastTime, files[0].lastModified(), "Unchanged output should keep timestamp");
+		} finally {
+			project.clean();
+		}
+	}
+
+	@Test
+	public void testStableJarWriteFromHash() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p3");
+		File bnd = project.getPropertiesFile();
+
+		project.clean();
+		try {
+			File[] files = project.build();
+			assertTrue(project.check());
+			assertEquals(1, files.length);
+
+			File jar = files[0];
+			long initialLastModified = jar.lastModified();
+
+			Thread.sleep(2000);
+			project.updateModified(System.currentTimeMillis(), "same output");
+
+			files = project.build();
+			assertTrue(project.check());
+			assertEquals(1, files.length);
+			assertEquals(initialLastModified, files[0].lastModified());
+
+			Thread.sleep(2000);
+			IO.store(IO.collect(bnd) + "\nBundle-Description: changed", bnd);
+			project.forceRefresh();
+
+			files = project.build();
+			assertTrue(project.check());
+			assertEquals(1, files.length);
+			assertTrue(files[0].lastModified() > initialLastModified);
 		} finally {
 			project.clean();
 		}

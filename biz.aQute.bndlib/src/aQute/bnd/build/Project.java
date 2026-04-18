@@ -110,6 +110,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
+import aQute.lib.hex.Hex;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -2077,7 +2078,29 @@ public class Project extends Processor {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
 
 		reportNewer(outputFile.lastModified(), jar);
-		File logicalFile = write(jar::write, outputFile);
+		File parent = outputFile.getParentFile();
+		if (!parent.isDirectory()) {
+			IO.mkdirs(parent);
+		}
+		File tempFile = File.createTempFile(outputFile.getName() + "-", ".tmp", parent);
+		File logicalFile;
+		try {
+			jar.write(tempFile);
+			String currentHash = getTimelessHash(jar);
+			boolean unchanged = false;
+			if (outputFile.isFile()) {
+				try (Jar existing = new Jar(outputFile)) {
+					unchanged = getTimelessHash(existing).equalsIgnoreCase(currentHash);
+				}
+			}
+			if (unchanged) {
+				logicalFile = outputFile;
+			} else {
+				logicalFile = write(file -> IO.copy(tempFile, file), outputFile);
+			}
+		} finally {
+			IO.delete(tempFile);
+		}
 
 		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
 			.size());
@@ -2106,6 +2129,10 @@ public class Project extends Processor {
 			getWorkspace().changedFile(canonical);
 		}
 		return logicalFile;
+	}
+
+	private String getTimelessHash(Jar jar) throws Exception {
+		return Hex.toHexString(jar.getTimelessDigest());
 	}
 
 	private File write(ConsumerWithException<File> jar, File outputFile)
