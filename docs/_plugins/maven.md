@@ -85,11 +85,13 @@ If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _loc
 
 For finding archives, both URLs are used. For releasing, only the first or the `stagingUrl` is used.
 
+## Index file
+
 The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories. 
 The index file supports two formats: 
 
 - a) text file with one GAV per line or
-- b) Maven _pom.xml_ content (note that not the full maven pom.xml features are supported. Mainly the `<dependency>` entries are relevant.
+- b) Maven _pom.xml_ content (note that not the full maven pom.xml features are supported. Mainly the `<dependency>` entries are relevant).
 
 Note on auto-detection of index format: If bnd detects xml it assumes `pom.xml`, otherwise the text-file format is assumed.
 
@@ -97,7 +99,7 @@ Alternative, the GAV's can be specified in the file where the repository is defi
 
 Both the index file and the source configuration can be replaced by macros. The only difference is that the source can use macros for more than one GAV while the indexFile is processed per line and that line must deliver at most single GAV.
 
-## Coordinates & Terminology
+### Coordinates & Terminology of Text file
 
 The index file contains a list of _coordinates_. A coordinate specifies an _archive_ in a Maven _revison_. An archive is a ZIP, POM, JAR, or any other type of file. In Maven, these files are addressed within a revision with an _extension_ and a _classifier_. The extension indicates the type of the file and the classifier is a modifier that makes the name unique in the project. A _revision_ is the combination of a _program_ and a _version_, where the program is the combination of _groupId_ and _artifactId_.
 
@@ -118,6 +120,38 @@ The file can contain comments (start the line with `#`), empty lines and also ma
 
     # This is a comment
     ${osgi}:${osgi}.service.log:1.4.0
+
+### Coordinates & Terminology of pom.xml
+
+An example `pom.xml` index file which is supported by MavenBndRepository looks like this:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>bnd.index</groupId>
+  <artifactId>central</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <dependencies>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.framework</artifactId>
+        <version>1.10.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.framework</artifactId>
+        <version>1.8.0</version>
+      </dependency>
+    </dependencies>
+</project>
+```
+
+As stated earlier: Not all maven `pom.xml` features are supported. Mainly the `<dependency>` entries are relevant. The parser is very simple and `pom.xml` is just meant to be an alternative format format for the text file. 
+
+One advantage of using the `pom.xml` format over the flat text file is that `pom.xml` is understood by more tooling. For example Dependabot can automatically update `pom.xml` files, but not the flat text file. 
+
 
 ## Local Repository
 
