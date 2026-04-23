@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-profile KEY</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-profile KEY</h1>
+<ul>
+<li>
+<p>Example: <code>-profile: "[&lt;[profile]&gt;]&lt;[key]&gt;</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/profile.md -->
+<p>The <code>-profile</code> instruction sets a prefix (profile key) that is used when a variable is not found in the current context. If a variable is missing, bnd will re-search for it using the pattern <code>[&lt;profile&gt;]&lt;key&gt;</code>, where <code>&lt;profile&gt;</code> is the value of the <code>-profile</code> instruction and <code>&lt;key&gt;</code> is the variable name.</p>
+<p>This allows you to define profile-specific values for variables, making it easier to manage different build or runtime configurations within the same project. If no profile is set or the variable is not found under the profile, bnd will fall back to the default value.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>findproviders  ';' namespace ( ';' FILTER ( ';' STRATEGY)? )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>findproviders  ';' namespace ( ';' FILTER ( ';' STRATEGY)? )?</h1>
+<p>The <code>findproviders</code> macro gives access to the resources in the Workspace repositories, including the projects itself. Its semantics match the OSGi <code>Repository.findProviders()</code> method.</p>
+<p>It was added to support the use case of including a set of plugins in a resolve to create an executable. Since it is impossible to add a requirement that will add all matching resources, the <code>findproviders</code> macro can be used to find these resources and then turn them into initial requirements. However, this macro will likely find many other use cases since it is quite versatile. If used outside of <code>bndrun</code> files, it can cause circular builds because it might want to search the project that is used in. Use the REPOS Strategy in this case.</p>
+<div class="highlight"><pre><span></span><code>findproviders ::= namespace ( &#39;;&#39; FILTER ( &#39;;&#39; STRATEGY)? )?
+namespace     ::= ... OSGi namespace
+FILTER        ::= Any LDAP Styled Filter
+STRATEGY      ::= &#39;ALL&#39; | &#39;WORKSPACE&#39; | &#39;REPOS&#39;
+</code></pre></div>
+
+<p>If no filter is given or the filter attribute is empty, then all resources that have a capability in the given namespace are returned.</p>
+<p>The following strategies are available:</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALL</td>
+<td>Searches in the Workspace and all configured Repositories</td>
+</tr>
+<tr>
+<td>REPOS</td>
+<td>Searches only in configured Repositories</td>
+</tr>
+<tr>
+<td>WORKSPACE</td>
+<td>Searches in Workspace projects only</td>
+</tr>
+</tbody>
+</table>
+<p>The result is in <code>PARAMETERS</code> format, to common format in bnd and OSGi. In this case the <em>key</em> will be the Bundle Symbolic Name and the attributes will <em>at least</em> contain the Bundle version. For example:</p>
+<div class="highlight"><pre><span></span><code>${findproviders;osgi.service}
+</code></pre></div>
+
+<p>This finds all resources that have an <code>osgi.service</code> capability. This could return something like:</p>
+<div class="highlight"><pre><span></span><code>com.h2database;version=1.4.198,
+org.apache.aries.async;version=1.0.1,
+org.apache.felix.configadmin;version=1.9.12,
+org.apache.felix.coordinator;version=1.0.2,
+org.apache.felix.eventadmin;version=1.5.0,
+...
+</code></pre></div>
+
+<p>This <code>PARAMETERS</code> format is <em>structured</em> because it has attributes; that makes it harder to use with all kind of other macros. The <a href="template.html"><code>template</code></a> macro was intended to help out. This macro takes the name of macro and then treats the contents as a  <code>PARAMETERS</code>. It then applies a <em>template</em> to each clause in the PARAMETERS. For example:</p>
+<div class="highlight"><pre><span></span><code>my.plugins = ${findproviders;osgi.service;\
+  (objectClass=com.example.my.Plugin)}
+-runrequires.plugins = ${template;my.plugins;\
+  osgi.identity;filter:=&#39;(osgi.identity=${@})&#39;}
+</code></pre></div>
+
+<p>This would turn the previous example into:</p>
+<div class="highlight"><pre><span></span><code>-runrequires.plugins = \
+    osgi.identity;filter:=&#39;(osgi.identity=com.h2database)&#39;,
+    osgi.identity;filter:=&#39;(osgi.identity=org.apache.aries.async)&#39;,
+    ..
+</code></pre></div>
+
+<h2 id="maven-support">Maven support</h2>
+<p>The usage of the <code>findproviders</code> macro as depicted above also works when used in the context of one of the <a href="https://github.com/bndtools/bnd/tree/master/maven-plugins">Maven plugins</a>.</p>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>basename ( ';' FILEPATH ) +</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>basename ( ';' FILEPATH ) +</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>basename</code> macro extracts the filename (last component) from one or more file paths. It returns only the filenames for files that exist.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${basename;&lt;filepath&gt;[;&lt;filepath&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>filepath</code> - One or more file paths (relative to project directory)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Resolves each path relative to project directory</li>
+<li>Filters to include only existing files</li>
+<li>Returns the filename (last path component) for each</li>
+<li>Multiple filenames are comma-separated</li>
+<li>Generates warning if called without arguments</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get single filename:</p>
+<div class="highlight"><pre><span></span><code>${basename;/path/to/file.txt}
+# Returns: &quot;file.txt&quot;
+</code></pre></div>
+
+<p>Multiple files:</p>
+<div class="highlight"><pre><span></span><code>${basename;src/Main.java;src/Util.java}
+# Returns: &quot;Main.java,Util.java&quot;
+</code></pre></div>
+
+<p>With project-relative paths:</p>
+<div class="highlight"><pre><span></span><code>${basename;${@}}
+# Returns filename of current bundle JAR
+</code></pre></div>
+
+<p>Extract from full paths:</p>
+<div class="highlight"><pre><span></span><code>${basename;${buildpath}}
+# Returns basenames of all buildpath entries
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Extracting filenames from full paths</li>
+<li>Getting JAR names from paths</li>
+<li>Display names in logs</li>
+<li>Creating filename lists</li>
+<li>Path manipulation</li>
+<li>Build output naming</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only processes existing files</li>
+<li>Returns filename only, not the directory</li>
+<li>Path is resolved relative to project base</li>
+<li>Non-existent files are silently ignored</li>
+<li>Empty result if no files exist</li>
+<li>See also: <code>${dir}</code> for directory path</li>
+<li>See also: <code>${stem}</code> for filename without extension</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

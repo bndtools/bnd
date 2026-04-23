@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-reportnewer BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-reportnewer BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-reportnewer=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/reportnewer.md -->
+<h1 id="-reportnewer">-reportnewer</h1>
+<p>The <code>-reportnewer</code> instruction reports any entries that were added to the build since the last JAR was made. This is useful for tracking changes and ensuring that only new or updated files are included in the build output.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-reportnewer: true
+</code></pre></div>
+
+<p>When enabled, bnd will output a list of files that are newer than the previous build.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

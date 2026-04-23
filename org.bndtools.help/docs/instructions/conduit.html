@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-conduit</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-conduit</h1>
+<ul>
+<li>
+<p>Example: <code>-conduit= jar/osgi.jar</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/conduit.md -->
+<p>The <code>-conduit</code> instruction allows a Project to act as a conduit to one or more actual JARs on the file system. That is, when the Project is build it will not build those JARs, it just returns them as the result of the project. This can be useful when a Project is moved elsewhere but must still be part of the build because, for example, it needs to be part of the release process.</p>
+<div class="highlight"><pre><span></span><code>-conduit: jar/foo.jar
+</code></pre></div>
+
+<p>Notice that you can use the <code>${lsa}</code> macro to get the contents of a directory:</p>
+<div class="highlight"><pre><span></span><code>-conduit: ${lsa;jar/*.jar}
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

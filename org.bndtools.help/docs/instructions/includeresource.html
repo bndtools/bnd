@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-includeresource iclause</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-includeresource iclause</h1>
+<ul>
+<li>
+<p>Example: <code>-includeresource: lib/=jar/, {preprocess.txt}, 'literal';literal;=true,</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/includeresource.md -->
+<p>The purpose of <code>-includeresource</code> is to fill the JAR with non-class resources. In general these come from the file system. For example, today it is very common to have these type of resources in <code>src/main/resources</code>. This pattern can easily be simulated by bnd with the <code>-includeresource</code> instruction. However, since in OSGi the packaging is so important the <code>-includeresource</code> contains a number of options to minimize files on disk and speed up things.</p>
+<p>The syntax of the <code>-includeresource</code> has become quite complex over time:</p>
+<div class="highlight"><pre><span></span><code>-includeresource ::= iclause ( &#39;,&#39; iclause ) *
+iclause          ::= (unroll | copy) parameter*
+copy             ::= &#39;{&#39; process &#39;}&#39; | process
+process          ::= assignment | source
+assignment       ::= PATH &#39;=&#39; source
+source           ::= (&#39;-&#39;)? PATH parameter*
+unroll           ::= &#39;@&#39; (PATH | URL) ( &#39;!/&#39; SELECTOR )?
+parameters       ::= &#39;flatten:&#39; | &#39;recursive:&#39; | &#39;filter:&#39; | `-preprocessmatchers`
+</code></pre></div>
+
+<p>In the case of <code>assignment</code> or <code>source</code>, the PATH parameter can point to a file or directory. It is also possible to use the name.ext path of a JAR file on the classpath, that is, ignoring the directory. The <code>source</code> form will place the resource in the target JAR with only the file name, therefore without any path components. That is, including <code>src/a/b.c</code> will result in a resource <code>b.c</code> in the root of the target JAR.</p>
+<p>If the PATH points to a directory, the directory name itself is not used in the target JAR path. If the resource must be placed in a sub directory of the target jar, use the <code>assignment</code> form. If the file is not found, bnd will traverse the classpath to see of any entry on the classpath matches the given file name (without the directory) and use that when it matches. The <code>inline</code> requires a ZIP or JAR file, which will be completely expanded in the target JAR (except the manifest), unless followed with a file specification. The file specification can be a specific file in the jar or a directory followed by <strong>or *. The</strong> indicates recursively and the<em> indicates one level. If just a directory name is given, it will mean </em>*.</p>
+<p>The <code>filter:</code> directive is an optional filter on the resources. This uses the same format as the instructions. Only the file name is verified against this instruction.</p>
+<div class="highlight"><pre><span></span><code>Include-Resource: @osgi.jar,[=\ =]
+    {LICENSE.txt},[=\ =]
+    acme/Merge.class=src/acme/Merge.class
+</code></pre></div>
+
+<p>The <code>-includeresources</code> instruction will be merged with all properties that starts with <code>-includeresources*</code>.</p>
+<h2 id="preprocessing">Preprocessing</h2>
+<p>A clause contained in curly braces (<code>{</code> <code>}</code>) are <em>preprocessed</em>. While copying the files are run through the macro processor with the builder providing the properties. In the workspace model, all macros of the project are then available. Well known binary resources (as decided by their extension) are ignored. You can override the extension list with the <code>-preprocessmatchers</code> instruction. This must be a a selector that takes the source file name as the input. The clause can also specify a local  <code>-preprocessmatchers</code>. This selector is <em>prepended</em> to the either the default pre process matchers or the set pre process matchers. This allows for the selection or rejection of specific files and/or extensions.</p>
+<div class="highlight"><pre><span></span><code>-includeresource: {src/main/resources}, {legal=contracts}
+</code></pre></div>
+
+<h2 id="ignoring-missing-sources">Ignoring Missing Sources</h2>
+<p>A <em>source</em> in the clause starting with a <code>-</code> sign will not generare an error when the source in the clause cannot be located. This is very convenient if you specify an global <code>-includeresource</code> instruction in <code>build.bnd</code>. For example, <code>-includeresource.all = -src/main/resources</code> will not complain when a project does not have a <code>src/main/resources</code> directory. Note that the minus sign must be on the <em>source</em>. E.g.</p>
+<div class="highlight"><pre><span></span><code>`-includeresource.all = {foo=-bar}`, -foo.txt
+</code></pre></div>
+
+<h2 id="rolling">Rolling</h2>
+<p>There are two variants of the rolling <em>operator</em> <code>@</code>. It can be used to <em>roll up</em> a directory as a zip or jar file, or it can be used to unroll a jar file into its constituents.</p>
+<p>If the destination is a path of a <code>jar</code> or <code>zip</code> file, like <code>foo/bar/icons.zip</code> and the source points to a directory in the file system, then the directory will be wrapped up in a Jar and stored as a single entry in the receiving jar file.</p>
+<div class="highlight"><pre><span></span><code>-includeresource    foo/bar/icons.zip=@icons/
+</code></pre></div>
+
+<p><em>Unrolling</em> is getting the content from another JAR. It is activated by starting the source with an at sign (<code>@</code>). The at sign signals that it is not the actual file that should be copied, but the contents of that file should be placed in the destination.</p>
+<div class="highlight"><pre><span></span><code>-includeresource    tmp=@jar/foo.jar
+</code></pre></div>
+
+<p>The part that follows the at sign (<code>@</code>) is either a file path or a URL. Without any extra parameters it will copy all resources except the ones in the <code>-donotcopy</code> list and the <code>META-INF/MANIFEST</code>.</p>
+<div class="highlight"><pre><span></span><code>-includeresource    @jar/foo.jar
+</code></pre></div>
+
+<p>This is an ideal way to wrap a bundle since it is a full copy. After that one can add additional resources or use <code>-exportcontents</code> to export the contained packages in the normal way. In this way, bnd will calculate all imports.</p>
+<p>The unrolling can also be restricted with a single <em>selector</em>. The syntax for the selector must start with a <code>!/</code> marker, which is commonly used for this purpose. After the <code>!/</code> the normal selector operators and patterns can be used. For example, if we want to get just the <code>LICENSE</code> from a bundle then we can do:</p>
+<div class="highlight"><pre><span></span><code>-includeresource    @jar/foo.jar!/LICENSE
+</code></pre></div>
+
+<p>However, since selectors can also negate, it is also possible to do the reverse:</p>
+<div class="highlight"><pre><span></span><code>-includeresource    &quot;@jar/foo.jar!/!LICENSE&quot;
+</code></pre></div>
+
+<p>This is a single selector, it is therefore not possible to specify a chain with rejections and selections. However, also a single selector can match multiple file paths:</p>
+<div class="highlight"><pre><span></span><code>-includeresource    @jar/osgi.jar!/!(LICENSE|about.html|org/*)
+</code></pre></div>
+
+<p>Wrapping often requires access to a JAR from the repository. It is therefore common to see the unrolling feature being combined with the <code>${repo}</code> macro. The <code>${repo}</code> macro is given the Bundle Symbolic Name and an optional version range returns the path to a file from the repository.</p>
+<div class="highlight"><pre><span></span><code>-includeresource    @${repo;biz.aQute.bndlib}!/about.html
+</code></pre></div>
+
+<h3 id="unrolling-options">Unrolling options</h3>
+<p><code>flatten:=BOOLEAN</code> - puts all files in the file-tree into one folder</p>
+<div class="highlight"><pre><span></span><code>-includeresource new.package/=@jar/file.jar!/META-INF/services/*;flatten:=true
+</code></pre></div>
+
+<p><code>rename:=RENAME</code> - maps the path using a given renaming instruction. Paths are filtered by the given instruction-SELECTOR. The instruction-Selector is compiled to a regex-pattern. This pattern is used to generate a matcher by using the filtered path and the matcher is used to replaceAll using the given extra value.</p>
+<div class="highlight"><pre><span></span><code>-includeresource new.package=@jar/cxf-rt-rs-sse-3.2.5.jar!/(META-INF)/(c*f)/(*);rename:=$2/$1/$3.copy
+</code></pre></div>
+
+<p><code>onduplicate</code> - controls duplicate file handling for files with the same path and filename. See <strong>Handling duplicates</strong> below.</p>
+<h3 id="handling-duplicates">Handling duplicates</h3>
+<p>When unrolling multiple jar files into your target jar then duplicates can occur when multiple files share the same path and filename. By default duplicates overwrite existing files (last wins).
+With the <code>onduplicate</code> directive you can control this behavior. For example there is the command <code>onduplicate:=MERGE</code> which by default is able to merge (append) services files in <code>/META-INF/services/</code>.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li><code>onduplicate:=OVERWRITE</code> - (default) duplicates overwrite existing files (in other words: last wins)</li>
+<li><code>onduplicate:=MERGE</code> - tries to merge duplicate files under <code>/META-INF/services/</code> by default. Other paths are skipped.</li>
+<li><code>onduplicate:='MERGE,metainfservices'</code> - same as MERGE. <code>metainfservices</code> is a tag which pulls in Plugins with this tag. Currently there is one default Plugin for handling files under <code>/META-INF/services/</code></li>
+<li><code>onduplicate:='sometag'</code> - tries to merge with Plugins tagged with <code>sometag</code></li>
+<li><code>onduplicate:=SKIP</code> - duplicates are skipped (in other words: first wins)</li>
+<li><code>onduplicate:=WARN</code> - output a warning if there are duplicates</li>
+<li><code>onduplicate:=ERROR</code> output an error if there are duplicates</li>
+</ul>
+<p><code>WARN</code> and <code>ERROR</code> can be combined with other commands, while OVERWRITE, MERGE, SKIP are mutually exclusive.
+So combinations are possible, e.g.</p>
+<ul>
+<li><code>onduplicate:=WARN,MERGE</code> - this outputs are warning if duplicates occur, but also tries to merge files under <code>META-INF/services</code>.</li>
+</ul>
+<h4 id="example-handling-duplicates">Example - Handling duplicates</h4>
+<p>Let's take Apache FOP as an example. This library comes with 4 jars which are not OSGi bundles.
+To use them in OSGi you could wrap them with bnd. Because of some classloading issues related to the ServiceLoader mechanism, one way to do it is to combine them into a single bundle.
+One challenge is its extension mechanism which uses ServiceLoaders under <code>/META-INF/services/</code>.</p>
+<p>For example the bundle <code>fop-core</code> contains a file <code>META-INF/services/org.apache.xmlgraphics.image.loader.spi.ImagePreloader</code> with the content:</p>
+<div class="highlight"><pre><span></span><code>org.apache.fop.image.loader.batik.PreloaderWMF
+org.apache.fop.image.loader.batik.PreloaderSVG
+</code></pre></div>
+
+<p><code>xmlgraphics-commons</code> contains the same file  <code>META-INF/services/org.apache.xmlgraphics.image.loader.spi.ImagePreloader</code> with content:</p>
+<div class="highlight"><pre><span></span><code>org.apache.xmlgraphics.image.loader.impl.PreloaderTIFF
+org.apache.xmlgraphics.image.loader.impl.PreloaderGIF
+org.apache.xmlgraphics.image.loader.impl.PreloaderJPEG
+org.apache.xmlgraphics.image.loader.impl.PreloaderBMP
+org.apache.xmlgraphics.image.loader.impl.PreloaderEMF
+org.apache.xmlgraphics.image.loader.impl.PreloaderEPS
+org.apache.xmlgraphics.image.loader.impl.imageio.PreloaderImageIO
+org.apache.xmlgraphics.image.loader.impl.PreloaderRawPNG
+</code></pre></div>
+
+<p>If you combine these two jars into a single target jar you want to ensure that both files do not overwrite each other but are merged / appended instead, in order to be a valid ServiceLoader file.</p>
+<p>This can be achieved by the following instructions:</p>
+<div class="highlight"><pre><span></span><code>@${repo;org.apache.xmlgraphics:fop-core;latest}!/*,\
+@${repo;org.apache.xmlgraphics:xmlgraphics-commons;latest}!/*;onduplicate:=MERGE,\
+</code></pre></div>
+
+<p>The instructions above can be read like this:</p>
+<ul>
+<li>the first line <code>fop-core</code> can be considered the parent which is unrolled without any special handling.</li>
+<li>the second line is the interesting one: The <code>onduplicate:=MERGE</code> directive tells bnd to try merging files. By default bnd is only able to merge files under <code>META-INF/services</code>. So bnd will append the duplicate file to the existing file with a line break.</li>
+</ul>
+<h2 id="literals">Literals</h2>
+<p>For testing purposes it is often necessary to have tiny resources in the bundle. These could of course be placed on the file system but bnd can also generate these on the fly. Since these are defined in the bnd files, the content has full access to the macros. This is done by specifying a <code>literal</code> attribute on the clause.</p>
+<div class="highlight"><pre><span></span><code>-includeresource    foo.txt;literal=&#39;This is some content with a macro ${sum;1,2,3}&#39;
+</code></pre></div>
+
+<p>The previous example will create a resource with the given content.</p>
+<h2 id="flattening-recurse">Flattening &amp; Recurse</h2>
+<p>When a directory is specified bnd will by default recurse the source and create a similar hierarchy on the destination.</p>
+<p>The recursion and the hierarchy can be controlled with directives.</p>
+<div class="highlight"><pre><span></span><code>-includeresource    target/=hierarchy/
+</code></pre></div>
+
+<p>The <code>recursive:</code> directive can be used to indicate that the source should not be recursively traversed by specifying <code>false</code>:</p>
+<div class="highlight"><pre><span></span><code>-includeresource    target/=hierarchy/;recursive:=false
+</code></pre></div>
+
+<p>In this case, only the <code>hierarchy</code> directory itself will be copied to the <code>target</code> directory.  The <code>flatten:</code> directive indicates that if the directories are recursively searched, the output must not create any directories. That is all resources are flattened in the output directory.</p>
+<div class="highlight"><pre><span></span><code>-includeresource    target/=hierarchy/;flatten:=true
+</code></pre></div>
+
+<h2 id="sample-usages">Sample usages</h2>
+<h3 id="simple-form">Simple form</h3>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-includeresource: lib/fancylibrary-3.12.0.jar</code></td>
+<td>Copy lib/fancylibrary-3.12.0.jar file into the root of the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource.resources: -src/main/resources</code></td>
+<td>Copy folder src/main/resources contents (including subdfolders) into root of the target JAR <br>The arbitrarily named suffix .resources prevents this includeresource directive to be overwritten <br>The preceding minus sign instructs to supress an error for non-existing folder src/main/resources</td>
+</tr>
+<tr>
+<td><code>-includeresource: ${workspace}/LICENSE, {readme.md}</code></td>
+<td>Copy the LICENSE file residing in the bnd workspace folder (above the project directory) as well as the pre-processed readme.md file (allowing for e.g. variable substitution) in the project folder into the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource: ${repo;com.acme:foo;latest}</code></td>
+<td>Copy the com.acme.foo bundle JAR in highest version number found in the bnd workspace repository into the root of the target JAR</td>
+</tr>
+</tbody>
+</table>
+<h3 id="assignment-form">Assignment form</h3>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-includeresource: images/=img/</code> or <br><code>-includeresource: images=img</code></td>
+<td>Copy contents of img/ folder (including subdfolders) into an images folder of the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource: x=a/c/c.txt</code></td>
+<td>Copy a/c/c.txt into file x in the root folder of the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource: x/=a/c/c.txt</code></td>
+<td>Copy a/c/c.txt into file x/c.txt in the root folder of the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource: libraries/fancylibrary.jar=lib/fancylibrary-3.12.jar; lib:=true</code></td>
+<td>Copy lib/fancylibrary-3.1.2.jar from project into libraries folder of the target JAR, and place it on the Bundle-Classpath (BCP). It will make sure the BCP starts with '.' and then each include resource that is included will be added to the BCP</td>
+</tr>
+<tr>
+<td><code>-includeresource: lib/; lib:=true</code></td>
+<td>Copy every JAR file underneath lib in a relative position under the root folder of the target JAR, and add each library to the bundle classpath</td>
+</tr>
+<tr>
+<td><code>-includeresource: acme-foo-snap.jar=${repo;com.acme:foo;snapshot}</code></td>
+<td>Copy the highest snapshot version of com.acme.foo found in the bnd workspace repository as acme-foo-snap.jar into the root of the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource: foo.txt;literal='foo bar'</code></td>
+<td>Create a file named foo.txt containing the string literal "foo bar" in the root folder of the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource: bsn.txt;literal='${bsn}'</code></td>
+<td>Create a file named bsn.txt containing the bundle symbolic name (bsn) of this project in the root folder of the target JAR</td>
+</tr>
+<tr>
+<td><code>-includeresource: libraries/=lib/;filter:=fancylibrary-*.jar;recursive:=false;lib:=true</code> or <br><code>-includeresource: libraries/=lib/fancylibrary-*.jar;lib:=true</code> (as of bndtools 4.2)</td>
+<td>Copy a wildcarded library from lib/ into libraries and add it to the bundle classpath</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inline-form">Inline form</h3>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-includeresource: @lib/fancylibrary-3.12.jar!/*</code></td>
+<td>Extract the contents of lib/fancylibrary-3.12.jar into the root folder of the target JAR, preserving relative paths</td>
+</tr>
+<tr>
+<td><code>-includeresource: @${repo;com.acme.foo;latest}!/!META-INF/*</code></td>
+<td>Extract the contents of the highest found com.acme.foo version in the bnd workspace repository into the root folder of the target JAR, preserving relative paths, excluding the META-INF/ folder</td>
+</tr>
+</tbody>
+</table>
+<p><br /><br /></p>
+</body>
+</html>

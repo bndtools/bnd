@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>tolower STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>tolower STRING</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>tolower</code> macro converts a string to lowercase using the default locale.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${tolower;&lt;string&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The string to convert to lowercase</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Converts all uppercase letters to lowercase</li>
+<li>Uses default locale for conversion</li>
+<li>Non-letter characters remain unchanged</li>
+<li>Returns the lowercase string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Convert simple string:</p>
+<div class="highlight"><pre><span></span><code>${tolower;HELLO WORLD}
+# Returns: &quot;hello world&quot;
+</code></pre></div>
+
+<p>Convert mixed case:</p>
+<div class="highlight"><pre><span></span><code>${tolower;MyClassName}
+# Returns: &quot;myclassname&quot;
+</code></pre></div>
+
+<p>Normalize for comparison:</p>
+<div class="highlight"><pre><span></span><code>${if;${equals;${tolower;${input}};${tolower;${expected}}};match;no-match}
+</code></pre></div>
+
+<p>Convert package names:</p>
+<div class="highlight"><pre><span></span><code>normalized=${tolower;Com.Example.API}
+# Returns: &quot;com.example.api&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Normalizing strings for comparison</li>
+<li>Converting user input to standard format</li>
+<li>Creating lowercase identifiers</li>
+<li>Case-insensitive matching</li>
+<li>Formatting output consistently</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses default locale conversion rules</li>
+<li>See also: <code>${toupper}</code> for uppercase conversion</li>
+<li>Locale-sensitive for certain characters</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

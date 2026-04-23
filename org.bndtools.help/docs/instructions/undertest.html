@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-undertest true</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-undertest true</h1>
+<ul>
+<li>Pattern: <code>true|false</code></li>
+</ul>
+<!-- Manual content from: ext/undertest.md -->
+<p>The <code>-undertest</code> instruction is set by the project when it builds a JAR in test mode. It is intended to be used by plugins or build logic to indicate that the current build is for testing purposes. When this instruction is present, certain behaviors or configurations (such as including test packages) may be enabled automatically.</p>
+<p>When building with <code>-undertest</code>, the build process skips dependency checking, so it is important to ensure that any dependent projects are built first. The instruction also causes the project to include test-specific packages (such as those specified by <code>-testpackages</code>) in the build, making them available for testing. This helps automate and streamline the test build process, ensuring that test-specific settings are applied only when needed and that the resulting JAR is suitable for test execution.</p>
+<p>In summary, <code>-undertest</code> signals that the current build is for testing, enables test package inclusion, and skips dependency checks to speed up the test build workflow.</p>
+<p><br /><br /></p>
+</body>
+</html>

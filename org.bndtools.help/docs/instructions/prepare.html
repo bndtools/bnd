@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-prepare makespec ( ',' makespec )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-prepare makespec ( ',' makespec )*</h1>
+<ul>
+<li>Pattern: <code>.*</code></li>
+</ul>
+<!-- Manual content from: ext/prepare.md -->
+<p>An typical use case for the <code>-prepare</code> instruction is the generation of CSS files from a <code>less</code> or <code>sccs</code> specification. The prepare instruction will execute a number of commands in the shell before it starts the build process.</p>
+<p>The commands used in the shell must work on the platform. Since the shell is so different in a Windows environment this function is not guaranteed to work.</p>
+<h2 id="example">Example</h2>
+<p>The following example compiles typescript code in the <code>typescript</code> directory. The output goes to <code>web/repository.js</code>. To install the <code>tsc</code> command, see <code>npm</code>.</p>
+<div class="highlight"><pre><span></span><code>-prepare: \
+    web/foo.js &lt;= typescript/*.ts ; \
+        command:=tsc -p typescript --out $@
+</code></pre></div>
+
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>-prepare     ::= makespec ( &#39;,&#39; makespec )
+makespec     ::= dependency ( &#39;;&#39; parameter )+
+dependency   ::= PATH ( &#39;&lt;=&#39; FILESPEC )?
+parameter    ::= command | report | name | env
+command      ::= &#39;command:=&#39; &lt;shell&gt; # mandatory
+report       ::= &#39;report:=&#39; PATTERN
+name         ::= &#39;name:=&#39; STRING
+env          ::= key &#39;=&#39; value
+</code></pre></div>
+
+<p>A <code>makespec</code> defines a dependency in the file system. It must start with a file path, this is the output file of the command.  It can be followed with a <code>dependency</code>. A <code>dependency</code> is a <code>FILESPEC</code>. The <code>FILESPEC</code> defines the set of input files to the command. If specified, then the command is only executed when the target file is older than any of the dependencies and the project bnd files.</p>
+<p>It is possible to specify a <code>name</code> for the command, this name is then used for any error reporting.</p>
+<p>The <code>command</code> parameter specifies the shell command. It must be a valid shell command. Any <code>$@</code> and <code>$&lt;</code> macros are replaced by the target file path and the set of files in the dependency.</p>
+<p>The shell is supposed to support multiple commands (separate with ';') and pipes ('|'). The working directory the command will run in is the project directory. </p>
+<p>Any attributes (i.e. not directives) are added as an environment variable for the command.</p>
+<p>If the executed command provides diagnostic output with file names, line numbers, etc. then it is possible in some cases to report these to the IDE so the error/warning appears on the right place. This requires the specification of a regular expression. This regular expression must specify named groups. A named group is like <code>(?&lt;name&gt;.*)</code>. The expression must find error messages from the console output or the error output. </p>
+<p>The following names can be used in the regular expression:</p>
+<div class="highlight"><pre><span></span><code>file           relative file name
+line           zero based line number
+line-1         one based line number
+type           `error` | `warning`
+message        the message
+</code></pre></div>
+
+<p>For example, the report pattern for the Microsoft TypeScript compiler tsc:</p>
+<div class="highlight"><pre><span></span><code>&quot;(^|\n)(?&lt;file&gt;[^(]+)\\((?&lt;line&gt;[0-9]+),(?&lt;column&gt;[0-9]+)\\):(?&lt;message&gt;[^\n]*)&quot;
+</code></pre></div>
+
+<h2 id="path">Path</h2>
+<p>It is possible to set the platforms command search path with the <code>-PATH</code> macro. This macro must contain a comma separated list of PATH, specifying places where to look. If this <code>-PATH</code> macro contains <code>${@}</code> then this will be replaced with the platforms current PATH. By not specifying the <code>${@}</code> it is possible to limit the available commands.</p>
+<p><br /><br /></p>
+</body>
+</html>
