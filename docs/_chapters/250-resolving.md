@@ -403,7 +403,7 @@ bnd.multireleaseCapability from a supporting resource 1 part of Optional[assertj
 ```
 
 
-### How do you create a distro?
+## How do you create a distro?
 
 1. Install the [bnd remote agent bundle][1] in the target container runtime. This will automatically open a local socket on a default port used by the bnd cli next.
 2. Execute the following command using the [bnd cli][2]:
