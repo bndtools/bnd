@@ -37,7 +37,7 @@ import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
  * 4. Features are indexed with proper capabilities and requirements
  * 5. Plugin references and included features are correctly extracted
  */
-//@Disabled("Deactivated for server builds - only for manual local testing due to long runtime")
+@Disabled("Deactivated for server builds - only for manual local testing due to long runtime")
 @ExtendWith(SoftAssertionsExtension.class)
 public class Eclipse438FeatureTest {
 

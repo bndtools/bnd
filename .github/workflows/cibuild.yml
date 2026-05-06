@@ -52,131 +52,121 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-canonical:
+    if: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        java: [ '17' ]
+        runner: [ '{0}' ]
+        include:
+          - os: 'ubuntu-latest'
+            java: '17'
+            runner: '{0}'
+            canonical: true
+            reference: true
+            fetch-depth: '0'
+    name: Build Canonical JDK${{ matrix.java }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40
+        with:
+          egress-policy: audit
+      - name: Git Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: ${{ matrix.fetch-depth }}
+      - name: Set up Java 8 + ${{ matrix.java }}
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          distribution: 'temurin'
+          java-version: |
+            8
+            ${{ matrix.java }}
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e
+      - name: Build
+        id: build
+        run: |
+          ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
+      - name: Configure settings.xml for Publish
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          server-id: bndtools.jfrog.io
+          server-username: JFROG_USERNAME
+          server-password: JFROG_PASSWORD
+      - name: Publish
+        id: publish
+        run: |
+          env | sort
+          ./.github/scripts/ci-publish.sh
+        env:
+          CANONICAL: true
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
+          JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
+          JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+      - name: Upload Test Reports
+        if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
+          path: |
+            */generated/test-reports/*/TEST-*.xml
+            maven/*/target/surefire-reports/TEST-*.xml
+            gradle-plugins/*/build/test-results/*/TEST-*.xml
+            gradle-plugins/build/reports/*
+
+  build-others:
+    needs: [build-canonical]
     strategy:
       fail-fast: ${{ (github.repository != 'bndtools/bnd') || ((github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/next')) || (github.event_name == 'pull_request') }}
       matrix:
-        os:
-        - 'ubuntu-latest'
-        java:
-        - '21'
-        - '25'
-        runner:
-        - '{0}' # 'xvfb-run --auto-servernum {0}'
+        os: [ 'ubuntu-latest', 'windows-latest' ]
+        java: [ '21', '25' ]
+        runner: [ '{0}' ]
+        exclude:
+          - os: 'ubuntu-latest'
+            java: '17'
         include:
-        - os: 'ubuntu-latest'
-          java: '17'
-          runner: '{0}' # 'xvfb-run --auto-servernum {0}'
-          canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
-          reference: true
-          fetch-depth: '0'
-        - os: 'windows-latest'
-          java: '17'
-          runner: '{0}'
-    name: Build JDK${{ matrix.java }} ${{ matrix.os }}
+          - os: 'windows-latest'
+            java: '17'
+            runner: '{0}'
+    name: Build Others JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Harden Runner
-      uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40
-      with:
-        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
-
-    - name: Git Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        fetch-depth: ${{ matrix.fetch-depth }}
-    - name: Set up Java 8 + ${{ matrix.java }}
-      uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
-      with:
-        distribution: 'temurin'
-        java-version: |
-          8
-          ${{ matrix.java }}
-    - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e
-
-    #- name: Cache cnf cache and ~/.bnd/urlcache/
-    #  id: cache-cnf-cache
-    #  uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
-    #  env:
-    #      cache-name: cache-cnf-cache
-    #  with:
-    #    path: |
-    #      "${{ github.workspace }}/cnf/cache"
-    #      ~/.bnd/urlcache/
-    #    key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/cnf/**/*.bnd', '**/cnf/**/*.mvn', '**/cnf/**/*.maven', '**/cnf/ext/*.*') }}
-
-    - name: Build
-      id: build
-      run: |
-        ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
-
-    - name: Configure settings.xml for Publish
-      if: ${{ matrix.canonical }}
-      uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
-      with:
-        distribution: 'temurin'
-        java-version: ${{ matrix.java }}
-        server-id: bndtools.jfrog.io
-        server-username: JFROG_USERNAME
-        server-password: JFROG_PASSWORD
-    - name: Publish
-      id: publish
-      if: ${{ matrix.canonical }}
-      run: |
-        env | sort
-        ./.github/scripts/ci-publish.sh
-      env:
-        CANONICAL: ${{ matrix.canonical }}
-        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
-        JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
-        JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-    - name: Upload P2 Repo artifact
-      if: ${{ matrix.reference && github.event_name == 'pull_request' }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
-        path: |
-          org.bndtools.p2/generated/org.bndtools.p2.jar
-        retention-days: 7   # keep for 7 days
-    - name: Publish PR p2 repo
-      if: ${{ matrix.reference && github.event_name == 'pull_request' }}
-      run: |
-        PR=${{ github.event.pull_request.number }}
-        ARTIFACT_PATH="org.bndtools.p2/generated/org.bndtools.p2.jar"
-        if [ -f "$ARTIFACT_PATH" ] && [ "$PR" != "" ]; then
-          echo "artifact found - start upload check"
-          if curl --silent --head --fail "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}" > /dev/null; then
-          echo "URL already existing - delete previous deployment"
-          curl -s -X DELETE \
-            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
-            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
-          fi
-          echo "upload p2 repo to https://bndtools.jfrog.io/artifactory/p2/pr/${PR}"
-          curl -s \
-            -H "Authorization: Bearer ${{ secrets.JFROG_SNAPSHOT_TOKEN }}" \
-            -H "X-Explode-Archive: true" \
-            -T "$ARTIFACT_PATH" \
-            "https://bndtools.jfrog.io/artifactory/p2/pr/${PR}/org.bndtools.p2.zip"
-          if [ $? -eq 0 ]; then
-            echo "upload successful"
-          else
-            echo "upload failed"
-          fi
-        else
-          echo "Artifact $ARTIFACT_PATH not found, skipping upload."
-        fi
-      env:
-        JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
-    - name: Upload Test Reports
-      if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
-        path: |
-          */generated/test-reports/*/TEST-*.xml
-          maven/*/target/surefire-reports/TEST-*.xml
-          gradle-plugins/*/build/test-results/*/TEST-*.xml
-          gradle-plugins/build/reports/*
+      - name: Harden Runner
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40
+        with:
+          egress-policy: audit
+      - name: Git Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+      - name: Set up Java 8 + ${{ matrix.java }}
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          distribution: 'temurin'
+          java-version: |
+            8
+            ${{ matrix.java }}
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e
+      - name: Build
+        id: build
+        run: |
+          ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
+      - name: Upload Test Reports
+        if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
+          path: |
+            */generated/test-reports/*/TEST-*.xml
+            maven/*/target/surefire-reports/TEST-*.xml
+            gradle-plugins/*/build/test-results/*/TEST-*.xml
+            gradle-plugins/build/reports/*
