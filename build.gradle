@@ -100,7 +100,7 @@ subprojects {
 				environment("JAVA_OPTS": jpmsOptions.join(" "))
 			}
 			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-				jvmArgs("-XX:+ShowCodeDetailsInExceptionMessages")
+				jvmArgs("-XX:+ShowCodeDetailsInExceptionMessages", "-XX:+UseStringDeduplication")
 			}
 			inputs.files(fileTree(layout.getProjectDirectory()) {
 				include("testresources/", "testdata/")
@@ -127,14 +127,14 @@ subprojects {
 			if (System.getProperty("maven.repo.local")) {
 				systemProperty("maven.repo.local", IO.getFile(gradle.getStartParameter().getCurrentDir(), System.getProperty("maven.repo.local")))
 			}
-			
+
 			// Forward all bnd.* system properties to test JVM
 			System.properties.each { key, value ->
 				if (key.startsWith("bnd.")) {
 					systemProperty(key, value)
 				}
 			}
-			
+
 		}
 	}
 }
