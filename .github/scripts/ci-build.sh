@@ -42,6 +42,7 @@ echo -e "#\n# gradle and maven versions\n#\n"
 
 echo -e "#\n# build bnd and bndtools\n#\n"
 ./gradlew \
+    --console=plain \
     --no-daemon \
     -Dmaven.repo.local=dist/m2 \
     -Dbnd.sonatype.release.description=${GITHUB_JOB}_${GITHUB_RUN_NUMBER} \
