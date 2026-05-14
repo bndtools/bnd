@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>vcompare VERSION VERSION</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>vcompare VERSION VERSION</h1>
+<h2 id="summary">Summary</h2>
+<p>Compare two OSGi version strings using proper version semantics, returning -1, 0, or 1.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${vcompare;&lt;version1&gt;;&lt;version2&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>version1</strong>: First version to compare (OSGi version format)</li>
+<li><strong>version2</strong>: Second version to compare (OSGi version format)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>Compares two OSGi version strings using semantic version comparison and returns:
+- <code>0</code> - The versions are equal
+- <code>1</code> - The first version is greater than the second (newer)
+- <code>-1</code> - The first version is less than the second (older)</p>
+<p>OSGi versions follow the format: <code>major.minor.micro.qualifier</code>
+- Numeric parts (major, minor, micro) are compared numerically
+- Qualifier is compared lexicographically</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Equal versions
+${vcompare;1.0.0;1.0.0}
+# Returns: 0
+
+# First version greater
+${vcompare;2.0.0;1.5.0}
+# Returns: 1
+
+# First version less
+${vcompare;1.0.0;2.0.0}
+# Returns: -1
+
+# Micro version comparison
+${vcompare;1.2.3;1.2.2}
+# Returns: 1
+
+# With qualifiers
+${vcompare;1.0.0.SNAPSHOT;1.0.0.RELEASE}
+# Returns: 1 (SNAPSHOT &gt; RELEASE lexicographically)
+
+# Different lengths
+${vcompare;1.0;1.0.0}
+# Returns: 0 (1.0 equals 1.0.0.0)
+
+# Use in conditional logic
+-include ${if;${vcompare;${bndversion};7.0.0};modern.bnd;legacy.bnd}
+
+# Check minimum version requirement
+-include ${if;${vcompare;${Bundle-Version};2.0.0};compatible.bnd;incompatible.bnd}
+
+# Version range check
+is-current = ${if;${vcompare;${Bundle-Version};3.0.0};true;false}
+
+# Compare with project version
+${vcompare;${version;===;${Bundle-Version}};${minimum-version}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Version Requirements</strong>: Check if a version meets minimum requirements</li>
+<li><strong>Conditional Configuration</strong>: Apply different settings based on version</li>
+<li><strong>Build Compatibility</strong>: Ensure compatibility with specific versions</li>
+<li><strong>Version Validation</strong>: Verify version constraints are met</li>
+<li><strong>Feature Gating</strong>: Enable features only in certain version ranges</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses <strong>OSGi version semantics</strong>, not lexicographic comparison</li>
+<li>For string comparison, use <a href="compare.html">compare</a></li>
+<li>For numeric comparison, use <a href="ncompare.html">ncompare</a></li>
+<li>Properly handles major.minor.micro.qualifier format</li>
+<li>Missing version parts default to 0 (or empty qualifier)</li>
+<li>Numeric parts compared numerically (2.0 &gt; 1.10)</li>
+<li>Qualifier compared alphabetically</li>
+<li>Returns only -1, 0, or 1</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="compare.html">compare</a> - Compare strings lexicographically</li>
+<li><a href="ncompare.html">ncompare</a> - Compare numbers numerically</li>
+<li><a href="version.html">version</a> / <a href="versionmask.html">versionmask</a> - Format version numbers</li>
+<li><a href="if.html">if</a> - Conditional macro that can use comparison results</li>
+<li><a href="bndversion.html">bndversion</a> - Get current bnd version for comparison</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

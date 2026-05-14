@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>isempty ( ';' STRING )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>isempty ( ';' STRING )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>isempty</code> macro checks if all provided arguments are empty strings. Returns true only if all values are empty, false otherwise.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${isempty[;&lt;string&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> (optional) - Zero or more strings to check</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns true if all arguments are empty strings</li>
+<li>Returns true if no arguments provided</li>
+<li>Returns false if any argument has content</li>
+<li>Empty string means zero length</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Check if empty:</p>
+<div class="highlight"><pre><span></span><code>${if;${isempty;${value}};value-empty;value-has-content}
+</code></pre></div>
+
+<p>Check multiple values:</p>
+<div class="highlight"><pre><span></span><code>${isempty;;;;}
+# Returns: true (all empty)
+</code></pre></div>
+
+<p>Validate required fields:</p>
+<div class="highlight"><pre><span></span><code>${if;${isempty;${name};${email}};missing-fields;fields-ok}
+</code></pre></div>
+
+<p>No arguments:</p>
+<div class="highlight"><pre><span></span><code>${isempty}
+# Returns: true
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Input validation</li>
+<li>Checking for missing values</li>
+<li>Required field validation</li>
+<li>Conditional logic on emptiness</li>
+<li>Form validation</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>All arguments must be empty for true</li>
+<li>Empty string is ""</li>
+<li>Whitespace is not empty</li>
+<li>Returns boolean</li>
+<li>See also: <code>${length}</code> to check string size</li>
+<li>See also: <code>${def}</code> for default values</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

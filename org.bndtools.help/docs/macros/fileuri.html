@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>fileuri ';' PATH</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>fileuri ';' PATH</h1>
+<h2 id="summary">Summary</h2>
+<p>Convert a file path to a proper file URI (e.g., <code>file:///path/to/file</code>).</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${fileuri;&lt;path&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>path</strong>: File path to convert to a URI (can be relative or absolute)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>The macro:
+1. Resolves relative paths against the processor's base directory
+2. Converts the path to a canonical file (resolves symbolic links, normalizes)
+3. Returns the file URI representation</p>
+<p>The resulting URI follows the <code>file:///</code> protocol format with proper escaping of special characters.</p>
+<p>The base directory depends on context:
+- In a project's <code>bnd.bnd</code>: Resolved against the project directory
+- In a workspace's <code>cnf/build.bnd</code>: Resolved against the workspace directory</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Current directory URI
+${fileuri;.}
+# In project: file:///workspace/my.project/
+# In workspace: file:///workspace/
+
+# Relative path (resolved against base directory)
+${fileuri;src/main/resources/config.xml}
+# Returns: file:///project/base/src/main/resources/config.xml
+
+# Absolute path
+${fileuri;/home/user/file.txt}
+# Returns: file:///home/user/file.txt
+
+# Use in manifest for resource references
+Bundle-Resource: ${fileuri;${workspace}/templates/default.html}
+
+# Reference external files
+X-Config-Location: ${fileuri;../config/settings.properties}
+
+# Handle spaces and special characters (automatically escaped)
+${fileuri;/path/with spaces/file (1).txt}
+# Returns: file:///path/with%20spaces/file%20(1).txt
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Manifest Headers</strong>: Create proper file URIs for bundle manifest headers</li>
+<li><strong>External References</strong>: Reference files outside the bundle with proper URIs</li>
+<li><strong>Configuration</strong>: Specify file locations in configuration that requires URIs</li>
+<li><strong>Cross-Platform Paths</strong>: Generate platform-independent file URIs</li>
+<li><strong>Resource Location</strong>: Document file resource locations in metadata</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Relative paths are resolved against the base directory of the processor (project or workspace root)</li>
+<li>The path is canonicalized before conversion (symlinks resolved, <code>.</code> and <code>..</code> removed)</li>
+<li>Special characters in the path are properly URI-encoded</li>
+<li>The resulting URI uses forward slashes regardless of the platform</li>
+<li>On Windows, drive letters are included in the URI (e.g., <code>file:///C:/path/file.txt</code>)</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="uri.html">uri</a> - More general URI handling</li>
+<li><a href="path.html">path</a> - Convert file paths to absolute paths</li>
+<li><a href="basedir.html">basedir</a> - Get the base directory path</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

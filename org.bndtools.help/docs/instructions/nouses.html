@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-nouses  BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-nouses  BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-nouses=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/nouses.md -->
+<p>Do not calculate the <a href="https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3127019">uses directive</a> on package exports or on capabilities, if set to <em>true</em>.
+Default: <em>false</em></p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-nouses: true
+</code></pre></div>
+
+<p><strong>Warning:</strong> 
+Setting this flag to <em>true</em> is rarely needed and can be <strong>dangerous</strong>. Without any <em>uses</em> clause, all packages are treated as independent from each other. That means the OSGi resolver is free to wire these packages to different classloaders if used by a consumer (or its dependencies).</p>
+<p><br /><br /></p>
+</body>
+</html>

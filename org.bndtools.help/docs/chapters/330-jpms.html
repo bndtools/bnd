@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JPMS Libraries</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>JPMS Libraries</h1>
+<p>Java developers face a challenge today of building JPMS libraries, let alone when adding a secondary goal that those libraries be usable OSGi bundles. Accuracy and consistency of metadata can often become a problem reducing the time spent focusing on more productive aspect of the library.</p>
+<p>A key <strong>OSGi</strong> innovation is the use of annotations to significantly reduce (in many cases to completely eliminate) the configuration needed to describe an OSGi bundle in build descriptors. See <a href="230-manifest-annotations.html">Bundle Annotations</a>.</p>
+<h2 id="creating-jpms-libraries-with-bnd">Creating JPMS Libraries with bnd</h2>
+<p>Just one of the additional benefits of using bnd is the ability to generate the <code>module-info.class</code>  along side all of the traditional OSGi metadata.</p>
+<p>When applying the instruction <code>-jpms-module-info</code> bnd will collect any relevant information and using several heuristics automatically generates the <code>module-info.class</code>.</p>
+<h3 id="name-version-access">Name, Version &amp; Access</h3>
+<p>When calculating the <strong>module name</strong> the following is considered:</p>
+<ol>
+<li>If the <code>-jpms-module-info</code> instruction contains a key, the key is used as the module name
+   e.g. <code>-jpms-module-info: foo.module</code>, the module name is <code>foo.module</code></li>
+<li>If the <code>Automatic-Module-Name</code> header is found in the manifest, the value is used as the module name</li>
+<li>Otherwise, the <code>Bundle-SymbolicName</code>  (as calculated) is used as the module name</li>
+</ol>
+<p>When calculating the <strong>module version</strong>, the following is considered:</p>
+<ol>
+<li>If the <code>-jpms-module-info</code> instruction contains a key having a <code>version</code> attribute, the <code>version</code> attribute value is used as the module version
+   e.g. <code>-jpms-module-info: foo.module;version=1.2.3</code>, the module version is <code>1.2.3</code></li>
+<li>Otherwise, the <code>Bundle-Version</code>  (as calculated) is used as the module version</li>
+</ol>
+<p>When calculating the <strong>module access</strong>, the following is considered:</p>
+<ol>
+<li>If the <code>-jpms-module-info</code> instruction contains a key having an <code>access</code> attribute, the <code>access</code> attribute value is used as the module access. Multiple comma separate values are allowed but quotes are required.
+   e.g. the module access is <code>0x0020</code> (OPEN):
+   <code>properties
+   -jpms-module-info: foo.module;access=0x0020</code>
+   With multiple flags:
+   <code>properties
+   -jpms-module-info: foo.module;access='OPEN,SYNTHETIC'</code></li>
+</ol>
+<p><em>Legal values are:</em>
+   * <code>OPEN</code> or <code>open</code>, <code>0x0020</code>, <code>32</code>
+   * <code>SYNTHETIC</code> or <code>synthetic</code>, <code>0x1000</code>, <code>4096</code>
+   * <code>MANDATED</code> or <code>mandated</code>, <code>0x8000</code>, <code>32768</code></p>
+<ol>
+<li>If the header <code>Require-Capability</code> contains <strong>any</strong> capability in the <code>osgi.extender</code> namespace, the module access is <strong>open</strong></li>
+<li>Otherwise, module access is <code>0</code></li>
+</ol>
+<p><em>Note that for the above rules, the earliest matching rule wins.</em></p>
+<h3 id="requires">Requires</h3>
+<p>When calculating the module <strong>requires</strong> the following is considered:</p>
+<ol>
+<li>
+<p>If the <code>-jpms-module-info</code> instruction contains a key having a <code>modules</code> attribute, the <code>modules</code> attribute value is first split on commas (<code>,</code>) and each segment is added as a raw required module name
+   e.g. <code>-jpms-module-info: foo.module;modules='java.desktop,java.logging'</code>, the modules <code>java.desktop</code>, and <code>java.logging</code> are added to module requires</p>
+</li>
+<li>
+<p>In addition, if the <code>-jpms-module-info</code> instruction contains a key having a <code>ee</code> attribute, the <code>ee</code> attribute indicates the Java module name mapping table to use for Java SE packages using bnd's <code>aQute.bnd.build.model.EE</code> definitions which define a set of Java module name mapping tables keyed by <code>EE</code>.
+   e.g. <code>-jpms-module-info: foo.module;ee=JavaSE-10</code>, bnd will use the Java module name mapping table for Java SE 10 when determining module name for a given Java SE package</p>
+</li>
+</ol>
+<p>If no <code>ee</code> attribute is specified, bnd will use the Java module name mapping table for Java SE 11 when determining module name for a given Java SE package</p>
+<ol>
+<li>If an imported package is associated with a module name, the module is added to module requires</li>
+</ol>
+<p><strong>Note:</strong> Non-Java SE packages are associated with module names by indexing all packages on the classpath of the bnd <code>analyzer</code> where the providing jar's module's name is:</p>
+<ul>
+<li>obtained from the jar's <code>module-info.class</code></li>
+<li>or, obtained from the jar's <code>Automatic-Module-Name</code></li>
+<li>or, calculated from the jar's filename by stripping off any version suffix (beginning with the first occurrence of a dash followed by a digit <code>-\d</code>)</li>
+<li>otherwise, no module name is associated with the exported package</li>
+</ul>
+<h4 id="requires-access-transitivity">Requires - Access: Transitivity</h4>
+<p>Bnd will set the access to <code>transitive</code>  if <em>any</em> package exported by the bundle has a <code>uses</code> constraint on a package of the required module.</p>
+<h4 id="requires-access-static">Requires  - Access: Static</h4>
+<p>Bnd will set the access to <code>static</code> if the module is specified in the <code>-jpms-module-info</code> instruction and does not actual have any imports.</p>
+<p>Bnd will set the access to <code>static</code> if <em>all</em> the packages imported from the module are any combination of <code>resolution:=optional</code>, <code>resolution:=dynamic</code> or match the <code>Dynamic-ImportPackage</code> instruction.</p>
+<h4 id="requires-version">Requires - Version</h4>
+<p>Bnd does not currently track a <code>require</code>'s version.</p>
+<h3 id="exports">Exports</h3>
+<p>Module <strong>exports</strong> will be mapped from all OSGi exported packages by default which can be managed easily with use of the <a href="230-manifest-annotations.html">Bundle Annotation</a> <code>@org.osgi.annotation.bundle.Export</code> on <code>package-info.java</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@org.osgi.annotation.bundle.Export</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">com.acme.foo</span><span class="p">;</span>
+</code></pre></div>
+
+<p><strong>Targeted exports</strong> (via the <code>exports .. to ..</code> clause) are supported with use of the <code>@aQute.bnd.annotation.jpms.ExportTo</code>. This annotation specifies the module name(s) to which a exported is targeted.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@org.osgi.annotation.bundle.Export</span>
+<span class="nd">@aQute.bnd.annotation.jpms.ExportTo</span><span class="p">(</span><span class="s">&quot;com.acme.bar&quot;</span><span class="p">)</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">com.acme.foo</span><span class="p">;</span>
+</code></pre></div>
+
+<p><strong>Note:</strong> The <code>@ExportTo</code> annotation is only relevant in conjunction with the <code>@Export</code> annotation.</p>
+<h3 id="opens">Opens</h3>
+<p>Module <strong>opens</strong> are supported with use of the <code>@aQute.bnd.annotation.jpms.Open</code> annotation on <code>package-info.java</code>. This annotation optionally specifies the module name(s) to which the opens is targeted.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@aQute.bnd.annotation.jpms.Open</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">com.acme.foo</span><span class="p">;</span>
+</code></pre></div>
+
+<h3 id="uses">Uses</h3>
+<p>Module <strong>uses</strong> are supported transparently with use of the bnd <a href="240-spi-annotations.html#serviceconsumer"><code>@aQute.bnd.annotation.spi.ServiceConsumer</code> SPI Annotation</a>.</p>
+<h3 id="provides">Provides</h3>
+<p>Module <strong>provides</strong> are supported transparently with use of the bnd <a href="240-spi-annotations.html#serviceprovider"><code>@aQute.bnd.annotation.spi.ServiceProvider</code> SPI Annotation</a>.</p>
+<h3 id="main-class">Main-Class</h3>
+<p>The module main class attribute is supported with use of the <code>@aQute.bnd.annotation.jpms.MainClass</code> annotation applied to the main class's Java type.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@aQute.bnd.annotation.jpms.MainClass</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Main</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="p">...</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{...}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="java-8-support">Java 8 Support</h3>
+<p>Bnd's <code>module-info.class</code> generation is supported when building with Java 8 or higher. (Yes! I did say Java 8.)</p>
+<h2 id="advanced-options">Advanced Options</h2>
+<p>There are scenarios where the heuristics used by bnd don't give the desired result because the necessary information is not available or is incorrect.</p>
+<p>The <code>-jpms-module-info-options</code> instruction provides some capabilities to help the developer handle these scenarios. The instruction uses the <em>package header syntax</em> similar to many other bnd instructions. The keys of these instructions are module names and there are 4 available attributes. They are:</p>
+<ul>
+<li><strong><code>substitute</code></strong> - If bnd generates a module name matching the value of this attribute it should be substituted with the key of the instruction.
+  e.g. </li>
+</ul>
+<p><code>properties
+  -jpms-module-info-options: java.enterprise;substitute="geronimo-jcdi_2.0_spec"</code>
+  means that if bnd calculates the module name to be <code>geronimo-jcdi_2.0_spec</code> it should replace it with <code>java.enterprise</code> </p>
+<ul>
+<li><strong><code>ignore</code></strong> - If the attribute <code>ignore="true"</code> is found the require matching the key of the instruction will not be added.
+  e.g. </li>
+</ul>
+<p><code>properties
+  -jpms-module-info-options: java.enterprise;ignore="true"</code></p>
+<p>means ignore the module <code>java.enterprise</code></p>
+<ul>
+<li><strong><code>static</code></strong> - If the attribute <code>static="true|false"</code> is found the access of the module matching the key of the instruction will be set to match.
+  e.g. </li>
+</ul>
+<p><code>properties
+  -jpms-module-info-options: java.enterprise;static="true"</code></p>
+<p>means make the <code>require</code> for module <code>java.enterprise</code> <code>static</code></p>
+<ul>
+<li><strong><code>transitive</code></strong> - If the attribute <code>transitive="true|false"</code> is found the access of the module matching the key of the instruction will be set to match.
+  e.g. </li>
+</ul>
+<p><code>properties
+  -jpms-module-info-options: java.enterprise;transitive="true"</code></p>
+<p>means make the <code>require</code> for module <code>java.enterprise</code> <code>transitive</code></p>
+<p>The following is an example with multiple attributes and instructions:</p>
+<div class="highlight"><pre><span></span><code><span class="na">-jpms-module-info-options</span><span class="o">:</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s">java.enterprise;substitute=&quot;geronimo-jcdi_2.0_spec&quot;;static=true;transitive=true,</span><span class="se">\</span>
+<span class="w">    </span><span class="s">java.management;ignore=true;</span>
+</code></pre></div>
+
+<h2 id="exporting-executable-jars">Exporting Executable JARs</h2>
+<p>Bnd's <code>export</code> functionality allows for the creation of <em>executable jars</em> which contain <em>fully assembled applications</em> whose only external dependency is a JDK.</p>
+<p>When the <code>-jpms-module-info</code> instruction is used in a <code>bndrun</code> file that is the target of the export function the executable jar that is created will contain a generated <code>module-info.class</code> containing whatever information bnd's JPMS heuristics could glean from the assembly.</p>
+<p>e.g.</p>
+<div class="highlight"><pre><span></span><code><span class="na">-jpms-module-info</span><span class="o">:</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s">${project.artifactId};</span><span class="se">\</span>
+<span class="w">        </span><span class="s">version=${project.version};</span><span class="se">\</span>
+<span class="w">        </span><span class="s">ee=JavaSE-${java.specification.version}</span>
+</code></pre></div>
+
+<p>The example above produces a module-info.class whose module id comes from the property <code>project.artifactId</code>, version from the property <code>project.version</code> and <code>ee</code> from the property <code>java.specification.version</code>.</p>
+<h3 id="launcher-main-class">Launcher Main Class</h3>
+<p>When the <code>-jpms-module-info</code> instruction is used in a <code>bndrun</code> file that is the target of the export function bnd launcher's main class will be applied to the module info implicitly.</p>
+</body>
+</html>

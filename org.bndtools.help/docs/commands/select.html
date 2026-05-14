@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>select</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>select</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   select [options]  &lt;&lt;jar-path&gt;&gt; &lt;[...]&gt;
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -h --header &lt;string&gt;* ]</code> A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. </li>
+<li><code>[ -k --key ]</code> Print the key before the value</li>
+<li><code>[ -n --name ]</code> Print the file name before the value</li>
+<li><code>[ -p --path ]</code> Print the file path before the value</li>
+<li><code>[ -w --where &lt;string&gt; ]</code> A simple assertion on a manifest header (e.g. Bundle-Version=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.</li>
+</ul>
+<!-- Manual content from: ext/select.md -->
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>biz.aQute.bnd (master)$ bnd select -h name generated/*.jar
+biz.aQute.bnd.jar
+biz.aQute.bnd (master)$ bnd select -h size generated/*.jar
+2604654
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

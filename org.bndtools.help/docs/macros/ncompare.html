@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ncompare NUMBER NUMBER</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>ncompare NUMBER NUMBER</h1>
+<h2 id="summary">Summary</h2>
+<p>Compare two numbers numerically using Java's <code>Double.compare()</code> method, returning -1, 0, or 1.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${ncompare;&lt;number1&gt;;&lt;number2&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>number1</strong>: First number to compare (can be integer or floating-point)</li>
+<li><strong>number2</strong>: Second number to compare (can be integer or floating-point)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>Compares the two numbers numerically and returns:
+- <code>0</code> - The numbers are equal
+- <code>1</code> - The first number is greater than the second
+- <code>-1</code> - The first number is less than the second</p>
+<p>Numbers are parsed as doubles, supporting both integers and floating-point values.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Equal numbers
+${ncompare;42;42}
+# Returns: 0
+
+# First number greater
+${ncompare;100;50}
+# Returns: 1
+
+# First number less
+${ncompare;10;20}
+# Returns: -1
+
+# Floating-point comparison
+${ncompare;3.14;2.71}
+# Returns: 1
+
+# Negative numbers
+${ncompare;-5;-10}
+# Returns: 1 (-5 is greater than -10)
+
+# Use in conditional logic
+-include ${if;${ncompare;${Bundle-Version};2.0};modern.bnd;legacy.bnd}
+
+# Compare with zero
+${ncompare;${errorcount};0}
+# Returns: 1 if errors exist, 0 if no errors
+
+# Numeric comparison (not lexicographic)
+${ncompare;10;2}
+# Returns: 1 (10 is greater than 2 numerically)
+
+# Compare with macro values
+${ncompare;${size;${errors}};5}
+# Check if more than 5 errors
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Threshold Checks</strong>: Verify if a value exceeds a threshold</li>
+<li><strong>Conditional Builds</strong>: Make decisions based on numeric values</li>
+<li><strong>Validation</strong>: Check if counts, sizes, or versions meet requirements</li>
+<li><strong>Quality Gates</strong>: Ensure numeric metrics are within acceptable ranges</li>
+<li><strong>Build Optimization</strong>: Skip steps based on numeric conditions</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Comparison is <strong>numeric</strong>, not lexicographic</li>
+<li>For string comparison, use <a href="compare.html">compare</a></li>
+<li>For OSGi version comparison, use <a href="vcompare.html">vcompare</a></li>
+<li>Both arguments are parsed as double-precision floating-point numbers</li>
+<li>Returns only -1, 0, or 1</li>
+<li>Handles integers, decimals, and negative numbers</li>
+<li>Useful with <a href="if.html">if</a> macro for conditional logic</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="compare.html">compare</a> - Compare strings lexicographically</li>
+<li><a href="vcompare.html">vcompare</a> - Compare OSGi version strings</li>
+<li><a href="if.html">if</a> - Conditional macro that can use comparison results</li>
+<li><a href="size.html">size</a> - Get list size for numeric comparisons</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

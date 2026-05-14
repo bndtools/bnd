@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>dir ( ';' FILE )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>dir ( ';' FILE )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>dir</code> macro extracts and returns the parent directory path from one or more file paths. It returns the absolute path to each file's containing directory, filtering out non-existent files.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${dir;&lt;filepath&gt;[;&lt;filepath&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>filepath</code> - One or more file paths (relative to project directory)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Resolves each file path relative to the project directory</li>
+<li>Filters to include only files that exist</li>
+<li>Returns the absolute path to each file's parent directory</li>
+<li>Multiple directory paths are concatenated with commas</li>
+<li>Returns null if no file arguments are provided</li>
+<li>Issues a warning if called without arguments</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get directory of a single file:</p>
+<div class="highlight"><pre><span></span><code>source.dir=${dir;src/main/java/Example.java}
+# Returns: /path/to/project/src/main/java
+</code></pre></div>
+
+<p>Get directories of multiple files:</p>
+<div class="highlight"><pre><span></span><code>dirs=${dir;LICENSE.txt;README.md}
+# Returns: /path/to/project,/path/to/project
+</code></pre></div>
+
+<p>Use in path construction:</p>
+<div class="highlight"><pre><span></span><code>parent.dir=${dir;${@}}
+# Gets directory containing current bundle JAR
+</code></pre></div>
+
+<p>Build relative path:</p>
+<div class="highlight"><pre><span></span><code>Bundle-License: ${dir;LICENSE}/LICENSE.txt
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Determining the location of source files</li>
+<li>Building paths relative to file locations</li>
+<li>Extracting directory structure information</li>
+<li>Creating directory-based configurations</li>
+<li>Referencing sibling files in the same directory</li>
+<li>Computing relative paths for resources</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>File paths are resolved relative to the project base directory</li>
+<li>Only existing files are processed; non-existent files are silently ignored</li>
+<li>Returns absolute paths, not relative paths</li>
+<li>The result uses platform-specific path separators</li>
+<li>Empty result if all specified files don't exist</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

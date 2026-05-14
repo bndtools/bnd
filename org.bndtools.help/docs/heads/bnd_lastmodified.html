@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bnd-LastModified  LONG</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bnd-LastModified  LONG</h1>
+<ul>
+<li>Pattern: <code>.*</code></li>
+</ul>
+<!-- Manual content from: ext/bnd_lastmodified.md -->
+<h1 id="bnd-lastmodified">Bnd-LastModified</h1>
+<p>The <code>Bnd-LastModified</code> header is automatically added by bnd to the bundle manifest. It contains a timestamp (in milliseconds since the epoch) that represents the aggregated last modified time of all resources included in the bundle. This value is useful for tracking when the bundle was last built or updated, and can help with cache invalidation or deployment automation.</p>
+<p>The timestamp is generated at build time and reflects the most recent modification among all files and resources that are part of the bundle. This ensures that any change to the bundle's contents will result in a new, updated timestamp in the manifest.</p>
+<p>This header is set by bnd and should not be manually modified. It is primarily intended for tooling and automation purposes.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

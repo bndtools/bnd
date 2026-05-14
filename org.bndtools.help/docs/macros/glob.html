@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>glob ';' GLOBEXP</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>glob ';' GLOBEXP</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>glob</code> macro converts a glob pattern (shell-style wildcard pattern) into a Java regular expression. This is useful when you need regex patterns but want to write simpler glob syntax.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${glob;&lt;glob-pattern&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>glob-pattern</code> - A glob pattern using wildcard syntax (e.g., <code>*.jar</code>, <code>com/example/**/*.class</code>)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Converts glob wildcards to regex equivalents:</li>
+<li><code>*</code> → matches any characters except path separator</li>
+<li><code>**</code> → matches any characters including path separators</li>
+<li><code>?</code> → matches any single character</li>
+<li><code>[abc]</code> → matches any character in the set</li>
+<li><code>{a,b,c}</code> → matches any of the alternatives</li>
+<li>Supports negation with <code>!</code> prefix</li>
+<li>Returns a valid Java regular expression string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Convert simple wildcard:</p>
+<div class="highlight"><pre><span></span><code>${glob;*.jar}
+# Returns regex matching JAR files
+</code></pre></div>
+
+<p>Match with path:</p>
+<div class="highlight"><pre><span></span><code>${glob;com/example/**/*.class}
+# Returns regex for any .class file under com/example/
+</code></pre></div>
+
+<p>Use in filter:</p>
+<div class="highlight"><pre><span></span><code>${filter;${packages};${glob;com.example.*}}
+# Filter packages matching glob pattern
+</code></pre></div>
+
+<p>Negated pattern:</p>
+<div class="highlight"><pre><span></span><code>${glob;!*.test.jar}
+# Returns negative lookahead regex excluding test JARs
+</code></pre></div>
+
+<p>Multiple alternatives:</p>
+<div class="highlight"><pre><span></span><code>${glob;*.{jar,war,ear}}
+# Matches files with .jar, .war, or .ear extensions
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Converting user-friendly glob patterns to regex</li>
+<li>Pattern matching in file filtering</li>
+<li>Configuration patterns that are easier to write as globs</li>
+<li>Combining glob syntax with regex-based macros</li>
+<li>Path matching in resource selection</li>
+<li>Building dynamic filter patterns</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Glob syntax is simpler and more intuitive than regex for basic patterns</li>
+<li>The <code>!</code> prefix creates a negative lookahead pattern</li>
+<li><code>*</code> does not cross directory boundaries (use <code>**</code> for that)</li>
+<li>The returned value is a regex pattern string, not a compiled Pattern object</li>
+<li>Glob patterns are case-sensitive by default</li>
+<li>See also: Instructions and filters in bnd often accept glob patterns directly</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

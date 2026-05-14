@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>findlast ';' VALUE ';' SEARCHED</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>findlast ';' VALUE ';' SEARCHED</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>findlast</code> macro returns the index position of the last occurrence of a substring within a target string, or -1 if not found. Searches from the end backwards.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${findlast;&lt;substring&gt;;&lt;target&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>substring</code> - The substring to find (literal string, not regex)</li>
+<li><code>target</code> - The string to search in</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the index of the last occurrence</li>
+<li>Returns -1 if substring is not found</li>
+<li>Index is 0-based</li>
+<li>Case-sensitive search</li>
+<li>Not a regex pattern match</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find last occurrence:</p>
+<div class="highlight"><pre><span></span><code>${findlast;/;/path/to/file.txt}
+# Returns: 8 (position of last /)
+</code></pre></div>
+
+<p>Not found:</p>
+<div class="highlight"><pre><span></span><code>${findlast;foo;hello world}
+# Returns: -1
+</code></pre></div>
+
+<p>Extract file extension:</p>
+<div class="highlight"><pre><span></span><code>${substring;${filename};${findlast;.;${filename}}}
+</code></pre></div>
+
+<p>Get last path component:</p>
+<div class="highlight"><pre><span></span><code>${substring;${path};${findlast;/;${path}}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Finding last delimiter</li>
+<li>Extracting file extensions</li>
+<li>Getting last path component</li>
+<li>String parsing from end</li>
+<li>Finding last occurrence</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns integer index (0-based)</li>
+<li>Not a regex search</li>
+<li>Case-sensitive</li>
+<li>Searches backwards from end</li>
+<li>See also: <code>${find}</code> for first occurrence</li>
+<li>See also: <code>${lastindexof}</code> for lists</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

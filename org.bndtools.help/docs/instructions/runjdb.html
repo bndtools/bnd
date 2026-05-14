@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runjdb  ADDRESS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runjdb  ADDRESS</h1>
+<ul>
+<li>
+<p>Example: <code>-runjdb: localhost:10001</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runjdb.md -->
+<h1 id="-runjdb">-runjdb</h1>
+<p>The <code>-runjdb</code> instruction specifies a JDB (Java Debugger) socket transport address to use when launching the application outside a debugger. This allows the debugger to attach to the running process for debugging purposes.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-runjdb: localhost:10001
+</code></pre></div>
+
+<p>The address can include a host name or IP address and a port. This is useful for remote debugging scenarios.</p>
+<p>This instruction launches the VM with the</p>
+<div class="highlight"><pre><span></span><code>-agentlib:jdwp=transport=dt_socket,server=y,address=&lt;address&gt;,suspend=y
+</code></pre></div>
+
+<p>command line argument.</p>
+<p>The socket transport address can include a host name (or IP address) and a port. For example:</p>
+<div class="highlight"><pre><span></span><code>-runjdb: localhost:10001
+</code></pre></div>
+
+<p>The socket transport address can be just a port number. For example:</p>
+<div class="highlight"><pre><span></span><code>-runjdb: 10001
+</code></pre></div>
+
+<p>Note: Starting with Java 9, using just a port number means that the launched VM will only listen on <code>localhost</code> for the connection. If you want to remote debug, you will need to specify a host name (or IP address), or an asterisk (<code>*</code>) to accept from any host. For example:</p>
+<div class="highlight"><pre><span></span><code>-runjdb: *:10001
+</code></pre></div>
+
+<p>If the socket transport address starts with a minus sign (<code>-</code>), then the launched VM is not suspended: <code>suspend=n</code>. The minus sign is removed from the socket transport address before it is used for the <code>address</code> option.</p>
+<p>If the specified socket transport address is not a port number or a host:port value, then the address <code>1044</code> is used.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>remote</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>remote</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   remote [options]  ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -h --host &lt;string&gt; ]</code> Specify the host to commicate with, default is 'localhost'</li>
+<li><code>[ -p --port &lt;int&gt; ]</code> Specify the port to commicate with, default is 29998</li>
+</ul>
+<h2 id="available-sub-commands">Available sub-commands</h2>
+<ul>
+<li><code>distro</code> -   </li>
+<li><code>framework</code> -   </li>
+<li><code>install</code> - Install/update the specified bundle. </li>
+<li><code>list</code> - List the bundles installed in the remote framework </li>
+<li><code>ping</code> -   </li>
+<li><code>revisions</code> -   </li>
+<li><code>start</code> - Start the specified bundles </li>
+<li><code>stop</code> - Stop the specified bundles </li>
+<li><code>uninstall</code> - Uninstall the specified bundles </li>
+</ul>
+<h3 id="distro">distro</h3>
+<p>Create a distro jar (or xml) from a remote agent</p>
+<h4 id="synopsis_1">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   distro [options]  &lt;bsn&gt; &lt;[version]&gt;
+</code></pre></div>
+
+<h5 id="options_1">Options:</h5>
+<ul>
+<li><code>[ -c --copyright &lt;string&gt; ]</code> The Bundle-Copyright header</li>
+<li><code>[ -d --description &lt;string&gt; ]</code> The Bundle-Description header</li>
+<li><code>[ -l --license &lt;string&gt; ]</code> The Bundle-License header</li>
+<li><code>[ -o --output &lt;string&gt; ]</code> Output name</li>
+<li><code>[ -v --vendor &lt;string&gt; ]</code> The Bundle-Vendor header</li>
+<li><code>[ -x --xml ]</code> Generate xml instead of a jar with manifest</li>
+</ul>
+<h3 id="framework">framework</h3>
+<p>Get the framework info</p>
+<h4 id="synopsis_2">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   framework
+</code></pre></div>
+
+<h3 id="install">install</h3>
+<p>Communicate with the remote framework to install or update bundle</p>
+<h4 id="synopsis_3">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   install [options]  &lt;filespec...&gt;
+</code></pre></div>
+
+<h5 id="options_2">Options:</h5>
+<ul>
+<li><code>[ -l --location &lt;string;&gt; ]</code> By default the location is 'manual:<bsn>'. You can specify multiple locations when installing multiple bundles</li>
+</ul>
+<h3 id="list">list</h3>
+<p>Communicate with the remote framework to list the installed bundles</p>
+<h4 id="synopsis_4">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   list [options]  ...
+</code></pre></div>
+
+<h5 id="options_3">Options:</h5>
+<ul>
+<li><code>[ -j --json ]</code> Specify to return the output as JSON</li>
+</ul>
+<h3 id="ping">ping</h3>
+<p>Ping the remote framework</p>
+<h4 id="synopsis_5">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   ping
+</code></pre></div>
+
+<h3 id="revisions">revisions</h3>
+<p>Get the bundle revisions</p>
+<h4 id="synopsis_6">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   revisions  &lt;bundleid...&gt;
+</code></pre></div>
+
+<h3 id="start">start</h3>
+<p>Communicate with the remote framework to perform bundle operation</p>
+<h4 id="synopsis_7">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   start  &lt;bundleId...&gt;
+</code></pre></div>
+
+<h3 id="stop">stop</h3>
+<p>Communicate with the remote framework to perform bundle operation</p>
+<h4 id="synopsis_8">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   stop  &lt;bundleId...&gt;
+</code></pre></div>
+
+<h3 id="uninstall">uninstall</h3>
+<p>Communicate with the remote framework to perform bundle operation</p>
+<h4 id="synopsis_9">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   uninstall  &lt;bundleId...&gt;
+</code></pre></div>
+</body>
+</html>

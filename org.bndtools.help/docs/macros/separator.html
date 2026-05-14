@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>separator</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>separator</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>separator</code> macro returns the operating system's file separator character used in file paths.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${separator}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns <code>/</code> (forward slash) on Unix/Linux/Mac systems</li>
+<li>Returns <code>\</code> (backslash) on Windows systems</li>
+<li>Returns the value of <code>File.separator</code> in Java</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get the file separator:</p>
+<div class="highlight"><pre><span></span><code>${separator}
+# Returns: &quot;/&quot; on Unix, &quot;\&quot; on Windows
+</code></pre></div>
+
+<p>Build paths manually:</p>
+<div class="highlight"><pre><span></span><code>path=${basedir}${separator}src${separator}main${separator}java
+</code></pre></div>
+
+<p>Use in conditionals:</p>
+<div class="highlight"><pre><span></span><code>${if;${equals;${separator};/};unix;windows}
+</code></pre></div>
+
+<p>Replace separators:</p>
+<div class="highlight"><pre><span></span><code>${replacestring;${path};${separator};/}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Determining the platform at build time</li>
+<li>Manual path construction</li>
+<li>Path manipulation and normalization</li>
+<li>Platform-specific logic</li>
+<li>Cross-platform path handling</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns a single character: <code>/</code> or <code>\</code></li>
+<li>This is the file/directory separator, not the path separator</li>
+<li>Path separator (for classpath) is different - see <code>${pathseparator}</code></li>
+<li>See also: <code>${osfile}</code> for OS-specific path creation</li>
+<li>See also: <code>${pathseparator}</code> for path list separator (<code>:</code> or <code>;</code>)</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

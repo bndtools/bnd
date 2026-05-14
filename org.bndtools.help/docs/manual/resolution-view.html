@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resolution View</title>
+<link rel="stylesheet" href="../../help.css">
+</head>
+<body>
+<h1>Resolution View</h1>
+<p><img src="https://bndtools.org/images/resolution-view.png" style="max-width:100%"></p>
+<p>The Resolution View is a powerful tool to analyse the requirements and capabilities of bundles and their dependencies. This shows the <strong>requirements and capabilities</strong> side by side of one or multiple selected resources such as JAR file(s), a <code>bnd.bnd</code> file or entries in the Repository Browser (bundles in a repository or repositories).</p>
+<p>Especially when it comes to resolution issues (e.g. required package cannot be satisfied by another bundle) this is the tool to <strong>make resolution issues visible</strong>.</p>
+<h2 id="example">Example</h2>
+<p>By selecting a bundle <strong>A</strong> and a repository <strong>R</strong> in the <a href="repositories-view.html">Repository View</a>, it allows you to see the aggregated <strong>Requirements and Capabilities</strong> of both. In other words it shows you:</p>
+<ul>
+<li>all <strong>requirements</strong> (most commonly packages) the bundle <strong>A</strong> and all bundles in the repository <strong>R</strong> require</li>
+<li>and all <strong>capabilities</strong> the bundle <strong>A</strong> and all bundles in the repository <strong>R</strong> provide</li>
+</ul>
+<p>If there is a <em>requirement</em> for which <em>no other</em> bundle provides a <em>capability</em>, then the Resolve would fail - and you can <strong>make that visible</strong> in the resolution view.</p>
+<p>This makes it a valuable tool used after a failed resolution (see the <em>Resolve</em> button in the <a href="bndeditor.html#run">.bnd / .bndrun editor</a>) and its (sometimes cryptic) error message.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Search filter for Requirements and Capabilities allowing wildcards and multiple search terms</li>
+<li>Filter toggle to hide optional requirements</li>
+<li>Filter toggle to detect (problematic) capabilities which are exported by multiple bundles but with different package content (split package problem)</li>
+<li>Copy to clipboard via <code>Ctrl / Cmd + C</code> for Requirements and Capabilities which copies their tooltip contents. This helps during debugging and communicating with others about it.</li>
+<li>Double Clicking on an entry of the ResolutionsView (Requirements and Capabilities) opens the <em>Advanced Search</em> of <em>Repository Browser</em> in the "Other" tab and prefills the fields for namespace and filter</li>
+<li>Drag&amp;Drop of selected Requirements in other panels e.g. to drag&amp;drop selected entries to the <em>Customize imports</em> panel of the .bnd-editor</li>
+</ul>
+<h2 id="more-information">More information</h2>
+<p>Background information can also be found in the manual at <a href="https://bnd.bndtools.org/chapters/250-resolving.html">Resolving Dependencies</a>.</p>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>reject ';' LIST ';' REGEX</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>reject ';' LIST ';' REGEX</h1>
+<h2 id="summary">Summary</h2>
+<p>Filter a list to exclude elements that match a regular expression. This macro is an alias for the <a href="filterout.html">filterout</a> macro.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${reject;&lt;list&gt;;&lt;regex&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>list</strong>: Comma-separated list of elements to filter</li>
+<li><strong>regex</strong>: Regular expression pattern to match against</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>Returns a new list containing only the elements from the input list that do <strong>not</strong> match the specified regular expression pattern.</p>
+<p>This macro is functionally identical to <a href="filterout.html">filterout</a>.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Reject items starting with &quot;test&quot;
+packages = com.example.api, com.example.test, com.example.impl
+${reject;${packages};.*\.test}
+# Returns: com.example.api,com.example.impl
+
+# Exclude test files
+files = Main.java, Test.java, Helper.java, TestHelper.java
+${reject;${files};.*Test.*}
+# Returns: Main.java,Helper.java
+
+# Exclude internal packages
+all-packages = com.company.api, com.company.internal, com.company.util
+-exportpackage: ${reject;${all-packages};.*\.internal.*}
+# Returns: com.company.api,com.company.util
+
+# Remove snapshot versions
+versions = 1.0.0, 2.0.0-SNAPSHOT, 3.0.0
+${reject;${versions};.*SNAPSHOT.*}
+# Returns: 1.0.0,3.0.0
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Package Exclusion</strong>: Exclude internal or test packages from exports</li>
+<li><strong>File Filtering</strong>: Remove unwanted files from a list</li>
+<li><strong>Dependency Filtering</strong>: Exclude specific dependencies by pattern</li>
+<li><strong>Clean-up</strong>: Remove items matching unwanted patterns</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>This is an alias for the <a href="filterout.html">filterout</a> macro - they behave identically</li>
+<li>Uses Java regular expression syntax</li>
+<li>Elements are matched in their entirety (use <code>.*</code> for partial matching)</li>
+<li>The opposite operation is provided by <a href="select.html">select</a> or <a href="filter.html">filter</a></li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="filterout.html">filterout</a> - Identical functionality (primary name)</li>
+<li><a href="select.html">select</a> / <a href="filter.html">filter</a> - Include only elements matching regex</li>
+<li><a href="removeall.html">removeall</a> - Remove specific elements from a list</li>
+<li><a href="retainall.html">retainall</a> - Keep only elements present in another list</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

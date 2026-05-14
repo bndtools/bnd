@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>repo ';' BSN ( ';' VERSION ( ';' STRATEGY )? )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>repo ';' BSN ( ';' VERSION ( ';' STRATEGY )? )?</h1>
+<p>Returns the absolute file system paths to the specified artifacts in the repositories.</p>
+<p>BSN is be a comma-separated list of bundle symbolic names. If the artifact
+is not a bundle, then the synthetic bundle symbolic names of groupId:artifactId
+can be used. Normally only a single bundle symbolic name is used since the remainder of the options apply to all the bundle symbolic names.</p>
+<p>VERSION is a OSGi version-<strong>range</strong> for the artifact. Special values supported are:
+* <code>project</code> - This return the built artifact from a project in the Bnd workspace.
+* <code>snapshot</code> - Synonym for <code>project</code>.
+* <code>latest</code> - The highest version available in a project in the Bnd workspace or the repositories. The built artifact from a project in the Bnd workspace is always used if it exists under the assumption the Bnd workspace is always building the latest version of the artifact.
+If the version range is not specified, the version range <code>[0,∞)</code> is used.</p>
+<p>Note about version-range: It is important to know that this is needs to be a version range according to <a href="https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i2655136">OSGi version semantics</a> (not Maven! version). That means for example, to refer to the maven version <code>4.6.0-dcm</code> you have to write <code>4.6.0.-dcm</code> which then internally will be translated to the maven equivalent if you are using e.g. MavenBndRepository.</p>
+<p>STRATEGY is the selection strategy to be used when multiple artifacts with the bundle symbolic name exist within the version range. The strategies supported are:
+* <code>HIGHEST</code> - The highest version for the artifact which is included by the version range. This is the default strategy and is the strategy always used by the special version range <code>latest</code>.
+* <code>LOWEST</code> - The lowest version for the artifact which is included by the version range.
+* <code>EXACT</code> - When this strategy is used, the version range must be a single version which is the version which is searched for. If multiple repositories contain the the exact version of the artifact, the artifact from the first repository is used.</p>
+</body>
+</html>

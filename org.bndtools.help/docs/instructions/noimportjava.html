@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-noimportjava BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-noimportjava BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-noimportjava=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/noimportjava.md -->
+<p>Prior to OSGi Core R7, it was invalid for the Import-Package header to include <code>java.*</code> packages. So Bnd would never include them in the generated Import-Package header. In OSGi Core R7, or later (e.g. <a href="https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.module-execution.environment">OSGi Core R8</a>), it is now permitted to include <code>java.*</code> packages in the Import-Package header. This allows the OSGi framework validate the execution environment can supply all the java packages required by a bundle. This can avoid a <code>NoClassDefFoundError</code> during execution of the bundle due to a missing <code>java.*</code> package required by the bundle. </p>
+<p>Bnd will now generate the Import-Package header including referenced <code>java.*</code> packages when either the bundle imports the <code>org.osgi.framework</code> package from OSGi Core R7, or later, or when the bundle includes class files targeting Java 11, or later.</p>
+<p>The <code>-noimportjava</code> instruction can be used to tell Bnd not to include referenced <code>java.*</code> packages in the generated Import-Package header.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-noimportjava: true
+</code></pre></div>
+
+<p>You can use the <code>Import-Package</code> instruction to control which referenced <code>java.*</code> packages should be imported.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: java.util.*, !java.*, *
+</code></pre></div>
+
+<p>will only import <code>java.util.*</code> packages and no other <code>java.*</code> packages.</p>
+<p><br /><br /></p>
+</body>
+</html>

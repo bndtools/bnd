@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-metainf-services</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-metainf-services</h1>
+<ul>
+<li>
+<p>Example: <code>-metainf-services: auto</code></p>
+</li>
+<li>
+<p>Values: <code>(annotation|auto|none)</code></p>
+</li>
+<li>
+<p>Pattern: <code>auto|annotation|none</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/metainf_services.md -->
+<p>The <code>-metainf-services</code> instruction tells <strong>bnd</strong> how files in the <code>META-INF/services</code> should be processed.
+See the chapter about <a href="/chapters/230-manifest-annotations.html#meta-infservices-annotations">META-INF/services Annotations</a> how to apply Bundle annotations to the files in the <code>META-INF/services</code>.</p>
+<p>This instruction can have the following values:</p>
+<ul>
+<li><code>annotation</code> (default if not set): Scan META-INF/services files and only process those files which contain at least one textual annotations.</li>
+<li><code>auto</code>: The convenience strategy. Scans <code>META-INF/services</code> files and auto-registers implementations in services files which do not have a single textual annotation. The latter means that bnd behaves as if there was a <code>aQute.bnd.annotation.spi.ServiceProvider</code> annotation present on each implementation. This is useful if you just want to have bnd generate the <code>Provide-Capability</code> headers for <code>osgi.serviceloader</code>. Additionally <code>auto</code> behaves like <code>annotation</code> and would process all other files with textual annotations.</li>
+<li><code>none</code>: skip processing of files in <code>META-INF/services</code> completely</li>
+</ul>
+<h2 id="example-of-auto-registration">Example of auto-registration</h2>
+<p>Assume we want to wrap a non-OSGi library containing <code>META-INF/services</code>.
+Create <code>bnd.bnd</code> file and put a library having a <code>META-INF/services</code> folder e.g. <a href="https://mvnrepository.com/artifact/org.codehaus.groovy/groovy/3.0.22">groovy-3.0.22.jar</a> in a local <code>lib</code> folder.
+We will use <code>-includeresource: @lib/groovy-3.0.22.jar</code> to <a href="/instructions/includeresource.html#rolling">unroll the jar</a>. </p>
+<div class="highlight"><pre><span></span><code># bnd.bnd
+-includeresource: @lib/groovy-3.0.22.jar
+-metainf-services: auto
+</code></pre></div>
+
+<p>This creates a new jar with the following MANIFEST.MF headers from the <code>META-INF/services</code> folder:</p>
+<div class="highlight"><pre><span></span><code># MANIFEST.MF
+Provide-Capability                      osgi.service;objectClass:List&lt;String&gt;=&quot;org.codehaus.groovy.transform.ASTTransformation&quot;;effective:=active
+                                        osgi.serviceloader;osgi.serviceloader=&quot;org.codehaus.groovy.transform.ASTTransformation&quot;;register:=&quot;groovy.grape.GrabAnnotationTransformation&quot;
+Require-Capability                      osgi.ee;filter:=&quot;(&amp;(osgi.ee=JavaSE)(version=1.8))&quot;
+                                        osgi.extender;filter:=&quot;(&amp;(osgi.extender=osgi.serviceloader.registrar)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))&quot;;resolution:=optional
+</code></pre></div>
+
+<p>Because <code>-metainf-services: auto</code> is used, it instructs bnd to auto-generate a <code>@ServiceProvider</code> annotation under the hood for services without annotations. 
+To prevent the latter (auto-generation) use the default <code>-metainf-services: annotation</code> (to process only textual annotations) or use <code>-metainf-services: none</code> to skip processing of <code>META-INF/services</code> files completely.</p>
+<p><a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/osgi/metainf/MetaInfServiceParser.java">source</a></p>
+<p><br /><br /></p>
+</body>
+</html>
