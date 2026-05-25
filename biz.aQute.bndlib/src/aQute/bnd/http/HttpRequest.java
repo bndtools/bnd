@@ -27,6 +27,7 @@ public class HttpRequest<T> {
 	Object				upload;
 	Type				download;
 	Map<String, String>	headers			= new HashMap<>();
+	Map<String, String>	headersIfAbsent	= new HashMap<>();
 	long				timeout			= -1;
 	HttpClient			client;
 	String				ifNoneMatch;
@@ -163,10 +164,18 @@ public class HttpRequest<T> {
 	}
 
 	/**
-	 * Add header to request
+	 * Add an explicit header to request
 	 */
 	public HttpRequest<T> headers(String key, String value) {
 		headers.put(key, value);
+		return this;
+	}
+
+	/**
+	 * Add a default header which is only set if not otherwise set.
+	 */
+	public HttpRequest<T> headersIfAbsent(String key, String value) {
+		headersIfAbsent.put(key, value);
 		return this;
 	}
 
