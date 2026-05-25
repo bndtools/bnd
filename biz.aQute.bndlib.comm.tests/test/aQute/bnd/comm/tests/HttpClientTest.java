@@ -899,4 +899,53 @@ public class HttpClientTest {
 			}
 		}
 	}
+
+	@Test
+	public void testPluginCannotOverrideExplicitUserAgent() throws Exception {
+
+		// 1. no overriding of User-Agent
+		try (Processor p = new Processor()) {
+
+			// try to customize the user-agent, which should not work
+			p.setProperty("-plugin.my-override-useragent", "aQute.bnd.url.ConnectionSettings;match=\""
+				+ httpServer.getBaseURI() + "/*\";User-Agent=\"My own User Agent\"");
+
+			try (HttpClient client = new HttpClient()) {
+				client.setRegistry(p);
+
+				// this sets explicit User-Agent via .headers()
+				String response = client.build()
+					.headers("User-Agent", "Use me!")
+					.get(String.class)
+					.go(httpServer.getBaseURI("user-agent"));
+
+				assertThat(response).contains("Use me!");
+			}
+
+		}
+	}
+
+	@Test
+	public void testPluginCanSetUserAgent() throws Exception {
+
+		try (Processor p = new Processor()) {
+
+			// now customize the user-agent, which now should work
+			p.setProperty("-plugin.my-override-useragent", "aQute.bnd.url.ConnectionSettings;match=\""
+				+ httpServer.getBaseURI() + "/*\";User-Agent=\"My own User Agent\"");
+
+			try (HttpClient client = new HttpClient()) {
+				client.setRegistry(p);
+
+				// because .headersIfAbsent() only sets the default if not set
+				// otherwise
+				String response = client.build()
+					.headersIfAbsent("User-Agent", "Don't use me!")
+					.get(String.class)
+					.go(httpServer.getBaseURI("user-agent"));
+
+				assertThat(response).contains("My own User Agent");
+			}
+		}
+	}
 }
