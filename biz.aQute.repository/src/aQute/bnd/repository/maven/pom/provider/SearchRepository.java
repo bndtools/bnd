@@ -104,7 +104,7 @@ class SearchRepository extends InnerRepository {
 				logger.debug("Searching {}", query);
 
 				SearchResult result = client.build()
-					.headers("User-Agent", "Bnd")
+					.headersIfAbsent("User-Agent", "Bnd")
 					.useCache(cacheFile, DEFAULT_MAX_STALE)
 					.get(SearchResult.class)
 					.go(url);
