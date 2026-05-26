@@ -2,27 +2,49 @@
 
 version: 2
 updates:
+  # Use semver-specific cooldowns to reduce noise from freshly released packages.
+  # Keep patch/minor updates reasonably current with a short delay, but postpone
+  # major-version PRs much longer since we usually only upgrade majors intentionally.
+  # Dependabot security updates are handled separately from version-update cooldowns.
+  # Keep the daily schedule so Dependabot still checks frequently.
+  # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#cooldown
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      semver-patch-days: 3
+      semver-minor-days: 3
+      semver-major-days: 30
 
   # Maintain dependencies for maven
   - package-ecosystem: "maven"
     directory: "/maven-plugins"
     schedule:
       interval: "daily"
+    cooldown:
+      semver-patch-days: 3
+      semver-minor-days: 3
+      semver-major-days: 30
 
   # Maintain dependencies for gradle
   - package-ecosystem: "gradle"
     directory: "/gradle-plugins"
     schedule:
       interval: "daily"
+    cooldown:
+      semver-patch-days: 3
+      semver-minor-days: 3
+      semver-major-days: 30
 
   # Maintain dependencies for bundler
   - package-ecosystem: "bundler"
     directory: "/docs"
     schedule:
       interval: "daily"
+    cooldown:
+      semver-patch-days: 3
+      semver-minor-days: 3
+      semver-major-days: 30
