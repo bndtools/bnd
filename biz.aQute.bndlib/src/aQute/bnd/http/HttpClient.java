@@ -567,8 +567,8 @@ public class HttpClient implements Closeable, URLConnector {
 					Dates.formatMillis(Dates.RFC_7231_DATE_TIME, request.ifUnmodifiedSince));
 			}
 
-			setHeadersIfAbsent(request.headersIfAbsent, con);
 			setHeaders(request.headers, con);
+			setHeadersIfAbsent(request.headersIfAbsent, con);
 
 			configureHttpConnection(request.verb, hcon);
 
@@ -728,18 +728,16 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 		private void setHeadersIfAbsent(Map<String, String> headers, URLConnection con) {
-			MapStream<String, String> stream = MapStream.ofNullable(headers);
-			if (logger.isDebugEnabled()) {
-				stream = stream.peek((k, v) -> logger.debug("set header {}={}", k, v));
-			}
-			stream.forEachOrdered((k, v) -> {
-				String existing = con.getRequestProperty(k);
-				// don't override headers which are already set
-				// e.g. via -plugin aQute.bnd.url.ConnectionSettings
-				if (existing == null) {
-					con.setRequestProperty(k, v);
-				}
-			});
+			MapStream.ofNullable(headers)
+				.forEachOrdered((k, v) -> {
+					String existing = con.getRequestProperty(k);
+					// don't override headers which are already set
+					// e.g. via -plugin aQute.bnd.url.ConnectionSettings
+					if (existing == null) {
+						logger.debug("set header {}={}", k, v);
+						con.setRequestProperty(k, v);
+					}
+				});
 		}
 
 		private Object convert(Type type, File in, TaggedData tag) throws Exception {
