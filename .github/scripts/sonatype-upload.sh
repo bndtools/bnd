@@ -110,10 +110,11 @@ DEPLOYMENTID_FILE="${RELEASE_DIR%/}_DEPLOYMENTID.txt"
 
 # ---- build deployment name ----------------------------------------------
 if [[ -z "${DEPLOYMENT_NAME}" ]]; then
-	GROUP_ID=$(detect_groupid)
-	DEPLOYMENT_NAME="uploaded ${GROUP_ID} on $(date '+%Y%m%d-%H%M%S')"
+	NAMESPACE=$(detect_groupid)
+	TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+	BUILD_ID="${GITHUB_RUN_ID:-local}"
+	DEPLOYMENT_NAME="uploaded on ${TIMESTAMP} from build ${BUILD_ID} namespace ${NAMESPACE}"
 fi
-
 
 # ---- release deployment: create bundle zip ------------------------------
 BUNDLE_ZIP="${TMPDIR:-/tmp}/sonatype-bundle-$$.zip"
