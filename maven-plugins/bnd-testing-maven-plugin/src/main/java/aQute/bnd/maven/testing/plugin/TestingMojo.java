@@ -17,6 +17,8 @@ import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
+import biz.aQute.resolve.Slf4jResolverLogger;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -196,8 +198,8 @@ public class TestingMojo extends AbstractMojo {
 				return 0;
 			}
 			if (resolve) {
-				try {
-					String runBundles = run.resolve(failOnChanges, false);
+				try (ResolverLogger rl = new Slf4jResolverLogger()) {
+					String runBundles = run.resolve(failOnChanges, false, rl);
 					if (run.isOk()) {
 						logger.info("{}: {}", Constants.RUNBUNDLES, runBundles);
 						run.setProperty(Constants.RUNBUNDLES, runBundles);

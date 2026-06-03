@@ -104,11 +104,35 @@ public class Bndrun extends Run {
 		return resolve(failOnChanges, writeOnChanges, runbundlesListFormatter);
 	}
 
+	/**
+	 * Use the resolver to calculate the <code>-runbundles</code> required to
+	 * execute the bndrun configuration.
+	 * <p>
+	 * Use the return value with {@link Run#setProperty(String, String)} with
+	 * key {@link Constants#RUNBUNDLES}
+	 *
+	 * @param failOnChanges if the build should fail when changes to the
+	 *            <code>-runbundles</code> are detected
+	 * @param writeOnChanges if the bndrun file should be updated when changes
+	 *            to the <code>-runbundles</code> are detected are detected
+	 * @param logger the logger to use to report the resolve operation
+	 * @return the calculated <code>-runbundles</code>
+	 * @throws Exception
+	 */
+	public String resolve(boolean failOnChanges, boolean writeOnChanges, ResolverLogger logger) throws Exception {
+		return resolve(failOnChanges, writeOnChanges, runbundlesListFormatter, null);
+	}
+
 	public <T> T resolve(boolean failOnChanges, boolean writeOnChanges,
 		Converter<T, Collection<? extends HeaderClause>> runbundlesFormatter) throws Exception {
+		return resolve(failOnChanges, writeOnChanges, runbundlesFormatter, null);
+	}
+
+	public <T> T resolve(boolean failOnChanges, boolean writeOnChanges,
+		Converter<T, Collection<? extends HeaderClause>> runbundlesFormatter, ResolverLogger logger) throws Exception {
 
 		checkValidate();
-		RunResolution resolution = RunResolution.resolve(this, this, null);
+		RunResolution resolution = RunResolution.resolve(this, this, null, logger);
 
 		if (!resolution.isOK()) {
 			throw resolution.exception;
@@ -118,8 +142,12 @@ public class Bndrun extends Run {
 	}
 
 	public RunResolution resolve(ResolutionCallback... callbacks) throws Exception {
+		return resolve(null, callbacks);
+	}
+
+	public RunResolution resolve(ResolverLogger logger, ResolutionCallback... callbacks) throws Exception {
 		checkValidate();
-		RunResolution resolution = RunResolution.resolve(this, this, Arrays.asList(callbacks))
+		RunResolution resolution = RunResolution.resolve(this, this, Arrays.asList(callbacks), logger)
 			.reportException();
 		if (!resolution.isOK()) {
 			if (resolution.exception instanceof ResolutionException re) {

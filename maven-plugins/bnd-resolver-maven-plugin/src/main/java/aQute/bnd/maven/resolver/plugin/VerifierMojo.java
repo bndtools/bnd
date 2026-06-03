@@ -26,6 +26,8 @@ import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.VersionRange;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
+import biz.aQute.resolve.Slf4jResolverLogger;
 import biz.aQute.resolve.RunResolution;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -147,7 +149,7 @@ public class VerifierMojo extends AbstractMojo {
 
 	private Operation getOperation() {
 		return (file, runName, run) -> {
-			try {
+			try (ResolverLogger rl = new Slf4jResolverLogger()) {
 				String originalRunRequires = run.mergeProperties(Constants.RUNREQUIRES);
 
 				Collection<BundleId> expectedRunbundles = run.getRunbundles()
@@ -166,7 +168,7 @@ public class VerifierMojo extends AbstractMojo {
 					.map(Requirement::toString)
 					.collect(Collectors.joining(", ")));
 
-				RunResolution result = run.resolve(new BundleFilter(runBundleReqs));
+				RunResolution result = run.resolve(rl, new BundleFilter(runBundleReqs));
 
 				if (result.isOK()) {
 					List<BundleId> resolved = result.getResolvedRunBundles();
