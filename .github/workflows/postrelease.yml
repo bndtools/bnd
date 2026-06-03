@@ -75,7 +75,7 @@ jobs:
   create-workspace-template:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.PAT_WORKSPACE_REPO }}
       WORKSPACE_REPO: github.com/bndtools/workspace.git
       V1: ${{ github.event.inputs.V1 }}
 
