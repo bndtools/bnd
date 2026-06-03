@@ -72,9 +72,10 @@ public class BndPerspective implements IPerspectiveFactory {
 		layout.addShowViewShortcut(BndPerspectiveConstants.ID_PROJECT_EXPLORER);
 
 		// new actions - Java project creation wizard
-		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWPROJECT);
-		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWWORKSPACE_FRAGMENTS);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWWORKSPACE);
+		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWWORKSPACE_FRAGMENTS);
+		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_IMPORT_WORKSPACE);
+		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWPROJECT);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBNDRUN);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBND);
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWBLUEPRINT_XML);
