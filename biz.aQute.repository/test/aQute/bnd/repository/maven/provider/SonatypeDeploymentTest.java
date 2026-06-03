@@ -40,8 +40,7 @@ public class SonatypeDeploymentTest {
 
 	File				sonatypeRepoFile				= new File(wsDir, "cnf/ext/sonatype_release.bnd");
 	File				releasedVersionFile				= new File(wsDir, "cnf/ext/gav_30_sonatype.mvn");
-	File				deploymentIDFile				= new File(wsDir, MavenBndRepository.SONATYPE_RELEASE_DIR + "/"
-		+ "biz_aQute_eval_" + MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE);
+	File				sonatypeReleaseDir				= new File(wsDir, MavenBndRepository.SONATYPE_RELEASE_DIR);
 	boolean				remoteTest						= true;
 
 	@BeforeAll
@@ -196,9 +195,12 @@ public class SonatypeDeploymentTest {
 					found);
 			}
 			if (remoteTest && !isSnapshot) {
-				assertTrue("Deployment ID file not found: " + deploymentIDFile, deploymentIDFile.exists());
+				File[] deploymentIDFiles = sonatypeReleaseDir.listFiles((dir, name) -> name.endsWith(
+					"_" + MavenBndRepository.SONATYPE_DEPLOYMENTID_FILE));
+				assertNotNull("Failed to list deployment ID files in: " + sonatypeReleaseDir, deploymentIDFiles);
+				assertTrue("Deployment ID file not found in: " + sonatypeReleaseDir, deploymentIDFiles.length > 0);
 
-				String deploymentId = Files.readString(deploymentIDFile.toPath());
+				String deploymentId = Files.readString(deploymentIDFiles[0].toPath());
 				assertNotNull("Deployment ID should not be null", deploymentId);
 
 				testDeploymentStatusCheck(ws, deploymentId);
