@@ -22,6 +22,8 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
+import biz.aQute.resolve.Slf4jResolverLogger;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenSession;
@@ -154,8 +156,8 @@ public class ExportMojo extends AbstractMojo {
 	private Operation getOperation() {
 		return (file, bndrun, run) -> {
 			if (resolve) {
-				try {
-					String runBundles = run.resolve(failOnChanges, false);
+				try (ResolverLogger rl = new Slf4jResolverLogger()) {
+					String runBundles = run.resolve(failOnChanges, false, rl);
 					if (run.isOk()) {
 						logger.info("{}: {}", Constants.RUNBUNDLES, runBundles);
 						run.setProperty(Constants.RUNBUNDLES, runBundles);
