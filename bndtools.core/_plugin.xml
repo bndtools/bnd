@@ -157,6 +157,17 @@
 			</description>
 		</wizard>
         
+		<wizard id="bndtools.importProject"
+			category="bndtools.wizardCategory"
+			class="bndtools.wizards.project.ImportBndWorkspaceWizard"
+			finalPerspective="bndtools.perspective"
+			preferredPerspectives="bndtools.perspective"
+			icon="icons/bndtools-logo-16x16.png"
+			name="Existing Bnd Workspace"
+			project="true">
+			<description>Imports an existing Bnd workspace</description>
+		</wizard>
+
 		<category id="bndtools.serviceWizardCategory" name="OSGi Services" />
 		<wizard id="bndtools.newServiceWiz"
 			category="bndtools.serviceWizardCategory"
