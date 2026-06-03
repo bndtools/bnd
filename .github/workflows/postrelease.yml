@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      WORKSPACE_REPO: https://x-access-token:${{ secrets.PAT_WORKSPACE_REPO }}@github.com/bndtools/workspace.git
+      WORKSPACE_REPO: github.com/bndtools/workspace.git
       V1: ${{ github.event.inputs.V1 }}
 
     steps:
@@ -84,7 +84,7 @@ jobs:
       run: |
         export v=`echo $V1 | awk -F. '{print $1"."$2}'`
         echo $v
-        git clone $WORKSPACE_REPO repo
+        git clone https://x-access-token:${GH_TOKEN}@${WORKSPACE_REPO} repo
         cd repo
         git config user.name github-actions
         git config user.email github-actions@bndtools.org
@@ -92,8 +92,7 @@ jobs:
         echo "For release $V1" > README.md
         git add .
         git commit -m "Release $V1"
-        git push --force $WORKSPACE_REPO $v 
-
+        git push --force https://x-access-token:${GH_TOKEN}@${WORKSPACE_REPO} $v
 
 
   #
