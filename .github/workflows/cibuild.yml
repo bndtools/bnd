@@ -75,6 +75,9 @@ jobs:
           runner: '{0}'
     name: Build JDK${{ matrix.java }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    outputs:
+      sonatype_deployment_ids: ${{ steps.sonatype_deployment.outputs.deployment_ids }}
+      sonatype_deployment_ids_csv: ${{ steps.sonatype_deployment.outputs.deployment_ids_csv }}
     steps:
     - name: Harden Runner
       uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
@@ -133,6 +136,48 @@ jobs:
         SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+    - name: Summarize Sonatype Deployment IDs
+      id: sonatype_deployment
+      if: ${{ matrix.canonical && always() }}
+      run: |
+        DEPLOYMENTID_FILE="dist/bundles_DEPLOYMENTID.txt"
+        echo "deployment_ids=" >> "${GITHUB_OUTPUT}"
+        echo "deployment_ids_csv=" >> "${GITHUB_OUTPUT}"
+        if [[ -f "${DEPLOYMENTID_FILE}" ]]; then
+          mapfile -t DEPLOYMENT_IDS < <(sed '/^[[:space:]]*$/d' "${DEPLOYMENTID_FILE}")
+          if [[ ${#DEPLOYMENT_IDS[@]} -gt 0 ]]; then
+            {
+              echo "### Deployment IDs"
+              echo
+              echo "| # | Deployment ID |"
+              echo "|---|---|"
+              for i in "${!DEPLOYMENT_IDS[@]}"; do
+                printf "| %d | \`%s\` |\n" "$((i + 1))" "${DEPLOYMENT_IDS[$i]}"
+              done
+            } >> "${GITHUB_STEP_SUMMARY}"
+            {
+              echo "deployment_ids<<EOF"
+              printf '%s\n' "${DEPLOYMENT_IDS[@]}"
+              echo "EOF"
+              echo "deployment_ids_csv=$(IFS=,; echo "${DEPLOYMENT_IDS[*]}")"
+            } >> "${GITHUB_OUTPUT}"
+          else
+            echo "### Deployment IDs" >> "${GITHUB_STEP_SUMMARY}"
+            echo >> "${GITHUB_STEP_SUMMARY}"
+            echo "No deployment IDs found in \`${DEPLOYMENTID_FILE}\`." >> "${GITHUB_STEP_SUMMARY}"
+          fi
+        else
+          echo "### Deployment IDs" >> "${GITHUB_STEP_SUMMARY}"
+          echo >> "${GITHUB_STEP_SUMMARY}"
+          echo "Deployment ID file \`${DEPLOYMENTID_FILE}\` not found." >> "${GITHUB_STEP_SUMMARY}"
+        fi
+    - name: Upload Sonatype Deployment IDs artifact
+      if: ${{ matrix.canonical && hashFiles('dist/bundles_DEPLOYMENTID.txt') != '' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-sonatype-deployment-ids
+        path: dist/bundles_DEPLOYMENTID.txt
+        retention-days: 30
     - name: Upload P2 Repo artifact
       if: ${{ matrix.reference && github.event_name == 'pull_request' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
