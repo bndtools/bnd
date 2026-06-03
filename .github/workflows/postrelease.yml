@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      WORKSPACE_REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/bndtools/workspace.git
+      WORKSPACE_REPO: https://x-access-token:${{ secrets.PAT_WORKSPACE_REPO }}@github.com/bndtools/workspace.git
       V1: ${{ github.event.inputs.V1 }}
 
     steps:
