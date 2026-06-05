@@ -1,0 +1,1057 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  <link rel="stylesheet" href="/release/assets/css/just-the-docs-default.css">
+
+  <link rel="stylesheet" href="/release/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet">
+
+  <style id="jtd-nav-activation">
+  
+
+    .site-nav > ul:nth-of-type(2) > li > a,
+    
+    .site-nav > ul:nth-of-type(2) > li > ul > li:not(:nth-child(1)) > a,
+    .site-nav > ul:nth-of-type(2) > li > ul > li > ul > li a {
+      background-image: none;
+    }
+
+    .site-nav > ul:not(:nth-of-type(2)) a,
+    .site-nav li.external a {
+      background-image: none;
+    }
+
+    .site-nav > ul:nth-of-type(2) > li:nth-child(4) > ul > li:nth-child(1) > a {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .site-nav > ul.nav-category-list > li > button svg,
+    .site-nav > ul:nth-of-type(2) > li:nth-child(4) > button svg,
+    .site-nav > ul:nth-of-type(2) > li:nth-child(4) > ul > li:nth-child(1) > button svg {
+      transform: rotate(-90deg);
+    }
+    .site-nav > ul.nav-category-list > li.nav-list-item > ul.nav-list,
+    .site-nav > ul:nth-of-type(2) > li.nav-list-item:nth-child(4) > ul.nav-list,
+    .site-nav > ul:nth-of-type(2) > li.nav-list-item:nth-child(4) > ul.nav-list > li.nav-list-item:nth-child(1) > ul.nav-list {
+      display: block;
+    }
+  </style>
+
+  
+
+  
+    <script src="/release/assets/js/vendor/lunr.min.js"></script>
+  
+
+  <script src="/release/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="icon" href="/release/favicon.ico" type="image/x-icon">
+
+
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Resolving Dependencies | bnd</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Resolving Dependencies" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="OSGi’s Best Kept Secret" />
+<meta property="og:description" content="OSGi’s Best Kept Secret" />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-06-05T08:36:50+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Resolving Dependencies" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-06-05T08:36:50+00:00","datePublished":"2026-06-05T08:36:50+00:00","description":"OSGi’s Best Kept Secret","headline":"Resolving Dependencies","mainEntityOfPage":{"@type":"WebPage","@id":"/release/chapters/250-resolving.html"},"url":"/release/chapters/250-resolving.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  <!-- bnd custom head additions -->
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/release/sitemap.xml">
+<link rel="shortcut icon" type="image/x-icon" href="/release/favicon.ico">
+
+<!-- Tocbot: right-side sticky "On this page" TOC -->
+<link rel="stylesheet" href="/release/css/tocbot.css">
+<script src="/release/js/tocbot.min.js"></script>
+
+
+
+<!-- Prevent flash of wrong color scheme: apply saved light/dark preference before CSS renders,
+     otherwise use OS/browser preference on page load. -->
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme-preference');
+      var pref = (stored === 'light' || stored === 'dark') ? stored : null;
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var useDark = pref ? pref === 'dark' : prefersDark;
+      if (useDark) {
+        var cssFile = document.querySelector('link[href*="just-the-docs-default.css"], link[href*="just-the-docs-light.css"], link[href*="just-the-docs-dark.css"]');
+        if (cssFile) {
+          cssFile.setAttribute('href',
+            cssFile.getAttribute('href').replace(/just-the-docs-(default|light|dark)\.css/, 'just-the-docs-dark.css'));
+        }
+      }
+      document.documentElement.setAttribute('data-color-scheme', useDark ? 'dark' : 'light');
+    } catch (e) {}
+  }());
+</script>
+
+
+</head>
+
+<body>
+  <a class="skip-to-main" href="#main-content">Skip to main content</a>
+  <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="svg-link" viewBox="0 0 24 24">
+  <title>Link</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+</symbol>
+
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+  <title>Menu</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</symbol>
+
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+  <title>Expand</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</symbol>
+
+  <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE -->
+<symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link">
+  <title id="svg-external-link-title">(external link)</title>
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+</symbol>
+
+  
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+  <title>Document</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+  </svg>
+</symbol>
+
+    <symbol id="svg-search" viewBox="0 0 24 24">
+  <title>Search</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+</symbol>
+
+  
+  
+    <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md -->
+<symbol id="svg-copy" viewBox="0 0 16 16">
+  <title>Copy</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+  </svg>
+</symbol>
+<symbol id="svg-copied" viewBox="0 0 16 16">
+  <title>Copied</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+  </svg>
+</symbol>
+
+  
+</svg>
+
+  
+    <header class="side-bar">
+  <div class="site-header">
+    <a href="/release/" class="site-title lh-tight">
+  bnd
+
+</a>
+    <button id="menu-button" class="site-button btn-reset" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div>
+
+  <nav aria-label="Main" id="site-nav" class="site-nav">
+  
+  
+    <ul class="nav-list"><li class="nav-list-item"><a href="/release/" class="nav-list-link">bnd – OSGi Bundle Tooling for Java</a></li></ul>
+  
+    
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Getting Started submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-getting-started.html" class="nav-list-link">Getting Started</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/110-introduction.html" class="nav-list-link">Introduction</a></li><li class="nav-list-item"><a href="/release/chapters/120-install.html" class="nav-list-link">How to install bnd</a></li><li class="nav-list-item"><a href="/release/chapters/123-tour-workspace.html" class="nav-list-link">Guided Tour Workspace & Projects</a></li><li class="nav-list-item"><a href="/release/chapters/125-tour-features.html" class="nav-list-link">bnd / bndlib Features and JAR Wrapping Techniques</a></li><li class="nav-list-item"><a href="/release/chapters/920-faq.html" class="nav-list-link">FAQ - Frequently Asked Questions</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Concepts and Practices submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-concepts.html" class="nav-list-link">Concepts and Practices</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/130-concepts.html" class="nav-list-link">Concepts</a></li><li class="nav-list-item"><a href="/release/chapters/135-history.html" class="nav-list-link">Background</a></li><li class="nav-list-item"><a href="/release/chapters/140-best-practices.html" class="nav-list-link">Best practices</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Build and Development submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-build-development.html" class="nav-list-link">Build and Development</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/150-build.html" class="nav-list-link">Build</a></li><li class="nav-list-item"><a href="/release/chapters/155-project-setup.html" class="nav-list-link">Project Setup</a></li><li class="nav-list-item"><a href="/release/chapters/160-jars.html" class="nav-list-link">Generating JARs</a></li><li class="nav-list-item"><a href="/release/chapters/170-versioning.html" class="nav-list-link">Versioning</a></li><li class="nav-list-item"><a href="/release/chapters/180-baselining.html" class="nav-list-link">Baselining</a></li><li class="nav-list-item"><a href="/release/chapters/200-components.html" class="nav-list-link">Service Components</a></li><li class="nav-list-item"><a href="/release/chapters/210-metatype.html" class="nav-list-link">Metatype</a></li><li class="nav-list-item"><a href="/release/chapters/220-contracts.html" class="nav-list-link">Contracts</a></li><li class="nav-list-item"><a href="/release/chapters/230-manifest-annotations.html" class="nav-list-link">Bundle Annotations</a></li><li class="nav-list-item"><a href="/release/chapters/235-accessor-properties.html" class="nav-list-link">Accessor Properties</a></li><li class="nav-list-item"><a href="/release/chapters/240-spi-annotations.html" class="nav-list-link">SPI Annotations</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Dependency and Launching submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-dependency-launching.html" class="nav-list-link">Dependency and Launching</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/250-resolving.html" class="nav-list-link">Resolving Dependencies</a></li><li class="nav-list-item"><a href="/release/chapters/300-launching.html" class="nav-list-link">Launching</a></li><li class="nav-list-item"><a href="/release/chapters/305-startlevels.html" class="nav-list-link">Startlevels</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Testing submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-testing.html" class="nav-list-link">Testing</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/310-testing.html" class="nav-list-link">Testing Framework</a></li><li class="nav-list-item"><a href="/release/chapters/315-launchpad-testing.html" class="nav-list-link">Testing with Launchpad</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Packaging and Distribution submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-packaging.html" class="nav-list-link">Packaging and Distribution</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/320-packaging.html" class="nav-list-link">Packaging Applications</a></li><li class="nav-list-item"><a href="/release/chapters/330-jpms.html" class="nav-list-link">JPMS Libraries</a></li><li class="nav-list-item"><a href="/release/chapters/390-wrapping.html" class="nav-list-link">Wrapping Libraries to OSGi Bundles</a></li><li class="nav-list-item"><a href="/release/chapters/325-sonatype-central-portal.html" class="nav-list-link">Sonatype Central Portal Publishing</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Documentation and Tools submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-documentation-tools.html" class="nav-list-link">Documentation and Tools</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/395-generating-documentation.html" class="nav-list-link">Generating Documentation</a></li><li class="nav-list-item"><a href="/release/chapters/400-commands.html" class="nav-list-link">bnd CLI Commands</a></li><li class="nav-list-item"><a href="/release/chapters/600-developer.html" class="nav-list-link">For Developers</a></li><li class="nav-list-item"><a href="/release/chapters/620-template-fragments.html" class="nav-list-link">Templates for Workspaces</a></li><li class="nav-list-item"><a href="/release/chapters/650-windows.html" class="nav-list-link">Tips for Windows users</a></li><li class="nav-list-item"><a href="/release/chapters/700-tools.html" class="nav-list-link">Tools bound to bnd</a></li><li class="nav-list-item"><a href="/release/chapters/875-external-plugins.html" class="nav-list-link">External Plugins</a></li></ul></li><li class="nav-list-item"><a href="/release/chapters/000-reference.html" class="nav-list-link">Reference Material</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Configuration and Troubleshooting submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-config-troubleshooting.html" class="nav-list-link">Configuration and Troubleshooting</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/880-settings.html" class="nav-list-link">Settings</a></li><li class="nav-list-item"><a href="/release/chapters/900-errors.html" class="nav-list-link">Errors</a></li><li class="nav-list-item"><a href="/release/chapters/910-warnings.html" class="nav-list-link">Warnings</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Headers submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/headers/" class="nav-list-link">Headers</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/heads/bnd.html" class="nav-list-link">.bnd</a></li><li class="nav-list-item"><a href="/release/heads/automatic_module_name.html" class="nav-list-link">Automatic-Module-Name</a></li><li class="nav-list-item"><a href="/release/heads/bin.html" class="nav-list-link">bin</a></li><li class="nav-list-item"><a href="/release/heads/bnd_addxmltotest.html" class="nav-list-link">Bnd-AddXmlToTest RESOURCE ( ',' RESOURCE )</a></li><li class="nav-list-item"><a href="/release/heads/bnd_lastmodified.html" class="nav-list-link">Bnd-LastModified  LONG</a></li><li class="nav-list-item"><a href="/release/heads/bundle_activationpolicy.html" class="nav-list-link">Bundle-ActivationPolicy ::= policy ( ';' directive )*</a></li><li class="nav-list-item"><a href="/release/heads/bundle_activator.html" class="nav-list-link">Bundle-Activator CLASS</a></li><li class="nav-list-item"><a href="/release/heads/bundle_blueprint.html" class="nav-list-link">Bundle-Blueprint RESOURE (',' RESOURCE )</a></li><li class="nav-list-item"><a href="/release/heads/bundle_category.html" class="nav-list-link">Bundle-Category STRING (',' STRING )</a></li><li class="nav-list-item"><a href="/release/heads/bundle_classpath.html" class="nav-list-link">Bundle-ClassPath ::= entry ( ',' entry )*</a></li><li class="nav-list-item"><a href="/release/heads/bundle_contactaddress.html" class="nav-list-link">Bundle-ContactAddress</a></li><li class="nav-list-item"><a href="/release/heads/bundle_contributors.html" class="nav-list-link">Bundle-Contributors ...</a></li><li class="nav-list-item"><a href="/release/heads/bundle_copyright.html" class="nav-list-link">Bundle-Copyright STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_description.html" class="nav-list-link">Bundle-Description STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_developers.html" class="nav-list-link">Bundle-Developers ...</a></li><li class="nav-list-item"><a href="/release/heads/bundle_docurl.html" class="nav-list-link">Bundle-DocURL STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_icon.html" class="nav-list-link">Bundle-Icon</a></li><li class="nav-list-item"><a href="/release/heads/bundle_license.html" class="nav-list-link">Bundle-License ::= '<<[EXTERNAL]>>' | ( license ( ',' license ) * )</a></li><li class="nav-list-item"><a href="/release/heads/bundle_localization.html" class="nav-list-link">Bundle-Localization</a></li><li class="nav-list-item"><a href="/release/heads/bundle_manifestversion.html" class="nav-list-link">Bundle-ManifestVersion ::= 2</a></li><li class="nav-list-item"><a href="/release/heads/bundle_name.html" class="nav-list-link">Bundle-Name STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_nativecode.html" class="nav-list-link">Bundle-NativeCode   ::= nativecode  ( ',' nativecode )* ( ',' optional ) ?</a></li><li class="nav-list-item"><a href="/release/heads/bundle_requiredexecutionenvironment.html" class="nav-list-link">Bundle-RequiredExecutionEnvironment ::= ee-name ( ',' ee-name )*</a></li><li class="nav-list-item"><a href="/release/heads/bundle_scm.html" class="nav-list-link">Bundle-SCM</a></li><li class="nav-list-item"><a href="/release/heads/bundle_symbolicname.html" class="nav-list-link">Bundle-SymbolicName ::= symbolic-name ( ';' parameter ) *</a></li><li class="nav-list-item"><a href="/release/heads/bundle_updatelocation.html" class="nav-list-link">Bundle-UpdateLocation</a></li><li class="nav-list-item"><a href="/release/heads/bundle_vendor.html" class="nav-list-link">Bundle-Vendor</a></li><li class="nav-list-item"><a href="/release/heads/bundle_version.html" class="nav-list-link">Bundle-Version ::= version</a></li><li class="nav-list-item"><a href="/release/heads/conditional_package.html" class="nav-list-link">Conditional-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/heads/created_by.html" class="nav-list-link">Created-By STRING</a></li><li class="nav-list-item"><a href="/release/heads/dynamicimport_package.html" class="nav-list-link">DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*</a></li><li class="nav-list-item"><a href="/release/heads/export_package.html" class="nav-list-link">Export-Package  ::= export ( ',' export)*</a></li><li class="nav-list-item"><a href="/release/heads/export_service.html" class="nav-list-link">Export-Service</a></li><li class="nav-list-item"><a href="/release/heads/fragment_host.html" class="nav-list-link">Fragment-Host       ::= bundle-description</a></li><li class="nav-list-item"><a href="/release/heads/ignore_package.html" class="nav-list-link">Ignore-Package</a></li><li class="nav-list-item"><a href="/release/heads/import_package.html" class="nav-list-link">Import-Package ::= import ( ',' import )*</a></li><li class="nav-list-item"><a href="/release/heads/javac.html" class="nav-list-link">javac</a></li><li class="nav-list-item"><a href="/release/heads/javac.encoding.html" class="nav-list-link">javac.encoding</a></li><li class="nav-list-item"><a href="/release/heads/javac.profile.html" class="nav-list-link">javac.profile</a></li><li class="nav-list-item"><a href="/release/heads/javac.source.html" class="nav-list-link">javac.source</a></li><li class="nav-list-item"><a href="/release/heads/javac.target.html" class="nav-list-link">javac.target</a></li><li class="nav-list-item"><a href="/release/heads/meta_persistence.html" class="nav-list-link">Meta-Persistence ::= ( RESOURCE ( ',' RESOURCE )* )?</a></li><li class="nav-list-item"><a href="/release/heads/private_package.html" class="nav-list-link">Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/heads/provide_capability.html" class="nav-list-link">Provide-Capability  ::= capability (',' capability )*</a></li><li class="nav-list-item"><a href="/release/heads/require_bundle.html" class="nav-list-link">Require-Bundle      ::= bundle-description ( ',' bundle-description )*</a></li><li class="nav-list-item"><a href="/release/heads/require_capability.html" class="nav-list-link">Require-Capability ::= requirement ( ',' requirement )*</a></li><li class="nav-list-item"><a href="/release/heads/service_component.html" class="nav-list-link">Service-Component ::= RESOURCE ( ',' RESOURCE )</a></li><li class="nav-list-item"><a href="/release/heads/src.html" class="nav-list-link">src</a></li><li class="nav-list-item"><a href="/release/heads/target_dir.html" class="nav-list-link">target-dir</a></li><li class="nav-list-item"><a href="/release/heads/test_cases.html" class="nav-list-link">Test-Cases CLASS ( ',' CLASS ) *</a></li><li class="nav-list-item"><a href="/release/heads/testbin.html" class="nav-list-link">testbin</a></li><li class="nav-list-item"><a href="/release/heads/tester_plugin.html" class="nav-list-link">Tester-Plugin</a></li><li class="nav-list-item"><a href="/release/heads/testsrc.html" class="nav-list-link">testsrc</a></li><li class="nav-list-item"><a href="/release/heads/tool.html" class="nav-list-link">Tool STRING</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Instruction Reference submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/instructions/" class="nav-list-link">Instruction Reference</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/instructions/augment.html" class="nav-list-link">-augment PARAMETER ( ',' PARAMETER ) *</a></li><li class="nav-list-item"><a href="/release/instructions/baseline.html" class="nav-list-link">-baseline selector</a></li><li class="nav-list-item"><a href="/release/instructions/baselinerepo.html" class="nav-list-link">-baselinerepo qname</a></li><li class="nav-list-item"><a href="/release/instructions/bnd_driver.html" class="nav-list-link">-bnd-driver</a></li><li class="nav-list-item"><a href="/release/instructions/builderignore.html" class="nav-list-link">-builderignore PATH-SPEC ( ',' PATH-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/buildpath.html" class="nav-list-link">-buildpath PATH</a></li><li class="nav-list-item"><a href="/release/instructions/buildrepo.html" class="nav-list-link">-buildrepo  repo ( ',' repo ) *</a></li><li class="nav-list-item"><a href="/release/instructions/buildtool.html" class="nav-list-link">-buildtool  toolspec  (EXPERIMENTAL!)</a></li><li class="nav-list-item"><a href="/release/instructions/bumppolicy.html" class="nav-list-link">-bumppolicy</a></li><li class="nav-list-item"><a href="/release/instructions/bundleannotations.html" class="nav-list-link">-bundleannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/cdiannotations.html" class="nav-list-link">-cdiannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/check.html" class="nav-list-link">-check 'ALL' | ( 'IMPORTS' | 'EXPORTS' ) *</a></li><li class="nav-list-item"><a href="/release/instructions/classpath.html" class="nav-list-link">-classpath  FILE (',' FILE) *</a></li><li class="nav-list-item"><a href="/release/instructions/compression.html" class="nav-list-link">-compression DEFLATE | STORE</a></li><li class="nav-list-item"><a href="/release/instructions/conditionalpackage.html" class="nav-list-link">-conditionalpackage PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/conduit.html" class="nav-list-link">-conduit</a></li><li class="nav-list-item"><a href="/release/instructions/connection_settings.html" class="nav-list-link">-connection-settings</a></li><li class="nav-list-item"><a href="/release/instructions/consumer_policy.html" class="nav-list-link">-consumer-policy VERSION-MASK</a></li><li class="nav-list-item"><a href="/release/instructions/contract.html" class="nav-list-link">-contract</a></li><li class="nav-list-item"><a href="/release/instructions/define_contract.html" class="nav-list-link">-define-contract</a></li><li class="nav-list-item"><a href="/release/instructions/dependson.html" class="nav-list-link">-dependson SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/deploy.html" class="nav-list-link">-deploy</a></li><li class="nav-list-item"><a href="/release/instructions/deployrepo.html" class="nav-list-link">-deployrepo</a></li><li class="nav-list-item"><a href="/release/instructions/diffignore.html" class="nav-list-link">-diffignore SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/diffpackages.html" class="nav-list-link">-diffpackages SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/digests.html" class="nav-list-link">-digests DIGEST ( ',' DIGEST ) *</a></li><li class="nav-list-item"><a href="/release/instructions/distro.html" class="nav-list-link">-distro REPO (',' REPO)</a></li><li class="nav-list-item"><a href="/release/instructions/donotcopy.html" class="nav-list-link">-donotcopy</a></li><li class="nav-list-item"><a href="/release/instructions/dsannotations.html" class="nav-list-link">-dsannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/dsannotations_options.html" class="nav-list-link">-dsannotations-options SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/eeprofile.html" class="nav-list-link">-eeprofile 'auto' | PROFILE +</a></li><li class="nav-list-item"><a href="/release/instructions/executable.html" class="nav-list-link">-executable ( rejar= STORE | DEFLATE ) ( ','  strip= matcher ( ',' matcher )* ) ( ',' location= FORMAT )</a></li><li class="nav-list-item"><a href="/release/instructions/export.html" class="nav-list-link">-export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*</a></li><li class="nav-list-item"><a href="/release/instructions/export_apiguardian.html" class="nav-list-link">-export-apiguardian PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/exportcontents.html" class="nav-list-link">-exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/exportreport.html" class="nav-list-link">-exportreport report-def ( ',' report-def )*</a></li><li class="nav-list-item"><a href="/release/instructions/exporttype.html" class="nav-list-link">-exporttype</a></li><li class="nav-list-item"><a href="/release/instructions/extension.html" class="nav-list-link">-extension</a></li><li class="nav-list-item"><a href="/release/instructions/failok.html" class="nav-list-link">-failok ('true' | 'false')?</a></li><li class="nav-list-item"><a href="/release/instructions/fixupmessages.html" class="nav-list-link">-fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...</a></li><li class="nav-list-item"><a href="/release/instructions/generate.html" class="nav-list-link">-generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ...</a></li><li class="nav-list-item"><a href="/release/instructions/gestalt.html" class="nav-list-link">-gestalt</a></li><li class="nav-list-item"><a href="/release/instructions/groupid.html" class="nav-list-link">-groupid groupId</a></li><li class="nav-list-item"><a href="/release/instructions/include.html" class="nav-list-link">-include PATH-SPEC ( ',' PATH-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/includepackage.html" class="nav-list-link">-includepackage PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/includeresource.html" class="nav-list-link">-includeresource iclause</a></li><li class="nav-list-item"><a href="/release/instructions/init.html" class="nav-list-link">-init ${MACRO} ( ',' ${MACRO}) *</a></li><li class="nav-list-item"><a href="/release/instructions/invalidfilenames.html" class="nav-list-link">-invalidfilenames</a></li><li class="nav-list-item"><a href="/release/instructions/javaagent.html" class="nav-list-link">-javaagent BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/jpms_module_info.html" class="nav-list-link">-jpms-module-info modulename [; version=<version>] [; access=OPEN|SYNTHETIC|MANDATED]</a></li><li class="nav-list-item"><a href="/release/instructions/jpms_module_info_options.html" class="nav-list-link">-jpms-module-info-options module-infos+</a></li><li class="nav-list-item"><a href="/release/instructions/jpms_multi_release.html" class="nav-list-link">-jpms-multi-release BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/launcher.html" class="nav-list-link">-launcher</a></li><li class="nav-list-item"><a href="/release/instructions/library.html" class="nav-list-link">-library library ( ',' library )*</a></li><li class="nav-list-item"><a href="/release/instructions/make.html" class="nav-list-link">-make</a></li><li class="nav-list-item"><a href="/release/instructions/manifest.html" class="nav-list-link">-manifest FILE</a></li><li class="nav-list-item"><a href="/release/instructions/manifest_name.html" class="nav-list-link">-manifest-name  RESOURCE</a></li><li class="nav-list-item"><a href="/release/instructions/maven_dependencies.html" class="nav-list-link">-maven-dependencies* entry ( ',' entry )*</a></li><li class="nav-list-item"><a href="/release/instructions/maven_release.html" class="nav-list-link">-maven-release ('local'|'remote') ( ',' option )*</a></li><li class="nav-list-item"><a href="/release/instructions/maven_scope.html" class="nav-list-link">-maven-scope dependency-scope</a></li><li class="nav-list-item"><a href="/release/instructions/metainf_services.html" class="nav-list-link">-metainf-services</a></li><li class="nav-list-item"><a href="/release/instructions/metatypeannotations.html" class="nav-list-link">-metatypeannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/metatypeannotations_options.html" class="nav-list-link">-metatypeannotations-options SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/namesection.html" class="nav-list-link">-namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/nobuildincache.html" class="nav-list-link">-nobuildincache BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nobundles.html" class="nav-list-link">-nobundles  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noclassforname.html" class="nav-list-link">-noclassforname BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nodefaultversion.html" class="nav-list-link">-nodefaultversion  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noee.html" class="nav-list-link">-noee  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noextraheaders.html" class="nav-list-link">-noextraheaders  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noimportjava.html" class="nav-list-link">-noimportjava BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nojunit.html" class="nav-list-link">-nojunit  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nojunitosgi.html" class="nav-list-link">-nojunitosgi  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nomanifest.html" class="nav-list-link">-nomanifest  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noparallel.html" class="nav-list-link">-noparallel CATEGORY;task=TASKS</a></li><li class="nav-list-item"><a href="/release/instructions/noproxyinterfaces.html" class="nav-list-link">-noproxyinterfaces BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nosubstitution.html" class="nav-list-link">-nosubstitution</a></li><li class="nav-list-item"><a href="/release/instructions/nouses.html" class="nav-list-link">-nouses  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/output.html" class="nav-list-link">-output  FILE</a></li><li class="nav-list-item"><a href="/release/instructions/outputmask.html" class="nav-list-link">-outputmask  TEMPLATE ?</a></li><li class="nav-list-item"><a href="/release/instructions/packageinfotype.html" class="nav-list-link">-packageinfotype</a></li><li class="nav-list-item"><a href="/release/instructions/pedantic.html" class="nav-list-link">-pedantic BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/plugin.html" class="nav-list-link">-plugin.* plugin-def ( ',' plugin-def )*</a></li><li class="nav-list-item"><a href="/release/instructions/pluginpath.html" class="nav-list-link">-pluginpath* PARAMETERS</a></li><li class="nav-list-item"><a href="/release/instructions/pom.html" class="nav-list-link">-pom BOOLEAN | PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/prepare.html" class="nav-list-link">-prepare makespec ( ',' makespec )*</a></li><li class="nav-list-item"><a href="/release/instructions/preprocessmatchers.html" class="nav-list-link">-preprocessmatchers SELECTOR</a></li><li class="nav-list-item"><a href="/release/instructions/privatepackage.html" class="nav-list-link">-privatepackage PACKAGE-SPEC</a></li><li class="nav-list-item"><a href="/release/instructions/profile.html" class="nav-list-link">-profile KEY</a></li><li class="nav-list-item"><a href="/release/instructions/provider_policy.html" class="nav-list-link">-provider-policy VERSION-MASK</a></li><li class="nav-list-item"><a href="/release/instructions/releaserepo.html" class="nav-list-link">-releaserepo* NAME ( ',' NAME ) *</a></li><li class="nav-list-item"><a href="/release/instructions/remoteworkspace.html" class="nav-list-link">-remoteworkspace (true|false)</a></li><li class="nav-list-item"><a href="/release/instructions/removeheaders.html" class="nav-list-link">-removeheaders KEY-SELECTOR ( '.' KEY-SELECTOR ) *</a></li><li class="nav-list-item"><a href="/release/instructions/reportconfig.html" class="nav-list-link">-reportconfig plugin-def ( ',' plugin-def )*</a></li><li class="nav-list-item"><a href="/release/instructions/reportnewer.html" class="nav-list-link">-reportnewer BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/reproducible.html" class="nav-list-link">-reproducible BOOLEAN | TIMESTAMP</a></li><li class="nav-list-item"><a href="/release/instructions/require_bnd.html" class="nav-list-link">-require-bnd  (FILTER ( ',' FILTER )* )?</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.html" class="nav-list-link">-resolve (manual|auto|beforelaunch|batch|cache)</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.effective.html" class="nav-list-link">-resolve.effective qname (',' qname )</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.excludesystem.html" class="nav-list-link">-resolve.excludesystem true|false</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.preferences.html" class="nav-list-link">-resolve.preferences qname ( ',' qname )</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.reject.html" class="nav-list-link">-resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? ),</a></li><li class="nav-list-item"><a href="/release/instructions/resolvedebug.html" class="nav-list-link">-resolvedebug INTEGER</a></li><li class="nav-list-item"><a href="/release/instructions/resourceonly.html" class="nav-list-link">-resourceonly  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runblacklist.html" class="nav-list-link">-runblacklist requirement (',' requirement)</a></li><li class="nav-list-item"><a href="/release/instructions/runbuilds.html" class="nav-list-link">-runbuilds BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runbundles.html" class="nav-list-link">-runbundles* REPO-ENTRY ( ',' REPO-ENTRY )*</a></li><li class="nav-list-item"><a href="/release/instructions/runee.html" class="nav-list-link">-runee EE</a></li><li class="nav-list-item"><a href="/release/instructions/runenv.html" class="nav-list-link">-runenv PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/runframework.html" class="nav-list-link">-runframework ( 'none' | 'services' | ANY )?</a></li><li class="nav-list-item"><a href="/release/instructions/runframeworkrestart.html" class="nav-list-link">-runframeworkrestart BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runfw.html" class="nav-list-link">-runfw REPO-ENTRY</a></li><li class="nav-list-item"><a href="/release/instructions/runjdb.html" class="nav-list-link">-runjdb  ADDRESS</a></li><li class="nav-list-item"><a href="/release/instructions/runkeep.html" class="nav-list-link">-runkeep true | false</a></li><li class="nav-list-item"><a href="/release/instructions/runnoreferences.html" class="nav-list-link">-runnoreferences  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runoptions.html" class="nav-list-link">-runoptions</a></li><li class="nav-list-item"><a href="/release/instructions/runpath.html" class="nav-list-link">-runpath REPO-ENTRY ( ',' REPO-ENTRY )</a></li><li class="nav-list-item"><a href="/release/instructions/runprogramargs.html" class="nav-list-link">-runprogramargs</a></li><li class="nav-list-item"><a href="/release/instructions/runproperties.html" class="nav-list-link">-runproperties PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/runprovidedcapabilities.html" class="nav-list-link">-runprovidedcapabilities</a></li><li class="nav-list-item"><a href="/release/instructions/runremote.html" class="nav-list-link">-runremote</a></li><li class="nav-list-item"><a href="/release/instructions/runrepos.html" class="nav-list-link">-runrepos REPO-NAME ( ',' REPO-NAME )*</a></li><li class="nav-list-item"><a href="/release/instructions/runrequires.html" class="nav-list-link">-runrequires REQUIREMENT ( ',' REQUIREMENT )*</a></li><li class="nav-list-item"><a href="/release/instructions/runstartlevel.html" class="nav-list-link">-runstartlevel ( order | begin | step )*</a></li><li class="nav-list-item"><a href="/release/instructions/runstorage.html" class="nav-list-link">-runstorage FILE</a></li><li class="nav-list-item"><a href="/release/instructions/runsystemcapabilities.html" class="nav-list-link">-runsystemcapabilities* CAPABILITY (',' CAPABILITY )</a></li><li class="nav-list-item"><a href="/release/instructions/runsystempackages.html" class="nav-list-link">-runsystempackages* PARAMETERS</a></li><li class="nav-list-item"><a href="/release/instructions/runtimeout.html" class="nav-list-link">-runtimeout DURATION</a></li><li class="nav-list-item"><a href="/release/instructions/runtrace.html" class="nav-list-link">-runtrace BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runvm.html" class="nav-list-link">-runvm KEYS</a></li><li class="nav-list-item"><a href="/release/instructions/savemanifest.html" class="nav-list-link">-savemanifest FILE</a></li><li class="nav-list-item"><a href="/release/instructions/sign.html" class="nav-list-link">-sign PARAMETERS</a></li><li class="nav-list-item"><a href="/release/instructions/snapshot.html" class="nav-list-link">-snapshot STRING</a></li><li class="nav-list-item"><a href="/release/instructions/sourcepath.html" class="nav-list-link">-sourcepath</a></li><li class="nav-list-item"><a href="/release/instructions/sources.html" class="nav-list-link">-sources  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/stalecheck.html" class="nav-list-link">-stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* ...</a></li><li class="nav-list-item"><a href="/release/instructions/standalone.html" class="nav-list-link">-standalone repo-spec (, repo-spec )</a></li><li class="nav-list-item"><a href="/release/instructions/strict.html" class="nav-list-link">-strict BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/sub.html" class="nav-list-link">-sub FILE-SPEC ( ',' FILE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/systemproperties.html" class="nav-list-link">-systemproperties PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/testcontinuous.html" class="nav-list-link">-testcontinuous BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/tester.html" class="nav-list-link">-tester REPO-SPEC</a></li><li class="nav-list-item"><a href="/release/instructions/testpackages.html" class="nav-list-link">-testpackages PACKAGE-SPEC ( ',' PACKAGE-SPEC )</a></li><li class="nav-list-item"><a href="/release/instructions/testpath.html" class="nav-list-link">-testpath REPO-SPEC ( ',' REPO-SPEC )</a></li><li class="nav-list-item"><a href="/release/instructions/testsources.html" class="nav-list-link">-testsources REGEX ( ',' REGEX )*</a></li><li class="nav-list-item"><a href="/release/instructions/testunresolved.html" class="nav-list-link">-testunresolved BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/undertest.html" class="nav-list-link">-undertest true</a></li><li class="nav-list-item"><a href="/release/instructions/upto.html" class="nav-list-link">-upto VERSION</a></li><li class="nav-list-item"><a href="/release/instructions/wab.html" class="nav-list-link">-wab FILE ( ',' FILE )*</a></li><li class="nav-list-item"><a href="/release/instructions/wablib.html" class="nav-list-link">-wablib FILE ( ',' FILE )*</a></li><li class="nav-list-item"><a href="/release/instructions/workingset.html" class="nav-list-link">-workingset PARAMETER ( ',' PARAMETER ) *</a></li><li class="nav-list-item"><a href="/release/instructions/workspace_templates.html" class="nav-list-link">-workspace-templates</a></li><li class="nav-list-item"><a href="/release/instructions/x_overwritestrategy.html" class="nav-list-link">-x-overwritestrategy</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Macro Reference submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/macros/" class="nav-list-link">Macro Reference</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/macros/apply.html" class="nav-list-link">apply ';' MACRO (';' LIST)*</a></li><li class="nav-list-item"><a href="/release/macros/average.html" class="nav-list-link">average (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/base64.html" class="nav-list-link">base64 ';' FILE [';' LONG ]</a></li><li class="nav-list-item"><a href="/release/macros/basedir.html" class="nav-list-link">basedir</a></li><li class="nav-list-item"><a href="/release/macros/basename.html" class="nav-list-link">basename ( ';' FILEPATH ) +</a></li><li class="nav-list-item"><a href="/release/macros/basenameext.html" class="nav-list-link">basenameext ';' PATH ( ';' EXTENSION )</a></li><li class="nav-list-item"><a href="/release/macros/bndversion.html" class="nav-list-link">bndversion</a></li><li class="nav-list-item"><a href="/release/macros/bsn.html" class="nav-list-link">bsn</a></li><li class="nav-list-item"><a href="/release/macros/bytes.html" class="nav-list-link">bytes ( ';' LONG )*</a></li><li class="nav-list-item"><a href="/release/macros/cat.html" class="nav-list-link">cat ';' FILEPATH</a></li><li class="nav-list-item"><a href="/release/macros/classes.html" class="nav-list-link">classes ( ; QUERY ( ; PATTERN )? )*</a></li><li class="nav-list-item"><a href="/release/macros/compare.html" class="nav-list-link">compare STRING STRING</a></li><li class="nav-list-item"><a href="/release/macros/currenttime.html" class="nav-list-link">currenttime</a></li><li class="nav-list-item"><a href="/release/macros/decorated.html" class="nav-list-link">decorated ';' NAME [ ';' BOOLEAN ]</a></li><li class="nav-list-item"><a href="/release/macros/def.html" class="nav-list-link">def ';' KEY (';' STRING)?</a></li><li class="nav-list-item"><a href="/release/macros/digest.html" class="nav-list-link">digest ';' ALGORITHM ';' FILE</a></li><li class="nav-list-item"><a href="/release/macros/dir.html" class="nav-list-link">dir ( ';' FILE )*</a></li><li class="nav-list-item"><a href="/release/macros/driver.html" class="nav-list-link">driver ( ';' NAME )?</a></li><li class="nav-list-item"><a href="/release/macros/ee.html" class="nav-list-link">ee</a></li><li class="nav-list-item"><a href="/release/macros/endswith.html" class="nav-list-link">endswith ';' STRING ';' SUFFIX</a></li><li class="nav-list-item"><a href="/release/macros/env.html" class="nav-list-link">env ';' KEY (';' STRING)?</a></li><li class="nav-list-item"><a href="/release/macros/error.html" class="nav-list-link">error ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/exporters.html" class="nav-list-link">exporters ';' PACKAGE</a></li><li class="nav-list-item"><a href="/release/macros/exports.html" class="nav-list-link">exports</a></li><li class="nav-list-item"><a href="/release/macros/extension.html" class="nav-list-link">extension ';' PATH</a></li><li class="nav-list-item"><a href="/release/macros/fileuri.html" class="nav-list-link">fileuri ';' PATH</a></li><li class="nav-list-item"><a href="/release/macros/filter.html" class="nav-list-link">filter ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/filterout.html" class="nav-list-link">filterout ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/find.html" class="nav-list-link">find ';' VALUE ';' SEARCHED</a></li><li class="nav-list-item"><a href="/release/macros/findfile.html" class="nav-list-link">findfile ';' PATH ( ';' FILTER )</a></li><li class="nav-list-item"><a href="/release/macros/findlast.html" class="nav-list-link">findlast ';' VALUE ';' SEARCHED</a></li><li class="nav-list-item"><a href="/release/macros/findname.html" class="nav-list-link">findname ';' REGEX ( ';' REPLACEMENT )?</a></li><li class="nav-list-item"><a href="/release/macros/findpath.html" class="nav-list-link">findpath ';' REGEX ( ';' REPLACE )?</a></li><li class="nav-list-item"><a href="/release/macros/findproviders.html" class="nav-list-link">findproviders  ';' namespace ( ';' FILTER ( ';' STRATEGY)? )?</a></li><li class="nav-list-item"><a href="/release/macros/first.html" class="nav-list-link">first (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/fmodified.html" class="nav-list-link">fmodified ( ';' RESOURCE )+</a></li><li class="nav-list-item"><a href="/release/macros/foreach.html" class="nav-list-link">foreach ';' MACRO (';' LIST)*</a></li><li class="nav-list-item"><a href="/release/macros/format.html" class="nav-list-link">format ';' STRING (';' ANY )*</a></li><li class="nav-list-item"><a href="/release/macros/frange.html" class="nav-list-link">frange ';' VERSION ( ';' BOOLEAN )?</a></li><li class="nav-list-item"><a href="/release/macros/gestalt.html" class="nav-list-link">gestalt ';' NAME ( ';' NAME (';' ANY )? )?</a></li><li class="nav-list-item"><a href="/release/macros/get.html" class="nav-list-link">get ';' INDEX (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/githead.html" class="nav-list-link">githead</a></li><li class="nav-list-item"><a href="/release/macros/glob.html" class="nav-list-link">glob ';' GLOBEXP</a></li><li class="nav-list-item"><a href="/release/macros/global.html" class="nav-list-link">global ';' KEY ( ';' DEFAULT )?</a></li><li class="nav-list-item"><a href="/release/macros/ide.html" class="nav-list-link">ide ';' ( 'javac.target' | 'javac.source' )</a></li><li class="nav-list-item"><a href="/release/macros/if.html" class="nav-list-link">if ';' STRING ';' STRING ( ';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/imports.html" class="nav-list-link">imports</a></li><li class="nav-list-item"><a href="/release/macros/indexof.html" class="nav-list-link">indexof ';' STRING (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/is.html" class="nav-list-link">is ( ';' ANY )*</a></li><li class="nav-list-item"><a href="/release/macros/isdir.html" class="nav-list-link">isdir ( ';' FILE )+</a></li><li class="nav-list-item"><a href="/release/macros/isempty.html" class="nav-list-link">isempty ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/isfile.html" class="nav-list-link">isfile (';' FILE )+</a></li><li class="nav-list-item"><a href="/release/macros/isnumber.html" class="nav-list-link">isnumber ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/join.html" class="nav-list-link">join ( ';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/js.html" class="nav-list-link">js (';' JAVASCRIPT )*</a></li><li class="nav-list-item"><a href="/release/macros/last.html" class="nav-list-link">last (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/lastindexof.html" class="nav-list-link">lastindexof ';' STRING (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/length.html" class="nav-list-link">length STRING</a></li><li class="nav-list-item"><a href="/release/macros/list.html" class="nav-list-link">list (';' KEY)*</a></li><li class="nav-list-item"><a href="/release/macros/literal.html" class="nav-list-link">literal ';' STRING</a></li><li class="nav-list-item"><a href="/release/macros/long2date.html" class="nav-list-link">long2date</a></li><li class="nav-list-item"><a href="/release/macros/lsa.html" class="nav-list-link">lsa ';' DIR (';' SELECTORS )</a></li><li class="nav-list-item"><a href="/release/macros/lsr.html" class="nav-list-link">lsr ';' DIR (';' SELECTORS )</a></li><li class="nav-list-item"><a href="/release/macros/map.html" class="nav-list-link">map ';' MACRO (';' LIST)*</a></li><li class="nav-list-item"><a href="/release/macros/matches.html" class="nav-list-link">matches STRING REGEX</a></li><li class="nav-list-item"><a href="/release/macros/maven_version.html" class="nav-list-link">maven_version ';' MAVEN-VERSION</a></li><li class="nav-list-item"><a href="/release/macros/max.html" class="nav-list-link">max (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/md5.html" class="nav-list-link">md5 ';' RESOURCE</a></li><li class="nav-list-item"><a href="/release/macros/min.html" class="nav-list-link">min (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/native_capability.html" class="nav-list-link">native_capability ( ';' ( 'os.name' | 'os.version' | 'os.processor' ) '=' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/ncompare.html" class="nav-list-link">ncompare NUMBER NUMBER</a></li><li class="nav-list-item"><a href="/release/macros/nmax.html" class="nav-list-link">nmax (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/nmin.html" class="nav-list-link">nmin (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/now.html" class="nav-list-link">now ( 'long' | DATEFORMAT )</a></li><li class="nav-list-item"><a href="/release/macros/nsort.html" class="nav-list-link">nsort (';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/osfile.html" class="nav-list-link">osfile ';' DIR ';' NAME</a></li><li class="nav-list-item"><a href="/release/macros/p_allsourcepath.html" class="nav-list-link">p_allsourcepath</a></li><li class="nav-list-item"><a href="/release/macros/p_bootclasspath.html" class="nav-list-link">p_bootclasspath</a></li><li class="nav-list-item"><a href="/release/macros/p_buildpath.html" class="nav-list-link">p_buildpath</a></li><li class="nav-list-item"><a href="/release/macros/p_dependson.html" class="nav-list-link">p_dependson</a></li><li class="nav-list-item"><a href="/release/macros/p_output.html" class="nav-list-link">p_output</a></li><li class="nav-list-item"><a href="/release/macros/p_sourcepath.html" class="nav-list-link">p_sourcepath</a></li><li class="nav-list-item"><a href="/release/macros/p_testpath.html" class="nav-list-link">p_testpath</a></li><li class="nav-list-item"><a href="/release/macros/packageattribute.html" class="nav-list-link">packageattribute ';' PACKAGE (';' ATTRIBUTE)?</a></li><li class="nav-list-item"><a href="/release/macros/packages.html" class="nav-list-link">packages</a></li><li class="nav-list-item"><a href="/release/macros/path.html" class="nav-list-link">path ( ';' FILES )+</a></li><li class="nav-list-item"><a href="/release/macros/pathseparator.html" class="nav-list-link">pathseparator</a></li><li class="nav-list-item"><a href="/release/macros/permissions.html" class="nav-list-link">permissions (';' ( 'packages' | 'admin' | 'permissions' ) )+</a></li><li class="nav-list-item"><a href="/release/macros/propertiesdir.html" class="nav-list-link">propertiesdir</a></li><li class="nav-list-item"><a href="/release/macros/propertiesname.html" class="nav-list-link">propertiesname</a></li><li class="nav-list-item"><a href="/release/macros/rand.html" class="nav-list-link">rand (';' MIN ' (;' MAX )?)?</a></li><li class="nav-list-item"><a href="/release/macros/random.html" class="nav-list-link">random</a></li><li class="nav-list-item"><a href="/release/macros/range.html" class="nav-list-link">range ';' RANGE_MASK ( ';' VERSION )</a></li><li class="nav-list-item"><a href="/release/macros/reject.html" class="nav-list-link">reject ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/removeall.html" class="nav-list-link">removeall ';' LIST ';' LIST</a></li><li class="nav-list-item"><a href="/release/macros/replace.html" class="nav-list-link">replace ';' LIST ';' REGEX (';' STRING (';' STRING)? )?</a></li><li class="nav-list-item"><a href="/release/macros/replacelist.html" class="nav-list-link">replacelist ';' LIST ';' REGEX (';' STRING (';' STRING)? )?</a></li><li class="nav-list-item"><a href="/release/macros/replacestring.html" class="nav-list-link">replacestring ';' STRING ';' REGEX (';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/repo.html" class="nav-list-link">repo ';' BSN ( ';' VERSION ( ';' STRATEGY )? )?</a></li><li class="nav-list-item"><a href="/release/macros/repodigests.html" class="nav-list-link">repodigests ( ';' NAME )*</a></li><li class="nav-list-item"><a href="/release/macros/repos.html" class="nav-list-link">repos</a></li><li class="nav-list-item"><a href="/release/macros/retainall.html" class="nav-list-link">retainall ';' LIST ';' LIST</a></li><li class="nav-list-item"><a href="/release/macros/reverse.html" class="nav-list-link">reverse (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/select.html" class="nav-list-link">select ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/separator.html" class="nav-list-link">separator</a></li><li class="nav-list-item"><a href="/release/macros/sha1.html" class="nav-list-link">sha1 ';' RESOURCE</a></li><li class="nav-list-item"><a href="/release/macros/size.html" class="nav-list-link">size ( ';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/sjoin.html" class="nav-list-link">sjoin ';' SEPARATOR ( ';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/sort.html" class="nav-list-link">sort (';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/split.html" class="nav-list-link">split ';' REGEX (';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/startswith.html" class="nav-list-link">startswith ';' STRING ';' PREFIX</a></li><li class="nav-list-item"><a href="/release/macros/stem.html" class="nav-list-link">stem ';' STRING</a></li><li class="nav-list-item"><a href="/release/macros/sublist.html" class="nav-list-link">sublist ';' START ';' END (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/subst.html" class="nav-list-link">subst ';' STRING ';' REGEX (';' STRING (';' NUMBER )? )?</a></li><li class="nav-list-item"><a href="/release/macros/substring.html" class="nav-list-link">substring ';' STRING ';' START ( ';' END )?</a></li><li class="nav-list-item"><a href="/release/macros/sum.html" class="nav-list-link">sum (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/system.html" class="nav-list-link">system ';' STRING ( ';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/system_allow_fail.html" class="nav-list-link">system_allow_fail ';' STRING ( ';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/template.html" class="nav-list-link">template ';' NAME [ ';' template ]+</a></li><li class="nav-list-item"><a href="/release/macros/thisfile.html" class="nav-list-link">thisfile</a></li><li class="nav-list-item"><a href="/release/macros/toclassname.html" class="nav-list-link">toclassname ';' FILES</a></li><li class="nav-list-item"><a href="/release/macros/toclaspath.html" class="nav-list-link">toclasspath ';' LIST ( ';' BOOLEAN )?</a></li><li class="nav-list-item"><a href="/release/macros/tolower.html" class="nav-list-link">tolower STRING</a></li><li class="nav-list-item"><a href="/release/macros/toupper.html" class="nav-list-link">toupper STRING</a></li><li class="nav-list-item"><a href="/release/macros/trim.html" class="nav-list-link">trim ';' STRING</a></li><li class="nav-list-item"><a href="/release/macros/tstamp.html" class="nav-list-link">tstamp ( ';' DATEFORMAT ( ';' TIMEZONE ( ';' LONG )? )? )?</a></li><li class="nav-list-item"><a href="/release/macros/unescape.html" class="nav-list-link">unescape ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/uniq.html" class="nav-list-link">uniq (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/uri.html" class="nav-list-link">uri ';' URI (';' URI)?</a></li><li class="nav-list-item"><a href="/release/macros/user.html" class="nav-list-link">user ';' KEY ( ';' DEFAULT )?</a></li><li class="nav-list-item"><a href="/release/macros/vcompare.html" class="nav-list-link">vcompare VERSION VERSION</a></li><li class="nav-list-item"><a href="/release/macros/version.html" class="nav-list-link">version MASK VERSION?</a></li><li class="nav-list-item"><a href="/release/macros/version_cleanup.html" class="nav-list-link">version_cleanup ';' VERSION</a></li><li class="nav-list-item"><a href="/release/macros/versionmask.html" class="nav-list-link">versionmask MASK VERSION?</a></li><li class="nav-list-item"><a href="/release/macros/vmax.html" class="nav-list-link">vmax (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/vmin.html" class="nav-list-link">vmin (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/warning.html" class="nav-list-link">warning ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/workspace.html" class="nav-list-link">workspace</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="bnd CLI Commands submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/commands/overview.html" class="nav-list-link">bnd CLI Commands</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/commands/action.html" class="nav-list-link">action</a></li><li class="nav-list-item"><a href="/release/commands/add.html" class="nav-list-link">add</a></li><li class="nav-list-item"><a href="/release/commands/baseline.html" class="nav-list-link">baseline</a></li><li class="nav-list-item"><a href="/release/commands/bash.html" class="nav-list-link">bash</a></li><li class="nav-list-item"><a href="/release/commands/bnd.html" class="nav-list-link">bnd</a></li><li class="nav-list-item"><a href="/release/commands/bootstrap.html" class="nav-list-link">bootstrap</a></li><li class="nav-list-item"><a href="/release/commands/bsn2url.html" class="nav-list-link">bsn2url</a></li><li class="nav-list-item"><a href="/release/commands/build.html" class="nav-list-link">build</a></li><li class="nav-list-item"><a href="/release/commands/buildtool.html" class="nav-list-link">buildtool</a></li><li class="nav-list-item"><a href="/release/commands/buildx.html" class="nav-list-link">buildx</a></li><li class="nav-list-item"><a href="/release/commands/bump.html" class="nav-list-link">bump</a></li><li class="nav-list-item"><a href="/release/commands/changes.html" class="nav-list-link">changes</a></li><li class="nav-list-item"><a href="/release/commands/classpath.html" class="nav-list-link">classpath</a></li><li class="nav-list-item"><a href="/release/commands/classtoresource.html" class="nav-list-link">classtoresource</a></li><li class="nav-list-item"><a href="/release/commands/clean.html" class="nav-list-link">clean</a></li><li class="nav-list-item"><a href="/release/commands/collect.html" class="nav-list-link">collect</a></li><li class="nav-list-item"><a href="/release/commands/com.html" class="nav-list-link">com</a></li><li class="nav-list-item"><a href="/release/commands/compile.html" class="nav-list-link">compile</a></li><li class="nav-list-item"><a href="/release/commands/convert.html" class="nav-list-link">convert</a></li><li class="nav-list-item"><a href="/release/commands/copy.html" class="nav-list-link">copy</a></li><li class="nav-list-item"><a href="/release/commands/create.html" class="nav-list-link">create</a></li><li class="nav-list-item"><a href="/release/commands/debug.html" class="nav-list-link">debug</a></li><li class="nav-list-item"><a href="/release/commands/defaults.html" class="nav-list-link">defaults</a></li><li class="nav-list-item"><a href="/release/commands/deliverables.html" class="nav-list-link">deliverables</a></li><li class="nav-list-item"><a href="/release/commands/dependencies.html" class="nav-list-link">dependencies</a></li><li class="nav-list-item"><a href="/release/commands/dev.html" class="nav-list-link">dev</a></li><li class="nav-list-item"><a href="/release/commands/diff.html" class="nav-list-link">diff</a></li><li class="nav-list-item"><a href="/release/commands/digest.html" class="nav-list-link">digest</a></li><li class="nav-list-item"><a href="/release/commands/do.html" class="nav-list-link">do</a></li><li class="nav-list-item"><a href="/release/commands/eclipse.html" class="nav-list-link">eclipse</a></li><li class="nav-list-item"><a href="/release/commands/ees.html" class="nav-list-link">ees</a></li><li class="nav-list-item"><a href="/release/commands/export.html" class="nav-list-link">export</a></li><li class="nav-list-item"><a href="/release/commands/exportreport.html" class="nav-list-link">exportreport</a></li><li class="nav-list-item"><a href="/release/commands/extract.html" class="nav-list-link">extract</a></li><li class="nav-list-item"><a href="/release/commands/find.html" class="nav-list-link">find</a></li><li class="nav-list-item"><a href="/release/commands/flatten.html" class="nav-list-link">flatten</a></li><li class="nav-list-item"><a href="/release/commands/generate.html" class="nav-list-link">generate</a></li><li class="nav-list-item"><a href="/release/commands/generatemanual.html" class="nav-list-link">generatemanual</a></li><li class="nav-list-item"><a href="/release/commands/gmd.html" class="nav-list-link">gmd</a></li><li class="nav-list-item"><a href="/release/commands/graph.html" class="nav-list-link">graph</a></li><li class="nav-list-item"><a href="/release/commands/grep.html" class="nav-list-link">grep</a></li><li class="nav-list-item"><a href="/release/commands/index.html" class="nav-list-link">index</a></li><li class="nav-list-item"><a href="/release/commands/info.html" class="nav-list-link">info</a></li><li class="nav-list-item"><a href="/release/commands/junit.html" class="nav-list-link">junit</a></li><li class="nav-list-item"><a href="/release/commands/macro.html" class="nav-list-link">macro</a></li><li class="nav-list-item"><a href="/release/commands/maven.html" class="nav-list-link">maven ( 'settings' | 'bundle'</a></li><li class="nav-list-item"><a href="/release/commands/mbr.html" class="nav-list-link">mbr</a></li><li class="nav-list-item"><a href="/release/commands/nexus.html" class="nav-list-link">nexus</a></li><li class="nav-list-item"><a href="/release/commands/package.html" class="nav-list-link">package</a></li><li class="nav-list-item"><a href="/release/commands/packagetoresource.html" class="nav-list-link">packagetoresource</a></li><li class="nav-list-item"><a href="/release/commands/plugins.html" class="nav-list-link">plugins</a></li><li class="nav-list-item"><a href="/release/commands/print.html" class="nav-list-link">print</a></li><li class="nav-list-item"><a href="/release/commands/profile.html" class="nav-list-link">profile</a></li><li class="nav-list-item"><a href="/release/commands/project.html" class="nav-list-link">project</a></li><li class="nav-list-item"><a href="/release/commands/properties.html" class="nav-list-link">properties</a></li><li class="nav-list-item"><a href="/release/commands/release.html" class="nav-list-link">release</a></li><li class="nav-list-item"><a href="/release/commands/remote.html" class="nav-list-link">remote</a></li><li class="nav-list-item"><a href="/release/commands/remove.html" class="nav-list-link">remove</a></li><li class="nav-list-item"><a href="/release/commands/repo.html" class="nav-list-link">repo</a></li><li class="nav-list-item"><a href="/release/commands/resolve.html" class="nav-list-link">resolve</a></li><li class="nav-list-item"><a href="/release/commands/run.html" class="nav-list-link">run</a></li><li class="nav-list-item"><a href="/release/commands/runtests.html" class="nav-list-link">runtests</a></li><li class="nav-list-item"><a href="/release/commands/schema.html" class="nav-list-link">schema</a></li><li class="nav-list-item"><a href="/release/commands/select.html" class="nav-list-link">select</a></li><li class="nav-list-item"><a href="/release/commands/settings.html" class="nav-list-link">settings</a></li><li class="nav-list-item"><a href="/release/commands/shell.html" class="nav-list-link">shell [options]</a></li><li class="nav-list-item"><a href="/release/commands/source.html" class="nav-list-link">source</a></li><li class="nav-list-item"><a href="/release/commands/sync.html" class="nav-list-link">sync</a></li><li class="nav-list-item"><a href="/release/commands/syntax.html" class="nav-list-link">syntax</a></li><li class="nav-list-item"><a href="/release/commands/test.html" class="nav-list-link">test</a></li><li class="nav-list-item"><a href="/release/commands/type.html" class="nav-list-link">type</a></li><li class="nav-list-item"><a href="/release/commands/verify.html" class="nav-list-link">verify</a></li><li class="nav-list-item"><a href="/release/commands/version.html" class="nav-list-link">version</a></li><li class="nav-list-item"><a href="/release/commands/view.html" class="nav-list-link">view</a></li><li class="nav-list-item"><a href="/release/commands/wrap.html" class="nav-list-link">wrap</a></li><li class="nav-list-item"><a href="/release/commands/xmlrepodiff.html" class="nav-list-link">xmlrepodiff</a></li><li class="nav-list-item"><a href="/release/commands/xref.html" class="nav-list-link">xref</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Plugins submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/plugins/" class="nav-list-link">Plugins</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/plugins/ant.html" class="nav-list-link">Ant</a></li><li class="nav-list-item"><a href="/release/plugins/aspectj.html" class="nav-list-link">AspectJ Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/blueprint.html" class="nav-list-link">Blueprint</a></li><li class="nav-list-item"><a href="/release/plugins/pomrepo.html" class="nav-list-link">Bnd Pom Repository</a></li><li class="nav-list-item"><a href="/release/plugins/eclipse.html" class="nav-list-link">Eclipse</a></li><li class="nav-list-item"><a href="/release/plugins/filerepo.html" class="nav-list-link">FileRepo Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/git.html" class="nav-list-link">Git</a></li><li class="nav-list-item"><a href="/release/plugins/gradle.html" class="nav-list-link">Gradle Workspace Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/jpa.html" class="nav-list-link">Jpa</a></li><li class="nav-list-item"><a href="/release/plugins/localindexrepo.html" class="nav-list-link">Local Index Repo</a></li><li class="nav-list-item"><a href="/release/plugins/maven.html" class="nav-list-link">Maven Bnd Repository Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/obrexporter.html" class="nav-list-link">OBR Index Exporter Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/osgirepo.html" class="nav-list-link">OSGi Repository</a></li><li class="nav-list-item"><a href="/release/plugins/p2export.html" class="nav-list-link">P2 Exporter</a></li><li class="nav-list-item"><a href="/release/plugins/p2repo.html" class="nav-list-link">P2 Repository</a></li><li class="nav-list-item"><a href="/release/plugins/signer.html" class="nav-list-link">Signer</a></li><li class="nav-list-item"><a href="/release/plugins/spring.html" class="nav-list-link">Spring</a></li><li class="nav-list-item"><a href="/release/plugins/url.basic.authentication.html" class="nav-list-link">Url.basic.authentication</a></li><li class="nav-list-item"><a href="/release/plugins/url.bnd.authentication.html" class="nav-list-link">Url.bnd.authentication</a></li><li class="nav-list-item"><a href="/release/plugins/url.https.verification.html" class="nav-list-link">Url.https.verification</a></li></ul></li><li class="nav-list-item"><a href="/release/plugins/analysisplugin.html" class="nav-list-link">Analysis Plugin</a></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+    
+  
+</nav>
+
+
+<div class="d-md-block d-none site-footer">
+  
+  
+    This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+  
+  </div>
+</header>
+
+  
+  <div class="main" id="top">
+    <div id="main-header" class="main-header">
+  
+    
+
+<div class="search" role="search">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search bnd" autocomplete="off">
+    <label for="search-input" class="search-label">
+      <span class="sr-only">Search bnd</span>
+      <svg viewBox="0 0 24 24" class="search-icon" aria-hidden="true"><use xlink:href="#svg-search"></use></svg>
+    </label>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
+
+  
+  <!-- Theme toggle button: two-state Light ↔ Dark -->
+<button id="theme-toggle"
+  type="button"
+        class="btn-reset bnd-theme-toggle"
+    aria-label="Switch to dark mode"
+    title="Switch to dark mode">
+  <img class="bnd-theme-icon"
+   src="/release/assets/images/theme-toggle.svg"
+   alt=""
+   aria-hidden="true">
+</button>
+
+  
+    <nav aria-label="Auxiliary" class="aux-nav">
+  <ul class="aux-nav-list"><li class="aux-nav-list-item">
+        <a href="https://github.com/bndtools/bnd/blob/master/docs/_chapters/250-resolving.md" class="site-button"target="_blank" rel="noopener noreferrer">GitHub</a>
+      </li><li class="aux-nav-list-item">
+        <a href="https://bndtools.org" class="site-button"target="_blank" rel="noopener noreferrer">bndtools.org</a>
+      </li><li class="aux-nav-list-item releases-nav-item">
+      <div class="releases">
+        <button class="dropbtn"><span class="fa fa-bars"></span> </button>
+        <div class="dropdown-content"></div>
+      </div>
+    </li>
+  </ul>
+</nav>
+  
+</div>
+
+    <div class="main-content-wrap">
+      <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+  <ol class="breadcrumb-nav-list">
+    <li class="breadcrumb-nav-list-item"><a href="/release/chapters/000-dependency-launching.html">Dependency and Launching</a></li>
+    <li class="breadcrumb-nav-list-item"><span>Resolving Dependencies</span></li>
+  </ol>
+</nav>
+
+
+      <div id="main-content" class="main-content">
+        <main>
+          
+            <h2 id="osgis-best-kept-secret">
+  
+  
+    <a href="#osgis-best-kept-secret" class="anchor-heading" aria-labelledby="osgis-best-kept-secret"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> OSGi’s Best Kept Secret
+  
+  
+</h2>
+    
+
+<p>This Application Note is about <em>resolving</em> in OSGi. The OSGi Framework has always used a <em>resolver</em> to <em>wire</em> a given set of bundles together, ensuring that only valid wires are made. However, the same OSGi resolver can also be used to select a set of bundles from a much larger set. This application note discusses this secondary usage.</p>
+
+<p>The resolver model is based on technology developed in OSGi since 2006 with <a href="https://github.com/osgi/design/raw/main/rfcs/rfc0112/rfc-0112-OBR.pdf">RFC-0112 Bundle Repository</a>. This RFC laid out a model that was gradually implemented in the OSGi specifications and for which many tools were developed. Resolving automates a task that is mostly done manually today.</p>
+<h2 id="what-problem-is-being-resolved">
+  
+  
+    <a href="#what-problem-is-being-resolved" class="anchor-heading" aria-labelledby="what-problem-is-being-resolved"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> What Problem is Being (Re)Solved?
+  
+  
+</h2>
+    
+
+<p>The pain that the resolver solves is well known to anybody that builds application from modules, the so called <em>assembly</em> process. All developers know the dreadful feeling of having to drag in more and more dependencies to get rid of Class Not Found errors when the application starts (or after running for an hour). For many, Maven was a significant improvement because it made this process so much easier because dependencies in Maven are <em>transitive</em>. If you depend on some artefact, then this artefact drags in its own dependencies to the runtime.</p>
+
+<p>Unfortunately, the Maven dependency model has limitations for a number of reasons. Though it undeniably has become easier to get <em>a</em> result, the result is often littered with unnecessary or wrong artefacts. Often application developers have no real understanding what is in their runtime.</p>
+
+<p>These are the causes:</p>
+
+<ul>
+  <li><strong>Our small minds</strong> – The human mind and human motivation provide little support for properly maintaining any amount of meta-data. Many open source projects show unnecessary dependencies that were once needed but no longer necessary. Fortunately, Maven Central/Sonatype has become much more restrictive. However, in the past, a lot of Maven dependencies were quite bad.</li>
+  <li><strong>Aggregate problem</strong> – The aggregate problem stems from a dependency that is used for one small part but where a co-packaged part drags in other (and therefore unnecessary) dependencies. For example, many JARs provide support for Ant, a former build tool. This was useful if you happened to use Ant but it caused the addition of the Ant runtime in systems that never used Ant. The aggregate problem causes a serious increase of dependency fan-out in many projects.</li>
+  <li><strong>Version Conflicts</strong> – When you drag in a lot of dependencies you invariably run into a situation where two of your dependencies require the same third dependency but in different versions. (This is called the <em>diamond</em> problem for obvious reasons if you draw the graph.) Sometimes these versions are really incompatible, sometimes the higher would suffice. However, in Maven, the first artefact encountered in a breadth first search defines the version.</li>
+  <li><strong>Variations</strong> – In many situations it is necessary to create different variations of an application. For example, an application could be delivered for different platforms or in a demo variation and a full monty variation. Since the Maven transitive dependency model creates a fixed graph it is not suitable to assemble these variations easily. That is, there often is not a single runtime.</li>
+</ul>
+
+<p>The result is that all too often the class path of the final application is littered with never used byte codes and/or overlapping packages that came from artefacts with different versions. If the customer could see the mess the average class path is they would run away screaming.</p>
+
+<p>Establishing the perfect class path for an application is a process for which the human mind is extremely badly suited and the transitive model of Maven has too many sharp edges. The resolver provides an alternative model that focuses on looking at the whole solution space instead of having to live with the (sometimes arbitrary) decisions of developers or of deeply nested transitive dependencies.</p>
+<h2 id="principles">
+  
+  
+    <a href="#principles" class="anchor-heading" aria-labelledby="principles"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Principles
+  
+  
+</h2>
+    
+
+<p><img src="https://user-images.githubusercontent.com/200494/31130842-cf5299d2-a858-11e7-907c-d6cb43954501.png" alt="image" /></p>
+
+<p>The design of the resolving model is quite simple. It consists of the following entities:</p>
+
+<ul>
+  <li><strong>Resource</strong> – A resource is a <em>description</em> of an artefact that can be <em>installed</em> in a system. When it is installed, it adds functions to that system. However, before it can be installed it requires certain functions to already be present. A resource can describe a bundle but it could also describe a piece of hardware or a certificate. It is important to realise that a resource is <em>not</em> the artefact, it is a description of the <em>relation</em> between the artefact and the target system. For example, in OSGi the bundle is a JAR file that can be installed in a framework, this is the artefact. A resource describes formally what that bundle can contribute to the system and what it needs from the system.</li>
+  <li><strong>Capability</strong> – A capability is a description of a resource’s contribution to the system when its artefact is installed. A capability has a <em>type</em> and a set of <em>properties</em>. That is, it is a bit like a DTO (or <em>struct</em>). The type is defined by name and is therefore called the <em>namespace</em>. The properties are key value pairs, where the keys are strings and values can be scalars or collections of <code class="language-properties highlighter-rouge"><span class="err">String</span></code>, <code class="language-properties highlighter-rouge"><span class="err">Integer</span></code>, <code class="language-properties highlighter-rouge"><span class="err">Double</span></code>, and <code class="language-properties highlighter-rouge"><span class="err">Long</span></code>.</li>
+  <li><strong>Requirement</strong> – A requirement represents the <em>needs</em> of an artefact when it is installed in the system. Since we describe the system with capabilities, we need a way to assert the properties of a capability in a given namespace. A requirement therefore consists of a type and an <em>OSGi filter</em>. The type is the same as for the capabilities, it is the namespace. The filter is constructed from a powerful filter language based on LDAP. A filter can assert expressions of arbitrary complexity. A requirement can be <em>mandatory</em> or <em>optional</em>.</li>
+  <li><strong>Namespace</strong> – Since a requirement can match any set of properties it is necessary to scope the capabilities it can be asserted against. This is achieved by giving a requirement and a capability a namespace. A requirement can only match a capability when the capability has the same namespace.</li>
+</ul>
+
+<p>Resolving in this App note is therefore the process of constructing an application out of <em>resources</em>. Resolving takes a list of <em>initial requirements</em>, a description of the <em>system capabilities</em>, and one or more <em>repositories</em>. It will use the list of initial requirements to find resources in the repository that provide the required capabilities. Clearly, these resources have their own requirements, retrieving applicable resources is therefore a recursive process. A <em>resolver</em> will find either a solution consisting of a set of resources where all requirements are satisfied or that there is no solution.</p>
+
+<p>It is important to realise that a resource and its capabilities and requirements are descriptions. They provide a formal representation of an external artefact. Since these formal representations can be read by a computer, we can calculate a closure of resources that, when installed together, have only resources where all their mandatory requirements are <em>satisfied</em> by the resources in the closure.</p>
+<h3 id="core-namespaces">
+  
+  
+    <a href="#core-namespaces" class="anchor-heading" aria-labelledby="core-namespaces"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Core Namespaces
+  
+  
+</h3>
+    
+
+<p>Although the OSGi specifications started out with a set of headers that each had their own semantics, over time the specification migrated fully to the more simple and formal model of Resources, Capabilities, and Requirements. Since the function of the legacy headers were still needed, it was necessary to map these legacy headers to the formal model. This resulted in a number of OSGi core namespaces.</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">osgi.wiring.identity</span></code> – <code class="language-properties highlighter-rouge"><span class="err">Bundle-SymbolicName</span></code> header.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">osgi.wiring.bundle</span></code> – <code class="language-properties highlighter-rouge"><span class="err">Bundle-SymbolicName</span></code> and <code class="language-properties highlighter-rouge"><span class="err">Require-Bundle</span></code> header.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">osgi.wiring.package</span></code> – <code class="language-properties highlighter-rouge"><span class="err">Import-Package</span></code> and <code class="language-properties highlighter-rouge"><span class="err">Export-Package</span></code> headers.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">osgi.wiring.host</span></code> – <code class="language-properties highlighter-rouge"><span class="err">Bundle-SymbolicName</span></code> and <code class="language-properties highlighter-rouge"><span class="err">Fragment-Host</span></code> header.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">osgi.ee</span></code> – <code class="language-properties highlighter-rouge"><span class="err">Bundle-RequiredExecutionEnvironment</span></code> header.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">osgi.native</span></code> – <code class="language-properties highlighter-rouge"><span class="err">Bundle-NativeCode</span></code> header.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">osgi.content</span></code> – Provides the URL and checksum to download the corresponding artefact. (This namespace is defined in the compendium Repository specification.)</li>
+</ul>
+
+<p>Each namespace defines the names of the properties and their semantics. For the OSGi namespaces, there are classes like <code class="language-properties highlighter-rouge"><span class="err">org.osgi.framework.namespace.IdentityNamespace</span></code> that contain the details of a namespace.</p>
+<h3 id="example-resource-model">
+  
+  
+    <a href="#example-resource-model" class="anchor-heading" aria-labelledby="example-resource-model"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Example Resource Model
+  
+  
+</h3>
+    
+
+<p>To make the model more clear let’s take a closer look to a simple bundle <code class="language-properties highlighter-rouge"><span class="err">com.example.bundle</span></code> that exports package <code class="language-properties highlighter-rouge"><span class="err">com.example.pe</span></code> and imports a package <code class="language-properties highlighter-rouge"><span class="err">com.example.pi</span></code>. When the bundle is installed it will require that some other bundle, or the framework, provides package <code class="language-properties highlighter-rouge"><span class="err">com.example.pi</span></code>. We can describe this bundle then as follows:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="err">Resource</span> <span class="err">for</span> <span class="err">bundle</span> <span class="err">com.example.bundle</span>
+   <span class="py">capabilities</span><span class="p">:</span>
+     <span class="err">osgi.wiring.identity;</span>  <span class="py">osgi.wiring.identity</span><span class="p">=</span><span class="s">com.example.bundle</span>
+     <span class="err">osgi.wiring.bundle;</span>    <span class="py">osgi.wiring.bundle</span><span class="p">=</span><span class="s">com.example.bundle</span>
+     <span class="err">osgi.wiring.host;</span>      <span class="py">osgi.wiring.host</span><span class="p">=</span><span class="s">com.example.bundle</span>
+     <span class="err">osgi.wiring.package;</span>   <span class="py">osgi.wiring.package</span><span class="p">=</span><span class="s">com.example.pe</span>
+   <span class="py">requirements</span><span class="p">:</span>
+     <span class="err">osgi.ee;</span>               <span class="py">filter</span><span class="p">:</span><span class="s">="(&amp;(osgi.ee=JavaSE)(version=1.8))"</span>
+     <span class="err">osgi.wiring.package;</span>   <span class="py">filter</span><span class="p">:</span><span class="s">='(osgi.wiring.package=com.example.pi)'</span>
+</code></pre></div></div>
+<h2 id="who-wants-to-provide-that-gibberish">
+  
+  
+    <a href="#who-wants-to-provide-that-gibberish" class="anchor-heading" aria-labelledby="who-wants-to-provide-that-gibberish"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Who Wants to Provide That Gibberish???
+  
+  
+</h2>
+    
+
+<p>Clearly, an <code class="language-properties highlighter-rouge"><span class="py">Export-Package</span><span class="p">:</span> <span class="s">com.example.pe</span></code> is a bit easier to read than the corresponding capability, let alone the filter in the requirement. This is especially true when the versions are taken into account, with the assertion of the version range the filters become quite unreadable. Clearly, if this had to be maintained by human developers then a model like Maven would be far superior. Fortunately, almost all of the metadata that is needed to make this work does not require much extra work from the developer. For example, the <code class="language-properties highlighter-rouge"><span class="err">bnd</span></code> tool that is available in Maven, Gradle, Eclipse, Intellij and others can easily analyse a JAR file and automatically generate the requirements and capabilities based on the source code.</p>
+
+<p>In certain cases it is necessary to provide requirements and capabilities that bnd cannot infer. However, <a href="230-manifest-annotations.html">Manifest annotations</a> support in bnd can be used to define an annotation that will add parameterised requirements to the resource.</p>
+
+<p>Really, when you use an adequately appointed toolchain (like Bndtools) none of this gibberish is visible to normal developers unless they have a special case. The gibberish is left to the tools that prefer gibberish over natural language.</p>
+<h2 id="how-to-write-resolvable-bundles">
+  
+  
+    <a href="#how-to-write-resolvable-bundles" class="anchor-heading" aria-labelledby="how-to-write-resolvable-bundles"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> How to Write Resolvable Bundles
+  
+  
+</h2>
+    
+
+<p>For a bundle to be a good citizen in a resolution it suffices to follow the standard rules of good software engineering. However, since there is so much software out there that does not follow these rules, a short summary.</p>
+
+<ul>
+  <li><strong>Minimise Dependencies</strong> – Every dependency has a cost. Always consider if all dependencies are <em>really</em> necessary. Although a dependency can provide a short term gain for the coder, it will have consequences for the later stages in the development process. Perfect bundles are bundles that have no dependencies. Unfortunately they are also often useless (although you can still build a lot from Java SE <code class="language-properties highlighter-rouge"><span class="err">java.*</span></code> which is an implicit import). Therefore, a developer must always be aware of this trade off.</li>
+  <li><strong>API Driven</strong> – Always, always, always separate API and implementation. A lot of developers avoid the overhead of developing an API when they consider the (initial) problem too simple to do the effort of a separate API. The author of this App note is one of them but he never, ever did not regret this. Usually he then spent a lot of extra effort to add an API afterwards.</li>
+  <li><strong>Service Oriented</strong> – The best dependencies are service oriented dependencies. Services make the coupling between modules explicit and allow different implementations to provide the same service. For example, use a simple DTOs service that handles type conversions and JSON parsing/generating. In projects where I see the explicit use of Jackson it always seems to cause a mess of required JARs visible in each bundle project.</li>
+  <li><strong>Package Imports</strong> – A bundle can require other bundles (the Maven model) or it can import packages from other bundles. The best imported packages are the ones used for services since they are <em>specification only</em>. Second best are <em>libraries</em>. Library packages have no internal state nor use statics. Importing implementation packages for convenience is usually deemed bad practice because it often indicates that the decomposition in bundles is not optimal.</li>
+  <li><strong>Import the Exports</strong> – If a package is exported <strong>and</strong> used inside the same bundle then the exported package should also be imported. This allows the resolver more leeway.</li>
+</ul>
+
+<p>To see the requirements and capabilities of a bundle Bndtools has a special <code class="language-properties highlighter-rouge"><span class="err">Resolution</span></code> view. This shows the requirements and capabilities of a selected JAR file or a bnd.bnd file.</p>
+
+<p><img src="https://user-images.githubusercontent.com/200494/31276722-9cf2df0a-aa9d-11e7-9f9a-6dd58fc16972.png" width="50%" /></p>
+
+<p>This view uses a number of icons to represent the requirements/capabilities. You can hover over them to see further details.</p>
+
+<ul>
+  <li><img src="https://user-images.githubusercontent.com/200494/31222248-c962b09c-a9c6-11e7-99ac-1977a6c736fd.png" alt="service" /> – <code class="language-properties highlighter-rouge"><span class="err">osgi.service</span></code>.</li>
+  <li><img src="https://user-images.githubusercontent.com/200494/31222315-f8e60454-a9c6-11e7-82d8-bbaa7acc46b1.png" alt="bullet_green" /> – <code class="language-properties highlighter-rouge"><span class="err">osgi.identity</span></code></li>
+  <li><img src="https://user-images.githubusercontent.com/200494/31222346-1153abf4-a9c7-11e7-97df-1bfa7a967505.gif" alt="package" /> – <code class="language-properties highlighter-rouge"><span class="err">osgi.wiring.package</span></code></li>
+  <li><img src="https://user-images.githubusercontent.com/200494/31222445-6a2231ce-a9c7-11e7-8242-c226709f9a76.png" alt="java" /> – <code class="language-properties highlighter-rouge"><span class="err">osgi.ee</span></code></li>
+  <li><img src="https://user-images.githubusercontent.com/200494/31222450-7156a204-a9c7-11e7-800e-9c67837f4cef.png" alt="wand" /> – <code class="language-properties highlighter-rouge"><span class="err">osgi.extender</span></code></li>
+  <li><img src="https://user-images.githubusercontent.com/200494/31222500-9460eade-a9c7-11e7-9a75-50ae25a35c00.png" alt="bundle" /> – <code class="language-properties highlighter-rouge"><span class="err">osgi.bundle</span></code></li>
+</ul>
+
+<p>Developers that are keen on developing good bundles should pay close attention to this pane.</p>
+<h2 id="resolving">
+  
+  
+    <a href="#resolving" class="anchor-heading" aria-labelledby="resolving"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Resolving
+  
+  
+</h2>
+    
+
+<p><img src="https://user-images.githubusercontent.com/200494/31221580-73596198-a9c4-11e7-8d11-1e1fe7e37199.png" alt="Resolving" /></p>
+
+<p>The previous diagram adds the resolver to the earlier diagram of the basic model. It adds the following entities:</p>
+
+<ul>
+  <li><strong>Repository</strong> – A Repository is a collection of resources. Repositories can be represented in many different ways as will be discussed later.</li>
+  <li><strong>Resolver</strong> – The Resolver is the entity that takes a set of <em>initial requirements</em>, <em>system capabilities</em>, a set of repositories, and produces a <em>resolution</em>.</li>
+  <li><strong>Resolution</strong> – A resolution is a <em>wiring</em> of resources. It provides detailed information about what requirements are matched with what capabilities from the included resources.</li>
+</ul>
+
+<p>An important variable in the resolving process is <code class="language-properties highlighter-rouge"><span class="err">effective</span></code> which defines the <em>effectiveness</em> under which the resolve operation is performed. The resolver will only look at requirements that it deems <em>effective</em>. The default effectiveness is <code class="language-properties highlighter-rouge"><span class="err">resolve</span></code>. The effectiveness <code class="language-properties highlighter-rouge"><span class="err">active</span></code> is a convention commonly used for situations that do not need to be resolved by the OSGi framework but are relevant in using the resolver for assembling applications.</p>
+<h2 id="repositories">
+  
+  
+    <a href="#repositories" class="anchor-heading" aria-labelledby="repositories"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Repositories
+  
+  
+</h2>
+    
+
+<p>A <em>repository</em> is a collection of resources. This could be Maven Central or it could be a single bundle. That said, neither is a good idea in practice. The repository is the <em>scope</em> of the resolution. Only resources in the repository can be selected. Although the naive idea is to make the scope as large as possible to let the computer do the work, it is much better to <em>curate</em> the repository.</p>
+
+<p>There are many reasons why you need a curated repository but basically it comes down is the GIGO principle: garbage is garbage out. Another reason is running time. The resolver gets overwhelmed quickly when there are too many alternatives for a requirement. Resolving is an NP complete problem and this means that the resolution time quickly becomes very long when a lot of alternatives need to be examined.</p>
+<h3 id="available-repositories">
+  
+  
+    <a href="#available-repositories" class="anchor-heading" aria-labelledby="available-repositories"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Available Repositories
+  
+  
+</h3>
+    
+
+<p>The bnd toolchain provides OSGi Repository access for many popular repository formats.</p>
+
+<ul>
+  <li><strong>OSGi XML Format</strong> – The OSGi Alliance specified an XML format for repositories which is fully supported by bnd.</li>
+  <li><strong>Maven Central</strong> – You can provide subsets of Maven repositories using a simple text file, a query on Maven Central, or a <code class="language-properties highlighter-rouge"><span class="err">pom.xml</span></code>. It integrates fully with the local <code class="language-properties highlighter-rouge"><span class="err">~/.m2</span></code> repository.</li>
+  <li><strong>Eclipse P2</strong> – Eclipse repositories have a web based layout that can be parsed by bnd.</li>
+  <li><strong>File based</strong> – You can store bundles in a directory structure and use it as a repository.</li>
+  <li><strong>Eclipse Workspace</strong> – In Bndtools, all generated bundles in a workspace are directly available to the resolver.</li>
+</ul>
+
+<p>Since bnd has an extensive library to parse bundles and generate the resources it is relatively easy to parse bundles in other ways. For example, there is a Maven plugin that can generate an OSGi index.</p>
+<h3 id="managing-repositories">
+  
+  
+    <a href="#managing-repositories" class="anchor-heading" aria-labelledby="managing-repositories"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Managing Repositories
+  
+  
+</h3>
+    
+
+<p>A repository generally represents a <em>release</em> of a software product. Many developers publish an OSGi Repository XML to allow the resolver access to the metadata of their bundles, for example <a href="https://www.knopflerfish.org/releases/4.0.1/repository.xml">Knopflerfish</a> produces an OSGi XML Repository with all their bundles.</p>
+
+<p>This model is in contrast with Maven Central and most other Maven repositories. These repositories are designed to contain everything that was ever released. An OSGi repository is more the content of a specific release. Since it generally only contains a specific release, it will disallow the resolver to use any unwanted resources.</p>
+<h3 id="workspace-repository">
+  
+  
+    <a href="#workspace-repository" class="anchor-heading" aria-labelledby="workspace-repository"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Workspace Repository
+  
+  
+</h3>
+    
+
+<p>A natural repository is the bnd <em>workspace</em> since a workspace is a collection of <em>related</em> projects. Since these projects are build together it is trivial to keep them compatible. The metadata burden can be mitigated by sharing metadata between these related projects. For example, in bnd all bundles share the same version. Although this might sometimes release unchanged bundles under a newer version, the only cost is a bit of disk space. A small price to pay for an otherwise very error prone manual process. The Gradle build can release to a Nexus repository and automatically generate an index that can be used as repository.</p>
+<h2 id="resolving-in-bndtools">
+  
+  
+    <a href="#resolving-in-bndtools" class="anchor-heading" aria-labelledby="resolving-in-bndtools"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Resolving in Bndtools
+  
+  
+</h2>
+    
+
+<p>By far the best way to get experience with the resolver is using the bnd’s <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> files. Bndtools provides a friendly user interface that makes it easy to use the OSGi Resolver in an interactive way.</p>
+
+<p>A <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> describes the runtime configuration for an application. This can either be a standalone executable JAR or an application that should be hosted in a container like a Java EE server or Karaf. In this app note, the target is an executable JAR unless otherwise noted.</p>
+
+<p>If you double click on the bndrun file, it opens a <em>Run</em> pane.</p>
+
+<p><img alt="Run pane" src="https://user-images.githubusercontent.com/200494/31168440-9b5ff29e-a8f5-11e7-857f-22ec30202fd7.png" width="50%" />&gt;</p>
+
+<p>Even though most lists are hidden, the pane is already quite overwhelming. So let’s go through the GUI and explain it one by one.</p>
+<h3 id="core-runtime">
+  
+  
+    <a href="#core-runtime" class="anchor-heading" aria-labelledby="core-runtime"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Core Runtime
+  
+  
+</h3>
+    
+
+<p>Remember that a resolution is for a specific system, in our case an executable JAR. In the <code class="language-properties highlighter-rouge"><span class="err">Core</span> <span class="err">Runtime</span></code> pane we specify the OSGi framework that will be used as well as the <em>execution environment</em>. The execution environment is from a list of Java VM versions and OSGi specifications.</p>
+
+<p><img src="https://user-images.githubusercontent.com/200494/31168839-0ea01c56-a8f7-11e7-988f-faf2aea7e233.png" width="50%" /></p>
+
+<p>The execution environment is used to calculate the <em>system capabilities</em>. That is, the system is treated as a single resource that provides the capabilities of the Framework as well as the capabilities of the OSGi defined execution environments. The system resource is always included in the resolution but can of course never be downloaded, it is the target environment.</p>
+<h3 id="browse-repos">
+  
+  
+    <a href="#browse-repos" class="anchor-heading" aria-labelledby="browse-repos"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Browse Repos
+  
+  
+</h3>
+    
+
+<p>The <code class="language-properties highlighter-rouge"><span class="err">Browse</span> <span class="err">Repos</span></code> is a list of the resources that are found in the active repositories. A search field makes it easy to find specific resources. For example, if you type in <code class="language-properties highlighter-rouge"><span class="err">gogo</span></code> it will list all Gogo bundles.</p>
+
+<p><img src="https://user-images.githubusercontent.com/200494/31168644-59c03bc2-a8f6-11e7-800b-5abb32609f67.png" width="50%" /></p>
+
+<p>One or more resources from the <code class="language-properties highlighter-rouge"><span class="err">Browse</span> <span class="err">Repos</span></code> list can be selected and then dragged to the <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Requirements</span></code> list to the left. This adds an <em>identity requirement</em> to the set of initial requirements. You can also drag a resource to the <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Blacklist</span></code> and <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Bundles</span></code> lists.</p>
+<h3 id="run-requirements">
+  
+  
+    <a href="#run-requirements" class="anchor-heading" aria-labelledby="run-requirements"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Run Requirements
+  
+  
+</h3>
+    
+
+<p>This is the main list to watch. It contains the set of <em>initial requirements</em> given to the resolver. The GUI makes it possible to add identity requirements and remove listed requirements. The easiest way is to use drag and drop form the <code class="language-properties highlighter-rouge"><span class="err">Browse</span> <span class="err">Repos</span></code> list but it is also possible to use the green <code class="language-properties highlighter-rouge"><span class="err">+</span></code>, which opens a dialog from which bundles can be added directly from the selected repositories.</p>
+
+<p><img alt="Run Requirements" src="https://user-images.githubusercontent.com/200494/31171486-26d66416-a900-11e7-8856-0e4debb85e24.png" width="50%" /></p>
+<h3 id="additional-components">
+  
+  
+    <a href="#additional-components" class="anchor-heading" aria-labelledby="additional-components"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Additional Components
+  
+  
+</h3>
+    
+
+<p>There are some more panes that are useful but they will be handled in diagnosing problems. For reference, a short introduction to these panes.</p>
+
+<ul>
+  <li><strong>Repositories</strong> – Allows the selection/unselection of some of the repositories. Can also switch the <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file to <em>standalone</em>. A standalone <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file has no relation to the workspace it resides in and establishes its own repositories.</li>
+  <li><strong>Runtime Properties</strong> – Makes it possible to define OSGi framework properties, command line arguments, and VM arguments.</li>
+  <li><strong>Run Blacklist</strong> – Any resources selected by the requirements in the blacklist can never be used in a resolution.</li>
+  <li><strong>Run Bundles</strong> – This is normally the output of the resolver. However, it is possible to add/remove bundles from this list when the resolver is bypassed. The <code class="language-properties highlighter-rouge"><span class="err">Run</span></code>, <code class="language-properties highlighter-rouge"><span class="err">Debug</span></code>, and <code class="language-properties highlighter-rouge"><span class="err">Export</span></code> functions always work from the <code class="language-properties highlighter-rouge"><span class="err">-runbundles</span></code> list.</li>
+  <li><strong>Resolve</strong> – A popup that defines <em>when</em> the <a href="/instructions/resolve.html">resolver will run</a>.</li>
+</ul>
+<h2 id="resolving-1">
+  
+  
+    <a href="#resolving-1" class="anchor-heading" aria-labelledby="resolving-1"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Resolving
+  
+  
+</h2>
+    
+
+<p>Taking the initial requirement it is possible to resolve by clicking on the <code class="language-properties highlighter-rouge"><span class="err">Resolve</span></code> button. This will show a rather large dialog window with the resolution.</p>
+
+<p><img alt="Resolution" src="https://user-images.githubusercontent.com/200494/31171747-285c920a-a901-11e7-978c-b6fb46c9c5aa.png" width="50%" /></p>
+
+<p>This dialog window is divided in three main parts:</p>
+
+<ul>
+  <li><strong>Required Resources</strong> – The required resources are the solution that the resolver found based on the initial requirements and the system capabilities.</li>
+  <li><strong>Optional Resources</strong> – During resolving some resources are included by an <em>optional</em> requirement. The resolver cannot automatically add optional resources, optional resources require human choice.</li>
+  <li><strong>Reasons</strong> – Clicking on a required resource or an optional resource will show a <em>requirements trace</em> in this list. Sometimes a resource is added and it is not clear why it was added. Traversing through this list can then help finding out what caused its inclusion. If no solution was found, this list can also contain very useful information. This list is a great debugging tool.</li>
+</ul>
+
+<p>If some of the listed optional resources are desired then they can be selected. Pressing the <code class="language-properties highlighter-rouge"><span class="err">Update</span> <span class="err">and</span> <span class="err">Resolve</span></code> button will restart the resolver but now with the selected optional resources as mandatory.</p>
+
+<p>If the <code class="language-properties highlighter-rouge"><span class="err">Finish</span></code> button is pressed then the current required resources list is converted to the list of <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Bundles</span></code>. You can inspect them at the right bottom of the <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> editor window.</p>
+
+<p><img src="https://user-images.githubusercontent.com/200494/31172730-0528b2ba-a905-11e7-8e75-1ff36f9556b9.png" width="50%" /></p>
+
+<p>After a successful resolve you can either <code class="language-properties highlighter-rouge"><span class="err">Run</span></code>, <code class="language-properties highlighter-rouge"><span class="err">Debug</span></code>, or <code class="language-properties highlighter-rouge"><span class="err">Export</span></code> the <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file.</p>
+<h2 id="debugging-resolving">
+  
+  
+    <a href="#debugging-resolving" class="anchor-heading" aria-labelledby="debugging-resolving"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Debugging Resolving
+  
+  
+</h2>
+    
+
+<p>So far the ideal process of happy resolves and satisfied bundles has been described. It is now necessary to leave this rosy world and descend into the world of failed resolves. Unfortunately, the provided diagnostic information when a resolve fails is quite low.</p>
+
+<p>When a resolve fails it returns a cause but more often than not this is not the real cause. This is not some shortcoming from the current resolver but a fundamental logical problem. The simplest form of a resolution is if you have for example 3 numbers 1,4,8. You need to find the numbers that sum to 10 using only addition and subtraction. If you try out all the combination then you find that no combination works. A failure report could be that -3 is not available because the last tried permutation was 1+4+8. Clearly, before that permutation many other numbers were missing as well, the missing -3 just happened to be the last one …</p>
+
+<p>That said, there are a number of scenarios where the resolver does give a hint where the problem is.</p>
+<h2 id="missing-requirement-false">
+  
+  
+    <a href="#missing-requirement-false" class="anchor-heading" aria-labelledby="missing-requirement-false"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Missing Requirement false
+  
+  
+</h2>
+    
+
+<p>This rather obscure message indicates that the resolver tries to include a <em>api</em> bundle that was made unresolvable.</p>
+
+<p>The api bundle may have a special Require-Capability header such as:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="py">Require-Capability</span><span class="p">:</span> <span class="se">\
+</span>  <span class="s">compile-only</span>
+</code></pre></div></div>
+
+<p>This header creates a requirement that cannot be satisfied. There is nothing special with <code class="language-properties highlighter-rouge"><span class="err">compile-only</span></code>, it is just an unused namespace. It could also have been <code class="language-properties highlighter-rouge"><span class="err">foo-bar</span></code>.</p>
+
+<p>In the resolver, you will see the following error chain:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="err">Unable</span> <span class="err">to</span> <span class="err">resolve</span> <span class="err">&lt;&lt;INITIAL&gt;&gt;</span> <span class="py">version</span><span class="p">=</span><span class="s">null:</span>
+    <span class="err">missing</span> <span class="err">requirement</span> <span class="err">osgi.enroute.examples.resolver.missingapi.provider</span>
+ <span class="err">-&gt;</span>  <span class="err">Unable</span> <span class="err">to</span> <span class="err">resolve</span> <span class="err">osgi.enroute.examples.resolver.missingapi.provider</span> <span class="py">version</span><span class="p">=</span><span class="s">1.0.0.201710041250:</span>
+    <span class="err">missing</span> <span class="err">requirement</span> <span class="err">osgi.enroute.examples.resolver.missingapi.api;</span> <span class="py">version</span><span class="p">=</span><span class="s">[1.0.0,1.1.0)</span>
+ <span class="err">-&gt;</span>  <span class="err">Unable</span> <span class="err">to</span> <span class="err">resolve</span> <span class="err">osgi.enroute.examples.resolver.missingapi.api</span> <span class="py">version</span><span class="p">=</span><span class="s">1.0.0.201710041249:</span>
+    <span class="err">missing</span> <span class="err">requirement</span> <span class="err">false]]</span>
+</code></pre></div></div>
+
+<p><strong>Note:</strong> Unfortunately, the output is blurred by a misguided attempt to make the output more concise. Because of this, the distinction between a bundle and a package is not very clear. Sadly you can only see the difference between a requirement for a bundle and a package by looking at the version. If this is a range then it is a package and if it is a version with a timestamp it is a bundle. (This works most of the time.) This is a bug in bnd and should be corrected.</p>
+
+<p>As indicated, you really need to understand that the diagnostic is just the last path the resolver took. The <code class="language-properties highlighter-rouge"><span class="err">osgi.enroute.examples.resolver.missingapi.provider</span></code> bundle tries to find a provider for the package <code class="language-properties highlighter-rouge"><span class="err">osgi.enroute.examples.resolver.missingapi.api</span></code> and has found the <code class="language-properties highlighter-rouge"><span class="err">osgi.enroute.examples.resolver.missingapi.api</span></code> bundle. However, this API bundle has the impossible to satisfy <code class="language-properties highlighter-rouge"><span class="err">compile-only</span></code> requirement.</p>
+
+<p>That said, it is better to look at the <code class="language-properties highlighter-rouge"><span class="err">Missing</span> <span class="err">Requirements</span></code> list since this reports quite nicely what is missing.</p>
+
+<p><img src="https://user-images.githubusercontent.com/200494/31177786-5aae5c3c-a917-11e7-98aa-112c380fb83b.png" width="50%" /></p>
+
+<p>The icon and the text more clearly indicate that it cannot resolve the <code class="language-properties highlighter-rouge"><span class="err">osgi.enroute.examples.resolver.missingapi.api</span></code> bundle due to the <code class="language-properties highlighter-rouge"><span class="err">compile-only</span></code> requirement.</p>
+
+<p>Exporting the API package from the provider bundle will correct this case.</p>
+<h2 id="compendium-bundle">
+  
+  
+    <a href="#compendium-bundle" class="anchor-heading" aria-labelledby="compendium-bundle"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Compendium Bundle
+  
+  
+</h2>
+    
+
+<p>Many developers compile against the compendium bundle to get the OSGi service API packages.  Although compiling against an API bundle has advantages, using the compendium bundle in runtime is evil. Since the compendium bundle aggregates a large number of API packages it will have the tendency to unnecessarily constrain the versions of different APIs. That is, it blocks you from using newer APIs.</p>
+
+<p>To make bundles that should not be used at runtime not resolvable there is the <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Blacklist</span></code> list on the <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> editor. This list contains bundles that should never be included in a resolution.</p>
+
+<p>For example, we create a bundle that implements the Wire Admin service.</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="err">public</span> <span class="err">class</span> <span class="err">MyService</span> <span class="err">implements</span> <span class="err">WireAdmin</span> <span class="err">{</span>
+      <span class="err">...</span>
+ <span class="err">}</span>
+</code></pre></div></div>
+
+<p>This will cause a requirement for an exported package <code class="language-properties highlighter-rouge"><span class="err">org.osgi.service.wireadmin</span></code>.  We therefore add the OSGi compendium bundle to the <code class="language-properties highlighter-rouge"><span class="err">-buildpath</span></code>. This then compiles fine.</p>
+
+<p>However, the resolve will then drag in the OSGi compendium bundle.</p>
+
+<p><img src="https://user-images.githubusercontent.com/200494/31179074-3153a0d2-a91b-11e7-972e-622c7db59dd5.png" alt="image" /></p>
+
+<p>If we look at the reasons when we select the compendium bundle we see that also the Configuration Admin imports from the compendium even though it actually might provide a higher version. (This maybe understandable but a really bad practice.)</p>
+
+<p><img src="https://user-images.githubusercontent.com/200494/31178847-8d5ca4d8-a91a-11e7-9df1-4a586bc191c1.png" width="50%" /></p>
+
+<p>To get rid of the compendium bundle we can drag and drop it to the <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Blacklist</span></code> window. Any requirement in the <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Blacklist</span></code> list will automatically exclude all bundles that are selected by that requirement.</p>
+<h2 id="you-are-sure-there-is-a-provider">
+  
+  
+    <a href="#you-are-sure-there-is-a-provider" class="anchor-heading" aria-labelledby="you-are-sure-there-is-a-provider"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> You Are Sure There Is a Provider!
+  
+  
+</h2>
+    
+
+<p>Sometimes the resolver can complain about a missing requirement but you are sure that it is in the repository. The first thing is to try to isolate the problem. Almost any problem can be solved if you remove the redundant parts. Quite often developers are trying to debug this situation in a complex large <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file and then get overwhelmed.</p>
+
+<p>Just create a new <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file and only add the bundle you think should provide the resource to the <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Requires</span></code> list, keep only one requirement, and then resolve. If this resolves fine then at least you know that that bundle can potentially resolve.</p>
+
+<p>However, often you find that even on its own it does not resolve. In most case the error message and the <code class="language-properties highlighter-rouge"><span class="err">Reasons</span></code> list provide sufficient information to understand why it does not resolve.</p>
+
+<p>It is still a mystery, try checking the <code class="language-properties highlighter-rouge"><span class="err">Run</span> <span class="err">Blacklist</span></code> list. If it is not there, it might be time to raise a bug.</p>
+<h2 id="osgi-bnd-snapshot-viewer">
+  
+  
+    <a href="#osgi-bnd-snapshot-viewer" class="anchor-heading" aria-labelledby="osgi-bnd-snapshot-viewer"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> OSGi bnd Snapshot Viewer
+  
+  
+</h2>
+    
+
+<p>Another tool for diagnosing potential issues in your OSGI framework (bundle, packages, services), the SCR info, configuration, log, and custom extensions is the <a href="/snapshot.html">OSGi bnd Snapshot Viewer</a>.</p>
+<h2 id="the-source-view">
+  
+  
+    <a href="#the-source-view" class="anchor-heading" aria-labelledby="the-source-view"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> The Source View
+  
+  
+</h2>
+    
+
+<p>So far this App Note only visited the <em>graphic user interface</em> (GUI). However, bnd always keeps all information in simple properties files that can also edited as text. In the Run editor (that edits <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> files) you can also select the <code class="language-properties highlighter-rouge"><span class="err">Source</span></code> view. Not all features of a <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file can be manipulated through the GUI. This section therefore shows what is in the source and it can be manipulated.</p>
+
+<p>Notice that most instructions are <a href="/instructions/#merged-instructions"><em>merge properties</em></a>. That is, bnd will first find all properties that start with the instruction name and merge their values together. For example, if you set <code class="language-properties highlighter-rouge"><span class="err">-runrequires</span></code>, <code class="language-properties highlighter-rouge"><span class="err">-runrequires.foo</span></code>, and <code class="language-properties highlighter-rouge"><span class="err">-runrequires.bar</span></code> bnd will use the combination of these properties. The order is the sorting order of the names used.</p>
+
+<ul>
+  <li><a href="/instructions/runfw.html">-runfw</a> – Defines the framework to use</li>
+  <li><a href="/instructions/runbundles.html">-runbundles</a> – List of the bundles to run, calculated by the resolver.</li>
+  <li><a href="/instructions/runsystemcapabilities.html">-runsystemcapabilities</a> – Additional capabilities provided by the framework.</li>
+  <li><a href="/instructions/runsystempackages.html">-runsystempackages</a> – Additional packages exported by the framework.</li>
+  <li><a href="/instructions/runrequires.html">-runrequires</a> – The initial requirements</li>
+  <li><a href="/instructions/runprovidedcapabilities.html">-runprovidedcapabilities</a> – Only use with the <code class="language-properties highlighter-rouge"><span class="err">-distro</span></code> option, it contains additional capabilities that are not in the distro files.</li>
+  <li><a href="/instructions/runblacklist.html">-runblacklist</a> – Requirements that select resources that should never be part of the resolution.</li>
+  <li><a href="/instructions/runee.html">-runee</a> – The execution environment</li>
+  <li><a href="/instructions/runpath.html">-runpath</a> – The JARs that should be on the classpath. Exports and provided capabilities defined in the manifests of these JARs are added to the system capabilities.</li>
+  <li><a href="/instructions/runrepos.html">-runrepos</a> – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.</li>
+  <li><a href="/instructions/augment.html">-augment</a> – Adds virtual capabilities and requirements to resources in the repository.</li>
+  <li><a href="/instructions/distro.html">-distro</a> – Directly provides the system capabilities in a JAR with Manifest. Is used when the resulotion is not used to create an executable JAR but to create a Java EE WAR or Karaf KAR where the application is running in a host environment.</li>
+  <li><a href="/instructions/resolve.html">-resolve</a> – Controls when the resolver runs</li>
+  <li><a href="/instructions/resolve.effective.html">-resolve.effective</a> – Sets the effectives for the resolver.</li>
+  <li><a href="/instructions/resolve.preferences.html">-resolve.preferences</a> – Can be used to make some resources more equal than others.</li>
+</ul>
+<h2 id="augmenting-legacy-bundles">
+  
+  
+    <a href="#augmenting-legacy-bundles" class="anchor-heading" aria-labelledby="augmenting-legacy-bundles"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Augmenting Legacy Bundles
+  
+  
+</h2>
+    
+
+<p>The problem with metadata is that it can also be wrong. Especially legacy bundles lack the proper metadata to inform the resolver that they provide a service or require an implementation of a specification. This is not a problem in runtime since these requirements are generally not used by the Framework, they are designed for using the resolver in selecting a closure of bundles. However, in certain cases adding a capability or a requirement to a bundle in the repository would simplify things. Clearly it is possible to wrap the legacy bundle but this is extremely cumbersome and can create confusion down the line.</p>
+
+<p>Therefore, another method is to use the <em>augments</em> that the bnd repositories support. Augments can add capabilities and requirements to existing bundles in a repository. However, it can only do this for the interactive resolve process. When the OSGi Framework resolves a number of bundles it will never takes augments into account.</p>
+
+<p>There are two different ways to add the augments.</p>
+
+<ul>
+  <li><strong>Bndrun file</strong> – Provide the augments in the <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file. This is an ad-hoc mechanism that is normally a last resort. For non-standalone bndrun files you can also add augments in the <code class="language-properties highlighter-rouge"><span class="err">cnf/ext</span></code> directory since any bnd file in there will add its properties to the bndrun file. It is of course also possible to include file in any <code class="language-properties highlighter-rouge"><span class="err">bnd</span></code>/<code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file.</li>
+  <li><strong>Resource</strong> – Provide a resource in a repository that contains an <code class="language-properties highlighter-rouge"><span class="err">bnd.augment</span></code> capability. Such a resource has a file with properties that describe the augment for that repository. This is a good way when you have to curate a repository and need to fixup some legacy bundles. This resource can also add to the blacklist.</li>
+</ul>
+
+<p>In both cases the augments are described using the standard OSGi/bnd syntax. The syntax is not a beauty since it stretches what you can do with the OSGi header format. However, augmenting should really be a last resort so maybe it is not really bad that the syntax is cumbersome.</p>
+
+<p>You can add an augment with the <code class="language-properties highlighter-rouge"><span class="err">-augment</span></code> instruction in the <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file.</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="err">-augment</span> <span class="err">PARAMETER</span> <span class="err">(</span> <span class="err">','</span> <span class="err">PARAMETER</span> <span class="err">)</span> <span class="err">*</span>
+</code></pre></div></div>
+
+<p>Augmenting is adding additional capabilities and requirements. When bnd resolves a project or bndrun file, it will read these instructions. Since <code class="language-properties highlighter-rouge"><span class="err">-augment</span></code> is a merge property you can also use additional keys like <code class="language-properties highlighter-rouge"><span class="err">-augment.xyz</span></code>.</p>
+
+<p>The <code class="language-properties highlighter-rouge"><span class="err">key</span></code> of the <code class="language-properties highlighter-rouge"><span class="err">PARAMETER</span></code> is used for matching the Bundle Symbolic Name. It can contain the <code class="language-properties highlighter-rouge"><span class="err">*</span></code> wildcard character to match multiple bundles. The bundle symbolic name must be allowed as a value in a filter it is therefore not a globbing expression.</p>
+
+<p>The following directives and attribute are architected:</p>
+
+<ul>
+  <li><strong>version</strong> – A version range. If a single version is given it will be used as <code class="language-properties highlighter-rouge"><span class="err">[&lt;version&gt;,∞)</span></code>. The version range can be prefixed with an <code class="language-properties highlighter-rouge"><span class="err">@</span></code> for a consumer range (to the next major) or a provider range (to the next minor) when the <code class="language-properties highlighter-rouge"><span class="err">@</span></code> is a suffix of the version. The range can restrict the augmentation to a limited set of bundles.</li>
+  <li><strong>capability:</strong> – The <code class="language-properties highlighter-rouge"><span class="py">capability</span><span class="p">:</span></code> directive specifies a Provide-Capability instruction, this will therefore likely have to be quoted to not confuse bnd with embedded comma’s. Any number of clauses can be specified in a capability directive by separating the clauses with a comma. (This is where the syntax gets stretched.)</li>
+  <li><strong>requirement:</strong> – The <code class="language-properties highlighter-rouge"><span class="py">requirement</span><span class="p">:</span></code> directive specifies a Require-Capability instruction similar to the <code class="language-properties highlighter-rouge"><span class="py">capability</span><span class="p">:</span></code> directive.</li>
+</ul>
+
+<p>To augment the repositories during a resolve, bnd will find all bundles that match the bundle symbolic name and fall within the defined range. If no range is given, only the bundle symbolic name will constrain the search. Each found bundle will then be decorated with the capabilities and requirements defined in the <code class="language-properties highlighter-rouge"><span class="py">capability</span><span class="p">:</span></code> and <code class="language-properties highlighter-rouge"><span class="py">requirement</span><span class="p">:</span></code> directive.</p>
+
+<p>For example, we need to provide an extender capability to a bundle with the bundle symbolic name <code class="language-properties highlighter-rouge"><span class="err">com.example.prime</span></code> with version <code class="language-properties highlighter-rouge"><span class="err">[1.2,1.3)</span></code>. In that case add the following instruction to the <code class="language-properties highlighter-rouge"><span class="err">bndrun</span></code> file.</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="py">-augment.prime</span> <span class="p">=</span> <span class="se">\
+</span>      <span class="s">com.example.prime; </span><span class="se">\
+</span>           <span class="s">capability:='osgi.extender; </span><span class="se">\
+</span>                <span class="s">osgi.extender=some.extender; </span><span class="se">\
+</span>                <span class="s">version:Version=1.2@'</span>
+</code></pre></div></div>
+
+<p>The <code class="language-properties highlighter-rouge"><span class="py">capability</span><span class="p">:</span></code> and <code class="language-properties highlighter-rouge"><span class="py">requirement</span><span class="p">:</span></code> directives follow all the rules of the Provide-Capability and Require-Capability headers respectively. For the resolver, it is as if these headers were specified in their manifests. Since these headers can contain semicolons and commas they must be quoted. bnd will allow double quotes inside normal quotes and vice versa when it is necessary to nest quotes.</p>
+<h2 id="first-time-curating-a-repository">
+  
+  
+    <a href="#first-time-curating-a-repository" class="anchor-heading" aria-labelledby="first-time-curating-a-repository"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> First Time Curating a Repository
+  
+  
+</h2>
+    
+
+<p>A workspace setup with bnd will generally provide a good start. However, when you need to grandfather in a lot of bundles from Maven Central then it is likely that you will need to spend some time to augment these bundles. This can be a depressing task since you’ll find out how messy the world is. However, experience shows that once the repository is resolvable, maintaining it has very little overhead. Better, it tends to signal probems very early in the development process.</p>
+
+<p>There are a number of (rudimentary) functions in the command line version of bnd that might be useful. Unfortunately, the commands currently assume an OSGi repository.</p>
+<h2 id="resolving-against-existing-container">
+  
+  
+    <a href="#resolving-against-existing-container" class="anchor-heading" aria-labelledby="resolving-against-existing-container"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Resolving against existing container
+  
+  
+</h2>
+    
+
+<p>With openliberty, WebSphere Liberty, Karaf, Liferay, etc. you are deploying into an existing container which already has a lot of capabilities. The crux of the issue becomes resolving only what you need to deploy. What you need at that point is a way to find out what the container already provides in a format which can be used during resolve time.</p>
+
+<p>Currently, the way to do that is to create a <strong>distro</strong> of the target container. This <strong>distro</strong> is a JAR file which provides all the capabilities that the target container provides at one point in time. It includes the capabilities of all currently installed bundles. It also contains all capabilities provided by the system bundle which may have been configured by framework properties. It is an aggregate view of all the capabilities available in the framework contained in a single JAR.</p>
+<h2 id="resolving-multi-release-jar-files-mrj">
+  
+  
+    <a href="#resolving-multi-release-jar-files-mrj" class="anchor-heading" aria-labelledby="resolving-multi-release-jar-files-mrj"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Resolving Multi-Release JAR files (MRJ)
+  
+  
+</h2>
+    
+
+<p>A Multi-Release JAR (MRJ) has directories in <code class="language-properties highlighter-rouge"><span class="err">META-INF/versions/&lt;release&gt;</span></code> (see <a href="https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html#multi-release-jar-files">JAR File Specification</a>). When the JAR is deployed on a VM with a given release R, that VM will preferentially load file resource from its own release R and then down to the main area. This means that a JAR can have different content depending on the VM it is deployed. For OSGi, this means that a bundle resource can have different requirements based on the runtime VM. The capabilities are the same since the public API must not change.</p>
+
+<p>The problem is that this makes some requirements dependent on the VM. To model this, we introduced synthetic resource for each supported VM release that can only resolve on that release and when the release specific requirements of the bundle can be resolved.</p>
+
+<p>This is only about modeling a JAR as a resource in an OSGi repository. Nothing is changed in the original JAR.</p>
+
+<p>So we first treat the <em>multi release</em> bundle as any other bundle when we turn it into a resource, the release directories are ignored. If there are none, we’re actually done.</p>
+
+<p>Otherwise, we add a single requirement to a <code class="language-properties highlighter-rouge"><span class="err">bnd.multirelease</span></code> capability unique for this bundle. This namespace only has the properties <code class="language-properties highlighter-rouge"><span class="py">bnd.multirelease</span><span class="p">=</span><span class="s">&lt;bsn&gt;</span></code> and <code class="language-properties highlighter-rouge"><span class="py">version</span><span class="p">=</span><span class="s">&lt;version&gt;</span></code>. By requiring another resource, we can generate a synthetic resource for each VM release that the bundle supports. This is depicted here, where mrj is <code class="language-properties highlighter-rouge"><span class="err">bnd.multirelease</span></code>.</p>
+
+<p><img style="width: 600px" src="/release//img/resolving-mrj.png" /></p>
+
+<p>For the <code class="language-properties highlighter-rouge"><span class="err">osgi.identity</span></code> capability, we have to create a resource name that is unique. To keep it readable, the name is the <code class="language-properties highlighter-rouge"><span class="err">original-bsn</span> <span class="err">+</span> <span class="err">"__"</span> <span class="err">+</span> <span class="err">release</span></code>. The version is the original bundle’s version. We introduced a new type for these synthetic resources: <code class="language-properties highlighter-rouge"><span class="err">bnd.synthetic</span></code>.</p>
+
+<p>A Bundle <code class="language-properties highlighter-rouge"><span class="err">x.y.z</span></code>, providing code for JDK 1.8, 9 and 11 will appear as <code class="language-properties highlighter-rouge"><span class="err">x.y.z__8</span></code>, <code class="language-properties highlighter-rouge"><span class="err">x.y.z__9</span></code> and <code class="language-properties highlighter-rouge"><span class="err">x.y.z__11</span></code> with the corresponding narrow version ranges for their respective Java version.</p>
+
+<p>We also add the requirements of the bundle if it would run on that release.
+The synthetic resources are added to the same repository of the original bundle</p>
+
+<p>For example the bundle <code class="language-properties highlighter-rouge"><span class="py">org.assertj</span><span class="p">:</span><span class="s">assertj-core:3.24.1</span></code> contains classes for Java 8 and Java 9. In the <a href="https://bndtools.org/manual/resolution-view.html">Resolution View</a> of bndtools it is shown with the following two capabilities for each Java version:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">FROM</span><span class="p">:</span> <span class="s">assertj-core__8 version=3.24.1 type=bnd.synthetic</span>
+<span class="err">bnd.multireleaseCapability</span> <span class="err">from</span> <span class="err">a</span> <span class="err">supporting</span> <span class="err">resource</span> <span class="err">0</span> <span class="err">part</span> <span class="err">of</span> <span class="err">Optional[assertj-core</span> <span class="py">version</span><span class="p">=</span><span class="s">3.24.1]</span>
+<span class="err">;</span>
+	<span class="py">bnd.multirelease</span> <span class="p">=</span> <span class="s">assertj-core;</span>
+	<span class="py">version</span> <span class="p">=</span> <span class="s">3.24.1</span>
+</code></pre></div></div>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">FROM</span><span class="p">:</span> <span class="s">assertj-core__9 version=3.24.1 type=bnd.synthetic</span>
+<span class="err">bnd.multireleaseCapability</span> <span class="err">from</span> <span class="err">a</span> <span class="err">supporting</span> <span class="err">resource</span> <span class="err">1</span> <span class="err">part</span> <span class="err">of</span> <span class="err">Optional[assertj-core</span> <span class="py">version</span><span class="p">=</span><span class="s">3.24.1]</span>
+<span class="err">;</span>
+	<span class="py">bnd.multirelease</span> <span class="p">=</span> <span class="s">assertj-core;</span>
+	<span class="py">version</span> <span class="p">=</span> <span class="s">3.24.1</span>
+</code></pre></div></div>
+<h2 id="how-do-you-create-a-distro">
+  
+  
+    <a href="#how-do-you-create-a-distro" class="anchor-heading" aria-labelledby="how-do-you-create-a-distro"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> How do you create a distro?
+  
+  
+</h2>
+    
+
+<ol>
+  <li>Install the <a href="https://search.maven.org/artifact/biz.aQute.bnd/biz.aQute.remote.agent">bnd remote agent bundle</a> in the target container runtime. This will automatically open a local socket on a default port used by the bnd cli next.</li>
+  <li>
+    <p>Execute the following command using the <a href="https://search.maven.org/artifact/biz.aQute.bnd/biz.aQute.bnd">bnd cli</a>:</p>
+
+    <div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="err">bnd</span> <span class="err">remote</span> <span class="err">distro</span> <span class="err">-o</span> <span class="err">container-5.6.7.jar</span> <span class="err">container</span> <span class="err">5.6.7</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Take the jar <code class="language-properties highlighter-rouge"><span class="err">container-5.6.7.jar</span></code> created in 2. and place it into the directory containing the bndrun file that is used to resolve your deployment jars.</li>
+  <li>
+    <p>in the bndrun file add:</p>
+
+    <div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="py">-distro</span><span class="p">:</span> <span class="s">${.}/container-5.6.7.jar;version=file</span>
+</code></pre></div>    </div>
+  </li>
+  <li>resolve… the result of the resolve should be the set of bundles you need to install in the container, minus everything the container already provides.</li>
+</ol>
+
+<p>What you do with those resolved bundles is dependent on the goal of the developer. They can be directly installed in the existing container, or they could be assembled into a package format native to the container, or possibly a subsystem.</p>
+<h3 id="considerations">
+  
+  
+    <a href="#considerations" class="anchor-heading" aria-labelledby="considerations"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Considerations
+  
+  
+</h3>
+    
+<p>What you need to bear in mind is that the <strong>distro</strong> needs to be re-created each time the target container changes in any significant way, otherwise it won’t reflect the true capabilities of the system needed to resolve against.</p>
+<h2 id="conclusion">
+  
+  
+    <a href="#conclusion" class="anchor-heading" aria-labelledby="conclusion"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Conclusion
+  
+  
+</h2>
+    
+
+<p>Creating applications from reusable models is a goal that the software industry has been trying to achieve for a long time. To a certain extent, the Maven dependency model provides this model. However, it also is a model where dependencies are not strictly managed and much is left to chance.</p>
+
+<p>The resolver model provides an alternative (working inside maven if so desired) to establish a class path that optimises the whole application class path instead of just slavishly following transitively dependencies. Experience shows that organisations that use the resolver have a much better grip of what is actually running in their runtime. Not only minimises this runtime errors, it generally also makes it easier to migrate and evolve the code base.</p>
+
+<p>Converting an existing build into a resolve based build can be daunting but the efforts are worth it. For bnd users that use the workspace model the advantages will flow freely.</p>
+
+          
+
+          
+            
+          
+        </main>
+        
+<hr>
+<footer>
+  
+    <p><a href="#top" id="back-to-top">Back to top</a></p>
+  
+
+  <p class="text-small mb-0">Copyright &copy; 2009 - present bndtools contributors. Distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>.</p>
+
+  
+    <div class="d-flex mt-2">
+      
+      
+        <p class="text-small mb-0">
+          <a href="https://github.com/bndtools/bnd/edit/master/docs/_chapters/250-resolving.md" id="edit-this-page">Edit this page on GitHub</a>
+        </p>
+      
+    </div>
+  <div class="d-md-none mt-4 fs-2">
+    
+    
+      This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    
+  </div>
+</footer>
+
+      </div>
+    </div>
+    
+      
+
+<div class="search-overlay"></div>
+
+    
+  </div>
+
+  
+</body>
+</html>
+
