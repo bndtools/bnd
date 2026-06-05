@@ -121,6 +121,9 @@ jobs:
         sed 's/baseline.version:.*/baseline.version: ${{ github.event.inputs.V1 }}/' cnf/build.bnd >tmp
         cat tmp
         mv tmp cnf/build.bnd
+    
+    - name: sync baseline version to docs
+      run: bash docs/scripts/sync-baseline-version.sh
 
     - name: create PR
       run: |
