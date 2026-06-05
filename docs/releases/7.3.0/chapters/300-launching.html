@@ -1,0 +1,889 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  <link rel="stylesheet" href="/release/assets/css/just-the-docs-default.css">
+
+  <link rel="stylesheet" href="/release/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet">
+
+  <style id="jtd-nav-activation">
+  
+
+    .site-nav > ul:nth-of-type(2) > li > a,
+    
+    .site-nav > ul:nth-of-type(2) > li > ul > li:not(:nth-child(2)) > a,
+    .site-nav > ul:nth-of-type(2) > li > ul > li > ul > li a {
+      background-image: none;
+    }
+
+    .site-nav > ul:not(:nth-of-type(2)) a,
+    .site-nav li.external a {
+      background-image: none;
+    }
+
+    .site-nav > ul:nth-of-type(2) > li:nth-child(4) > ul > li:nth-child(2) > a {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .site-nav > ul.nav-category-list > li > button svg,
+    .site-nav > ul:nth-of-type(2) > li:nth-child(4) > button svg,
+    .site-nav > ul:nth-of-type(2) > li:nth-child(4) > ul > li:nth-child(2) > button svg {
+      transform: rotate(-90deg);
+    }
+    .site-nav > ul.nav-category-list > li.nav-list-item > ul.nav-list,
+    .site-nav > ul:nth-of-type(2) > li.nav-list-item:nth-child(4) > ul.nav-list,
+    .site-nav > ul:nth-of-type(2) > li.nav-list-item:nth-child(4) > ul.nav-list > li.nav-list-item:nth-child(2) > ul.nav-list {
+      display: block;
+    }
+  </style>
+
+  
+
+  
+    <script src="/release/assets/js/vendor/lunr.min.js"></script>
+  
+
+  <script src="/release/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="icon" href="/release/favicon.ico" type="image/x-icon">
+
+
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Launching | bnd</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Launching" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a bndrun file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile." />
+<meta property="og:description" content="bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a bndrun file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile." />
+<meta property="og:site_name" content="bnd" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-06-05T12:17:29+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Launching" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-06-05T12:17:29+00:00","datePublished":"2026-06-05T12:17:29+00:00","description":"bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a bndrun file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile.","headline":"Launching","mainEntityOfPage":{"@type":"WebPage","@id":"/release/chapters/300-launching.html"},"url":"/release/chapters/300-launching.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  <!-- bnd custom head additions -->
+<link rel="sitemap" type="application/xml" title="bnd Sitemap" href="/release/sitemap.xml">
+<link rel="shortcut icon" type="image/x-icon" href="/release/favicon.ico">
+
+<!-- Tocbot: right-side sticky "On this page" TOC -->
+<link rel="stylesheet" href="/release/css/tocbot.css">
+<script src="/release/js/tocbot.min.js"></script>
+
+
+
+<!-- Prevent flash of wrong color scheme: apply saved light/dark preference before CSS renders,
+     otherwise use OS/browser preference on page load. -->
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme-preference');
+      var pref = (stored === 'light' || stored === 'dark') ? stored : null;
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var useDark = pref ? pref === 'dark' : prefersDark;
+      if (useDark) {
+        var cssFile = document.querySelector('link[href*="just-the-docs-default.css"], link[href*="just-the-docs-light.css"], link[href*="just-the-docs-dark.css"]');
+        if (cssFile) {
+          cssFile.setAttribute('href',
+            cssFile.getAttribute('href').replace(/just-the-docs-(default|light|dark)\.css/, 'just-the-docs-dark.css'));
+        }
+      }
+      document.documentElement.setAttribute('data-color-scheme', useDark ? 'dark' : 'light');
+    } catch (e) {}
+  }());
+</script>
+
+
+</head>
+
+<body>
+  <a class="skip-to-main" href="#main-content">Skip to main content</a>
+  <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="svg-link" viewBox="0 0 24 24">
+  <title>Link</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+</symbol>
+
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+  <title>Menu</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</symbol>
+
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+  <title>Expand</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</symbol>
+
+  <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE -->
+<symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link">
+  <title id="svg-external-link-title">(external link)</title>
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+</symbol>
+
+  
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+  <title>Document</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+  </svg>
+</symbol>
+
+    <symbol id="svg-search" viewBox="0 0 24 24">
+  <title>Search</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+</symbol>
+
+  
+  
+    <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md -->
+<symbol id="svg-copy" viewBox="0 0 16 16">
+  <title>Copy</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+  </svg>
+</symbol>
+<symbol id="svg-copied" viewBox="0 0 16 16">
+  <title>Copied</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+  </svg>
+</symbol>
+
+  
+</svg>
+
+  
+    <header class="side-bar">
+  <div class="site-header">
+    <a href="/release/" class="site-title lh-tight">
+  bnd
+
+</a>
+    <button id="menu-button" class="site-button btn-reset" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div>
+
+  <nav aria-label="Main" id="site-nav" class="site-nav">
+  
+  
+    <ul class="nav-list"><li class="nav-list-item"><a href="/release/" class="nav-list-link">bnd – OSGi Bundle Tooling for Java</a></li></ul>
+  
+    
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Getting Started submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-getting-started.html" class="nav-list-link">Getting Started</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/110-introduction.html" class="nav-list-link">Introduction</a></li><li class="nav-list-item"><a href="/release/chapters/120-install.html" class="nav-list-link">How to install bnd</a></li><li class="nav-list-item"><a href="/release/chapters/123-tour-workspace.html" class="nav-list-link">Guided Tour Workspace & Projects</a></li><li class="nav-list-item"><a href="/release/chapters/125-tour-features.html" class="nav-list-link">bnd / bndlib Features and JAR Wrapping Techniques</a></li><li class="nav-list-item"><a href="/release/chapters/920-faq.html" class="nav-list-link">FAQ - Frequently Asked Questions</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Concepts and Practices submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-concepts.html" class="nav-list-link">Concepts and Practices</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/130-concepts.html" class="nav-list-link">Concepts</a></li><li class="nav-list-item"><a href="/release/chapters/135-history.html" class="nav-list-link">Background</a></li><li class="nav-list-item"><a href="/release/chapters/140-best-practices.html" class="nav-list-link">Best practices</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Build and Development submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-build-development.html" class="nav-list-link">Build and Development</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/150-build.html" class="nav-list-link">Build</a></li><li class="nav-list-item"><a href="/release/chapters/155-project-setup.html" class="nav-list-link">Project Setup</a></li><li class="nav-list-item"><a href="/release/chapters/160-jars.html" class="nav-list-link">Generating JARs</a></li><li class="nav-list-item"><a href="/release/chapters/170-versioning.html" class="nav-list-link">Versioning</a></li><li class="nav-list-item"><a href="/release/chapters/180-baselining.html" class="nav-list-link">Baselining</a></li><li class="nav-list-item"><a href="/release/chapters/200-components.html" class="nav-list-link">Service Components</a></li><li class="nav-list-item"><a href="/release/chapters/210-metatype.html" class="nav-list-link">Metatype</a></li><li class="nav-list-item"><a href="/release/chapters/220-contracts.html" class="nav-list-link">Contracts</a></li><li class="nav-list-item"><a href="/release/chapters/230-manifest-annotations.html" class="nav-list-link">Bundle Annotations</a></li><li class="nav-list-item"><a href="/release/chapters/235-accessor-properties.html" class="nav-list-link">Accessor Properties</a></li><li class="nav-list-item"><a href="/release/chapters/240-spi-annotations.html" class="nav-list-link">SPI Annotations</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Dependency and Launching submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-dependency-launching.html" class="nav-list-link">Dependency and Launching</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/250-resolving.html" class="nav-list-link">Resolving Dependencies</a></li><li class="nav-list-item"><a href="/release/chapters/300-launching.html" class="nav-list-link">Launching</a></li><li class="nav-list-item"><a href="/release/chapters/305-startlevels.html" class="nav-list-link">Startlevels</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Testing submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-testing.html" class="nav-list-link">Testing</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/310-testing.html" class="nav-list-link">Testing Framework</a></li><li class="nav-list-item"><a href="/release/chapters/315-launchpad-testing.html" class="nav-list-link">Testing with Launchpad</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Packaging and Distribution submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-packaging.html" class="nav-list-link">Packaging and Distribution</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/320-packaging.html" class="nav-list-link">Packaging Applications</a></li><li class="nav-list-item"><a href="/release/chapters/330-jpms.html" class="nav-list-link">JPMS Libraries</a></li><li class="nav-list-item"><a href="/release/chapters/390-wrapping.html" class="nav-list-link">Wrapping Libraries to OSGi Bundles</a></li><li class="nav-list-item"><a href="/release/chapters/325-sonatype-central-portal.html" class="nav-list-link">Sonatype Central Portal Publishing</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Documentation and Tools submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-documentation-tools.html" class="nav-list-link">Documentation and Tools</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/395-generating-documentation.html" class="nav-list-link">Generating Documentation</a></li><li class="nav-list-item"><a href="/release/chapters/400-commands.html" class="nav-list-link">bnd CLI Commands</a></li><li class="nav-list-item"><a href="/release/chapters/600-developer.html" class="nav-list-link">For Developers</a></li><li class="nav-list-item"><a href="/release/chapters/620-template-fragments.html" class="nav-list-link">Templates for Workspaces</a></li><li class="nav-list-item"><a href="/release/chapters/650-windows.html" class="nav-list-link">Tips for Windows users</a></li><li class="nav-list-item"><a href="/release/chapters/700-tools.html" class="nav-list-link">Tools bound to bnd</a></li><li class="nav-list-item"><a href="/release/chapters/875-external-plugins.html" class="nav-list-link">External Plugins</a></li></ul></li><li class="nav-list-item"><a href="/release/chapters/000-reference.html" class="nav-list-link">Reference Material</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Configuration and Troubleshooting submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/chapters/000-config-troubleshooting.html" class="nav-list-link">Configuration and Troubleshooting</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/chapters/880-settings.html" class="nav-list-link">Settings</a></li><li class="nav-list-item"><a href="/release/chapters/900-errors.html" class="nav-list-link">Errors</a></li><li class="nav-list-item"><a href="/release/chapters/910-warnings.html" class="nav-list-link">Warnings</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Headers submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/headers/" class="nav-list-link">Headers</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/heads/bnd.html" class="nav-list-link">.bnd</a></li><li class="nav-list-item"><a href="/release/heads/automatic_module_name.html" class="nav-list-link">Automatic-Module-Name</a></li><li class="nav-list-item"><a href="/release/heads/bin.html" class="nav-list-link">bin</a></li><li class="nav-list-item"><a href="/release/heads/bnd_addxmltotest.html" class="nav-list-link">Bnd-AddXmlToTest RESOURCE ( ',' RESOURCE )</a></li><li class="nav-list-item"><a href="/release/heads/bnd_lastmodified.html" class="nav-list-link">Bnd-LastModified  LONG</a></li><li class="nav-list-item"><a href="/release/heads/bundle_activationpolicy.html" class="nav-list-link">Bundle-ActivationPolicy ::= policy ( ';' directive )*</a></li><li class="nav-list-item"><a href="/release/heads/bundle_activator.html" class="nav-list-link">Bundle-Activator CLASS</a></li><li class="nav-list-item"><a href="/release/heads/bundle_blueprint.html" class="nav-list-link">Bundle-Blueprint RESOURE (',' RESOURCE )</a></li><li class="nav-list-item"><a href="/release/heads/bundle_category.html" class="nav-list-link">Bundle-Category STRING (',' STRING )</a></li><li class="nav-list-item"><a href="/release/heads/bundle_classpath.html" class="nav-list-link">Bundle-ClassPath ::= entry ( ',' entry )*</a></li><li class="nav-list-item"><a href="/release/heads/bundle_contactaddress.html" class="nav-list-link">Bundle-ContactAddress</a></li><li class="nav-list-item"><a href="/release/heads/bundle_contributors.html" class="nav-list-link">Bundle-Contributors ...</a></li><li class="nav-list-item"><a href="/release/heads/bundle_copyright.html" class="nav-list-link">Bundle-Copyright STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_description.html" class="nav-list-link">Bundle-Description STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_developers.html" class="nav-list-link">Bundle-Developers ...</a></li><li class="nav-list-item"><a href="/release/heads/bundle_docurl.html" class="nav-list-link">Bundle-DocURL STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_icon.html" class="nav-list-link">Bundle-Icon</a></li><li class="nav-list-item"><a href="/release/heads/bundle_license.html" class="nav-list-link">Bundle-License ::= '<<[EXTERNAL]>>' | ( license ( ',' license ) * )</a></li><li class="nav-list-item"><a href="/release/heads/bundle_localization.html" class="nav-list-link">Bundle-Localization</a></li><li class="nav-list-item"><a href="/release/heads/bundle_manifestversion.html" class="nav-list-link">Bundle-ManifestVersion ::= 2</a></li><li class="nav-list-item"><a href="/release/heads/bundle_name.html" class="nav-list-link">Bundle-Name STRING</a></li><li class="nav-list-item"><a href="/release/heads/bundle_nativecode.html" class="nav-list-link">Bundle-NativeCode   ::= nativecode  ( ',' nativecode )* ( ',' optional ) ?</a></li><li class="nav-list-item"><a href="/release/heads/bundle_requiredexecutionenvironment.html" class="nav-list-link">Bundle-RequiredExecutionEnvironment ::= ee-name ( ',' ee-name )*</a></li><li class="nav-list-item"><a href="/release/heads/bundle_scm.html" class="nav-list-link">Bundle-SCM</a></li><li class="nav-list-item"><a href="/release/heads/bundle_symbolicname.html" class="nav-list-link">Bundle-SymbolicName ::= symbolic-name ( ';' parameter ) *</a></li><li class="nav-list-item"><a href="/release/heads/bundle_updatelocation.html" class="nav-list-link">Bundle-UpdateLocation</a></li><li class="nav-list-item"><a href="/release/heads/bundle_vendor.html" class="nav-list-link">Bundle-Vendor</a></li><li class="nav-list-item"><a href="/release/heads/bundle_version.html" class="nav-list-link">Bundle-Version ::= version</a></li><li class="nav-list-item"><a href="/release/heads/conditional_package.html" class="nav-list-link">Conditional-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/heads/created_by.html" class="nav-list-link">Created-By STRING</a></li><li class="nav-list-item"><a href="/release/heads/dynamicimport_package.html" class="nav-list-link">DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*</a></li><li class="nav-list-item"><a href="/release/heads/export_package.html" class="nav-list-link">Export-Package  ::= export ( ',' export)*</a></li><li class="nav-list-item"><a href="/release/heads/export_service.html" class="nav-list-link">Export-Service</a></li><li class="nav-list-item"><a href="/release/heads/fragment_host.html" class="nav-list-link">Fragment-Host       ::= bundle-description</a></li><li class="nav-list-item"><a href="/release/heads/ignore_package.html" class="nav-list-link">Ignore-Package</a></li><li class="nav-list-item"><a href="/release/heads/import_package.html" class="nav-list-link">Import-Package ::= import ( ',' import )*</a></li><li class="nav-list-item"><a href="/release/heads/javac.html" class="nav-list-link">javac</a></li><li class="nav-list-item"><a href="/release/heads/javac.encoding.html" class="nav-list-link">javac.encoding</a></li><li class="nav-list-item"><a href="/release/heads/javac.profile.html" class="nav-list-link">javac.profile</a></li><li class="nav-list-item"><a href="/release/heads/javac.source.html" class="nav-list-link">javac.source</a></li><li class="nav-list-item"><a href="/release/heads/javac.target.html" class="nav-list-link">javac.target</a></li><li class="nav-list-item"><a href="/release/heads/meta_persistence.html" class="nav-list-link">Meta-Persistence ::= ( RESOURCE ( ',' RESOURCE )* )?</a></li><li class="nav-list-item"><a href="/release/heads/private_package.html" class="nav-list-link">Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/heads/provide_capability.html" class="nav-list-link">Provide-Capability  ::= capability (',' capability )*</a></li><li class="nav-list-item"><a href="/release/heads/require_bundle.html" class="nav-list-link">Require-Bundle      ::= bundle-description ( ',' bundle-description )*</a></li><li class="nav-list-item"><a href="/release/heads/require_capability.html" class="nav-list-link">Require-Capability ::= requirement ( ',' requirement )*</a></li><li class="nav-list-item"><a href="/release/heads/service_component.html" class="nav-list-link">Service-Component ::= RESOURCE ( ',' RESOURCE )</a></li><li class="nav-list-item"><a href="/release/heads/src.html" class="nav-list-link">src</a></li><li class="nav-list-item"><a href="/release/heads/target_dir.html" class="nav-list-link">target-dir</a></li><li class="nav-list-item"><a href="/release/heads/test_cases.html" class="nav-list-link">Test-Cases CLASS ( ',' CLASS ) *</a></li><li class="nav-list-item"><a href="/release/heads/testbin.html" class="nav-list-link">testbin</a></li><li class="nav-list-item"><a href="/release/heads/tester_plugin.html" class="nav-list-link">Tester-Plugin</a></li><li class="nav-list-item"><a href="/release/heads/testsrc.html" class="nav-list-link">testsrc</a></li><li class="nav-list-item"><a href="/release/heads/tool.html" class="nav-list-link">Tool STRING</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Instruction Reference submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/instructions/" class="nav-list-link">Instruction Reference</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/instructions/augment.html" class="nav-list-link">-augment PARAMETER ( ',' PARAMETER ) *</a></li><li class="nav-list-item"><a href="/release/instructions/baseline.html" class="nav-list-link">-baseline selector</a></li><li class="nav-list-item"><a href="/release/instructions/baselinerepo.html" class="nav-list-link">-baselinerepo qname</a></li><li class="nav-list-item"><a href="/release/instructions/bnd_driver.html" class="nav-list-link">-bnd-driver</a></li><li class="nav-list-item"><a href="/release/instructions/builderignore.html" class="nav-list-link">-builderignore PATH-SPEC ( ',' PATH-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/buildpath.html" class="nav-list-link">-buildpath PATH</a></li><li class="nav-list-item"><a href="/release/instructions/buildrepo.html" class="nav-list-link">-buildrepo  repo ( ',' repo ) *</a></li><li class="nav-list-item"><a href="/release/instructions/buildtool.html" class="nav-list-link">-buildtool  toolspec  (EXPERIMENTAL!)</a></li><li class="nav-list-item"><a href="/release/instructions/bumppolicy.html" class="nav-list-link">-bumppolicy</a></li><li class="nav-list-item"><a href="/release/instructions/bundleannotations.html" class="nav-list-link">-bundleannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/cdiannotations.html" class="nav-list-link">-cdiannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/check.html" class="nav-list-link">-check 'ALL' | ( 'IMPORTS' | 'EXPORTS' ) *</a></li><li class="nav-list-item"><a href="/release/instructions/classpath.html" class="nav-list-link">-classpath  FILE (',' FILE) *</a></li><li class="nav-list-item"><a href="/release/instructions/compression.html" class="nav-list-link">-compression DEFLATE | STORE</a></li><li class="nav-list-item"><a href="/release/instructions/conditionalpackage.html" class="nav-list-link">-conditionalpackage PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/conduit.html" class="nav-list-link">-conduit</a></li><li class="nav-list-item"><a href="/release/instructions/connection_settings.html" class="nav-list-link">-connection-settings</a></li><li class="nav-list-item"><a href="/release/instructions/consumer_policy.html" class="nav-list-link">-consumer-policy VERSION-MASK</a></li><li class="nav-list-item"><a href="/release/instructions/contract.html" class="nav-list-link">-contract</a></li><li class="nav-list-item"><a href="/release/instructions/define_contract.html" class="nav-list-link">-define-contract</a></li><li class="nav-list-item"><a href="/release/instructions/dependson.html" class="nav-list-link">-dependson SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/deploy.html" class="nav-list-link">-deploy</a></li><li class="nav-list-item"><a href="/release/instructions/deployrepo.html" class="nav-list-link">-deployrepo</a></li><li class="nav-list-item"><a href="/release/instructions/diffignore.html" class="nav-list-link">-diffignore SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/diffpackages.html" class="nav-list-link">-diffpackages SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/digests.html" class="nav-list-link">-digests DIGEST ( ',' DIGEST ) *</a></li><li class="nav-list-item"><a href="/release/instructions/distro.html" class="nav-list-link">-distro REPO (',' REPO)</a></li><li class="nav-list-item"><a href="/release/instructions/donotcopy.html" class="nav-list-link">-donotcopy</a></li><li class="nav-list-item"><a href="/release/instructions/dsannotations.html" class="nav-list-link">-dsannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/dsannotations_options.html" class="nav-list-link">-dsannotations-options SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/eeprofile.html" class="nav-list-link">-eeprofile 'auto' | PROFILE +</a></li><li class="nav-list-item"><a href="/release/instructions/executable.html" class="nav-list-link">-executable ( rejar= STORE | DEFLATE ) ( ','  strip= matcher ( ',' matcher )* ) ( ',' location= FORMAT )</a></li><li class="nav-list-item"><a href="/release/instructions/export.html" class="nav-list-link">-export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*</a></li><li class="nav-list-item"><a href="/release/instructions/export_apiguardian.html" class="nav-list-link">-export-apiguardian PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/exportcontents.html" class="nav-list-link">-exportcontents PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/exportreport.html" class="nav-list-link">-exportreport report-def ( ',' report-def )*</a></li><li class="nav-list-item"><a href="/release/instructions/exporttype.html" class="nav-list-link">-exporttype</a></li><li class="nav-list-item"><a href="/release/instructions/extension.html" class="nav-list-link">-extension</a></li><li class="nav-list-item"><a href="/release/instructions/failok.html" class="nav-list-link">-failok ('true' | 'false')?</a></li><li class="nav-list-item"><a href="/release/instructions/fixupmessages.html" class="nav-list-link">-fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...</a></li><li class="nav-list-item"><a href="/release/instructions/generate.html" class="nav-list-link">-generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ...</a></li><li class="nav-list-item"><a href="/release/instructions/gestalt.html" class="nav-list-link">-gestalt</a></li><li class="nav-list-item"><a href="/release/instructions/groupid.html" class="nav-list-link">-groupid groupId</a></li><li class="nav-list-item"><a href="/release/instructions/include.html" class="nav-list-link">-include PATH-SPEC ( ',' PATH-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/includepackage.html" class="nav-list-link">-includepackage PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/includeresource.html" class="nav-list-link">-includeresource iclause</a></li><li class="nav-list-item"><a href="/release/instructions/init.html" class="nav-list-link">-init ${MACRO} ( ',' ${MACRO}) *</a></li><li class="nav-list-item"><a href="/release/instructions/invalidfilenames.html" class="nav-list-link">-invalidfilenames</a></li><li class="nav-list-item"><a href="/release/instructions/javaagent.html" class="nav-list-link">-javaagent BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/jpms_module_info.html" class="nav-list-link">-jpms-module-info modulename [; version=<version>] [; access=OPEN|SYNTHETIC|MANDATED]</a></li><li class="nav-list-item"><a href="/release/instructions/jpms_module_info_options.html" class="nav-list-link">-jpms-module-info-options module-infos+</a></li><li class="nav-list-item"><a href="/release/instructions/jpms_multi_release.html" class="nav-list-link">-jpms-multi-release BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/launcher.html" class="nav-list-link">-launcher</a></li><li class="nav-list-item"><a href="/release/instructions/library.html" class="nav-list-link">-library library ( ',' library )*</a></li><li class="nav-list-item"><a href="/release/instructions/make.html" class="nav-list-link">-make</a></li><li class="nav-list-item"><a href="/release/instructions/manifest.html" class="nav-list-link">-manifest FILE</a></li><li class="nav-list-item"><a href="/release/instructions/manifest_name.html" class="nav-list-link">-manifest-name  RESOURCE</a></li><li class="nav-list-item"><a href="/release/instructions/maven_dependencies.html" class="nav-list-link">-maven-dependencies* entry ( ',' entry )*</a></li><li class="nav-list-item"><a href="/release/instructions/maven_release.html" class="nav-list-link">-maven-release ('local'|'remote') ( ',' option )*</a></li><li class="nav-list-item"><a href="/release/instructions/maven_scope.html" class="nav-list-link">-maven-scope dependency-scope</a></li><li class="nav-list-item"><a href="/release/instructions/metainf_services.html" class="nav-list-link">-metainf-services</a></li><li class="nav-list-item"><a href="/release/instructions/metatypeannotations.html" class="nav-list-link">-metatypeannotations SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/metatypeannotations_options.html" class="nav-list-link">-metatypeannotations-options SELECTORS</a></li><li class="nav-list-item"><a href="/release/instructions/namesection.html" class="nav-list-link">-namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *</a></li><li class="nav-list-item"><a href="/release/instructions/nobuildincache.html" class="nav-list-link">-nobuildincache BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nobundles.html" class="nav-list-link">-nobundles  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noclassforname.html" class="nav-list-link">-noclassforname BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nodefaultversion.html" class="nav-list-link">-nodefaultversion  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noee.html" class="nav-list-link">-noee  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noextraheaders.html" class="nav-list-link">-noextraheaders  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noimportjava.html" class="nav-list-link">-noimportjava BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nojunit.html" class="nav-list-link">-nojunit  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nojunitosgi.html" class="nav-list-link">-nojunitosgi  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nomanifest.html" class="nav-list-link">-nomanifest  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/noparallel.html" class="nav-list-link">-noparallel CATEGORY;task=TASKS</a></li><li class="nav-list-item"><a href="/release/instructions/noproxyinterfaces.html" class="nav-list-link">-noproxyinterfaces BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/nosubstitution.html" class="nav-list-link">-nosubstitution</a></li><li class="nav-list-item"><a href="/release/instructions/nouses.html" class="nav-list-link">-nouses  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/output.html" class="nav-list-link">-output  FILE</a></li><li class="nav-list-item"><a href="/release/instructions/outputmask.html" class="nav-list-link">-outputmask  TEMPLATE ?</a></li><li class="nav-list-item"><a href="/release/instructions/packageinfotype.html" class="nav-list-link">-packageinfotype</a></li><li class="nav-list-item"><a href="/release/instructions/pedantic.html" class="nav-list-link">-pedantic BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/plugin.html" class="nav-list-link">-plugin.* plugin-def ( ',' plugin-def )*</a></li><li class="nav-list-item"><a href="/release/instructions/pluginpath.html" class="nav-list-link">-pluginpath* PARAMETERS</a></li><li class="nav-list-item"><a href="/release/instructions/pom.html" class="nav-list-link">-pom BOOLEAN | PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/prepare.html" class="nav-list-link">-prepare makespec ( ',' makespec )*</a></li><li class="nav-list-item"><a href="/release/instructions/preprocessmatchers.html" class="nav-list-link">-preprocessmatchers SELECTOR</a></li><li class="nav-list-item"><a href="/release/instructions/privatepackage.html" class="nav-list-link">-privatepackage PACKAGE-SPEC</a></li><li class="nav-list-item"><a href="/release/instructions/profile.html" class="nav-list-link">-profile KEY</a></li><li class="nav-list-item"><a href="/release/instructions/provider_policy.html" class="nav-list-link">-provider-policy VERSION-MASK</a></li><li class="nav-list-item"><a href="/release/instructions/releaserepo.html" class="nav-list-link">-releaserepo* NAME ( ',' NAME ) *</a></li><li class="nav-list-item"><a href="/release/instructions/remoteworkspace.html" class="nav-list-link">-remoteworkspace (true|false)</a></li><li class="nav-list-item"><a href="/release/instructions/removeheaders.html" class="nav-list-link">-removeheaders KEY-SELECTOR ( '.' KEY-SELECTOR ) *</a></li><li class="nav-list-item"><a href="/release/instructions/reportconfig.html" class="nav-list-link">-reportconfig plugin-def ( ',' plugin-def )*</a></li><li class="nav-list-item"><a href="/release/instructions/reportnewer.html" class="nav-list-link">-reportnewer BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/reproducible.html" class="nav-list-link">-reproducible BOOLEAN | TIMESTAMP</a></li><li class="nav-list-item"><a href="/release/instructions/require_bnd.html" class="nav-list-link">-require-bnd  (FILTER ( ',' FILTER )* )?</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.html" class="nav-list-link">-resolve (manual|auto|beforelaunch|batch|cache)</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.effective.html" class="nav-list-link">-resolve.effective qname (',' qname )</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.excludesystem.html" class="nav-list-link">-resolve.excludesystem true|false</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.preferences.html" class="nav-list-link">-resolve.preferences qname ( ',' qname )</a></li><li class="nav-list-item"><a href="/release/instructions/resolve.reject.html" class="nav-list-link">-resolve.reject ( '@'? namespace ( ';filter:=' FILTER )? ),</a></li><li class="nav-list-item"><a href="/release/instructions/resolvedebug.html" class="nav-list-link">-resolvedebug INTEGER</a></li><li class="nav-list-item"><a href="/release/instructions/resourceonly.html" class="nav-list-link">-resourceonly  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runblacklist.html" class="nav-list-link">-runblacklist requirement (',' requirement)</a></li><li class="nav-list-item"><a href="/release/instructions/runbuilds.html" class="nav-list-link">-runbuilds BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runbundles.html" class="nav-list-link">-runbundles* REPO-ENTRY ( ',' REPO-ENTRY )*</a></li><li class="nav-list-item"><a href="/release/instructions/runee.html" class="nav-list-link">-runee EE</a></li><li class="nav-list-item"><a href="/release/instructions/runenv.html" class="nav-list-link">-runenv PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/runframework.html" class="nav-list-link">-runframework ( 'none' | 'services' | ANY )?</a></li><li class="nav-list-item"><a href="/release/instructions/runframeworkrestart.html" class="nav-list-link">-runframeworkrestart BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runfw.html" class="nav-list-link">-runfw REPO-ENTRY</a></li><li class="nav-list-item"><a href="/release/instructions/runjdb.html" class="nav-list-link">-runjdb  ADDRESS</a></li><li class="nav-list-item"><a href="/release/instructions/runkeep.html" class="nav-list-link">-runkeep true | false</a></li><li class="nav-list-item"><a href="/release/instructions/runnoreferences.html" class="nav-list-link">-runnoreferences  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runoptions.html" class="nav-list-link">-runoptions</a></li><li class="nav-list-item"><a href="/release/instructions/runpath.html" class="nav-list-link">-runpath REPO-ENTRY ( ',' REPO-ENTRY )</a></li><li class="nav-list-item"><a href="/release/instructions/runprogramargs.html" class="nav-list-link">-runprogramargs</a></li><li class="nav-list-item"><a href="/release/instructions/runproperties.html" class="nav-list-link">-runproperties PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/runprovidedcapabilities.html" class="nav-list-link">-runprovidedcapabilities</a></li><li class="nav-list-item"><a href="/release/instructions/runremote.html" class="nav-list-link">-runremote</a></li><li class="nav-list-item"><a href="/release/instructions/runrepos.html" class="nav-list-link">-runrepos REPO-NAME ( ',' REPO-NAME )*</a></li><li class="nav-list-item"><a href="/release/instructions/runrequires.html" class="nav-list-link">-runrequires REQUIREMENT ( ',' REQUIREMENT )*</a></li><li class="nav-list-item"><a href="/release/instructions/runstartlevel.html" class="nav-list-link">-runstartlevel ( order | begin | step )*</a></li><li class="nav-list-item"><a href="/release/instructions/runstorage.html" class="nav-list-link">-runstorage FILE</a></li><li class="nav-list-item"><a href="/release/instructions/runsystemcapabilities.html" class="nav-list-link">-runsystemcapabilities* CAPABILITY (',' CAPABILITY )</a></li><li class="nav-list-item"><a href="/release/instructions/runsystempackages.html" class="nav-list-link">-runsystempackages* PARAMETERS</a></li><li class="nav-list-item"><a href="/release/instructions/runtimeout.html" class="nav-list-link">-runtimeout DURATION</a></li><li class="nav-list-item"><a href="/release/instructions/runtrace.html" class="nav-list-link">-runtrace BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/runvm.html" class="nav-list-link">-runvm KEYS</a></li><li class="nav-list-item"><a href="/release/instructions/savemanifest.html" class="nav-list-link">-savemanifest FILE</a></li><li class="nav-list-item"><a href="/release/instructions/sign.html" class="nav-list-link">-sign PARAMETERS</a></li><li class="nav-list-item"><a href="/release/instructions/snapshot.html" class="nav-list-link">-snapshot STRING</a></li><li class="nav-list-item"><a href="/release/instructions/sourcepath.html" class="nav-list-link">-sourcepath</a></li><li class="nav-list-item"><a href="/release/instructions/sources.html" class="nav-list-link">-sources  BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/stalecheck.html" class="nav-list-link">-stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* ...</a></li><li class="nav-list-item"><a href="/release/instructions/standalone.html" class="nav-list-link">-standalone repo-spec (, repo-spec )</a></li><li class="nav-list-item"><a href="/release/instructions/strict.html" class="nav-list-link">-strict BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/sub.html" class="nav-list-link">-sub FILE-SPEC ( ',' FILE-SPEC )*</a></li><li class="nav-list-item"><a href="/release/instructions/systemproperties.html" class="nav-list-link">-systemproperties PROPERTIES</a></li><li class="nav-list-item"><a href="/release/instructions/testcontinuous.html" class="nav-list-link">-testcontinuous BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/tester.html" class="nav-list-link">-tester REPO-SPEC</a></li><li class="nav-list-item"><a href="/release/instructions/testpackages.html" class="nav-list-link">-testpackages PACKAGE-SPEC ( ',' PACKAGE-SPEC )</a></li><li class="nav-list-item"><a href="/release/instructions/testpath.html" class="nav-list-link">-testpath REPO-SPEC ( ',' REPO-SPEC )</a></li><li class="nav-list-item"><a href="/release/instructions/testsources.html" class="nav-list-link">-testsources REGEX ( ',' REGEX )*</a></li><li class="nav-list-item"><a href="/release/instructions/testunresolved.html" class="nav-list-link">-testunresolved BOOLEAN</a></li><li class="nav-list-item"><a href="/release/instructions/undertest.html" class="nav-list-link">-undertest true</a></li><li class="nav-list-item"><a href="/release/instructions/upto.html" class="nav-list-link">-upto VERSION</a></li><li class="nav-list-item"><a href="/release/instructions/wab.html" class="nav-list-link">-wab FILE ( ',' FILE )*</a></li><li class="nav-list-item"><a href="/release/instructions/wablib.html" class="nav-list-link">-wablib FILE ( ',' FILE )*</a></li><li class="nav-list-item"><a href="/release/instructions/workingset.html" class="nav-list-link">-workingset PARAMETER ( ',' PARAMETER ) *</a></li><li class="nav-list-item"><a href="/release/instructions/workspace_templates.html" class="nav-list-link">-workspace-templates</a></li><li class="nav-list-item"><a href="/release/instructions/x_overwritestrategy.html" class="nav-list-link">-x-overwritestrategy</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Macro Reference submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/macros/" class="nav-list-link">Macro Reference</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/macros/apply.html" class="nav-list-link">apply ';' MACRO (';' LIST)*</a></li><li class="nav-list-item"><a href="/release/macros/average.html" class="nav-list-link">average (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/base64.html" class="nav-list-link">base64 ';' FILE [';' LONG ]</a></li><li class="nav-list-item"><a href="/release/macros/basedir.html" class="nav-list-link">basedir</a></li><li class="nav-list-item"><a href="/release/macros/basename.html" class="nav-list-link">basename ( ';' FILEPATH ) +</a></li><li class="nav-list-item"><a href="/release/macros/basenameext.html" class="nav-list-link">basenameext ';' PATH ( ';' EXTENSION )</a></li><li class="nav-list-item"><a href="/release/macros/bndversion.html" class="nav-list-link">bndversion</a></li><li class="nav-list-item"><a href="/release/macros/bsn.html" class="nav-list-link">bsn</a></li><li class="nav-list-item"><a href="/release/macros/bytes.html" class="nav-list-link">bytes ( ';' LONG )*</a></li><li class="nav-list-item"><a href="/release/macros/cat.html" class="nav-list-link">cat ';' FILEPATH</a></li><li class="nav-list-item"><a href="/release/macros/classes.html" class="nav-list-link">classes ( ; QUERY ( ; PATTERN )? )*</a></li><li class="nav-list-item"><a href="/release/macros/compare.html" class="nav-list-link">compare STRING STRING</a></li><li class="nav-list-item"><a href="/release/macros/currenttime.html" class="nav-list-link">currenttime</a></li><li class="nav-list-item"><a href="/release/macros/decorated.html" class="nav-list-link">decorated ';' NAME [ ';' BOOLEAN ]</a></li><li class="nav-list-item"><a href="/release/macros/def.html" class="nav-list-link">def ';' KEY (';' STRING)?</a></li><li class="nav-list-item"><a href="/release/macros/digest.html" class="nav-list-link">digest ';' ALGORITHM ';' FILE</a></li><li class="nav-list-item"><a href="/release/macros/dir.html" class="nav-list-link">dir ( ';' FILE )*</a></li><li class="nav-list-item"><a href="/release/macros/driver.html" class="nav-list-link">driver ( ';' NAME )?</a></li><li class="nav-list-item"><a href="/release/macros/ee.html" class="nav-list-link">ee</a></li><li class="nav-list-item"><a href="/release/macros/endswith.html" class="nav-list-link">endswith ';' STRING ';' SUFFIX</a></li><li class="nav-list-item"><a href="/release/macros/env.html" class="nav-list-link">env ';' KEY (';' STRING)?</a></li><li class="nav-list-item"><a href="/release/macros/error.html" class="nav-list-link">error ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/exporters.html" class="nav-list-link">exporters ';' PACKAGE</a></li><li class="nav-list-item"><a href="/release/macros/exports.html" class="nav-list-link">exports</a></li><li class="nav-list-item"><a href="/release/macros/extension.html" class="nav-list-link">extension ';' PATH</a></li><li class="nav-list-item"><a href="/release/macros/fileuri.html" class="nav-list-link">fileuri ';' PATH</a></li><li class="nav-list-item"><a href="/release/macros/filter.html" class="nav-list-link">filter ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/filterout.html" class="nav-list-link">filterout ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/find.html" class="nav-list-link">find ';' VALUE ';' SEARCHED</a></li><li class="nav-list-item"><a href="/release/macros/findfile.html" class="nav-list-link">findfile ';' PATH ( ';' FILTER )</a></li><li class="nav-list-item"><a href="/release/macros/findlast.html" class="nav-list-link">findlast ';' VALUE ';' SEARCHED</a></li><li class="nav-list-item"><a href="/release/macros/findname.html" class="nav-list-link">findname ';' REGEX ( ';' REPLACEMENT )?</a></li><li class="nav-list-item"><a href="/release/macros/findpath.html" class="nav-list-link">findpath ';' REGEX ( ';' REPLACE )?</a></li><li class="nav-list-item"><a href="/release/macros/findproviders.html" class="nav-list-link">findproviders  ';' namespace ( ';' FILTER ( ';' STRATEGY)? )?</a></li><li class="nav-list-item"><a href="/release/macros/first.html" class="nav-list-link">first (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/fmodified.html" class="nav-list-link">fmodified ( ';' RESOURCE )+</a></li><li class="nav-list-item"><a href="/release/macros/foreach.html" class="nav-list-link">foreach ';' MACRO (';' LIST)*</a></li><li class="nav-list-item"><a href="/release/macros/format.html" class="nav-list-link">format ';' STRING (';' ANY )*</a></li><li class="nav-list-item"><a href="/release/macros/frange.html" class="nav-list-link">frange ';' VERSION ( ';' BOOLEAN )?</a></li><li class="nav-list-item"><a href="/release/macros/gestalt.html" class="nav-list-link">gestalt ';' NAME ( ';' NAME (';' ANY )? )?</a></li><li class="nav-list-item"><a href="/release/macros/get.html" class="nav-list-link">get ';' INDEX (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/githead.html" class="nav-list-link">githead</a></li><li class="nav-list-item"><a href="/release/macros/glob.html" class="nav-list-link">glob ';' GLOBEXP</a></li><li class="nav-list-item"><a href="/release/macros/global.html" class="nav-list-link">global ';' KEY ( ';' DEFAULT )?</a></li><li class="nav-list-item"><a href="/release/macros/ide.html" class="nav-list-link">ide ';' ( 'javac.target' | 'javac.source' )</a></li><li class="nav-list-item"><a href="/release/macros/if.html" class="nav-list-link">if ';' STRING ';' STRING ( ';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/imports.html" class="nav-list-link">imports</a></li><li class="nav-list-item"><a href="/release/macros/indexof.html" class="nav-list-link">indexof ';' STRING (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/is.html" class="nav-list-link">is ( ';' ANY )*</a></li><li class="nav-list-item"><a href="/release/macros/isdir.html" class="nav-list-link">isdir ( ';' FILE )+</a></li><li class="nav-list-item"><a href="/release/macros/isempty.html" class="nav-list-link">isempty ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/isfile.html" class="nav-list-link">isfile (';' FILE )+</a></li><li class="nav-list-item"><a href="/release/macros/isnumber.html" class="nav-list-link">isnumber ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/join.html" class="nav-list-link">join ( ';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/js.html" class="nav-list-link">js (';' JAVASCRIPT )*</a></li><li class="nav-list-item"><a href="/release/macros/last.html" class="nav-list-link">last (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/lastindexof.html" class="nav-list-link">lastindexof ';' STRING (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/length.html" class="nav-list-link">length STRING</a></li><li class="nav-list-item"><a href="/release/macros/list.html" class="nav-list-link">list (';' KEY)*</a></li><li class="nav-list-item"><a href="/release/macros/literal.html" class="nav-list-link">literal ';' STRING</a></li><li class="nav-list-item"><a href="/release/macros/long2date.html" class="nav-list-link">long2date</a></li><li class="nav-list-item"><a href="/release/macros/lsa.html" class="nav-list-link">lsa ';' DIR (';' SELECTORS )</a></li><li class="nav-list-item"><a href="/release/macros/lsr.html" class="nav-list-link">lsr ';' DIR (';' SELECTORS )</a></li><li class="nav-list-item"><a href="/release/macros/map.html" class="nav-list-link">map ';' MACRO (';' LIST)*</a></li><li class="nav-list-item"><a href="/release/macros/matches.html" class="nav-list-link">matches STRING REGEX</a></li><li class="nav-list-item"><a href="/release/macros/maven_version.html" class="nav-list-link">maven_version ';' MAVEN-VERSION</a></li><li class="nav-list-item"><a href="/release/macros/max.html" class="nav-list-link">max (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/md5.html" class="nav-list-link">md5 ';' RESOURCE</a></li><li class="nav-list-item"><a href="/release/macros/min.html" class="nav-list-link">min (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/native_capability.html" class="nav-list-link">native_capability ( ';' ( 'os.name' | 'os.version' | 'os.processor' ) '=' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/ncompare.html" class="nav-list-link">ncompare NUMBER NUMBER</a></li><li class="nav-list-item"><a href="/release/macros/nmax.html" class="nav-list-link">nmax (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/nmin.html" class="nav-list-link">nmin (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/now.html" class="nav-list-link">now ( 'long' | DATEFORMAT )</a></li><li class="nav-list-item"><a href="/release/macros/nsort.html" class="nav-list-link">nsort (';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/osfile.html" class="nav-list-link">osfile ';' DIR ';' NAME</a></li><li class="nav-list-item"><a href="/release/macros/p_allsourcepath.html" class="nav-list-link">p_allsourcepath</a></li><li class="nav-list-item"><a href="/release/macros/p_bootclasspath.html" class="nav-list-link">p_bootclasspath</a></li><li class="nav-list-item"><a href="/release/macros/p_buildpath.html" class="nav-list-link">p_buildpath</a></li><li class="nav-list-item"><a href="/release/macros/p_dependson.html" class="nav-list-link">p_dependson</a></li><li class="nav-list-item"><a href="/release/macros/p_output.html" class="nav-list-link">p_output</a></li><li class="nav-list-item"><a href="/release/macros/p_sourcepath.html" class="nav-list-link">p_sourcepath</a></li><li class="nav-list-item"><a href="/release/macros/p_testpath.html" class="nav-list-link">p_testpath</a></li><li class="nav-list-item"><a href="/release/macros/packageattribute.html" class="nav-list-link">packageattribute ';' PACKAGE (';' ATTRIBUTE)?</a></li><li class="nav-list-item"><a href="/release/macros/packages.html" class="nav-list-link">packages</a></li><li class="nav-list-item"><a href="/release/macros/path.html" class="nav-list-link">path ( ';' FILES )+</a></li><li class="nav-list-item"><a href="/release/macros/pathseparator.html" class="nav-list-link">pathseparator</a></li><li class="nav-list-item"><a href="/release/macros/permissions.html" class="nav-list-link">permissions (';' ( 'packages' | 'admin' | 'permissions' ) )+</a></li><li class="nav-list-item"><a href="/release/macros/propertiesdir.html" class="nav-list-link">propertiesdir</a></li><li class="nav-list-item"><a href="/release/macros/propertiesname.html" class="nav-list-link">propertiesname</a></li><li class="nav-list-item"><a href="/release/macros/rand.html" class="nav-list-link">rand (';' MIN ' (;' MAX )?)?</a></li><li class="nav-list-item"><a href="/release/macros/random.html" class="nav-list-link">random</a></li><li class="nav-list-item"><a href="/release/macros/range.html" class="nav-list-link">range ';' RANGE_MASK ( ';' VERSION )</a></li><li class="nav-list-item"><a href="/release/macros/reject.html" class="nav-list-link">reject ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/removeall.html" class="nav-list-link">removeall ';' LIST ';' LIST</a></li><li class="nav-list-item"><a href="/release/macros/replace.html" class="nav-list-link">replace ';' LIST ';' REGEX (';' STRING (';' STRING)? )?</a></li><li class="nav-list-item"><a href="/release/macros/replacelist.html" class="nav-list-link">replacelist ';' LIST ';' REGEX (';' STRING (';' STRING)? )?</a></li><li class="nav-list-item"><a href="/release/macros/replacestring.html" class="nav-list-link">replacestring ';' STRING ';' REGEX (';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/repo.html" class="nav-list-link">repo ';' BSN ( ';' VERSION ( ';' STRATEGY )? )?</a></li><li class="nav-list-item"><a href="/release/macros/repodigests.html" class="nav-list-link">repodigests ( ';' NAME )*</a></li><li class="nav-list-item"><a href="/release/macros/repos.html" class="nav-list-link">repos</a></li><li class="nav-list-item"><a href="/release/macros/retainall.html" class="nav-list-link">retainall ';' LIST ';' LIST</a></li><li class="nav-list-item"><a href="/release/macros/reverse.html" class="nav-list-link">reverse (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/select.html" class="nav-list-link">select ';' LIST ';' REGEX</a></li><li class="nav-list-item"><a href="/release/macros/separator.html" class="nav-list-link">separator</a></li><li class="nav-list-item"><a href="/release/macros/sha1.html" class="nav-list-link">sha1 ';' RESOURCE</a></li><li class="nav-list-item"><a href="/release/macros/size.html" class="nav-list-link">size ( ';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/sjoin.html" class="nav-list-link">sjoin ';' SEPARATOR ( ';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/sort.html" class="nav-list-link">sort (';' LIST )+</a></li><li class="nav-list-item"><a href="/release/macros/split.html" class="nav-list-link">split ';' REGEX (';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/startswith.html" class="nav-list-link">startswith ';' STRING ';' PREFIX</a></li><li class="nav-list-item"><a href="/release/macros/stem.html" class="nav-list-link">stem ';' STRING</a></li><li class="nav-list-item"><a href="/release/macros/sublist.html" class="nav-list-link">sublist ';' START ';' END (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/subst.html" class="nav-list-link">subst ';' STRING ';' REGEX (';' STRING (';' NUMBER )? )?</a></li><li class="nav-list-item"><a href="/release/macros/substring.html" class="nav-list-link">substring ';' STRING ';' START ( ';' END )?</a></li><li class="nav-list-item"><a href="/release/macros/sum.html" class="nav-list-link">sum (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/system.html" class="nav-list-link">system ';' STRING ( ';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/system_allow_fail.html" class="nav-list-link">system_allow_fail ';' STRING ( ';' STRING )?</a></li><li class="nav-list-item"><a href="/release/macros/template.html" class="nav-list-link">template ';' NAME [ ';' template ]+</a></li><li class="nav-list-item"><a href="/release/macros/thisfile.html" class="nav-list-link">thisfile</a></li><li class="nav-list-item"><a href="/release/macros/toclassname.html" class="nav-list-link">toclassname ';' FILES</a></li><li class="nav-list-item"><a href="/release/macros/toclaspath.html" class="nav-list-link">toclasspath ';' LIST ( ';' BOOLEAN )?</a></li><li class="nav-list-item"><a href="/release/macros/tolower.html" class="nav-list-link">tolower STRING</a></li><li class="nav-list-item"><a href="/release/macros/toupper.html" class="nav-list-link">toupper STRING</a></li><li class="nav-list-item"><a href="/release/macros/trim.html" class="nav-list-link">trim ';' STRING</a></li><li class="nav-list-item"><a href="/release/macros/tstamp.html" class="nav-list-link">tstamp ( ';' DATEFORMAT ( ';' TIMEZONE ( ';' LONG )? )? )?</a></li><li class="nav-list-item"><a href="/release/macros/unescape.html" class="nav-list-link">unescape ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/uniq.html" class="nav-list-link">uniq (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/uri.html" class="nav-list-link">uri ';' URI (';' URI)?</a></li><li class="nav-list-item"><a href="/release/macros/user.html" class="nav-list-link">user ';' KEY ( ';' DEFAULT )?</a></li><li class="nav-list-item"><a href="/release/macros/vcompare.html" class="nav-list-link">vcompare VERSION VERSION</a></li><li class="nav-list-item"><a href="/release/macros/version.html" class="nav-list-link">version MASK VERSION?</a></li><li class="nav-list-item"><a href="/release/macros/version_cleanup.html" class="nav-list-link">version_cleanup ';' VERSION</a></li><li class="nav-list-item"><a href="/release/macros/versionmask.html" class="nav-list-link">versionmask MASK VERSION?</a></li><li class="nav-list-item"><a href="/release/macros/vmax.html" class="nav-list-link">vmax (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/vmin.html" class="nav-list-link">vmin (';' LIST )*</a></li><li class="nav-list-item"><a href="/release/macros/warning.html" class="nav-list-link">warning ( ';' STRING )*</a></li><li class="nav-list-item"><a href="/release/macros/workspace.html" class="nav-list-link">workspace</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="bnd CLI Commands submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/commands/overview.html" class="nav-list-link">bnd CLI Commands</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/commands/action.html" class="nav-list-link">action</a></li><li class="nav-list-item"><a href="/release/commands/add.html" class="nav-list-link">add</a></li><li class="nav-list-item"><a href="/release/commands/baseline.html" class="nav-list-link">baseline</a></li><li class="nav-list-item"><a href="/release/commands/bash.html" class="nav-list-link">bash</a></li><li class="nav-list-item"><a href="/release/commands/bnd.html" class="nav-list-link">bnd</a></li><li class="nav-list-item"><a href="/release/commands/bootstrap.html" class="nav-list-link">bootstrap</a></li><li class="nav-list-item"><a href="/release/commands/bsn2url.html" class="nav-list-link">bsn2url</a></li><li class="nav-list-item"><a href="/release/commands/build.html" class="nav-list-link">build</a></li><li class="nav-list-item"><a href="/release/commands/buildtool.html" class="nav-list-link">buildtool</a></li><li class="nav-list-item"><a href="/release/commands/buildx.html" class="nav-list-link">buildx</a></li><li class="nav-list-item"><a href="/release/commands/bump.html" class="nav-list-link">bump</a></li><li class="nav-list-item"><a href="/release/commands/changes.html" class="nav-list-link">changes</a></li><li class="nav-list-item"><a href="/release/commands/classpath.html" class="nav-list-link">classpath</a></li><li class="nav-list-item"><a href="/release/commands/classtoresource.html" class="nav-list-link">classtoresource</a></li><li class="nav-list-item"><a href="/release/commands/clean.html" class="nav-list-link">clean</a></li><li class="nav-list-item"><a href="/release/commands/collect.html" class="nav-list-link">collect</a></li><li class="nav-list-item"><a href="/release/commands/com.html" class="nav-list-link">com</a></li><li class="nav-list-item"><a href="/release/commands/compile.html" class="nav-list-link">compile</a></li><li class="nav-list-item"><a href="/release/commands/convert.html" class="nav-list-link">convert</a></li><li class="nav-list-item"><a href="/release/commands/copy.html" class="nav-list-link">copy</a></li><li class="nav-list-item"><a href="/release/commands/create.html" class="nav-list-link">create</a></li><li class="nav-list-item"><a href="/release/commands/debug.html" class="nav-list-link">debug</a></li><li class="nav-list-item"><a href="/release/commands/defaults.html" class="nav-list-link">defaults</a></li><li class="nav-list-item"><a href="/release/commands/deliverables.html" class="nav-list-link">deliverables</a></li><li class="nav-list-item"><a href="/release/commands/dependencies.html" class="nav-list-link">dependencies</a></li><li class="nav-list-item"><a href="/release/commands/dev.html" class="nav-list-link">dev</a></li><li class="nav-list-item"><a href="/release/commands/diff.html" class="nav-list-link">diff</a></li><li class="nav-list-item"><a href="/release/commands/digest.html" class="nav-list-link">digest</a></li><li class="nav-list-item"><a href="/release/commands/do.html" class="nav-list-link">do</a></li><li class="nav-list-item"><a href="/release/commands/eclipse.html" class="nav-list-link">eclipse</a></li><li class="nav-list-item"><a href="/release/commands/ees.html" class="nav-list-link">ees</a></li><li class="nav-list-item"><a href="/release/commands/export.html" class="nav-list-link">export</a></li><li class="nav-list-item"><a href="/release/commands/exportreport.html" class="nav-list-link">exportreport</a></li><li class="nav-list-item"><a href="/release/commands/extract.html" class="nav-list-link">extract</a></li><li class="nav-list-item"><a href="/release/commands/find.html" class="nav-list-link">find</a></li><li class="nav-list-item"><a href="/release/commands/flatten.html" class="nav-list-link">flatten</a></li><li class="nav-list-item"><a href="/release/commands/generate.html" class="nav-list-link">generate</a></li><li class="nav-list-item"><a href="/release/commands/generatemanual.html" class="nav-list-link">generatemanual</a></li><li class="nav-list-item"><a href="/release/commands/gmd.html" class="nav-list-link">gmd</a></li><li class="nav-list-item"><a href="/release/commands/graph.html" class="nav-list-link">graph</a></li><li class="nav-list-item"><a href="/release/commands/grep.html" class="nav-list-link">grep</a></li><li class="nav-list-item"><a href="/release/commands/index.html" class="nav-list-link">index</a></li><li class="nav-list-item"><a href="/release/commands/info.html" class="nav-list-link">info</a></li><li class="nav-list-item"><a href="/release/commands/junit.html" class="nav-list-link">junit</a></li><li class="nav-list-item"><a href="/release/commands/macro.html" class="nav-list-link">macro</a></li><li class="nav-list-item"><a href="/release/commands/maven.html" class="nav-list-link">maven ( 'settings' | 'bundle'</a></li><li class="nav-list-item"><a href="/release/commands/mbr.html" class="nav-list-link">mbr</a></li><li class="nav-list-item"><a href="/release/commands/nexus.html" class="nav-list-link">nexus</a></li><li class="nav-list-item"><a href="/release/commands/package.html" class="nav-list-link">package</a></li><li class="nav-list-item"><a href="/release/commands/packagetoresource.html" class="nav-list-link">packagetoresource</a></li><li class="nav-list-item"><a href="/release/commands/plugins.html" class="nav-list-link">plugins</a></li><li class="nav-list-item"><a href="/release/commands/print.html" class="nav-list-link">print</a></li><li class="nav-list-item"><a href="/release/commands/profile.html" class="nav-list-link">profile</a></li><li class="nav-list-item"><a href="/release/commands/project.html" class="nav-list-link">project</a></li><li class="nav-list-item"><a href="/release/commands/properties.html" class="nav-list-link">properties</a></li><li class="nav-list-item"><a href="/release/commands/release.html" class="nav-list-link">release</a></li><li class="nav-list-item"><a href="/release/commands/remote.html" class="nav-list-link">remote</a></li><li class="nav-list-item"><a href="/release/commands/remove.html" class="nav-list-link">remove</a></li><li class="nav-list-item"><a href="/release/commands/repo.html" class="nav-list-link">repo</a></li><li class="nav-list-item"><a href="/release/commands/resolve.html" class="nav-list-link">resolve</a></li><li class="nav-list-item"><a href="/release/commands/run.html" class="nav-list-link">run</a></li><li class="nav-list-item"><a href="/release/commands/runtests.html" class="nav-list-link">runtests</a></li><li class="nav-list-item"><a href="/release/commands/schema.html" class="nav-list-link">schema</a></li><li class="nav-list-item"><a href="/release/commands/select.html" class="nav-list-link">select</a></li><li class="nav-list-item"><a href="/release/commands/settings.html" class="nav-list-link">settings</a></li><li class="nav-list-item"><a href="/release/commands/shell.html" class="nav-list-link">shell [options]</a></li><li class="nav-list-item"><a href="/release/commands/source.html" class="nav-list-link">source</a></li><li class="nav-list-item"><a href="/release/commands/sync.html" class="nav-list-link">sync</a></li><li class="nav-list-item"><a href="/release/commands/syntax.html" class="nav-list-link">syntax</a></li><li class="nav-list-item"><a href="/release/commands/test.html" class="nav-list-link">test</a></li><li class="nav-list-item"><a href="/release/commands/type.html" class="nav-list-link">type</a></li><li class="nav-list-item"><a href="/release/commands/verify.html" class="nav-list-link">verify</a></li><li class="nav-list-item"><a href="/release/commands/version.html" class="nav-list-link">version</a></li><li class="nav-list-item"><a href="/release/commands/view.html" class="nav-list-link">view</a></li><li class="nav-list-item"><a href="/release/commands/wrap.html" class="nav-list-link">wrap</a></li><li class="nav-list-item"><a href="/release/commands/xmlrepodiff.html" class="nav-list-link">xmlrepodiff</a></li><li class="nav-list-item"><a href="/release/commands/xref.html" class="nav-list-link">xref</a></li></ul></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+        
+          
+            <div class="nav-category"></div>
+            <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="Plugins submenu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/release/plugins/" class="nav-list-link">Plugins</a><ul class="nav-list"><li class="nav-list-item"><a href="/release/plugins/ant.html" class="nav-list-link">Ant</a></li><li class="nav-list-item"><a href="/release/plugins/aspectj.html" class="nav-list-link">AspectJ Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/blueprint.html" class="nav-list-link">Blueprint</a></li><li class="nav-list-item"><a href="/release/plugins/pomrepo.html" class="nav-list-link">Bnd Pom Repository</a></li><li class="nav-list-item"><a href="/release/plugins/eclipse.html" class="nav-list-link">Eclipse</a></li><li class="nav-list-item"><a href="/release/plugins/filerepo.html" class="nav-list-link">FileRepo Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/git.html" class="nav-list-link">Git</a></li><li class="nav-list-item"><a href="/release/plugins/gradle.html" class="nav-list-link">Gradle Workspace Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/jpa.html" class="nav-list-link">Jpa</a></li><li class="nav-list-item"><a href="/release/plugins/localindexrepo.html" class="nav-list-link">Local Index Repo</a></li><li class="nav-list-item"><a href="/release/plugins/maven.html" class="nav-list-link">Maven Bnd Repository Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/obrexporter.html" class="nav-list-link">OBR Index Exporter Plugin</a></li><li class="nav-list-item"><a href="/release/plugins/osgirepo.html" class="nav-list-link">OSGi Repository</a></li><li class="nav-list-item"><a href="/release/plugins/p2export.html" class="nav-list-link">P2 Exporter</a></li><li class="nav-list-item"><a href="/release/plugins/p2repo.html" class="nav-list-link">P2 Repository</a></li><li class="nav-list-item"><a href="/release/plugins/signer.html" class="nav-list-link">Signer</a></li><li class="nav-list-item"><a href="/release/plugins/spring.html" class="nav-list-link">Spring</a></li><li class="nav-list-item"><a href="/release/plugins/url.basic.authentication.html" class="nav-list-link">Url.basic.authentication</a></li><li class="nav-list-item"><a href="/release/plugins/url.bnd.authentication.html" class="nav-list-link">Url.bnd.authentication</a></li><li class="nav-list-item"><a href="/release/plugins/url.https.verification.html" class="nav-list-link">Url.https.verification</a></li></ul></li><li class="nav-list-item"><a href="/release/plugins/analysisplugin.html" class="nav-list-link">Analysis Plugin</a></li></ul>
+          
+        
+      
+    
+      
+      
+      
+      
+    
+  
+</nav>
+
+
+<div class="d-md-block d-none site-footer">
+  
+  
+    This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+  
+  </div>
+</header>
+
+  
+  <div class="main" id="top">
+    <div id="main-header" class="main-header">
+  
+    
+
+<div class="search" role="search">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search bnd" autocomplete="off">
+    <label for="search-input" class="search-label">
+      <span class="sr-only">Search bnd</span>
+      <svg viewBox="0 0 24 24" class="search-icon" aria-hidden="true"><use xlink:href="#svg-search"></use></svg>
+    </label>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
+
+  
+  <!-- Theme toggle button: two-state Light ↔ Dark -->
+<button id="theme-toggle"
+  type="button"
+        class="btn-reset bnd-theme-toggle"
+    aria-label="Switch to dark mode"
+    title="Switch to dark mode">
+  <img class="bnd-theme-icon"
+   src="/release/assets/images/theme-toggle.svg"
+   alt=""
+   aria-hidden="true">
+</button>
+
+  
+    <nav aria-label="Auxiliary" class="aux-nav">
+  <ul class="aux-nav-list"><li class="aux-nav-list-item">
+        <a href="https://github.com/bndtools/bnd/blob/master/docs/_chapters/300-launching.md" class="site-button"target="_blank" rel="noopener noreferrer">GitHub</a>
+      </li><li class="aux-nav-list-item">
+        <a href="https://bndtools.org" class="site-button"target="_blank" rel="noopener noreferrer">bndtools.org</a>
+      </li><li class="aux-nav-list-item releases-nav-item">
+      <div class="releases">
+        <button class="dropbtn"><span class="fa fa-bars"></span> </button>
+        <div class="dropdown-content"></div>
+      </div>
+    </li>
+  </ul>
+</nav>
+  
+</div>
+
+    <div class="main-content-wrap">
+      <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+  <ol class="breadcrumb-nav-list">
+    <li class="breadcrumb-nav-list-item"><a href="/release/chapters/000-dependency-launching.html">Dependency and Launching</a></li>
+    <li class="breadcrumb-nav-list-item"><span>Launching</span></li>
+  </ol>
+</nav>
+
+
+      <div id="main-content" class="main-content">
+        <main>
+          
+            <p>bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a <em>bndrun</em> file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile.</p>
+
+<p>The launching environment is described with a number of instructions that start with <code class="language-properties highlighter-rouge"><span class="err">-run</span></code>.</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runfw</span></code> — Specify the run framework in repository format</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runsystemcapabilities</span></code> — Capabilities added to the environment</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runbundles</span></code> — A list of bundles to install in repository format</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runvm</span></code> — VM options. Use a comma to separate different options. E.g. <code class="language-properties highlighter-rouge"><span class="py">-Dx</span><span class="p">=</span><span class="s">4, -Dy=5</span></code>.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runproperties</span></code> — System properties for the framework to create</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code> — A list of jars (not required to be bundles) that are put on the classpath and available from the system bundle. Any Export-Package and Provide-Capabilityheaders  are provided as packages/capabilities from the framework. The <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code> can also override the default launcher.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runsystempackages</span></code> — An Export-Package list for packages exported by the system bundle.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runkeep</span></code> – Keep the framework working directory. That is, do not clean at start up</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runstorage</span></code> – The working directory</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">-runnoreferences</span></code> – Do not use the <code class="language-properties highlighter-rouge"><span class="py">reference</span><span class="p">:</span></code> scheme when installing. (Sometimes required on Windows).</li>
+</ul>
+
+<p>Additional properties can be specified, and can be inherited from the workspace, that are specific for a launcher or are used for exporting a bndrun to an executable format like OSGi Subsystems, KARs, WARs, or executable JARs.</p>
+<h2 id="launcher-architecture">
+  
+  
+    <a href="#launcher-architecture" class="anchor-heading" aria-labelledby="launcher-architecture"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Launcher Architecture
+  
+  
+</h2>
+    
+
+<p>Launchers are not build into bnd, the actual launching strategy is parameterized. A launcher is associated with a bnd or bndrun file by placing a JAR on the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code>. A JAR should have a <code class="language-properties highlighter-rouge"><span class="err">Launcher-Plugin</span></code> header to be a launcher. If no launcher is found on the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code> then the built-in <code class="language-properties highlighter-rouge"><span class="err">biz.aQute.launcher</span></code> will be used.</p>
+
+<p>The plugin maps the bnd model specified in a bndrun or bnd file to an external execution. In general this plugin launches or contacts a VM, installs the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code>, installs <code class="language-properties highlighter-rouge"><span class="err">-runbundles</span></code>, fires up the bundles. The plugin is also called when the bundles or settings have changed so that it can dynamically update the bundles on the running VM.</p>
+
+<p>There are currently two launchers in the bnd repository:</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">biz.aQute.launcher</span></code> – Default launcher. This launcher starts a VM on the local machine and keeps it synchronized with the changes in the IDE. The launcher can also create an executable JAR.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">biz.aQute.remote.launcher</span></code> – A launcher that can communicate with a remote VM, optionally installs a <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code> (among which a framework), and then synchronizes the <code class="language-properties highlighter-rouge"><span class="err">-runbundles</span></code> and a number of other properties with the remote VM.</li>
+</ul>
+<h2 id="bizaqutelauncher">
+  
+  
+    <a href="#bizaqutelauncher" class="anchor-heading" aria-labelledby="bizaqutelauncher"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> biz.aQute.launcher
+  
+  
+</h2>
+    
+
+<p>The default launcher in bnd. It creates a new VM with the given options, creates a framework using the OSGi launching API, and then manages the bundles on this framework with the OSGi launching API. It can update the remote framework in real time by changing a properties file that is watched for by the launcher class running in the remote framework.</p>
+<h3 id="example-bndrun-file">
+  
+  
+    <a href="#example-bndrun-file" class="anchor-heading" aria-labelledby="example-bndrun-file"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Example bndrun file
+  
+  
+</h3>
+    
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">-runfw</span><span class="p">:</span>                     <span class="s">org.apache.felix.framework;version='[4,5)'</span>
+<span class="py">-runbundles</span><span class="p">:</span> <span class="se">\
+</span>	<span class="s">org.apache.felix.shell,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.shell.tui,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.scr,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.http.jetty,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.configadmin,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.metatype,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.log,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.webconsole,</span><span class="se">\
+</span>	<span class="s">osgi.cmpn,</span><span class="se">\
+</span>	<span class="s">aQute.xray.badbundle;version=latest,</span><span class="se">\
+</span>	<span class="s">aQute.xray.plugin;version=latest,</span><span class="se">\
+</span>	<span class="s">aQute.xray.hello;version=latest,</span><span class="se">\
+</span>	<span class="s">com.springsource.org.apache.commons.fileupload;version=1.2.1,</span><span class="se">\
+</span>	<span class="s">com.springsource.org.apache.commons.io;version=1.4.0,</span><span class="se">\
+</span>	<span class="s">com.springsource.org.json;version=1.0.0</span>
+
+<span class="py">-runproperties</span><span class="p">:</span>            <span class="s">org.osgi.service.http.port=8080</span>
+
+<span class="py">-runrequires</span><span class="p">:</span><span class="se">\
+</span>	<span class="s">bundle:(symbolicname=org.apache.felix.shell),</span><span class="se">\
+</span>	<span class="s">bundle:(symbolicname=org.apache.felix.shell.tui),</span><span class="se">\
+</span>	<span class="s">bundle:(symbolicname=org.apache.felix.webconsole),</span><span class="se">\
+</span>	<span class="s">bundle:(symbolicname=org.apache.felix.configadmin),</span><span class="se">\
+</span>	<span class="s">bundle:(symbolicname=org.apache.felix.metatype),</span><span class="se">\
+</span>	<span class="s">bundle:(symbolicname=org.apache.felix.log),</span><span class="se">\
+</span>	<span class="s">bundle:(&amp;(symbolicname=osgi.cmpn)(version&gt;=4.2)),</span><span class="se">\
+</span>	<span class="s">bundle:(&amp;(symbolicname=org.apache.felix.scr)(version&gt;=1.6.0))</span>
+</code></pre></div></div>
+<h3 id="exports-from-the-runpath">
+  
+  
+    <a href="#exports-from-the-runpath" class="anchor-heading" aria-labelledby="exports-from-the-runpath"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Exports from the Runpath
+  
+  
+</h3>
+    
+
+<p>The launcher analyzes the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code> JARs. Any additional capabilities in the manifest (packages and Provide Capability headers) in these JARs are automatically added to the framework.</p>
+<h3 id="exporting-an-older-java-8-compatible-launcher">
+  
+  
+    <a href="#exporting-an-older-java-8-compatible-launcher" class="anchor-heading" aria-labelledby="exporting-an-older-java-8-compatible-launcher"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Exporting an older Java 8 compatible launcher
+  
+  
+</h3>
+    
+
+<p>There are cases where you are working with a recent 7.x release of bnd / bndtools but you want to export an executable .jar which contains e.g. the launcher of bnd 6.4.1 which is compatible with JDK-8 (because newer 7.x bnd and launcher requires JDK-17 minimum).
+In this you can do the following:</p>
+
+<ol>
+  <li>Place <code class="language-properties highlighter-rouge"><span class="py">biz.aQute.bnd</span><span class="p">:</span><span class="s">biz.aQute.launcher:6.4.1</span></code> in one of your repositories</li>
+  <li>reference it in your <code class="language-properties highlighter-rouge"><span class="err">.bndrun</span></code> like this:</li>
+</ol>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># myapp.bndrun
+</span><span class="py">-runpath</span><span class="p">:</span> <span class="s">${repo;biz.aQute.bnd:biz.aQute.launcher;[6.4.1,6.4.2)};version=file</span>
+</code></pre></div></div>
+<h3 id="runtime-information">
+  
+  
+    <a href="#runtime-information" class="anchor-heading" aria-labelledby="runtime-information"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Runtime Information
+  
+  
+</h3>
+    
+
+<p>The launcher registers a service with object class <code class="language-properties highlighter-rouge"><span class="err">Object</span></code> that provides some runtime information. The following properties are set on this service:</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launcher.arguments</span></code> – The arguments passed to the <code class="language-properties highlighter-rouge"><span class="err">main</span></code> method.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launcher.properties</span></code> – The properties handed to the launcher. These properties are modified by any overriding properties that were set from the command line.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launcher.ready</span></code> – A boolean set to true, indicating the launcher has done all its work.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">service.ranking</span></code> – Set to -1000</li>
+</ul>
+<h2 id="embedded-activators">
+  
+  
+    <a href="#embedded-activators" class="anchor-heading" aria-labelledby="embedded-activators"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Embedded Activators
+  
+  
+</h2>
+    
+
+<p>The launcher supports <em>embedded activators</em>. These are like normal Bundle Actviator classes but are instead found on the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code>. Any bundle that has the header <code class="language-properties highlighter-rouge"><span class="err">Embedded-Activator</span></code> will be started. The start can happen at 3 points that are identified with a static field in the Embedded Activator class. This field is called <code class="language-properties highlighter-rouge"><span class="err">IMMEDIATE</span></code>. For example:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">public</span> <span class="err">class</span> <span class="err">MyEmbeddedActivator</span> <span class="err">implements</span> <span class="err">BundleActivator</span> <span class="err">{</span>
+    <span class="err">public</span> <span class="err">static</span> <span class="err">String</span> <span class="py">IMMEDIATE</span> <span class="p">=</span> <span class="s">"AFTER_FRAMEWORK_INIT";</span>
+    <span class="err">...</span>
+<span class="err">}</span> 
+</code></pre></div></div>
+
+<p>The <code class="language-properties highlighter-rouge"><span class="err">IMMEDIATE</span></code> field can have the following values:</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">"AFTER_FRAMEWORK_INIT"</span></code> –  The Embedded Activator is called after the Framework is initialized but before the framework is started. This means that no bundles are started yet.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">"BEFORE_BUNDLES_START"</span></code> – The Embedded Activator is called after the framework has been started but before the bundles are explicitly started <em>by the launcher</em>. This will always happening in start level 1. If the framework was started from an existing configuration then any bundles in start level 1 that were persistently started will therefore have been started before the Embedded Activator is started. The launcher starts bundles persistently so if the same configuration is restarted they will be started after the framework is started.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">"AFTER_BUNDLES_START"</span></code> – Will start the Embedded Activators <em>after</em> all bundles have been persistently started. Since this happens at start level 1, some bundles in higher start levels will not be active.</li>
+</ul>
+
+<p>The reason strings are used is to not require the need for extraneous types on the executable’s class path. If a string in <code class="language-properties highlighter-rouge"><span class="err">IMMEDIATE</span></code> is used that is not part of the previous one then a message must be logged. The behavior will then be <code class="language-properties highlighter-rouge"><span class="err">"AFTER_BUNDLES_START"</span></code>. Other strings are reserved for future extensions.</p>
+
+<p>For example:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">public</span> <span class="err">class</span> <span class="err">MyActivator</span> <span class="err">implements</span> <span class="err">BundleActivator</span> <span class="err">{</span>
+    <span class="err">public</span> <span class="err">static</span> <span class="err">String</span> <span class="py">IMMEDIATE</span> <span class="p">=</span> <span class="s">"BEFORE_BUNDLES_START";</span>
+
+    <span class="err">public</span> <span class="err">void</span> <span class="err">start(BundleContext</span> <span class="err">context)</span> <span class="err">{}</span>
+    
+    <span class="err">public</span> <span class="err">void</span> <span class="err">stop(BundleContext</span> <span class="err">context)</span> <span class="err">{}</span>
+<span class="err">}</span>
+
+<span class="py">bnd.bnd</span><span class="p">:</span>
+    <span class="py">Embedded-Activator</span><span class="p">:</span> <span class="s">com.example.MyActivator</span>
+</code></pre></div></div>
+
+<p>For backward compatibility reason the <code class="language-properties highlighter-rouge"><span class="err">IMMEDIATE</span></code> field the launcher will also recognize a <code class="language-properties highlighter-rouge"><span class="err">boolean</span></code> field.</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">true</span></code> – Corresponds to the String <code class="language-properties highlighter-rouge"><span class="err">BEFORE_BUNDLES_START</span></code>.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">false</span></code> – Will be the <code class="language-properties highlighter-rouge"><span class="err">"AFTER_BUNDLES_START"</span></code> case</li>
+</ul>
+
+<p>It is recommended to update to one of the strings instead of the boolean and not use this pattern in new setups.</p>
+<h2 id="startlevels">
+  
+  
+    <a href="#startlevels" class="anchor-heading" aria-labelledby="startlevels"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Startlevels
+  
+  
+</h2>
+    
+
+<p>The <code class="language-properties highlighter-rouge"><span class="err">-runbundles</span></code> instruction supports an <code class="language-properties highlighter-rouge"><span class="err">startlevel</span></code> attribute. If one or more of the bundles listed in the <code class="language-properties highlighter-rouge"><span class="err">-runbundles</span></code> instruction
+uses the <code class="language-properties highlighter-rouge"><span class="err">startlevel</span></code> attribute then the launcher will assign a startlevel to each bundle. This is currently supported for the
+normal launcher and not for Launchpad nor the remote launcher.</p>
+
+<p>If a bundle has a <code class="language-properties highlighter-rouge"><span class="err">startlevel</span></code> attribute then this must be an integer &gt; 0, otherwise it is ignored. Bundles that have no
+<code class="language-properties highlighter-rouge"><span class="err">startlevel</span></code> attribute will be assign the maximum assigned startlevel attribute + 1. For example, given the following 
+bundles:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">-runbundles</span><span class="p">:</span> <span class="se">\
+</span>	<span class="s">org.apache.felix.configadmin;version='[1.8.8,1.8.9)',</span><span class="se">\
+</span>	<span class="s">org.apache.felix.http.jetty;version='[3.2.0,3.2.1)';startlevel=10,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.http.servlet-api;version='[1.1.2,1.1.3)',</span><span class="se">\
+</span>	<span class="s">...</span>
+	<span class="err">osgi.enroute.twitter.bootstrap.webresource;</span><span class="py">version</span><span class="p">=</span><span class="s">'[3.3.5,3.3.6)';startlevel=12,</span><span class="se">\
+</span>	<span class="s">osgi.enroute.web.simple.provider;version='[2.1.0,2.1.1)'</span>
+</code></pre></div></div>
+
+<p>The <code class="language-properties highlighter-rouge"><span class="err">org.apache.felix.configadmin</span></code>,  <code class="language-properties highlighter-rouge"><span class="err">org.apache.felix.http.servlet-api</span></code>, and <code class="language-properties highlighter-rouge"><span class="err">osgi.enroute.web.simple.provider</span></code> do not specify 
+a <code class="language-properties highlighter-rouge"><span class="err">startlevel</span></code> attribute and will therefore be assigned to start level 13. This value is picked because max(10,12)= 12 + 1 = 13.</p>
+
+<p>Startlevels are assigned before the framework is started, they are updated on the fly if during a debug session the setup changes.</p>
+
+<p>Normally in OSGi the begining start level is selected with the system property <code class="language-properties highlighter-rouge"><span class="err">org.osgi.framework.startlevel.beginning</span></code>. If
+this <code class="language-properties highlighter-rouge"><span class="err">-runproperty</span></code> is not set then the launcher will set this property before starting the framework to the maximum of
+specified levels + 2. If a start level management agent is present then this property should be set, the launcher will
+then not interfere.</p>
+
+<p>The bundles are started at during start level 1.</p>
+
+<p>For example, a management agent that manages start levels is placed in start level 1 and all other bundles are placed
+at start level 100.</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">-runbundles</span><span class="p">:</span> <span class="se">\
+</span>	<span class="s">org.apache.felix.configadmin;version='[1.8.8,1.8.9)',</span><span class="se">\
+</span>	<span class="s">org.apache.felix.http.jetty;version='[3.2.0,3.2.1)';startlevel=100,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.http.servlet-api;version='[1.1.2,1.1.3)',</span><span class="se">\
+</span>	<span class="s">org.example.management.agent;startlevel=1</span>
+	<span class="err">osgi.enroute.twitter.bootstrap.webresource;</span><span class="py">version</span><span class="p">=</span><span class="s">'[3.3.5,3.3.6)';startlevel=100,</span><span class="se">\
+</span>	<span class="s">osgi.enroute.web.simple.provider;version='[2.1.0,2.1.1)'</span>
+</code></pre></div></div>
+
+<p>The <code class="language-properties highlighter-rouge"><span class="err">-runproperties</span></code> specify a begining of 1:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">-runproperties</span><span class="p">:</span> <span class="se">\
+</span>       <span class="s">org.osgi.framework.startlevel.beginning=1</span>
+</code></pre></div></div>
+
+<p>The launcher will install all bundles and assign them their start level. The framework is then started and moves
+to level 1. This starts the management agent. This management agent will then move the start level higher to finally
+level 100.</p>
+<h3 id="packaging">
+  
+  
+    <a href="#packaging" class="anchor-heading" aria-labelledby="packaging"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Packaging
+  
+  
+</h3>
+    
+
+<p>Any bndrun file can be packaged by the launcher plugin. This creates an executable JAR that will contain all its dependencies.</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span> <span class="err">bnd</span> <span class="err">package</span> <span class="err">xyz.bndrun</span>
+</code></pre></div></div>
+
+<p>You can then execute the jar:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span> <span class="err">java</span> <span class="err">-jar</span> <span class="err">xyz.jar</span>
+</code></pre></div></div>
+
+<p>You can override all the properties that are embedded in the executable JAR with the <code class="language-properties highlighter-rouge"><span class="py">-Dlauncher.properties</span><span class="p">=</span><span class="s">&lt;file&gt;</span></code> option of the Java VM. Instead of consulting its internal properties file, the launcher will read the given file. However, you can also set individual System properties with the <code class="language-properties highlighter-rouge"><span class="err">-D</span></code> option that override a specific launching constant.</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.storage.dir</span></code> – (<code class="language-properties highlighter-rouge"><span class="err">-runstorage</span></code>) Sets the directory for the framework directory. When <code class="language-properties highlighter-rouge"><span class="err">org.osgi.framework.storage</span></code> is also set, then the OSGi property has priority.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.keep</span></code> – Keeps the OSGi Framework storage around</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.system.packages</span></code> – Extra system packages</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.system.capabilities</span></code> – Extra system capabilities</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.trace</span></code> – Trace the launcher’s progress</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.timeout</span></code> – Abort after <code class="language-properties highlighter-rouge"><span class="err">timeout</span></code> milliseconds</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.name</span></code> – Name of the executable (normally project name)</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.noreferences</span></code> – Do not use the <code class="language-properties highlighter-rouge"><span class="py">reference</span><span class="p">:</span></code> scheme (<code class="language-properties highlighter-rouge"><span class="err">-runnoreferences</span></code>)</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">launch.notificationPort</span></code> – A port to send errors to</li>
+</ul>
+
+<p>For example, if you want to run your executable in trace mode:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span> <span class="err">java</span> <span class="py">-Dlaunch.trace</span><span class="p">=</span><span class="s">true xyz.jar</span>
+</code></pre></div></div>
+<h3 id="expanding-executable-jars">
+  
+  
+    <a href="#expanding-executable-jars" class="anchor-heading" aria-labelledby="expanding-executable-jars"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Expanding Executable JARs
+  
+  
+</h3>
+    
+
+<p>An executable JAR can be unzipped in a directory. It will then include a Windows and Linuxy shell script to start the executable in expanded form. In the expanded form, the framework will try to use <code class="language-properties highlighter-rouge"><span class="py">reference</span><span class="p">:</span></code> URLs to install bundles when not on Windows. (Windows and reference URLs do not work well because Windows keeps files locked.)</p>
+
+<p>If no reference URLs should be used, the <code class="language-properties highlighter-rouge"><span class="py">-runnoreferences</span><span class="p">=</span><span class="s">true</span></code> instruction can be set.</p>
+<h3 id="properties">
+  
+  
+    <a href="#properties" class="anchor-heading" aria-labelledby="properties"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Properties
+  
+  
+</h3>
+    
+
+<p>Framework properties can be set using the <code class="language-properties highlighter-rouge"><span class="err">-runproperties</span></code> instruction.	 Framework properties do not include the system properties but any property set using <code class="language-properties highlighter-rouge"><span class="err">-runproperties</span></code> can be overridden with a system property. That is, it is impossible to set a property using the <code class="language-properties highlighter-rouge"><span class="err">-D</span></code> on the Java command line unless it was prior given a default in the bndrun file.</p>
+
+<p>For example:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">bndrun</span><span class="p">:</span>
+<span class="py">-runproperties</span><span class="p">:</span> <span class="s">foo=3</span>
+
+
+<span class="err">$</span> <span class="err">java</span> <span class="py">-Dfoo</span><span class="p">=</span><span class="s">4 -Dbar=1 xyz.jar</span>
+</code></pre></div></div>
+
+<p>In this example, the xyz app will see <code class="language-properties highlighter-rouge"><span class="py">foo</span><span class="p">=</span><span class="s">4</span></code> but <code class="language-properties highlighter-rouge"><span class="err">bar</span></code> will not be a framework property.</p>
+<h3 id="exit-codes">
+  
+  
+    <a href="#exit-codes" class="anchor-heading" aria-labelledby="exit-codes"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Exit codes
+  
+  
+</h3>
+    
+
+<p>If the framework stops the launcher will exit. It will set a system exit code that reflects the event type from that the framework returned. The shell script that started the launcher can take the system exit code into account to restart the framework in certain cases.</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">OSGi</span> <span class="err">FrameworkEvent</span>             <span class="err">Launcher</span> <span class="err">Constant</span>  <span class="err">Value</span>
+<span class="err">STOPPED</span>                         <span class="err">STOPPED</span>            <span class="err">-9</span>
+<span class="err">WAIT_TIMEDOUT</span>	                <span class="err">TIMEDOUT</span>           <span class="err">-3</span>
+<span class="err">ERROR</span>                           <span class="err">ERROR</span>              <span class="err">-2</span>
+<span class="err">WARNING</span>                         <span class="err">WARNING</span>            <span class="err">-1</span>
+<span class="err">STOPPED_BOOTCLASSPATH_MODIFIED</span>  <span class="err">STOPPED_UPDATE</span>     <span class="err">-4</span>
+<span class="err">STOPPED_UPDATE</span>                  <span class="err">STOPPED_UPDATE</span>     <span class="err">-4</span>
+</code></pre></div></div>
+
+<p>The launcher therefore returns the process exit code UPDATE_NEEDED(-4) when it requires an update. This was chosen over doing an in-process update because it is much safer. So the launching script should look something like:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">do</span> <span class="err">{</span>
+  <span class="err">bnd</span> <span class="err">run</span> <span class="err">app.bndrun</span>
+<span class="err">}</span> <span class="err">while</span> <span class="err">($?==-4)</span>
+</code></pre></div></div>
+<h2 id="remote-launching">
+  
+  
+    <a href="#remote-launching" class="anchor-heading" aria-labelledby="remote-launching"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Remote Launching
+  
+  
+</h2>
+    
+
+<p>The purpose of the aQute Remote project is to provide remote debugging support for bnd projects. It can be used to debug bundles and bndrun files in a remote machine running an OSGi framework with an agent installed on it; it can also install a framework on a remote machine before it uses the agent. The architecture is heavily optimized to run on small remote machines.</p>
+<h3 id="parts">
+  
+  
+    <a href="#parts" class="anchor-heading" aria-labelledby="parts"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Parts
+  
+  
+</h3>
+    
+
+<p>This project is the bnd remote launcher. It consists of the following artifacts:</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">biz.aQute.remote.launcher</span></code> – The actual launcher. You can use the <code class="language-properties highlighter-rouge"><span class="err">biz.aQute.remote.launcher</span></code> by placing it on the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code>. This will override the default launcher. It contains the agent and the bnd launcher plugin.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">biz.aQute.remote.agent</span></code> – The agent that must run as a bundle on a framework, or alternatively, runs on the framework side of the classpath and uses the framework’s Bundle Context. That is, you can put this file on the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code> of the <code class="language-properties highlighter-rouge"><span class="err">biz.aQute.launcher</span></code> bndrun and bnd files.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">biz.aQute.remote.main</span></code> – An executable JAR.</li>
+</ul>
+<h3 id="usage">
+  
+  
+    <a href="#usage" class="anchor-heading" aria-labelledby="usage"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Usage
+  
+  
+</h3>
+    
+
+<p>The <code class="language-properties highlighter-rouge"><span class="err">biz.aQute.remote.launcher</span></code> should be placed on the <code class="language-properties highlighter-rouge"><span class="err">-runpath</span></code> in a bnd or bndrun file. The remote plugin expects a <code class="language-properties highlighter-rouge"><span class="err">-runremote</span></code> instruction in the parent file. This property has the following syntax:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">-runremote</span> <span class="p">:</span><span class="s">:= remote (',' remote)*</span>
+<span class="py">remote</span>     <span class="p">:</span><span class="s">:= NAME ( ';' aspect '=' value ) *</span>
+<span class="py">aspect</span>	   <span class="p">:</span><span class="s">:= 'jdb' | 'shell' | 'host' | 'agent' | `timeout`</span>
+</code></pre></div></div>
+
+<p>It is possible to specity multiple remote clauses. All sections are started simultaneously. The aspects are described in the following sections:</p>
+
+<ul>
+  <li><code class="language-properties highlighter-rouge"><span class="err">jdb</span></code> – The JDB debug port. This is the port that will be opened by the debugger in the IDE. If this aspect is not set, a number is assigned from 16043, incremented for every session. The debugger will wait until this port becomes available on the required host.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">host</span></code> – The name of the remote host. Default <code class="language-properties highlighter-rouge"><span class="err">localhost</span></code>. Notice that for some Unixes there is a confusion what localhost is, some Linux variants make localhost 127.0.1.1 while the original is 127.0.0.1. So better make sure.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">shell</span></code> – The shell that should be used. There are a number of possibilities for this value
+    <ul>
+      <li>0 – No shell. The IDE shell will not be used</li>
+      <li>&lt; 0 – Try to use an available Gogo shell in the framework and open a session. The input/output of the session is forwarded to the IDE console.</li>
+      <li>1 – Use the System.in/System.out/System.err streams. This will replace the existing streams (this can be prevented with a security manager). This mode will forward all IO to the original streams.</li>
+      <li>
+        <blockquote>
+          <p>1 – A TCP port. The launcher will attach the port from the remote host and forward any I/O.</p>
+        </blockquote>
+      </li>
+    </ul>
+  </li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">agent</span></code> – The port on which the agent is listening, the default is ${aQute.agent.server.port}.</li>
+  <li><code class="language-properties highlighter-rouge"><span class="err">timeout</span></code> – Timeout in seconds for the debug connection</li>
+</ul>
+
+<p>Additionally, the communication can be traced by setting the <code class="language-properties highlighter-rouge"><span class="err">aQute.remote.util.Link.trace</span></code> system property to <code class="language-properties highlighter-rouge"><span class="err">true</span></code> on the target system.</p>
+<h3 id="example-bndrun">
+  
+  
+    <a href="#example-bndrun" class="anchor-heading" aria-labelledby="example-bndrun"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Example bndrun
+  
+  
+</h3>
+    
+
+<p>An example remote bndrun file:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">local</span>		<span class="p">=</span>	<span class="se">\
+</span>	<span class="s">local; </span><span class="se">\
+</span>	<span class="s">shell   =   4003; </span><span class="se">\
+</span>	<span class="s">jdb     =   1044; </span><span class="se">\
+</span>	<span class="s">host    =   localhost</span>
+
+<span class="py">-runremote</span><span class="p">:</span>     <span class="s">${local}	</span>
+<span class="py">-runfw</span><span class="p">:</span>         <span class="s">org.apache.felix.framework;version='[4,5)'</span>
+<span class="py">-runee</span><span class="p">:</span>         <span class="s">JavaSE-1.8</span>
+<span class="py">-runproperties</span><span class="p">:</span> <span class="s">gosh.args=--noshutdown, osgi.shell.telnet.port=4003</span>
+
+<span class="py">-runpath</span><span class="p">:</span>       <span class="s">biz.aQute.remote.launcher;version=latest</span>
+<span class="py">-runrequires</span><span class="p">:</span><span class="se">\
+</span>	<span class="s">osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',</span><span class="se">\
+</span>	<span class="s">osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'</span>
+
+<span class="py">-runbundles</span><span class="p">:</span><span class="se">\
+</span>	<span class="s">launch.simple.really;version=latest, </span><span class="se">\
+</span>	<span class="s">org.apache.felix.gogo.shell,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.gogo.command,</span><span class="se">\
+</span>	<span class="s">org.apache.felix.gogo.runtime, </span><span class="se">\
+</span>	<span class="s">org.apache.felix.shell.remote</span>
+</code></pre></div></div>
+<h3 id="example-bndrun-with-the--javaagent-parameter">
+  
+  
+    <a href="#example-bndrun-with-the--javaagent-parameter" class="anchor-heading" aria-labelledby="example-bndrun-with-the--javaagent-parameter"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Example bndrun with the -javaagent parameter
+  
+  
+</h3>
+    
+
+<p>One example where a javaagent is used is the <a href="https://www.eclemma.org/jacoco/">JaCoCo Java Code Coverage Library</a>.
+The following example shows how Jacoco v0.8.5 can be started by adding the <em>-javaagent</em> parameter via <em>-runvm</em> as a VM-option.</p>
+
+<ul>
+  <li>add jacocoagent.jar to a <a href="https://bndtools.org/repositories.html">bndtools repository</a>: Maven coordinates: <em>org.jacoco:org.jacoco.agent:jar:runtime:0.8.5</em> 
+Note: the <em>runtime</em> classifier is important, to  get the jacocoagent which defines a Premain-Class (see <a href="https://www.jacoco.org/jacoco/trunk/doc/repo.html">maven artifacts</a>)</li>
+  <li>
+    <p>create new <em>myapp.coverage.bndrun</em> which inherits from parent <em>myapp.bndrun</em></p>
+
+    <div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="py">-include</span><span class="p">:</span> <span class="s">myapp.bndrun</span>
+
+  <span class="py">-runvm.coverage</span><span class="p">:</span> <span class="s">-javaagent:"${repo;org.jacoco:org.jacoco.agent:jar:runtime;latest}=output=tcpserver,jmx=true"</span>
+</code></pre></div>    </div>
+  </li>
+  <li>In Eclipse open the <em>myapp.coverage.bndrun</em> and start your application.</li>
+</ul>
+
+<p><strong>A few notes about  the example:</strong></p>
+
+<ul>
+  <li>The example assumes a <a href="https://bndtools.org/workspace.html">bnd workspace</a> in Eclipse and a Maven Repository using <a href="/plugins/maven.html"><em>aQute.bnd.repository.maven.provider.MavenBndRepository</em></a></li>
+  <li>This allows specifying dependencies e.g. in <em>/cnf/central.maven</em> (this is what is referenced above via the <a href="/macros/repo.html"><em>${repo}</em> macro</a>)</li>
+  <li>
+    <p>the additional parameters <em>=output=tcpserver,jmx=true</em> are <a href="https://www.eclemma.org/jacoco/trunk/doc/agent.html">JaCoCo-specific</a> to start the agent as tcpserver and also expose functionality via JMX</p>
+  </li>
+  <li><em>runvm.coverage</em> is a <a href="/instructions/#merged-instructions">merged instruction</a> (because of the suffix .coverage). It gets merged with a <em>-runvm</em> parameter from the included parent myapp.bndrun. Advantage: Avoid repeating all the VM-options the from the parent <em>-runvm</em> again, but just specify the additional parameters.</li>
+  <li>Usage in Eclipse: open “Coverage View” , right click “Import Session”, choose “Agent Adress 127.0.0.1 Port 6300”, press “Next”, Select the project to Monitor, Click “Finish”</li>
+</ul>
+
+          
+
+          
+            
+          
+        </main>
+        
+<hr>
+<footer>
+  
+    <p><a href="#top" id="back-to-top">Back to top</a></p>
+  
+
+  <p class="text-small mb-0">Copyright &copy; 2009 - present bndtools contributors. Distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>.</p>
+
+  
+    <div class="d-flex mt-2">
+      
+      
+        <p class="text-small mb-0">
+          <a href="https://github.com/bndtools/bnd/edit/master/docs/_chapters/300-launching.md" id="edit-this-page">Edit this page on GitHub</a>
+        </p>
+      
+    </div>
+  <div class="d-md-none mt-4 fs-2">
+    
+    
+      This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    
+  </div>
+</footer>
+
+      </div>
+    </div>
+    
+      
+
+<div class="search-overlay"></div>
+
+    
+  </div>
+
+  
+</body>
+</html>
+
