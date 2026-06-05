@@ -14,10 +14,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    cooldown:
-      semver-patch-days: 3
-      semver-minor-days: 3
-      semver-major-days: 30
 
   # Maintain dependencies for maven
   - package-ecosystem: "maven"
