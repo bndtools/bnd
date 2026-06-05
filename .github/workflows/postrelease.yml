@@ -46,6 +46,11 @@ jobs:
         ruby-version: 3.4.5
         bundler-cache: true
         working-directory: docs
+    - name: update baseline for the current build
+      run: |
+        sed 's/baseline.version:.*/baseline.version: ${{ github.event.inputs.V1 }}/' cnf/build.bnd >tmp
+        cat tmp
+        mv tmp cnf/build.bnd        
     - name: create release docs for ${{ github.event.inputs.V1 }}
       run: |
         cd docs
@@ -122,9 +127,6 @@ jobs:
         cat tmp
         mv tmp cnf/build.bnd
     
-    - name: sync baseline version to docs
-      run: bash docs/scripts/sync-baseline-version.sh
-
     - name: create PR
       run: |
         git config user.name github-actions
