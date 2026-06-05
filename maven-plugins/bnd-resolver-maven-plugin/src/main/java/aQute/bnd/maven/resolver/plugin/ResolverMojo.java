@@ -18,6 +18,8 @@ import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
+import biz.aQute.resolve.Slf4jResolverLogger;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -159,8 +161,8 @@ public class ResolverMojo extends AbstractMojo {
 
 	private Operation getOperation() {
 		return (file, runName, run) -> {
-			try {
-				String result = run.resolve(failOnChanges, writeOnChanges);
+			try (ResolverLogger rl = new Slf4jResolverLogger()) {
+				String result = run.resolve(failOnChanges, writeOnChanges, rl);
 				logger.info("{}: {}", Constants.RUNBUNDLES, result);
 			} catch (ResolutionException re) {
 				logger.error(ResolveProcess.format(re, reportOptional));
