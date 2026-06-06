@@ -61,6 +61,17 @@ public interface PomConfiguration {
 	String pom();
 
 	/**
+	 * The path to the trusted checksum file corresponding to index file
+	 */
+	String checksumFile();
+
+	/**
+	 * If <code>true</code> the checksumFile will be automatically generated on
+	 * initialization.
+	 */
+	boolean checksumRecord();
+
+	/**
 	 * The name of the repo. Required.
 	 */
 	String name();

@@ -44,6 +44,18 @@ public interface Configuration {
 	String index(String deflt);
 
 	/**
+	 * The path to the trusted checksum file corresponding to index file
+	 *
+	 */
+	String checksumFile();
+
+	/**
+	 * If <code>true</code> the checksumFile will be automatically generated on
+	 * initialization.
+	 */
+	boolean checksumRecord();
+
+	/**
 	 * Content added to the index file. Content maybe one line without CR/LF as
 	 * long as there is a comma or whitespace separating the GAVs. Further same
 	 * format as the index file.

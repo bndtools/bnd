@@ -75,20 +75,22 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | `readOnly`       | `true`|`false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
 | `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_ (text with one GAV per line or pom.xml).|
+| `checksumFile`   | `PATH`| `<index-dir>/<index-filename>.checksums` | The path to the trusted checksum file relative to `build.bnd`. If not specified, defaults to a `.checksums` sidecar file next to the index file. See [Trusted Checksum Verification](#trusted-checksum-verification).|
+| `checksumRecord`   | `boolean` | `false` | When set to `true`, the repository automatically generates (records) the trusted checksum file during initialization. Checksums are computed for all artifacts currently listed in the index file and written to the default sidecar location (`<index>.checksums`) or the path specified by `checksumFile`. Non-fatal errors during recording are logged but do not prevent the repository from initializing. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
 | `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for changes to the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
 | `multi`          | `NAME`|        | Comma separated list of extensions to be searched for indexing containing bundles. For example, a zip file could comprise further bundles. Hence, this zip artifact can be referenced in this plugin for indexing the internal JARs. |
 
-If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_. 
+If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_.
 
 For finding archives, both URLs are used. For releasing, only the first or the `stagingUrl` is used.
 
 ## Index file
 
-The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories. 
-The index file supports two formats: 
+The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent breaking builds due to changes in repositories.
+The index file supports two formats:
 
 - a) text file with one GAV per line or
 - b) Maven _pom.xml_ content (note that not the full maven pom.xml features are supported. Mainly the `<dependency>` entries are relevant).
@@ -148,9 +150,9 @@ An example `pom.xml` index file which is supported by MavenBndRepository looks l
 </project>
 ```
 
-As stated earlier: Not all maven `pom.xml` features are supported. Mainly the `<dependency>` entries are relevant. The parser is very simple and `pom.xml` is just meant to be an alternative format format for the text file. 
+As stated earlier: Not all maven `pom.xml` features are supported. Mainly the `<dependency>` entries are relevant. The parser is very simple and `pom.xml` is just meant to be an alternative format for the text file.
 
-One advantage of using the `pom.xml` format over the flat text file is that `pom.xml` is understood by more tooling. For example Dependabot can automatically update `pom.xml` files, but not the flat text file. 
+One advantage of using the `pom.xml` format over the flat text file is that `pom.xml` is understood by more tooling. For example Dependabot can automatically update `pom.xml` files, but not the flat text file.
 
 
 ## Local Repository
@@ -182,6 +184,106 @@ The Maven Bnd Repository uses the bnd Http Client. See the [-connection-settings
 ## Tagging
 
 This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.
+
+## Trusted Checksum Verification
+
+The Maven Bnd Repository supports trusted checksum verification to protect against tampered or corrupted artifacts. When a checksum file is present, every artifact fetched from the repository is validated against the expected checksum before use. If the checksum does not match, the local file is deleted and an exception is thrown.
+
+### The .checksums File
+
+The checksum file is a plain-text sidecar file that lists the expected checksum for each artifact coordinate in the index. By convention, bnd looks for a file with the same name as the index file plus the `.checksums` extension. For example, if your index is `cnf/central.maven`, bnd will automatically look for `cnf/central.maven.checksums`.
+
+You can override this location with the checksumFile configuration property:
+
+```
+-plugin.central = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/central.maven; \
+		checksumFile=${.}/trusted/central.checksums; \
+		name="Central"
+```
+
+If neither a default nor an explicit checksum file exists, checksum verification is silently skipped and the repository operates normally.
+
+### File Format
+
+Each line in the `.checksums` file specifies one artifact coordinate and its expected checksum in the form:
+
+```
+<GAV>=<hashType>:<hexDigest>
+```
+
+where `<GAV>` uses the same coordinate syntax as the index file and `<hashType>` is one of `sha1`, `sha-1`, `sha256`, `sha-256`, `sha512`, `sha-512`, or `md5`.
+
+Lines starting with # are treated as comments. Empty lines are ignored.
+
+**Example central.maven.checksums:**
+
+```
+# Trusted checksums for central.maven
+commons-cli:commons-cli:1.0=sha1:6dac9733315224fc562f6268df58e92d65fd0137
+commons-cli:commons-cli:1.2=sha1:2bf96b7aa8b611c177d329452af1dc933e14501c
+org.osgi:osgi.core:6.0.0=sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+```
+
+### Generating the Checksums File
+
+The `checksumRecord` configuration option enables automatic generation of the trusted checksum file during repository initialization. This is useful for CI/CD pipelines and build automation where you want to "bootstrap" or audit the checksums without manual intervention.
+
+**Configuration:**
+
+```
+-plugin.central =
+	aQute.bnd.repository.maven.provider.MavenBndRepository;
+	releaseUrl=https://repo.maven.apache.org/maven2/;
+	index=${.}/central.maven;
+	checksumRecord=true;
+	name="Central"
+```
+
+**Workflow:**
+
+1. Repository initialization runs (during workspace startup or build)
+2. Index file is loaded and all artifacts are discovered
+3. If `checksumRecord=true`, bnd iterates through each artifact
+4. Computes a checksum (SHA-1 by default) for each locally available artifact
+5. Writes the checksums to the `.checksums` sidecar file (or custom location)
+6. Repository becomes ready for use
+
+**Use Cases:**
+
+- **Local development:** Enable `checksumRecord=true` locally when you need to generate or update the checksum file. After building, review the changes to `index.checksums` and commit to version control if satisfied.
+- **Controlled checksum updates:** Use an environment variable like `CHECKSUMS_RECORD` to selectively enable recording only when intentional (e.g., `checksumRecord=${if;${env;CHECKSUMS_RECORD};false}`). Leave disabled in regular CI builds to prevent unintended modifications to the checksum file.
+- **Onboarding new artifacts:** When adding new dependencies to the index, enable recording on a local build to bootstrap the initial checksum file.
+
+**Notes:**
+
+- Recording happens **after** repository initialization completes, ensuring all artifacts are available
+- Only artifacts that have been downloaded to the local repository can have their checksums recorded
+- Remote-only artifacts (not yet downloaded) are skipped during recording
+- The generated file uses SHA-1 by default (matching the format created by the IDE's "Create Trusted Checksums file" action)
+- If the checksum file already exists, it will be **overwritten** with the current state
+- **Best practice:** Leave `checksumRecord=false` in standard CI builds. Enable it only when you intend to update and review the checksum file before committing.
+- To use recorded checksums for verification on subsequent builds, ensure `checksumFile` is configured or the default `.checksums` sidecar is in place
+
+### Generating checksums file in Bndtools
+
+Additionally the Bndtools Eclipse Plugin provides a context menu action on the repository to generate the checksum file automatically. Right-click the repository entry and choose "Create Trusted Checksums file". This computes a `sha1` checksum for every artifact currently in the index and writes the result to the default sidecar location (`<index>.checksums`).
+
+After generating the file, review it and commit it to version control alongside your index file. This ensures that everyone on your team (and CI) uses the same trusted checksums.
+
+### Expected Behavior
+
+|                              Situation                             |                               Behavior                              |
+|:------------------------------------------------------------------:|:-------------------------------------------------------------------:|
+| No checksum file exists                                            | Default: No verification is performed; artifacts are used as-is.                  |
+| `.checksums` file exists but has no entry for an artifact              | That artifact is not verified; it is used as-is.                    |
+| Checksum file exists and artifact matches the expected hash        | Artifact is used normally.                                          |
+| Checksum file exists but  artifact does not match the expected hash | The local file is deleted and a `TrustedChecksumException` is thrown. The artifact appears as if it does not exist / could not be downloaded and thus will not resolve. Removing the artifact entry from the checksum file and a rebuild should re-download the artifact |
+
+This design means you can incrementally add entries to the checksum file: only artifacts explicitly listed are verified. Artifacts not listed in the file are passed through without verification.
+
 
 ## IDEs
 
