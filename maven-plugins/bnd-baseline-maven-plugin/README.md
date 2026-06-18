@@ -125,14 +125,16 @@ be disabled as follows:
 
 #### Include Distribution Management 
 
-By default the `bnd-baseline-maven-plugin` will include repositories
-listed in the Distribution Management section of the POM when 
-searching for the baseline. This is usually the right choice as the 
-distribution repository does not normally change between releases.
-This behaviour can be disabled as follows:
+By default the `bnd-baseline-maven-plugin` will not include repositories
+listed in the [Distribution Management section of the POM](https://maven.apache.org/pom.html#Distribution_Management) when 
+searching for the baseline because this is very often only suitable
+for uploading (but not necessarily for downloading).
+If however your distribution management URL can also be used to download
+old versions of your bundles you can explicitly use that as (additional)
+source for old versions via:
 
     <configuration>
-        <includeDistributionManagement>false</includeDistributionManagement>
+        <includeDistributionManagement>true</includeDistributionManagement>
     </configuration>
 
 #### Continue on Error
