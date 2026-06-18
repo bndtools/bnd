@@ -1,10 +1,9 @@
 package bndtools.wizards.newworkspace;
 
-import static aQute.bnd.wstemplates.FragmentTemplateEngine.DEFAULT_INDEX;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.List;
@@ -61,6 +60,7 @@ import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
 import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.preferences.BndPreferences;
 import bndtools.shared.ConfirmDialogWithTextarea;
 import bndtools.util.ui.UI;
 
@@ -88,9 +88,11 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		try {
 			Job job = Job.create("load index", mon -> {
 				try {
-					templates.read(new URL(DEFAULT_INDEX))
-						.unwrap()
-						.forEach(templates::add);
+					for (String uri : new BndPreferences().getWorkspaceTemplateIndexes()) {
+						templates.read(new URL(uri))
+							.unwrap()
+							.forEach(templates::add);
+					}
 					Parameters p = workspace.getMergedParameters(Constants.WORKSPACE_TEMPLATES);
 					templates.read(p)
 						.forEach(templates::add);
@@ -109,7 +111,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					Plugin.getDefault()
 						.getLog()
 						.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-							"failed to read default index " + DEFAULT_INDEX, e));
+							"failed to read template index", e));
 				}
 			});
 			job.schedule();
@@ -422,6 +424,13 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 							} else {
 								result.unwrap()
 									.forEach(templates::add);
+								String uriStr = uri.toString();
+								BndPreferences prefs = new BndPreferences();
+								List<String> indexes = new ArrayList<>(prefs.getWorkspaceTemplateIndexes());
+								if (!indexes.contains(uriStr)) {
+									indexes.add(uriStr);
+									prefs.setWorkspaceTemplateIndexes(indexes);
+								}
 								ui.write(() -> model.templates = templates.getAvailableTemplates());
 							}
 						} catch (Exception e) {

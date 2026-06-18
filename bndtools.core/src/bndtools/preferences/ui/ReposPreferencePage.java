@@ -39,12 +39,16 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
 	private List<String>	templateRepos;
 	private TableViewer		vwrRepos;
 
+	private List<String>	workspaceTemplateIndexes;
+	private TableViewer		vwrIndexes;
+
 	@Override
 	public void init(IWorkbench workbench) {
 		BndPreferences prefs = new BndPreferences();
 
 		enableTemplateRepo = prefs.getEnableTemplateRepo();
 		templateRepos = new ArrayList<>(prefs.getTemplateRepoUriList());
+		workspaceTemplateIndexes = new ArrayList<>(prefs.getWorkspaceTemplateIndexes());
 	}
 
 	@Override
@@ -124,6 +128,51 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
 			}
 		});
 
+		Group indexGroup = new Group(composite, SWT.NONE);
+		indexGroup.setText("Workspace Template Indexes");
+		indexGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		indexGroup.setLayout(new GridLayout(2, false));
+
+		Label lblIndexes = new Label(indexGroup, SWT.NONE);
+		lblIndexes.setText("Index URLs (index.bnd) offered as workspace template fragments in the New Bnd Workspace wizard:");
+		lblIndexes.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+
+		final Table tblIndexes = new Table(indexGroup, SWT.BORDER | SWT.MULTI);
+		vwrIndexes = new TableViewer(tblIndexes);
+		vwrIndexes.setContentProvider(ArrayContentProvider.getInstance());
+		vwrIndexes.setLabelProvider(new URLLabelProvider(tblIndexes.getDisplay()));
+		vwrIndexes.setInput(workspaceTemplateIndexes);
+
+		GridData gdIndexes = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		gdIndexes.widthHint = 260;
+		gdIndexes.heightHint = 80;
+		tblIndexes.setLayoutData(gdIndexes);
+
+		final AddRemoveButtonBarPart addRemoveIndexPart = new AddRemoveButtonBarPart();
+		Control addRemoveIndexPanel = addRemoveIndexPart.createControl(indexGroup, SWT.FLAT | SWT.VERTICAL);
+		addRemoveIndexPanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		addRemoveIndexPart.setRemoveEnabled(false);
+		addRemoveIndexPart.addListener(new AddRemoveListener() {
+			@Override
+			public void addSelected() {
+				doAddIndex();
+			}
+
+			@Override
+			public void removeSelected() {
+				doRemoveIndex();
+			}
+		});
+		vwrIndexes.addSelectionChangedListener(event -> addRemoveIndexPart.setRemoveEnabled(!vwrIndexes.getSelection()
+			.isEmpty()));
+		tblIndexes.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.keyCode == SWT.DEL && e.stateMask == 0)
+					doRemoveIndex();
+			}
+		});
+
 		return composite;
 	}
 
@@ -152,6 +201,30 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
 		validate();
 	}
 
+	private void doAddIndex() {
+		URLDialog dialog = new URLDialog(getShell(), "Add workspace template index URL", false);
+		if (dialog.open() == Window.OK) {
+			URI location = dialog.getLocation();
+
+			String locationStr = location.toString();
+			workspaceTemplateIndexes.add(locationStr);
+			vwrIndexes.add(locationStr);
+		}
+	}
+
+	private void doRemoveIndex() {
+		int[] selectedIndexes = vwrIndexes.getTable()
+			.getSelectionIndices();
+		if (selectedIndexes == null)
+			return;
+		List<Object> selected = new ArrayList<>(selectedIndexes.length);
+		for (int index : selectedIndexes) {
+			selected.add(workspaceTemplateIndexes.get(index));
+		}
+		workspaceTemplateIndexes.removeAll(selected);
+		vwrIndexes.remove(selected.toArray());
+	}
+
 	private void validate() {
 		String error = null;
 		if (enableTemplateRepo) {
@@ -174,6 +247,7 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
 
 		prefs.setEnableTemplateRepo(enableTemplateRepo);
 		prefs.setTemplateRepoUriList(templateRepos);
+		prefs.setWorkspaceTemplateIndexes(workspaceTemplateIndexes);
 
 		return true;
 	}
