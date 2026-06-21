@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
+import aQute.bnd.version.MavenVersion;
 import aQute.service.reporter.Report;
 import aQute.service.reporter.Report.Location;
 import org.gradle.api.Buildable;
@@ -28,7 +29,6 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JavaToolchainSpec;
-import org.gradle.util.GradleVersion;
 
 /**
  * BndUtils class.
@@ -43,8 +43,21 @@ public class BndUtils {
 	 * @return Whether the current Gradle is at least the specified version.
 	 */
 	public static boolean isGradleCompatible(String requestedVersion) {
-		return GradleVersion.current()
-			.compareTo(GradleVersion.version(requestedVersion)) >= 0;
+		return MavenVersion.parseMavenString(currentGradleVersion())
+			.compareTo(MavenVersion.parseMavenString(requestedVersion)) >= 0;
+	}
+
+	private static String currentGradleVersion() {
+		String version = Optional.ofNullable(org.gradle.api.invocation.Gradle.class.getPackage())
+			.map(Package::getImplementationVersion)
+			.orElse(null);
+		if ((version == null) || version.isBlank()) {
+			version = System.getProperty("org.gradle.version");
+		}
+		if ((version == null) || version.isBlank()) {
+			throw new IllegalStateException("Unable to determine Gradle version");
+		}
+		return version;
 	}
 
 	/**
