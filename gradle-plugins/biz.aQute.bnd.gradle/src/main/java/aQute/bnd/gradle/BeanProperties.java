@@ -13,11 +13,10 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.MissingPropertyException;
 import org.gradle.api.file.FileSystemLocation;
-import org.gradle.api.internal.DynamicObjectAware;
 import org.gradle.api.provider.Provider;
-import org.gradle.internal.metaobject.DynamicInvokeResult;
-import org.gradle.internal.metaobject.DynamicObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,10 +86,12 @@ public class BeanProperties extends Properties {
 
 	private static Object getField(Object target, String fieldName) {
 		try {
-			if (target instanceof DynamicObjectAware dynamicObjectAware) {
-				DynamicObject dynamicObject = dynamicObjectAware.getAsDynamicObject();
-				DynamicInvokeResult result = dynamicObject.tryGetProperty(fieldName);
-				return result.isFound() ? result.getValue() : null;
+			if (target instanceof GroovyObject groovyObject) {
+				try {
+					return groovyObject.getProperty(fieldName);
+				} catch (MissingPropertyException e) {
+					return null;
+				}
 			}
 			String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 			Class<?> targetClass = target.getClass();

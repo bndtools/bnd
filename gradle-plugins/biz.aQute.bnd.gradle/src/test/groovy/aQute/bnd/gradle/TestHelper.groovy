@@ -28,6 +28,22 @@ class TestHelper {
 		return runner(version)
 	}
 
+	public static GradleRunner getCompatibilityGradleRunner(String version) {
+		GradleRunner runner = GradleRunner.create()
+		if (System.getProperty("org.gradle.warning.mode") == "fail") {
+			// if "fail" we use the build gradle version
+			return runner
+		}
+		return runner.withGradleVersion(version)
+	}
+
+	public static List<String> compatibilityGradleVersions() {
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_25)) {
+			return ["9.2.0"]
+		}
+		return ["8.14", "9.2.0"]
+	}
+
 	private static GradleRunner runner(String version) {
 		GradleRunner runner = GradleRunner.create()
 		if (System.getProperty("org.gradle.warning.mode") == "fail") {

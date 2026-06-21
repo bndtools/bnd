@@ -3,9 +3,11 @@ package aQute.bnd.gradle;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,12 +25,11 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
 import org.gradle.api.initialization.Settings;
-import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Delete;
-import org.gradle.internal.metaobject.DynamicInvokeResult;
-import org.gradle.internal.metaobject.DynamicObject;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
 /**
@@ -73,11 +74,9 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	}
 
 	private void configureSettings(Settings settings) throws Exception {
-		DynamicObject dynamicObject = new DslObject(settings).getAsDynamicObject();
-
 		/* Start with the declared build project name */
-		DynamicInvokeResult result = dynamicObject.tryGetProperty("bnd_build");
-		String bnd_build = result.isFound() ? (String) result.getValue() : "";
+		String bnd_build = stringProperty(settings, "bnd_build")
+			.orElse("");
 		String defaultProjectName = bnd_build;
 
 		/* If in a subproject, use the subproject name */
@@ -140,21 +139,21 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		}
 
 		/* Add cnf project to the graph */
-		result = dynamicObject.tryGetProperty("bnd_cnf");
-		String cnf = result.isFound() ? (String) result.getValue() : Workspace.CNFDIR;
+		String cnf = stringProperty(settings, "bnd_cnf")
+			.orElse(Workspace.CNFDIR);
 		projectNames.add(cnf);
 
 		/* Add any projects which must always be included */
-		result = dynamicObject.tryGetProperty("bnd_include");
-		if (result.isFound()) {
-			Strings.splitAsStream((String) result.getValue())
+		Optional<String> property = stringProperty(settings, "bnd_include");
+		if (property.isPresent()) {
+			Strings.splitAsStream(property.get())
 				.forEach(projectNames::add);
 		}
 
 		/* Remove any projects which must always be excluded */
-		result = dynamicObject.tryGetProperty("bnd_exclude");
-		if (result.isFound()) {
-			Strings.splitAsStream((String) result.getValue())
+		property = stringProperty(settings, "bnd_exclude");
+		if (property.isPresent()) {
+			Strings.splitAsStream(property.get())
 				.forEach(projectNames::remove);
 		}
 
@@ -293,8 +292,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	}
 
 	private static void bndWorkspaceConfigure(Workspace workspace, Gradle gradle) {
-		ExtraPropertiesExtension ext = new DslObject(gradle).getExtensions()
-			.getExtraProperties();
+		ExtraPropertiesExtension ext = extraProperties(gradle);
 		if (ext.has("bndWorkspaceConfigure")) {
 			Object bndWorkspaceConfigure = ext.get("bndWorkspaceConfigure");
 			if (bndWorkspaceConfigure instanceof Closure<?> closure) {
@@ -307,6 +305,35 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 				throw new GradleException(
 					String.format("The bndWorkspaceConfigure %s is not a Closure or an Action", bndWorkspaceConfigure));
 			}
+		}
+	}
+
+	private static Optional<String> stringProperty(Settings settings, String propertyName) {
+		ExtraPropertiesExtension ext = settings.getExtensions()
+			.getExtraProperties();
+		if (ext.has(propertyName)) {
+			return Optional.ofNullable(ext.get(propertyName))
+				.map(String::valueOf);
+		}
+		ProviderFactory providers = settings.getProviders();
+		return Optional.ofNullable(providers.gradleProperty(propertyName)
+			.getOrNull());
+	}
+
+	private static ExtraPropertiesExtension extraProperties(Object target) {
+		if (target instanceof ExtensionAware extensionAware) {
+			return extensionAware.getExtensions()
+				.getExtraProperties();
+		}
+		try {
+			Method getExtensions = target.getClass()
+				.getMethod("getExtensions");
+			Object extensions = getExtensions.invoke(target);
+			Method getExtraProperties = extensions.getClass()
+				.getMethod("getExtraProperties");
+			return (ExtraPropertiesExtension) getExtraProperties.invoke(extensions);
+		} catch (Exception e) {
+			throw new GradleException(String.format("The target %s does not support extra properties", target), e);
 		}
 	}
 }
