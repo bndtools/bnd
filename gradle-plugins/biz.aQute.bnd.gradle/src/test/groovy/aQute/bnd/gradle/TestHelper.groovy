@@ -44,6 +44,10 @@ class TestHelper {
 		return ["8.14", "9.2.0"]
 	}
 
+	public static List<String> gradle9Versions() {
+		return ["9.2.0"]
+	}
+
 	private static GradleRunner runner(String version) {
 		GradleRunner runner = GradleRunner.create()
 		if (System.getProperty("org.gradle.warning.mode") == "fail") {

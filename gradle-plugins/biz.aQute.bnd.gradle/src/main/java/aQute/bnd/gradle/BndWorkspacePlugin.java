@@ -17,8 +17,8 @@ import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.strings.Strings;
-import groovy.lang.Closure;
 import org.gradle.StartParameter;
+import groovy.lang.Closure;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
@@ -295,9 +295,16 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		ExtraPropertiesExtension ext = extraProperties(gradle);
 		if (ext.has("bndWorkspaceConfigure")) {
 			Object bndWorkspaceConfigure = ext.get("bndWorkspaceConfigure");
-			if (bndWorkspaceConfigure instanceof Closure<?> closure) {
-				closure.call(workspace);
-			} else if (bndWorkspaceConfigure instanceof Action) {
+			/* Check for Closure first (for Groovy DSL compatibility when Groovy is available) */
+			if (bndWorkspaceConfigure != null) {
+				Class<?> closureClass = tryLoadClass("groovy.lang.Closure");
+				if (closureClass != null && closureClass.isInstance(bndWorkspaceConfigure)) {
+					invokeClosureCall(bndWorkspaceConfigure, workspace);
+					return;
+				}
+			}
+			/* Fall back to Action (standard Gradle API) */
+			if (bndWorkspaceConfigure instanceof Action) {
 				@SuppressWarnings("unchecked")
 				Action<Workspace> action = (Action<Workspace>) bndWorkspaceConfigure;
 				action.execute(workspace);
@@ -305,6 +312,24 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 				throw new GradleException(
 					String.format("The bndWorkspaceConfigure %s is not a Closure or an Action", bndWorkspaceConfigure));
 			}
+		}
+	}
+
+	private static Class<?> tryLoadClass(String className) {
+		try {
+			return Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+	}
+
+	private static void invokeClosureCall(Object closure, Workspace workspace) {
+		try {
+			Method callMethod = closure.getClass()
+				.getMethod("call", Object.class);
+			callMethod.invoke(closure, workspace);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
 	}
 
