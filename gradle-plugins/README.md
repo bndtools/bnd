@@ -6,6 +6,7 @@ A Bnd Workspace build uses the information specified in the Bnd Workspace's `cnf
 
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
 These plugins require Java 17 and at least Gradle 8.0.
+Gradle 9.x is supported and validated (tested against Gradle 9.2.0).
 More recent Java versions will require more recent Gradle versions.
 
 This README represents the capabilities and features of the Bnd Gradle Plugins in the branch containing this README.
@@ -687,6 +688,7 @@ In general, your Gradle scripts will not apply the `biz.aQute.bnd` Gradle plugin
 The tasks of the Gradle Plugin for Bnd Workspace Builds use the Bnd Workspace model objects such as [Workspace][8] and [Project][9] at task execution time to perform Bnd operations.
 However, Gradle's [Configuration Cache][23] support requires that all objects used at task execution time must be serializable and the Bnd Workspace model objects are not serializable.
 So the Gradle Plugin for Bnd Workspace Builds cannot be used with Gradle's Configuration Cache.
+The workspace plugin explicitly declares this incompatibility via `Task.notCompatibleWithConfigurationCache()` so that Gradle reports a clear error if configuration cache is enabled.
 
 ## Gradle Tasks
 
