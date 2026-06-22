@@ -6,7 +6,7 @@ import aQute.bnd.osgi.Constants
 
 pluginManagement {
 	plugins {
-		id "com.gradle.enterprise" version "3.13.4"
+		id "com.gradle.enterprise" version "3.19.2"
 	}
 }
 
