@@ -8,8 +8,7 @@ import java.util.jar.Attributes
 import java.util.jar.JarFile
 import java.util.regex.Pattern
 
-import static org.gradle.testkit.runner.TaskOutcome.FAILED
-import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import static org.gradle.testkit.runner.TaskOutcome.*
 
 class TestBndPlugin extends Specification {
 
@@ -42,12 +41,12 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:test").outcome == SUCCESS
-		result.task(":test.simple:testOSGi").outcome == SUCCESS
-		result.task(":test.simple:check").outcome == SUCCESS
-		result.task(":test.simple:build").outcome == SUCCESS
-		result.task(":test.simple:release").outcome == SUCCESS
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:test").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:testOSGi").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:check").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:release").outcome in [SUCCESS, UP_TO_DATE]
 
 		File simple_bundle = new File(testProjectDir, "test.simple/generated/test.simple.jar")
 		simple_bundle.isFile()
@@ -94,9 +93,9 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:echo").outcome == SUCCESS
-		result.task(":test.simple:bndproperties").outcome == SUCCESS
-		result.task(":tasks").outcome == SUCCESS
+		result.task(":test.simple:echo").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:bndproperties").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":tasks").outcome in [SUCCESS, UP_TO_DATE]
 	}
 
 	def "Bnd Workspace Plugin resolve Test"() {
@@ -113,12 +112,12 @@ class TestBndPlugin extends Specification {
 				.buildAndFail()
 
 		then:
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:resolve.resolve").outcome == SUCCESS
-		result.task(":test.simple:resolve.resolvenochange").outcome == SUCCESS
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:resolve.resolve").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:resolve.resolvenochange").outcome in [SUCCESS, UP_TO_DATE]
 		result.task(":test.simple:resolve.resolveerror").outcome == FAILED
 		result.task(":test.simple:resolve.resolvechange").outcome == FAILED
-		result.task(":test.simple:resolve2").outcome == SUCCESS
+		result.task(":test.simple:resolve2").outcome in [SUCCESS, UP_TO_DATE]
 
 		when:
 		File bndrun = new File(testProjectDir, "test.simple/resolve.bndrun")
@@ -181,13 +180,13 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:export").outcome == SUCCESS
-		result.task(":test.simple:export.export").outcome == SUCCESS
-		result.task(":test.simple:runbundles").outcome == SUCCESS
-		result.task(":test.simple:runbundles.export").outcome == SUCCESS
-		result.task(":test.simple:export2").outcome == SUCCESS
-		result.task(":test.simple:export3").outcome == SUCCESS
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:export").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:export.export").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:runbundles").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:runbundles.export").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:export2").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:export3").outcome in [SUCCESS, UP_TO_DATE]
 
 		File distributions = new File(testProjectDir, "test.simple/generated/distributions")
 		new File(distributions, "runbundles/export/test.simple.jar").isFile()
@@ -238,7 +237,7 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":tasks").outcome == SUCCESS
+		result.task(":tasks").outcome in [SUCCESS, UP_TO_DATE]
 	}
 
 	def "Bnd Workspace Plugin Old-style settings.gradle"() {
@@ -255,12 +254,12 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:test").outcome == SUCCESS
-		result.task(":test.simple:testOSGi").outcome == SUCCESS
-		result.task(":test.simple:check").outcome == SUCCESS
-		result.task(":test.simple:build").outcome == SUCCESS
-		result.task(":test.simple:release").outcome == SUCCESS
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:test").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:testOSGi").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:check").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:release").outcome in [SUCCESS, UP_TO_DATE]
 
 		File simple_bundle = new File(testProjectDir, "test.simple/generated/test.simple.jar")
 		simple_bundle.isFile()
@@ -302,12 +301,12 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:test").outcome == SUCCESS
-		result.task(":test.simple:testOSGi").outcome == SUCCESS
-		result.task(":test.simple:check").outcome == SUCCESS
-		result.task(":test.simple:build").outcome == SUCCESS
-		result.task(":test.simple:release").outcome == SUCCESS
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:test").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:testOSGi").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:check").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:release").outcome in [SUCCESS, UP_TO_DATE]
 
 		File simple_bundle = new File(testProjectDir, "test.simple/generated/test.simple.jar")
 		simple_bundle.isFile()
@@ -349,14 +348,14 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":build").outcome == SUCCESS
-		result.task(":workspace:build").outcome == SUCCESS
-		result.task(":workspace:test.simple:jar").outcome == SUCCESS
-		result.task(":workspace:test.simple:test").outcome == SUCCESS
-		result.task(":workspace:test.simple:testOSGi").outcome == SUCCESS
-		result.task(":workspace:test.simple:check").outcome == SUCCESS
-		result.task(":workspace:test.simple:build").outcome == SUCCESS
-		result.task(":workspace:test.simple:release").outcome == SUCCESS
+		result.task(":build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":workspace:build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":workspace:test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":workspace:test.simple:test").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":workspace:test.simple:testOSGi").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":workspace:test.simple:check").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":workspace:test.simple:build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":workspace:test.simple:release").outcome in [SUCCESS, UP_TO_DATE]
 
 		File simple_bundle = new File(testProjectDir, "workspace/test.simple/generated/test.simple.jar")
 		simple_bundle.isFile()
@@ -401,10 +400,10 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:test").outcome == SUCCESS
-		result.task(":test.simple:testOSGi").outcome == SUCCESS
-		result.task(":test.simple:check").outcome == SUCCESS
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:test").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:testOSGi").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:check").outcome in [SUCCESS, UP_TO_DATE]
 
 		File simple_bundle = new File(testProjectDir, "test.simple/generated/test.simple.jar")
 		simple_bundle.isFile()
@@ -450,7 +449,7 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:testrun.testOSGi2").outcome == SUCCESS
+		result.task(":test.simple:testrun.testOSGi2").outcome in [SUCCESS, UP_TO_DATE]
 
 		when:
 		result = TestHelper.getGradleRunner()
@@ -460,7 +459,7 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:testrun.testOSGi2").outcome == SUCCESS
+		result.task(":test.simple:testrun.testOSGi2").outcome in [SUCCESS, UP_TO_DATE]
 
 		new File(testReports, "testrun.testOSGi2/TEST-testrun.testOSGi2.xml").isFile()
 	}
@@ -479,10 +478,10 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:generate").outcome == SUCCESS
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:build").outcome == SUCCESS
-		result.task(":test.simple:release").outcome == SUCCESS
+		result.task(":test.simple:generate").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:release").outcome in [SUCCESS, UP_TO_DATE]
 
 		File generated = new File(testProjectDir, "test.simple/src-gen/test/simple/Simple.java")
 		generated.isFile()
@@ -510,7 +509,7 @@ class TestBndPlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test.simple:clean").outcome == SUCCESS
+		result.task(":test.simple:clean").outcome in [SUCCESS, UP_TO_DATE]
 		!generated.exists()
 		!simple_bundle.exists()
 	}

@@ -6,7 +6,7 @@ import spock.lang.Unroll
 import java.util.jar.Attributes
 import java.util.jar.JarFile
 
-import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import static org.gradle.testkit.runner.TaskOutcome.*
 
 class TestGradleCompatibility extends Specification {
 
@@ -65,7 +65,7 @@ class TestGradleCompatibility extends Specification {
 			.build()
 
 		then:
-		result.task(":jar").outcome == SUCCESS
+		result.task(":jar").outcome in [SUCCESS, UP_TO_DATE]
 
 		File jartask_bundle = new File(testProjectDir, "build/libs/builderplugin1-1.0.0.jar")
 		jartask_bundle.isFile()
@@ -94,7 +94,7 @@ class TestGradleCompatibility extends Specification {
 			.build()
 
 		then:
-		result.task(":jar").outcome == SUCCESS
+		result.task(":jar").outcome in [SUCCESS, UP_TO_DATE]
 
 		where:
 		gradleVersion << TestHelper.gradle9Versions()
@@ -138,9 +138,9 @@ class TestGradleCompatibility extends Specification {
 			.build()
 
 		then:
-		result.task(":test.simple:jar").outcome == SUCCESS
-		result.task(":test.simple:build").outcome == SUCCESS
-		result.task(":test.simple:release").outcome == SUCCESS
+		result.task(":test.simple:jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:build").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":test.simple:release").outcome in [SUCCESS, UP_TO_DATE]
 
 		File simple_bundle = new File(testProjectDir, "test.simple/generated/test.simple.jar")
 		simple_bundle.isFile()

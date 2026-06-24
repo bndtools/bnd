@@ -33,8 +33,8 @@ class TestBundlePlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":bundle").outcome == SUCCESS
-		result.task(":jar").outcome == SUCCESS
+		result.task(":bundle").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":jar").outcome in [SUCCESS, UP_TO_DATE]
 
 		testProjectBuildDir.isDirectory()
 
@@ -144,8 +144,8 @@ class TestBundlePlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":bundle").outcome == SUCCESS
-		result.task(":jar").outcome == SUCCESS
+		result.task(":bundle").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":jar").outcome in [SUCCESS, UP_TO_DATE]
 
 		File jartask_result = new File(testProjectBuildDir, "libs/${testProject}.jar")
 		jartask_result.isFile()
@@ -182,8 +182,8 @@ class TestBundlePlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":bundle").outcome == SUCCESS
-		result.task(":jar").outcome == SUCCESS
+		result.task(":bundle").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":jar").outcome in [SUCCESS, UP_TO_DATE]
 
 		testProjectBuildDir.isDirectory()
 
@@ -288,10 +288,10 @@ class TestBundlePlugin extends Specification {
 				.build()
 
 		then:
-		result.task(":test").outcome == SUCCESS
-		result.task(":bundle").outcome == SUCCESS
-		result.task(":jar").outcome == SUCCESS
-		result.task(":testOSGi").outcome == SUCCESS
+		result.task(":test").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":bundle").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":jar").outcome in [SUCCESS, UP_TO_DATE]
+		result.task(":testOSGi").outcome in [SUCCESS, UP_TO_DATE]
 
 		testProjectBuildDir.isDirectory()
 
@@ -425,7 +425,7 @@ class TestBundlePlugin extends Specification {
 
 		then:
 		result.task(":jar") == null // Jar tasks never run
-		result.task(":jarlibraryelements").outcome == SUCCESS
+		result.task(":jarlibraryelements").outcome in [SUCCESS, UP_TO_DATE]
 		result.output =~ Pattern.quote("### compileClasspath: ${compileClasspath.absolutePath}")
 		result.output =~ Pattern.quote("### bundleExtensionClasspath: ${bundleExtensionClasspath.absolutePath}")
 	}

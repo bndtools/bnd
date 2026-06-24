@@ -766,7 +766,90 @@ When you use the Gradle plugin for another JVM language like Groovy, Scala, or K
 
 ---
 
+# Running builds with local Bnd Gradle Plugins
+
+If you are developing the plugins in this repository and want another build to use your local plugin code, use one of the following approaches.
+
+For this repository itself (`bnd` workspace), there are two valid local workflows:
+
+## Rebuild the bnd workspace with freshly built local plugins (recommended for validation)
+
+For a full rebuild check (the same intent as CI), use the same multi-phase flow as the rebuild scripts:
+
+1. Build and publish the workspace artifacts to a local repo.
+2. Build the Gradle plugins against those local artifacts, then publish the plugins locally.
+3. Rebuild the workspace using the freshly published local artifacts/plugins.
+
+You can run this via the existing scripts:
+
+```bash
+./.github/scripts/rebuild-build.sh
+./.github/scripts/rebuild-test.sh
+```
+
+These scripts are used by the rebuild workflow in [ .github/workflows/rebuild.yml ](.github/workflows/rebuild.yml).
+
+Manual equivalent commands are:
+
+```bash
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 buildscriptDependencies publish
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --warning-mode=fail :gradle-plugins:build
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :gradle-plugins:publish
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 -Pbnd_snapshots=./dist/bundles --warning-mode=fail buildscriptDependencies build publish
+```
+
+## Build this repository directly from local plugin sources (composite)
+
+`settings.gradle` already includes `includeBuild("gradle-plugins")`, so local source changes in `gradle-plugins` are visible to normal workspace builds.
+For example:
+
+```bash
+./gradlew dist:build
+```
+
+## Option 1: Composite build (recommended)
+
+Use a Gradle composite so the consumer build resolves the plugin directly from your local checkout.
+
+In the consumer build's `settings.gradle`, add:
+
+```groovy
+pluginManagement {
+  includeBuild("../bnd/gradle-plugins")
+}
+```
+
+Then run the build normally (for example `./gradlew clean build`).
+
+This approach avoids publishing and always uses the current local sources.
+
+## Option 2: Publish locally and consume from `mavenLocal`
+
+From this repository, publish the plugin artifacts to your local Maven repository:
+
+```bash
+./gradlew :gradle-plugins:biz.aQute.bnd.gradle:publishToMavenLocal
+```
+
+Then in the consumer build, use `mavenLocal()` in plugin resolution and pin a local version:
+
+```groovy
+pluginManagement {
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+    mavenCentral()
+  }
+  plugins {
+    id "biz.aQute.bnd.builder" version "7.4.0-SNAPSHOT"
+  }
+}
+```
+
+If you update plugin code, re-run `publishToMavenLocal` before rebuilding the consumer.
+
 # Using the latest development SNAPSHOT build of the Bnd Gradle Plugins
+
 
 If you want to try the latest development SNAPSHOT build of the  Bnd Gradle Plugins, you will need to refer to the snapshot repository and select the latest version (`+`) of the plugin.
 For example, replace the `pluginManagement` block (in `settings.gradle`) with a `buildscript` script block, to configure the repository and version of the plugin jar:

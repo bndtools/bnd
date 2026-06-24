@@ -6,7 +6,8 @@ import aQute.bnd.osgi.Constants
 
 pluginManagement {
 	plugins {
-		id "com.gradle.enterprise" version "3.13.4"
+		// Gradle Enterprise plugin disabled for Gradle 9 compatibility
+		// id "com.gradle.enterprise" version "3.17"
 	}
 }
 
@@ -51,9 +52,12 @@ buildscript {
 }
 
 plugins {
-	id "com.gradle.enterprise"
+	// Gradle Enterprise plugin disabled for Gradle 9 compatibility
+	// id "com.gradle.enterprise"
 }
 
+// Gradle Enterprise build scan configuration disabled for Gradle 9 compatibility
+/*
 if (Boolean.parseBoolean(System.getenv("CI"))) {
 	gradleEnterprise {
 		buildScan {
@@ -63,6 +67,7 @@ if (Boolean.parseBoolean(System.getenv("CI"))) {
 		}
 	}
 }
+*/
 
 rootProject.name = "bnd"
 

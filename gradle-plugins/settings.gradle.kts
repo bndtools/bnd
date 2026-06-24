@@ -10,10 +10,11 @@ plugins {
 	id("com.gradle.develocity")
 }
 
-if (System.getenv("CI").toBoolean()) {
-	develocity {
-		buildScan {
-			publishing.onlyIf { true }
+develocity {
+	buildScan {
+		val isCI = System.getenv("CI").toBoolean()
+		publishing.onlyIf { isCI }
+		if (isCI) {
 			termsOfUseUrl.set("https://gradle.com/terms-of-service")
 			termsOfUseAgree.set("yes")
 		}
