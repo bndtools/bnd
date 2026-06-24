@@ -56,6 +56,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.repository.maven.provider.MavenBndRepository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
@@ -81,6 +82,7 @@ import aQute.lib.json.JSONCodec;
 import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
+import aQute.maven.api.Archive;
 
 public class RepoCommand {
 	private final static Logger	logger	= LoggerFactory.getLogger(RepoCommand.class);
@@ -888,6 +890,90 @@ public class RepoCommand {
 			r.toPom(out, po);
 		} finally {
 			out.close();
+		}
+	}
+
+	@Description("Export the Maven coordinates (GAVs) of all artifacts in the Maven repositories as a flat, "
+		+ "newline-separated list. Macros in the repository index files (e.g. ${junit.version}) are resolved. "
+		+ "The output is directly consumable by the Eclipse Dash License Tool (dash-licenses), for example:\n"
+		+ "  bnd repo deps -o deps.txt\n"
+		+ "  java -jar org.eclipse.dash.licenses-<version>.jar deps.txt -summary DEPENDENCIES")
+	@Arguments(arg = {})
+	interface DepsOptions extends Options {
+		@Description("Output file (default: the console)")
+		String output();
+
+		@Description("A glob expression on the repository name; default is all Maven repositories")
+		Glob from();
+
+		@Description("Exclude artifacts whose 'group:artifact:version' coordinate matches any of the given glob "
+			+ "expressions (e.g. '-e biz.aQute.bnd:*' to drop your own bundles). May be repeated.")
+		String[] exclude();
+
+		@Description("Emit ClearlyDefined ids (maven/mavencentral/<group>/<artifact>/<version>) instead of Maven GAVs")
+		boolean clearlydefined();
+	}
+
+	/**
+	 * Read the Maven repositories of the workspace and export the coordinates of
+	 * all of their artifacts as a flat list, suitable as input for the Eclipse
+	 * Dash License Tool. This bridges the bnd workspace model (curated Maven
+	 * repository index files) to license/IP analysis tooling.
+	 *
+	 * @throws Exception
+	 */
+	@Description("Export the Maven GAVs of all artifacts in the Maven repositories for license/IP analysis (dash-licenses)")
+	public void _deps(DepsOptions opts) throws Exception {
+		Glob from = opts.from();
+
+		List<Glob> excludes = new ArrayList<>();
+		if (opts.exclude() != null) {
+			for (String e : opts.exclude()) {
+				excludes.add(new Glob(e));
+			}
+		}
+
+		// Deduplicate and sort. Distinct classifiers (sources, javadoc) and the
+		// pom share a single revision, so collecting the revision coordinate
+		// collapses them into one entry per artifact.
+		Set<String> coordinates = new TreeSet<>();
+
+		for (RepositoryPlugin repo : repos) {
+			if (!(repo instanceof MavenBndRepository maven))
+				continue;
+
+			if (from != null && !from.matches(repo.getName()))
+				continue;
+
+			for (Archive archive : maven.getArchives()) {
+				String gav = archive.revision.toString(); // group:artifact:version
+
+				boolean excluded = false;
+				for (Glob g : excludes) {
+					if (g.matches(gav)) {
+						excluded = true;
+						break;
+					}
+				}
+				if (excluded)
+					continue;
+
+				if (opts.clearlydefined()) {
+					coordinates.add("maven/mavencentral/" + archive.revision.group + "/" + archive.revision.artifact
+						+ "/" + archive.revision.version);
+				} else {
+					coordinates.add(gav);
+				}
+			}
+		}
+
+		String text = Strings.join("\n", coordinates);
+
+		String sout = opts.output();
+		if (sout == null || "console".equals(sout)) {
+			bnd.out.println(text);
+		} else {
+			IO.store(text + "\n", bnd.getFile(sout));
 		}
 	}
 
