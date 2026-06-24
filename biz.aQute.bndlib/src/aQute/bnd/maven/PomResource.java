@@ -20,9 +20,10 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Lists;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
-import aQute.bnd.unmodifiable.Lists;
 import aQute.libg.glob.Glob;
 
 public class PomResource extends WriteResource {
@@ -144,9 +145,11 @@ public class PomResource extends WriteResource {
 			version = "0";
 		}
 
-		// Apply -snapshot instruction transformation to the version
+		// Apply -snapshot transformation only when the version is a valid OSGi
+		// version. Versions already in Maven format (e.g. "1.0.0-SNAPSHOT"
+		// with a hyphen qualifier separator) are left as-is.
 		String snapshot = processor.getProperty(Constants.SNAPSHOT);
-		if ((snapshot != null) && (version.contains("SNAPSHOT"))) {
+		if ((snapshot != null) && (version.contains("SNAPSHOT")) && Version.isVersion(version)) {
 			version = Builder.doSnapshot(version, snapshot);
 		}
 
