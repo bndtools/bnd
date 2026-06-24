@@ -21,6 +21,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -47,6 +48,7 @@ public class BndPreferences {
 	private static final String		PREF_WORKSPACE_TEMPLATE_INDEXES	= "workspaceTemplateIndexes";
 	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
 	private static final String		PREF_PARALLEL					= "parallel";
+	private static final String		PREF_REBUILD_TRIGGER_POLICY		= "rebuildTriggerPolicy";
 
 	static final String				PREF_WORKSPACE_OFFLINE			= "workspaceIsOffline";
 
@@ -69,6 +71,7 @@ public class BndPreferences {
 		store.setDefault(PREF_WORKSPACE_TEMPLATE_INDEXES, FragmentTemplateEngine.DEFAULT_INDEX);
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
 		store.setDefault(PREF_PARALLEL, false);
+		store.setDefault(PREF_REBUILD_TRIGGER_POLICY, "");
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
 		store.setDefault(QuickFixVersioning.PREFERENCE_KEY, QuickFixVersioning.DEFAULT.toString());
 		store.setDefault(PREF_EXPLORER_PROMPT, "");
@@ -332,6 +335,44 @@ public class BndPreferences {
 		return store.getBoolean(PREF_PARALLEL);
 	}
 
+	/**
+	 * Returns the stored rebuild trigger policy preference.
+	 *
+	 * @return the stored policy string, or an empty string if the Default option is selected (meaning
+	 *         the value from {@code build.bnd} should be used without Eclipse overriding it).
+	 */
+	public String getRebuildTriggerPolicy() {
+		return store.getString(PREF_REBUILD_TRIGGER_POLICY);
+	}
+
+	/**
+	 * Returns {@code true} when the rebuild trigger policy preference is set to "Default", meaning
+	 * Eclipse will not override the value from {@code build.bnd}.
+	 */
+	public boolean isRebuildTriggerPolicyDefault() {
+		return getRebuildTriggerPolicy().isEmpty();
+	}
+
+	/**
+	 * Sets the rebuild trigger policy.
+	 *
+	 * @param policy the policy to use; accepted values are {@code "always"} (rebuild on every
+	 *            change), {@code "api"} (skip rebuild when only non-API changes are detected), or
+	 *            {@code ""} (empty, meaning "Default": do not override the value from
+	 *            {@code build.bnd}). Any other non-empty value is stored as-is but treated as
+	 *            {@code "always"} by the build infrastructure.
+	 */
+	public void setRebuildTriggerPolicy(String policy) {
+		Workspace workspace = Central.getWorkspaceIfPresent();
+		if (workspace != null) {
+			if (policy == null || policy.isEmpty()) {
+				workspace.unsetProperty(Constants.REBUILDTRIGGERPOLICY);
+			} else {
+				workspace.setProperty(Constants.REBUILDTRIGGERPOLICY, policy);
+			}
+		}
+		store.setValue(PREF_REBUILD_TRIGGER_POLICY, policy == null ? "" : policy);
+	}
 
 	public Closeable onString(String key, Consumer<String> listener) {
 		IPropertyChangeListener l = e -> {

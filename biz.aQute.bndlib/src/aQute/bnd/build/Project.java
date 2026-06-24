@@ -2122,7 +2122,8 @@ public class Project extends Processor {
 	}
 
 	private void persistRebuildTriggerPolicyResult(File outputFile, RebuildTriggerPolicyResult result) {
-		if (RebuildTriggerPolicy.ALWAYS.equals(get(Constants.REBUILDTRIGGERPOLICY, RebuildTriggerPolicy.ALWAYS))) {
+		if (Constants.REBUILDTRIGGERPOLICY_ALWAYS
+			.equals(get(Constants.REBUILDTRIGGERPOLICY, Constants.REBUILDTRIGGERPOLICY_ALWAYS))) {
 			// do not store any .digest files by default
 			// to avoid polluting / confusing existing projects
 			return;
@@ -3867,7 +3868,6 @@ public class Project extends Processor {
 	 */
 	static class RebuildTriggerPolicy {
 
-		private static final String ALWAYS = "always";
 
 		/**
 		 * Result of evaluating the build change policy.
@@ -3938,8 +3938,9 @@ public class Project extends Processor {
 		 *         decision and the computed digest values
 		 */
 		RebuildTriggerPolicyResult doRebuildTriggerPolicy(Processor proc, Jar jar, File outputFile) {
-			String rebuildTriggerPolicy = proc.get(Constants.REBUILDTRIGGERPOLICY, ALWAYS);
-			if (ALWAYS.equals(rebuildTriggerPolicy)) {
+			String rebuildTriggerPolicy = proc.get(Constants.REBUILDTRIGGERPOLICY,
+				Constants.REBUILDTRIGGERPOLICY_ALWAYS);
+			if (Constants.REBUILDTRIGGERPOLICY_ALWAYS.equals(rebuildTriggerPolicy)) {
 				return RebuildTriggerPolicyResult.REBUILD_ALWAYS;
 			}
 
