@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
@@ -20,6 +21,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.team.TeamUtils;
@@ -42,6 +44,7 @@ public class BndPreferences {
 	private static final String		PREF_BUILDBEFORELAUNCH			= "buildBeforeLaunch";
 	private static final String		PREF_ENABLE_TEMPLATE_REPO		= "enableTemplateRepo";
 	private static final String		PREF_TEMPLATE_REPO_URI_LIST		= "templateRepoUriList";
+	private static final String		PREF_WORKSPACE_TEMPLATE_INDEXES	= "workspaceTemplateIndexes";
 	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
 	private static final String		PREF_PARALLEL					= "parallel";
 
@@ -63,6 +66,7 @@ public class BndPreferences {
 		store.setDefault(PREF_ENABLE_TEMPLATE_REPO, false);
 		store.setDefault(PREF_TEMPLATE_REPO_URI_LIST,
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
+		store.setDefault(PREF_WORKSPACE_TEMPLATE_INDEXES, FragmentTemplateEngine.DEFAULT_INDEX);
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
 		store.setDefault(PREF_PARALLEL, false);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
@@ -208,6 +212,29 @@ public class BndPreferences {
 				sb.append(' ');
 		}
 		store.setValue(PREF_TEMPLATE_REPO_URI_LIST, sb.toString());
+	}
+
+	public List<String> getWorkspaceTemplateIndexes() {
+		return parseUriList(store.getString(PREF_WORKSPACE_TEMPLATE_INDEXES));
+	}
+
+	public void setWorkspaceTemplateIndexes(List<String> uris) {
+		store.setValue(PREF_WORKSPACE_TEMPLATE_INDEXES, formatUriList(uris));
+	}
+
+	static List<String> parseUriList(String urisStr) {
+		if (urisStr == null || urisStr.isBlank())
+			return Collections.emptyList();
+		return Arrays.stream(urisStr.trim()
+			.split("\\s+"))
+			.filter(s -> !s.isBlank())
+			.collect(Collectors.toList());
+	}
+
+	static String formatUriList(List<String> uris) {
+		return uris.stream()
+			.filter(s -> s != null && !s.isBlank())
+			.collect(Collectors.joining(" "));
 	}
 
 	public IPreferenceStore getStore() {
