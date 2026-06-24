@@ -643,5 +643,40 @@ public class MavenTest {
 		b.close();
 	}
 
+	@Test
+	public void testPomResourceWithMavenStyleSnapshotPomVersion() throws Exception {
+		// Regression: a -pom "version=" that is already in Maven style (e.g.
+		// "1.0.0-SNAPSHOT" with a hyphen qualifier separator) must NOT be fed
+		// through doSnapshot/Version.parseVersion, which only accepts OSGi
+		// versions. This mirrors: -snapshot: ${tstamp}-SNAPSHOT and
+		// -pom: version=${versionmask;===s;${@version}} -> 1.0.0-SNAPSHOT.
+		// Before the fix this threw:
+		// IllegalArgumentException: Invalid syntax for version: 1.0.0-SNAPSHOT
+		Builder b = new Builder();
+		b.setProperty("-pom", "version=1.0.0-SNAPSHOT");
+		b.setBundleSymbolicName("com.example.test");
+		b.setBundleVersion("1.0.0.SNAPSHOT");
+		b.setProperty("-snapshot", "202606231200-SNAPSHOT");
+		b.setProperty("-resourceonly", "true");
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		Resource r = jar.getResource("pom.xml");
+		assertNotNull(r);
+
+		Document d = XML.newDocumentBuilderFactory()
+			.newDocumentBuilder()
+			.parse(r.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
+
+		// The Maven-style version must be left untouched (not re-processed by doSnapshot).
+		assertEquals("1.0.0-SNAPSHOT", xpath.evaluate("/project/version", d));
+
+		jar.close();
+		b.close();
+	}
+
 }
 
