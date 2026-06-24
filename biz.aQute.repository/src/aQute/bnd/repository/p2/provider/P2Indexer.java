@@ -152,9 +152,21 @@ class P2Indexer implements Closeable {
 				if (!bsn.equals(id) || !osgiVersion.equals(capVersion)) {
 					continue;
 				}
-				if (requestedType != null && !requestedType.equals(capType)) {
-					continue;
+				
+				// Filter by type: when requestedType is specified, it must match
+				// When requestedType is null (default case), exclude features to prefer bundles
+				if (requestedType != null) {
+					if (!requestedType.equals(capType)) {
+						continue;
+					}
+				} else {
+					// Default case: when no specific type requested, skip Eclipse features
+					// to ensure bundles are returned instead of empty feature containers
+					if ("org.eclipse.update.feature".equals(capType)) {
+						continue;
+					}
 				}
+				
 				return resource;
 			}
 		}
