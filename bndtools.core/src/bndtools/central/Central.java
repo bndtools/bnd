@@ -282,6 +282,7 @@ public class Central implements IStartupParticipant {
 					ws.forceRefresh();
 					ws.refresh();
 					ws.refreshProjects();
+					applyRebuildTriggerPolicy(ws);
 					return tryResolve(cnfWorkspaceDeferred);
 				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
 					// There is no "cnf" project and the current workspace is
@@ -291,6 +292,7 @@ public class Central implements IStartupParticipant {
 					ws.forceRefresh();
 					ws.refresh();
 					ws.refreshProjects();
+					applyRebuildTriggerPolicy(ws);
 					return null;
 				}
 				return null;
@@ -329,6 +331,7 @@ public class Central implements IStartupParticipant {
 			}
 
 			ws.setOffline(new BndPreferences().isWorkspaceOffline());
+			applyRebuildTriggerPolicy(ws);
 
 			ws.addBasicPlugin(new SWTClipboard());
 			ws.addBasicPlugin(getInstance().repoListenerTracker);
@@ -347,6 +350,27 @@ public class Central implements IStartupParticipant {
 			}
 			logger.error("Workspace creation failure", e);
 			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Applies the Eclipse rebuild trigger policy preference to the workspace.
+	 * <p>
+	 * This must be called after every {@link Workspace#refresh()} because refresh recreates the
+	 * workspace property map from {@code build.bnd}, wiping any in-memory overrides.
+	 * <p>
+	 * When the preference is "Default" (empty string), the workspace property is left unset so the
+	 * value from {@code build.bnd} is used. Otherwise the Eclipse preference value is written to
+	 * the workspace property, overriding what is in {@code build.bnd}.
+	 *
+	 * @param ws the workspace to configure
+	 */
+	public static void applyRebuildTriggerPolicy(Workspace ws) {
+		BndPreferences prefs = new BndPreferences();
+		if (prefs.isRebuildTriggerPolicyDefault()) {
+			ws.unsetProperty(Constants.REBUILDTRIGGERPOLICY);
+		} else {
+			ws.setProperty(Constants.REBUILDTRIGGERPOLICY, prefs.getRebuildTriggerPolicy());
 		}
 	}
 

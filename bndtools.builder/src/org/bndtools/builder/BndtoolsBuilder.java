@@ -307,9 +307,10 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					});
 					if (model.isCnf()) {
 						Job job = Job.create("refresh workspace", (m) -> {
-							model.getWorkspace()
-							.refresh(); // this is for bnd plugins built in
-											// cnf
+							Workspace wsttmp = model.getWorkspace();
+							wsttmp.refresh(); // this is for bnd plugins built
+												// in cnf
+							Central.applyRebuildTriggerPolicy(wsttmp);
 						});
 						job.schedule(10);
 					}

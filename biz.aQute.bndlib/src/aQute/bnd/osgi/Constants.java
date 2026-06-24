@@ -216,7 +216,11 @@ public interface Constants {
 	String		PREPARE										= "-prepare";
 	String		PREPROCESSMATCHERS							= "-preprocessmatchers";
 	String		PRIVATEPACKAGE								= "-privatepackage";
+
 	String		REBUILDTRIGGERPOLICY						= "-rebuildtriggerpolicy";
+	String		REBUILDTRIGGERPOLICY_ALWAYS					= "always";
+	String		REBUILDTRIGGERPOLICY_API					= "api";
+
 	String		RELEASEREPO									= "-releaserepo";
 	String		REPORTCONFIG								= "-reportconfig";
 	String		DISTRO										= "-distro";
@@ -264,6 +268,7 @@ public interface Constants {
 	String		AUGMENT_RANGE_ATTRIBUTE						= "version:";
 	String		AUGMENT_CAPABILITY_DIRECTIVE				= "capability:";
 	String		AUGMENT_REQUIREMENT_DIRECTIVE				= "requirement:";
+
 
 	String		REMOTEWORKSPACE								= "-remoteworkspace";
 
