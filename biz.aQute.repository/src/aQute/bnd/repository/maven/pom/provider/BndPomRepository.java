@@ -482,19 +482,23 @@ public class BndPomRepository extends BaseRepository
 			cb.copy(gavs);
 		});
 
-		String bsn = (String) target[0];
-		Version version = (Version) target[1];
-		Archive archive = getArchiveByBsnVersion(bsn, version);
 
-		RepoActionsUtil.addSources(archive, (a) -> {
+		if (target.length == 2) {
+			// Revision Action: 0 = bns, 1 = version
+			String bsn = (String) target[0];
+			Version version = (Version) target[1];
+			Archive archive = getArchiveByBsnVersion(bsn, version);
 
-			try {
-				return repoImpl.getMavenRepository()
-					.get(a);
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-		}, menu);
+			RepoActionsUtil.addSources(archive, (a) -> {
+
+				try {
+					return repoImpl.getMavenRepository()
+						.get(a);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			}, menu);
+		}
 
 		return menu;
 	}
