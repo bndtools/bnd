@@ -306,6 +306,14 @@ public class BridgeRepository {
 		return new TreeSet<>(map.keySet());
 	}
 
+	public Map<Version, ResourceInfo> versionInfos(String bsn) {
+		Map<Version, ResourceInfo> map = index.get(bsn);
+		if (map == null || map.isEmpty()) {
+			return Map.of();
+		}
+		return Collections.unmodifiableMap(map);
+	}
+
 	public Repository getRepository() {
 		return repository;
 	}
