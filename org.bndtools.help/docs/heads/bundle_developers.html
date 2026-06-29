@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-Developers ...</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-Developers ...</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-Developers: Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_developers.md -->
+<h1 id="bundle-developers">Bundle-Developers</h1>
+<p>The <code>Bundle-Developers</code> header lists developers of the bundle, as defined in the Maven POM or via annotations. This header is not standardized by OSGi but is used for documentation and tracking purposes.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Developers: Jane Smith;roles=&#39;lead&#39;;organization=&#39;Example Corp.&#39;
+</code></pre></div>
+
+<p>This header is optional and is mainly used for informational purposes.</p>
+<div class="highlight"><pre><span></span><code>/*
+ * Bundle-Developers header
+ */
+private void doBundleDevelopers(BundleDevelopers annotation) throws IOException {
+    StringBuilder sb = new StringBuilder(annotation.value());
+    if (annotation.name() != null) {
+        sb.append(&quot;;name=&#39;&quot;);
+        escape(sb, annotation.name());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.roles() != null) {
+        sb.append(&quot;;roles=&#39;&quot;);
+        escape(sb,annotation.roles());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.organizationUrl() != null) {
+        sb.append(&quot;;organizationUrl=&#39;&quot;);
+        escape(sb,annotation.organizationUrl());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.organization() != null) {
+        sb.append(&quot;;organization=&#39;&quot;);
+        escape(sb,annotation.organization());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.timezone() != 0)
+        sb.append(&quot;;timezone=&quot;).append(annotation.timezone());
+
+    add(Constants.BUNDLE_DEVELOPERS, sb.toString());
+}
+
+
+        /**
+     * Maven defines developers and developers in the POM. This annotation will
+     * generate a (not standardized by OSGi) Bundle-Developers header.
+     * &lt;p&gt;
+     * A deve
+     * &lt;p&gt;
+     * This annotation can be used directly on a type or it can &#39;color&#39; an
+     * annotation. This coloring allows custom annotations that define a specific
+     * developer. For example:
+     * 
+     * &lt;pre&gt;
+     *   @BundleContributor(&quot;Peter.Kriens@aQute.biz&quot;)
+     *   @interface pkriens {}
+     *   
+     *   @pkriens
+     *   public class MyFoo {
+     *     ...
+     *   }
+     * &lt;/pre&gt;
+     * 
+     * Duplicates are removed before the header is generated and the coloring does
+     * not create an entry in the header, only an annotation on an actual type is
+     * counted. This makes it possible to make a library of developers without
+     * then adding them all to the header.
+     * &lt;p&gt;
+     * {@see https://maven.apache.org/pom.html#Developers}
+     */
+    @Retention(RetentionPolicy.CLASS)
+    @Target({
+            ElementType.ANNOTATION_TYPE, ElementType.TYPE
+    })
+    public @interface BundleDevelopers {
+
+        /**
+         * The email address of the developer.
+         */
+        String value();
+
+        /**
+         * The display name of the developer. If not specified, the {@link #value()}
+         * is used.
+         */
+        String name() default &quot;&quot;;
+
+        /**
+         * The roles this developer plays in the development.
+         */
+        String[] roles() default {};
+
+        /**
+         * The name of the organization where the developer works for.
+         */
+        String organization() default &quot;&quot;;
+
+        /**
+         * The url of the organization where the developer works for.
+         */
+        String organizationUrl() default &quot;&quot;;
+
+        /**
+         * Time offset in hours from UTC without Daylight savings
+         */
+        int timezone() default 0;
+    }
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>digest ';' ALGORITHM ';' FILE</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>digest ';' ALGORITHM ';' FILE</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>digest</code> macro computes a cryptographic hash of a file using a specified algorithm (such as MD5, SHA-1, SHA-256, etc.). The result is returned as a hexadecimal string.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${digest;&lt;algorithm&gt;;&lt;file&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>algorithm</code> - The digest algorithm name (e.g., "MD5", "SHA-1", "SHA-256", "SHA-512")</li>
+<li><code>file</code> - Path to the file to hash (relative to project directory)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Reads the entire file and computes its digest</li>
+<li>Uses Java's MessageDigest API, so any supported algorithm can be used</li>
+<li>Returns the digest as a lowercase hexadecimal string</li>
+<li>File path is resolved relative to the project directory</li>
+<li>Throws an exception if the algorithm is not supported or file cannot be read</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Calculate MD5 hash:</p>
+<div class="highlight"><pre><span></span><code>file.md5=${digest;MD5;target/mybundle.jar}
+</code></pre></div>
+
+<p>Calculate SHA-256 hash:</p>
+<div class="highlight"><pre><span></span><code>file.sha256=${digest;SHA-256;LICENSE.txt}
+</code></pre></div>
+
+<p>Calculate SHA-512 for verification:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Digest-SHA512: ${digest;SHA-512;${@}}
+</code></pre></div>
+
+<p>Multiple checksums:</p>
+<div class="highlight"><pre><span></span><code>md5.checksum=${digest;MD5;artifact.jar}
+sha1.checksum=${digest;SHA-1;artifact.jar}
+sha256.checksum=${digest;SHA-256;artifact.jar}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Generating checksums for artifact verification</li>
+<li>Creating file integrity manifests</li>
+<li>Implementing build reproducibility checks</li>
+<li>Generating unique identifiers based on file content</li>
+<li>Security verification and tamper detection</li>
+<li>Creating content-addressable storage keys</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Common algorithms include: MD5, SHA-1, SHA-256, SHA-384, SHA-512</li>
+<li>The algorithm name is case-insensitive</li>
+<li>MD5 and SHA-1 are considered weak for security purposes; prefer SHA-256 or stronger</li>
+<li>The output is always lowercase hexadecimal</li>
+<li>For large files, this reads the entire file into memory for hashing</li>
+<li>See also: <code>${md5}</code> and <code>${sha1}</code> macros for specific algorithms</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

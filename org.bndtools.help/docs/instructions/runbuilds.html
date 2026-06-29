@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runbuilds BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runbuilds BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-runbuilds=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runbuilds.md -->
+<p>The <code>-runbuilds</code> instruction controls whether the bundles built by the current project should be automatically added to the <code>-runbundles</code> list when running or testing the project. </p>
+<ul>
+<li>In a <code>.bndrun</code> file, the default is <code>false</code>, so built bundles are not added unless you explicitly set <code>-runbuilds: true</code>.</li>
+<li>In a <code>.bnd</code> file, the default is <code>true</code>, so built bundles are included unless you set <code>-runbuilds: false</code>.</li>
+</ul>
+<p>This instruction is useful for controlling which bundles are available at runtime, especially when you want to test or launch only a subset of the bundles produced by your project.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

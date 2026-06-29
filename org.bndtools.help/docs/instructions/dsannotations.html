@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-dsannotations SELECTORS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-dsannotations SELECTORS</h1>
+<ul>
+<li>
+<p>Example: <code>-dsannotations: *</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/dsannotations.md -->
+<p>The <code>-dsannotations</code> instruction tells bnd which classes in your bundle should be scanned for Declarative Services (DS) annotations. bnd will process these classes and generate the necessary DS XML descriptors automatically.</p>
+<p>You provide a comma-separated list of fully qualified class names or use <code>*</code> to process all classes. This makes it easy to enable DS annotation processing for your entire bundle or for specific classes only.</p>
+<p>You can further configure DS annotation processing using the <code>-dsannotations-options</code> instruction.</p>
+<h2 id="component-class-requirements">Component Class Requirements</h2>
+<p>When bnd processes DS annotations, it validates that component classes meet the DS specification requirements. Starting with bnd 7.3.0, component classes must have either a public no-argument constructor or a public <code>@Activate</code>-annotated constructor. Inner classes must be declared as <code>static</code>.</p>
+<p>If validation fails, bnd will generate an error and stop the build. See <a href="/chapters/200-components.html#component-class-requirements">Component Class Requirements</a> for detailed requirements and examples.</p>
+<p><a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java">source</a></p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runenv PROPERTIES</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runenv PROPERTIES</h1>
+<ul>
+<li>
+<p>Example: <code>-runenv: org.osgi.service.http.port=9999, org.osgi.framework.bootdelegation="sun.*,com.sun.*,"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runenv.md -->
+<h1 id="-runenv">-runenv</h1>
+<p>The <code>-runenv</code> instruction specifies system properties to set when launching the application. This is useful for configuring the runtime environment, such as setting ports, feature flags, or other JVM properties.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-runenv: my.property=value, another.property=1234
+</code></pre></div>
+
+<p>These properties will be set in the local JVM when the workspace is started.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

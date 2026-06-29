@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>How to install bnd</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>How to install bnd</h1>
+<p>bnd is not a single product, it is a library (bndlib) used in many different software build environments. It runs inside Maven, ant, gradle, Eclipse, sbt, and maybe one day in Intellij. To install bnd, you will have to install these tools. </p>
+<div>
+<ul class="property-index">
+
+<li><a href=""></a> </li>
+
+
+</ul>
+</div>
+
+<h2 id="command-line">Command Line</h2>
+<p>That said, there is also a command line version of bnd, providing an easy way to try out its many features. You can install bnd through <a href="https://formulae.brew.sh/formula/bnd">brew</a> on MacOS.</p>
+<p>You can also run bnd command as executable jar, which can be downloaded from <a href="https://bndtools.jfrog.io/bndtools/libs-snapshot/biz/aQute/bnd/biz.aQute.bnd/">JFrog</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install bnd CLI</span>
+curl<span class="w"> </span>-Lk<span class="w"> </span>-o<span class="w"> </span>~/biz.aQute.bnd.jar<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/7.2.1/biz.aQute.bnd-7.2.1.jar
+
+<span class="c1"># create alias for easy use via &#39;bnd&#39;</span>
+<span class="nb">alias</span><span class="w"> </span><span class="nv">bnd</span><span class="o">=</span><span class="s1">&#39;java -jar ~/biz.aQute.bnd.jar&#39;</span>
+
+<span class="c1"># display bnd version to verify installation</span>
+bnd<span class="w"> </span>version
+
+<span class="c1"># Run commands</span>
+bnd<span class="w"> </span>&lt;command&gt;
+
+<span class="c1"># Example</span>
+bnd<span class="w"> </span><span class="nb">help</span>
+</code></pre></div>
+
+<h2 id="libraries">Libraries</h2>
+<p>The binaries are available on JFrog:</p>
+<ul>
+<li><a href="https://bndtools.jfrog.io/artifactory/update-latest/biz/aQute/bnd/biz.aQute.bnd/">Releases and Release Candidates (RC)</a></li>
+<li><a href="https://bndtools.jfrog.io/bndtools/libs-snapshot/biz/aQute/bnd/biz.aQute.bnd/">SNAPSHOT releases</a> (e.g. the latest from current master branch)</li>
+</ul>
+<p>If you are a maven user, you can find many versions in central. The coordinates are:</p>
+<div class="highlight"><pre><span></span><code>    &lt;dependency&gt;
+        &lt;groupId&gt;biz.aQute.bnd&lt;/groupId&gt;
+        &lt;artifactId&gt;biz.aQute.bndlib&lt;/artifactId&gt;
+        &lt;version&gt;7.1.0&lt;/version&gt;
+    &lt;/dependency&gt;
+</code></pre></div>
+
+<h2 id="source-code">Source Code</h2>
+<p>bnd is maintained at <a href="https://github.com/bndtools/bnd">github</a>. If you want to change the code, just clone it and modify it. In general we accept pull requests, and often even highly appreciate them.</p>
+<h2 id="manual">Manual</h2>
+<p>The manual is also on <a href="https://github.com/bndtools/bnd/tree/master/docs">github</a>. If you see an improvement, do not hesitate to clone the repo and create a pull request. Improvements are bug corrections but we also like short articles about how to do do something with bnd.</p>
+<h2 id="communication-settings">Communication Settings</h2>
+<p>If you're behind a firewall that requires proxies or you use repositories that require authentication see <a href="/instructions/connection_settings.html">-connection-settings</a>.</p>
+</body>
+</html>

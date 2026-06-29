@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>unescape ( ';' STRING )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>unescape ( ';' STRING )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>unescape</code> macro converts escape sequences in strings to their corresponding control characters. It concatenates all input arguments and processes escape sequences.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${unescape;&lt;string&gt;[;&lt;string&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - One or more strings to unescape (concatenated before processing)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Concatenates all input arguments</li>
+<li>Replaces escape sequences with control characters:</li>
+<li><code>\n</code> → newline (line feed)</li>
+<li><code>\r</code> → carriage return</li>
+<li><code>\t</code> → tab</li>
+<li><code>\b</code> → backspace</li>
+<li><code>\f</code> → form feed</li>
+<li>Returns the unescaped string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Unescape newline:</p>
+<div class="highlight"><pre><span></span><code>${unescape;line1\nline2}
+# Returns: &quot;line1
+# line2&quot;
+</code></pre></div>
+
+<p>Unescape tab:</p>
+<div class="highlight"><pre><span></span><code>${unescape;col1\tcol2\tcol3}
+# Returns: &quot;col1    col2    col3&quot;
+</code></pre></div>
+
+<p>Multiple strings:</p>
+<div class="highlight"><pre><span></span><code>${unescape;first\n;second\n;third}
+# Returns: &quot;first
+# second
+# third&quot;
+</code></pre></div>
+
+<p>Mixed escapes:</p>
+<div class="highlight"><pre><span></span><code>${unescape;Name:\tJohn\nAge:\t30}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Creating multi-line strings</li>
+<li>Generating formatted output</li>
+<li>Processing escape sequences in templates</li>
+<li>Building tab-delimited data</li>
+<li>Creating properly formatted text</li>
+<li>Template processing</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only specific escape sequences are supported</li>
+<li>Other backslash sequences remain unchanged</li>
+<li>All arguments are concatenated before unescaping</li>
+<li>Useful for creating formatted text in properties</li>
+<li>Control characters may not display properly in all contexts</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

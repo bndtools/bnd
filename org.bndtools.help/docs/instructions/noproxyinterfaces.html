@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-noproxyinterfaces BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-noproxyinterfaces BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-noproxyinterfaces=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/noproxyinterfaces.md -->
+<p>Normally, Bnd examines the method bodies of classes looking for the instruction sequence:</p>
+<div class="highlight"><pre><span></span><code>Proxy.newProxyInstance(ClassLoader, Class[], InvocationHandler)
+</code></pre></div>
+
+<p>When Bnd detects a call to <code>Proxy.newProxyInstance</code>, it inspects the <code>Class[]</code> argument — for example, <code>new Class[] { SomeInterface.class, ... }</code> — and treats all listed interfaces as if they were implemented by the class. This means that any types referenced in the parameters or return types of those interfaces must also be imported.</p>
+<h2 id="example">Example</h2>
+<p>Consider the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ServletContext</span><span class="p">)</span><span class="w"> </span><span class="n">Proxy</span><span class="p">.</span><span class="na">newProxyInstance</span><span class="p">(</span>
+<span class="w">    </span><span class="n">curClassLoader</span><span class="p">,</span><span class="w"> </span>
+<span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">Class</span><span class="o">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ServletContext</span><span class="p">.</span><span class="na">class</span><span class="w"> </span><span class="p">},</span><span class="w"> </span>
+<span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">AdaptorInvocationHandler</span><span class="p">()</span>
+<span class="p">);</span>
+</code></pre></div>
+
+<p>Bnd will automatically add the package <code>javax.servlet.descriptor</code> to the <code>Import-Package</code> header, because the detected <code>ServletContext</code> interface declares the method <code>JspConfigDescriptor getJspConfigDescriptor()</code>.</p>
+<h2 id="limitations">Limitations</h2>
+<p>Interface detection only occurs when the <code>Class[]</code> array is created inline (that is, using the <code>anewarray</code> bytecode pattern shown above).
+If the array is obtained from a field, local variable, or method parameter, Bnd cannot reliably determine its contents from the bytecode, and therefore no interfaces will be detected in those cases.</p>
+<h2 id="disabling-proxy-interface-detection">Disabling Proxy Interface Detection</h2>
+<p>The <code>-noproxyinterfaces</code> instruction can be used to tell Bnd <strong>not</strong> to search method bodies for calls to <code>Proxy.newProxyInstance</code>.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-noproxyinterfaces: true
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>average (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>average (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>average</code> macro calculates the arithmetic mean of all numeric values provided in one or more semicolon-separated lists. Each list element is parsed as a double-precision floating-point number, and the result is the sum of all values divided by the count.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${average;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of numeric values. Values within each list can be comma-separated.</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Parses all list elements as double-precision floating-point numbers</li>
+<li>Calculates the sum of all values across all lists</li>
+<li>Divides by the total number of values to get the average</li>
+<li>Throws an exception if no values are provided</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Calculate average of a simple list:</p>
+<div class="highlight"><pre><span></span><code>${average;1,2,3,4,5}
+# Returns: 3
+</code></pre></div>
+
+<p>Calculate average across multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${average;10,20,30;40,50}
+# Returns: 30 (average of 10,20,30,40,50)
+</code></pre></div>
+
+<p>Calculate average of decimal values:</p>
+<div class="highlight"><pre><span></span><code>${average;1.5,2.5,3.5}
+# Returns: 2.5
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Computing average build times or metric values</li>
+<li>Calculating mean version numbers for analysis</li>
+<li>Aggregating numeric configuration values</li>
+<li>Statistical analysis of build data</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

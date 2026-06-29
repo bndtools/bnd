@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-dsannotations-options SELECTORS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-dsannotations-options SELECTORS</h1>
+<ul>
+<li>
+<p>Example: <code>-dsannotations-options: version;minimum=1.2.0</code></p>
+</li>
+<li>
+<p>Values: <code>(inherit|felixExtensions|extender|nocapabilities|norequirements|version)</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/dsannotations_options.md -->
+<p>The <code>-dsannotations-options</code> instruction configures how DS component annotations are processed and what metadata is generated.</p>
+<div class="highlight"><pre><span></span><code><span class="na">-dsannotations-options</span><span class="o">:</span><span class="w"> </span><span class="s">version;minimum=1.2.0;maximum=1.3.0</span>
+</code></pre></div>
+
+<p>The example above, will restrict the use of OSGi DS annotations to minimum 1.2.0 and maximum 1.3.0 version. The version number denotes that the users are free to use any version equal to or higher than 1.2.0 but less than or equal to 1.3.0, provided that the users have the DS annotations included on the build path.</p>
+<p>The following options are supported:</p>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>inherit</td>
+<td>use DS annotations found in the class hierarchy of the component class. <em>WARNING:</em> Annotations are not inherited from the component's super classes by default. The problem is that super classes from imported packages may be different at runtime than they were at build time. So it is always best to declare your annotations on the actual component class.</td>
+</tr>
+<tr>
+<td>felixExtensions</td>
+<td>enable features proprietary to Apache Felix SCR</td>
+</tr>
+<tr>
+<td>extender</td>
+<td>add the <code>osgi.extender=osgi.component</code> requirement to the manifest</td>
+</tr>
+<tr>
+<td>nocapabilities</td>
+<td>do not add <code>osgi.service</code> capabilities to the manifest</td>
+</tr>
+<tr>
+<td>norequirements</td>
+<td>do not add <code>osgi.service</code> requirements to the manifest</td>
+</tr>
+<tr>
+<td>version</td>
+<td>set the minimum and/or maximum version of the <code>osgi.extender=osgi.component</code> requirement added to the manifest</td>
+</tr>
+</tbody>
+</table>
+<p><br /><br /></p>
+</body>
+</html>

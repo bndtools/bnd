@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>retainall ';' LIST ';' LIST</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>retainall ';' LIST ';' LIST</h1>
+<h2 id="summary">Summary</h2>
+<p>Keep only elements from the first list that are also present in the second list, effectively computing the intersection of two lists.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${retainall;&lt;list1&gt;;&lt;list2&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>list1</strong>: Source list from which elements will be kept</li>
+<li><strong>list2</strong>: List of elements to retain from list1</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns a new list containing only elements that appear in both lists</li>
+<li>Performs exact string matching (not pattern matching)</li>
+<li>Order of elements is preserved from list1</li>
+<li>Returns empty string if fewer than two lists are provided</li>
+<li>Acts as a set intersection operation</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Find common packages
+packages1 = com.example.api, com.example.impl, com.example.util
+packages2 = com.example.api, com.example.util, com.other.api
+common-packages = ${retainall;${packages1};${packages2}}
+# Returns: com.example.api,com.example.util
+
+# Keep only approved dependencies
+all-deps = foo.jar, bar.jar, baz.jar, qux.jar
+approved-deps = foo.jar, baz.jar
+used-deps = ${retainall;${all-deps};${approved-deps}}
+# Returns: foo.jar,baz.jar
+
+# List intersection
+list-a = a, b, c, d
+list-b = c, d, e, f
+intersection = ${retainall;${list-a};${list-b}}
+# Returns: c,d
+
+# Filter build path to allowed items
+buildpath = ${workspace.buildpath}
+allowed-libs = commons-io, commons-lang, slf4j-api
+-buildpath: ${retainall;${buildpath};${allowed-libs}}
+
+# No common elements
+list-x = a, b, c
+list-y = d, e, f
+${retainall;${list-x};${list-y}}
+# Returns: (empty)
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Whitelist Filtering</strong>: Keep only approved/allowed elements from a list</li>
+<li><strong>Set Intersection</strong>: Find common elements between two lists</li>
+<li><strong>Dependency Validation</strong>: Ensure only permitted dependencies are used</li>
+<li><strong>Package Filtering</strong>: Keep only packages that meet certain criteria</li>
+<li><strong>Configuration Merging</strong>: Identify common configuration items</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses exact string matching, not regular expressions</li>
+<li>For pattern-based filtering, use <a href="filter.html">filter</a> or <a href="select.html">select</a></li>
+<li>Elements are compared as complete strings</li>
+<li>Returns empty string if fewer than two arguments provided</li>
+<li>This is the opposite of <a href="removeall.html">removeall</a> - retainall keeps matching elements, removeall removes them</li>
+<li>Order of retained elements follows list1's order</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="removeall.html">removeall</a> - Remove elements present in another list (opposite operation)</li>
+<li><a href="filter.html">filter</a> / <a href="select.html">select</a> - Keep elements matching a regex pattern</li>
+<li><a href="reject.html">reject</a> / <a href="filterout.html">filterout</a> - Remove elements matching a regex pattern</li>
+<li><a href="uniq.html">uniq</a> - Remove duplicate elements</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>foreach ';' MACRO (';' LIST)*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>foreach ';' MACRO (';' LIST)*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>foreach</code> macro iterates over one or more lists and invokes a specified macro for each element, passing both the element value and its index (0-based) as arguments. The results are collected and returned as a comma-separated list.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${foreach;&lt;macro-name&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>macro-name</code> - Name of a macro to invoke for each element (without the <code>${}</code> wrapper)</li>
+<li><code>list</code> - One or more semicolon-separated lists to iterate over</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists into a single list</li>
+<li>Iterates through each element with a 0-based index</li>
+<li>For each element, invokes: <code>${&lt;macro-name&gt;;&lt;element&gt;;&lt;index&gt;}</code></li>
+<li>Collects all macro results</li>
+<li>Returns results as a comma-separated string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Transform each element:</p>
+<div class="highlight"><pre><span></span><code># Define a macro to wrap elements
+my-macro;$1-modified
+
+# Use foreach
+${foreach;my-macro;apple,banana,cherry}
+# Invokes: ${my-macro;apple;0}, ${my-macro;banana;1}, ${my-macro;cherry;2}
+</code></pre></div>
+
+<p>Number items in a list:</p>
+<div class="highlight"><pre><span></span><code># Define numbering macro
+num;$2: $1
+
+${foreach;num;first,second,third}
+# Returns: &quot;0: first,1: second,2: third&quot;
+</code></pre></div>
+
+<p>Process file list:</p>
+<div class="highlight"><pre><span></span><code># Define file processing macro
+process-file;processed-$1
+
+${foreach;process-file;${lsr;src;*.java}}
+</code></pre></div>
+
+<p>Generate indexed output:</p>
+<div class="highlight"><pre><span></span><code># Define template macro
+item-template;&lt;item index=&quot;$2&quot;&gt;$1&lt;/item&gt;
+
+${foreach;item-template;red,green,blue}
+# Returns XML items with indices
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Transforming lists with complex logic</li>
+<li>Generating indexed output</li>
+<li>Applying templates to list elements</li>
+<li>Creating numbered or labeled items</li>
+<li>Building structured output from lists</li>
+<li>Mapping values with context (index)</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The invoked macro receives two arguments: the value and the index (0-based)</li>
+<li>The macro must be defined before use (either as a property or built-in macro)</li>
+<li>Results are joined with commas</li>
+<li>Index starts at 0 for the first element</li>
+<li>Empty lists produce empty results</li>
+<li>See also: <code>${map}</code> for simpler transformations without index</li>
+<li>See also: <code>${apply}</code> for passing entire lists to a macro</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>literal ';' STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>literal ';' STRING</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>literal</code> macro prevents macro expansion by wrapping a value with the macro prefix <code>${</code> and suffix <code>}</code>. This effectively creates a literal macro reference that won't be expanded in the current pass.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${literal;&lt;value&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>value</code> - The string to wrap with macro delimiters</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Wraps the input value with <code>${</code> and <code>}</code></li>
+<li>Returns <code>${&lt;value&gt;}</code></li>
+<li>Prevents immediate macro expansion</li>
+<li>The result can be expanded in a later processing pass</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Create a literal macro reference:</p>
+<div class="highlight"><pre><span></span><code>${literal;version}
+# Returns: &quot;${version}&quot;
+</code></pre></div>
+
+<p>Delay macro expansion:</p>
+<div class="highlight"><pre><span></span><code>deferred=${literal;basedir}
+# deferred contains the string &quot;${basedir}&quot;, not the actual path
+</code></pre></div>
+
+<p>Pass macro syntax as a value:</p>
+<div class="highlight"><pre><span></span><code>template=${literal;project.name}
+# Later: expanded=${template} will evaluate ${project.name}
+</code></pre></div>
+
+<p>Store macro patterns:</p>
+<div class="highlight"><pre><span></span><code>pattern=${literal;if;condition;true;false}
+# Returns: &quot;${if;condition;true;false}&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Delaying macro expansion to a later processing stage</li>
+<li>Storing macro patterns as values</li>
+<li>Generating dynamic macro references</li>
+<li>Template creation and processing</li>
+<li>Multi-pass macro processing</li>
+<li>Escaping macro syntax</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The result is a string, not an expanded macro</li>
+<li>Useful for meta-programming with macros</li>
+<li>The wrapped value will be expanded if processed again</li>
+<li>Does not escape inner content - only wraps it</li>
+<li>Requires exactly one argument</li>
+<li>Returns a literal macro syntax string</li>
+<li>See also: Property substitution and template processing</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

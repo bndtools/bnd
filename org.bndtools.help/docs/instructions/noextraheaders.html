@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-noextraheaders  BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-noextraheaders  BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-noextraheaders=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/noextraheaders.md -->
+<p>The <code>-noextraheaders</code> instruction controls whether bnd adds extra headers to the manifest that are specific to bnd, such as <code>Created-By</code>, <code>Tool</code>, and <code>Bnd-LastModified</code>. By default, these headers are included to provide information about the build environment and tool versions. When this instruction is set to <code>true</code>, bnd will not add these extra headers, resulting in a cleaner manifest with only the standard OSGi headers.</p>
+<p>This can be useful if you want to minimize metadata or ensure that your manifest contains only the required information.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>
