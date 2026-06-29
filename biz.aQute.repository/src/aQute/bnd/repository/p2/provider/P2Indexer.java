@@ -13,9 +13,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.repository.BridgeRepository;
+import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
@@ -69,6 +72,7 @@ class P2Indexer implements Closeable {
 	private final PromiseFactory			promiseFactory;
 	private volatile BridgeRepository		bridge;
 	private static final SupportingResource	RECOVERY	= new ResourceBuilder().build();
+	private static final String				ECLIPSE_FEATURE_CAPABILITY	= "org.eclipse.update.feature";
 
 	P2Indexer(Unpack200 processor, Reporter reporter, File location, HttpClient client, URI url, String name)
 		throws Exception {
@@ -152,7 +156,7 @@ class P2Indexer implements Closeable {
 				if (!bsn.equals(id) || !osgiVersion.equals(capVersion)) {
 					continue;
 				}
-				
+
 				// Filter by type: when requestedType is specified, it must match
 				// When requestedType is null (default case), exclude features to prefer bundles
 				if (requestedType != null) {
@@ -162,11 +166,11 @@ class P2Indexer implements Closeable {
 				} else {
 					// Default case: when no specific type requested, skip Eclipse features
 					// to ensure bundles are returned instead of empty feature containers
-					if ("org.eclipse.update.feature".equals(capType)) {
+					if (ECLIPSE_FEATURE_CAPABILITY.equals(capType)) {
 						continue;
 					}
 				}
-				
+
 				return resource;
 			}
 		}
@@ -179,7 +183,31 @@ class P2Indexer implements Closeable {
 	}
 
 	SortedSet<Version> versions(String bsn) throws Exception {
-		return getBridge().versions(bsn);
+
+		// must only return bundles (not features)
+		// the difficulty for P2Repository is that bsn is not unique (it can be
+		// bundle and feature)
+		// but we need to ensure that in versions() only bundles are return
+		// which is important e.g. for -buildpath
+		Map<Version, ResourceInfo> versionInfos = getBridge().versionInfos(bsn);
+
+		TreeSet<Version> versions = new TreeSet<Version>();
+		Set<Entry<Version, ResourceInfo>> entrySet = versionInfos.entrySet();
+		for (Entry<Version, ResourceInfo> entry : entrySet) {
+			Resource resource = entry.getValue()
+				.getResource();
+
+			boolean isFeature = ResourceUtils.hasType(resource, ECLIPSE_FEATURE_CAPABILITY);
+			if (isFeature) {
+				// skip features
+				continue;
+			}
+
+			// here we know it is a bundle
+			versions.add(entry.getKey());
+		}
+
+		return versions;
 	}
 
 	private ResourcesRepository readRepository(File index) throws Exception {
@@ -232,6 +260,7 @@ class P2Indexer implements Closeable {
 			.collect(toResourcesRepository()))
 			.getValue();
 	}
+
 
 	static boolean isTargetPlatform(URI repositoryUri) {
 		String path = repositoryUri.getPath();
@@ -380,29 +409,29 @@ class P2Indexer implements Closeable {
 
 	/**
 	 * Get all features available in this P2 repository.
-	 * 
+	 *
 	 * @return a list of features, or empty list if none available
 	 * @throws Exception if an error occurs while fetching features
 	 */
 	public List<Feature> getFeatures() throws Exception {
 		List<Feature> features = new ArrayList<>();
-		
+
 		// IMPORTANT: We must get resources directly from the repository's raw list.
 		// BridgeRepository uses a Map<BSN,Version> which drops duplicate entries.
 		// P2 repositories can have BOTH a bundle AND a feature with the same ID/version.
-		aQute.bnd.osgi.repository.ResourcesRepository resourcesRepo = 
+		aQute.bnd.osgi.repository.ResourcesRepository resourcesRepo =
 			(aQute.bnd.osgi.repository.ResourcesRepository) getBridge().getRepository();
 		List<Resource> allResources = resourcesRepo.getResources();
-		
+
 		// Filter resources with type=org.eclipse.update.feature in identity capability
 		for (Resource resource : allResources) {
 			List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 			for (Capability identity : identities) {
 				Object type = identity.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
-				if ("org.eclipse.update.feature".equals(type)) {
+				if (ECLIPSE_FEATURE_CAPABILITY.equals(type)) {
 					String featureId = (String) identity.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 					logger.debug("Processing feature resource: {}", featureId);
-					
+
 					// Try to extract the full feature from the JAR
 					Feature feature = extractFeatureFromResource(resource);
 					if (feature == null) {
@@ -421,13 +450,13 @@ class P2Indexer implements Closeable {
 				}
 			}
 		}
-		
+
 		return features;
 	}
 
 	/**
 	 * Get a specific feature by ID and version.
-	 * 
+	 *
 	 * @param id the feature ID
 	 * @param version the feature version
 	 * @return the feature, or null if not found
@@ -436,26 +465,26 @@ class P2Indexer implements Closeable {
 	public Feature getFeature(String id, String version) throws Exception {
 		// Get all resources from the repository
 		org.osgi.service.repository.Repository repository = getBridge().getRepository();
-		
+
 		// Create a wildcard requirement to find all identity capabilities
 		aQute.bnd.osgi.resource.RequirementBuilder rb = new aQute.bnd.osgi.resource.RequirementBuilder(
 			IdentityNamespace.IDENTITY_NAMESPACE);
 		Requirement req = rb.buildSyntheticRequirement();
-		
+
 		// Find all providers
 		Map<Requirement, Collection<Capability>> providers = repository.findProviders(
 			java.util.Collections.singleton(req));
 		Collection<Capability> allCaps = providers.get(req);
-		
+
 		if (allCaps == null || allCaps.isEmpty()) {
 			return null;
 		}
-		
+
 		// Get unique resources
 		Set<Resource> allResources = aQute.bnd.osgi.resource.ResourceUtils.getResources(allCaps);
-		
+
 		org.osgi.framework.Version requestedVersion = org.osgi.framework.Version.parseVersion(version);
-		
+
 		// Find the matching feature resource
 		for (Resource resource : allResources) {
 			List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
@@ -463,22 +492,22 @@ class P2Indexer implements Closeable {
 				Object type = identity.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
 				Object idAttr = identity.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 				Object versionAttr = identity.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-				
-				if ("org.eclipse.update.feature".equals(type) && 
-					id.equals(idAttr) && 
+
+				if (ECLIPSE_FEATURE_CAPABILITY.equals(type) &&
+					id.equals(idAttr) &&
 					requestedVersion.equals(versionAttr)) {
 					return extractFeatureFromResource(resource);
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Extract a Feature object from a Resource by downloading and parsing the
 	 * feature JAR.
-	 * 
+	 *
 	 * @param resource the resource representing the feature
 	 * @return the parsed Feature, or null if extraction fails
 	 */
@@ -490,23 +519,23 @@ class P2Indexer implements Closeable {
 				logger.debug("Feature resource has no content capability, skipping");
 				return null;
 			}
-			
+
 			URI uri = contentCapability.url();
 			logger.debug("Extracting feature from URI: {}", uri);
-			
+
 			// Download and get TaggedData
 			TaggedData tag = client.build()
 				.useCache(MAX_STALE)
 				.get()
 				.asTag()
 				.go(uri);
-			
+
 			logger.debug("Downloaded feature JAR, state: {}, file: {}", tag.getState(), tag.getFile());
-			
+
 			// Try to unpack if it's a pack.gz or similar format
 			File featureFile = processor.unpackAndLinkIfNeeded(tag, null);
 			logger.debug("Unpacked feature file: {}", featureFile);
-			
+
 			// Parse the feature.xml from the JAR
 			Feature feature = parseFeatureFromJar(featureFile);
 			if (feature != null) {
@@ -515,16 +544,16 @@ class P2Indexer implements Closeable {
 				logger.debug("Failed to parse feature from file: {}", featureFile);
 			}
 			return feature;
-			
+
 		} catch (Exception e) {
 			logger.debug("Failed to extract feature from resource: {}", e.getMessage(), e);
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Parse a Feature from a feature JAR file.
-	 * 
+	 *
 	 * @param jarFile the feature JAR file (may be .jar, .zip, or .content from cache)
 	 * @return the parsed Feature, or null if parsing fails
 	 */
@@ -534,7 +563,7 @@ class P2Indexer implements Closeable {
 			logger.debug("Feature file not accessible: {}", jarFile);
 			return null;
 		}
-		
+
 		try (InputStream in = IO.stream(jarFile)) {
 			Feature feature = new Feature(in);
 			feature.parse();
@@ -544,11 +573,11 @@ class P2Indexer implements Closeable {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Create a minimal Feature object from resource metadata when full extraction fails.
 	 * This ensures features are visible in the repository even if their JARs can't be downloaded/parsed.
-	 * 
+	 *
 	 * @param resource the resource representing the feature
 	 * @return a minimal Feature with id, version, label, and provider, or null if metadata is insufficient
 	 */
@@ -559,12 +588,12 @@ class P2Indexer implements Closeable {
 			String version = null;
 			String label = null;
 			String providerName = null;
-			
+
 			List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 			for (Capability identity : identities) {
 				Map<String, Object> attrs = identity.getAttributes();
 				Object typeAttr = attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
-				if ("org.eclipse.update.feature".equals(typeAttr)) {
+				if (ECLIPSE_FEATURE_CAPABILITY.equals(typeAttr)) {
 					id = (String) attrs.get(IdentityNamespace.IDENTITY_NAMESPACE);
 					Object versionObj = attrs.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 					if (versionObj instanceof org.osgi.framework.Version) {
@@ -577,12 +606,12 @@ class P2Indexer implements Closeable {
 					break;
 				}
 			}
-			
+
 			if (id == null || version == null) {
 				logger.debug("Cannot create minimal feature: missing id or version");
 				return null;
 			}
-			
+
 			// Create a minimal XML document for the Feature
 			String xml = String.format(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -593,23 +622,23 @@ class P2Indexer implements Closeable {
 				label != null ? " label=\"" + escapeXml(label) + "\"" : "",
 				providerName != null ? " provider-name=\"" + escapeXml(providerName) + "\"" : ""
 			);
-			
+
 			javax.xml.parsers.DocumentBuilderFactory dbf = aQute.lib.xml.XML.newDocumentBuilderFactory();
 			javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
 			org.w3c.dom.Document doc = db.parse(new java.io.ByteArrayInputStream(xml.getBytes("UTF-8")));
-			
+
 			Feature feature = new Feature(doc);
 			feature.parse();
-			
+
 			logger.debug("Created minimal feature from metadata: {} version {}", id, version);
 			return feature;
-			
+
 		} catch (Exception e) {
 			logger.debug("Failed to create minimal feature from resource metadata: {}", e.getMessage());
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Escape XML special characters
 	 */

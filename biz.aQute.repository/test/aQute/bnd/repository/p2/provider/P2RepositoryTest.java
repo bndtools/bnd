@@ -7,7 +7,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,12 +24,14 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
 import aQute.p2.packed.Unpack200;
+import aQute.p2.provider.Feature;
 
 public class P2RepositoryTest {
 	@InjectTemporaryDirectory
@@ -204,7 +209,7 @@ public class P2RepositoryTest {
 	 * Test for issue #7279: Verify that type filtering works correctly in P2Indexer.
 	 * When a P2 repository contains both a feature and a bundle with the same BSN,
 	 * the bundle should be returned for compilation, not the empty feature container.
-	 * 
+	 *
 	 * This test verifies that the filtering logic in findResource() properly
 	 * excludes org.eclipse.update.feature types when requesting bundles.
 	 */
@@ -233,15 +238,42 @@ public class P2RepositoryTest {
 			assertThat(list).as("repository has bundles")
 				.hasSizeGreaterThan(0);
 
+			// Test 3: Verify features are filtered out of the main repository
+			// but still accessible via getFeatures()
+			List<Feature> features = indexer.getFeatures();
+			assertThat(features).as("repository has features")
+				.hasSizeGreaterThan(0);
+
+			for (String bsn : list) {
+				SortedSet<Version> versions = p2r.versions(bsn);
+				Map<Version, ResourceInfo> versionInfos = indexer.getBridge()
+					.versionInfos(bsn);
+
+				Set<Version> featureVersions = new TreeSet<>();
+				for (Entry<Version, ResourceInfo> entry : versionInfos.entrySet()) {
+					Resource resource = entry.getValue()
+						.getResource();
+					boolean isFeature = ResourceUtils.hasType(resource, "org.eclipse.update.feature");
+					if (isFeature) {
+						featureVersions.add(entry.getKey());
+					}
+				}
+
+				if (!featureVersions.isEmpty()) {
+					assertThat(versions).doesNotContainAnyElementsOf(featureVersions);
+				}
+			}
+
 			// Verify we can get at least one bundle
 			String bsn = list.get(0);
 			SortedSet<Version> versions = p2r.versions(bsn);
 			assertThat(versions).as("versions for " + bsn)
 				.isNotEmpty();
 
+
 			Version version = versions.first();
 			File bundleFile = p2r.get(bsn, version, null);
-			
+
 			// If we get a file, verify it's a valid bundle
 			if (bundleFile != null && bundleFile.exists()) {
 				try (Jar jar = new Jar(bundleFile)) {
@@ -278,14 +310,14 @@ public class P2RepositoryTest {
 			// Test that we can retrieve bundles
 			String bsn = list.get(0);
 			SortedSet<Version> versions = p2r.versions(bsn);
-			
+
 			if (!versions.isEmpty()) {
 				Version version = versions.first();
-				
+
 				// Request with explicit bundle type
 				Map<String, String> bundleProps = new HashMap<>();
 				bundleProps.put(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, "bundle");
-				
+
 				File bundleFile = p2r.get(bsn, version, bundleProps);
 				assertThat(bundleFile).as("get with explicit bundle type for %s", bsn)
 					.isNotNull();
