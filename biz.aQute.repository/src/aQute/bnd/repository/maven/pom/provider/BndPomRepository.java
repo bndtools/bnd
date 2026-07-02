@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -57,6 +58,7 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
+import aQute.maven.provider.TrustedChecksums;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -75,6 +77,7 @@ public class BndPomRepository extends BaseRepository
 	private String				name;
 	private Reporter			reporter			= new Slf4jReporter(BndPomRepository.class);
 	private File				localRepo;
+	private MavenRepository					storage;
 	private InnerRepository		repoImpl;
 	private List<Archive>		archives;
 	private BridgeRepository	bridge;
@@ -82,8 +85,8 @@ public class BndPomRepository extends BaseRepository
 	private String				query;
 	private String				queryUrl;
 	private ScheduledFuture<?>	pomPoller;
-
 	private String				status;
+	private TrustedChecksums				trustedChecksums;
 
 	public BndPomRepository() {
 		prepared = Memoize.supplier(this::preparePromise);
@@ -156,6 +159,7 @@ public class BndPomRepository extends BaseRepository
 			status("Neither pom, archive nor query property are set");
 		}
 
+
 		return Processor.getPromiseFactory()
 			.submit(this::prepareAsync);
 	}
@@ -169,6 +173,9 @@ public class BndPomRepository extends BaseRepository
 			HttpClient client = registry.getPlugin(HttpClient.class);
 			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 			File location = workspace.getFile(getLocation());
+
+			this.trustedChecksums = loadTrustedChecksumFile(workspace);
+			this.trustedChecksums.open();
 
 			String releaseUrl = configuration.releaseUrl();
 			if (releaseUrl == null) {
@@ -188,26 +195,39 @@ public class BndPomRepository extends BaseRepository
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(snapshotUrl, reporter, localRepo,
 				client);
 
-			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
+			storage = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
 				.executor(), reporter);
+			storage.setTrustedChecksums(trustedChecksums);
 
 			boolean transitive = configuration.transitive(true);
 			boolean dependencyManagement = configuration.dependencyManagement(false);
 
 			if (pomFiles != null) {
-				repoImpl = new PomRepository(repository, client, location, transitive, dependencyManagement)
+				repoImpl = new PomRepository(storage, client, location, transitive, dependencyManagement)
 					.uris(pomFiles);
 			} else if (archives != null) {
-				repoImpl = new PomRepository(repository, client, location, transitive, dependencyManagement)
+				repoImpl = new PomRepository(storage, client, location, transitive, dependencyManagement)
 					.archives(archives);
 			} else if (query != null) {
-				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client, transitive,
+				repoImpl = new SearchRepository(storage, location, query, queryUrl, workspace, client, transitive,
 					dependencyManagement);
 			} else {
-				repository.close();
+				storage.close();
 				return false;
 			}
+
+			// Generate trusted checksums file if recording is enabled
+			if (configuration.checksumRecord() && repoImpl instanceof PomRepository pr) {
+				try {
+					TrustedChecksums.createTrustedChecksumFile(storage, trustedChecksums.getFile(), pr.archives);
+				} catch (Exception e) {
+					reporter.exception(e, "Failed to record trusted checksums file");
+					// Don't fail init() if optional recording fails
+				}
+			}
+
 			bridge = new BridgeRepository(repoImpl);
+
 
 			startPoll();
 			return true;
@@ -482,6 +502,16 @@ public class BndPomRepository extends BaseRepository
 			cb.copy(gavs);
 		});
 
+		menu.put("Generate Trusted Checksums File", () -> {
+			if (repoImpl instanceof PomRepository pr) {
+				try {
+					TrustedChecksums.createTrustedChecksumFile(storage, trustedChecksums.getFile(), pr.archives);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			}
+
+		});
 
 		if (target.length == 2) {
 			// Revision Action: 0 = bns, 1 = version
@@ -509,7 +539,22 @@ public class BndPomRepository extends BaseRepository
 		if (!init()) {
 			return getStatus();
 		}
-		return bridge.tooltip(target);
+
+		try (Formatter f = new Formatter()) {
+			f.format("BndPomRepository             : %s\n", getName());
+			f.format("Tags                         : %s\n", getTags());
+			File trustedChecksumsFile = trustedChecksums.getFile();
+			if (trustedChecksumsFile.exists()) {
+				f.format("Trusted Checksums File   : %s\n", trustedChecksumsFile);
+			}
+
+			String tooltipBase = bridge.tooltip(target);
+			f.format("Resources                    : %s\n", tooltipBase);
+
+
+			return f.toString();
+		}
+
 	}
 
 	@Override
@@ -544,5 +589,14 @@ public class BndPomRepository extends BaseRepository
 			.getOther(Archive.JAR_EXTENSION, Archive.SOURCES_CLASSIFIER);
 	}
 
+	private TrustedChecksums loadTrustedChecksumFile(Workspace workspace) {
+		String checksumFile = configuration.checksumFile();
+		if (checksumFile == null || checksumFile.isBlank()) {
+			return new TrustedChecksums(null);
+		}
+		File file = workspace.getFile(checksumFile);
+		return new TrustedChecksums(file);
+
+	}
 
 }

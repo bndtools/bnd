@@ -50,6 +50,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private SonatypeMode						sonatypeMode	= SonatypeMode.NONE;
 	private String								sonatypeReleaseUrl	= null;
 	private String								sonatypeSnapshotUrl	= null;
+	private TrustedChecksums					trustedChecksums;
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
@@ -204,6 +205,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			case UNMODIFIED :
 			case UPDATED :
 			default :
+				checkTrustedChecksum(archive, file);
 				return file;
 		}
 	}
@@ -255,7 +257,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public File toLocalFile(Archive archive) {
-		return toLocalFile(archive.localPath);
+		File file = toLocalFile(archive.localPath);
+		checkTrustedChecksum(archive, file);
+		return file;
 	}
 
 	@Override
@@ -433,6 +437,19 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	public String getSonatypePublishSnapshotUrl() {
 		return sonatypeSnapshotUrl;
+	}
+
+	public void setTrustedChecksums(TrustedChecksums trustedChecksums) {
+		this.trustedChecksums = trustedChecksums;
+	}
+
+
+	private boolean checkTrustedChecksum(Archive archive, File file) {
+		if (trustedChecksums == null || archive == null || file == null || !file.isFile()) {
+			return false;
+		}
+
+		return trustedChecksums.checkTrustedChecksum(archive, file);
 	}
 
 }

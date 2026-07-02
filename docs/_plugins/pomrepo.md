@@ -40,7 +40,7 @@ Opening the `Run` tab of the bndrun editor on this file will show you all transi
 ## Searching
 
 
-**DEPRECATION:** The searching feature below will be deprecated in bnd 7.2.0 for removal in bnd 8.0. 
+**DEPRECATION:** The searching feature below will be deprecated in bnd 7.2.0 for removal in bnd 8.0.
 The reason is that this search is considered "legacy" (see https://status.maven.org/), and also is often instable recently.
 
 Maven Central supports a [searching facility](https://blog.sonatype.com/2011/06/you-dont-need-a-browser-to-use-maven-central/) based on Solr. For example, you want all the artifacts of a given group id. In that case you could use the following Bnd Pom Repository plugin:
@@ -67,6 +67,7 @@ The query must return a JSON response.
 | `revision`       | `GAV...` |      | A comma separated list of Maven coordinates. The GAV will be searched in the normal way. For further information about Coordinates & Terminology please see MavenBndRepositoryPlugin|
 | `pom`            | `URI...` |      | A comma separated list of URLs to POM files.|
 | `location`       | `PATH` | `cnf/cache/pom-<name>.xml` | Optional cached index of the parsed POMs. |
+| `checksumFile`   | `PATH`|  | The path to the trusted checksum file relative to `build.bnd`. See [Trusted Checksum Verification](#trusted-checksum-verification).|
 | `query`          | `STRING` |      | A Solr query string. This is the part after `?` and must be properly URL encoded|
 | `queryUrl`       | `URI` | `https://search.maven.org/solrsearch/select` | Optional URL to the search engine.|
 | `name`           | `STRING`|       | Required name of the repo.|
@@ -107,6 +108,11 @@ This plugin supports Tagging via the `tags` configuration property. See [Tagging
 ## IDEs
 
 The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.
+
+## Trusted Checksum Verification
+
+The Bnd Pom Repository supports trusted checksum verification to protect against tampered or corrupted artifacts.
+See the section in [MavenBndRepository - Trusted Checksum Verification](maven.md#trusted-checksum-verification) for more details.
 
 ## Caveats
 

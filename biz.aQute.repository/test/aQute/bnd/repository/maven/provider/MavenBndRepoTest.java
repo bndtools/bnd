@@ -78,6 +78,8 @@ public class MavenBndRepoTest {
 	File								remote;
 	File								staging;
 	File								index;
+	File								trustedChecksumsFile;
+	File								trustedChecksumsFileFailing;
 
 	private MavenBndRepository			repo;
 	private FakeNexus					fnx;
@@ -89,12 +91,16 @@ public class MavenBndRepoTest {
 		remote = IO.getFile(tmp, "remote");
 		staging = IO.getFile(tmp, "staging");
 		index = IO.getFile(tmp, "index");
+		trustedChecksumsFile = IO.getFile(tmp, "index.checksums");
+		trustedChecksumsFileFailing = IO.getFile(tmp, "index.failing.checksums");
 		remote.mkdirs();
 		local.mkdirs();
 		staging.mkdirs();
 
 		IO.copy(IO.getFile("testresources/mavenrepo"), remote);
 		IO.copy(IO.getFile("testresources/mavenrepo/index.maven"), index);
+		IO.copy(IO.getFile("testresources/mavenrepo/index.maven.checksums"), trustedChecksumsFile);
+		IO.copy(IO.getFile("testresources/mavenrepo/index.maven.failing.checksums"), trustedChecksumsFileFailing);
 
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
@@ -1518,6 +1524,37 @@ public class MavenBndRepoTest {
 				.trim())
 	        .as("plain jar dependency for org.osgi.dto must exist without <type> or <classifier>")
 	        .isEqualTo("org.osgi.dto");
+	}
+
+	@Test
+	public void testGetTrustedCheckPass() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		map.put("checksumFile", trustedChecksumsFile.toString());
+
+		config(map);
+		File file = repo.get("commons-cli:commons-cli", new Version("1.0"), null);
+		assertNotNull(file);
+		assertTrue(file.isFile());
+
+		File file2 = repo.get("commons-cli:commons-cli", new Version("1.2"), null);
+		assertNotNull(file2);
+		assertTrue(file2.isFile());
+	}
+
+	@Test
+	public void testGetTrustedCheckFail() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		map.put("checksumFile", trustedChecksumsFileFailing.toString());
+		config(map);
+		File file = repo.get("commons-cli:commons-cli", new Version("1.0"), null);
+		assertFalse(file.isFile());
+
+		File file2 = repo.get("commons-cli:commons-cli", new Version("1.2"), null);
+		assertFalse(file2.isFile());
 	}
 
 }
