@@ -6,7 +6,7 @@ import aQute.bnd.osgi.Constants
 
 pluginManagement {
 	plugins {
-		id "com.gradle.enterprise" version "3.13.4"
+		id "com.gradle.develocity" version "4.4.3"
 	}
 }
 
@@ -51,15 +51,15 @@ buildscript {
 }
 
 plugins {
-	id "com.gradle.enterprise"
+	id "com.gradle.develocity"
 }
 
-if (Boolean.parseBoolean(System.getenv("CI"))) {
-	gradleEnterprise {
-		buildScan {
-			publishAlways()
-			termsOfServiceUrl = "https://gradle.com/terms-of-service"
-			termsOfServiceAgree = "yes"
+develocity {
+	buildScan {
+		if (Boolean.parseBoolean(System.getenv("CI"))) {
+			publishing.onlyIf { true }
+			termsOfUseUrl = "https://gradle.com/terms-of-service"
+			termsOfUseAgree = "yes"
 		}
 	}
 }

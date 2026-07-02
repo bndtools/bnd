@@ -1,21 +1,22 @@
 pluginManagement {
 	plugins {
-		id("com.gradle.plugin-publish") version("1.2.0")
+		id("com.gradle.plugin-publish") version("2.1.1")
 		id("dev.hargrave.addmavendescriptor") version("1.1.0")
-		id("com.gradle.enterprise") version("3.13.4")
+		id("com.gradle.develocity") version("4.4.3")
 	}
 }
 
 plugins {
-	id("com.gradle.enterprise")
+	id("com.gradle.develocity")
 }
 
-if (System.getenv("CI").toBoolean()) {
-	gradleEnterprise {
-		buildScan {
-			publishAlways()
-			termsOfServiceUrl = "https://gradle.com/terms-of-service"
-			termsOfServiceAgree = "yes"
+develocity {
+	buildScan {
+		val isCI = System.getenv("CI").toBoolean()
+		publishing.onlyIf { isCI }
+		if (isCI) {
+			termsOfUseUrl.set("https://gradle.com/terms-of-service")
+			termsOfUseAgree.set("yes")
 		}
 	}
 }

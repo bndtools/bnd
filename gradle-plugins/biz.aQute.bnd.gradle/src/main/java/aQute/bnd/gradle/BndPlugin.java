@@ -477,8 +477,10 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<AbstractArchiveTask> jar = tasks.named(JavaPlugin.JAR_TASK_NAME, AbstractArchiveTask.class,
 				t -> {
 					t.setDescription("Jar this project's bundles.");
-					t.getActions()
-						.clear(); /* Replace the standard task actions */
+					/* Bnd Workspace model objects are not serializable; configuration cache is not supported. */
+					t.notCompatibleWithConfigurationCache(
+						"Bnd workspace plugin does not support configuration cache: bnd Project objects are not serializable");
+					/* Gradle 9: getActions().clear() is not supported. Configuration via inputs/outputs is sufficient. */
 					t.setEnabled(!bndProject.isNoBundles());
 					/* use first deliverable as archiveFileName */
 					t.getArchiveFileName()

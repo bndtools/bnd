@@ -46,7 +46,6 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.java.archives.internal.DefaultManifest;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
@@ -564,13 +563,7 @@ public class BundleTaskExtension {
 					archiveFile.setLastModified(now);
 					// Set effective manifest from generated manifest
 					Manifest builtManifest = builtJar.getManifest();
-					taskManifest.ifPresent(
-						manifest -> manifest.from(mergeManifest(builtManifest), merge -> merge.eachEntry(details -> {
-							if (details.getMergeValue() == null) {
-								// exclude if entry not in merge manifest
-								details.exclude();
-							}
-						})));
+					taskManifest.ifPresent(manifest -> updateTaskManifest(manifest, builtManifest));
 					logReport(builder, getTask().getLogger());
 					if (!builder.isOk()) {
 						failTask("Bundle " + archiveFileName + " has errors", archiveFile);
@@ -581,12 +574,14 @@ public class BundleTaskExtension {
 			}
 		}
 
-		private org.gradle.api.java.archives.Manifest mergeManifest(Manifest builtManifest) {
-			org.gradle.api.java.archives.Manifest mergeManifest = new DefaultManifest(null);
-			mergeManifest.attributes(new AttributesMap(builtManifest.getMainAttributes()));
+		private void updateTaskManifest(org.gradle.api.java.archives.Manifest taskManifest, Manifest builtManifest) {
+			taskManifest.getAttributes()
+				.clear();
+			taskManifest.getSections()
+				.clear();
+			taskManifest.attributes(new AttributesMap(builtManifest.getMainAttributes()));
 			builtManifest.getEntries()
-				.forEach((section, attrs) -> mergeManifest.attributes(new AttributesMap(attrs), section));
-			return mergeManifest;
+				.forEach((section, attrs) -> taskManifest.attributes(new AttributesMap(attrs), section));
 		}
 
 		private void failTask(String msg, File archiveFile) {
