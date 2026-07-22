@@ -477,6 +477,7 @@ public class HttpClient implements Closeable, URLConnector {
 
 				request.useCacheFile = info.file;
 				if (info.isPresent()) {
+
 					//
 					// We have a file in the cache, check if it is within
 					// our accepted stale period
@@ -504,7 +505,10 @@ public class HttpClient implements Closeable, URLConnector {
 
 						TaggedData tag = connect();
 
-						if (tag.getState() == State.NOT_FOUND) {
+						if (tag.isNotFound()) {
+							// Negative cache: Just save the .json metadata
+							info.updateNegativeCache();
+							// Clear the content file, keep metadata
 							cache().clear(uri);
 						} else if (tag.getState() == State.UPDATED) {
 							//
@@ -520,6 +524,11 @@ public class HttpClient implements Closeable, URLConnector {
 					}
 					return new TaggedData(uri, HTTP_NOT_MODIFIED, info.file);
 				}
+				else if (info.hasNegativeCache(request.maxStale)) {
+					// Has .json but no .content - negative cache hit
+					return new TaggedData(uri, HTTP_NOT_FOUND, info.file);
+				}
+
 				//
 				// No entry in the cache, but we are cached
 				//
@@ -534,7 +543,12 @@ public class HttpClient implements Closeable, URLConnector {
 
 				TaggedData tag = connect();
 
-				if (tag.isOk()) {
+				if (tag.isNotFound()) {
+					// Negative cache: Just save the .json metadata
+					info.updateNegativeCache();
+					// Clear the content file, keep metadata
+					cache().clear(uri);
+				} else if (tag.isOk()) {
 					info.update(tag.getInputStream(), tag.getTag(), tag.getModified());
 				}
 				return tag;

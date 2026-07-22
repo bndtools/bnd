@@ -37,6 +37,7 @@ public class URLCache {
 		public long		modified;
 		public URI		uri;
 		public String	sha_256;
+		public boolean	notFound	= false;	// true = cached 404 response
 	}
 
 	public class Info implements Closeable {
@@ -92,6 +93,14 @@ public class URLCache {
 				.put(this.dto);
 		}
 
+		public void updateNegativeCache() throws Exception {
+			this.dto.notFound = true;
+			this.dto.modified = System.currentTimeMillis();
+		    codec.enc()
+		        .to(jsonFile)
+		        .put(this.dto);
+		}
+
 		public boolean isPresent() {
 			boolean f = file.isFile();
 			boolean j = jsonFile.isFile();
@@ -109,6 +118,13 @@ public class URLCache {
 
 		public long getModified() {
 			return dto.modified;
+		}
+
+		public boolean hasNegativeCache(long ttl) {
+			if (!jsonFile.isFile()) {
+				return false;
+			}
+			return dto.notFound && System.currentTimeMillis() - dto.modified < ttl;
 		}
 
 		@Override
