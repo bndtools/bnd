@@ -95,6 +95,7 @@ public class URLCache {
 
 		public void updateNegativeCache() throws Exception {
 			this.dto.notFound = true;
+			IO.mkdirs(this.jsonFile.getParentFile());
 			this.dto.modified = System.currentTimeMillis();
 		    codec.enc()
 		        .to(jsonFile)
@@ -130,7 +131,7 @@ public class URLCache {
 		@Override
 		public String toString() {
 			return "Info [file=" + file + ", etag=" + dto.etag + ", modified=" + Instant.ofEpochMilli(dto.modified)
-				+ ", url=" + url + ", lock=" + lock + "]";
+				+ ", url=" + url + ", lock=" + lock + ", notFound=" + dto.notFound + "]";
 		}
 
 	}

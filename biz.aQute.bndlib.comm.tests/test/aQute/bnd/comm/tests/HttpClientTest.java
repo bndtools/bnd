@@ -491,7 +491,8 @@ public class HttpClientTest {
 				.go(cheshire);
 			assertNotNull(tag);
 			assertEquals(404, tag.getResponseCode());
-			assertThat(cache.isCached(cheshire)).isFalse();
+			// we cache 404 NOT FOUND now
+			assertThat(cache.isCached(cheshire)).isTrue();
 		}
 	}
 

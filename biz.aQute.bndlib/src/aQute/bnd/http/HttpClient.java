@@ -508,8 +508,6 @@ public class HttpClient implements Closeable, URLConnector {
 						if (tag.isNotFound()) {
 							// Negative cache: Just save the .json metadata
 							info.updateNegativeCache();
-							// Clear the content file, keep metadata
-							cache().clear(uri);
 						} else if (tag.getState() == State.UPDATED) {
 							//
 							// update the cache from the input stream
@@ -546,8 +544,6 @@ public class HttpClient implements Closeable, URLConnector {
 				if (tag.isNotFound()) {
 					// Negative cache: Just save the .json metadata
 					info.updateNegativeCache();
-					// Clear the content file, keep metadata
-					cache().clear(uri);
 				} else if (tag.isOk()) {
 					info.update(tag.getInputStream(), tag.getTag(), tag.getModified());
 				}
