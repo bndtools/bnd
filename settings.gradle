@@ -4,12 +4,6 @@
 
 import aQute.bnd.osgi.Constants
 
-pluginManagement {
-	plugins {
-		id "com.gradle.enterprise" version "3.13.4"
-	}
-}
-
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
 	repositories {
@@ -46,20 +40,6 @@ buildscript {
 					details.changing = true
 				}
 			}
-		}
-	}
-}
-
-plugins {
-	id "com.gradle.enterprise"
-}
-
-if (Boolean.parseBoolean(System.getenv("CI"))) {
-	gradleEnterprise {
-		buildScan {
-			publishAlways()
-			termsOfServiceUrl = "https://gradle.com/terms-of-service"
-			termsOfServiceAgree = "yes"
 		}
 	}
 }

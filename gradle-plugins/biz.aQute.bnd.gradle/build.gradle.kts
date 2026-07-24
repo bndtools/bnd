@@ -1,5 +1,4 @@
 import groovy.lang.GroovySystem
-import org.gradle.util.internal.VersionNumber
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -28,7 +27,9 @@ group = bnd_group
 version = bnd_version
 
 val groovyVersion = GroovySystem.getVersion()
-val isGroovy4 = VersionNumber.parse(groovyVersion).major >= 4
+val groovyMajor = groovyVersion.substringBefore('.')
+	.toIntOrNull() ?: 0
+val isGroovy4 = groovyMajor >= 4
 val spockVersion = if (isGroovy4) "2.3-groovy-4.0" else "2.3-groovy-3.0"
 
 val javaVersion = JavaVersion.VERSION_17 // Bnd target language level

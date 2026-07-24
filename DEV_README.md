@@ -645,3 +645,50 @@ Macros are in the following classes, recognized by methods starting with an unde
 - `biz.aQute.bndlib/src/aQute/bnd/osgi/Analyzer.java`
 - `biz.aQute.bndlib/src/aQute/bnd/osgi/Builder.java`
 - `biz.aQute.bndlib/src/aQute/bnd/build/Workspace.java`
+
+## Running builds with local Bnd Gradle Plugins
+
+If you are developing the Bnd Gradle Plugins in `gradle-plugins` and want a build to use your local plugin code, use one of the following approaches.
+
+### Rebuild the bnd workspace with freshly built local plugins
+
+For a full rebuild check (the same intent as CI), use the same multi-phase flow as the rebuild scripts:
+
+```bash
+./.github/scripts/rebuild-build.sh
+./.github/scripts/rebuild-test.sh
+```
+
+These scripts are used by the rebuild workflow in [.github/workflows/rebuild.yml](.github/workflows/rebuild.yml).
+The manual equivalent commands are:
+
+```bash
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 buildscriptDependencies publish
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 --warning-mode=fail :gradle-plugins:build
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :gradle-plugins:publish
+./gradlew --no-daemon -Dmaven.repo.local=dist/m2 -Pbnd_snapshots=./dist/bundles --warning-mode=fail buildscriptDependencies build publish
+```
+
+### Use the local plugin sources in another build (composite build)
+
+Use a Gradle composite build so the consumer build resolves the plugins directly from your local checkout.
+In the consumer build's `settings.gradle`, add:
+
+```groovy
+pluginManagement {
+  includeBuild("../bnd/gradle-plugins")
+}
+```
+
+This approach avoids publishing and always uses the current local sources.
+
+### Publish locally and consume from `mavenLocal`
+
+Publish the plugin artifacts to your local Maven repository:
+
+```bash
+./gradlew :gradle-plugins:biz.aQute.bnd.gradle:publishToMavenLocal
+```
+
+Then in the consumer build, use `mavenLocal()` in the `pluginManagement` repositories and pin the local version of the plugin.
+If you update plugin code, re-run `publishToMavenLocal` before rebuilding the consumer.
