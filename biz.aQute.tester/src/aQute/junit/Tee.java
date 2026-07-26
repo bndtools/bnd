@@ -18,7 +18,7 @@ public class Tee extends PrintStream {
 	}
 
 	protected Object lock() {
-		return out;
+		return this;
 	}
 
 	@Override
@@ -258,6 +258,13 @@ public class Tee extends PrintStream {
 	public PrintStream append(char c) {
 		synchronized (lock()) {
 			return super.append(c);
+		}
+	}
+
+	@Override
+	public void flush() {
+		synchronized (lock()) {
+			super.flush();
 		}
 	}
 
