@@ -74,6 +74,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import bndtools.Plugin;
 import bndtools.editor.BndEditor;
 import bndtools.editor.common.BndEditorPart;
