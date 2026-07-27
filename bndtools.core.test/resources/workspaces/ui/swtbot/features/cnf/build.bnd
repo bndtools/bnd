@@ -1,0 +1,8 @@
+# Test workspace for the Eclipse feature -buildpath SWTBot tests.
+# The Feature Fixture repository is a minimal local p2 repository containing
+# the feature test.feature with the member bundles feature.member.a/b.
+
+-plugin.0.FeatureFixture:\
+    aQute.bnd.repository.p2.provider.P2Repository;\
+        name = "Feature Fixture";\
+        url = "${fileuri;${.}/fixture-p2}"

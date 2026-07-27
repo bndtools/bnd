@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -31,7 +33,14 @@ public class Container {
 		PROJECT,
 		EXTERNAL,
 		LIBRARY,
-		ERROR
+		ERROR,
+		/**
+		 * An Eclipse feature (identity type
+		 * {@code org.eclipse.update.feature}). A feature is a container of
+		 * included bundles and included features; on a path it expands to its
+		 * members, see {@link Container#getMembers()}.
+		 */
+		FEATURE
 	}
 
 	private volatile File					file;
@@ -160,6 +169,7 @@ public class Container {
 				return true;
 
 			case LIBRARY :
+			case FEATURE :
 				List<Container> containers = getMembers();
 				for (Container container : containers) {
 					if (!container.contributeFiles(files, reporter))
@@ -232,13 +242,19 @@ public class Container {
 	}
 
 	/**
-	 * Return the this if this is anything else but a library. If it is a
-	 * library, return the members. This could work recursively, e.g., libraries
-	 * can point to libraries.
+	 * Return the this if this is anything else but a library or a feature. If
+	 * it is a library, return the members. This could work recursively, e.g.,
+	 * libraries can point to libraries. If it is an Eclipse feature, return
+	 * the contained bundles and the members of included features,
+	 * recursively.
 	 *
 	 * @throws Exception
 	 */
 	public List<Container> getMembers() throws Exception {
+		return getMembers(new HashSet<>());
+	}
+
+	List<Container> getMembers(Set<String> visitedFeatures) throws Exception {
 		List<Container> result = project.newList();
 
 		// Are ww a library? If no, we are the result
@@ -257,6 +273,8 @@ public class Container {
 					}
 				}
 			}
+		} else if (getType() == TYPE.FEATURE) {
+			result.addAll(project.getFeatureMembers(this, visitedFeatures));
 		} else
 			result.add(this);
 
@@ -270,7 +288,7 @@ public class Container {
 	 * @param list the result list
 	 */
 	public static void flatten(Container container, List<Container> list) throws Exception {
-		if (container.getType() == TYPE.LIBRARY) {
+		if (container.getType() == TYPE.LIBRARY || container.getType() == TYPE.FEATURE) {
 			flatten(container.getMembers(), list);
 		} else
 			list.add(container);
