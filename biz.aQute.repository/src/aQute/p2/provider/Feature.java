@@ -19,7 +19,6 @@ import org.w3c.dom.NodeList;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.osgi.resource.ResourceUtils;
 
 /**
  * Parser for Eclipse feature.xml files. This class parses Eclipse features and
@@ -27,21 +26,6 @@ import aQute.bnd.osgi.resource.ResourceUtils;
  * the osgi.identity namespace with type=org.eclipse.update.feature.
  */
 public class Feature extends XMLBase {
-
-	/**
-	 * Requirement attribute marking the relation of an osgi.identity
-	 * requirement to the feature: {@value #RELATION_PLUGIN} for
-	 * {@code <plugin>} references, {@value #RELATION_INCLUDE} for
-	 * {@code <includes>} references and {@value #RELATION_REQUIRE} for
-	 * {@code <requires><import>} references. This attribute does not take part
-	 * in filter matching, it only conveys provenance so that consumers (e.g.
-	 * -buildpath feature expansion) can distinguish members from mere
-	 * dependencies.
-	 */
-	public static final String	RELATION_ATTRIBUTE	= ResourceUtils.FEATURE_RELATION_ATTRIBUTE;
-	public static final String	RELATION_PLUGIN		= ResourceUtils.FEATURE_RELATION_PLUGIN;
-	public static final String	RELATION_INCLUDE	= ResourceUtils.FEATURE_RELATION_INCLUDE;
-	public static final String	RELATION_REQUIRE	= ResourceUtils.FEATURE_RELATION_REQUIRE;
 
 	/**
 	 * Represents a plugin reference in a feature
@@ -328,17 +312,6 @@ public class Feature extends XMLBase {
 				req.addDirective("filter",
 					String.format("(&(osgi.identity=%s)(version=%s))", plugin.id, plugin.version));
 			}
-			req.addAttribute(RELATION_ATTRIBUTE, RELATION_PLUGIN);
-			req.addAttribute("id", plugin.id);
-			addVersionAttribute(req, plugin.version);
-			if (plugin.os != null)
-				req.addAttribute("os", plugin.os);
-			if (plugin.ws != null)
-				req.addAttribute("ws", plugin.ws);
-			if (plugin.arch != null)
-				req.addAttribute("arch", plugin.arch);
-			if (plugin.fragment)
-				req.addAttribute("fragment", "true");
 			rb.addRequirement(req);
 		}
 
@@ -354,16 +327,6 @@ public class Feature extends XMLBase {
 			if (include.optional) {
 				req.addDirective("resolution", "optional");
 			}
-			req.addAttribute(RELATION_ATTRIBUTE, RELATION_INCLUDE);
-			req.addAttribute("id", include.id);
-			req.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, "org.eclipse.update.feature");
-			addVersionAttribute(req, include.version);
-			if (include.os != null)
-				req.addAttribute("os", include.os);
-			if (include.ws != null)
-				req.addAttribute("ws", include.ws);
-			if (include.arch != null)
-				req.addAttribute("arch", include.arch);
 			rb.addRequirement(req);
 		}
 
@@ -376,27 +339,10 @@ public class Feature extends XMLBase {
 			String filter = buildRequirementFilter(reqIdentity, requirement.version, requirement.match,
 				requirement.feature != null);
 			req.addDirective("filter", filter);
-			req.addAttribute(RELATION_ATTRIBUTE, RELATION_REQUIRE);
 			rb.addRequirement(req);
 		}
 
 		return rb.build();
-	}
-
-	/**
-	 * Add an exact version attribute to a requirement when the version is a
-	 * valid OSGi version and not the 0.0.0 placeholder. The filter directive
-	 * remains the authoritative constraint; the attribute only conveys the
-	 * exact pinned version to consumers without requiring filter parsing.
-	 */
-	private static void addVersionAttribute(CapReqBuilder req, String version) {
-		if (version == null || version.equals("0.0.0"))
-			return;
-		try {
-			req.addAttribute("version", Version.parseVersion(version));
-		} catch (IllegalArgumentException e) {
-			// not a valid OSGi version, the filter still carries it
-		}
 	}
 
 	/**

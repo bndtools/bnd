@@ -31,7 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Properties;
@@ -40,7 +39,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -51,7 +49,6 @@ import java.util.stream.Collectors;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
@@ -1330,7 +1327,6 @@ public class Project extends Processor {
 
 		Strategy useStrategy = overrideStrategy(attrs, strategy);
 		RepoFilter repoFilter = parseRepoFilter(attrs);
-		String requestedType = attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
 
 
 		// Hold the workspace read lock for the entire resolution. This prevents
@@ -1369,7 +1365,7 @@ public class Project extends Processor {
 						continue;
 
 					try {
-						SortedSet<Version> vs = versionsOf(plugin, bsn, requestedType);
+						SortedSet<Version> vs = plugin.versions(bsn);
 						if (vs != null) {
 							for (Version v : vs) {
 								if (!versions.containsKey(v) && versionRange.includes(v))
@@ -1397,18 +1393,14 @@ public class Project extends Processor {
 				//
 				// We have to augment the list of returned versions
 				// with info from the workspace. We use null as a marker
-				// to indicate that it is a workspace project. Workspace
-				// projects deliver bundles, so they cannot provide typed
-				// resources like Eclipse features.
+				// to indicate that it is a workspace project
 				//
 
-				if (requestedType == null) {
-					SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository()
-						.versions(bsn);
-					for (Version v : localVersions) {
-						if (!versions.containsKey(v) && versionRange.includes(v))
-							versions.put(v, null);
-					}
+				SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository()
+					.versions(bsn);
+				for (Version v : localVersions) {
+					if (!versions.containsKey(v) && versionRange.includes(v))
+						versions.put(v, null);
 				}
 
 				// Verify if we found any, if so, we use the strategy to pick
@@ -1536,202 +1528,10 @@ public class Project extends Processor {
 		if (f.getName()
 			.endsWith(".lib"))
 			container = new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs, db);
-		else if (attrs != null && ResourceUtils.TYPE_ECLIPSE_FEATURE.equals(attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE)))
-			container = new Container(this, bsn, range, Container.TYPE.FEATURE, f, null, attrs, db);
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
 
 		return container;
-	}
-
-	/**
-	 * List the available versions of a bsn in a repository. When a type is
-	 * requested (e.g. {@code org.eclipse.update.feature}), the normal
-	 * {@link RepositoryPlugin#versions(String)} cannot be used since it only
-	 * lists bundles. In that case we query the repository via the OSGi
-	 * Repository API for identity capabilities carrying the requested type.
-	 *
-	 * @param plugin the repository
-	 * @param bsn the identity to look up
-	 * @param requestedType the requested identity type or null for the
-	 *            default bundle lookup
-	 */
-	private SortedSet<Version> versionsOf(RepositoryPlugin plugin, String bsn, String requestedType) throws Exception {
-		if (requestedType == null)
-			return plugin.versions(bsn);
-
-		SortedSet<Version> versions = new TreeSet<>();
-		if (!(plugin instanceof Repository repo))
-			return versions;
-
-		Requirement identity = identityRequirement(bsn, requestedType, null);
-		Map<Requirement, Collection<Capability>> providers = repo.findProviders(Collections.singleton(identity));
-		Collection<Capability> capabilities = providers != null ? providers.get(identity) : null;
-		if (capabilities == null)
-			return versions;
-
-		for (Capability capability : capabilities) {
-			Object version = capability.getAttributes()
-				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-			if (version != null) {
-				versions.add(Version.parseVersion(version.toString()));
-			}
-		}
-		return versions;
-	}
-
-	private static Requirement identityRequirement(String bsn, String type, String version) {
-		StringBuilder filter = new StringBuilder();
-		filter.append("(&(")
-			.append(IdentityNamespace.IDENTITY_NAMESPACE)
-			.append('=')
-			.append(bsn)
-			.append(')');
-		if (type != null) {
-			filter.append('(')
-				.append(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE)
-				.append('=')
-				.append(type)
-				.append(')');
-		}
-		if (version != null) {
-			filter.append('(')
-				.append(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE)
-				.append('=')
-				.append(version)
-				.append(')');
-		}
-		filter.append(')');
-		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
-			.buildSyntheticRequirement();
-	}
-
-	/**
-	 * Find the resource of an Eclipse feature in the available repositories
-	 * via the OSGi Repository API.
-	 */
-	private org.osgi.resource.Resource findFeatureResource(String bsn, String version) {
-		Requirement requirement = identityRequirement(bsn, ResourceUtils.TYPE_ECLIPSE_FEATURE, version);
-		for (RepositoryPlugin plugin : getRepositories()) {
-			if (!(plugin instanceof Repository repo))
-				continue;
-			Map<Requirement, Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
-			Collection<Capability> capabilities = providers != null ? providers.get(requirement) : null;
-			if (capabilities != null && !capabilities.isEmpty()) {
-				return capabilities.iterator()
-					.next()
-					.getResource();
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Expand an Eclipse feature container into its member bundles. Members
-	 * are the {@code <plugin>} references and, recursively, the members of
-	 * {@code <includes>} referenced features. {@code <requires>} imports are
-	 * dependencies, not members, and are ignored. Members whose os/ws/arch
-	 * does not match the running platform are skipped.
-	 *
-	 * @param feature the feature container to expand
-	 * @param visitedFeatures guard against include cycles
-	 */
-	List<Container> getFeatureMembers(Container feature, Set<String> visitedFeatures) throws Exception {
-		List<Container> result = newList();
-		String featureId = feature.getBundleSymbolicName();
-		String key = featureId + ":" + feature.getVersion();
-		if (!visitedFeatures.add(key)) {
-			warning("Detected a cycle in the includes of feature %s, ignoring repeated occurrence", key);
-			return result;
-		}
-
-		org.osgi.resource.Resource resource = findFeatureResource(featureId, feature.getVersion());
-		if (resource == null) {
-			result.add(new Container(this, featureId, feature.getVersion(), Container.TYPE.ERROR, null,
-				"Cannot find the resource of feature " + key + " in the repositories to expand its members",
-				feature.getAttributes(), null));
-			return result;
-		}
-
-		List<Requirement> requirements = resource.getRequirements(IdentityNamespace.IDENTITY_NAMESPACE);
-		int marked = 0;
-		for (Requirement requirement : requirements) {
-			Map<String, Object> reqAttrs = requirement.getAttributes();
-			String relation = Objects.toString(reqAttrs.get(ResourceUtils.FEATURE_RELATION_ATTRIBUTE), null);
-			if (relation == null)
-				continue;
-			marked++;
-
-			boolean include = ResourceUtils.FEATURE_RELATION_INCLUDE.equals(relation);
-			if (!include && !ResourceUtils.FEATURE_RELATION_PLUGIN.equals(relation))
-				continue; // a requires import is a dependency, not a member
-
-			if (!EclipsePlatform.CURRENT.matches(Objects.toString(reqAttrs.get("os"), null),
-				Objects.toString(reqAttrs.get("ws"), null), Objects.toString(reqAttrs.get("arch"), null)))
-				continue;
-
-			String id = Objects.toString(reqAttrs.get("id"), null);
-			if (id == null)
-				continue;
-			String version = Objects.toString(reqAttrs.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE), null);
-			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
-				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
-
-			Container member = getFeatureMember(key, id, version, include, optional);
-			if (member == null)
-				continue;
-
-			for (Container c : member.getMembers(visitedFeatures)) {
-				if (!result.contains(c))
-					result.add(c);
-			}
-		}
-
-		if (marked == 0 && !requirements.isEmpty()) {
-			warning(
-				"The index of the repository containing feature %s predates feature member support, refresh the repository to expand the feature",
-				key);
-		}
-		return result;
-	}
-
-	/**
-	 * Resolve a single feature member. The version pinned in the feature is
-	 * tried exactly first; if absent from the repositories the highest
-	 * available version is used with a warning.
-	 *
-	 * @return the member container, an error container, or null when an
-	 *         optional member is not available
-	 */
-	private Container getFeatureMember(String featureKey, String id, String version, boolean include,
-		boolean optional) throws Exception {
-		Map<String, String> attrs = include
-			? Collections.singletonMap(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, ResourceUtils.TYPE_ECLIPSE_FEATURE)
-			: null;
-
-		Container member = null;
-		if (version != null && Verifier.isVersion(version)) {
-			member = getBundle(id, version, Strategy.EXACT, attrs);
-		}
-		if (member == null || member.getError() != null) {
-			Container highest = getBundle(id, null, Strategy.HIGHEST, attrs);
-			if (highest.getError() == null) {
-				if (member != null) {
-					warning("Member %s;version=%s of feature %s not found with the exact version, using %s instead",
-						id, version, featureKey, highest.getVersion());
-				}
-				member = highest;
-			} else if (member == null) {
-				member = highest;
-			}
-		}
-
-		if (member.getError() != null && optional) {
-			logger.debug("skipping optional member {} of feature {}: {}", id, featureKey, member.getError());
-			return null;
-		}
-		return member;
 	}
 
 	/**

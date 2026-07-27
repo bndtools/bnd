@@ -121,10 +121,7 @@ class P2Indexer implements Closeable {
 		URI url = contentCapability.url();
 
 		final File source = client.getCacheFileFor(url);
-		// Features may share bsn+version with a bundle; use a distinct link
-		// name to avoid overwriting the bundle in the cache (and vice versa)
-		boolean isFeature = ResourceUtils.hasType(resource, ECLIPSE_FEATURE_CAPABILITY);
-		final File link = new File(location, bsn + "-" + version + (isFeature ? ".feature.jar" : ".jar"));
+		final File link = new File(location, bsn + "-" + version + ".jar");
 
 		IO.createSymbolicLinkOrCopy(link, source);
 
@@ -217,38 +214,12 @@ class P2Indexer implements Closeable {
 		if (index.isFile()) {
 			try (XMLResourceParser xp = new XMLResourceParser(index.toURI())) {
 				List<Resource> resources = xp.parse();
-				if (urlHash.equals(xp.name()) && !requiresReindex(resources)) {
+				if (urlHash.equals(xp.name())) {
 					return new ResourcesRepository(resources);
 				}
 			}
 		}
 		return save(readRepository());
-	}
-
-	/**
-	 * Detect indexes written before feature requirements carried the
-	 * {@link Feature#RELATION_ATTRIBUTE} provenance marker. Such stale caches
-	 * are re-indexed once so feature expansion can distinguish members
-	 * (plugins/includes) from mere dependencies (requires).
-	 */
-	private boolean requiresReindex(List<Resource> resources) {
-		for (Resource resource : resources) {
-			if (!ResourceUtils.hasType(resource, ECLIPSE_FEATURE_CAPABILITY))
-				continue;
-
-			List<Requirement> requirements = resource.getRequirements(IdentityNamespace.IDENTITY_NAMESPACE);
-			if (requirements.isEmpty())
-				continue;
-
-			boolean marked = requirements.stream()
-				.anyMatch(req -> req.getAttributes()
-					.containsKey(Feature.RELATION_ATTRIBUTE));
-			if (!marked) {
-				logger.info("p2 index {} lacks feature relation markers, re-indexing", indexFile);
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private ResourcesRepository readRepository() throws Exception {

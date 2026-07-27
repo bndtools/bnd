@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.osgi.framework.namespace.IdentityNamespace;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
@@ -44,12 +43,10 @@ import bndtools.central.Central;
 import bndtools.central.RepositoryUtils;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
-import bndtools.model.repo.FeatureVersionNode;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.model.repo.RepositoryFeature;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 
@@ -106,22 +103,12 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 	public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
 		for (VersionedClause clause : selectedBundles) {
-			this.selectedBundles.put(key(clause), clause);
+			this.selectedBundles.put(clause.getName(), clause);
 		}
 	}
 
 	public List<VersionedClause> getSelectedBundles() {
 		return new ArrayList<>(selectedBundles.values());
-	}
-
-	/**
-	 * Key for the selected map. Eclipse features may share their name with a
-	 * bundle, so the identity type is part of the key.
-	 */
-	private static String key(VersionedClause clause) {
-		String type = clause.getAttribs()
-			.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
-		return type == null ? clause.getName() : clause.getName() + ";" + type;
 	}
 
 	Control createAvailableBundlesPanel(Composite parent) {
@@ -285,8 +272,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		List<VersionedClause> adding = getVersionClauses(selection);
 		if (!adding.isEmpty()) {
 			for (VersionedClause clause : adding) {
-				if (!selectedBundles.containsKey(key(clause))) {
-					selectedBundles.put(key(clause), clause);
+				if (!selectedBundles.containsKey(clause.getName())) {
+					selectedBundles.put(clause.getName(), clause);
 					selectedViewer.add(clause);
 				}
 			}
@@ -304,10 +291,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 				adding.add(RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item, phase));
 			} else if (item instanceof RepositoryBundleVersion) {
 				adding.add(RepositoryBundleUtils.convertRepoBundleVersion((RepositoryBundleVersion) item, phase));
-			} else if (item instanceof RepositoryFeature) {
-				adding.add(RepositoryBundleUtils.convertRepoFeature((RepositoryFeature) item));
-			} else if (item instanceof FeatureVersionNode) {
-				adding.add(RepositoryBundleUtils.convertRepoFeature(((FeatureVersionNode) item).getParent()));
 			} else if (item instanceof ProjectBundle) {
 				String bsn = ((ProjectBundle) item).getBsn();
 				Attrs attribs = new Attrs();
@@ -321,7 +304,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	void doRemove() {
 		IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
 		for (Object clause : selection.toList()) {
-			selectedBundles.remove(key((VersionedClause) clause));
+			selectedBundles.remove(((VersionedClause) clause).getName());
 		}
 		selectedViewer.remove(selection.toArray());
 		availableViewer.refresh();

@@ -1,4 +1,0 @@
--privatepackage: bndtools.core.test.launch.rendered
-Bundle-Activator: bndtools.core.test.launch.rendered.Activator
-
-Import-Package: ${eclipse.importpackage},*

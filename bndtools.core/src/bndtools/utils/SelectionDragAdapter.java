@@ -58,18 +58,10 @@ public class SelectionDragAdapter implements DragSourceListener {
 					break;
 				} else if (item instanceof RepositoryFeature) {
 					RepositoryFeature rf = (RepositoryFeature) item;
-					// Create drag data in the canonical feature clause syntax
-					String version = rf.getFeature()
-						.getVersion();
-					StringBuilder clause = new StringBuilder(rf.getFeature()
-						.getId());
-					if (version != null) {
-						clause.append(";version='")
-							.append(version)
-							.append('\'');
-					}
-					clause.append(";type=org.eclipse.update.feature");
-					event.data = clause.toString();
+					// Create drag data as "feature:id:version" string
+					event.data = "feature:" + rf.getFeature()
+						.getId() + ":" + rf.getFeature()
+							.getVersion();
 					break;
 				}
 			}
