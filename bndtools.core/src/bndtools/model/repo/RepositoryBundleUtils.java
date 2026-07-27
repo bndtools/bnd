@@ -1,10 +1,12 @@
 package bndtools.model.repo;
 
 import org.bndtools.utils.repos.RepoUtils;
+import org.osgi.framework.namespace.IdentityNamespace;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 
@@ -123,6 +125,28 @@ public class RepositoryBundleUtils {
 		}
 		return new VersionedClause(bundleVersion.getParentBundle()
 			.getBsn(), attribs);
+	}
+
+	/**
+	 * Converts a RepositoryFeature into a versioned clause using the
+	 * canonical Eclipse feature syntax:
+	 * {@code id;version='V';type=org.eclipse.update.feature}. The type
+	 * attribute distinguishes the feature from a bundle with the same name
+	 * since Eclipse features and bundles may share id and version.
+	 *
+	 * @param feature the repository feature
+	 * @return the versioned clause identifying the feature
+	 */
+	public static VersionedClause convertRepoFeature(RepositoryFeature feature) {
+		Attrs attribs = new Attrs();
+		String version = feature.getFeature()
+			.getVersion();
+		if (version != null && !version.isBlank() && !version.equals("0.0.0")) {
+			attribs.put(Constants.VERSION_ATTRIBUTE, version);
+		}
+		attribs.put(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, ResourceUtils.TYPE_ECLIPSE_FEATURE);
+		return new VersionedClause(feature.getFeature()
+			.getId(), attribs);
 	}
 
 	/**
