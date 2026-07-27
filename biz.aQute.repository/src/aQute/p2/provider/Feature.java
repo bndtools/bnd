@@ -371,7 +371,7 @@ public class Feature extends XMLBase {
 		for (Requires requirement : requires) {
 			CapReqBuilder req = new CapReqBuilder("osgi.identity");
 			String reqIdentity = requirement.plugin != null ? requirement.plugin : requirement.feature;
-			
+
 			// Build the filter with version constraint if present
 			String filter = buildRequirementFilter(reqIdentity, requirement.version, requirement.match,
 				requirement.feature != null);
@@ -402,7 +402,7 @@ public class Feature extends XMLBase {
 	/**
 	 * Build an LDAP filter for a requirement with version constraint.
 	 * Handles Eclipse match rules: "perfect", "equivalent", "compatible", "greaterOrEqual"
-	 * 
+	 *
 	 * @param identity the identity (plugin or feature id)
 	 * @param version the version string (may be null)
 	 * @param match the match rule (may be null, defaults to "greaterOrEqual")
@@ -411,10 +411,10 @@ public class Feature extends XMLBase {
 	 */
 	public String buildRequirementFilter(String identity, String version, String match, boolean isFeature) {
 		StringBuilder filter = new StringBuilder();
-		
+
 		// Determine if we need version filtering
 		boolean hasVersion = version != null && !version.equals("0.0.0");
-		
+
 		// Start with identity
 		if (isFeature || hasVersion) {
 			filter.append("(&");
@@ -422,12 +422,12 @@ public class Feature extends XMLBase {
 		filter.append("(osgi.identity=")
 			.append(identity)
 			.append(")");
-		
+
 		// Add type for features
 		if (isFeature) {
 			filter.append("(type=org.eclipse.update.feature)");
 		}
-		
+
 		// Add version constraint if present
 		if (hasVersion) {
 			String versionFilter = buildVersionFilter(version, match);
@@ -435,11 +435,11 @@ public class Feature extends XMLBase {
 				filter.append(versionFilter);
 			}
 		}
-		
+
 		if (isFeature || hasVersion) {
 			filter.append(")");
 		}
-		
+
 		return filter.toString();
 	}
 
@@ -450,7 +450,7 @@ public class Feature extends XMLBase {
 	 * - equivalent: same major.minor, micro/qualifier may differ
 	 * - compatible: same major, minor/micro/qualifier may differ
 	 * - greaterOrEqual: version >= specified (default if no match specified)
-	 * 
+	 *
 	 * @param version the version string
 	 * @param match the match rule (may be null)
 	 * @return version filter fragment (without outer parentheses)
@@ -459,34 +459,34 @@ public class Feature extends XMLBase {
 		if (version == null || version.isEmpty() || version.equals("0.0.0")) {
 			return null;
 		}
-		
+
 		// Default to greaterOrEqual if no match specified
 		if (match == null || match.isEmpty()) {
 			match = "greaterOrEqual";
 		}
-		
+
 		try {
 			Version v = Version.parseVersion(version);
-			
+
 			switch (match.toLowerCase()) {
 				case "perfect":
 					// Exact version match
 					return String.format("(version=%s)", version);
-					
+
 				case "equivalent":
 					// Same major.minor, micro/qualifier may differ
 					// Range: [major.minor.micro, major.(minor+1).0)
 					Version lower = v;
 					Version upper = new Version(v.getMajor(), v.getMinor() + 1, 0);
 					return String.format("(version>=%s)(!(version>=%s))", lower, upper);
-					
+
 				case "compatible":
 					// Same major, minor/micro/qualifier may differ
 					// Range: [major.minor.micro, (major+1).0.0)
 					Version lowerCompat = v;
 					Version upperCompat = new Version(v.getMajor() + 1, 0, 0);
 					return String.format("(version>=%s)(!(version>=%s))", lowerCompat, upperCompat);
-					
+
 				case "greaterorequal":
 				default:
 					// Unbounded range: version >= specified
@@ -501,7 +501,7 @@ public class Feature extends XMLBase {
 	/**
 	 * Build a platform filter expression from os, ws, and arch attributes.
 	 * Returns null if no platform attributes are specified.
-	 * 
+	 *
 	 * @param os the operating system (may be null)
 	 * @param ws the windowing system (may be null)
 	 * @param arch the architecture (may be null)
@@ -509,7 +509,7 @@ public class Feature extends XMLBase {
 	 */
 	public static String buildPlatformFilter(String os, String ws, String arch) {
 		List<String> filters = new ArrayList<>();
-		
+
 		if (os != null && !os.isEmpty()) {
 			filters.add(String.format("(osgi.os=%s)", os));
 		}
@@ -519,22 +519,22 @@ public class Feature extends XMLBase {
 		if (arch != null && !arch.isEmpty()) {
 			filters.add(String.format("(osgi.arch=%s)", arch));
 		}
-		
+
 		if (filters.isEmpty()) {
 			return null;
 		}
-		
+
 		if (filters.size() == 1) {
 			return filters.get(0);
 		}
-		
+
 		// Combine multiple filters with AND
 		StringBuilder result = new StringBuilder("(&");
 		for (String filter : filters) {
 			result.append(filter);
 		}
 		result.append(")");
-		
+
 		return result.toString();
 	}
 
