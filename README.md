@@ -118,7 +118,7 @@ pluginManagement {
 }
 
 plugins {
-  id "biz.aQute.bnd.builder" version "X.Y.Z.RC1"
+  id "biz.aQute.bnd.builder" version "X.Y.Z-RC1"
 }
 ```
 
@@ -133,7 +133,7 @@ plugins {
 <plugin>
   <groupId>biz.aQute.bnd</groupId>
   <artifactId>bnd-maven-plugin</artifactId>
-  <version>X.Y.Z.RC1</version>
+  <version>X.Y.Z-RC1</version>
 </plugin>
 ```
 
