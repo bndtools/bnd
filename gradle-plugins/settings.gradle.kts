@@ -2,6 +2,21 @@ pluginManagement {
 	plugins {
 		id("com.gradle.plugin-publish") version("2.1.1")
 		id("dev.hargrave.addmavendescriptor") version("1.1.0")
+		id("com.gradle.enterprise") version("3.19.2")
+	}
+}
+
+plugins {
+	id("com.gradle.enterprise")
+}
+
+if (System.getenv("CI").toBoolean()) {
+	gradleEnterprise {
+		buildScan {
+			publishAlways()
+			termsOfServiceUrl = "https://gradle.com/terms-of-service"
+			termsOfServiceAgree = "yes"
+		}
 	}
 }
 

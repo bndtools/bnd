@@ -4,6 +4,11 @@
 
 import aQute.bnd.osgi.About
 import aQute.lib.io.IO
+import org.apache.tools.ant.taskdefs.condition.Os
+
+plugins {
+	id "org.gradle.test-retry" version "1.6.5" apply false
+}
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	ext.jpmsOptions = [
@@ -27,9 +32,20 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	]
 }
 
+project(":biz.aQute.launchpad") {
+	tasks.named("test") {
+		if (Os.isFamily(Os.FAMILY_WINDOWS) && !Boolean.parseBoolean(System.getenv("CI"))) {
+			reports {
+				html.required = false
+			}
+		}
+	}
+}
+
 /* Configure the subprojects */
 subprojects {
 	if (pluginManager.hasPlugin("biz.aQute.bnd")) {
+		pluginManager.apply("org.gradle.test-retry")
 		group = bnd.get("-groupid")
 		version = bnd.get("base.version")
 		tasks.withType(JavaCompile).configureEach {
@@ -46,6 +62,7 @@ subprojects {
 		}
 		tasks.named("test") {
 			useJUnitPlatform()
+
 			reports {
 				junitXml {
 					outputPerTestCase = true
@@ -119,14 +136,14 @@ subprojects {
 			if (System.getProperty("maven.repo.local")) {
 				systemProperty("maven.repo.local", IO.getFile(gradle.getStartParameter().getCurrentDir(), System.getProperty("maven.repo.local")))
 			}
-			
+
 			// Forward all bnd.* system properties to test JVM
 			System.properties.each { key, value ->
 				if (key.startsWith("bnd.")) {
 					systemProperty(key, value)
 				}
 			}
-			
+
 		}
 	}
 }

@@ -522,7 +522,12 @@ class TestBndPlugin extends Specification {
 		assert testProjectDir.isDirectory()
 
 		when: "the configuration cache is requested"
-		// The BuildFeatures service used for the fail fast check requires Gradle 8.5
+		// "8.5" is a floor, not a pin: TestHelper.getGradleRunner(version)
+		// runs with max(version, default version for the current JVM). The
+		// BuildFeatures service used for the fail fast check was introduced
+		// in Gradle 8.5, so this test verifies the oldest supported Gradle
+		// version on JDK 17 while newer JVMs (and --warning-mode=fail runs)
+		// exercise Gradle 8.10/9.x with the same test.
 		def result = TestHelper.getGradleRunner("8.5")
 				.withProjectDir(testProjectDir)
 				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--configuration-cache", "--stacktrace", ":tasks")

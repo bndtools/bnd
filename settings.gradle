@@ -4,6 +4,12 @@
 
 import aQute.bnd.osgi.Constants
 
+pluginManagement {
+	plugins {
+		id "com.gradle.enterprise" version "3.19.2"
+	}
+}
+
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
 	repositories {

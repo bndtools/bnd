@@ -7,7 +7,7 @@ Here are some tips for developing in bnd / bndtools.
 
 ### Soft Assertions
 
-We often use `org.assertj.core.api.SoftAssertions` (in combination with the JUnit `SoftAssertionsExtension`) in contrast to "hard" assertions (as in org.`assertj.core.api.Assertions.assertThat()`). 
+We often use `org.assertj.core.api.SoftAssertions` (in combination with the JUnit `SoftAssertionsExtension`) in contrast to "hard" assertions (as in org.`assertj.core.api.Assertions.assertThat()`).
 
 > With soft assertions AssertJ collects all assertion errors instead of stopping at the first one.
 > 	This is especially useful for long tests like end to end tests as we can fix all reported errors at once and avoid multiple failing runs.
@@ -78,7 +78,7 @@ List<String> warnings = List.of("blah", "foo", "snee");
 List<String> errors = List.of();
 
 // ...some setup of the processor, which produces some warnings, but no errors
-softly.assertThat(warnings).as("i expect warnings").containsExactly("bar"); 
+softly.assertThat(warnings).as("i expect warnings").containsExactly("bar");
 softly.assertThat(errors).as("errors").isEmpty();
 ```
 
@@ -87,7 +87,7 @@ You would get an error like this if `bar` is not contained:
 ```
 Multiple Failures (1 failure)
 -- failure 1 --
-[i expect warnings] 
+[i expect warnings]
 Expecting actual:
   ["blah", "foo", "snee"]
 to contain exactly (and in same order):
@@ -156,7 +156,7 @@ Use that, if you just have very few test methods needing temp folders.
 
 ## Adding Error/Warning Markers
 
-Bndtools aims to be a thin wrapper over bnd. This means that it is comparatively rare that bndtools 
+Bndtools aims to be a thin wrapper over bnd. This means that it is comparatively rare that bndtools
 should be creating errors or warnings. In most cases bnd is responsible for generating errors at
 build time, it's then bndtools job to display them nicely to the user.
 
@@ -181,7 +181,7 @@ e.g.
 ### Step 2 - Create a BuildErrorHandler
 
 
-Once bnd is generating extra error information then bndtools can use it to generate appropriate 
+Once bnd is generating extra error information then bndtools can use it to generate appropriate
 markers. This is achieved through the use of the org.bndtools.build.api.BuildErrorDetailsHandler
 (it's normally best to extend org.bndtools.build.api.AbstractBuildErrorDetailsHandler). The method
 responsible for adding markers is generateMarkerData(), which returns a list of MarkerData objects.
@@ -208,7 +208,7 @@ e.g.
     if (errorInfo.isTypeLevel) {
       md = createTypeMarkerData(javaProject, errorInfo.className, attribs, false);
     } else if (errorInfo.isMethodLevel) {
-      md = createMethodMarkerData(javaProject, errorInfo.className, errorInfo.methodName, 
+      md = createMethodMarkerData(javaProject, errorInfo.className, errorInfo.methodName,
               errorInfo.methodSignature, attribs, false);
     }
 
@@ -220,8 +220,8 @@ e.g.
     result.add(md);
 
     return result;
-    
-    
+
+
 ### Step 3 - Hook in to the Eclipse plugin registry
 
 Bndtools uses the Eclipse plugin registry to discover BuildErrorDetailsHandler instances. To hook
@@ -229,11 +229,11 @@ in to this you need to add the following to your plugin.xml
 
 
     <extension point="bndtools.core.buildErrorDetailsHandlers">
-      <handler typeMatch="org.bndtools.example.MyCustomizedLocationObject" 
+      <handler typeMatch="org.bndtools.example.MyCustomizedLocationObject"
           class="org.bndtools.example.handler.MyCustomBuildErrorDetailsHandler" />
     </extension>
-    
-    
+
+
 ### Step 4 - You're done!
 
 Error markers will now appear in the right places. More work can be done to add quick fixes, but
@@ -292,7 +292,7 @@ A comparison of the advantages of each mode follows.
 The full proxy mode presents the same extension object to the rest of the system
 for the life of the Workbench. This makes it more suitable when you have
 components in the system that are hanging on to references to the extension
-objects for extended periods, as it will allow the backing component object 
+objects for extended periods, as it will allow the backing component object
 instances to be cleaned up. For example, if the extension client caches the
 reference to the extension object in a static class variable, there is no easy
 way to clear that reference when your service restarts. Using the proxy mode,
@@ -303,7 +303,7 @@ However, there are times when the full proxy mode won't work:
 
 * When the clients of the extension make assumptions about the concrete type
 of the extension object. An example is in the source lookup code, which at one
-point specifically looks for a subclass of `AbstractSourceLookupDirector` - 
+point specifically looks for a subclass of `AbstractSourceLookupDirector` -
 even if your backing service extends `AbstractSourceLookupDirector`, the
 returned proxy object does not.
 * The proxy mode makes use of Java's dynamic proxies, and these can only be used
@@ -337,7 +337,7 @@ the proxy mode's limitations.
 
 There also exists the possibility of extensions where neither approach will work
 properly - eg, a client of an extension that has a class as its base type, but
-the client also hangs on to references in a static variable. Unfortunately in 
+the client also hangs on to references in a static variable. Unfortunately in
 this case you'll have to abandon the use of the `ExtensionFacade` altogether.
 
 #### How to use
@@ -410,7 +410,7 @@ blank (eg, `class="org.bndtools.facade.ExtensionFacade::my.component.name"`).
 
 ### Examples of the `ExtensionFacade` in action
 
-The prototype example of how to use the `ExtensionFacade` is in the 
+The prototype example of how to use the `ExtensionFacade` is in the
 `org.bndtools.launch` bundle, which contains the launch-related code
 for Bndtools. This bundle was used as a proving ground for the
 `ExtensionFacade`'s initial development. The extensions are registered in
@@ -420,7 +420,7 @@ for Bndtools. This bundle was used as a proving ground for the
 
 ## Generating JDK properties files
 
-The files like `JavaSE_17.properties` (read by `EE.init()` (see [EE.java](EE.java))) 
+The files like `JavaSE_17.properties` (read by `EE.init()` (see [EE.java](EE.java)))
 contain all java packages provided by a given JDK and are generated using a CLI tool https://github.com/bjhargrave/java-platform-packages
 
 To make it a bit easier to run the tool to generate the files for new JDKs the following section will give some options.
@@ -455,7 +455,7 @@ It requires that the other script for downloading the JDK has run before (see be
 
 #!/bin/bash
 
-# This script is specific for [bnd / bndtools](https://github.com/bndtools/bnd). 
+# This script is specific for [bnd / bndtools](https://github.com/bndtools/bnd).
 # It is basically a CLI wrapper around https://github.com/bjhargrave/java-platform-packages
 
 # Check if all required parameters are provided
@@ -482,10 +482,10 @@ curl -L "https://raw.githubusercontent.com/bjhargrave/java-platform-packages/ref
 if [ -d "$JDK_DIR" ]; then
     if [ -x "$JDK_DIR/bin/java" ]; then
         JAVA_CMD="$JDK_DIR/bin/java"  # Linux JDK path
-        JAVAC_CMD="$JDK_DIR/bin/javac"  
+        JAVAC_CMD="$JDK_DIR/bin/javac"
     elif [ -x "$JDK_DIR/Contents/Home/bin/java" ]; then
         JAVA_CMD="$JDK_DIR/Contents/Home/bin/java"  # macOS JDK path
-        JAVAC_CMD="$JDK_DIR/Contents/Home/bin/javac"  
+        JAVAC_CMD="$JDK_DIR/Contents/Home/bin/javac"
     else
         echo "Error: No Java executable found in $JDK_DIR"
         exit 1
