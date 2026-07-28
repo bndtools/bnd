@@ -53,9 +53,10 @@ jobs:
         mv tmp cnf/build.bnd        
     - name: create release docs for ${{ github.event.inputs.V1 }}
       run: |
+        # keep the following in-sync with docs/ADDING_RELEASE_DOCS.md
         cd docs
         echo "releasename: ${V1}" >tmp
-        echo "baseurl: /release/${V1}" >>tmp
+        echo "baseurl: /releases/${V1}" >>tmp
         echo "repository: bndtools/bnd" >>tmp
         cat _config.yml | sed '/^releasename: /d' | sed '/^baseurl: /d' | sed '/^repository: /d' >>tmp
         mv tmp _config.yml
@@ -64,7 +65,15 @@ jobs:
         bundle exec jekyll build
 
         rm -rf _site/releases
-        find _site -type f ! -name "*.html" -exec rm -f {} +
+        # Remove unwanted root-level files (keeping only the ones you specified)
+        find _site -maxdepth 1 -type f ! -name "404.html" \
+                           ! -name "favicon.ico" \
+                           ! -name "index.html" \
+                           ! -name "robots.txt" \
+                           ! -name "sitemap.xml" \
+                           ! -name "snapshot.html" \
+                           -delete
+        
 
     - uses: actions/upload-artifact@v7.0.1
       with:
