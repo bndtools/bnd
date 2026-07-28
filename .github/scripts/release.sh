@@ -478,19 +478,36 @@ update_about_java_patch() {
     fi
 }
 
-# Update package-info.java
+# Update package-info.java by incrementing the minor version
 update_package_info() {
     local file="${REPO_ROOT}/biz.aQute.bndlib/src/aQute/bnd/osgi/package-info.java"
-    local version=$1
 
     log_info "Updating ${file}"
 
+    # Extract current version from the file
+    local current_version
+    current_version=$(grep '@Version' "$file" | sed 's/.*@Version("\([^"]*\)").*/\1/')
+    
+    if [[ -z "$current_version" ]]; then
+        log_error "Could not extract current version from $file"
+        return 1
+    fi
+
+    # Parse the current version
+    parse_version "$current_version" "CURR"
+    
+    # Increment the minor version
+    local new_minor=$((CURR_MINOR + 1))
+    local new_version="${CURR_MAJOR}.${new_minor}.0"
+
     if [[ "$DRY_RUN" == true ]]; then
-        log_info "  Would set @Version to: $version"
+        log_info "  Would update @Version from: $current_version to: $new_version"
         return
     fi
 
-    "${SED_INPLACE[@]}" "s/@Version(\"[^\"]*\")/@Version(\"$version\")/" "$file"
+    log_info "  Updating @Version from $current_version to $new_version"
+    
+    "${SED_INPLACE[@]}" "s/@Version(\"[^\"]*\")/@Version(\"$new_version\")/" "$file"
 }
 
 # Update maven-plugins/bnd-plugin-parent/pom.xml
@@ -611,7 +628,7 @@ do_first_rc() {
     # Update master branch files for V2
     update_build_bnd "$NEXT_VERSION" "SNAPSHOT"
     update_about_java "$NEXT_VERSION" true
-    update_package_info "$NEXT_VERSION"
+    update_package_info
     update_maven_pom "${NEXT_VERSION}-SNAPSHOT"
     update_gradle_plugins_properties "${NEXT_VERSION}-SNAPSHOT"
     update_gradle_readme "$readme_current_version" "$NEXT_VERSION"
@@ -782,7 +799,7 @@ do_patch_first_rc() {
     update_about_java_patch "$RELEASE_VERSION" true
 
     # Update package-info.java
-    update_package_info "$RELEASE_VERSION"
+    update_package_info
 
     # Update maven pom
     update_maven_pom "${RELEASE_VERSION}-RC$RC_NUMBER"
