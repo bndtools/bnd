@@ -22,6 +22,7 @@
 #
 # Environment:
 #   SONATYPE_BEARER   – Bearer token for authentication (required)
+#   INSECURE          – Set to 'true' to pass --insecure to curl (e.g. for testing behind a proxy)
 #
 # -------------------------------------------------------------------------
 set -euo pipefail
@@ -33,34 +34,81 @@ DEPLOYMENT_NAME=""
 RELEASE_DIR=""
 # -------------------------------------------------------------------------
 
-detect_groupid() {
-	local path_groups
-
-	# Derive groupIds only from Maven repository paths.
-	# We intentionally do not inspect arbitrary files or recurse into jar contents.
-	path_groups=$(find "${RELEASE_DIR}" -type f \( -name '*.pom' -o -name 'maven-metadata.xml' \) -print0 | while IFS= read -r -d '' file; do
+# Detect distinct namespace roots (first two path segments of POM files,
+# e.g. biz/aQute or org/bndtools) as required by Sonatype Central Portal.
+detect_namespaces() {
+	find "${RELEASE_DIR}" -type f -name '*.pom' -print0 | while IFS= read -r -d '' file; do
 		rel_path="${file#"${RELEASE_DIR}"/}"
-		rel_dir="$(dirname "${rel_path}")"
+		printf '%s\n' "${rel_path}" | cut -d'/' -f1-2
+	done | sort -u
+}
 
-		# Expected Maven paths:
-		#   group/path/artifact/version/artifact-version*.pom
-		#   group/path/artifact/maven-metadata.xml
-		if [[ "${rel_path}" == *.pom ]]; then
-			group_path="$(echo "${rel_dir}" | sed -E 's|/[^/]+/[^/]+$||')"
-		else
-			group_path="$(echo "${rel_dir}" | sed -E 's|/[^/]+$||')"
-		fi
+# Upload one bundle, optionally scoped to a namespace subdirectory.
+# Arguments: <ns_dir> <deployment_name>
+#   ns_dir: path relative to RELEASE_DIR to include (empty = whole dir)
+upload_namespace() {
+	local ns_dir="$1"
+	local name="$2"
+	local ns_tag="${ns_dir:+-${ns_dir//\//-}}"
+	local bundle_zip="${TMPDIR:-/tmp}/sonatype-bundle-$$${ns_tag}.zip"
+	local http_response="${TMPDIR:-/tmp}/sonatype-response-$$${ns_tag}.txt"
 
-		if [[ -n "${group_path}" && "${group_path}" != "${rel_dir}" ]]; then
-			echo "${group_path}" | tr '/' '.'
-		fi
-	done | sed '/^$/d' | awk '!seen[$0]++')
-	if [[ -n "${path_groups}" ]]; then
-		printf '%s\n' "${path_groups}" | paste -sd, -
-		return 0
+	rm -f "${bundle_zip}" "${http_response}"
+	TEMP_FILES+=("${bundle_zip}" "${http_response}")
+
+	if [[ -z "${ns_dir}" ]]; then
+		echo "Creating Sonatype Central bundle from ${RELEASE_DIR} ..."
+		(cd "${RELEASE_DIR}" && jar cMf "${bundle_zip}" .)
+	else
+		echo "Creating Sonatype Central bundle for namespace ${ns_dir} ..."
+		local filelist
+		filelist=$(mktemp)
+		TEMP_FILES+=("${filelist}")
+		(cd "${RELEASE_DIR}" && find . -path "./${ns_dir}/*" -type f -print > "${filelist}" && jar cMf "${bundle_zip}" @"${filelist}")
+		rm -f "${filelist}"
 	fi
 
-	echo "unknown-group"
+	local bundle_size
+	bundle_size=$(stat -c%s "${bundle_zip}" 2>/dev/null || stat -f%z "${bundle_zip}")
+	echo "Bundle size: ${bundle_size} bytes"
+
+	if [[ "${bundle_size}" -eq 0 ]]; then
+		echo "Error: bundle zip is empty – nothing to upload" >&2
+		exit 1
+	fi
+
+	local encoded_name
+	encoded_name=$(printf '%s' "${name}" | sed -e 's/%/%25/g' -e 's/ /%20/g' -e 's/&/%26/g' -e 's/=/%3D/g' -e 's/?/%3F/g' -e 's/+/%2B/g' -e 's/#/%23/g' -e 's/\[/%5B/g' -e 's/\]/%5D/g')
+	local query="name=${encoded_name}&publishingType=${PUBLISHING_TYPE}"
+
+	echo "Uploading bundle to Sonatype Central Portal ..."
+	echo "  URL: ${UPLOAD_URL}"
+	echo "  Publishing type: ${PUBLISHING_TYPE}"
+	echo "  Name: ${name}"
+
+	local curl_opts=()
+	[[ "${INSECURE:-}" == "true" ]] && curl_opts+=("--insecure")
+
+	local http_code
+	http_code=$(curl -sS -w '%{http_code}' -o "${http_response}" \
+		"${curl_opts[@]}" \
+		-H "Authorization: Bearer ${SONATYPE_BEARER}" \
+		-F "bundle=@${bundle_zip}" \
+		"${UPLOAD_URL}?${query}")
+
+	local response_body
+	response_body=$(cat "${http_response}")
+
+	if [[ "${http_code}" -lt 200 || "${http_code}" -ge 300 ]]; then
+		echo "Error: Upload failed with HTTP ${http_code}" >&2
+		echo "${response_body}" >&2
+		exit 1
+	fi
+
+	local deployment_id="${response_body}"
+	echo "Upload accepted. Deployment ID: ${deployment_id}"
+	echo "${deployment_id}" >> "${DEPLOYMENTID_FILE}"
+	rm -f "${bundle_zip}" "${http_response}"
 }
 
 usage() {
@@ -77,11 +125,14 @@ usage() {
 
 	Environment:
 	  SONATYPE_BEARER   Bearer token for authentication (required)
+	  INSECURE          Set to 'true' to pass --insecure to curl
 	EOF
 	exit "${1:-0}"
 }
 
-# ---- parse arguments ----------------------------------------------------
+
+# ---- parse arguments (robust: first non-option is dir, ignore trailing options) ----
+RELEASE_DIR=""
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--publishing-type) PUBLISHING_TYPE="$2"; shift 2 ;;
@@ -89,7 +140,15 @@ while [[ $# -gt 0 ]]; do
 		--upload-url)      UPLOAD_URL="$2"; shift 2 ;;
 		-h|--help)         usage 0 ;;
 		-*)                echo "Unknown option: $1" >&2; usage 1 ;;
-		*)                 RELEASE_DIR="$1"; shift ;;
+		*)
+			if [[ -z "$RELEASE_DIR" ]]; then
+				RELEASE_DIR="$1"
+			else
+				# Ignore extra non-option args after dir
+				:
+			fi
+			shift
+			;;
 	esac
 done
 
@@ -108,59 +167,27 @@ fi
 # Deployment ID file stored beside the release dir
 DEPLOYMENTID_FILE="${RELEASE_DIR%/}_DEPLOYMENTID.txt"
 
-# ---- build deployment name ----------------------------------------------
+# ---- detect namespaces and build deployment name ------------------------
+TEMP_FILES=()
+trap 'rm -f "${TEMP_FILES[@]}"' EXIT
+
+mapfile -t NAMESPACES < <(detect_namespaces)
+
 if [[ -z "${DEPLOYMENT_NAME}" ]]; then
-	GROUP_ID=$(detect_groupid)
-	DEPLOYMENT_NAME="uploaded ${GROUP_ID} on $(date '+%Y%m%d-%H%M%S')"
+	NS_LABEL=$(printf '%s\n' "${NAMESPACES[@]:-unknown}" | tr '/' '.' | paste -sd, -)
+	DEPLOYMENT_NAME="uploaded ${NS_LABEL} on $(date '+%Y%m%d-%H%M%S')"
 fi
 
-
-# ---- release deployment: create bundle zip ------------------------------
-BUNDLE_ZIP="${TMPDIR:-/tmp}/sonatype-bundle-$$.zip"
-rm -f "${BUNDLE_ZIP}"
-trap 'rm -f "${BUNDLE_ZIP}"' EXIT
-
-echo "Creating Sonatype Central bundle from ${RELEASE_DIR} ..."
-(cd "${RELEASE_DIR}" && jar cMf "${BUNDLE_ZIP}" .)
-
-BUNDLE_SIZE=$(stat -c%s "${BUNDLE_ZIP}" 2>/dev/null || stat -f%z "${BUNDLE_ZIP}")
-echo "Bundle size: ${BUNDLE_SIZE} bytes"
-
-if [[ "${BUNDLE_SIZE}" -eq 0 ]]; then
-	echo "Error: bundle zip is empty – nothing to upload" >&2
-	exit 1
+# ---- upload: one bundle per namespace (Sonatype requires single namespace) ----
+if [[ ${#NAMESPACES[@]} -le 1 ]]; then
+	# Single namespace or no POM files found: upload everything as one bundle
+	upload_namespace "" "${DEPLOYMENT_NAME}"
+else
+	echo "Multiple namespaces detected: ${NAMESPACES[*]} – uploading separately"
+	for NS in "${NAMESPACES[@]}"; do
+		NS_DOTTED="${NS//\//.}"
+		upload_namespace "${NS}" "${DEPLOYMENT_NAME} [${NS_DOTTED}]"
+	done
 fi
 
-# ---- upload bundle ------------------------------------------------------
-# URL-encode the deployment name (handles spaces and special characters)
-ENCODED_NAME=$(printf '%s' "${DEPLOYMENT_NAME}" | sed -e 's/%/%25/g' -e 's/ /%20/g' -e 's/&/%26/g' -e 's/=/%3D/g' -e 's/?/%3F/g' -e 's/+/%2B/g' -e 's/#/%23/g')
-QUERY="name=${ENCODED_NAME}&publishingType=${PUBLISHING_TYPE}"
-
-echo "Uploading bundle to Sonatype Central Portal ..."
-echo "  URL: ${UPLOAD_URL}"
-echo "  Publishing type: ${PUBLISHING_TYPE}"
-echo "  Name: ${DEPLOYMENT_NAME}"
-
-HTTP_RESPONSE="${TMPDIR:-/tmp}/sonatype-response-$$.txt"
-trap 'rm -f "${BUNDLE_ZIP}" "${HTTP_RESPONSE}"' EXIT
-
-HTTP_CODE=$(curl -sS -w '%{http_code}' -o "${HTTP_RESPONSE}" \
-	-H "Authorization: Bearer ${SONATYPE_BEARER}" \
-	-F "bundle=@${BUNDLE_ZIP}" \
-	"${UPLOAD_URL}?${QUERY}")
-
-RESPONSE_BODY=$(cat "${HTTP_RESPONSE}")
-
-if [[ "${HTTP_CODE}" -lt 200 || "${HTTP_CODE}" -ge 300 ]]; then
-	echo "Error: Upload failed with HTTP ${HTTP_CODE}" >&2
-	echo "${RESPONSE_BODY}" >&2
-	exit 1
-fi
-
-# The response body contains the deployment ID
-DEPLOYMENT_ID="${RESPONSE_BODY}"
-echo "Upload accepted. Deployment ID: ${DEPLOYMENT_ID}"
-
-# Store the deployment ID beside the release directory
-echo "${DEPLOYMENT_ID}" > "${DEPLOYMENTID_FILE}"
-echo "Deployment ID stored in: ${DEPLOYMENTID_FILE}"
+echo "Deployment ID(s) stored in: ${DEPLOYMENTID_FILE}"
