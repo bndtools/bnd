@@ -514,4 +514,37 @@ class TestBndPlugin extends Specification {
 		!generated.exists()
 		!simple_bundle.exists()
 	}
+
+	def "Bnd Workspace Plugin configuration cache fail fast Test"() {
+		given:
+		String testProject = "workspaceplugin1"
+		File testProjectDir = new File(testResources, testProject)
+		assert testProjectDir.isDirectory()
+
+		when: "the configuration cache is requested"
+		// "8.5" is a floor, not a pin: TestHelper.getGradleRunner(version)
+		// runs with max(version, default version for the current JVM). The
+		// BuildFeatures service used for the fail fast check was introduced
+		// in Gradle 8.5, so this test verifies the oldest supported Gradle
+		// version on JDK 17 while newer JVMs (and --warning-mode=fail runs)
+		// exercise Gradle 8.10/9.x with the same test.
+		def result = TestHelper.getGradleRunner("8.5")
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--configuration-cache", "--stacktrace", ":tasks")
+				.forwardOutput()
+				.buildAndFail()
+
+		then: "the build fails fast with a clear message"
+		result.output.contains("The Bnd Workspace plugin does not support the Gradle configuration cache")
+
+		when: "the configuration cache is not requested"
+		result = TestHelper.getGradleRunner("8.5")
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--stacktrace", ":tasks")
+				.forwardOutput()
+				.build()
+
+		then: "the build succeeds"
+		result.task(":tasks").outcome == SUCCESS
+	}
 }

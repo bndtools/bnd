@@ -6,7 +6,7 @@ import aQute.bnd.osgi.Constants
 
 pluginManagement {
 	plugins {
-		id "com.gradle.enterprise" version "3.13.4"
+		id "com.gradle.enterprise" version "3.19.2"
 	}
 }
 
@@ -46,20 +46,6 @@ buildscript {
 					details.changing = true
 				}
 			}
-		}
-	}
-}
-
-plugins {
-	id "com.gradle.enterprise"
-}
-
-if (Boolean.parseBoolean(System.getenv("CI"))) {
-	gradleEnterprise {
-		buildScan {
-			publishAlways()
-			termsOfServiceUrl = "https://gradle.com/terms-of-service"
-			termsOfServiceAgree = "yes"
 		}
 	}
 }
