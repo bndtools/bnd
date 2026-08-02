@@ -6,6 +6,9 @@ import static aQute.bnd.osgi.Constants.DEFAULT_PROP_TESTBIN_DIR;
 import static aQute.bnd.osgi.Constants.DEFAULT_PROP_TESTSRC_DIR;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -100,6 +103,9 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		for (File f : sourcePath)
 			IO.mkdirs(f);
 
+		final org.eclipse.core.resources.IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace()
+			.getRoot();
+
 		//
 		// All the things we should find when we have traversed the build path
 		//
@@ -171,14 +177,14 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 					break;
 
 				case IClasspathEntry.CPE_SOURCE :
-					File file = toFile(cpe.getPath());
+					File file = toFile(cpe.getPath(), wsRoot);
 					if (file == null) {
-						model.warning("Bndtools: Found virtual file for '%s'", cpe.getPath())
+						model.warning("Bndtools: Found virtual file for '%s'", cpe.getPath(), wsRoot)
 							.details(cpe);
 					} else {
-						File output = toFile(cpe.getOutputLocation());
+						File output = toFile(cpe.getOutputLocation(), wsRoot);
 						if (output == null)
-							output = toFile(javaProject.getOutputLocation());
+							output = toFile(javaProject.getOutputLocation(), wsRoot);
 
 						if (file.equals(testsrc)) {
 							//
@@ -236,12 +242,11 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 				case testsrc :
 					// if the testsrc directory does not exist or has no
 					// children, then don't warn
-					File[] subs = testsrc.listFiles();
-					if (subs != null && subs.length > 0)
+					if (testsrc != null && containsAtLeastOneEntry(testsrc.toPath())) {
 						warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null,
 							"Bndtools: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
+					}
 					break;
-
 				case bndcontainer :
 					warning(model, null, null, null,
 						"Bndtools: The build path does not refer to the bnd container '%s'",
@@ -286,13 +291,12 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		return path.substring(prefix.length() + 1);
 	}
 
-	private File toFile(IPath path) {
+	private File toFile(IPath path, org.eclipse.core.resources.IWorkspaceRoot wsRoot) {
 		if (path == null)
 			return null;
 
 		try {
-			IFile file = ResourcesPlugin.getWorkspace()
-				.getRoot()
+			IFile file = wsRoot
 				.getFile(path);
 			if (file != null)
 				return file.getLocation()
@@ -302,5 +306,29 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 			// ignore
 		}
 		return null;
+	}
+
+
+	/**
+	 * Determines whether the specified directory contains at least one entry.
+	 * An entry may be either a file or a subdirectory.
+	 *
+	 * @param directory the directory to inspect
+	 * @return {@code true} if the directory contains at least one entry;
+	 *         {@code false} if the path does not exist or is not a directory
+	 */
+	private static boolean containsAtLeastOneEntry(java.nio.file.Path directory) throws IOException {
+	    if (directory == null || !Files.isDirectory(directory)) {
+	        return false;
+	    }
+
+		try (DirectoryStream<java.nio.file.Path> entries = Files.newDirectoryStream(directory)) {
+	        return entries.iterator()
+	            .hasNext();
+	    }
+		catch (IOException e) {
+			// If we can't read the directory, treat it as empty
+			return false;
+		}
 	}
 }

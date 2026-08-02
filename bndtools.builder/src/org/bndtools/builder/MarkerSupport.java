@@ -49,7 +49,9 @@ import aQute.service.reporter.Reporter.SetLocation;
 class MarkerSupport {
 	private static final ILogger			logger			= Logger.getLogger(BndtoolsBuilder.class);
 	private final IProject					project;
-
+	// Cache for validators - they are defined in plugin.xml and don't change at
+	// runtime
+	private static volatile List<IValidator>	cachedValidators	= null;
 	private static final org.slf4j.Logger	consoleLogger	= LoggerFactory.getLogger(MarkerSupport.class);
 
 	MarkerSupport(IProject project) {
@@ -199,20 +201,27 @@ class MarkerSupport {
 	}
 
 	static List<IValidator> loadValidators() {
-		List<IValidator> validators = null;
-		IConfigurationElement[] validatorElems = Platform.getExtensionRegistry()
-			.getConfigurationElementsFor(CORE_PLUGIN_ID, "validators");
-		if (validatorElems != null && validatorElems.length > 0) {
-			validators = new ArrayList<>(validatorElems.length);
-			for (IConfigurationElement elem : validatorElems) {
-				try {
-					validators.add((IValidator) elem.createExecutableExtension("class"));
-				} catch (Exception e) {
-					logger.logError("Unable to instantiate validator: " + elem.getAttribute("name"), e);
+		if (cachedValidators == null) {
+			synchronized (MarkerSupport.class) {
+				if (cachedValidators == null) {
+					List<IValidator> validators = null;
+					IConfigurationElement[] validatorElems = Platform.getExtensionRegistry()
+						.getConfigurationElementsFor(CORE_PLUGIN_ID, "validators");
+					if (validatorElems != null && validatorElems.length > 0) {
+						validators = new ArrayList<>(validatorElems.length);
+						for (IConfigurationElement elem : validatorElems) {
+							try {
+								validators.add((IValidator) elem.createExecutableExtension("class"));
+							} catch (Exception e) {
+								logger.logError("Unable to instantiate validator: " + elem.getAttribute("name"), e);
+							}
+						}
+					}
+					cachedValidators = validators;
 				}
 			}
 		}
-		return validators;
+		return cachedValidators;
 	}
 
 	void validate(Project model) throws Exception {
