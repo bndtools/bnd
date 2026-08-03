@@ -180,7 +180,9 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	@Override
 	protected void doCommitToModel(List<Requirement> requires) {
 		if (isDirty()) {
-			model.setRunRequires(requires);
+			String key = model.getLocalMergePropertyKey(Constants.RUNREQUIRES)
+				.orElse(Constants.RUNREQUIRES);
+			model.setRunRequiresAtKey(key, requires);
 		}
 	}
 

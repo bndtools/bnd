@@ -2,10 +2,13 @@ package org.bndtools.builder.handlers.baseline;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -17,6 +20,7 @@ import org.bndtools.utils.jdt.ASTUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -62,6 +66,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 	private static final String		PACKAGEINFO					= "packageinfo";
 	private static final String		PACKAGEINFOJAVA				= "package-info.java";
 	private static final String		PROP_SUGGESTED_VERSION		= "suggestedVersion";
+	private static final String		PROP_PACKAGE_NAME			= "packageName";
 
 	private static final String		ANNOTATION_VERSION_BND_PKG	= "aQute.bnd.annotation";
 	private static final String		ANNOTATION_VERSION_OSGI_PKG	= "org.osgi.annotation.versioning";
@@ -107,6 +112,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 						attribs.put(IMarker.MESSAGE, message.trim());
 						attribs.put(IJavaModelMarker.ID, 8088);
 						attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
+						attribs.put(PROP_PACKAGE_NAME, baselineInfo.packageName);
 						if (range != null) {
 							attribs.put(IMarker.CHAR_START, range.getOffset());
 							attribs.put(IMarker.CHAR_END, range.getOffset() + range.getLength());
@@ -128,6 +134,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 						Map<String, Object> attribs = new HashMap<>();
 						attribs.put(IMarker.MESSAGE, message.trim());
 						attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
+						attribs.put(PROP_PACKAGE_NAME, baselineInfo.packageName);
 
 						LineLocation lineLoc = findVersionLocation(pkgInfoFile.getLocation()
 							.toFile());
@@ -150,6 +157,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 							Map<String, Object> attribs = new HashMap<>();
 							attribs.put(IMarker.MESSAGE, message.trim());
 							attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
+							attribs.put(PROP_PACKAGE_NAME, baselineInfo.packageName);
 							IPath location = bndfile.getLocation();
 							if (location != null) {
 								File file = bndfile.getLocation()
@@ -250,12 +258,12 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 							Tree classMember = classMemberDiff.getNewer();
 							if (Type.METHOD == classMember.getType())
 								markers.addAll(generateAddedMethodMarker(javaProject, className, classMember.getName(),
-									classMember.ifAdded()));
+								classMember.ifAdded(), baselineInfo));
 						} else if (Delta.REMOVED == classMemberDiff.getDelta()) {
 							Tree classMember = classMemberDiff.getOlder();
 							if (Type.METHOD == classMember.getType()) {
 								markers.addAll(generateRemovedMethodMarker(javaProject, className,
-									classMember.getName(), classMember.ifRemoved()));
+								classMember.getName(), classMember.ifRemoved(), baselineInfo));
 							}
 						}
 					}
@@ -268,7 +276,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 	}
 
 	List<MarkerData> generateAddedMethodMarker(IJavaProject javaProject, String className, final String methodName,
-		final Delta requiresDelta) throws JavaModelException {
+		final Delta requiresDelta, final Info baselineInfo) throws JavaModelException {
 		final List<MarkerData> markers = new ArrayList<>();
 		final CompilationUnit ast = createAST(javaProject, className);
 
@@ -283,9 +291,11 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 						attribs.put(IMarker.MESSAGE, message);
 						attribs.put(IMarker.CHAR_START, methodDecl.getStartPosition());
 						attribs.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
+						attribs.put(PROP_PACKAGE_NAME, baselineInfo.packageName);
+						attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
 
 						markers.add(new MarkerData(ast.getJavaElement()
-							.getResource(), attribs, false));
+							.getResource(), attribs, true));
 					}
 					return false;
 				}
@@ -298,14 +308,16 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 			attribs.put(IMarker.MESSAGE, message);
 			attribs.put(IMarker.CHAR_START, 0);
 			attribs.put(IMarker.CHAR_END, 0);
+			attribs.put(PROP_PACKAGE_NAME, baselineInfo.packageName);
+			attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
 
-			markers.add(new MarkerData(javaProject.getResource(), attribs, false));
+			markers.add(new MarkerData(javaProject.getResource(), attribs, true));
 		}
 		return markers;
 	}
 
 	List<MarkerData> generateRemovedMethodMarker(IJavaProject javaProject, final String className,
-		final String methodName, final Delta requiresDelta) throws JavaModelException {
+		final String methodName, final Delta requiresDelta, final Info baselineInfo) throws JavaModelException {
 		final List<MarkerData> markers = new ArrayList<>();
 		final CompilationUnit ast = createAST(javaProject, className);
 		if (ast != null) {
@@ -325,9 +337,11 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 								"The method '%s' was removed, which requires a %s change to the package.", methodName,
 								requiresDelta);
 							attribs.put(IMarker.MESSAGE, message);
+							attribs.put(PROP_PACKAGE_NAME, baselineInfo.packageName);
+							attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
 
 							markers.add(new MarkerData(ast.getJavaElement()
-								.getResource(), attribs, false));
+								.getResource(), attribs, true));
 							return false;
 						}
 					}
@@ -343,12 +357,18 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 		List<IMarkerResolution> result = new ArrayList<>();
 
 		final String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
-		if (suggestedVersion != null) {
+		if (suggestedVersion == null)
+			return result;
+
+		IResource resource = marker.getResource();
+		String fileName = resource instanceof IFile ? resource.getName() : "";
+
+		if (PACKAGEINFO.equals(fileName)) {
 			result.add(new IMarkerResolution() {
 				@Override
 				public void run(IMarker marker) {
-					final IFile file = (IFile) marker.getResource();
-					final IWorkspace workspace = file.getWorkspace();
+					IFile file = (IFile) marker.getResource();
+					IWorkspace workspace = file.getWorkspace();
 					try {
 						workspace.run(monitor -> {
 							String input = "version " + suggestedVersion;
@@ -365,10 +385,113 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 					return "Change package version to " + suggestedVersion;
 				}
 			});
+		} else if (Project.BNDFILE.equals(fileName)) {
+			result.add(new IMarkerResolution() {
+				@Override
+				public void run(IMarker marker) {
+					IFile file = (IFile) marker.getResource();
+					try {
+						String content = IO.collect(file.getLocation()
+							.toFile());
+						int pkgEnd = marker.getAttribute(IMarker.CHAR_END, 0);
+						String newContent = replaceVersionInExportPackage(content, pkgEnd, suggestedVersion);
+						if (newContent != null) {
+							IWorkspace workspace = file.getWorkspace();
+							workspace.run(monitor -> {
+								file.setContents(
+									new ByteArrayInputStream(newContent.getBytes(StandardCharsets.UTF_8)),
+									false, true, monitor);
+							}, null);
+						}
+					} catch (Exception e) {
+						logger.logError("Error applying bnd.bnd baseline version quickfix.", e);
+					}
+				}
 
+				@Override
+				public String getLabel() {
+					return "Change package version to " + suggestedVersion;
+				}
+			});
+		} else {
+			final String packageName = marker.getAttribute(PROP_PACKAGE_NAME, null);
+			if (packageName != null) {
+				result.add(new IMarkerResolution() {
+					@Override
+					public void run(IMarker marker) {
+						IProject project = marker.getResource()
+							.getProject();
+						IJavaProject javaProject = JavaCore.create(project);
+						try {
+							updatePackageVersion(javaProject, packageName, suggestedVersion);
+						} catch (Exception e) {
+							logger.logError("Error applying structural change version quickfix.", e);
+						}
+					}
+
+					@Override
+					public String getLabel() {
+						return "Update package " + packageName + " version to " + suggestedVersion;
+					}
+				});
+			}
 		}
 
 		return result;
+	}
+
+	static String replaceVersionInExportPackage(String content, int searchFrom, String suggestedVersion) {
+		int searchEnd = Math.min(searchFrom + 300, content.length());
+		Pattern versionPattern = Pattern.compile(";\\s*version\\s*=\\s*\"([^\"]*)\"");
+		Matcher m = versionPattern.matcher(content);
+		m.region(searchFrom, searchEnd);
+		if (m.find()) {
+			return content.substring(0, m.start(1)) + suggestedVersion + content.substring(m.end(1));
+		}
+		return null;
+	}
+
+	private void updatePackageVersion(IJavaProject javaProject, String packageName, String suggestedVersion)
+		throws Exception {
+		for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+			if (IClasspathEntry.CPE_SOURCE != entry.getEntryKind())
+				continue;
+
+			IPath pkgPath = entry.getPath()
+				.append(packageName.replace('.', '/'));
+
+			IPackageFragment pkg = javaProject.findPackageFragment(pkgPath);
+			if (pkg != null) {
+				ICompilationUnit pkgInfoJava = pkg.getCompilationUnit(PACKAGEINFOJAVA);
+				if (pkgInfoJava != null && pkgInfoJava.exists()) {
+					ISourceRange range = findPackageInfoJavaVersionLocation(packageName, pkgInfoJava);
+					if (range != null) {
+						String source = pkgInfoJava.getSource();
+						String quoted = "\"" + suggestedVersion + "\"";
+						String newSource = source.substring(0, range.getOffset()) + quoted
+							+ source.substring(range.getOffset() + range.getLength());
+						IFile file = (IFile) pkgInfoJava.getResource();
+						file.getWorkspace()
+							.run(monitor -> file.setContents(
+								new ByteArrayInputStream(newSource.getBytes(StandardCharsets.UTF_8)),
+								false, true, monitor), null);
+						return;
+					}
+				}
+			}
+
+			IFile pkgInfoFile = javaProject.getProject()
+				.getWorkspace()
+				.getRoot()
+				.getFile(pkgPath.append(PACKAGEINFO));
+			if (pkgInfoFile != null && pkgInfoFile.exists()) {
+				String input = "version " + suggestedVersion;
+				pkgInfoFile.getWorkspace()
+					.run(monitor -> pkgInfoFile.setContents(new ByteArrayInputStream(input.getBytes()),
+						false, true, monitor), null);
+				return;
+			}
+		}
 	}
 
 	@Override
@@ -376,11 +499,34 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 		List<ICompletionProposal> proposals = new ArrayList<>();
 
 		String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
-		int start = marker.getAttribute(IMarker.CHAR_START, 0);
-		int end = marker.getAttribute(IMarker.CHAR_END, 0);
-		CompletionProposal proposal = new CompletionProposal("version " + suggestedVersion, start, end - start, end,
-			null, "Change package version to " + suggestedVersion, null, null);
-		proposals.add(proposal);
+		if (suggestedVersion == null)
+			return proposals;
+
+		IResource resource = marker.getResource();
+		if (resource instanceof IFile && Project.BNDFILE.equals(resource.getName())) {
+			try {
+				String content = IO.collect(((IFile) resource).getLocation()
+					.toFile());
+				int pkgEnd = marker.getAttribute(IMarker.CHAR_END, 0);
+				int searchEnd = Math.min(pkgEnd + 300, content.length());
+				Pattern versionPattern = Pattern.compile(";\\s*version\\s*=\\s*\"([^\"]*)\"");
+				Matcher m = versionPattern.matcher(content);
+				m.region(pkgEnd, searchEnd);
+				if (m.find()) {
+					int valueStart = m.start(1);
+					int valueEnd = m.end(1);
+					proposals.add(new CompletionProposal(suggestedVersion, valueStart, valueEnd - valueStart, valueEnd,
+						null, "Change package version to " + suggestedVersion, null, null));
+				}
+			} catch (Exception e) {
+				logger.logError("Error computing bnd.bnd version proposal.", e);
+			}
+		} else {
+			int start = marker.getAttribute(IMarker.CHAR_START, 0);
+			int end = marker.getAttribute(IMarker.CHAR_END, 0);
+			proposals.add(new CompletionProposal("version " + suggestedVersion, start, end - start, end,
+				null, "Change package version to " + suggestedVersion, null, null));
+		}
 
 		return proposals;
 	}
