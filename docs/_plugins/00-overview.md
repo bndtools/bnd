@@ -20,12 +20,6 @@ The following directive is defined for all plugin:
 | --- | --- |
 | `path:` | A path to the jar file that contains the plugin. The directory/jar at that location is placed on your classpath for that plugin. |
 
-## Tagging of repository plugins
-
-Repository plugins are usually referenced in `cnf/build.bnd` and implement the [Tagged](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/service/tags/Tagged.java) interface. 
-
-The `tags` property of repositories' configuration allows to add a comma separated list of tags to a repository. These tags will be used for filtering a list of repositories. 
-For example the [-runrepos](/instructions/runrepos.html) instruction in `.bndrun` considers only those repositories for resolution which have either the `resolve` tag or no `tags` property defined. This allows including and excluding repositories based on their tags.
 
 ## Index
 
@@ -52,3 +46,30 @@ For example the [-runrepos](/instructions/runrepos.html) instruction in `.bndrun
 
 
 </div>
+
+### Registration
+
+Plugins are registered in `cnf/build.bnd` or extension files:
+
+```properties
+-plugin.my-plugin = com.example.MyPlugin
+```
+
+Or programmatically:
+
+```java
+workspace.addBasicPlugin(new MyPlugin());
+```
+
+Your plugin needs to implement an interface which is used in the bnd codebase. For examples search the code for `getPlugins(SomeInterface.class)` to find out which plugin interfaces are used, for which you could add a plugin implementation.
+
+### Error Handling
+
+Most plugins follow a pattern where exceptions are logged but do not stop the build. Consult the specific plugin documentation for error behavior.
+
+## Tagging of repository plugins
+
+Repository plugins are usually referenced in `cnf/build.bnd` and implement the [Tagged](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/service/tags/Tagged.java) interface.
+
+The `tags` property of repositories' configuration allows to add a comma separated list of tags to a repository. These tags will be used for filtering a list of repositories.
+For example the [-runrepos](/instructions/runrepos.html) instruction in `.bndrun` considers only those repositories for resolution which have either the `resolve` tag or no `tags` property defined. This allows including and excluding repositories based on their tags.
