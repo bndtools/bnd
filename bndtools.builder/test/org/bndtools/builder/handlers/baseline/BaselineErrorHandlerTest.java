@@ -55,10 +55,26 @@ public class BaselineErrorHandlerTest {
 	}
 
 	@Test
-	void replaceVersionInExportPackage_multilineWithContinuation() {
-		String content = "Export-Package: \\\n    com.example;version=\"1.0.0\"";
+	void replaceVersionInExportPackage_singleQuotes() {
+		String content = "Export-Package: com.example;version='1.0.0'";
 		int searchFrom = content.indexOf("com.example") + "com.example".length();
 		assertThat(BaselineErrorHandler.replaceVersionInExportPackage(content, searchFrom, "2.0.0"))
-			.isEqualTo("Export-Package: \\\n    com.example;version=\"2.0.0\"");
+			.isEqualTo("Export-Package: com.example;version='2.0.0'");
+	}
+
+	@Test
+	void replaceVersionInExportPackage_doesNotTouchNextClauseWhenFirstHasNoVersion() {
+		String content = "Export-Package: com.a,com.b;version=\"2.0.0\"";
+		int searchFrom = content.indexOf("com.a") + "com.a".length();
+		assertThat(BaselineErrorHandler.replaceVersionInExportPackage(content, searchFrom, "1.5.0"))
+			.isNull();
+	}
+
+	@Test
+	void replaceVersionInExportPackage_multilineWithContinuation() {
+		String content = "Export-Package: \\" + "\n    com.example;version=\"1.0.0\"";
+		int searchFrom = content.indexOf("com.example") + "com.example".length();
+		assertThat(BaselineErrorHandler.replaceVersionInExportPackage(content, searchFrom, "2.0.0"))
+			.isEqualTo("Export-Package: \\" + "\n    com.example;version=\"2.0.0\"");
 	}
 }

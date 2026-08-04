@@ -441,15 +441,34 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 		return result;
 	}
 
-	static String replaceVersionInExportPackage(String content, int searchFrom, String suggestedVersion) {
+	private static final Pattern EXPORT_PACKAGE_VERSION_PATTERN = Pattern
+		.compile(";\\s*version\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^,;\\s\\\\]+))");
+
+	/**
+	 * Finds the character range of the {@code version} attribute value of the Export-Package clause starting
+	 * at {@code searchFrom}, searching no further than the next clause (a following comma). Returns
+	 * {@code null} if that clause has no {@code version} attribute.
+	 */
+	private static int[] findVersionValueRange(String content, int searchFrom) {
 		int searchEnd = Math.min(searchFrom + 300, content.length());
-		Pattern versionPattern = Pattern.compile(";\\s*version\\s*=\\s*\"([^\"]*)\"");
-		Matcher m = versionPattern.matcher(content);
+		Matcher m = EXPORT_PACKAGE_VERSION_PATTERN.matcher(content);
 		m.region(searchFrom, searchEnd);
-		if (m.find()) {
-			return content.substring(0, m.start(1)) + suggestedVersion + content.substring(m.end(1));
-		}
-		return null;
+		if (!m.find())
+			return null;
+		int comma = content.indexOf(',', searchFrom);
+		if (comma != -1 && comma < m.start())
+			return null;
+		int group = m.start(1) != -1 ? 1 : (m.start(2) != -1 ? 2 : 3);
+		return new int[] {
+			m.start(group), m.end(group)
+		};
+	}
+
+	static String replaceVersionInExportPackage(String content, int searchFrom, String suggestedVersion) {
+		int[] range = findVersionValueRange(content, searchFrom);
+		if (range == null)
+			return null;
+		return content.substring(0, range[0]) + suggestedVersion + content.substring(range[1]);
 	}
 
 	private void updatePackageVersion(IJavaProject javaProject, String packageName, String suggestedVersion)
@@ -510,14 +529,9 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 				String content = IO.collect(((IFile) resource).getLocation()
 					.toFile());
 				int pkgEnd = marker.getAttribute(IMarker.CHAR_END, 0);
-				int searchEnd = Math.min(pkgEnd + 300, content.length());
-				Pattern versionPattern = Pattern.compile(";\\s*version\\s*=\\s*\"([^\"]*)\"");
-				Matcher m = versionPattern.matcher(content);
-				m.region(pkgEnd, searchEnd);
-				if (m.find()) {
-					int valueStart = m.start(1);
-					int valueEnd = m.end(1);
-					proposals.add(new CompletionProposal(suggestedVersion, valueStart, valueEnd - valueStart, valueEnd,
+				int[] range = findVersionValueRange(content, pkgEnd);
+				if (range != null) {
+					proposals.add(new CompletionProposal(suggestedVersion, range[0], range[1] - range[0], range[1],
 						null, "Change package version to " + suggestedVersion, null, null));
 				}
 			} catch (Exception e) {
