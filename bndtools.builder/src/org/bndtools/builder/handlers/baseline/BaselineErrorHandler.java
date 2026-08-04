@@ -509,12 +509,16 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 					.toFile());
 				int pkgEnd = marker.getAttribute(IMarker.CHAR_END, 0);
 				int searchEnd = Math.min(pkgEnd + 300, content.length());
-				Pattern versionPattern = Pattern.compile(";\\s*version\\s*=\\s*\"([^\"]*)\"");
+				Pattern versionPattern = Pattern.compile(";\\s*version\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^,;\\s\\\\]+))");
 				Matcher m = versionPattern.matcher(content);
 				m.region(pkgEnd, searchEnd);
 				if (m.find()) {
-					int valueStart = m.start(1);
-					int valueEnd = m.end(1);
+					int comma = content.indexOf(',', pkgEnd);
+					if (comma != -1 && comma < m.start())
+						return proposals;
+					int group = m.start(1) != -1 ? 1 : (m.start(2) != -1 ? 2 : 3);
+					int valueStart = m.start(group);
+					int valueEnd = m.end(group);
 					proposals.add(new CompletionProposal(suggestedVersion, valueStart, valueEnd - valueStart, valueEnd,
 						null, "Change package version to " + suggestedVersion, null, null));
 				}
