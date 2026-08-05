@@ -2,7 +2,6 @@
 title: JAR Lifecycle Listener
 layout: bnd
 parent: Plugins
-nav_order: 10
 ---
 
 # JAR Lifecycle Listener Plugin
@@ -71,58 +70,27 @@ Called **after** the JAR is successfully written to disk.
 
 The `context` parameter enables stateless, thread-safe data exchange between phases:
 
-```java
-public class MyListener implements JarLifecycleListener {
-
-    @Override
-    public void beforeWrite(Project project, Jar jar, File outputFile, Map<String, Object> context) {
-        // Compute metadata
-        byte[] digest = jar.getTimelessDigest();
-        String digestHex = Hex.toHexString(digest);
-
-        // Store in context for after phase
-        context.put("contentDigest", digestHex);
-    }
-
-    @Override
-    public void afterWrite(Project project, File outputFile, Jar jar, Map<String, Object> context) {
-        // Retrieve metadata computed in before phase
-        String digestHex = (String) context.get("contentDigest");
-
-        // Perform post-write action
-        File digestFile = new File(outputFile.getParentFile(),
-                                  outputFile.getName() + ".digest");
-        IO.store(digestHex, digestFile);
-    }
-}
-```
-
-**Key properties:**
-- ✅ **Thread-safe** – Each JAR write gets a fresh map instance
-- ✅ **Stateless listeners** – Listeners don't store state; data is externalized
-- ✅ **Composable** – Multiple listeners can share context keys
-- ✅ **Testable** – Easy to mock for unit tests
-
-
 ## Error Handling
 
 If a listener throws an exception:
-- The exception is **logged at debug level** (not as an error)
+- The exception is logged
 - **Other listeners continue** to run
 - **The JAR write is unaffected** – exceptions do not roll back the write
 
 Avoid throwing exceptions for informational messages; use logging instead.
 
-## Registration
+## Code example
 
-### In Code
+### Programmatic registration
 
 ```java
+Workspace workspace = Central.getWorkspace();
+
 JarLifecycleListener listener = new MyListener();
 workspace.addBasicPlugin(listener);
 ```
 
-### In Configuration
+### via Configuration
 
 Add to `cnf/build.bnd` or a file in `cnf/ext/`:
 
@@ -165,6 +133,6 @@ public class DigestListener implements JarLifecycleListener {
 
 ## See Also
 
-- [Plugin Overview](00-overview.html)
+- [Plugin Overview](./)
 - [Bndtools Rebuild Policy Plugin](bndtools-rebuild-policy-plugin.html) – Example bndtools implementation
 
