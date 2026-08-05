@@ -112,7 +112,7 @@ The repository view in the IDE will show detailed information when you hover the
 ## Trusted Checksum Verification
 
 The Bnd Pom Repository supports trusted checksum verification to protect against tampered or corrupted artifacts.
-See the section in [MavenBndRepository - Trusted Checksum Verification](maven.md#trusted-checksum-verification) for more details.
+See the section in [MavenBndRepository - Trusted Checksum Verification](maven.html#trusted-checksum-verification) for more details.
 
 ## Caveats
 
