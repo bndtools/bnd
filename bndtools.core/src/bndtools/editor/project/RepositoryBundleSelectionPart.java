@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -49,11 +50,13 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ResourceTransfer;
+import org.osgi.framework.namespace.IdentityNamespace;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import bndtools.Plugin;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
@@ -297,19 +300,9 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 						adding.add(newClause);
 					} else if (item instanceof RepositoryFeature) {
 						RepositoryFeature feature = (RepositoryFeature) item;
-						// Create VersionedClause with "feature:id" BSN and feature=true attribute
-						VersionedClause newClause = new VersionedClause("feature:" + feature.getFeature()
-							.getId(), new Attrs());
-						// Set version if available
-						if (feature.getFeature()
-							.getVersion() != null) {
-							newClause.setVersionRange(feature.getFeature()
-								.getVersion());
-						}
-						// Add feature=true attribute for resolver identification
-						newClause.getAttribs()
-							.put("feature", "true");
-						adding.add(newClause);
+						// Create a clause in the canonical feature syntax:
+						// id;version='V';type=org.eclipse.update.feature
+						adding.add(RepositoryBundleUtils.convertRepoFeature(feature));
 					} else if (item instanceof IncludedBundleItem) {
 						IncludedBundleItem bundleItem = (IncludedBundleItem) item;
 						VersionedClause newClause = new VersionedClause(bundleItem.getPlugin().id, new Attrs());
@@ -336,7 +329,11 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 					for (ListIterator<VersionedClause> iter = bundles.listIterator(); iter.hasNext();) {
 						VersionedClause existing = iter.next();
 						if (newClause.getName()
-							.equals(existing.getName())) {
+							.equals(existing.getName())
+							&& Objects.equals(newClause.getAttribs()
+								.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE),
+								existing.getAttribs()
+									.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE))) {
 							int index = iter.previousIndex();
 							iter.set(newClause);
 							viewer.replace(newClause, index);
