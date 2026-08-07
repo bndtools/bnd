@@ -5,13 +5,23 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -20,11 +30,14 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
@@ -33,8 +46,11 @@ import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.dnd.URLTransfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -43,18 +59,22 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ResourceTransfer;
+import org.osgi.framework.namespace.IdentityNamespace;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
+import bndtools.editor.BndEditor;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
@@ -79,6 +99,10 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
 	protected BndEditModel			model;
 	protected List<VersionedClause>	bundles;
+	/** Bundles inherited from included files; shown gray, not committable. */
+	protected List<VersionedClause>	inheritedBundles		= new ArrayList<>();
+	/** Per-BSN provenance: maps each inherited bundle's BSN to the file path that defines it. */
+	private Map<String, String>		inheritedBundleProvenances	= Collections.emptyMap();
 	protected ToolItem				removeItemTool;
 
 	protected RepositoryBundleSelectionPart(String propertyName, DependencyPhase phase, Composite parent,
@@ -144,7 +168,23 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 	}
 
 	protected IBaseLabelProvider getLabelProvider() {
-		return new VersionedClauseLabelProvider();
+		return new MixedVersionedClauseLabelProvider();
+	}
+
+	/** A label provider that colors inherited bundles gray and local bundles with the default foreground. */
+	protected class MixedVersionedClauseLabelProvider extends VersionedClauseLabelProvider {
+		private Color grey;
+
+		@Override
+		public void update(ViewerCell cell) {
+			super.update(cell);
+			if (inheritedBundles.contains(cell.getElement())) {
+				if (grey == null)
+					grey = cell.getItem().getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY);
+				cell.setForeground(grey);
+				cell.setStyleRanges(new StyleRange[0]);
+			}
+		}
 	}
 
 	void createSection(Section section, FormToolkit toolkit) {
@@ -167,6 +207,18 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 			ToolItem remove = getRemoveItemTool();
 			if (remove != null)
 				remove.setEnabled(isRemovable(event.getSelection()));
+		});
+		// Double-click on an inherited row opens the file that defines that specific bundle.
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+				if (sel.isEmpty()) return;
+				Object first = sel.getFirstElement();
+				if (!(first instanceof VersionedClause) || !inheritedBundles.contains(first)) return;
+				String path = inheritedBundleProvenances.get(((VersionedClause) first).getName());
+				if (path != null) openProvenanceByPath(path);
+			}
 		});
 		ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
 			@Override
@@ -297,19 +349,9 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 						adding.add(newClause);
 					} else if (item instanceof RepositoryFeature) {
 						RepositoryFeature feature = (RepositoryFeature) item;
-						// Create VersionedClause with "feature:id" BSN and feature=true attribute
-						VersionedClause newClause = new VersionedClause("feature:" + feature.getFeature()
-							.getId(), new Attrs());
-						// Set version if available
-						if (feature.getFeature()
-							.getVersion() != null) {
-							newClause.setVersionRange(feature.getFeature()
-								.getVersion());
-						}
-						// Add feature=true attribute for resolver identification
-						newClause.getAttribs()
-							.put("feature", "true");
-						adding.add(newClause);
+						// Create a clause in the canonical feature syntax:
+						// id;version='V';type=org.eclipse.update.feature
+						adding.add(RepositoryBundleUtils.convertRepoFeature(feature));
 					} else if (item instanceof IncludedBundleItem) {
 						IncludedBundleItem bundleItem = (IncludedBundleItem) item;
 						VersionedClause newClause = new VersionedClause(bundleItem.getPlugin().id, new Attrs());
@@ -336,7 +378,11 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 					for (ListIterator<VersionedClause> iter = bundles.listIterator(); iter.hasNext();) {
 						VersionedClause existing = iter.next();
 						if (newClause.getName()
-							.equals(existing.getName())) {
+							.equals(existing.getName())
+							&& Objects.equals(newClause.getAttribs()
+								.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE),
+								existing.getAttribs()
+									.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE))) {
 							int index = iter.previousIndex();
 							iter.set(newClause);
 							viewer.replace(newClause, index);
@@ -404,6 +450,11 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 		return false;
 	}
 
+	/** Returns null to disable inherited display; subclasses may override. */
+	protected List<VersionedClause> loadMergedFromModel(BndEditModel m) {
+		return null;
+	}
+
 	protected int getTableHeightHint() {
 		return SWT.DEFAULT;
 	}
@@ -415,7 +466,15 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 	protected void setBundles(final List<VersionedClause> bundles) {
 		this.bundles = bundles;
 		Display.getDefault()
-			.asyncExec(() -> viewer.setInput(bundles));
+			.asyncExec(() -> viewer.setInput(buildDisplayList()));
+	}
+
+	private List<Object> buildDisplayList() {
+		List<Object> combined = new ArrayList<>(inheritedBundles.size() + (bundles != null ? bundles.size() : 0));
+		combined.addAll(inheritedBundles);
+		if (bundles != null)
+			combined.addAll(bundles);
+		return combined;
 	}
 
 	private void doAdd() {
@@ -444,7 +503,8 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 			List<Object> removed = new LinkedList<>();
 			while (elements.hasNext()) {
 				Object element = elements.next();
-				if (bundles.remove(element))
+				// Only local bundles can be removed; inherited stay in their source file.
+				if (!inheritedBundles.contains(element) && bundles.remove(element))
 					removed.add(element);
 			}
 
@@ -476,11 +536,48 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
 	@Override
 	public void refreshFromModel() {
-		List<VersionedClause> bundles = loadFromModel(model);
-		if (bundles != null) {
-			setBundles(new ArrayList<>(bundles));
+		// Compute inherited bundles (merged view minus local).
+		List<VersionedClause> merged = loadMergedFromModel(model);
+		List<VersionedClause> local = loadFromModel(model);
+		if (local == null) local = new ArrayList<>();
+		if (merged != null) {
+			Set<String> localNames = new HashSet<>();
+			for (VersionedClause vc : local)
+				localNames.add(vc.getName());
+			inheritedBundles.clear();
+			for (VersionedClause vc : merged)
+				if (!localNames.contains(vc.getName()))
+					inheritedBundles.add(vc);
 		} else {
-			setBundles(new ArrayList<VersionedClause>());
+			inheritedBundles.clear();
+		}
+
+		// Per-bundle provenance for the double-click handler.
+		inheritedBundleProvenances = inheritedBundles.isEmpty() ? Collections.emptyMap()
+			: BndEditModelAccessor.getInheritedBundleProvenances(model, propertyName);
+
+		table.setToolTipText(inheritedBundles.isEmpty() ? null
+			: "Some bundles are inherited from included files. Double-click an inherited item to open its source.");
+
+		setBundles(new ArrayList<>(local));
+	}
+
+	private void openProvenanceByPath(String absolutePath) {
+		File file = new File(absolutePath);
+		if (!file.isFile())
+			return;
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		IFile iFile = root.getFileForLocation(new Path(absolutePath));
+		if (iFile == null || !iFile.exists())
+			return;
+		try {
+			PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow()
+				.getActivePage()
+				.openEditor(new FileEditorInput(iFile), BndEditor.WORKSPACE_EDITOR);
+		} catch (PartInitException e) {
+			ErrorDialog.openError(getSection().getShell(), "Error", null,
+				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to open source file.", e));
 		}
 	}
 

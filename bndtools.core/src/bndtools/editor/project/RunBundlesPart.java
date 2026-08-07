@@ -165,7 +165,12 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
 	@Override
 	protected List<aQute.bnd.build.model.clauses.VersionedClause> loadFromModel(BndEditModel model) {
-		return model.getRunBundles();
+		return BndEditModelAccessor.getLocalVersionedClauses(model, aQute.bnd.osgi.Constants.RUNBUNDLES);
+	}
+
+	@Override
+	protected List<aQute.bnd.build.model.clauses.VersionedClause> loadMergedFromModel(BndEditModel model) {
+		return BndEditModelAccessor.getMergedVersionedClauses(model, aQute.bnd.osgi.Constants.RUNBUNDLES);
 	}
 
 	@Override
