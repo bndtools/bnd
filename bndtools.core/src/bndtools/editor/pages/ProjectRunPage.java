@@ -12,6 +12,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -175,20 +177,25 @@ public class ProjectRunPage extends FormPage {
 		RepositorySelectionPart reposPart = new RepositorySelectionPart(getEditor(), left, tk,
 			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
 		managedForm.addPart(reposPart);
-		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 50;
-		gd.heightHint = 50;
 		reposPart.getSection()
 			.setLayoutData(PageLayoutUtils.createCollapsed());
 
 		AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk,
-			ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
+			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
 		managedForm.addPart(availableBundlesPart);
-		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 50;
-		gd.heightHint = 50;
 		availableBundlesPart.getSection()
-			.setLayoutData(PageLayoutUtils.createExpanded());
+			.setLayoutData(createBrowseReposExpandedLayout());
+		availableBundlesPart.getSection()
+			.addExpansionListener(new ExpansionAdapter() {
+				@Override
+				public void expansionStateChanged(ExpansionEvent e) {
+					Object layoutData = availableBundlesPart.getSection()
+						.isExpanded() ? createBrowseReposExpandedLayout() : PageLayoutUtils.createCollapsed();
+					availableBundlesPart.getSection()
+						.setLayoutData(layoutData);
+					left.layout(true, true);
+				}
+			});
 
 		RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk,
 			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
@@ -198,11 +205,21 @@ public class ProjectRunPage extends FormPage {
 			.setLayoutData(gd);
 
 		RunPropertiesPart runPropertiesPart = new RunPropertiesPart(left, tk,
-			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
+			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
 		managedForm.addPart(runPropertiesPart);
-		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
 		runPropertiesPart.getSection()
-			.setLayoutData(gd);
+			.setLayoutData(createRunPropertiesExpandedLayout());
+		runPropertiesPart.getSection()
+			.addExpansionListener(new ExpansionAdapter() {
+				@Override
+				public void expansionStateChanged(ExpansionEvent e) {
+					Object layoutData = runPropertiesPart.getSection()
+						.isExpanded() ? createRunPropertiesExpandedLayout() : PageLayoutUtils.createCollapsed();
+					runPropertiesPart.getSection()
+						.setLayoutData(layoutData);
+					left.layout(true, true);
+				}
+			});
 
 		// SECOND COLUMN
 		if (supportsResolve) {
@@ -262,4 +279,17 @@ public class ProjectRunPage extends FormPage {
 			default :
 		}
 	}
+
+	private static GridData createBrowseReposExpandedLayout() {
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gd.minimumHeight = 220;
+		return gd;
+	}
+
+	private static GridData createRunPropertiesExpandedLayout() {
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.minimumHeight = 140;
+		return gd;
+	}
+
 }

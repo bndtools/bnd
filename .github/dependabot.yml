@@ -14,10 +14,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    groups:
-      codeql-action:
-        patterns:
-        - "github/codeql-action*"
 
   # Maintain dependencies for maven
   - package-ecosystem: "maven"

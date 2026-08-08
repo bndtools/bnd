@@ -2,47 +2,65 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bndtools.core.ui.resource.RequirementLabelProvider;
 import org.bndtools.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.utils.dnd.SupportedTransfer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import bndtools.Plugin;
+import bndtools.editor.BndEditor;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.FeatureVersionNode;
@@ -62,24 +80,78 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		super(parent, toolkit, style);
 	}
 
-	private final BndPreferences	preferences	= new BndPreferences();
-	private final List<Requirement>	requires	= new ArrayList<>();
+	private final BndPreferences	preferences				= new BndPreferences();
+	/** Local requirements: written to this file's own merge key. */
+	private final List<Requirement>	requires				= new ArrayList<>();
+	/** Inherited requirements: from included files, shown in gray (read-only). */
+	private final List<Requirement>	inheritedRequires		= new ArrayList<>();
 
 	private TableViewer				viewer;
 	private ToolItem				addBundleTool;
 	private ToolItem				removeTool;
 
-	private boolean					committing	= false;
+	private boolean					committing				= false;
+	/** Per-requirement provenance: maps each inherited requirement to the file path that defines it. */
+	private Map<Requirement, String>	inheritedProvenances	= new java.util.LinkedHashMap<>();
+	/** The key used to write local requirements (plain stem or stem.local). */
+	private String					localKey				= null;
+	/** Extra property key subscribed dynamically (the localKey when it's a suffix). */
+	private String					subscribedLocalKey		= null;
+
+	/** Returns the primary bnd property key this part displays (e.g. {@code -runrequires}). */
+	protected abstract String getPrimaryPropertyKey();
+
+	/** Returns the local write key (plain stem or stem.local) determined during the last refresh. */
+	protected final String getLocalKey() {
+		return localKey != null ? localKey : getPrimaryPropertyKey();
+	}
+
+	/** Colors inherited items gray and local items with the default foreground. */
+	private class MixedRequirementLabelProvider extends RequirementLabelProvider {
+		private final Color grey;
+
+		MixedRequirementLabelProvider(Display display) {
+			grey = display.getSystemColor(SWT.COLOR_DARK_GRAY);
+		}
+
+		@Override
+		public void update(ViewerCell cell) {
+			super.update(cell);
+			if (inheritedRequires.contains(cell.getElement())) {
+				cell.setForeground(grey);
+				// clear styled ranges so the grey foreground is not overridden
+				cell.setStyleRanges(new StyleRange[0]);
+			}
+		}
+	}
 
 	protected TableViewer createViewer(Composite parent, FormToolkit tk) {
 		Table table = tk.createTable(parent, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
-		viewer.setLabelProvider(new RequirementLabelProvider());
+		viewer.setLabelProvider(new MixedRequirementLabelProvider(table.getDisplay()));
 
 		// Listeners
-		viewer.addSelectionChangedListener(event -> removeTool.setEnabled(!viewer.getSelection()
-			.isEmpty()));
+		viewer.addSelectionChangedListener(event -> {
+			IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+			boolean hasLocalSelected = !sel.isEmpty()
+				&& sel.toList().stream().anyMatch(e -> requires.contains(e));
+			removeTool.setEnabled(hasLocalSelected);
+		});
+		viewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(DoubleClickEvent event) {
+				IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+				if (sel.isEmpty())
+					return;
+				Requirement req = (Requirement) sel.getFirstElement();
+				if (!inheritedRequires.contains(req))
+					return;
+				String prov = inheritedProvenances.get(req);
+				if (prov != null)
+					openProvenanceFile(prov);
+			}
+		});
 		table.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
@@ -193,14 +265,11 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 	private void doRemove() {
 		IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 		if (!selection.isEmpty()) {
-			Iterator<?> elements = selection.iterator();
-			List<Object> removed = new LinkedList<>();
-			while (elements.hasNext()) {
-				Object element = elements.next();
-				if (this.requires.remove(element))
-					removed.add(element);
-			}
-
+			// Only local items may be removed; inherited ones stay in their source file.
+			@SuppressWarnings("unchecked")
+			List<Object> removed = ((List<Object>) selection.toList()).stream()
+				.filter(e -> this.requires.remove(e))
+				.collect(Collectors.toList());
 			if (!removed.isEmpty()) {
 				viewer.remove(removed.toArray());
 				markDirty();
@@ -220,16 +289,83 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 
 	@Override
 	protected final void refreshFromModel() {
-		List<Requirement> loadedReqs = doRefreshFromModel();
-		if (loadedReqs == null)
-			loadedReqs = Collections.emptyList();
+		// Local requirements: only what is defined in this file's own merge keys.
+		List<Requirement> newLocal = doRefreshFromModel();
+		if (newLocal == null)
+			newLocal = Collections.emptyList();
 
-		if (loadedReqs.equals(this.requires))
+		// Inherited requirements: merged view minus local.
+		String primaryKey = getPrimaryPropertyKey();
+		List<Requirement> newInherited = Collections.emptyList();
+		if (primaryKey != null && model != null) {
+			List<Requirement> merged = BndEditModelAccessor.getMergedRequirements(model, primaryKey);
+			if (merged != null && !merged.isEmpty()) {
+				Set<Requirement> localSet = new HashSet<>(newLocal);
+				newInherited = merged.stream()
+					.filter(r -> !localSet.contains(r))
+					.collect(Collectors.toList());
+			}
+		}
+
+		// Determine which key local additions should be written to.
+		String newLocalKey = primaryKey;
+		if (primaryKey != null && model != null) {
+			String existingKey = BndEditModelAccessor.findLocalMergeKey(model, primaryKey);
+			if (existingKey != null) {
+				newLocalKey = existingKey;
+			} else if (!newInherited.isEmpty()) {
+				// No local key yet but inherited items exist: use a suffix so bnd merges them.
+				newLocalKey = primaryKey + ".local";
+			}
+		}
+		localKey = newLocalKey;
+
+		// Keep the property-change subscription aligned with the local key.
+		if (!Objects.equals(subscribedLocalKey, newLocalKey)) {
+			if (subscribedLocalKey != null && model != null)
+				model.removePropertyChangeListener(subscribedLocalKey, this);
+			subscribedLocalKey = newLocalKey;
+			if (newLocalKey != null && model != null
+				&& !Arrays.asList(getProperties()).contains(newLocalKey))
+				model.addPropertyChangeListener(newLocalKey, this);
+		}
+
+		// Update provenance tooltip for inherited items.
+		if (!newInherited.isEmpty()) {
+			inheritedProvenances = BndEditModelAccessor.getInheritedRequirementProvenances(model, primaryKey);
+			String tip = inheritedProvenances.values().stream().findAny().isPresent()
+				? "Some requirements are inherited from included files. Double-click an inherited item to open its source."
+				: "Some requirements are inherited from included files.";
+			viewer.getControl().setToolTipText(tip);
+		} else {
+			inheritedProvenances = Collections.emptyMap();
+			viewer.getControl().setToolTipText(null);
+		}
+
+		addBundleTool.setEnabled(true);
+		removeTool.setEnabled(false);
+
+		if (newInherited.equals(this.inheritedRequires) && newLocal.equals(this.requires))
 			return;
 
+		this.inheritedRequires.clear();
+		this.inheritedRequires.addAll(newInherited);
 		this.requires.clear();
-		this.requires.addAll(loadedReqs);
-		viewer.setInput(this.requires);
+		this.requires.addAll(newLocal);
+
+		List<Requirement> combined = new ArrayList<>(this.inheritedRequires.size() + this.requires.size());
+		combined.addAll(this.inheritedRequires);
+		combined.addAll(this.requires);
+		viewer.setInput(combined);
+	}
+
+	@Override
+	public void dispose() {
+		if (subscribedLocalKey != null && model != null) {
+			model.removePropertyChangeListener(subscribedLocalKey, this);
+			subscribedLocalKey = null;
+		}
+		super.dispose();
 	}
 
 	@Override
@@ -244,19 +380,32 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		}
 	}
 
-	/**
-	 * Update the requirements already available with new ones. Already existing
-	 * requirements will be removed from the given set.
-	 *
-	 * @param adding Set with {@link Requirement}s to add
-	 * @return true if requirements were added.
-	 */
-	private boolean updateViewerWithNewRequirements(Set<Requirement> adding) {
-		// remove duplicates
-		adding.removeAll(this.requires);
-		if (adding.isEmpty()) {
-			return false;
+	private void openProvenanceFile(String absolutePath) {
+		File file = new File(absolutePath);
+		if (!file.isFile())
+			return;
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		IFile iFile = root.getFileForLocation(new Path(absolutePath));
+		if (iFile == null || !iFile.exists())
+			return;
+		try {
+			PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow()
+				.getActivePage()
+				.openEditor(new FileEditorInput(iFile), BndEditor.WORKSPACE_EDITOR);
+		} catch (PartInitException e) {
+			ErrorDialog.openError(getSection().getShell(), "Error", null,
+				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to open source file.", e));
 		}
+	}
+
+	/** Adds new requirements as local items. Items already in inherited or local lists are skipped. */
+	private boolean updateViewerWithNewRequirements(Set<Requirement> adding) {
+		adding.removeAll(this.inheritedRequires);
+		adding.removeAll(this.requires);
+		if (adding.isEmpty())
+			return false;
 		this.requires.addAll(adding);
 		viewer.add(adding.toArray());
 		markDirty();
