@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>p_dependson</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>p_dependson</h1>
+<hr />
+<p>layout: default
+class:  Project
+title:  p_dependson
+summary: Get list of project names this project depends on</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>p_dependson</code> macro returns a comma-separated list of project names that the current project depends on (as specified in the <code>-dependson</code> directive).</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${p_dependson}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns project names from <code>-dependson</code> directive</li>
+<li>Results are comma-separated</li>
+<li>Returns paths to dependent projects</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get dependent projects:</p>
+<div class="highlight"><pre><span></span><code>Depends-On: ${p_dependson}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Documenting project dependencies</li>
+<li>Build order determination</li>
+<li>Dependency analysis</li>
+<li>Project relationship documentation</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns project names/paths</li>
+<li>Based on <code>-dependson</code> directive</li>
+<li>Used for workspace project dependencies</li>
+<li>See also: <code>${p_buildpath}</code> for JAR dependencies</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

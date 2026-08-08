@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>exports</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>exports</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>exports</code> macro returns a comma-separated list of packages that will be exported by the current bundle. The list can be optionally filtered by providing filter arguments.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${exports}
+${exports;&lt;filter&gt;...}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>filter</code> (optional) - One or more filter patterns to select specific exported packages</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns all packages in the bundle's Export-Package header</li>
+<li>Packages are listed in a comma-separated format</li>
+<li>Optional filter arguments can narrow down the result</li>
+<li>Available during bundle analysis phase</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get all exported packages:</p>
+<div class="highlight"><pre><span></span><code>exported.pkgs=${exports}
+# Returns: &quot;com.example.api,com.example.impl,com.example.util&quot;
+</code></pre></div>
+
+<p>Document exported packages:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Description: Exports ${exports}
+</code></pre></div>
+
+<p>Count exported packages:</p>
+<div class="highlight"><pre><span></span><code>export.count=${size;${exports}}
+</code></pre></div>
+
+<p>Use in conditional logic:</p>
+<div class="highlight"><pre><span></span><code>${if;${exports};has-exports;no-exports}
+</code></pre></div>
+
+<p>Filter exported packages:</p>
+<div class="highlight"><pre><span></span><code># Get only API packages (if filter parameters are supported)
+api.exports=${exports;.*\.api}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Documenting which packages are exposed by a bundle</li>
+<li>Validating export configurations</li>
+<li>Generating bundle documentation</li>
+<li>Computing bundle metrics (number of exported packages)</li>
+<li>Conditional logic based on what's exported</li>
+<li>Quality checks for proper API exposure</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only includes packages in the Export-Package manifest header</li>
+<li>Packages listed here are publicly accessible to other bundles</li>
+<li>Private packages are not included</li>
+<li>The list reflects the analyzed/calculated exports, not necessarily what was explicitly declared</li>
+<li>See also: <code>${imports}</code> for imported packages</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

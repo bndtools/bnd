@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-pluginpath* PARAMETERS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-pluginpath* PARAMETERS</h1>
+<ul>
+<li>
+<p>Example: <code>-pluginpath=${workspace}/cnf/cache/plugins-2.2.0.jar</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="directives">Directives</h3>
+<ul>
+<li><code>url</code> Specify a URL to download this file from if it does not exist</li>
+<li>
+<p>Example: <code>url=http://example.com/download/plugins-2.2.0.jar</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/pluginpath.md -->
+<p>The <code>-pluginpath</code> instruction allows you to define JAR files or directories that should be loaded into the local classloader for plugins. This is useful for plugins that are not embedded in bndlib and need to load their classes from external locations.</p>
+<p>You can specify multiple <code>-pluginpath</code> clauses in different places, and they will be merged together. If a specified file does not exist, you can provide a URL to download it, and optionally a SHA-1 digest to verify the download. This ensures that all required plugin dependencies are available and loaded correctly at build time.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

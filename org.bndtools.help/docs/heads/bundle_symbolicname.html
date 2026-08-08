@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-SymbolicName ::= symbolic-name ( ';' parameter ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-SymbolicName ::= symbolic-name ( ';' parameter ) *</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-SymbolicName: com.acme.foo.daffy;singleton:=true</code></p>
+</li>
+<li>
+<p>Values: <code>${p}</code></p>
+</li>
+<li>
+<p>Pattern: <code>[-\w]+(:?\.[-\w]+)*</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>singleton:</code> Indicates that the bundle can only have a single version resolved. A value of true indicates that the bundle is a singleton bundle. The default value is false. The Framework must resolve at most one bundle when multiple versions of a singleton bundle with the same symbolic name are installed. Singleton bundles do not affect the resolution of non-singleton bundles with the same symbolic name.</li>
+<li>
+<p>Example: <code>singleton:=false</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+<li>
+<p><code>fragment-attachment:</code> Defines how fragments are allowed to be attached, see the fragments in Fragment Bundles on page 73. The following values are valid for this directive:</p>
+</li>
+<li>
+<p>Example: ``</p>
+</li>
+<li>
+<p>Values: <code>always|never|resolve-time</code></p>
+</li>
+<li>
+<p>Pattern: <code>always|never|resolve-time</code></p>
+</li>
+<li>
+<p><code>blueprint.wait-for-dependencies</code> </p>
+</li>
+<li>
+<p>Example: ``</p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+<li>
+<p><code>blueprint.timeout</code> </p>
+</li>
+<li>
+<p>Example: ``</p>
+</li>
+<li>
+<p>Values: <code>30000,60000,300000</code></p>
+</li>
+<li>
+<p>Pattern: <code>\d+</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_symbolicname.md -->
+<h1 id="bundle-symbolicname">Bundle-SymbolicName</h1>
+<p>The <code>Bundle-SymbolicName</code> header specifies a unique, non-localizable name for the bundle. This name, together with the version, must uniquely identify a bundle, even if it is installed multiple times in a framework. The symbolic name should follow the reverse domain name convention (e.g., <code>com.example.mybundle</code>).</p>
+<p>If not set, bnd will use the name of the main bnd file or, if the file is called <code>bnd.bnd</code>, the name of its directory. The <code>${project}</code> variable can also be used to set this value.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-SymbolicName: com.example.mybundle
+</code></pre></div>
+
+<p>This header is required for all OSGi bundles.</p>
+<p>The Bundle-SymbolicName header can be set by the user. The default is the name of the main bnd file, or if the main bnd file is called bnd.bnd, it will be the name of the directory of the bnd file. An interesting variable is ${project} that will be set to this default name.</p>
+<div class="highlight"><pre><span></span><code>        private void verifySymbolicName() {
+    Parameters bsn = parseHeader(main.get(Analyzer.BUNDLE_SYMBOLICNAME));
+    if (!bsn.isEmpty()) {
+        if (bsn.size() &gt; 1)
+            error(&quot;More than one BSN specified &quot; + bsn);
+
+        String name = bsn.keySet().iterator().next();
+        if (!isBsn(name)) {
+            error(&quot;Symbolic Name has invalid format: &quot; + name);
+        }
+    }
+}
+
+        /**
+ * @param name
+ * @return
+ */
+public static boolean isBsn(String name) {
+    return SYMBOLICNAME.matcher(name).matches();
+}
+
+
+public final static String  SYMBOLICNAME_STRING             = &quot;[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*&quot;;
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

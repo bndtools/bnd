@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-buildtool  toolspec  (EXPERIMENTAL!)</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-buildtool  toolspec  (EXPERIMENTAL!)</h1>
+<ul>
+<li>
+<p>Example: <code>-buildtool \
+        gradle; version=7.3.0; \
+        bnd_version = 6.1.0
+        bnd_snapshot=https://bndtools.jfrog.io/bndtools/libs-snapshot-local</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/buildtool.md -->
+<p>In many projects, the workspace carries the files to build it with an external tool. Gradle is the most
+popular but it is also possible to use other tools. An advantage of the workspace is that there are
+no specific setups required, the workspace contains all the information needed to build. For example,
+the bnd command line can build it. Tools are generally used to provide additional tasks.</p>
+<p>The setup files of the build tool therefore tend to be dead weight. Dead weight, that frequently needs
+overlapping properties with the bnd workspace. Since the tools tend get updated frequently, there are
+many software engineering advantages in installing the build tool before the project is being built. It
+also makes it easier to maintain many different workspace, they no longer need to be updated when a
+new release becomes available. Only the workspace <code>cnf/build.bnd</code> needs to be maintained.</p>
+<h2 id="github-actions">Github Actions</h2>
+<p>TBD: a github action that will run the bnd command is foreseen</p>
+<h2 id="-buildtool-instruction">-buildtool instruction</h2>
+<p>The <code>-buildtool</code> instruction provides the information for the bnd command line tool to install a
+build tool template from the net. It has the following attributes:</p>
+<ul>
+<li><code>version</code> – If the <code>version</code> is an OSGi version, the key <em>must</em> be a tool name, for example <code>gradle</code>. The url used
+  to download the template will then be constructed of a url to 
+       <code>https://github.com/bndtools/workspace.tool.${key}/archive/refs/tags/${version}.zip</code></li>
+</ul>
+<p>If it is not a version, it can be:
+  * <code>url</code> – The key is interpreted as a URL to a template zip file.
+  * <code>file</code> – The key is interpreted to a file local to the root of the workspace
+* <code>*</code> – Any other attributes will be expanded in a properties file</p>
+<h2 id="template">Template</h2>
+<p>The template zip must contain a <code>tool.bnd</code> file. This file describes how the template should be installed. This file
+can be anywhere in the zip hierarchy, its parent directory is the <em>root</em>. Only files from the <em>root</em> will be copied.</p>
+<p>The <code>tool.bnd</code> file must contain a <code>-tool</code> instruction. </p>
+<div class="highlight"><pre><span></span><code>-tool \
+    .*;tool.bnd;skip=true, \
+    gradle.properties;macro=true,\
+    gradlew;exec=true, \
+    *
+</code></pre></div>
+
+<p>This is a normal <em>instructions</em>. The keys are matched against the file names relative from the <em>root</em>. The first matching
+instruction, provides the instructions how to process the file. The following attributes are available.</p>
+<ul>
+<li><code>skip=*</code> : Skip these files</li>
+<li><code>macro=*</code> : Process macros. The macros can use the workspace macros and any macros specified in the <code>tool.bnd</code> file.</li>
+<li><code>append=*</code> : Append the extra attributes of the <code>-buildtool</code> instruction to the matching files. This will happen in the format of bnd/properties files.</li>
+<li><code>exec=*</code> : Make the file executable for the owner</li>
+</ul>
+<p>The attributes <em>must</em> have a value, this value is ignored.</p>
+<h2 id="example">Example</h2>
+<p>We want to use Gradle 7.3 with bnd 6.1.0. We therefore add the following to the bnd workspace <code>cnf/build</code> file:</p>
+<div class="highlight"><pre><span></span><code>-buildtool \
+    gradle; version=7.3.0; \
+    bnd_version = 6.1.0
+    bnd_snapshot=https://bndtools.jfrog.io/bndtools/libs-snapshot-local
+</code></pre></div>
+
+<p>To install the tool, you can execute the bnd command <code>buildtool</code>:</p>
+<div class="highlight"><pre><span></span><code>$ bnd buildtool --force
+</code></pre></div>
+
+<p>This will download the sources at <code>https://github.com/bndtools/workspace.tool.gradle/archive/refs/heads/7.3.0.zip</code>. The zip file
+looks something like:</p>
+<div class="highlight"><pre><span></span><code>workspace.tool.gradle/
+    tool.bnd
+    gradle/
+        wrapper/
+            gradle-wrapper.jar
+            gradle-wrapper.properties
+    gradle.properties
+    settings.gradle
+    gradlew.bat
+    gradlew
+    .gitignore
+</code></pre></div>
+
+<p>The  <code>tool.bnd</code> looks like:</p>
+<div class="highlight"><pre><span></span><code>-tool \
+    .*;tool.bnd;skip=true, \
+    gradle.properties;macro=true,\
+    gradlew;exec=true, \
+    *
+</code></pre></div>
+
+<p>It should be clear that the <code>gradle.properties</code> is expanded. After the files are copied, it looks like:</p>
+<div class="highlight"><pre><span></span><code># Appended by tool manager at 2021-12-02T14:40:55.660843Z
+version = url
+bnd_version = 6.1.0
+bnd_snapshots = https://bndtools.jfrog.io/bndtools/libs-snapshot-local
+</code></pre></div>
+
+<p>After the command has finished, the gradle command can be executed</p>
+<div class="highlight"><pre><span></span><code>$ ./gradlew --parallel clean build
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

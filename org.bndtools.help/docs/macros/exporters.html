@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>exporters ';' PACKAGE</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>exporters ';' PACKAGE</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>exporters</code> macro returns a comma-separated list of JAR names from the classpath that contain (export) a specified package. This is useful for discovering which dependencies provide a particular package.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${exporters;&lt;package-name&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>package-name</code> - The fully qualified package name (e.g., "com.example.api")</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Searches all JARs on the build classpath</li>
+<li>Checks each JAR for directories matching the specified package</li>
+<li>Returns a comma-separated list of JAR names that contain the package</li>
+<li>Package name uses dot notation (e.g., "com.example") which is converted internally to path format</li>
+<li>Returns empty string if no JARs export the package</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find which JARs provide a specific package:</p>
+<div class="highlight"><pre><span></span><code>slf4j.jars=${exporters;org.slf4j}
+# Returns: &quot;slf4j-api-1.7.30&quot;
+</code></pre></div>
+
+<p>Check if a package is available:</p>
+<div class="highlight"><pre><span></span><code>${if;${exporters;javax.servlet};servlet-available;servlet-missing}
+</code></pre></div>
+
+<p>List providers of multiple packages:</p>
+<div class="highlight"><pre><span></span><code>json.providers=${exporters;org.json}
+jackson.providers=${exporters;com.fasterxml.jackson.core}
+</code></pre></div>
+
+<p>Document dependencies:</p>
+<div class="highlight"><pre><span></span><code># Package javax.xml.bind provided by: ${exporters;javax.xml.bind}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Discovering which dependencies provide specific packages</li>
+<li>Debugging classpath and dependency issues</li>
+<li>Documenting package sources</li>
+<li>Conditional configuration based on available packages</li>
+<li>Validating that required packages are on the classpath</li>
+<li>Analyzing dependency conflicts</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only searches JARs on the build classpath (not runtime classpath)</li>
+<li>Package name should use dot notation (e.g., "org.osgi.framework")</li>
+<li>Returns JAR filenames, not full paths</li>
+<li>Multiple JARs may export the same package (split packages)</li>
+<li>Empty return value indicates the package is not found on the classpath</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

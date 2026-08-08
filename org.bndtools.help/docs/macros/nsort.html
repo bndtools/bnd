@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>nsort (';' LIST )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>nsort (';' LIST )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>nsort</code> macro combines one or more lists and sorts their contents numerically. Unlike alphabetic sorting, it treats values as numbers, so "2" comes before "10".</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${nsort;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists to sort (items within lists are comma-separated)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists into a single list</li>
+<li>Strips leading zeros from values for comparison</li>
+<li>Sorts primarily by numeric length (shorter numbers first)</li>
+<li>For values of equal length, sorts lexicographically</li>
+<li>Returns a comma-separated sorted list</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Sort numbers correctly:</p>
+<div class="highlight"><pre><span></span><code>${nsort;10,2,1,20,3}
+# Returns: &quot;1,2,3,10,20&quot; (not &quot;1,10,2,20,3&quot;)
+</code></pre></div>
+
+<p>Sort with leading zeros:</p>
+<div class="highlight"><pre><span></span><code>${nsort;001,010,002,100}
+# Returns: &quot;1,2,10,100&quot; (leading zeros removed)
+</code></pre></div>
+
+<p>Combine and sort multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${nsort;5,15,25;10,20,30}
+# Returns: &quot;5,10,15,20,25,30&quot;
+</code></pre></div>
+
+<p>Sort version-like numbers:</p>
+<div class="highlight"><pre><span></span><code>${nsort;1,11,2,21,3}
+# Returns: &quot;1,2,3,11,21&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Sorting version numbers or identifiers</li>
+<li>Ordering numeric strings correctly</li>
+<li>Sorting file numbers or indices</li>
+<li>Version lists in proper numeric order</li>
+<li>Port numbers or numeric identifiers</li>
+<li>Any list where numeric order matters</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Sorts by length first, then lexicographically</li>
+<li>Leading zeros are stripped before comparison</li>
+<li>All values are treated as strings during comparison</li>
+<li>Shorter numbers always come before longer numbers</li>
+<li>For equal-length values, uses string comparison</li>
+<li>See also: <code>${sort}</code> for alphabetic sorting</li>
+<li>See also: <code>${vcompare}</code> for semantic version comparison</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

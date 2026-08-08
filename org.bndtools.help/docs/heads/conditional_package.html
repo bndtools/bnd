@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Conditional-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Conditional-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *</h1>
+<ul>
+<li>
+<p>Example: <code>Conditional-Package: com.*</code></p>
+</li>
+<li>
+<p>Values: <code>${packages}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/conditional_package.md -->
+<h1 id="conditional-package">Conditional-Package</h1>
+<p>This instruction is equal to using <a href="/instructions/conditionalpackage.html">-conditionalpackage</a> except for the fact that the header in addition will be copied into the generated bundle manifest (like all headers beginning with a capital letter).</p>
+<p>The <code>Conditional-Package</code> header allows you to specify package patterns that, when referred to by your code, will be included in the bundle if they match the given specifications. This is useful for conditionally including packages from the classpath based on actual usage.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Conditional-Package: com.example.optional.*
+</code></pre></div>
+
+<p>bnd will recursively add matching packages until no more additions are found. This header is useful for advanced packaging scenarios.</p>
+<div class="highlight"><pre><span></span><code>/**
+ * Answer extra packages. In this case we implement conditional package. Any
+ */
+@Override
+protected Jar getExtra() throws Exception {
+    Parameters conditionals = getParameters(CONDITIONAL_PACKAGE);
+    conditionals.putAll(getParameters(CONDITIONALPACKAGE));
+    if (conditionals.isEmpty())
+        return null;
+    trace(&quot;do Conditional Package %s&quot;, conditionals);
+    Instructions instructions = new Instructions(conditionals);
+
+    Collection&lt;PackageRef&gt; referred = instructions.select(getReferred().keySet(), false);
+    referred.removeAll(getContained().keySet());
+
+    Jar jar = new Jar(&quot;conditional-import&quot;);
+    addClose(jar);
+    for (PackageRef pref : referred) {
+        for (Jar cpe : getClasspath()) {
+            Map&lt;String,Resource&gt; map = cpe.getDirectories().get(pref.getPath());
+            if (map != null) {
+                copy(jar, cpe, pref.getPath(), false);
+                // Now use copy so that bnd.info is processed, next line
+                // should be
+                // removed in the future TODO
+                // jar.addDirectory(map, false);
+                break;
+            }
+        }
+    }
+    if (jar.getDirectories().size() == 0) {
+        trace(&quot;extra dirs %s&quot;, jar.getDirectories());
+        return null;
+    }
+    return jar;
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

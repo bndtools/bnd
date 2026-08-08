@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rand (';' MIN ' (;' MAX )?)?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>rand (';' MIN ' (;' MAX )?)?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>rand</code> macro generates a random integer. By default it returns a number between 0 and 100, or within a specified min/max range (inclusive).</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${rand[;&lt;max&gt;[;&lt;min&gt;]]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>max</code> (optional) - Maximum value (default: 100)</li>
+<li><code>min</code> (optional) - Minimum value (default: 0)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>No arguments: Random number 0-100</li>
+<li>One argument: Random number 0 to max</li>
+<li>Two arguments: Random number min to max</li>
+<li>Range is inclusive (includes both min and max)</li>
+<li>Returns rounded integer</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Default range (0-100):</p>
+<div class="highlight"><pre><span></span><code>${rand}
+# Returns: 42 (example)
+</code></pre></div>
+
+<p>Custom max:</p>
+<div class="highlight"><pre><span></span><code>${rand;10}
+# Returns: 7 (between 0-10)
+</code></pre></div>
+
+<p>Custom range:</p>
+<div class="highlight"><pre><span></span><code>${rand;100;50}
+# Returns: 73 (between 50-100)
+</code></pre></div>
+
+<p>Generate unique build number:</p>
+<div class="highlight"><pre><span></span><code>build.number=${rand;9999;1000}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Generating random test data</li>
+<li>Creating unique identifiers</li>
+<li>Random selection</li>
+<li>Build numbers</li>
+<li>Temporary values</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Range is inclusive on both ends</li>
+<li>Returns integer (rounded)</li>
+<li>Not cryptographically secure</li>
+<li>Each invocation generates new value</li>
+<li>See also: <code>${random}</code> for random strings</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

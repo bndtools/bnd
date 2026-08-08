@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>repos</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>repos</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>repos</code> macro returns a comma-separated list of the names of all repositories configured in the current project or workspace.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${repos}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns names of all configured repository plugins</li>
+<li>Repositories are listed in comma-separated format</li>
+<li>Includes all repository types (Maven, File, OBR, etc.)</li>
+<li>Returns the repository names as configured</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get all repository names:</p>
+<div class="highlight"><pre><span></span><code>${repos}
+# Returns: &quot;Maven Central, Local, Workspace, Release&quot; (example)
+</code></pre></div>
+
+<p>Document available repositories:</p>
+<div class="highlight"><pre><span></span><code>Bundle-RepositoriesUsed: ${repos}
+</code></pre></div>
+
+<p>Count repositories:</p>
+<div class="highlight"><pre><span></span><code>repo.count=${size;${split;,;${repos}}}
+</code></pre></div>
+
+<p>Check for specific repository:</p>
+<div class="highlight"><pre><span></span><code>${if;${findlast;${repos};Maven Central};has-central;no-central}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Listing available repositories in documentation</li>
+<li>Debugging repository configuration</li>
+<li>Validating repository setup</li>
+<li>Build metadata and reporting</li>
+<li>Repository availability checks</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns repository names, not paths or URLs</li>
+<li>Names are as configured in the workspace or project</li>
+<li>The list reflects the current configuration</li>
+<li>Repository order may vary</li>
+<li>See also: <code>${repo}</code> for accessing repository contents</li>
+<li>Repository configuration is in <code>cnf/build.bnd</code> or project files</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>
