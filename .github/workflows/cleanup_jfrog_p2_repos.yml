@@ -1,0 +1,415 @@
+name: Cleanup JFrog p2 Repos
+
+on:
+  pull_request:
+    types:
+    - closed
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'If true, only report paths that would be deleted'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  LC_ALL: en_US.UTF-8
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  cleanup:
+    name: Cleanup stale JFrog p2 repos
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+    - name: Delete stale p2 repos from JFrog
+      env:
+        GH_TOKEN: ${{ github.token }}
+        JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
+        REPOSITORY: bndtools/bnd
+        DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+      run: |
+        set -euo pipefail
+
+        jfrog_base_url="https://bndtools.jfrog.io/artifactory/p2/pr"
+        jfrog_api_url="https://bndtools.jfrog.io/artifactory/api/storage/p2/pr"
+
+        is_protected_repository() {
+          local repository_name
+          repository_name="$1"
+          [[ "${repository_name}" == "main" ||
+            "${repository_name}" == "master" ||
+            "${repository_name}" == next* ]]
+        }
+
+        is_existing_branch() {
+          local branch_name
+          branch_name="$1"
+          [[ -n "${branch_set["${branch_name}"]+yes}" ]]
+        }
+
+        is_open_pr() {
+          local pr_number
+          pr_number="$1"
+          [[ -n "${open_pr_set["${pr_number}"]+yes}" ]]
+        }
+
+        list_jfrog_repositories() {
+          local response_file status
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error --output "${response_file}" --write-out '%{http_code}' \
+            -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+            "${jfrog_api_url}?list&deep=1&listFolders=1" || true)"
+
+          case "${status}" in
+            200)
+              jq -r '
+                .files[]?
+                | select(.folder != true)
+                | .uri
+                | ltrimstr("/")
+                | select(type == "string" and (endswith("/content.jar") or endswith("/artifacts.jar")))
+                | sub("/[^/]+$"; "")
+              ' "${response_file}" | sort -u
+              rm -f "${response_file}"
+              ;;
+            404)
+              rm -f "${response_file}"
+              return 2
+              ;;
+            *)
+              echo "Failed to list JFrog path p2/pr (HTTP ${status})" >&2
+              if [ -s "${response_file}" ]; then
+                head -c 1000 "${response_file}" >&2
+                echo >&2
+              fi
+              rm -f "${response_file}"
+              return 1
+              ;;
+          esac
+        }
+
+        fetch_github_page() {
+          local page url description max_attempts attempt backoff response_file status
+          page="$1"
+          url="$2"
+          description="$3"
+          max_attempts=4
+          backoff=2
+
+          for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+            response_file="$(mktemp)"
+            status="$(curl --silent --show-error \
+              --connect-timeout 10 \
+              --max-time 60 \
+              --output "${response_file}" \
+              --write-out '%{http_code}' \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              "${url}" || true)"
+
+            case "${status}" in
+              200)
+                cat "${response_file}"
+                rm -f "${response_file}"
+                return 0
+                ;;
+              429|500|502|503|504|000)
+                if [ "${attempt}" -lt "${max_attempts}" ]; then
+                  echo "GitHub API transient error for ${description} on page ${page} (HTTP ${status}), retrying in ${backoff}s..." >&2
+                  rm -f "${response_file}"
+                  sleep "${backoff}"
+                  backoff=$((backoff * 2))
+                  continue
+                fi
+                echo "GitHub API transient error for ${description} on page ${page} after ${max_attempts} attempts (HTTP ${status})" >&2
+                if [ -s "${response_file}" ]; then
+                  head -c 1000 "${response_file}" >&2
+                  echo >&2
+                fi
+                rm -f "${response_file}"
+                return 1
+                ;;
+              *)
+                echo "GitHub API request for ${description} failed on page ${page} (HTTP ${status})" >&2
+                if [ -s "${response_file}" ]; then
+                  head -c 1000 "${response_file}" >&2
+                  echo >&2
+                fi
+                rm -f "${response_file}"
+                return 1
+                ;;
+            esac
+          done
+
+          return 1
+        }
+
+        delete_jfrog_repository() {
+          local repository_name jfrog_url status
+          repository_name="$1"
+          if is_protected_repository "${repository_name}"; then
+            echo "Skipping protected JFrog p2/pr repository ${repository_name}"
+            return 3
+          fi
+
+          jfrog_url="${jfrog_base_url}/${repository_name}"
+          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+            -X DELETE \
+            -H "Authorization: Bearer ${JFROG_SNAPSHOT_TOKEN}" \
+            "${jfrog_url}" || true)"
+
+          case "${status}" in
+            200|202|204)
+              echo "Deleted ${jfrog_url}"
+              return 0
+              ;;
+            404)
+              echo "Not found ${jfrog_url}"
+              return 2
+              ;;
+            *)
+              echo "Failed to delete ${jfrog_url} (HTTP ${status})"
+              return 1
+              ;;
+          esac
+        }
+
+        if [ -z "${JFROG_SNAPSHOT_TOKEN:-}" ]; then
+          echo "Missing secret JFROG_SNAPSHOT_TOKEN"
+          exit 1
+        fi
+
+        if [ -z "${GH_TOKEN:-}" ]; then
+          echo "Missing GitHub token"
+          exit 1
+        fi
+
+        repo_paths=()
+        if repo_paths_output="$(list_jfrog_repositories)"; then
+          if [ -n "${repo_paths_output}" ]; then
+            mapfile -t repo_paths < <(printf '%s\n' "${repo_paths_output}")
+          fi
+        else
+          status="$?"
+          if [ "${status}" -eq 2 ]; then
+            echo "JFrog path p2/pr not found (HTTP 404). Nothing to clean."
+            exit 0
+          fi
+          exit 1
+        fi
+
+        if [ "${#repo_paths[@]}" -eq 0 ]; then
+          echo "No P2 repositories found in JFrog path p2/pr. Nothing to clean."
+          exit 0
+        fi
+
+        page=1
+        open_prs=()
+        while :; do
+          url="https://api.github.com/repos/${REPOSITORY}/pulls?state=open&per_page=100&page=${page}"
+          if ! response="$(fetch_github_page "${page}" "${url}" "open PRs")"; then
+            exit 1
+          fi
+
+          count="$(jq 'length' <<<"${response}")"
+          if [ "${count}" -eq 0 ]; then
+            break
+          fi
+
+          while IFS= read -r pr_number; do
+            open_prs+=("${pr_number}")
+          done < <(jq -r '.[].number' <<<"${response}")
+
+          page=$((page + 1))
+        done
+
+        page=1
+        branches=()
+        while :; do
+          url="https://api.github.com/repos/${REPOSITORY}/branches?per_page=100&page=${page}"
+          if ! response="$(fetch_github_page "${page}" "${url}" "branches")"; then
+            exit 1
+          fi
+
+          count="$(jq 'length' <<<"${response}")"
+          if [ "${count}" -eq 0 ]; then
+            break
+          fi
+
+          while IFS= read -r branch_name; do
+            branches+=("${branch_name}")
+          done < <(jq -r '.[].name' <<<"${response}")
+
+          page=$((page + 1))
+        done
+
+        declare -A open_pr_set=()
+        for pr_number in "${open_prs[@]}"; do
+          open_pr_set["${pr_number}"]=1
+        done
+
+        declare -A branch_set=()
+        for branch_name in "${branches[@]}"; do
+          branch_set["${branch_name}"]=1
+        done
+
+        stale_prs=()
+        stale_branches=()
+        remaining_prs=()
+        remaining_branches=()
+
+        for repository_name in "${repo_paths[@]}"; do
+          if is_protected_repository "${repository_name}" || is_existing_branch "${repository_name}"; then
+            remaining_branches+=("${repository_name}")
+          elif [[ "${repository_name}" =~ ^[0-9]+$ ]]; then
+            if is_open_pr "${repository_name}"; then
+              remaining_prs+=("${repository_name}")
+            else
+              stale_prs+=("${repository_name}")
+            fi
+          else
+            stale_branches+=("${repository_name}")
+          fi
+        done
+
+        failures=0
+        deleted=0
+        missing=0
+        planned=0
+
+        if [ "${DRY_RUN}" = "true" ]; then
+          echo "Dry-run mode is enabled. No deletions will be performed."
+        fi
+
+        stale_repositories=("${stale_prs[@]}" "${stale_branches[@]}")
+        for repository_name in "${stale_repositories[@]}"; do
+          if [ "${DRY_RUN}" = "true" ]; then
+            if [ "${planned}" -lt 200 ]; then
+              echo "Would delete ${jfrog_base_url}/${repository_name}"
+            fi
+            planned=$((planned + 1))
+            continue
+          fi
+
+          if delete_jfrog_repository "${repository_name}"; then
+            deleted=$((deleted + 1))
+          else
+            status="$?"
+            case "${status}" in
+              2)
+                missing=$((missing + 1))
+                ;;
+              3)
+                ;;
+              *)
+                failures=$((failures + 1))
+                ;;
+            esac
+          fi
+        done
+
+        echo "Dry-run planned: ${planned}"
+        echo "Scanned JFrog P2 repositories: ${#repo_paths[@]}"
+          echo "Open PRs in GitHub: ${#open_prs[@]}"
+        echo "Existing branches in GitHub: ${#branches[@]}"
+        echo "Stale PR repositories: ${#stale_prs[@]}"
+        echo "Stale branch repositories: ${#stale_branches[@]}"
+        echo "Deleted: ${deleted}"
+        echo "Missing: ${missing}"
+        echo "Failures: ${failures}"
+
+        if [ "${DRY_RUN}" = "true" ]; then
+          echo "Projected remaining PR repositories: ${#remaining_prs[@]}"
+          if [ "${#remaining_prs[@]}" -gt 0 ]; then
+            echo "Projected remaining PR repository list with links (up to first 200):"
+            mapfile -t remaining_prs_sorted < <(printf '%s\n' "${remaining_prs[@]}" | sort -n)
+            for pr in "${remaining_prs_sorted[@]:0:200}"; do
+              echo "${pr} https://github.com/${REPOSITORY}/pull/${pr}"
+            done
+            if [ "${#remaining_prs_sorted[@]}" -gt 200 ]; then
+              echo "... truncated, not showing $(( ${#remaining_prs_sorted[@]} - 200 )) additional entries"
+            fi
+          fi
+
+          echo "Projected remaining branch repositories: ${#remaining_branches[@]}"
+          if [ "${#remaining_branches[@]}" -gt 0 ]; then
+            echo "Projected remaining branch repository list with links (up to first 200):"
+            mapfile -t remaining_branches_sorted < <(printf '%s\n' "${remaining_branches[@]}" | sort)
+            for branch_name in "${remaining_branches_sorted[@]:0:200}"; do
+              echo "${branch_name} https://github.com/${REPOSITORY}/tree/${branch_name}"
+            done
+            if [ "${#remaining_branches_sorted[@]}" -gt 200 ]; then
+              echo "... truncated, not showing $(( ${#remaining_branches_sorted[@]} - 200 )) additional entries"
+            fi
+          fi
+          exit 0
+        fi
+
+        repo_paths=()
+        if repo_paths_output="$(list_jfrog_repositories)"; then
+          if [ -n "${repo_paths_output}" ]; then
+            mapfile -t repo_paths < <(printf '%s\n' "${repo_paths_output}")
+          fi
+        else
+          status="$?"
+          if [ "${status}" -eq 2 ]; then
+            echo "Remaining p2/pr repositories: 0"
+            exit 0
+          fi
+          exit 1
+        fi
+
+        remaining_prs=()
+        remaining_branches=()
+        for repository_name in "${repo_paths[@]}"; do
+          if is_protected_repository "${repository_name}" || is_existing_branch "${repository_name}"; then
+            remaining_branches+=("${repository_name}")
+          elif [[ "${repository_name}" =~ ^[0-9]+$ ]]; then
+            remaining_prs+=("${repository_name}")
+          else
+            remaining_branches+=("${repository_name}")
+          fi
+        done
+
+        echo "Remaining PR repositories: ${#remaining_prs[@]}"
+        if [ "${#remaining_prs[@]}" -gt 0 ]; then
+          echo "Remaining PR repository list with links (up to first 200):"
+          mapfile -t remaining_prs_sorted < <(printf '%s\n' "${remaining_prs[@]}" | sort -n)
+          for pr in "${remaining_prs_sorted[@]:0:200}"; do
+            echo "${pr} https://github.com/${REPOSITORY}/pull/${pr}"
+          done
+          if [ "${#remaining_prs_sorted[@]}" -gt 200 ]; then
+            echo "... truncated, not showing $(( ${#remaining_prs_sorted[@]} - 200 )) additional entries"
+          fi
+        fi
+
+        echo "Remaining branch repositories: ${#remaining_branches[@]}"
+        if [ "${#remaining_branches[@]}" -gt 0 ]; then
+          echo "Remaining branch repository list with links (up to first 200):"
+          mapfile -t remaining_branches_sorted < <(printf '%s\n' "${remaining_branches[@]}" | sort)
+          for branch_name in "${remaining_branches_sorted[@]:0:200}"; do
+            echo "${branch_name} https://github.com/${REPOSITORY}/tree/${branch_name}"
+          done
+          if [ "${#remaining_branches_sorted[@]}" -gt 200 ]; then
+            echo "... truncated, not showing $(( ${#remaining_branches_sorted[@]} - 200 )) additional entries"
+          fi
+        fi
+
+        if [ "${failures}" -gt 0 ]; then
+          exit 1
+        fi
