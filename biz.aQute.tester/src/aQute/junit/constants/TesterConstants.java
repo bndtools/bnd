@@ -66,4 +66,11 @@ public interface TesterConstants {
 	 * well to use this special thread to run all tests on.
 	 */
 	String	TESTER_SEPARATETHREAD	= "tester.separatethread";
+
+	/**
+	 * Register the tester {@link java.lang.Runnable} as a service with the
+	 * attribute {@code junit.tester=true}. User code may then obtain the
+	 * service and run then tests when convenient.
+	 */
+	String  TESTER_CUSTOMSERVICE     = "tester.customservice";
 }
