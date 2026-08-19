@@ -1,0 +1,7 @@
+# This robots.txt file controls crawling of URLs under https://bnd.bndtools.org.
+# All crawlers are disallowed to crawl files in the "releases" directory, 
+# because they dilute search results, because they are outdated.
+User-agent: *
+Disallow: /releases/
+
+Sitemap: https://bnd.bndtools.org/sitemap.xml
