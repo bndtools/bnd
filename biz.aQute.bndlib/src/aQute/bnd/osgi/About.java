@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.annotation.baseline.BaselineIgnore;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.memoize.Memoize;
 import aQute.bnd.unmodifiable.Maps;
@@ -50,6 +51,7 @@ import aQute.lib.utf8properties.UTF8Properties;
  * <hr />
  * Ensure you only add Major and minor versions (the 7.2.1 below was a mistake)
  */
+@BaselineIgnore("8.0.0")
 public class About {
 	private final static Logger					logger		= LoggerFactory.getLogger(About.class);
 	public static final Version					_2_3		= new Version(2, 3, 0);
