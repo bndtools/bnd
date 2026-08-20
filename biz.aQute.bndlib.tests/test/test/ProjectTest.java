@@ -5,7 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +42,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
@@ -57,6 +68,47 @@ import aQute.lib.io.IO;
 public class ProjectTest {
 	@InjectTemporaryDirectory
 	File tmp;
+
+	@Test
+	public void testTestingCleansUpLauncherWhenPreparationReportsError() throws Exception {
+		IO.mkdirs(new File(tmp, Workspace.CNFDIR));
+		try (Workspace workspace = new Workspace(tmp); Project project = spy(new Project(workspace, tmp))) {
+			ProjectTester tester = mock(ProjectTester.class);
+			ProjectLauncher launcher = mock(ProjectLauncher.class);
+			doReturn(tester).when(project)
+				.getProjectTester();
+			when(tester.getProjectLauncher()).thenReturn(launcher);
+			doAnswer(invocation -> {
+				project.error("Test preparation failed");
+				return true;
+			}).when(tester)
+				.prepare();
+
+			project.test(null, null);
+
+			verify(launcher).cleanup();
+			verify(tester, never()).test();
+		}
+	}
+
+	@Test
+	public void testTestingCleansUpLauncherWhenPreparationThrows() throws Exception {
+		IO.mkdirs(new File(tmp, Workspace.CNFDIR));
+		try (Workspace workspace = new Workspace(tmp); Project project = spy(new Project(workspace, tmp))) {
+			ProjectTester tester = mock(ProjectTester.class);
+			ProjectLauncher launcher = mock(ProjectLauncher.class);
+			doReturn(tester).when(project)
+				.getProjectTester();
+			when(tester.getProjectLauncher()).thenReturn(launcher);
+			doThrow(new IOException("Test preparation failed")).when(tester)
+				.prepare();
+
+			assertThrows(IOException.class, () -> project.test(null, null));
+
+			verify(launcher).cleanup();
+			verify(tester, never()).test();
+		}
+	}
 
 	@Test
 	public void testAliasbuild() throws Exception {

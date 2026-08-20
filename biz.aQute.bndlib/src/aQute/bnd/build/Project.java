@@ -2604,32 +2604,37 @@ public class Project extends Processor {
 
 	public void test(File reportDir, List<String> tests) throws Exception {
 		ProjectTester tester = getProjectTester();
-		if (reportDir != null) {
-			logger.debug("Setting reportDir {}", reportDir);
-			IO.delete(reportDir);
-			tester.setReportDir(reportDir);
-		}
-		if (tests != null) {
-			logger.debug("Adding tests {}", tests);
-			for (String test : tests) {
-				tester.addTest(test);
+		try {
+			if (reportDir != null) {
+				logger.debug("Setting reportDir {}", reportDir);
+				IO.delete(reportDir);
+				tester.setReportDir(reportDir);
 			}
-		}
-		tester.prepare();
+			if (tests != null) {
+				logger.debug("Adding tests {}", tests);
+				for (String test : tests) {
+					tester.addTest(test);
+				}
+			}
+			tester.prepare();
 
-		if (!isOk()) {
-			logger.error("Tests not run because project has errors");
-			return;
-		}
-		int errors = tester.test();
-		if (errors == 0) {
-			logger.info("No Errors");
-		} else {
-			if (errors > 0) {
-				logger.info("{} Error(s)", errors);
-			} else {
-				logger.info("Error {}", errors);
+			if (!isOk()) {
+				logger.error("Tests not run because project has errors");
+				return;
 			}
+			int errors = tester.test();
+			if (errors == 0) {
+				logger.info("No Errors");
+			} else {
+				if (errors > 0) {
+					logger.info("{} Error(s)", errors);
+				} else {
+					logger.info("Error {}", errors);
+				}
+			}
+		} finally {
+			tester.getProjectLauncher()
+				.cleanup();
 		}
 	}
 
