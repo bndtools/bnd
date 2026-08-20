@@ -352,4 +352,65 @@ public class BndEditModelTest {
 		return path;
 	}
 
+	@Test
+	void testGetLocalMergePropertyKey_baseKey() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.loadFrom("-runrequires: osgi.identity;filter:='(osgi.identity=foo)'");
+		assertThat(model.getLocalMergePropertyKey(Constants.RUNREQUIRES))
+			.contains(Constants.RUNREQUIRES);
+	}
+
+	@Test
+	void testGetLocalMergePropertyKey_variantKey() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.loadFrom("-runrequires.shared: osgi.identity;filter:='(osgi.identity=foo)'");
+		assertThat(model.getLocalMergePropertyKey(Constants.RUNREQUIRES))
+			.contains("-runrequires.shared");
+	}
+
+	@Test
+	void testGetLocalMergePropertyKey_noKey() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.loadFrom("# empty bndrun");
+		assertThat(model.getLocalMergePropertyKey(Constants.RUNREQUIRES))
+			.isEmpty();
+	}
+
+	@Test
+	void testGetLocalMergePropertyKey_exactKeyTakesPrecedence() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.loadFrom("-runrequires.shared: foo\n-runrequires: bar");
+		assertThat(model.getLocalMergePropertyKey(Constants.RUNREQUIRES))
+			.contains(Constants.RUNREQUIRES);
+	}
+
+	@Test
+	void testSetRunRequiresAtKey_baseKey_writesToRunrequires() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.loadFrom("-runrequires: osgi.identity;filter:='(osgi.identity=foo)'");
+		Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=bar)")
+			.buildSyntheticRequirement();
+
+		model.setRunRequiresAtKey(Constants.RUNREQUIRES, List.of(req));
+
+		assertThat(model.getDocumentChanges()).containsKey(Constants.RUNREQUIRES);
+		assertThat(model.getDocumentChanges()).doesNotContainKey("-runrequires.shared");
+	}
+
+	@Test
+	void testSetRunRequiresAtKey_variantKey_writesToVariant() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.loadFrom("-runrequires.shared: osgi.identity;filter:='(osgi.identity=foo)'");
+		Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=bar)")
+			.buildSyntheticRequirement();
+
+		model.setRunRequiresAtKey("-runrequires.shared", List.of(req));
+
+		assertThat(model.getDocumentChanges()).containsKey("-runrequires.shared");
+		assertThat(model.getDocumentChanges()).doesNotContainKey(Constants.RUNREQUIRES);
+	}
+
 }
+

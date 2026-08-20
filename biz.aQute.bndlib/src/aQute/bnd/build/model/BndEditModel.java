@@ -1204,6 +1204,31 @@ public class BndEditModel {
 		doSetObject(Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
 	}
 
+	/** Returns the local document property key matching the stem or a stem.* variant, or empty if none. */
+	public Optional<String> getLocalMergePropertyKey(String stem) {
+		if (documentProperties.containsKey(stem))
+			return Optional.of(stem);
+		String prefix = stem + ".";
+		return documentProperties.stringPropertyNames()
+			.stream()
+			.filter(k -> k.startsWith(prefix))
+			.findFirst();
+	}
+
+	/**
+	 * Sets run requirements at the given key, which may be a stem.* variant (e.g. {@code -runrequires.shared}).
+	 * Also fires a property change for the base {@link Constants#RUNREQUIRES} key so all subscribers are notified.
+	 */
+	public void setRunRequiresAtKey(String key, List<Requirement> requires) {
+		if (Constants.RUNREQUIRES.equals(key)) {
+			setRunRequires(requires);
+			return;
+		}
+		List<Requirement> oldValue = doGetObject(key, requirementListConverter);
+		doSetObject(key, oldValue, requires, requirementListFormatter);
+		propChangeSupport.firePropertyChange(Constants.RUNREQUIRES, oldValue, requires);
+	}
+
 	public List<Requirement> getRunBlacklist() {
 		return doGetObject(Constants.RUNBLACKLIST, requirementListConverter, true);
 	}
