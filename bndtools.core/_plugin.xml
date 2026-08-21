@@ -431,6 +431,10 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.perspectiveExtensions">
+		<perspectiveExtension targetID="bndtools.perspective">
+			<newWizardShortcut id="bndtools.importProject" />
+		</perspectiveExtension>
+
 		<!-- Add lots of lovely Bndtools stuff to the Java perspective -->
 		<perspectiveExtension
 			targetID="org.eclipse.jdt.ui.JavaPerspective">
