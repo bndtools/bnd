@@ -2,6 +2,6 @@
 # All crawlers are disallowed to crawl files in the "releases" directory, 
 # because they dilute search results, because they are outdated.
 User-agent: *
-Disallow: /releases/
+Disallow: /releases/7.4.0/
 
 Sitemap: https://bnd.bndtools.org/sitemap.xml
