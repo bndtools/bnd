@@ -1034,7 +1034,7 @@ jtd.onReady(function () {
   });
 
   // fetch older releases and populate the release selector dropdown
-  fetch("/releases/index.json")
+  fetch("/releases/7.4.0/index.json")
     .then(response => response.json())
     .then(data => {
       var container = document.querySelector('.releases .dropdown-content');
