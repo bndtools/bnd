@@ -1204,6 +1204,43 @@ public class BndEditModel {
 		doSetObject(Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
 	}
 
+	/** Returns true if the given property key is defined locally, not inherited from an included file. */
+	public boolean isLocalProperty(String key) {
+		return documentProperties.containsKey(key);
+	}
+
+	/** Returns true if any local property key matches the stem or a stem.* variant. */
+	public boolean hasLocalMergeProperty(String stem) {
+		if (documentProperties.containsKey(stem))
+			return true;
+		String prefix = stem + ".";
+		return documentProperties.stringPropertyNames()
+			.stream()
+			.anyMatch(k -> k.startsWith(prefix));
+	}
+
+	/** Returns requirements merged across all stem.* variants from the owner processor. */
+	public List<Requirement> getMergedRequirements(String stem) {
+		Processor p = getOwner();
+		if (p == null)
+			return null;
+		String merged = p.mergeProperties(stem);
+		if (merged == null || merged.isBlank())
+			return null;
+		return requirementListConverter.convert(merged);
+	}
+
+	/** Returns the provenance (absolute file path) of the given property key, or empty if local or unknown. */
+	public Optional<String> getPropertyProvenance(String key) {
+		Processor p = getOwner();
+		if (p == null)
+			return Optional.empty();
+		return PropertyKey.findVisible(p.getMergePropertyKeys(key))
+			.stream()
+			.findFirst()
+			.flatMap(PropertyKey::getProvenance);
+	}
+
 	public List<Requirement> getRunBlacklist() {
 		return doGetObject(Constants.RUNBLACKLIST, requirementListConverter, true);
 	}

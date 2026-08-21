@@ -2,6 +2,7 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -9,19 +10,27 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.bndtools.core.ui.resource.RequirementLabelProvider;
 import org.bndtools.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.utils.dnd.SupportedTransfer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -29,20 +38,25 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import bndtools.Plugin;
+import bndtools.editor.BndEditor;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.FeatureVersionNode;
@@ -62,14 +76,36 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		super(parent, toolkit, style);
 	}
 
-	private final BndPreferences	preferences	= new BndPreferences();
-	private final List<Requirement>	requires	= new ArrayList<>();
+	private final BndPreferences	preferences			= new BndPreferences();
+	private final List<Requirement>	requires			= new ArrayList<>();
 
 	private TableViewer				viewer;
 	private ToolItem				addBundleTool;
 	private ToolItem				removeTool;
 
-	private boolean					committing	= false;
+	private boolean					committing			= false;
+	private boolean					inherited			= false;
+	private String					inheritedProvenance	= null;
+
+	/** Returns the primary bnd property key this part displays (e.g. {@code -runrequires}). */
+	protected abstract String getPrimaryPropertyKey();
+
+	/** A label provider that renders items in grey to indicate they are inherited. */
+	private static class InheritedRequirementLabelProvider extends RequirementLabelProvider {
+		private final Color grey;
+
+		InheritedRequirementLabelProvider(Display display) {
+			grey = display.getSystemColor(SWT.COLOR_DARK_GRAY);
+		}
+
+		@Override
+		public void update(ViewerCell cell) {
+			super.update(cell);
+			cell.setForeground(grey);
+			// clear styled ranges so the grey foreground is not overridden
+			cell.setStyleRanges(new org.eclipse.swt.custom.StyleRange[0]);
+		}
+	}
 
 	protected TableViewer createViewer(Composite parent, FormToolkit tk) {
 		Table table = tk.createTable(parent, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
@@ -78,8 +114,16 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		viewer.setLabelProvider(new RequirementLabelProvider());
 
 		// Listeners
-		viewer.addSelectionChangedListener(event -> removeTool.setEnabled(!viewer.getSelection()
+		viewer.addSelectionChangedListener(event -> removeTool.setEnabled(!inherited && !viewer.getSelection()
 			.isEmpty()));
+		viewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(DoubleClickEvent event) {
+				if (inherited && inheritedProvenance != null) {
+					openProvenanceFile(inheritedProvenance);
+				}
+			}
+		});
 		table.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
@@ -224,6 +268,34 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		if (loadedReqs == null)
 			loadedReqs = Collections.emptyList();
 
+		// Determine whether the property is inherited from another file.
+		// Use hasLocalMergeProperty to also catch stem.* variant keys (e.g. -runrequires.shared).
+		String primaryKey = getPrimaryPropertyKey();
+		boolean nowInherited = primaryKey != null && model != null && !model.hasLocalMergeProperty(primaryKey)
+			&& !loadedReqs.isEmpty();
+		Optional<String> provenance = (nowInherited && primaryKey != null && model != null)
+			? model.getPropertyProvenance(primaryKey)
+			: Optional.empty();
+		inherited = nowInherited;
+		inheritedProvenance = provenance.orElse(null);
+
+		// Switch label provider based on inherited state; update tooltip
+		if (inherited) {
+			viewer.setLabelProvider(new InheritedRequirementLabelProvider(viewer.getControl()
+				.getDisplay()));
+			String tip = inheritedProvenance != null
+				? "Inherited from " + inheritedProvenance + ". Double-click to open source."
+				: "Inherited from an included file. Double-click to open source.";
+			viewer.getControl()
+				.setToolTipText(tip);
+		} else {
+			viewer.setLabelProvider(new RequirementLabelProvider());
+			viewer.getControl()
+				.setToolTipText(null);
+		}
+		addBundleTool.setEnabled(!inherited);
+		removeTool.setEnabled(false);
+
 		if (loadedReqs.equals(this.requires))
 			return;
 
@@ -244,13 +316,27 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		}
 	}
 
-	/**
-	 * Update the requirements already available with new ones. Already existing
-	 * requirements will be removed from the given set.
-	 *
-	 * @param adding Set with {@link Requirement}s to add
-	 * @return true if requirements were added.
-	 */
+	private void openProvenanceFile(String absolutePath) {
+		File file = new File(absolutePath);
+		if (!file.isFile())
+			return;
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		IFile iFile = root.getFileForLocation(new Path(absolutePath));
+		if (iFile == null || !iFile.exists())
+			return;
+		try {
+			PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow()
+				.getActivePage()
+				.openEditor(new FileEditorInput(iFile), BndEditor.WORKSPACE_EDITOR);
+		} catch (PartInitException e) {
+			ErrorDialog.openError(getSection().getShell(), "Error", null,
+				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to open source file.", e));
+		}
+	}
+
+	/** Update the requirements already available with new ones. Already existing requirements will be removed. */
 	private boolean updateViewerWithNewRequirements(Set<Requirement> adding) {
 		// remove duplicates
 		adding.removeAll(this.requires);

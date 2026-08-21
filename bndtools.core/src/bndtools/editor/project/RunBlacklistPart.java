@@ -29,6 +29,11 @@ public class RunBlacklistPart extends AbstractRequirementListPart {
 		return SUBSCRIBE_PROPS;
 	}
 
+	@Override
+	protected String getPrimaryPropertyKey() {
+		return Constants.RUNBLACKLIST;
+	}
+
 	private void createSection(Section section, FormToolkit tk) {
 		section.setText("Run Blacklist");
 		section.setDescription("The specified requirements will be excluded from the resolution.");
@@ -70,7 +75,10 @@ public class RunBlacklistPart extends AbstractRequirementListPart {
 
 	@Override
 	protected List<Requirement> doRefreshFromModel() {
-		return model.getRunBlacklist();
+		List<Requirement> local = model.getRunBlacklist();
+		if (local != null && !local.isEmpty())
+			return local;
+		return model.getMergedRequirements(Constants.RUNBLACKLIST);
 	}
 
 	@Override
