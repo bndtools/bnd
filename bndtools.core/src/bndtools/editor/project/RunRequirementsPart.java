@@ -61,6 +61,11 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		return SUBSCRIBE_PROPS;
 	}
 
+	@Override
+	protected String getPrimaryPropertyKey() {
+		return Constants.RUNREQUIRES;
+	}
+
 	private void createSection(Section section, FormToolkit tk) {
 		section.setText("Run Requirements");
 		section.setDescription(
@@ -190,7 +195,11 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 			.ordinal());
 		updateResolveModeDescription();
 
-		return model.getRunRequires();
+		List<Requirement> local = model.getRunRequires();
+		if (local != null && !local.isEmpty())
+			return local;
+		// No local -runrequires; fall back to owner-merged (e.g. -runrequires.shared from an included file)
+		return model.getMergedRequirements(Constants.RUNREQUIRES);
 	}
 
 	private void updateResolveModeDescription() {
