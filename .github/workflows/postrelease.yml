@@ -35,6 +35,7 @@ jobs:
     env:
       BUNDLE_GEMFILE: Gemfile
       BUNDLE_PATH: vendor/bundle
+      V1: ${{ github.event.inputs.V1 }}
     steps:
     - name: Git Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
