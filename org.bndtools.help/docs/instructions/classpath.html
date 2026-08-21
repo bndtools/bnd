@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-classpath  FILE (',' FILE) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-classpath  FILE (',' FILE) *</h1>
+<ul>
+<li>
+<p>Example: <code>-baseline: jar/foo.jar, jar/bar.jar</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/classpath.md -->
+<p>The <code>-classpath</code> instruction adds class path entries to a bnd file's processing. It contains direct references to JARs through file paths or URLs. Entries on the class path are made available as imports and can be used as private or exported packages.</p>
+<div class="highlight"><pre><span></span><code>-classpath: jar/foo.jar, jar/bar.jar
+</code></pre></div>
+
+<p>If you need to get all JARs in a directory you could use the <code>${lsa}</code> macro:</p>
+<div class="highlight"><pre><span></span><code>-classpath: ${lsa;jar/*}
+</code></pre></div>
+
+<p>This instruction should only be used when bnd is used in stand alone mode. In project mode (when you have a workspace), the <code>-buildpath</code> defines the actual class path. However, even in project mode any <code>-classpath</code> entries are added to the actual class path.</p>
+<p><br /><br /></p>
+</body>
+</html>

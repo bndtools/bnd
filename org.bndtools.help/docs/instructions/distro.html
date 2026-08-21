@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-distro REPO (',' REPO)</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-distro REPO (',' REPO)</h1>
+<ul>
+<li>
+<p>Example: <code>-distro: karaf-4.1.jar;version=file</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/distro.md -->
+<p>The <code>-distro</code> instruction is used in the case that your application must run in a host environment, for example Karaf. In such cases it is not possible to calculate the system capabilities from the framework and the run path. Each of these host environments has a specific set of capabilities that should be used as input to the resolver. </p>
+<p>The <code>-distro</code> capability has the same syntax as the <code>-runpath</code>, a list of bundle specifications. The resolver will parse these bundles and treat their capabilities specified with the <code>Provide-Capability</code> header in their Manifest as the system capabilities. These files can be generated manually. However, the bnd command line tool can create a distro bundle using the remote agent.</p>
+<p>When the <code>-distro</code> is present in the <code>bndrun</code> file it overrides any other definition that are used to derive capabilities. If additional capabilities are needed the <code>-runprovidedcapabilities</code> should be used.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-distro: karaf-4.1.jar;version=file
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

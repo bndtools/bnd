@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>range ';' RANGE_MASK ( ';' VERSION )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>range ';' RANGE_MASK ( ';' VERSION )</h1>
+<p>The <code>range</code> macro takes a version range mask/template and uses it calculate a range from a given version. The primary reason for the <code>${range}</code> macro is to be used in the <a href="/chapters/170-versioning.html">version policy</a>. With the version policy we have a version of an exported package and we need to calculate the range for that. The rules come from the <a href="/instructions/consumer_policy.html">consumer</a> or <a href="/instructions/provider_policy.html">provider</a> policy. However, this policy can be overridden on the Import-Package header by specifying the version as a range macro:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: com.example.myownpolicy; version=&quot;${range;[==,=+)}&quot;, *
+</code></pre></div>
+
+<p>Since the version for the exported package is set as <code>${@}</code>, the macro will calculate the proper semantic range for a provider.</p>
+<p>The syntax for the <code>range</code> macro is:</p>
+<div class="highlight"><pre><span></span><code>range ::= ( &#39;\[&#39; |&#39;\( ) mask &#39;,&#39; mask ( &#39;\)&#39; | &#39;\]&#39; )
+mask  ::= m ( m ( m )? )? q
+m     ::= [0-9=+-~]
+q     ::= [0-9=~Ss]
+</code></pre></div>
+
+<p>The meaning of the characters is:</p>
+<ul>
+<li><code>=</code> – Keep the version part</li>
+<li><code>-</code> – Decrement the version part</li>
+<li><code>+</code> – Increment the version part</li>
+<li><code>[0-9]</code> – Replace the version part</li>
+<li><code>~</code> – Ignore the version part</li>
+<li><code>[Ss]</code> – If the qualifier equals <code>SNAPSHOT</code>, then it will return a maven like snapshot version. Maven snapshot versions do not use the <code>.</code> as the separator but a <code>-</code> sign. The upper case <code>S</code> checks case sensitive, the lower case <code>s</code> is case insensitive. This template character will be treated as the last character in the template and return the version immediately. </li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>With <code>${range}</code>:</p>
+<ul>
+<li><code>${range;[==,+);1.2.3}</code> will return <code>[1.2,2)</code>.</li>
+<li><code>${range;[===,+++);1.2.3}</code> will return <code>[1.2.3,2.3.4)</code>.</li>
+<li><code>${range;[===,+==);1.2.3}</code> will return <code>[1.2.3,2.2.3)</code>.</li>
+<li><code>${range;[===,==+);1.2.3}</code> will return <code>[1.2.3,1.2.4)</code>.</li>
+<li><code>${range;[=+=,+=+);1.2.3}</code> will return <code>[1.3.3,2.2.4)</code>.</li>
+</ul>
+<p>With <code>${versionmask}</code>:</p>
+<ul>
+<li><code>${versionmask;===S;1.2.3.SNAPSHOT}</code> will return <code>1.2.3-SNAPSHOT</code>.</li>
+<li><code>[${versionmask;==;1.2.3},${versionmask;+;1.2.3})</code> will return <code>[1.2,2)</code>.</li>
+<li><code>[${versionmask;===;1.2.3},${versionmask;+++;1.2.3})</code> will return <code>[1.2.3,2.3.4)</code>.</li>
+<li><code>[${versionmask;===;1.2.3},${versionmask;+==;1.2.3})</code> will return <code>[1.2.3,2.2.3)</code>.</li>
+<li><code>[${versionmask;===;1.2.3},${versionmask;==+;1.2.3})</code> will return <code>[1.2.3,1.2.4)</code>.</li>
+<li><code>[${versionmask;=+=;1.2.3},${versionmask;+=+;1.2.3})</code> will return <code>[1.3.3,2.2.4)</code>.</li>
+</ul>
+<p>Also see <a href="/macros/versionmask.html">versionmask</a> / <a href="/macros/version.html">version</a>.</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

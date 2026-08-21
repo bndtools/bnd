@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>base64 ';' FILE [';' LONG ]</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>base64 ';' FILE [';' LONG ]</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>base64</code> macro reads a file and returns its contents encoded as a Base64 string. This is useful for embedding binary content or file data directly in text-based configuration files.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${base64;&lt;file&gt;[;fileSizeLimit]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>file</code> - Path to the file to encode (relative to the project directory)</li>
+<li><code>fileSizeLimit</code> (optional) - Maximum file size in bytes (default: 100,000 bytes)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Reads the entire file into memory</li>
+<li>Encodes the file contents as Base64</li>
+<li>Enforces a size limit to prevent memory issues with large files</li>
+<li>Throws an exception if the file exceeds the size limit</li>
+<li>File path is resolved relative to the current project directory</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Encode a small binary file:</p>
+<div class="highlight"><pre><span></span><code>${base64;resources/icon.png}
+</code></pre></div>
+
+<p>Encode with custom size limit (1MB):</p>
+<div class="highlight"><pre><span></span><code>${base64;data/config.bin;1000000}
+</code></pre></div>
+
+<p>Embed a certificate in a property:</p>
+<div class="highlight"><pre><span></span><code>certificate.data=${base64;certs/ca-cert.pem}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Embedding small binary resources in manifest files</li>
+<li>Including certificates or keys in configuration</li>
+<li>Encoding binary data for transmission in text formats</li>
+<li>Creating data URIs for embedded content</li>
+<li>Storing binary configuration data in properties files</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Default size limit is 100,000 bytes to prevent memory exhaustion</li>
+<li>For large files, consider referencing the file path instead of embedding</li>
+<li>The encoded output will be approximately 33% larger than the original file</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

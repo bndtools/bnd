@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>findpath ';' REGEX ( ';' REPLACE )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>findpath ';' REGEX ( ';' REPLACE )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>findpath</code> macro finds resources in the current bundle by matching full resource paths against a regular expression, with optional replacement to transform the results.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${findpath[;&lt;regex&gt;[;&lt;replacement&gt;]]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>regex</code> (optional) - Regular expression to match full paths (default: ".*" matches all)</li>
+<li><code>replacement</code> (optional) - Replacement pattern using regex groups (e.g., "$1")</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Searches bundle resources by full path</li>
+<li>Matches entire path against regex pattern</li>
+<li>Optionally applies replacement to matched paths</li>
+<li>Returns comma-separated list of results</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find all resources:</p>
+<div class="highlight"><pre><span></span><code>${findpath}
+# Returns full paths of all resources
+</code></pre></div>
+
+<p>Find by path pattern:</p>
+<div class="highlight"><pre><span></span><code>${findpath;META-INF/.*\.xml}
+# Returns XML files (full path) in META-INF/
+</code></pre></div>
+
+<p>Extract path components:</p>
+<div class="highlight"><pre><span></span><code>${findpath;com/example/(.*)/.*\.class;$1}
+# Returns middle package component
+</code></pre></div>
+
+<p>Find and transform:</p>
+<div class="highlight"><pre><span></span><code>${findpath;src/(.*)\.java;$1}
+# Returns paths without src/ prefix and .java extension
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Resource discovery by path</li>
+<li>Full path pattern matching</li>
+<li>Path transformation</li>
+<li>Bundle content analysis</li>
+<li>Package structure extraction</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Matches full resource path, not just filename</li>
+<li>Uses Java regex syntax</li>
+<li>See also: <code>${findname}</code> for filename-only matching</li>
+<li>See also: <code>${lsr}</code> for file system searches</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

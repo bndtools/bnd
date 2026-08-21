@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>grep</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>grep</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   grep [options]  &lt;pattern&gt; &lt;file...&gt;
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -b --bsn ]</code> Search in bsn</li>
+<li><code>[ -e --exports ]</code> Search in exports</li>
+<li><code>[ -h --headers &lt;string&gt;* ]</code> Set header(s) to search, can be wildcarded. The default is all headers (*).</li>
+<li><code>[ -i --imports ]</code> Search in imports</li>
+<li><code>[ -r --resources &lt;string&gt;* ]</code> Search path names of resources. No resources are included unless expressly specified.</li>
+</ul>
+<!-- Manual content from: ext/grep.md -->
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>biz.aQute.bnd (master)$ bnd grep -h &quot;*&quot; &quot;settings&quot; generated/*.jar
+            generated/biz.aQute.bnd.jar :      Private-Package ...ute.lib.[settings]...
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

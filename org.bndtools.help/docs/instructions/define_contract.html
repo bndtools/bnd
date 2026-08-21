@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-define-contract</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-define-contract</h1>
+<ul>
+<li>
+<p>Example: <code>-define-contract:\
+  osgi.contract;\
+    osgi.contract=JavaServlet;\
+    uses:="javax.servlet,javax.servlet.annotation,javax.servlet.descriptor,javax.servlet.http";\
+    version:Version="3.0"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/define_contract.md -->
+<p>Used in conjunction with the <a href="contract.html"><code>-contract</code></a> instruction,<code>-define-contract</code> can be applied in order to define a contract which is not available on the build path (i.e. compile class path).</p>
+<p>The contract specification is exactly the same syntax used in the <code>Provide-Capability</code> header.</p>
+<div class="highlight"><pre><span></span><code><span class="na">-define-contract</span><span class="o">:</span><span class="se">\</span>
+<span class="w">  </span><span class="s">osgi.contract;</span><span class="se">\</span>
+<span class="w">    </span><span class="s">osgi.contract=JavaServlet;</span><span class="se">\</span>
+<span class="w">    </span><span class="s">uses:=&quot;javax.servlet,javax.servlet.annotation,javax.servlet.descriptor,javax.servlet.http&quot;;</span><span class="se">\</span>
+<span class="w">    </span><span class="s">version:Version=&quot;3.0&quot;</span>
+</code></pre></div>
+
+<p>Now if the current bundle imports packages declared in the <code>uses</code> directive of the defined contract above, they will be imported without a package version, and a contract requirement will be added exactly as if there had been a contract on the build path.</p>
+<p><strong>Note</strong> the <code>-contract</code> instruction defaults to <code>*</code> (all contracts) and so it can be omitted when using the <code>-define-contract</code> instruction.</p>
+<h3 id="further-reading">Further Reading</h3>
+<ul>
+<li>See <a href="/instructions/contract.html">-contract</a> and <a href="/instructions/define_contract.html">-define-contract</a> instruction for defining contracts in bnd.</li>
+<li>See also <a href="https://docs.osgi.org/reference/portable-java-contracts.html">Portable Contract Definitions</a></li>
+</ul>
+<p><br /><br /></p>
+</body>
+</html>

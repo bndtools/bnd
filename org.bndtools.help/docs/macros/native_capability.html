@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>native_capability ( ';' ( 'os.name' | 'os.version' | 'os.processor' ) '=' STRING )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>native_capability ( ';' ( 'os.name' | 'os.version' | 'os.processor' ) '=' STRING )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>native_capability</code> macro generates an OSGi native capability string in the format specified for Provide-Capability or Require-Capability headers. It represents the native platform according to OSGi RFC 188, automatically detecting the current platform or using explicit overrides.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${native_capability[;&lt;property&gt;=&lt;value&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>os.name=&lt;value&gt;</code> (optional) - Override OS name (e.g., "Linux", "Windows 7")</li>
+<li><code>os.version=&lt;value&gt;</code> (optional) - Override OS version (e.g., "3.2.4", "6.1.0")</li>
+<li><code>os.processor=&lt;value&gt;</code> (optional) - Override processor (e.g., "x86-64", "aarch64")</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Automatically detects current platform if no overrides provided</li>
+<li>Generates OSGi native capability clause</li>
+<li>Includes OS name aliases, version, and processor aliases</li>
+<li>Throws exception if required values cannot be determined</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Auto-detect current platform:</p>
+<div class="highlight"><pre><span></span><code>${native_capability}
+# On Windows 7 x64:
+# osgi.native;osgi.native.osname:List&lt;String&gt;=&quot;Windows7,Windows 7,Win32&quot;;
+#   osgi.native.osversion:Version=6.1.0;
+#   osgi.native.processor:List&lt;String&gt;=&quot;x86-64,amd64,em64t,x86_64&quot;
+</code></pre></div>
+
+<p>Override OS name:</p>
+<div class="highlight"><pre><span></span><code>${native_capability;os.name=Linux}
+</code></pre></div>
+
+<p>Specify complete platform:</p>
+<div class="highlight"><pre><span></span><code>${native_capability;os.name=Linux;os.version=3.2.4;os.processor=x86-64}
+</code></pre></div>
+
+<p>Use in capability header:</p>
+<div class="highlight"><pre><span></span><code>Provide-Capability: ${native_capability}
+</code></pre></div>
+
+<p>Cross-platform requirement:</p>
+<div class="highlight"><pre><span></span><code>Require-Capability: ${native_capability;os.name=MacOSX;os.version=10.15.0}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Declaring native platform capabilities</li>
+<li>Platform-specific bundle requirements</li>
+<li>Cross-compilation targeting</li>
+<li>Native library dependencies</li>
+<li>Platform compatibility specifications</li>
+<li>OSGi native code requirements</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Follows OSGi RFC 188 specification</li>
+<li>Automatically provides OS name aliases</li>
+<li>Processor names include common aliases</li>
+<li>Version must be valid OSGi version format</li>
+<li>Throws exception if platform cannot be detected and no overrides provided</li>
+<li>Used with Require-Capability or Provide-Capability headers</li>
+<li>Essential for native code bundles</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>
