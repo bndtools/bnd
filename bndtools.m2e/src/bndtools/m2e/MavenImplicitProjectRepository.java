@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -26,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Run;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
-import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.version.Version;
@@ -37,10 +37,11 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	private static final org.slf4j.Logger	logger	= LoggerFactory.getLogger(MavenImplicitProjectRepository.class);
 
-	private volatile FileSetRepository		fileSetRepository;
-	private final IMavenProjectFacade		projectFacade;
-	private final Run						run;
-	private final IPath						bndrunFilePath;
+	private final CompletableFuture<FileSetRepository>	initialRepository	= new CompletableFuture<>();
+	private volatile FileSetRepository					fileSetRepository;
+	private final IMavenProjectFacade					projectFacade;
+	private final Run									run;
+	private final IPath									bndrunFilePath;
 
 	public MavenImplicitProjectRepository(IMavenProjectRegistry mavenProjectRegistry,
 		IMavenProjectFacade projectFacade, Run run) {
@@ -53,19 +54,13 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		if (fileSetRepository == null) {
-			return ResourceUtils.emptyProviders(requirements);
-		}
-		return fileSetRepository.findProviders(requirements);
+		return getFileSetRepository().findProviders(requirements);
 	}
 
 	@Override
 	public File get(final String bsn, final Version version, Map<String, String> properties,
 		final DownloadListener... listeners) throws Exception {
-		if (fileSetRepository == null) {
-			return null;
-		}
-		return fileSetRepository.get(bsn, version, properties, listeners);
+		return getFileSetRepository().get(bsn, version, properties, listeners);
 	}
 
 	@Override
@@ -81,10 +76,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
-		if (fileSetRepository == null) {
-			return Collections.emptyList();
-		}
-		return fileSetRepository.list(pattern);
+		return getFileSetRepository().list(pattern);
 	}
 
 	@Override
@@ -121,10 +113,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		if (fileSetRepository == null) {
-			return new TreeSet<>();
-		}
-		return fileSetRepository.versions(bsn);
+		return getFileSetRepository().versions(bsn);
 	}
 
 	protected void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
@@ -132,8 +121,10 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 		try {
 			BndrunContainer bndrunContainer = run.getPlugin(BndrunContainer.class);
 
-			fileSetRepository = bndrunContainer.getFileSetRepository(mavenProject);
-			fileSetRepository.list(null);
+			FileSetRepository repository = bndrunContainer.getFileSetRepository(mavenProject);
+			repository.list(null);
+			fileSetRepository = repository;
+			initialRepository.complete(repository);
 
 			fullRefresh();
 		} catch (Exception e) {
@@ -143,13 +134,21 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 				String name = mavenProject.getName()
 					.isEmpty() ? mavenProject.getArtifactId() : mavenProject.getName();
 
-				fileSetRepository = new FileSetRepository(name, Collections.emptyList());
+				FileSetRepository repository = new FileSetRepository(name, Collections.emptyList());
+				fileSetRepository = repository;
+				initialRepository.complete(repository);
 
 				fullRefresh();
 			} catch (Exception e2) {
+				initialRepository.completeExceptionally(e2);
 				throw Exceptions.duck(e2);
 			}
 		}
+	}
+
+	private FileSetRepository getFileSetRepository() {
+		FileSetRepository repository = fileSetRepository;
+		return (repository != null) ? repository : initialRepository.join();
 	}
 
 	private void fullRefresh() throws Exception {
