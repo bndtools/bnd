@@ -37,8 +37,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	private static final org.slf4j.Logger	logger	= LoggerFactory.getLogger(MavenImplicitProjectRepository.class);
 
-	private final CompletableFuture<FileSetRepository>	initialRepository	= new CompletableFuture<>();
-	private volatile FileSetRepository					fileSetRepository;
+	private final RepositoryHolder<FileSetRepository>	repositoryHolder	= new RepositoryHolder<>();
 	private final IMavenProjectFacade					projectFacade;
 	private final Run									run;
 	private final IPath									bndrunFilePath;
@@ -54,13 +53,15 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		return getFileSetRepository().findProviders(requirements);
+		return repositoryHolder.get()
+			.findProviders(requirements);
 	}
 
 	@Override
 	public File get(final String bsn, final Version version, Map<String, String> properties,
 		final DownloadListener... listeners) throws Exception {
-		return getFileSetRepository().get(bsn, version, properties, listeners);
+		return repositoryHolder.get()
+			.get(bsn, version, properties, listeners);
 	}
 
 	@Override
@@ -76,7 +77,8 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
-		return getFileSetRepository().list(pattern);
+		return repositoryHolder.get()
+			.list(pattern);
 	}
 
 	@Override
@@ -113,7 +115,8 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		return getFileSetRepository().versions(bsn);
+		return repositoryHolder.get()
+			.versions(bsn);
 	}
 
 	protected void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
@@ -123,8 +126,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 			FileSetRepository repository = bndrunContainer.getFileSetRepository(mavenProject);
 			repository.list(null);
-			fileSetRepository = repository;
-			initialRepository.complete(repository);
+			repositoryHolder.set(repository);
 
 			fullRefresh();
 		} catch (Exception e) {
@@ -135,20 +137,33 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 					.isEmpty() ? mavenProject.getArtifactId() : mavenProject.getName();
 
 				FileSetRepository repository = new FileSetRepository(name, Collections.emptyList());
-				fileSetRepository = repository;
-				initialRepository.complete(repository);
+				repositoryHolder.set(repository);
 
 				fullRefresh();
 			} catch (Exception e2) {
-				initialRepository.completeExceptionally(e2);
+				repositoryHolder.fail(e2);
 				throw Exceptions.duck(e2);
 			}
 		}
 	}
 
-	private FileSetRepository getFileSetRepository() {
-		FileSetRepository repository = fileSetRepository;
-		return (repository != null) ? repository : initialRepository.join();
+	static final class RepositoryHolder<T> {
+		private final CompletableFuture<T>	initialRepository	= new CompletableFuture<>();
+		private volatile T				repository;
+
+		T get() {
+			T current = repository;
+			return (current != null) ? current : initialRepository.join();
+		}
+
+		void set(T repository) {
+			this.repository = repository;
+			initialRepository.complete(repository);
+		}
+
+		void fail(Throwable throwable) {
+			initialRepository.completeExceptionally(throwable);
+		}
 	}
 
 	private void fullRefresh() throws Exception {
