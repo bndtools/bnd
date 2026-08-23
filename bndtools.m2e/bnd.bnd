@@ -41,6 +41,8 @@
 	org.eclipse.osgi,\
 	org.codehaus.plexus:plexus-build-api
 
+-testpath: ${junit}
+
 Bundle-SymbolicName: ${p};singleton:=true
 Bundle-ActivationPolicy: lazy
 
