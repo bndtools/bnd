@@ -20,6 +20,10 @@
 	osgi.arch=x86_64,\
 	osgi.os=win32
 
+# include this property to open a workspace without selection dialog
+#-runproperties.workspace: \
+#	osgi.instance.area=C:/git/github.com/peterkir/bnd-rcp-sample-workspace
+
 -runblacklist.win32: \
 	osgi.identity;filter:='(osgi.identity=*macosx*)',\
 	osgi.identity;filter:='(osgi.identity=*linux*)',\

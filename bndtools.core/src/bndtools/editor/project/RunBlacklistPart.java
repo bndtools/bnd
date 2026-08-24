@@ -29,6 +29,11 @@ public class RunBlacklistPart extends AbstractRequirementListPart {
 		return SUBSCRIBE_PROPS;
 	}
 
+	@Override
+	protected String getPrimaryPropertyKey() {
+		return Constants.RUNBLACKLIST;
+	}
+
 	private void createSection(Section section, FormToolkit tk) {
 		section.setText("Run Blacklist");
 		section.setDescription("The specified requirements will be excluded from the resolution.");
@@ -65,12 +70,17 @@ public class RunBlacklistPart extends AbstractRequirementListPart {
 
 	@Override
 	protected void doCommitToModel(List<Requirement> requires) {
-		model.setRunBlacklist(requires);
+		String key = getLocalKey();
+		if (Constants.RUNBLACKLIST.equals(key)) {
+			model.setRunBlacklist(requires);
+		} else {
+			BndEditModelAccessor.setRequirementListByKey(model, key, requires);
+		}
 	}
 
 	@Override
 	protected List<Requirement> doRefreshFromModel() {
-		return model.getRunBlacklist();
+		return BndEditModelAccessor.getLocalMergeRequirements(model, Constants.RUNBLACKLIST);
 	}
 
 	@Override
