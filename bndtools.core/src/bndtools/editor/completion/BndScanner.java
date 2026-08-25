@@ -50,7 +50,7 @@ public class BndScanner extends RuleBasedScanner {
 			do {
 				c = scanner.read();
 				n++;
-			} while ((c == ' ' || c == '\t'));
+			} while ((c == ' ' || c == '\t' || c == '\uFEFF'));
 
 			if (c == '#' || c == '!') {
 				while (true) {
