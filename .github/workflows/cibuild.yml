@@ -35,14 +35,6 @@ env:
     -Daether.connector.http.connectionMaxTtl=25
     -Daether.connector.connectTimeout=120000
   BNDTOOLS_CORE_TEST_NOJUNITOSGI: true # This test is very flaky on CI
-  GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-  GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-  P2_SIGN: true
-  P2_SIGN_KEY: ${{ secrets.GPG_KEY_ID }}
-  P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-  P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
-  SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
 
 defaults:
   run:
@@ -109,17 +101,24 @@ jobs:
           CANONICAL: true
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          P2_SIGN: true
+          P2_SIGN_KEY: ${{ secrets.GPG_KEY_ID }}
+          P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
           SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
           JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
           JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+
       - name: Upload P2 Repo artifact
-        if: ${{ matrix.canonical && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ matrix.canonical && github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
           path: org.bndtools.p2/generated/org.bndtools.p2.jar
           if-no-files-found: error
           retention-days: 7
+
       - name: Publish P2 repo
         if: ${{ matrix.canonical && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) }}
         env:
