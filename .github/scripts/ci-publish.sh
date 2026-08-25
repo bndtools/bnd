@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -ev
 
+# Import signing key for this publishing step. Build steps do not receive signing secrets.
+if [[ -n "${GPG_PRIVATE_KEY:-}" && -n "${GPG_PASSPHRASE:-}" ]]; then
+	echo "Importing GPG private key"
+	printf '%s\n' "${GPG_PRIVATE_KEY}" | \
+		gpg --batch \
+			--yes \
+			--pinentry-mode loopback \
+			--passphrase "${GPG_PASSPHRASE}" \
+			--import
+fi
+
 # Prepare GPG arguments for Maven and Gradle if environment variables are set
 GPG_ARGS=""
 GRADLE_GPG_ARGS=""
@@ -37,10 +48,10 @@ if [[ "${IS_RELEASE}" == "true" ]]; then
 		SONATYPE_OPTS=""
 		if [[ -n "${SONATYPE_PUBLISHING_TYPE:-}" ]]; then
 			SONATYPE_OPTS="--publishing-type ${SONATYPE_PUBLISHING_TYPE}"
-		else 
+		else
 			SONATYPE_OPTS="--publishing-type USER_MANAGED"
 		fi
-		
+
 		./.github/scripts/sonatype-upload.sh ${SONATYPE_OPTS} dist/bundles
 	else
 		echo "Skipping Sonatype deployment due to missing SONATYPE_BEARER"
