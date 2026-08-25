@@ -307,6 +307,7 @@ public class BndEditModel {
 		// converters.put(BndConstants.RUNVMARGS, stringConverter);
 		converters.put(Constants.TESTCASES, listConverter);
 		converters.put(Constants.RUNREQUIRES, requirementListConverter);
+		converters.put(Constants.RUNBLACKLIST, requirementListConverter);
 		converters.put(Constants.RUNEE, eeConverter);
 		converters.put(Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
@@ -349,6 +350,7 @@ public class BndEditModel {
 		// formatters.put(BndConstants.TESTSUITES, stringListFormatter);
 		formatters.put(Constants.TESTCASES, stringListFormatter);
 		formatters.put(Constants.RUNREQUIRES, requirementListFormatter);
+		formatters.put(Constants.RUNBLACKLIST, requirementListFormatter);
 		formatters.put(Constants.RUNEE, eeFormatter);
 		formatters.put(Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
@@ -1435,6 +1437,38 @@ public class BndEditModel {
 
 	public void setGenericString(String name, String value) {
 		doSetObject(name, getGenericString(name), value, stringConverter);
+	}
+
+	/**
+	 * Get a property value using the converter registered for the key's stem,
+	 * so merge keys such as {@code -runrequires.extra} are converted to the
+	 * same type as their stem key. Falls back to the raw string value when no
+	 * converter is registered.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getTypedProperty(String key) {
+		Converter<? extends T, ? super String> converter = getConverter(converters, key);
+		if (converter == null)
+			return (T) getGenericString(key);
+		return doGetObject(key, converter);
+	}
+
+	/**
+	 * Set a property value using the formatter registered for the key's stem,
+	 * so merge keys such as {@code -runrequires.extra} are formatted exactly
+	 * like their stem key. Unlike {@link #setGenericString(String, String)}
+	 * this keeps the internal object cache consistently typed for keys that
+	 * also have typed getters/setters, avoiding ClassCastExceptions.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> void setTypedProperty(String key, T value) {
+		Converter<String, ? super T> formatter = getConverter(formatters, key);
+		if (formatter == null) {
+			setGenericString(key, value == null ? null : value.toString());
+			return;
+		}
+		T oldValue = getTypedProperty(key);
+		doSetObject(key, oldValue, value, formatter);
 	}
 
 	/**

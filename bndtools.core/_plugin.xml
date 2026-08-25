@@ -105,7 +105,7 @@
 			icon="icons/repoindex.png" name="OSGi Repository Index"
 			project="false">
 		</wizard>
-		
+
 		<wizard name="OSGi Declarative Services Component"
 			icon="${icons.component}" category="bndtools.wizardCategory"
 			id="bndtools.newDsComponentWizard">
@@ -137,7 +137,7 @@
             class="bndtools.wizards.newworkspace.NewWorkspaceWizard"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
-            icon="icons/bndtools-logo-16x16.png" 
+            icon="icons/bndtools-logo-16x16.png"
             name="Bnd Workspace (Fragments)"
             project="true">
 			<description>
@@ -149,14 +149,14 @@
 			class="bndtools.wizards.workspace.WorkspaceSetupWizard"
 			finalPerspective="bndtools.perspective"
 			preferredPerspectives="bndtools.perspective"
-			icon="icons/bndtools-logo-16x16.png" 
+			icon="icons/bndtools-logo-16x16.png"
 			name="Bnd OSGi Workspace"
             project="true">
 			<description>
 			Create a new bnd workspace
 			</description>
 		</wizard>
-        
+
 		<wizard id="bndtools.importProject"
 			category="bndtools.wizardCategory"
 			class="bndtools.wizards.project.ImportBndWorkspaceWizard"
@@ -178,7 +178,18 @@
 		</wizard>
 	</extension>
 
+	<extension point="org.eclipse.core.resources.markers"
+		id="includeconflict"
+		name="Bnd Include Conflict Marker">
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+	</extension>
+
 	<extension point="org.eclipse.ui.ide.markerResolution">
+		<markerResolutionGenerator
+			markerType="bndtools.core.includeconflict"
+			class="bndtools.editor.project.IncludeConflictMarkerResolutionGenerator" />
 		<markerResolutionGenerator
 			markerType="bndtools.builder.missingworkspace"
 			class="bndtools.wizards.workspace.MissingWorkspaceMarkerResolutionGenerator" />
@@ -486,7 +497,7 @@
 			sourceLocatorId="bndtools.launch.sourcelookup.BndDependencySourceLookupDirector"
 			sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer" />
 		<launchConfigurationType
-			id="bndtools.launch.bnd.NativeBndLaunchDelegate" 
+			id="bndtools.launch.bnd.NativeBndLaunchDelegate"
 			delegate="org.bndtools.facade.ExtensionFacade:org.eclipse.debug.core.model.ILaunchConfigurationDelegate2"
 			modes="run, debug" name="bnd Native"
 			sourceLocatorId="bndtools.launch.sourcelookup.BndDependencySourceLookupDirector"
@@ -889,7 +900,7 @@
 			helpUrl="https://bnd.bndtools.org/plugins/osgirepo.html">
 			<property name="name" type="string"
 				description="Name of the repository" />
-			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />	
+			<property name="tags" type="combo" description="Comma separated list ('resolve' used for resolution. See -runrepos instruction for details). Use &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution." options="resolve,&lt;&lt;EMPTY&gt;&gt;"  />
 			<property name="locations" type="string"
 				description="Index locations (comma-separated list of URLs)" />
 			<property name="cache" type="string"
@@ -988,7 +999,7 @@
 		    <property name="poll_time" type="int" description="Sets the time in seconds when to check for changes in the pom-files" default="300" />
 		    <property name="dependencyManagement" type="boolean" description="Also considers the dependency management section of a POM. Default is false." default="false" />
 		</plugin>
-		
+
 	</extension>
 
 	<extension point="org.eclipse.ui.intro.configExtension">
@@ -1046,7 +1057,7 @@
                tooltip="Analyzes a .bndrun file e.g. for unused bundles in repositories and other aspects.">
          </action>
       </objectContribution>
-	
+
 		<objectContribution adaptable="true"
 			id="bndtools.nonBndProjectContribution"
 			objectClass="org.eclipse.core.resources.IProject">
@@ -1209,7 +1220,7 @@
 			id="bndtools.core.BndtoolsJavaWorkingSet">
 		</workingSet>
 	</extension>
-	
+
 	<!-- =========================================================================== -->
 	<!-- Remote Bundle Install Support -->
 	<!-- =========================================================================== -->

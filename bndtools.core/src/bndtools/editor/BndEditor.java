@@ -41,6 +41,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -97,6 +98,7 @@ import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
+import bndtools.editor.project.IncludeConflictDetector;
 import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
@@ -657,6 +659,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 								IDocument document = docProvider.getDocument(getEditorInput());
 								model.loadFrom(new IDocumentWrapper(document));
 								model.setDirty(false);
+								IncludeConflictDetector.updateMarkers(inputResource, model);
 							} catch (IOException e) {
 								logger.logError("Unable to load edit model", e);
 								completed.fail(e);
@@ -775,6 +778,41 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		IResourceDelta delta = event.getDelta();
 		if (delta == null)
 			return;
+
+		// When an included file is saved, refresh the owner processor and reload
+		// so merged properties (e.g. -runrequires, -runproperties) reflect the change.
+		aQute.bnd.osgi.Processor owner = model.getOwner();
+		if (owner != null && !saving.get()) {
+			final IResourceDelta fullDelta = delta; // delta is reassigned below; capture before
+			boolean includedChanged = owner.getIncluded()
+				.stream()
+				.anyMatch(includedFile -> {
+					IFile wsFile = ResourcesPlugin.getWorkspace()
+						.getRoot()
+						.getFileForLocation(new Path(includedFile.getAbsolutePath()));
+					if (wsFile == null)
+						return false;
+					IResourceDelta d = fullDelta.findMember(wsFile.getFullPath());
+					return d != null
+						&& (d.getKind() & IResourceDelta.CHANGED) != 0
+						&& (d.getFlags() & IResourceDelta.CONTENT) != 0;
+				});
+			if (includedChanged) {
+				final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
+				if (docProvider != null) {
+					final IDocument document = docProvider.getDocument(getEditorInput());
+					SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, () -> {
+						try {
+							owner.forceRefresh();
+							model.loadFrom(new IDocumentWrapper(document));
+							IncludeConflictDetector.updateMarkers(inputResource, model);
+						} catch (IOException e) {
+							logger.logError("Failed to reload model after included file change", e);
+						}
+					});
+				}
+			}
+		}
 		IPath fullPath = myResource.getFullPath();
 		delta = delta.findMember(fullPath);
 		if (delta == null)

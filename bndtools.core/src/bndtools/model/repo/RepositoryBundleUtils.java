@@ -151,4 +151,30 @@ public class RepositoryBundleUtils {
 		return new VersionRange(true, l.getWithoutQualifier(), h, false);
 	}
 
+	/**
+	 * Converts a RepositoryFeature into a VersionedClause in the canonical feature syntax:
+	 * id;version='V';feature=true;type=org.eclipse.update.feature
+	 *
+	 * @param feature
+	 * @return a VersionedClause for the feature
+	 */
+	public static VersionedClause convertRepoFeature(RepositoryFeature feature) {
+		Attrs attribs = new Attrs();
+		String featureId = feature.getFeature().getId();
+		VersionedClause clause = new VersionedClause("feature:" + featureId, attribs);
+		
+		// Set version if available
+		if (feature.getFeature().getVersion() != null) {
+			clause.setVersionRange(feature.getFeature().getVersion());
+		}
+		
+		// Add feature=true attribute for resolver identification
+		clause.getAttribs().put("feature", "true");
+		
+		// Add type attribute for Eclipse update compatibility
+		clause.getAttribs().put("type", "org.eclipse.update.feature");
+		
+		return clause;
+	}
+
 }

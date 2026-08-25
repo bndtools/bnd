@@ -95,7 +95,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
 	@Override
 	protected IBaseLabelProvider getLabelProvider() {
-		return new VersionedClauseLabelProvider() {
+		return new MixedVersionedClauseLabelProvider() {
 			@Override
 			public void update(ViewerCell cell) {
 				Object element = cell.getElement();
@@ -160,12 +160,26 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
 	@Override
 	protected void saveToModel(BndEditModel model, List<aQute.bnd.build.model.clauses.VersionedClause> bundles) {
-		model.setRunBundles(bundles);
+		// Write to the same local merge key the part reads from, so included
+		// plain -runbundles definitions are merged instead of shadowed.
+		String key = BndEditModelAccessor.findLocalMergeKey(model, Constants.RUNBUNDLES);
+		if (key == null)
+			key = inheritedBundles.isEmpty() ? Constants.RUNBUNDLES : Constants.RUNBUNDLES + ".local";
+		if (Constants.RUNBUNDLES.equals(key)) {
+			model.setRunBundles(bundles);
+		} else {
+			BndEditModelAccessor.setVersionedClausesByKey(model, key, bundles);
+		}
 	}
 
 	@Override
 	protected List<aQute.bnd.build.model.clauses.VersionedClause> loadFromModel(BndEditModel model) {
-		return model.getRunBundles();
+		return BndEditModelAccessor.getLocalVersionedClauses(model, aQute.bnd.osgi.Constants.RUNBUNDLES);
+	}
+
+	@Override
+	protected List<aQute.bnd.build.model.clauses.VersionedClause> loadMergedFromModel(BndEditModel model) {
+		return BndEditModelAccessor.getMergedVersionedClauses(model, aQute.bnd.osgi.Constants.RUNBUNDLES);
 	}
 
 	@Override
