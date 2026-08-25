@@ -113,7 +113,7 @@ jobs:
           JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
           JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
       - name: Upload P2 Repo artifact
-        if: ${{ matrix.canonical && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ matrix.canonical && github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: pr-${{ github.event.pull_request.number }}-jdk${{ matrix.java }}-${{ matrix.os }}
