@@ -114,6 +114,85 @@ class DiffRequireCapabilityOrderTest {
                 "After clean()/reorderClause() the written headers must be identical");
     }
 
+	/**
+	 * #7377: the fix must equally cover Provide-Capability
+	 */
+	@Test
+	void provideCapabilityDifferentInsertionOrder() throws Exception {
+		Parameters capA = new Parameters();
+		Attrs a = new Attrs();
+		a.put("objectClass", "com.example.Foo");
+		a.put("uses:", "com.example");
+		capA.put("osgi.service", a);
+
+		Parameters capB = new Parameters();
+		Attrs b = new Attrs();
+		b.put("uses:", "com.example");
+		b.put("objectClass", "com.example.Foo");
+		capB.put("osgi.service", b);
+
+		assertNotEquals(capA.toString(), capB.toString(), "insertion order must produce different strings");
+
+		Diff manifestDiff = diffManifests(Constants.PROVIDE_CAPABILITY, capA.toString(), capB.toString());
+		assertEquals(Delta.UNCHANGED, manifestDiff.getDelta(),
+			"Provide-Capability with different attribute order must be treated as equal");
+	}
+
+	/**
+	 * #7377: repeated capability namespaces (duplicate clause keys, e.g. two
+	 * osgi.service requirements) must pair up via the internal ~ suffix when
+	 * only the attribute order differs
+	 */
+	@Test
+	void duplicateClauseKeysWithDifferentAttributeOrder() throws Exception {
+		String headerA = "osgi.service;effective:=active;filter:=\"(objectClass=com.example.Foo)\","
+			+ "osgi.service;effective:=active;filter:=\"(objectClass=com.example.Bar)\"";
+		String headerB = "osgi.service;filter:=\"(objectClass=com.example.Foo)\";effective:=active,"
+			+ "osgi.service;filter:=\"(objectClass=com.example.Bar)\";effective:=active";
+
+		Diff manifestDiff = diffManifests(Constants.REQUIRE_CAPABILITY, headerA, headerB);
+		assertEquals(Delta.UNCHANGED, manifestDiff.getDelta(),
+			"repeated namespaces with different attribute order must be treated as equal");
+	}
+
+	/**
+	 * Guard against over-normalisation: a real difference must still be
+	 * detected
+	 */
+	@Test
+	void realChangeIsStillDetected() throws Exception {
+		String headerA = "osgi.service;effective:=active;filter:=\"(objectClass=com.example.Foo)\"";
+		String headerB = "osgi.service;effective:=active;filter:=\"(objectClass=com.example.Bar)\"";
+
+		Diff manifestDiff = diffManifests(Constants.REQUIRE_CAPABILITY, headerA, headerB);
+		assertEquals(Delta.CHANGED, manifestDiff.getDelta(), "a changed filter value must still be detected");
+	}
+
+	private static Diff diffManifests(String header, String valueA, String valueB) throws Exception {
+		try (Jar jarA = jarWith(header, valueA); Jar jarB = jarWith(header, valueB)) {
+			DiffPluginImpl differ = new DiffPluginImpl();
+			Tree treeA = differ.tree(jarA);
+			Tree treeB = differ.tree(jarB);
+			return treeA.diff(treeB)
+				.get("<manifest>");
+		}
+	}
+
+	private static Jar jarWith(String header, String value) {
+		Jar jar = new Jar("test");
+		Manifest manifest = new Manifest();
+		manifest.getMainAttributes()
+			.putValue("Manifest-Version", "1.0");
+		manifest.getMainAttributes()
+			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.bundle");
+		manifest.getMainAttributes()
+			.putValue(Constants.BUNDLE_VERSION, "1.0.0");
+		manifest.getMainAttributes()
+			.putValue(header, value);
+		jar.setManifest(manifest);
+		return jar;
+	}
+
     private static String extractHeader(String manifest, String name) {
         for (String line : manifest.split("\r?\n")) {
             if (line.startsWith(name + ":")) {
