@@ -15,7 +15,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -172,7 +172,7 @@ public class RunPropertiesPart extends BndEditorPart {
 		viewRunProperties.setCellModifier(runPropertiesModifier);
 		viewRunProperties.setContentProvider(new MapContentProvider());
 		viewRunProperties.setLabelProvider(new MixedPropertiesLabelProvider(tblRunProperties.getDisplay()));
-		ColumnViewerToolTipSupport.enableFor(viewRunProperties);
+		StickyToolTipSupport.enableFor(viewRunProperties);
 		Control createRemovePropsToolBar = createRemovePropsPart.createControl(composite, SWT.FLAT | SWT.VERTICAL);
 
 		Label lblProgramArgs = toolkit.createLabel(composite, "Launcher Arguments:");

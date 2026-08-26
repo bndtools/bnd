@@ -49,7 +49,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -266,7 +266,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}
 		};
 		viewer.setContentProvider(contentProvider);
-		ColumnViewerToolTipSupport.enableFor(viewer);
+		StickyToolTipSupport.enableFor(viewer);
 
 		viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
 		getViewSite().setSelectionProvider(viewer);

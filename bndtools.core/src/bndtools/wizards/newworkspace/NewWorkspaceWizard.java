@@ -18,7 +18,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -210,7 +210,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			CheckboxTableViewer selectedTemplates = CheckboxTableViewer.newCheckList(container,
 				SWT.BORDER | SWT.FULL_SELECTION);
-			ColumnViewerToolTipSupport.enableFor(selectedTemplates);
+			StickyToolTipSupport.enableFor(selectedTemplates);
 			selectedTemplates.setContentProvider(ArrayContentProvider.getInstance());
 			Table table = selectedTemplates.getTable();
 			table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 6, 10));

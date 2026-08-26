@@ -28,7 +28,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -157,7 +157,7 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
 		viewer.setLabelProvider(new MixedRequirementLabelProvider(table.getDisplay()));
-		ColumnViewerToolTipSupport.enableFor(viewer);
+		StickyToolTipSupport.enableFor(viewer);
 
 		// Listeners
 		viewer.addSelectionChangedListener(event -> {
