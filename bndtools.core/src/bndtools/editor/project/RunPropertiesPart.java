@@ -1,6 +1,7 @@
 package bndtools.editor.project;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -220,7 +221,7 @@ public class RunPropertiesPart extends BndEditorPart {
 		// Listeners
 		viewRunProperties.addSelectionChangedListener(event -> {
 			IStructuredSelection sel = (IStructuredSelection) viewRunProperties.getSelection();
-			boolean hasLocal = !sel.isEmpty() && sel.toList().stream().anyMatch(k -> !inheritedKeys.contains(k));
+			boolean hasLocal = !sel.isEmpty() && Arrays.stream(sel.toArray()).anyMatch(k -> !inheritedKeys.contains(k));
 			createRemovePropsPart.setRemoveEnabled(hasLocal);
 		});
 		// Double-click on an inherited row opens the file that defines that specific key.

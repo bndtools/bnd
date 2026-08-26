@@ -163,7 +163,7 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 		viewer.addSelectionChangedListener(event -> {
 			IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
 			boolean hasLocalSelected = !sel.isEmpty()
-				&& sel.toList().stream().anyMatch(e -> requires.contains(e));
+				&& Arrays.stream(sel.toArray()).anyMatch(e -> requires.contains(e));
 			removeTool.setEnabled(hasLocalSelected);
 		});
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
