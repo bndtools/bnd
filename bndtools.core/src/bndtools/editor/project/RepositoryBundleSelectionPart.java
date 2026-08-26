@@ -27,7 +27,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -213,7 +213,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 		viewer = new TableViewer(table);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(getLabelProvider());
-		ColumnViewerToolTipSupport.enableFor(viewer);
+		StickyToolTipSupport.enableFor(viewer);
 
 		// Listeners
 		viewer.addSelectionChangedListener(event -> {

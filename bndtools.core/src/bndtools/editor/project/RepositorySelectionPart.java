@@ -29,7 +29,7 @@ import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -302,7 +302,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 		cmpStackContainer.setLayoutData(gd);
 		cmpMainContainer.layout(true, true);
 
-		ColumnViewerToolTipSupport.enableFor(runReposViewer, ToolTip.NO_RECREATE);
+		StickyToolTipSupport.enableFor(runReposViewer, ToolTip.NO_RECREATE);
 	}
 
 	void updateButtons() {

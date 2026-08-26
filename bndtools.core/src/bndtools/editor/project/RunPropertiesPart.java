@@ -1,6 +1,7 @@
 package bndtools.editor.project;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -15,7 +16,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -172,7 +173,7 @@ public class RunPropertiesPart extends BndEditorPart {
 		viewRunProperties.setCellModifier(runPropertiesModifier);
 		viewRunProperties.setContentProvider(new MapContentProvider());
 		viewRunProperties.setLabelProvider(new MixedPropertiesLabelProvider(tblRunProperties.getDisplay()));
-		ColumnViewerToolTipSupport.enableFor(viewRunProperties);
+		StickyToolTipSupport.enableFor(viewRunProperties);
 		Control createRemovePropsToolBar = createRemovePropsPart.createControl(composite, SWT.FLAT | SWT.VERTICAL);
 
 		Label lblProgramArgs = toolkit.createLabel(composite, "Launcher Arguments:");
@@ -220,7 +221,7 @@ public class RunPropertiesPart extends BndEditorPart {
 		// Listeners
 		viewRunProperties.addSelectionChangedListener(event -> {
 			IStructuredSelection sel = (IStructuredSelection) viewRunProperties.getSelection();
-			boolean hasLocal = !sel.isEmpty() && sel.toList().stream().anyMatch(k -> !inheritedKeys.contains(k));
+			boolean hasLocal = !sel.isEmpty() && Arrays.stream(sel.toArray()).anyMatch(k -> !inheritedKeys.contains(k));
 			createRemovePropsPart.setRemoveEnabled(hasLocal);
 		});
 		// Double-click on an inherited row opens the file that defines that specific key.
