@@ -31,7 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Properties;
@@ -1537,8 +1536,10 @@ public class Project extends Processor {
 		if (f.getName()
 			.endsWith(".lib"))
 			container = new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs, db);
-		else if (attrs != null && ResourceUtils.TYPE_ECLIPSE_FEATURE.equals(attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE)))
-			container = new Container(this, bsn, range, Container.TYPE.ECLIPSE_FEATURE, f, null, attrs, db);
+		else if (attrs != null && attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE) != null)
+			// any identity type attribute (e.g. an Eclipse or Karaf feature) marks a
+			// typed resource; which repository can expand it is not core's concern
+			container = new Container(this, bsn, range, Container.TYPE.TYPED_RESOURCE, f, null, attrs, db);
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
 
@@ -1609,130 +1610,36 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Find the resource of an Eclipse feature in the available repositories
-	 * via the OSGi Repository API.
+	 * Expand a {@link Container.TYPE#TYPED_RESOURCE} container into its
+	 * member containers. Core bnd does not know how to interpret any
+	 * particular identity type (e.g. an Eclipse feature); it merely asks each
+	 * repository, in declaration order, whether it recognizes the container's
+	 * type, see {@link RepositoryPlugin#getTypedResourceMembers}. The first
+	 * repository that returns a non-null result wins.
+	 *
+	 * @param container the typed resource container to expand
+	 * @param visited guard against expansion cycles, keyed by {@code bsn:version}
 	 */
-	private org.osgi.resource.Resource findFeatureResource(String bsn, String version) {
-		Requirement requirement = identityRequirement(bsn, ResourceUtils.TYPE_ECLIPSE_FEATURE, version);
+	List<Container> getTypedResourceMembers(Container container, Set<String> visited) throws Exception {
+		String key = container.getBundleSymbolicName() + ":" + container.getVersion();
+		if (!visited.add(key)) {
+			warning("Detected a cycle while expanding %s, ignoring repeated occurrence", key);
+			return newList();
+		}
+
 		for (RepositoryPlugin plugin : getRepositories()) {
-			if (!(plugin instanceof Repository repo))
-				continue;
-			Map<Requirement, Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
-			Collection<Capability> capabilities = providers != null ? providers.get(requirement) : null;
-			if (capabilities != null && !capabilities.isEmpty()) {
-				return capabilities.iterator()
-					.next()
-					.getResource();
-			}
+			List<Container> members = plugin.getTypedResourceMembers(container, visited);
+			if (members != null)
+				return members;
 		}
-		return null;
-	}
 
-	/**
-	 * Expand an Eclipse feature container into its member bundles. Members
-	 * are the {@code <plugin>} references and, recursively, the members of
-	 * {@code <includes>} referenced features. {@code <requires>} imports are
-	 * dependencies, not members, and are ignored. Members whose os/ws/arch
-	 * does not match the running platform are skipped.
-	 *
-	 * @param feature the feature container to expand
-	 * @param visitedFeatures guard against include cycles
-	 */
-	List<Container> getFeatureMembers(Container feature, Set<String> visitedFeatures) throws Exception {
 		List<Container> result = newList();
-		String featureId = feature.getBundleSymbolicName();
-		String key = featureId + ":" + feature.getVersion();
-		if (!visitedFeatures.add(key)) {
-			warning("Detected a cycle in the includes of feature %s, ignoring repeated occurrence", key);
-			return result;
-		}
-
-		org.osgi.resource.Resource resource = findFeatureResource(featureId, feature.getVersion());
-		if (resource == null) {
-			result.add(new Container(this, featureId, feature.getVersion(), Container.TYPE.ERROR, null,
-				"Cannot find the resource of feature " + key + " in the repositories to expand its members",
-				feature.getAttributes(), null));
-			return result;
-		}
-
-		List<Requirement> requirements = resource.getRequirements(IdentityNamespace.IDENTITY_NAMESPACE);
-		int marked = 0;
-		for (Requirement requirement : requirements) {
-			Map<String, Object> reqAttrs = requirement.getAttributes();
-			String relation = Objects.toString(reqAttrs.get(ResourceUtils.FEATURE_RELATION_ATTRIBUTE), null);
-			if (relation == null)
-				continue;
-			marked++;
-
-			boolean include = ResourceUtils.FEATURE_RELATION_INCLUDE.equals(relation);
-			if (!include && !ResourceUtils.FEATURE_RELATION_PLUGIN.equals(relation))
-				continue; // a requires import is a dependency, not a member
-
-			if (!EclipsePlatform.CURRENT.matches(Objects.toString(reqAttrs.get("os"), null),
-				Objects.toString(reqAttrs.get("ws"), null), Objects.toString(reqAttrs.get("arch"), null)))
-				continue;
-
-			String id = Objects.toString(reqAttrs.get("id"), null);
-			if (id == null)
-				continue;
-			String version = Objects.toString(reqAttrs.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE), null);
-			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
-				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
-
-			Container member = getFeatureMember(key, id, version, include, optional);
-			if (member == null)
-				continue;
-
-			for (Container c : member.getMembers(visitedFeatures)) {
-				if (!result.contains(c))
-					result.add(c);
-			}
-		}
-
-		if (marked == 0 && !requirements.isEmpty()) {
-			warning(
-				"The index of the repository containing feature %s predates feature member support, refresh the repository to expand the feature",
-				key);
-		}
+		result.add(new Container(this, container.getBundleSymbolicName(), container.getVersion(), Container.TYPE.ERROR,
+			null,
+			"No repository could expand " + key + " of type "
+				+ container.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE),
+			container.getAttributes(), null));
 		return result;
-	}
-
-	/**
-	 * Resolve a single feature member. The version pinned in the feature is
-	 * tried exactly first; if absent from the repositories the highest
-	 * available version is used with a warning.
-	 *
-	 * @return the member container, an error container, or null when an
-	 *         optional member is not available
-	 */
-	private Container getFeatureMember(String featureKey, String id, String version, boolean include,
-		boolean optional) throws Exception {
-		Map<String, String> attrs = include
-			? Collections.singletonMap(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, ResourceUtils.TYPE_ECLIPSE_FEATURE)
-			: null;
-
-		Container member = null;
-		if (version != null && Verifier.isVersion(version)) {
-			member = getBundle(id, version, Strategy.EXACT, attrs);
-		}
-		if (member == null || member.getError() != null) {
-			Container highest = getBundle(id, null, Strategy.HIGHEST, attrs);
-			if (highest.getError() == null) {
-				if (member != null) {
-					warning("Member %s;version=%s of feature %s not found with the exact version, using %s instead",
-						id, version, featureKey, highest.getVersion());
-				}
-				member = highest;
-			} else if (member == null) {
-				member = highest;
-			}
-		}
-
-		if (member.getError() != null && optional) {
-			logger.debug("skipping optional member {} of feature {}: {}", id, featureKey, member.getError());
-			return null;
-		}
-		return member;
 	}
 
 	/**

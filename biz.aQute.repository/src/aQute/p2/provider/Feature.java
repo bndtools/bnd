@@ -19,7 +19,6 @@ import org.w3c.dom.NodeList;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.osgi.resource.ResourceUtils;
 
 /**
  * Parser for Eclipse feature.xml files. This class parses Eclipse features and
@@ -27,6 +26,14 @@ import aQute.bnd.osgi.resource.ResourceUtils;
  * the osgi.identity namespace with type=org.eclipse.update.feature.
  */
 public class Feature extends XMLBase {
+
+	/**
+	 * The identity type of an Eclipse feature resource, see
+	 * {@link IdentityNamespace#CAPABILITY_TYPE_ATTRIBUTE}. This is the value
+	 * that a {@code -buildpath} clause must set as {@code type} to reference
+	 * an Eclipse feature, e.g. {@code type=org.eclipse.update.feature}.
+	 */
+	public static final String	TYPE				= "org.eclipse.update.feature";
 
 	/**
 	 * Requirement attribute marking the relation of an osgi.identity
@@ -38,10 +45,11 @@ public class Feature extends XMLBase {
 	 * -buildpath feature expansion) can distinguish members from mere
 	 * dependencies.
 	 */
-	public static final String	RELATION_ATTRIBUTE	= ResourceUtils.FEATURE_RELATION_ATTRIBUTE;
-	public static final String	RELATION_PLUGIN		= ResourceUtils.FEATURE_RELATION_PLUGIN;
-	public static final String	RELATION_INCLUDE	= ResourceUtils.FEATURE_RELATION_INCLUDE;
-	public static final String	RELATION_REQUIRE	= ResourceUtils.FEATURE_RELATION_REQUIRE;
+	public static final String	RELATION_ATTRIBUTE	= "bnd.relation";
+	public static final String	RELATION_PLUGIN		= "plugin";
+	public static final String	RELATION_INCLUDE	= "include";
+	public static final String	RELATION_REQUIRE	= "require";
+
 
 	/**
 	 * Represents a plugin reference in a feature
@@ -271,7 +279,7 @@ public class Feature extends XMLBase {
 		// Create identity capability with type=org.eclipse.update.feature
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, id);
-		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, "org.eclipse.update.feature");
+		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, TYPE);
 		if (version != null) {
 			try {
 				Version v = Version.parseVersion(version);
@@ -345,9 +353,9 @@ public class Feature extends XMLBase {
 		// Create requirements for included features
 		for (Includes include : includes) {
 			CapReqBuilder req = new CapReqBuilder("osgi.identity");
-			String filter = String.format("(&(osgi.identity=%s)(type=org.eclipse.update.feature))", include.id);
+			String filter = String.format("(&(osgi.identity=%s)(type=%s))", include.id, TYPE);
 			if (include.version != null && !include.version.equals("0.0.0")) {
-				filter = String.format("(&(osgi.identity=%s)(type=org.eclipse.update.feature)(version=%s))", include.id,
+				filter = String.format("(&(osgi.identity=%s)(type=%s)(version=%s))", include.id, TYPE,
 					include.version);
 			}
 			req.addDirective("filter", filter);
@@ -356,7 +364,7 @@ public class Feature extends XMLBase {
 			}
 			req.addAttribute(RELATION_ATTRIBUTE, RELATION_INCLUDE);
 			req.addAttribute("id", include.id);
-			req.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, "org.eclipse.update.feature");
+			req.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, TYPE);
 			addVersionAttribute(req, include.version);
 			if (include.os != null)
 				req.addAttribute("os", include.os);
@@ -425,7 +433,9 @@ public class Feature extends XMLBase {
 		
 		// Add type for features
 		if (isFeature) {
-			filter.append("(type=org.eclipse.update.feature)");
+			filter.append("(type=")
+				.append(TYPE)
+				.append(")");
 		}
 		
 		// Add version constraint if present

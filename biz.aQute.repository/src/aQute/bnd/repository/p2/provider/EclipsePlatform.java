@@ -1,4 +1,4 @@
-package aQute.bnd.build;
+package aQute.bnd.repository.p2.provider;
 
 import java.util.Locale;
 

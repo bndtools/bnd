@@ -6,9 +6,9 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.p2.provider.Feature;
 
 /**
  * Contains helpers for converting Version into Version range which is needed
@@ -144,7 +144,7 @@ public class RepositoryBundleUtils {
 		if (version != null && !version.isBlank() && !version.equals("0.0.0")) {
 			attribs.put(Constants.VERSION_ATTRIBUTE, version);
 		}
-		attribs.put(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, ResourceUtils.TYPE_ECLIPSE_FEATURE);
+		attribs.put(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, Feature.TYPE);
 		return new VersionedClause(feature.getFeature()
 			.getId(), attribs);
 	}
@@ -173,32 +173,6 @@ public class RepositoryBundleUtils {
 		// bumpMicro
 		Version h = l.bumpMajor();
 		return new VersionRange(true, l.getWithoutQualifier(), h, false);
-	}
-
-	/**
-	 * Converts a RepositoryFeature into a VersionedClause in the canonical feature syntax:
-	 * id;version='V';feature=true;type=org.eclipse.update.feature
-	 *
-	 * @param feature
-	 * @return a VersionedClause for the feature
-	 */
-	public static VersionedClause convertRepoFeature(RepositoryFeature feature) {
-		Attrs attribs = new Attrs();
-		String featureId = feature.getFeature().getId();
-		VersionedClause clause = new VersionedClause("feature:" + featureId, attribs);
-		
-		// Set version if available
-		if (feature.getFeature().getVersion() != null) {
-			clause.setVersionRange(feature.getFeature().getVersion());
-		}
-		
-		// Add feature=true attribute for resolver identification
-		clause.getAttribs().put("feature", "true");
-		
-		// Add type attribute for Eclipse update compatibility
-		clause.getAttribs().put("type", "org.eclipse.update.feature");
-		
-		return clause;
 	}
 
 }

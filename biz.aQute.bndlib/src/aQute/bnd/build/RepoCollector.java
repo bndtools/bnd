@@ -103,7 +103,7 @@ public class RepoCollector extends Processor {
 	}
 
 	private void add(Collection<Container> containers, Container container) throws Exception {
-		if (container.getType() == Container.TYPE.LIBRARY || container.getType() == Container.TYPE.ECLIPSE_FEATURE) {
+		if (container.getType() == Container.TYPE.LIBRARY || container.getType() == Container.TYPE.TYPED_RESOURCE) {
 			List<Container> members = container.getMembers();
 			for (Container sub : members) {
 				add(containers, sub);

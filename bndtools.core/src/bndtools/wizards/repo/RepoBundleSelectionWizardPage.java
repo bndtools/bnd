@@ -86,6 +86,13 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 																				} else if (element instanceof ProjectBundle) {
 																					bsn = ((ProjectBundle) element)
 																						.getBsn();
+																				} else if (element instanceof RepositoryFeature) {
+																					bsn = ((RepositoryFeature) element)
+																						.getBsn();
+																				} else if (element instanceof FeatureVersionNode) {
+																					bsn = ((FeatureVersionNode) element)
+																						.getParent()
+																						.getBsn();
 																				}
 
 																				if (bsn != null) {
