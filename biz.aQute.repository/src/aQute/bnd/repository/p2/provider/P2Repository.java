@@ -71,11 +71,19 @@ public class P2Repository extends BaseRepository
 
 		try {
 			name = config.name(client.toName(url));
-			File location = workspace.getFile(config.location("cnf/cache/p2-" + name));
-			IO.mkdirs(location);
-			File indexFile = new File(location, "index.xml.gz");
+			String configuredLocation = config.location("cnf/cache/p2-" + name + "/");
+			File configuredFile = workspace.getFile(configuredLocation);
+			File indexFile;
+			File location;
+			if (configuredLocation.endsWith("/")) {
+				location = configuredFile;
+				indexFile = new File(location, "index.xml.gz");
+			} else {
+				indexFile = configuredFile;
+				location = indexFile.getParentFile();
+			}
 
-			return new P2Indexer(new Unpack200(this.workspace), reporter, location, client, url, name);
+			return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}

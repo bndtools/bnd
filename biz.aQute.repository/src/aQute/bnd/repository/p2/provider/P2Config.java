@@ -23,12 +23,16 @@ public interface P2Config {
 	URI url();
 
 	/**
-	 * The location to store the index file.
+	 * The location to store the index file. A location ending in {@code /} is a
+	 * directory in which {@code index.xml.gz} is stored. Otherwise, the location
+	 * specifies the complete index filename.
 	 */
 	String location();
 
 	/**
-	 * The location to store the index file with a default passed.
+	 * The location to store the index file with a default passed. A location
+	 * ending in {@code /} is a directory in which {@code index.xml.gz} is stored.
+	 * Otherwise, the location specifies the complete index filename.
 	 */
 	String location(String string);
 

@@ -18,7 +18,7 @@ It can take the following configuration properties:
 | ----------------- | --------- | ---------- | --------------- |
 | `name`           | `NAME`    | p2 + `url` | The name of the repository. |
 | `url`            | `URI`     |            | The URL to either the P2 repository (a directory) or an Eclipse target platform definition file. |
-| `location`       | `STRING`  |            | The location to store the _index_ file and where bundles will be downloaded to. |
+| `location`       | `STRING`  | `cnf/cache/p2-<name>/` | The location to store the index and downloaded bundles. A value ending in `/` is a directory and stores the index as `index.xml.gz`; otherwise, the value specifies the complete index filename and bundles are stored in its parent directory. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 
 ## Example
@@ -28,6 +28,16 @@ It can take the following configuration properties:
  	aQute.bnd.repository.p2.provider.P2Repository; \
  	url = https://download.eclipse.org/modeling/emf/emf/builds/release/2.21; \
  	name = EMF
+```
+
+To select the index filename explicitly:
+
+```
+-plugin.p2: \
+	aQute.bnd.repository.p2.provider.P2Repository; \
+	url = https://download.eclipse.org/modeling/emf/emf/builds/release/2.21; \
+	name = EMF; \
+	location = cnf/cache/emf-index.xml.gz
 ```
 
 ## Tagging

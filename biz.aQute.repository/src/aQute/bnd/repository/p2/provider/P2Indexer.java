@@ -76,10 +76,15 @@ class P2Indexer implements Closeable {
 
 	P2Indexer(Unpack200 processor, Reporter reporter, File location, HttpClient client, URI url, String name)
 		throws Exception {
+		this(processor, reporter, location, new File(location, "index.xml.gz"), client, url, name);
+	}
+
+	P2Indexer(Unpack200 processor, Reporter reporter, File location, File indexFile, HttpClient client, URI url,
+		String name) throws Exception {
 		this.processor = processor;
 		this.reporter = reporter;
 		this.location = location;
-		this.indexFile = new File(location, "index.xml.gz");
+		this.indexFile = indexFile;
 		this.client = client;
 		this.promiseFactory = client.promiseFactory();
 		this.url = url;
