@@ -221,7 +221,11 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.ide.markerResolution">
-		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
+		<markerResolutionGenerator markerType="bndtools.builder.bndproblem"
+			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
+		<markerResolutionGenerator markerType="bndtools.builder.bndpathproblem"
+			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
+		<markerResolutionGenerator markerType="bndtools.builder.bndworkspaceproblem"
 			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
 	</extension>
 

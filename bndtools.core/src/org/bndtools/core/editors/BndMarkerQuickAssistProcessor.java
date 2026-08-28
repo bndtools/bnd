@@ -15,6 +15,8 @@ import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.ui.IMarkerResolution;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
@@ -33,7 +35,11 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
 	public boolean canFix(Annotation annotation) {
 		if (annotation instanceof MarkerAnnotation) {
 			IMarker marker = ((MarkerAnnotation) annotation).getMarker();
-			return marker.getAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, false);
+			if (marker.getAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, false))
+				return true;
+			// covers quick fixes contributed via markerResolutionGenerator
+			return IDE.getMarkerHelpRegistry()
+				.hasResolutions(marker);
 		}
 		return false;
 	}
@@ -59,12 +65,30 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
 				Position position = model.getPosition(annotation);
 				if (isAtPosition(context.getOffset(), position)) {
 					IMarker marker = ((MarkerAnnotation) annotation).getMarker();
+					int before = proposals.size();
 					String errorType = marker.getAttribute("$bndType", null);
 					if (errorType != null) {
 						BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(errorType);
 						if (handler != null) {
-							proposals.addAll(handler.getProposals(marker));
+							List<ICompletionProposal> handlerProposals = handler.getProposals(marker);
+							if (handlerProposals != null)
+								proposals.addAll(handlerProposals);
+							if (proposals.size() == before) {
+								// no source proposals, offer the marker
+								// resolutions instead
+								List<IMarkerResolution> resolutions = handler.getResolutions(marker);
+								if (resolutions != null)
+									for (IMarkerResolution resolution : resolutions)
+										proposals.add(new MarkerResolutionCompletionProposal(resolution, marker));
+							}
 						}
+					}
+					if (proposals.size() == before) {
+						// quick fixes registered for the marker type, e.g.
+						// markerResolutionGenerator extensions
+						for (IMarkerResolution resolution : IDE.getMarkerHelpRegistry()
+							.getResolutions(marker))
+							proposals.add(new MarkerResolutionCompletionProposal(resolution, marker));
 					}
 				}
 			}
