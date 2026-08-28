@@ -459,8 +459,8 @@ public class Verifier extends Processor {
 						bactivator),
 					bactivator, ActivatorErrorType.NOT_ACCESSIBLE);
 			} else {
-				registerActivatorErrorLocation(warning(Constants.BUNDLE_ACTIVATOR
-					+ " %s is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error",
+				registerActivatorErrorLocation(error(Constants.BUNDLE_ACTIVATOR
+					+ " %s is not contained in the bundle. Its package is imported, but the activator class must be included in the bundle.",
 					bactivator), bactivator, ActivatorErrorType.IS_IMPORTED);
 			}
 		} else if (getParent() != null) {
