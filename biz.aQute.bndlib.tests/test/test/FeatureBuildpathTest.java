@@ -1,10 +1,13 @@
 package test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -15,17 +18,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
@@ -33,31 +38,46 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 
 /**
- * Test the expansion of Eclipse features on -buildpath like paths. A feature
- * is a container of included bundles ({@code <plugin>}) and included features
- * ({@code <includes>}); on a path it expands to its member bundles. Required
- * features/plugins ({@code <requires>}) are dependencies and are not
- * expanded.
+ * Test the generic expansion of {@link Container.TYPE#TYPED_RESOURCE}
+ * containers on -buildpath like paths, using a made-up identity type and
+ * relation vocabulary (not the real Eclipse feature ones) to prove that
+ * neither {@link Container} nor {@link Project} know anything about any
+ * particular typed resource: the {@code FeatureRepo} test double below is a
+ * {@link RepositoryPlugin} that recognizes the type and expands it via
+ * {@link RepositoryPlugin#getTypedResourceMembers}, exactly like
+ * {@code P2Repository} does for real Eclipse features (see
+ * biz.aQute.repository for that production implementation).
+ * <p>
+ * A typed resource is a container of included bundles ({@code plugin}
+ * relation) and included typed resources ({@code include} relation); on a
+ * path it expands to its member bundles. {@code require} relations are
+ * dependencies and are not expanded.
  */
 @ExtendWith(SoftAssertionsExtension.class)
 public class FeatureBuildpathTest {
-	private static final String	FEATURE_TYPE	= "org.eclipse.update.feature";
+	private static final String	FEATURE_TYPE		= "test.feature.type";
+	private static final String	RELATION_ATTRIBUTE	= "test.relation";
+	private static final String	RELATION_PLUGIN		= "plugin";
+	private static final String	RELATION_INCLUDE	= "include";
+	private static final String	RELATION_REQUIRE	= "require";
 
 	@InjectSoftAssertions
-	SoftAssertions				softly;
+	SoftAssertions					softly;
 
 	@InjectTemporaryDirectory
-	File						tmp;
+	File							tmp;
 
 	/**
-	 * A repository mimicking the P2 repository semantics: bundles and
-	 * features can share bsn+version, get() dispatches on the requested
-	 * identity type, versions() only lists bundles, and the index is
-	 * queryable via the OSGi Repository API.
+	 * A repository mimicking a typed-resource-aware repository (e.g. a p2
+	 * repository backing Eclipse features): bundles and typed resources can
+	 * share bsn+version, get() dispatches on the requested identity type,
+	 * versions() only lists bundles, the index is queryable via the OSGi
+	 * Repository API, and {@link #getTypedResourceMembers} expands a
+	 * container of this repository's own made-up type into its members.
 	 */
 	static class FeatureRepo extends BaseRepository implements RepositoryPlugin {
-		final ResourcesRepository	index	= new ResourcesRepository();
-		final Map<String, File>		files	= new HashMap<>();
+		final ResourcesRepository				index			= new ResourcesRepository();
+		final Map<String, File>				files			= new HashMap<>();
 		final Map<String, TreeSet<Version>>	bundleVersions	= new HashMap<>();
 
 		void addBundle(String bsn, String version, File file) throws Exception {
@@ -117,6 +137,88 @@ public class FeatureBuildpathTest {
 			return index.findProviders(requirements);
 		}
 
+		/**
+		 * Expand a container of this repository's own made-up
+		 * {@value #FEATURE_TYPE} into its members; {@code null} for any
+		 * other type, or when this repository does not have the requested
+		 * identity indexed, so that other repositories get a chance to
+		 * expand it. This mirrors what a real repository (e.g.
+		 * {@code P2Repository} for Eclipse features) does, entirely outside
+		 * of core bnd.
+		 */
+		@Override
+		public List<Container> getTypedResourceMembers(Container container, Set<String> visited) throws Exception {
+			if (!FEATURE_TYPE.equals(container.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE)))
+				return null;
+
+			Requirement requirement = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE,
+					"(&(" + IdentityNamespace.IDENTITY_NAMESPACE + "=" + container.getBundleSymbolicName() + ")("
+						+ IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + FEATURE_TYPE + ")("
+						+ IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE + "=" + container.getVersion() + "))")
+				.buildSyntheticRequirement();
+			Collection<Capability> capabilities = findProviders(Collections.singleton(requirement)).get(requirement);
+			if (capabilities == null || capabilities.isEmpty())
+				return null; // this repository does not have this feature indexed
+
+			Resource resource = capabilities.iterator()
+				.next()
+				.getResource();
+
+			Project project = container.getProject();
+			String featureKey = container.getBundleSymbolicName() + ":" + container.getVersion();
+			List<Container> result = new ArrayList<>();
+			for (Requirement req : resource.getRequirements(IdentityNamespace.IDENTITY_NAMESPACE)) {
+				Map<String, Object> reqAttrs = req.getAttributes();
+				String relation = String.valueOf(reqAttrs.get(RELATION_ATTRIBUTE));
+				boolean include = RELATION_INCLUDE.equals(relation);
+				if (!include && !RELATION_PLUGIN.equals(relation))
+					continue; // a require relation is a dependency, not a member
+
+				if (reqAttrs.get("os") != null)
+					continue; // simulate a foreign-platform member, always skipped in this test
+
+				String id = (String) reqAttrs.get("id");
+				if (id == null)
+					continue;
+				Object versionAttr = reqAttrs.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+				String version = versionAttr != null ? versionAttr.toString() : null;
+				boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(req.getDirectives()
+					.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
+
+				Map<String, String> memberAttrs = include
+					? Collections.singletonMap(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, FEATURE_TYPE)
+					: null;
+
+				Container member = null;
+				if (version != null && Verifier.isVersion(version)) {
+					member = project.getBundle(id, version, Strategy.EXACT, memberAttrs);
+				}
+				if (member == null || member.getError() != null) {
+					Container highest = project.getBundle(id, null, Strategy.HIGHEST, memberAttrs);
+					if (highest.getError() == null) {
+						if (member != null) {
+							project.warning(
+								"Member %s;version=%s of feature %s not found with the exact version, using %s instead",
+								id, version, featureKey, highest.getVersion());
+						}
+						member = highest;
+					} else if (member == null) {
+						member = highest;
+					}
+				}
+				if (member.getError() != null && optional)
+					continue;
+
+				for (Container c : member.getMembers(visited)) {
+					if (!result.contains(c))
+						result.add(c);
+				}
+			}
+			return result;
+		}
+
 		@Override
 		public PutResult put(java.io.InputStream stream, PutOptions options) throws Exception {
 			throw new UnsupportedOperationException();
@@ -141,7 +243,7 @@ public class FeatureBuildpathTest {
 	static Requirement pluginMember(String id, String version, Map<String, String> extra) throws Exception {
 		CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addDirective("filter", "(&(osgi.identity=" + id + ")(version=" + version + "))")
-			.addAttribute(ResourceUtils.FEATURE_RELATION_ATTRIBUTE, ResourceUtils.FEATURE_RELATION_PLUGIN)
+			.addAttribute(RELATION_ATTRIBUTE, RELATION_PLUGIN)
 			.addAttribute("id", id)
 			.addAttribute("version", new Version(version));
 		if (extra != null) {
@@ -154,7 +256,7 @@ public class FeatureBuildpathTest {
 		CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addDirective("filter",
 				"(&(osgi.identity=" + id + ")(type=" + FEATURE_TYPE + ")(version=" + version + "))")
-			.addAttribute(ResourceUtils.FEATURE_RELATION_ATTRIBUTE, ResourceUtils.FEATURE_RELATION_INCLUDE)
+			.addAttribute(RELATION_ATTRIBUTE, RELATION_INCLUDE)
 			.addAttribute("id", id)
 			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, FEATURE_TYPE)
 			.addAttribute("version", new Version(version));
@@ -167,7 +269,7 @@ public class FeatureBuildpathTest {
 	static Requirement requireMember(String id) throws Exception {
 		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addDirective("filter", "(osgi.identity=" + id + ")")
-			.addAttribute(ResourceUtils.FEATURE_RELATION_ATTRIBUTE, ResourceUtils.FEATURE_RELATION_REQUIRE)
+			.addAttribute(RELATION_ATTRIBUTE, RELATION_REQUIRE)
 			.addAttribute("id", id)
 			.buildSyntheticRequirement();
 	}
@@ -205,7 +307,7 @@ public class FeatureBuildpathTest {
 
 			try (Project project = ws.getProject("p1")) {
 				List<Container> containers = project.getBundles(Strategy.LOWEST,
-					"test.feature;version='1.0.0';type=org.eclipse.update.feature", "-buildpath");
+					"test.feature;version='1.0.0';type=" + FEATURE_TYPE, "-buildpath");
 
 				softly.assertThat(project.check())
 					.as("no errors or warnings expected")
@@ -233,7 +335,7 @@ public class FeatureBuildpathTest {
 
 			try (Project project = ws.getProject("p1")) {
 				List<Container> containers = project.getBundles(Strategy.LOWEST,
-					"test.feature;version='1.0.0';type=org.eclipse.update.feature", "-buildpath");
+					"test.feature;version='1.0.0';type=" + FEATURE_TYPE, "-buildpath");
 
 				softly.assertThat(project.check())
 					.isTrue();
@@ -260,9 +362,9 @@ public class FeatureBuildpathTest {
 
 			try (Project project = ws.getProject("p1")) {
 				List<Container> containers = project.getBundles(Strategy.LOWEST,
-					"feature.a;version='1.0.0';type=org.eclipse.update.feature", "-buildpath");
+					"feature.a;version='1.0.0';type=" + FEATURE_TYPE, "-buildpath");
 
-				softly.assertThat(project.check("Detected a cycle in the includes of feature"))
+				softly.assertThat(project.check("Detected a cycle while expanding"))
 					.isTrue();
 				softly.assertThat(containers)
 					.extracting(Container::getBundleSymbolicName)
@@ -282,7 +384,7 @@ public class FeatureBuildpathTest {
 
 			try (Project project = ws.getProject("p1")) {
 				List<Container> containers = project.getBundles(Strategy.LOWEST,
-					"test.feature;version='1.0.0';type=org.eclipse.update.feature", "-buildpath");
+					"test.feature;version='1.0.0';type=" + FEATURE_TYPE, "-buildpath");
 
 				softly.assertThat(project
 					.check("Member bundle.a;version=9.9.9 of feature test.feature:1.0.0 not found with the exact"))
@@ -309,7 +411,7 @@ public class FeatureBuildpathTest {
 
 			try (Project project = ws.getProject("p1")) {
 				List<Container> containers = project.getBundles(Strategy.LOWEST,
-					"test.feature;version='1.0.0';type=org.eclipse.update.feature", "-buildpath");
+					"test.feature;version='1.0.0';type=" + FEATURE_TYPE, "-buildpath");
 
 				softly.assertThat(project.check())
 					.as("missing optional include must not cause errors")
@@ -328,7 +430,7 @@ public class FeatureBuildpathTest {
 
 			try (Project project = ws.getProject("p1")) {
 				List<Container> containers = project.getBundles(Strategy.LOWEST,
-					"no.such.feature;version='1.0.0';type=org.eclipse.update.feature", "-buildpath");
+					"no.such.feature;version='1.0.0';type=" + FEATURE_TYPE, "-buildpath");
 
 				softly.assertThat(project.check())
 					.as("the error is carried by the container and reported by doPath later")
@@ -360,7 +462,7 @@ public class FeatureBuildpathTest {
 			try (Project project = ws.getProject("p1")) {
 				// requesting by type=feature must expand to member bundles, not return the bundle with the same id
 				List<Container> featureContainers = project.getBundles(Strategy.LOWEST,
-					"bundle.shared;version='1.0.0';type=org.eclipse.update.feature", "-buildpath");
+					"bundle.shared;version='1.0.0';type=" + FEATURE_TYPE, "-buildpath");
 
 				softly.assertThat(project.check())
 					.as("no errors or warnings expected")
@@ -382,3 +484,4 @@ public class FeatureBuildpathTest {
 		}
 	}
 }
+

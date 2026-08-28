@@ -7,7 +7,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.osgi.framework.namespace.IdentityNamespace;
 
-import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.p2.provider.Feature;
 
 public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
 
@@ -25,7 +25,7 @@ public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
 		}
 		cell.setText(label.getString());
 		cell.setStyleRanges(label.getStyleRanges());
-		boolean isFeature = ResourceUtils.TYPE_ECLIPSE_FEATURE.equals(clause.getAttribs()
+		boolean isFeature = Feature.TYPE.equals(clause.getAttribs()
 			.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE));
 		cell.setImage(isFeature ? featureImg : bundleImg);
 	}

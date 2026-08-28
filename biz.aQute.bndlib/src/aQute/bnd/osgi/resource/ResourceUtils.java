@@ -99,27 +99,6 @@ public abstract class ResourceUtils {
 	public static final Resource						DUMMY_RESOURCE				= new ResourceBuilder().build();
 	public static final String							WORKSPACE_NAMESPACE			= "bnd.workspace.project";
 
-	/**
-	 * The identity type of an Eclipse feature resource, see
-	 * {@link IdentityNamespace#CAPABILITY_TYPE_ATTRIBUTE}.
-	 */
-	public static final String							TYPE_ECLIPSE_FEATURE		= "org.eclipse.update.feature";
-
-	/**
-	 * Requirement attribute conveying the provenance of an osgi.identity
-	 * requirement of an Eclipse feature resource:
-	 * {@link #FEATURE_RELATION_PLUGIN} for {@code <plugin>} references,
-	 * {@link #FEATURE_RELATION_INCLUDE} for {@code <includes>} references and
-	 * {@link #FEATURE_RELATION_REQUIRE} for {@code <requires><import>}
-	 * references. The attribute does not take part in filter matching; it
-	 * allows consumers (e.g. -buildpath feature expansion) to distinguish
-	 * feature members from mere dependencies.
-	 */
-	public static final String							FEATURE_RELATION_ATTRIBUTE	= "bnd.relation";
-	public static final String							FEATURE_RELATION_PLUGIN		= "plugin";
-	public static final String							FEATURE_RELATION_INCLUDE	= "include";
-	public static final String							FEATURE_RELATION_REQUIRE	= "require";
-
 	private static final Converter						cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
 

@@ -260,7 +260,7 @@ public class SubsystemExporter implements Exporter {
 					files.add(container.getFile());
 					break;
 				case LIBRARY :
-				case ECLIPSE_FEATURE :
+				case TYPED_RESOURCE :
 					container.contributeFiles(files, reporter);
 					break;
 			}
