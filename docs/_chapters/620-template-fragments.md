@@ -67,6 +67,7 @@ The index has the following attributes for a clause:
 * `description` – A human readable description for the template fragment
 * `require` – A comma separated list of fragment ids. Do not forget to quote when multiple fragments are required
 * `tag` – A comma separated list of tags, quotes are needed when there are multiple.
+* `archived` – (Optional) Boolean flag (`true`/`false`) indicating that the template fragment is archived.
 
 ## Example
 

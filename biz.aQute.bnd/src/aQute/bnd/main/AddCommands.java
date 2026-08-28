@@ -59,6 +59,8 @@ public class AddCommands {
 	@Description("Add template fragment(s) to the current workspace. Leave the name empty to see a list of available templates at the index."
 		+ "\\n\\nExample:\\n bnd add fragment osgi gradle ")
 	interface AddTemplateOptions extends Options {
+		@Description("Show archived template fragments when listing available templates")
+		boolean showArchived();
 	}
 
 	@Description("Add template fragment(s) to the current workspace.")
@@ -73,7 +75,7 @@ public class AddCommands {
 
 		List<String> selectedFragmentNames = args;
 		String indexUrl = DEFAULT_INDEX;
-		installTemplateFragment(ws, selectedFragmentNames, indexUrl);
+		installTemplateFragment(ws, selectedFragmentNames, indexUrl, options.showArchived());
 
 	}
 
@@ -88,6 +90,9 @@ public class AddCommands {
 		@Description("Specify template fragment(s) by name to install together with the created workspace. Fragments are identified by the 'name' attribute in the index. Specify multiple fragments by repeating the -f option. "
 			+ "To see a list of available templates use 'bnd add fragment' without arguments.")
 		List<String> fragment();
+
+		@Description("Show archived template fragments when listing available templates")
+		boolean showArchived();
 
 	}
 
@@ -112,7 +117,7 @@ public class AddCommands {
 		if (fragments != null && !fragments
 			.isEmpty()) {
 			String indexUrl = DEFAULT_INDEX;
-			installTemplateFragment(ws, fragments, indexUrl);
+			installTemplateFragment(ws, fragments, indexUrl, options.showArchived());
 		}
 
 
@@ -167,19 +172,25 @@ public class AddCommands {
 	}
 
 	private void showTemplatesFragments(List<TemplateInfo> availableTemplates) {
-		availableTemplates.forEach(ti -> bnd.out.format("%s - %s%n  - Repo: %s %n", ti.name(), ti.description(),
+		availableTemplates.forEach(ti -> bnd.out.format("%s%s - %s%n  - Repo: %s %n", ti.name(),
+			ti.archived() ? " (archived)" : "", ti.description(),
 			ti.id()
 				.repoUrl()));
 	}
 
-	private void installTemplateFragment(Workspace ws, List<String> selectedFragmentNames, String index)
+	private void installTemplateFragment(Workspace ws, List<String> selectedFragmentNames, String index,
+		boolean showArchived)
 		throws MalformedURLException {
 		FragmentTemplateEngine engine = initFragmentTemplateEngine(ws, index);
 		List<TemplateInfo> availableTemplates = engine.getAvailableTemplates();
 
 		if (selectedFragmentNames == null || selectedFragmentNames.isEmpty()) {
 			bnd.out.format("Available template fragments:%n");
-			showTemplatesFragments(availableTemplates);
+			List<TemplateInfo> toShow = showArchived ? availableTemplates
+				: availableTemplates.stream()
+					.filter(ti -> !ti.archived())
+					.toList();
+			showTemplatesFragments(toShow);
 			return;
 		}
 		List<TemplateInfo> selectedTemplates = availableTemplates.stream()

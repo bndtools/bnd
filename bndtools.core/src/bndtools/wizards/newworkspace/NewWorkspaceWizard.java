@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -25,6 +26,8 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
@@ -69,6 +72,12 @@ import bndtools.util.ui.UI;
  */
 public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWizard {
 
+	private static final String		SETTINGS_SECTION			= "NewWorkspaceWizard";
+	private static final String		SETTING_CLEAN				= "clean";
+	private static final String		SETTING_SWITCH_WORKSPACE	= "switchWorkspace";
+	private static final String		SETTING_SHOW_ARCHIVED		= "showArchived";
+	private static final String		SETTING_UPDATE_WORKSPACE	= "updateWorkspace";
+
 	static final Logger				log					= LoggerFactory.getLogger(NewWorkspaceWizard.class);
 
 	final Model						model;
@@ -85,6 +94,30 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		this.model = new Model(workspace);
 		this.ui = new UI<>(model);
 		templates = new FragmentTemplateEngine(workspace);
+
+		IDialogSettings workbenchSettings = Plugin.getDefault()
+			.getDialogSettings();
+		IDialogSettings section = workbenchSettings.getSection(SETTINGS_SECTION);
+		if (section == null) {
+			section = workbenchSettings.addNewSection(SETTINGS_SECTION);
+		}
+		setDialogSettings(section);
+
+		if (section.get(SETTING_CLEAN) != null) {
+			model.clean = section.getBoolean(SETTING_CLEAN);
+		}
+		if (section.get(SETTING_SWITCH_WORKSPACE) != null) {
+			model.switchWorkspace = section.getBoolean(SETTING_SWITCH_WORKSPACE);
+		}
+		if (section.get(SETTING_SHOW_ARCHIVED) != null) {
+			model.showArchived = section.getBoolean(SETTING_SHOW_ARCHIVED);
+		}
+		if (section.get(SETTING_UPDATE_WORKSPACE) != null) {
+			model.updateWorkspace(section.getBoolean(SETTING_UPDATE_WORKSPACE));
+		} else {
+			model.updateWorkspace(true);
+		}
+
 		try {
 			Job job = Job.create("load index", mon -> {
 				try {
@@ -160,6 +193,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		}
 
 		if (model.valid == null) {
+			saveDialogSettings();
 			ui.write(() -> {
 				TemplateUpdater updater = templates.updater(model.location, model.selectedTemplates);
 				model.execute(updater);
@@ -168,6 +202,22 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		} else
 			return false;
 
+	}
+
+	@Override
+	public void dispose() {
+		saveDialogSettings();
+		super.dispose();
+	}
+
+	private void saveDialogSettings() {
+		IDialogSettings settings = getDialogSettings();
+		if (settings != null) {
+			settings.put(SETTING_CLEAN, model.clean);
+			settings.put(SETTING_SWITCH_WORKSPACE, model.switchWorkspace);
+			settings.put(SETTING_SHOW_ARCHIVED, model.showArchived);
+			settings.put(SETTING_UPDATE_WORKSPACE, model.updateWorkspace);
+		}
 	}
 
 
@@ -208,10 +258,26 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			switchWorkspace.setText("Show workspace select dialog to switch to new workspace after finish");
 			switchWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 8, 1));
 
+			Button showArchived = new Button(container, SWT.CHECK);
+			showArchived.setText("Show archived");
+			showArchived.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 8, 1));
+
 			CheckboxTableViewer selectedTemplates = CheckboxTableViewer.newCheckList(container,
 				SWT.BORDER | SWT.FULL_SELECTION);
 			StickyToolTipSupport.enableFor(selectedTemplates);
 			selectedTemplates.setContentProvider(ArrayContentProvider.getInstance());
+			selectedTemplates.addFilter(new ViewerFilter() {
+				@Override
+				public boolean select(Viewer viewer, Object parentElement, Object element) {
+					if (model.showArchived) {
+						return true;
+					}
+					if (element instanceof TemplateInfo ti) {
+						return !ti.archived();
+					}
+					return true;
+				}
+			});
 			Table table = selectedTemplates.getTable();
 			table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 6, 10));
 			TableLayout tableLayout = new TableLayout();
@@ -239,7 +305,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public String getText(Object element) {
 					if (element instanceof TemplateInfo ti) {
-						return ti.name();
+						return ti.name() + (ti.archived() ? " (archived)" : "");
 					}
 					return super.getText(element);
 				}
@@ -281,6 +347,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public Image getImage(Object element) {
 					if (element instanceof TemplateInfo ti) {
+						if (ti.archived()) {
+							return verifiedGreyedOut;
+						}
 						boolean officialOrSHA = ti.isOfficial() || ti.isCommitSHA();
 						return officialOrSHA ? verified : verifiedGreyedOut;
 					}
@@ -343,10 +412,12 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			formText.setText("Double click to open the fragment template Github-Repo in your browser.", false, false);
 			formText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 6, 1));
 
-			model.updateWorkspace(true);
 			ui.u("location", model.location, UI.text(location)
 				.map(File::getAbsolutePath, File::new));
 			ui.u("clean", model.clean, UI.checkbox(clean));
+			ui.u("switchWorkspace", model.switchWorkspace, UI.checkbox(switchWorkspace));
+			ui.u("showArchived", model.showArchived, UI.checkbox(showArchived))
+				.bind(v -> selectedTemplates.refresh());
 			ui.u("updateWorkspace", model.updateWorkspace, UI.checkbox(useEclipseWorkspace))
 				.bind(v -> location.setEnabled(!v))
 				.bind(v -> browseButton.setEnabled(!v))
@@ -359,7 +430,6 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			ui.u("valid", model.valid, this::setErrorMessage);
 			ui.u("error", model.error, this::setErrorMessage);
 			ui.u("valid", model.valid, v -> setPageComplete(v == null));
-			ui.u("switchWorkspace", model.switchWorkspace, UI.checkbox(switchWorkspace));
 			ui.u("templates", model.templates, l -> selectedTemplates.setInput(l.toArray()));
 			ui.u("selectedTemplates", model.selectedTemplates, UI.widget(selectedTemplates)
 				.map(List::toArray, this::toTemplates));

@@ -180,6 +180,37 @@ class TemplateFragmentsTest {
 	}
 
 	@Test
+	void testArchivedAttribute() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+
+			Result<List<TemplateInfo>> result = tfs.read("-workspace-templates "
+				+ "t1;name=t1;archived=true,"
+				+ "t2;name=t2;archived=false,"
+				+ "t3;name=t3;description=standard,"
+				+ "t4;name=t4;archived=\"true\"");
+
+			assertThat(result.isOk()).describedAs(result.toString())
+				.isTrue();
+
+			List<TemplateInfo> infos = result.unwrap();
+			assertThat(infos).hasSize(4);
+
+			assertThat(infos.get(0).name()).isEqualTo("t1");
+			assertThat(infos.get(0).archived()).isTrue();
+
+			assertThat(infos.get(1).name()).isEqualTo("t2");
+			assertThat(infos.get(1).archived()).isFalse();
+
+			assertThat(infos.get(2).name()).isEqualTo("t3");
+			assertThat(infos.get(2).archived()).isFalse();
+
+			assertThat(infos.get(3).name()).isEqualTo("t4");
+			assertThat(infos.get(3).archived()).isTrue();
+		}
+	}
+
+	@Test
 	void testRequireField() throws Exception {
 		try (Workspace w = getworkSpace()) {
 			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
