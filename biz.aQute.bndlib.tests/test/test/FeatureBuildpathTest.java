@@ -38,20 +38,21 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 
 /**
- * Test the generic expansion of {@link Container.TYPE#TYPED_RESOURCE}
- * containers on -buildpath like paths, using a made-up identity type and
- * relation vocabulary (not the real Eclipse feature ones) to prove that
- * neither {@link Container} nor {@link Project} know anything about any
- * particular typed resource: the {@code FeatureRepo} test double below is a
- * {@link RepositoryPlugin} that recognizes the type and expands it via
+ * Test the generic expansion of
+ * {@link aQute.bnd.build.Container.TYPE#TYPED_RESOURCE} containers on
+ * -buildpath like paths, using a made-up identity type and relation vocabulary
+ * (not the real Eclipse feature ones) to prove that neither {@link Container}
+ * nor {@link Project} know anything about any particular typed resource: the
+ * {@code FeatureRepo} test double below is a {@link RepositoryPlugin} that
+ * recognizes the type and expands it via
  * {@link RepositoryPlugin#getTypedResourceMembers}, exactly like
- * {@code P2Repository} does for real Eclipse features (see
- * biz.aQute.repository for that production implementation).
+ * {@code P2Repository} does for real Eclipse features (see biz.aQute.repository
+ * for that production implementation).
  * <p>
- * A typed resource is a container of included bundles ({@code plugin}
- * relation) and included typed resources ({@code include} relation); on a
- * path it expands to its member bundles. {@code require} relations are
- * dependencies and are not expanded.
+ * A typed resource is a container of included bundles ({@code plugin} relation)
+ * and included typed resources ({@code include} relation); on a path it expands
+ * to its member bundles. {@code require} relations are dependencies and are not
+ * expanded.
  */
 @ExtendWith(SoftAssertionsExtension.class)
 public class FeatureBuildpathTest {
