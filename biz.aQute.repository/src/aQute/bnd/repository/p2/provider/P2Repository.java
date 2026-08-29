@@ -259,7 +259,7 @@ public class P2Repository extends BaseRepository
 	 * API.
 	 */
 	private Resource findFeatureResource(String bsn, String version) {
-		Requirement requirement = identityRequirement(bsn, version);
+		Requirement requirement = CapReqBuilder.createIdentityRequirement(bsn, Feature.TYPE, version);
 		Map<Requirement, Collection<Capability>> providers = findProviders(Collections.singleton(requirement));
 		Collection<Capability> capabilities = providers != null ? providers.get(requirement) : null;
 		if (capabilities == null || capabilities.isEmpty())
@@ -269,30 +269,6 @@ public class P2Repository extends BaseRepository
 			.getResource();
 	}
 
-	private static Requirement identityRequirement(String bsn, String version) {
-		StringBuilder filter = new StringBuilder();
-		filter.append("(&(")
-			.append(IdentityNamespace.IDENTITY_NAMESPACE)
-			.append('=')
-			.append(bsn)
-			.append(')')
-			.append('(')
-			.append(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE)
-			.append('=')
-			.append(Feature.TYPE)
-			.append(')');
-		if (version != null) {
-			filter.append('(')
-				.append(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE)
-				.append('=')
-				.append(version)
-				.append(')');
-		}
-		filter.append(')');
-		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
-			.buildSyntheticRequirement();
-	}
 
 	@Override
 	public File getRoot() throws Exception {

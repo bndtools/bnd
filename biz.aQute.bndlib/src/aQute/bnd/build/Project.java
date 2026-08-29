@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
@@ -1566,7 +1565,7 @@ public class Project extends Processor {
 		if (!(plugin instanceof Repository repo))
 			return versions;
 
-		Requirement identity = identityRequirement(bsn, requestedType, null);
+		Requirement identity = CapReqBuilder.createIdentityRequirement(bsn, requestedType, null);
 		Map<Requirement, Collection<Capability>> providers = repo.findProviders(Collections.singleton(identity));
 		Collection<Capability> capabilities = providers != null ? providers.get(identity) : null;
 		if (capabilities == null)
@@ -1582,32 +1581,7 @@ public class Project extends Processor {
 		return versions;
 	}
 
-	private static Requirement identityRequirement(String bsn, String type, String version) {
-		StringBuilder filter = new StringBuilder();
-		filter.append("(&(")
-			.append(IdentityNamespace.IDENTITY_NAMESPACE)
-			.append('=')
-			.append(bsn)
-			.append(')');
-		if (type != null) {
-			filter.append('(')
-				.append(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE)
-				.append('=')
-				.append(type)
-				.append(')');
-		}
-		if (version != null) {
-			filter.append('(')
-				.append(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE)
-				.append('=')
-				.append(version)
-				.append(')');
-		}
-		filter.append(')');
-		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
-			.buildSyntheticRequirement();
-	}
+
 
 	/**
 	 * Expand a {@link Container.TYPE#TYPED_RESOURCE} container into its
