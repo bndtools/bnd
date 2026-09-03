@@ -16,7 +16,7 @@ on:
     branches:
       - master
     paths:
-      - 'docs/**/_ext/**'      
+      - 'docs/**/_ext/**'
   workflow_dispatch:
 
 permissions:
@@ -48,6 +48,17 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: 17
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+
+    - name: Cache Maven local repo (dist/m2)
+      uses: actions/cache@v4
+      with:
+        path: dist/m2
+        key: dist-m2-${{ vars.CACHE_EPOCH || '1' }}-${{ runner.os }}-${{ hashFiles('**/pom.xml', 'cnf/**/*.bnd', '**/*.gradle', '**/*.gradle.kts') }}
+        restore-keys: |
+          dist-m2-${{ vars.CACHE_EPOCH || '1' }}-${{ runner.os }}-
 
     - name: Build biz.aQute.bnd JAR
       run: |

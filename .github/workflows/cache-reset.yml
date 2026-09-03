@@ -1,0 +1,59 @@
+name: 'Cache Reset'
+
+# Manually invalidate the dist/m2 and cnf/cache build caches used by CI Build / Rebuild / Generate Docs,
+# then optionally kick off a fresh CI Build run with the now-empty caches.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RESET to confirm invalidating all build caches'
+        required: true
+      trigger_build:
+        description: 'Also trigger a CI Build run after resetting the caches'
+        type: boolean
+        default: true
+      ref:
+        description: 'Branch/ref to run CI Build on (only used if trigger_build is true)'
+        default: 'master'
+
+permissions:
+  contents: read
+
+jobs:
+  reset:
+    if: ${{ github.event.inputs.confirm == 'RESET' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Bump CACHE_EPOCH repository variable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          new_epoch="$(date +%s)"
+          # Changing CACHE_EPOCH changes every cache key (dist-m2-*, cnf-cache-*),
+          # so old caches simply become unreachable and are GC'd by GitHub after 7 days of disuse.
+          if gh variable set CACHE_EPOCH --body "${new_epoch}" --repo "${{ github.repository }}"; then
+            echo "CACHE_EPOCH is now ${new_epoch}"
+          else
+            echo "Failed to set repository variable CACHE_EPOCH (needs 'actions: write' on the token / repo admin access)" >&2
+            exit 1
+          fi
+
+      - name: Delete existing Actions caches immediately
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          echo "Deleting all Actions caches for ${{ github.repository }} ..."
+          gh cache list --repo "${{ github.repository }}" --limit 100 --json id -q '.[].id' | \
+            xargs -r -n1 gh cache delete --repo "${{ github.repository }}" || \
+            echo "No caches found or deletion not permitted; they will still expire once CACHE_EPOCH changes keys."
+
+      - name: Trigger CI Build with empty caches
+        if: ${{ github.event.inputs.trigger_build == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run cibuild.yml --repo "${{ github.repository }}" --ref "${{ github.event.inputs.ref }}"
