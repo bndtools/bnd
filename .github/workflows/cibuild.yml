@@ -120,7 +120,7 @@ jobs:
           retention-days: 7
 
       - name: Publish P2 repo
-        if: ${{ matrix.canonical && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) }}
+        if: ${{ matrix.canonical && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'dependabot/'))) }}
         env:
           JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
           JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
