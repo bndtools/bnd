@@ -21,6 +21,7 @@ on:
     - '!CONTRIBUTING.md'
     - '!DEV_README.md'
     - '!README.md'
+  workflow_dispatch: {} # perf-measurement: manual trigger only, no build steps changed
 
 env:
   LC_ALL: en_US.UTF-8
