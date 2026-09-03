@@ -42,6 +42,7 @@ public class P2RepositoryTest {
 	public void testLocationAsDirectory() throws Exception {
 		File repository = IO.getFile("testdata/p2/macbadge");
 		File location = new File(tmp, "directory-location");
+		assertThat(location.mkdirs()).isTrue();
 		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 			P2Repository p2r = new P2Repository()) {
 			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
@@ -52,8 +53,7 @@ public class P2RepositoryTest {
 			config.put("url", repository.toURI()
 				.toString());
 			config.put("name", "test");
-			config.put("location", location.getAbsolutePath()
-				.replace(File.separatorChar, '/') + "/");
+			config.put("location", location.getAbsolutePath());
 			p2r.setProperties(config);
 
 			assertThat(p2r.list(null)).isNotEmpty();

@@ -18,7 +18,7 @@ It can take the following configuration properties:
 | ----------------- | --------- | ---------- | --------------- |
 | `name`           | `NAME`    | p2 + `url` | The name of the repository. |
 | `url`            | `URI`     |            | The URL to either the P2 repository (a directory) or an Eclipse target platform definition file. |
-| `location`       | `STRING`  | `cnf/cache/p2-<name>/` | The location to store the index and downloaded bundles. A value ending in `/` is a directory and stores the index as `index.xml.gz`; otherwise, the value specifies the complete index filename and bundles are stored in its parent directory. |
+| `location`       | `STRING`  | `cnf/cache/p2-<name>/` | The location to store the index and downloaded bundles. A value ending in `/` is a directory and stores the index as `index.xml.gz`; an existing directory is also treated as a directory. Otherwise, the value specifies the complete index filename and bundles are stored in its parent directory. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 
 ## Example

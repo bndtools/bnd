@@ -23,16 +23,18 @@ public interface P2Config {
 	URI url();
 
 	/**
-	 * The location to store the index file. A location ending in {@code /} is a
-	 * directory in which {@code index.xml.gz} is stored. Otherwise, the location
-	 * specifies the complete index filename.
+	 * The location to store the index file and downloaded bundles. A location ending
+	 * in {@code /} is a directory in which {@code index.xml.gz} is stored. Otherwise,
+	 * the location specifies the complete index filename and bundles are stored in
+	 * its parent directory.
 	 */
 	String location();
 
 	/**
-	 * The location to store the index file with a default passed. A location
-	 * ending in {@code /} is a directory in which {@code index.xml.gz} is stored.
-	 * Otherwise, the location specifies the complete index filename.
+	 * The location to store the index file and downloaded bundles with a default
+	 * passed. A location ending in {@code /} is a directory in which
+	 * {@code index.xml.gz} is stored. Otherwise, the location specifies the complete
+	 * index filename and bundles are stored in its parent directory.
 	 */
 	String location(String string);
 

@@ -75,7 +75,9 @@ public class P2Repository extends BaseRepository
 			File configuredFile = workspace.getFile(configuredLocation);
 			File indexFile;
 			File location;
-			if (configuredLocation.endsWith("/")) {
+			boolean directoryLocation = configuredLocation.endsWith("/") || configuredLocation.endsWith("\\")
+				|| configuredFile.isDirectory();
+			if (directoryLocation) {
 				location = configuredFile;
 				indexFile = new File(location, "index.xml.gz");
 			} else {
