@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-require-bnd  (FILTER ( ',' FILTER )* )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-require-bnd  (FILTER ( ',' FILTER )* )?</h1>
+<ul>
+<li>
+<p>Example: <code>-require-bnd="(version&gt;=4.1)"</code></p>
+</li>
+<li>
+<p>Values: <code>(FILTER ( ',' FILTER )* )?</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/require_bnd.md -->
+<h1 id="-require-bnd">-require-bnd</h1>
+<p>The <code>-require-bnd</code> instruction allows you to specify a filter that must match the Bnd version for the build to proceed. If the filter does not match, bnd will generate an error and stop the build. This is useful for enforcing minimum or specific Bnd versions in your build environment.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-require-bnd: version&gt;=7.0.0
+</code></pre></div>
+
+<p>If not set, any Bnd version will be accepted.</p>
+<p>Each specified filter must evaluate to true for the running version of Bnd in the <code>version</code> attribute. Since the values of the instruction are filter expressions, they need to quoted so the filter operators are not processed by Bnd.</p>
+<p>This instruction can be useful when the workspace requires a feature of Bnd introduced in some version of Bnd. For example:</p>
+<div class="highlight"><pre><span></span><code>-require-bnd: &quot;(version&gt;=4.3.0)&quot;
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

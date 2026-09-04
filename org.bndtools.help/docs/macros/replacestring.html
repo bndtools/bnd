@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>replacestring ';' STRING ';' REGEX (';' STRING )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>replacestring ';' STRING ';' REGEX (';' STRING )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>replacestring</code> macro applies regex-based replacement to a single string, supporting back-references for captured groups.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${replacestring;&lt;string&gt;;&lt;regex&gt;[;&lt;replacement&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The string to process</li>
+<li><code>regex</code> - Regular expression pattern to match</li>
+<li><code>replacement</code> (optional) - Replacement string with <code>$1-$9</code> back-references (default: empty)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Applies <code>string.replaceAll(regex, replacement)</code></li>
+<li>Supports regex back-references (<code>$1</code>, <code>$2</code>, etc.)</li>
+<li>Default replacement is empty (removes matches)</li>
+<li>All occurrences are replaced</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Simple replacement:</p>
+<div class="highlight"><pre><span></span><code>description: This is, possibly, the best implementation ever!
+${replacestring;${description};possibly;definitely}
+# Returns: &quot;This is, definitely, the best implementation ever!&quot;
+</code></pre></div>
+
+<p>Remove pattern:</p>
+<div class="highlight"><pre><span></span><code>${replacestring;version-1.2.3;version-;}
+# Returns: &quot;1.2.3&quot;
+</code></pre></div>
+
+<p>Using back-references:</p>
+<div class="highlight"><pre><span></span><code>${replacestring;com.example.impl;com\.(.+)\.impl;$1}
+# Returns: &quot;example&quot;
+</code></pre></div>
+
+<p>Multiple replacements:</p>
+<div class="highlight"><pre><span></span><code>${replacestring;hello world;[aeiou];*}
+# Returns: &quot;h*ll* w*rld&quot;
+</code></pre></div>
+
+<p>Path normalization:</p>
+<div class="highlight"><pre><span></span><code>${replacestring;${path};\\;/}
+# Replace backslashes with forward slashes
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>String transformations</li>
+<li>Pattern-based modifications</li>
+<li>Text cleanup</li>
+<li>Path normalization</li>
+<li>Version string manipulation</li>
+<li>String formatting</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Regex uses Java syntax</li>
+<li>All occurrences replaced</li>
+<li>Empty replacement removes text</li>
+<li>For lists, use <code>${replace}</code> or <code>${replacelist}</code></li>
+<li>See also: <code>${replace}</code> for list processing</li>
+<li>See also: <code>${subst}</code> for simple string substitution</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

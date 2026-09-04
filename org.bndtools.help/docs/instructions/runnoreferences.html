@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runnoreferences  BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runnoreferences  BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-runnoreferences: true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runnoreferences.md -->
+<h1 id="-runnoreferences">-runnoreferences</h1>
+<p>The <code>-runnoreferences</code> instruction controls whether the <code>reference:</code> URL scheme is used for installing bundles in the OSGi installer. On non-Windows systems, <code>reference:</code> URLs are used by default for efficiency. Setting <code>-runnoreferences: true</code> disables this behavior and uses regular file URLs instead. On Windows, this instruction is ignored because <code>reference:</code> URLs are never used due to file locking issues.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-runnoreferences: true
+</code></pre></div>
+
+<p>Use this instruction if you need to avoid <code>reference:</code> URLs for compatibility or deployment reasons.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

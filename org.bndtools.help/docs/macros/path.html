@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>path ( ';' FILES )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>path ( ';' FILES )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>path</code> macro joins one or more lists of file paths using the operating system's path separator (<code>:</code> on Unix, <code>;</code> on Windows). This is useful for creating classpaths and other path lists.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${path;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of file paths</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists</li>
+<li>Joins paths using the OS-specific path separator</li>
+<li>Unix/Linux/Mac: <code>:</code> (colon)</li>
+<li>Windows: <code>;</code> (semicolon)</li>
+<li>Returns a platform-appropriate path list string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Create a classpath on Unix:</p>
+<div class="highlight"><pre><span></span><code>${path;lib/a.jar,lib/b.jar,lib/c.jar}
+# Returns: &quot;lib/a.jar:lib/b.jar:lib/c.jar&quot;
+</code></pre></div>
+
+<p>Create a classpath on Windows:</p>
+<div class="highlight"><pre><span></span><code>${path;lib/a.jar,lib/b.jar,lib/c.jar}
+# Returns: &quot;lib/a.jar;lib/b.jar;lib/c.jar&quot;
+</code></pre></div>
+
+<p>Combine multiple path lists:</p>
+<div class="highlight"><pre><span></span><code>${path;${buildpath};${testpath}}
+# Joins both lists with OS separator
+</code></pre></div>
+
+<p>Build Java classpath:</p>
+<div class="highlight"><pre><span></span><code>-classpath=${path;${lsr;lib;*.jar}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Creating Java classpaths</li>
+<li>Building PATH environment variables</li>
+<li>Generating OS-specific path lists</li>
+<li>Combining multiple path sources</li>
+<li>Creating portable path specifications</li>
+<li>Tool invocation with path arguments</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses the OS-native path separator automatically</li>
+<li>Unix/Mac uses colon <code>:</code>, Windows uses semicolon <code>;</code></li>
+<li>Input lists use comma or semicolon separation</li>
+<li>Output uses the OS path separator</li>
+<li>See also: <code>${pathseparator}</code> to get the separator itself</li>
+<li>See also: <code>${osfile}</code> for OS-specific file paths</li>
+<li>See also: <code>${join}</code> for comma-separated joining</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

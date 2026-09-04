@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>External Plugins</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>External Plugins</h1>
+<h2 id="external-plugins">External Plugins</h2>
+<p>External Plugins are external code to bnd code but that can be executed from within bnd. The JARs for this code are coming from the Workspace repository. The External Plugin Namespace defines the namespace (<code>bnd.external.plugin</code>)  and the following attributes:</p>
+<p>| Attribute                     | Description                   |
+|-------------------------------+-------------------------------|
+| <code>bnd.external.plugin</code>         | Defines the name of the plugin, should follow simple token syntax|
+| objectClass                   | The interface type the implementation should implement|
+| implementation                | The implementation fully qualified class name|
+| subtype                       | Optional subtype when the <code>objectClass</code> has a type parameter |
+| version                       | Optional version range to limit the candidates |</p>
+<p>There is an annotation, <code>aQute.bnd.service.externalplugin.ExternalPlugin</code>, that can be applied on a type.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>aQute.bnd.service.externalplugin.ExternalPlugin(
+    name          = &quot;calling&quot;, 
+    objectClass   = Callable.class, 
+    subtype       = String.class)
+public class CallImpl implements Callable&lt;String&gt; {
+    public String call() throws Exception {
+        return &quot;hello&quot;;
+    }
+}
+</code></pre></div>
+
+<p>In Bndtools, you can declare any class as an ExternalPlugin. The automatic build features will automatically build the JAR of the plugin and this will immediately become available in the rest of the build. If you use external plugins from the local workspace, make sure to declare a  <code>-dependson</code> to the external plugin project in any project that uses it, this dependency is not automatically detected. </p>
+<p>A JAR can contain any number of external plugins. It must ensure that it does not have any dependencies outside the bndlib it was compiled against.</p>
+</body>
+</html>

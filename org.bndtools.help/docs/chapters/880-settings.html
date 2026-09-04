@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Settings</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Settings</h1>
+<p>For a build model it is crucial that it has no dependencies on the machine it is running on. One of the  most frustrating developer experiences is the phrase: 'Yes, but it runs on my machine!'. For this reason bnd goes out of it is way to have no dependencies outside its workspace. That is, until we hit security. It is in the nature of security to have secrets and by definitions these secrets cannot be in the workspace, or, well, they will not be that secret for long. Though the best solution is to keep the secret in your head, there are times when this is impossible or plain cumbersome.</p>
+<p>For this reason, bnd maintains a settings file in ~/.bnd/settings.json. This file contains ordinary settings ...</p>
+<p>TBD</p>
+<h2 id="authorization">Authorization</h2>
+<h2 id="the-bnd-settings-command">The bnd settings Command</h2>
+<h2 id="the-global-macro">The global macro</h2>
+<h2 id="authorizing-a-new-system">Authorizing a New System</h2>
+<p>The settings automatically generate a private and public key when they are initialized. However, in certain cases it is necessary to explicitly authorize a system. For example, <a href="https://travis-ci.org/">Travis</a> always starts a build from a completely freshly initialized VM. In such a case it is necessary to authorize the machine explicitly. Though it is possible to just copy an existing settings file to this machine, it is more elegant to use the bnd commands. Do the following steps to authorize a machine.</p>
+<p>On a trusted host, get the current private and public key and the email:</p>
+<div class="highlight"><pre><span></span><code>$ bnd identity
+--publicKey 08E...CF --privateKey C7FE...D3 --email bnd@example.org
+</code></pre></div>
+
+<p>The output is a bit longer than shown because these keys are darned long, you know, security is hard. You should copy the output and then on the target system run:</p>
+<div class="highlight"><pre><span></span><code>$ bnd identity &lt;copied output&gt;
+</code></pre></div>
+
+<p>This will use the same authorization as the original machine. If you want to create a more unique authorization, then it is possible to create a new private/public key pair. </p>
+<div class="highlight"><pre><span></span><code> $ bnd settings -l temp.json -g
+ $ bnd identity -l temp.json 
+ --publicKey 08E...CF --privateKey C7FE...D3 --email bnd@example.org
+ ...
+ $ bnd identity &lt;copied output&gt;
+</code></pre></div>
+</body>
+</html>

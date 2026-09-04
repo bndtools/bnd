@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>bash</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>bash</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   bash  ...
+</code></pre></div>
+
+<!-- Manual content from: ext/bash.md -->
+<h2 id="bash-command-autocompletion">Bash Command Autocompletion</h2>
+<p>The <code>bash</code> command in bnd can generate an autocompletion script for the Bash shell, making it easier to use bnd commands interactively.</p>
+<p>When you run the bash autocompletion generator, bnd will create a temporary file containing the autocompletion script, populate it with the list of available commands, and output the result. This script can then be sourced in your shell to enable tab-completion for bnd commands.</p>
+<p><strong>Example:</strong></p>
+<p>To generate and use the autocompletion script for bash:</p>
+<ol>
+<li>Run the following command to generate the script:
+   <code>bnd bash &gt; bnd-completion.bash</code></li>
+<li>Source the script in your shell:
+   <code>source bnd-completion.bash</code></li>
+</ol>
+<p>This will enable tab-completion for all available bnd commands in your current shell session.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

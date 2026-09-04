@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>frange ';' VERSION ( ';' BOOLEAN )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>frange ';' VERSION ( ';' BOOLEAN )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>frange</code> macro generates an OSGi filter expression representing a version range. By default, it creates a consumer-compatible range (major version increment). Optionally, you can request a provider-compatible range (minor version increment).</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${frange;&lt;version&gt;[;provider]}
+${frange;&lt;version-range&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>version</code> - A version string (e.g., "1.2.3") or a version range (e.g., "[1.2.3,2.0.0)")</li>
+<li><code>provider</code> (optional) - Boolean (true/false) to use provider compatibility (default: false for consumer compatibility)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li><strong>Consumer compatibility (default)</strong>: Creates range from version to next major version</li>
+<li><code>${frange;1.2.3}</code> → <code>(&amp;(version&gt;=1.2.3)(!(version&gt;=2.0.0)))</code></li>
+<li><strong>Provider compatibility</strong>: Creates range from version to next minor version</li>
+<li><code>${frange;1.2.3;true}</code> → <code>(&amp;(version&gt;=1.2.3)(!(version&gt;=1.3.0)))</code></li>
+<li><strong>Version range</strong>: If a version range is provided, converts it directly to filter syntax</li>
+<li><code>${frange;[1.2.3,2.3.4)}</code> → <code>(&amp;(version&gt;=1.2.3)(!(version&gt;=2.3.4)))</code></li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Consumer compatibility range:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: org.example.*;version=&quot;${frange;1.2.3}&quot;
+# Generates: (&amp;(version&gt;=1.2.3)(!(version&gt;=2.0.0)))
+</code></pre></div>
+
+<p>Provider compatibility range:</p>
+<div class="highlight"><pre><span></span><code>Require-Capability: osgi.service;filter:=&quot;${frange;1.0.0;true}&quot;
+# Generates: (&amp;(version&gt;=1.0.0)(!(version&gt;=1.1.0)))
+</code></pre></div>
+
+<p>Use with version property:</p>
+<div class="highlight"><pre><span></span><code>bundle.range=${frange;${bundle.version}}
+</code></pre></div>
+
+<p>Dependency filter:</p>
+<div class="highlight"><pre><span></span><code>Require-Bundle: com.example.api;bundle-version=&quot;${frange;2.5.0}&quot;
+</code></pre></div>
+
+<p>Version range input:</p>
+<div class="highlight"><pre><span></span><code>${frange;[1.0.0,3.0.0)}
+# Converts range to filter syntax
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Generating version filters for Import-Package headers</li>
+<li>Creating compatibility ranges for bundle dependencies</li>
+<li>Specifying service version requirements</li>
+<li>Expressing OSGi semantic versioning ranges</li>
+<li>Building capability filters with version constraints</li>
+<li>Defining compatible version ranges in manifests</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Consumer compatibility follows OSGi semantic versioning (breaking changes at major version)</li>
+<li>Provider compatibility is more restrictive (breaking changes at minor version)</li>
+<li>The generated filter uses OSGi filter syntax with <code>version</code> attribute</li>
+<li>Qualifiers are removed from version bounds</li>
+<li>Can accept either a version or a version range as input</li>
+<li>See also: <code>${range}</code> for generating version range notation (not filter syntax)</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

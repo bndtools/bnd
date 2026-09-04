@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>add</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>add</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   add  &lt;what&gt; ...
+</code></pre></div>
+
+<h2 id="available-sub-commands">Available sub-commands</h2>
+<ul>
+<li><code>fragment</code> - Add template fragment(s) to the current workspace. </li>
+<li><code>plugin</code> - Add a plugin </li>
+<li><code>project</code> - Create a project in the current workspace </li>
+<li><code>workspace</code> - Create a bnd workspace in the current folder. The workspace can also be inialized with a set of template fragments. </li>
+</ul>
+<h3 id="fragment">fragment</h3>
+<p>Add template fragment(s) to the current workspace. Leave the name empty to see a list of available templates at the index.\n\nExample:\n bnd add fragment osgi gradle </p>
+<h4 id="synopsis_1">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   fragment  &lt;[name]...&gt;
+</code></pre></div>
+
+<h3 id="plugin">plugin</h3>
+<p>Add a plugin</p>
+<h4 id="synopsis_2">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   plugin [options]  &lt;[name]&gt; ...
+</code></pre></div>
+
+<h5 id="options">Options:</h5>
+<ul>
+<li><code>[ -a --alias &lt;string&gt; ]</code> </li>
+<li><code>[ -f --force ]</code> </li>
+</ul>
+<h3 id="project">project</h3>
+<p>Create a project in the current workspace</p>
+<h4 id="synopsis_3">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   project  &lt;name&gt; ...
+</code></pre></div>
+
+<h3 id="workspace">workspace</h3>
+<p>Create a bnd workspace in the current folder. The workspace can also be inialized with a set of template fragments.</p>
+<p>Example:
+ bnd add workspace -f osgi -f gradle 'myworkspace'</p>
+<p>See https://bnd.bndtools.org/chapters/620-template-fragments.html for more information.</p>
+<h4 id="synopsis_4">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   workspace [options]  &lt;name&gt; ...
+</code></pre></div>
+
+<h5 id="options_1">Options:</h5>
+<ul>
+<li><code>[ -f --fragment &lt;string&gt;* ]</code> Specify template fragment(s) by name to install together with the created workspace. Fragments are identified by the 'name' attribute in the index. Specify multiple fragments by repeating the -f option. To see a list of available templates use 'bnd add fragment' without arguments.</li>
+</ul>
+</body>
+</html>

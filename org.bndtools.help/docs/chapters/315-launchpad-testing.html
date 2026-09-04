@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Testing with Launchpad</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Testing with Launchpad</h1>
+<p><em>note</em> This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage.</p>
+<p>An OSGi framework poses special challenges to testing because it is necessary to start a framework instance for each 
+test. There has always been a bnd OSGi testing framework that was developed to test the OSGi specifications and  reference
+implementations. This testing framework packaged the tests as a bundle and had a special version of JUnit that could run
+these tests from inside the framework. Actually quite powerful and it was fully integrated with  Eclipse JUnit testing,
+delivering identical output to the CI build tools. However, the use of a special JUnit runner excluded it for people that wanted
+to use TestNG or other test frameworks.</p>
+<p>A second problem was that since tests ran inside the framework as a bundle they could not influence the setup of the OSGi
+framework easily. A last problem was that tests shared the same framework which could result in ordering dependencies. </p>
+<h2 id="launchpad">Launchpad</h2>
+<p>Launchpad is a bnd runtime library that provides an API to launch a framework that is fully integrated with the 
+bnd workspace. It automatically exports the runtime class path via the framework bundle, ensuring there is a single class space for
+the code on the class path and the code in the bundles. (This does require that bundles properly import their 
+exported packages.)</p>
+<p>Launchpad provides a builder that incrementally can build up the specifications of the framework. The builder can
+take <code>bndrun</code> files or bundle specifications in the same format as that are used to set the <code>-buildpath</code> or
+<code>-runbundles</code> in the <code>bnd.bnd</code> files. Once the information is setup, bnd will calculate the setup based on 
+the classes in the <code>test</code> folder and launch an OSGi framework.</p>
+<p>Once the framework is launched, Launchpad can then inject services and some key framework objects into annotated
+fields. Each field can specify a timeout, target filter, and minimum cardinality. Injection can take place in any object but is
+usually on the test instance.</p>
+<p>In the original OSGi testing support test bundles had to be created during the build. In the OSGi test cases for the Blueprint
+reference implementation more than 200 test bundles were used. Although the overhead was relatively small due to the bnd <code>-make</code> facility,
+it was still a nuisance because the information in a test case had to be synchronized in a <code>bnd</code> file in another directory. For
+this reason Launchpad contains a <em>bundle builder</em>. This bundle builder used <code>bnd</code> under the hood. It can use anything that a bnd
+sub bundle could use; it is build in the context of the project that contains the test classes and shares the same 
+<code>-buildpath</code>. Bundles that are build with the bundle builder can actually leverage nested classes in the test class for
+Bundle Activator or component classes.</p>
+<p>Overall this is a comprehensive library for testing OSGi projects in a Bndtools workspace.</p>
+<h2 id="quick-start">Quick Start</h2>
+<p>You need the <code>biz.aQute.launchpad</code> library on your <code>-testpath</code>.</p>
+<div class="highlight"><pre><span></span><code>bnd.bnd:
+... 
+-buildpath: ...
+-testpath: \
+    osgi.enroute.junit.wrapper, \
+    biz.aQute.launchpad
+</code></pre></div>
+
+<p><em>note</em> The biz.aQute.launchpad is available in 4.2 but there are a few minor API changes that did not make it. You can
+therefore use the snapshot version on JFrog or download the latest version and use:</p>
+<div class="highlight"><pre><span></span><code>lib/biz.aQute.launchpad.jar;version=file
+</code></pre></div>
+
+<p>The next step is to enable your <em>workspace</em> for launchpad. A bnd workspace can have a Remote Workspace Server and
+Launchpad needs it. You therefore need to add the following to your <code>cnf/build.bnd</code> file.</p>
+<div class="highlight"><pre><span></span><code>cnf/build.bnd:
+    -remoteworkspace        true
+</code></pre></div>
+
+<p>Using JUnit, we can now create a test. We start with creating a <code>LaunchpadBuilder</code>. This builder stores information about the to be started framework. It has many
+methods that usually align with the properties for a <code>bnd.bnd</code> file. The Javadoc contains the details. We could create this
+object in a <code>@Before</code> method and close it in an <code>@After</code> method but this object does not have to be closed. It contains only
+the settings.</p>
+<div class="highlight"><pre><span></span><code>LaunchpadBuilder    builder = new LaunchpadBuilder()
+                    .runfw(&quot;org.apache.felix.framework&quot;);
+</code></pre></div>
+
+<p>For this first quick start test we inject a Bundle Context, the core OSGi object that allows us to interact with the framework.</p>
+<div class="highlight"><pre><span></span><code>@Service
+BundleContext       context;
+</code></pre></div>
+
+<p>The method is a normal JUnit test method. We open the Launchpad in a <em>try resource</em> block. Closing the <code>Launchpad</code> object will
+shutdown the framework. The test is simply verifying that the injection has worked.</p>
+<div class="highlight"><pre><span></span><code>@Test
+public void quickStart() throws Exception {
+    try (Launchpad launchpad = builder.create()
+        .inject(this)) {
+        assertNotNull(context);
+    }
+}
+</code></pre></div>
+
+<p>Voila! The first Launchpad test case.</p>
+<h2 id="two-models">Two Models</h2>
+<p>The Launchpad code can be used in different modes:</p>
+<ul>
+<li>Using the class path. In this mode classes on the classpath are exported as framework classes and override 
+  any classes in the framework. This mode does not require any support from the test framework but there are
+  a number of caveats. This setup works very well if you want to tests POJOs that require an OSGi context.</li>
+<li>JUnit Runner. In this mode bnd creates a bundle that is the project's bundle but includes the test classes. These
+  test classes use DynamicImport-Package to minimize disruptions to the manifest. The Launchpad Runner will then start
+  the framework, install the test bundle, and run the tests. This mode works well when you want to test your finished bundle.</li>
+</ul>
+<h2 id="junit-launchpad-runner-mode">JUnit Launchpad Runner Mode</h2>
+<p>To use the Launchpad Runner it is necessary to add an <code>@RunWith</code> annotation on your JUnit test class:</p>
+<div class="highlight"><pre><span></span><code>@RunWith(LaunchpadRunner.class)
+public class TestMyCode {
+
+    LaunchpadBuilder    builder = new LaunchpadBuilder().runfw(&quot;org.apache.felix.framework&quot;).debug();
+
+    @Service
+    Launchpad       launchpad;
+
+    @Test
+    public void testMyCode() {
+        launchpad.report();
+    }
+}
+</code></pre></div>
+
+<h3 id="junit-theory">Junit Theory</h3>
+<p>The Launchpad Runner is in control to gather the tests and then execute them. The test gathering is handled via the
+standard JUnit support. However, when the test must run, LaunchpadRunner creates a bundle that has the following qualities:</p>
+<ul>
+<li>Fully contains the project's build artifact. This is the sole bundle for a single bundle project or the first bundle (sorted 
+by name) if a multi bundle project is used. The code actually uses a prior build JAR.</li>
+<li>All the test classes are added to this JAR</li>
+<li>A DynamicImport-Package * is added </li>
+</ul>
+<p>The runner then launches a framework based on a LaunchpadBuilder that it finds in the the <code>static</code> field <code>builder</code>.</p>
+<p>It then installs the bundles, and adds the test bundle. To execute a test, it loads the
+class from the test bundle and finds the appropriate method, instantiates the class in an instance, runs the injector
+on this object. and executes the methods.</p>
+<p>This mode is similar to the PAX Exam model. It has similar constraints. It does run the <code>@Before</code> and <code>@After</code> annotated
+methods but it cannot run the <code>@BeforeClass</code> and <code>@AfterClass</code>.</p>
+<h2 id="classpath-mode">Classpath Mode</h2>
+<p>Launchpad is quite awesome to use but there are some pitfalls to take into account. It is strongly recommended
+to read this section to get an idea how Launchpad handles class sharing between the test classes (which are on the
+normal Java class path) and the classes in bundles. There is more going on than what one suspects looking at the
+simplicity how it can be used. This section details the workings to make you aware of potential bugs and should 
+help in debugging problems. In general, the cleaner your code base, the better this all works. If you have a very messy
+setup with lots of scripts, fragments, require bundle, and very wide code interfaces instead of services then this
+might not be for you ...</p>
+<h3 id="class-loading">Class Loading</h3>
+<p>In Java, class are loaded from the <em>classpath</em>. The class path is a (usually very long) list of Jar files. When a class
+needs to be loaded, Java searches al those Jars for that class, first one wins.</p>
+<p>In OSGi, this model is changed for a <em>delegating</em> model. Each bundle <em>imports</em> a set of <em>packages</em> and <em>exports</em> a set 
+of packages. This information is in a bundle's <em>manifest</em>. When an OSGi framework <em>resolves</em> a bundle, it wires these
+imports to a corresponding export. </p>
+<h3 id="lauchpads-classpath">Lauchpad's Classpath</h3>
+<p>When a test case gets started the <em>driver</em> (Eclipse, Gradle, etc.) launches a new Java VM. The class path for that
+VM will consist of all entries on the <code>-buildpath</code>, <code>-testpath</code>, and the main and test output folders. When the
+Launchpad builder is first called it will contact the <em>Remote Workspace</em> in the driver and request for an analysis of 
+the test code. The Remote Workspace then uses the project setup to calculate a bundle that would export all the
+test code and its imports. The Launchpad Builder then makes the OSGi framework export all packages that that
+virtual test bundle would have exported. That is, any class visible from the test cases will be exported by 
+the OSGi framework by default. It is possible to <em>exclude exports</em> using glob expressions or predicates from a test case.
+See the <code>excludeExport()</code> methods.</p>
+<h3 id="bundles">Bundles</h3>
+<p>A bundle installed on the OSGi Framework should this see all the relevant classes from the class path instead of
+from other bundles. The tricky case is when a bundle exports a package that is also available from the 
+class path. If this package is only exported then the framework cannot substitute it for the package from the 
+class path. In such a bad case the bundle that exports it will see its embedded version of the class while
+the rest of the system sees the version from the class path. This can then result in a class cast exception
+like:</p>
+<div class="highlight"><pre><span></span><code>java.lang.ClassCastException: an instance of org.example.Foo cannot be assigned to org.example.Foo
+</code></pre></div>
+
+<p>Although the names of those classes are identical, the problem is that they will be loaded by different class
+loaders. </p>
+<h3 id="version-sensitivity">Version Sensitivity</h3>
+<p>Due to this setup there is very strict sensitivity to the version of the OSGi Framework packages and bundles. Most bnd projects
+have the OSGi framework packages on the <code>-buildpath</code>. The version of these packages can be lower than the version
+of the Framework because of backward compatibility. Actually, bnd generally recommends to compile against the
+lowest possible framework packages. However, with launchpad these packages will also be used by the Framework, there
+is unfortunately no good way around this. The consequence is that the <code>-buildpath</code> version of the Framework
+packages must match the exact version used by the implementation of the framework.</p>
+<h3 id="excluding-exported-system-packages">Excluding Exported System Packages</h3>
+<p>Launchpad will calculate the set of packages that are exported by the framework from the claspath. The so called
+<code>org.osgi.framework.system.packages.extra</code>. It calculates this by creating bundle from the test sources, adding
+all dependencies, and then exporting the full content. That export statement is then uses for <code>org.osgi.framework.system.packages.extra</code>.</p>
+<p>However, this is generally too wide since it includes all dependencies, not just public dependencies. Version mismatches
+can create nasty problems and sometimes the solution is to exclude exports. </p>
+<p>The Launchpad Builder provides a number of methods called <code>excludeExport()</code> that take either a <em>glob</em> or a predicate.
+The globs/predicates are then ran against the list of calculated export package names. Any matching entry is then
+not exported.</p>
+<div class="highlight"><pre><span></span><code>Launchpad b = new LaunchpadBuilder()
+    .excludeExports( &quot;slf4j.*&quot;)
+    .create();
+</code></pre></div>
+
+<p>If a bndrun file is the <code>-excludeexports</code> instruction can be placed in the bndrun file containing a list globs.</p>
+<div class="highlight"><pre><span></span><code>-excludeexports     aQute.lib*, slf4j.*
+</code></pre></div>
+
+<h2 id="naming">Naming</h2>
+<p>The Launchpad has a default name of the method and class that called <code>create()</code>. These names can be overwritten with
+<code>create(name)</code> and <code>create(name,className)</code>. The actual name of Launchpad is set under the following framework 
+property names:</p>
+<div class="highlight"><pre><span></span><code>launchpad.name
+launchpad.className
+</code></pre></div>
+
+<h2 id="interaction-with-services">Interaction with Services</h2>
+<p>Clearly the best part of Launchpad is that you can actually use real services and do not have
+to mock them up. Many a test seems to mostly test their mocks. </p>
+<p>With Launchpad, real framework is running. You can inject services or register services. </p>
+<p>In the following example we register a service <code>Foo</code> and then verify if we can get it. We then
+unregister the service and see that it no longer exists.</p>
+<div class="highlight"><pre><span></span><code>interface Foo {}
+
+@Test
+public void services() throws Exception {
+    try (Launchpad launchpad = builder.create()) {
+
+        ServiceRegistration&lt;Foo&gt; register = 
+            launchpad.register(Foo.class, new Foo() {});
+        Optional&lt;Foo&gt; s = 
+            launchpad.waitForService(Foo.class, 100);
+        assertThat(s.isPresent()).isTrue();
+
+        register.unregister();
+
+        s = launchpad.waitForService(Foo.class, 100);
+        assertThat(s.isPresent()).isFalse();
+    }
+}
+</code></pre></div>
+
+<p>The <code>waitForService</code> methods take a timeout in milliseconds. Their purpose is to provide some leeway
+during startup for the system to settle. If a service should be there then it the <code>getService()</code> methods
+can be used. </p>
+<h2 id="injection">Injection</h2>
+<p>Injection is not automatic because in many cases you want to handle the setup of the framework before
+you inject. Injection can also happen as often as you want. However, you first need to create and
+start the framework.</p>
+<div class="highlight"><pre><span></span><code>@Test
+public void inject() throws Exception {
+    try (Launchpad launchpad = builder.create()) {
+        ServiceRegistration&lt;Foo&gt; register = launchpad.register(Foo.class, new Foo() {});
+
+        class I {
+            @Service
+            Foo foo;
+            @Service
+            Bundle          bundles[];
+            @Service
+            BundleContext   context;
+        }
+        I inject = new I();
+        launchpad.inject(inject);
+        assertThat(inject.bundles).isNotEmpty();
+    }
+}
+</code></pre></div>
+
+<h2 id="hello-world">Hello World</h2>
+<p>Although Bundle-Activator's are not recommended to be used (they are singletons), they are very useful in
+test cases. With Launchpad it is not necessary to to make a separate bundle, we can make a bundle with
+an inner class as activator.</p>
+<p>We therefore first define the Bundle Activator as a static public inner class of the test class:</p>
+<div class="highlight"><pre><span></span><code>public static class Activator implements BundleActivator {
+    @Override
+    public void start(BundleContext context) throws Exception {
+        System.out.println(&quot;Hello World&quot;);
+    }
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        System.out.println(&quot;Goodbye World&quot;);
+    }
+}
+</code></pre></div>
+
+<p>The Launchpad class contains a special <em>Bundle builder</em>. This bundle builder is based on bnd and can can do everything that
+bnd can do in a <code>bnd.bnd</code> file. In this case we add the Bundle Activator and start it.</p>
+<div class="highlight"><pre><span></span><code>@Test
+public void activator() throws Exception {
+    try (Launchpad launchpad = builder.create()) {
+
+        Bundle start = launchpad.bundle()
+            .bundleActivator(Activator.class)
+            .start();
+    }
+}
+</code></pre></div>
+
+<p>When the test is run the output is:</p>
+<div class="highlight"><pre><span></span><code>Hello World
+Goodbye World
+</code></pre></div>
+
+<h2 id="components">Components</h2>
+<p>Since the bundle builder can do anything bnd can do, we can also use inner classes for components. These inner
+classes must be static and public (this is an OSGi DS requirement). The following is an example of a class
+that depends on the <code>Bar</code> service. </p>
+<div class="highlight"><pre><span></span><code>interface Bar {
+    void bar();
+}
+
+@Component
+public static class C {
+    @Reference Bar bar;
+    @Activate  void activate() { bar.bar(); }
+}
+
+@Test
+public void component() throws Exception {
+    try (Launchpad launchpad = builder
+        .bundles(&quot;org.apache.felix.log&quot;)
+        .bundles(&quot;org.apache.felix.scr&quot;)
+        .bundles(&quot;org.apache.felix.configadmin&quot;)
+        .create()) {
+
+        Bundle b = launchpad.component(C.class);
+        AtomicBoolean   called = new AtomicBoolean(false);
+        launchpad.register(Bar.class, ()-&gt; called.set(true) );
+        assertThat(called.get()).isTrue();
+    }
+}
+</code></pre></div>
+
+<p>Adding a component will return a Bundle. Uninstalling the bundle will remove the component.</p>
+<h2 id="debugging">Debugging</h2>
+<p>Clearly there are lots of things that can go wrong. You can therefore activate the <code>debug()</code> on the builder or
+Launchpad. This will provide logging to the console.</p>
+<div class="highlight"><pre><span></span><code>@Test
+public void debug() {
+    try (Launchpad launchpad = builder
+        .debug()
+        .create()) {
+
+        }
+}
+</code></pre></div>
+
+<p>If you run this the console will show a lot of diagnostics information. </p>
+<h2 id="using-a-bndrun-file">Using a bndrun file</h2>
+<p>One of the great innovations in bndtools is the resolver. So far we've assembled the list of bundles to run ourselves.
+However, we can also use a <code>bndrun</code> file and <code>bndrun</code> files can be resolved.</p>
+<div class="highlight"><pre><span></span><code>@Test
+public void bndrun() {
+    try (Launchpad launchpad = builder
+        .bndrun(&quot;showit.bndrun&quot;)
+        .create()) {         
+        }
+}
+</code></pre></div>
+
+<p>If the <code>bndrun</code> file contains the following after resolving:</p>
+<div class="highlight"><pre><span></span><code>-runrequires: \
+    osgi.identity;filter:=&#39;(osgi.identity=org.apache.felix.gogo.shell)&#39;,\
+    osgi.identity;filter:=&#39;(osgi.identity=biz.aQute.bnd.runtime.gogo)&#39;
+
+
+-runbundles: \
+    org.apache.felix.gogo.runtime;version=&#39;[1.1.0,1.1.1)&#39;,\
+    org.apache.felix.gogo.shell;version=&#39;[1.1.0,1.1.1)&#39;,\
+    biz.aQute.bnd.runtime.gogo;version=snapshot,\
+    org.apache.felix.log;version=&#39;[1.0.1,1.0.2)&#39;
+-runfw: org.apache.felix.framework;version=&#39;[5.6.10,5.6.10]&#39;
+-runee: JavaSE-1.8
+</code></pre></div>
+
+<p>Then we see the following output:</p>
+<div class="highlight"><pre><span></span><code>Welcome to Apache Felix Gogo
+g!
+</code></pre></div>
+
+<h2 id="making-bundles">Making Bundles</h2>
+<p>The Launchpad object contains a special bundle builder. It provides the same capabilities that bnd already has when
+it creates bundles. You can use all the facilities that you can use in the <code>bnd.bnd</code> file. Export-Package, Import-Package,
+-includeresource, etc.</p>
+<p>The following example shows how to create a bundle with a a special header.</p>
+<div class="highlight"><pre><span></span><code>@Test
+public void bundles() throws Exception {
+    try (Launchpad launchpad = builder.create()) {
+        Bundle b = launchpad.bundle()
+            .header(&quot;FooBar&quot;, &quot;1&quot;)
+            .install();
+        String string = b.getHeaders()
+            .get(&quot;FooBar&quot;);
+        assertThat(string).isEqualTo(&quot;1&quot;);
+    }
+}
+</code></pre></div>
+
+<h3 id="inheriting-from-the-project-workspace-or-a-bnd-file">Inheriting from the project, workspace, or a bnd file</h3>
+<p>When you create a bundle from the Launchpad class then by default you inherit nothing from the enironment. However,
+it is possible to set the parent of the builder. The <code>parent(String)</code> or <code>parent(File)</code> method can set multiple
+parents. </p>
+<div class="highlight"><pre><span></span><code>parent ::= FILE* ( WORKSPACE | PROJECT )?
+</code></pre></div>
+
+<ul>
+<li><code>WORKSPACE</code> – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.</li>
+<li><code>PROJECT</code> – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.</li>
+<li><code>FILE</code>    – A file path with forward slashes on all platforms. This must point to a bnd/properties file.  </li>
+</ul>
+<p>The order of the parents is important. Earlier bnd files override the same named value in later bnd files.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle b = lp.bundle().parent(&#39;foo.bnd&#39;).parent(WORKSPACE).start();
+</code></pre></div>
+
+<h2 id="hiding-a-service">Hiding a Service</h2>
+<p>In some scenarios you'd like to hide a service so you can override it with a mocked version. Hiding in OSGi
+can be achieved with the [Servic Hooks] services. The easiest way is to hide a service via the Launchpad Builder.</p>
+<div class="highlight"><pre><span></span><code>    LaunchpadBuilder    builder = new LaunchpadBuilder().runfw(&quot;org.apache.felix.framework&quot;).hide(SomeService.class);
+</code></pre></div>
+
+<p>If you now create a framework, all services <em>not</em> registered via Launchpad will be invisible to all bundles. That is,
+only services registered through Launchpad can be seen by the other bundles in the OSGi framework.</p>
+<div class="highlight"><pre><span></span><code>@Test
+public void testHidingViaBuilder() throws Exception {
+    try (Launchpad fw = builder.runfw(&quot;org.apache.felix.framework&quot;)
+            .create()) {
+
+        boolean isHidden = fw.getServices(String.class)
+                .isEmpty();         
+        assertThat(isHidden).isTrue();
+
+        fw.framework.getBundleContext()
+                .registerService(String.class, &quot;fw&quot;, null);
+
+        isHidden = fw.getServices(String.class)
+                .isEmpty();
+        assertThat(isHidden).isTrue();
+
+        ServiceRegistration&lt;String&gt; visibleToAllViaTestbundle = fw.register(String.class, &quot;Hello&quot;);
+
+        assertThat(fw.getServices(String.class)).containsOnly(&quot;Hello&quot;);
+        visibleToAllViaTestbundle.unregister();
+
+        isHidden = fw.getServices(String.class)
+                .isEmpty();
+        assertThat(isHidden).isTrue();
+    }
+}
+</code></pre></div>
+
+<p>Although hiding via the Launchpad Builder is the easiest way to hide services, it has the disadvantage that all
+tests hide the same service(s). It is also possible to handle the service hiding in a more controlled way
+by hiding via the Launchpad object.  Using this function does require a bit of orchestration. Once you hide 
+a service it becomes invisible to bundles that look for that service later. However, bundles that already 
+obtained this service will not lose sight of it. It is therefore necessary to hide a service before the 
+corresponding framework is started. Since the default is automatic start, the automatic start must be 
+disabled with the <code>nostart()</code> method on the builder.</p>
+<p>After the framework is then created. the service is hidden and then the framework is started. </p>
+<div class="highlight"><pre><span></span><code>@Test
+public void testHiding() throws Exception {
+    try (Launchpad fw = builder.runfw(&quot;org.apache.felix.framework&quot;)
+            .nostart()
+            .create()) {
+
+        @SuppressWarnings(&quot;resource&quot;)
+        Closeable hide = fw.hide(String.class);
+        fw.start();
+
+        boolean isHidden = fw.getServices(String.class)
+                .isEmpty();
+        assertThat(isHidden).isTrue();
+
+        fw.framework.getBundleContext()
+                .registerService(String.class, &quot;fw&quot;, null);
+
+        isHidden = fw.getServices(String.class)
+                .isEmpty();
+        assertThat(isHidden).isTrue();
+
+        ServiceRegistration&lt;String&gt; visibleToAllViaTestbundle = fw.register(String.class, &quot;Hello&quot;);
+
+        assertThat(fw.getServices(String.class)).containsOnly(&quot;Hello&quot;);
+        visibleToAllViaTestbundle.unregister();
+
+        isHidden = fw.getServices(String.class)
+                .isEmpty();
+        assertThat(isHidden).isTrue();
+
+        hide.close();
+        assertThat(fw.getServices(String.class)).containsOnly(&quot;fw&quot;);
+    }
+}
+</code></pre></div>
+
+<p>As you can see from the test code, the <code>hide</code> method in this case returns a <code>Closeable</code>. This object can be used to
+remove the hiding of the given service.</p>
+<h3 id="visibility">Visibility</h3>
+<p>To diagnose any issues it is important to realize that there are some special rules around which bundle does what. Launchpad
+has the Bundle Context of the OSGi Framework as well as a special test bundle. The test bundle is empty but it used to have
+a Bundle Context for the test code that runs outside the Framework. When you hide a service it will register
+Service Hooks that only let services from the test bundle pass through, all other services of the given type are removed
+from visibility.</p>
+<div class="highlight"><pre><span></span><code>Closeable Launchpad.hide(SomeService.class);
+</code></pre></div>
+
+<p>The service will remain hidden until you close the <code>Closeable</code>.</p>
+</body>
+</html>

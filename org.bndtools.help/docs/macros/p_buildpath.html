@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>p_buildpath</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>p_buildpath</h1>
+<hr />
+<p>layout: default
+class:  Project
+title:  p_buildpath
+summary: Get the project's buildpath as a list</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>p_buildpath</code> macro returns the project's buildpath (compile-time dependencies) as a comma-separated list of file paths.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${p_buildpath}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns all JARs and directories on the buildpath</li>
+<li>Paths are absolute</li>
+<li>Results are comma-separated</li>
+<li>Includes all <code>-buildpath</code> entries</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get buildpath:</p>
+<div class="highlight"><pre><span></span><code>Build-Dependencies: ${p_buildpath}
+</code></pre></div>
+
+<p>Count buildpath entries:</p>
+<div class="highlight"><pre><span></span><code>dependency.count=${size;${split;,;${p_buildpath}}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Listing compile-time dependencies</li>
+<li>Build documentation</li>
+<li>Dependency analysis</li>
+<li>Creating custom classpaths</li>
+<li>Build metadata</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns absolute paths</li>
+<li>Includes all <code>-buildpath</code> entries</li>
+<li>See also: <code>${p_testpath}</code> for test dependencies</li>
+<li>See also: <code>${p_dependson}</code> for project dependencies</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>
