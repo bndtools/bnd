@@ -30,12 +30,62 @@ import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 import aQute.p2.packed.Unpack200;
 import aQute.p2.provider.Feature;
 
 public class P2RepositoryTest {
 	@InjectTemporaryDirectory
 	File tmp;
+
+	@Test
+	public void testLocationAsDirectory() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File location = new File(tmp, "directory-location");
+		assertThat(location.mkdirs()).isTrue();
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("url", repository.toURI()
+				.toString());
+			config.put("name", "test");
+			config.put("location", location.getAbsolutePath());
+			p2r.setProperties(config);
+
+			assertThat(p2r.list(null)).isNotEmpty();
+			assertThat(new File(location, "index.xml.gz")).isFile();
+			assertThat(p2r.getRoot()).isEqualTo(location);
+		}
+	}
+
+	@Test
+	public void testLocationAsIndexFile() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File location = new File(tmp, "file-location");
+		File indexFile = new File(location, "custom-index.xml.gz");
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("url", repository.toURI()
+				.toString());
+			config.put("name", "test");
+			config.put("location", indexFile.getAbsolutePath());
+			p2r.setProperties(config);
+
+			assertThat(p2r.list(null)).isNotEmpty();
+			assertThat(indexFile).isFile();
+			assertThat(new File(location, "index.xml.gz")).doesNotExist();
+			assertThat(p2r.getRoot()).isEqualTo(location);
+		}
+	}
 
 	@Test
 	public void testSimple() throws Exception {

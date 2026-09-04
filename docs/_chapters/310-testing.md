@@ -159,7 +159,7 @@ As noted above, `biz.aQute.tester.junit-platform` requires JUnit Platform (and i
         aQute.bnd.repository.p2.provider.P2Repository;\
             name="Eclipse Local";\
             url="file:///path/to/eclipse/";\
-            location="${workspace}/cnf/cache/stable/EclipseLocal"
+			location="${workspace}/cnf/cache/stable/EclipseLocal/"
 ```
 
 Alternatively, it is not difficult to download the required (non-OSGi) modules from Maven Central and include them as-is on `-runpath`, or else (preferably) wrap them into bundles and include them in `-runrequires`/`-runbundles`. 
