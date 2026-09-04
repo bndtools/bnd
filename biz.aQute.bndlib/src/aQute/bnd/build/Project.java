@@ -39,6 +39,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -1328,6 +1329,7 @@ public class Project extends Processor {
 
 		Strategy useStrategy = overrideStrategy(attrs, strategy);
 		RepoFilter repoFilter = parseRepoFilter(attrs);
+		String requestedType = attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
 
 
 		// Hold the workspace read lock for the entire resolution. This prevents
@@ -1366,7 +1368,7 @@ public class Project extends Processor {
 						continue;
 
 					try {
-						SortedSet<Version> vs = plugin.versions(bsn);
+						SortedSet<Version> vs = versionsOf(plugin, bsn, requestedType);
 						if (vs != null) {
 							for (Version v : vs) {
 								if (!versions.containsKey(v) && versionRange.includes(v))
@@ -1394,14 +1396,18 @@ public class Project extends Processor {
 				//
 				// We have to augment the list of returned versions
 				// with info from the workspace. We use null as a marker
-				// to indicate that it is a workspace project
+				// to indicate that it is a workspace project. Workspace
+				// projects deliver bundles, so they cannot provide typed
+				// resources like Eclipse features.
 				//
 
-				SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository()
-					.versions(bsn);
-				for (Version v : localVersions) {
-					if (!versions.containsKey(v) && versionRange.includes(v))
-						versions.put(v, null);
+				if (requestedType == null) {
+					SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository()
+						.versions(bsn);
+					for (Version v : localVersions) {
+						if (!versions.containsKey(v) && versionRange.includes(v))
+							versions.put(v, null);
+					}
 				}
 
 				// Verify if we found any, if so, we use the strategy to pick
@@ -1529,10 +1535,85 @@ public class Project extends Processor {
 		if (f.getName()
 			.endsWith(".lib"))
 			container = new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs, db);
+		else if (attrs != null && attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE) != null)
+			// any identity type attribute (e.g. an Eclipse or Karaf feature) marks a
+			// typed resource; which repository can expand it is not core's concern
+			container = new Container(this, bsn, range, Container.TYPE.TYPED_RESOURCE, f, null, attrs, db);
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
 
 		return container;
+	}
+
+	/**
+	 * List the available versions of a bsn in a repository. When a type is
+	 * requested (e.g. {@code org.eclipse.update.feature}), the normal
+	 * {@link RepositoryPlugin#versions(String)} cannot be used since it only
+	 * lists bundles. In that case we query the repository via the OSGi
+	 * Repository API for identity capabilities carrying the requested type.
+	 *
+	 * @param plugin the repository
+	 * @param bsn the identity to look up
+	 * @param requestedType the requested identity type or null for the
+	 *            default bundle lookup
+	 */
+	private SortedSet<Version> versionsOf(RepositoryPlugin plugin, String bsn, String requestedType) throws Exception {
+		if (requestedType == null)
+			return plugin.versions(bsn);
+
+		SortedSet<Version> versions = new TreeSet<>();
+		if (!(plugin instanceof Repository repo))
+			return versions;
+
+		Requirement identity = CapReqBuilder.createIdentityRequirement(bsn, requestedType, null);
+		Map<Requirement, Collection<Capability>> providers = repo.findProviders(Collections.singleton(identity));
+		Collection<Capability> capabilities = providers != null ? providers.get(identity) : null;
+		if (capabilities == null)
+			return versions;
+
+		for (Capability capability : capabilities) {
+			Object version = capability.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			if (version != null) {
+				versions.add(Version.parseVersion(version.toString()));
+			}
+		}
+		return versions;
+	}
+
+
+
+	/**
+	 * Expand a {@link Container.TYPE#TYPED_RESOURCE} container into its
+	 * member containers. Core bnd does not know how to interpret any
+	 * particular identity type (e.g. an Eclipse feature); it merely asks each
+	 * repository, in declaration order, whether it recognizes the container's
+	 * type, see {@link RepositoryPlugin#getTypedResourceMembers}. The first
+	 * repository that returns a non-null result wins.
+	 *
+	 * @param container the typed resource container to expand
+	 * @param visited guard against expansion cycles, keyed by {@code bsn:version}
+	 */
+	List<Container> getTypedResourceMembers(Container container, Set<String> visited) throws Exception {
+		String key = container.getBundleSymbolicName() + ":" + container.getVersion();
+		if (!visited.add(key)) {
+			warning("Detected a cycle while expanding %s, ignoring repeated occurrence", key);
+			return newList();
+		}
+
+		for (RepositoryPlugin plugin : getRepositories()) {
+			List<Container> members = plugin.getTypedResourceMembers(container, visited);
+			if (members != null)
+				return members;
+		}
+
+		List<Container> result = newList();
+		result.add(new Container(this, container.getBundleSymbolicName(), container.getVersion(), Container.TYPE.ERROR,
+			null,
+			"No repository could expand " + key + " of type "
+				+ container.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE),
+			container.getAttributes(), null));
+		return result;
 	}
 
 	/**
