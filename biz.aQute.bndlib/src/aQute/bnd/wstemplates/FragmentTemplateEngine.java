@@ -59,6 +59,7 @@ public class FragmentTemplateEngine {
 	private static final String		TAG					= "tag";
 	private static final String		REQUIRE				= "require";
 	private static final String		DESCRIPTION			= "description";
+	private static final String		ARCHIVED			= "archived";
 	private static final String		WORKSPACE_TEMPLATES	= "-workspace-templates";
 	private static final String		NAME				= "name";
 	private static final Pattern	COMMIT_SHA			= Pattern.compile("[a-f0-9]{40}$");
@@ -80,8 +81,13 @@ public class FragmentTemplateEngine {
 	 * Info about a template, comes from the index files.
 	 */
 
-	public record TemplateInfo(TemplateID id, String name, String description, String[] require, String... tag)
+	public record TemplateInfo(TemplateID id, String name, String description, boolean archived, String[] require,
+		String... tag)
 		implements Comparable<TemplateInfo> {
+
+		public TemplateInfo(TemplateID id, String name, String description, String[] require, String... tag) {
+			this(id, name, description, false, require, tag);
+		}
 
 		@Override
 		public int compareTo(TemplateInfo o) {
@@ -208,10 +214,13 @@ public class FragmentTemplateEngine {
 			TemplateID templateId = TemplateID.from(id);
 			String name = attrs.getOrDefault(NAME, id.toString());
 			String description = attrs.getOrDefault(DESCRIPTION, "");
+			boolean archived = attrs.containsKey(ARCHIVED)
+				&& (attrs.get(ARCHIVED) == null || attrs.get(ARCHIVED)
+					.isEmpty() || Processor.isTrue(attrs.get(ARCHIVED)));
 			String require[] = toArray(attrs.get(REQUIRE));
 			String tags[] = toArray(attrs.get(TAG));
 
-			templates.add(new TemplateInfo(templateId, name, description, require, tags));
+			templates.add(new TemplateInfo(templateId, name, description, archived, require, tags));
 		}
 		return templates;
 	}
