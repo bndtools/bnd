@@ -134,6 +134,7 @@ public class Analyzer extends Processor {
 		PackageRef.class, true);
 	private final Contracts							contracts				= new Contracts(this);
 	private final Packages							classpathExports		= new Packages();
+	private final Packages							stagedConditionalPackages = new Packages();
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
 	private final Map<TypeRef, Clazz>				classspace				= map();
@@ -441,6 +442,7 @@ public class Analyzer extends Processor {
 		uses.clear();
 		apiUses.clear();
 		classpathExports.clear();
+		stagedConditionalPackages.clear();
 		contracts.clear();
 		packagesVisited.clear();
 		nonClassReferences.clear();
@@ -980,6 +982,27 @@ public class Analyzer extends Processor {
 	}
 
 	protected Jar getExtra() throws Exception {
+		stageConditionalImports();
+		Iterator<Entry<PackageRef, Attrs>> stagedIterator = stagedConditionalPackages.entrySet()
+			.iterator();
+		while (stagedIterator.hasNext()) {
+			Entry<PackageRef, Attrs> staged = stagedIterator.next();
+			PackageRef packageRef = staged.getKey();
+			stagedIterator.remove();
+			Jar extra = new Jar(Constants.IMPORT_PACKAGE);
+			addClose(extra);
+			for (Jar cpe : getClasspath()) {
+				Map<String, Resource> packageDir = cpe.getDirectory(packageRef.getPath());
+				if (packageDir != null && !packageDir.isEmpty()) {
+					extra.copy(cpe, packageRef.getPath(), false);
+					if (!extra.getDirectories()
+						.isEmpty()) {
+						return extra;
+					}
+					break;
+				}
+			}
+		}
 		return null;
 	}
 
@@ -2220,8 +2243,6 @@ public class Analyzer extends Processor {
 	 * 3. If package is not on classpath at all, change resolution to optional
 	 */
 	private void processConditionalImports(Packages regularImports) {
-		Packages packagesToEmbed = new Packages();
-		
 		Iterator<Entry<PackageRef, Attrs>> importsIterator = regularImports.entrySet()
 			.iterator();
 		while (importsIterator.hasNext()) {
@@ -2239,9 +2260,12 @@ public class Analyzer extends Processor {
 					if (classpathAttrs.containsKey(Constants.INTERNAL_EXPORTED_DIRECTIVE)) {
 						// Package is from an OSGi bundle - keep as regular import
 						// Directive already removed, nothing else to do
+					} else if (contained.containsKey(packageRef)) {
+						// Package is already embedded through conditional processing
+						importsIterator.remove();
 					} else {
-						// Package is from a non-OSGi jar - mark for embedding
-						packagesToEmbed.put(packageRef, attrs);
+						// Package is from a non-OSGi jar - stage it for embedding
+						stagedConditionalPackages.put(packageRef, new Attrs(attrs));
 						importsIterator.remove();
 					}
 				} else {
@@ -2250,46 +2274,17 @@ public class Analyzer extends Processor {
 				}
 			}
 		}
-		
-		// Add packages to embed to conditional packages
-		if (!packagesToEmbed.isEmpty()) {
-			embedConditionalPackages(packagesToEmbed);
-		}
 	}
 
-	/**
-	 * Add packages that need to be embedded to the jar.
-	 * This is called for conditional imports from non-OSGi jars.
-	 */
-	private void embedConditionalPackages(Packages packagesToEmbed) {
-		try {
-			for (PackageRef packageRef : packagesToEmbed.keySet()) {
-				// Find the package in the classpath and copy it to the dot jar
-				for (Jar cpe : getClasspath()) {
-					Map<String, Resource> packageDir = cpe.getDirectory(packageRef.getPath());
-					if (packageDir != null && !packageDir.isEmpty()) {
-						// Copy all resources from this package
-						for (Map.Entry<String, Resource> entry : packageDir.entrySet()) {
-							String path = entry.getKey();
-							Resource resource = entry.getValue();
-							// Only copy if not already present
-							if (dot.getResource(path) == null) {
-								dot.putResource(path, resource);
-							}
-						}
-						// Mark package as contained (embedded)
-						Attrs attrs = packagesToEmbed.get(packageRef);
-						if (attrs == null) {
-							attrs = new Attrs();
-						}
-						contained.put(packageRef, attrs);
-						// Package found and copied, no need to check other jars
-						break;
-					}
-				}
-			}
-		} catch (Exception e) {
-			exception(e, "Failed to embed conditional packages: %s", e.getMessage());
+	private void stageConditionalImports() {
+		String h = getProperty(IMPORT_PACKAGE);
+		if (h == null) {
+			h = "*";
+		}
+		Instructions filter = new Instructions(h);
+		Packages conditionalImports = filter(filter, new Packages(referred), Create.set());
+		if (!conditionalImports.isEmpty()) {
+			processConditionalImports(conditionalImports);
 		}
 	}
 

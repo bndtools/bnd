@@ -424,6 +424,10 @@ public class Builder extends Analyzer {
 	 */
 	@Override
 	protected Jar getExtra() throws Exception {
+		Jar extra = super.getExtra();
+		if (extra != null) {
+			return extra;
+		}
 		Parameters conditionals = getMergedParameters(CONDITIONAL_PACKAGE);
 		conditionals.putAll(decorated(CONDITIONALPACKAGE));
 		if (conditionals.isEmpty())

@@ -1579,5 +1579,39 @@ public class AnalyzerTest {
 		}
 	}
 
+	@Test
+	public void testConditionalImportWithTransitiveNonOSGiJar() throws Exception {
+		try (Jar dependency = new Jar("dependency")) {
+			dependency.putResource("test/conditionalimportlibrary/a/A.class",
+				new FileResource(IO.getFile("bin_test/test/conditionalimportlibrary/a/A.class")));
+			dependency.putResource("test/conditionalimportlibrary/b/B.class",
+				new FileResource(IO.getFile("bin_test/test/conditionalimportlibrary/b/B.class")));
+
+			try (Builder a = new Builder()) {
+				Properties p = new Properties();
+				p.put("Import-Package", "*;resolution:=conditional");
+				p.put("Private-Package", "test.conditionalimporttransitive");
+
+				a.addClasspath(new File("bin_test"));
+				a.addClasspath(dependency);
+
+				a.setProperties(p);
+				Jar jar = a.build();
+				assertTrue(a.check());
+
+				assertNotNull(jar.getResource("test/conditionalimportlibrary/a/A.class"));
+				assertNotNull(jar.getResource("test/conditionalimportlibrary/b/B.class"));
+
+				String imports = jar.getManifest()
+					.getMainAttributes()
+					.getValue("Import-Package");
+				if (imports != null) {
+					assertFalse(imports.contains("test.conditionalimportlibrary.a"));
+					assertFalse(imports.contains("test.conditionalimportlibrary.b"));
+				}
+			}
+		}
+	}
+
 
 }
