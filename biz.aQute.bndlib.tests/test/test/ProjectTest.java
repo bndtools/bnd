@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
@@ -1595,4 +1596,40 @@ public class ProjectTest {
 				.isEmpty();
 		}
 	}
+
+	@Test
+	public void testDetectSimpleCircularDependencyInBuildpath() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-circular-buildpath"));
+		try (Project projectA = ws.getProject("project-a")) {
+			projectA.verifyDependencies(false);
+			assertThat(projectA.getErrors()).as("project-a should detect circular dependency").isNotEmpty();
+			assertThat(projectA.getErrors().get(0)).as("error message should mention circular dependency")
+				.containsIgnoringCase("circular");
+		}
+	}
+
+	@Test
+	public void testDetectIndirectCircularDependencyInBuildpath() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-indirect-circular"));
+		try (Project projectA = ws.getProject("project-a")) {
+			projectA.verifyDependencies(false);
+			assertThat(projectA.getErrors()).as("project-a should detect indirect circular dependency").isNotEmpty();
+			assertThat(projectA.getErrors().get(0)).as("error message should mention circular dependency")
+				.containsIgnoringCase("circular");
+		}
+	}
+
+	@Test
+	public void testAllowLinearBuildpathWithoutFalsePositive() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-linear-buildpath"));
+		try (Project projectA = ws.getProject("project-a")) {
+			projectA.verifyDependencies(false);
+			// Filter out any other errors that may exist, focus on circular dependency errors
+			List<String> circularErrors = projectA.getErrors().stream()
+				.filter(e -> e.toLowerCase().contains("circular"))
+				.collect(Collectors.toList());
+			assertThat(circularErrors).as("project-a should not detect circular dependency in linear chain").isEmpty();
+		}
+	}
 }
+

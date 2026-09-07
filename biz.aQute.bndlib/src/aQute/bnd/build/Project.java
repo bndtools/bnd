@@ -3166,6 +3166,7 @@ public class Project extends Processor {
 		verifyDependencies(RUNPATH, getRunpath());
 		if (test)
 			verifyDependencies(TESTPATH, getTestpath());
+		verifyBuildpathCircularDependencies();
 		verifyDependencies(BUILDPATH, getBuildpath());
 	}
 
@@ -3191,6 +3192,118 @@ public class Project extends Processor {
 
 		error("%s: has errors: %s", title, Strings.join(msgs));
 	}
+
+	/**
+	 * Detect circular dependencies in buildpath entries.
+	 * This method checks for cycles among project containers in the buildpath.
+	 * Works without calling prepare() on dependency projects to avoid triggering
+	 * the prepare-time cycle detection.
+	 * 
+	 * @throws Exception if a circular dependency is detected
+	 */
+	private void verifyBuildpathCircularDependencies() throws Exception {
+		List<Project> cycle = detectBuildpathCycleFromProject(this, new ArrayList<>(), new HashSet<>());
+		if (cycle != null) {
+			// Format cycle path: A -> B -> C -> A
+			String cyclePath = cycle.stream()
+				.map(Project::getName)
+				.collect(Collectors.joining(" → "));
+			error("Circular dependency in buildpath: %s", cyclePath);
+		}
+	}
+
+	/**
+	 * Recursively detect if there is a circular dependency in buildpath.
+	 * Uses depth-first search to find cycles starting from the given project.
+	 * Does not call getBuildpath() to avoid prepare() overhead and conflicts.
+	 * 
+	 * @param project The project to check
+	 * @param currentPath The current path being traversed
+	 * @param visitedInPath Set of projects in the current traversal path to detect cycles
+	 * @return The cycle path if found, null otherwise
+	 */
+	private List<Project> detectBuildpathCycleFromProject(Project project, List<Project> currentPath, Set<Project> visitedInPath) throws Exception {
+		
+		// Check if this project is already in the current path (cycle detected)
+		if (visitedInPath.contains(project)) {
+			// Found a cycle - construct the cycle list
+			List<Project> cycle = new ArrayList<>();
+			boolean foundCycleStart = false;
+			for (Project p : currentPath) {
+				if (p.equals(project)) {
+					foundCycleStart = true;
+				}
+				if (foundCycleStart) {
+					cycle.add(p);
+				}
+			}
+			cycle.add(project); // Close the cycle
+			return cycle;
+		}
+		
+		// Add to current path
+		currentPath.add(project);
+		visitedInPath.add(project);
+		
+		try {
+			// Get raw buildpath dependencies without calling prepare() on dependency projects
+			List<Project> buildpathProjects = getBuildpathProjectDependencies(project);
+			
+			// Check each project dependency in buildpath
+			for (Project depProject : buildpathProjects) {
+				if (!depProject.equals(project)) {
+					List<Project> cycle = detectBuildpathCycleFromProject(depProject, currentPath, visitedInPath);
+					if (cycle != null) {
+						return cycle;
+					}
+				}
+			}
+		} finally {
+			// Remove from current path for backtracking
+			currentPath.remove(currentPath.size() - 1);
+			visitedInPath.remove(project);
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Extract project dependencies from the buildpath without calling prepare().
+	 * Parses the raw buildpath property and looks up PROJECT type entries.
+	 * 
+	 * @param project The project to get buildpath dependencies for
+	 * @return List of projects referenced in the buildpath
+	 * @throws Exception if something goes wrong
+	 */
+	private List<Project> getBuildpathProjectDependencies(Project project) throws Exception {
+		List<Project> result = new ArrayList<>();
+		
+		// Get the raw buildpath property without parsing containers
+		String buildpathSpec = project.mergeProperties(Constants.BUILDPATH);
+		if (buildpathSpec == null || buildpathSpec.trim().isEmpty()) {
+			return result;
+		}
+		
+		// Parse the buildpath to find project references
+		Parameters buildpathParams = project.parseHeader(buildpathSpec);
+		for (Entry<String, Attrs> entry : buildpathParams.entrySet()) {
+			String bsn = entry.getKey().replaceAll("^\\^", ""); // Remove duplicate marker
+			String versionAttr = entry.getValue().get("version");
+			
+			// Check if this is a PROJECT type reference
+			if ("project".equals(versionAttr)) {
+				// Look up the project by name in the workspace
+				Project depProject = project.getWorkspace().getProject(bsn);
+				if (depProject != null && depProject.exists()) {
+					result.add(depProject);
+				}
+			}
+		}
+		
+		return result;
+	}
+
+
 
 	/**
 	 * Report detailed info from this project
