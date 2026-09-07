@@ -1598,42 +1598,36 @@ public class ProjectTest {
 
 	@Test
 	public void testDetectSimpleCircularDependencyInBuildpath(SoftAssertions softly) throws Exception {
-		Workspace ws = getWorkspace(IO.getFile("testresources/ws-circular-buildpath"));
-		try (Project projectA = ws.getProject("project-a")) {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-circular-buildpath"));
+			Project projectA = ws.getProject("project-a")) {
 			projectA.verifyDependencies(false);
 			softly.assertThat(projectA.getErrors()).as("project-a should detect circular dependency").isNotEmpty();
 			softly.assertThat(projectA.getErrors().get(0)).as("error message should mention circular dependency")
 				.containsIgnoringCase("circular");
-		} finally {
-			ws.close();
 		}
 	}
 
 	@Test
 	public void testDetectIndirectCircularDependencyInBuildpath(SoftAssertions softly) throws Exception {
-		Workspace ws = getWorkspace(IO.getFile("testresources/ws-indirect-circular"));
-		try (Project projectA = ws.getProject("project-a")) {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-indirect-circular"));
+			Project projectA = ws.getProject("project-a")) {
 			projectA.verifyDependencies(false);
 			softly.assertThat(projectA.getErrors()).as("project-a should detect indirect circular dependency").isNotEmpty();
 			softly.assertThat(projectA.getErrors().get(0)).as("error message should mention circular dependency")
 				.containsIgnoringCase("circular");
-		} finally {
-			ws.close();
 		}
 	}
 
 	@Test
 	public void testAllowLinearBuildpathWithoutFalsePositive(SoftAssertions softly) throws Exception {
-		Workspace ws = getWorkspace(IO.getFile("testresources/ws-linear-buildpath"));
-		try (Project projectA = ws.getProject("project-a")) {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-linear-buildpath"));
+			Project projectA = ws.getProject("project-a")) {
 			projectA.verifyDependencies(false);
 			// Filter out any other errors that may exist, focus on circular dependency errors
 			List<String> circularErrors = projectA.getErrors().stream()
 				.filter(e -> e.toLowerCase().contains("circular"))
 				.toList();
 			softly.assertThat(circularErrors).as("project-a should not detect circular dependency in linear chain").isEmpty();
-		} finally {
-			ws.close();
 		}
 	}
 }
