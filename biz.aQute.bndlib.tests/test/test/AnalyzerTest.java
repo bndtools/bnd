@@ -898,12 +898,12 @@ public class AnalyzerTest {
 			Manifest manifest = a.getJar()
 				.getManifest();
 
-			assertEquals(0, a.getErrors()
+			assertEquals(1, a.getErrors()
 				.size());
-			assertEquals(1, a.getWarnings()
+			assertEquals(0, a.getWarnings()
 				.size());
 			assertTrue(
-				a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
+				a.check("Bundle-Activator org.osgi.framework.BundleActivator is not contained in the bundle"));
 
 			String imports = manifest.getMainAttributes()
 				.getValue("Import-Package");
