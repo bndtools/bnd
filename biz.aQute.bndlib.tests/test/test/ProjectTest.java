@@ -1601,7 +1601,8 @@ public class ProjectTest {
 		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-circular-buildpath"));
 			Project projectA = ws.getProject("project-a")) {
 			projectA.verifyDependencies(false);
-			softly.assertThat(projectA.getErrors()).as("project-a should detect circular dependency").isNotEmpty();
+			// Use hard assertion for isEmpty check to prevent IndexOutOfBoundsException
+			assertThat(projectA.getErrors()).as("project-a should detect circular dependency").isNotEmpty();
 			softly.assertThat(projectA.getErrors().get(0)).as("error message should mention circular dependency")
 				.containsIgnoringCase("circular");
 		}
@@ -1612,7 +1613,8 @@ public class ProjectTest {
 		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-indirect-circular"));
 			Project projectA = ws.getProject("project-a")) {
 			projectA.verifyDependencies(false);
-			softly.assertThat(projectA.getErrors()).as("project-a should detect indirect circular dependency").isNotEmpty();
+			// Use hard assertion for isEmpty check to prevent IndexOutOfBoundsException
+			assertThat(projectA.getErrors()).as("project-a should detect indirect circular dependency").isNotEmpty();
 			softly.assertThat(projectA.getErrors().get(0)).as("error message should mention circular dependency")
 				.containsIgnoringCase("circular");
 		}
