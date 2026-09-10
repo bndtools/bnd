@@ -3,12 +3,14 @@ package aQute.lib.xml;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.transform.TransformerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
@@ -16,6 +18,11 @@ import org.xml.sax.SAXNotSupportedException;
 
 public final class XML {
 	private static final Logger logger = LoggerFactory.getLogger(XML.class);
+
+	private static final int		DEFAULT_XML_ENTITY_SIZE_LIMIT	= Integer.getInteger("bnd.xml.entitySizeLimit", 0);
+	private static final String[]	JAXP_ENTITY_SIZE_LIMITS			= {
+		"jdk.xml.totalEntitySizeLimit", "jdk.xml.maxGeneralEntitySizeLimit"
+	};
 
 	private XML() {}
 
@@ -87,6 +94,8 @@ public final class XML {
 				e);
 		}
 
+		setJaxpLimits(instance);
+
 		return instance;
 	}
 
@@ -95,6 +104,14 @@ public final class XML {
 	 * <p>
 	 * The returned SAXParserFactory is configured to avoid XML External Entity
 	 * (XXE) attacks.
+	 * </p>
+	 * <p>
+	 * Note that JAXP processing limits such as
+	 * {@code jdk.xml.totalEntitySizeLimit} and
+	 * {@code jdk.xml.maxGeneralEntitySizeLimit} cannot be configured on a
+	 * {@link SAXParserFactory}. Callers that want bnd's configured JAXP limits
+	 * should use {@link #newSAXParser()} instead.
+	 * </p>
 	 *
 	 * @return A properly configured SAXParserFactory instance.
 	 */
@@ -138,6 +155,26 @@ public final class XML {
 		return instance;
 	}
 
+
+	/**
+	 * Create and return a {@link SAXParser} instance configured using
+	 * {@link #newSAXParserFactory()}.
+	 * <p>
+	 * In addition to the factory's XML security configuration, the parser is
+	 * configured with bnd's JAXP entity-size limits. Explicit {@code jdk.xml.*}
+	 * system properties are honored; otherwise bnd's defaults are used.
+	 *
+	 * @return a properly configured SAXParser instance
+	 * @throws ParserConfigurationException if a parser cannot be created
+	 * @throws SAXException if a SAX parser cannot be created
+	 */
+	public static SAXParser newSAXParser() throws Exception {
+
+		SAXParser instance = newSAXParserFactory().newSAXParser();
+		setJaxpLimits(instance);
+		return instance;
+	}
+
 	/**
 	 * Create and return a XMLInputFactory instance.
 	 * <p>
@@ -160,6 +197,9 @@ public final class XML {
 			logger.info("Unable to set property {} to false: XML External Entity (XXE) attack risk",
 				XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, e);
 		}
+
+		setJaxpLimits(instance);
+
 		return instance;
 	}
 
@@ -187,4 +227,43 @@ public final class XML {
 		}
 		return instance;
 	}
+
+	private static void setJaxpLimits(XMLInputFactory factory) {
+		for (String property : JAXP_ENTITY_SIZE_LIMITS) {
+			int value = Integer.getInteger(property, DEFAULT_XML_ENTITY_SIZE_LIMIT);
+
+			try {
+				factory.setProperty(property, value);
+			} catch (IllegalArgumentException e) {
+				// Not supported by this XML implementation.
+				logger.info("Unable to set property {} to : {}", property, value, e);
+			}
+		}
+	}
+
+	private static void setJaxpLimits(SAXParser parser) {
+		for (String property : JAXP_ENTITY_SIZE_LIMITS) {
+			int value = Integer.getInteger(property, DEFAULT_XML_ENTITY_SIZE_LIMIT);
+
+			try {
+				parser.setProperty(property, value);
+			} catch (Exception e) {
+				// Not supported by this XML implementation.
+				logger.info("Unable to set property {} to : {}", property, value, e);
+			}
+		}
+	}
+
+	private static void setJaxpLimits(DocumentBuilderFactory factory) {
+		for (String property : JAXP_ENTITY_SIZE_LIMITS) {
+			int value = Integer.getInteger(property, DEFAULT_XML_ENTITY_SIZE_LIMIT);
+			try {
+				factory.setAttribute(property, value);
+			} catch (IllegalArgumentException e) {
+				// Not supported by this XML implementation.
+				logger.info("Unable to set property {} to : {}", property, value, e);
+			}
+		}
+	}
+
 }

@@ -26,6 +26,7 @@ import aQute.bnd.result.Result;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.lib.xml.XML;
 import aQute.libg.re.Catalog;
 import aQute.libg.re.RE;
 import aQute.libg.re.RE.Match;
@@ -87,7 +88,7 @@ public class MagicBnd {
 	}
 
 	private static String getName(File file, String defaultName) throws FactoryConfigurationError {
-		XMLInputFactory factory = XMLInputFactory.newInstance();
+		XMLInputFactory factory = XML.newXMLInputFactory();
 		try (InputStream inputStream = new FileInputStream(file);) {
 			XMLStreamReader reader = factory.createXMLStreamReader(inputStream);
 
