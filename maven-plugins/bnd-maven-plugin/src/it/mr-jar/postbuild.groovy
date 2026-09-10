@@ -23,6 +23,7 @@ assert default_manifest.getValue('Bundle-SymbolicName') == 'mr'
 assert default_manifest.getValue('Multi-Release') == 'true'
 assert default_manifest.getValue('Require-Capability').contains('osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"')
 assert default_manifest.getValue('Import-Package').contains('org.apache.commons.io;version=')
+assert mr_jar.getEntry('bnd/mr/example/Main.class') != null
 
 //check no unwanted module-info is there
 assert mr_jar.getEntry('module-info.class') == null

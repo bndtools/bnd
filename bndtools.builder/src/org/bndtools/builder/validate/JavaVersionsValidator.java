@@ -16,6 +16,18 @@ import bndtools.central.Central;
 
 public class JavaVersionsValidator implements IValidator, IProjectValidator {
 
+	static boolean sameJavaVersion(String first, String second) {
+		return first != null && second != null && normalizeJavaVersion(first).equals(normalizeJavaVersion(second));
+	}
+
+	private static String normalizeJavaVersion(String version) {
+		String normalized = version.trim();
+		if (normalized.startsWith("1.")) {
+			normalized = normalized.substring(2);
+		}
+		return normalized;
+	}
+
 	@Override
 	public IStatus validate(Builder builder) {
 		return Status.OK_STATUS;
@@ -30,6 +42,16 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
 		}
 
 		Map<String, String> options = javaProject.getOptions(true);
+		String javacRelease = model.getProperty(Constants.JAVAC_RELEASE);
+		if (javacRelease != null && !javacRelease.isEmpty()) {
+			String eclipseCompliance = options.get(JavaCore.COMPILER_COMPLIANCE);
+			if (!sameJavaVersion(javacRelease, eclipseCompliance)) {
+				model.warning("Eclipse: javac.release inconsistency between bnd & Eclipse. bnd is %s and Eclipse is %s",
+					javacRelease, eclipseCompliance)
+					.header(Constants.JAVAC_RELEASE);
+			}
+			return;
+		}
 
 		String javacSource = model.getProperty(Constants.JAVAC_SOURCE);
 		if (javacSource != null) {
