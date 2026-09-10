@@ -28,6 +28,25 @@ bnd stores user-specific settings in:
 
 The settings file can contain configuration such as identity and authorization information. Depending on the environment, it can also be protected with a password using the `BND_SETTINGS_PASSWORD` environment variable.
 
+The file contains ordinary string settings in `map`, together with the public `id` and private `secret` key data used by
+bnd authentication. The [settings sample](../examples/settings.json) shows the complete JSON shape. The key data in that
+sample is disposable; generate a new identity for real use with `bnd settings -g`.
+
+## Usage
+
+Copy the sample to the default location, then replace its example values:
+
+    $ mkdir -p ~/.bnd
+    $ cp docs/examples/settings.json ~/.bnd/settings.json
+
+Read a value from the settings file with the `global` macro in a workspace `cnf/build.bnd`:
+
+    repository.user: ${global;example.username}
+
+Use a default when the setting is absent:
+
+    repository.token: ${global;example.token;not-configured}
+
 ## Authorization
 
 ## The bnd settings Command
