@@ -1,6 +1,5 @@
 package aQute.libg.sax;
 
-import javax.xml.parsers.SAXParser;
 import javax.xml.transform.Result;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
@@ -23,9 +22,8 @@ public class SAXUtil {
 				filter.setParent(last);
 				last = filter;
 			}
-
-		SAXParser newSAXParser = XML.newSAXParser();
-		XMLReader reader = newSAXParser
+		XMLReader reader = XML.newSAXParserFactory()
+			.newSAXParser()
 			.getXMLReader();
 		reader.setContentHandler(last);
 

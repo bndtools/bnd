@@ -130,6 +130,7 @@ import aQute.libg.tuple.Pair;
 public class Project extends Processor {
 	private final static Logger logger = LoggerFactory.getLogger(Project.class);
 
+
 	class RefreshData implements AutoCloseable {
 		final Memoize<Parameters>				installRepositories;
 		final CloseableMemoize<ProjectGenerate>	generate;
@@ -3232,8 +3233,8 @@ public class Project extends Processor {
 	// TODO test format parametsr
 
 	public void compile(boolean test) throws Exception {
-
-		Command javac = getCommonJavac(false);
+		JavacCommand jr = new JavacCommand(this);
+		Command javac = jr.getCommonJavac(false);
 		javac.add("-d", IO.absolutePath(getOutput()));
 
 		StringBuilder buildpath = new StringBuilder();
@@ -3277,7 +3278,7 @@ public class Project extends Processor {
 			compile(javac, "src");
 
 		if (test) {
-			javac = getCommonJavac(true);
+			javac = jr.getCommonJavac(true);
 			javac.add("-d", IO.absolutePath(getTestOutput()));
 
 			Collection<Container> tp = Container.flatten(getTestpath());
@@ -3371,55 +3372,7 @@ public class Project extends Processor {
 		return argFile;
 	}
 
-	private Command getCommonJavac(boolean test) throws Exception {
-		Command javac = new Command();
-		javac.add(getJavaExecutable("javac"));
-		String target = getProperty("javac.target", "1.6");
-		String profile = getProperty("javac.profile", "");
-		String source = getProperty("javac.source", "1.6");
-		String debug = getProperty("javac.debug");
-		if ("on".equalsIgnoreCase(debug) || "true".equalsIgnoreCase(debug))
-			debug = "vars,source,lines";
 
-		Parameters options = new Parameters(getProperty("java.options"), this);
-
-		boolean deprecation = isTrue(getProperty("java.deprecation"));
-
-		javac.add("-encoding", "UTF-8");
-
-		javac.add("-source", source);
-
-		javac.add("-target", target);
-
-		if (!profile.isEmpty())
-			javac.add("-profile", profile);
-
-		if (deprecation)
-			javac.add("-deprecation");
-
-		if (test || debug == null) {
-			javac.add("-g:source,lines,vars");
-		} else {
-			javac.add("-g:" + debug);
-		}
-
-		javac.addAll(options.keyList());
-
-		StringBuilder bootclasspath = new StringBuilder();
-		String bootclasspathDel = "-Xbootclasspath/p:";
-
-		Collection<Container> bcp = Container.flatten(getBootclasspath());
-		for (Container c : bcp) {
-			bootclasspath.append(bootclasspathDel)
-				.append(IO.absolutePath(c.getFile()));
-			bootclasspathDel = File.pathSeparator;
-		}
-
-		if (bootclasspath.length() != 0) {
-			javac.add(bootclasspath.toString());
-		}
-		return javac;
-	}
 
 	public String _ide(String[] args) throws IOException {
 		if (args.length < 2) {

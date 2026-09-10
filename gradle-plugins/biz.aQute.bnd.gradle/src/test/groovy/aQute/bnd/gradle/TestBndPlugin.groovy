@@ -28,6 +28,41 @@ class TestBndPlugin extends Specification {
 		assert pluginClasspath != null
 	}
 
+	def "Bnd plugin enforces Java API level for matching source and target"() {
+		given:
+		String testProject = "workspaceplugin1-release"
+		File testProjectDir = new File(testResources, testProject)
+		testProjectDir.deleteDir()
+		copyDirectory(new File(testResources, "workspaceplugin1"), testProjectDir)
+		new File(testProjectDir, "cnf/ext/javac.bnd").text = "javac.source=1.8\njavac.target=8\n"
+		new File(testProjectDir, "test.simple/src/main/java/test/simple/UsesNewerApi.java").with {
+			parentFile.mkdirs()
+			text = "package test.simple;\nimport java.util.List;\npublic class UsesNewerApi { List<String> values = List.of(); }\n"
+		}
+
+		when:
+		def result = TestHelper.getGradleRunner()
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--stacktrace", ":test.simple:compileJava")
+				.forwardOutput()
+				.buildAndFail()
+
+		then:
+		result.output.contains("release version 8 not supported") || result.output.contains("cannot find symbol")
+	}
+
+	private static void copyDirectory(File source, File target) {
+		target.mkdirs()
+		source.eachFile { file ->
+			File destination = new File(target, file.name)
+			if (file.directory) {
+				copyDirectory(file, destination)
+			} else {
+				destination.bytes = file.bytes
+			}
+		}
+	}
+
 	def "Bnd Workspace Plugin"() {
 		given:
 		String testProject = "workspaceplugin1"

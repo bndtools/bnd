@@ -83,6 +83,7 @@
 				<configuration>
 					<bnd>
 						<![CDATA[
+							javac.release: 8
 							Export-Package: bnd.mr.example.*
 							Import-Package: *
 							Multi-Release: true
