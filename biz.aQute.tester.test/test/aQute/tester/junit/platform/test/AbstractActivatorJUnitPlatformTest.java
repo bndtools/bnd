@@ -37,6 +37,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.platform.commons.JUnitException;
+import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.opentest4j.AssertionFailedError;
 import org.opentest4j.MultipleFailuresError;
@@ -740,5 +744,51 @@ abstract class AbstractActivatorJUnitPlatformTest extends AbstractActivatorCommo
 		assertThat(methods).containsExactly("testPlanExecutionStarted", "executionStarted", "executionStarted",
 			"executionStarted", "executionStarted", "executionStarted", "executionFinished", "executionFinished",
 			"executionFinished", "executionFinished", "executionFinished", "testPlanExecutionFinished");
+	}
+
+	public static class FilterGenerator implements BundleActivator, PostDiscoveryFilter {
+
+		ServiceRegistration<PostDiscoveryFilter> reg;
+
+		@Override
+		public FilterResult apply(TestDescriptor descriptor) {
+			return descriptor.getSource()
+				.filter(MethodSource.class::isInstance)
+				.map(MethodSource.class::cast)
+				.filter(source -> source.getClassName()
+					.equals(With2Failures.class.getName())
+					&& source.getMethodName()
+						.equals("test1"))
+				.map(source -> FilterResult.excluded("excluded by test"))
+				.orElseGet(() -> FilterResult.included(null));
+		}
+
+		@Override
+		public void start(BundleContext context) throws Exception {
+			reg = context.registerService(PostDiscoveryFilter.class, this, null);
+		}
+
+		@Override
+		public void stop(BundleContext context) throws Exception {
+			reg.unregister();
+		}
+	}
+
+	@Test
+	public void testFilters_excludeSpecificTest() throws Exception {
+		final ExitCode exitCode = runTests(() -> {
+			lp.bundle()
+				.addResourceWithCopy(FilterGenerator.class)
+				.bundleActivator(FilterGenerator.class.getName())
+				.importPackage("org.junit.platform.engine")
+				.importPackage("org.junit.platform.engine.support.descriptor")
+				.importPackage("org.junit.platform.launcher")
+				.importPackage("*")
+				.start();
+		}, With2Failures.class);
+
+		// test1 is excluded, so only test3's failure should be counted
+		assertThat(exitCode.exitCode).as("exit code")
+			.isEqualTo(1);
 	}
 }
