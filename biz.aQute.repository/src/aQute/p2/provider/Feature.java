@@ -28,6 +28,30 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 public class Feature extends XMLBase {
 
 	/**
+	 * The identity type of an Eclipse feature resource, see
+	 * {@link IdentityNamespace#CAPABILITY_TYPE_ATTRIBUTE}. This is the value
+	 * that a {@code -buildpath} clause must set as {@code type} to reference
+	 * an Eclipse feature, e.g. {@code type=org.eclipse.update.feature}.
+	 */
+	public static final String	TYPE				= "org.eclipse.update.feature";
+
+	/**
+	 * Requirement attribute marking the relation of an osgi.identity
+	 * requirement to the feature: {@value #RELATION_PLUGIN} for
+	 * {@code <plugin>} references, {@value #RELATION_INCLUDE} for
+	 * {@code <includes>} references and {@value #RELATION_REQUIRE} for
+	 * {@code <requires><import>} references. This attribute does not take part
+	 * in filter matching, it only conveys provenance so that consumers (e.g.
+	 * -buildpath feature expansion) can distinguish members from mere
+	 * dependencies.
+	 */
+	public static final String	RELATION_ATTRIBUTE	= "bnd.relation";
+	public static final String	RELATION_PLUGIN		= "plugin";
+	public static final String	RELATION_INCLUDE	= "include";
+	public static final String	RELATION_REQUIRE	= "require";
+
+
+	/**
 	 * Represents a plugin reference in a feature
 	 */
 	public static class Plugin {
@@ -255,7 +279,7 @@ public class Feature extends XMLBase {
 		// Create identity capability with type=org.eclipse.update.feature
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, id);
-		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, "org.eclipse.update.feature");
+		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, TYPE);
 		if (version != null) {
 			try {
 				Version v = Version.parseVersion(version);
@@ -312,21 +336,42 @@ public class Feature extends XMLBase {
 				req.addDirective("filter",
 					String.format("(&(osgi.identity=%s)(version=%s))", plugin.id, plugin.version));
 			}
+			req.addAttribute(RELATION_ATTRIBUTE, RELATION_PLUGIN);
+			req.addAttribute("id", plugin.id);
+			addVersionAttribute(req, plugin.version);
+			if (plugin.os != null)
+				req.addAttribute("os", plugin.os);
+			if (plugin.ws != null)
+				req.addAttribute("ws", plugin.ws);
+			if (plugin.arch != null)
+				req.addAttribute("arch", plugin.arch);
+			if (plugin.fragment)
+				req.addAttribute("fragment", "true");
 			rb.addRequirement(req);
 		}
 
 		// Create requirements for included features
 		for (Includes include : includes) {
 			CapReqBuilder req = new CapReqBuilder("osgi.identity");
-			String filter = String.format("(&(osgi.identity=%s)(type=org.eclipse.update.feature))", include.id);
+			String filter = String.format("(&(osgi.identity=%s)(type=%s))", include.id, TYPE);
 			if (include.version != null && !include.version.equals("0.0.0")) {
-				filter = String.format("(&(osgi.identity=%s)(type=org.eclipse.update.feature)(version=%s))", include.id,
+				filter = String.format("(&(osgi.identity=%s)(type=%s)(version=%s))", include.id, TYPE,
 					include.version);
 			}
 			req.addDirective("filter", filter);
 			if (include.optional) {
 				req.addDirective("resolution", "optional");
 			}
+			req.addAttribute(RELATION_ATTRIBUTE, RELATION_INCLUDE);
+			req.addAttribute("id", include.id);
+			req.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, TYPE);
+			addVersionAttribute(req, include.version);
+			if (include.os != null)
+				req.addAttribute("os", include.os);
+			if (include.ws != null)
+				req.addAttribute("ws", include.ws);
+			if (include.arch != null)
+				req.addAttribute("arch", include.arch);
 			rb.addRequirement(req);
 		}
 
@@ -339,10 +384,27 @@ public class Feature extends XMLBase {
 			String filter = buildRequirementFilter(reqIdentity, requirement.version, requirement.match,
 				requirement.feature != null);
 			req.addDirective("filter", filter);
+			req.addAttribute(RELATION_ATTRIBUTE, RELATION_REQUIRE);
 			rb.addRequirement(req);
 		}
 
 		return rb.build();
+	}
+
+	/**
+	 * Add an exact version attribute to a requirement when the version is a
+	 * valid OSGi version and not the 0.0.0 placeholder. The filter directive
+	 * remains the authoritative constraint; the attribute only conveys the
+	 * exact pinned version to consumers without requiring filter parsing.
+	 */
+	private static void addVersionAttribute(CapReqBuilder req, String version) {
+		if (version == null || version.equals("0.0.0"))
+			return;
+		try {
+			req.addAttribute("version", Version.parseVersion(version));
+		} catch (IllegalArgumentException e) {
+			// not a valid OSGi version, the filter still carries it
+		}
 	}
 
 	/**
@@ -371,7 +433,9 @@ public class Feature extends XMLBase {
 		
 		// Add type for features
 		if (isFeature) {
-			filter.append("(type=org.eclipse.update.feature)");
+			filter.append("(type=")
+				.append(TYPE)
+				.append(")");
 		}
 		
 		// Add version constraint if present

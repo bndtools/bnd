@@ -1,0 +1,10 @@
+Test-Cases: ${classes;CONCRETE;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable}
+
+# The harness utilities (WorkbenchTest/WorkspaceImporter/TaskUtils) are
+# duplicated into this bundle since the headless test bundle is not part of
+# the SWTBot launch.
+-privatepackage: \
+	bndtools.core.test.ui.swtbot,\
+	bndtools.core.test.utils
+
+Import-Package: ${eclipse.importpackage},*

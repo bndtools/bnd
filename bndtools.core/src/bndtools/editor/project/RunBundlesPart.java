@@ -30,7 +30,6 @@ import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import bndtools.central.Central;
-import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
