@@ -20,7 +20,10 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 Add template fragment(s) to the current workspace. Leave the name empty to see a list of available templates at the index.\n\nExample:\n bnd add fragment osgi gradle 
 
 #### Synopsis: 
-	   fragment  <[name]...>
+	   fragment [options]  <[name]...>
+
+##### Options: 
+- `[ -s --showArchived ]` Show archived template fragments when listing available templates
 
 ### plugin 
 Add a plugin
@@ -51,4 +54,5 @@ See https://bnd.bndtools.org/chapters/620-template-fragments.html for more infor
 
 ##### Options: 
 - `[ -f --fragment <string>* ]` Specify template fragment(s) by name to install together with the created workspace. Fragments are identified by the 'name' attribute in the index. Specify multiple fragments by repeating the -f option. To see a list of available templates use 'bnd add fragment' without arguments.
+- `[ -s --showArchived ]` Show archived template fragments when listing available templates
 
