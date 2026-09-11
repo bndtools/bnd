@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -462,11 +463,18 @@ public class UI<M> implements AutoCloseable {
 
 			@Override
 			public AutoCloseable subscribe(Consumer<Object[]> subscription) {
-				ISelectionChangedListener listener = se -> {
+				ISelectionChangedListener selectionListener = se -> {
 					subscription.accept(widget.getCheckedElements());
 				};
-				widget.addSelectionChangedListener(listener);
-				return () -> widget.removeSelectionChangedListener(listener);
+				ICheckStateListener checkStateListener = cse -> {
+					subscription.accept(widget.getCheckedElements());
+				};
+				widget.addSelectionChangedListener(selectionListener);
+				widget.addCheckStateListener(checkStateListener);
+				return () -> {
+					widget.removeSelectionChangedListener(selectionListener);
+					widget.removeCheckStateListener(checkStateListener);
+				};
 			}
 		};
 	}
