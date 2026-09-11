@@ -47,6 +47,7 @@ public class Model implements Runnable {
 	boolean				clean				= false;
 	boolean				updateWorkspace		= false;
 	boolean				switchWorkspace		= true;
+	boolean				showArchived		= false;
 	List<TemplateInfo>	templates			= new ArrayList<>();
 	List<TemplateInfo>	selectedTemplates	= new ArrayList<>();
 	Progress			validatedUrl		= Progress.init;

@@ -18,7 +18,7 @@ import bndtools.util.ui.UI;
  */
 class TemplateDefinitionDialog extends Dialog {
 	final UI<TemplateDefinitionDialog>	ui	= new UI<>(this);
-	String								path;
+	String								path	= "";
 
 	public TemplateDefinitionDialog(Shell parentShell) {
 		super(parentShell);
@@ -42,8 +42,6 @@ class TemplateDefinitionDialog extends Dialog {
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 12, 1));
 
 		Text textField = new Text(container, SWT.BORDER);
-		textField.setText(
-			"https://raw.githubusercontent.com/bndtools/workspace-templates/refs/heads/master/index.bnd");
 		GridData textFieldLayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false, 11, 1);
 		textFieldLayoutData.minimumWidth = 200;
 		textField.setLayoutData(textFieldLayoutData);
