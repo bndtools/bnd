@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-upto VERSION</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-upto VERSION</h1>
+<ul>
+<li>
+<p>Example: <code>-upto: 2.3.1</code></p>
+</li>
+<li>
+<p>Pattern: <code>(\d{1,10})(\.(\d{1,10})(\.(\d{1,10})(\.([-\w]+))?)?)?</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/upto.md -->
+<p>The <code>-upto</code> instruction specifies the highest version of bnd features that your project should be compatible with. When you set this instruction, any features or behaviors introduced after the specified version will be disabled, ensuring compatibility with earlier versions of bnd.</p>
+<p>This is useful for maintaining backward compatibility or for projects that need to avoid adopting new behaviors automatically. If <code>-upto</code> is not set, bnd assumes the latest version and enables all features by default.</p>
+<p>In summary, use <code>-upto</code> to control the introduction of new features and maintain a stable build environment as bnd evolves.</p>
+<p><br /><br /></p>
+</body>
+</html>

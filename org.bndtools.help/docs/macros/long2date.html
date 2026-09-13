@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>long2date</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>long2date</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>long2date</code> macro converts a long integer representing milliseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC) into a human-readable date string.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${long2date;&lt;milliseconds&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>milliseconds</code> - A long integer representing milliseconds since epoch</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Parses the input as a long integer</li>
+<li>Converts to a formatted date string</li>
+<li>Returns "not a valid long" if parsing fails</li>
+<li>Uses a standard date format for output</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Convert current time:</p>
+<div class="highlight"><pre><span></span><code>${long2date;${currenttime}}
+# Returns: &quot;Wed Nov 20 10:30:45 UTC 2024&quot; (example)
+</code></pre></div>
+
+<p>Convert stored timestamp:</p>
+<div class="highlight"><pre><span></span><code>Build-Date: ${long2date;1700000000000}
+# Returns human-readable date
+</code></pre></div>
+
+<p>Format file modification time:</p>
+<div class="highlight"><pre><span></span><code>Modified: ${long2date;${fmodified;${@}}}
+</code></pre></div>
+
+<p>Display build timestamp:</p>
+<div class="highlight"><pre><span></span><code>${long2date;${tstamp}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Converting timestamps to readable dates</li>
+<li>Displaying build times in manifests</li>
+<li>Formatting file modification times</li>
+<li>Debugging timestamp values</li>
+<li>Creating human-readable logs</li>
+<li>Documentation generation with dates</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Input must be milliseconds (not seconds)</li>
+<li>Returns "not a valid long" for invalid input</li>
+<li>Date format is standard Java Date.toString() format</li>
+<li>The output format is not customizable in this macro</li>
+<li>For custom date formatting, use <code>${tstamp}</code> macro</li>
+<li>See also: <code>${currenttime}</code> for getting current time in milliseconds</li>
+<li>See also: <code>${tstamp}</code> for formatted timestamps</li>
+<li>See also: <code>${now}</code> for seconds since epoch</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

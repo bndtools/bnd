@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-donotcopy</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-donotcopy</h1>
+<ul>
+<li>
+<p>Example: <code>-donotcopy=(CVS|\.svn)</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/donotcopy.md -->
+<p>When <code>-includeresource</code> copies files from another JAR or the file system it will look at the <code>-donotcopy</code> 
+instruction. This instruction is a <em>single</em> regular expression. Any resource that is copied is matched
+against this list. If there is a match, then the file is ignored.</p>
+<p>For example (and also the defaults)</p>
+<div class="highlight"><pre><span></span><code>-donotcopy: CVS|\\.svn|\\.git|\\.DS_Store|\\.gitignore
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

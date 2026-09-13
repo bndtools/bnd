@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>do</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>do</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   do [options]  ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -f --force ]</code> Force even when there are errors</li>
+<li><code>[ -o --output &lt;string&gt; ]</code> The output file</li>
+</ul>
+<!-- Manual content from: ext/do.md -->
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>biz.aQute.bnd (master)$ bnd do generated/biz.aQute.bnd.jar 
+[MANIFEST biz.aQute.bnd]
+Bnd-LastModified                         1404915822703                           
+Bundle-Copyright                         Copyright (c) aQute (2000, 2014). All Rights Reserved.
+Bundle-Description                       This command line utility is the Swiss army knife of OSGi. It provides you with a breadth
+Bundle-DocURL                            http://www.aQute.biz/Code/Bnd           
+Bundle-License                           http://www.opensource.org/licenses/apache2.0.php; description=&quot;Apache License, Version 2.0&quot;; link=http://www.apache.org/licenses/LICENSE-2.0.html
+Bundle-ManifestVersion                   2                                       
+Bundle-Name                              biz.aQute.bnd                           
+Bundle-SCM                               git://github.com/bndtools/bnd.git       
+Bundle-SymbolicName                      biz.aQute.bnd                           
+Bundle-Vendor                            aQute SARL http://www.aQute.biz         
+Bundle-Version                           2.4.0.201407091423                      
+Conditional-Package                      aQute.libg.*,aQute.lib.*,aQute.configurable
+Created-By                               1.8.0 (Oracle Corporation)              
+Export-Package                           aQute.bnd.service;version=&quot;4.1.0&quot;;uses:=&quot;aQute.bnd.build,aQute.bnd.osgi,aQute.bnd.version,aQute.service.reporter&quot;,aQute.bnd.service.action;version=&quot;2.0.0&quot;;uses:=&quot;aQute.bnd.build&quot;,aQute.bnd.service.classparser;version=&quot;1.0&quot;;uses:=&quot;aQute.bnd.osgi&quot;,aQute.bnd.service.diff;version=&quot;1.0&quot;;uses:=&quot;aQute.bnd.osgi&quot;,aQute.bnd.service.extension;version=&quot;1.0&quot;;uses:=&quot;aQute.bnd.build&quot;,aQute.bnd.service.progress;version=&quot;1.0.0&quot;,aQute.bnd.service.repository;version=&quot;1.2&quot;;uses:=&quot;aQute.bnd.service,aQute.bnd.version,aQute.service.reporter,org.osgi.resource&quot;,aQute.bnd.service.resolve.hook;version=&quot;1.0&quot;;uses:=&quot;org.osgi.resource&quot;,aQute.bnd.service.url;version=&quot;1.2&quot;,aQute.bnd.header;version=&quot;1.3.0&quot;;uses:=&quot;aQute.bnd.version,aQute.service.reporter&quot;,aQute.bnd.osgi;version=&quot;2.3.0&quot;;uses:=&quot;aQute.bnd.build,aQute.bnd.header,aQute.bnd.service,aQute.bnd.util.dto,aQute.bnd.version,aQute.service.reporter&quot;,aQute.bnd.build;version=&quot;2.4.0&quot;;uses:=&quot;aQute.bnd.maven.support,aQute.bnd.osgi,aQute.bnd.service,aQute.bnd.service.action,aQute.bnd.version,aQute.service.reporter&quot;,aQute.bnd.version;version=&quot;1.1.0&quot;,aQute.bnd.maven.support;version=&quot;2.0&quot;;uses:=&quot;aQute.bnd.service,aQute.bnd.version,aQute.service.reporter,javax.xml.xpath,org.w3c.dom&quot;,org.osgi.service.bindex;version=&quot;1.0&quot;,aQute.service.reporter;version=&quot;1.0.1&quot;,aQute.bnd.osgi.resource;version=&quot;1.4.0&quot;;uses:=&quot;aQute.bnd.header,aQute.bnd.util.dto,org.osgi.resource&quot;,org.osgi.service.repository;version=&quot;1.0&quot;;uses:=&quot;org.osgi.resource&quot;,org.osgi.resource;version=&quot;1.0&quot;,aQute.bnd.util.dto;version=&quot;1.0&quot;
+Git-Descriptor                           2.4.0.M1-66-gc1ad07d-dirty              
+Git-SHA                                  c1ad07dfeb4704ce590bd93c1405d7bfe8bef131
+Import-Package                           org.apache.tools.ant;resolution:=optional,org.apache.tools.ant.taskdefs;resolution:=optional,org.apache.tools.ant.types;resolution:=optional,aQute.bnd.service;version=&quot;[4.1,5)&quot;,aQute.bnd.service.action;version=&quot;[2.0,2.1)&quot;,aQute.bnd.service.diff;version=&quot;[1.0,2)&quot;,aQute.bnd.service.progress;version=&quot;[1.0,2)&quot;,aQute.bnd.service.repository;version=&quot;[1.2,2)&quot;,aQute.bnd.service.url;version=&quot;[1.2,2)&quot;,aQute.bnd.version;version=&quot;[1.1,2)&quot;,aQute.service.reporter;version=&quot;[1.0,2)&quot;,javax.crypto,javax.crypto.spec,javax.naming,javax.net.ssl,javax.script,javax.xml.namespace,javax.xml.parsers,javax.xml.transform,javax.xml.transform.dom,javax.xml.transform.stream,javax.xml.xpath,org.osgi.framework;version=&quot;[1.6,2)&quot;,org.osgi.resource;version=&quot;[1.0,2)&quot;,org.osgi.service.log;version=&quot;[1.3,2)&quot;,org.w3c.dom,org.xml.sax,org.xml.sax.helpers,junit.framework;resolution:=optional;version=&quot;[3.8,4)&quot;
+Main-Class                               aQute.bnd.main.bnd                      
+Manifest-Version                         1.0                                     
+Private-Package                          aQute.bnd.annotation;version=&quot;1.43.2&quot;,aQute.bnd.annotation.component;version=&quot;1.43.1&quot;,aQute.bnd.annotation.headers;version=&quot;1.0&quot;,aQute.bnd.annotation.licenses;version=&quot;1.0&quot;,aQute.bnd.annotation.metatype;version=&quot;1.44.1&quot;,aQute.bnd.ant,aQute.bnd.build.model;version=&quot;2.6.0&quot;,aQute.bnd.build.model.clauses;version=2,aQute.bnd.build.model.conversions,aQute.bnd.compatibility,aQute.bnd.component,aQute.bnd.component.error;version=&quot;1.0.0&quot;,aQute.bnd.differ;version=&quot;1.1.0&quot;,aQute.bnd.enroute.commands,aQute.bnd.filerepo;version=&quot;1.0&quot;,aQute.bnd.gradle,aQute.bnd.help;version=&quot;1.1&quot;,aQute.bnd.indexer,aQute.bnd.indexer.analyzers,aQute.bnd.main;version=&quot;0.9&quot;,aQute.bnd.make,aQute.bnd.make.calltree,aQute.bnd.make.component,aQute.bnd.make.coverage,aQute.bnd.make.metatype,aQute.bnd.maven,aQute.bnd.obr,aQute.bnd.osgi.eclipse,aQute.bnd.properties;version=&quot;2.0&quot;,aQute.bnd.resource.repository,aQute.bnd.signing,aQute.bnd.testing;version=&quot;1.0&quot;,aQute.bnd.url;version=&quot;1.0&quot;,aQute.configurable;version=&quot;1.0.0&quot;,aQute.lib.deployer,embedded-repo.jar,org.osgi.service.component.annotations;version=&quot;1.3&quot;,org.osgi.service.coordinator;version=&quot;1.0&quot;,templates,aQute.lib.base64;version=&quot;1.2.0&quot;,aQute.lib.collections;version=&quot;1.2.0&quot;,aQute.lib.converter;version=&quot;2.0.1&quot;,aQute.lib.filter;version=&quot;1.1.0&quot;,aQute.lib.getopt;version=&quot;1.0.0&quot;,aQute.lib.hex;version=&quot;1.1.0&quot;,aQute.lib.io;version=&quot;1.4.0&quot;,aQute.lib.json;version=&quot;3.0.0&quot;,aQute.lib.justif;version=&quot;1.1.0&quot;,aQute.lib.persistentmap;version=&quot;1.1.0&quot;,aQute.lib.settings;version=&quot;1.2.0&quot;,aQute.lib.strings;version=&quot;1.1.0&quot;,aQute.lib.tag;version=&quot;1.1&quot;,aQute.libg.classdump;version=&quot;1.0&quot;,aQute.libg.command;version=&quot;3.0.0&quot;,aQute.libg.cryptography;version=&quot;1.1.0&quot;,aQute.libg.filelock;version=&quot;1.0.0&quot;,aQute.libg.filters;version=&quot;1.0&quot;,aQute.libg.forker;version=&quot;1.0&quot;,aQute.libg.generics;version=&quot;1.0&quot;,aQute.libg.glob;version=&quot;1.1.1&quot;,aQute.libg.map;version=&quot;1.2.0&quot;,aQute.libg.qtokens;version=&quot;1.0&quot;,aQute.libg.reporter;version=&quot;1.5&quot;,aQute.libg.sed;version=&quot;1.1.0&quot;,aQute.libg.tuple;version=&quot;1.0&quot;,aQute.lib.markdown
+Require-Capability                       osgi.ee;filter:=&quot;(&amp;(osgi.ee=JavaSE)(version=1.6))&quot;
+Tool                                     Bnd-2.4.1.201406261752
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

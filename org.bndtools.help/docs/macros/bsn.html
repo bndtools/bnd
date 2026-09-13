@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>bsn</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>bsn</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>bsn</code> macro returns the Bundle Symbolic Name (BSN) of the bundle currently being analyzed or built. This is particularly useful in sub-bundle scenarios where the BSN may differ from the project's main BSN.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${bsn}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the Bundle-SymbolicName of the bundle being generated</li>
+<li>In simple projects, this is typically the project's BSN</li>
+<li>In projects with sub-bundles, returns the specific sub-bundle's BSN</li>
+<li>Available during the JAR generation phase</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Use the BSN in a manifest header:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Description: Bundle for ${bsn}
+</code></pre></div>
+
+<p>Create BSN-based paths:</p>
+<div class="highlight"><pre><span></span><code>output.file=${bsn}.jar
+</code></pre></div>
+
+<p>Reference in bundle documentation:</p>
+<div class="highlight"><pre><span></span><code>Bundle-DocURL: https://example.com/docs/${bsn}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Creating bundle-specific configuration</li>
+<li>Generating bundle-aware documentation URLs</li>
+<li>Building output file names based on BSN</li>
+<li>Conditional logic based on which bundle is being built</li>
+<li>Sub-bundle configurations that need to reference their own BSN</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The BSN is the unique identifier for an OSGi bundle</li>
+<li>This differs from <code>${project.name}</code> which is the project name</li>
+<li>In multi-bundle projects (with <code>.bnd</code> files), each sub-bundle has its own BSN</li>
+<li>The BSN follows OSGi naming conventions (typically reverse domain notation)</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

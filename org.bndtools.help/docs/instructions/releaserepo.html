@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-releaserepo* NAME ( ',' NAME ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-releaserepo* NAME ( ',' NAME ) *</h1>
+<ul>
+<li>
+<p>Example: <code>-releaserepo=cnf</code></p>
+</li>
+<li>
+<p>Values: <code>${repos}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/releaserepo.md -->
+<p>You can specify zero or more repository names to use when releasing a project.</p>
+<p>The <code>-releaserepo</code> instruction aggregates the <code>-releaserepo</code> property and all properties that start with <code>-releaserepo.</code>. This makes it possible to set release repository names in different places.</p>
+<p>If the <code>-releaserepo</code> instruction is set to the empty value, then releasing a project does nothing. If the <code>-releaserepo</code> instruction is unset, then releasing a project will release it to the first writable repository.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-releaserepo: releases, snapshots
+</code></pre></div>
+
+<p>This instruction is useful for managing release targets in multi-repository environments.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

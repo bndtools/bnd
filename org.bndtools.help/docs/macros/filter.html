@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>filter ';' LIST ';' REGEX</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>filter ';' LIST ';' REGEX</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>filter</code> macro filters a list to include only those entries that match a specified regular expression pattern. Entries that don't match are removed from the result.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${filter;&lt;list&gt;;&lt;regex&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - A comma or semicolon-separated list of values</li>
+<li><code>regex</code> - A Java regular expression pattern to match against</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Splits the input list into individual entries</li>
+<li>Compiles the regex pattern</li>
+<li>Tests each entry against the pattern using full match semantics</li>
+<li>Keeps only entries that match the pattern</li>
+<li>Returns the filtered list as a comma-separated string</li>
+<li>Empty result if no entries match</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Filter for JAR files:</p>
+<div class="highlight"><pre><span></span><code>${filter;foo.jar,bar.txt,baz.jar;.*\.jar}
+# Returns: &quot;foo.jar,baz.jar&quot;
+</code></pre></div>
+
+<p>Filter package names:</p>
+<div class="highlight"><pre><span></span><code>${filter;com.example.api,com.example.impl,org.other;com\.example\..*}
+# Returns: &quot;com.example.api,com.example.impl&quot;
+</code></pre></div>
+
+<p>Filter versions:</p>
+<div class="highlight"><pre><span></span><code>${filter;1.0.0,2.0.0-SNAPSHOT,2.1.0;.*SNAPSHOT.*}
+# Returns: &quot;2.0.0-SNAPSHOT&quot;
+</code></pre></div>
+
+<p>Filter by prefix:</p>
+<div class="highlight"><pre><span></span><code>${filter;test-bundle,main-bundle,test-util;test-.*}
+# Returns: &quot;test-bundle,test-util&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Selecting specific files from a list</li>
+<li>Filtering packages or classes by naming patterns</li>
+<li>Extracting specific versions from a list</li>
+<li>Building selective classpaths</li>
+<li>Conditional inclusion based on naming conventions</li>
+<li>Cleaning up lists to match specific criteria</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses Java regular expression syntax</li>
+<li>The pattern must match the <em>entire</em> entry (full match, not substring)</li>
+<li>Case-sensitive by default (use <code>(?i)</code> for case-insensitive matching)</li>
+<li>See also: <code>${filterout}</code> (or <code>${reject}</code>) for inverse filtering</li>
+<li>See also: <code>${select}</code> which is an alias for <code>${filter}</code></li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

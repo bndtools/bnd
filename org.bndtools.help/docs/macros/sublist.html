@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sublist ';' START ';' END (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>sublist ';' START ';' END (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>sublist</code> macro extracts elements from a list between start and end positions. It supports negative indices to count from the end of the list.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${sublist;&lt;start&gt;;&lt;end&gt;;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>start</code> - Starting index (0-based, negative counts from end)</li>
+<li><code>end</code> - Ending index (exclusive, negative counts from end)</li>
+<li><code>list</code> - One or more lists to combine and extract from</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists</li>
+<li>Extracts elements from start (inclusive) to end (exclusive)</li>
+<li>Negative indices count from the end</li>
+<li>If start &gt; end, they are automatically swapped</li>
+<li>Returns comma-separated sublist</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get first 3 elements:</p>
+<div class="highlight"><pre><span></span><code>${sublist;0;3;apple,banana,cherry,date,elderberry}
+# Returns: &quot;apple,banana,cherry&quot;
+</code></pre></div>
+
+<p>Get last 2 elements:</p>
+<div class="highlight"><pre><span></span><code>${sublist;-2;-0;apple,banana,cherry}
+# Returns: &quot;banana,cherry&quot;
+</code></pre></div>
+
+<p>Skip first element:</p>
+<div class="highlight"><pre><span></span><code>${sublist;1;-0;red,green,blue}
+# Returns: &quot;green,blue&quot;
+</code></pre></div>
+
+<p>Get middle elements:</p>
+<div class="highlight"><pre><span></span><code>${sublist;2;5;a,b,c,d,e,f,g}
+# Returns: &quot;c,d,e&quot;
+</code></pre></div>
+
+<p>Extract from multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${sublist;0;3;one,two;three,four,five}
+# Returns: &quot;one,two,three&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Extracting ranges from lists</li>
+<li>Pagination of results</li>
+<li>Removing headers or trailers</li>
+<li>List slicing operations</li>
+<li>Selecting specific segments</li>
+<li>Windowing over lists</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Indices are 0-based (first element is 0)</li>
+<li>Negative indices count backwards (-1 adjusts to list end)</li>
+<li>End index is exclusive (not included in result)</li>
+<li>Start and end are swapped if start &gt; end</li>
+<li>Combines multiple list arguments first</li>
+<li>See also: <code>${first}</code>, <code>${last}</code>, <code>${get}</code> for single elements</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

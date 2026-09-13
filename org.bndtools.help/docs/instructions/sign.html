@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-sign PARAMETERS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-sign PARAMETERS</h1>
+<ul>
+<li>
+<p>Example: <code>-sign=alias</code></p>
+</li>
+<li>
+<p>Values: <code>&lt;alias&gt; [ ';' 'password:=' &lt;password&gt; ] [ ';'* 'keystore:=' &lt;keystore&gt; ] [ ';' 'sign-password:=' &lt;pw&gt; ] ( ',' ... )*</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/sign.md -->
+<h1 id="-sign">-sign</h1>
+<p>The <code>-sign</code> instruction is used to sign the generated JAR file with a specified certificate or keystore. This is important for distributing secure and trusted bundles, especially in environments that require signed artifacts.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-sign: mykeystore;alias=myalias
+</code></pre></div>
+
+<p>This instruction ensures that the output JAR is cryptographically signed as part of the build process.</p>
+<p>A more detailed example using additional properties:</p>
+<div class="highlight"><pre><span></span><code>-sign: mykeystore;alias=myalias;storepass=secret;keypass=secret;keystore=path/to/keystore.jks;digestalg=SHA-256
+</code></pre></div>
+
+<p>In this example:
+- <code>mykeystore</code> is the name of the keystore.
+- <code>alias</code> specifies the certificate alias to use for signing.
+- <code>storepass</code> and <code>keypass</code> provide the passwords for the keystore and key.
+- <code>keystore</code> gives the path to the keystore file.
+- <code>digestalg</code> sets the digest algorithm (e.g., SHA-256) for the signature.</p>
+<p>These options allow you to fully control the signing process and meet the requirements of your deployment environment.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

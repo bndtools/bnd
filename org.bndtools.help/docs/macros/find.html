@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>find ';' VALUE ';' SEARCHED</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>find ';' VALUE ';' SEARCHED</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>find</code> macro returns the starting index position of a substring within a target string, or -1 if not found. This is a simple string search, not a regex pattern match.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${find;&lt;target&gt;;&lt;substring&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>target</code> - The string to search in</li>
+<li><code>substring</code> - The substring to find (literal string, not regex)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the index of the first occurrence of substring</li>
+<li>Returns -1 if substring is not found</li>
+<li>Index is 0-based (first character is position 0)</li>
+<li>Case-sensitive search</li>
+<li>Not a regex pattern match</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find substring position:</p>
+<div class="highlight"><pre><span></span><code>${find;hello world;world}
+# Returns: 6
+</code></pre></div>
+
+<p>Search not found:</p>
+<div class="highlight"><pre><span></span><code>${find;hello world;foo}
+# Returns: -1
+</code></pre></div>
+
+<p>Check if string contains substring:</p>
+<div class="highlight"><pre><span></span><code>${if;${matches;${find;${path};/test/};-?[0-9]+};contains-test;no-test}
+</code></pre></div>
+
+<p>Find file extension:</p>
+<div class="highlight"><pre><span></span><code>${find;${filename};.}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Locating substring positions</li>
+<li>Checking if string contains text</li>
+<li>String parsing and analysis</li>
+<li>Finding delimiters</li>
+<li>Conditional logic based on presence</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns integer index (0-based)</li>
+<li>Not a regex search (use <code>${matches}</code> for regex)</li>
+<li>Case-sensitive</li>
+<li>Returns first occurrence only</li>
+<li>See also: <code>${lastindexof}</code> for last occurrence</li>
+<li>See also: <code>${matches}</code> for regex matching</li>
+<li>See also: <code>${indexof}</code> for list searching</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

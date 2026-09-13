@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>compare STRING STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>compare STRING STRING</h1>
+<h2 id="summary">Summary</h2>
+<p>Compare two strings lexicographically using Java's <code>String.compareTo()</code> method, returning -1, 0, or 1.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${compare;&lt;string1&gt;;&lt;string2&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>string1</strong>: First string to compare</li>
+<li><strong>string2</strong>: Second string to compare</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>Compares the two strings lexicographically (alphabetically) and returns:
+- <code>0</code> - The strings are equal
+- <code>1</code> - The first string is greater than the second (comes later alphabetically)
+- <code>-1</code> - The first string is less than the second (comes earlier alphabetically)</p>
+<p>The comparison is case-sensitive and uses Unicode character values.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Equal strings
+${compare;hello;hello}
+# Returns: 0
+
+# First string greater
+${compare;world;hello}
+# Returns: 1
+
+# First string less
+${compare;apple;banana}
+# Returns: -1
+
+# Case-sensitive comparison
+${compare;Apple;apple}
+# Returns: -1 (uppercase comes before lowercase)
+
+# Use in conditional logic
+-include ${if;${compare;${env;MODE};production};prod.bnd;dev.bnd}
+
+# Numeric strings (lexicographic, not numeric)
+${compare;10;2}
+# Returns: -1 (because &quot;1&quot; &lt; &quot;2&quot; alphabetically)
+
+# Empty string comparison
+${compare;;text}
+# Returns: -1 (empty string is less than any non-empty string)
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Conditional Logic</strong>: Make decisions based on string comparison</li>
+<li><strong>Sorting Logic</strong>: Implement custom sort orders in build configurations</li>
+<li><strong>Version Comparison</strong>: Compare simple version strings (use <a href="vcompare.html">vcompare</a> for OSGi versions)</li>
+<li><strong>Configuration Selection</strong>: Choose configuration based on string values</li>
+<li><strong>Validation</strong>: Check if strings match expected values</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Comparison is <strong>lexicographic</strong> (alphabetical), not numeric</li>
+<li>For numeric comparison, use <a href="ncompare.html">ncompare</a></li>
+<li>For OSGi version comparison, use <a href="vcompare.html">vcompare</a></li>
+<li>Comparison is case-sensitive</li>
+<li>Returns only -1, 0, or 1 (not the actual difference between strings)</li>
+<li>Useful with <a href="if.html">if</a> macro for conditional builds</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="ncompare.html">ncompare</a> - Compare numbers numerically</li>
+<li><a href="vcompare.html">vcompare</a> - Compare OSGi version strings</li>
+<li><a href="if.html">if</a> - Conditional macro that can use comparison results</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

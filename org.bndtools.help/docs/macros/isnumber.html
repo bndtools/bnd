@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>isnumber ( ';' STRING )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>isnumber ( ';' STRING )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>isnumber</code> macro checks if all provided arguments are valid numeric values. Returns true only if all arguments are numbers, false otherwise.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${isnumber;&lt;string&gt;[;&lt;string&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - One or more strings to check (minimum 1 required)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns true if all arguments are valid numbers</li>
+<li>Returns false if any argument is not numeric</li>
+<li>Accepts integers and decimals</li>
+<li>Scientific notation supported</li>
+<li>Requires at least one argument</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Check if numeric:</p>
+<div class="highlight"><pre><span></span><code>${if;${isnumber;${value}};is-numeric;not-numeric}
+</code></pre></div>
+
+<p>Validate multiple values:</p>
+<div class="highlight"><pre><span></span><code>${isnumber;123;45.6;-78}
+# Returns: true
+</code></pre></div>
+
+<p>Not a number:</p>
+<div class="highlight"><pre><span></span><code>${isnumber;abc}
+# Returns: false
+</code></pre></div>
+
+<p>Mixed values:</p>
+<div class="highlight"><pre><span></span><code>${isnumber;123;abc}
+# Returns: false (all must be numeric)
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Input validation</li>
+<li>Type checking</li>
+<li>Numeric validation before operations</li>
+<li>Configuration validation</li>
+<li>Data type verification</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>All arguments must be numeric for true</li>
+<li>Supports integers, decimals, negative</li>
+<li>Scientific notation accepted</li>
+<li>Requires at least one argument</li>
+<li>Returns boolean</li>
+<li>See also: <code>${matches}</code> for pattern matching</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

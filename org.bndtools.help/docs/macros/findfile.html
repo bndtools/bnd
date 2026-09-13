@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>findfile</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>findfile</h1>
+<hr />
+<p>layout: default
+class: Project
+title:  findfile ';' PATH ( ';' FILTER )
+summary: Get filtered list of file paths from a directory tree</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>findfile</code> macro recursively searches a directory and returns a filtered list of relative file paths matching the specified filter pattern.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${findfile;&lt;directory&gt;[;&lt;filter&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>directory</code> - Base directory to search (relative to project)</li>
+<li><code>filter</code> (optional) - Instruction pattern to match files (default: all files)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Recursively traverses the directory tree</li>
+<li>Returns relative paths from the base directory</li>
+<li>Filters paths using instruction pattern matching</li>
+<li>Returns comma-separated list of matching paths</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find all files:</p>
+<div class="highlight"><pre><span></span><code>${findfile;src}
+</code></pre></div>
+
+<p>Find Java source files:</p>
+<div class="highlight"><pre><span></span><code>${findfile;src;*.java}
+</code></pre></div>
+
+<p>Find with exclusion pattern:</p>
+<div class="highlight"><pre><span></span><code>${findfile;resources;!*.tmp}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>File discovery</li>
+<li>Build input collection</li>
+<li>Resource gathering</li>
+<li>Pattern-based file selection</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Paths are relative to the base directory</li>
+<li>Uses bnd instruction pattern matching</li>
+<li>See also: <code>${findname}</code>, <code>${findpath}</code></li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

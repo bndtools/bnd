@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-jpms-multi-release BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-jpms-multi-release BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-jpms-multi-release: true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/jpms_multi_release.md -->
+<p>This instruction controls that if a JAR setup to be a <a href="https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html">multi-release jar</a> the manifests &amp; module-infos 
+for each supported versions should be added. If this instruction is true, it will generate this metadata,
+if the instruction is absent or the value is not true, then it will ignore the <code>versions</code>.</p>
+<p>A multi release Jar (MRJ) will contain directories in <code>META-INF/versions/</code>, where the directory name is a release
+number. If this instruction is enabled, then during manifest generation, bnd will also calculate a manifest and
+module-info in each versioned directory.</p>
+<p><br /><br /></p>
+</body>
+</html>

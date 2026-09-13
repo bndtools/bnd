@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Baselining</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Baselining</h1>
+<p>Baselining compares a bundle with another bundle, the <em>baseline</em>, to find mistakes in the <a href="https://docs.osgi.org/whitepaper/semantic-versioning/">semantic versioning</a>. For example, there is a binary incompatible change in the new bundle but the version has not been bumped. Baselining can be run from the command line (see <code>bnd help baseline</code>) or it can be run as part of a project build. </p>
+<p>APIs are compared for backward compatibility using the semantic versioning rules defined in this chapter. Baselining is aware of the <code>@ConsumerType</code> and <code>@ProviderType</code> rules. Proper versions are calculated and suggested.</p>
+<h2 id="setting-up-a-project-for-baselining">Setting Up a Project for Baselining</h2>
+<p>During the build, bnd will check the <a href="../instructions/baseline.html"><code>-baseline</code> instruction</a> at the end of the build when the JAR is ready. This instruction is a selector on the symbolic name of the building bundle. If it matches, the baselining is started with one exception: by default, the bundle/package version must be 1.0.0 or above. If the version is less (i.e. major version being <code>0</code>) no baselining errors are reported, the purpose is to allow the <a href="https://semver.org/#spec-item-4">primordial baseline to be established without errors</a>.</p>
+<p>To enable baselining for versions in the range <code>[0.1.0, 1.0.0)</code>, use the <a href="../instructions/baselineincludezeromajor.html"><code>-baselineincludezeromajor</code> instruction</a>:</p>
+<div class="highlight"><pre><span></span><code>-baselineincludezeromajor: true
+</code></pre></div>
+
+<p>This will enable baseline error reporting for packages with major version <code>0</code> (except for <code>0.0.x</code> versions which are still excluded).</p>
+<p>By default the baseline is a bundle from one of the repositories with the same symbolic name as the building bundle and the highest possible version. However, it is possible to specify the version or to baseline against a file.</p>
+<p>It is recommended to enable baselining per project since not all project requires baselining. For example, baselining is overkill for a project that is always compiled with all its dependencies and thus has no external dependencies. The recommended practice is therefore to add the following instruction to a project that requires baselining (usually API bundles):</p>
+<div class="highlight"><pre><span></span><code>-baseline: *
+</code></pre></div>
+
+<p>The default baseline is the bundle with the highest version in the <em>baseline repository</em>. The selector can specify a <code>version</code> or a <code>file</code> attribute when the default baseline is not applicable. </p>
+<ul>
+<li><code>version</code> – Baseline against the first bundle in the baseline repository that has the given version or higher.</li>
+<li><code>file</code> – The file is the baseline.</li>
+</ul>
+<p>The baseline bundle is looked up in the <em>baseline repository</em>. The baseline repository is by default the <em>release repository</em> unless overridden by the <a href="../instructions/baselinerepo.html">-baselinerepo</a> instruction. The release repository is set with the <a href="../instructions/releaserepo.html">-releaserepo</a> instruction.</p>
+<p>Only bundles that are not <em>staging</em> are considered for the baseline, this means that it is possible to release the current bundle and compare against the previous version until the bundle is released and becomes master. </p>
+<p>By default the bundle and baseline are compared (<em>diffed</em>) and then analyzed for semantic version violations. Certain headers always change because they contain time or digest information. Most of these headers are already automatically ignored but the <a href="../instructions/diffignore.html">-diffignore</a> instruction can add more ignorance. You can use the 
+<a href="../instructions/diffpackages.html">-diffpackages</a> instruction to specify the names of exported packages to be baseline compared. The default is to baseline compare all exported packages.</p>
+<h3 id="maven-support">Maven Support</h3>
+<p>There is a dedicated <a href="../../maven-plugins/bnd-baseline-maven-plugin/README.md">Maven plugin for baselining</a>.</p>
+<h2 id="example-baselining-project-instructions">Example baselining Project Instructions</h2>
+<div class="highlight"><pre><span></span><code>  Bundle-Version: 1.0.2
+  -baseline: *
+  -baselinerepo: Released
+</code></pre></div>
+
+<p>In this example, the last version in the Released repository for the project's bsn is supposed to be the previous version. Make sure you do not always release staging versions to this repository since this will create false changes. During a development cycle, the baseline version must remain constant until the current development bundle is released, at which points it becomes the baseline of the next cycle.</p>
+<p>Since an error is raised when the baselining detects a semantic version violation it is possible to release a snapshot in a build only when there is a correctly baselined bundle built.</p>
+<h3 id="baselineignore-fine-grained-control"><code>@BaselineIgnore</code> - Fine grained control</h3>
+<p>Occasionally, scenarios arise where a language construct or change is not accounted for in bnd (bnd developers are humans too), or where a developer wants to overrule the strict opinion of the baseline logic for whatever reason (not recommended but it does happen) for instance in the grey areas of binary compatibility.</p>
+<p>Instead of forcing developers to make a choice between disabling baseline (in order to avoid build warnings or failures) and keeping it enabled it's important to know that there is fine grained control available using bnd's <code>@aQute.bnd.annotation.baseline.BaselineIgnore</code> annotation.</p>
+<p>The value of the <code>@BaselineIgnore</code> annotation is a valid OSGi version string.</p>
+<p>e.g.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@BaselineIgnore</span><span class="p">(</span><span class="s">&quot;2.4.12&quot;</span><span class="p">)</span>
+<span class="kd">public</span><span class="w"> </span><span class="n">Foo</span><span class="w"> </span><span class="nf">getFoo</span><span class="p">();</span>
+</code></pre></div>
+
+<p>When the <code>@BaselineIgnore</code> annotation is applied to a <em>baselined</em> element, the <em>baseliner</em> will ignore the annotated element when baselining against a baseline package whose version is less than the specified version. This means the annotated element will not produce a baselining mismatch. The correct baseline information about the element will be in the baseline report, but the element will not cause baselining to fail. When baselining against a baseline package whose version is greater than or equal to the specified version, this annotation is ignored and the annotated element will be included in the baselining.</p>
+<p>The annotation should be used in a scope that is as narrow as possible by applying it to the most specific member causing the baseline <em>issue</em>.</p>
+</body>
+</html>

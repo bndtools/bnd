@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-failok ('true' | 'false')?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-failok ('true' | 'false')?</h1>
+<ul>
+<li>
+<p>Example: <code>-failok=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/failok.md -->
+<h1 id="-failok">-failok</h1>
+<p>The <code>-failok</code> instruction allows the build to continue even if errors occur. When set to <code>true</code>, bnd will ignore any errors during the build process and assume everything went fine. This can be useful for experimental or non-critical builds, but should be used with caution as it may hide real problems.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-failok: true
+</code></pre></div>
+
+<p>By default, this option is not set and build errors will cause the process to fail.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

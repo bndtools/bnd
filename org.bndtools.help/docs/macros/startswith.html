@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>startswith ';' STRING ';' PREFIX</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>startswith ';' STRING ';' PREFIX</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>startswith</code> macro checks if a given string starts with a specified prefix. Returns the string if it matches, empty string otherwise.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${startswith;&lt;string&gt;;&lt;prefix&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The string to check</li>
+<li><code>prefix</code> - The prefix to look for</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Checks if string starts with the prefix</li>
+<li>Returns the original string if it starts with prefix</li>
+<li>Returns empty string ("") if it doesn't</li>
+<li>Case-sensitive comparison</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Check string prefix:</p>
+<div class="highlight"><pre><span></span><code>${startswith;com.example.api;com.example}
+# Returns: &quot;com.example.api&quot;
+</code></pre></div>
+
+<p>Check with non-matching prefix:</p>
+<div class="highlight"><pre><span></span><code>${startswith;org.other.package;com.example}
+# Returns: &quot;&quot;
+</code></pre></div>
+
+<p>Use in conditional:</p>
+<div class="highlight"><pre><span></span><code>${if;${startswith;${project};test.};test-project;regular-project}
+</code></pre></div>
+
+<p>Filter list by prefix:</p>
+<div class="highlight"><pre><span></span><code>${filter;${packages};${startswith;.*;com\.example}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>String prefix validation</li>
+<li>Package name filtering</li>
+<li>Path matching</li>
+<li>Conditional logic based on prefixes</li>
+<li>Name pattern checking</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Case-sensitive comparison</li>
+<li>Returns truthy (string) or falsy (empty) value</li>
+<li>Useful with <code>${if}</code> for conditional logic</li>
+<li>See also: <code>${endswith}</code> for suffix checking</li>
+<li>See also: <code>${matches}</code> for regex matching</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>DynamicImport-Package ::= dynamic-description ( ',' dynamic-description )*</h1>
+<ul>
+<li>
+<p>Example: <code>DynamicImport-Package: com.acme.plugin.*</code></p>
+</li>
+<li>
+<p>Values: ``</p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>version</code> A version range to select the version of an export definition. The default value is 0.0.0.</li>
+<li>
+<p>Example: <code>version="[1.2,3.0)"</code></p>
+</li>
+<li>
+<p>Pattern: <code>((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?</code></p>
+</li>
+<li>
+<p><code>bundle-symbolic-name</code> The bundle symbolic name of the exporting bundle.</p>
+</li>
+<li>
+<p>Example: <code>bundle-symbolic-name=com.acme.foo.daffy</code></p>
+</li>
+<li>
+<p>Pattern: <code>[-\w]+(:?\.[-\w]+)*</code></p>
+</li>
+<li>
+<p><code>bundle-version</code> A version range to select the bundle version of the exporting bundle. The default value is 0.0.0.</p>
+</li>
+<li>
+<p>Example: <code>bundle-version=1.3</code></p>
+</li>
+<li>
+<p>Pattern: <code>((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/dynamicimport_package.md -->
+<h1 id="dynamicimport-package">DynamicImport-Package</h1>
+<p>The <code>DynamicImport-Package</code> header allows a bundle to declare packages that should be imported dynamically at runtime, rather than being resolved at deployment time. This is useful for cases where the set of required packages is not known in advance.</p>
+<p>The header contains a comma-separated list of package names, which can include wildcards and directives. For example:</p>
+<div class="highlight"><pre><span></span><code>DynamicImport-Package: com.example.*, org.osgi.service.*
+</code></pre></div>
+
+<p>Packages listed here will be resolved by the OSGi framework when they are first referenced by the bundle. Use this feature sparingly, as it can make dependency management less predictable.</p>
+<div class="highlight"><pre><span></span><code>/**
+ * &lt;pre&gt;
+ *          DynamicImport-Package ::= dynamic-description
+ *              ( &#39;,&#39; dynamic-description )*
+ *              
+ *          dynamic-description::= wildcard-names ( &#39;;&#39; parameter )*
+ *          wildcard-names ::= wildcard-name ( &#39;;&#39; wildcard-name )*
+ *          wildcard-name ::= package-name 
+ *                         | ( package-name &#39;.*&#39; ) // See 1.4.2
+ *                         | &#39;*&#39;
+ * &lt;/pre&gt;
+ */
+private void verifyDynamicImportPackage() {
+    verifyListHeader(Constants.DYNAMICIMPORT_PACKAGE, WILDCARDPACKAGE, true);
+    String dynamicImportPackage = get(Constants.DYNAMICIMPORT_PACKAGE);
+    if (dynamicImportPackage == null)
+        return;
+
+    Parameters map = main.getDynamicImportPackage();
+    for (String name : map.keySet()) {
+        name = name.trim();
+        if (!verify(name, WILDCARDPACKAGE))
+            error(Constants.DYNAMICIMPORT_PACKAGE + &quot; header contains an invalid package name: &quot; + name);
+
+        Map&lt;String,String&gt; sub = map.get(name);
+        if (r3 &amp;&amp; sub.size() != 0) {
+            error(&quot;DynamicPackage-Import has attributes on import: &quot; + name
+                    + &quot;. This is however, an &lt;=R3 bundle and attributes on this header were introduced in R4. &quot;);
+        }
+    }
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

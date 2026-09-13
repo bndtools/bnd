@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>stem ';' STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>stem ';' STRING</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>stem</code> macro returns the portion of a string up to (but not including) the first dot character. If no dot is found, returns the entire string.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${stem;&lt;string&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The string to process</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Finds the first dot (<code>.</code>) character</li>
+<li>Returns substring before the first dot</li>
+<li>Returns entire string if no dot is found</li>
+<li>Only considers the first dot (not subsequent dots)</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Extract file basename:</p>
+<div class="highlight"><pre><span></span><code>${stem;example.txt}
+# Returns: &quot;example&quot;
+</code></pre></div>
+
+<p>Get package prefix:</p>
+<div class="highlight"><pre><span></span><code>${stem;com.example.api}
+# Returns: &quot;com&quot;
+</code></pre></div>
+
+<p>Extract version major:</p>
+<div class="highlight"><pre><span></span><code>${stem;1.2.3}
+# Returns: &quot;1&quot;
+</code></pre></div>
+
+<p>No dot present:</p>
+<div class="highlight"><pre><span></span><code>${stem;filename}
+# Returns: &quot;filename&quot;
+</code></pre></div>
+
+<p>Multiple dots:</p>
+<div class="highlight"><pre><span></span><code>${stem;archive.tar.gz}
+# Returns: &quot;archive&quot; (only first dot)
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Extracting file basenames without extension</li>
+<li>Getting first component of qualified names</li>
+<li>Parsing dotted strings</li>
+<li>Version number parsing</li>
+<li>File name manipulation</li>
+<li>Package name prefixes</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only removes up to the first dot</li>
+<li>For removing all extensions, use multiple applications or other methods</li>
+<li>Returns original string if no dot found</li>
+<li>Empty string before dot returns empty</li>
+<li>See also: <code>${basename}</code> for file name extraction</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

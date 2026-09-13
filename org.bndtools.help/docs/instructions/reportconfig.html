@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-reportconfig plugin-def ( ',' plugin-def )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-reportconfig plugin-def ( ',' plugin-def )*</h1>
+<ul>
+<li>
+<p>Example: <code>-exportreport: metadata.json;configName=blueprint</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/reportconfig.md -->
+<p>The purpose of the <code>-reportconfig</code> instruction is to configure the content of the reports exported with the <code>-exportreport</code> instruction.</p>
+<p>When a report is generated, a set of plugins is used to extract a specific piece of data from the source (for example, the information contain in metatypes from a bundle source). Those plugins are generally designed to not require a configuration and are silently ignored if they do not find any data, thus, this instruction should rarely be used.</p>
+<p>Additional plugins can be declared and configured with the <a href="./plugin.html">-plugin.*</a> instruction and will be available for all your reports, however the <code>-reportconfig</code> instruction gives more control on the  plugins that should be used when generating a specific report. This instruction diverges from the <code>-plugins.*</code> instruction as you can declare named configuration, for example <code>-reportconfig.api-bundle:...</code> will have the name <code>api-bundle</code> that you can then use for a specific report <code>-exportreport:file.json;configName=api-bundle</code>. In addition, this instruction allows to declare plugins with a short name instead of the canonical name of the plugin class (<code>importFile</code> instead of <code>biz.aQute.bnd.reporter.plugins.entries.any.ImportResourcePlugin</code>).</p>
+<p><em>See <a href="./exportreport.html">-exportreport</a> instruction documentation.</em></p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>-reportconfig.xxx  ::= plugin-def ( &#39;,&#39; plugin-def ) *
+plugin-def         ::= plugin | &#39;clearDefaults&#39;
+plugin             ::= ( qname | plugin-name ) ( &#39;;&#39; parameters ) *
+plugin-name        ::= extended
+</code></pre></div>
+
+<p>where <em>xxx</em> is the name of the configuration.</p>
+<h2 id="example">Example</h2>
+<p>One use case is when you want a specific resource from a bundle in the report but where there is no plugins to extract it. For this you can use the <code>importJarFile</code> plugin which need the path to the resource inside the bundle and will import it into the report.</p>
+<p>For example, if you need blueprint data:</p>
+<p><strong>bnb.bnd</strong></p>
+<div class="highlight"><pre><span></span><code>-reportconfig.blueprint: importJarFile;path=OSGI-INF/blueprint/component.xml
+-exportreport: metadata.json;configName=blueprint
+</code></pre></div>
+
+<h2 id="clean-configuration">Clean configuration</h2>
+<p>When you set a <code>-reportconfig.xxx</code> instruction, a list of default plugins will be added to the specified list. If you do not want the default plugins you can use the special property <code>clearDefaults</code>:</p>
+<p><strong>bnb.bnd</strong></p>
+<div class="highlight"><pre><span></span><code>-reportconfig.blueprint: \
+   importJarFile;path=OSGI-INF/blueprint/component.xml, \
+   clearDefaults
+</code></pre></div>
+
+<h2 id="plugins">Plugins</h2>
+<p>This section describes the available plugins in Bnd, additional plugins may be provided by a specific build tool.</p>
+<p>All plugins have the <code>entryName</code> property which can be set to override the name under which data will be aggregated into the reports (this corresponds to a tag name when serialised in <code>XML</code>):</p>
+<div class="highlight"><pre><span></span><code> -reportconfig.bundle: metatypes;entryName=serviceConfigs
+</code></pre></div>
+
+<h3 id="any-entry">Any Entry</h3>
+<p>This plugin allows the user to define an arbitrary entry.</p>
+<ul>
+<li>Short name: <code>anyEntry</code></li>
+<li>Properties:</li>
+<li><code>key</code>: the name under which the value will be available in the report.</li>
+<li><code>value</code>: the value of the entry.</li>
+<li>Default Plugin: no</li>
+</ul>
+<div class="highlight"><pre><span></span><code>-reportconfig.api-bundle:anyEntry;key=bundleType;value=api
+</code></pre></div>
+
+<h3 id="import-file">Import File</h3>
+<p>This plugin allows to add a local or remote file to the report. The type of the file can be: <code>properties</code>, <code>manifest</code>, <code>XML</code> and <code>JSON</code>.</p>
+<ul>
+<li>Short name: <code>importFile</code></li>
+<li>Properties:</li>
+<li><code>url</code>: URL to the file.</li>
+<li><code>type</code>: The type of the file. (optional)</li>
+<li>Default Plugin: no</li>
+</ul>
+<div class="highlight"><pre><span></span><code>-reportconfig.bundle:importFile;url=http://&lt;...&gt;/myFile.json
+</code></pre></div>
+
+<h3 id="import-jar-file">Import Jar File</h3>
+<p>This plugin allows to add a file contains in a bundle to the report. The type of the file can be: <code>properties</code>, <code>manifest</code>, <code>XML</code> and <code>JSON</code>.</p>
+<ul>
+<li>Short name: <code>importJarFile</code></li>
+<li>Properties:</li>
+<li><code>path</code>: Path from the root of the Jar.</li>
+<li><code>type</code>: The type of the file. (optional)</li>
+<li>Default Plugin: no</li>
+</ul>
+<div class="highlight"><pre><span></span><code>-reportconfig.bundle:
+</code></pre></div>
+
+<h3 id="commoninfo">CommonInfo</h3>
+<p>Add some common data to the report. If data are extracted from the workspace, the following properties will be read in the build.bnd file: <code>ws-name</code>, <code>ws-description</code>, <code>ws-version</code>, <code>ws-icons</code>, <code>ws-docURL</code>, <code>ws-updateLocation</code>, <code>ws-licenses</code>, <code>ws-developers</code>, <code>ws-scm</code>, <code>ws-copyright</code>, <code>ws-vendor</code>, <code>ws-contactAddress</code>; otherwise, the corresponding headers will be read. If data are extracted from a project, the above properties will be read in the bnd.bnd file but with a <code>p-</code> prefix, such as <code>p-contactAddress</code>.</p>
+<ul>
+<li>Short name: <code>commonInfo</code></li>
+<li>Default Plugin: yes</li>
+</ul>
+<h3 id="manifest">Manifest</h3>
+<p>Add the OSGI headers to the report.</p>
+<ul>
+<li>Short name: <code>manifest</code></li>
+<li>Default Plugin: yes</li>
+</ul>
+<h3 id="components">Components</h3>
+<p>Add a list of the declarative services.</p>
+<ul>
+<li>Short name: <code>components</code></li>
+<li>Default Plugin: yes</li>
+</ul>
+<h3 id="metatypes">Metatypes</h3>
+<p>Add a list of the metatypes.</p>
+<ul>
+<li>Short name: <code>metatypes</code></li>
+<li>Default Plugin: yes</li>
+</ul>
+<h3 id="file-name">File Name</h3>
+<p>Add the file name or the folder name in which the source is backed up.</p>
+<ul>
+<li>Short name: <code>fileName</code></li>
+<li>Default Plugin: yes</li>
+</ul>
+<h3 id="bundles">Bundles</h3>
+<p>Add a list of bundle data (for example, the bundles built by a project).</p>
+<ul>
+<li>Short name: <code>bundles</code></li>
+<li>Properties:</li>
+<li><code>useConfig</code>: The configuration name used when generating the data. (optional)</li>
+<li><code>excludes</code>: A list of bundle symbolic names to exclude. (optional)</li>
+<li>Default Plugin: yes</li>
+</ul>
+<div class="highlight"><pre><span></span><code>-reportconfig.project:bundles;useConfig=api-bundle;excludes=&quot;com.domain.product.provider&quot;
+</code></pre></div>
+
+<h3 id="code-snippets">Code Snippets</h3>
+<p>Add a list of code snippet extracted from source files in a project. By default, source files containing code snippets must be located in a <code>&lt;root test source dir&gt;/examples</code> folder and its sub directories (eg; <code>src/test/java/examples/**</code>). The actual supported file types are: <code>java</code>.</p>
+<p>Code snippets can either be a single sample code with a title and a description or have multiple steps.</p>
+<ul>
+<li>Short name: <code>codeSnippets</code></li>
+<li>Properties:</li>
+<li><code>path</code>: The directory path from which code snippets will be looked up. (optional)</li>
+<li>Default Plugin: yes</li>
+</ul>
+<h4 id="java-code-snippets">Java Code Snippets</h4>
+<p>You can either export a full type or a method. For the snippet to be extracted you must add a comment block to the type or the method. The comment must contain the <code>${snippet }</code> tag with the following optional properties:</p>
+<ul>
+<li><code>title</code> (String): A title for the code snippet.</li>
+<li><code>description</code> (String): A short description of the code snippet.</li>
+<li><code>includeDeclaration</code> (Boolean): If true, the type declaration (or the method declaration) will be include, otherwise only its content. Default is true.</li>
+<li><code>includeImports</code> (Boolean): If true, the imports declration will be include. Default is true.</li>
+<li><code>groupName</code> (String): A user defined group name. If set, it will turn the actual snippet into a snippet with multiple steps, only the title and the description considered then and                the snippet children must reference its <code>groupName</code> in their <code>parentGroup</code> property.</li>
+<li><code>parentGroup</code> (String): The parent group name. If set, it will make the actual snippet a step in the referenced snippet group.</li>
+<li><code>id</code> (String): A user defined id of the snippet. By default, the Id is the type name or the method name, optionally appended by a counting starting from 1 if not unique (eg; MyType, MyType1, etc).</li>
+</ul>
+<p>Here is an example illustrating a code snippet with steps:</p>
+<div class="highlight"><pre><span></span><code><span class="cm">/**</span>
+<span class="cm"> * ${snippet title=How to Print Something in Java, description=&quot;In this example we will show how to</span>
+<span class="cm"> * print a string to the console.&quot;, groupName=print} </span>
+<span class="cm"> */</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">PrintExample</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">  </span><span class="cm">/**</span>
+<span class="cm">   * ${snippet title=Print No New Line, description=&quot;Here, we print without a new line at the end.&quot;,</span>
+<span class="cm">   * parentGroup=print, includeDeclaration=false} </span>
+<span class="cm">   */</span>
+<span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">printNoNewLine</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">print</span><span class="p">(</span><span class="s">&quot;Hello&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="cm">/**</span>
+<span class="cm">   * ${snippet title=Print With New Line, description=&quot;Here, we print with a new line at the end.&quot;,</span>
+<span class="cm">   * parentGroup=print, includeDeclaration=false} </span>
+<span class="cm">   */</span>
+<span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">printWithNewLine</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Hello&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Which will result in the following <code>json</code> object:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span>
+<span class="w">   </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PrintExample&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;How to Print Something in Java&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="s2">&quot;In this example we will show how to print a string to the console.&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;steps&quot;</span><span class="p">:[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">         </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;printNoNewLine&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;Print No New Line&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="s2">&quot;Here, we print without a new line at the end.&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;programmingLangague&quot;</span><span class="p">:</span><span class="s2">&quot;java&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;codeSnippet&quot;</span><span class="p">:</span><span class="s2">&quot;System.out.print(\&quot;Hello\&quot;);&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">         </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;printWithNewLine&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;Print With New Line&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="s2">&quot;Here, we print with a new line at the end.&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;programmingLangague&quot;</span><span class="p">:</span><span class="s2">&quot;java&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;codeSnippet&quot;</span><span class="p">:</span><span class="s2">&quot;System.out.println(\&quot;Hello\&quot;);&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">   </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="projects">Projects</h3>
+<p>Add a list of project data (for example, the projects built by the workspace).</p>
+<ul>
+<li>Short name: <code>projects</code></li>
+<li>Properties:</li>
+<li><code>useConfig</code>: The configuration name used when generating the data. (optional)</li>
+<li><code>excludes</code>: A list of project names to exclude.</li>
+<li>Default Plugin: yes</li>
+</ul>
+<div class="highlight"><pre><span></span><code>-reportconfig.ws:projects;useConfig=bnd-proj;excludes=&quot;maven-index&quot;
+</code></pre></div>
+
+<h3 id="maven-coordinate">Maven Coordinate</h3>
+<p>Add the maven coordinate of the bundle (extracted from the pom.properties file).</p>
+<ul>
+<li>Short name: <code>mavenCoordinate</code></li>
+<li>Properties: no</li>
+<li>Default Plugin: yes</li>
+</ul>
+<h3 id="gogo-commands">Gogo Commands</h3>
+<p>Add a list of Gogo commands.</p>
+<ul>
+<li>Short name: <code>gogoCommands</code></li>
+<li>Properties: no</li>
+<li>Default Plugin: yes</li>
+</ul>
+<p><br /><br /></p>
+</body>
+</html>

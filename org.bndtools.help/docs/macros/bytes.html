@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>bytes ( ';' LONG )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>bytes ( ';' LONG )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>bytes</code> macro converts a byte count (as long integer) into human-readable format with appropriate size units (b, Kb, Mb, Gb, etc.). It automatically selects the most appropriate unit by dividing by 1024 until the value is less than 1024. 
+Supports formatting a list of inputs.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${bytes;&lt;number&gt;*}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>number</code> - One or multiple numeric values representing byte counts (as long integers)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Converts a byte count to the most appropriate unit (b, Kb, Mb, Gb, Tb, Pb, Eb, Zb, Yb, Bb, Geopbyte)</li>
+<li>Automatically selects units by repeatedly dividing by 1024</li>
+<li>Rounds results to one decimal place</li>
+<li>multiple values supported. Outputs are concatenated by space.</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Format a small byte count:</p>
+<div class="highlight"><pre><span></span><code>${bytes;1024}
+# Returns: &quot;1.0 Kb&quot;
+</code></pre></div>
+
+<p>Format megabytes:</p>
+<div class="highlight"><pre><span></span><code>${bytes;5242880}
+# Returns: &quot;5.0 Mb&quot; (5 * 1024 * 1024 bytes)
+</code></pre></div>
+
+<p>Format gigabytes:</p>
+<div class="highlight"><pre><span></span><code>${bytes;10737418240}
+# Returns: &quot;10.0 Gb&quot;
+</code></pre></div>
+
+<p>Format multiple</p>
+<div class="highlight"><pre><span></span><code>${bytes;1048576;10000048576}
+# Returns: &quot;1.0 Mb 9.3 Gb&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Displaying file sizes in human-readable format</li>
+<li>Reporting bundle or artifact sizes</li>
+<li>Formatting memory or disk usage metrics</li>
+<li>Creating readable size reports in build logs</li>
+<li>Displaying download or upload sizes</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses 1024 as the divisor (binary units), not 1000 (decimal units)</li>
+<li>Values are rounded to one decimal place</li>
+<li>The unit abbreviations use 'b' for bytes and 'Kb', 'Mb', etc.</li>
+<li>Supports very large sizes up to "Geopbyte"</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

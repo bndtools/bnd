@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-Name STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-Name STRING</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-Name: My Bundle</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_name.md -->
+<h1 id="bundle-name">Bundle-Name</h1>
+<p>The <code>Bundle-Name</code> header defines a short, human-readable name for the bundle. This name is intended for display in user interfaces and tools. If the <code>Bundle-Name</code> is not set, it will default to the value of the <code>Bundle-SymbolicName</code> header.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Name: My Example Bundle
+</code></pre></div>
+
+<p>This header is optional but recommended for clarity and usability.</p>
+<p>If the Bundle-Name is not set, it will default to the Bundle-SymbolicName.</p>
+<div class="highlight"><pre><span></span><code>        //
+        // Use the same name for the bundle name as BSN when
+        // the bundle name is not set
+        //
+        if (main.getValue(BUNDLE_NAME) == null) {
+            main.putValue(BUNDLE_NAME, bsn);
+        }
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

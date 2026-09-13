@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-NativeCode   ::= nativecode  ( ',' nativecode )* ( ',' optional ) ?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-NativeCode   ::= nativecode  ( ',' nativecode )* ( ',' optional ) ?</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-NativeCode: /lib/http.DLL; osname = QNX; osversion = 3.1</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>osname</code> The name of the operating system.</li>
+<li>
+<p>Example: <code>osname=MacOS</code></p>
+</li>
+<li>
+<p>Values: <code>AIX,DigitalUnix,Embos,Epoc32,FreeBSD,HPUX,IRIX,Linux,MacOS,NetBSD,Netware,OpenBSD,OS2,QNX,Solaris,SunOS,VxWorks,Windows95,Win32,Windows98,WindowsNT,WindowsCE,Windows2000,Windows2003,WindowsXP,WindowsVista</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>osversion</code> Operating System Version.</p>
+</li>
+<li>
+<p>Example: <code>osversion=3.1</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>language</code> Language ISO 639 code.</p>
+</li>
+<li>
+<p>Example: <code>language=nl</code></p>
+</li>
+<li>
+<p>Pattern: <code>\p{Upper}{2}</code></p>
+</li>
+<li>
+<p><code>processor</code> Processor name.</p>
+</li>
+<li>
+<p>Example: <code>processor=x86</code></p>
+</li>
+<li>
+<p>Values: <code>68k,ARM_LE,arm_le,arm_be,Alpha,ia64n,ia64w,Ignite,Mips,PArisc,PowerPC,Sh4,Sparc,Sparcv9,S390,S390x,V850E,x86,i486,x86-64</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>selection-filter</code> The value of this attribute must be a filter expression that indicates if the native code clause should be selected or not.</p>
+</li>
+<li>
+<p>Example: <code>selection-filter="(com.acme.windowing=win32)"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_nativecode.md -->
+<h1 id="bundle-nativecode">Bundle-NativeCode</h1>
+<p>The <code>Bundle-NativeCode</code> header specifies native code libraries that are included in the bundle and may be loaded by the OSGi framework. This header lists one or more native code clauses, each describing the path to a native library and optional attributes such as operating system, processor, language, or version constraints.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-NativeCode: lib/linux-x86/libfoo.so;osname=Linux;processor=x86, lib/win32-x86/foo.dll;osname=Windows;processor=x86
+</code></pre></div>
+
+<p>A wildcard (<code>*</code>) can be used as the last entry to indicate that the bundle can run without native code if no match is found. If a required native library is missing or not found in the JAR, bnd will issue an error.</p>
+<p>This header is used for bundles that need to provide platform-specific native libraries alongside Java code.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>
