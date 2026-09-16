@@ -1,0 +1,4 @@
+-plugin.swtbot: \
+	aQute.bnd.repository.p2.provider.P2Repository; \
+		name = "SWTBot P2"; \
+		url = "https://download.eclipse.org/technology/swtbot/releases/latest/"

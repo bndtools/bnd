@@ -1,29 +1,7 @@
--include: test.shared.bndrun
+-include: ~test.win32.x86_64.bndrun
 
--runrequires.win32: \
-	bnd.identity;id='org.eclipse.compare.win32',\
-	bnd.identity;id='org.eclipse.core.filesystem.win32.x86_64',\
-	bnd.identity;id='org.eclipse.core.net.win32.x86_64',\
-	bnd.identity;id='org.eclipse.core.resources.win32.x86_64',\
-	bnd.identity;id='org.eclipse.e4.ui.swt.win32',\
-	bnd.identity;id='org.eclipse.equinox.security.win32.x86_64',\
-	bnd.identity;id='org.eclipse.swt.win32.win32.x86_64',\
-	bnd.identity;id='org.eclipse.ui.win32'
-
--runvm.win32:
-
--runsystemcapabilities.win32: \
-	osgi.native;osgi.native.osname:List<String>="win32";osgi.native.processor:List<String>="x86-64"
-
--runproperties.win32: \
-	osgi.ws=win32,\
-	osgi.arch=x86_64,\
-	osgi.os=win32
-
--runblacklist.win32: \
-	osgi.identity;filter:='(osgi.identity=*macosx*)',\
-	osgi.identity;filter:='(osgi.identity=*linux*)',\
-
+-runproperties+: \
+	tester.names=bndtools.core.test.wizards.newworkspace.NewWorkspaceWizardTest
 -runbundles: \
 	assertj-core;version='[3.24.2,3.24.3)';startlevel=3,\
 	bcpg;version='[1.77.0,1.77.1)';startlevel=3,\
@@ -32,7 +10,6 @@
 	bcutil;version='[1.77.0,1.77.1)';startlevel=3,\
 	biz.aQute.bnd.embedded-repo;version=snapshot;startlevel=3,\
 	biz.aQute.bnd.util;version=snapshot;startlevel=3,\
-	biz.aQute.bndlib;version='[7.0.0,7.0.1)';startlevel=3,\
 	biz.aQute.bndlib;version=snapshot;startlevel=3,\
 	biz.aQute.repository;version=snapshot;startlevel=3,\
 	biz.aQute.resolve;version=snapshot;startlevel=3,\
@@ -270,6 +247,7 @@
 	org.eclipse.search.core;version='[3.16.0,3.16.1)';startlevel=3,\
 	org.eclipse.swt;version='[3.126.0,3.126.1)';startlevel=3,\
 	org.eclipse.swt.win32.win32.x86_64;version='[3.124.200,3.124.201)';startlevel=3,\
+	org.eclipse.swtbot.swt.finder;version='[4.3.0,4.3.1)';startlevel=3,\
 	org.eclipse.team.core;version='[3.10.200,3.10.201)';startlevel=3,\
 	org.eclipse.team.ui;version='[3.10.200,3.10.201)';startlevel=3,\
 	org.eclipse.text;version='[3.13.100,3.13.101)';startlevel=3,\
@@ -302,6 +280,7 @@
 	org.eclipse.wst.xml.core;version='[1.2.800,1.2.801)';startlevel=3,\
 	org.hamcrest;version='[2.2.0,2.2.1)';startlevel=3,\
 	org.hamcrest.core;version='[2.2.0,2.2.1)';startlevel=3,\
+	org.hamcrest.library;version='[2.2.0,2.2.1)';startlevel=3,\
 	org.jdom2;version='[2.0.6,2.0.7)';startlevel=3,\
 	org.junit;version='[4.13.2,4.13.3)';startlevel=3,\
 	org.opentest4j;version='[1.3.0,1.3.1)';startlevel=3,\
@@ -324,7 +303,4 @@
 	org.osgi.util.xml;version='[1.0.2,1.0.3)';startlevel=3,\
 	org.sat4j.core;version='[2.3.6,2.3.7)';startlevel=3,\
 	org.sat4j.pb;version='[2.3.6,2.3.7)';startlevel=3,\
-	org.tukaani.xz;version='[1.9.0,1.9.1)';startlevel=3,\
-	org.eclipse.swtbot.swt.finder;version='[4.1.0.202306071420,4.1.0.202306071421)';startlevel=3
-
--resolve: auto
+	org.tukaani.xz;version='[1.9.0,1.9.1)';startlevel=3
