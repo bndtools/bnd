@@ -324,7 +324,6 @@
 	org.osgi.util.xml;version='[1.0.2,1.0.3)';startlevel=3,\
 	org.sat4j.core;version='[2.3.6,2.3.7)';startlevel=3,\
 	org.sat4j.pb;version='[2.3.6,2.3.7)';startlevel=3,\
-	org.tukaani.xz;version='[1.9.0,1.9.1)';startlevel=3,\
-	org.eclipse.swtbot.swt.finder;version='[4.1.0.202306071420,4.1.0.202306071421)';startlevel=3
+	org.tukaani.xz;version='[1.9.0,1.9.1)';startlevel=3
 
 -resolve: auto

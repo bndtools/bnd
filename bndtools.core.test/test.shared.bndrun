@@ -15,7 +15,6 @@
 	bnd.identity;id='bndtools.core.services',\
 	bnd.identity;id='bndtools.core.test.launch',\
 	bnd.identity;id='bndtools.core.test.tests',\
-	bnd.identity;id='org.eclipse.swtbot.swt.finder',\
 	bnd.identity;id='com.google.guava';version='[33.4.8,34.0.0)',\
 	bnd.identity;id='com.google.guava.failureaccess',\
 	bnd.identity;id='org.apache.ant',\
