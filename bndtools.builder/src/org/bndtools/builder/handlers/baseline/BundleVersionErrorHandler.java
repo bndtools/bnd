@@ -1,5 +1,7 @@
 package org.bndtools.builder.handlers.baseline;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,13 +10,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ui.IMarkerResolution;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
@@ -23,10 +31,14 @@ import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
 import bndtools.central.Central;
 
 public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler {
+
+	private static final ILogger	logger							= Logger
+		.getLogger(BundleVersionErrorHandler.class);
 
 	private static final String		PROP_SUGGESTED_VERSION			= "suggestedVersion";
 
@@ -69,6 +81,56 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
 				}
 			}
 		}
+
+		return result;
+	}
+
+	@Override
+	public List<IMarkerResolution> getResolutions(IMarker marker) {
+		List<IMarkerResolution> result = new ArrayList<>();
+
+		final String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
+		if (suggestedVersion == null)
+			return result;
+
+		result.add(new IMarkerResolution() {
+			@Override
+			public String getLabel() {
+				return "Change bundle version to " + suggestedVersion;
+			}
+
+			@Override
+			public void run(IMarker marker) {
+				IResource resource = marker.getResource();
+				if (!(resource instanceof IFile))
+					return;
+				final IFile file = (IFile) resource;
+				final int start = marker.getAttribute(IMarker.CHAR_START, -1);
+				final int end = marker.getAttribute(IMarker.CHAR_END, -1);
+				final IWorkspace workspace = file.getWorkspace();
+				try {
+					workspace.run(monitor -> {
+						IPath location = file.getLocation();
+						if (location == null)
+							return;
+						String content;
+						try {
+							content = IO.collect(location.toFile());
+						} catch (Exception e) {
+							return;
+						}
+						if (start < 0 || end < start || end > content.length())
+							return;
+						String newContent = content.substring(0, start) + Constants.BUNDLE_VERSION + ": "
+							+ suggestedVersion + content.substring(end);
+						file.setContents(new ByteArrayInputStream(newContent.getBytes(StandardCharsets.UTF_8)), false,
+							true, monitor);
+					}, null);
+				} catch (Exception e) {
+					logger.logError("Error applying bundle version quick fix.", e);
+				}
+			}
+		});
 
 		return result;
 	}
