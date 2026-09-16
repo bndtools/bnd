@@ -51,6 +51,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.INewWizard;
@@ -96,6 +97,27 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 	final static Image				verified			= Icons.image("icons/tick.png", false);
 	final static Image				verifiedGreyedOut	= new Image(Display.getDefault(), verified, SWT.IMAGE_DISABLE);
+
+	public static String globToRegex(String glob) {
+		boolean hasWildcard = glob.indexOf('*') >= 0 || glob.indexOf('?') >= 0;
+		StringBuilder sb = new StringBuilder();
+		if (!hasWildcard) {
+			sb.append(".*");
+		}
+		for (char c : glob.toCharArray()) {
+			switch (c) {
+				case '*' -> sb.append(".*");
+				case '?' -> sb.append('.');
+				case '.', '(', ')', '+', '|', '^', '$', '@', '%', '[', ']', '{', '}', '\\' -> sb.append('\\')
+					.append(c);
+				default -> sb.append(c);
+			}
+		}
+		if (!hasWildcard) {
+			sb.append(".*");
+		}
+		return sb.toString();
+	}
 
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
@@ -379,6 +401,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					}
 					return super.getText(element);
 				}
+
 			});
 
 			TableViewerColumn descriptionColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
@@ -458,7 +481,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				}
 			});
 			tableLayout.addColumnData(new ColumnPixelData(20, false));
-			tableLayout.addColumnData(new ColumnPixelData(30, false));
+			int maxIndexWidth = Math.max(32, 18 + String.valueOf(Math.max(1, model.templates.size())).length() * 8);
+			tableLayout.addColumnData(new ColumnPixelData(maxIndexWidth, false));
 			tableLayout.addColumnData(new ColumnPixelData(120, false));
 			tableLayout.addColumnData(new ColumnPixelData(460, false));
 			tableLayout.addColumnData(new ColumnPixelData(120, false));
@@ -491,7 +515,15 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			ui.u("valid", model.valid, this::setErrorMessage);
 			ui.u("error", model.error, this::setErrorMessage);
 			ui.u("valid", model.valid, v -> setPageComplete(v == null));
-			ui.u("templates", model.templates, l -> selectedTemplates.setInput(l.toArray()));
+			ui.u("templates", model.templates, l -> {
+				selectedTemplates.setInput(l.toArray());
+				if (!l.isEmpty()) {
+					int digits = String.valueOf(l.size()).length();
+					int width = Math.max(26, 16 + digits * 8);
+					indexColumn.getColumn()
+						.setWidth(width);
+				}
+			});
 			ui.u("selectedTemplates", model.selectedTemplates, UI.widget(selectedTemplates)
 				.map(List::toArray, this::toTemplates));
 			UI.checkbox(addButton)
@@ -542,29 +574,6 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 						.map(String::valueOf)
 				.collect(Collectors.joining(", "));
 			return indices;
-		}
-
-		// converts a shell-style glob (* and ?) into a case-insensitive regex; plain text without glob
-		// special characters is treated as a substring search
-		static String globToRegex(String glob) {
-			boolean hasWildcard = glob.indexOf('*') >= 0 || glob.indexOf('?') >= 0;
-			StringBuilder sb = new StringBuilder();
-			if (!hasWildcard) {
-				sb.append(".*");
-			}
-			for (char c : glob.toCharArray()) {
-				switch (c) {
-					case '*' -> sb.append(".*");
-					case '?' -> sb.append('.');
-					case '.', '(', ')', '+', '|', '^', '$', '@', '%', '[', ']', '{', '}', '\\' -> sb.append('\\')
-						.append(c);
-					default -> sb.append(c);
-				}
-			}
-			if (!hasWildcard) {
-				sb.append(".*");
-			}
-			return sb.toString();
 		}
 
 		void browseForLocation() {
