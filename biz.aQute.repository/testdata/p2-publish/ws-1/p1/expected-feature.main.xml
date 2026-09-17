@@ -489,7 +489,32 @@ version(s), and exceptions or additional permissions here}."
     <discovery url="https://download.eclipse.org/eclipse/updates/4.30/" label="Eclipse Update Site"/>
   </url>
   <requires>
+    <import plugin="biz.aQute.bnd.embedded-repo" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="biz.aQute.bnd.util" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="biz.aQute.bndlib" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="biz.aQute.repository" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="biz.aQute.resolve" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="bndtools.api" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="bndtools.builder" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="bndtools.core" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="bndtools.core.services" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="bndtools.jareditor" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="bndtools.release" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.headless.build.manager" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.headless.build.plugin.ant" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.headless.build.plugin.gradle" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.launch" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.remoteinstall" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.templating" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.templating.gitrepo" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.versioncontrol.ignores.manager" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
+    <import plugin="org.bndtools.versioncontrol.ignores.plugin.git" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
     <import feature="org.eclipse.platform.feature.group" version="4.25.0" match="equivalent"/>
+    <import plugin="org.osgi.service.coordinator" version="1.0.2.201505202024" match="perfect"/>
+    <import plugin="org.osgi.service.repository" version="1.1.0.201505202024" match="perfect"/>
+    <import plugin="org.osgi.util.function" version="1.2.0.202109301733" match="perfect"/>
+    <import plugin="org.osgi.util.promise" version="1.2.0.202109301733" match="perfect"/>
+    <import plugin="org.slf4j.api" version="1.7.30.v20200204-2150" match="perfect"/>
   </requires>
   <plugin id="biz.aQute.bnd.embedded-repo" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
   <plugin id="biz.aQute.bnd.util" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>

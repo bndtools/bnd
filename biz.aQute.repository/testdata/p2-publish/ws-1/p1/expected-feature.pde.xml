@@ -5,6 +5,7 @@
   <url/>
   <requires>
     <import feature="bndtools.main.feature.feature.group" version="7.0.0.0000-RC1" match="perfect"/>
+    <import plugin="bndtools.pde" version="7.0.0.202306291715-SNAPSHOT" match="perfect"/>
     <import feature="org.eclipse.pde.feature.group" version="3.14.1300" match="equivalent"/>
   </requires>
   <plugin id="bndtools.pde" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
