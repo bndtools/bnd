@@ -74,6 +74,7 @@
 	org.eclipse.ui.workbench,\
 	org.eclipse.swt,\
 	org.eclipse.swt.win32.win32.x86_64,\
+	org.eclipse.swtbot.swt.finder,\
 	org.eclipse.e4.core.contexts,\
 	org.eclipse.e4.core.services,\
 	org.eclipse.e4.ui.di,\
