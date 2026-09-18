@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )*</h1>
+<ul>
+<li>
+<p>Example: <code>Private-Package: com.*</code></p>
+</li>
+<li>
+<p>Values: <code>${packages}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/private_package.md -->
+<h1 id="private-package">Private-Package</h1>
+<p>The <code>Private-Package</code> header specifies which packages should be included in the bundle but not exported. The syntax and behavior are similar to the <code>Export-Package</code> header, but these packages are private to the bundle and not visible to other bundles.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Private-Package: com.example.internal.*
+</code></pre></div>
+
+<p>If a package is selected by both the export and private package headers, the export takes precedence. bnd will merge split packages by default, but you can control this with the <code>-split-package:</code> directive.</p>
+<h2 id="private-package_1">Private Package</h2>
+<p>The method of inclusion is identical to the Export-Package header, the only difference is, is that these packages are not exported. This header will be copied to the manifest. If a package is selected by the export and private package headers, then the export takes precedence.</p>
+<p>Private-Package= com.*</p>
+<h3 id="split-packages">Split packages</h3>
+<p>Bnd traverse the packages on the classpath and copies them to the output based on the instructions given by the Export-Package and Private-Package headers. This opens up for the possibility that there are multiple packages with the same name on the class path. It is better to avoid this situation because it means there is no cohesive definition of the package and it is just, eh, messy. However, there are valid cases that packages should be merged from different sources. For example, when a standard package needs to be merged with implementation code like the osgi packages sometimes (unfortunately) do. Without any extra instructions, bnd will merge multiple packages where the last one wins if the packages contain duplicate resources, but it will give a warning to notify the unwanted case of split packages.</p>
+<p>The <code>-split-package:</code> directive on the Export-Package/Private-Package clause allows fine grained control over what should be done with split packages. The following values are architected:</p>
+<p>||<nobr><code>merge-first</code></nobr>||Merge split packages but do not add resources that come later in the classpath. That is, the first resource wins. This is the default, although the default will generate a warning||
+||<nobr><code>merge-last</code></nobr>||Merge split packages but overwrite resources that come earlier in the classpath. That is, the last resource wins.||
+||<code>first</code>||Do not merge, only use the first package found||
+||<code>error</code>||Generate an error when a split package is detected||</p>
+<p>For example:</p>
+<p>Private-Package: test.pack;-split-package:=merge-first</p>
+<div class="highlight"><pre><span></span><code>private void doExpand(Jar dot) {
+
+    // Build an index of the class path that we can then
+    // use destructively
+    MultiMap&lt;String,Jar&gt; packages = new MultiMap&lt;String,Jar&gt;();
+    for (Jar srce : getClasspath()) {
+        dot.updateModified(srce.lastModified, srce + &quot; (&quot; + srce.lastModifiedReason + &quot;)&quot;);
+        for (Entry&lt;String,Map&lt;String,Resource&gt;&gt; e : srce.getDirectories().entrySet()) {
+            if (e.getValue() != null)
+                packages.add(e.getKey(), srce);
+        }
+    }
+
+    Parameters privatePackages = getPrivatePackage();
+    if (isTrue(getProperty(Constants.UNDERTEST))) {
+        String h = getProperty(Constants.TESTPACKAGES, &quot;test;presence:=optional&quot;);
+        privatePackages.putAll(parseHeader(h));
+    }
+
+    if (!privatePackages.isEmpty()) {
+        Instructions privateFilter = new Instructions(privatePackages);
+        Set&lt;Instruction&gt; unused = doExpand(dot, packages, privateFilter);
+
+        if (!unused.isEmpty()) {
+            warning(&quot;Unused &quot; + Constants.PRIVATE_PACKAGE + &quot; instructions, no such package(s) on the class path: %s&quot;, unused);
+        }
+    }
+
+    Parameters exportedPackage = getExportPackage();
+    if (!exportedPackage.isEmpty()) {
+        Instructions exportedFilter = new Instructions(exportedPackage);
+
+        // We ignore unused instructions for exports, they should show
+        // up as errors during analysis. Otherwise any overlapping
+        // packages with the private packages should show up as
+        // unused
+
+        doExpand(dot, packages, exportedFilter);
+    }
+}
+
+
+
+
+
+
+    /**
+ * Allow any local initialization by subclasses before we build.
+ */
+public void init() throws Exception {
+    begin();
+    doRequireBnd();
+
+    // Check if we have sensible setup
+
+    if (getClasspath().size() == 0
+            &amp;&amp; (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
+        warning(&quot;Classpath is empty. &quot; + Constants.PRIVATE_PACKAGE + &quot; (-privatepackage) and &quot; + EXPORT_PACKAGE + &quot; can only expand from the classpath when there is one&quot;);
+
+}
+
+
+
+    /**
+ * Check if the given resource is in scope of this bundle. That is, it
+ * checks if the Include-Resource includes this resource or if it is a class
+ * file it is on the class path and the Export-Package or Private-Package
+ * include this resource.
+ *
+ * @param f
+ * @return
+ */
+public boolean isInScope(Collection&lt;File&gt; resources) throws Exception {
+    Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
+    clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
+    clauses.putAll(parseHeader(getProperty(Constants.PRIVATEPACKAGE)));
+    if (isTrue(getProperty(Constants.UNDERTEST))) {
+        clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES, &quot;test;presence:=optional&quot;)));
+    }
+
+    Collection&lt;String&gt; ir = getIncludedResourcePrefixes();
+
+    Instructions instructions = new Instructions(clauses);
+
+    for (File r : resources) {
+        String cpEntry = getClasspathEntrySuffix(r);
+
+        if (cpEntry != null) {
+
+            if (cpEntry.equals(&quot;&quot;)) // Meaning we actually have a CPE
+                return true;
+
+            String pack = Descriptors.getPackage(cpEntry);
+            Instruction i = matches(instructions, pack, null, r.getName());
+            if (i != null)
+                return !i.isNegated();
+        }
+
+        // Check if this resource starts with one of the I-C header
+        // paths.
+        String path = r.getAbsolutePath();
+        for (String p : ir) {
+            if (path.startsWith(p))
+                return true;
+        }
+    }
+    return false;
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

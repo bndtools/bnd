@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>md5 ';' RESOURCE</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>md5 ';' RESOURCE</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>md5</code> macro calculates the MD5 hash of a resource that exists within the current bundle JAR. The result can be returned as either Base64 (default) or hexadecimal encoding.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${md5;&lt;resource-path&gt;[;&lt;encoding&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>resource-path</code> - Path to a resource within the bundle (e.g., "META-INF/MANIFEST.MF")</li>
+<li><code>encoding</code> (optional) - Output encoding: "hex" for hexadecimal, "base64" for Base64 (default)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Locates the resource within the bundle being built</li>
+<li>Calculates the MD5 digest of the resource contents</li>
+<li>Returns the digest in the specified encoding (Base64 by default)</li>
+<li>Throws an exception if the resource is not found</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get MD5 of a resource (Base64):</p>
+<div class="highlight"><pre><span></span><code>${md5;META-INF/services/com.example.Service}
+# Returns Base64-encoded MD5
+</code></pre></div>
+
+<p>Get MD5 in hexadecimal format:</p>
+<div class="highlight"><pre><span></span><code>${md5;config/application.properties;hex}
+# Returns: &quot;5d41402abc4b2a76b9719d911017c592&quot; (example)
+</code></pre></div>
+
+<p>Hash manifest file:</p>
+<div class="highlight"><pre><span></span><code>manifest.md5=${md5;META-INF/MANIFEST.MF;hex}
+</code></pre></div>
+
+<p>Verify resource integrity:</p>
+<div class="highlight"><pre><span></span><code>Bundle-ResourceMD5: ${md5;important-config.xml}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Verifying resource integrity in bundles</li>
+<li>Generating resource checksums for validation</li>
+<li>Creating content-based identifiers</li>
+<li>Implementing resource version checking</li>
+<li>Integrity verification in manifests</li>
+<li>Detecting resource tampering</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Resource path is relative to the bundle root</li>
+<li>Only works with resources that are part of the bundle being built</li>
+<li>MD5 is considered cryptographically weak; use for checksums only, not security</li>
+<li>Default encoding is Base64</li>
+<li>Hex encoding produces lowercase hexadecimal strings</li>
+<li>Throws FileNotFoundException if resource doesn't exist</li>
+<li>See also: <code>${sha1}</code> and <code>${digest}</code> for other hash algorithms</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

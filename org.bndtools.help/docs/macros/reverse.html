@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>reverse (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>reverse (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>reverse</code> macro reverses the order of elements from one or more combined lists. The last element becomes first, and the first becomes last.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${reverse;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists (items within lists are comma-separated)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists into a single list</li>
+<li>Reverses the order of all elements</li>
+<li>Returns the reversed list as a comma-separated string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Reverse a simple list:</p>
+<div class="highlight"><pre><span></span><code>${reverse;1,2,3,4,5}
+# Returns: &quot;5,4,3,2,1&quot;
+</code></pre></div>
+
+<p>Reverse text items:</p>
+<div class="highlight"><pre><span></span><code>${reverse;apple,banana,cherry}
+# Returns: &quot;cherry,banana,apple&quot;
+</code></pre></div>
+
+<p>Reverse multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${reverse;red,green;blue,yellow}
+# Returns: &quot;yellow,blue,green,red&quot;
+</code></pre></div>
+
+<p>Reverse file list:</p>
+<div class="highlight"><pre><span></span><code>${reverse;${lsr;src;*.java}}
+# Returns files in reverse order
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Reversing lists for processing in opposite order</li>
+<li>Creating descending sort orders</li>
+<li>Stack-like operations (LIFO)</li>
+<li>Reversing dependency orders</li>
+<li>Changing processing sequence</li>
+<li>List manipulation</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The entire combined list is reversed</li>
+<li>Element values are not modified, only their order</li>
+<li>Empty lists return empty results</li>
+<li>Useful for reordering sorted lists</li>
+<li>Can be combined with <code>${sort}</code> for descending order</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>p_sourcepath</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>p_sourcepath</h1>
+<hr />
+<p>layout: default
+class:  Project
+title: p_sourcepath
+summary: Get the project's source directories</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>p_sourcepath</code> macro returns the project's source directories as a comma-separated list of paths.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${p_sourcepath}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns all source directories</li>
+<li>Paths are absolute</li>
+<li>Results are comma-separated</li>
+<li>Typically includes <code>src</code> directory</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get source paths:</p>
+<div class="highlight"><pre><span></span><code>Source-Directories: ${p_sourcepath}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Documenting source locations</li>
+<li>Build configuration</li>
+<li>Source analysis tools</li>
+<li>IDE integration</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns absolute paths</li>
+<li>Usually includes standard <code>src</code> directory</li>
+<li>See also: <code>${p_buildpath}</code> for dependencies</li>
+<li>See also: <code>${p_output}</code> for output directory</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

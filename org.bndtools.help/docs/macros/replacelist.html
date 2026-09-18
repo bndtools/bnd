@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>replacelist ';' LIST ';' REGEX (';' STRING (';' STRING)? )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>replacelist ';' LIST ';' REGEX (';' STRING (';' STRING)? )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>replacelist</code> macro applies regex-based replacement to each element in a list. Unlike <code>${replace}</code>, it uses a sophisticated splitter that handles quoted sections, preserving commas within quotes.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${replacelist;&lt;list&gt;;&lt;regex&gt;[;&lt;replacement&gt;[;&lt;delimiter&gt;]]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - List of elements (can contain quoted sections with commas)</li>
+<li><code>regex</code> - Regular expression pattern to match</li>
+<li><code>replacement</code> (optional) - Replacement string with <code>$1-$9</code> back-references (default: empty)</li>
+<li><code>delimiter</code> (optional) - Output delimiter (default: ",")</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Splits list intelligently (respects quoted sections)</li>
+<li>Applies <code>element.replaceAll(regex, replacement)</code> to each</li>
+<li>Supports regex back-references (<code>$1</code>, <code>$2</code>, etc.)</li>
+<li>Preserves quoted sections during splitting</li>
+<li>Returns delimited result</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Add to quoted elements:</p>
+<div class="highlight"><pre><span></span><code>impls: foo;version=&quot;[1,2)&quot;, bar;version=&quot;[1.2,2)&quot;
+${replacelist;${list;impls};$;\\;strategy=highest}
+# Returns: foo;version=&quot;[1,2)&quot;;strategy=highest,bar;version=&quot;[1.2,2)&quot;;strategy=highest
+</code></pre></div>
+
+<p>Process dependencies:</p>
+<div class="highlight"><pre><span></span><code>deps: lib;version=&quot;1.0,2.0&quot;,tool;version=&quot;2.0&quot;
+${replacelist;${deps};$;,optional}
+</code></pre></div>
+
+<p>Back-references with quotes:</p>
+<div class="highlight"><pre><span></span><code>${replacelist;a=&quot;x,y&quot;,b=&quot;z&quot;;(.+)=&quot;(.+)&quot;;$1:$2}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>OSGi manifest attribute manipulation</li>
+<li>Dependency list processing</li>
+<li>Version range handling</li>
+<li>Complex list transformations</li>
+<li>Preserving structured data</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Handles quoted sections properly</li>
+<li>More robust than <code>${replace}</code> for OSGi attributes</li>
+<li>Regex uses Java syntax</li>
+<li>Empty replacement removes matched text</li>
+<li>See also: <code>${replace}</code> for simple splitting</li>
+<li>See also: <code>${replacestring}</code> for single strings</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-jpms-module-info-options module-infos+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-jpms-module-info-options module-infos+</h1>
+<ul>
+<li>
+<p>Example: <code>-jpms-module-info-options: java.enterprise;transitive="true"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/jpms_module_info_options.md -->
+<p>See <a href="../chapters/330-jpms.html">jpms</a> for an overview and the detailed rules how the <code>module-info.class</code> file is
+calculated. </p>
+<p>The <code>-jpms-module-info-options</code> instruction provides some capabilities to help the developer handle these scenarios. The keys of these instructions are module names and there are 4 available attributes. </p>
+<div class="highlight"><pre><span></span><code>-jpms-module-info-options       ::= moduleinfo
+moduleinfo                      ::= NAME 
+                                    [ &#39;;substitute=&#39; substitute ] 
+                                    [ &#39;;ignore=&#39; ignore ] 
+                                    [ &#39;;static=&#39; static ] 
+                                    [ &#39;;transitive=&#39; transitive ]
+</code></pre></div>
+
+<p>They attributes are:</p>
+<ul>
+<li>
+<p><strong><code>substitute</code></strong> - If bnd generates a module name based on the file name and it matches the value of this attribute it should be substituted with the key of the instruction.
+  e.g. </p>
+<p>-jpms-module-info-options: java.enterprise;substitute="geronimo-jcdi_2.0_spec"</p>
+</li>
+</ul>
+<p>means that if bnd calculates the module name to be <code>geronimo-jcdi_2.0_spec</code> it should replace it with <code>java.enterprise</code> </p>
+<p>– <strong><code>ignore</code></strong> - If the attribute <code>ignore="true"</code> is found the require matching the key of the instruction will not be added.
+  e.g. </p>
+<p><code>properties
+  -jpms-module-info-options: java.enterprise;ignore="true"</code></p>
+<p>means ignore the module <code>java.enterprise</code></p>
+<ul>
+<li><strong><code>static</code></strong> - If the attribute <code>static="true|false"</code> is found the access of the module matching the key of the instruction will be set to match.
+  e.g. </li>
+</ul>
+<p><code>properties
+  -jpms-module-info-options: java.enterprise;static="true"</code></p>
+<p>means make the <code>require</code> for module <code>java.enterprise</code> <code>static</code></p>
+<ul>
+<li><strong><code>transitive</code></strong> - If the attribute <code>transitive="true|false"</code> is found the access of the module matching the key of the instruction will be set to match.
+  e.g. </li>
+</ul>
+<p><code>properties
+  -jpms-module-info-options: java.enterprise;transitive="true"</code></p>
+<p>means make the <code>require</code> for module <code>java.enterprise</code> <code>transitive</code></p>
+<p>The following is an example with multiple attributes and instructions:</p>
+<div class="highlight"><pre><span></span><code><span class="na">-jpms-module-info-options</span><span class="o">:</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s">java.enterprise;substitute=&quot;geronimo-jcdi_2.0_spec&quot;;static=true;transitive=true,</span><span class="se">\</span>
+<span class="w">    </span><span class="s">java.management;ignore=true;</span>
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

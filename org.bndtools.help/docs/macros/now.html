@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>now ( 'long' | DATEFORMAT )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>now ( 'long' | DATEFORMAT )</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>now</code> macro returns the current date and time. It can return the raw Date object, milliseconds since epoch, or a formatted date string.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${now[;&lt;format&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>format</code> (optional) - Either "long" for milliseconds, a date format pattern, or omit for default Date format</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>No argument: Returns default Date string representation</li>
+<li>"long": Returns milliseconds since Unix epoch</li>
+<li>Format pattern: Returns formatted date string using SimpleDateFormat</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get current time in millis:</p>
+<div class="highlight"><pre><span></span><code>${now;long}
+# Returns: 1700000000000 (example)
+</code></pre></div>
+
+<p>Custom format:</p>
+<div class="highlight"><pre><span></span><code>${now;yyyy-MM-dd HH:mm:ss}
+# Returns: &quot;2024-11-20 10:30:45&quot;
+</code></pre></div>
+
+<p>ISO format:</p>
+<div class="highlight"><pre><span></span><code>${now;yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;}
+# Returns: &quot;2024-11-20T10:30:45Z&quot;
+</code></pre></div>
+
+<p>Default format:</p>
+<div class="highlight"><pre><span></span><code>${now}
+# Returns: &quot;Wed Nov 20 10:30:45 UTC 2024&quot;
+</code></pre></div>
+
+<p>Build timestamp:</p>
+<div class="highlight"><pre><span></span><code>Build-Time: ${now;yyyy-MM-dd HH:mm z}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Build timestamps</li>
+<li>Current time logging</li>
+<li>Time-based conditionals</li>
+<li>Unique identifiers with timestamps</li>
+<li>Build metadata</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses system time zone unless specified in format</li>
+<li>Format uses SimpleDateFormat patterns</li>
+<li>"long" returns milliseconds as number</li>
+<li>Default returns Java Date.toString() format</li>
+<li>See also: <code>${tstamp}</code> for more control</li>
+<li>See also: <code>${currenttime}</code> for millis only</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPI Annotations</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>SPI Annotations</h1>
+<p>Writing Java libraries which support <strong>OSGi</strong> does not typically require more than generating proper OSGi metadata. <strong>bnd</strong> helps accomplish with minimal effort on the part of developers. One issue that remains somewhat complex is properly handling the use of the <a href="https://docs.oracle.com/javase/tutorial/ext/basics/spi.html">Java SPI</a> such that it works seamlessly in OSGi and avoiding the need for custom code to accomplish a similar goal. OSGi defines the <a href="https://osgi.org/specification/osgi.cmpn/8.0.0/service.loader.html">Service Loader Mediator Specification</a> but applying it requires a significant amount of manifest metadata.</p>
+<h2 id="spi-annotations">SPI Annotations</h2>
+<p>bnd defines a set of <em>SPI annotations</em> which provide a simple solution for developers who wish to maintain OSGi friendly libraries.</p>
+<h3 id="serviceconsumer">@ServiceConsumer</h3>
+<p>The Java SPI use cases are broken into two groups; providers and consumers. The <code>@aQute.bnd.annotation.spi.ServiceConsumer</code> annotation is used in consumer code to express a requirement on an SPI service type adding the appropriate OSGi metadata to the manifest.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@ServiceConsumer</span><span class="p">(</span>
+<span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonProvider</span><span class="p">.</span><span class="na">class</span>
+<span class="p">)</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">abstract</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JsonProvider</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">JsonProvider</span><span class="w"> </span><span class="nf">provider</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">JsonProvider</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ServiceLoader</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">JsonProvider</span><span class="p">.</span><span class="na">class</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">provider</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">JsonException</span><span class="p">(</span><span class="s">&quot;provider not found&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><code>@ServiceConsumer</code> also grants the developer control in defining many facets of the generated OSGi requirements such as <code>cardinality</code>, <code>effective</code> time and <code>resolution</code>.</p>
+<h3 id="serviceprovider">@ServiceProvider</h3>
+<p>The provider side is supported by the <code>@aQute.bnd.annotation.spi.ServiceProvider</code> annotation. It is used to express a capability for a given SPI service type adding all the appropriate OSGi manifest metadata.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@ServiceProvider</span><span class="p">(</span><span class="n">JsonProvider</span><span class="p">.</span><span class="na">class</span><span class="p">)</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JsonProviderImpl</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JsonProvider</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><code>@ServiceProvider</code> also grants the developer control in defining many facets of the generated OSGi requirements and capabilities such as additional attributes and directives (attributes becoming service properties), <code>cardinality</code>, <code>effective</code> time, <code>resolution</code>, and package <code>uses</code>.</p>
+<h4 id="osgi-services">OSGi Services</h4>
+<p>The <code>@ServiceProvider</code> annotation will automatically result in publishing OSGi services for each provider discovered. Any attributes (excluding directives) specified on the annotation will be automatically added as OSGi service properties.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@ServiceProvider</span><span class="p">(</span>
+<span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonProvider</span><span class="p">.</span><span class="na">class</span><span class="p">,</span>
+<span class="w">    </span><span class="n">attribute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s">&quot;colors:List&lt;String&gt;=&#39;blue,green,red&#39;&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">)</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JsonProviderImpl</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JsonProvider</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>An <code>osgi.service</code> capability is also generated for each provider type.</p>
+<h4 id="service-descriptor-files">Service Descriptor Files</h4>
+<p>An additional feature provided by bnd is the ability to manage the service descriptor files (a.k.a. <code>META-INF/services/*</code>) automatically for any <code>osgi.serviceloader</code> capabilities it finds having the <code>register:</code> directive containing a provider's fully qualified class name. The <code>register:</code> directive is automatically generated from all instances of <code>@ServiceProvider</code>.</p>
+</body>
+</html>

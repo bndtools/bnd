@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sjoin ';' SEPARATOR ( ';' LIST )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>sjoin ';' SEPARATOR ( ';' LIST )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>sjoin</code> macro combines one or more lists into a single string using a custom separator. Unlike <code>${join}</code> which always uses commas, this allows you to specify any separator.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${sjoin;&lt;separator&gt;;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>separator</code> - The string to use between elements (can be any string)</li>
+<li><code>list</code> - One or more lists to combine</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists into a single collection</li>
+<li>Joins elements using the specified separator</li>
+<li>The separator can be any string (space, newline, custom text, etc.)</li>
+<li>Returns the joined string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Join with space:</p>
+<div class="highlight"><pre><span></span><code>${sjoin; ;apple,banana,cherry}
+# Returns: &quot;apple banana cherry&quot;
+</code></pre></div>
+
+<p>Join with custom separator:</p>
+<div class="highlight"><pre><span></span><code>${sjoin; | ;red,green,blue}
+# Returns: &quot;red | green | blue&quot;
+</code></pre></div>
+
+<p>Join with newline:</p>
+<div class="highlight"><pre><span></span><code>${sjoin;\n;line1,line2,line3}
+# Returns multi-line text
+</code></pre></div>
+
+<p>Join multiple lists with colon:</p>
+<div class="highlight"><pre><span></span><code>${sjoin;:;${exports};${imports}}
+# Returns packages separated by colons
+</code></pre></div>
+
+<p>Create formatted list:</p>
+<div class="highlight"><pre><span></span><code>${sjoin;, and ;first,second,third}
+# Returns: &quot;first, and second, and third&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Creating custom formatted output</li>
+<li>Building strings with specific delimiters</li>
+<li>Generating reports or logs</li>
+<li>Creating paths with custom separators</li>
+<li>Formatting lists for display</li>
+<li>Building command-line arguments</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The separator can be any string, including special characters</li>
+<li>Input lists can use comma or semicolon separation</li>
+<li>Empty separator joins elements directly (no space)</li>
+<li>See also: <code>${join}</code> for comma-separated joining</li>
+<li>See also: <code>${path}</code> for OS-specific path separator joining</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...</h1>
+<ul>
+<li>
+<p>Example: <code>-fixupmessages: 'Version mismatch';replace:='************* ${@}';restrict:=error</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/fixupmessages.md -->
+<p>The <code>-fixupmessages</code> instruction is intended to <em>fixup</em> the errors and warnings. It allows you to remove errors and/or warnings, turn errors into warnings, and turn warnings into errors. With this instruction you can fail a build based on a warning or succeed a build that runs into errors.</p>
+<p>The default of this instruction is to list a number of patterns. Any error or warning that matches this pattern is then removed. The following example will remove any  error/warning that matches <code>'some error'</code>, <code>'another error'</code>, or <code>'and yet another error'</code>.</p>
+<div class="highlight"><pre><span></span><code>-fixupmessages:  \
+    some error, 
+    another error, 
+    and yet another error
+</code></pre></div>
+
+<p>The pattern is a <a href="/chapters/820-instructions.html#selector">SELECTOR</a>, which makes it possible to do case insensitive matches, wildcards, literals, etc.</p>
+<h2 id="syntax">Syntax</h2>
+<p>The basic format of <code>-fixupmessages</code> is:</p>
+<div class="highlight"><pre><span></span><code>-fixupmessages ::= fixup ( &#39;,&#39; fixup ) *
+fixup          ::= SELECTOR directive *
+directive      ::= &#39;;&#39; ( restrict | is | replace )
+restrict       ::= &#39;restrict:=&#39; ( &#39;error&#39; | &#39;warning&#39; )
+is             ::= &#39;is:=&#39; ( &#39;ignore&#39; | &#39;error&#39; | &#39;warning&#39; )
+replace        ::= &#39;replace:=&#39; &lt;&lt;text&gt;&gt;
+</code></pre></div>
+
+<p>The value of a fixup clause is a globbing expression.</p>
+<h2 id="directives">Directives</h2>
+<p>The following directives are supported:</p>
+<ul>
+<li><code>restrict:</code> – By default, the fixup clause is applied to all errors and warnings. You can restrict its application to either errors or warnings specifying either <code>restrict:=error</code> or <code>restrict:=warning</code>.</li>
+<li><code>is:</code> – By default an error remains an error and a warning remains a warning. However, if you specify the <code>is:</code> directive you can force an error to become a warning or vice versa. This can be very useful if you build fails with an error that you do not consider a failure.</li>
+<li><code>replace:</code> – Replace the message with a new message. The replacement will be processed by the macro processor, the <code>${@}</code> macro will contain the current message.</li>
+</ul>
+<p>The <code>-fixupmessages</code> instruction is a <em>merged property</em>. This means that you can define it in many different places like for example in a file in <code>cnf/ext</code>. Just put an extension on the instruction. For example:</p>
+<div class="highlight"><pre><span></span><code>-fixupmessages.one: &#39;Some error&#39;
+-fixupmessages.two: &#39;Another error&#39;
+</code></pre></div>
+
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Turn an error into a warning
+-fixupmessages:
+  &#39;Invalid character&#39;; \
+    restrict:=error;
+    is:=warning
+
+# Replace a message
+-fixupmessages: \
+  &quot;split&quot;;replace:=broken
+
+# Ignore case by appending :i
+-fixupmessages: \
+  &quot;case insensitive:i&quot;
+
+# Wildcards
+-fixupmessages: \
+  &quot;prefix*suffix&quot;
+
+# Turn properties parser messages into warnings
+-fixupmessages.parser: \
+  &quot;Invalid character in properties&quot;; \
+  &quot;No value specified for key&quot;; \
+  &quot;Invalid property key&quot;; \
+  &quot;Invalid unicode string&quot;; \
+  &quot;Found \\&lt;whitespace&gt;&quot;;
+    is:=warning
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

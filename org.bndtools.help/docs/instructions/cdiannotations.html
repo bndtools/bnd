@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-cdiannotations SELECTORS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-cdiannotations SELECTORS</h1>
+<ul>
+<li>
+<p>Example: <code>-cdiannotations: *;discover=all</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="directives">Directives</h3>
+<ul>
+<li><code>discover</code> Bean Discovery Mode.</li>
+<li>
+<p>Example: <code>discover=all</code></p>
+</li>
+<li>
+<p>Values: <code>(all|annotated|annotated_by_bean|none)</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>noservicecapabilities</code> indicates that no service capabilities will be added for matches.</p>
+</li>
+<li>
+<p>Example: <code>noservicecapabilities=true</code></p>
+</li>
+<li>
+<p>Values: <code>true, false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/cdiannotations.md -->
+<p>The <code>-cdiannotations</code> instruction tells <strong>bnd</strong> which bundle classes, if any, to search for OSGI CDI Integration (or plain CDI) annotations. <strong>bnd</strong> will then process those classes into requirements and capabilities.</p>
+<p>The value of this instruction is a comma delimited list of globs matching packages or classes by fully qualified name.</p>
+<p>The default value of this instruction is <code>*</code>, which means that by default <strong>bnd</strong> will process all bundle classes looking for OSGI CDI Integration (or plain CDI) annotations.</p>
+<h5 id="discover">discover</h5>
+<p>Each glob may specify the <code>discover</code> attribute which determines the bean discovery mode to apply to matches.</p>
+<p>The following <code>discover</code> modes are supported:</p>
+<table>
+<thead>
+<tr>
+<th><code>discover</code></th>
+<th>Bean Discovery Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>all</code></td>
+<td>include all classes in the bundle as CDI beans</td>
+</tr>
+<tr>
+<td><code>annotated</code></td>
+<td>include classes annotated with <a href="https://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#bean_defining_annotations">bean defining annotations</a> as CDI beans</td>
+</tr>
+<tr>
+<td><code>annotated_by_bean</code> (default)</td>
+<td>include classes annotated with <code>org.osgi.service.cdi.annotations.Bean</code> or classes in packages annotated with <code>org.osgi.service.cdi.annotations.Beans</code> as CDI beans. <em>This is the </em><em>default</em><em> mode when <code>discover</code> is not specified.</em></td>
+</tr>
+<tr>
+<td><code>none</code></td>
+<td>do not include any classes in the bundle as CDI beans</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="na">-cdiannotations</span><span class="o">:</span><span class="w"> </span><span class="s">*;discover=all</span>
+</code></pre></div>
+
+<h5 id="noservicecapabilities">noservicecapabilities</h5>
+<p>Each glob may specify the <code>noservicecapabilities</code> attribute which indicates that no service capabilities will be added for matches.</p>
+<div class="highlight"><pre><span></span><code><span class="na">-cdiannotations</span><span class="o">:</span><span class="w"> </span><span class="s">*;discover=annotated;noservicecapabilities=true</span>
+</code></pre></div>
+
+<h5 id="noservicerequirements">noservicerequirements</h5>
+<p>Each glob may specify the <code>noservicerequirements</code> attribute which indicates that no service requirements will be added for matches.</p>
+<div class="highlight"><pre><span></span><code><span class="na">-cdiannotations</span><span class="o">:</span><span class="w"> </span><span class="s">*;noservicerequirements=true</span>
+</code></pre></div>
+
+<p><a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/cdi/CDIAnnotations.java">source</a></p>
+<p><br /><br /></p>
+</body>
+</html>

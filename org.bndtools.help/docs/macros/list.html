@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>list (';' KEY)*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>list (';' KEY)*</h1>
+<h2 id="summary">Summary</h2>
+<p>Merge multiple property values into a single comma-separated list with automatic semicolon escaping, useful for combining list-valued properties that contain semicolons.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${list[;&lt;property-name&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>property-name...</strong>: Zero or more property names whose values should be merged</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>The macro:
+1. Looks up each property name to get its value
+2. Splits each value using quoted string parsing (respects quotes)
+3. Escapes unescaped semicolons within elements (replaces <code>;</code> with <code>\;</code>)
+4. Merges all elements into a single comma-separated list
+5. Returns an empty string if no properties are specified</p>
+<p>This is particularly useful when list elements contain semicolons (like OSGi version ranges or attributes) and need to be passed to other macros.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Define list properties with semicolons
+deps = com.foo;version=&quot;[1,2)&quot;, com.bar;version=&quot;[1.2,2)&quot;
+
+# Merge and add attributes to each element
+-buildpath: ${replacelist;${list;deps};$;\\;strategy=highest}
+# Results in:
+# com.foo;version=&quot;[1,2)&quot;;strategy=highest,com.bar;version=&quot;[1.2,2)&quot;;strategy=highest
+
+# Merge multiple lists
+files = foo.jar, bar.jar
+extras = baz.jar, qux.jar
+all-files = ${list;files;extras}
+# Returns: foo.jar,bar.jar,baz.jar,qux.jar
+
+# Merge build paths with attributes
+compile-deps = javax.servlet;version=3.0, commons-io;version=2.5
+runtime-deps = slf4j-api;version=1.7
+all-deps = ${list;compile-deps;runtime-deps}
+
+# Create a combined package list with versions
+Private-Package: ${list;internal-packages;test-packages}
+
+# Handle empty properties (no-op for empty ones)
+${list;optional-deps;main-deps}
+# Only includes non-empty properties
+
+# Complex example with attributes
+base-deps = org.osgi.core;version=&quot;[6,7)&quot;, org.osgi.service.component;version=&quot;[1.3,2)&quot;
+extra-deps = org.apache.felix.scr;version=&quot;[2,3)&quot;
+-buildpath: ${list;base-deps;extra-deps}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Dependency Management</strong>: Combine dependencies with version ranges from different sources</li>
+<li><strong>Build Path Merging</strong>: Merge multiple classpath or build path properties</li>
+<li><strong>Package Lists</strong>: Combine package lists that include OSGi attributes</li>
+<li><strong>Attribute Manipulation</strong>: Prepare lists for processing with <code>replacelist</code> to add attributes</li>
+<li><strong>Configuration Merging</strong>: Merge configuration lists from different profiles</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Properties are specified by name, not by their expanded values</li>
+<li>Empty or undefined properties are simply skipped</li>
+<li>Semicolons within list elements are automatically escaped to <code>\;</code></li>
+<li>Uses comma as the delimiter for the output list</li>
+<li>Respects quoted strings in property values</li>
+<li>Order of elements matches the order of property arguments</li>
+<li>Particularly useful for OSGi manifest headers that use semicolons for attributes</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="replacelist.html">replacelist</a> - Apply regex replacements to list elements</li>
+<li><a href="join.html">join</a> - Join list elements with a custom delimiter</li>
+<li><a href="filter.html">filter</a> - Filter list elements by regex</li>
+<li><a href="uniq.html">uniq</a> - Remove duplicate elements from a list</li>
+<li><a href="sort.html">sort</a> - Sort list elements</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>
