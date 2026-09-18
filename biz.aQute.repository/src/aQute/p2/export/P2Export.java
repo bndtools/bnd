@@ -535,8 +535,16 @@ class P2Export {
 		for (Required require : feature.requires) {
 			if (require.type == IUType.feature) {
 
+				// Feature requirements go in <requires> as <import feature>
 				new Tag(requires, "import")//
 					.addAttribute("feature", require.id.getBsn())//
+					.addAttribute("version", require.range.getLeft()) //
+					.addAttribute("match", getMatch(require.range));
+			}
+			else if (require.type == IUType.bundle) {
+				// Bundle requirements also go in <requires> as <import plugin>
+				new Tag(requires, "import")//
+					.addAttribute("plugin", require.id.getBsn())//
 					.addAttribute("version", require.range.getLeft()) //
 					.addAttribute("match", getMatch(require.range));
 			}

@@ -116,6 +116,7 @@ class P2PublisherTest {
 
 				String expectedPde = Files.readString(p.getFile("expected-feature.pde.xml")
 					.toPath());
+				System.out.println(xmlFeaturePde);
 				assertEquals("feature.xml does not match expected-feature.xml", expectedPde, xmlFeaturePde);
 			} finally {}
 		}
