@@ -1,0 +1,9 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+tasks.named("test") {
+	if (Os.isFamily(Os.FAMILY_WINDOWS) && !Boolean.parseBoolean(System.getenv("CI"))) {
+		reports {
+			html.required = false
+		}
+	}
+}
