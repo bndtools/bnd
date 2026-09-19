@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -31,7 +33,18 @@ public class Container {
 		PROJECT,
 		EXTERNAL,
 		LIBRARY,
-		ERROR
+		ERROR,
+		/**
+		 * A typed resource: an identity whose OSGi identity capability carries a
+		 * {@code type} attribute other than a plain bundle, e.g. an Eclipse
+		 * feature ({@code org.eclipse.update.feature}), an OSGi feature or a
+		 * Karaf feature. Such a resource is a container of included bundles
+		 * and, possibly, of other typed resources; on a path it expands to its
+		 * members, see {@link Container#getMembers()}. The expansion is
+		 * delegated to the repository that recognizes the identity type, see
+		 * {@link aQute.bnd.service.RepositoryPlugin#getTypedResourceMembers}.
+		 */
+		TYPED_RESOURCE
 	}
 
 	private volatile File					file;
@@ -160,6 +173,7 @@ public class Container {
 				return true;
 
 			case LIBRARY :
+			case TYPED_RESOURCE :
 				List<Container> containers = getMembers();
 				for (Container container : containers) {
 					if (!container.contributeFiles(files, reporter))
@@ -232,13 +246,30 @@ public class Container {
 	}
 
 	/**
-	 * Return the this if this is anything else but a library. If it is a
-	 * library, return the members. This could work recursively, e.g., libraries
-	 * can point to libraries.
+	 * Return this if this is anything else but a library or a typed resource.
+	 * If it is a library, return the members. This could work recursively,
+	 * e.g., libraries can point to libraries. If it is a typed resource
+	 * (e.g. a feature), return the contained bundles and the members of
+	 * included typed resources, recursively.
 	 *
 	 * @throws Exception
 	 */
-	public List<Container> getMembers() throws Exception {
+	 public List<Container> getMembers() throws Exception {
+		return getMembers(new HashSet<>());
+	}
+
+	/**
+	 * Like {@link #getMembers()} but reusing a cycle-detection guard, keyed
+	 * by {@code bsn:version}, that is shared across a whole nested typed
+	 * resource expansion. Repository implementations expanding a typed
+	 * resource (see
+	 * {@link aQute.bnd.service.RepositoryPlugin#getTypedResourceMembers})
+	 * must pass the {@code visited} set they received along unchanged when
+	 * recursively expanding a nested member.
+	 *
+	 * @throws Exception
+	 */
+	public List<Container> getMembers(Set<String> visited) throws Exception {
 		List<Container> result = project.newList();
 
 		// Are ww a library? If no, we are the result
@@ -257,6 +288,8 @@ public class Container {
 					}
 				}
 			}
+		} else if (getType() == TYPE.TYPED_RESOURCE) {
+			result.addAll(project.getTypedResourceMembers(this, visited));
 		} else
 			result.add(this);
 
@@ -270,7 +303,7 @@ public class Container {
 	 * @param list the result list
 	 */
 	public static void flatten(Container container, List<Container> list) throws Exception {
-		if (container.getType() == TYPE.LIBRARY) {
+		if (container.getType() == TYPE.LIBRARY || container.getType() == TYPE.TYPED_RESOURCE) {
 			flatten(container.getMembers(), list);
 		} else
 			list.add(container);
