@@ -26,6 +26,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
+import bndtools.preferences.BndPreferences;
 
 /**
  * Detects merge-property conflicts: plain merge-stem properties (e.g.
@@ -49,6 +50,16 @@ public class IncludeConflictDetector {
 		if (resource == null || !resource.exists() || model == null)
 			return;
 		try {
+			int severity = getIncludeConflictSeverity();
+			if (severity == BndPreferences.INCLUDECONFLICT_SEVERITY_IGNORE) {
+				// Remove any existing markers and stop
+				resource.getWorkspace()
+					.run(monitor -> resource.deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_ZERO),
+						resource.getWorkspace()
+							.getRoot(),
+						IWorkspace.AVOID_UPDATE, null);
+				return;
+			}
 			Map<String, List<File>> conflicts = findConflicts(model);
 			List<InFileDuplicate> duplicates = findInFileDuplicates(model);
 			List<IFile> includedFiles = new ArrayList<>();
@@ -79,7 +90,7 @@ public class IncludeConflictDetector {
 						.map(File::getName)
 						.collect(Collectors.joining(", "));
 					IMarker marker = resource.createMarker(MARKER_TYPE);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+					marker.setAttribute(IMarker.SEVERITY, severity);
 					marker.setAttribute(IMarker.MESSAGE, "Property '" + key
 						+ "' is defined in multiple files of the include tree (" + files
 						+ "); the values shadow each other instead of merging. Rename to merged syntax, e.g. '" + key
@@ -100,7 +111,7 @@ public class IncludeConflictDetector {
 					if (target == null || !target.exists())
 						continue;
 					IMarker marker = target.createMarker(MARKER_TYPE);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+					marker.setAttribute(IMarker.SEVERITY, severity);
 					marker.setAttribute(IMarker.MESSAGE, "Property '" + d.key() + "' is defined " + d.count()
 						+ " times in " + d.file()
 							.getName()
@@ -379,6 +390,14 @@ public class IncludeConflictDetector {
 			iFile.setContents(new ByteArrayInputStream(updated.getBytes(StandardCharsets.UTF_8)), true, true, null);
 		} else {
 			IO.store(updated, file);
+		}
+	}
+
+	private static int getIncludeConflictSeverity() {
+		try {
+			return new BndPreferences().getIncludeConflictSeverity();
+		} catch (Exception e) {
+			return IMarker.SEVERITY_ERROR;
 		}
 	}
 

@@ -28,6 +28,7 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 	private Button			parallel;
 	private Button			rbAlways;
 	private Button			rbOptimized;
+	private Combo			cmbIncludeConflictSeverity;
 
 	@Override
 	public void init(IWorkbench workbench) {
@@ -118,8 +119,25 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 			}
 		});
 
+		// Include Conflict Marker severity
+		new Label(composite, SWT.NONE).setText(Messages.BndBuildPreferencePage_includeConflict_severity_label);
+		cmbIncludeConflictSeverity = new Combo(composite, SWT.READ_ONLY);
+		cmbIncludeConflictSeverity.setItems(Messages.BndBuildPreferencePage_includeConflict_severity_error,
+			Messages.BndBuildPreferencePage_includeConflict_severity_warning,
+			Messages.BndBuildPreferencePage_includeConflict_severity_info,
+			Messages.BndBuildPreferencePage_includeConflict_severity_ignore);
+		cmbIncludeConflictSeverity.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		cmbIncludeConflictSeverity.select(severityToIndex(prefs.getIncludeConflictSeverity()));
+
 		return composite;
 	}
+
+	private static final int[] INCLUDECONFLICT_SEVERITIES = {
+		org.eclipse.core.resources.IMarker.SEVERITY_ERROR,
+		org.eclipse.core.resources.IMarker.SEVERITY_WARNING,
+		org.eclipse.core.resources.IMarker.SEVERITY_INFO,
+		BndPreferences.INCLUDECONFLICT_SEVERITY_IGNORE
+	};
 
 	@Override
 	public boolean performOk() {
@@ -127,6 +145,7 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 		prefs.setParallel(parallel.getSelection());
 		String policy = getRebuildTriggerPolicy();
 		prefs.setRebuildTriggerPolicy(policy);
+		prefs.setIncludeConflictSeverity(INCLUDECONFLICT_SEVERITIES[cmbIncludeConflictSeverity.getSelectionIndex()]);
 
 		Workspace ws = Central.getWorkspaceIfPresent();
 		if (ws != null) {
@@ -141,6 +160,14 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 			return REBUILDTRIGGERPOLICY_API;
 		}
 		return REBUILDTRIGGERPOLICY_ALWAYS;
+	}
+
+	private static int severityToIndex(int severity) {
+		for (int i = 0; i < INCLUDECONFLICT_SEVERITIES.length; i++) {
+			if (INCLUDECONFLICT_SEVERITIES[i] == severity)
+				return i;
+		}
+		return 0; // default to Error
 	}
 
 

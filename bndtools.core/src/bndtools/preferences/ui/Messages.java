@@ -36,6 +36,11 @@ public class Messages extends NLS {
 	public static String		BndPreferencePage_quickfixVersioning_btnNoVersion_tt;
 	public static String		BndPreferencePage_quickfixVersioning_btnLatest;
 	public static String		BndPreferencePage_quickfixVersioning_btnLatest_tt;
+	public static String		BndBuildPreferencePage_includeConflict_severity_label;
+	public static String		BndBuildPreferencePage_includeConflict_severity_error;
+	public static String		BndBuildPreferencePage_includeConflict_severity_warning;
+	public static String		BndBuildPreferencePage_includeConflict_severity_info;
+	public static String		BndBuildPreferencePage_includeConflict_severity_ignore;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

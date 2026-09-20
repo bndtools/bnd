@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -51,6 +52,13 @@ public class BndPreferences {
 	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
 	private static final String		PREF_PARALLEL					= "parallel";
 	private static final String		PREF_REBUILD_TRIGGER_POLICY		= "rebuildTriggerPolicy";
+	private static final String		PREF_INCLUDECONFLICT_SEVERITY	= "includeConflictSeverity";
+
+	/**
+	 * Sentinel value for {@link #PREF_INCLUDECONFLICT_SEVERITY} meaning
+	 * "suppress the marker entirely".
+	 */
+	public static final int			INCLUDECONFLICT_SEVERITY_IGNORE	= -1;
 
 	static final String				PREF_WORKSPACE_OFFLINE			= "workspaceIsOffline";
 
@@ -72,6 +80,7 @@ public class BndPreferences {
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
 		store.setDefault(PREF_WORKSPACE_TEMPLATE_INDEXES, FragmentTemplateEngine.DEFAULT_INDEX);
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
+		store.setDefault(PREF_INCLUDECONFLICT_SEVERITY, IMarker.SEVERITY_ERROR);
 		store.setDefault(PREF_PARALLEL, false);
 		store.setDefault(PREF_REBUILD_TRIGGER_POLICY, REBUILDTRIGGERPOLICY_ALWAYS);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
@@ -443,6 +452,31 @@ public class BndPreferences {
 			workspace.setOffline(b);
 		}
 		store.setValue(PREF_WORKSPACE_OFFLINE, b);
+	}
+
+	/**
+	 * Returns the severity for Include Conflict Markers.
+	 *
+	 * @return {@link IMarker#SEVERITY_ERROR}, {@link IMarker#SEVERITY_WARNING},
+	 *         {@link IMarker#SEVERITY_INFO}, or
+	 *         {@link #INCLUDECONFLICT_SEVERITY_IGNORE} to suppress markers
+	 *         entirely.
+	 */
+	public int getIncludeConflictSeverity() {
+		return store.getInt(PREF_INCLUDECONFLICT_SEVERITY);
+	}
+
+	/**
+	 * Sets the severity for Include Conflict Markers.
+	 *
+	 * @param severity {@link IMarker#SEVERITY_ERROR},
+	 *            {@link IMarker#SEVERITY_WARNING},
+	 *            {@link IMarker#SEVERITY_INFO}, or
+	 *            {@link #INCLUDECONFLICT_SEVERITY_IGNORE} to suppress markers
+	 *            entirely.
+	 */
+	public void setIncludeConflictSeverity(int severity) {
+		store.setValue(PREF_INCLUDECONFLICT_SEVERITY, severity);
 	}
 
 	public void addPropertyChangeListener(IPropertyChangeListener listener) {
