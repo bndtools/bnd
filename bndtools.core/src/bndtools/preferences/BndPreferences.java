@@ -80,7 +80,7 @@ public class BndPreferences {
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
 		store.setDefault(PREF_WORKSPACE_TEMPLATE_INDEXES, FragmentTemplateEngine.DEFAULT_INDEX);
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
-		store.setDefault(PREF_INCLUDECONFLICT_SEVERITY, IMarker.SEVERITY_ERROR);
+		store.setDefault(PREF_INCLUDECONFLICT_SEVERITY, INCLUDECONFLICT_SEVERITY_IGNORE);
 		store.setDefault(PREF_PARALLEL, false);
 		store.setDefault(PREF_REBUILD_TRIGGER_POLICY, REBUILDTRIGGERPOLICY_ALWAYS);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
