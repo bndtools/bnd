@@ -51,17 +51,6 @@ public class IncludeConflictDetector {
 			return;
 		try {
 			int severity = getIncludeConflictSeverity();
-			if (severity == BndPreferences.INCLUDECONFLICT_SEVERITY_IGNORE) {
-				// Remove any existing markers and stop
-				resource.getWorkspace()
-					.run(monitor -> resource.deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_ZERO),
-						resource.getWorkspace()
-							.getRoot(),
-						IWorkspace.AVOID_UPDATE, null);
-				return;
-			}
-			Map<String, List<File>> conflicts = findConflicts(model);
-			List<InFileDuplicate> duplicates = findInFileDuplicates(model);
 			List<IFile> includedFiles = new ArrayList<>();
 			Processor owner = model.getOwner();
 			if (owner != null && owner.getIncluded() != null) {
@@ -73,6 +62,25 @@ public class IncludeConflictDetector {
 						includedFiles.add(iFile);
 				}
 			}
+			if (severity == BndPreferences.INCLUDECONFLICT_SEVERITY_IGNORE) {
+				// Remove any existing markers on the edited file and all included files, then stop
+				resource.getWorkspace()
+					.run(monitor -> {
+						resource.deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_ZERO);
+						for (IFile included : includedFiles) {
+							for (IMarker m : included.findMarkers(MARKER_TYPE, false, IResource.DEPTH_ZERO)) {
+								if (m.getAttribute(ATTR_IN_FILE, false))
+									m.delete();
+							}
+						}
+					},
+						resource.getWorkspace()
+							.getRoot(),
+						IWorkspace.AVOID_UPDATE, null);
+				return;
+			}
+			Map<String, List<File>> conflicts = findConflicts(model);
+			List<InFileDuplicate> duplicates = findInFileDuplicates(model);
 			IWorkspaceRunnable runnable = monitor -> {
 				resource.deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_ZERO);
 				// In-file duplicate markers on included files are context-free: recomputed
@@ -393,9 +401,21 @@ public class IncludeConflictDetector {
 		}
 	}
 
+	private static volatile BndPreferences sharedPreferences;
+
+	private static BndPreferences getPreferences() {
+		if (sharedPreferences == null) {
+			synchronized (IncludeConflictDetector.class) {
+				if (sharedPreferences == null)
+					sharedPreferences = new BndPreferences();
+			}
+		}
+		return sharedPreferences;
+	}
+
 	private static int getIncludeConflictSeverity() {
 		try {
-			return new BndPreferences().getIncludeConflictSeverity();
+			return getPreferences().getIncludeConflictSeverity();
 		} catch (Exception e) {
 			return IMarker.SEVERITY_ERROR;
 		}
