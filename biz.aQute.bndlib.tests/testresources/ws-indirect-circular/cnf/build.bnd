@@ -1,0 +1,3 @@
+# Empty build.bnd for workspace configuration
+-plugin.norepos = 
+
