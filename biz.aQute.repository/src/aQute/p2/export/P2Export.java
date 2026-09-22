@@ -723,20 +723,27 @@ class P2Export {
 		for (Entry<String, Attrs> entry : parameters.entrySet()) {
 			String version = entry.getValue()
 				.getVersion();
-			if (version == null) {
+			if (!isVersionRange(version)) {
 				continue;
 			}
 
 			try {
 				VersionRange range = VersionRange.valueOf(version);
-				if (range.getRight() != null) {
-					bundleVersionRanges.put(Processor.removeDuplicateMarker(entry.getKey()), range.toString());
-				}
+				bundleVersionRanges.put(Processor.removeDuplicateMarker(entry.getKey()), range.toString());
 			} catch (IllegalArgumentException e) {
 				// Ignore non-range selectors like latest/project and fall back to exact versions.
 			}
 		}
 		return bundleVersionRanges;
+	}
+
+	private boolean isVersionRange(String version) {
+		if (version == null || version.length() < 3) {
+			return false;
+		}
+		char left = version.charAt(0);
+		char right = version.charAt(version.length() - 1);
+		return (left == '[' || left == '(') && version.indexOf(',') > 0 && (right == ']' || right == ')');
 	}
 
 	private void parseRequired(List<Required> prs, Processor definition, String defaultRange) {
