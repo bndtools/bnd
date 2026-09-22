@@ -276,6 +276,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 			commitPages(true);
 			sourcePage.refresh();
 		}
+		IDocumentProvider provider = sourcePage.getDocumentProvider();
+		if (provider != null) {
+			IDocument document = provider.getDocument(getEditorInput());
+			if (document != null)
+				IncludeConflictDetector.updateMarkers(inputResource, model, document.get());
+		}
 	}
 
 	public void reallySave(IProgressMonitor monitor) {
@@ -659,7 +665,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 								IDocument document = docProvider.getDocument(getEditorInput());
 								model.loadFrom(new IDocumentWrapper(document));
 								model.setDirty(false);
-								IncludeConflictDetector.updateMarkers(inputResource, model);
+								IncludeConflictDetector.updateMarkers(inputResource, model, document.get());
 							} catch (IOException e) {
 								logger.logError("Unable to load edit model", e);
 								completed.fail(e);
@@ -805,7 +811,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 						try {
 							owner.forceRefresh();
 							model.loadFrom(new IDocumentWrapper(document));
-							IncludeConflictDetector.updateMarkers(inputResource, model);
+						IncludeConflictDetector.updateMarkers(inputResource, model, document.get());
 						} catch (IOException e) {
 							logger.logError("Failed to reload model after included file change", e);
 						}
@@ -858,6 +864,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, () -> {
 						try {
 							model.loadFrom(new IDocumentWrapper(document));
+							IncludeConflictDetector.updateMarkers(inputResource, model, document.get());
 							updateIncludedPages();
 						} catch (IOException e) {
 							logger.logError("Failed to reload document", e);
@@ -904,6 +911,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					IDocumentWrapper idoc = new IDocumentWrapper(docProvider.getDocument(element));
 					if (!saving.get()) {
 						model.loadFrom(idoc);
+						IncludeConflictDetector.updateMarkers(inputResource, model, idoc.get());
 					} else {
 						if (savedString != null) {
 							logger.logInfo("Putting back content that we almost lost!", null);

@@ -29,6 +29,7 @@ import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.MacroReference;
 import aQute.bnd.osgi.Processor.PropertyKey;
+import aQute.bnd.osgi.PropertyConflict;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -43,6 +44,226 @@ import aQute.service.reporter.Reporter.SetLocation;
 
 @ExtendWith(SoftAssertionsExtension.class)
 public class ProcessorTest {
+
+	@Test
+	void testPropertyConflictPolicies(@InjectTemporaryDirectory File base, SoftAssertions softly) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		for (String instruction : List.of("", "-pedantic: true", "-propertyconflicts: warning",
+			"-propertyconflicts: error", "-pedantic: true\n-propertyconflicts: off")) {
+			IO.store("name: first\nname: last\n" + instruction, file);
+			try (Processor processor = new Processor()) {
+				processor.setProperties(file);
+				boolean error = instruction.endsWith("error");
+				boolean warning = instruction.endsWith("true") || instruction.endsWith("warning");
+				softly.assertThat(processor.getProperty("name")).isEqualTo("last");
+				softly.assertThat(processor.getErrors()).as(instruction).hasSize(error ? 1 : 0);
+				softly.assertThat(processor.getWarnings()).as(instruction).hasSize(warning ? 1 : 0);
+				softly.assertThat(processor.isOk()).as(instruction).isEqualTo(!error);
+				softly.assertThat(PropertyConflict.getConflicts(processor)).singleElement().satisfies(conflict -> {
+					softly.assertThat(conflict.kind()).isEqualTo(PropertyConflict.Kind.DUPLICATE);
+					softly.assertThat(conflict.mergeable()).isFalse();
+					softly.assertThat(conflict.winner().line()).isEqualTo(1);
+				});
+			}
+		}
+	}
+
+	@Test
+	void testPropertyConflictIncludes(@InjectTemporaryDirectory File base, SoftAssertions softly) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("-runvm: same\n-include: nested.bnd\n", new File(base, "included.bnd"));
+		IO.store("-runvm: same\n", new File(base, "nested.bnd"));
+		IO.store("-include: included.bnd\n-runvm: same\n-propertyconflicts: error\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			softly.assertThat(processor.getErrors()).singleElement().asString().contains("`-runvm`", "nested.bnd");
+			softly.assertThat(processor.getWarnings()).isEmpty();
+			softly.assertThat(processor.getProperty("-runvm")).isEqualTo("same");
+			PropertyConflict conflict = PropertyConflict.getConflicts(processor).get(0);
+			softly.assertThat(conflict.occurrences()).hasSize(3);
+			softly.assertThat(conflict.winner().source()).endsWith("nested.bnd");
+			softly.assertThat(conflict.mergeable()).isTrue();
+			softly.assertThat(processor.getLocation(processor.getErrors().get(0)).details).isEqualTo(conflict);
+		}
+	}
+
+	@Test
+	void testPropertyConflictDefaultsAndSuffixes(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("-runvm: default\n-runvm.extra: extra\n", new File(base, "included.bnd"));
+		IO.store("-include: ~included.bnd\n-runvm: local\n-propertyconflicts: error\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			assertThat(processor.getProperty("-runvm")).isEqualTo("local");
+			assertThat(PropertyConflict.getConflicts(processor)).isEmpty();
+			assertThat(processor.check()).isTrue();
+		}
+		IO.store("-include: included.bnd\n-runvm.local: local\n-propertyconflicts: error\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			assertThat(processor.mergeProperties("-runvm")).contains("local", "default", "extra");
+			assertThat(PropertyConflict.getConflicts(processor)).isEmpty();
+			assertThat(processor.check()).isTrue();
+		}
+	}
+
+	@Test
+	void testPropertyConflictSuffixedMergedHeaderIncludes(@InjectTemporaryDirectory File base, SoftAssertions softly)
+		throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("-runblacklist.win32: mac\n", new File(base, "included.bnd"));
+		IO.store("-include: included.bnd\n-runblacklist.win32: linux\n-propertyconflicts: error\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			softly.assertThat(processor.getErrors())
+				.singleElement()
+				.asString()
+				.contains("`-runblacklist.win32`", "included.bnd");
+			softly.assertThat(processor.getProperty("-runblacklist.win32"))
+				.isEqualTo("mac");
+			PropertyConflict conflict = PropertyConflict.getConflicts(processor)
+				.get(0);
+			softly.assertThat(conflict.key())
+				.isEqualTo("-runblacklist.win32");
+			softly.assertThat(conflict.mergeable())
+				.isTrue();
+		}
+	}
+
+	@Test
+	void testPropertyConflictDefaultOffForIncludes(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("-runvm: included\n", new File(base, "included.bnd"));
+		IO.store("-include: included.bnd\n-runvm: local\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			assertThat(processor.getProperty("-runvm")).isEqualTo("included");
+			assertThat(processor.check()).isTrue();
+			processor.setPedantic(true);
+			assertThat(processor.getWarnings()).singleElement().asString().contains("[Property Conflict]");
+			assertThat(processor.getWarnings()).hasSize(1);
+		}
+	}
+
+	@Test
+	void testPropertyConflictInheritanceAndTransfer(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("name: first\nname: second\n", file);
+		try (Processor parent = new Processor(); Processor child = new Processor(parent); Processor report = new Processor()) {
+			parent.setProperty("-propertyconflicts", "error");
+			parent.setProperty("name", "inherited");
+			child.setProperties(file);
+			report.getInfo(child);
+			assertThat(report.getErrors()).hasSize(1);
+			assertThat(report.getLocation(report.getErrors().get(0)).details).isInstanceOf(PropertyConflict.class);
+			assertThat(child.getErrors()).isEmpty();
+			assertThat(parent.getErrors()).isEmpty();
+		}
+	}
+
+	@Test
+	void testPropertyConflictSnapshotAndRefresh(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("name: disk\n-propertyconflicts: error\n", file);
+		try (Processor owner = new Processor()) {
+			owner.setProperties(file);
+			try (Processor snapshot = PropertyConflict.analyze(owner, file, "name: first\nname: last\n")) {
+				assertThat(snapshot.getErrors()).hasSize(1);
+				assertThat(snapshot.getProperty("name")).isEqualTo("last");
+				assertThat(snapshot.getLocation(snapshot.getErrors().get(0)).line).isEqualTo(1);
+			}
+			assertThat(owner.getErrors()).isEmpty();
+			IO.store("name: first\nname: last\n-propertyconflicts: error\n", file);
+			owner.forceRefresh();
+			assertThat(owner.getErrors()).hasSize(1);
+			IO.store("name: fixed\n-propertyconflicts: error\n", file);
+			owner.forceRefresh();
+			assertThat(owner.getErrors()).isEmpty();
+			assertThat(PropertyConflict.getConflicts(owner)).isEmpty();
+		}
+	}
+
+	@Test
+	void testPropertyConflictFixupAndFailOk(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("name: first\nname: last\n-propertyconflicts: error\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			assertThat(processor.isOk()).isFalse();
+			processor.setProperty("-fixupmessages", "'*Property Conflict*';is:=warning");
+			assertThat(processor.getWarnings()).hasSize(1);
+			assertThat(processor.isOk()).isTrue();
+			processor.unsetProperty("-fixupmessages");
+			processor.setFailOk(true);
+			assertThat(processor.getWarnings()).hasSize(1);
+			assertThat(processor.getErrors()).isEmpty();
+		}
+	}
+
+	@Test
+	void testPropertyConflictFixupPreservesDetails(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		IO.store("name: first\nname: last\n-propertyconflicts: warning\n", file);
+		try (Processor processor = new Processor(); Processor target = new Processor()) {
+			processor.setProperties(file);
+			processor.setProperty("-fixupmessages", "'*Property Conflict*';is:=error;replace:='conflict found'");
+			assertThat(processor.getErrors()).containsExactly("conflict found");
+			assertThat(processor.getLocation("conflict found").details).isInstanceOf(PropertyConflict.class);
+			target.getInfo(processor, "");
+			assertThat(target.getErrors()).containsExactly("conflict found");
+			assertThat(target.getLocation("conflict found").details).isInstanceOf(PropertyConflict.class);
+			assertThat(target.getLocation("conflict found").line).isEqualTo(1);
+		}
+	}
+
+	@Test
+	void testPropertyConflictExtensionAndParentOverrides(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "extension.bnd");
+		IO.store("-runvm: extension\n", file);
+		try (Processor parent = new Processor(); Processor processor = new Processor(parent)) {
+			parent.setProperty("-runvm", "parent");
+			processor.setProperty("-propertyconflicts", "error");
+			processor.setProperty("-runvm", "local");
+			processor.doIncludeFile(file, false, processor.getProperties(), "ext");
+			assertThat(processor.getProperty("-runvm")).isEqualTo("local");
+			assertThat(processor.getProperty("-runvm.ext")).isEqualTo("extension");
+			assertThat(processor.getErrors()).isEmpty();
+			assertThat(PropertyConflict.getConflicts(processor)).isEmpty();
+		}
+	}
+
+	@Test
+	void testPropertyConflictStreamAndInvalidPolicy() throws Exception {
+		try (Processor processor = new Processor()) {
+			processor.setProperties(IO.stream("name: first\nname: last\n-propertyconflicts: error\n"));
+			assertThat(processor.getErrors()).hasSize(1);
+			processor.setProperty("-propertyconflicts", "invalid");
+			assertThat(processor.getErrors()).singleElement().asString().startsWith("Invalid -propertyconflicts value:");
+			processor.setProperty("-propertyconflicts", "off");
+			assertThat(processor.getErrors()).isEmpty();
+		}
+	}
+
+	@Test
+	void testPropertyConflictUrlAndManifest(@InjectTemporaryDirectory File base) throws Exception {
+		File file = new File(base, "bnd.bnd");
+		File included = new File(base, "remote.bnd");
+		IO.store("-runvm: first\n-runvm: last\n", included);
+		IO.store("-include: " + included.toURI() + "\n-runvm: local\n-propertyconflicts: error\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			assertThat(processor.getErrors()).hasSize(2).allSatisfy(message -> assertThat(message).contains(included.toURI().toString()));
+			assertThat(PropertyConflict.getConflicts(processor)).allSatisfy(conflict ->
+				assertThat(conflict.winner().source()).isEqualTo(included.toURI().toString()));
+		}
+		IO.store("Manifest-Version: 1.0\r\nExport-Package: included\r\n\r\n", new File(base, "included.mf"));
+		IO.store("-include: included.mf\nExport-Package: local\n-propertyconflicts: error\n", file);
+		try (Processor processor = new Processor()) {
+			processor.setProperties(file);
+			assertThat(processor.getErrors()).hasSize(1);
+			assertThat(processor.getProperty("Export-Package")).isEqualTo("included");
+		}
+	}
 
 	@Test
 	void testMacroReferences() throws IOException {

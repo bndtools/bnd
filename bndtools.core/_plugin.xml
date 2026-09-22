@@ -196,6 +196,8 @@
 	</extension>
 
 	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.osgi.PropertyConflict"
+			class="bndtools.editor.project.PropertyConflictDetailsHandler" />
 		<handler typeMatch="bndtools.builder.missingworkspace"
 			class="bndtools.wizards.workspace.MissingWorkspaceBuildErrorHandler" />
 	</extension>
