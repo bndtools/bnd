@@ -44,6 +44,30 @@ Packages with directive `resolution:=dynamic` will be removed from `Import-Packa
 
     Import-Package: org.slf4j.*;resolution:=dynamic, *
 
+## Conditional Resolution
+
+Packages with directive `resolution:=conditional` provide a flexible way to handle imports based on the classpath configuration. This is particularly useful when wrapping third-party libraries where you want automatic handling of dependencies:
+
+    Import-Package: *;resolution:=conditional
+
+When a package is marked with `resolution:=conditional`, bnd will:
+
+1. **Import normally** if the package is found on the classpath and comes from an OSGi bundle (has Export-Package metadata)
+2. **Embed the package** if it's found on the classpath but comes from a non-OSGi jar (no OSGi metadata)
+3. **Mark as optional** (`resolution:=optional`) if the package is not found on the classpath at all
+
+This behavior is especially useful when:
+- Wrapping existing JARs that mix OSGi and non-OSGi dependencies
+- Creating flexible bundles that can adapt to different deployment scenarios
+- Avoiding the need to manually specify which packages should be imported vs. embedded
+
+Example use case: Wrapping a third-party library that depends on both OSGi frameworks (like org.osgi.framework) and plain Java libraries (like Apache Commons):
+
+    Import-Package: *;resolution:=conditional
+    Private-Package: com.thirdparty.*
+
+In this case, OSGi packages will be imported with proper version ranges, while non-OSGi dependencies will be embedded directly into the bundle, and any optional dependencies not on the classpath will be marked as optional imports.
+
 If an imported package uses mandatory attributes, then bnd will attempt to add those attributes to the import statement. However, in certain (bizarre!) cases this is not wanted. It is therefore possible to remove an attribute from the import clause. This is done with the `-remove-attribute` directive or by setting the value of an attribute to `!`. The parameter of the `-remove-attribute` directive is an instruction and can use the standard options with `!`, `*`, `?`, etc.
 
     Import-Package: org.eclipse.core.runtime;-remove-attribute:="common",*
