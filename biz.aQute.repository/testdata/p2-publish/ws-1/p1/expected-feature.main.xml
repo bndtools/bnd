@@ -515,5 +515,5 @@ version(s), and exceptions or additional permissions here}."
   <plugin id="org.osgi.service.repository" version="[1.1.0.201505202024,1.1.0.201505202024]" unpack="false"/>
   <plugin id="org.osgi.util.function" version="[1.2.0.202109301733,1.2.0.202109301733]" unpack="false"/>
   <plugin id="org.osgi.util.promise" version="[1.2.0.202109301733,1.2.0.202109301733]" unpack="false"/>
-  <plugin id="org.slf4j.api" version="[1.7.30.v20200204-2150,1.7.30.v20200204-2150]" unpack="false"/>
+  <plugin id="org.slf4j.api" version="[1.7.0,2.0.0)" unpack="false"/>
 </feature>

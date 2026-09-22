@@ -544,9 +544,13 @@ class P2Export {
 
 		for (Required require : feature.requires) {
 			if (require.type == IUType.bundle) {
+				String version = feature.bundleVersionRanges.get(require.id.getBsn());
+				if (version == null) {
+					version = require.range != null ? require.range.toString() : toExact(require.id.getVersion());
+				}
 				new Tag(f, "plugin")//
 					.addAttribute("id", require.id.getBsn())//
-					.addAttribute("version", require.range) //
+					.addAttribute("version", version) //
 					.addAttribute("unpack", false);
 			}
 		}
@@ -640,6 +644,7 @@ class P2Export {
 				definition.setParent(bndrun);
 
 				BundleId featureId = getFeatureId(definition);
+				Map<String, String> bundleVersionRanges = extractBundleVersionRanges(definition);
 
 				List<Required> requires = new ArrayList<>();
 				List<Provided> provides = new ArrayList<>();
@@ -676,7 +681,7 @@ class P2Export {
 				parseProvided(provides, definition);
 
 				Feature feature = new Feature(featureId, definition, provides, requires, definition.get("-p2.plugin"),
-					definition.get("update"), definition.get("update.label"));
+					definition.get("update"), definition.get("update.label"), bundleVersionRanges);
 				units.add(feature);
 
 				Artifact art = generateFeature(feature);
@@ -708,6 +713,42 @@ class P2Export {
 		Artifacts artifact = new Artifacts(name, mappings, artifacts);
 		Content content = new P2.Content(name, references, units);
 		return new P2(name, content, artifact, categories, "", "");
+	}
+
+	private Map<String, String> extractBundleVersionRanges(Processor definition) {
+		String runbundles = definition.mergeProperties(Constants.RUNBUNDLES);
+		if (runbundles == null) {
+			return Collections.emptyMap();
+		}
+
+		Map<String, String> bundleVersionRanges = new LinkedHashMap<>();
+		Parameters parameters = new Parameters(runbundles);
+		for (Entry<String, Attrs> entry : parameters.entrySet()) {
+			String version = entry.getValue()
+				.getVersion();
+			if (!isVersionRange(version)) {
+				continue;
+			}
+			bundleVersionRanges.put(Processor.removeDuplicateMarker(entry.getKey()), version);
+		}
+		return bundleVersionRanges;
+	}
+
+	private boolean isVersionRange(String version) {
+		if (version == null || version.length() < 3) {
+			return false;
+		}
+		char left = version.charAt(0);
+		char right = version.charAt(version.length() - 1);
+		if ((left != '[' && left != '(') || version.indexOf(',') <= 0 || (right != ']' && right != ')')) {
+			return false;
+		}
+		try {
+			VersionRange.valueOf(version);
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	private void parseRequired(List<Required> prs, Processor definition, String defaultRange) {
