@@ -268,7 +268,6 @@ class P2 {
 			String updateSiteUrl, String updateLabel, Map<String, String> bundleVersionRanges) {
 			super(id, properties, provides, requires);
 			this.plugin = plugin;
-			this.requires.addAll(requires);
 			this.groupId = getBundleId(id.getBsn() + ".feature.group", id.getVersion());
 			this.jarId = getBundleId(id.getBsn() + ".feature.jar", id.getVersion());
 			this.update = updateSiteUrl;

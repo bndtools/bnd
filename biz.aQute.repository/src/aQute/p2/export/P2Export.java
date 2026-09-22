@@ -544,7 +544,10 @@ class P2Export {
 
 		for (Required require : feature.requires) {
 			if (require.type == IUType.bundle) {
-				String version = feature.bundleVersionRanges.getOrDefault(require.id.getBsn(), require.range.toString());
+				String version = feature.bundleVersionRanges.get(require.id.getBsn());
+				if (version == null) {
+					version = require.range != null ? require.range.toString() : toExact(require.id.getVersion());
+				}
 				new Tag(f, "plugin")//
 					.addAttribute("id", require.id.getBsn())//
 					.addAttribute("version", version) //
