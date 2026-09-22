@@ -107,6 +107,8 @@ class P2PublisherTest {
 
 				String expectedMain = Files.readString(p.getFile("expected-feature.main.xml")
 					.toPath());
+				assertThat(xmlFeatureMain)
+					.contains("<plugin id=\"org.slf4j.api\" version=\"[1.7.0,2.0.0)\" unpack=\"false\"/>");
 				assertEquals("feature.xml does not match expected-feature.main.xml", expectedMain, xmlFeatureMain);
 
 				InputStream xmlFeaturePdeIs = featurePde.getResource("feature.xml")

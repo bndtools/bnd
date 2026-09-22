@@ -259,12 +259,13 @@ class P2 {
 	static class Feature extends IU {
 		final BundleId	groupId;
 		final BundleId	jarId;
+		final Map<String, String> bundleVersionRanges;
 		final String	plugin;
 		final String	update;
 		final String	updateLabel;
 
 		Feature(BundleId id, Domain properties, List<Provided> provides, List<Required> requires, String plugin,
-			String updateSiteUrl, String updateLabel) {
+			String updateSiteUrl, String updateLabel, Map<String, String> bundleVersionRanges) {
 			super(id, properties, provides, requires);
 			this.plugin = plugin;
 			this.requires.addAll(requires);
@@ -272,6 +273,7 @@ class P2 {
 			this.jarId = getBundleId(id.getBsn() + ".feature.jar", id.getVersion());
 			this.update = updateSiteUrl;
 			this.updateLabel = updateLabel;
+			this.bundleVersionRanges = bundleVersionRanges;
 		}
 
 		String getProvider() {
