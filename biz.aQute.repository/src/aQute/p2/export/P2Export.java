@@ -726,13 +726,7 @@ class P2Export {
 			if (!isVersionRange(version)) {
 				continue;
 			}
-
-			try {
-				VersionRange range = VersionRange.valueOf(version);
-				bundleVersionRanges.put(Processor.removeDuplicateMarker(entry.getKey()), range.toString());
-			} catch (IllegalArgumentException e) {
-				// Ignore non-range selectors like latest/project and fall back to exact versions.
-			}
+			bundleVersionRanges.put(Processor.removeDuplicateMarker(entry.getKey()), version);
 		}
 		return bundleVersionRanges;
 	}
@@ -743,7 +737,15 @@ class P2Export {
 		}
 		char left = version.charAt(0);
 		char right = version.charAt(version.length() - 1);
-		return (left == '[' || left == '(') && version.indexOf(',') > 0 && (right == ']' || right == ')');
+		if ((left != '[' && left != '(') || version.indexOf(',') <= 0 || (right != ']' && right != ')')) {
+			return false;
+		}
+		try {
+			VersionRange.valueOf(version);
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	private void parseRequired(List<Required> prs, Processor definition, String defaultRange) {
