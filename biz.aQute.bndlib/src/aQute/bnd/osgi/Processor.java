@@ -122,6 +122,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private volatile Memoize<PluginsContainer>	pluginsContainer	= newPluginsContainer();
 
 	final MessageReporter						reporter			= new MessageReporter(this);
+	private final PropertyConflictTracker propertyConflicts = new PropertyConflictTracker();
+	private final Map<File, String> propertySources = new HashMap<>();
 	boolean										fileMustExist		= true;
 
 	private File								base				= new File("").getAbsoluteFile();
@@ -330,6 +332,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	@Override
 	public List<String> getErrors() {
 		return reporter.getErrors();
+	}
+
+	/** Parsed conflicts, independent of their configured diagnostic severity. */
+	List<PropertyConflict> getPropertyConflicts() {
+		return propertyConflicts.conflicts();
+	}
+
+	void reportPropertyConflicts() {
+		propertyConflicts.report(this);
 	}
 
 	/**
@@ -684,7 +695,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setProperties(InputStream properties) throws IOException {
 		UTF8Properties p = new UTF8Properties();
-		p.load(properties);
+		List<UTF8Properties.Property> declarations = new ArrayList<>();
+		String source = propertiesFile == null ? "" : propertiesFile.getAbsolutePath();
+		p.load(properties, propertiesFile, this, Constants.OSGI_SYNTAX_HEADERS, source, declarations::add);
+		propertyConflicts.parsed(source, declarations);
 		setProperties(getBase(), p);
 	}
 
@@ -762,6 +776,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 								ext = value.substring(n);
 
 							Path tmp = Files.createTempFile("url", ext);
+							propertySources.put(tmp.toFile(), value);
 							try (Resource resource = Resource.fromURL(url, getPlugin(HttpClient.class))) {
 								try (OutputStream out = IO.outputStream(tmp)) {
 									resource.write(out);
@@ -769,6 +784,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 								Files.setLastModifiedTime(tmp, FileTime.fromMillis(resource.lastModified()));
 								doIncludeFile(tmp.toFile(), overwrite, p);
 							} finally {
+								propertySources.remove(tmp.toFile());
 								removeIncluded(tmp.toFile());
 								IO.delete(tmp);
 							}
@@ -825,8 +841,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String value = (String) entry.getValue();
 
 			if (overwrite || !target.containsKey(key)) {
+				if (overwrite && target.containsKey(key) && PropertyConflict.isMergedHeader(key))
+					propertyConflicts.include(key, target, sub, propertiesFile, file);
 				SetterResult res = set.apply(key, value);
-				if (overwrite && res.provenance() != null && res.prevValue() != null && !res.prevValue()
+				if (overwrite && !PropertyConflict.isMergedHeader(key) && res.provenance() != null && res.prevValue() != null && !res.prevValue()
 					.equals(value)) {
 					// log warning if overwrite=true and value different than
 					// current value
@@ -934,7 +952,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	protected Properties magicBnd(File file) throws IOException {
 		if (Strings.endsWithIgnoreCase(file.getName(), ".mf")) {
 			try (InputStream in = IO.stream(file)) {
-				return getManifestAsProperties(in, file.getAbsolutePath());
+				return getManifestAsProperties(in, propertySources.getOrDefault(file, file.getAbsolutePath()));
 			}
 		} else
 			return loadProperties(file);
@@ -978,6 +996,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *
 	 */
 	public void forceRefresh() {
+		propertyConflicts.reset(this);
 		included.clear();
 		Processor p = getParent();
 		properties = (p != null) ? new UTF8Properties(p.getRawProperties()) : new UTF8Properties();
@@ -1009,6 +1028,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void setProperties(File propertiesFile, File base) {
+		propertyConflicts.reset(this);
 		this.propertiesFile = propertiesFile.getAbsoluteFile();
 		setBase(base);
 		try {
@@ -1029,7 +1049,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setProperties(Reader reader) throws IOException {
 		UTF8Properties p = new UTF8Properties();
-		p.load(reader);
+		List<UTF8Properties.Property> declarations = new ArrayList<>();
+		String source = propertiesFile == null ? "" : propertiesFile.getAbsolutePath();
+		p.load(IO.collect(reader), propertiesFile, this, Constants.OSGI_SYNTAX_HEADERS, source, declarations::add);
+		propertyConflicts.parsed(source, declarations);
 		setProperties(p);
 	}
 
@@ -1306,7 +1329,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	UTF8Properties loadProperties0(File file) throws IOException {
 		try {
 			UTF8Properties p = new UTF8Properties();
-			p.load(file, this, Constants.OSGI_SYNTAX_HEADERS);
+			List<UTF8Properties.Property> declarations = new ArrayList<>();
+			p.load(file, this, Constants.OSGI_SYNTAX_HEADERS, declarations::add);
+			String source = propertySources.getOrDefault(file, file.getAbsolutePath());
+			p.setProvenance(source);
+			propertyConflicts.parsed(source, declarations.stream()
+				.map(property -> new UTF8Properties.Property(property.key(), source, property.line(), property.start(), property.end()))
+				.toList());
 			return p.replaceHere(file.getParentFile());
 		} catch (Exception e) {
 			error("Error during loading properties file: %s, error: %s", file, e);

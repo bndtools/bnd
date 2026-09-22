@@ -2,6 +2,7 @@ package aQute.lib.utf8properties;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import aQute.lib.hex.Hex;
 import aQute.lib.strings.Strings;
@@ -49,9 +50,16 @@ final class PropertiesParser {
 	private boolean						continuation	= true;
 	private final Collection<String>	syntaxHeaders;
 	private final String				provenance;
+	private final Consumer<UTF8Properties.Property>	declarations;
 
 	PropertiesParser(String source, String file, Reporter reporter, UTF8Properties properties,
 		Collection<String> syntaxHeaders, String provenance) {
+		this(source, file, reporter, properties, syntaxHeaders, provenance, null);
+	}
+
+	PropertiesParser(String source, String file, Reporter reporter, UTF8Properties properties,
+		Collection<String> syntaxHeaders, String provenance, Consumer<UTF8Properties.Property> declarations) {
+		this.declarations = declarations;
 		this.provenance = provenance;
 		this.source = source.toCharArray();
 		this.file = file;
@@ -143,13 +151,17 @@ final class PropertiesParser {
 			}
 
 			this.validKey = true;
+			int keyLine = line;
+			int keyStart = n - 1;
 			String key = key();
+			if (declarations != null)
+				declarations.accept(new UTF8Properties.Property(key, provenance, keyLine, keyStart, n - 1));
 
 			if (!validKey) {
 				warning("Invalid property key: `%s`", key);
 			}
 
-			if (reporter != null && reporter.isPedantic() && properties.containsKey(key)) {
+			if (declarations == null && reporter != null && reporter.isPedantic() && properties.containsKey(key)) {
 				warning("Duplicate property key: `%s`", key);
 			}
 
